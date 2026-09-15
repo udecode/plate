@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, defineBasePlugin } from 'platejs';
+import { BaseParagraphPlugin, definePlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
 
 import { schema } from '../../core';
@@ -63,7 +63,7 @@ describe('ExitBreakPlugin', () => {
   });
 
   it('exits after the nearest ancestor whose parent accepts a paragraph', () => {
-    const CodeBlockPlugin = defineBasePlugin('codeblock', {
+    const CodeBlockPlugin = definePlugin('codeblock', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1, max: 1 }),
@@ -97,7 +97,7 @@ describe('ExitBreakPlugin', () => {
   });
 
   it('exits after an outer structure whose grammar rejects paragraphs', () => {
-    const TableCellPlugin = defineBasePlugin('tableCell', {
+    const TableCellPlugin = definePlugin('tableCell', {
       schema: ({ plugins }) => ({
         element: {
           content: plugins.blockContent({
@@ -107,14 +107,14 @@ describe('ExitBreakPlugin', () => {
         },
       }),
     });
-    const TableRowPlugin = defineBasePlugin('tableRow', {
+    const TableRowPlugin = definePlugin('tableRow', {
       schema: {
         element: {
           content: schema.content.element(TableCellPlugin, { min: 1 }),
         },
       },
     });
-    const TablePlugin = defineBasePlugin('table', {
+    const TablePlugin = definePlugin('table', {
       schema: {
         element: {
           content: schema.content.element(TableRowPlugin, { min: 1 }),

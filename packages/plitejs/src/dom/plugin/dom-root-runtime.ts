@@ -1,4 +1,5 @@
-import { setEditorFocused, type AnyEditor } from '../../internal';
+import { setEditorFocused } from '../../core/public-state';
+import type { AnyEditor } from '../../interfaces/editor';
 import {
   type DOMRootFactOverrides,
   type DOMRootQuirk,
@@ -45,7 +46,7 @@ type DOMRootRuntimeLifecycle<TRoot extends HTMLElement> = {
 
 export type DOMRootRuntimeOptions<TRoot extends HTMLElement> = Omit<
   DOMIntegrityObserverOptions,
-  'consumeOwnedMutation' | 'schedule'
+  'consumeOwnedMutation' | 'onDOMChange' | 'schedule'
 > &
   DOMRootRuntimeLifecycle<TRoot> & {
     adapter: object;
@@ -257,6 +258,8 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
   private readonly factListeners = new Set<() => void>();
 
+  private readonly layoutListeners = new Set<() => void>();
+
   private readonly disposables = new Map<string, () => void>();
 
   readonly editor: AnyEditor;
@@ -289,7 +292,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     this.domInputRuntime = new DOMInputRuntime({
       getGeneration: () => this.generation,
       getRoot: () =>
-        this.rootRef.current?.getAttribute('data-plite-root') ?? 'main',
+        this.rootRef.current?.getAttribute('data-editor-root') ?? 'main',
     });
     this.testRootFacts = options.testRootFacts;
     this.schedulerImplementation = this.createScheduler();
@@ -312,6 +315,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
         : { maxRepairPassesPerFrame: options.maxRepairPassesPerFrame }),
       consumeOwnedMutation: (mutation) =>
         this.domSyncMutationOwnership.consume(mutation),
+      onDOMChange: this.publishLayout,
       onRepair: options.onRepair,
       resolvePath: options.resolvePath,
       schedule: (callback, scheduleOptions) =>
@@ -483,6 +487,14 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
     return () => {
       this.factListeners.delete(listener);
+    };
+  };
+
+  readonly subscribeLayout = (listener: () => void) => {
+    this.layoutListeners.add(listener);
+
+    return () => {
+      this.layoutListeners.delete(listener);
     };
   };
 
@@ -747,4 +759,12 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       listener();
     }
   }
+
+  private readonly publishLayout = () => {
+    if (!this.connected) return;
+
+    for (const listener of this.layoutListeners) {
+      listener();
+    }
+  };
 }

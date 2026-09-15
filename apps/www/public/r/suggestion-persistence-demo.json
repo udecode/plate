@@ -1,0 +1,37 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "suggestion-persistence-demo",
+  "title": "Save and Reload Suggestions",
+  "description": "Save proposals and discussion threads together in an in-memory snapshot.",
+  "registryDependencies": [
+    "https://platejs.org/r/basic-blocks.json",
+    "https://platejs.org/r/discussion.json",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/history-toolbar-button.json",
+    "https://platejs.org/r/mode-toolbar-button.json",
+    "https://platejs.org/r/suggestion.json",
+    "https://platejs.org/r/toolbar.json",
+    "button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/suggestion-persistence-demo.tsx",
+      "content": "'use client';\n\nimport type { EditorValueInput, Value } from 'platejs';\nimport type { CommentThread } from 'platejs/comments';\nimport { CommentsPlugin } from 'platejs/comments/react';\nimport { EditorRoot, useCreateEditor } from 'platejs/react';\nimport * as React from 'react';\n\nimport { Button } from '@/components/ui/button';\nimport { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';\nimport { DiscussionKit } from '@/registry/components/editor/discussion';\nimport { Editor, EditorContainer } from '@/registry/components/editor/editor';\nimport {\n  RedoToolbarButton,\n  UndoToolbarButton,\n} from '@/registry/components/editor/history-toolbar-button';\nimport { ModeToolbarButton } from '@/registry/components/editor/mode-toolbar-button';\nimport { SuggestionKit } from '@/registry/components/editor/suggestion';\nimport { Toolbar } from '@/registry/components/editor/toolbar';\nimport { createSuggestionDocument } from '@/registry/examples/values/suggestion-document';\n\ntype SuggestionSnapshot = {\n  document: EditorValueInput<Value>;\n  threads: readonly CommentThread[];\n};\n\nexport default function SuggestionPersistenceDemo() {\n  const [saved, setSaved] = React.useState<SuggestionSnapshot | null>(null);\n  const [loaded, setLoaded] = React.useState<SuggestionSnapshot>(() => ({\n    document: createSuggestionDocument(),\n    threads: [],\n  }));\n  const [status, setStatus] = React.useState(\n    'Snapshots stay in memory in this example.'\n  );\n  const editor = useCreateEditor(\n    {\n      plugins: [\n        ...BasicBlocksKit,\n        ...SuggestionKit,\n        ...DiscussionKit,\n        CommentsPlugin.configure({\n          initialState: {\n            currentUserId: 'alice',\n            users: { alice: { id: 'alice', name: 'Alice' } },\n            initialThreads: loaded.threads,\n          },\n        }),\n      ],\n      initialValue: loaded.document,\n      userId: 'alice',\n    },\n    [loaded]\n  );\n\n  return (\n    <div className=\"flex w-full flex-col gap-4 p-4 sm:p-6\">\n      <div className=\"flex flex-wrap gap-2\">\n        <Button\n          onClick={() => {\n            setSaved(\n              structuredClone({\n                document: editor.read.value(),\n                threads: editor.plugin(CommentsPlugin).api.getThreads(),\n              })\n            );\n            setStatus('Saved proposals and discussion threads in memory.');\n          }}\n          size=\"sm\"\n          variant=\"outline\"\n        >\n          Save snapshot\n        </Button>\n        <Button\n          disabled={!saved}\n          onClick={() => {\n            if (!saved) return;\n            setLoaded(structuredClone(saved));\n            setStatus(\n              'Reloaded the saved proposals and threads. Unsaved changes were discarded.'\n            );\n          }}\n          size=\"sm\"\n          variant=\"outline\"\n        >\n          Reload snapshot\n        </Button>\n      </div>\n      <p aria-live=\"polite\" className=\"text-sm text-muted-foreground\">\n        {status}\n      </p>\n      <EditorRoot\n        editor={editor}\n        key={editor.id}\n        authored={{ intent: 'propose', projection: 'markup' }}\n      >\n        <SuggestionPersistenceContent />\n      </EditorRoot>\n    </div>\n  );\n}\n\nfunction SuggestionPersistenceContent() {\n  return (\n    <EditorContainer className=\"h-[280px] rounded-md border\" variant=\"demo\">\n      <Toolbar className=\"border-b px-3 py-1\">\n        <UndoToolbarButton aria-label=\"Undo saved document change\" />\n        <RedoToolbarButton aria-label=\"Redo saved document change\" />\n        <div className=\"ml-auto\">\n          <ModeToolbarButton />\n        </div>\n      </Toolbar>\n      <Editor\n        aria-label=\"Saved suggestions document\"\n        className=\"h-auto min-h-[200px] px-8 pb-12 sm:px-12\"\n        variant=\"demo\"\n      />\n    </EditorContainer>\n  );\n}\n",
+      "type": "registry:example"
+    },
+    {
+      "path": "src/registry/examples/values/suggestion-document.tsx",
+      "content": "import { createEditor } from 'platejs/react';\n\nimport { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';\nimport { SuggestionKit } from '@/registry/components/editor/suggestion';\n\nexport function createSuggestionDocument() {\n  const editor = createEditor({\n    plugins: [...BasicBlocksKit, ...SuggestionKit],\n    userId: 'alice',\n    initialValue: [\n      {\n        type: 'paragraph',\n        children: [{ text: 'We ship on Friday.' }],\n      },\n      {\n        type: 'paragraph',\n        children: [{ text: 'This extra sentence can go.' }],\n      },\n    ],\n  });\n\n  editor.update((tx) => {\n    tx.authored.propose();\n    tx.text.insert('the update ', { at: { path: [0, 0], offset: 8 } });\n  });\n  editor.update((tx) => {\n    tx.authored.propose();\n    tx.text.delete({\n      at: {\n        anchor: { path: [1, 0], offset: 5 },\n        focus: { path: [1, 0], offset: 11 },\n      },\n    });\n  });\n\n  return editor.read.value();\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/suggestion",
+        "title": "Suggestions"
+      }
+    ]
+  },
+  "type": "registry:example"
+}

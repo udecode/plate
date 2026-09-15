@@ -44,7 +44,7 @@ const toPlateValue = (blocks: HugeDocumentBlock[]): Value =>
         }
   );
 
-const toPliteValue = (blocks: HugeDocumentBlock[]): Value =>
+const toEditorValue = (blocks: HugeDocumentBlock[]): Value =>
   blocks.map(({ text, type }) => ({
     children: [{ text }],
     type,
@@ -73,6 +73,6 @@ export const createHugeDocumentValue = ({
   const hugeDocumentBlocks = getHugeDocumentBlocks(blocks);
 
   return engine === 'upstream-slate'
-    ? toPliteValue(hugeDocumentBlocks)
+    ? toEditorValue(hugeDocumentBlocks)
     : toPlateValue(hugeDocumentBlocks);
 };

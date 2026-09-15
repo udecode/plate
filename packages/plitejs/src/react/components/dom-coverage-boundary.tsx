@@ -1,10 +1,9 @@
 import * as React from 'react';
 
-import type { Range as PliteRange } from '../..';
+import type { Range as ModelRange } from '../..';
 import type {
   DOMCoverageBoundary,
   DOMCoverageCopyPolicy,
-  DOMCoverageFindPolicy,
   DOMCoverageMaterializeRangeRole,
   DOMCoverageMaterializeReason,
   DOMCoverageReason,
@@ -26,7 +25,7 @@ import { ImperativeTextFlowContext } from './editable-text-flow';
 
 export type DOMCoverageBoundaryMaterializePayload = {
   boundary: DOMCoverageBoundary;
-  range?: PliteRange;
+  range?: ModelRange;
   rangeRole?: DOMCoverageMaterializeRangeRole;
   reason: DOMCoverageMaterializeReason;
 };
@@ -36,7 +35,6 @@ export const DOMCoverageBoundaryRange = ({
   children,
   content,
   copyPolicy = 'model',
-  findPolicy = 'native',
   from,
   hidden = true,
   onMaterialize,
@@ -48,7 +46,6 @@ export const DOMCoverageBoundaryRange = ({
   children?: React.ReactNode;
   content?: React.ReactNode;
   copyPolicy?: DOMCoverageCopyPolicy;
-  findPolicy?: DOMCoverageFindPolicy;
   hidden?: boolean;
   onMaterialize?: (payload: DOMCoverageBoundaryMaterializePayload) => void;
   reason?: DOMCoverageReason;
@@ -89,7 +86,6 @@ export const DOMCoverageBoundaryRange = ({
             anchorNodeKey && focusNodeKey
               ? [{ anchor: anchorNodeKey, focus: focusNodeKey }]
               : [],
-          findPolicy,
           ownerPath,
           ownerNodeKey,
           reason,
@@ -141,8 +137,8 @@ export const DOMCoverageBoundaryRange = ({
   return (
     <span
       contentEditable={false}
-      data-plite-dom-coverage-boundary={boundaryId}
-      data-plite-dom-coverage-edge="anchor"
+      data-editor-dom-coverage-boundary={boundaryId}
+      data-editor-dom-coverage-edge="anchor"
     >
       {children}
     </span>
@@ -154,7 +150,6 @@ export const DOMCoverageSelfBoundary = ({
   children,
   content,
   copyPolicy = 'exclude',
-  findPolicy = 'native',
   hidden = true,
   onMaterialize,
   reason = 'app-hidden',
@@ -164,7 +159,6 @@ export const DOMCoverageSelfBoundary = ({
   children?: React.ReactNode;
   content?: React.ReactNode;
   copyPolicy?: DOMCoverageCopyPolicy;
-  findPolicy?: DOMCoverageFindPolicy;
   hidden?: boolean;
   onMaterialize?: (payload: DOMCoverageBoundaryMaterializePayload) => void;
   reason?: DOMCoverageReason;
@@ -186,7 +180,6 @@ export const DOMCoverageSelfBoundary = ({
           copyPolicy,
           coveredPathRanges: [{ anchor: ownerPath, focus: ownerPath }],
           coveredRuntimeRanges: [{ anchor: ownerNodeKey, focus: ownerNodeKey }],
-          findPolicy,
           ownerPath,
           ownerNodeKey,
           reason,
@@ -238,8 +231,8 @@ export const DOMCoverageSelfBoundary = ({
   return (
     <span
       contentEditable={false}
-      data-plite-dom-coverage-boundary={boundaryId}
-      data-plite-dom-coverage-edge="owner"
+      data-editor-dom-coverage-boundary={boundaryId}
+      data-editor-dom-coverage-edge="owner"
     >
       {children}
     </span>

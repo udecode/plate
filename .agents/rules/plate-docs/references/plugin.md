@@ -32,13 +32,13 @@ Required shape:
      `platejs/<feature>` entrypoint
    - add the plugin to `createEditor`
    - declare an ordinary node `component` in
-     `defineBasePlugin(name, { component })` or
-     `definePlatePlugin(name, { component })`
+     `definePlugin(name, { component })` or
+     `definePlugin(name, { component })`
    - replace an existing descriptor's component with one terminal
      `.configure({ component })`
    - keep Base `.extend()` free of `component`; independent defaults belong in
      the constructor
-   - use `toPlatePlugin()` at the owning React adapter to publish a reusable
+   - use `toReactPlugin()` at the owning React adapter to publish a reusable
      Plate-layer descriptor or add genuine Plate-only authoring; a terminal
      consumer never inserts conversion merely to set `component`
    - never teach `.withComponent()`
@@ -61,11 +61,11 @@ Required shape:
    - keep Plate-context capture inside the authoring callback and extract
      domain inputs; never teach a context identity helper, callback annotation,
      cast, or `any` to recover erased inference
-   - use `defineExtension` imported from `plitejs` only for
+   - use `definePlugin` imported from `plitejs` only for
      independently reusable standalone Plite descriptors composed as
      dependencies
    - put constructor-accessible fields and their context callbacks directly in
-     `defineBasePlugin()` / `definePlatePlugin()`; use `.extend()` only for an
+     the headless or React `definePlugin()` call; use `.extend()` only for an
      imported/prebuilt plugin descriptor, a shared factory the constructor cannot
      access, or a real earlier-stage type dependency
    - teach `name` as descriptor identity and `type` as serialized node identity
@@ -82,18 +82,30 @@ Required shape:
      editor or mounted view exposing the API. Descriptor construction and
      shared plugin stores retain their model lifetime. Use mounted hooks for
      view commands; never imply a base editor chooses a mounted view
-   - show one object factory call with no caller generics; do not claim the
+   - show one descriptor-definition object call with no caller generics; do not claim the
      implementation uses one self-referential generic when contextual
      inference requires a private inferred environment plus author input
-   - teach the root `EditorExtensionDependencyReference` only as a shallow,
+   - teach an externally parameterized Plate integration as a non-installable
+     factory only when its app-owned options determine exact capabilities:
+     `YjsPlugin.create(options)` returns the complete descriptor, while copied
+     composition may use `YjsPlugin.require(key).map(stage)`; never put the
+     factory in a plugin tuple or call `.extend()` / `.configure()` on it
+   - teach the root `PluginDependencyReference` only as a shallow,
      non-generic `name` plus optional `enabled` reference; never expose the
      internal normalized installed-capability carrier, higher-kinded encoding,
      or recursive exact dependency ancestry
-   - teach `EditorExtensionTypeProvider` as the sole public value-sensitive
-     capability bridge; never teach its internal carrier or expansion machinery
+   - teach `PluginTypeProvider` as the sole public
+     descriptor-to-installed-capability bridge; keep its carrier and expansion
+     machinery under
+     `plitejs/internal`
+   - teach one Plite-owned nominal descriptor family across raw, Base,
+     configured, and React plugins; descriptor ancestors resolve to one private
+     installed record, while same-name foreign descriptors remain absent
+   - never teach synthetic replacement descriptors, name-remapped dependency
+     topology, alias registries, or raw/Plate portal dispatch
    - teach typed portals as a static literal-name plus capability-equivalence
-     proof and a runtime exact-descriptor-identity proof; never imply that a
-     same-name object is an interchangeable runtime token
+     proof and a runtime installed-descriptor-or-source-ancestor proof; never
+     imply that a same-name object is an interchangeable runtime token
    - never teach Plate foundation's author-source-to-canonical-lowered normalization
      aliases; plugin authors supply one object and receive one descriptor
    - show low-level React composition as `react({ dom })` with the exact DOM
@@ -105,11 +117,11 @@ Required shape:
    - register a complete before/after Editable or container component directly;
      show a callback only for real custom composition, and pass only the exact
      `editableRef` or `containerRef` supplied by that slot
-   - teach clipboard ingress only as a direct `clipboardHandler(...)` entry in
-     `contributions`, never as a root `clipboard` field; teach only
-     `clipboardHandler(handler)`, with the handler transaction contextually
-     inferred from the owning extension or Plate stage, and never pass an
-     editor to the helper
+   - teach clipboard ingress as a `domCommands.insertData` interceptor in
+     `commands`, never as a root plugin field or contribution; read
+     `DataTransfer` from `input`, return `state.transaction(...)`, delegate with
+     `next()`, and let the owning plugin or Plate stage infer transaction
+     capabilities without callback annotations or editor type arguments
    - teach Plite owner-local capabilities as `read` and `update`, pure
      core-read policy as `readMiddleware`, and config-free `validate`
 7. Style plugins without distinct components should document their schema
@@ -123,18 +135,17 @@ Required shape:
    controls.
 9. `## Plugins` for actual plugin objects.
 10. `## API Reference` for shipped standalone functions or plugin APIs, and
-   `## Transforms` only for real `editor.update.<group>.*` surfaces. Give
-   standalone operations their exact import paths and arguments; do not invent
-   an installed plugin for file conversion. Teach
-   `editor.plugin(Plugin).api.*` only when the example is intentionally generic
-   package code or needs exact descriptor ownership; teach
-   `editor.extension(Extension).api.*` for exact raw Plite ownership. These
-   paths expose one descriptor-owned API, never root-merged methods. When that descriptor is
-   optional, show `const plugin = editor.plugin(Plugin)` and guard portal access
-   with `plugin.installed`; disabled plugins count as absent. Never teach root
-   API probing, node/schema/cache inference, or caught portal errors as plugin
-   availability checks. Never invent or document `editor.tf`,
-   `editor.transforms`, or a competing root mutation namespace.
+    `## Transforms` only for real `editor.update.<group>.*` surfaces. Give
+    standalone operations their exact import paths and arguments; do not invent
+    an installed plugin for file conversion. Teach
+    `editor.plugin(Plugin).api.*` only when the example is intentionally generic
+    package code or needs exact descriptor ownership, including raw Plite ownership. These
+    paths expose one descriptor-owned API, never root-merged methods. When that descriptor is
+    optional, show `const plugin = editor.plugin(Plugin)` and guard portal access
+    with `plugin.installed`; disabled plugins count as absent. Never teach root
+    API probing, node/schema/cache inference, or caught portal errors as plugin
+    availability checks. Never invent or document `editor.tf`,
+    `editor.transforms`, or a competing root mutation namespace.
 
 Preserve existing `<APIOptions>`, `<APIParameters>`, and `<APIReturns>`
 formatting when editing a working page. Use

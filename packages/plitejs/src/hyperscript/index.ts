@@ -1,7 +1,7 @@
 import { createHyperscript } from './hyperscript';
 
 /**
- * The default hyperscript factory that ships with Plite, without custom tags.
+ * The default editor hyperscript factory, without custom tags.
  */
 
 const jsx = createHyperscript();

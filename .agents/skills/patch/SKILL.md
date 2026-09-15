@@ -1,5 +1,5 @@
 ---
-description: Fix one local Plate or Plite behavior bug or regression with reproduction, durable behavior coverage, architecture pressure, and exact owning-lane proof.
+description: Repair one local Plate/Plite behavior bug with exact reproduction, an owning fix and focused verification.
 argument-hint: '[repair <expectation> | <one bug report, route, failing test, or observable regression case>]'
 disable-model-invocation: true
 name: patch

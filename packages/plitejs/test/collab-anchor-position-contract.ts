@@ -46,7 +46,7 @@ const remoteCollabPolicy = {
 } satisfies EditorUpdatePolicy;
 
 const createCollabEditor = (children: Element[]) => {
-  const editor = createEditor({ extensions: [history()] as const });
+  const editor = createEditor({ plugins: [history()] as const });
 
   editorReplace(editor, {
     children,

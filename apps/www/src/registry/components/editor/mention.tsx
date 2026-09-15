@@ -3,8 +3,8 @@
 import { IS_APPLE } from 'platejs';
 import { MentionInputPlugin, MentionPlugin } from 'platejs/mention/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditorFocused,
   useEditorReadOnly,
   useElementSelected,
@@ -25,7 +25,7 @@ import {
 } from './inline-combobox';
 
 export function MentionElement(
-  props: PlateElementProps<typeof MentionPlugin> & {
+  props: EditorElementProps<typeof MentionPlugin> & {
     prefix?: string;
   }
 ) {
@@ -37,7 +37,7 @@ export function MentionElement(
   const label = element.label ?? element.ref;
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',
@@ -51,7 +51,7 @@ export function MentionElement(
       attributes={{
         ...props.attributes,
         contentEditable: false,
-        'data-plite-value': label,
+        'data-editor-value': label,
         draggable: true,
       }}
     >
@@ -70,18 +70,18 @@ export function MentionElement(
           {props.children}
         </>
       )}
-    </PlateElement>
+    </EditorElement>
   );
 }
 
 export function MentionInputElement(
-  props: PlateElementProps<typeof MentionInputPlugin>
+  props: EditorElementProps<typeof MentionInputPlugin>
 ) {
   const { element } = props;
   const [search, setSearch] = React.useState('');
 
   return (
-    <PlateElement {...props} as="span">
+    <EditorElement {...props} as="span">
       <InlineCombobox
         value={search}
         element={element}
@@ -116,7 +116,7 @@ export function MentionInputElement(
       </InlineCombobox>
 
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 

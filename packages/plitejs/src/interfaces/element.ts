@@ -2,16 +2,16 @@ import { type Ancestor, type Descendant, NodeApi, type Path } from '..';
 import { isObject } from '../utils/is-object';
 import type { BaseEditor, EditorNodeTypeProvider } from './editor';
 import type {
-  EditorSchemaExtensionProvider,
+  EditorSchemaPluginProvider,
   SchemaElementInNode,
   SchemaElementShapeFor,
   SchemaElementTypes,
 } from './schema';
 
 /**
- * `Element` objects are a type of node in a Plite document that contain other
+ * `Element` objects are nodes in a document that contain other
  * element nodes or text nodes. They can be either "blocks" or "inlines"
- * depending on the Plite editor's configuration.
+ * depending on the editor's configuration.
  */
 
 export interface BaseElement {
@@ -30,7 +30,7 @@ type ElementOfVariant<N> = Element extends N
     ? Extract<ReturnType<TElementFactory>, Element>
     : N extends BaseEditor<infer V, any>
       ? ElementIn<V>
-      : N extends EditorSchemaExtensionProvider<infer TSchemaFactory>
+      : N extends EditorSchemaPluginProvider<infer TSchemaFactory>
         ? SchemaElementShapeFor<
             ReturnType<TSchemaFactory>,
             SchemaElementTypes<ReturnType<TSchemaFactory>>

@@ -27,7 +27,7 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   useEditorReadOnly,
-  definePlatePlugin,
+  definePlugin,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -200,7 +200,7 @@ export function FixedToolbar(props: React.ComponentProps<typeof Toolbar>) {
   );
 }
 
-export const FixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
+export const FixedToolbarPlugin = definePlugin('fixedToolbar', {
   slots: {
     beforeEditable: () => (
       <FixedToolbar>

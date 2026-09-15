@@ -17,11 +17,10 @@ import {
 import { PathApi } from 'platejs';
 import { useDraggable, useDropLine } from 'platejs/dnd/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useComposedRef,
   useEditor,
-  useEditorPlugin,
   useEditorReadOnly,
   useEditorSelector,
   useElement,
@@ -130,11 +129,11 @@ const paintIndicator = (
   else indicator.style.left = `${offset}px`;
 };
 
-export function TableElement(props: PlateElementProps<typeof TablePlugin>) {
+export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
   const { children } = props;
   const isSelectingTable = useElementSelected({ mode: 'node' });
   const editor = useEditor();
-  const { api, read, store } = useEditorPlugin(TablePlugin);
+  const { api, read, store } = useEditor().plugin(TablePlugin);
   const { disableMarginLeft = false } = store.get();
   const readOnly = useEditorReadOnly();
   const hasControls = !readOnly;
@@ -162,7 +161,7 @@ export function TableElement(props: PlateElementProps<typeof TablePlugin>) {
         return next;
       });
     },
-    []
+    [setRowHeightOverrides]
   );
   const marginLeft = disableMarginLeft
     ? 0
@@ -328,7 +327,13 @@ export function TableElement(props: PlateElementProps<typeof TablePlugin>) {
                 .reduce((total, width) => total + width, 0))
       );
     },
-    [baseColSizes, beginResize, controlColumnWidth, deferColumnResize]
+    [
+      baseColSizes,
+      beginResize,
+      controlColumnWidth,
+      deferColumnResize,
+      setRowHeightOverrides,
+    ]
   );
   const tableResizeContext = React.useMemo(
     () => ({
@@ -371,7 +376,7 @@ export function TableElement(props: PlateElementProps<typeof TablePlugin>) {
   );
 
   const content = (
-    <PlateElement
+    <EditorElement
       {...props}
       attributes={{
         ...props.attributes,
@@ -443,7 +448,7 @@ export function TableElement(props: PlateElementProps<typeof TablePlugin>) {
           </table>
         </div>
       </TableResizeContext>
-    </PlateElement>
+    </EditorElement>
   );
 
   if (readOnly) {
@@ -805,7 +810,7 @@ function ColorDropdownMenu({
 export function TableRowElement({
   children,
   ...props
-}: PlateElementProps<typeof TableRowPlugin>) {
+}: EditorElementProps<typeof TableRowPlugin>) {
   const { element } = props;
   const isSelectingRow = useElementSelected({ mode: 'node' });
   const isSelectingTable = React.useContext(TableNodeSelectionContext);
@@ -849,12 +854,12 @@ export function TableRowElement({
   });
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       ref={useComposedRef(props.ref, previewRef, nodeRef)}
       as="tr"
       className={cn(
-        'group/row hover:[&>td>.plite-row-drag-handle]:opacity-100 data-[table-resizing=true]:[&>td>.plite-row-drag-handle]:opacity-0',
+        'group/row hover:[&>td>.editor-row-drag-handle]:opacity-100 data-[table-resizing=true]:[&>td>.editor-row-drag-handle]:opacity-0',
         isDragging && 'opacity-50'
       )}
       style={
@@ -880,7 +885,7 @@ export function TableRowElement({
       <TableNodeSelectionContext value={isSelectingRow || isSelectingTable}>
         {children}
       </TableNodeSelectionContext>
-    </PlateElement>
+    </EditorElement>
   );
 }
 
@@ -896,7 +901,7 @@ function RowDragHandle({ dragRef }: { dragRef: React.Ref<HTMLButtonElement> }) {
       className={cn(
         '-translate-y-1/2 absolute top-1/2 left-0 z-51 h-6 w-4 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
         'cursor-grab active:cursor-grabbing',
-        'plite-row-drag-handle opacity-0 transition-opacity duration-100'
+        'editor-row-drag-handle opacity-0 transition-opacity duration-100'
       )}
       onClick={() => {
         const range = editor.read.ranges.get(element);
@@ -928,7 +933,7 @@ function RowDropLine() {
 }
 
 export function TableCellElement(
-  props: PlateElementProps<typeof TableCellPlugin>
+  props: EditorElementProps<typeof TableCellPlugin>
 ) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
@@ -956,7 +961,7 @@ export function TableCellElement(
   const rowIndex = indices.row + rowSpan - 1;
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       as={isHeader ? 'th' : 'td'}
       className={cn(
@@ -1002,11 +1007,11 @@ export function TableCellElement(
         <div
           className={TABLE_SELECTION_OVERLAY_CLASS}
           contentEditable={false}
-          data-plite-root-chrome-ignore="true"
+          data-editor-root-chrome-ignore="true"
           data-slot="node-selection-highlight"
         />
       )}
-    </PlateElement>
+    </EditorElement>
   );
 }
 
@@ -1032,7 +1037,7 @@ function TableCellResizeControls({
     <div
       className="pointer-events-none absolute inset-0 z-30 select-none"
       contentEditable={false}
-      data-plite-root-chrome-ignore="true"
+      data-editor-root-chrome-ignore="true"
       suppressContentEditableWarning={true}
     >
       <div

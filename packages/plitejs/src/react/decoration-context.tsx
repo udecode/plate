@@ -6,14 +6,11 @@ import {
 } from 'react';
 
 import type { NodeKey } from '..';
-import type {
-  PliteDecorationSource,
-  PliteDecorationSlice,
-} from './decoration-source';
+import type { DecorationSource, DecorationSlice } from './decoration-source';
 import { useIsomorphicLayoutEffect } from './hooks/use-isomorphic-layout-effect';
 
 export type PliteDecorationStore = Readonly<{
-  getNodeSnapshot: (nodeKey: NodeKey) => readonly PliteDecorationSlice[];
+  getNodeSnapshot: (nodeKey: NodeKey) => readonly DecorationSlice[];
   getVersion: () => number;
   hasSources: () => boolean;
   subscribe: (
@@ -27,13 +24,13 @@ export const DecorationContext = createContext<PliteDecorationStore | null>(
 );
 
 export type PliteDecorationRegistrar = (
-  source: PliteDecorationSource<unknown>
+  source: DecorationSource<unknown>
 ) => () => void;
 
 export const DecorationRegistrationContext =
   createContext<PliteDecorationRegistrar | null>(null);
 
-const EMPTY_DECORATIONS = Object.freeze([]) as readonly PliteDecorationSlice[];
+const EMPTY_DECORATIONS = Object.freeze([]) as readonly DecorationSlice[];
 const subscribeEmpty = () => () => {};
 const getEmptySnapshot = () => EMPTY_DECORATIONS;
 export const usePliteDecorationEntries = (nodeKey: NodeKey | null) => {
@@ -59,7 +56,7 @@ export const usePliteDecorationEntries = (nodeKey: NodeKey | null) => {
 };
 
 export const useRegisterPliteDecorationSource = (
-  source: PliteDecorationSource<unknown> | null
+  source: DecorationSource<unknown> | null
 ) => {
   const register = useContext(DecorationRegistrationContext);
 

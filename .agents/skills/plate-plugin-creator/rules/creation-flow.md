@@ -17,14 +17,14 @@ Need a plugin or plugin refactor?
 +- Does the behavior matter without React?
 |  |
 |  +- yes -> `src/lib`
-|  |   +- `defineBasePlugin`
+|  |   +- `definePlugin`
 |  |   +- static renderer? -> terminal `BasePlugin.configure`
-|  |   +- real React job later? -> thin `toPlatePlugin` wrapper
+|  |   +- real React job later? -> thin `toReactPlugin` wrapper
 |  |   +- no React job? -> keep base-only
 |  |
 |  +- no -> `src/react`
 |      +- only groups complete plugins? -> app/registry kit array
-|      +- genuinely hook/DOM/component-native? -> `definePlatePlugin`
+|      +- genuinely hook/DOM/component-native? -> `definePlugin`
 |
 +- For every proposed source file:
 |  |
@@ -59,15 +59,21 @@ Apply Best API's standalone-operation boundary before assigning file conversion
 to a plugin. An editor argument for configured decoding does not by itself
 create an installed capability.
 
-Use `defineBasePlugin` for document semantics, parsers, normalizers, injected
+Use `definePlugin` for document semantics, parsers, normalizers, injected
 rules, update groups, and shared behavior contracts.
 
-The sole factory grammar is `defineBasePlugin(name, definition)` and
-`definePlatePlugin(name, definition)`. Use the flat `PLUGINS` catalog for
+The sole descriptor-definition grammar is `definePlugin(name, definition)` at
+the owning Plite, Base, or Plate layer. Use the flat `PLUGINS` catalog for
 first-party capability names. Element `type` and property `key` are separate
 persisted identities that default to `name` when omitted and are immutable
 after creation. Runtime AST work resolves the owning `.type`/`.key`; behavior
 plugins expose neither.
+
+When required app resources specialize the returned descriptor, expose one
+concrete non-installable factory value with `.create(options)`. Add
+`.require(key).map(stage)` only for a copied composition job that needs an
+option-dependent capability before construction. Keep descriptor `.extend()`
+for author contribution and terminal `.configure()` for consumer overrides.
 
 Do not split those implementation kinds into their own files when the plugin is
 their only production owner.
@@ -78,7 +84,7 @@ Base and Plate constructors accept root-level `component`; Base `.extend()`
 does not. Static owners declare or terminally replace a server-safe component
 without importing a Plate React entrypoint.
 
-Use `toPlatePlugin` when the semantic base already exists and the remaining job
+Use `toReactPlugin` when the semantic base already exists and the remaining job
 is publishing its reusable Plate-layer descriptor or adding genuine Plate-only
 authoring such as a hook or live React callback. A terminal consumer never
 inserts conversion merely to set `component`.
@@ -87,7 +93,7 @@ The wrapper must stay thin. Do not copy or re-declare base behavior.
 
 ### Direct Plate plugin
 
-Use `definePlatePlugin` only when:
+Use `definePlugin` only when:
 
 1. the plugin authors React render descriptors with no useful semantic base;
 2. the behavior exists only at a DOM/editor surface;
@@ -99,13 +105,13 @@ Keep that product choice in an app or registry kit array; packages export or
 reexport the individual descriptors. Encode truly inseparable structure through
 one honest descriptor's `dependencies`, not a package array.
 
-### Plite extension
+### Plite plugin
 
 Plate constructors expose genuine editor-wide Plite substrate through flat
 native fields such as `commands`, `corrections`, `contributions`, `on`, and
-`readMiddleware`. Never hide those fields in a nested `extension` object.
+`readMiddleware`. Never hide those fields in a nested `plugin` object.
 
-Use `defineExtension` only for an independently reusable standalone descriptor
+Use `definePlugin` from `plitejs` only for an independently reusable standalone descriptor
 that composes as a dependency. Plate consumers import it through `platejs`;
 Plate implementation imports its owning facade leaf. Only a raw Plite owner
 authors directly against `plitejs`. If several Plate
@@ -229,7 +235,7 @@ None of these justify another source file:
 For React behavior, an intermediate package component, adapter, barrel, or
 reexport is not a production owner. Trace terminal product consumers. If all of
 them are copied registry UI and the behavior is UI/product composition, move
-the complete hook/store/provider/hotkey/plugin-extension owner to `plate-ui`.
+the complete hook/store/provider/hotkey/plugin-plugin owner to `plate-ui`.
 
 ## File Placement
 

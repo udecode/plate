@@ -1,0 +1,233 @@
+---
+title: "Locations"
+description: "Use paths, points, ranges, selections, and anchors in a Plate root."
+---
+
+Locations tell Plate where to read or write inside an editor root. The core
+location types are `Path`, `Point`, and `Range`. Public read and update methods
+with an `at` option also accept a live text or element node.
+
+## Root resolution
+
+Rootless locations resolve against the current editor or view root. The base
+editor uses the primary document; root-bound views use their own root.
+Locations in extra roots carry the root key on their points.
+
+## Path
+
+A path is an array of indexes from a root to a node.
+
+```ts
+type Path = number[];
+```
+
+In this root value, the paragraph has path `[0]` and the text node has path
+`[0, 0]`.
+
+```ts
+const children = [
+  {
+    type: "paragraph",
+    children: [{ text: "A line of text!" }],
+  },
+];
+```
+
+Use `[]` for the root itself. For example, this selects the current root.
+
+```ts
+editor.update((tx) => {
+  tx.selection.set([]);
+});
+```
+
+Use `PathApi` for path math.
+
+```ts
+import { PathApi } from "platejs";
+
+const parent = PathApi.parent([0, 0]);
+const common = PathApi.common([0, 0], [0, 2]);
+```
+
+## Node targets
+
+A node target is either a location or a descendant from the current editor.
+
+```ts
+type NodeTarget<N extends Descendant = Descendant> = Location | N;
+```
+
+Pass a node directly when component code already owns that element. Plate
+resolves its current path before running the read or update.
+
+```ts
+editor.update.nodes.set({ icon: "🔥" }, { at: calloutElement });
+```
+
+The target follows the same logical node through property updates and moves.
+It resolves only while that node belongs to the current editor root. A removed,
+detached, foreign-editor, or different-root node does not resolve, so writes do
+nothing.
+
+Use `editor.read.nodes.path(...)` when the path itself is the result you need.
+It returns `undefined` when the target does not resolve.
+
+```ts
+const path = editor.read.nodes.path(calloutElement);
+```
+
+`Location` remains `Path | Point | Range`. A node is accepted at the public
+editor lifecycle boundary; pure location utilities still operate on structural
+locations. Destination fields such as `tx.nodes.move({ to })` remain explicit
+paths.
+
+## Point
+
+A point targets an offset inside a text node.
+
+```ts
+interface Point {
+  path: Path;
+  offset: number;
+  root?: string;
+}
+```
+
+The start of the first text node is:
+
+```ts
+const start = {
+  path: [0, 0],
+  offset: 0,
+};
+```
+
+A point in a named root carries that root key.
+
+```ts
+const headerStart = {
+  path: [0, 0],
+  offset: 0,
+  root: "header",
+};
+```
+
+Points always resolve to text nodes. Elements do not have cursor offsets.
+
+## Range
+
+A range spans between two points.
+
+```ts
+interface Range {
+  anchor: Point;
+  focus: Point;
+}
+```
+
+The anchor is where the user started the selection. The focus is where the user
+ended it. A backward range can have an anchor that appears after the focus in
+document order.
+
+Use `RangeApi` when you need ordered edges or direction checks.
+
+```ts
+import { RangeApi } from "platejs";
+
+const [start, end] = RangeApi.edges(range);
+const collapsed = RangeApi.isCollapsed(range);
+const backward = RangeApi.isBackward(range);
+```
+
+Both points in a range must resolve inside the same root. For named roots, put
+the same `root` on both points.
+
+```ts
+const headerRange = {
+  anchor: { path: [0, 0], offset: 0, root: "header" },
+  focus: { path: [0, 0], offset: 6, root: "header" },
+};
+```
+
+## Selection
+
+The editor selection is `EditorSelection | null`: one text selection or one
+directional exact node selection. Core owns mapping, serialization, and DOM
+projection.
+
+```ts
+const selection = editor.read((state) => state.selection());
+```
+
+```ts
+editor.update((tx) => {
+  tx.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 15 },
+  });
+});
+```
+
+Set the selection to `null` to clear it.
+
+```ts
+editor.update((tx) => {
+  tx.selection.set(null);
+});
+```
+
+Use read helpers for common editor-derived points and ranges.
+
+```ts
+const start = editor.read((state) => state.points.start([0]));
+const end = editor.read((state) => state.points.end([0]));
+const unhung = editor.read((state) => {
+  const selection = state.selection();
+
+  return selection ? state.ranges.unhang(selection, { voids: true }) : null;
+});
+```
+
+Use [Path API](/docs/api/path), [Point API](/docs/api/point),
+and [Range API](/docs/api/range) for the full helper list.
+
+## Anchors
+
+Use anchors for runtime locations that map through canonical document changes.
+Choose association and deletion policy explicitly. `editor.anchor` creates a
+persistent handle that the owner must release.
+
+```ts
+const anchor = editor.anchor(
+  {
+    anchor: { path: [0, 0], offset: 2 },
+    focus: { path: [0, 0], offset: 8 },
+  },
+  { association: "inward", deletion: "drop" }
+);
+
+const range = anchor.resolve();
+anchor.release();
+```
+
+Use `tx.anchor` when the mapped location belongs only to one update or detached
+transaction builder. It supports paths, points, and ranges and expires when the
+callback ends.
+
+```ts
+editor.update((tx) => {
+  const target = tx.anchor(range, {
+    association: "inward",
+    deletion: "nearest",
+  });
+
+  tx.nodes.unwrap();
+
+  const mapped = target.resolve();
+
+  if (mapped) tx.selection.set(mapped);
+});
+```
+
+See [Anchor API](/docs/api/anchor) for the two handle contracts.

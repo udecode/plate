@@ -1,8 +1,8 @@
 'use client';
 
-import { type EditableSiblingProps, useEditor } from 'platejs/react';
+import type { EditableSiblingProps } from 'platejs/react';
 import {
-  YjsPlugin as YjsPluginBase,
+  YjsPlugin,
   useYjsRemoteCursor,
   useYjsRemoteCursorGeometry,
   useYjsRemoteCursorIds,
@@ -13,6 +13,8 @@ type CursorData = {
   color?: unknown;
   name?: unknown;
 };
+
+type CursorEditor = Parameters<typeof useYjsRemoteCursor>[0];
 
 const FALLBACK_COLORS = ['#7C3AED', '#0891B2', '#DB2777', '#4F46E5'];
 const HEX_COLOR = /^#[\dA-Fa-f]{6}$/;
@@ -27,27 +29,37 @@ const cursorName = (clientId: number, data: CursorData | undefined) =>
     ? data.name
     : `Guest ${clientId}`;
 
-/** Yjs collaboration with copied selection, caret, and label presentation. */
-export const YjsPlugin = YjsPluginBase.extend({
-  decorate: {
-    attributes: ({ decoration, read }) => {
-      const clientId = Number(decoration.key);
-      const cursor = read.remoteCursor(clientId);
-      return {
-        style: { backgroundColor: `${cursorColor(clientId, cursor?.data)}33` },
-      };
+/** Creates Yjs collaboration with copied selection, caret, and label UI. */
+export const CollaborationPlugin = YjsPlugin.require('awareness').map(
+  ({ api, editor }) => ({
+    decorate: {
+      attributes: ({ decoration }) => {
+        const clientId = Number(decoration.key);
+        const cursor = api.remoteCursor(clientId);
+
+        return {
+          style: {
+            backgroundColor: `${cursorColor(clientId, cursor?.data)}33`,
+          },
+        };
+      },
     },
-  },
-  slots: { afterEditable: RemoteCursorOverlay },
-});
+    slots: {
+      afterEditable: ({ editableRef }) => (
+        <RemoteCursorOverlay editableRef={editableRef} editor={editor} />
+      ),
+    },
+  })
+);
 
 function RemoteCursor({
   clientId,
   editableRef,
+  editor,
 }: EditableSiblingProps & {
   readonly clientId: number;
+  readonly editor: CursorEditor;
 }) {
-  const editor = useEditor();
   const cursor = useYjsRemoteCursor(editor, clientId);
   const geometry = useYjsRemoteCursorGeometry(editor, clientId, {
     editableRef,
@@ -93,7 +105,7 @@ function RemoteCursor({
     >
       <span
         ref={labelRef}
-        className="absolute top-0 left-0 max-w-[calc(100vw-0.5rem)] overflow-hidden rounded-t-sm rounded-br-sm px-1.5 py-0.5 text-xs text-ellipsis whitespace-nowrap text-white"
+        className="absolute top-0 left-0 max-w-[calc(100vw-0.5rem)] truncate rounded-t-sm rounded-br-sm px-1.5 py-0.5 text-xs text-white"
         data-remote-cursor-label=""
         style={{
           backgroundColor: color,
@@ -106,8 +118,10 @@ function RemoteCursor({
   );
 }
 
-export function RemoteCursorOverlay({ editableRef }: EditableSiblingProps) {
-  const editor = useEditor();
+export function RemoteCursorOverlay({
+  editableRef,
+  editor,
+}: EditableSiblingProps & { readonly editor: CursorEditor }) {
   const clientIds = useYjsRemoteCursorIds(editor);
 
   return (
@@ -120,6 +134,7 @@ export function RemoteCursorOverlay({ editableRef }: EditableSiblingProps) {
         <RemoteCursor
           clientId={clientId}
           editableRef={editableRef}
+          editor={editor}
           key={clientId}
         />
       ))}

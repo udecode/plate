@@ -2,10 +2,10 @@ import type { Range } from '../..';
 import { MAIN_ROOT_KEY } from '../root-key';
 
 const INTERACTIVE_CHROME_TARGET =
-  'a[href]:not([data-plite-inline="true"]), button, input, select, textarea, [contenteditable="true"]:not([data-plite-editor="true"]), [role="button"], [data-plite-root-chrome-ignore="true"]';
+  'a[href]:not([data-editor-inline="true"]), button, input, select, textarea, [contenteditable="true"]:not([data-editor="true"]), [role="button"], [data-editor-root-chrome-ignore="true"]';
 const NATIVE_EDITABLE_TARGET =
-  '[data-plite-string], [data-plite-zero-width], [data-plite-leaf], [data-plite-node="text"], [data-plite-node="element"]';
-const EDITABLE_ROOT_TARGET = '[data-plite-editor="true"]';
+  '[data-editor-string], [data-editor-zero-width], [data-editor-leaf], [data-editor-node="text"], [data-editor-node="element"]';
+const EDITABLE_ROOT_TARGET = '[data-editor="true"]';
 
 export type RootInteractionTarget =
   | { kind: 'external' }
@@ -87,9 +87,9 @@ const isSameRootChromeEditableSurface = ({
   editableRoot: HTMLElement;
   target: Element;
 }) => {
-  const chromeRoot = currentTarget.getAttribute('data-plite-root-chrome');
+  const chromeRoot = currentTarget.getAttribute('data-editor-root-chrome');
   const editableRootKey =
-    editableRoot.getAttribute('data-plite-root') ?? MAIN_ROOT_KEY;
+    editableRoot.getAttribute('data-editor-root') ?? MAIN_ROOT_KEY;
 
   return target === editableRoot && chromeRoot === editableRootKey;
 };

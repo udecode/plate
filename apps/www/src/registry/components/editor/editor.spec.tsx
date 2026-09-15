@@ -24,13 +24,13 @@ const PlateStaticMock = mock(({ className }: any) => (
 mock.module('platejs/react', () => ({
   NodeSelectionDrag: () => null,
   NodeSelectionHighlight: () => null,
-  PlateContainer: PlateContainerMock,
-  PlateContent: PlateContentMock,
-  PlateView: PlateViewMock,
+  EditorContainer: PlateContainerMock,
+  EditorContent: PlateContentMock,
+  EditorPreview: PlateViewMock,
 }));
 
 mock.module('platejs/static', () => ({
-  PlateStatic: PlateStaticMock,
+  EditorStatic: PlateStaticMock,
 }));
 
 describe('editor whitespace wrapping', () => {

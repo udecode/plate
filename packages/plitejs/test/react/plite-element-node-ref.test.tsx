@@ -1,7 +1,13 @@
 import { act, render } from '@testing-library/react';
-import type { Value, Element as PliteElementNode } from 'plitejs';
+import {
+  createEditorView,
+  type NodeKey,
+  type Value,
+  type Element as ElementNode,
+} from 'plitejs';
 import React from 'react';
 
+import { resolveDOMRangeInRoot } from '../../src/dom/plugin/dom-editor';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
@@ -11,12 +17,11 @@ import {
   createEditor,
   type Editor,
   Editable,
-  Plite,
-  PliteElement,
+  EditorRoot,
+  EditorElement,
   useEditorContext,
 } from '../../src/react';
 import { EditorContext, ElementContext } from '../../src/react/context';
-import { createFastDOMSelectionRange } from '../../src/react/editable/fast-dom-selection-range';
 import {
   usePliteNodeRef,
   getPliteNodeElementByPath,
@@ -26,9 +31,61 @@ import {
 import type { EditorContextValue } from '../../src/react/plugin/with-react';
 
 const readElement = (editor: Editor, path: number[]) =>
-  editor.read((state) => state.nodes.get(path))![0] as PliteElementNode;
+  editor.read((state) => state.nodes.get(path))![0] as ElementNode;
 
 describe('PliteElement node ref binding', () => {
+  test('updates moved and removed bindings in each exact view', () => {
+    const block = (text: string) => ({ type: 'block', children: [{ text }] });
+    const editor = createEditor({
+      initialValue: {
+        children: [block('main first'), block('main second')],
+        roots: { header: [block('header first'), block('header second')] },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+    const other = createEditor({
+      initialValue: [block('other first'), block('other second')],
+    });
+    const key = editor.key([1])!;
+    const headerKey = header.key([1])!;
+    const otherKey = other.key([1])!;
+    const Bound = ({ nodeKey, label }: { nodeKey: NodeKey; label: string }) => (
+      <span data-testid={label} ref={usePliteNodeRef(nodeKey)} />
+    );
+    const rendered = render(
+      <>
+        <EditorRoot editor={editor}>
+          <Bound label="main-a" nodeKey={key} />
+        </EditorRoot>
+        <EditorRoot editor={editor}>
+          <Bound label="main-b" nodeKey={key} />
+        </EditorRoot>
+        <EditorRoot editor={header}>
+          <Bound label="header" nodeKey={headerKey} />
+        </EditorRoot>
+        <EditorRoot editor={other}>
+          <Bound label="other" nodeKey={otherKey} />
+        </EditorRoot>
+      </>
+    );
+    const elements = ['main-a', 'main-b', 'header', 'other'].map((label) =>
+      rendered.getByTestId(label)
+    );
+    const paths = () =>
+      elements.map((element) => element.getAttribute('data-editor-path'));
+    act(() => editor.update.nodes.insert(block('inserted'), { at: [0] }));
+    expect(paths()).toEqual(['2', '2', '1', '1']);
+    act(() => header.update.nodes.insert(block('inserted'), { at: [0] }));
+    expect(paths()).toEqual(['2', '2', '2', '1']);
+    act(() => editor.update.nodes.remove({ at: [2] }));
+    expect(paths()).toEqual([null, null, '2', '1']);
+    expect(elements.slice(0, 2).map(getPliteNodePathFromDOMElement)).toEqual([
+      null,
+      null,
+    ]);
+    rendered.unmount();
+  });
+
   test('keeps repeated nested-path synchronization free of attribute mutations and repairs stale attributes', () => {
     const editor = createEditor<Value>({
       initialValue: [
@@ -52,21 +109,21 @@ describe('PliteElement node ref binding', () => {
     const observer = new MutationObserver(() => {});
     observer.observe(element, { attributes: true });
     try {
-      syncPliteNodePathBindingsToDOM(editor, [nodeKey]);
-      syncPliteNodePathBindingsToDOM(editor, [nodeKey]);
+      syncPliteNodePathBindingsToDOM(editor);
+      syncPliteNodePathBindingsToDOM(editor);
       expect(observer.takeRecords()).toHaveLength(0);
-      expect(element.getAttribute('data-plite-path')).toBe('0,0');
+      expect(element.getAttribute('data-editor-path')).toBe('0,0');
       expect(getPliteNodePathFromDOMElement(element)).toEqual([0, 0]);
 
-      element.setAttribute('data-plite-path', '9,9');
-      element.setAttribute('data-plite-node-key', 'stale');
+      element.setAttribute('data-editor-path', '9,9');
+      element.setAttribute('data-editor-node-key', 'stale');
       observer.takeRecords();
-      syncPliteNodePathBindingsToDOM(editor, [nodeKey]);
+      syncPliteNodePathBindingsToDOM(editor);
       expect(
         observer.takeRecords().map((record) => record.attributeName)
-      ).toEqual(['data-plite-path', 'data-plite-node-key']);
-      expect(element.getAttribute('data-plite-path')).toBe('0,0');
-      expect(element.getAttribute('data-plite-node-key')).toBe(nodeKey);
+      ).toEqual(['data-editor-path', 'data-editor-node-key']);
+      expect(element.getAttribute('data-editor-path')).toBe('0,0');
+      expect(element.getAttribute('data-editor-node-key')).toBe(nodeKey);
       expect(getPliteNodePathFromDOMElement(element)).toEqual([0, 0]);
     } finally {
       observer.disconnect();
@@ -103,22 +160,18 @@ describe('PliteElement node ref binding', () => {
         }, [index, view]);
 
         return (
-          <Editable
-            domStrategy="full"
-            id={`flow-view-${index}`}
-            renderElement={renderElement}
-          />
+          <Editable id={`flow-view-${index}`} renderElement={renderElement} />
         );
       };
       const tree = (secondView: boolean) => (
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <View index={0} />
           {secondView && (
-            <Plite editor={editor}>
+            <EditorRoot editor={editor}>
               <View index={1} />
-            </Plite>
+            </EditorRoot>
           )}
-        </Plite>
+        </EditorRoot>
       );
       const queries = vi.spyOn(HTMLElement.prototype, 'querySelectorAll');
       const rendered = render(tree(true));
@@ -126,13 +179,13 @@ describe('PliteElement node ref binding', () => {
         rendered.container.querySelector(`#flow-view-${index}`)!
       );
       const hosts = roots.map((root) =>
-        root.querySelector('[data-plite-text-flow-host]')
+        root.querySelector('[data-editor-text-flow-host]')
       );
       const expectPoints = (viewIndex: number, texts: string[]) => {
         const root = roots[viewIndex];
-        const host = root.querySelector('[data-plite-text-flow-host]');
+        const host = root.querySelector('[data-editor-text-flow-host]');
         expect(host).not.toBeNull();
-        expect(host?.hasAttribute('data-plite-path')).toBe(records === 1);
+        expect(host?.hasAttribute('data-editor-path')).toBe(records === 1);
         texts.forEach((text, index) => {
           const point = views[viewIndex].api.dom.resolveDOMPoint({
             path: [0, index],
@@ -149,7 +202,7 @@ describe('PliteElement node ref binding', () => {
       const expectNoPathScans = () => {
         const scans = queries.mock.calls.filter(
           ([selector], index) =>
-            selector.startsWith('[data-plite-path=') &&
+            selector.startsWith('[data-editor-path=') &&
             roots.some((root) => root === queries.mock.contexts[index])
         );
         expect.soft(scans).toEqual([]);
@@ -179,7 +232,7 @@ describe('PliteElement node ref binding', () => {
         }
         rendered.rerender(tree(false));
         expect(roots[1].isConnected).toBe(false);
-        expect(roots[0].querySelector('[data-plite-text-flow-host]')).toBe(
+        expect(roots[0].querySelector('[data-editor-text-flow-host]')).toBe(
           hosts[0]
         );
         expectPoints(
@@ -212,7 +265,7 @@ describe('PliteElement node ref binding', () => {
         <ElementContext
           value={{ element: readElement(editor, [0]), nodeKey, path: [0] }}
         >
-          <PliteElement data-testid={testId}>content</PliteElement>
+          <EditorElement data-testid={testId}>content</EditorElement>
         </ElementContext>
       </EditorContext>
     );
@@ -234,10 +287,10 @@ describe('PliteElement node ref binding', () => {
       initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     });
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable id="first-root" />
         <Editable id="second-root" />
-      </Plite>
+      </EditorRoot>
     );
     const selection = {
       anchor: { path: [0, 0], offset: 0 },
@@ -247,11 +300,7 @@ describe('PliteElement node ref binding', () => {
       const editorElement = rendered.container.querySelector<HTMLElement>(
         `#${id}`
       )!;
-      const range = createFastDOMSelectionRange({
-        editor,
-        editorElement,
-        selection,
-      });
+      const range = resolveDOMRangeInRoot(editor, selection, editorElement);
       expect(range).not.toBeNull();
       expect(editorElement.contains(range!.startContainer)).toBe(true);
       expect(editorElement.contains(range!.endContainer)).toBe(true);
@@ -264,10 +313,10 @@ describe('PliteElement node ref binding', () => {
       initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     });
     const tree = (tick: number) => (
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable data-tick={tick} id="native-transfer" />
         <Editable data-tick={tick} id="target-transfer" />
-      </Plite>
+      </EditorRoot>
     );
     const rendered = render(tree(0));
     const target =
@@ -310,7 +359,7 @@ describe('PliteElement node ref binding', () => {
         <ElementContext
           value={{ element: readElement(editor, path), nodeKey, path }}
         >
-          <PliteElement data-testid="bound-element">content</PliteElement>
+          <EditorElement data-testid="bound-element">content</EditorElement>
         </ElementContext>
       </EditorContext>
     );
@@ -330,7 +379,7 @@ describe('PliteElement node ref binding', () => {
     rendered.rerender(renderElement([1]));
 
     expect(rendered.getByTestId('bound-element')).toBe(element);
-    expect(element.getAttribute('data-plite-path')).toBe('1');
+    expect(element.getAttribute('data-editor-path')).toBe('1');
     expect(getPliteNodeElementByPath(editor, [0])).toBe(null);
     expect(getPliteNodeElementByPath(editor, [1])).toBe(element);
     expect(getPliteNodePathFromDOMElement(element)).toEqual([1]);
@@ -351,7 +400,7 @@ describe('PliteElement node ref binding', () => {
         <ElementContext
           value={{ element: readElement(editor, [0]), nodeKey, path: [0] }}
         >
-          <PliteElement data-testid="bound-element">content</PliteElement>
+          <EditorElement data-testid="bound-element">content</EditorElement>
         </ElementContext>
       </EditorContext>
     );
@@ -360,7 +409,7 @@ describe('PliteElement node ref binding', () => {
 
     expect(element).toBeTruthy();
 
-    element?.setAttribute('data-plite-path', '1');
+    element?.setAttribute('data-editor-path', '1');
 
     expect(getPliteNodeElementByPath(editor, [0])).toBe(null);
   });
@@ -384,7 +433,7 @@ describe('PliteElement node ref binding', () => {
 
       return (
         <div
-          data-plite-path="0"
+          data-editor-path="0"
           data-revision={revision}
           data-testid="bound-node"
           ref={ref}
@@ -401,14 +450,14 @@ describe('PliteElement node ref binding', () => {
 
     act(() => {
       editorMoveNodes(editor, { at: [0], to: [2] });
-      syncPliteNodePathBindingsToDOM(editor, [nodeKey]);
+      syncPliteNodePathBindingsToDOM(editor);
     });
 
-    expect(element.getAttribute('data-plite-path')).toBe('1');
-    element.setAttribute('data-plite-path', '0');
+    expect(element.getAttribute('data-editor-path')).toBe('1');
+    element.setAttribute('data-editor-path', '0');
     rendered.rerender(renderNode(1));
 
-    expect(element.getAttribute('data-plite-path')).toBe('1');
+    expect(element.getAttribute('data-editor-path')).toBe('1');
     expect(getPliteNodePathFromDOMElement(element)).toEqual([1]);
   });
 });

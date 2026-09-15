@@ -58,7 +58,7 @@ export const getPlitePlaceholderStyle = (
  * The placeholder is aria-hidden, pointer-inert, and styled to overlay the
  * empty editable block without becoming editor content.
  */
-export const PlitePlaceholder = ({
+export const EditorPlaceholder = ({
   as = 'span',
   children,
   dir,
@@ -81,7 +81,7 @@ export const PlitePlaceholder = ({
     <Component
       aria-hidden
       contentEditable={false}
-      data-plite-placeholder
+      data-editor-placeholder
       dir={dir}
       ref={ref}
       style={getPlitePlaceholderStyle(style, webkit)}

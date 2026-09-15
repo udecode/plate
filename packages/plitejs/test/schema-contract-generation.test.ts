@@ -44,7 +44,7 @@ describe('generated editor schema contract', () => {
     version: 1,
   });
   const records: readonly EditorSchemaContributionRecord[] = [
-    { contribution: Article.schema, extensionName: Article.name },
+    { contribution: Article.schema, pluginName: Article.name },
   ];
 
   it('round-trips deterministic structural data and rebinds validators', () => {
@@ -153,7 +153,7 @@ describe('generated editor schema contract', () => {
               ),
             ],
           },
-          extensionName: 'generated-contract-property',
+          pluginName: 'generated-contract-property',
         },
       ])
     );
@@ -220,7 +220,7 @@ describe('generated editor schema contract', () => {
     ) =>
       createEditorSchemaContract(
         compileEditorSchemaContributions([
-          { contribution, extensionName: 'schema:diff-contract' },
+          { contribution, pluginName: 'schema:diff-contract' },
         ])
       );
     const Before = defineEditorSchema('schema:diff-before', {
@@ -438,10 +438,10 @@ describe('generated editor schema contract', () => {
     });
     const compile = (
       contribution: EditorSchemaContributionRecord['contribution'],
-      extensionName: string
+      pluginName: string
     ) =>
       createEditorSchemaContract(
-        compileEditorSchemaContributions([{ contribution, extensionName }])
+        compileEditorSchemaContributions([{ contribution, pluginName }])
       );
     const previous = compile(innerArticle.schema, 'left-contributor');
     const relabeled = compile(innerArticle.schema, 'right-contributor');

@@ -161,7 +161,7 @@ const contentAttributes = (host: HTMLElement) =>
     spellcheck: 'false',
   });
 
-/** Project a code block through CodeMirror while Plite owns text and history.
+/** Project a code block through CodeMirror while the editor owns text and history.
  * Keep this adapter stable across renders. Supply theme, search and editing
  * commands as extensions; do not install CodeMirror history.
  */
@@ -169,7 +169,7 @@ export function createCodeMirrorAdapter({
   extensions = [],
   loadLanguage: resolveLanguage,
 }: {
-  /** View presentation and native commands. History stays with Plite. */
+  /** View presentation and native commands. History stays with the editor. */
   extensions?: Extension;
   /** Resolve one language; stale loads and disposed views are ignored. */
   loadLanguage?: (language: string) => Extension | Promise<Extension>;
@@ -378,35 +378,6 @@ export function createCodeMirrorAdapter({
           readOnly.of(readOnlyExtensions(state.readOnly)),
           attributes.of(contentAttributes(host)),
 
-          keymap.of([
-            {
-              key: 'Mod-z',
-              preventDefault: true,
-              run: () => {
-                actions.history('undo');
-
-                return true;
-              },
-            },
-            {
-              key: 'Mod-Shift-z',
-              preventDefault: true,
-              run: () => {
-                actions.history('redo');
-
-                return true;
-              },
-            },
-            {
-              key: 'Mod-y',
-              preventDefault: true,
-              run: () => {
-                actions.history('redo');
-
-                return true;
-              },
-            },
-          ]),
           EditorView.domEventHandlers({
             beforeinput(event) {
               if (
@@ -452,6 +423,35 @@ export function createCodeMirrorAdapter({
               return handleBoundaryKey(event);
             },
           }),
+          keymap.of([
+            {
+              key: 'Mod-z',
+              preventDefault: true,
+              run: () => {
+                actions.history('undo');
+
+                return true;
+              },
+            },
+            {
+              key: 'Mod-Shift-z',
+              preventDefault: true,
+              run: () => {
+                actions.history('redo');
+
+                return true;
+              },
+            },
+            {
+              key: 'Mod-y',
+              preventDefault: true,
+              run: () => {
+                actions.history('redo');
+
+                return true;
+              },
+            },
+          ]),
           EditorView.updateListener.of(dispatchUpdate),
           extensions,
         ],

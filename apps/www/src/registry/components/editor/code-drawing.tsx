@@ -10,8 +10,8 @@ import {
 } from 'platejs/code-drawing';
 import { CodeDrawingPlugin } from 'platejs/code-drawing/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditor,
   useEditorReadOnly,
   useEditorSelector,
@@ -62,7 +62,7 @@ const isCodeDrawingView = (value: string | null): value is CodeDrawingView =>
 export function CodeDrawingElement({
   plantUmlServer = 'https://www.plantuml.com/plantuml',
   ...props
-}: PlateElementProps<typeof CodeDrawingPlugin> & { plantUmlServer?: string }) {
+}: EditorElementProps<typeof CodeDrawingPlugin> & { plantUmlServer?: string }) {
   const { children } = props;
   const isMobile = useIsMobile();
   const editor = useEditor();
@@ -176,7 +176,7 @@ export function CodeDrawingElement({
   );
 
   const content = (
-    <PlateElement {...props}>
+    <EditorElement {...props}>
       <div contentEditable={false}>
         <div>
           <CodeDrawingPreview
@@ -195,7 +195,7 @@ export function CodeDrawingElement({
         </div>
       </div>
       {children}
-    </PlateElement>
+    </EditorElement>
   );
 
   if (readOnly) {

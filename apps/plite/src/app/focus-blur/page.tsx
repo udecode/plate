@@ -4,18 +4,18 @@ import { BaseParagraphPlugin } from 'platejs';
 import {
   BlockPlaceholderPlugin,
   createEditor,
-  Plate,
-  PlateContent,
-  PlateElement,
-  type PlateElementProps,
+  EditorRoot,
+  EditorContent,
+  EditorElement,
+  type EditorElementProps,
   useEditor,
 } from 'platejs/react';
 import { StrictMode, useState } from 'react';
 
 function ParagraphElement(
-  props: PlateElementProps<typeof BaseParagraphPlugin>
+  props: EditorElementProps<typeof BaseParagraphPlugin>
 ) {
-  return <PlateElement {...props} as="section" />;
+  return <EditorElement {...props} as="section" />;
 }
 
 function FocusControls() {
@@ -77,10 +77,10 @@ function FocusFixture({
   return (
     <section aria-label={variant}>
       <h2>{variant}</h2>
-      <Plate editor={editor}>
-        <PlateContent aria-label={`${variant} editor`} />
+      <EditorRoot editor={editor}>
+        <EditorContent aria-label={`${variant} editor`} />
         <FocusControls />
-      </Plate>
+      </EditorRoot>
     </section>
   );
 }

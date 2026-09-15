@@ -2,8 +2,8 @@
 
 import {
   type HorizontalRulePlugin,
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditorFocused,
   useEditorReadOnly,
   useElementSelected,
@@ -13,14 +13,14 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 export function HrElement(
-  props: PlateElementProps<typeof HorizontalRulePlugin>
+  props: EditorElementProps<typeof HorizontalRulePlugin>
 ) {
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected();
   const focused = useEditorFocused();
 
   return (
-    <PlateElement {...props}>
+    <EditorElement {...props}>
       <div className="py-6" contentEditable={false}>
         <hr
           className={cn(
@@ -31,6 +31,6 @@ export function HrElement(
         />
       </div>
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }

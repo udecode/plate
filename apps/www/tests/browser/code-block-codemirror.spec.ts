@@ -1,20 +1,73 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
-const EDITOR_ROOT = '.plite-editor[contenteditable="true"]';
+const EDITOR_ROOT = '.editor-editor[contenteditable="true"]';
 const HUGE_CODE_BLOCK_INDEX = 2;
 const ROUTE = '/blocks/code-block-codemirror-demo';
 
 test.setTimeout(90_000);
 
+test('code-block: keyboard selection follows focus after Chromium composition', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+  const client = await page.context().newCDPSession(page);
+  try {
+    await page.goto(ROUTE, { waitUntil: 'commit' });
+    const editor = createBrowserEditorHarness(
+      page,
+      'code-block:selection',
+      page.locator(EDITOR_ROOT).first()
+    );
+    await editor.ready({ editor: 'visible', text: 'Huge Code Block' });
+    const input = page.locator('[data-code-block-codemirror-input]');
+    const initial = await editor.get.modelBlockText(HUGE_CODE_BLOCK_INDEX);
+    await editor.selection.select({
+      anchor: { path: [HUGE_CODE_BLOCK_INDEX, 0], offset: 0 },
+      focus: { path: [HUGE_CODE_BLOCK_INDEX, 0], offset: initial!.length },
+    });
+    await editor.focus();
+    await page.keyboard.insertText('AB');
+    await expect(input).toHaveText('AB');
+    await page.keyboard.press('Home');
+    await page.keyboard.press('ArrowRight');
+    await client.send('Input.imeSetComposition', {
+      text: 'a',
+      selectionStart: 1,
+      selectionEnd: 1,
+    });
+    await client.send('Input.insertText', { text: 'あ' });
+    await expect(input).toHaveText('AあB');
+    await page.getByText('Huge Code Block', { exact: true }).click();
+    await input.focus();
+    await page.keyboard.press('Home');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Shift+ArrowRight');
+    await page.keyboard.press('Backspace');
+    await expect(input).toHaveText('AB');
+    await expect
+      .poll(() => editor.get.modelBlockText(HUGE_CODE_BLOCK_INDEX))
+      .toBe('AB');
+    await page.keyboard.type('!');
+    await expect(input).toHaveText('A!B');
+    await expect
+      .poll(() => editor.get.modelBlockText(HUGE_CODE_BLOCK_INDEX))
+      .toBe('A!B');
+    runtimeErrors.assertNone();
+  } finally {
+    await client.detach();
+    runtimeErrors.stop();
+  }
+});
+
 test('code-block: CodeMirror keeps a 10k-line block bounded and model-owned', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page
@@ -23,7 +76,7 @@ test('code-block: CodeMirror keeps a 10k-line block bounded and model-owned', as
     await page.goto(ROUTE, { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       'code-block:codemirror',
       root
@@ -32,7 +85,7 @@ test('code-block: CodeMirror keeps a 10k-line block bounded and model-owned', as
     await editor.ready({ editor: 'visible', text: 'Huge Code Block' });
 
     const inputs = page.locator('[data-code-block-codemirror-input]');
-    const hugeBlock = page.locator('.plite-codeBlock').last();
+    const hugeBlock = page.locator('.editor-codeBlock').last();
     const hugeHost = hugeBlock.locator('[data-code-block-codemirror]');
     const hugeInput = hugeHost.locator('[data-code-block-codemirror-input]');
     const initialText = await editor.get.modelBlockText(HUGE_CODE_BLOCK_INDEX);
@@ -46,7 +99,7 @@ test('code-block: CodeMirror keeps a 10k-line block bounded and model-owned', as
     await expect(hugeHost).toHaveAttribute('data-language', 'typescript');
     await expect(hugeInput).toHaveAttribute('aria-label', 'Code block');
     await expect(hugeInput).toHaveAttribute('contenteditable', 'true');
-    await expect(hugeBlock.locator('[data-plite-node="text"]')).toHaveCount(0);
+    await expect(hugeBlock.locator('[data-editor-node="text"]')).toHaveCount(0);
 
     const initialDOM = await hugeHost.evaluate((host) => ({
       elements: host.querySelectorAll('*').length,
@@ -60,7 +113,7 @@ test('code-block: CodeMirror keeps a 10k-line block bounded and model-owned', as
     expect(initialDOM.lines).toBeLessThan(100);
     expect(initialDOM.textLength).toBeLessThan(64_000);
 
-    const probe = '__PLITE_CODEMIRROR__';
+    const probe = '__EDITOR_CODEMIRROR__';
     const expectedAfterType = `${initialText}${probe}`;
 
     await editor.selection.collapse({
@@ -126,7 +179,8 @@ test('code-block: CodeMirror keeps a 10k-line block bounded and model-owned', as
     const finalDOM = await hugeHost.evaluate((host) => ({
       elements: host.querySelectorAll('*').length,
       lines: host.querySelectorAll('.cm-line').length,
-      nativeTextHosts: host.querySelectorAll('[data-plite-node="text"]').length,
+      nativeTextHosts: host.querySelectorAll('[data-editor-node="text"]')
+        .length,
     }));
 
     expect(finalDOM.elements).toBeLessThan(500);
@@ -142,7 +196,7 @@ test('code-block: CodeMirror preserves code editing, IME, and remote updates', a
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page
@@ -151,7 +205,7 @@ test('code-block: CodeMirror preserves code editing, IME, and remote updates', a
     await page.goto(ROUTE, { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       'code-block:codemirror-editing',
       root
@@ -160,7 +214,7 @@ test('code-block: CodeMirror preserves code editing, IME, and remote updates', a
     await editor.ready({ editor: 'visible', text: 'Huge Code Block' });
 
     const blockIndex = HUGE_CODE_BLOCK_INDEX;
-    const block = page.locator('.plite-codeBlock').first();
+    const block = page.locator('.editor-codeBlock').first();
     const host = block.locator('[data-code-block-codemirror]');
     const input = host.locator('[data-code-block-codemirror-input]');
     const initialText = await editor.get.modelBlockText(blockIndex);
@@ -328,7 +382,7 @@ for (const key of ['Enter', 'Tab']) {
     page,
   }) => {
     await page.goto(ROUTE, { waitUntil: 'commit' });
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       `code-block:composition-${key}`,
       page.locator(EDITOR_ROOT).first()
@@ -378,7 +432,7 @@ for (const key of ['Enter', 'Tab']) {
 
 test('code-block: Tab indents a leading empty line', async ({ page }) => {
   await page.goto(ROUTE, { waitUntil: 'commit' });
-  const editor = createPliteBrowserEditorHarness(
+  const editor = createBrowserEditorHarness(
     page,
     'code-block:leading-empty-line',
     page.locator(EDITOR_ROOT).first()
@@ -407,10 +461,10 @@ test('code-block: Tab indents a leading empty line', async ({ page }) => {
 test('code-block: native commands indent lines and expand a syntax block', async ({
   page,
 }) => {
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
   try {
     await page.goto(ROUTE, { waitUntil: 'commit' });
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       'code-block:native-commands',
       page.locator(EDITOR_ROOT).first()

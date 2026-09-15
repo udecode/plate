@@ -1,21 +1,21 @@
-export type PliteViewSourcePhase = 'project' | 'read' | 'resolve';
+export type ViewSourcePhase = 'project' | 'read' | 'resolve';
 
 /** Diagnostic emitted when an optional view source is deactivated. */
-export type PliteViewSourceError = Readonly<{
+export type ViewSourceError = Readonly<{
   cause: unknown;
-  phase: PliteViewSourcePhase;
+  phase: ViewSourcePhase;
   sourceId: string;
 }>;
 
-export type PliteViewSourceErrorSink = (error: PliteViewSourceError) => void;
+export type ViewSourceErrorSink = (error: ViewSourceError) => void;
 
-export type PliteViewSourceOptions = Readonly<{
+export type ViewSourceOptions = Readonly<{
   id: string;
-  onError?: PliteViewSourceErrorSink;
+  onError?: ViewSourceErrorSink;
 }>;
 
 /** Current isolation state for an optional view source. */
-export type PliteViewSourceStatus = Readonly<{
+export type ViewSourceStatus = Readonly<{
   active: boolean;
   failureCount: number;
 }>;

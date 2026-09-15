@@ -2,7 +2,7 @@
 
 import { NodeApi, type Value } from 'platejs';
 import {
-  Plate,
+  EditorRoot,
   type Editor as ProductEditor,
   useCreateEditor,
   useEditor,
@@ -139,7 +139,7 @@ function assertRenderedTable(editor: ProductEditor, config: TablePerfConfig) {
   const root = editor.api.dom.root();
   const table = editor.read.nodes.get([0], { type: TablePlugin })?.[0];
   const cells = root?.querySelectorAll(
-    'td[data-plite-path],th[data-plite-path]'
+    'td[data-editor-path],th[data-editor-path]'
   );
 
   if (
@@ -163,7 +163,7 @@ function assertRenderedTable(editor: ProductEditor, config: TablePerfConfig) {
     row.children.forEach((cell, colIndex) => {
       const element = cells.item(rowIndex * config.cols + colIndex);
       if (
-        element?.getAttribute('data-plite-path') !==
+        element?.getAttribute('data-editor-path') !==
           `0,${rowIndex},${colIndex}` ||
         element.textContent !== NodeApi.string(cell)
       ) {
@@ -524,12 +524,12 @@ function TablePerfEditor({
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <BindTablePerfEditor onEditor={onEditor} />
       <EditorContainer className="h-[500px] overflow-auto">
         <Editor className="p-4" variant="none" />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 

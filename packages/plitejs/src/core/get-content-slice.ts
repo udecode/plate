@@ -36,7 +36,8 @@ const getOpenDepth = (editor: Editor, point: Point) => {
  */
 export const getContentSlice = <V extends Value>(
   editor: Editor<V>,
-  selection: NodeSelection | Range | null
+  selection: NodeSelection | Range | null,
+  sourceRoots?: ContentSliceValue['roots']
 ): ContentSliceValue<V> => {
   if (!selection) {
     return ContentSlice.empty;
@@ -93,9 +94,18 @@ export const getContentSlice = <V extends Value>(
         editor.read.schema.getElementContentRoots(node)
       )) {
         if (visitedRoots.has(innerRoot)) continue;
-        const rootContent = getEditorDocumentRoots(editor)[innerRoot];
+        const rootContent = (sourceRoots ?? getEditorDocumentRoots(editor))[
+          innerRoot
+        ];
 
-        if (!rootContent) continue;
+        if (!rootContent) {
+          if (sourceRoots !== undefined) {
+            throw new Error(
+              `Missing content slice source root "${innerRoot}".`
+            );
+          }
+          continue;
+        }
         visitedRoots.add(innerRoot);
         roots[innerRoot] = rootContent;
         collect(rootContent);

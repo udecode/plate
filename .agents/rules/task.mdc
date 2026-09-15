@@ -1,5 +1,5 @@
 ---
-description: Own a Plate or Plite engineering task from source-grounded intake through implementation, exact proof and authorized delivery. Includes complex plans, reviews and current-checkout closure.
+description: Complete a Plate/Plite engineering task through its owning implementation, proof and authorized delivery.
 argument-hint: '[task | plan/spec/issue | autonomous <scope> | complex <scope> | closure <target> | review-patterns <feedback>]'
 disable-model-invocation: true
 ---
@@ -7,25 +7,25 @@ disable-model-invocation: true
 # Task
 
 Handle $ARGUMENTS. Keep one lifecycle and the user's entire intended outcome.
-Read [the Plate workflow](./references/workflow.md) first. Read the user-named
-source and nearby owners before selecting a method. Proceed through already
-authorized work; an internal handoff is not a reason to stop.
+Handle a direct pause or resume through Autogoal before selecting work. For a
+question or tiny local edit, use the affected source and direct verification.
+For substantive work, read [the Plate workflow](./references/workflow.md) once
+and inspect the user-named source and nearby owners. Continue authorized work
+through implementation and required proof; an internal handoff is not a stop.
 
 ## Engineering method
 
-Use the full [Poteto Mode](../poteto-mode/SKILL.md), its Codex adapter and the
-matched playbook for substantive engineering work. Read the relevant principle
-leaves, examples and worker prompts. For an unmatched complex effort use
-[Figure It Out](../figure-it-out/SKILL.md). These supply methods within Task.
+Use known owners and accepted plans directly. Select a complete
+[Poteto Mode](../poteto-mode/SKILL.md) playbook for an unresolved decision or
+explicit invocation. Read its relevant references, examples and recovery once;
+do not load every principle or repeat intake per finding. Use
+[Figure It Out](../figure-it-out/SKILL.md) when no accepted plan or method fits.
 
-Choose methods for a concrete question: How traces source flow; Why recovers
-rationale; Architect and Arena explore competing structures; Blast Radius
-tests consequential assumptions; Interrogate challenges a contested decision.
-Do not run a fixed chain of every method. Preserve full upstream instructions
-when one applies and disclose unavailable tool or model-family independence.
-
-For a question or tiny local edit, answer or make the edit and verify it
-directly. Do not manufacture a goal, plan, panel, app launch or new test.
+How traces unclear source flow; Why recovers missing rationale; Architect/Arena
+compare consequential unsettled structures; Blast Radius tests consequential
+assumptions; Interrogate challenges a contested decision. Select only the
+actual question. The Codex adapter maps tools/models for capability-dependent
+work, including permitted independent subagents; report real limits.
 
 For GitHub sources, route public issue/PR/security work to Maintainer. For a
 Linear item, fetch the issue, comments and relevant attachments through its
@@ -88,8 +88,9 @@ Run the existing applicable checks; do not add tests or broaden the runner just
 because another skill lists possible cases. An observed costly regression may
 justify the smallest public-boundary test under Testing's policy.
 
-For a long or unattended run, use Show Me Your Work's append-only decision
-trail and link existing receipts. Resolve failed evidence before advancing.
+Keep decisions and linked receipts in the current plan. Use Show Me Your Work
+only when requested or when competing experiments need a separate history.
+Resolve failed evidence before advancing.
 Claim exact local, integrated and released states separately.
 
 ## Closeout

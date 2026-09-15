@@ -137,7 +137,7 @@ const detachedContentSchema = defineEditorSchema(
 
 const createSchemaEditor = () =>
   createEditor({
-    extensions: [detachedContentSchema],
+    plugins: [detachedContentSchema],
     initialValue: {
       children: [{ children: [{ text: 'document' }], type: 'paragraph' }],
       roots: {
@@ -271,7 +271,7 @@ describe('detached slice content fitting', () => {
 
   it('inherits named-root context from a root-scoped view', () => {
     const runtime = createEditor({
-      extensions: [detachedContentSchema],
+      plugins: [detachedContentSchema],
       initialValue: {
         children: [paragraph('document')],
         roots: { comments: [paragraph('comment')] },
@@ -390,7 +390,7 @@ describe('detached slice content fitting', () => {
           const parent = testCase.parent();
           const root = 'root' in testCase ? testCase.root : undefined;
           const editor = createEditor({
-            extensions: [detachedContentSchema],
+            plugins: [detachedContentSchema],
             initialValue:
               root === 'comments'
                 ? {
@@ -446,15 +446,15 @@ describe('detached slice content fitting', () => {
   it('canonicalizes and validates one detached winner exactly once', () => {
     const editor = createSchemaEditor();
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         acceptsCoreDuration: (id: string) => boolean;
         record: (event: { id: string }) => void;
       };
     };
-    const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     const events: string[] = [];
 
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
       acceptsCoreDuration: (id) =>
         id === 'slice-fit-canonicalize' ||
         id === 'slice-fit-content-validation',
@@ -478,7 +478,7 @@ describe('detached slice content fitting', () => {
         1
       );
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
     }
   });
 });

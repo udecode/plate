@@ -1,12 +1,12 @@
 import {
   defineEditorSchema,
-  defineExtension,
+  definePlugin,
   editorCommands,
-  type EditorValueFromExtensions,
+  type EditorValueFromPlugins,
   NodeApi,
   PathApi,
-  type Element as PliteElement,
-  type Text as PliteText,
+  type Element as EditorElement,
+  type Text as EditorText,
   PointApi,
   property,
   RangeApi,
@@ -19,12 +19,12 @@ import {
   target,
   TextApi,
 } from 'plitejs';
-import { clipboardHandler, isHotkey, parseDOMClipboardHtml } from 'plitejs/dom';
+import { domCommands, isHotkey, parseDOMClipboardHtml } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
   Editable,
   type Editor,
-  Plite,
+  EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
   useEditor,
@@ -117,9 +117,7 @@ const RichTextSchema = defineEditorSchema('schema:derived', {
   unknown: 'reject',
 });
 
-type RichTextValue = EditorValueFromExtensions<
-  readonly [typeof RichTextExtension]
->;
+type RichTextValue = EditorValueFromPlugins<readonly [typeof RichTextPlugin]>;
 type RichTextEditor = Editor<RichTextValue>;
 type RichTextElement = SchemaElementFor<typeof RichTextSchema>;
 type RichTextElementType = SchemaElementTypes<typeof RichTextSchema>;
@@ -156,7 +154,7 @@ const CLEAR_FORMATTING_HOTKEY = 'mod+\\';
 
 const RichTextExample = () => {
   const editor = useEditor({
-    extensions: [history(), RichTextExtension],
+    plugins: [history(), RichTextPlugin],
     initialValue: [
       {
         type: 'paragraph',
@@ -195,7 +193,7 @@ const RichTextExample = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Toolbar>
         <MarkButton format="bold" icon="format_bold" />
         <MarkButton format="italic" icon="format_italic" />
@@ -220,7 +218,7 @@ const RichTextExample = () => {
         renderLeaf={Leaf}
         spellCheck
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
@@ -264,7 +262,7 @@ const toggleBlock = (editor: RichTextEditor, format: RichTextElementFormat) => {
     tx.nodes.unwrap({
       match: (n) =>
         NodeApi.isElement(n) &&
-        isListType((n as PliteElement).type as RichTextElementFormat),
+        isListType((n as EditorElement).type as RichTextElementFormat),
       split: true,
     });
 
@@ -288,7 +286,7 @@ const clearRichTextFormatting = (editor: RichTextEditor) => {
   });
 };
 
-const toRichTextLeaf = (node: PliteText): RichTextText => ({
+const toRichTextLeaf = (node: EditorText): RichTextText => ({
   ...(node.bold ? { bold: true } : {}),
   ...(node.code ? { code: true } : {}),
   ...(node.italic ? { italic: true } : {}),
@@ -363,41 +361,36 @@ const normalizeRichTextHtmlFragment = (fragment: unknown): RichTextValue => {
     : [{ type: 'paragraph', children: [{ text: '' }] }];
 };
 
-const RichTextExtension = defineExtension('richtext', {
-  contributions: [
-    clipboardHandler({
-      insertData(data, { next, tx }) {
-        const html = data.getData('text/html');
-
-        if (!html) {
-          return next();
-        }
-
-        if (
-          data.getData('application/x-plite-fragment') ||
-          html.includes('data-plite-fragment=')
-        ) {
-          return next();
-        }
-
-        const hasPlainText = Array.from(data.types).includes('text/plain');
-        const text = hasPlainText ? data.getData('text/plain') : '';
-
-        if (isPlainTextClipboardHtml(html, text)) {
-          return next();
-        }
-
-        const parsed = parseDOMClipboardHtml(html);
-        const fragment = normalizeRichTextHtmlFragment(
-          deserialize(parsed.body)
-        );
-
-        tx.fragment.replace(fragment);
-        return true;
-      },
-    }),
-  ],
+const RichTextPlugin = definePlugin('richtext', {
   commands: ({ around }) => [
+    around(domCommands.insertData, ({ input, next, state }) => {
+      const html = input.getData('text/html');
+
+      if (!html) {
+        return next();
+      }
+
+      if (
+        input.getData('application/x-editor-fragment') ||
+        html.includes('data-editor-fragment=')
+      ) {
+        return next();
+      }
+
+      const hasPlainText = Array.from(input.types).includes('text/plain');
+      const text = hasPlainText ? input.getData('text/plain') : '';
+
+      if (isPlainTextClipboardHtml(html, text)) {
+        return next();
+      }
+
+      const parsed = parseDOMClipboardHtml(html);
+      const fragment = normalizeRichTextHtmlFragment(deserialize(parsed.body));
+
+      return state.transaction((tx) => {
+        tx.fragment.replace(fragment);
+      });
+    }),
     around(editorCommands.insertBreak, ({ state, next }) => {
       const selection = state.selection();
 

@@ -37,14 +37,14 @@ import {
 } from './use-plite-runtime';
 
 /** Focus behavior after undo or redo commands. */
-export type PliteHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
+export type EditorHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
 
 /** Options for history commands and shortcut handling. */
-export type UsePliteHistoryOptions<TRoot extends RootKey = RootKey> = {
-  focusPolicy?: PliteHistoryFocusPolicy;
+export type UseEditorHistoryOptions<TRoot extends RootKey = RootKey> = {
+  focusPolicy?: EditorHistoryFocusPolicy;
 } & (
   | {
-      /** Bind commands and focus to this existing view, including outside Plite. */
+      /** Bind commands and focus to this existing view, including outside an editor root. */
       editor: Editor<any, any>;
       root?: never;
     }
@@ -54,8 +54,8 @@ export type UsePliteHistoryOptions<TRoot extends RootKey = RootKey> = {
     }
 );
 
-/** Undo/redo state and command handlers for one Plite root. */
-export type PliteHistoryController = {
+/** Undo/redo state and command handlers for one editor root. */
+export type EditorHistoryController = {
   canRedo: boolean;
   canUndo: boolean;
   onKeyDown: (event: KeyboardEvent) => void;
@@ -167,11 +167,11 @@ const selectHistoryAvailability = (state: unknown): HistoryAvailability => {
  * `onKeyDown` to editor chrome that owns shortcuts, and choose `focusPolicy`
  * based on whether undo/redo should restore editor focus.
  */
-export function usePliteHistory<const TRoot extends RootKey = RootKey>({
+export function useEditorHistory<const TRoot extends RootKey = RootKey>({
   editor: providedEditor,
   focusPolicy = 'restore-root',
   root: fixedRoot,
-}: UsePliteHistoryOptions<TRoot> = {}): PliteHistoryController {
+}: UseEditorHistoryOptions<TRoot> = {}): EditorHistoryController {
   if (fixedRoot === MAIN_ROOT_KEY) {
     throw new Error(
       '[Plite] Omit root to bind history to the primary document.'
@@ -181,7 +181,7 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
   const context = useOptionalPliteRuntimeContext();
   const source =
     providedEditor ??
-    context?.runtime.editor ??
+    context?.runtime ??
     failInvariant('usePliteHistory requires an editor or Plite provider.');
   const historyRootSelector = useMemo(
     () => createHistoryRootSelector(toInternalRoot(source.read.view.root())),

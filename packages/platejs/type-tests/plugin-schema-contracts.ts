@@ -2,7 +2,7 @@ import {
   type BasePluginContext,
   type BasePluginDefinition,
   createEditor as createHeadlessEditor,
-  defineBasePlugin,
+  definePlugin as defineHeadlessPlugin,
   type Editor as HeadlessEditor,
   type DefinitionOf,
   ElementIdPlugin,
@@ -13,11 +13,11 @@ import {
 } from 'platejs';
 import {
   createEditor,
-  definePlatePlugin,
-  type PlateElementForDescriptor,
-  type PlateElementProps,
+  definePlugin,
+  type ElementForDescriptor,
+  type EditorElementProps,
   type Editor,
-  toPlatePlugin,
+  toReactPlugin,
 } from 'platejs/react';
 
 import {
@@ -32,9 +32,9 @@ import {
 } from '../src/core';
 import type { AnyBasePlugin } from '../src/lib/plugin/BasePlugin';
 import type { NormalizePluginState } from '../src/lib/plugin/PluginDefinition';
-import type { PliteElementProps } from '../src/static/components/plite-nodes';
+import type { EditorElementProps as StaticEditorElementProps } from '../src/static/components/plite-nodes';
 
-const TargetPlugin = defineBasePlugin('schemaTarget', {
+const TargetPlugin = defineHeadlessPlugin('schemaTarget', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -71,7 +71,7 @@ const configuredTargetElement = configuredTargetEditor.read.schema.create(
   ConfiguredTargetPlugin
 );
 const exactConfiguredTargetType: 'schemaTarget' = configuredTargetElement.type;
-const ConfiguredPlateTargetPlugin = toPlatePlugin(TargetPlugin).configure({});
+const ConfiguredPlateTargetPlugin = toReactPlugin(TargetPlugin).configure({});
 const configuredPlateTargetName: 'schemaTarget' =
   ConfiguredPlateTargetPlugin.name;
 const configuredPlateTargetEditor = createEditor({
@@ -100,7 +100,7 @@ void exactConfiguredPlateTargetType;
 void configuredTargetName;
 void exactExtendedTargetName;
 
-const NoSchemaPlugin = defineBasePlugin('noSchemaElement', {});
+const NoSchemaPlugin = defineHeadlessPlugin('noSchemaElement', {});
 const noSchemaEditor = createHeadlessEditor({
   plugins: [NoSchemaPlugin],
 });
@@ -122,7 +122,7 @@ const configuredPropertyInitialState: ConfiguredPropertyPluginState = {
   prefix: 'configured',
 };
 
-const ConfiguredPropertyPlugin = defineBasePlugin('configuredProperty', {
+const ConfiguredPropertyPlugin = defineHeadlessPlugin('configuredProperty', {
   initialState: configuredPropertyInitialState,
   schema: ({ initialState, targetElementTypes }) => {
     const prefix: string = initialState.prefix;
@@ -142,7 +142,7 @@ const ConfiguredPropertyPlugin = defineBasePlugin('configuredProperty', {
   targetPlugins: [TargetPlugin],
 });
 
-const AmbiguousPropertyPlugin = defineBasePlugin('ambiguousProperty', {
+const AmbiguousPropertyPlugin = defineHeadlessPlugin('ambiguousProperty', {
   schema: {
     properties: {
       'first-property': schema.elementProperty(property.string(), {
@@ -155,7 +155,7 @@ const AmbiguousPropertyPlugin = defineBasePlugin('ambiguousProperty', {
   },
 });
 
-const MarkPropertyPlugin = definePlatePlugin('schemaMarkProperty', {
+const MarkPropertyPlugin = definePlugin('schemaMarkProperty', {
   schema: {
     mark: {
       inclusive: false,
@@ -165,7 +165,7 @@ const MarkPropertyPlugin = definePlatePlugin('schemaMarkProperty', {
   },
 });
 
-const ElementPropertyPlugin = definePlatePlugin('schemaElementProperty', {
+const ElementPropertyPlugin = definePlugin('schemaElementProperty', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -174,7 +174,7 @@ const ElementPropertyPlugin = definePlatePlugin('schemaElementProperty', {
   },
 });
 
-const JsonElementPropertyPlugin = defineBasePlugin('jsonElementProperty', {
+const JsonElementPropertyPlugin = defineHeadlessPlugin('jsonElementProperty', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -195,7 +195,7 @@ const exactJsonSizes: readonly number[] | undefined = jsonPropertyElement.sizes;
 
 void exactJsonSizes;
 
-const SchemaPropertyContributorPlugin = defineBasePlugin(
+const SchemaPropertyContributorPlugin = defineHeadlessPlugin(
   'schemaPropertyContributor',
   {
     schema: {
@@ -247,7 +247,7 @@ const exactCombinedConfiguredProperty: string =
   combinedContributors.configuredProperty;
 const exactCombinedPriority: number = combinedContributors.priority;
 
-const SharedStringPropertyPlugin = defineBasePlugin('sharedStringProperty', {
+const SharedStringPropertyPlugin = definePlugin('sharedStringProperty', {
   schema: {
     properties: {
       shared: schema.elementProperty('sharedString', property.string(), {
@@ -256,7 +256,7 @@ const SharedStringPropertyPlugin = defineBasePlugin('sharedStringProperty', {
     },
   },
 });
-const SharedNumberPropertyPlugin = defineBasePlugin('sharedNumberProperty', {
+const SharedNumberPropertyPlugin = definePlugin('sharedNumberProperty', {
   schema: {
     properties: {
       shared: schema.elementProperty('sharedNumber', property.number(), {
@@ -309,10 +309,10 @@ void exactRequiredCorrelatedString;
 void invalidContributedElement;
 void invalidRequiredPrefix;
 
-const RelationshipParagraphPlugin = defineBasePlugin('relationshipParagraph', {
+const RelationshipParagraphPlugin = definePlugin('relationshipParagraph', {
   schema: { element: schema.element.textBlock() },
 });
-const RelationshipCellPlugin = defineBasePlugin('relationshipCell', {
+const RelationshipCellPlugin = definePlugin('relationshipCell', {
   dependencies: [RelationshipParagraphPlugin],
   schema: {
     element: {
@@ -323,7 +323,7 @@ const RelationshipCellPlugin = defineBasePlugin('relationshipCell', {
     },
   },
 });
-const RelationshipRowPlugin = defineBasePlugin('relationshipRow', {
+const RelationshipRowPlugin = definePlugin('relationshipRow', {
   dependencies: [RelationshipCellPlugin],
   schema: {
     element: {
@@ -334,7 +334,7 @@ const RelationshipRowPlugin = defineBasePlugin('relationshipRow', {
     },
   },
 });
-const RelationshipTablePlugin = defineBasePlugin('relationshipTable', {
+const RelationshipTablePlugin = definePlugin('relationshipTable', {
   dependencies: [RelationshipRowPlugin],
   schema: {
     element: {
@@ -363,7 +363,7 @@ const relationshipTableVocabulary: typeof relationshipTable = {
 void exactRelationshipTable;
 void relationshipTableVocabulary;
 
-const AggregatePropertiesPlugin = defineBasePlugin('aggregateProperties', {
+const AggregatePropertiesPlugin = definePlugin('aggregateProperties', {
   schema: {
     properties: {
       firstProperty: schema.elementProperty(property.string(), {
@@ -381,7 +381,7 @@ const aggregatePropertiesEditor = createHeadlessEditor({
 // @ts-expect-error aggregate property contributors do not own one primary key
 void aggregatePropertiesEditor.plugin(AggregatePropertiesPlugin).key;
 
-const ExplicitPlateElementPlugin = definePlatePlugin('plateElementOwner', {
+const ExplicitPlateElementPlugin = definePlugin('plateElementOwner', {
   schema: {
     element: {
       ...schema.element.textBlock(),
@@ -399,18 +399,15 @@ const explicitPlateElementType: 'plateElementDocumentType' =
 // @ts-expect-error author descriptors do not expose a universal property key
 void ExplicitPlateElementPlugin.key;
 
-const PlateDependencyElementPlugin = definePlatePlugin(
-  'plateDependencyElement',
-  {
-    schema: {
-      element: {
-        ...schema.element.textBlock(),
-        properties: { dependencyOnly: property.boolean() },
-      },
+const PlateDependencyElementPlugin = definePlugin('plateDependencyElement', {
+  schema: {
+    element: {
+      ...schema.element.textBlock(),
+      properties: { dependencyOnly: property.boolean() },
     },
-  }
-);
-const PlateOwnerElementPlugin = definePlatePlugin('plateOwnerElement', {
+  },
+});
+const PlateOwnerElementPlugin = definePlugin('plateOwnerElement', {
   dependencies: [PlateDependencyElementPlugin],
   schema: {
     element: {
@@ -420,15 +417,15 @@ const PlateOwnerElementPlugin = definePlatePlugin('plateOwnerElement', {
   },
 });
 type PlateOwnerElement = ElementOf<typeof PlateOwnerElementPlugin>;
-type PlateOwnerHookElement = PlateElementForDescriptor<
+type PlateOwnerHookElement = ElementForDescriptor<
   typeof PlateOwnerElementPlugin
 >;
 declare const plateOwnerElement: PlateOwnerElement;
 declare const plateOwnerHookElement: PlateOwnerHookElement;
-declare const plateOwnerProps: PlateElementProps<
+declare const plateOwnerProps: EditorElementProps<
   typeof PlateOwnerElementPlugin
 >;
-declare const plateOwnerStaticProps: PliteElementProps<
+declare const plateOwnerStaticProps: StaticEditorElementProps<
   typeof PlateOwnerElementPlugin
 >;
 const exactPlateOwnerType: 'plateOwnerElement' = plateOwnerElement.type;
@@ -447,7 +444,7 @@ void plateOwnerProps.element.dependencyOnly;
 // @ts-expect-error PliteElementProps element inference excludes dependency nodes.
 void plateOwnerStaticProps.element.dependencyOnly;
 
-const PlateFactoryElementPlugin = definePlatePlugin('plateFactoryElement', {
+const PlateFactoryElementPlugin = definePlugin('plateFactoryElement', {
   schema: () => ({
     element: {
       ...schema.element.textBlock(),
@@ -455,7 +452,7 @@ const PlateFactoryElementPlugin = definePlatePlugin('plateFactoryElement', {
     },
   }),
 });
-type PlateFactoryHookElement = PlateElementForDescriptor<
+type PlateFactoryHookElement = ElementForDescriptor<
   typeof PlateFactoryElementPlugin
 >;
 declare const plateFactoryHookElement: PlateFactoryHookElement;
@@ -466,7 +463,7 @@ const exactPlateFactoryProperty: number | undefined =
 void exactPlateFactoryProperty;
 void exactPlateFactoryType;
 
-const ExplicitPlateMarkPlugin = definePlatePlugin('plateMarkOwner', {
+const ExplicitPlateMarkPlugin = definePlugin('plateMarkOwner', {
   api: ({ schema: innerSchema2 }) => {
     const exactKey: 'plateMarkDocumentKey' = innerSchema2.key;
 
@@ -496,7 +493,7 @@ const configuredPrefix: string = ConfiguredPropertyPlugin.initialState.prefix;
 const configuredTargetPlugin: typeof TargetPlugin =
   ConfiguredPropertyPlugin.targetPlugins[0];
 
-const PluginReferenceStatePlugin = defineBasePlugin('pluginReferenceState', {
+const PluginReferenceStatePlugin = definePlugin('pluginReferenceState', {
   initialState: {
     nested: { targets: [TargetPlugin] as const },
     target: TargetPlugin,
@@ -541,7 +538,7 @@ class PluginStateResource {
 }
 
 const pluginStateResource = new PluginStateResource();
-const PluginResourceStatePlugin = defineBasePlugin('pluginResourceState', {
+const PluginResourceStatePlugin = definePlugin('pluginResourceState', {
   initialState: { resource: pluginStateResource },
 });
 const pluginResourceEditor = createHeadlessEditor({
@@ -618,38 +615,34 @@ booleanMarkPortal.update.set(true);
 // @ts-expect-error Boolean mark toggles do not accept a value.
 booleanMarkPortal.update.toggle(true);
 
-const dynamicElementType: string = editor.plugin('schemaTarget').schema.type;
-const dynamicMarkKey: string = editor.plugin('schemaMarkProperty').schema.key;
-
-void dynamicElementType;
-void dynamicMarkKey;
+// @ts-expect-error Public plugin lookup does not accept persisted names.
+editor.plugin('schemaTarget');
+// @ts-expect-error Public plugin lookup does not accept persisted keys.
+editor.plugin('schemaMarkProperty');
 void exactMarkKey;
 void markActive;
 void markValue;
 
 const requirePluginReference = <T extends PluginReference>(plugin: T) => plugin;
-const ReferenceChildPlugin = defineBasePlugin('schemaReferenceChild', {
+const ReferenceChildPlugin = definePlugin('schemaReferenceChild', {
   dependencies: [TargetPlugin, ElementPropertyPlugin],
 });
-const DependencyInferencePlugin = defineBasePlugin(
-  'schemaDependencyInference',
-  {
-    api: () => ({
-      readDependencyInference: () => 'dependency' as const,
-    }),
-    update: () => ({
-      writeDependencyInference: () => undefined,
-    }),
-  }
-);
-const NestedInferencePlugin = defineBasePlugin('schemaNestedInference', {
+const DependencyInferencePlugin = definePlugin('schemaDependencyInference', {
+  api: () => ({
+    readDependencyInference: () => 'dependency' as const,
+  }),
+  update: () => ({
+    writeDependencyInference: () => undefined,
+  }),
+});
+const NestedInferencePlugin = definePlugin('schemaNestedInference', {
   api: () => ({ readNestedInference: () => 'nested' as const }),
   update: () => ({ writeNestedInference: () => undefined }),
 });
-export const InferenceTreePlugin = defineBasePlugin('schemaInferenceTree', {
+export const InferenceTreePlugin = definePlugin('schemaInferenceTree', {
   dependencies: [DependencyInferencePlugin, NestedInferencePlugin],
 });
-const ExplicitReferenceParentPlugin = defineBasePlugin(
+const ExplicitReferenceParentPlugin = definePlugin(
   'explicitSchemaReferenceParent',
   {
     dependencies: [TargetPlugin],
@@ -665,7 +658,7 @@ const explicitChildReference: PluginReference<'schemaTarget'> =
   ExplicitReferenceParentPlugin.dependencies[0];
 const explicitParentAtErasedBoundary: AnyBasePlugin =
   ExplicitReferenceParentPlugin;
-const exactEmptyStateAtErasedBoundary: AnyBasePlugin = defineBasePlugin(
+const exactEmptyStateAtErasedBoundary: AnyBasePlugin = definePlugin(
   'exactEmptyState',
   {}
 );
@@ -759,8 +752,8 @@ requirePluginReference(
     },
   })
 );
-const PlateTargetPlugin = toPlatePlugin(TargetPlugin);
-const PlateReferenceChildPlugin = toPlatePlugin(ReferenceChildPlugin);
+const PlateTargetPlugin = toReactPlugin(TargetPlugin);
+const PlateReferenceChildPlugin = toReactPlugin(ReferenceChildPlugin);
 const ExtendedSchemaTargetPlugin = TargetPlugin.extend(() => ({
   api: () => ({
     schemaInferenceProof: () => true,
@@ -768,7 +761,7 @@ const ExtendedSchemaTargetPlugin = TargetPlugin.extend(() => ({
 })).extend(({ api }) => ({
   api: () => ({ readSchemaInferenceProof: () => api.schemaInferenceProof() }),
 }));
-const PlateExtendedSchemaTargetPlugin = toPlatePlugin(
+const PlateExtendedSchemaTargetPlugin = toReactPlugin(
   ExtendedSchemaTargetPlugin
 ).extend(() => ({ selectors: { schemaInferenceProof: () => true } }));
 const schemaInferenceEditor = createHeadlessEditor({
@@ -781,10 +774,10 @@ const plateExtendedSchemaTargetType: 'schemaTarget' =
     PlateExtendedSchemaTargetPlugin
   ).type;
 
-requirePluginReference(definePlatePlugin('createdPlateReference', {}));
+requirePluginReference(definePlugin('createdPlateReference', {}));
 requirePluginReference(PlateTargetPlugin);
-requirePluginReference(toPlatePlugin(TargetPlugin, { editOnly: true }));
-requirePluginReference(toPlatePlugin(TargetPlugin, () => ({ enabled: true })));
+requirePluginReference(toReactPlugin(TargetPlugin, { editOnly: true }));
+requirePluginReference(toReactPlugin(TargetPlugin, () => ({ enabled: true })));
 requirePluginReference(PlateTargetPlugin.configure({ enabled: true }));
 requirePluginReference(PlateTargetPlugin.extend({ editOnly: true }));
 requirePluginReference(PlateTargetPlugin.extend(() => ({ enabled: true })));
@@ -947,7 +940,7 @@ void editor.api.plateModel;
 // @ts-expect-error The compiled Plate model is not exposed through runtime.
 void editor.runtime.model;
 
-defineBasePlugin('exclusiveSchema', {
+definePlugin('exclusiveSchema', {
   // @ts-expect-error A plugin cannot own both an element and a mark.
   schema: {
     element: {},
@@ -955,13 +948,13 @@ defineBasePlugin('exclusiveSchema', {
   },
 });
 
-defineBasePlugin('explicitMarkDescriptor', {
+definePlugin('explicitMarkDescriptor', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
 
-defineBasePlugin('advancedMarkDescriptor', {
+definePlugin('advancedMarkDescriptor', {
   schema: {
     mark: {
       inclusive: false,
@@ -972,7 +965,7 @@ defineBasePlugin('advancedMarkDescriptor', {
   },
 });
 
-defineBasePlugin('requiredElementPropertyTarget', {
+definePlugin('requiredElementPropertyTarget', {
   schema: {
     properties: {
       // @ts-expect-error Element property placement requires an explicit target.

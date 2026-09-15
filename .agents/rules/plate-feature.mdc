@@ -1,5 +1,5 @@
 ---
-description: Deliver a Plate feature end to end across platejs entrypoints, React adapters, copied registry UI, docs, release artifacts, proof, and Plate Next attestation.
+description: Deliver a Plate feature across its package, React, copied UI, docs and required release-proof owners.
 argument-hint: <feature | platejs subpath | registry item>
 ---
 

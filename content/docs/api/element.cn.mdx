@@ -1,0 +1,21 @@
+---
+title: Element
+description: Plate 元素节点类型和纯函数。
+---
+
+元素包含后代节点并表示块级或行内结构。块、行内、void 和可选择等策略
+属于 `editor.read.schema`。
+
+## 常用方法
+
+从 `platejs` 导入 `ElementApi`。
+
+| 方法 | 用途 |
+| --- | --- |
+| `ElementApi.isElement(value)` | 判断值是否为元素。 |
+| `ElementApi.isElementList(value)` | 判断值是否为元素数组。 |
+| `ElementApi.matches(element, props)` | 匹配元素属性。 |
+
+在 React 中为插件配置组件，并通过 `EditorElement` 保留编辑器属性及
+`children`。void 元素同样保留模型中的文本锚点。
+参见[插件组件](/docs/plugin-components)和[Schema](/docs/schema)。

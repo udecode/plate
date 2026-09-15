@@ -5,7 +5,8 @@ import {
   getChildren as editorGetChildren,
   getSelection as editorGetSelection,
 } from '../../src/internal';
-import { createEditor, Editable, Plite } from '../../src/react';
+import { createEditor, Editable, EditorRoot } from '../../src/react';
+import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   createEditableInputController,
   createEditableInputControllerState,
@@ -25,7 +26,7 @@ const fallbackSelection: TextSelection = {
 
 const domSelectionForText = (text: string) => {
   const stringElement = Array.from(
-    document.querySelectorAll('[data-plite-string]')
+    document.querySelectorAll('[data-editor-string]')
   ).find((element) => element.textContent === text);
   const textNode = stringElement?.firstChild;
 
@@ -51,13 +52,17 @@ test('target runtime imports the current DOM selection for implicit editor comma
   });
   let scheduledSelectionSync = 0;
 
+  let rendered!: ReturnType<typeof render>;
   act(() => {
-    render(
-      <Plite editor={editor}>
+    rendered = render(
+      <EditorRoot editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
   });
+  const mountedEditor = findMountedEditableDOMRuntime(
+    rendered.container.querySelector('[data-editor]')!
+  )!.editor;
 
   await act(async () => {
     editor.update((tx) => {
@@ -68,7 +73,7 @@ test('target runtime imports the current DOM selection for implicit editor comma
   domSelectionForText('two');
 
   const target = resolveEditableImplicitTarget({
-    editor,
+    editor: mountedEditor,
     inputController,
     request: {
       fallback: fallbackSelection,
@@ -92,13 +97,17 @@ test('target runtime imports the current DOM selection for implicit editor comma
 test('Editable target runtime routes implicit block commands to the current DOM selection', async () => {
   const editor = createEditor<Value>({ initialValue });
 
+  let rendered!: ReturnType<typeof render>;
   act(() => {
-    render(
-      <Plite editor={editor}>
+    rendered = render(
+      <EditorRoot editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
   });
+  const mountedEditor = findMountedEditableDOMRuntime(
+    rendered.container.querySelector('[data-editor]')!
+  )!.editor;
 
   await act(async () => {
     editor.update((tx) => {
@@ -109,7 +118,7 @@ test('Editable target runtime routes implicit block commands to the current DOM 
   domSelectionForText('two');
 
   await act(async () => {
-    editor.update((tx) => {
+    mountedEditor.update((tx) => {
       tx.nodes.set({ type: 'heading-one' } as never);
     });
   });

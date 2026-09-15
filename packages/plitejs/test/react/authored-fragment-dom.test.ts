@@ -9,7 +9,7 @@ import { readAuthoredViewFragments } from '../../src/core/authored-runtime';
 import { resolveDOMPointInRoot } from '../../src/dom/plugin/dom-editor';
 import {
   bindDOMFragmentElement,
-  getMountedDOMFragmentEditor,
+  getMountedDOMFragmentEditors,
   readDOMFragmentParent,
 } from '../../src/dom/plugin/dom-fragment-view';
 import {
@@ -26,9 +26,9 @@ const paragraph = (text: string) => ({
 
 const textLeaf = (text: string) => {
   const leaf = document.createElement('span');
-  leaf.setAttribute('data-plite-leaf', 'true');
+  leaf.setAttribute('data-editor-leaf', 'true');
   const string = document.createElement('span');
-  string.setAttribute('data-plite-string', 'true');
+  string.setAttribute('data-editor-string', 'true');
   string.textContent = text;
   leaf.append(string);
   return { leaf, text: string.firstChild as Text };
@@ -36,7 +36,7 @@ const textLeaf = (text: string) => {
 
 it('resolves inline retained text in its own coordinates and excludes it from parent offsets', () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('AXB')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -50,20 +50,20 @@ it('resolves inline retained text in its own coordinates and excludes it from pa
     createAuthoredFragmentView(parent, readAuthoredViewFragments(parent, id)[0])
   );
   const root = document.createElement('div');
-  root.setAttribute('data-plite-editor', 'true');
+  root.setAttribute('data-editor', 'true');
   root.contentEditable = 'true';
   const parentText = document.createElement('span');
-  parentText.setAttribute('data-plite-node', 'text');
-  parentText.setAttribute('data-plite-path', '0,0');
+  parentText.setAttribute('data-editor-node', 'text');
+  parentText.setAttribute('data-editor-path', '0,0');
   const parentKey = parent.key([0, 0]);
   assert.ok(parentKey);
-  parentText.setAttribute('data-plite-node-key', parentKey);
+  parentText.setAttribute('data-editor-node-key', parentKey);
   const retainedText = document.createElement('span');
-  retainedText.setAttribute('data-plite-node', 'text');
-  retainedText.setAttribute('data-plite-path', '0,0');
+  retainedText.setAttribute('data-editor-node', 'text');
+  retainedText.setAttribute('data-editor-path', '0,0');
   const retainedKey = retained.key([0, 0]);
   assert.ok(retainedKey);
-  retainedText.setAttribute('data-plite-node-key', retainedKey);
+  retainedText.setAttribute('data-editor-node-key', retainedKey);
   const before = textLeaf('A');
   const deleted = textLeaf('X');
   const after = textLeaf('B');
@@ -79,10 +79,12 @@ it('resolves inline retained text in its own coordinates and excludes it from pa
   detachAgain();
   try {
     assert.equal(
-      getMountedDOMFragmentEditor(
-        parent,
-        readAuthoredViewFragments(parent, id)[0].id
-      ),
+      [
+        ...getMountedDOMFragmentEditors(
+          parent,
+          readAuthoredViewFragments(parent, id)[0].id
+        ),
+      ][0],
       retained
     );
     assert.deepEqual(
@@ -100,27 +102,27 @@ it('resolves inline retained text in its own coordinates and excludes it from pa
     ]);
     assert.deepEqual(parent.api.dom.resolveDOMPoint(point(2)), [after.text, 1]);
     assert.deepEqual(
-      retained.api.dom.resolvePlitePoint([deleted.text, 1], {
+      retained.api.dom.resolvePoint([deleted.text, 1], {
         exactMatch: true,
       }),
       point(1)
     );
     assert.deepEqual(
-      parent.api.dom.resolvePlitePoint([after.text, 1], { exactMatch: true }),
+      parent.api.dom.resolvePoint([after.text, 1], { exactMatch: true }),
       point(2)
     );
     assert.equal(
-      parent.api.dom.resolvePlitePoint([deleted.text, 1], { exactMatch: true }),
+      parent.api.dom.resolvePoint([deleted.text, 1], { exactMatch: true }),
       null
     );
     assert.equal(
-      retained.api.dom.resolvePlitePoint([before.text, 1], {
+      retained.api.dom.resolvePoint([before.text, 1], {
         exactMatch: true,
       }),
       null
     );
-    assert.equal(parent.api.dom.resolvePliteNode(deleted.text), null);
-    assert.deepEqual(retained.api.dom.resolvePliteNode(deleted.text), {
+    assert.equal(parent.api.dom.resolveNode(deleted.text), null);
+    assert.deepEqual(retained.api.dom.resolveNode(deleted.text), {
       text: 'X',
     });
     assert.equal(retained.api.dom.hasDOMNode(deleted.text), true);
@@ -145,7 +147,7 @@ it('binds sibling retained table rows without inserting a DOM wrapper', () => {
     children: [{ type: 'td', children: [paragraph(text)] }],
   });
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [
       { type: 'table', children: [row('One'), row('Two'), row('Three')] },
     ],
@@ -166,7 +168,7 @@ it('binds sibling retained table rows without inserting a DOM wrapper', () => {
   );
   assert.equal(retained.read.children()[0].children.length, 2);
   const root = document.createElement('div');
-  root.setAttribute('data-plite-editor', 'true');
+  root.setAttribute('data-editor', 'true');
   const table = document.createElement('table');
   const tbody = document.createElement('tbody');
   table.append(tbody);
@@ -181,11 +183,11 @@ it('binds sibling retained table rows without inserting a DOM wrapper', () => {
     const p = document.createElement('p');
     const textElement = document.createElement('span');
     const content = textLeaf(text);
-    textElement.setAttribute('data-plite-node', 'text');
-    textElement.setAttribute('data-plite-path', path.join(','));
+    textElement.setAttribute('data-editor-node', 'text');
+    textElement.setAttribute('data-editor-path', path.join(','));
     const nodeKey = retained.key(path);
     assert.ok(nodeKey);
-    textElement.setAttribute('data-plite-node-key', nodeKey);
+    textElement.setAttribute('data-editor-node-key', nodeKey);
     textElement.append(content.leaf);
     p.append(textElement);
     td.append(p);
@@ -206,13 +208,13 @@ it('binds sibling retained table rows without inserting a DOM wrapper', () => {
         [entry.text, 2]
       );
       assert.deepEqual(
-        retained.api.dom.resolvePlitePoint([entry.text, 2], {
+        retained.api.dom.resolvePoint([entry.text, 2], {
           exactMatch: true,
         }),
         { path: entry.path, offset: 2 }
       );
       assert.equal(
-        parent.api.dom.resolvePlitePoint([entry.text, 2], { exactMatch: true }),
+        parent.api.dom.resolvePoint([entry.text, 2], { exactMatch: true }),
         null
       );
     }

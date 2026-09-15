@@ -41,7 +41,7 @@ const assignRef = (
  * Use this primitive when building custom element shells that still need Plite
  * DOM attributes, path/runtime metadata, and node-ref binding.
  */
-export const PliteElement = ({
+export const EditorElement = ({
   as = 'div',
   children,
   className,
@@ -80,8 +80,8 @@ export const PliteElement = ({
     <Component
       {...domProps}
       className={className}
-      data-plite-path={path ? path.join(',') : undefined}
-      data-plite-node-key={nodeKeyDOMValue}
+      data-editor-path={path ? path.join(',') : undefined}
+      data-editor-node-key={nodeKeyDOMValue}
       {...getPliteElementShellAttributes({ isInline, isVoid })}
       id={id}
       ref={combinedRef}

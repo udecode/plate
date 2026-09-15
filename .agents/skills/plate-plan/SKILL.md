@@ -1,5 +1,5 @@
 ---
-description: Plan or execute Plate architecture and public API changes on top of Plite. Use for plugin/runtime boundaries, product API hard cuts, package/docs/registry adoption, and accepted Plate architecture plans.
+description: Plan or execute Plate framework architecture and API adoption across plugins, packages, docs and registry.
 argument-hint: '[--quick|--standard|--deep] <Plate architecture/API question | accepted plan path>'
 disable-model-invocation: true
 name: plate-plan
@@ -92,17 +92,24 @@ rejected shape.
   the current Plite shape.
 - When a Plate product need reveals a neutral presentation law for one mounted
   Editable, first route derivable runtime and DOM behavior to Plite React.
-  `PlateContent` inherits the mechanics; copied UI owns literal focus markers,
+  `EditorContent` inherits the mechanics; copied UI owns literal focus markers,
   feature exclusions, and styling. Add a controlled input only when the exact
   view cannot derive user intent. Do not plan a Plate plugin, store, or registry
   kit whose only job is toggling that exact-view paint.
+- Keep ordinary `EditorContent` on Plite's complete DOM component. A Plate facade
+  for explicit DOM omission mirrors the dedicated Plite component and options;
+  it does not add a strategy prop, plugin, global store or second runtime.
+  Paginated Plate surfaces inherit pagination's own omission contract.
 - Plan inline transient feature paint on the owning plugin's
   `decorate: { read, observe?, attributes? }` descriptor. Reads return keyed ranges with
   render-safe attributes; Plate lowers them into Plite decorations. Copied
   features configure `decorate.attributes` without wrapping semantic reads or
   repeating observers. Prove object/callback/null input, inferred context,
   class/style merge, observer lifetime and live/static output; remove feature
-  selectors from generic Editor skins only after explicit caller adoption. Plan
+  selectors from generic Editor skins only after explicit caller adoption.
+  Feature-owned content-root styles use `render.contentAttributes` on the
+  existing plugin, with safe attribute composition on live/static roots and
+  no additional DOM wrapper. Plan
   sparse whole-element view attributes through
   `render.useViewElementAttributes`, one hook host per enabled plugin per
   mounted view. It returns `{ key, attributes }[]`; Plate keeps source order,

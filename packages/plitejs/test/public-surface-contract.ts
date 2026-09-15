@@ -11,11 +11,8 @@ const plitePackageDirectories = {
   plitejs: 'plitejs',
 } as const;
 
-const publicDocsRoots = [
-  resolve(repoRoot, 'content/docs/plite'),
-  resolve(repoRoot, 'content/docs/api/plite'),
-];
-const publicDocsIndex = 'content/docs/api/plite.mdx';
+const publicDocsRoots = [resolve(repoRoot, 'content/docs')];
+const publicDocsIndex = 'content/docs/api/plate.mdx';
 const publicExamplesRoot = resolve(
   repoRoot,
   'apps/www/src/app/(app)/examples/plite'
@@ -67,7 +64,7 @@ const publicAuthoringFiles = [...publicDocs, ...publicExamples].sort();
 
 const bannedPublicSurface = [
   {
-    pattern: /(?<!schema\.)\b(?:elementProperty|textProperty)\b/,
+    pattern: /(?<!\.)\b(?:elementProperty|textProperty)\b/,
     reason:
       'schema property declarations should use schema.elementProperty or schema.textProperty',
   },
@@ -90,8 +87,8 @@ const bannedPublicSurface = [
     reason: 'pure command handlers replace transform middleware registries',
   },
   {
-    pattern: /\b(?:extension\s+`transforms`|transforms\s*:)/i,
-    reason: 'extension commands own typed semantic actions',
+    pattern: /\b(?:plugin\s+`transforms`|transforms\s*:\s*\{)/i,
+    reason: 'plugin commands own typed semantic actions',
   },
   {
     pattern: /\beditor\.(selection|children|marks|intents)\b/,

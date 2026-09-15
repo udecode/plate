@@ -19,6 +19,7 @@ import {
   type Peer,
   paragraph,
   readPeerChildren,
+  readPeerPliteValue,
   redoHistoryPeer,
   redoHistoryPeerAndSync,
   syncConnectedPeers,
@@ -158,6 +159,36 @@ describe('plitejs/yjs split_node collaboration contract', () => {
       paragraph('alp'),
       paragraph('ha'),
     ]);
+  });
+
+  it('does not cross into an adjacent text leaf with different properties', () => {
+    const children = [
+      {
+        children: [{ bold: true, text: 'alpha' }, { text: 'beta' }],
+        type: 'paragraph',
+      },
+    ];
+    const peers = createPeers(['a', 'b', 'c'], children);
+    const [a] = peers;
+    const expected = [
+      {
+        children: [{ bold: true, text: 'al' }],
+        type: 'paragraph',
+      },
+      {
+        children: [{ bold: true, text: 'pha' }, { text: 'beta' }],
+        type: 'paragraph',
+      },
+    ];
+
+    a.editor.update.nodes.split({ at: { path: [0, 0], offset: 2 } });
+
+    assert.deepEqual(readPeerChildren(a), expected);
+    assert.deepEqual(readPeerPliteValue(a), expected);
+    syncConnectedPeers(peers);
+    for (const peer of peers) {
+      assert.deepEqual(readPeerChildren(peer), expected);
+    }
   });
 
   it('splits moved content by visible child position', () => {

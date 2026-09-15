@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   type Element,
   type Editor as EditorType,
 } from 'plitejs';
@@ -27,7 +27,7 @@ const paragraph = (text: string): Element => ({
 describe('apply/onChange hard cuts', () => {
   void editorHasNoOnChangeKey;
 
-  it('does not expose editor.onChange as an instance extension point', () => {
+  it('does not expose editor.onChange as an instance plugin point', () => {
     const editor = createEditor();
 
     assert.equal('onChange' in editor, false);
@@ -37,7 +37,7 @@ describe('apply/onChange hard cuts', () => {
     );
   });
 
-  it('does not expose editor.apply as an instance extension point', () => {
+  it('does not expose editor.apply as an instance plugin point', () => {
     const editor = createEditor();
 
     assert.equal('apply' in editor, false);
@@ -83,8 +83,8 @@ describe('apply/onChange hard cuts', () => {
   it('uses commit listeners instead of onChange callback timing', () => {
     const events: string[] = [];
     const editor = createEditor({
-      extensions: [
-        defineExtension('commit-timing-listener', {
+      plugins: [
+        definePlugin('commit-timing-listener', {
           on: {
             commit({ commit }) {
               events.push(`commit:${commit.changed.has('text')}`);

@@ -188,8 +188,8 @@ const plateHyperscript = createHyperscript({
   elements,
 });
 
-type PlateElementTag = keyof typeof elements;
-type PlateHyperscriptTag = Parameters<typeof plateHyperscript>[0];
+type ElementTag = keyof typeof elements;
+type HyperscriptTag = Parameters<typeof plateHyperscript>[0];
 
 export function jsx(
   tagName: 'editor',
@@ -207,12 +207,12 @@ export function jsx(
   ...children: unknown[]
 ): Text;
 export function jsx(
-  tagName: PlateElementTag,
+  tagName: ElementTag,
   attributes?: object | null,
   ...children: unknown[]
 ): Element;
 export function jsx(
-  tagName: PlateHyperscriptTag,
+  tagName: HyperscriptTag,
   attributes?: object | null,
   ...children: unknown[]
 ): unknown {

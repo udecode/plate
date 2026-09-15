@@ -1,6 +1,9 @@
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
-import { type PlateStaticProps, PlateStatic } from 'platejs/static';
+import {
+  type EditorStaticProps,
+  EditorStatic as EditorStaticPrimitive,
+} from 'platejs/static';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -10,7 +13,7 @@ export const editorVariants = cva(
     'group/editor',
     'relative w-full cursor-text select-text overflow-x-hidden whitespace-break-spaces break-words',
     'rounded-md ring-offset-background focus-visible:outline-none',
-    'placeholder:text-muted-foreground/80 **:data-plite-placeholder:top-[auto_!important] **:data-plite-placeholder:text-muted-foreground/80 **:data-plite-placeholder:opacity-100!',
+    'placeholder:text-muted-foreground/80 **:data-editor-placeholder:top-[auto_!important] **:data-editor-placeholder:text-muted-foreground/80 **:data-editor-placeholder:opacity-100!',
     '[&_strong]:font-bold'
   ),
   {
@@ -43,9 +46,9 @@ export function EditorStatic({
   className,
   variant,
   ...props
-}: PlateStaticProps & VariantProps<typeof editorVariants>) {
+}: EditorStaticProps & VariantProps<typeof editorVariants>) {
   return (
-    <PlateStatic
+    <EditorStaticPrimitive
       className={cn(editorVariants({ variant }), className)}
       {...props}
     />

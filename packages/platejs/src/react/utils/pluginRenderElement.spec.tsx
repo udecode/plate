@@ -5,12 +5,15 @@ import React from 'react';
 
 import { property, schema, target, type Element } from '../../core';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
-import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
-import { TestPlate as Plate } from '../__tests__/TestPlate';
+import {
+  BaseParagraphPlugin,
+  definePlugin as defineHeadlessPlugin,
+} from '../../lib';
+import { TestPlate as EditorRoot } from '../__tests__/TestPlate';
 import { PlateRoot } from '../components/PlateRoot.internal';
 import type { Editor } from '../editor/Editor';
 import { createEditor } from '../editor/withPlate';
-import { definePlatePlugin } from '../plugin';
+import { definePlugin } from '../plugin';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { useElement } from '../stores/element/useElement';
 import { pluginRenderElement } from './pluginRenderElement.internal';
@@ -24,7 +27,7 @@ const createValue = () =>
     },
   ] as any;
 
-const MarkerPlugin = defineBasePlugin('marker', {
+const MarkerPlugin = defineHeadlessPlugin('marker', {
   schema: () => ({
     properties: {
       marker: schema.elementProperty(property.string(), {
@@ -48,11 +51,11 @@ const renderPlugin = (editor: Editor, name: string = ParagraphPlugin.name) => {
     } as any);
 
   return render(
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <PlateRoot>
         <RenderProbe />
       </PlateRoot>
-    </Plate>
+    </EditorRoot>
   );
 };
 
@@ -64,10 +67,10 @@ describe('pluginRenderElement', () => {
     });
 
     const { container } = renderPlugin(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element).toBeInTheDocument();
-    expect(element).toHaveClass('plite-paragraph');
+    expect(element).toHaveClass('editor-paragraph');
   });
 
   it('keeps element context available for custom node components', () => {
@@ -96,7 +99,7 @@ describe('pluginRenderElement', () => {
   });
 
   it('passes each wrapper its own plugin API', () => {
-    const WrapperPlugin = defineBasePlugin('wrapper', {
+    const WrapperPlugin = defineHeadlessPlugin('wrapper', {
       api: () => ({
         isMarked: (element: Element) => element.marker === 'yes',
       }),
@@ -123,7 +126,7 @@ describe('pluginRenderElement', () => {
   it('prefilters descriptor wrappers before mounting their component', () => {
     let componentCalls = 0;
     let matchCalls = 0;
-    const WrapperPlugin = definePlatePlugin('wrapper', {
+    const WrapperPlugin = definePlugin('wrapper', {
       slots: {
         wrapNode: {
           component: ({ children }) => {
@@ -152,7 +155,7 @@ describe('pluginRenderElement', () => {
   });
 
   it('preserves Plite children for void intrinsic components', () => {
-    const HorizontalRulePlugin = defineBasePlugin('horizontalRule', {
+    const HorizontalRulePlugin = defineHeadlessPlugin('horizontalRule', {
       component: 'hr',
       schema: { element: { void: 'block' } },
     });
@@ -167,7 +170,7 @@ describe('pluginRenderElement', () => {
     });
 
     const { container } = renderPlugin(editor, HorizontalRulePlugin.name);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element).toBeInTheDocument();
     expect(element?.tagName).toBe('DIV');

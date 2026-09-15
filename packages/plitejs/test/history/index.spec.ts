@@ -132,14 +132,14 @@ const getHistory = (editor: any) =>
   editor.read((state: any) => state.history());
 
 describe('plitejs/history', () => {
-  it('exposes the current history extension surface', () => {
+  it('exposes the current history plugin surface', () => {
     assert.strictEqual(typeof PliteHistory.history, 'function');
     assert.strictEqual('withHistory' in PliteHistory, false);
   });
 
   it('records before and after selection roots from the commit', () => {
     const runtime = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
         roots: {

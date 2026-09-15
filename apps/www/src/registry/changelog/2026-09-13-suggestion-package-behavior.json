@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-13-suggestion-package-behavior",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-13-suggestion-package-behavior.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Compose suggestion controls and review cards from reusable suggestion APIs",
+  "targets": [
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/suggestion-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-13-suggestion-package-behavior",
+      "kind": "wiring",
+      "summary": "Use `SuggestionPlugin`, view-local activation, and authored-change hooks in copied controls and review cards. Customize styles, cards, and Comments composition in registry source.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "suggestion",
+        "discussion",
+        "mode-toolbar-button",
+        "suggestion-toolbar-button"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-13",
+          "entry": "2026-09-13-suggestion-package-behavior",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

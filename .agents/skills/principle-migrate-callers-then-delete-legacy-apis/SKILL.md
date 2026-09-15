@@ -1,9 +1,7 @@
 ---
 name: principle-migrate-callers-then-delete-legacy-apis
-description: "Apply when introducing a new internal API while old callers still exist. Migrate callers and delete the old API in the same wave instead of preserving compatibility layers."
+description: "Coordinate an accepted internal API replacement across its callers and remove the obsolete path."
 ---
-
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
 
 # Migrate Callers Then Delete Legacy APIs
 

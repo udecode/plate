@@ -28,7 +28,7 @@ export const resolveEditableClickTarget = (
     : isDOMElement(target)
       ? target
       : null;
-  const pliteHost = targetElement?.closest('[data-plite-node]');
+  const pliteHost = targetElement?.closest('[data-editor-node]');
   const path =
     pliteHost instanceof Element
       ? getPliteNodePathFromDOMElement(pliteHost)
@@ -50,7 +50,7 @@ export const resolveEditableClickTarget = (
   }
 
   try {
-    const node = ReactEditor.resolvePliteNode(editor, target);
+    const node = ReactEditor.resolveNode(editor, target);
     const fallbackPath = node ? ReactEditor.resolvePath(editor, node) : null;
 
     // Click handlers can mutate the document before selection reconciliation.

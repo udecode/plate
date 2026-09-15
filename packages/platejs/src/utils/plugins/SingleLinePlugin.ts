@@ -1,11 +1,11 @@
 import { editorCommands, NodeApi } from '../../facade';
-import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import { PLUGINS } from '../plate-keys';
 
 const LINE_BREAK = /[\r\n\u2028\u2029]/g;
 
 /** Forces editor to only have one line. */
-export const SingleLinePlugin = defineBasePlugin(PLUGINS.singleLine, {
+export const SingleLinePlugin = definePlugin(PLUGINS.singleLine, {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction(() => {})

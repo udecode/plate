@@ -25,7 +25,7 @@ export function CommentToolbarButton() {
       aria-label="Comment"
       disabled={readOnly || !hasSelection}
       onClick={beginComment}
-      data-plate-prevent-overlay
+      data-editor-prevent-overlay
       tooltip="Comment"
     >
       <MessageSquareTextIcon />

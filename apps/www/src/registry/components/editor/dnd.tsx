@@ -124,7 +124,7 @@ function Draggable({
   return (
     <div
       className={cn(
-        'relative hover:[&>.plite-gutterLeft]:opacity-100',
+        'relative hover:[&>.editor-gutterLeft]:opacity-100',
         isThisDragging && 'opacity-50'
       )}
       onMouseEnter={() => {
@@ -155,8 +155,8 @@ function Draggable({
             )}
             style={{ top: `${dragButtonTop + 3}px` }}
             type="button"
-            data-plate-prevent-deselect
-            data-plate-selectable
+            data-editor-prevent-deselect
+            data-editor-selectable
             onFocus={() => {
               activate();
               setIsPointerActive(true);
@@ -193,7 +193,7 @@ function Draggable({
 
       <DropLine dropLine={dropLine} />
 
-      <div ref={nodeRef} className="plite-blockWrapper flow-root">
+      <div ref={nodeRef} className="editor-blockWrapper flow-root">
         {children}
       </div>
     </div>
@@ -307,14 +307,14 @@ function Gutter({
     <div
       {...props}
       className={cn(
-        'plite-gutterLeft',
+        'editor-gutterLeft',
         '-translate-x-full absolute top-0 z-50 flex h-full w-[22px] cursor-text select-none hover:opacity-100 sm:opacity-0',
         'focus-within:opacity-100',
         active && 'opacity-100',
         className
       )}
       contentEditable={false}
-      data-plate-selectable
+      data-editor-selectable
     >
       {children}
     </div>
@@ -400,7 +400,7 @@ function DragHandle({
           onMouseUp={() => {
             resetPreview();
           }}
-          data-plate-prevent-deselect
+          data-editor-prevent-deselect
           role="button"
           tabIndex={0}
         >
@@ -422,7 +422,7 @@ function DropLine({
       {...props}
       aria-hidden
       className={cn(
-        'plite-dropLine',
+        'editor-dropLine',
         'pointer-events-none absolute inset-x-0 h-0.5 transition-opacity',
         'bg-brand/50',
         dropLine ? 'opacity-100' : 'opacity-0',

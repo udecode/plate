@@ -1,9 +1,9 @@
 import { editorCommands, NodeApi } from '../../facade';
-import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import { PLUGINS } from '../plate-keys';
 
 /** Forces editor to only have one block. */
-export const SingleBlockPlugin = defineBasePlugin(PLUGINS.singleBlock, {
+export const SingleBlockPlugin = definePlugin(PLUGINS.singleBlock, {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction((tx) => {

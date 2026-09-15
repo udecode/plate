@@ -1,125 +1,13 @@
-import { type ReactNode, useCallback, useMemo } from 'react';
+import { type ReactNode, useCallback } from 'react';
 
 import type { EditorCommit, NodeKey, Path } from '../..';
 import { NodeApi, SelectionApi } from '../..';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorSelector } from '../hooks/use-editor-selector';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { recordPliteReactRender } from '../render-profiler';
 import { toPublicRootOption } from '../root-key';
 import { toInternalRoot } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
-
-export type DOMStrategyRootConfig = {
-  overscan: number;
-  segmentSize: number;
-  previewChars: number;
-  promotionWindowSize: number;
-  threshold: number;
-};
-
-const EMPTY_RUNTIME_IDS: readonly NodeKey[] = [];
-
-type SegmentNodeKeyGroup = {
-  endIndex: number;
-  nodeKeys: readonly NodeKey[];
-  segmentIndex: number;
-  startIndex: number;
-};
-
-const createSegmentNodeKeyGroups = ({
-  segmentSize,
-  topLevelNodeKeys,
-}: {
-  segmentSize: number;
-  topLevelNodeKeys: readonly NodeKey[];
-}) => {
-  const groups: SegmentNodeKeyGroup[] = [];
-
-  for (
-    let startIndex = 0, segmentIndex = 0;
-    startIndex < topLevelNodeKeys.length;
-    startIndex += segmentSize, segmentIndex += 1
-  ) {
-    const endIndex = Math.min(
-      topLevelNodeKeys.length - 1,
-      startIndex + segmentSize - 1
-    );
-
-    groups.push({
-      endIndex,
-      nodeKeys: topLevelNodeKeys.slice(startIndex, endIndex + 1),
-      segmentIndex,
-      startIndex,
-    });
-  }
-
-  return groups;
-};
-
-const createSegmentPlanFromGroups = ({
-  defaultActiveSegmentIndex,
-  groups,
-  overscan,
-  promotedSegmentIndex,
-  promotedWindowStartIndex,
-  promotionWindowSize,
-}: {
-  defaultActiveSegmentIndex: number;
-  groups: readonly SegmentNodeKeyGroup[];
-  overscan: number;
-  promotedSegmentIndex: number | null;
-  promotedWindowStartIndex: number | null;
-  promotionWindowSize: number;
-}) => {
-  const activeSegmentIndex = promotedSegmentIndex ?? defaultActiveSegmentIndex;
-  const activeStart = Math.max(0, activeSegmentIndex - overscan);
-  const activeEnd = activeSegmentIndex + overscan;
-
-  return {
-    activeSegmentIndex,
-    segments: groups.map((group) => {
-      const isActive =
-        group.segmentIndex >= activeStart && group.segmentIndex <= activeEnd;
-      const shouldWindowPromotedSegment =
-        promotedSegmentIndex === group.segmentIndex &&
-        promotedWindowStartIndex != null &&
-        promotionWindowSize > 0 &&
-        promotionWindowSize < group.nodeKeys.length;
-      const windowOffset = shouldWindowPromotedSegment
-        ? Math.min(
-            Math.max(0, promotedWindowStartIndex - group.startIndex),
-            Math.max(0, group.nodeKeys.length - promotionWindowSize)
-          )
-        : 0;
-      const mountedNodeKeys =
-        isActive && shouldWindowPromotedSegment
-          ? group.nodeKeys.slice(
-              windowOffset,
-              windowOffset + promotionWindowSize
-            )
-          : isActive
-            ? group.nodeKeys
-            : EMPTY_RUNTIME_IDS;
-      const mountedStartIndex =
-        isActive && mountedNodeKeys.length > 0
-          ? group.startIndex + windowOffset
-          : null;
-      const mountedEndIndex =
-        mountedStartIndex == null
-          ? null
-          : mountedStartIndex + mountedNodeKeys.length - 1;
-
-      return {
-        ...group,
-        isActive,
-        mountedEndIndex,
-        mountedNodeKeys,
-        mountedStartIndex,
-      };
-    }),
-  };
-};
 
 const isSelectionChangeForRoot = (root: string, change: EditorCommit) =>
   change.selectionChanged &&
@@ -136,7 +24,9 @@ const getSelectionPathKey = (
     ? `${toInternalRoot(root)}:${
         SelectionApi.isNode(selection)
           ? selection.paths.map((path) => path.join('.')).join(';')
-          : `${selection.anchor.path.join('.')}:${selection.focus.path.join('.')}`
+          : `${selection.anchor.path.join('.')}:${selection.focus.path.join(
+              '.'
+            )}`
       }`
     : 'null';
 
@@ -179,9 +69,6 @@ const shouldUpdateEditableRootCommit = (root: string, change?: EditorCommit) =>
   change.changed.has('structure', toPublicRootOption(root)) ||
   change.changed.hasAny('state');
 
-const shouldUpdateRootDocumentEpoch = (root: string, change?: EditorCommit) =>
-  !change || change.changed.has('replace', toPublicRootOption(root));
-
 const sameNodeKeys = (left: readonly NodeKey[], right: readonly NodeKey[]) =>
   left.length === right.length &&
   left.every((nodeKey, index) => nodeKey === right[index]);
@@ -214,32 +101,6 @@ export const useRootNodeKeys = () => {
   return useEditorSelector(selector, {
     equalityFn: (left, right) => left != null && sameNodeKeys(left, right),
     profileId: 'root-node-keys',
-    shouldUpdate,
-  });
-};
-
-export const useRootDocumentEpoch = () => {
-  const editor = useEditorContext();
-  const root = toInternalRoot(editor.read((state) => state.view.root()));
-  const selector = useCallback(
-    (innerEditor2: ReactRuntimeEditor) =>
-      innerEditor2.read((state) => {
-        const commit = state.lastCommit();
-
-        return commit?.changed.has('replace', toPublicRootOption(root))
-          ? commit.version
-          : 0;
-      }),
-    [root]
-  );
-  const shouldUpdate = useCallback(
-    (change?: EditorCommit) => shouldUpdateRootDocumentEpoch(root, change),
-    [root]
-  );
-
-  return useEditorSelector(selector, {
-    equalityFn: Object.is,
-    profileId: 'root-document-epoch',
     shouldUpdate,
   });
 };
@@ -379,94 +240,4 @@ export const useEditableRootCommitWakeup = () => {
       shouldUpdate,
     }
   );
-};
-
-export const useInternalSegmentDOMStrategyRootSources = ({
-  internalSegmentDOMStrategyConfig,
-  promotedSegmentIndex,
-  promotedSegmentOverscan,
-  promotedWindowStartIndex,
-}: {
-  internalSegmentDOMStrategyConfig: DOMStrategyRootConfig | null;
-  promotedSegmentIndex: number | null;
-  promotedSegmentOverscan?: number | null;
-  promotedWindowStartIndex: number | null;
-}) => {
-  const topLevelNodeKeys = useRootNodeKeys();
-  const segmentNodeKeyGroups = useMemo(
-    () =>
-      internalSegmentDOMStrategyConfig &&
-      topLevelNodeKeys.length >= internalSegmentDOMStrategyConfig.threshold
-        ? createSegmentNodeKeyGroups({
-            segmentSize: internalSegmentDOMStrategyConfig.segmentSize,
-            topLevelNodeKeys,
-          })
-        : null,
-    [internalSegmentDOMStrategyConfig, topLevelNodeKeys]
-  );
-  const selectedTopLevelIndex = useTopLevelSelectionIndex(
-    segmentNodeKeyGroups != null
-  );
-  const selectedSegmentIndex =
-    internalSegmentDOMStrategyConfig &&
-    segmentNodeKeyGroups &&
-    selectedTopLevelIndex != null
-      ? Math.floor(
-          selectedTopLevelIndex / internalSegmentDOMStrategyConfig.segmentSize
-        )
-      : 0;
-
-  return useMemo(() => {
-    recordPliteReactRender({
-      id: internalSegmentDOMStrategyConfig
-        ? 'dom-strategy-root-sources'
-        : 'root-sources',
-      kind: 'root-plan',
-    });
-
-    const segmentPlan =
-      internalSegmentDOMStrategyConfig && segmentNodeKeyGroups
-        ? createSegmentPlanFromGroups({
-            overscan:
-              promotedSegmentOverscan ??
-              internalSegmentDOMStrategyConfig.overscan,
-            defaultActiveSegmentIndex: selectedSegmentIndex,
-            groups: segmentNodeKeyGroups,
-            promotedSegmentIndex,
-            promotedWindowStartIndex,
-            promotionWindowSize:
-              internalSegmentDOMStrategyConfig.promotionWindowSize,
-          })
-        : null;
-    const mountedTopLevelNodeKeys = segmentPlan
-      ? new Set(
-          segmentPlan.segments.flatMap((segment) =>
-            segment.isActive ? segment.mountedNodeKeys : []
-          )
-        )
-      : null;
-    const mountedTopLevelRanges = segmentPlan
-      ? segmentPlan.segments
-          .filter((segment) => segment.isActive)
-          .map((segment) => ({
-            endIndex: segment.mountedEndIndex ?? segment.endIndex,
-            startIndex: segment.mountedStartIndex ?? segment.startIndex,
-          }))
-      : null;
-
-    return {
-      segmentPlan,
-      mountedTopLevelRanges,
-      mountedTopLevelNodeKeys,
-      topLevelNodeKeys,
-    };
-  }, [
-    internalSegmentDOMStrategyConfig,
-    promotedSegmentIndex,
-    promotedSegmentOverscan,
-    promotedWindowStartIndex,
-    segmentNodeKeyGroups,
-    selectedSegmentIndex,
-    topLevelNodeKeys,
-  ]);
 };

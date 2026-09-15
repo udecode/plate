@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "docx-source",
+  "dependencies": [
+    "platejs"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/docx-source.tsx",
+      "content": "'use client';\n\nimport type { DocxSource } from 'platejs/docx/import';\nimport * as React from 'react';\n\ntype DocxSourceContextValue = Readonly<{\n  replaceSource: (source: DocxSource | null) => void;\n  source: DocxSource | null;\n}>;\n\nconst DocxSourceContext = React.createContext<DocxSourceContextValue | null>(\n  null\n);\n\nexport function DocxSourceProvider({ children }: React.PropsWithChildren) {\n  const [source, setSource] = React.useState<DocxSource | null>(null);\n  const sourceRef = React.useRef<DocxSource | null>(null);\n\n  const replaceSource = React.useCallback((next: DocxSource | null) => {\n    if (sourceRef.current === next) return;\n    sourceRef.current?.dispose();\n    sourceRef.current = next;\n    setSource(next);\n  }, []);\n\n  React.useEffect(\n    () => () => {\n      sourceRef.current?.dispose();\n      sourceRef.current = null;\n    },\n    []\n  );\n  const value = React.useMemo(\n    () => ({ replaceSource, source }),\n    [replaceSource, source]\n  );\n\n  return (\n    <DocxSourceContext.Provider value={value}>\n      {children}\n    </DocxSourceContext.Provider>\n  );\n}\n\nexport const useDocxSource = () => React.useContext(DocxSourceContext);\n",
+      "type": "registry:component",
+      "target": "@components/editor/docx-source.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

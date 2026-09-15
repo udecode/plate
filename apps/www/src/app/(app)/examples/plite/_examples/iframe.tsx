@@ -1,7 +1,7 @@
 import { isHotkey } from 'plitejs/dom';
 import {
   Editable,
-  Plite,
+  EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
   useEditor,
@@ -71,7 +71,7 @@ const IFrameExample = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Toolbar>
         <MarkButton format="bold" icon="format_bold" />
         <MarkButton format="italic" icon="format_italic" />
@@ -101,7 +101,7 @@ const IFrameExample = () => {
           spellCheck
         />
       </IFrame>
-    </Plite>
+    </EditorRoot>
   );
 };
 

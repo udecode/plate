@@ -1,5 +1,5 @@
 ---
-description: Operate the docs/research compiled layer in either full or maintain mode. Use for research-lane creation, research upkeep, authority-sensitive corpus work, source summaries, concepts, systems, decisions, and open-question pages.
+description: Create or maintain compiled research pages from source evidence, decisions, concepts and open questions.
 argument-hint: '[full|maintain] <goal or area>'
 disable-model-invocation: true
 ---

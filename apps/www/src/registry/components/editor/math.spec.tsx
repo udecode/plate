@@ -66,13 +66,13 @@ mock.module('platejs', () => ({
 }));
 
 mock.module('platejs/react', () => ({
-  PlateElement: ({ children }: React.PropsWithChildren) => (
+  EditorElement: ({ children }: React.PropsWithChildren) => (
     <div>{children}</div>
   ),
   useEditor: () => ({
     api: { dom: { focus: mock() } },
     key: () => 'equation-key',
-    plugin: () => ({
+    extension: () => ({
       api: { set: mock() },
       update: Object.assign(updateWithOptions, { set: mock() }),
     }),

@@ -1,5 +1,5 @@
 ---
-description: Reproduce evidence-backed Plate/Plite architecture reviews and score current systems without implementing fixes. Use for full, plugin, entrypoint, package, or bounded surface audits that need ownership, lifetime, reachability, scale, proof, and before/after verdicts.
+description: Review current Plate/Plite architecture through owner, lifetime, reachability, scale and proof evidence without repairs.
 argument-hint: '[all [plate|plite|both]] | [plugin|entrypoint|package|surface] <target>'
 ---
 

@@ -28,7 +28,7 @@ what the lane actually requires.
 When `get_goal` returns a goal, classify it before touching durable state:
 
 - `same`: the existing goal already describes the current requested end state.
-  Continue under it and keep its plan current.
+  Check the plan's pause state before continuing under it.
 - `same but stale plan`: the goal is right but the plan is stale. Repair the
   plan first, then continue.
 - `newer user correction`: the latest user message narrows, reverses, or
@@ -50,6 +50,35 @@ Do not invent a goal state file when a goal tool is available. If goal tools are
 not available, record degraded control state in the active plan only when the
 repo workflow requires that fallback; otherwise state that goal tools are not
 available and continue with the nearest safe workflow.
+
+## Pause handling
+
+A direct request to pause, stop, or hold work takes effect before another work
+step or requested repair detour. Persist it in the existing plan immediately:
+
+- Set `Status: Paused` and record the date and user instruction.
+- Preserve the objective, remaining checklist, evidence, and unfinished cleanup.
+- Save the current next step under `Saved next action after explicit resume`;
+  make `Next action` wait for a direct user instruction to resume.
+- Read back the changed plan. An acknowledgment or private note is insufficient.
+
+If a supported native pause control exists, use it under its current contract
+and read back the result. Otherwise record the unavailable native control in
+the same plan and explain it once. A paused file plan does not prove a paused
+native goal. Do not repurpose `update_goal` completion or blocked states,
+manipulate internal goal storage, or bypass a rejected control route.
+
+End the turn promptly after the pause and any separately requested detour.
+Never use sleeps, polling, repeated pause reminders, or another goal to wait
+for resumption. Automatic goal continuations and compaction are not direct
+user instructions to resume. Read the paused plan before considering work and
+leave it paused when no direct resume exists. A request to repair a skill or
+task history authorizes that repair only; finishing it does not resume the
+original objective.
+
+On explicit resumption, update the existing plan to active, retain the pause
+record, and revalidate the saved next step before proceeding. Resume supported
+native control separately if needed; never conflate its state with the file.
 
 ## Goal Anatomy
 
@@ -205,9 +234,11 @@ Repair workflow:
 1. Restate the expectation in one sentence.
 2. Identify the miss with source evidence: plan row, final response shape,
    missing gate, bad status, wrong template, or stale generated skill.
-3. Pick exactly one primary owner. Patch secondary owners only when sync is
-   required, such as source rule plus project template.
-4. Create a repair plan with:
+3. Pick one primary behavior owner. Patch its shared source, project adapter and
+   loaded callers only where needed to prevent a conflicting instruction.
+4. Use the existing affected plan for the expectation, repair and verification.
+   Do not create a second plan or copy its acceptance ledger. Only when no
+   suitable plan exists and the repair needs durable tracking, create one with:
 
    ```bash
    node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
@@ -215,7 +246,7 @@ Repair workflow:
      --title "<short repair title>"
    ```
 
-   If a repair is truly trivial, record why no separate repair plan is needed.
+   A bounded repair may close with its source/verification handoff.
 5. Patch source-of-truth files only. Never hand-edit installed
    `.agents/skills/**/SKILL.md`; after changing dotai `skills/**`, run
    `scripts/validate-skills`.
@@ -249,26 +280,119 @@ For long-running work, assume recall alone will drop strict checklist items. The
 
 Before extended work:
 
-1. Read the complete applicable methods, linked checklists and selected templates. Extract the user's acceptance, required work, proof, handoff and conditional gates into the existing plan before executing them.
-2. Give every applicable obligation a resolvable checkbox or gate row with its owning source and eventual evidence. Keep distinct requirements distinct. Link existing detailed ledgers or child plans and record their coverage; do not replace them with one vague “all checks passed” row or duplicate their state.
+1. Resolve method applicability from the actual request and unanswered decisions. Read selected methods and checklists in full once; do not recursively load every reference or repeat intake for each finding. Extract the user's acceptance, required work, proof, handoff and applicable gates into the existing plan.
+2. Keep every applicable obligation in one resolvable checkbox or gate row with its owning source and eventual evidence. Existing detailed ledgers or child plans own their rows; the parent links their coverage and completion rather than copying their state. Group coupled findings into bounded batches while retaining each acceptance ID. Do not collapse distinct requirements into a vague “all checks passed” row.
 3. Resolve applicability under current user and project authority. Record a specific N/A reason for excluded source requirements. Do not silently delete, relax or defer an applicable item because the task is long. Do not turn a source's possible tests into mandatory tests against the project's test-value policy.
 
-At each meaningful checkpoint, update evidence and remaining obligations before selecting the next work. On scope changes, add the new obligations and identify invalidated evidence. On resume or compaction, reread the goal plan and its referenced open obligations; do not reconstruct the checklist from memory.
+Update current state in place at a settled batch, changed scope/authority/decision, material failure/blocker, pause or handoff. Batch routine successful reads and checks into that checkpoint; command logs already retain their details. Preserve original evidence and material decisions without appending another full scope or chronology after each tool call. On scope changes, add obligations and identify invalidated evidence. On resume or compaction, read the current checkpoint and referenced open obligations; consult source methods again only when changed, missing or needed to resolve uncertainty.
 
-Before closure, reread the governing source checklists and reconcile them against the plan. This catches requirements never copied into it. Every applicable item must have current evidence, a justified N/A disposition, or an explicit unresolved state that prevents completion. Run the owning semantic validators and `check-complete.mjs` on the root plan, including linked plans. Passing a subset or a structurally valid plan cannot close the full objective. A user-approved narrower outcome changes scope explicitly; elapsed time does not.
+Before closure, reconcile the original acceptance and selected source checklists against their canonical rows, using the already-read sources and rereading changed or uncertain requirements. Every applicable item needs current evidence, a justified N/A disposition, or an unresolved state that prevents completion. Run the owning semantic validators and `check-complete.mjs` on the root plan, including linked plans. Passing a subset or a structurally valid plan cannot close the full objective. A user-approved narrower outcome changes scope explicitly; elapsed time does not.
 
 If the user opts out of a native goal, retain this durable checklist for long work and explain the unavailable continuation guarantee only when material. Short work checks the same applicable obligations directly before handoff without creating a plan or native goal solely for this protocol.
+
+## Bounded batches and evidence reuse
+
+An acceptance row is an accounting boundary, not a mandatory planning,
+implementation, verification or delivery cycle. Group ready work that shares an
+implementation owner, dependency or proof surface. Record included IDs, remaining
+acceptance, required proof and one concrete exit condition in the existing
+checkpoint. Preserve explicit scope and delivery deadlines. An exit condition
+names the current safe unit; it cannot be “keep improving until everything works.”
+
+### Eligible owners and traversal
+
+For a multi-owner sweep, choose the highest-priority eligible owner that has not
+been visited in this traversal. Eligible means its selected unit can run under
+current authority and access. A deferred owner is not eligible merely because
+more local investigation, helpers or implementation are possible.
+
+Give each owner one bounded visit. Complete the selected unit or record its
+verified constraint, save all remaining acceptance under that owner, and advance
+to the next unvisited eligible owner. Newly discovered work joins the current
+unit only if needed to finish it safely within its recorded exit condition;
+otherwise queue it under the same acceptance row. Do not repeatedly enlarge the
+exit condition. Revisit after all eligible owners have been traversed, when new
+evidence removes the recorded constraint, or when the user changes priority.
+
+If final acceptance needs unavailable human/provider/browser access, finish only
+the already-defined safe unit and park the remaining dependent work for the
+assisted iteration. If no bounded safe unit exists, park now. Do not start a new
+architecture, fixture, tooling or local-proof expansion to fill the blocked time.
+Independent work belonging to another ready owner stays eligible.
+
+At each settled checkpoint report disjoint counts for verified, awaiting human
+help, unfinished and unvisited, totaling the original denominator. A verified
+row needs its full acceptance evidence. Awaiting human help names the exact
+external action plus any queued dependent implementation/proof; that work remains
+unverified. Ready agent-owned work stays unfinished. Unvisited is relative to the
+current traversal and may retain older implementation/proof. Record the missing
+acceptance and next action once in the owning row.
+
+Two consecutive checkpoints without advancing an acceptance or disposition
+trigger scheduling reassessment before further work on that owner. Helper,
+document, command and capture counts alone do not qualify. Choose a concrete
+closing unit or park the owner and advance the traversal; do not add another
+review or investigation loop.
+
+### Human help and bounded troubleshooting
+
+An evidenced user-only unlock, security-key interaction, browser popup dismissal,
+provider approval or comparable manual prerequisite is deferred immediately.
+Record the failed operation/evidence, exact required human action, affected
+acceptance and resume check in one consolidated help queue. Tell the user once.
+Do not probe equivalent paths or weaken security to avoid the human action.
+Retry only after confirmed changed state or when the user starts the assisted
+iteration; starting that iteration permits a check, not an assumption of success.
+
+For an unclear tool/access failure, make at most two informed diagnostic attempts
+or spend ten minutes investigating it, whichever comes first, unless the user
+sets another bound. Each attempt must name its hypothesis and discriminating
+observation. Equivalent symptoms share one budget across tools, turns, context
+recovery and renamed tasks. A genuinely new condition may justify a new attempt;
+record that condition first. Polling a confirmed live operation follows the tool's
+wait contract and is not permission to restart it or renew investigation limits.
+
+At the bound, apply a known authorized repair with a concrete finish condition,
+request the specific missing human action, or defer the investigation and choose
+another eligible owner. A known repair is ordinary implementation, not an excuse
+to restart troubleshooting. This bound limits diagnosis, not all engineering
+work. Parked agent-owned work stays unfinished; time spent never proves a blocker
+or completion. Direct evidence of an external prerequisite requires no two-attempt
+minimum.
+
+### Evidence and iteration closure
+
+Keep one canonical record per claim and the relevant implementation/dependency,
+environment, authorization, fixture, state and artifact bindings. Reuse proof
+while those bindings hold; a new revision alone is not invalidation. Record the
+actual invalidator before repeating passed proof. Unknown impact is uncovered.
+Do narrow checks during iteration and required wider proof once for the settled
+batch. Batching and deferral never replace required live, received-artifact,
+provider or deployment proof, or justify another plan, panel or test matrix.
+
+A traversal iteration can be fully accounted for with explicitly deferred rows
+while product acceptance remains incomplete. Report those states separately.
+Iteration completion does not change the native goal's objective or completion
+threshold: a full-delivery goal stays open while required work/proof is missing.
+Only a user-authorized disposition-only objective can finish at disposition.
+Tool-specific whole-goal completion and repeated-blocker rules still apply; one
+parked owner does not make the whole goal blocked while eligible work remains.
 
 ## Resume Protocol
 
 After compaction, interruption, or a long pause:
 
-1. Read the latest user message first.
+1. Read the latest direct user instruction first; distinguish automatic goal
+   continuations from an explicit resume.
 2. Call `get_goal` when available.
 3. Re-read the active `docs/plans` path named by the goal, current workflow, or
    latest handoff.
-4. Find the latest verification evidence, open risk, and next owner.
+4. Check for `Status: Paused` using Pause handling before selecting work. Then
+   find the latest verification evidence, open risk, and next owner.
 5. Continue from the newest user instruction, not from an older stale objective.
+   Select the next eligible owner under the saved traversal; preserve human-help
+   deferments and retry budgets across recovery. Do not reopen a parked owner
+   merely because it was the most recent work.
 6. Before final response, sanity-check that the answer matches the newest
    request and the current plan state.
 
@@ -483,10 +607,10 @@ Template sync review:
   template itself.
 - After editing dotai `skills/autogoal/SKILL.md`, run `scripts/validate-skills`.
 
-Create the plan before substantive edits. Update it after every meaningful
-decision, finding, tradeoff, failed attempt, review fix, verification run, or
-scope change. Re-read it before major decisions and after compaction or
-interruption.
+Create or reuse the plan before extended work. Maintain it at the material
+checkpoints defined in Checklist retention; keep routine command details in
+their existing evidence log. Re-read the current state before major decisions
+and after compaction or interruption.
 
 Check the goal plan before completion:
 

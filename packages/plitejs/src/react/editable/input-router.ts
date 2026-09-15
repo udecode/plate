@@ -35,6 +35,7 @@ import {
 } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
+import { readPliteViewSelection } from '../view-selection';
 import { clearCrossEditorDragSession } from './cross-editor-drag-session';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { isInteractiveInternalTarget } from './input-controller';
@@ -259,7 +260,7 @@ const getExpectedDeferredTextInputRepairTarget = ({
   const textHost =
     getPliteNodeElementByPath(editor, path) ??
     rootElement.querySelector<HTMLElement>(
-      `[data-plite-node="text"][data-plite-path="${pathAttribute}"]`
+      `[data-editor-node="text"][data-editor-path="${pathAttribute}"]`
     );
   const pliteText = readRuntimeText(editor, path);
   const text = textHost?.textContent?.replace(/\uFEFF/g, '') ?? pliteText?.text;
@@ -441,7 +442,7 @@ const getReadOnlyDOMStringLengths = ({
       ? selection.anchorNode
       : selection?.anchorNode?.parentElement;
   const selectedString = selectionElement?.closest(
-    '[data-plite-string="true"]'
+    '[data-editor-string="true"]'
   );
   const selectedIndex =
     selectedString instanceof HTMLElement
@@ -486,7 +487,7 @@ const getTextHostSelectionOffset = ({
 
   for (const string of strings) {
     const textNode = Array.from(string.childNodes).find(isDOMText);
-    const lengthAttribute = string.getAttribute('data-plite-length');
+    const lengthAttribute = string.getAttribute('data-editor-length');
     const length =
       lengthAttribute == null
         ? (textNode?.textContent?.length ?? string.textContent?.length ?? 0)
@@ -560,7 +561,7 @@ const getRuntimeDOMInputRepairTarget = ({
   const textHost =
     getPliteNodeElementByPath(editor, path) ??
     rootElement.querySelector<HTMLElement>(
-      `[data-plite-node="text"][data-plite-path="${pathAttribute}"]`
+      `[data-editor-node="text"][data-editor-path="${pathAttribute}"]`
     );
   const pliteText = readRuntimeText(editor, path);
 
@@ -677,9 +678,9 @@ export const getDOMInputRepairTarget = (
   const textHost =
     flowEntry?.host ??
     (isDOMText(anchorNode)
-      ? anchorNode.parentElement?.closest('[data-plite-node="text"]')
+      ? anchorNode.parentElement?.closest('[data-editor-node="text"]')
       : isDOMElement(anchorNode)
-        ? anchorNode.closest('[data-plite-node="text"]')
+        ? anchorNode.closest('[data-editor-node="text"]')
         : null);
   const path = flowEntry
     ? ([...flowEntry.path] as Path)
@@ -851,7 +852,7 @@ const restoreReadOnlyDOMText = ({
   rootElement: HTMLElement;
 }) => {
   rootElement
-    .querySelectorAll<HTMLElement>('[data-plite-node="text"]')
+    .querySelectorAll<HTMLElement>('[data-editor-node="text"]')
     .forEach((textElement) => {
       const path = getPliteNodePathFromDOMElement(textElement);
       const pliteText = path ? readRuntimeText(editor, path)?.text : null;
@@ -861,7 +862,7 @@ const restoreReadOnlyDOMText = ({
       }
 
       const strings = getPliteTextHostStrings(textElement).filter(
-        (string) => string.getAttribute('data-plite-string') === 'true'
+        (string) => string.getAttribute('data-editor-string') === 'true'
       );
 
       if (strings.length === 0) {
@@ -1052,7 +1053,7 @@ export const useEditableDOMInputHandler = ({
       return;
     }
 
-    const domRange = ReactEditor.resolvePliteRange(editor, domSelection, {
+    const domRange = ReactEditor.resolveRange(editor, domSelection, {
       exactMatch: false,
     });
 
@@ -1071,13 +1072,13 @@ export const useEditableDOMInputHandler = ({
       : isDOMElement(anchorNode)
         ? anchorNode
         : null;
-    const textHost = anchorElement?.closest('[data-plite-node="text"]');
+    const textHost = anchorElement?.closest('[data-editor-node="text"]');
     const pliteText = readRuntimeText(editor, domRange.anchor.path)?.text;
     const domText = textHost?.textContent?.replace(/\uFEFF/g, '') ?? null;
 
     if (
       !textHost ||
-      textHost.getAttribute('data-plite-path') !== pathKey ||
+      textHost.getAttribute('data-editor-path') !== pathKey ||
       pliteText == null ||
       domText !== pliteText
     ) {
@@ -1349,6 +1350,18 @@ export const useEditableDOMInputHandler = ({
         }
 
         if (!rootRef.current || typeof nativeInput.inputType !== 'string') {
+          return;
+        }
+
+        if (
+          readPliteViewSelection(editor)?.segments.parts.some(
+            (part) => part.fragment
+          )
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          if (inputController) armModelOwnedTextInputGuard({ inputController });
+          onReadOnlyDOMInput?.();
           return;
         }
 

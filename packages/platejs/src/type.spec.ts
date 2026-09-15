@@ -1,6 +1,7 @@
-import { type Editor, createEditor } from './index';
+import { BaseParagraphPlugin, type Editor, createEditor } from './index';
 
-const getParagraphType = (editor: Editor) => editor.plugin('paragraph').name;
+const getParagraphType = (editor: Editor) =>
+  editor.plugin(BaseParagraphPlugin).name;
 
 it('does not throw', () => {
   const editor = createEditor();

@@ -8,9 +8,9 @@ import {
 } from 'plitejs';
 import {
   Editable,
-  Plite,
-  type PliteDecoration,
-  type PliteDecorationSource,
+  EditorRoot,
+  type Decoration,
+  type DecorationSource,
   useEditorContext,
   useEditorState,
   useEditor,
@@ -41,12 +41,12 @@ type LintIssueMatch = {
 
 const NO_LINT_ISSUES: readonly LintIssueMatch[] = [];
 
-const lintSegmentVariants = cva('plite-linting-segment', {
+const lintSegmentVariants = cva('editor-linting-segment', {
   variants: {
     severity: {
-      error: 'plite-linting-segment-error',
-      info: 'plite-linting-segment-info',
-      warning: 'plite-linting-segment-warning',
+      error: 'editor-linting-segment-error',
+      info: 'editor-linting-segment-info',
+      warning: 'editor-linting-segment-warning',
     },
   },
 });
@@ -99,7 +99,7 @@ const formatIssues = (issues: readonly LintIssueMatch[]) =>
         .map((match) => `${match.issue.ruleId}:${match.issue.severity}`)
         .join('|');
 
-const toLintDecoration = (match: LintIssueMatch): PliteDecoration => ({
+const toLintDecoration = (match: LintIssueMatch): Decoration => ({
   attributes: {
     className: lintSegmentVariants({ severity: match.issue.severity }),
     'data-lint-rule': match.issue.ruleId,
@@ -219,13 +219,13 @@ const LintingPanel = ({
   };
 
   return (
-    <div className="plite-linting-panel">
+    <div className="editor-linting-panel">
       <Instruction>
         This linter keeps findings outside the Plite document.{' '}
         <code>decorations</code> maps lint findings to range attributes and
         refreshes on text edits or external source changes.
       </Instruction>
-      <div className="plite-linting-controls">
+      <div className="editor-linting-controls">
         <Button onClick={runLocalLint} type="button" variant="outline">
           Run linter
         </Button>
@@ -248,21 +248,21 @@ const LintingPanel = ({
           Clear diagnostics
         </Button>
       </div>
-      <div className="plite-linting-status">
-        <span className="plite-linting-code" id="linting-source">
+      <div className="editor-linting-status">
+        <span className="editor-linting-code" id="linting-source">
           source:{sourceLabel}
         </span>
-        <span className="plite-linting-code" id="linting-count">
+        <span className="editor-linting-code" id="linting-count">
           issues:{diagnostics.length}
         </span>
-        <span className="plite-linting-code" id="linting-snapshot">
+        <span className="editor-linting-code" id="linting-snapshot">
           {formatIssues(diagnostics)}
         </span>
       </div>
-      <ul className="plite-linting-issue-list" id="linting-issues">
+      <ul className="editor-linting-issue-list" id="linting-issues">
         {diagnostics.map((diagnostic) => (
           <li
-            className="plite-linting-issue"
+            className="editor-linting-issue"
             data-lint-issue={diagnostic.issue.id}
             key={diagnostic.issue.id}
           >
@@ -271,7 +271,7 @@ const LintingPanel = ({
           </li>
         ))}
       </ul>
-      <Editable className="plite-linting-editor" id="linting" />
+      <Editable className="editor-linting-editor" id="linting" />
     </div>
   );
 };
@@ -300,7 +300,7 @@ const LintingExample = () => {
   const [lintMode, setLintMode] = useState<LintMode>('off');
   const [sourceLabel, setSourceLabel] = useState('idle');
 
-  const lintingSource = useMemo<PliteDecorationSource<typeof editor>>(
+  const lintingSource = useMemo<DecorationSource<typeof editor>>(
     () => ({
       id: 'linting',
       read: ({ entry: [node, path] }) =>
@@ -314,14 +314,14 @@ const LintingExample = () => {
   );
 
   return (
-    <Plite decorations={[lintingSource]} editor={editor}>
+    <EditorRoot decorations={[lintingSource]} editor={editor}>
       <LintingPanel
         lintMode={lintMode}
         setLintMode={setLintMode}
         setSourceLabel={setSourceLabel}
         sourceLabel={sourceLabel}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 

@@ -31,7 +31,7 @@ mock.module('platejs/date', () => ({
 
 mock.module('platejs/react', () => ({
   ...PlateReact,
-  PlateElement: (props: any) => {
+  EditorElement: (props: any) => {
     plateElementMock(props);
 
     return <div data-testid="plate-element">{props.children}</div>;

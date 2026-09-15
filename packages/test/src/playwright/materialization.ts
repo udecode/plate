@@ -1,12 +1,12 @@
 import { expect, type Locator } from '@playwright/test';
 
-import { READY_TIMEOUT_MS, PLITE_BROWSER_HANDLE_KEY } from './constants';
-import type { PliteBrowserDOMPathOptions } from './types';
+import { READY_TIMEOUT_MS, BROWSER_HANDLE_KEY } from './constants';
+import type { BrowserDOMPathOptions } from './types';
 
 export const scrollTextPathIntoViewAndCheckMaterialized = async (
   root: Locator,
   path: number[],
-  options: PliteBrowserDOMPathOptions = {}
+  options: BrowserDOMPathOptions = {}
 ) =>
   root.evaluate(
     (
@@ -16,7 +16,7 @@ export const scrollTextPathIntoViewAndCheckMaterialized = async (
         key,
         path: innerPath,
       }: {
-        align: PliteBrowserDOMPathOptions['align'];
+        align: BrowserDOMPathOptions['align'];
         key: string;
         path: number[];
       }
@@ -26,16 +26,16 @@ export const scrollTextPathIntoViewAndCheckMaterialized = async (
       handle?.scrollPathIntoView?.(innerPath, align ?? 'center');
 
       return !!element.querySelector(
-        `[data-plite-node="text"][data-plite-path="${innerPath.join(',')}"]`
+        `[data-editor-node="text"][data-editor-path="${innerPath.join(',')}"]`
       );
     },
-    { align: options.align, key: PLITE_BROWSER_HANDLE_KEY, path }
+    { align: options.align, key: BROWSER_HANDLE_KEY, path }
   );
 
 export const waitForTextPathMaterialized = async (
   root: Locator,
   path: number[],
-  options: PliteBrowserDOMPathOptions = {}
+  options: BrowserDOMPathOptions = {}
 ) => {
   await expect
     .poll(

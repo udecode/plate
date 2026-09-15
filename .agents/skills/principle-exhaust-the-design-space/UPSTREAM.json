@@ -9,13 +9,14 @@
       "upstream": "skills/principle-exhaust-the-design-space/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "8583310d7297b7823d75494faa57b003564d436807febecdecbd8321abe5cf6e",
-      "destinationSha256": "73c7d81d1219b12bb2dd1c2962d3e9a9373152d22f0a2e8daae6848333aa9b98",
+      "destinationSha256": "2e33c92eef2afad795dc206fcb86a581a35971dcd1f036c37432cc0e867d81c2",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-exhaust-the-design-space/SKILL.md\n+++ skills/principle-exhaust-the-design-space/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-exhaust-the-design-space\n description: \"Apply when facing a novel UI interaction or architectural decision with no precedent in the codebase. Build 2-3 competing prototypes and compare side by side before committing.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Exhaust the Design Space\n \n"
+      "unifiedDiff": "--- skills/principle-exhaust-the-design-space/SKILL.md\n+++ skills/principle-exhaust-the-design-space/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-exhaust-the-design-space\n-description: \"Apply when facing a novel UI interaction or architectural decision with no precedent in the codebase. Build 2-3 competing prototypes and compare side by side before committing.\"\n-disable-model-invocation: true\n+description: \"Compare concrete alternatives when a consequential interaction or architecture choice remains unsettled.\"\n ---\n \n # Exhaust the Design Space\n"
     }
   ],
   "ownedFiles": [

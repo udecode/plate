@@ -36,7 +36,7 @@ export const useEditableRootSelectionExport = ({
             timing: 'animation-frame',
           }
         ),
-      shouldSkipDOMExport: runtime.isPartialDOMBackedSelection,
+      shouldSkipDOMExport: runtime.isViewportBackedSelection,
       syncDOMSelectionToEditor,
     });
 

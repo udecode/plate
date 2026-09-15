@@ -1,9 +1,7 @@
 ---
 name: principle-subtract-before-you-add
-description: "Apply when sequencing an addition, refactor, or rewrite. Remove dead weight, redundant validators, and stub references first, then build on the simpler base."
+description: "Remove evidenced dead or duplicate structure before an authorized addition or redesign."
 ---
-
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
 
 # Subtract Before You Add
 

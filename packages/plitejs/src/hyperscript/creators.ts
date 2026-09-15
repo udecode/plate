@@ -13,7 +13,7 @@ import {
   type TextSelection,
   TextApi,
 } from '..';
-import { failInvariant, replace as replaceEditor } from '../internal';
+import { replace as replaceEditor } from '../interfaces/editor';
 import {
   AnchorToken,
   addAnchorToken,
@@ -88,7 +88,7 @@ const resolveDescendants = (children: any[]): Descendant[] => {
         n = nodes.at(-1);
       }
       if (!TextApi.isText(n)) {
-        failInvariant('Expected a text node for the selection token');
+        throw new Error('Expected a text node for the selection token');
       }
 
       if (normalizedChild instanceof AnchorToken) {
@@ -98,7 +98,9 @@ const resolveDescendants = (children: any[]): Descendant[] => {
       }
     } else {
       throw new Error(
-        `Unexpected hyperscript child object: ${JSON.stringify(normalizedChild)}`
+        `Unexpected hyperscript child object: ${JSON.stringify(
+          normalizedChild
+        )}`
       );
     }
   };

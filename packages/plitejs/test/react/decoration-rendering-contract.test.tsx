@@ -1,22 +1,74 @@
 import { act, render, waitFor } from '@testing-library/react';
 import { TextApi } from 'plitejs';
 import { history } from 'plitejs/history';
-import { StrictMode } from 'react';
+import { StrictMode, useContext } from 'react';
 
 import { getNodeKey as editorGetNodeKey } from '../../src/internal';
 import {
   createEditor,
   Editable,
-  Plite,
-  type PliteDecorationSource,
+  EditorRoot,
+  type DecorationSource,
+  useEditorContext,
 } from '../../src/react';
 import { ImperativeTextFlowContext } from '../../src/react/components/editable-text-flow';
-import { useRegisterPliteDecorationSource } from '../../src/react/decoration-context';
-import { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
+import {
+  DecorationContext,
+  type PliteDecorationStore,
+  useRegisterPliteDecorationSource,
+} from '../../src/react/decoration-context';
+import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
+import {
+  createMainRootPliteViewSelection,
+  writePliteViewSelection,
+} from '../../src/react/view-selection';
 
 const paragraph = (text: string) => ({
   children: [{ text }],
   type: 'paragraph',
+});
+
+test('activates and retires projected selection paint without a document commit', () => {
+  const editor = createEditor({ initialValue: [paragraph('hello')] });
+  let store: PliteDecorationStore;
+  let view: ReturnType<typeof useEditorContext>;
+  const Capture = () => {
+    store = useContext(DecorationContext)!;
+    view = useEditorContext();
+    return null;
+  };
+  const mounted = render(
+    <EditorRoot editor={editor}>
+      <Capture />
+    </EditorRoot>
+  );
+  const textKey = editor.key([0, 0])!;
+  const range = {
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 4 },
+  };
+  expect(store!.hasSources()).toBe(false);
+  expect(store!.getNodeSnapshot(textKey)).toEqual([]);
+  act(() =>
+    writePliteViewSelection(view!, createMainRootPliteViewSelection(range))
+  );
+  expect(store!.getNodeSnapshot(textKey)).toEqual([
+    expect.objectContaining({ start: 0, end: 4 }),
+  ]);
+  act(() => writePliteViewSelection(view!, null));
+  expect(store!.getNodeSnapshot(textKey)).toEqual([]);
+  expect(store!.hasSources()).toBe(false);
+  act(() =>
+    writePliteViewSelection(view!, createMainRootPliteViewSelection(range))
+  );
+  expect(store!.getNodeSnapshot(textKey)).toEqual([
+    expect.objectContaining({ start: 0, end: 4 }),
+  ]);
+  expect(editor.read.lastCommit()).toBeNull();
+  mounted.unmount();
+  const retiredVersion = store!.getVersion();
+  writePliteViewSelection(view!, null);
+  expect(store!.getVersion()).toBe(retiredVersion);
 });
 
 test.each([2, 4])(
@@ -31,7 +83,7 @@ test.each([2, 4])(
       const reads: string[] = [];
       const observations = [0, 0, 0];
       const cleanups = [0, 0, 0];
-      const sources: Array<PliteDecorationSource<typeof editor>> = [
+      const sources: Array<DecorationSource<typeof editor>> = [
         'syntax',
         'search',
         'annotation',
@@ -64,16 +116,16 @@ test.each([2, 4])(
     const other = createFixture();
     const rendered = render(
       <>
-        <Plite decorations={active.sources} editor={active.editor}>
+        <EditorRoot decorations={active.sources} editor={active.editor}>
           {Array.from({ length: viewCount }, (_, index) => (
             <div hidden={index === viewCount - 1} key={index}>
               <Editable data-testid={`active-${index}`} />
             </div>
           ))}
-        </Plite>
-        <Plite decorations={other.sources} editor={other.editor}>
+        </EditorRoot>
+        <EditorRoot decorations={other.sources} editor={other.editor}>
           <Editable data-testid="independent" />
-        </Plite>
+        </EditorRoot>
       </>
     );
     expect(active.observations).toEqual([1, 1, 1]);
@@ -141,9 +193,9 @@ test('matches complete rendering and exact layer precedence through randomized r
     { key: 'inner-b', start: 14, end: 18, revision: 0 },
   ];
   const refreshes: Array<
-    Parameters<NonNullable<PliteDecorationSource['observe']>>[0]['refresh']
+    Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
   > = [];
-  const sources: Array<PliteDecorationSource<typeof editor>> = [
+  const sources: Array<DecorationSource<typeof editor>> = [
     'first',
     'second',
   ].map((id, sourceIndex) => ({
@@ -175,12 +227,12 @@ test('matches complete rendering and exact layer precedence through randomized r
         : [],
   }));
   const rendered = render(
-    <Plite editor={editor} decorations={sources}>
+    <EditorRoot editor={editor} decorations={sources}>
       <Editable data-testid="retained" />
       <ImperativeTextFlowContext.Provider value={false}>
         <Editable data-testid="complete" />
       </ImperativeTextFlowContext.Provider>
-    </Plite>
+    </EditorRoot>
   );
   const readCharacters = (root: HTMLElement) => {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -279,9 +331,9 @@ test('keeps a changed run before the next model text in the same host', async ()
   });
   let end = 3;
   let refresh:
-    | Parameters<NonNullable<PliteDecorationSource['observe']>>[0]['refresh']
+    | Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
     | undefined;
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'multi-text',
     observe: ({ refresh: nextRefresh }) => {
       refresh = nextRefresh;
@@ -302,11 +354,11 @@ test('keeps a changed run before the next model text in the same host', async ()
         : [],
   };
   const rendered = render(
-    <Plite editor={editor} decorations={[source]}>
+    <EditorRoot editor={editor} decorations={[source]}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
-  const root = rendered.container.querySelector('[data-plite-editor]')!;
+  const root = rendered.container.querySelector('[data-editor]')!;
 
   for (const nextEnd of [6, 2, 5, 1]) {
     await act(async () => {
@@ -336,9 +388,9 @@ test('compiles and binds only the changed syntax window in an observed flow', as
     })
   );
   let refresh:
-    | Parameters<NonNullable<PliteDecorationSource['observe']>>[0]['refresh']
+    | Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
     | undefined;
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'syntax-window',
     observe: ({ refresh: nextRefresh }) => {
       refresh = nextRefresh;
@@ -347,14 +399,14 @@ test('compiles and binds only the changed syntax window in an observed flow', as
     read: ({ entry: [node] }) => (TextApi.isText(node) ? ranges : []),
   };
   const rendered = render(
-    <Plite editor={editor} decorations={[source]}>
+    <EditorRoot editor={editor} decorations={[source]}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
   await act(async () => {
     editor.update.text.insert('x', { at: { path: [0, 0], offset: 400 } });
   });
-  const flow = rendered.container.querySelector('[data-plite-text-flow]')!;
+  const flow = rendered.container.querySelector('[data-editor-text-flow]')!;
   const first = flow.querySelector('[data-token="0"]')!;
   const last = flow.querySelector('[data-token="199"]')!;
   const firstText = first.firstChild;
@@ -378,7 +430,7 @@ test('compiles and binds only the changed syntax window in an observed flow', as
   expect(attributes).not.toHaveBeenCalled();
   attributes.mockRestore();
   expect(
-    Number(flow.getAttribute('data-plite-text-flow-boundary-visits'))
+    Number(flow.getAttribute('data-editor-text-flow-boundary-visits'))
   ).toBeLessThanOrEqual(6);
   expect(flow.querySelector('[data-token="100"]')?.textContent).toBe('x ');
   expect(flow.querySelector('[data-token="0"]')).toBe(first);
@@ -395,12 +447,12 @@ test.each([true, false])(
     let className = 'match-before';
     let refresh:
       | Parameters<
-          NonNullable<PliteDecorationSource<typeof editor>['observe']>
+          NonNullable<DecorationSource<typeof editor>['observe']>
         >[0]['refresh']
       | null = null;
     let observeCount = 0;
     let cleanupCount = 0;
-    const match: PliteDecorationSource<typeof editor> = {
+    const match: DecorationSource<typeof editor> = {
       id: 'match',
       observe: ({ refresh: nextRefresh }) => {
         observeCount += 1;
@@ -429,7 +481,7 @@ test.each([true, false])(
             ]
           : [],
     };
-    const emphasis: PliteDecorationSource<typeof editor> = {
+    const emphasis: DecorationSource<typeof editor> = {
       id: 'emphasis',
       read: ({ entry: [node, path] }) =>
         TextApi.isText(node) && node.text === 'Hello world'
@@ -450,7 +502,7 @@ test.each([true, false])(
             ]
           : [],
     };
-    const tail: PliteDecorationSource<typeof editor> = {
+    const tail: DecorationSource<typeof editor> = {
       id: 'tail',
       read: ({ entry: [node, path] }) =>
         TextApi.isText(node) && node.text === 'Hello world'
@@ -468,10 +520,10 @@ test.each([true, false])(
     };
     const rendered = render(
       <ImperativeTextFlowContext.Provider value={imperative}>
-        <Plite decorations={[match, emphasis, tail]} editor={editor}>
+        <EditorRoot decorations={[match, emphasis, tail]} editor={editor}>
           <Editable data-testid="first" />
           <Editable data-testid="second" />
-        </Plite>
+        </EditorRoot>
       </ImperativeTextFlowContext.Provider>
     );
 
@@ -493,7 +545,7 @@ test.each([true, false])(
       expect(outer).toHaveClass('match-before');
       expect(outer).not.toHaveClass('emphasis');
       expect(outer).not.toHaveAttribute('data-emphasis');
-      expect(outer).not.toHaveAttribute('data-plite-string');
+      expect(outer).not.toHaveAttribute('data-editor-string');
       expect(outer).toHaveAttribute('data-priority', 'first');
       expect(outer).toHaveStyle({
         backgroundColor: 'red',
@@ -502,13 +554,13 @@ test.each([true, false])(
       expect(inner?.parentElement).toBe(outer);
       expect(inner).toHaveClass('emphasis');
       expect(inner).toHaveAttribute('data-priority', 'second');
-      expect(inner).toHaveAttribute('data-plite-string', 'true');
+      expect(inner).toHaveAttribute('data-editor-string', 'true');
       expect(inner).not.toHaveAttribute('data-match');
       expect(inner).toHaveStyle({ color: 'blue', fontWeight: 700 });
       expect(outer.textContent).toBe('Hello');
     });
     expect(
-      rendered.container.querySelectorAll('[data-tail][data-plite-string]')
+      rendered.container.querySelectorAll('[data-tail][data-editor-string]')
     ).toHaveLength(2);
 
     await act(async () => {
@@ -541,7 +593,7 @@ test.each([true, false])(
   'preserves overlapping identities through edits, history, and source removal (imperative=%s)',
   async (imperative) => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('abcdefghij')],
     });
     const first = editor.anchor(
@@ -560,9 +612,9 @@ test.each([true, false])(
     );
     let includeSecond = true;
     let refresh:
-      | Parameters<NonNullable<PliteDecorationSource['observe']>>[0]['refresh']
+      | Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
       | undefined;
-    const source: PliteDecorationSource<typeof editor> = {
+    const source: DecorationSource<typeof editor> = {
       id: 'overlap',
       observe: ({ refresh: nextRefresh }) => {
         refresh = nextRefresh;
@@ -588,9 +640,9 @@ test.each([true, false])(
     };
     const rendered = render(
       <ImperativeTextFlowContext.Provider value={imperative}>
-        <Plite decorations={[source]} editor={editor}>
+        <EditorRoot decorations={[source]} editor={editor}>
           <Editable />
-        </Plite>
+        </EditorRoot>
       </ImperativeTextFlowContext.Provider>
     );
     const textFor = (id: string) =>
@@ -659,9 +711,9 @@ test.each([true, false])(
       });
     });
     expectPaint('', '', '');
-    expect(
-      rendered.container.querySelector('[data-plite-editor]')?.textContent
-    ).toBe('aj');
+    expect(rendered.container.querySelector('[data-editor]')?.textContent).toBe(
+      'aj'
+    );
     expect(
       rendered.container.querySelectorAll('[data-comment-id]')
     ).toHaveLength(0);
@@ -694,7 +746,7 @@ test.each([true, false])(
 
 test('reconciles retained decorated text from model commits', async () => {
   const editor = createEditor({ initialValue: [paragraph('Hello world')] });
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'retained-text-commit',
     read: ({ entry: [node, path] }) =>
       TextApi.isText(node)
@@ -711,14 +763,14 @@ test('reconciles retained decorated text from model commits', async () => {
         : [],
   };
   const rendered = render(
-    <Plite decorations={[source]} editor={editor}>
+    <EditorRoot decorations={[source]} editor={editor}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
-  const editable = rendered.container.querySelector('[data-plite-editor]');
+  const editable = rendered.container.querySelector('[data-editor]');
 
   expect(
-    editable?.querySelector('[data-plite-text-flow="true"]')
+    editable?.querySelector('[data-editor-text-flow="true"]')
   ).not.toBeNull();
   expect(editable?.textContent).toBe('Hello world');
 
@@ -732,11 +784,11 @@ test('reconciles retained decorated text from model commits', async () => {
   const token = editable?.querySelector('[data-retained-token]');
 
   expect(token?.textContent).toBe('Hello');
-  expect(token).toHaveAttribute('data-plite-string', 'true');
+  expect(token).toHaveAttribute('data-editor-string', 'true');
   expect(
     editable
-      ?.querySelector('[data-plite-text-flow]')
-      ?.getAttribute('data-plite-text-flow-incremental-text-changes')
+      ?.querySelector('[data-editor-text-flow]')
+      ?.getAttribute('data-editor-text-flow-incremental-text-changes')
   ).toBe('1');
 });
 
@@ -744,7 +796,7 @@ test('repairs dirty syntax in one Editable without validating the other view', a
   const editor = createEditor({ initialValue: [paragraph('alpha beta')] });
   let revision = 0;
   let refresh: (() => void) | undefined;
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'view-paint',
     observe: ({ refresh: refreshSource }) => {
       refresh = () => refreshSource({ nodeKeys: 'all' });
@@ -776,10 +828,10 @@ test('repairs dirty syntax in one Editable without validating the other view', a
         : [],
   };
   const rendered = render(
-    <Plite decorations={[source]} editor={editor}>
+    <EditorRoot decorations={[source]} editor={editor}>
       <Editable data-testid="first" />
       <Editable data-testid="second" />
-    </Plite>
+    </EditorRoot>
   );
 
   await act(async () => {
@@ -816,7 +868,7 @@ test.each(['validation', 'text', 'children'])(
     const editor = createEditor({ initialValue: [paragraph('alpha beta')] });
     let revision = 0;
     let refresh: (() => void) | undefined;
-    const source: PliteDecorationSource<typeof editor> = {
+    const source: DecorationSource<typeof editor> = {
       id: 'host-revalidation',
       observe: ({ refresh: refreshSource }) => {
         refresh = () => refreshSource({ nodeKeys: 'all' });
@@ -840,15 +892,15 @@ test.each(['validation', 'text', 'children'])(
           : [],
     };
     const rendered = render(
-      <Plite decorations={[source]} editor={editor}>
+      <EditorRoot decorations={[source]} editor={editor}>
         <Editable data-testid="editor" />
-      </Plite>
+      </EditorRoot>
     );
     await act(async () => {});
     const root = rendered.getByTestId('editor');
     const token = root.querySelector('[data-token="alpha"]')!;
     const textNode = token.firstChild!;
-    const runtime = getMountedEditableDOMRuntime(editor)!;
+    const runtime = findMountedEditableDOMRuntime(root)!;
     const selectionExport = vi.spyOn(
       runtime,
       'requestSelectionExportAfterDOMCommit'
@@ -884,10 +936,10 @@ test('keeps unchanged tokens connected when another decoration is added or remov
   let includeMiddle = false;
   let refresh:
     | Parameters<
-        NonNullable<PliteDecorationSource<typeof editor>['observe']>
+        NonNullable<DecorationSource<typeof editor>['observe']>
       >[0]['refresh']
     | undefined;
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'stable-token-dom',
     observe: ({ refresh: nextRefresh }) => {
       refresh = nextRefresh;
@@ -914,11 +966,11 @@ test('keeps unchanged tokens connected when another decoration is added or remov
     },
   };
   const rendered = render(
-    <Plite decorations={[source]} editor={editor}>
+    <EditorRoot decorations={[source]} editor={editor}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
-  const editable = rendered.container.querySelector('[data-plite-editor]')!;
+  const editable = rendered.container.querySelector('[data-editor]')!;
   const alpha = editable.querySelector('[data-stable-token="alpha"]')!;
   const gamma = editable.querySelector('[data-stable-token="gamma"]')!;
   expect(alpha).not.toBeNull();
@@ -960,7 +1012,7 @@ test.each(['!', '\n'])(
   'keeps appended %j outside a decoration ending at the text boundary',
   async (inserted) => {
     const editor = createEditor({ initialValue: [paragraph('token')] });
-    const source: PliteDecorationSource<typeof editor> = {
+    const source: DecorationSource<typeof editor> = {
       id: 'fixed-token',
       read: ({ entry: [node, path] }) =>
         TextApi.isText(node)
@@ -977,9 +1029,9 @@ test.each(['!', '\n'])(
           : [],
     };
     const rendered = render(
-      <Plite decorations={[source]} editor={editor}>
+      <EditorRoot decorations={[source]} editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
     const token = rendered.container.querySelector('[data-fixed-token]');
 
@@ -991,9 +1043,9 @@ test.each(['!', '\n'])(
 
     expect(rendered.container.querySelector('[data-fixed-token]')).toBe(token);
     expect(token?.textContent).toBe('token');
-    expect(
-      rendered.container.querySelector('[data-plite-editor]')?.textContent
-    ).toBe(`token${inserted === '\n' ? '\n\n' : inserted}`);
+    expect(rendered.container.querySelector('[data-editor]')?.textContent).toBe(
+      `token${inserted === '\n' ? '\n\n' : inserted}`
+    );
     rendered.unmount();
   }
 );
@@ -1001,9 +1053,9 @@ test.each(['!', '\n'])(
 test('preserves the terminal newline after appending to a plain text flow', async () => {
   const editor = createEditor({ initialValue: [paragraph('plain')] });
   const rendered = render(
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
 
   await act(async () => {
@@ -1012,12 +1064,12 @@ test('preserves the terminal newline after appending to a plain text flow', asyn
     });
   });
 
+  expect(rendered.container.querySelector('[data-editor]')?.textContent).toBe(
+    'plain\n\n'
+  );
   expect(
-    rendered.container.querySelector('[data-plite-editor]')?.textContent
-  ).toBe('plain\n\n');
-  expect(
-    rendered.container.querySelector('[data-plite-string]')
-  ).toHaveAttribute('data-plite-length', '6');
+    rendered.container.querySelector('[data-editor-string]')
+  ).toHaveAttribute('data-editor-length', '6');
   rendered.unmount();
 });
 
@@ -1031,20 +1083,22 @@ test('composition replaces only its owning retained text flow', async () => {
     focus: { path: [0, 0], offset: 2 },
   });
   const rendered = render(
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
   const blocks = () =>
     Array.from(
       rendered.container.querySelectorAll<HTMLElement>(
-        '[data-plite-node="element"]'
+        '[data-editor-node="element"]'
       )
     );
   const initialBlocks = blocks();
-  const firstFlow = initialBlocks[0].querySelector('[data-plite-text-flow]');
-  const secondFlow = initialBlocks[1].querySelector('[data-plite-text-flow]');
-  const runtime = getMountedEditableDOMRuntime(editor)!;
+  const firstFlow = initialBlocks[0].querySelector('[data-editor-text-flow]');
+  const secondFlow = initialBlocks[1].querySelector('[data-editor-text-flow]');
+  const runtime = findMountedEditableDOMRuntime(
+    rendered.container.querySelector('[data-editor]')!
+  )!;
 
   expect(firstFlow).not.toBeNull();
   expect(secondFlow).not.toBeNull();
@@ -1052,9 +1106,9 @@ test('composition replaces only its owning retained text flow', async () => {
   act(() => runtime.setComposing(true));
 
   await waitFor(() =>
-    expect(blocks()[0].querySelector('[data-plite-text-flow]')).toBeNull()
+    expect(blocks()[0].querySelector('[data-editor-text-flow]')).toBeNull()
   );
-  expect(blocks()[1].querySelector('[data-plite-text-flow]')).toBe(secondFlow);
+  expect(blocks()[1].querySelector('[data-editor-text-flow]')).toBe(secondFlow);
 
   act(() => {
     editor.update((tx) => {
@@ -1063,14 +1117,14 @@ test('composition replaces only its owning retained text flow', async () => {
   });
 
   await waitFor(() => expect(blocks()[1]).toHaveTextContent('Second! text'));
-  expect(blocks()[1].querySelector('[data-plite-text-flow]')).toBe(secondFlow);
+  expect(blocks()[1].querySelector('[data-editor-text-flow]')).toBe(secondFlow);
 
   act(() => runtime.setComposing(false));
 
   await waitFor(() =>
-    expect(blocks()[0].querySelector('[data-plite-text-flow]')).not.toBeNull()
+    expect(blocks()[0].querySelector('[data-editor-text-flow]')).not.toBeNull()
   );
-  expect(blocks()[1].querySelector('[data-plite-text-flow]')).toBe(secondFlow);
+  expect(blocks()[1].querySelector('[data-editor-text-flow]')).toBe(secondFlow);
 });
 
 test('reconciles only retained flows whose decoration buckets changed', async () => {
@@ -1079,9 +1133,9 @@ test('reconciles only retained flows whose decoration buckets changed', async ()
   });
   let firstVersion = 'before';
   let refresh:
-    | Parameters<NonNullable<PliteDecorationSource['observe']>>[0]['refresh']
+    | Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
     | null = null;
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'retained-text-locality',
     observe: ({ refresh: nextRefresh }) => {
       refresh = nextRefresh;
@@ -1106,19 +1160,19 @@ test('reconciles only retained flows whose decoration buckets changed', async ()
         : [],
   };
   const rendered = render(
-    <Plite decorations={[source]} editor={editor}>
+    <EditorRoot decorations={[source]} editor={editor}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
   const flows = Array.from(
-    rendered.container.querySelectorAll<HTMLElement>('[data-plite-text-flow]')
+    rendered.container.querySelectorAll<HTMLElement>('[data-editor-text-flow]')
   );
   const firstKey = editorGetNodeKey(editor, [0, 0]);
 
   expect(flows).toHaveLength(2);
   expect(firstKey).not.toBeNull();
   const before = flows.map((flow) =>
-    Number(flow.getAttribute('data-plite-text-flow-reconcile-count'))
+    Number(flow.getAttribute('data-editor-text-flow-reconcile-count'))
   );
 
   await act(async () => {
@@ -1132,7 +1186,7 @@ test('reconciles only retained flows whose decoration buckets changed', async ()
   );
 
   const after = flows.map((flow) =>
-    Number(flow.getAttribute('data-plite-text-flow-reconcile-count'))
+    Number(flow.getAttribute('data-editor-text-flow-reconcile-count'))
   );
 
   expect(after[0]).toBe(before[0] + 1);
@@ -1143,11 +1197,11 @@ test('keeps a child-owned source alive through StrictMode replay', async () => {
   const editor = createEditor({ initialValue: [paragraph('Strict source')] });
   let className = 'strict-before';
   let refresh:
-    | Parameters<NonNullable<PliteDecorationSource['observe']>>[0]['refresh']
+    | Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
     | null = null;
   let observeCount = 0;
   let cleanupCount = 0;
-  const source: PliteDecorationSource<unknown> = {
+  const source: DecorationSource<unknown> = {
     id: 'strict-child',
     observe: ({ refresh: nextRefresh }) => {
       observeCount += 1;
@@ -1178,10 +1232,10 @@ test('keeps a child-owned source alive through StrictMode replay', async () => {
   };
   const rendered = render(
     <StrictMode>
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <RegisterSource />
         <Editable />
-      </Plite>
+      </EditorRoot>
     </StrictMode>
   );
 

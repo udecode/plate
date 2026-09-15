@@ -26,7 +26,7 @@ import {
   isInteractiveInternalTarget,
 } from './input-controller';
 import type { EditableInputController } from './input-state';
-import { readLiveSelection } from './runtime-selection-state';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 type RuntimeKernelIntent = ReturnType<typeof classifyKeyboardIntent>;
 type RuntimeNativeInput = DOMInputRepair;
@@ -86,7 +86,7 @@ export const useRuntimeKernelTraceEngine = ({
       target: EventTarget | null;
     }) => {
       const targetOwner = getKernelEventTargetOwner(target);
-      const selection = readLiveSelection(editor);
+      const selection = readRuntimeSelection(editor);
       const frame = beginEditableEventFrame(editor, {
         eventFamily: family,
         focusOwner: targetOwner,
@@ -120,7 +120,7 @@ export const useRuntimeKernelTraceEngine = ({
     }) => {
       const targetOwner = getKernelEventTargetOwner(target);
       const nextOwnership = getKernelEventOwnership({ intent, ownership });
-      const selection = readLiveSelection(editor);
+      const selection = readRuntimeSelection(editor);
       const currentFrame = getCurrentEditableEventFrame(editor);
       const canReusePendingFrame =
         currentFrame?.active &&
@@ -179,7 +179,7 @@ export const useRuntimeKernelTraceEngine = ({
 
   const repairDOMInputWithTrace = useCallback(
     (nativeInput: RuntimeNativeInput, rootElement: HTMLElement) => {
-      const selectionBefore = readLiveSelection(editor);
+      const selectionBefore = readRuntimeSelection(editor);
       const selectionSourceBefore = inputController.state.selectionSource;
       const ownership: EditableOwnership = nativeInput.inputType.startsWith(
         'delete'
@@ -206,7 +206,7 @@ export const useRuntimeKernelTraceEngine = ({
           nativeAllowed: ownership === 'native-allowed',
           ownership,
           repair: null,
-          selectionAfter: readLiveSelection(editor),
+          selectionAfter: readRuntimeSelection(editor),
           selectionBefore,
           selectionSource: inputController.state.selectionSource,
           stateAfter: mapSelectionSourceToKernelState(
@@ -299,7 +299,7 @@ export const useRuntimeKernelTraceEngine = ({
           nativeAllowed: decision.nativeAllowed,
           ownership: decision.ownership,
           repair: null,
-          selectionAfter: readLiveSelection(editor),
+          selectionAfter: readRuntimeSelection(editor),
           selectionBefore: decision.selectionBefore,
           selectionPolicy: decision.selectionPolicy,
           selectionSource: inputController.state.selectionSource,

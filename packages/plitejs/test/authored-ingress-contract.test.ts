@@ -13,7 +13,7 @@ const point = (offset: number) => ({ path: [0, 0], offset });
 const proposal = { intent: 'propose', projection: 'proposed' } as const;
 const savedProposal = () => {
   const editor = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('Base')],
   });
   const view = createEditorView(editor, { authored: proposal });
@@ -25,10 +25,93 @@ const savedProposal = () => {
 };
 
 describe('authored document ingress', () => {
+  it('reloads independent and dependent insertions across nested paths and roots', () => {
+    const initial = {
+      children: [
+        paragraph('alpha'),
+        { type: 'quote', children: [paragraph('beta'), paragraph('gamma')] },
+        paragraph('delta'),
+      ],
+      roots: { note: [paragraph('omega')] },
+    };
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: initial,
+    });
+    const view = createEditorView(source, { authored: proposal });
+    const note = createEditorView(source, { root: 'note', authored: proposal });
+    for (const [path, offset, text] of [
+      [[2, 0], 3, 'D'],
+      [[0, 0], 2, 'XYZ'],
+      [[1, 1, 0], 1, 'G'],
+      [[1, 0, 0], 3, 'B'],
+    ] as const) {
+      view.update((tx) => {
+        tx.authored.propose();
+        tx.text.insert(text, { at: { path, offset } });
+      });
+    }
+    note.update((tx) => {
+      tx.authored.propose();
+      tx.text.insert('N', { at: point(2) });
+    });
+    view.update((tx) => {
+      tx.authored.propose();
+      tx.text.insert('?', { at: point(3) });
+    });
+    view.update((tx) => {
+      tx.authored.propose();
+      tx.text.insert('!', { at: { path: [2, 0], offset: 0 } });
+    });
+    const expected = view.read.children();
+    const expectedNote = note.read.children();
+    const saved = JSON.stringify(source.read.value());
+    const loaded = createEditor({
+      plugins: [authored({ authorId: 'bob' })],
+      initialValue: JSON.parse(saved),
+    });
+    const loadedView = createEditorView(loaded, { authored: proposal });
+    const loadedNote = createEditorView(loaded, {
+      root: 'note',
+      authored: proposal,
+    });
+    assert.deepEqual(loaded.read.value().children, initial.children);
+    assert.deepEqual(loadedView.read.children(), expected);
+    assert.deepEqual(loadedNote.read.children(), expectedNote);
+    assert.equal(loaded.read.authored.changes().items.length, 7);
+    loadedView.update((tx) => {
+      tx.authored.propose();
+      tx.text.insert('+', { at: { path: [1, 0, 0], offset: 1 } });
+    });
+    assert.deepEqual(loadedView.read.children(), [
+      paragraph('alX?YZpha'),
+      { type: 'quote', children: [paragraph('b+etBa'), paragraph('gGamma')] },
+      paragraph('!delDta'),
+    ]);
+    const changes = loaded.read.authored.changes().items;
+    assert.equal(
+      loaded.update.authored.decide({
+        action: 'accept',
+        selection: loaded.read.authored.select({
+          ids: changes.map((change) => change.id),
+        }),
+      }).status,
+      'applied'
+    );
+    assert.deepEqual(loaded.read.children(), loadedView.read.children());
+    const again = createEditor({
+      plugins: [authored({ authorId: 'bob' })],
+      initialValue: JSON.parse(JSON.stringify(loaded.read.value())),
+    });
+    assert.deepEqual(again.read.children(), loaded.read.children());
+    assert.deepEqual(again.read.value().roots, loaded.read.value().roots);
+    assert.equal(JSON.stringify(source.read.value()), saved);
+  });
+
   it('loads saved proposals into an existing reader without authoring the load', () => {
     const saved = savedProposal();
     const editor = createEditor({
-      extensions: [
+      plugins: [
         history(),
         authored({
           authorId: () => {
@@ -58,7 +141,7 @@ describe('authored document ingress', () => {
   it('loads plain content as a fresh document and detaches the replaced documents anchors', () => {
     let authorId: string | null = 'alice';
     const editor = createEditor({
-      extensions: [authored({ authorId: () => authorId })],
+      plugins: [authored({ authorId: () => authorId })],
       initialValue: [paragraph('Old')],
     });
     const view = createEditorView(editor, { authored: proposal });
@@ -84,7 +167,7 @@ describe('authored document ingress', () => {
     const saved = savedProposal();
     saved.value.children[0].children[0].text = 'Corrupt accepted content';
     const editor = createEditor({
-      extensions: [authored({ authorId: 'bob' })],
+      plugins: [authored({ authorId: 'bob' })],
       initialValue: [paragraph('Keep')],
     });
     const view = createEditorView(editor, { authored: proposal });
@@ -102,7 +185,7 @@ describe('authored document ingress', () => {
   for (const editFirst of [false, true]) {
     it(`rejects ordinary writes ${editFirst ? 'before' : 'after'} document replacement atomically`, () => {
       const editor = createEditor({
-        extensions: [authored({ authorId: 'alice' })],
+        plugins: [authored({ authorId: 'alice' })],
         initialValue: [paragraph('Keep')],
       });
       const before = editor.read.value();
@@ -122,7 +205,7 @@ describe('authored document ingress', () => {
   it('loads a runtime in proposal mode with an accepted-coordinate input selection', () => {
     const saved = savedProposal();
     const editor = createEditor({
-      extensions: [authored({ authorId: 'bob' })],
+      plugins: [authored({ authorId: 'bob' })],
       initialValue: [paragraph('Other')],
     });
     editor.api.authored.setView(proposal);
@@ -138,7 +221,7 @@ describe('authored document ingress', () => {
 
   it('rejects full-document metadata at a root-bound view', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'bob' })],
+      plugins: [authored({ authorId: 'bob' })],
       initialValue: [paragraph('Keep')],
     });
     const view = createEditorView(editor, { authored: proposal });
@@ -152,7 +235,7 @@ describe('authored document ingress', () => {
 
   it('clears local undo and redo actions from the replaced document', () => {
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: 'bob' })],
+      plugins: [history(), authored({ authorId: 'bob' })],
       initialValue: [paragraph('Old')],
     });
     const view = createEditorView(editor, { authored: proposal });
@@ -171,7 +254,7 @@ describe('authored document ingress', () => {
 
   it('restores saved local history in the same atomic document load', () => {
     const source = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base')],
     });
     const proposed = createEditorView(source, { authored: proposal });
@@ -179,7 +262,7 @@ describe('authored document ingress', () => {
     const saved = JSON.parse(JSON.stringify(source.read.value()));
     const savedHistory = JSON.parse(JSON.stringify(History.toJSON(proposed)));
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Other')],
     });
     const view = createEditorView(editor, { authored: proposal });
@@ -198,7 +281,7 @@ describe('authored document ingress', () => {
 
   it('rejects an authored decision after loading before publishing either state', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'bob' })],
+      plugins: [authored({ authorId: 'bob' })],
       initialValue: [paragraph('Keep')],
     });
     const before = editor.read.value();
@@ -219,7 +302,7 @@ describe('authored document ingress', () => {
 
   it('captures root-bound replacement as one proposal and preserves other roots', () => {
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: {
         children: [paragraph('Body')],
         roots: { note: [paragraph('Note')] },

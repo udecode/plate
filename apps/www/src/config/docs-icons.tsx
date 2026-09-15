@@ -180,7 +180,7 @@ export const DocIcons = {
   'mark-toolbar-button': BoldIcon,
   markdown: SquareMIcon,
   'markdown-streaming': SquareMIcon,
-  'markdown-to-plite': SquareMIcon,
+  'markdown-to-editor': SquareMIcon,
   media: ImageIcon,
   'media-audio': AudioLinesIcon,
   'media-embed': DockIcon,

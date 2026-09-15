@@ -45,6 +45,7 @@ export type DOMIntegrityObserverOptions = {
   isCanonicalTextMutation: (mutation: MutationRecord) => boolean;
   isComposing: () => boolean;
   maxRepairPassesPerFrame?: number;
+  onDOMChange?: () => void;
   onRepair: (evidence: DOMIntegrityRepairEvidence) => void;
   resolvePath: (mutation: MutationRecord) => string | null;
   schedule: ScheduleDOMIntegrityTask;
@@ -89,7 +90,7 @@ const isInsideOwnedRoot = (
 
   if (nonEditableOwner && nonEditableOwner !== root) return false;
 
-  const nestedRoot = targetElement?.closest<HTMLElement>('[data-plite-editor]');
+  const nestedRoot = targetElement?.closest<HTMLElement>('[data-editor]');
 
   if (nestedRoot && nestedRoot !== root) return false;
 
@@ -109,7 +110,7 @@ const isInsideOwnedRoot = (
 };
 
 const isRootChromeNode = (node: Node) =>
-  !!closestElement(node)?.closest('[data-plite-root-chrome-ignore="true"]');
+  !!closestElement(node)?.closest('[data-editor-root-chrome-ignore="true"]');
 
 const isRootChromeMutation = (mutation: MutationRecord) => {
   if (isRootChromeNode(mutation.target)) return true;
@@ -120,10 +121,64 @@ const isRootChromeMutation = (mutation: MutationRecord) => {
   return changedNodes.length > 0 && changedNodes.every(isRootChromeNode);
 };
 
+const EDITOR_DOM_ATTRIBUTES = new Set([
+  'contenteditable',
+  'data-editor',
+  'data-editor-authored-author',
+  'data-editor-authored-change',
+  'data-editor-content-root-owner-path',
+  'data-editor-content-root-owner-root',
+  'data-editor-content-root-slot',
+  'data-editor-dom-coverage-boundary',
+  'data-editor-dom-coverage-edge',
+  'data-editor-dom-sync',
+  'data-editor-dom-sync-reason',
+  'data-editor-drop-cursor',
+  'data-editor-external-text',
+  'data-editor-external-text-path',
+  'data-editor-inactive-selection',
+  'data-editor-inactive-selection-caret',
+  'data-editor-inline',
+  'data-editor-keep-selection-visible',
+  'data-editor-leaf',
+  'data-editor-leaf-end',
+  'data-editor-leaf-start',
+  'data-editor-length',
+  'data-editor-mark-placeholder',
+  'data-editor-node',
+  'data-editor-node-key',
+  'data-editor-page',
+  'data-editor-page-index',
+  'data-editor-page-mount-item-index',
+  'data-editor-page-surface',
+  'data-editor-paged-editable',
+  'data-editor-paged-editable-editor',
+  'data-editor-paged-editable-editor-overlay',
+  'data-editor-paged-editable-page-virtualization',
+  'data-editor-path',
+  'data-editor-placeholder',
+  'data-editor-placeholder-anchor',
+  'data-editor-retained',
+  'data-editor-root',
+  'data-editor-root-chrome',
+  'data-editor-root-chrome-ignore',
+  'data-editor-spacer',
+  'data-editor-string',
+  'data-editor-text-flow',
+  'data-editor-text-flow-host',
+  'data-editor-view-selection',
+  'data-editor-viewport-boundary',
+  'data-editor-viewport-selection',
+  'data-editor-virtualized-row',
+  'data-editor-virtualized-viewport',
+  'data-editor-void',
+  'data-editor-zero-width',
+]);
+
 const affectsEditorDOMContract = (mutation: MutationRecord) =>
   mutation.type !== 'attributes' ||
-  mutation.attributeName === 'contenteditable' ||
-  mutation.attributeName?.startsWith('data-plite-') === true;
+  (mutation.attributeName !== null &&
+    EDITOR_DOM_ATTRIBUTES.has(mutation.attributeName));
 
 const captureSelection = (root: HTMLElement) => {
   const selection = root.ownerDocument.getSelection();
@@ -313,6 +368,9 @@ export class DOMIntegrityObserver {
     const records = this.observer?.takeRecords() ?? [];
 
     if (records.length === 0) return;
+    if (records.some((record) => !isRootChromeMutation(record))) {
+      this.options.onDOMChange?.();
+    }
 
     for (const mutation of records) {
       const owned = this.options.consumeOwnedMutation(mutation);
@@ -351,6 +409,7 @@ export class DOMIntegrityObserver {
     if (!this.connected || !this.root) return;
 
     if (wasPaused || !this.observer) this.observe();
+    if (wasPaused) this.options.onDOMChange?.();
     if (this.deferredHostCommitEvidence.length > 0) {
       const mutations = this.deferredHostCommitEvidence.splice(0);
 
@@ -415,6 +474,9 @@ export class DOMIntegrityObserver {
     const { root } = this;
 
     if (!root || records.length === 0) return;
+    if (records.some((record) => !isRootChromeMutation(record))) {
+      this.options.onDOMChange?.();
+    }
 
     const androidMutationHandler = this.options.getAndroidMutationHandler();
     const androidOwnsMutations = this.options.isAndroidMutationOwned();

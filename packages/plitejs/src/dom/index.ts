@@ -8,7 +8,6 @@ export type {
   DOMCoverageCopyPolicy,
   DOMCoverageDOMPointResult,
   DOMCoverageDOMRangeResult,
-  DOMCoverageFindPolicy,
   DOMCoverageMaterializeHandler,
   DOMCoverageMaterializeRangeRole,
   DOMCoverageMaterializeReason,
@@ -18,7 +17,7 @@ export type {
   DOMCoverageRuntimeRange,
   DOMCoverageSelectionPolicy,
   DOMCoverageSession,
-  DOMCoveragePlitePointResult,
+  DOMCoveragePointResult,
 } from './plugin/dom-coverage';
 export { DOMCoverage } from './plugin/dom-coverage';
 export type {
@@ -31,24 +30,22 @@ export type {
   ScrollIntoViewOptions,
   ScrollIntoViewTarget,
 } from './plugin/dom-editor';
-export type { DOMExtension, DOMExtensionTypes } from './plugin/with-dom';
+export type { DOMPlugin, DOMPluginTypes } from './plugin/with-dom';
 export {
   DOMEditor,
   isTrackedMutation,
-  PliteDOMResolutionError,
+  DOMResolutionError,
 } from './plugin/dom-editor';
 export type { DOMEditorOptions } from './plugin/with-dom';
 export { dom } from './plugin/with-dom';
 export type {
   ClipboardSliceRead,
   ClipboardSliceWrite,
-  DOMClipboardHandler,
-  DOMClipboardInsertContext,
   DOMFragmentDataHtml,
   DOMFragmentDataPayload,
 } from './plugin/dom-clipboard-runtime';
 export {
-  clipboardHandler,
+  domCommands,
   getDOMClipboardFormatKey,
   writeDOMFragmentData,
   writeDOMRangeData,

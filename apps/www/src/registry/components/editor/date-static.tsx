@@ -1,27 +1,19 @@
 import { BaseDatePlugin, getDateDisplayLabel } from 'platejs/date';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
-import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
-
 export function DateElementStatic(
-  props: PliteElementProps<typeof BaseDatePlugin>
+  props: EditorElementProps<typeof BaseDatePlugin>
 ) {
   const { element } = props;
 
   return (
-    <PliteElement as="span" className="inline-block" {...props}>
-      <span
-        className={cn(
-          'w-fit rounded-sm bg-muted px-1 text-muted-foreground',
-          inlineSuggestionVariants()
-        )}
-      >
+    <EditorElement as="span" className="inline-block" {...props}>
+      <span className="w-fit rounded-sm bg-muted px-1 text-muted-foreground">
         {getDateDisplayLabel(element.value)}
       </span>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 

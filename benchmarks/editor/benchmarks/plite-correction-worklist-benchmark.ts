@@ -3,7 +3,7 @@ import { dirname } from 'node:path';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   ElementApi,
 } from '../../../packages/plitejs/src/index';
 import { getDefined } from '../../getDefined';
@@ -45,7 +45,7 @@ const rows = cohorts.map(({ blocks, name }) => {
   });
 
   editor.install(
-    defineExtension(`correction-worklist-benchmark-${name}`, {
+    definePlugin(`correction-worklist-benchmark-${name}`, {
       corrections: [
         {
           event: 'properties',

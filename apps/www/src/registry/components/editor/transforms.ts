@@ -8,9 +8,9 @@ import {
   BaseListPlugin,
   BaseParagraphPlugin,
   PLUGINS,
-  type PlatePluginTransaction,
   type Element,
   type HeadingLevel,
+  type PluginTransaction,
 } from 'platejs';
 import { BaseCalloutPlugin } from 'platejs/callout';
 import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
@@ -50,7 +50,7 @@ const getListType = (action: string) =>
 const insertBlockMap: Record<
   string,
   (
-    tx: PlatePluginTransaction,
+    tx: PluginTransaction,
     options: { replaceEmpty: boolean; select: boolean }
   ) => void
 > = {
@@ -80,7 +80,7 @@ const insertBlockMap: Record<
 export const insertBlock = (
   editor: Editor,
   action: string,
-  { upsert = false, tx }: { upsert?: boolean; tx?: PlatePluginTransaction } = {}
+  { upsert = false, tx }: { upsert?: boolean; tx?: PluginTransaction } = {}
 ) => {
   const state = tx ?? editor.read;
   const block = state.nodes.block();
@@ -107,9 +107,7 @@ export const insertBlock = (
     return;
   }
 
-  const insert: (transaction: PlatePluginTransaction) => void = (
-    transaction
-  ) => {
+  const insert: (transaction: PluginTransaction) => void = (transaction) => {
     if (listType) {
       transaction.plugin(BaseListPlugin).insert({ type: listType }, options);
     } else if (level) {
@@ -133,7 +131,7 @@ export const insertBlock = (
   else editor.update(insert);
 };
 
-const insertInlineMap: Record<string, (tx: PlatePluginTransaction) => void> = {
+const insertInlineMap: Record<string, (tx: PluginTransaction) => void> = {
   [PLUGINS.date]: (tx) =>
     tx.plugin(BaseDatePlugin).insert({}, { select: true }),
   action_footnote: (tx) =>
@@ -145,7 +143,7 @@ const insertInlineMap: Record<string, (tx: PlatePluginTransaction) => void> = {
 export const insertInlineElement = (
   editor: Editor,
   action: string,
-  tx?: PlatePluginTransaction
+  tx?: PluginTransaction
 ) => {
   if (action === PLUGINS.link) {
     const link = editor.plugin(linkPlugin);
@@ -174,7 +172,9 @@ export const applyBlockAction = (editor: Editor, action: string) => {
       const listType = getListType(action);
       const level = headingLevels[action];
       if (listType) {
-        tx.blocks.set({ type: editor.plugin(BaseParagraphPlugin).schema.type });
+        tx.blocks.set({
+          type: editor.plugin(BaseParagraphPlugin).schema.type,
+        });
         tx.plugin(BaseListPlugin).toggle({ type: listType });
       } else if (action === PLUGINS.blockquote) {
         tx.plugin(BaseBlockquotePlugin).wrap();
@@ -182,7 +182,7 @@ export const applyBlockAction = (editor: Editor, action: string) => {
         tx.blocks.set(
           level
             ? { type: editor.plugin(BaseHeadingPlugin).schema.type, level }
-            : { type: editor.plugin(action).schema.type }
+            : { type: editor.plugin(BaseParagraphPlugin).schema.type }
         );
       }
     });

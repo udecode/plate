@@ -22,9 +22,6 @@ export interface EditorText extends Text {
   readonly kbd?: boolean;
   readonly script?: "sub" | "sup";
   readonly strikethrough?: boolean;
-  readonly suggestion?: boolean;
-  readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-  readonly suggestionTransient?: boolean;
   readonly underline?: boolean;
 }
 
@@ -32,16 +29,12 @@ export interface AiChatElement extends Element {
   readonly children: readonly (EditorText)[];
   readonly type: "aiChat";
   readonly aiPreview?: boolean;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface AudioElement extends Element {
   readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
   readonly type: "audio";
   readonly aiPreview?: boolean;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
   readonly url: string;
   readonly width?: number | string;
@@ -57,8 +50,6 @@ export interface BlockquoteElement extends Element {
   readonly listStart?: number;
   readonly listStyle?: string;
   readonly listType?: "bulleted" | "numbered" | "task";
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface CalloutElement extends Element {
@@ -67,8 +58,6 @@ export interface CalloutElement extends Element {
   readonly aiPreview?: boolean;
   readonly backgroundColor?: string;
   readonly icon: string;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
   readonly variant?: string;
 }
 
@@ -83,16 +72,12 @@ export interface CodeBlockElement extends Element {
   readonly listStart?: number;
   readonly listStyle?: string;
   readonly listType?: "bulleted" | "numbered" | "task";
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface ColumnElement extends Element {
   readonly children: readonly (AiChatElement | AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | PlaceholderElement | DetailsSummaryElement | TableElement | TocElement | VideoElement)[];
   readonly type: "column";
   readonly aiPreview?: boolean;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
   readonly width: string;
 }
 
@@ -100,16 +85,11 @@ export interface ColumnGroupElement extends Element {
   readonly children: readonly (ColumnElement)[];
   readonly type: "columnGroup";
   readonly aiPreview?: boolean;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface DateElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "date";
-  readonly suggestion?: boolean;
-  readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-  readonly suggestionTransient?: boolean;
   readonly value: string;
 }
 
@@ -123,16 +103,11 @@ export interface DetailsElement extends Element {
   readonly listStart?: number;
   readonly listStyle?: string;
   readonly listType?: "bulleted" | "numbered" | "task";
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface EmojiInputElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "emojiInput";
-  readonly suggestion?: boolean;
-  readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-  readonly suggestionTransient?: boolean;
   readonly trigger?: string;
   readonly userId?: string;
   readonly value?: string;
@@ -143,8 +118,6 @@ export interface EquationElement extends Element {
   readonly type: "equation";
   readonly aiPreview?: boolean;
   readonly latex: string;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface FileElement extends Element {
@@ -152,8 +125,6 @@ export interface FileElement extends Element {
   readonly type: "file";
   readonly aiPreview?: boolean;
   readonly name?: string;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
   readonly url: string;
   readonly width?: number | string;
 }
@@ -163,16 +134,11 @@ export interface FootnoteDefinitionElement extends Element {
   readonly type: "footnoteDefinition";
   readonly aiPreview?: boolean;
   readonly ref: string;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface FootnoteInputElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "footnoteInput";
-  readonly suggestion?: boolean;
-  readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-  readonly suggestionTransient?: boolean;
   readonly trigger?: string;
   readonly userId?: string;
   readonly value?: string;
@@ -182,9 +148,6 @@ export interface FootnoteElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "footnoteReference";
   readonly ref: string;
-  readonly suggestion?: boolean;
-  readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface HeadingElement extends Element {
@@ -199,8 +162,6 @@ export interface HeadingElement extends Element {
   readonly listStart?: number;
   readonly listStyle?: string;
   readonly listType?: "bulleted" | "numbered" | "task";
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
 }
 
@@ -208,8 +169,6 @@ export interface HorizontalRuleElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "horizontalRule";
   readonly aiPreview?: boolean;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface ImageElement extends Element {
@@ -225,8 +184,6 @@ export interface ImageElement extends Element {
   readonly listType?: "bulleted" | "numbered" | "task";
   readonly naturalHeight?: number;
   readonly naturalWidth?: number;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
   readonly title?: string;
   readonly url: string;
@@ -237,17 +194,11 @@ export interface InlineEquationElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "inlineEquation";
   readonly latex: string;
-  readonly suggestion?: boolean;
-  readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface LinkElement extends Element {
   readonly children: readonly (EditorText)[];
   readonly type: "link";
-  readonly suggestion?: boolean;
-  readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-  readonly suggestionTransient?: boolean;
   readonly target?: string;
   readonly url: string;
 }
@@ -258,8 +209,6 @@ export interface MediaEmbedElement extends Element {
   readonly aiPreview?: boolean;
   readonly provider?: string;
   readonly sourceUrl?: string;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
   readonly url: string;
   readonly width?: number | string;
@@ -270,17 +219,11 @@ export interface MentionElement extends Element {
   readonly type: "mention";
   readonly label?: string;
   readonly ref: string;
-  readonly suggestion?: boolean;
-  readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface MentionInputElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "mentionInput";
-  readonly suggestion?: boolean;
-  readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-  readonly suggestionTransient?: boolean;
   readonly trigger?: string;
   readonly userId?: string;
   readonly value?: string;
@@ -297,8 +240,6 @@ export interface ParagraphElement extends Element {
   readonly listStart?: number;
   readonly listStyle?: string;
   readonly listType?: "bulleted" | "numbered" | "task";
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
 }
 
@@ -307,16 +248,11 @@ export interface PlaceholderElement extends Element {
   readonly type: "placeholder";
   readonly aiPreview?: boolean;
   readonly mediaType: string;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface SlashInputElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "slashInput";
-  readonly suggestion?: boolean;
-  readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-  readonly suggestionTransient?: boolean;
   readonly trigger?: string;
   readonly userId?: string;
   readonly value?: string;
@@ -326,8 +262,6 @@ export interface DetailsSummaryElement extends Element {
   readonly children: readonly (DateElement | EmojiInputElement | FootnoteInputElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | MentionInputElement | SlashInputElement | EditorText)[];
   readonly type: "summary";
   readonly aiPreview?: boolean;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface TableElement extends Element {
@@ -336,8 +270,6 @@ export interface TableElement extends Element {
   readonly aiPreview?: boolean;
   readonly columnWidths?: readonly (null | number)[];
   readonly marginLeft?: number;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface TableCellElement extends Element {
@@ -349,8 +281,6 @@ export interface TableCellElement extends Element {
   readonly colSpan?: number;
   readonly header?: boolean;
   readonly rowSpan?: number;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface TableRowElement extends Element {
@@ -358,16 +288,12 @@ export interface TableRowElement extends Element {
   readonly type: "tableRow";
   readonly aiPreview?: boolean;
   readonly height?: number;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface TocElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "toc";
   readonly aiPreview?: boolean;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
 }
 
 export interface VideoElement extends Element {
@@ -376,8 +302,6 @@ export interface VideoElement extends Element {
   readonly aiPreview?: boolean;
   readonly provider?: string;
   readonly sourceUrl?: string;
-  readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-  readonly suggestionTransient?: boolean;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
   readonly url: string;
   readonly width?: number | string;
@@ -389,7 +313,6 @@ export type Schema = Readonly<{
   readonly plugins: Readonly<{
     readonly paragraph: Readonly<{ readonly type: "paragraph"; }>;
     readonly ai: Readonly<{ readonly key: "ai"; }>;
-    readonly suggestion: Readonly<{ readonly key: "suggestion"; }>;
     readonly aiChat: Readonly<{ readonly type: "aiChat"; }>;
     readonly heading: Readonly<{ readonly type: "heading"; }>;
     readonly blockquote: Readonly<{ readonly type: "blockquote"; }>;
@@ -443,13 +366,9 @@ export type Mutations = Readonly<{
   readonly aiChat: Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly toggle: true;
     readonly type: "aiChat";
@@ -457,16 +376,12 @@ export type Mutations = Readonly<{
   readonly audio: Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
       readonly width?: number | string;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
       readonly width?: number | string;
@@ -482,8 +397,6 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
@@ -493,8 +406,6 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "blockquote";
   }>;
@@ -503,16 +414,12 @@ export type Mutations = Readonly<{
       readonly aiPreview?: boolean;
       readonly backgroundColor?: string;
       readonly icon?: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly variant?: string;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
       readonly backgroundColor?: string;
       readonly icon: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly variant?: string;
     }>;
     readonly toggle: true;
@@ -528,8 +435,6 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
@@ -540,22 +445,16 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "codeBlock";
   }>;
   readonly column: Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly width?: string;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly width: string;
     }>;
     readonly type: "column";
@@ -563,27 +462,17 @@ export type Mutations = Readonly<{
   readonly columnGroup: Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "columnGroup";
   }>;
   readonly date: Readonly<{
     readonly construction: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly value: string;
     }>;
     readonly properties: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly value: string;
     }>;
     readonly type: "date";
@@ -597,8 +486,6 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
@@ -608,24 +495,16 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "details";
   }>;
   readonly emojiInput: Readonly<{
     readonly construction: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly trigger?: string;
       readonly userId?: string;
       readonly value?: string;
     }>;
     readonly properties: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly trigger?: string;
       readonly userId?: string;
       readonly value?: string;
@@ -636,14 +515,10 @@ export type Mutations = Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
       readonly latex?: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
       readonly latex: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "equation";
   }>;
@@ -651,16 +526,12 @@ export type Mutations = Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
       readonly name?: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly url: string;
       readonly width?: number | string;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
       readonly name?: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly url: string;
       readonly width?: number | string;
     }>;
@@ -670,30 +541,20 @@ export type Mutations = Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
       readonly ref: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
       readonly ref: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "footnoteDefinition";
   }>;
   readonly footnoteInput: Readonly<{
     readonly construction: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly trigger?: string;
       readonly userId?: string;
       readonly value?: string;
     }>;
     readonly properties: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly trigger?: string;
       readonly userId?: string;
       readonly value?: string;
@@ -703,15 +564,9 @@ export type Mutations = Readonly<{
   readonly footnote: Readonly<{
     readonly construction: Readonly<{
       readonly ref: string;
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly ref: string;
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "footnoteReference";
   }>;
@@ -726,8 +581,6 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
     }>;
     readonly properties: Readonly<{
@@ -740,8 +593,6 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
     }>;
     readonly type: "heading";
@@ -749,13 +600,9 @@ export type Mutations = Readonly<{
   readonly horizontalRule: Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "horizontalRule";
   }>;
@@ -771,8 +618,6 @@ export type Mutations = Readonly<{
       readonly listType?: "bulleted" | "numbered" | "task";
       readonly naturalHeight?: number;
       readonly naturalWidth?: number;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly title?: string;
       readonly url: string;
@@ -789,8 +634,6 @@ export type Mutations = Readonly<{
       readonly listType?: "bulleted" | "numbered" | "task";
       readonly naturalHeight?: number;
       readonly naturalWidth?: number;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly title?: string;
       readonly url: string;
@@ -801,30 +644,18 @@ export type Mutations = Readonly<{
   readonly inlineEquation: Readonly<{
     readonly construction: Readonly<{
       readonly latex?: string;
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly latex: string;
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "inlineEquation";
   }>;
   readonly link: Readonly<{
     readonly construction: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly target?: string;
       readonly url: string;
     }>;
     readonly properties: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly target?: string;
       readonly url: string;
     }>;
@@ -835,8 +666,6 @@ export type Mutations = Readonly<{
       readonly aiPreview?: boolean;
       readonly provider?: string;
       readonly sourceUrl?: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
       readonly width?: number | string;
@@ -845,8 +674,6 @@ export type Mutations = Readonly<{
       readonly aiPreview?: boolean;
       readonly provider?: string;
       readonly sourceUrl?: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
       readonly width?: number | string;
@@ -857,32 +684,20 @@ export type Mutations = Readonly<{
     readonly construction: Readonly<{
       readonly label?: string;
       readonly ref: string;
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly label?: string;
       readonly ref: string;
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "mention";
   }>;
   readonly mentionInput: Readonly<{
     readonly construction: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly trigger?: string;
       readonly userId?: string;
       readonly value?: string;
     }>;
     readonly properties: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly trigger?: string;
       readonly userId?: string;
       readonly value?: string;
@@ -899,8 +714,6 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
     }>;
     readonly properties: Readonly<{
@@ -912,8 +725,6 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
     }>;
     readonly toggle: true;
@@ -923,30 +734,20 @@ export type Mutations = Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
       readonly mediaType: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
       readonly mediaType: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "placeholder";
   }>;
   readonly slashInput: Readonly<{
     readonly construction: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly trigger?: string;
       readonly userId?: string;
       readonly value?: string;
     }>;
     readonly properties: Readonly<{
-      readonly suggestion?: boolean;
-      readonly suggestionData?: { readonly id: string; readonly createdAt: number; readonly type: "insert"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "remove"; readonly userId: string; } | { readonly id: string; readonly createdAt: number; readonly type: "update"; readonly userId: string; readonly newProperties?: unknown; readonly properties?: unknown; };
-      readonly suggestionTransient?: boolean;
       readonly trigger?: string;
       readonly userId?: string;
       readonly value?: string;
@@ -956,13 +757,9 @@ export type Mutations = Readonly<{
   readonly detailsSummary: Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly toggle: true;
     readonly type: "summary";
@@ -972,15 +769,11 @@ export type Mutations = Readonly<{
       readonly aiPreview?: boolean;
       readonly columnWidths?: readonly (null | number)[];
       readonly marginLeft?: number;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
       readonly columnWidths?: readonly (null | number)[];
       readonly marginLeft?: number;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "table";
   }>;
@@ -992,8 +785,6 @@ export type Mutations = Readonly<{
       readonly colSpan?: number;
       readonly header?: boolean;
       readonly rowSpan?: number;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
@@ -1002,8 +793,6 @@ export type Mutations = Readonly<{
       readonly colSpan?: number;
       readonly header?: boolean;
       readonly rowSpan?: number;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "tableCell";
   }>;
@@ -1011,27 +800,19 @@ export type Mutations = Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
       readonly height?: number;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
       readonly height?: number;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "tableRow";
   }>;
   readonly toc: Readonly<{
     readonly construction: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly properties: Readonly<{
       readonly aiPreview?: boolean;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
     }>;
     readonly type: "toc";
   }>;
@@ -1040,8 +821,6 @@ export type Mutations = Readonly<{
       readonly aiPreview?: boolean;
       readonly provider?: string;
       readonly sourceUrl?: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
       readonly width?: number | string;
@@ -1050,8 +829,6 @@ export type Mutations = Readonly<{
       readonly aiPreview?: boolean;
       readonly provider?: string;
       readonly sourceUrl?: string;
-      readonly suggestion?: { readonly id: string; readonly createdAt: number; readonly type: "insert" | "remove"; readonly userId: string; readonly isLineBreak?: boolean; };
-      readonly suggestionTransient?: boolean;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
       readonly width?: number | string;
@@ -1071,7 +848,6 @@ export const schema = Object.freeze({
   plugins: Object.freeze({
     paragraph: Object.freeze({ type: "paragraph" }),
     ai: Object.freeze({ key: "ai" }),
-    suggestion: Object.freeze({ key: "suggestion" }),
     aiChat: Object.freeze({ type: "aiChat" }),
     heading: Object.freeze({ type: "heading" }),
     blockquote: Object.freeze({ type: "blockquote" }),
@@ -1122,7 +898,7 @@ export const schema = Object.freeze({
   properties: Object.freeze({}),
 }) satisfies Schema;
 
-export const fingerprint = "fnv1a64:5a791f5ba35945f9";
+export const fingerprint = "fnv1a64:4c461492d319fe62";
 
 type EditorPlugins = (typeof EditorModule)["EditorKit"] & GeneratedEditorTypeProvider<Types>;
 

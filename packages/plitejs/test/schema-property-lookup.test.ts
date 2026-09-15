@@ -35,7 +35,7 @@ for (const placement of ['element', 'text'] as const) {
       ],
     });
     const compiled = compileEditorSchemaContributions([
-      { extensionName: definition.name, contribution: definition.schema },
+      { pluginName: definition.name, contribution: definition.schema },
     ]);
     const lookup = (key: string, type: string) =>
       resolveCompiledSchemaProperty(compiled, placement, key, {

@@ -1,7 +1,7 @@
 import { property, schema, target } from '../../core';
 import { createEditor } from '../../lib/editor';
-import { defineBasePlugin } from '../../lib/plugin';
-import { definePlatePlugin, toPlatePlugin } from '../../react/plugin';
+import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin';
+import { definePlugin, toReactPlugin } from '../../react/plugin';
 import {
   isNominalPluginDescriptor,
   isNominalPluginReference,
@@ -18,7 +18,7 @@ const expectReusableReference = (plugin: NominalPluginOutput) => {
 
 describe('plugin references', () => {
   it('preserves identity through terminal configuration', () => {
-    const TargetPlugin = defineBasePlugin('configuredReferenceTarget', {});
+    const TargetPlugin = defineHeadlessPlugin('configuredReferenceTarget', {});
     const ConfiguredTargetPlugin = TargetPlugin.configure({
       enabled: true,
     });
@@ -32,7 +32,7 @@ describe('plugin references', () => {
   });
 
   it('keeps every public factory and method result nominal', () => {
-    const BasePlugin = defineBasePlugin('baseReference', {
+    const BasePlugin = defineHeadlessPlugin('baseReference', {
       initialState: { nested: { value: 1 } },
     });
     const baseOutputs: NominalPluginOutput[] = [
@@ -46,39 +46,39 @@ describe('plugin references', () => {
       BasePlugin.extend(() => ({ selectors: { nominalSelector: () => true } })),
       BasePlugin.extend(() => ({ update: () => ({ nominalTx: () => true }) })),
     ];
-    const PlatePlugin = toPlatePlugin(BasePlugin);
+    const Plugin = toReactPlugin(BasePlugin);
     const plateOutputs: NominalPluginOutput[] = [
-      definePlatePlugin('plateReference', {
+      definePlugin('plateReference', {
         initialState: { nested: { value: 1 } },
       }),
-      PlatePlugin,
-      toPlatePlugin(BasePlugin, { editOnly: true }),
-      toPlatePlugin(BasePlugin, () => ({ enabled: true })),
-      PlatePlugin.configure({ initialState: { nested: { value: 3 } } }),
-      PlatePlugin.extend({ editOnly: true }),
-      PlatePlugin.extend(() => ({ enabled: true })),
-      PlatePlugin.extend(() => ({
+      Plugin,
+      toReactPlugin(BasePlugin, { editOnly: true }),
+      toReactPlugin(BasePlugin, () => ({ enabled: true })),
+      Plugin.configure({ initialState: { nested: { value: 3 } } }),
+      Plugin.extend({ editOnly: true }),
+      Plugin.extend(() => ({ enabled: true })),
+      Plugin.extend(() => ({
         api: () => ({ nominalPluginApi: () => true }),
       })),
-      PlatePlugin.extend(() => ({
+      Plugin.extend(() => ({
         selectors: { nominalSelector: () => true },
       })),
-      PlatePlugin.extend(() => ({ update: () => ({ nominalTx: () => true }) })),
-      toPlatePlugin(BasePlugin, { component: () => null }),
+      Plugin.extend(() => ({ update: () => ({ nominalTx: () => true }) })),
+      toReactPlugin(BasePlugin, { component: () => null }),
     ];
 
     [...baseOutputs, ...plateOutputs].forEach(expectReusableReference);
   });
 
   it('accepts genuine state references and rejects spread-forged identities', () => {
-    const TargetPlugin = defineBasePlugin('referenceTarget', {
+    const TargetPlugin = defineHeadlessPlugin('referenceTarget', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
     });
-    const OwnerPlugin = defineBasePlugin('referenceOwner', {
+    const OwnerPlugin = defineHeadlessPlugin('referenceOwner', {
       initialState: { target: TargetPlugin },
       schema: ({ initialState }) => ({
         properties: {
@@ -95,7 +95,7 @@ describe('plugin references', () => {
     ).not.toThrow();
 
     const forgedReference = { ...TargetPlugin };
-    const ForgedOwnerPlugin = defineBasePlugin('forgedReferenceOwner', {
+    const ForgedOwnerPlugin = defineHeadlessPlugin('forgedReferenceOwner', {
       initialState: { target: forgedReference },
       schema: ({ initialState }) => ({
         properties: {

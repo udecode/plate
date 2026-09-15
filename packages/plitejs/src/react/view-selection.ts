@@ -1,4 +1,15 @@
 import { PathApi, type Range, RangeApi, type RootKey } from '..';
+import { createAuthoredFragmentView } from '../core/authored-fragment-view';
+import {
+  readAuthoredViewFragmentVersion,
+  readAuthoredViewFragments,
+} from '../core/authored-runtime';
+import { hasEditorRuntime } from '../core/editor-runtime';
+import type { AnyEditor } from '../interfaces/editor';
+import {
+  createContentRootViewBoundaryGraph,
+  findContentRootOwners,
+} from './editable/content-root-owners';
 import { failInvariant } from './editable/runtime-editor-api';
 import {
   clonePliteViewBoundaryPointWithOwner,
@@ -27,6 +38,17 @@ export type PliteViewSelectionCollapseEdge =
 
 const EDITOR_TO_VIEW_SELECTION = new WeakMap<object, PliteViewSelection>();
 const EDITOR_TO_VIEW_SELECTION_STORE_KEY = new WeakMap<object, object>();
+const VIEW_SELECTION_BINDINGS = new WeakMap<
+  object,
+  {
+    editor: AnyEditor;
+    release: () => void;
+    resolve: () => PliteViewSelection | null;
+    version: object | null;
+  }
+>();
+const VIEW_SELECTION_MOUNTS = new WeakMap<object, number>();
+const PENDING_VIEW_SELECTION_NOTIFICATIONS = new WeakSet<object>();
 type PliteViewSelectionNotification = Readonly<{
   forceInvalidate?: boolean;
 }>;
@@ -48,7 +70,10 @@ export const setPliteViewSelectionStoreKey = (
   editor: object,
   storeKey: object
 ) => {
-  EDITOR_TO_VIEW_SELECTION_STORE_KEY.set(editor, storeKey);
+  EDITOR_TO_VIEW_SELECTION_STORE_KEY.set(
+    editor,
+    getViewSelectionStoreKey(storeKey)
+  );
 };
 
 const getViewSelectionStoreKey = (editor: object): object =>
@@ -74,6 +99,7 @@ const isBoundaryPointEqual = (
   left: PliteViewBoundaryPoint,
   right: PliteViewBoundaryPoint
 ) =>
+  (left.fragmentId ?? null) === (right.fragmentId ?? null) &&
   getViewBoundaryPointOwnerKey(left) === getViewBoundaryPointOwnerKey(right) &&
   left.point.offset === right.point.offset &&
   getPliteViewBoundaryPointRoot(left) ===
@@ -149,6 +175,10 @@ export const extendPliteViewSelection = (
   });
 
 export const isPliteViewSelectionCollapsed = (selection: PliteViewSelection) =>
+  selection.segments.parts.length === 1 &&
+  (selection.segments.parts[0].nodes[0]?.text ||
+    (selection.anchor.affinity ?? 'backward') ===
+      (selection.focus.affinity ?? 'backward')) &&
   isBoundaryPointEqual(selection.anchor, selection.focus);
 
 export const collapsePliteViewSelection = (
@@ -179,8 +209,137 @@ export const collapsePliteViewSelection = (
 
 export const readPliteViewSelection = (
   editor: object
-): PliteViewSelection | null =>
-  EDITOR_TO_VIEW_SELECTION.get(getViewSelectionStoreKey(editor)) ?? null;
+): PliteViewSelection | null => {
+  const key = getViewSelectionStoreKey(editor);
+  const binding = VIEW_SELECTION_BINDINGS.get(key);
+  if (binding && hasEditorRuntime(binding.editor)) {
+    const version = readAuthoredViewFragmentVersion(binding.editor);
+    if (version !== binding.version) {
+      binding.version = version;
+      PENDING_VIEW_SELECTION_NOTIFICATIONS.add(key);
+      const selection = version ? binding.resolve() : null;
+      if (selection) EDITOR_TO_VIEW_SELECTION.set(key, selection);
+      else {
+        binding.release();
+        VIEW_SELECTION_BINDINGS.delete(key);
+        EDITOR_TO_VIEW_SELECTION.delete(key);
+      }
+    }
+  }
+  return EDITOR_TO_VIEW_SELECTION.get(key) ?? null;
+};
+
+export const reconcilePliteViewSelection = (editor: object) => {
+  const key = getViewSelectionStoreKey(editor);
+  readPliteViewSelection(editor);
+  if (PENDING_VIEW_SELECTION_NOTIFICATIONS.delete(key)) {
+    notifyViewSelectionListeners(key);
+  }
+};
+
+export const mountPliteViewSelection = (editor: object) => {
+  const key = getViewSelectionStoreKey(editor);
+  VIEW_SELECTION_MOUNTS.set(key, (VIEW_SELECTION_MOUNTS.get(key) ?? 0) + 1);
+  return () => {
+    const remaining = (VIEW_SELECTION_MOUNTS.get(key) ?? 1) - 1;
+    if (remaining) VIEW_SELECTION_MOUNTS.set(key, remaining);
+    else {
+      VIEW_SELECTION_MOUNTS.delete(key);
+      writePliteViewSelection(editor, null);
+    }
+  };
+};
+
+const bindViewSelection = (
+  editor: AnyEditor,
+  selection: PliteViewSelection
+) => {
+  const version = readAuthoredViewFragmentVersion(editor);
+  if (!version) return null;
+  const releases: Array<() => void> = [];
+  const release = () => releases.forEach((dispose) => dispose());
+  const bind = (
+    boundary: PliteViewBoundaryPoint,
+    association: 'backward' | 'forward'
+  ) => {
+    const descriptor = boundary.fragmentId
+      ? selection.segments.parts.find(
+          (part) => part.fragment?.id === boundary.fragmentId
+        )?.fragment
+      : null;
+    const fragment = descriptor
+      ? readAuthoredViewFragments(editor, descriptor.changeId).find(
+          (entry) => entry.id === descriptor.id
+        )
+      : null;
+    if (boundary.fragmentId && !fragment) return null;
+    const view = fragment
+      ? createAuthoredFragmentView(editor, fragment)
+      : editor;
+    const anchor = view.anchor(boundary.point, {
+      association,
+      deletion: 'nearest',
+    });
+    releases.push(() => anchor.release());
+    const { owner } = boundary;
+    const ownerAnchor = owner
+      ? editor.anchor(owner.ownerPath, {
+          ...(owner.ownerRoot === 'main' ? {} : { root: owner.ownerRoot }),
+          deletion: 'drop',
+        })
+      : null;
+    if (ownerAnchor) releases.push(() => ownerAnchor.release());
+    return () => {
+      const point = anchor.resolve();
+      const ownerPath = ownerAnchor?.resolve();
+      if (!point || (owner && !ownerPath)) return null;
+      return {
+        ...boundary,
+        point,
+        ...(owner && ownerPath ? { owner: { ...owner, ownerPath } } : {}),
+      };
+    };
+  };
+  try {
+    const collapsed = isPliteViewSelectionCollapsed(selection);
+    const anchor = bind(
+      selection.anchor,
+      collapsed || !selection.segments.backward ? 'forward' : 'backward'
+    );
+    const focus = bind(
+      selection.focus,
+      collapsed || selection.segments.backward ? 'forward' : 'backward'
+    );
+    if (!anchor || !focus) {
+      release();
+      return null;
+    }
+    return {
+      editor,
+      version,
+      release,
+      resolve: () => {
+        const start = anchor();
+        const end = focus();
+        if (!start || !end) return null;
+        const graph = createContentRootViewBoundaryGraph(
+          editor,
+          findContentRootOwners(editor)
+        );
+        if (
+          !PliteViewBoundaryGraph.resolvePointNode(graph, start) ||
+          !PliteViewBoundaryGraph.resolvePointNode(graph, end)
+        ) {
+          return null;
+        }
+        return createPliteViewSelection(graph, { anchor: start, focus: end });
+      },
+    };
+  } catch (error) {
+    release();
+    throw error;
+  }
+};
 
 export const refreshPliteViewSelection = (editor: object) => {
   notifyViewSelectionListeners(getViewSelectionStoreKey(editor), {
@@ -196,6 +355,16 @@ export const writePliteViewSelection = (
   const key = getViewSelectionStoreKey(editor);
   const previous = EDITOR_TO_VIEW_SELECTION.get(key) ?? null;
   const shouldNotify = options.notify !== false;
+  if (previous === selection) return;
+  const bindingEditor = hasEditorRuntime(key) ? key : editor;
+  const binding =
+    selection && hasEditorRuntime(bindingEditor)
+      ? bindViewSelection(bindingEditor, selection)
+      : null;
+  VIEW_SELECTION_BINDINGS.get(key)?.release();
+  VIEW_SELECTION_BINDINGS.delete(key);
+  PENDING_VIEW_SELECTION_NOTIFICATIONS.delete(key);
+  if (binding) VIEW_SELECTION_BINDINGS.set(key, binding);
 
   if (!selection) {
     EDITOR_TO_VIEW_SELECTION.delete(key);
@@ -281,4 +450,22 @@ export const readPliteViewSelectionHistoryEntry = (
   const entry = batch ? HISTORY_BATCH_TO_VIEW_SELECTION.get(batch) : undefined;
 
   return entry?.[direction];
+};
+
+export const withPliteViewSelectionHistory = (
+  editor: EditorWithHistory,
+  direction: HistoryDirection,
+  update: () => void
+) => {
+  const batch = getHistoryBatch(
+    editor,
+    direction === 'undo' ? 'undos' : 'redos'
+  );
+  const entry = batch ? HISTORY_BATCH_TO_VIEW_SELECTION.get(batch) : undefined;
+  update();
+  const inverse = getHistoryBatch(
+    editor,
+    direction === 'undo' ? 'redos' : 'undos'
+  );
+  if (entry && inverse) HISTORY_BATCH_TO_VIEW_SELECTION.set(inverse, entry);
 };

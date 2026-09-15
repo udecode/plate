@@ -32,7 +32,11 @@ Add `NormalizeTypesPlugin` when specific paths must exist or hold a specific blo
 
 ```tsx
 import { HeadingPlugin } from 'platejs/react';
-import { NormalizeTypesPlugin, PLUGINS } from 'platejs';
+import {
+  BaseHeadingPlugin,
+  BaseParagraphPlugin,
+  NormalizeTypesPlugin,
+} from 'platejs';
 import { createEditor } from 'platejs/react';
 
 export const editor = createEditor({
@@ -43,11 +47,11 @@ export const editor = createEditor({
         rules: [
           {
             path: [0],
-            strictType: editor.plugin(PLUGINS.heading).schema.type,
+            strictType: editor.plugin(BaseHeadingPlugin).schema.type,
           },
           {
             path: [1],
-            type: editor.plugin(PLUGINS.paragraph).schema.type,
+            type: editor.plugin(BaseParagraphPlugin).schema.type,
           },
         ],
       },
@@ -64,8 +68,8 @@ This keeps the first block as an H1 and inserts a paragraph at path `[1]` when t
 |-------|-------|--------------|
 | `NormalizeTypesPlugin` | `platejs` | Stores `rules` and `onError`, then overrides normalization. |
 | `NormalizeTypesPlugin.corrections` | `platejs` | Runs the configured path rules when root children change. |
-| `tx.nodes.get(path)` | Plite transaction | Reads the node at the configured path. |
-| `tx.nodes.insert` / `tx.nodes.set` | Plite transaction | Inserts missing nodes or corrects a strict type. |
+| `tx.nodes.get(path)` | Plate transaction | Reads the node at the configured path. |
+| `tx.nodes.insert` / `tx.nodes.set` | Plate transaction | Inserts missing nodes or corrects a strict type. |
 | Playground demo | Registry example | Enables a first-block H1 rule when the playground id is `forced-layout`. |
 
 There is no `ForcedLayoutPlugin` and no `forced-layout`. The public plugin is `NormalizeTypesPlugin`.
@@ -133,7 +137,7 @@ That example keeps the first playground block as an H1 while leaving the rest of
 |-----|---------|-----|
 | `NormalizeTypesPlugin` | `platejs` | Path-based type normalization plugin. |
 | `NormalizeTypesPluginState.rules` | `platejs` | Ordered list of path rules. Defaults to `[]`. |
-| `Rule.path` | `platejs` | Plite `Path` where the rule applies. |
+| `Rule.path` | `platejs` | Plate `Path` where the rule applies. |
 | `Rule.strictType` | `platejs` | Required type for an existing or missing node. |
 | `Rule.type` | `platejs` | Type for a missing node only. |
 | `NormalizeTypesPluginState.onError` | `platejs` | Called when inserting a missing node throws. |

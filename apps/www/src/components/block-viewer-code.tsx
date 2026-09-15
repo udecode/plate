@@ -123,7 +123,7 @@ function BlockViewerFileTree({ size }: { size?: 'default' | 'sm' }) {
             <SidebarGroupContent>
               <SidebarMenu className="translate-x-0 gap-1.5">
                 {tree.map((file) => (
-                  <Tree key={file.path} index={1} item={file} />
+                  <Tree key={file.name} index={1} item={file} />
                 ))}
               </SidebarMenu>
             </SidebarGroupContent>

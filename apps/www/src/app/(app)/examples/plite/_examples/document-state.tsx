@@ -1,5 +1,5 @@
 import {
-  defineExtension,
+  definePlugin,
   defineStateField,
   type EditorCommit,
   valueCodecs,
@@ -7,8 +7,8 @@ import {
 import { history } from 'plitejs/history';
 import {
   Editable,
-  Plite,
-  PliteReactUpdatePolicy,
+  EditorRoot,
+  ReactUpdatePolicy,
   useEditorContext,
   useEditorState,
   useSetStateField,
@@ -39,8 +39,8 @@ const spellcheck = defineStateField({
   persist: valueCodecs.boolean,
 });
 
-const HistoryExtension = history();
-const DocumentStateExtension = defineExtension('documentState', {
+const HistoryPlugin = history();
+const DocumentStatePlugin = definePlugin('documentState', {
   stateFields: [documentTitle, spellcheck],
 });
 const formatList = (items: readonly string[]) =>
@@ -94,7 +94,7 @@ const getHistoryShortcut = (event: KeyboardEvent<HTMLInputElement>) => {
 
 const DocumentStatePanel = () => {
   const editor = useEditorContext();
-  const historyPortal = editor.extension(HistoryExtension);
+  const historyPortal = editor.plugin(HistoryPlugin);
   const title = useStateFieldValue(documentTitle);
   const setTitle = useSetStateField(documentTitle);
   const spellcheckEnabled = useStateFieldValue(spellcheck);
@@ -146,9 +146,9 @@ const DocumentStatePanel = () => {
     }
 
     if (direction === 'undo') {
-      historyPortal.update(PliteReactUpdatePolicy.preserveSelection).undo();
+      historyPortal.update(ReactUpdatePolicy.preserveSelection).undo();
     } else {
-      historyPortal.update(PliteReactUpdatePolicy.preserveSelection).redo();
+      historyPortal.update(ReactUpdatePolicy.preserveSelection).redo();
     }
     restoreTitleFocus();
   };
@@ -160,7 +160,7 @@ const DocumentStatePanel = () => {
       {
         history: 'skip',
         tags: [
-          ...PliteReactUpdatePolicy.preserveSelection.tags,
+          ...ReactUpdatePolicy.preserveSelection.tags,
           'collaboration',
           'remote-state',
         ],
@@ -175,9 +175,9 @@ const DocumentStatePanel = () => {
   };
 
   return (
-    <div className="plite-document-state-panel">
-      <div className="plite-document-state-top-bar">
-        <Label className="plite-document-state-title-label">
+    <div className="editor-document-state-panel">
+      <div className="editor-document-state-top-bar">
+        <Label className="editor-document-state-title-label">
           Document title
           <Input
             aria-label="Document title"
@@ -187,7 +187,7 @@ const DocumentStatePanel = () => {
             value={title}
           />
         </Label>
-        <span className="plite-document-state-toggle-label">
+        <span className="editor-document-state-toggle-label">
           <Switch
             aria-label="Enable spellcheck"
             checked={spellcheckEnabled}
@@ -199,7 +199,7 @@ const DocumentStatePanel = () => {
           <Label htmlFor="document-state-spellcheck-toggle">Spellcheck</Label>
         </span>
       </div>
-      <div className="plite-document-state-controls">
+      <div className="editor-document-state-controls">
         <Button
           onClick={() => {
             setTitle('Q3 Launch Brief');
@@ -231,7 +231,7 @@ const DocumentStatePanel = () => {
           Receive remote title
         </Button>
       </div>
-      <div className="plite-document-state-status">
+      <div className="editor-document-state-status">
         <Badge id="document-state-title" variant="default">
           title:{title}
         </Badge>
@@ -243,11 +243,11 @@ const DocumentStatePanel = () => {
         </Badge>
       </div>
       <div
-        className="plite-document-state-editor-surface"
+        className="editor-document-state-editor-surface"
         id="document-state-editor-surface"
       >
         <Editable
-          className="plite-document-state-editor"
+          className="editor-document-state-editor"
           id="document-state"
           spellCheck={spellcheckEnabled}
         />
@@ -258,7 +258,7 @@ const DocumentStatePanel = () => {
 
 const DocumentStateExample = () => {
   const editor = useEditor({
-    extensions: [HistoryExtension, DocumentStateExtension],
+    plugins: [HistoryPlugin, DocumentStatePlugin],
     initialValue: {
       children: [
         {
@@ -278,9 +278,9 @@ const DocumentStateExample = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <DocumentStatePanel />
-    </Plite>
+    </EditorRoot>
   );
 };
 

@@ -1,6 +1,6 @@
 import { type NodeKey, PathApi, RangeApi } from '..';
 import { isDOMNode } from '../dom';
-import type { PliteDecorationSource } from './decoration-source';
+import type { DecorationSource } from './decoration-source';
 import {
   getSnapshot as editorGetSnapshot,
   subscribeSource as editorSubscribeSource,
@@ -9,7 +9,7 @@ import { readRuntimeSelectionRange } from './editable/runtime-selection-state';
 import type { ReactRuntimeEditor } from './plugin/react-editor';
 
 export const PLITE_KEEP_SELECTION_VISIBLE_ATTRIBUTE =
-  'data-plite-keep-selection-visible';
+  'data-editor-keep-selection-visible';
 
 export type PliteInactiveSelectionStore = Readonly<{
   getSnapshot: () => boolean;
@@ -249,7 +249,7 @@ export const createPliteInactiveSelectionDecorationSource = (
   editor: ReactRuntimeEditor<any>,
   store: PliteInactiveSelectionStore,
   id: string
-): PliteDecorationSource<unknown> => {
+): DecorationSource<unknown> => {
   const getInputKey = () => {
     const selection = readRuntimeSelectionRange(editor);
 
@@ -300,7 +300,7 @@ export const createPliteInactiveSelectionDecorationSource = (
 
       return [
         {
-          attributes: { 'data-plite-inactive-selection': '' },
+          attributes: { 'data-editor-inactive-selection': '' },
           key: `${id}:range`,
           range: selection,
         },

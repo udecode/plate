@@ -1,5 +1,5 @@
 ---
-description: Write, revise or audit Plate public documentation, including page design, feature examples, installation, API teaching, MDX and navigation. Use for Plate docs work; general prose stays with Technical Writing.
+description: Write or audit Plate public documentation, page design, examples, installation, MDX and navigation.
 ---
 
 # Plate Docs
@@ -19,7 +19,11 @@ Read the target page, its nearest useful sibling, and the source that owns each
 changed claim. Start from the current source and public exports. Docs describe
 the current API; unresolved API design belongs to Best API before teaching it.
 Plate application examples import from `platejs`, `platejs/react` or the actual
-feature subpath. Raw Plite documentation is the explicit exception.
+feature subpath. Public docs teach Plate as one editor API; its internal runtime
+is not a second learning path. Plite is named only in the Performance comparison
+and From Plite to Plate guide, including that guide's translation. Keep runtime
+contributor references outside `content/docs`. This boundary covers navigation,
+search, LLM output, examples and installable docs as well as visible prose.
 
 ## House style: shadcn
 

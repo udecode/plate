@@ -1,11 +1,11 @@
 import { FootnotePlugin } from '../src/react/features/footnote/FootnotePlugin';
 import { NavigationFeedbackPlugin } from '../src/react/plugins/navigation-feedback/NavigationFeedbackPlugin';
-import { useEditor, useEditorPlugin } from '../src/react/stores';
+import { useEditor } from '../src/react/stores';
 
 export function NavigationFeedbackContracts() {
   const editor = useEditor();
-  const navigation = useEditorPlugin(NavigationFeedbackPlugin);
-  const footnote = useEditorPlugin(FootnotePlugin);
+  const navigation = useEditor().plugin(NavigationFeedbackPlugin);
+  const footnote = useEditor().plugin(FootnotePlugin);
   const key = editor.key([0]);
   if (!key) return null;
 

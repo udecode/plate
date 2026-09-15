@@ -9,13 +9,14 @@
       "upstream": "skills/principle-laziness-protocol/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "8999fda9fde65fd905835c86e3bfc64190369a84bba30b1e93769f39ad6580fe",
-      "destinationSha256": "8fdfd87482cb862a9ebe1cf4cc33d55d6aab6f9485b1c5a45085982df0b09e61",
+      "destinationSha256": "3e24279777ac411ed59c883b4fff4b0b5d2a031c2281d2d6eb835a5ecff1af43",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-laziness-protocol/SKILL.md\n+++ skills/principle-laziness-protocol/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-laziness-protocol\n description: \"Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Laziness Protocol\n \n"
+      "unifiedDiff": "--- skills/principle-laziness-protocol/SKILL.md\n+++ skills/principle-laziness-protocol/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-laziness-protocol\n-description: \"Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem.\"\n-disable-model-invocation: true\n+description: \"Evaluate proposed layers, abstractions or signal threading when a simpler design may satisfy the same outcome.\"\n ---\n \n # Laziness Protocol\n"
     }
   ],
   "ownedFiles": [

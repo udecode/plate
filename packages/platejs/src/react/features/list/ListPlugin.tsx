@@ -5,10 +5,10 @@ import {
   isOrderedList,
   ListType,
 } from '../../../features/list/lib';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
 /** Enables support for indented lists with React-specific features. */
-export const ListPlugin = toPlatePlugin(BaseListPlugin, {
+export const ListPlugin = toReactPlugin(BaseListPlugin, {
   slots: {
     wrapNodeChildren: (props) => {
       const { listStyle, listType } = props.element;

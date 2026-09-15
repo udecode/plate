@@ -2,7 +2,7 @@ import { act, render } from '@testing-library/react';
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
 import React from 'react';
 
-import { createEditor, ParagraphPlugin, Plate } from '../../react/core';
+import { createEditor, ParagraphPlugin, EditorRoot } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
 import { useAIChat } from './useAIChat';
 
@@ -29,6 +29,7 @@ for (const parts of [['Generated'], ['First', ' second']]) {
     const source = controlledTransport();
     const editor = createEditor({
       plugins: [ParagraphPlugin, AIChatPlugin],
+      userId: 'alice',
       initialValue: [{ type: 'paragraph', children: [{ text: 'original' }] }],
       selection: {
         kind: 'text',
@@ -42,9 +43,9 @@ for (const parts of [['Generated'], ['First', ' second']]) {
       return <div ref={editableRef} />;
     }
     const view = render(
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <Binding />
-      </Plate>
+      </EditorRoot>
     );
     let pending: Promise<void> | undefined;
     try {

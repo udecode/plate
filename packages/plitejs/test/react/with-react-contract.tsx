@@ -15,7 +15,7 @@ import {
 import { react } from '../../src/react/plugin/with-react';
 
 test('react clears pending selection before mounted-root Android insertText bridge calls', () => {
-  const editor = createEditor({ extensions: [react({ dom: dom() })] });
+  const editor = createEditor({ plugins: [react({ dom: dom() })] });
   const runtime = new DOMRootRuntime({
     adapter: {},
     editor,

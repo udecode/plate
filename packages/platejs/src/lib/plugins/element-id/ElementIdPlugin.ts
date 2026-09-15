@@ -17,7 +17,7 @@ import {
   MAIN_ROOT_KEY,
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
-import { defineBasePlugin } from '../../plugin/defineBasePlugin';
+import { definePlugin } from '../../plugin/definePlugin';
 
 export type ElementIdPluginState = {
   /** Generate one persisted ID for a newly materialized element. */
@@ -288,7 +288,7 @@ const elementIdInitialState: ElementIdPluginState = {
   generateId: () => nanoid(),
 };
 
-export const ElementIdPlugin = defineBasePlugin('elementId', {
+export const ElementIdPlugin = definePlugin('elementId', {
   initialState: elementIdInitialState,
   schema: ({ initialState }) => ({
     properties: {

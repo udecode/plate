@@ -1,4 +1,10 @@
+import {
+  type InternalCompiledPluginPublicationEntry,
+  resolveInstalledPlugin,
+} from 'plitejs/internal';
+
 import type {
+  RuntimePluginReference,
   EditorUpdatePolicy,
   SchemaPropertyHandle,
   Value,
@@ -11,6 +17,7 @@ import {
   getCompiledPlateModelBinding,
   getCompiledPlatePlugin,
   getCompiledPlatePluginApi,
+  hasCompiledPlateModelCandidate,
   hasCompiledPlatePluginApiCandidate,
   hasCompiledPlatePluginCandidate,
   isResolvingPlatePlugin,
@@ -19,6 +26,8 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { getPluginStore } from '../../internal/plugin/pluginStore';
 import {
+  getPluginDescriptorMetadata,
+  getPluginSourceReferences,
   getPluginSchemaFamily,
   isNominalPluginDescriptor,
   isResolvedPluginDescriptor,
@@ -30,8 +39,6 @@ import type {
   AnyBasePluginPortal,
   AnyPluginBase,
   BasePluginContext,
-  BasePluginPortal,
-  DynamicBasePluginPortal,
 } from './BasePlugin';
 import { createDefinePluginCodecs } from './pluginAuthoringContext';
 import type {
@@ -58,24 +65,41 @@ type PluginAccessCache = {
 
 const PLUGIN_ACCESS_CACHE = new WeakMap<object, PluginAccessCache>();
 
-export function createPluginPortal<
-  V extends Value,
-  E extends AnyBasePluginDefinition,
-  P extends (AnyBasePlugin | AnyPluginBase) & PluginReference,
->(
-  editor: InternalBaseEditorWithInstalledPlugins<V, E>,
-  p: P
-): BasePluginPortal<InternalPluginDefinitionOf<P>>;
-export function createPluginPortal(
-  editor: Editor,
-  plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
-): DynamicBasePluginPortal;
-export function createPluginPortal(
-  editor: object,
-  plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
-): unknown {
-  return createPluginAccess(editor, plugin, false);
-}
+export const createPlatePluginPortal = (
+  editor: Parameters<
+    NonNullable<InternalCompiledPluginPublicationEntry['createPortal']>
+  >[0],
+  descriptor: RuntimePluginReference
+) =>
+  createPluginAccess(
+    editor,
+    descriptor as AnyBasePlugin | PluginReference,
+    false
+  ) as AnyBasePluginPortal;
+
+const isPluginDescriptorSourceOf = (
+  source: AnyBasePlugin | AnyPluginBase | PluginReference,
+  installed: AnyBasePlugin
+) => {
+  if (
+    getPluginSourceReferences(installed).includes(source) ||
+    getPluginSourceReferences(source).includes(installed)
+  ) {
+    return true;
+  }
+
+  const sourceMetadata = getPluginDescriptorMetadata(source);
+  const installedStages = getPluginDescriptorMetadata(installed).stages;
+
+  return (
+    !sourceMetadata.configured &&
+    !sourceMetadata.resolved &&
+    sourceMetadata.stages.length <= installedStages.length &&
+    sourceMetadata.stages.every(
+      (stage, index) => stage === installedStages[index]
+    )
+  );
+};
 
 export function createPluginContext<
   V extends Value,
@@ -122,17 +146,42 @@ const createPluginAccess = (
   const name = typeof input === 'string' ? input : input.name;
   const provided =
     descriptor && isPluginBaseDescriptor(descriptor) ? descriptor : undefined;
-  const matchesDescriptorFamily = (plugin: AnyBasePlugin) =>
-    !descriptor ||
-    !isNominalPluginDescriptor(descriptor) ||
-    getPluginSchemaFamily(descriptor) === getPluginSchemaFamily(plugin);
-  const getCandidate = () => {
-    if (!provided) return undefined;
-    if (isResolvingPlatePlugin(editor, provided)) return provided;
-    if (!hasCompiledPlatePluginCandidate(editor)) return undefined;
+  const isDescriptorInstalled = () => {
+    if (!descriptor) return true;
     const compiled = getCompiledPlatePlugin(editor, name);
 
-    if (provided === compiled) return provided;
+    if (compiled) {
+      return (
+        getPluginSchemaFamily(descriptor) === getPluginSchemaFamily(compiled) &&
+        (descriptor === compiled ||
+          isPluginDescriptorSourceOf(descriptor, compiled))
+      );
+    }
+    return (
+      resolveInstalledPlugin(
+        editor as Parameters<typeof resolveInstalledPlugin>[0],
+        descriptor
+      ) !== undefined
+    );
+  };
+  const getCandidate = () => {
+    if (provided && isResolvingPlatePlugin(editor, provided)) return provided;
+    if (
+      !hasCompiledPlatePluginCandidate(editor) &&
+      !hasCompiledPlateModelCandidate(editor)
+    ) {
+      return undefined;
+    }
+    const compiled = getCompiledPlatePlugin(editor, name);
+
+    if (
+      compiled &&
+      descriptor &&
+      (descriptor === compiled ||
+        isPluginDescriptorSourceOf(descriptor, compiled))
+    ) {
+      return compiled;
+    }
 
     return undefined;
   };
@@ -142,18 +191,30 @@ const createPluginAccess = (
     if (!plugin) {
       throw new Error(`Plate plugin "${name}" is not installed.`);
     }
-    if (!matchesDescriptorFamily(plugin)) {
+    if (!getCandidate() && !isDescriptorInstalled()) {
+      if (
+        descriptor &&
+        getPluginSchemaFamily(descriptor) !== getPluginSchemaFamily(plugin)
+      ) {
+        throw new Error(
+          `Plate plugin "${name}" resolves to a different descriptor family.`
+        );
+      }
       throw new Error(
-        `Plate plugin "${name}" resolves to a different descriptor family.`
+        `Plate plugin "${name}" descriptor is not installed on this editor.`
       );
     }
 
     return plugin;
   };
   const isInstalled = () => {
-    const plugin = getCandidate() ?? getCompiledPlatePlugin(editor, name);
+    const candidate = getCandidate();
+    const plugin = candidate ?? getCompiledPlatePlugin(editor, name);
 
-    return plugin !== undefined && matchesDescriptorFamily(plugin);
+    return (
+      plugin !== undefined &&
+      (candidate !== undefined || isDescriptorInstalled())
+    );
   };
   const getStore = () => getPluginStore(editor, getPlugin());
   const getAuthoredSchema = () =>

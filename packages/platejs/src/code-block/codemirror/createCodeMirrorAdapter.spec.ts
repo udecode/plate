@@ -1,5 +1,5 @@
 import type { Extension } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
+import { EditorView, keymap } from '@codemirror/view';
 
 import type { ExternalTextState } from '../../react/core';
 import { createCodeMirrorAdapter } from './createCodeMirrorAdapter';
@@ -157,6 +157,35 @@ test('history and boundary deletion use the canonical actions', () => {
   });
   expect(view.state.doc.toString()).toBe('abc');
 });
+
+test.each(['backward', 'forward'] as const)(
+  '%s boundary navigation precedes consumer editing commands',
+  (direction) => {
+    const { actions, set, view } = mount({
+      extensions: keymap.of([
+        {
+          key: direction === 'backward' ? 'ArrowLeft' : 'ArrowRight',
+          run: () => true,
+          shift: () => true,
+        },
+      ]),
+    });
+    const offset = direction === 'backward' ? 0 : 3;
+    set({ selection: { anchor: offset, focus: offset, mode: 'native' } });
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: direction === 'backward' ? 'ArrowLeft' : 'ArrowRight',
+      shiftKey: true,
+    });
+    view.contentDOM.dispatchEvent(event);
+    expect(actions.navigateOut).toHaveBeenCalledWith(
+      expect.objectContaining({ baseVersion: 1, direction, extend: true })
+    );
+    expect(event.defaultPrevented).toBe(true);
+    expect(actions.dispatch).not.toHaveBeenCalled();
+  }
+);
 
 test('pending composition completion is flushed once before disposal', async () => {
   const { actions, destroy, view } = mount();

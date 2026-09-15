@@ -38,9 +38,9 @@ const clone = <T>(value: T): T => structuredClone(value);
 
 const replaceSnapshot = editorReplace as unknown as <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>,
+  editor: Editor<V, TPlugins>,
   input: SnapshotInput<V>
 ) => void;
 
@@ -137,7 +137,7 @@ describe('plite public accessor + transaction boundary', () => {
 
   it('exposes direct read methods for schema, point, and runtime state', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineTestSchema('test-schema', {
           caption: { selectable: false, void: 'block' },
           mention: { inline: true },

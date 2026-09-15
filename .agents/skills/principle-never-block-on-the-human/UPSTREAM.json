@@ -9,13 +9,14 @@
       "upstream": "skills/principle-never-block-on-the-human/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "f656f3b7581df55e79f53cc47df93905c3a940b822c25071ba95f40e530d102a",
-      "destinationSha256": "5818a2772891eebdd88b2602e41cf154f14798201207cc0faa791feef7824b62",
+      "destinationSha256": "7b1162bc69dfa2438e2c51aa8a2f9e70389c9c8795faae9550f23ede2b6c3469",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-never-block-on-the-human/SKILL.md\n+++ skills/principle-never-block-on-the-human/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-never-block-on-the-human\n description: \"Apply when tempted to ask 'should I do X?' on reversible work. Proceed, present the result, let the human course-correct after the fact; reserve confirmation for irreversible actions.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Never Block on the Human\n \n"
+      "unifiedDiff": "--- skills/principle-never-block-on-the-human/SKILL.md\n+++ skills/principle-never-block-on-the-human/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-never-block-on-the-human\n-description: \"Apply when tempted to ask 'should I do X?' on reversible work. Proceed, present the result, let the human course-correct after the fact; reserve confirmation for irreversible actions.\"\n-disable-model-invocation: true\n+description: \"Resolve an unnecessary permission pause when reversible work is already authorized and intent is clear.\"\n ---\n \n # Never Block on the Human\n@@ -18,6 +17,6 @@\n - **Code is cheap, attention is scarce.** A wrong implementation costs minutes to fix. A blocked agent costs the human's attention to unblock.\n \n **Boundaries:**\n-- **Irreversible actions** (force-push, delete production data, send external messages) still require confirmation.\n+- **Irreversible actions** (force-push, delete production data, send external messages) require applicable authority. Honor explicit authorization already given; ask only when it is missing.\n - **Reversible actions** (write code, edit notes, split tasks) should proceed without blocking.\n - **Product direction** comes from the human; *execution* should not block.\n"
     }
   ],
   "ownedFiles": [

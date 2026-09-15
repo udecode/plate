@@ -6,6 +6,7 @@ import {
   PathApi,
 } from '../../../core';
 import { getSelection } from '../../../dom/plite-dom.internal';
+import { fitSlicePlacements } from '../../../facade';
 import { failInvariant } from '../../../features/table/internal/failInvariant';
 import {
   BaseTableCellPlugin,
@@ -20,10 +21,11 @@ import {
   createTableNodeSelection,
   readTableSelection,
 } from '../../../features/table/lib/internal/selection';
-import { type Editor, toPlatePlugin } from '../../core';
+import { type Editor, toReactPlugin } from '../../core';
 
 const tableDragCaptures = new WeakMap<Editor, TableDragCapture>();
-const TABLE_CELL_DRAG_MIME = 'application/x-plate-table-cell-selection';
+const TABLE_CELL_DRAG_MIME = 'application/x-editor-table-cell-selection';
+const TABLE_COPY_FIT_REJECTED = new Error('Table copy fit rejected.');
 
 const consumeTableDragEvent = (event: {
   preventDefault: () => void;
@@ -33,14 +35,14 @@ const consumeTableDragEvent = (event: {
   event.stopPropagation();
 };
 
-export const TableCellPlugin = toPlatePlugin(BaseTableCellPlugin);
+export const TableCellPlugin = toReactPlugin(BaseTableCellPlugin);
 
-export const TableRowPlugin = toPlatePlugin(BaseTableRowPlugin, {
+export const TableRowPlugin = toReactPlugin(BaseTableRowPlugin, {
   dependencies: [TableCellPlugin],
 });
 
 /** Enables support for tables with React-specific features. */
-export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
+export const TablePlugin = toReactPlugin(BaseTablePlugin, {
   dependencies: [TableRowPlugin],
   shortcuts: {
     tab: {
@@ -196,10 +198,34 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         return true;
       }
 
-      editor.update({ history: 'new-batch', tags: 'paste' }, (tx) => {
-        tx.changes.apply(result.change);
-        tx.selection.set(result.selection);
-      });
+      try {
+        editor.update({ history: 'new-batch', tags: 'paste' }, (tx) => {
+          tx.changes.apply(result.change);
+          const targetEditor = result.root
+            ? createEditorView(editor, { root: result.root })
+            : editor;
+
+          for (const group of result.placementGroups) {
+            if (
+              !fitSlicePlacements(targetEditor, group.source, {
+                placements: group.placements,
+              })
+            ) {
+              throw TABLE_COPY_FIT_REJECTED;
+            }
+          }
+          tx.selection.set(result.selection);
+        });
+      } catch (error) {
+        if (error !== TABLE_COPY_FIT_REJECTED) throw error;
+        editor
+          .plugin(DebugPlugin)
+          .api.warn(
+            'Table drag/drop rejected during content fitting.',
+            'TABLE_MUTATION_DIAGNOSTIC',
+            { kind: 'invalid-source', reason: 'content-rejected' }
+          );
+      }
 
       return true;
     },
@@ -210,7 +236,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
       if (!domSelection || domSelection.rangeCount === 0) return undefined;
 
-      const range = editor.api.dom.resolvePliteRange(domSelection, {
+      const range = editor.api.dom.resolveRange(domSelection, {
         exactMatch: false,
       });
       const view = range && read.selection(range);

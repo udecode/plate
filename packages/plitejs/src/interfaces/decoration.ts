@@ -4,37 +4,34 @@ import type { Editor, NodeKey } from './editor';
 import type { NodeEntry } from './node';
 import type { Range } from './range';
 
-type PliteDecorationAttributeValue = boolean | number | string | undefined;
+type DecorationAttributeValue = boolean | number | string | undefined;
 
-export type PliteDecorationAttributes = Readonly<
+export type DecorationAttributes = Readonly<
   {
     className?: string;
     style?: Readonly<CSSProperties<string | number>>;
   } & {
-    [name: `aria-${string}`]: PliteDecorationAttributeValue;
-    [name: `data-${string}`]: PliteDecorationAttributeValue;
+    [name: `aria-${string}`]: DecorationAttributeValue;
+    [name: `data-${string}`]: DecorationAttributeValue;
   }
 >;
 
-export type PliteDecoration = Readonly<{
-  attributes: PliteDecorationAttributes;
+export type Decoration = Readonly<{
+  attributes: DecorationAttributes;
   key: string;
   range: Range;
 }>;
 
-export type PliteDecorationRefresh = Readonly<{
+export type DecorationRefresh = Readonly<{
   nodeKeys: 'all' | readonly NodeKey[];
 }>;
 
-export type PliteDecorationSource<E = Editor> = Readonly<{
+export type DecorationSource<E = Editor> = Readonly<{
   id: string;
   /** Attach external ownership before the source's first mounted read. */
   observe?: (context: {
     editor: E;
-    refresh: (input: PliteDecorationRefresh) => void;
+    refresh: (input: DecorationRefresh) => void;
   }) => () => void;
-  read: (context: {
-    editor: E;
-    entry: NodeEntry;
-  }) => readonly PliteDecoration[];
+  read: (context: { editor: E; entry: NodeEntry }) => readonly Decoration[];
 }>;

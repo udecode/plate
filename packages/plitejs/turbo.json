@@ -32,6 +32,7 @@
         "lint:partition:history",
         "lint:partition:pagination",
         "lint:partition:react",
+        "lint:partition:react-virtualized",
         "lint:partition:testing",
         "lint:partition:yjs"
       ],
@@ -63,6 +64,7 @@
       "dependsOn": [],
       "inputs": [
         "$TURBO_DEFAULT$",
+        "src/internal/index.*",
         "src/**",
         "!src/authored/**",
         "!src/diff/**",
@@ -72,10 +74,13 @@
         "!src/pagination/**",
         "!src/pagination/react.*",
         "!src/react/**",
+        "!src/react/virtualized.*",
+        "!src/react/virtualized/**",
         "!src/testing/**",
         "!src/yjs/**",
         "!src/yjs/react/**",
         "test/annotations/**",
+        "test/internal/index*",
         "test/**",
         "!test/authored/**",
         "!test/diff/**",
@@ -85,6 +90,8 @@
         "!test/pagination/**",
         "!test/pagination/react*",
         "!test/react/**",
+        "!test/react/virtualized*",
+        "!test/react/virtualized/**",
         "!test/testing/**",
         "!test/yjs/**",
         "!test/yjs/react/**",
@@ -164,7 +171,28 @@
       "dependsOn": [],
       "inputs": [
         "src/react/**",
+        "!src/react/virtualized.*",
+        "!src/react/virtualized/**",
         "test/react/**",
+        "!test/react/virtualized*",
+        "!test/react/virtualized/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:react-virtualized": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/virtualized.*",
+        "src/react/virtualized/**",
+        "test/react/virtualized*",
+        "test/react/virtualized/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -218,6 +246,7 @@
         "test:partition:history",
         "test:partition:pagination",
         "test:partition:react",
+        "test:partition:react-virtualized",
         "test:partition:testing",
         "test:partition:yjs"
       ],
@@ -231,7 +260,11 @@
     },
     "test:partition:authored": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:authored", "typecheck:partition:core"],
+      "dependsOn": [
+        "typecheck:partition:authored",
+        "typecheck:partition:core",
+        "typecheck:partition:history"
+      ],
       "inputs": [
         "src/authored/**",
         "test/authored/**",
@@ -253,6 +286,7 @@
       "dependsOn": ["typecheck:partition:core", "typecheck:partition:history"],
       "inputs": [
         "src/annotations/**",
+        "src/internal/index.*",
         "src/**",
         "!src/authored/**",
         "!src/diff/**",
@@ -262,10 +296,13 @@
         "!src/pagination/**",
         "!src/pagination/react.*",
         "!src/react/**",
+        "!src/react/virtualized.*",
+        "!src/react/virtualized/**",
         "!src/testing/**",
         "!src/yjs/**",
         "!src/yjs/react/**",
         "test/annotations/**",
+        "test/internal/index*",
         "test/**",
         "!test/authored/**",
         "!test/diff/**",
@@ -275,6 +312,8 @@
         "!test/pagination/**",
         "!test/pagination/react*",
         "!test/react/**",
+        "!test/react/virtualized*",
+        "!test/react/virtualized/**",
         "!test/testing/**",
         "!test/yjs/**",
         "!test/yjs/react/**",
@@ -376,15 +415,46 @@
     "test:partition:react": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:dom",
         "typecheck:partition:history",
         "typecheck:partition:react",
+        "typecheck:partition:react-virtualized",
         "typecheck:partition:testing"
       ],
       "inputs": [
         "src/react/**",
+        "!src/react/virtualized.*",
+        "!src/react/virtualized/**",
         "test/react/**",
+        "!test/react/virtualized*",
+        "!test/react/virtualized/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml",
+        "vitest.config.mjs"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:react-virtualized": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:react",
+        "typecheck:partition:react-virtualized"
+      ],
+      "inputs": [
+        "src/react/virtualized.*",
+        "src/react/virtualized/**",
+        "test/react/virtualized*",
+        "test/react/virtualized/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -422,7 +492,9 @@
     "test:partition:yjs": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:dom",
         "typecheck:partition:history",
         "typecheck:partition:react",
         "typecheck:partition:testing",
@@ -456,6 +528,7 @@
         "typecheck:partition:history",
         "typecheck:partition:pagination",
         "typecheck:partition:react",
+        "typecheck:partition:react-virtualized",
         "typecheck:partition:testing",
         "typecheck:partition:yjs",
         "typecheck:contracts",
@@ -525,6 +598,7 @@
       "dependsOn": [],
       "inputs": [
         "src/annotations/**",
+        "src/internal/index.*",
         "src/**",
         "!src/authored/**",
         "!src/diff/**",
@@ -534,6 +608,8 @@
         "!src/pagination/**",
         "!src/pagination/react.*",
         "!src/react/**",
+        "!src/react/virtualized.*",
+        "!src/react/virtualized/**",
         "!src/testing/**",
         "!src/yjs/**",
         "!src/yjs/react/**",
@@ -668,6 +744,8 @@
       "dependsOn": ["typecheck:partition:core", "typecheck:partition:dom"],
       "inputs": [
         "src/react/**",
+        "!src/react/virtualized.*",
+        "!src/react/virtualized/**",
         "!src/**/*.spec.*",
         "!src/**/*.test.*",
         "!src/**/*.slow.*",
@@ -687,6 +765,33 @@
       "outputs": [
         ".turbo/entrypoint-types/react/**",
         ".turbo/entrypoint-types/react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:react-virtualized": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:react"],
+      "inputs": [
+        "src/react/virtualized.*",
+        "src/react/virtualized/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/react-virtualized.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/react-virtualized/**",
+        ".turbo/entrypoint-types/react-virtualized.tsbuildinfo"
       ]
     },
     "typecheck:partition:testing": {
@@ -746,11 +851,13 @@
     "typecheck:tests": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:diff",
         "typecheck:partition:dom",
         "typecheck:partition:history",
         "typecheck:partition:react",
+        "typecheck:partition:react-virtualized",
         "typecheck:partition:testing",
         "typecheck:partition:yjs"
       ],

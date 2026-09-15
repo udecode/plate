@@ -22,6 +22,7 @@ import {
   getYjsTextContentFrom,
   getYjsVisibleChildren,
   insertYjsChild,
+  readPliteNodeFromYjs,
   resolveYjsTextPoint,
   splitVisibleYjsChildren,
   type YjsPropertyContext,
@@ -328,6 +329,19 @@ export const applyCanonicalSplitToYjs = (
     const sibling = textSiblings[index];
 
     if (!(sibling instanceof Y.XmlText)) break;
+    if (index !== textIndex) {
+      const siblingText = readPliteNodeFromYjs(root, sibling);
+
+      if (
+        !isText(siblingText) ||
+        !areJsonLikeValuesEqual(
+          nodeProperties(siblingText, 'text'),
+          split.textProperties
+        )
+      ) {
+        break;
+      }
+    }
     contiguousTextLength += getYjsLength(sibling);
   }
 

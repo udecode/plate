@@ -13,7 +13,7 @@ for (const [variant, tag] of [
 
     const fixture = page.getByRole('region', { name: variant, exact: true });
     const editor = page.getByRole('textbox', { name: `${variant} editor` });
-    const target = editor.locator('[data-plite-node="element"]').nth(1);
+    const target = editor.locator('[data-editor-node="element"]').nth(1);
     const focusButton = fixture.getByRole('button', {
       name: 'Focus',
       exact: true,

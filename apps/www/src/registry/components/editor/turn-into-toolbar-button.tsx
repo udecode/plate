@@ -16,7 +16,7 @@ import {
   QuoteIcon,
   SquareIcon,
 } from 'lucide-react';
-import { ElementApi, PLUGINS } from 'platejs';
+import { BaseParagraphPlugin, ElementApi, PLUGINS } from 'platejs';
 import { useEditor, useSelectionFragmentProp } from 'platejs/react';
 import * as React from 'react';
 
@@ -111,7 +111,7 @@ export function TurnIntoToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
   const documentValue = useSelectionFragmentProp({
-    defaultValue: editor.plugin(PLUGINS.paragraph).schema.type,
+    defaultValue: editor.plugin(BaseParagraphPlugin).schema.type,
     getProp: (node) =>
       ElementApi.isElement(node) ? getBlockType(editor, node) : undefined,
   });

@@ -3,13 +3,13 @@ import type { Draft } from 'mutative';
 /** Shared type contracts for Plate plugin definitions. */
 import type {
   EditorCoreStateView,
-  DefinitionOf as PliteDefinitionOf,
-  EditorExtensionDependencyReference,
-  EditorExtensionDefinition,
-  EditorExtensionReference,
+  DefinitionOf as RuntimeDefinitionOf,
+  RuntimePluginDependencyReference,
+  RuntimePluginDefinition,
+  RuntimePluginReference,
   EditorReadMethodTree,
   EditorUpdatePolicy,
-  Editor as PliteEditor,
+  Editor as RuntimeEditor,
   Element,
   Path,
   PropertyValueDescriptor,
@@ -23,8 +23,8 @@ import type {
   SchemaTextPropertyOptions,
   Text,
   EditorSchemaSourceProvider,
-  EditorExtensionDependencyReferenceFor,
-  EditorExtensionInstalledCapabilitiesOf,
+  RuntimePluginDependencyReferenceFor,
+  RuntimePluginInstalledCapabilitiesOf,
 } from '../../facade';
 import type { AnyObject } from '../types/AnyObject';
 import type { Nullable } from '../types/Nullable';
@@ -57,15 +57,14 @@ export type BasePluginDefinition = Readonly<{
   api?: object;
   codecs?: true;
   commands?: true;
-  conflicts?: ReadonlyArray<EditorExtensionReference | PluginReference>;
+  conflicts?: ReadonlyArray<RuntimePluginReference | PluginReference>;
   contributions?: true;
   corrections?: true;
   decorate?: true;
-  dependencies?: ReadonlyArray<EditorExtensionReference | PluginReference>;
+  dependencies?: ReadonlyArray<RuntimePluginReference | PluginReference>;
   editOnly?: true;
   effectTypes?: true;
   enabled?: boolean;
-  facetProviders?: true;
   initialState?: object;
   inject?: true;
   inputRules?: true;
@@ -99,7 +98,7 @@ type PublicDependencyReference<P> =
       ? Readonly<{ enabled: TEnabled; name: TName }>
       : P extends Readonly<{ name: infer TName extends string }>
         ? Readonly<{ name: TName }>
-        : EditorExtensionDependencyReference;
+        : RuntimePluginDependencyReference;
 
 type PublicDependencyReferences<TReferences> =
   TReferences extends readonly unknown[]
@@ -121,7 +120,7 @@ type PublicPluginDefinition<D extends AnyBasePluginDefinition> = Readonly<{
 /** Extract the exact normalized public definition from a Base or Plate descriptor. */
 export type DefinitionOf<P> = P extends unknown
   ? [ExactPluginDefinitionOf<P>] extends [never]
-    ? PliteDefinitionOf<P> extends infer D extends AnyBasePluginDefinition
+    ? RuntimeDefinitionOf<P> extends infer D extends AnyBasePluginDefinition
       ? D
       : never
     : ExactPluginDefinitionOf<P> extends infer D extends AnyBasePluginDefinition
@@ -251,7 +250,7 @@ export type PluginBase<
   slots: Nullable<{
     /** Wraps the Editable content and its lifecycle effects. */
     wrapContent?: NodeComponent<{ children: any }>;
-    /** Wraps the complete Plite root for the mounted Plate view. */
+    /** Wraps the complete editor root for the mounted view. */
     wrapRoot?: NodeComponent<{ children: any }>;
   }>;
   rules: {
@@ -311,15 +310,13 @@ export type PluginBase<
   enabled?: InferEnabled<C>;
 };
 
-declare const pluginReference: unique symbol;
+declare const platePluginReference: unique symbol;
 
-export interface PluginReference<TName extends string = string> {
-  /**
-   * Nominal descriptor identity.
-   *
-   * @internal
-   */
-  readonly [pluginReference]: true;
+export interface PluginReference<
+  TName extends string = string,
+> extends RuntimePluginReference {
+  /** Plate-owned type projection over the shared plugin descriptor identity. */
+  readonly [platePluginReference]: true;
   readonly name: TName;
 }
 
@@ -343,8 +340,8 @@ export interface PluginDependency<in out TPlugin> {
 export type PluginDependencySource<P> =
   P extends PluginDependency<infer TPlugin> ? TPlugin : never;
 
-type NormalizePliteDefinition<TDefinition> =
-  TDefinition extends EditorExtensionDefinition
+type NormalizeRuntimeDefinition<TDefinition> =
+  TDefinition extends RuntimePluginDefinition
     ? Readonly<{
         [
           TKey in keyof TDefinition as TKey extends
@@ -359,14 +356,14 @@ type NormalizePliteDefinition<TDefinition> =
         Readonly<{ name: TDefinition['name'] }>
     : never;
 
-type DependencyInstalledDefinitionOf<P> = NormalizePliteDefinition<
-  EditorExtensionInstalledCapabilitiesOf<P>
+type DependencyInstalledDefinitionOf<P> = NormalizeRuntimeDefinition<
+  RuntimePluginInstalledCapabilitiesOf<P>
 >;
 
-type PliteDependencyInstalledDefinitionOf<P> = [
+type RuntimeDependencyInstalledDefinitionOf<P> = [
   DependencyInstalledDefinitionOf<P>,
 ] extends [never]
-  ? DependencyInstalledDefinitionOf<EditorExtensionDependencyReferenceFor<P>>
+  ? DependencyInstalledDefinitionOf<RuntimePluginDependencyReferenceFor<P>>
   : DependencyInstalledDefinitionOf<P>;
 
 type SourcePluginDefinitionOf<TSource> = TSource extends AnyBasePluginDefinition
@@ -395,7 +392,7 @@ type SourcePluginInstalledDefinitionOf<P> =
 type PluginDependencyInstalledDefinitionOf<P> = [
   SourcePluginInstalledDefinitionOf<P>,
 ] extends [never]
-  ? ExactPluginDefinitionOf<P> | PliteDependencyInstalledDefinitionOf<P>
+  ? ExactPluginDefinitionOf<P> | RuntimeDependencyInstalledDefinitionOf<P>
   : SourcePluginInstalledDefinitionOf<P>;
 
 type PluginBlockContentOptions = Omit<SchemaContentOptions, 'default'> &
@@ -426,7 +423,7 @@ export type PluginSchemaMark =
       }
     >;
 
-export type PlateSchemaElement = SchemaElement &
+export type PluginSchemaElement = SchemaElement &
   Readonly<{
     /** Whether this element is legal in Plate normal block content. */
     blockContent?: boolean;
@@ -438,9 +435,9 @@ export type PluginSchemaPropertyMap = Readonly<
   Record<string, SchemaPropertyDefinition | SchemaProperty>
 >;
 
-type PluginSchemaElement = Readonly<{
+type PluginElementSchemaDeclaration = Readonly<{
   contentRoots?: readonly SchemaContentRootContribution[];
-  element: PlateSchemaElement;
+  element: PluginSchemaElement;
   mark?: never;
   properties?: PluginSchemaPropertyMap;
 }>;
@@ -468,7 +465,7 @@ type PluginSchemaContentRoots = Readonly<{
 
 export type PluginSchemaDeclaration =
   | PluginSchemaContentRoots
-  | PluginSchemaElement
+  | PluginElementSchemaDeclaration
   | PluginSchemaProperties
   | PluginSchemaText;
 
@@ -578,7 +575,7 @@ export type SelectionRules = {
    *   apply the mark to new text.
    * - `hard`: Creates a 'hard' edge that requires two key presses to move across.
    *   Uses offset-based navigation.
-   * - `default`: Uses Plite's default behavior.
+   * - `default`: Uses the editor's default behavior.
    */
   affinity?: 'default' | 'directional' | 'hard' | 'outward';
 };
@@ -688,7 +685,7 @@ export type InferTargetPlugins<P extends AnyBasePluginDefinition> =
 
 export type InferDependencies<P> = P extends {
   dependencies?: infer D extends ReadonlyArray<
-    EditorExtensionReference | PluginReference
+    RuntimePluginReference | PluginReference
   >;
 }
   ? D
@@ -696,7 +693,7 @@ export type InferDependencies<P> = P extends {
 
 export type InferConflicts<P> = P extends {
   conflicts?: infer D extends ReadonlyArray<
-    EditorExtensionReference | PluginReference
+    RuntimePluginReference | PluginReference
   >;
 }
   ? D
@@ -716,7 +713,7 @@ export type InferOwnApi<P extends AnyBasePluginDefinition> = InferApi<P>;
 export type NormalizePluginState<T> =
   IsAny<T> extends true
     ? T
-    : T extends PliteEditor
+    : T extends RuntimeEditor
       ? T
       : T extends PluginReference<infer TName>
         ? PluginReference<TName>
@@ -862,7 +859,7 @@ export type InferOwnRead<P extends AnyBasePluginDefinition> = InferRead<P>;
 export type InferOwnUpdate<P extends AnyBasePluginDefinition> = InferUpdate<P>;
 
 /**
- * Renders a component for Plite nodes declared by `schema.element` or
+ * Renders a component for editor nodes declared by `schema.element` or
  * `schema.mark` that match this plugin's type. This is the primary render
  * method for plugin-specific node content.
  *

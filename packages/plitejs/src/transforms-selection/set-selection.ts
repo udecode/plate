@@ -2,6 +2,7 @@ import {
   getCurrentSelection,
   getCurrentSelectionRoot,
   getEditorUpdateRoot,
+  markTransactionSelectionWritten,
   setCurrentSelection,
   syncImplicitTargetToCurrentSelection,
 } from '../core/public-state';
@@ -23,12 +24,13 @@ type MutableRangeProperties = {
 
 export const writeSelection = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>,
+  editor: Editor<V, TPlugins>,
   selection: Selection,
   root = getEditorUpdateRoot(editor)
 ) => {
+  markTransactionSelectionWritten(editor);
   setCurrentSelection(editor, selection, root);
   syncImplicitTargetToCurrentSelection(editor);
 };
@@ -37,6 +39,7 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
   editor,
   props
 ) => {
+  markTransactionSelectionWritten(editor);
   const selection = getCurrentSelection(editor);
   const oldProps: MutableRangeProperties = {};
   const newProps: MutableRangeProperties = {};

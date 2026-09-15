@@ -131,12 +131,12 @@ const lawSchemas = Array.from({ length: 3 }, (_unused, grammar) =>
 );
 
 const createLawEditor = (grammar: number, policy: number) => {
-  const extension = lawSchemas[grammar]?.[policy];
+  const plugin = lawSchemas[grammar]?.[policy];
 
-  assert.ok(extension);
+  assert.ok(plugin);
 
   return createEditor({
-    extensions: [extension],
+    plugins: [plugin],
     initialValue: {
       children: [
         section([paragraph('main-alpha'), paragraph('main-bravo')]),

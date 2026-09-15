@@ -63,12 +63,12 @@ const editor = createEditor({
 ### 创建插件
 
 ```tsx
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { FixedToolbarButtons } from '@/components/editor/fixed-toolbar';
 import { FloatingToolbar } from '@/components/editor/floating-toolbar';
 
-const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
+const fixedToolbarPlugin = definePlugin('fixedToolbar', {
   slots: {
     beforeEditable: () => (
       <FixedToolbar>
@@ -78,7 +78,7 @@ const fixedToolbarPlugin = definePlatePlugin('fixedToolbar', {
   },
 });
 
-const floatingToolbarPlugin = definePlatePlugin('floatingToolbar', {
+const floatingToolbarPlugin = definePlugin('floatingToolbar', {
   slots: {
     afterEditable: FloatingToolbar,
   },

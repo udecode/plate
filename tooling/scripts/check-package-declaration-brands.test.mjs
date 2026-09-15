@@ -64,32 +64,33 @@ test('allows ordinary public Plate constants', () => {
   );
 });
 
-test('rejects leaked Plite witnesses and public dependency generics', () => {
+test('rejects leaked plugin witnesses and public dependency generics', () => {
   assert.deepEqual(
     audit(`
-      declare const PublicExtension: {
-        readonly [editorExtensionDefinition]: { definition: unknown };
+      declare const PublicPlugin: {
+        readonly [pluginDefinition]: { definition: unknown };
       };
-      type Rebuilt = EditorExtension<ExampleDefinition, readonly [Dependency]>;
+      type Rebuilt = Plugin<ExampleDefinition, readonly [Dependency]>;
     `),
     [
-      'dist/index.d.ts: public declaration exposes private Plite witness editorExtensionDefinition',
-      'dist/index.d.ts: EditorExtension exposes a public dependencies generic; keep EditorExtension<Definition> and private transitive requirements',
+      'dist/index.d.ts: public declaration exposes private plugin witness pluginDefinition',
+      'dist/index.d.ts: Plugin exposes a public dependencies generic; keep Plugin<Definition> and private transitive requirements',
     ]
   );
 });
 
-test('allows the private Plite witness owner and one public definition generic', () => {
+test('allows the private plugin witness owner and one public definition generic', () => {
   assert.deepEqual(
     audit(`
-      declare const editorExtensionDefinition: unique symbol;
-      type EditorExtensionShape<TDefinition> = {
-        readonly [editorExtensionDefinition]: {
+      declare const pluginDefinition: unique symbol;
+      type PluginShape<TDefinition> = {
+        readonly [pluginDefinition]: {
           definition: (value: TDefinition) => TDefinition;
         };
       };
-      type EditorExtension<TDefinition> = EditorExtensionShape<TDefinition>;
-      type ExampleExtension = EditorExtension<ExampleDefinition>;
+      type Plugin<TDefinition> = PluginShape<TDefinition>;
+      type ExamplePlugin = Plugin<ExampleDefinition>;
+      type UnifiedPlugin = import('unified').Plugin<any[], any, any>;
     `),
     []
   );
@@ -98,19 +99,19 @@ test('allows the private Plite witness owner and one public definition generic',
 test('keeps root dependency references shallow and internal carriers off root', () => {
   assert.deepEqual(
     audit(`
-      type Bad = EditorExtensionDependencyReference<Capability>;
-      export type { EditorExtensionTypeLambda };
-      export type { InternalEditorExtensionTypeProviderOf };
+      type Bad = PluginDependencyReference<Capability>;
+      export type { PluginTypeLambda };
+      export type { PluginTypeProviderOf };
     `),
     [
-      'dist/index.d.ts: EditorExtensionDependencyReference must remain shallow and non-generic',
-      'dist/index.d.ts: root declaration exposes internal Plite dependency type EditorExtensionTypeLambda',
-      'dist/index.d.ts: root declaration exposes internal Plite dependency type InternalEditorExtensionTypeProviderOf',
+      'dist/index.d.ts: PluginDependencyReference must remain shallow and non-generic',
+      'dist/index.d.ts: root declaration exposes internal Plite dependency type PluginTypeLambda',
+      'dist/index.d.ts: root declaration exposes internal Plite dependency type PluginTypeProviderOf',
     ]
   );
   assert.deepEqual(
     audit(`
-      interface EditorExtensionDependencyReference {
+      interface PluginDependencyReference {
         readonly enabled?: boolean;
         readonly name: string;
       }
@@ -119,41 +120,41 @@ test('keeps root dependency references shallow and internal carriers off root', 
   );
   assert.deepEqual(
     audit(`
-      interface EditorExtensionDependencyReference {
+      interface PluginDependencyReference {
         readonly api: unknown;
         readonly enabled?: boolean;
         readonly name: string;
       }
     `),
     [
-      'dist/index.d.ts: EditorExtensionDependencyReference must contain exactly readonly name: string and readonly enabled?: boolean',
+      'dist/index.d.ts: PluginDependencyReference must contain exactly readonly name: string and readonly enabled?: boolean',
     ]
   );
   assert.deepEqual(
     audit(`
-      type EditorExtensionDependencyReference = Readonly<{
+      type PluginDependencyReference = Readonly<{
         enabled?: boolean;
         name: string;
       }>;
     `),
     [
-      'dist/index.d.ts: EditorExtensionDependencyReference must remain the exact shallow interface',
+      'dist/index.d.ts: PluginDependencyReference must remain the exact shallow interface',
     ]
   );
   assert.deepEqual(
     auditAt(
       'dist/internal/index.d.ts',
       `
-        export type { EditorExtensionTypeLambda };
-        export type { InternalEditorExtensionTypeProviderOf };
+        export type { PluginTypeLambda };
+        export type { PluginTypeProviderOf };
       `
     ),
     []
   );
   assert.deepEqual(
-    auditAt('dist/index.d.mts', `export type { EditorExtensionTypeLambda };`),
+    auditAt('dist/index.d.mts', `export type { PluginTypeLambda };`),
     [
-      'dist/index.d.mts: root declaration exposes internal Plite dependency type EditorExtensionTypeLambda',
+      'dist/index.d.mts: root declaration exposes internal Plite dependency type PluginTypeLambda',
     ]
   );
 });
@@ -164,12 +165,12 @@ test('keeps Core author-to-canonical carriers off public entrypoints', () => {
       'dist/react/index.d.ts',
       `
         export type { PluginDefinitionCarrier };
-        type Runtime = StaticEditorExtensionTypeLambda<Definition>;
+        type Runtime = StaticPluginTypeLambda<Definition>;
       `
     ),
     [
       'dist/react/index.d.ts: public declaration exposes internal Core author-to-canonical type PluginDefinitionCarrier',
-      'dist/react/index.d.ts: public declaration exposes internal Core author-to-canonical type StaticEditorExtensionTypeLambda',
+      'dist/react/index.d.ts: public declaration exposes internal Core author-to-canonical type StaticPluginTypeLambda',
     ]
   );
   assert.deepEqual(
@@ -177,7 +178,7 @@ test('keeps Core author-to-canonical carriers off public entrypoints', () => {
       'dist/react/internal/index.d.ts',
       `
         export type { PluginDefinitionCarrier };
-        type Runtime = StaticEditorExtensionTypeLambda<Definition>;
+        type Runtime = StaticPluginTypeLambda<Definition>;
       `
     ),
     []
@@ -195,12 +196,12 @@ test('keeps Plate plugin compiler machinery private and out of leaf declarations
   const symbols = [
     'InternalDefinitionOf',
     'PluginDefinitionCarrier',
-    'StaticEditorExtensionTypeLambda',
+    'StaticPluginTypeLambda',
     'PluginDefinitionProvider',
     'PluginDefinitionRoot',
     'PluginDefinitionFromRoot',
     'NormalizeBasePluginInput',
-    'NormalizePlatePluginInput',
+    'NormalizePluginInput',
     'MergePluginDefinitions',
     'MergePluginState',
     'BasePluginContextualDescriptor',
@@ -215,12 +216,12 @@ test('keeps Plate plugin compiler machinery private and out of leaf declarations
     'BasePluginStageDefinition',
     'BasePluginStage',
     'ExtendedBasePlugin',
-    'PlatePluginMethods',
+    'PluginMethods',
     'MergePlatePluginDefinitions',
     'PlatePluginConstructorDefinition',
     'PlatePluginConstructorProvider',
     'PlatePluginConstructorResult',
-    'PlatePluginStageDefinition',
+    'PluginStageDefinition',
     'PlatePluginStage',
     'ExtendedPlatePlugin',
     'PlatePluginAdapterProvider',
@@ -260,11 +261,11 @@ test('keeps Plate plugin compiler machinery private and out of leaf declarations
       'dist/react/index.d.ts',
       `
         export interface BasePlugin<D> {}
-        export interface PlatePlugin<D> {}
+        export interface Plugin<D> {}
         export type DefinitionOf<P> = P;
         export interface PluginReference { readonly name: string }
-        export interface EditorExtensionTypeProvider<T> {
-          readonly __editorExtensionTypes?: T;
+        export interface PluginTypeProvider<T> {
+          readonly __pluginTypes?: T;
         }
       `
     ),
@@ -274,36 +275,36 @@ test('keeps Plate plugin compiler machinery private and out of leaf declarations
 
 test('keeps package-specific type lambdas private behind public type providers', () => {
   const privateLambda = `
-    interface HistoryExtensionTypeLambda {
+    interface HistoryPluginTypeLambda {
       readonly input: Value;
-      readonly output: HistoryExtensionTypes<this['input']>;
+      readonly output: HistoryPluginTypes<this['input']>;
     }
-    type HistoryExtensionTypeProvider =
-      EditorExtensionTypeProvider<HistoryExtensionTypeLambda>;
-    export { HistoryExtensionTypeProvider };
+    type HistoryPluginTypeProvider =
+      PluginTypeProvider<HistoryPluginTypeLambda>;
+    export { HistoryPluginTypeProvider };
   `;
 
   assert.deepEqual(audit(privateLambda), []);
   assert.deepEqual(
     audit(
       privateLambda.replace(
-        'export { HistoryExtensionTypeProvider };',
-        'export { HistoryExtensionTypeLambda, HistoryExtensionTypeProvider };'
+        'export { HistoryPluginTypeProvider };',
+        'export { HistoryPluginTypeLambda, HistoryPluginTypeProvider };'
       )
     ),
     [
-      'dist/index.d.ts: public declaration exports package-specific type lambda HistoryExtensionTypeLambda; expose a *TypeProvider and keep EditorExtensionTypeLambda internal',
+      'dist/index.d.ts: public declaration exports package-specific type lambda HistoryPluginTypeLambda; expose a *TypeProvider and keep PluginTypeLambda internal',
     ]
   );
-  assert.deepEqual(audit(`export interface HistoryExtensionTypeLambda {}`), [
-    'dist/index.d.ts: public declaration exports package-specific type lambda HistoryExtensionTypeLambda; expose a *TypeProvider and keep EditorExtensionTypeLambda internal',
+  assert.deepEqual(audit(`export interface HistoryPluginTypeLambda {}`), [
+    'dist/index.d.ts: public declaration exports package-specific type lambda HistoryPluginTypeLambda; expose a *TypeProvider and keep PluginTypeLambda internal',
   ]);
   assert.deepEqual(
     audit(`export type { LocalHistoryTypeLambda as PublicHistoryTypeLambda };`),
     [
-      'dist/index.d.ts: public declaration exports package-specific type lambda LocalHistoryTypeLambda; expose a *TypeProvider and keep EditorExtensionTypeLambda internal',
-      'dist/index.d.ts: public declaration exports package-specific type lambda PublicHistoryTypeLambda; expose a *TypeProvider and keep EditorExtensionTypeLambda internal',
+      'dist/index.d.ts: public declaration exports package-specific type lambda LocalHistoryTypeLambda; expose a *TypeProvider and keep PluginTypeLambda internal',
+      'dist/index.d.ts: public declaration exports package-specific type lambda PublicHistoryTypeLambda; expose a *TypeProvider and keep PluginTypeLambda internal',
     ]
   );
-  assert.deepEqual(audit(`export type { HistoryExtensionTypeProvider };`), []);
+  assert.deepEqual(audit(`export type { HistoryPluginTypeProvider };`), []);
 });

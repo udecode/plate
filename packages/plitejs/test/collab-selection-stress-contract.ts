@@ -45,7 +45,7 @@ const createCollabEditor = ({
   children?: Element[];
   selection: TextSelection;
 }) => {
-  const editor = createEditor({ extensions: [history()] as const });
+  const editor = createEditor({ plugins: [history()] as const });
 
   editorReplace(editor, {
     children,

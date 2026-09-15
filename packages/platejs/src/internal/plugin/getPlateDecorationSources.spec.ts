@@ -1,10 +1,10 @@
-import type { NodeEntry, PliteDecoration } from '../../facade';
+import type { NodeEntry, Decoration } from '../../facade';
 import { createEditor } from '../../lib/editor/withPlite';
-import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import { getPlateDecorationSources } from './getPlateDecorationSources';
 
 const entry: NodeEntry = [{ text: 'paint' }, [0, 0]];
-const decoration: PliteDecoration = {
+const decoration: Decoration = {
   attributes: {
     'data-feature': '',
     'data-priority': 'semantic',
@@ -21,7 +21,7 @@ const rows = [decoration];
 
 describe('Plate decoration presentation', () => {
   it('merges presentation while retaining semantic markers, order and ranges', () => {
-    const plugin = defineBasePlugin('paint', {
+    const plugin = definePlugin('paint', {
       decorate: { read: () => [decoration, { ...decoration, key: 'second' }] },
     }).configure({
       decorate: {
@@ -49,7 +49,7 @@ describe('Plate decoration presentation', () => {
   it.each([undefined, null])(
     'retains source results with presentation %s',
     (attributes) => {
-      const plugin = defineBasePlugin('paint', {
+      const plugin = definePlugin('paint', {
         decorate: { attributes, read: () => rows },
       });
       const editor = createEditor({ plugins: [plugin] });
@@ -59,7 +59,7 @@ describe('Plate decoration presentation', () => {
   );
 
   it('clears inherited presentation without clearing the reader', () => {
-    const plugin = defineBasePlugin('paint', {
+    const plugin = definePlugin('paint', {
       decorate: { attributes: { className: 'paint' }, read: () => rows },
     }).configure({ decorate: { attributes: null } });
     const editor = createEditor({ plugins: [plugin] });
@@ -70,7 +70,7 @@ describe('Plate decoration presentation', () => {
   it('preserves terminal configuration, one observer and cleanup through author stages', () => {
     let observations = 0;
     let cleanups = 0;
-    const plugin = defineBasePlugin('paint', {
+    const plugin = definePlugin('paint', {
       decorate: {
         observe: ({ refresh, store }) => {
           observations += 1;
@@ -111,7 +111,7 @@ describe('Plate decoration presentation', () => {
 
   it('uses the supplied editor view for both reading and presentation', () => {
     const seen: object[] = [];
-    const plugin = defineBasePlugin('paint', {
+    const plugin = definePlugin('paint', {
       decorate: {
         attributes: ({ decoration: current, editor, entry: currentEntry }) => {
           seen.push(editor);
@@ -137,9 +137,9 @@ describe('Plate decoration presentation', () => {
   });
 
   it('retains empty results without evaluating presentation', () => {
-    const empty: readonly PliteDecoration[] = [];
+    const empty: readonly Decoration[] = [];
     const attributes = mock(() => ({ className: 'paint' }));
-    const plugin = defineBasePlugin('paint', {
+    const plugin = definePlugin('paint', {
       decorate: { attributes, read: () => empty },
     });
     const editor = createEditor({ plugins: [plugin] });
@@ -150,7 +150,7 @@ describe('Plate decoration presentation', () => {
 
   it('propagates presentation errors through source reads', () => {
     const error = new Error('paint failed');
-    const plugin = defineBasePlugin('paint', {
+    const plugin = definePlugin('paint', {
       decorate: {
         attributes: () => {
           throw error;

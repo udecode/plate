@@ -47,7 +47,7 @@ const createSeededEditor = (
   selection: Range | null = null
 ) =>
   createEditor<Value, readonly [typeof UpstreamHelperSchema]>({
-    extensions: [UpstreamHelperSchema] as const,
+    plugins: [UpstreamHelperSchema] as const,
     initialSelection: selection ? SelectionApi.text(selection) : null,
     initialValue: children,
   });
@@ -336,7 +336,7 @@ describe('old Slate helper behavior through current Plite APIs', () => {
 
   it('covers old block/above/edgeBlocks helpers with state.nodes.block and state.ranges.edges', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineTestSchema('nested-block-helper-loss', {
           blockquote: { content: schema.content.text({ min: 1 }) },
           paragraph: {

@@ -88,7 +88,7 @@ const state = {
   sourceReads: 0,
   surface: '',
 }
-globalThis.__PLITE_REACT_RENDER_PROFILER__ = {
+globalThis.__EDITOR_REACT_RENDER_PROFILER__ = {
   record: (event) => state.pliteEvents.push(event),
 }
 
@@ -221,7 +221,7 @@ const clear = () => {
 }
 
 const getHandle = () => {
-  const root = app.querySelector('[data-plite-editor="true"]')
+  const root = app.querySelector('[data-editor="true"]')
   const handle = root?.__pliteBrowserHandle
   if (!root || !handle) throw new Error('Missing Plite browser handle')
   return { handle, root }
@@ -231,7 +231,7 @@ const waitForHandle = async () => {
   let paintedFrames = 0
 
   for (let attempt = 0; attempt < 300; attempt += 1) {
-    const root = app.querySelector('[data-plite-editor="true"]')
+    const root = app.querySelector('[data-editor="true"]')
     const handle = root?.__pliteBrowserHandle
 
     if (root && handle && paintedFrames >= 2) return { handle, root }
@@ -334,7 +334,6 @@ const install = async (surface, lineCount, chars, fixture) => {
         Plite,
         { decorations: rangesFor(lineCount, chars, fixture).length ? [source] : [], editor },
         React.createElement(Editable, {
-          domStrategy: 'auto',
           renderElement,
           renderLeaf,
           spellCheck: false,
@@ -420,7 +419,7 @@ const snapshot = () => {
   const modelText = handle.getText()
   const content = root
   const domText = content.textContent ?? ''
-  const flow = content.querySelector('[data-plite-text-flow="true"]')
+  const flow = content.querySelector('[data-editor-text-flow="true"]')
   const semanticElements = Array.from(
     content.querySelectorAll('a,b,code,em,i,mark,s,strong,sub,sup,u')
   )
@@ -470,19 +469,19 @@ const snapshot = () => {
     modelSelection: handle.getSelection(),
     modelTextLength: modelText.length,
     pliteEventCounts,
-    flowBoundaryVisits: Number(flow?.getAttribute('data-plite-text-flow-boundary-visits') ?? 0),
-    flowCreatedSegments: Number(flow?.getAttribute('data-plite-text-flow-created-segments') ?? 0),
-    flowDeferredTextChangeCount: Number(flow?.getAttribute('data-plite-text-flow-deferred-text-change-count') ?? 0),
-    flowDeferredTextChanges: Number(flow?.getAttribute('data-plite-text-flow-deferred-text-changes') ?? 0),
-    flowIncrementalTextChanges: Number(flow?.getAttribute('data-plite-text-flow-incremental-text-changes') ?? 0),
-    flowIncrementalTextChangeCount: Number(flow?.getAttribute('data-plite-text-flow-incremental-text-change-count') ?? 0),
-    flowRecords: Number(flow?.getAttribute('data-plite-text-flow-records') ?? 0),
-    flowReconcileCount: Number(flow?.getAttribute('data-plite-text-flow-reconcile-count') ?? 0),
-    flowReconcileMs: Number(flow?.getAttribute('data-plite-text-flow-reconcile-ms') ?? 0),
-    flowRemovedSegments: Number(flow?.getAttribute('data-plite-text-flow-removed-segments') ?? 0),
-    flowRebuildCount: Number(flow?.getAttribute('data-plite-text-flow-rebuild-count') ?? 0),
-    flowReusedSegments: Number(flow?.getAttribute('data-plite-text-flow-reused-segments') ?? 0),
-    flowSegments: Number(flow?.getAttribute('data-plite-text-flow-segments') ?? 0),
+    flowBoundaryVisits: Number(flow?.getAttribute('data-editor-text-flow-boundary-visits') ?? 0),
+    flowCreatedSegments: Number(flow?.getAttribute('data-editor-text-flow-created-segments') ?? 0),
+    flowDeferredTextChangeCount: Number(flow?.getAttribute('data-editor-text-flow-deferred-text-change-count') ?? 0),
+    flowDeferredTextChanges: Number(flow?.getAttribute('data-editor-text-flow-deferred-text-changes') ?? 0),
+    flowIncrementalTextChanges: Number(flow?.getAttribute('data-editor-text-flow-incremental-text-changes') ?? 0),
+    flowIncrementalTextChangeCount: Number(flow?.getAttribute('data-editor-text-flow-incremental-text-change-count') ?? 0),
+    flowRecords: Number(flow?.getAttribute('data-editor-text-flow-records') ?? 0),
+    flowReconcileCount: Number(flow?.getAttribute('data-editor-text-flow-reconcile-count') ?? 0),
+    flowReconcileMs: Number(flow?.getAttribute('data-editor-text-flow-reconcile-ms') ?? 0),
+    flowRemovedSegments: Number(flow?.getAttribute('data-editor-text-flow-removed-segments') ?? 0),
+    flowRebuildCount: Number(flow?.getAttribute('data-editor-text-flow-rebuild-count') ?? 0),
+    flowReusedSegments: Number(flow?.getAttribute('data-editor-text-flow-reused-segments') ?? 0),
+    flowSegments: Number(flow?.getAttribute('data-editor-text-flow-segments') ?? 0),
     reactActualDurationMs: state.reactEvents.reduce((sum, event) => sum + event.actualDuration, 0),
     reactCommitCount: state.reactEvents.length,
     sourceReads: state.sourceReads,
@@ -493,12 +492,12 @@ const snapshot = () => {
       (length, element) => length + (element.textContent?.length ?? 0),
       0
     ),
-    textHosts: content.querySelectorAll('[data-plite-node="text"]').length,
+    textHosts: content.querySelectorAll('[data-editor-node="text"]').length,
     tokenElements: content.querySelectorAll('[data-token]').length,
   }
 }
 
-globalThis.__PLITE_TEXT_FLOW__ = {
+globalThis.__EDITOR_TEXT_FLOW__ = {
   assertState,
   install,
   nextPaint,
@@ -508,7 +507,7 @@ globalThis.__PLITE_TEXT_FLOW__ = {
   snapshot,
   waitForDecorationSettle,
 }
-globalThis.__PLITE_TEXT_FLOW_READY__ = true
+globalThis.__EDITOR_TEXT_FLOW_READY__ = true
 `;
 
 const html = (
@@ -718,7 +717,7 @@ const measureCells = async ({ fixture, lineCount }) => {
 
   const measurement = async () => {
     await page.setContent(html(bundle), { waitUntil: 'load' });
-    await page.waitForFunction(() => globalThis.__PLITE_TEXT_FLOW_READY__);
+    await page.waitForFunction(() => globalThis.__EDITOR_TEXT_FLOW_READY__);
     const accumulators = Object.fromEntries(
       surfaces.map((surface) => [surface, createCellAccumulator()])
     );
@@ -749,7 +748,7 @@ const measureCells = async ({ fixture, lineCount }) => {
             lineCount: lines,
             surface: selectedSurface,
           }) =>
-            globalThis.__PLITE_TEXT_FLOW__.install(
+            globalThis.__EDITOR_TEXT_FLOW__.install(
               selectedSurface,
               lines,
               chars,
@@ -766,7 +765,7 @@ const measureCells = async ({ fixture, lineCount }) => {
           await mountCPUSession.detach();
         }
         const mounted = await page.evaluate(() =>
-          globalThis.__PLITE_TEXT_FLOW__.snapshot()
+          globalThis.__EDITOR_TEXT_FLOW__.snapshot()
         );
         const hasDecorations = ['sparse', 'dense', 'overlap', 'code'].includes(
           fixture
@@ -785,7 +784,7 @@ const measureCells = async ({ fixture, lineCount }) => {
         }
         const refreshMs = hasDecorations
           ? await page.evaluate(() =>
-              globalThis.__PLITE_TEXT_FLOW__.refreshDecorations()
+              globalThis.__EDITOR_TEXT_FLOW__.refreshDecorations()
             )
           : 0;
 
@@ -799,7 +798,7 @@ const measureCells = async ({ fixture, lineCount }) => {
 
         await page.evaluate(
           ({ chars, fixture: selectedFixture, lineCount: lines }) =>
-            globalThis.__PLITE_TEXT_FLOW__.selectMiddle(
+            globalThis.__EDITOR_TEXT_FLOW__.selectMiddle(
               lines,
               chars,
               selectedFixture
@@ -820,21 +819,21 @@ const measureCells = async ({ fixture, lineCount }) => {
 
         for (let operation = 0; operation < typeOps; operation += 1) {
           await page.evaluate(
-            (text) => globalThis.__PLITE_TEXT_FLOW__.prepareInput(text),
+            (text) => globalThis.__EDITOR_TEXT_FLOW__.prepareInput(text),
             inserted
           );
           const typeStart = await page.evaluate(() => performance.now());
 
           await page.keyboard.type(inserted);
           await page.evaluate(() =>
-            globalThis.__PLITE_TEXT_FLOW__.assertState()
+            globalThis.__EDITOR_TEXT_FLOW__.assertState()
           );
           const typeEnd = await page.evaluate(() =>
-            globalThis.__PLITE_TEXT_FLOW__.nextPaint()
+            globalThis.__EDITOR_TEXT_FLOW__.nextPaint()
           );
           const settleEnd = hasDecorations
             ? await page.evaluate(() =>
-                globalThis.__PLITE_TEXT_FLOW__.waitForDecorationSettle()
+                globalThis.__EDITOR_TEXT_FLOW__.waitForDecorationSettle()
               )
             : typeEnd;
 
@@ -859,7 +858,7 @@ const measureCells = async ({ fixture, lineCount }) => {
           accumulator.snapshots.push({
             mounted,
             typed: await page.evaluate(() =>
-              globalThis.__PLITE_TEXT_FLOW__.snapshot()
+              globalThis.__EDITOR_TEXT_FLOW__.snapshot()
             ),
           });
         }

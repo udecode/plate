@@ -5,7 +5,7 @@ import {
   createEditor,
   createEditorView,
   DocumentChange,
-  defineExtension,
+  definePlugin,
   defineEffect,
   defineStateField,
   defineUpdateAnnotation,
@@ -37,9 +37,9 @@ const paragraph = (text: string): Element => ({
 
 const replaceSnapshot = editorReplace as unknown as <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>,
+  editor: Editor<V, TPlugins>,
   input: SnapshotInput
 ) => void;
 
@@ -51,6 +51,9 @@ describe('commit metadata contract', () => {
     const snapshot = editorGetSnapshot(header);
     const keys = snapshot.index.entries().map(([key]) => key);
     const created = editorGetLastCommit(editor)!;
+    for (const key of keys) {
+      assert.equal(created.changed.hasNodeKey(key, 'path'), true);
+    }
     assert.deepEqual(
       new Set(created.changed.nodeKeys('presence', 'header')),
       new Set(keys)
@@ -61,6 +64,9 @@ describe('commit metadata contract', () => {
     );
     editor.update((tx) => tx.roots.delete('header'));
     const deleted = editorGetLastCommit(editor)!;
+    for (const key of keys) {
+      assert.equal(deleted.changed.hasNodeKey(key, 'path'), false);
+    }
     assert.deepEqual(
       new Set(deleted.changed.nodeKeys('presence', 'header')),
       new Set(keys)
@@ -134,6 +140,87 @@ describe('commit metadata contract', () => {
       keyReads <= 64,
       `Read ${keyReads} paths for one appended paragraph`
     );
+  });
+
+  it('bounds precise path queries and unrelated details by demand', () => {
+    const editor = createEditor({
+      initialValue: Array.from({ length: 1000 }, () => paragraph('text')),
+    });
+    const before = editorGetSnapshot(editor);
+    const stable = before.index.keyAt([0])!;
+    const moved = before.index.keyAt([999, 0])!;
+    const foreign = createEditor({ initialValue: [paragraph('foreign')] }).key([
+      0,
+    ]);
+    editor.update.nodes.insert(paragraph('inserted'), { at: [1] });
+    const actual = editorGetLastCommit(editor)!;
+    const inserted = actual.after.index.keyAt([1])!;
+    let reads = 0;
+    const boundedIndex = (index: SnapshotIndex): SnapshotIndex => ({
+      entries: () => {
+        throw new Error('Precise path query enumerated the index');
+      },
+      keyAt: (path) => {
+        reads += 1;
+        return index.keyAt(path);
+      },
+      pathOf: (key) => {
+        reads += 1;
+        return index.pathOf(key);
+      },
+    });
+    const commit = createEditorCommit(
+      {
+        after: { ...actual.after, index: boundedIndex(actual.after.index) },
+        afterValue: { children: actual.after.children },
+        annotations: {},
+        before: { ...before, index: boundedIndex(before.index) },
+        beforeValue: { children: before.children },
+        changes: actual.changes,
+        dirtyStateKeys: [],
+        editor,
+        effects: [],
+        selectionAfter: null,
+        selectionAfterRoot: 'main',
+        selectionBefore: null,
+        selectionBeforeRoot: 'main',
+        selectionChanged: false,
+        tags: [],
+      },
+      { previousVersion: 0, version: 1 }
+    );
+    const expected = new Map([
+      [stable, false],
+      [moved, true],
+      [inserted, true],
+      [foreign, false],
+    ]);
+    for (const [key, changed] of expected) {
+      assert.equal(commit.changed.hasNodeKey(key, 'path'), changed);
+    }
+    assert.ok(reads <= 32, `Read ${reads} index entries for four keys`);
+    const firstReads = reads;
+    for (const [key, changed] of expected) {
+      assert.equal(commit.changed.hasNodeKey(key, 'path'), changed);
+    }
+    assert.equal(reads, firstReads);
+
+    assert.ok(!commit.changed.nodeKeys('node').includes(moved));
+    assert.ok(!commit.changed.nodeKeys('text').includes(moved));
+    assert.equal(commit.changed.hasAny('root-order'), true);
+    assert.ok(
+      reads <= 64,
+      `Read ${reads} index entries for node/text/order demand`
+    );
+    const paths = commit.changed.nodeKeysAll('path');
+    for (const [key, changed] of expected) {
+      assert.equal(paths.includes(key), changed);
+    }
+    const aggregateReads = reads;
+    for (const [key, changed] of expected) {
+      assert.equal(commit.changed.hasNodeKey(key, 'path'), changed);
+    }
+    assert.equal(reads, aggregateReads);
   });
 
   it('replaces one subtree without materializing unrelated runtime identities', () => {
@@ -412,6 +499,12 @@ describe('commit metadata contract', () => {
             JSON.stringify(beforePaths.get(key)) !== JSON.stringify(path)
         )
         .map(([key]) => key);
+      for (const key of new Set([...before, ...after])) {
+        assert.equal(
+          commit.changed.hasNodeKey(key, 'path'),
+          changedPaths.includes(key)
+        );
+      }
       assert.deepEqual(
         new Set(commit.changed.nodeKeysAll('path')),
         new Set(changedPaths)
@@ -463,9 +556,16 @@ describe('commit metadata contract', () => {
       editorGetNodeKey(header, [0]),
       editorGetNodeKey(header, [0, 0]),
     ];
+    const moved = editorGetNodeKey(header, [1]);
+    const main = editorGetNodeKey(editor, [0]);
     header.update.nodes.remove({ at: [0] });
     const commit = editorGetLastCommit(editor);
     assert.ok(commit);
+    assert.equal(commit.changed.hasNodeKey(moved, 'path'), true);
+    assert.equal(commit.changed.hasNodeKey(main, 'path'), false);
+    for (const key of removed) {
+      assert.equal(commit.changed.hasNodeKey(key, 'path'), false);
+    }
     assert.deepEqual(commit.changed.nodeKeys('presence'), []);
     assert.deepEqual(
       new Set(commit.changed.nodeKeys('presence', 'header')),
@@ -644,8 +744,8 @@ describe('commit metadata contract', () => {
       initial: () => null,
     });
     const editor = createEditor({
-      extensions: [
-        defineExtension('local-provenance', {
+      plugins: [
+        definePlugin('local-provenance', {
           stateFields: [localProvenance],
         }),
       ] as const,
@@ -750,8 +850,8 @@ describe('commit metadata contract', () => {
   it('does not mark effect-only commits as state or snapshot changes', () => {
     const effect = defineEffect<string>({ key: 'metadata.effect-only' });
     const editor = createEditor({
-      extensions: [
-        defineExtension('metadata-effect-only', {
+      plugins: [
+        definePlugin('metadata-effect-only', {
           effectTypes: [effect],
         }),
       ] as const,

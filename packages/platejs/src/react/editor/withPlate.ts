@@ -1,50 +1,45 @@
 import {
   createEditor as createPliteEditor,
-  type Editor as PliteEditor,
-  type EditorExtensionReference,
-  type EditorExtensionsFromOptions,
-  type EditorValueFromOptions,
+  type Editor as RuntimeEditor,
+  type RuntimePluginReference,
   type Value,
 } from '../../facade';
 import type { GeneratedEditorValue } from '../../internal/editor/generatedEditorTypes';
-import type {
-  BasePluginInput,
-  EditorApplicationSchema,
-  EditorValueInput,
-} from '../../lib';
+import type { EditorApplicationSchema, EditorValueInput } from '../../lib';
 import {
   applyEditor,
   type EditorOptions as HeadlessEditorOptions,
+  type PlatePluginsFromTuple,
+  type RuntimePluginsFromTuple,
 } from '../../lib/editor/withPlite';
-import type { Shortcuts, PlatePluginDefinitionInput } from '../plugin';
+import type { Shortcuts, PluginDefinitionInput } from '../plugin';
 import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
 import type {
-  InferPlateEditorPlugins,
+  InferEditorPlugins,
   InferPlateEditorSchemaPlugins,
-  InternalPlateEditorMutationProvider,
-  InternalPlateEditorWithInstalledPlugins,
+  InternalReactEditorMutationProvider,
+  InternalReactEditorWithInstalledPlugins,
   Editor,
 } from './Editor';
 import { getPlateCorePlugins } from './getPlateCorePlugins.internal';
 
-type PlatePluginInput = BasePluginInput;
+type PluginInput = RuntimePluginReference;
 
 export type InferPlateEditorValue<TPlugins> = GeneratedEditorValue<TPlugins>;
 
-export type { InferPlateEditorPlugins } from './Editor';
+export type { InferEditorPlugins } from './Editor';
 
 type ReactEditorOptions<
   V extends Value = Value,
-  TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  TPlugins extends readonly unknown[] = readonly PlatePluginInput[],
+  TPlugins extends readonly RuntimePluginReference[] = readonly PluginInput[],
   TSchema extends EditorApplicationSchema | undefined =
     | EditorApplicationSchema
     | undefined,
-> = Omit<HeadlessEditorOptions<TExtensions>, 'id' | 'plugins' | 'schema'> &
+> = Omit<HeadlessEditorOptions<TPlugins>, 'id' | 'plugins' | 'schema'> &
   Omit<
     Partial<
       Pick<
-        PlatePluginDefinitionInput,
+        PluginDefinitionInput,
         | 'decorate'
         | 'inject'
         | 'on'
@@ -57,7 +52,7 @@ type ReactEditorOptions<
     'shortcuts'
   > & {
     /** Root editor API declarations for the synthetic root plugin. */
-    api?: PlatePluginDefinitionInput['api'];
+    api?: PluginDefinitionInput['api'];
     /**
      * Configuration for the built-in navigation feedback plugin.
      *
@@ -70,7 +65,7 @@ type ReactEditorOptions<
     shortcuts?: Shortcuts;
     initialValue?:
       | ((context: {
-          editor: Editor<V, TExtensions, TPlugins, TSchema>;
+          editor: Editor<V, TPlugins, PlatePluginsFromTuple<TPlugins>, TSchema>;
         }) => EditorValueInput<NoInfer<V>>)
       | EditorValueInput<NoInfer<V>>;
     plugins?: TPlugins;
@@ -79,22 +74,21 @@ type ReactEditorOptions<
 
 export const applyPlateEditor = <
   V extends Value = Value,
-  const TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  const TPlugins extends readonly BasePluginInput[] = readonly [],
+  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
-  E extends PliteEditor = PliteEditor,
+  E extends RuntimeEditor = RuntimeEditor,
 >(
   e: E,
-  options: ReactEditorOptions<V, TExtensions, TPlugins, TSchema>
-): InternalPlateEditorWithInstalledPlugins<
+  options: ReactEditorOptions<V, TPlugins, TSchema>
+): InternalReactEditorWithInstalledPlugins<
   V,
-  InferPlateEditorPlugins<TPlugins>,
-  InternalPlateEditorMutationProvider<
-    TPlugins,
-    InferPlateEditorSchemaPlugins<TPlugins>,
+  InferEditorPlugins<PlatePluginsFromTuple<TPlugins>>,
+  InternalReactEditorMutationProvider<
+    PlatePluginsFromTuple<TPlugins>,
+    InferPlateEditorSchemaPlugins<PlatePluginsFromTuple<TPlugins>>,
     TSchema
   >,
-  TExtensions
+  RuntimePluginsFromTuple<TPlugins>
 > => {
   const { navigationFeedback, plugins = [], readOnly, ...rest } = options;
   const combinedPlugins = [
@@ -112,57 +106,54 @@ export const applyPlateEditor = <
     false
   );
 
-  return editor as unknown as InternalPlateEditorWithInstalledPlugins<
+  return editor as unknown as InternalReactEditorWithInstalledPlugins<
     V,
-    InferPlateEditorPlugins<TPlugins>,
-    InternalPlateEditorMutationProvider<
-      TPlugins,
-      InferPlateEditorSchemaPlugins<TPlugins>,
+    InferEditorPlugins<PlatePluginsFromTuple<TPlugins>>,
+    InternalReactEditorMutationProvider<
+      PlatePluginsFromTuple<TPlugins>,
+      InferPlateEditorSchemaPlugins<PlatePluginsFromTuple<TPlugins>>,
       TSchema
     >,
-    TExtensions
+    RuntimePluginsFromTuple<TPlugins>
   >;
 };
 
 type CreateEditorOptionsForValue<
   V extends Value,
-  TExtensions extends readonly EditorExtensionReference[],
-  TPlugins extends readonly unknown[],
+  TPlugins extends readonly RuntimePluginReference[],
   TSchema extends EditorApplicationSchema | undefined,
-> = Partial<
-  Omit<
-    ReactEditorOptions<V, TExtensions, NoInfer<TPlugins>, TSchema>,
-    'plugins'
-  >
-> & {
+> = Partial<Omit<ReactEditorOptions<V, TPlugins, TSchema>, 'plugins'>> & {
   /** Stable logical identity for the created editor. */
   id?: string;
-  /** Existing Plite editor to enhance instead of allocating a new editor. */
-  editor?: PliteEditor<any, any>;
+  /** Existing editor to enhance instead of allocating a new editor. */
+  editor?: RuntimeEditor<any, any>;
   plugins?: TPlugins;
 };
 
 export type CreateEditorOptions<
   V extends Value = Value,
-  TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  TPlugins extends readonly unknown[] = readonly PlatePluginInput[],
+  TPlugins extends readonly RuntimePluginReference[] = readonly PluginInput[],
   TSchema extends EditorApplicationSchema | undefined =
     | EditorApplicationSchema
     | undefined,
-> = CreateEditorOptionsForValue<V, TExtensions, TPlugins, TSchema>;
+> = CreateEditorOptionsForValue<V, TPlugins, TSchema>;
 
 export function createEditorWithEditor<
   V extends Value = Value,
-  const TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  const TPlugins extends readonly BasePluginInput[] = readonly [],
+  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  editor: PliteEditor<any, any>,
-  options: CreateEditorOptions<V, TExtensions, TPlugins, TSchema> = {}
-): Editor<V, TExtensions, TPlugins, TSchema> {
+  editor: RuntimeEditor<any, any>,
+  options: CreateEditorOptions<V, TPlugins, TSchema> = {}
+): Editor<
+  V,
+  RuntimePluginsFromTuple<TPlugins>,
+  PlatePluginsFromTuple<TPlugins>,
+  TSchema
+> {
   const { id: _id, ...editorOptions } = options;
   const apply = applyPlateEditor as unknown as (
-    editor: PliteEditor,
+    editor: RuntimeEditor,
     options: unknown
   ) => unknown;
 
@@ -208,60 +199,47 @@ export function createEditorWithEditor<
  * @see {@link createEditor} for a non-React version of editor creation.
  * @see {@link useCreateEditor} for a memoized version in React components.
  */
-type EditorPluginsFromOptions<TOptions> = TOptions extends {
-  plugins: infer TPlugins extends readonly BasePluginInput[];
-}
-  ? TPlugins
-  : readonly [];
-
-type EditorSchemaFromOptions<TOptions> = TOptions extends {
-  schema: infer TSchema extends EditorApplicationSchema;
-}
-  ? TSchema
-  : undefined;
-
 export function createEditor<
-  const TOptions extends CreateEditorOptionsForValue<
-    any,
-    readonly EditorExtensionReference[],
-    readonly BasePluginInput[],
-    EditorApplicationSchema | undefined
-  > & {
-    extensions: readonly EditorExtensionReference[];
-  },
+  const TInitialValue extends Value,
+  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  options: TOptions
+  options: Omit<
+    CreateEditorOptions<Value, TPlugins, TSchema>,
+    'initialValue'
+  > & {
+    initialValue: TInitialValue;
+    plugins: TPlugins;
+  }
 ): Editor<
-  EditorValueFromOptions<TOptions>,
-  EditorExtensionsFromOptions<TOptions>,
-  EditorPluginsFromOptions<TOptions>,
-  EditorSchemaFromOptions<TOptions>
+  TInitialValue,
+  RuntimePluginsFromTuple<TPlugins>,
+  PlatePluginsFromTuple<TPlugins>,
+  TSchema
 >;
 export function createEditor<
-  V extends Value,
-  const TExtensions extends readonly EditorExtensionReference[],
-  const TPlugins extends readonly BasePluginInput[] = readonly [],
+  V extends Value = Value,
+  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  options: CreateEditorOptions<V, TExtensions, TPlugins, TSchema> & {
-    extensions: TExtensions;
-  }
-): Editor<V, TExtensions, TPlugins, TSchema>;
+  options: CreateEditorOptions<V, TPlugins, TSchema> & { plugins: TPlugins }
+): Editor<
+  V,
+  RuntimePluginsFromTuple<TPlugins>,
+  PlatePluginsFromTuple<TPlugins>,
+  TSchema
+>;
 export function createEditor<
   V extends Value = Value,
-  const TPlugins extends readonly BasePluginInput[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  options?: CreateEditorOptions<V, readonly [], TPlugins, TSchema> & {
-    extensions?: readonly [];
-  }
-): Editor<V, readonly [], TPlugins, TSchema>;
+  options?: CreateEditorOptions<V, readonly [], TSchema>
+): Editor<V, readonly [], readonly [], TSchema>;
 
 export function createEditor(options: unknown = {}): unknown {
   const resolvedOptions = options as CreateEditorOptionsForValue<
     Value,
-    readonly EditorExtensionReference[],
-    readonly BasePluginInput[],
+    readonly RuntimePluginReference[],
     EditorApplicationSchema | undefined
   >;
   const { editor: inputEditor, id, ...editorOptions } = resolvedOptions;
@@ -276,9 +254,8 @@ export function createEditor(options: unknown = {}): unknown {
 
   return applyPlateEditor<
     Value,
-    readonly EditorExtensionReference[],
-    readonly BasePluginInput[],
+    readonly RuntimePluginReference[],
     EditorApplicationSchema | undefined,
-    PliteEditor<Value, any>
-  >(editor as PliteEditor<Value, any>, editorOptions);
+    RuntimeEditor<Value, any>
+  >(editor as RuntimeEditor<Value, any>, editorOptions);
 }

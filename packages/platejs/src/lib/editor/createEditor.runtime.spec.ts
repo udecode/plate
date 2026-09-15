@@ -1,21 +1,21 @@
 import { expect, mock, test } from 'bun:test';
 
-import { defineExtension } from '../../core';
+import { defineRuntimePlugin } from '../../facade';
 
-let reactExtensionCreated = false;
+let reactPluginCreated = false;
 
 mock.module('plitejs/react', () => ({
   react: () => {
-    reactExtensionCreated = true;
+    reactPluginCreated = true;
 
-    return defineExtension('react-runtime-sentinel', {});
+    return defineRuntimePlugin('react-runtime-sentinel', {});
   },
 }));
 
-test('createEditor does not construct the React extension', async () => {
+test('createEditor does not construct the React plugin', async () => {
   const { createEditor } = await import('../../index');
   const editor = createEditor();
 
   expect(editor.api.dom.focus).toBeInstanceOf(Function);
-  expect(reactExtensionCreated).toBeFalse();
+  expect(reactPluginCreated).toBeFalse();
 });

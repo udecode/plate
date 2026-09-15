@@ -599,7 +599,7 @@ describe('plite slice contract', () => {
   });
 
   it('records full-document fragment replacement as one undoable change', () => {
-    const editor = createEditor({ extensions: [history()] as const });
+    const editor = createEditor({ plugins: [history()] as const });
     const children = createChildren();
     const replacement: Element[] = [
       {

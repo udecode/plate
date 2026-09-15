@@ -1,9 +1,9 @@
 ---
 name: architect
-description: "Sketch types, signatures, and module structure before code, then stay in the loop while implementation fills in. Use for /architect, 'architect this', 'design this', or non-trivial work where jumping to code would lock in the wrong shape."
+description: "Compare architecture sketches for an unsettled public contract, ownership or data model; use when asked to architect a change."
 ---
 
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
+For platform-specific commands or delegation, read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md). Use the complete domain method below under current project scope and proof requirements.
 
 # Architect
 
@@ -11,7 +11,7 @@ Design before implementing. Sketch types, function signatures, class shapes, and
 
 ## Start
 
-Open a todolist with one entry per phase before starting. Autonomous mode without checkpoints needs the list to show phase position and keep phases from silently disappearing.
+Track the selected phases in the existing plan so current position and remaining work stay visible; do not create a parallel tracker.
 
 1. Ground
 2. Sketch
@@ -21,9 +21,9 @@ Open a todolist with one entry per phase before starting. Autonomous mode withou
 
 ## Phase A: Ground the problem
 
-Build a real mental model of every system the new code touches. Run the **how** skill over the relevant subsystems. Critique mode if existing structure is the constraint or the design must push back on it.
+Build a source-grounded model of the affected systems. Reuse an existing map while its evidence holds; use **how** where flow or ownership remains unclear. Use critique mode when existing structure is the constraint.
 
-Naming a file isn't grounding. Produce the traced model `how` prescribes. If the design redefines ownership or layering, also run the **why** skill on the existing shape so the rationale becomes a constraint, not a guess.
+Naming a file is not grounding. Trace the relevant behavior and contracts. Use **why** when missing historical rationale could change an ownership or layering decision.
 
 Skip Phase A only when the work is genuinely greenfield with no surrounding system to integrate.
 

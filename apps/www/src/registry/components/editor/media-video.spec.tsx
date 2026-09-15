@@ -27,11 +27,11 @@ mock.module('platejs/media', () => ({
 
 mock.module('platejs/react', () => ({
   ...actualCoreReact,
-  PlateElement: ({ children }: any) => (
+  EditorElement: ({ children }: any) => (
     <div data-testid="plate-element">{children}</div>
   ),
   useEditor: () => ({
-    plugin: () => ({ update: { set: () => {} } }),
+    extension: () => ({ update: { set: () => {} } }),
     read: { selection: () => null },
   }),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
@@ -68,11 +68,6 @@ mock.module('./resize-handle', () => ({
 
 describe('VideoElement', () => {
   const editor = {
-    api: {
-      suggestion: {
-        suggestionData: () => null,
-      },
-    },
     read: { selection: () => null },
   } as any;
 

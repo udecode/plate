@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { Plate, type PlateProps } from '../components/Plate';
+import { EditorRoot, type EditorRootProps } from '../components/Plate';
 
-export const TestPlate = (props: PlateProps<any>) => (
-  <Plate suppressInstanceWarning {...props} />
+export const TestPlate = (props: EditorRootProps<any>) => (
+  <EditorRoot suppressInstanceWarning {...props} />
 );

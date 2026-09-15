@@ -1,0 +1,80 @@
+---
+title: Serializing
+description: Save complete Plate documents and convert them to text, HTML, Markdown, or DOCX.
+---
+
+Save the editor's JSON value when you need an editable document. Use a format serializer when you need to exchange content with another application.
+
+## Choose a format
+
+| Task | API or guide |
+| --- | --- |
+| Save the complete editor document | `editor.read.value()` and [Document Meta](/docs/document-meta) |
+| Export plain text | `NodeApi.string` |
+| Render HTML on the server | `renderStaticHtml` from `platejs/static` and [HTML](/docs/html) |
+| Parse or export Markdown | `MarkdownPlugin` and [Markdown](/docs/markdown) |
+| Import or export Word documents | [DOCX](/docs/docx) |
+| Preserve review proposals in an export | [Authored Changes](/docs/authored-changes#export-explicit-projections) |
+| Control browser copy and paste | [Clipboard](/docs/clipboard) |
+
+## Save the document
+
+`editor.read.value()` includes primary children, named roots, and persistent metadata. `EditorRoot` passes the same complete value to `onValueChange`.
+
+```ts
+const document = editor.read.value();
+const schema = editor.read.schema.identity();
+
+await saveDocument({ document, schema });
+```
+
+Persist an application-owned schema identity with the document when stored data needs versioned upgrades. Load the envelope through the editor's document migration path before schema fitting. See [Document Model](/docs/document-model#application-schema).
+
+Saving only `children` drops named roots and persistent metadata. Store comment bodies, permissions, and audit events in their owning application store; keep document-owned IDs and metadata with the document.
+
+## Plain text
+
+```ts
+import { NodeApi, type Descendant } from 'platejs';
+
+const serializePlainText = (nodes: readonly Descendant[]) =>
+  nodes.map((node) => NodeApi.string(node)).join('\n');
+
+const text = serializePlainText(editor.read.children());
+```
+
+This output intentionally loses block types, marks, links, named roots, and review metadata.
+
+## HTML
+
+Use [Static Rendering](/docs/static) to bind server-safe components to the editor's plugins, then render HTML through `platejs/static`. The [HTML guide](/docs/html) owns complete import and export examples.
+
+The installed plugins define the schema and accepted HTML. Configure the owning plugin's HTML codec for custom tags and attributes. Keep external HTML sanitization, allowed URLs, and application-specific restrictions at the import boundary.
+
+For a custom string serializer, escape both text and attribute values before writing markup. A generic tree walk cannot infer your custom element semantics.
+
+## Markdown and DOCX
+
+Install `MarkdownPlugin` before calling `editor.api.markdown.serialize()` or `deserialize()`. Feature codecs define the representation of their nodes and marks; configure those codecs on the plugin that owns the document shape.
+
+DOCX import and export have separate entrypoints: `platejs/docx/import` and `platejs/docx/export`. Use their diagnostics to decide how the app handles unsupported source content.
+
+Ordinary format output represents document content. To preserve proposals and author history, choose an explicit authored projection and use the authored format helpers described in [Authored Changes](/docs/authored-changes).
+
+## Insert decoded content
+
+Use a closed fragment when the parser has complete nodes:
+
+```ts
+editor.update.fragment.replace(children);
+```
+
+Use `ContentSlice` when the input preserves open structural boundaries:
+
+```ts
+editor.update.slice.replace(slice);
+```
+
+Slice validation rejects malformed JSON and impossible open depths. Fitting checks the installed vocabulary, properties, roots, and grammar before publishing a replacement. Use `editor.read.slice.fitContent` for a detached preview that must not change the document.
+
+A clipboard policy can be narrower than a file-import policy. Keep those policies with the corresponding codec or `domCommands.insertData` contribution rather than changing the saved document format.

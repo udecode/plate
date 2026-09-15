@@ -3,8 +3,8 @@
 import { cva } from 'class-variance-authority';
 import {
   type HeadingPlugin,
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -21,13 +21,15 @@ const headingVariants = cva('relative mb-1', {
   },
 });
 
-export function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
+export function HeadingElement(
+  props: EditorElementProps<typeof HeadingPlugin>
+) {
   const { level } = props.element;
   const tag = `h${level}` as const;
 
   return (
-    <PlateElement as={tag} className={headingVariants({ level })} {...props}>
+    <EditorElement as={tag} className={headingVariants({ level })} {...props}>
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }

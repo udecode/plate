@@ -17,7 +17,7 @@ const paragraph = (text: string): Descendant => ({
 describe('screen-reader announcement history policy', () => {
   it('does not store or replay announcements through undo and redo', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('body')],
     });
 

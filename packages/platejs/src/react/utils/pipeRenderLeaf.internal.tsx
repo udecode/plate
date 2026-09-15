@@ -10,10 +10,11 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { EditableProps, EditOnlyConfig } from '../../lib';
-import { PlateLeaf } from '../components';
+import { EditorLeaf } from '../components';
 import type { Editor } from '../editor/Editor';
+import { usePlateRenderContext } from '../internal/plate-context';
 import { setDOMTextSyncRendererCapability } from '../plite-react';
-import type { AnyResolvedPlatePlugin } from '../plugin';
+import type { AnyResolvedPlugin } from '../plugin';
 import { getRenderNodeProps } from './getRenderNodeProps.internal';
 import { type RenderLeaf, pluginRenderLeaf } from './pluginRenderLeaf.internal';
 import { setRetainedTextFlowRendererCapability } from './retainedTextFlowRenderer.internal';
@@ -54,7 +55,7 @@ const isActiveHardAffinityBoundary = (
 
 /** @see {@link RenderLeaf} */
 export const pipeRenderLeaf = (
-  editor: Editor,
+  modelEditor: Editor,
   renderLeafProp?: EditableProps['renderLeaf']
 ): EditableProps['renderLeaf'] => {
   const complexRenderLeafEntries: Array<{
@@ -72,15 +73,15 @@ export const pipeRenderLeaf = (
   const renderLeafEntryByKey = new Map<string, true>();
   const leafAttributeEntries: Array<{
     key: string;
-    plugin: AnyResolvedPlatePlugin;
+    plugin: AnyResolvedPlugin;
   }> = [];
-  const plateRuntime = getPlateRuntime(editor);
+  const plateRuntime = getPlateRuntime(modelEditor);
   const hasInjectNodeProps =
     plateRuntime.pluginCache.inject.nodeProps.text.length > 0;
   const textInjectionTransformScopes =
     plateRuntime.pluginCache.inject.nodeProps.text.flatMap((name) => {
       const plugin =
-        getCompiledPlatePlugin(editor, name) ??
+        getCompiledPlatePlugin(modelEditor, name) ??
         failInvariant('Expected value to be defined');
       const nodeProps = plugin.inject?.nodeProps;
       const hasTextInjectionTransform = [
@@ -101,12 +102,13 @@ export const pipeRenderLeaf = (
 
   renderLeafPluginNames.forEach((name) => {
     const plugin =
-      getCompiledPlatePlugin(editor, name) ??
+      getCompiledPlatePlugin(modelEditor, name) ??
       failInvariant('Expected value to be defined');
 
     if (plugin) {
       const leafKey =
-        getCompiledPlateModelBinding(editor, plugin)?.propertyKey ?? undefined;
+        getCompiledPlateModelBinding(modelEditor, plugin)?.propertyKey ??
+        undefined;
 
       if (!leafKey) return;
       const { component: pluginComponent } = plugin;
@@ -124,7 +126,7 @@ export const pipeRenderLeaf = (
 
       if (canUseSimpleLeaf && leafKey) {
         const entry = {
-          className: plugin.name ? `plite-${plugin.name}` : undefined,
+          className: plugin.name ? `editor-${plugin.name}` : undefined,
           editOnly: plugin.editOnly,
           key: leafKey,
           selectionAffinity: plugin.rules.selection?.affinity,
@@ -140,7 +142,7 @@ export const pipeRenderLeaf = (
             (component && typeof component !== 'string') ||
             plugin.render.attributes
           ),
-          renderLeaf: pluginRenderLeaf(editor, plugin as any, {
+          renderLeaf: pluginRenderLeaf(modelEditor, plugin as any, {
             assumeActive: true,
           }),
         };
@@ -152,10 +154,10 @@ export const pipeRenderLeaf = (
 
   plateRuntime.pluginCache.node.leafAttributeMarks.forEach((name) => {
     const plugin =
-      getCompiledPlatePlugin(editor, name) ??
+      getCompiledPlatePlugin(modelEditor, name) ??
       failInvariant('Expected value to be defined');
     const key = plugin
-      ? getCompiledPlateModelBinding(editor, plugin)?.propertyKey
+      ? getCompiledPlateModelBinding(modelEditor, plugin)?.propertyKey
       : undefined;
 
     if (plugin && key) {
@@ -187,11 +189,15 @@ export const pipeRenderLeaf = (
   const canUsePlainOuterLeaf =
     !hasInjectNodeProps && !renderLeafProp && leafAttributeEntries.length === 0;
 
-  const renderer: NonNullable<EditableProps['renderLeaf']> = ({
-    attributes: initialAttributes,
-    ...props
+  const Renderer = ({
+    nodeProps,
+  }: {
+    nodeProps: Parameters<NonNullable<EditableProps['renderLeaf']>>[0];
   }) => {
+    const { attributes: initialAttributes, ...props } = nodeProps;
+    const { editor, wrap } = usePlateRenderContext(modelEditor);
     let attributes = initialAttributes;
+    let { children } = props;
     const readOnly = editor.read.view.isReadOnly();
     const { leaf } = props;
     let hasActiveSimpleRenderLeaf = false;
@@ -231,18 +237,18 @@ export const pipeRenderLeaf = (
           );
 
           if (!showBoundarySpacers) {
-            props.children = <Tag className={className}>{props.children}</Tag>;
+            children = <Tag className={className}>{children}</Tag>;
 
             continue;
           }
 
-          props.children = (
+          children = (
             <>
               <span contentEditable={false} style={HARD_AFFINITY_SPACER_STYLE}>
                 {HARD_AFFINITY_SPACE}
               </span>
               <Tag className={className}>
-                {props.children}
+                {children}
                 <span
                   contentEditable={false}
                   style={HARD_AFFINITY_SPACER_STYLE}
@@ -256,7 +262,7 @@ export const pipeRenderLeaf = (
           continue;
         }
 
-        props.children = <Tag className={className}>{props.children}</Tag>;
+        children = <Tag className={className}>{children}</Tag>;
       }
     }
 
@@ -264,9 +270,7 @@ export const pipeRenderLeaf = (
       for (const { key, renderLeaf: RenderLeaf } of complexRenderLeafEntries) {
         if (!leaf[key]) continue;
 
-        props.children = (
-          <RenderLeaf {...(props as any)}>{props.children}</RenderLeaf>
-        );
+        children = <RenderLeaf {...(props as any)}>{children}</RenderLeaf>;
       }
     }
 
@@ -275,7 +279,7 @@ export const pipeRenderLeaf = (
         const leafAttributes = plugin.render.mark?.leafAttributes;
         const pluginLeafProps =
           typeof leafAttributes === 'function'
-            ? leafAttributes(props as any)
+            ? leafAttributes({ ...props, children } as any)
             : (leafAttributes ?? {});
 
         attributes = {
@@ -292,20 +296,20 @@ export const pipeRenderLeaf = (
     });
 
     if (canUsePlainOuterLeaf) {
-      return <span {...attributes}>{props.children}</span>;
+      return wrap(<span {...attributes}>{children}</span>);
     }
 
     if (renderLeafProp) {
-      return renderLeafProp({ attributes, ...props });
+      return wrap(renderLeafProp({ attributes, ...props, children }));
     }
 
     const ctxProps = getRenderNodeProps({
       editor,
-      props: { attributes, ...props } as any,
+      props: { attributes, ...props, children } as any,
       readOnly,
     });
 
-    return <PlateLeaf {...ctxProps}>{props.children}</PlateLeaf>;
+    return wrap(<EditorLeaf {...ctxProps}>{children}</EditorLeaf>);
   };
   const resolveDOMTextSync: Parameters<
     typeof setDOMTextSyncRendererCapability
@@ -327,7 +331,10 @@ export const pipeRenderLeaf = (
   };
 
   return setRetainedTextFlowRendererCapability(
-    setDOMTextSyncRendererCapability(renderer, resolveDOMTextSync),
+    setDOMTextSyncRendererCapability(
+      (props) => <Renderer nodeProps={props} />,
+      resolveDOMTextSync
+    ),
     ({ marks }) =>
       !renderLeafProp &&
       textInjectionTransformScopes.length === 0 &&

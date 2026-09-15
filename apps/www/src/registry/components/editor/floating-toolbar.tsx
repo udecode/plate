@@ -17,7 +17,7 @@ import {
   ItalicPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
-  definePlatePlugin,
+  definePlugin,
   useComposedRef,
   useEditorFocused,
   useEditorReadOnly,
@@ -28,7 +28,7 @@ import {
 import * as React from 'react';
 
 import { ToolbarGroup, Toolbar } from '@/registry/components/editor/toolbar';
-import { useWidgetFloating } from '@/registry/hooks/use-widget-floating';
+import { useFloatingRect } from '@/registry/hooks/use-floating-rect';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
@@ -210,7 +210,7 @@ function PositionedFloatingToolbar({
   onOverlayOpenChange: (open: boolean) => void;
 }) {
   const geometry = useSelectionGeometry({ editableRef });
-  const floating = useWidgetFloating(geometry, {
+  const floating = useFloatingRect(geometry?.boundingRect ?? null, {
     open: true,
     middleware: [
       offset(12),
@@ -255,7 +255,7 @@ function PositionedFloatingToolbar({
   );
 }
 
-export const FloatingToolbarPlugin = definePlatePlugin('floatingToolbar', {
+export const FloatingToolbarPlugin = definePlugin('floatingToolbar', {
   slots: {
     afterEditable: FloatingToolbar,
   },

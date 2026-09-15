@@ -41,11 +41,23 @@ Copy:
 ## Direct React Plugin
 
 - [CopilotPlugin.tsx](../../../../packages/platejs/src/ai/react/CopilotPlugin.tsx)
-- [YjsPlugin.tsx](../../../../packages/platejs/src/yjs/react/YjsPlugin.tsx)
 
-Copy direct `definePlatePlugin` only when the behavior is genuinely hook,
+Copy direct `definePlugin` only when the behavior is genuinely hook,
 DOM/editor-surface, or React-native. Do not copy explicit types or file
 topology without checking current owner law.
+
+## Neutral Substrate And Plate Adapter
+
+- [plugin.ts](../../../../packages/plitejs/src/yjs/core/plugin.ts)
+- [YjsPlugin.tsx](../../../../packages/platejs/src/yjs/react/YjsPlugin.tsx)
+
+Keep neutral document behavior and externally supplied resources in the Plite
+descriptor constructor. The Plate `YjsPlugin` factory preserves that
+input-to-descriptor relation while adding only Plate authoring and presentation
+policy. Copied composition refines required inputs before mapping an ordinary
+Plate author stage; each `.create()` returns a complete descriptor. Optional
+capabilities must remain exact through copied factories, builder stages,
+portals and explicit-editor hooks.
 
 Comments uses [BaseCommentsPlugin.ts](../../../../packages/platejs/src/features/comments/BaseCommentsPlugin.ts)
 for records, actions and native ranges. Its React adapter adds click and shortcut
@@ -119,7 +131,7 @@ Copy:
   `defineCodecs(TargetPlugin, map)` for foreign maps without manual targets;
 - Plate authoring objects and callback returns stay plain; context capture
   stays inline, extracted helpers receive domain inputs, and independently
-  reusable standalone descriptors use Plite `defineExtension`;
+  reusable standalone descriptors use Plite `definePlugin`;
 - concrete editors expose `editor.api.<name>`;
 - generic package code can use `editor.plugin(Plugin).api`, `.read`, `.update`,
   and `.store`;
@@ -127,8 +139,8 @@ Copy:
   descriptor access; exact element and primary-mark portals expose
   `schema.type` or `schema.key`, while missing and wrong-kind access throws;
 - behavior and aggregate-property portals omit `schema`, consumer portals do
-  not expose `schema.properties`, and name-only portals keep non-optional
-  identity getters for package-decoupled callers;
+  not expose `schema.properties`, and nominal descriptor portals keep
+  applicable identity getters non-optional;
 - copied registry UI stays generic and never imports a host editor type;
 - scoped portal methods use direct verbs instead of repeating the plugin noun.
 
@@ -167,7 +179,7 @@ Reject:
   `store`, resolved plugin state, or `tx`;
 - top-level Plate plugin `config`;
 - deleted option accessors or arbitrary plugin fields on the editor root;
-- duplicate plugin API and editor-extension API implementations;
+- duplicate plugin API and editor-plugin API implementations;
 - redundant portal nesting such as `table.update.insert.table`;
 - a second node-component channel instead of root `component`;
 - direct codec maps, manual codec `target` fields, or a global codec helper

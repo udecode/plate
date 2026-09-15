@@ -82,11 +82,12 @@ you opt out. Task applies it without requiring a separate `$autogoal` call.
 Short questions and small edits need no goal solely for tracking. Long work
 keeps applicable obligations and evidence in one plan.
 
-Task selects Poteto Mode, the relevant principles, Verify Plate, Testing and
-other specialists as needed. A tiny edit does not require a full method chain,
-app launch or review panel. Delegation follows the active user and runtime
-rules; an installed parallel-work skill does not override them. Autoreview is
-not run on `next`.
+Task uses known owners and accepted plans directly. Unresolved decisions or
+explicit requests select complete Poteto/playbook/principle methods. Verify
+Plate and Testing apply to their proof owners. A tiny edit needs direct
+verification, without a method chain, app launch or review panel. Native
+subagents can handle bounded independent work with one writer per mutable
+resource; the lead consumes their results. Autoreview is not run on `next`.
 
 Plate Docs owns public page design, examples, installation, API teaching, MDX
 and navigation. Technical Writing supplies general prose and preservation.
@@ -130,20 +131,20 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 
 | Skill | Purpose |
 | --- | --- |
-| [task](../../.agents/skills/task/SKILL.md) | Own a Plate or Plite engineering task from source-grounded intake through implementation, exact proof and authorized delivery. |
+| [task](../../.agents/skills/task/SKILL.md) | Complete a Plate/Plite engineering task through its owning implementation, proof and authorized delivery. |
 | [best-api-review](../../.agents/skills/best-api-review/SKILL.md) | Judge whether an API or architecture change is worth pursuing, including new primitives and breaking redesigns beyond today's API. |
 
 ### Design and plan
 
 | Skill | Purpose |
 | --- | --- |
-| [best-api](../../.agents/skills/best-api/SKILL.md) | Design, review, audit, or repair Plate/Plite public APIs for materially better DX, AX, simplicity, and scalability without speculative machinery. |
-| [plite-plan](../../.agents/skills/plite-plan/SKILL.md) | Plan or execute Plite architecture and public API changes for the raw editor substrate. |
-| [plate-plan](../../.agents/skills/plate-plan/SKILL.md) | Plan or execute Plate architecture and public API changes on top of Plite. |
+| [best-api](../../.agents/skills/best-api/SKILL.md) | Design, review or repair Plate/Plite public call shapes before planning their adoption. |
+| [plite-plan](../../.agents/skills/plite-plan/SKILL.md) | Plan or execute Plite substrate architecture and API adoption across model, operations, DOM, history and collaboration. |
+| [plate-plan](../../.agents/skills/plate-plan/SKILL.md) | Plan or execute Plate framework architecture and API adoption across plugins, packages, docs and registry. |
 | [architect](../../.agents/skills/architect/SKILL.md) | Sketch types, signatures, and module structure before code, then stay in the loop while implementation fills in. |
 | [blast-radius](../../.agents/skills/blast-radius/SKILL.md) | Find what a change could break somewhere else before it ships, beyond the diff, and prove the one fact it's safe because of by running real code instead of writing it up. |
 | [prototype](../../.agents/skills/prototype/SKILL.md) | Build a throwaway prototype to flesh out a design before committing to it. |
-| [grill-me](../../.agents/skills/grill-me/SKILL.md) | Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. |
+| [grill-me](../../.agents/skills/grill-me/SKILL.md) | Stress-test a plan or design through a focused user interview when the user asks to be grilled. |
 | [grill-with-docs](../../.agents/skills/grill-with-docs/SKILL.md) | Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. |
 | [interrogate](../../.agents/skills/interrogate/SKILL.md) | Use for "interrogate", "adversarial review", "multi-model review", "challenge this", "stress test this code", "find blind spots", or "tear this apart". |
 | [figure-it-out](../../.agents/skills/figure-it-out/SKILL.md) | Design an auditable playbook when no narrower one fits: a large migration, an ambitious multi-part change, or work a human reviews after stepping away. |
@@ -152,41 +153,41 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 
 | Skill | Purpose |
 | --- | --- |
-| [plate-feature](../../.agents/skills/plate-feature/SKILL.md) | Deliver a Plate feature end to end across platejs entrypoints, React adapters, copied registry UI, docs, release artifacts, proof, and Plate Next attestation. |
-| [plate-plugin-creator](../../.agents/skills/plate-plugin-creator/SKILL.md) | Build or refactor Plate plugins and entrypoints with owner-first colocation, inference, scoped capabilities, React families, and package proof. |
-| [plate-ui](../../.agents/skills/plate-ui/SKILL.md) | Master Plate React/UI architecture for package primitives, component families, copied registry UI, kit wiring, and browser proof. |
-| [patch](../../.agents/skills/patch/SKILL.md) | Fix one local Plate or Plite behavior bug or regression with reproduction, durable behavior coverage, architecture pressure, and exact owning-lane proof. |
-| [regression](../../.agents/skills/regression/SKILL.md) | Test-first Plate/Plite regression methodology for reporter-complete oracles, exact reproduction, one-case Patch delegation, proof receipts, corpus replay, failed-fix interruption, and automatic workflow repair. |
+| [plate-feature](../../.agents/skills/plate-feature/SKILL.md) | Deliver a Plate feature across its package, React, copied UI, docs and required release-proof owners. |
+| [plate-plugin-creator](../../.agents/skills/plate-plugin-creator/SKILL.md) | Build Plate plugins and entrypoints with semantic ownership, inference, scoped capabilities and package proof. |
+| [plate-ui](../../.agents/skills/plate-ui/SKILL.md) | Implement Plate React component families, copied registry UI and kit wiring with exact browser proof. |
+| [patch](../../.agents/skills/patch/SKILL.md) | Repair one local Plate/Plite behavior bug with exact reproduction, an owning fix and focused verification. |
+| [regression](../../.agents/skills/regression/SKILL.md) | Prove reporter-complete Plate/Plite regressions, replay explicit corpora and repair failed-fix methodology. |
 | [diagnosing-bugs](../../.agents/skills/diagnosing-bugs/SKILL.md) | Diagnosis loop for hard bugs and performance regressions. |
-| [hard-cut](../../.agents/skills/hard-cut/SKILL.md) | Remove a feature completely with no backward compatibility. |
-| [architecture-cleanup](../../.agents/skills/architecture-cleanup/SKILL.md) | Clean architecture, code shape, and AI-generated sludge across Plate and Slate with source-backed delete/merge/inline/split decisions, anti-confetti proof, and agent-navigation scoring. |
-| [plate-next](../../.agents/skills/plate-next/SKILL.md) | Plate Next cleanup supervisor: deeply review and migrate Plate surfaces to be Plite-perfect, hard-cut old Slate/Plate compatibility sludge, route plans vs implementation, and run auto-style timed/full loops. |
-| [slate-migration](../../.agents/skills/slate-migration/SKILL.md) | Slate v2 migration supervisor. |
-| [slate-ar](../../.agents/skills/slate-ar/SKILL.md) | Slate v2 Codex Autoresearch wrapper. |
+| [hard-cut](../../.agents/skills/hard-cut/SKILL.md) | Remove a Plate/Plite feature and every caller, fallback, test and document for its deleted behavior. |
+| [architecture-cleanup](../../.agents/skills/architecture-cleanup/SKILL.md) | Audit or simplify Plate/Plite code ownership through source-backed deletion, merging, inlining and focused proof. |
+| [plate-next](../../.agents/skills/plate-next/SKILL.md) | Audit or migrate Plate surfaces to current Plite doctrine, including scoped hard cuts and versioned adoption proof. |
+| [slate-migration](../../.agents/skills/slate-migration/SKILL.md) | Supervise authorized Slate/Plate migration, caller adoption, compatibility removal and exact package/docs proof. |
+| [slate-ar](../../.agents/skills/slate-ar/SKILL.md) | Operate Slate v2 Autoresearch status, quality, recipe and release modes; use Benchmark for performance diagnosis. |
 
 ### Verify and measure
 
 | Skill | Purpose |
 | --- | --- |
-| [verify-plate](../../.agents/skills/verify-plate/SKILL.md) | Verify Plate and Plite package APIs, editor routes, CLI outputs, docs and registry artifacts through existing runners and real browser/native controls. |
-| [benchmark](../../.agents/skills/benchmark/SKILL.md) | Review Plate/Plite performance designs or diagnose, compare, fix and rerun measured performance through the ordered benchmark lanes. |
-| [testing](../../.agents/skills/testing/SKILL.md) | Select valuable Plate/Plite behavior and type tests, use the correct runners, or audit suite health and coverage with testing audit. |
+| [verify-plate](../../.agents/skills/verify-plate/SKILL.md) | Verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. |
+| [benchmark](../../.agents/skills/benchmark/SKILL.md) | Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. |
+| [testing](../../.agents/skills/testing/SKILL.md) | Repair or add justified Plate/Plite tests with the owning runners; use testing audit for suite health and coverage. |
 | [tdd](../../.agents/skills/tdd/SKILL.md) | Test-driven development with red-green-refactor loop. |
-| [plate-review](../../.agents/skills/plate-review/SKILL.md) | Reproduce evidence-backed Plate/Plite architecture reviews and score current systems without implementing fixes. |
-| [autoreview](../../.agents/skills/autoreview/SKILL.md) | Pre-commit/ship code review: Codex default; optional Claude, Pi, or Kimi. |
+| [plate-review](../../.agents/skills/plate-review/SKILL.md) | Review current Plate/Plite architecture through owner, lifetime, reachability, scale and proof evidence without repairs. |
+| [autoreview](../../.agents/skills/autoreview/SKILL.md) | Run Task’s bounded structured review for an explicit request or actual PR closure; never on `next`. |
 | [create-verification-skill](../../.agents/skills/create-verification-skill/SKILL.md) | Generate a project-local verification skill that drives your app the way a user does — any language, framework, or platform. |
-| [maintain-verification-skill](../../.agents/skills/maintain-verification-skill/SKILL.md) | Periodic pass that keeps a project's verification skill and feature map honest: parallel source readers per feature, one live session driving every feature, at most one PR of proven corrections. |
+| [maintain-verification-skill](../../.agents/skills/maintain-verification-skill/SKILL.md) | Check the owned verifier against its full existing inventory with source and live evidence; preserve gaps and actual repair/publication authority. |
 
 ### Research editors and issues
 
 | Skill | Purpose |
 | --- | --- |
-| [plite-research](../../.agents/skills/plite-research/SKILL.md) | Plite research intelligence. |
-| [editor-audit](../../.agents/skills/editor-audit/SKILL.md) | Exhaustively compare one or more local editor architectures with live Plite and Plate using a symmetric source inventory, one strict row per atomic concept, verified source commits, and explicit hybrid extraction. |
-| [issue-harvester](../../.agents/skills/issue-harvester/SKILL.md) | Run exhaustive issue coverage harvests for Slate v2 and Plate from Slate, Plate, or external editor repos: auto-create or refresh issue closure ledgers, scan closed-issue PR/test provenance, process only unchecked issues, add fresh local tests, and keep one checkmark per relevant issue without giant prompts. |
-| [editor-test-harvester](../../.agents/skills/editor-test-harvester/SKILL.md) | Mine external editor repositories and issue corpora for portable editor-behavior tests with ClawSweeper-style discipline, then optionally turn a completed harvest into a lane-specific Slate v2 or Plate plan with an explicit execution boundary. |
-| [clawsweeper](../../.agents/skills/clawsweeper/SKILL.md) | Slate issue-ledger provenance and claim-hygiene skill: archive-first discovery, duplicate/stale/invalid proof, exact claim levels, fork dossier accounting, external issue provenance support, and gitcrawl CLI refreshes. |
-| [research-wiki](../../.agents/skills/research-wiki/SKILL.md) | Operate the docs/research compiled layer in either full or maintain mode. |
+| [plite-research](../../.agents/skills/plite-research/SKILL.md) | Research external editor sources and prior art, maintain evidence ledgers and promote findings into Plite owners. |
+| [editor-audit](../../.agents/skills/editor-audit/SKILL.md) | Compare external editor architectures with Plite/Plate through a complete source inventory and explicit extraction decisions. |
+| [issue-harvester](../../.agents/skills/issue-harvester/SKILL.md) | Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence. |
+| [editor-test-harvester](../../.agents/skills/editor-test-harvester/SKILL.md) | Harvest portable behavior evidence from external editors and optionally prepare a lane-specific adoption plan. |
+| [clawsweeper](../../.agents/skills/clawsweeper/SKILL.md) | Maintain Slate issue provenance, archive discovery, claim levels, fork dossiers and gitcrawl refreshes. |
+| [research-wiki](../../.agents/skills/research-wiki/SKILL.md) | Create or maintain compiled research pages from source evidence, decisions, concepts and open questions. |
 
 ### Explain and document
 
@@ -197,29 +198,29 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 | [teach](../../.agents/skills/teach/SKILL.md) | Explain a body of work plainly so a person actually understands it. |
 | [recall](../../.agents/skills/recall/SKILL.md) | Reconstruct your recent working context from your own chat history, live state, and the shared record (user reports, prior fixes, incidents), then hand back a tight current-state brief. |
 | [technical-writing](../../.agents/skills/technical-writing/SKILL.md) | Write, edit, and audit clear prose while preserving facts and house style. |
-| [plate-docs](../../.agents/skills/plate-docs/SKILL.md) | Write, revise or audit Plate public documentation, including page design, feature examples, installation, API teaching, MDX and navigation. |
-| [show-me-your-work](../../.agents/skills/show-me-your-work/SKILL.md) | Keep a reviewable decision trail for long-running or unattended work: a TSV log with one row per decision (what, why, evidence, result). |
+| [plate-docs](../../.agents/skills/plate-docs/SKILL.md) | Write or audit Plate public documentation, page design, examples, installation, MDX and navigation. |
+| [show-me-your-work](../../.agents/skills/show-me-your-work/SKILL.md) | Keep a separately requested or necessary experiment history in one evidence-backed TSV; ordinary decisions stay in the existing plan. |
 | [walkthrough](../../.agents/skills/walkthrough/SKILL.md) | Create a short annotated visual walkthrough from real final-state screenshots or rendered artifacts. |
 | [video-transcripts](../../.agents/skills/video-transcripts/SKILL.md) | Generate structured video transcripts from local files or video URLs using Gemini Files API. |
-| [gpt-pro](../../.agents/skills/gpt-pro/SKILL.md) | Create a self-contained GPT Pro or external-review prompt with full repo context, current state, evidence, and pointed review questions because the reviewer has no local file access. |
+| [gpt-pro](../../.agents/skills/gpt-pro/SKILL.md) | Prepare a self-contained external-review prompt with the exact repository context, evidence and unresolved questions. |
 | [no-comments](../../.agents/skills/no-comments/SKILL.md) | Spawn Comment Sicko, fix accepted findings, and offer encodings for claimed constraints. |
 
 ### Maintain, synchronize and release
 
 | Skill | Purpose |
 | --- | --- |
-| [maintainer](../../.agents/skills/maintainer/SKILL.md) | Plate/Slate maintainer control plane for public GitHub issues, PRs, security queue, heartbeat scans, VISION fit, routing, authority boundaries, and proof-gated handoff. |
-| [github-issue-reporter](../../.agents/skills/github-issue-reporter/SKILL.md) | Draft or publish a Plate next/Beta issue from bug videos or text, preserving exact main/next roles, reproduction, real media and final GitHub read-back. |
+| [maintainer](../../.agents/skills/maintainer/SKILL.md) | Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof. |
+| [github-issue-reporter](../../.agents/skills/github-issue-reporter/SKILL.md) | Draft a Plate Beta issue from video or text, with exact reproduction and media; publish only when requested. |
 | [resolve-pr-feedback](../../.agents/skills/resolve-pr-feedback/SKILL.md) | Resolve GitHub PR review feedback with source-backed triage, fixes, a scoped feedback ledger, focused proof, replies, and thread resolution. |
-| [release-lanes](../../.agents/skills/release-lanes/SKILL.md) | Maintain Plate's latest and beta release lanes end-to-end through Task: promote next to main, sync main directly back into next, repair release metadata conflicts, re-enter beta, and verify npm/GitHub release state. |
-| [changeset](../../.agents/skills/changeset/SKILL.md) | Create and maintain package release notes and version metadata. |
-| [registry-changelog](../../.agents/skills/registry-changelog/SKILL.md) | Author and verify Plate registry changelog entries for user-visible registry UI, kit, example, and registry metadata changes. |
-| [sync-plate-ui](../../.agents/skills/sync-plate-ui/SKILL.md) | Sync Plate UI registry components into downstream apps with fork-aware status, planning, review, dashboards, apply, and changelog tracking. |
-| [sync-shadcn](../../.agents/skills/sync-shadcn/SKILL.md) | Sync upstream shadcn docs into Plate with full source inventory, fork-aware planning, review, dashboards, accepted apply and exact baseline accounting. |
-| [shadcn-parity](../../.agents/skills/shadcn-parity/SKILL.md) | Clone shadcn implementation patterns with source-by-source parity. |
+| [release-lanes](../../.agents/skills/release-lanes/SKILL.md) | Promote Plate beta releases, sync main back to next and verify published npm/GitHub state with release authority. |
+| [changeset](../../.agents/skills/changeset/SKILL.md) | Write and verify package release changesets and the PR’s managed auto-release choice. |
+| [registry-changelog](../../.agents/skills/registry-changelog/SKILL.md) | Write and verify user-facing changelog entries for registry UI, kits, examples and metadata. |
+| [sync-plate-ui](../../.agents/skills/sync-plate-ui/SKILL.md) | Sync Plate registry UI into downstream apps with fork-aware comparison, scoped apply and changelog tracking. |
+| [sync-shadcn](../../.agents/skills/sync-shadcn/SKILL.md) | Sync upstream shadcn docs into Plate with source inventory, fork-aware apply and baseline accounting. |
+| [shadcn-parity](../../.agents/skills/shadcn-parity/SKILL.md) | Adopt shadcn implementation patterns with source-by-source parity when the user requests mirroring or cloning. |
 | [maintain-workflow](../../.agents/skills/maintain-workflow/SKILL.md) | Maintain reusable agent workflows and compare methodology across projects. |
 | [agent-native-reviewer](../../.agents/skills/agent-native-reviewer/SKILL.md) | Audit changed agent workflows for usable routes, source ownership, discovery, and reproducible proof. |
-| [sync-vision](../../.agents/skills/sync-vision/SKILL.md) | Sync root VISION.md and docs/vision detail files from changed human and agent inputs. |
+| [sync-vision](../../.agents/skills/sync-vision/SKILL.md) | Update Plate’s root and scoped Vision from changed attributable inputs while preserving baseline accounting. |
 
 ### Coordinate and maintain the method
 
@@ -227,7 +228,7 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 | --- | --- |
 | [poteto-mode](../../.agents/skills/poteto-mode/SKILL.md) | poteto's agent style for concise, detailed responses, deliberate subagents, unslopped prose, simple code, and verified work. |
 | [autogoal](../../.agents/skills/autogoal/SKILL.md) | Manage native Codex goals requested directly or through an explicit standing user instruction, with measurable completion evidence. |
-| [improve](../../.agents/skills/improve/SKILL.md) | Audit and improve the current Plate/Plite project through Autogoal and one evolving audit plan across architecture, simplification, performance, test value, docs, registry, and applicable agent rules. |
+| [improve](../../.agents/skills/improve/SKILL.md) | Audit and repair Plate/Plite through one improvement plan, with an optional iteration count or hour budget. |
 | [orchestrator](../../.agents/skills/orchestrator/SKILL.md) | Turn the current Codex thread into a coordination thread that routes explicitly delegated work to durable reusable child tasks with the project's checkout, proof and delivery policy. |
 | [arena](../../.agents/skills/arena/SKILL.md) | Spawn N parallel candidates at the same task, pick a base, graft the strongest parts of the losers into it. |
 | [swarm](../../.agents/skills/swarm/SKILL.md) | Fan out N parallel workers, drain them, and return one report. |

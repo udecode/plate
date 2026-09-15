@@ -9,7 +9,10 @@ import React, {
 
 import { DecorationContext } from '../decoration-context';
 import type { EditableDOMRuntime } from '../editable/editable-dom-runtime';
-import { subscribeSource } from '../editable/runtime-editor-api';
+import {
+  subscribeEditorViewState,
+  subscribeSource,
+} from '../editable/runtime-editor-api';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { recordPliteReactRender } from '../render-profiler';
 
@@ -106,7 +109,14 @@ export const EditableDOMCommitFence = ({
           listener();
         }
       );
+      const unsubscribeView = subscribeEditorViewState(
+        runtime.editor,
+        (change) => {
+          if (change === 'authored') runtime.externalText.refreshAll();
+        }
+      );
       return () => {
+        unsubscribeView();
         unsubscribe();
         recordPliteReactRender({
           id: 'commit-fence-unsubscribe',

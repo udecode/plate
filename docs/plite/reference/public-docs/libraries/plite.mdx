@@ -1,0 +1,184 @@
+---
+title: "Plite"
+description: "Use the core editor runtime, document model, transactions, helper APIs, and plugins."
+---
+
+`plitejs` is the core editor runtime. It owns the document model, canonical changes,
+paths, points, ranges, transactions, state fields, schema plugins, and pure
+node/location helper namespaces.
+
+Use `createEditor` to create an editor.
+
+## Create an editor
+
+```ts
+import { createEditor } from "plitejs";
+
+const editor = createEditor({
+  initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+});
+```
+
+Use `isEditor` when library code needs to validate an unknown value before
+treating it as an editor.
+
+Use `createEditorView(editor, options)` when framework packages need a
+root-scoped view over a committed editor. App UI should normally use framework
+helpers such as `useEditor` in `plitejs/react`.
+
+Read committed state with direct read methods, or with `editor.read(...)` when
+several reads should share one state view.
+
+```ts
+const value = editor.read.value();
+const selection = editor.read.selection();
+
+const info = editor.read((state) => ({
+  text: state.text.string([]),
+  value: state.value(),
+}));
+```
+
+Write document, selection, mark, root, and state-field changes inside
+direct update methods, or inside `editor.update(...)` when one command groups
+related writes into one commit.
+
+```ts
+editor.update.text.insert("Hello");
+
+editor.update((tx) => {
+  tx.text.insert(" ");
+  tx.text.insert("world");
+});
+```
+
+## Public type groups
+
+Core document and editor shapes include `Editor`, `BaseEditor`, `Value`,
+`InitialValue`, `Selection`, `RootKey`, and `NodeKey`.
+
+View, snapshot, and commit types include `EditorView`, `EditorSnapshot`,
+`EditorCommit`, `EditorCommitChanged`,
+`EditorCommitChangeKind`, `EditorCommitRuntimeChangeKind`,
+`SnapshotInput`, and `SnapshotListener`.
+
+Read/update API types include `EditorStateView`, `EditorStateValueApi`,
+`EditorUpdate`, `EditorUpdatePolicy`, `EditorUpdatePolicyFor`,
+`EditorUpdateTransaction`, and `EditorTransactionValueApi`.
+
+Plugin and schema types include `Plugin`,
+`PluginDefinition`, `PluginDefinitionInput`,
+`PluginReference`, `PluginDependencyReference`,
+`DefinitionOf`, `PluginPortal`,
+`PluginActivationContext`, `PluginCleanupContext`,
+`PluginCandidateContext`, `PluginReadFactory`,
+`PluginUpdateFactory`, `PluginReadMiddlewareFactory`,
+`PluginApiFactory`, `PluginApiFactoryContext`,
+`EditorLifecycleError`,
+`EditorLifecycleErrorSink`, `EditorSchemaDefinition`,
+`EditorSchemaContribution`, `EditorSchemaIdentity`, `SchemaElement`,
+`SchemaContent`, `SchemaTarget`, `PropertyValueDescriptor`, `ContentSlice`,
+`EditorStateSliceApi`, `EditorTransactionSliceApi`, `StateFieldDescriptor`,
+`StateFieldValueInput`, `EditorStateField`, `EditorValueCodec`,
+`SerializedEditorValue`, and `SerializedEditorEffect`.
+
+`PluginDependencyReference` is shallow and non-generic. Adapter
+authors use the finite dependency capability/provider types exported from
+`plitejs`; there is no public internal entrypoint.
+
+Command, read-policy, and debug APIs include `EditorCommand`,
+`EditorCommandHandler`, `EditorCommandAroundHandler`,
+`EditorCommandContinuation`, `EditorCommandDispatch`,
+`EditorCommandResult`, `TransactionSpec`,
+`EditorMergeTargetDecision`, `EditorMergeTargetPolicy`,
+`EditorSelectabilityGuard`, `EditorExportSliceProjection`,
+`setDebugValueScrubber`, and `DebugValueScrubber`.
+
+Define persisted field and shared-effect values with `defineValueCodec` or the
+strict primitive `valueCodecs`. Adapter authors serialize keyed shared effects
+with `encodeEditorEffect` and decode them against an installed descriptor with
+`decodeEditorEffect`.
+
+## Plugin authoring
+
+Plugins register schema facts, owner-local read and update groups,
+changed-range corrections, commit listeners, and runtime APIs.
+
+Use an `api` factory for mounted host/runtime services, even when it needs no
+context. It receives one `{ editor, root, getContributions }` object. Use
+`update` for feature commands that change Plite model state.
+
+Pass statically known plugins to `createEditor`. Use `editor.extend` for a
+dynamic plugin; installation produces one atomic plugin commit,
+optionally with a candidate-schema document migration, and its cleanup function
+removes the plugin through another plugin commit. Use
+`tx.plugins.reconfigure` when an plugin replacement must commit with other
+document changes. A schema replacement that rejects the current document uses
+the optional `migrate` callback; Plite publishes the candidate document and
+plugin revision together or publishes nothing.
+
+Every API factory resolves against the same detached declarative candidate.
+Its context exposes the candidate schema and descriptor-resolved dependency APIs;
+results from other API factories become visible only after every factory has
+resolved. `validate(context)` receives that final candidate while the live
+editor keeps its previous installed plugin set. `activate(editor, context)`
+runs only after the validated candidate is published.
+
+`createEditorView(runtime, { root })` resolves functional API factories against
+that view. `context.root` identifies the named root, and API reads, writes, and
+exported selection slices stay scoped to it. The primary document view receives
+`undefined`.
+
+Register reversible resources with `context.onCleanup`. Register work that may
+update the editor with `context.afterPublish`; it runs after commit observers.
+Activation, validation, API factories, and cleanup are synchronous.
+
+```ts
+import { definePlugin } from "plitejs";
+
+const plugin = definePlugin("host-state", {
+  activate(editor, context) {
+    const unsubscribe = subscribeToHostState(refreshHostCache);
+
+    context.onCleanup(() => unsubscribe());
+    context.afterPublish(() => {
+      editor.update((tx) => {
+        tx.marks.set(null);
+      });
+    });
+  },
+});
+```
+
+## Helper namespaces
+
+Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`, `PathApi`,
+`PointApi`, `RangeApi`, `SelectionApi`, `SpanApi`, and `TextApi`. These
+namespace objects are frozen; compose or wrap custom helpers instead of
+mutating them.
+Create persistent mapped locations with `editor.anchor`. Use `tx.anchor` for a
+Path, Point, or Range needed only inside one transaction callback.
+
+Inside a live editor, use `editor.read.<group>.<method>()` and
+`editor.update.<group>.<method>()` for one-shot actions. Use grouped `state.*`
+and `tx.*` APIs when code needs custom logic or plugin-owned namespaces. Use
+the helper namespaces when library code needs pure operations on Plite data
+outside an editor transaction.
+
+Use [Schema](../concepts/19-schema) for the complete declaration, validation,
+slice-fitting, identity, and migration contract.
+
+## Internal subpath
+
+The `/internal` package subpath is reserved for sibling Plite packages in this
+repo. Applications, plugin libraries, and framework adapters outside this
+workspace should use the root `plitejs` export.
+
+## Related docs
+
+- [Editor](../api/nodes/editor)
+- [Transforms](../api/transforms)
+- [Interfaces](../concepts/01-interfaces)
+- [Locations](../concepts/03-locations)
+- [Commands](../concepts/06-commands)
+- [Plugins](../concepts/08-plugins)

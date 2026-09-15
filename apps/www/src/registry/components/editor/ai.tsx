@@ -2,11 +2,11 @@
 
 import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
 import {
-  PlateElement,
-  PlateText,
+  EditorElement,
+  EditorText,
   usePluginStore,
-  type PlateElementProps,
-  type PlateTextProps,
+  type EditorElementProps,
+  type EditorTextProps,
 } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
@@ -14,7 +14,7 @@ import { AILoadingBar, AIMenu } from '@/registry/components/editor/ai-menu';
 
 import { AIChatTransportPlugin, useEditorChat } from './use-chat';
 
-export function AILeaf(props: PlateTextProps<typeof AIPlugin>) {
+export function AILeaf(props: EditorTextProps<typeof AIPlugin>) {
   const streaming = usePluginStore(AIChatPlugin, 'streaming');
   const streamingLeaf = props.editor
     .plugin(AIChatPlugin)
@@ -23,7 +23,7 @@ export function AILeaf(props: PlateTextProps<typeof AIPlugin>) {
   const isLast = streamingLeaf?.[0] === props.text;
 
   return (
-    <PlateText
+    <EditorText
       className={cn(
         'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',
         'transition-all duration-200 ease-in-out',
@@ -36,11 +36,13 @@ export function AILeaf(props: PlateTextProps<typeof AIPlugin>) {
   );
 }
 
-export function AIAnchorElement(props: PlateElementProps<typeof AIChatPlugin>) {
+export function AIAnchorElement(
+  props: EditorElementProps<typeof AIChatPlugin>
+) {
   return (
-    <PlateElement {...props}>
+    <EditorElement {...props}>
       <div className="h-[0.1px]" />
-    </PlateElement>
+    </EditorElement>
   );
 }
 

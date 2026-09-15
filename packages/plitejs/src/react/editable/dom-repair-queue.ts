@@ -5,11 +5,12 @@ import {
   isDOMElement,
   isDOMText,
 } from '../../dom';
+import { type DOMPhaseScheduler, isGeckoDOMHost } from '../../dom/internal';
+import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
 import {
-  type DOMPhaseScheduler,
-  isGeckoDOMHost,
-  resolveDOMTextFlowPoint,
-} from '../../dom/internal';
+  getPliteTextHostBounds,
+  getPliteTextHostStrings,
+} from '../../dom/plugin/dom-geometry';
 import {
   getPliteNodeElementByPath,
   getPliteNodePathFromDOMElement,
@@ -86,7 +87,7 @@ export const profileDOMRepairDuration = <T>(
   kind: string,
   callback: () => T
 ): T => {
-  if (!globalThis.__PLITE_REACT_RENDER_PROFILER__) {
+  if (!globalThis.__EDITOR_REACT_RENDER_PROFILER__) {
     return callback();
   }
 
@@ -372,9 +373,9 @@ export const createDOMRepairQueue = ({
       const anchorNode = domSelection?.anchorNode ?? null;
       const anchorOffset = domSelection?.anchorOffset ?? null;
       let textHost = isDOMText(anchorNode)
-        ? anchorNode.parentElement?.closest('[data-plite-node="text"]')
+        ? anchorNode.parentElement?.closest('[data-editor-node="text"]')
         : isDOMElement(anchorNode)
-          ? anchorNode.closest('[data-plite-node="text"]')
+          ? anchorNode.closest('[data-editor-node="text"]')
           : null;
       let path = textHost ? getPliteNodePathFromDOMElement(textHost) : null;
       let pliteNode = path ? readRuntimeText(editor, path) : null;
@@ -393,14 +394,14 @@ export const createDOMRepairQueue = ({
         const liveDOMTextHostMatchesTarget =
           liveDOMPath && PathApi.equals(liveDOMPath, path)
             ? true
-            : liveDOMTextHost?.getAttribute('data-plite-path') ===
+            : liveDOMTextHost?.getAttribute('data-editor-path') ===
               path.join(',');
         pliteNode = readRuntimeText(editor, path);
         textHost =
           getPliteNodeElementByPath(editor, path) ??
           (liveDOMTextHostMatchesTarget ? liveDOMTextHost : null) ??
           rootElement.querySelector<HTMLElement>(
-            `[data-plite-node="text"][data-plite-path="${path.join(',')}"]`
+            `[data-editor-node="text"][data-editor-path="${path.join(',')}"]`
           );
         ({ selectionOffset } = nativeInput.target);
         textHostText = nativeInput.target.text;
@@ -546,10 +547,10 @@ export const createDOMRepairQueue = ({
         const targetTextHostStillOwnsPathlessDOMSelection =
           !!nativeInput.target &&
           !!liveDOMTextHost &&
-          liveDOMTextHost.getAttribute('data-plite-path') ===
+          liveDOMTextHost.getAttribute('data-editor-path') ===
             nativeInput.target.path.join(',');
         const targetVirtualizedRow = textHost?.closest(
-          '[data-plite-dom-strategy-virtual-row]'
+          '[data-editor-virtualized-row]'
         );
         const targetVirtualizedRowStillOwnsPathlessDOMSelection =
           !!nativeInput.target &&
@@ -771,40 +772,25 @@ export const createDOMRepairQueue = ({
             }
           }
 
-          let textHost = profileDOMRepairDuration('lookup-text-host', () =>
-            getPliteNodeElementByPath(editor, path)
+          const domPoint = profileDOMRepairDuration('lookup-text-host', () =>
+            resolveDOMPointInRoot(
+              editor,
+              { path, offset: pliteOffset },
+              ReactEditor.resolveDOMNode(editor, editor)
+            )
+          );
+          const targetElement = domPoint
+            ? isDOMText(domPoint[0])
+              ? domPoint[0].parentElement
+              : isDOMElement(domPoint[0])
+                ? domPoint[0]
+                : null
+            : null;
+          const textHost = targetElement?.closest<HTMLElement>(
+            '[data-editor-node="text"]'
           );
 
-          if (!textHost) {
-            let root: Document | ShadowRoot;
-
-            try {
-              root = ReactEditor.findDocumentOrShadowRoot(editor);
-            } catch {
-              return false;
-            }
-
-            const domSelection = getSelection(root);
-            const anchorNode = domSelection?.anchorNode ?? null;
-            const anchorElement = isDOMText(anchorNode)
-              ? anchorNode.parentElement
-              : isDOMElement(anchorNode)
-                ? anchorNode
-                : null;
-            const selectedTextHost = anchorElement?.closest(
-              '[data-plite-node="text"]'
-            );
-
-            if (
-              isDOMElement(selectedTextHost) &&
-              selectedTextHost.getAttribute('data-plite-path') ===
-                path.join(',')
-            ) {
-              textHost = selectedTextHost as HTMLElement;
-            }
-          }
-
-          if (!textHost) {
+          if (!domPoint || !textHost) {
             if (kind === 'repair-caret-after-text-insert') {
               return false;
             }
@@ -814,15 +800,24 @@ export const createDOMRepairQueue = ({
 
           if (kind === 'repair-caret-after-text-insert') {
             const pliteText = readRuntimeText(editor, path)?.text;
-            const textHostText = textHost.textContent?.replace(/\uFEFF/g, '');
+            const strings = getPliteTextHostStrings(textHost);
+            const textHostText = (
+              strings.length
+                ? strings.map((string) => string.textContent ?? '').join('')
+                : (textHost.textContent ?? '')
+            ).replaceAll('\uFEFF', '');
+            const bounds = getPliteTextHostBounds(textHost);
 
-            if (pliteText != null && textHostText !== pliteText) {
+            if (
+              pliteText != null &&
+              textHostText !== pliteText.slice(bounds.start, bounds.end)
+            ) {
               return false;
             }
           }
 
           const isDecoratedTextHost =
-            textHost.getAttribute('data-plite-dom-sync-reason') ===
+            textHost.getAttribute('data-editor-dom-sync-reason') ===
             'decoration';
           const isVirtualizedTextHost = isInsideVirtualizedDOM(textHost);
           const shouldRetainModelOwnedTextInsert =
@@ -961,52 +956,7 @@ export const createDOMRepairQueue = ({
 
             return true;
           };
-          const textFlowPoint = resolveDOMTextFlowPoint(textHost, pliteOffset);
-
-          if (textFlowPoint) {
-            return repairDOMPoint(textFlowPoint.node, textFlowPoint.offset);
-          }
-
-          const strings = Array.from(
-            textHost.querySelectorAll(
-              '[data-plite-string], [data-plite-zero-width]'
-            )
-          );
-          let offset = 0;
-
-          for (const string of strings) {
-            const textNode = Array.from(string.childNodes).find(isDOMText);
-            const lengthAttribute = string.getAttribute('data-plite-length');
-            const length =
-              lengthAttribute == null
-                ? (textNode?.textContent?.length ??
-                  string.textContent?.length ??
-                  0)
-                : Number.parseInt(lengthAttribute, 10);
-            const nextOffset = offset + (Number.isFinite(length) ? length : 0);
-
-            if (pliteOffset <= nextOffset) {
-              const zeroWidthOffset =
-                textNode?.textContent?.startsWith('\uFEFF') ||
-                string.textContent === '\uFEFF'
-                  ? 1
-                  : 0;
-              const domOffset = string.hasAttribute('data-plite-zero-width')
-                ? zeroWidthOffset
-                : Math.max(0, Math.min(pliteOffset - offset, length));
-
-              const domNode = textNode ?? string;
-              return repairDOMPoint(domNode, domOffset);
-            }
-
-            offset = nextOffset;
-          }
-
-          if (kind === 'repair-caret-after-text-insert') {
-            return false;
-          }
-
-          return scrollCurrentDOMSelectionIntoView();
+          return repairDOMPoint(domPoint[0], domPoint[1]);
         });
 
       let repairCompleted = false;

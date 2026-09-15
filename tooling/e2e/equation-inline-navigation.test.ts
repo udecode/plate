@@ -39,7 +39,7 @@ test.describe('inline equation keyboard navigation', () => {
       await page.goto('/blocks/equation-demo');
 
       const editor = page.locator(
-        '[data-plite-editor="true"][contenteditable="true"]'
+        '[data-editor="true"][contenteditable="true"]'
       );
       const equationButton = page
         .getByRole('button', { name: 'Edit equation' })
@@ -50,8 +50,8 @@ test.describe('inline equation keyboard navigation', () => {
       interactionErrors = recordInteractionErrors(page);
 
       const equationPath = await equationButton
-        .locator('xpath=ancestor::*[@data-plite-path][1]')
-        .getAttribute('data-plite-path');
+        .locator('xpath=ancestor::*[@data-editor-path][1]')
+        .getAttribute('data-editor-path');
 
       expect(equationPath).not.toBeNull();
 
@@ -92,11 +92,11 @@ test.describe('inline equation keyboard navigation', () => {
               selection?.anchorNode?.nodeType === Node.ELEMENT_NODE
                 ? (selection.anchorNode as Element)
                 : selection?.anchorNode?.parentElement;
-            const pathElement = anchor?.closest('[data-plite-path]');
+            const pathElement = anchor?.closest('[data-editor-path]');
 
             return {
               collapsed: selection?.isCollapsed,
-              path: pathElement?.getAttribute('data-plite-path'),
+              path: pathElement?.getAttribute('data-editor-path'),
               rootFocused: document.activeElement === element,
             };
           })

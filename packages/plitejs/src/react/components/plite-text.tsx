@@ -11,7 +11,7 @@ import { getPliteTextShellAttributes } from '../shell-runtime';
  * The shell carries path/runtime metadata and native DOM-sync attributes used
  * by selection and mutation handling.
  */
-export const PliteText = ({
+export const EditorText = ({
   domSync = false,
   domSyncReason,
   children,
@@ -32,8 +32,8 @@ export const PliteText = ({
 
   return (
     <span
-      data-plite-path={path ? path.join(',') : undefined}
-      data-plite-node-key={nodeKeyDOMValue}
+      data-editor-path={path ? path.join(',') : undefined}
+      data-editor-node-key={nodeKeyDOMValue}
       {...getPliteTextShellAttributes({ domSync, domSyncReason })}
       ref={ref}
     >

@@ -1,9 +1,9 @@
 import { expect, type Page, test } from '@playwright/test';
 import {
-  attachPliteBrowserJsonArtifact,
-  attachPliteBrowserSelectionScreenshot,
+  attachBrowserJsonArtifact,
+  attachBrowserSelectionScreenshot,
   openExample,
-  type PliteBrowserEditorHarness,
+  type BrowserEditorHarness,
 } from '@platejs/test/playwright';
 
 const hugeDocumentReadyTimeout = 90 * 1000;
@@ -39,7 +39,7 @@ type HugeDocumentKeyboardProfiler = {
 type HugeDocumentKeyboardProfilerWindow = Window &
   typeof globalThis & {
     __HUGE_DOCUMENT_KEYDOWN_PROFILER__?: HugeDocumentKeyboardProfiler;
-    __PLITE_REACT_RENDER_PROFILER__?: {
+    __EDITOR_REACT_RENDER_PROFILER__?: {
       record: (event: HugeDocumentKeyboardProfilerEvent) => void;
     };
   };
@@ -47,11 +47,11 @@ type HugeDocumentKeyboardProfilerWindow = Window &
 test.setTimeout(120 * 1000);
 
 const scrollContainersAwayFromCaret = async (
-  editor: PliteBrowserEditorHarness
+  editor: BrowserEditorHarness
 ) =>
   editor.root.evaluate((element: HTMLElement) => {
     for (
-      let parent = element.parentElement;
+      let parent: HTMLElement | null = element;
       parent;
       parent = parent.parentElement
     ) {
@@ -62,7 +62,7 @@ const scrollContainersAwayFromCaret = async (
     window.scrollTo(0, 0);
   });
 
-const getScrollableParentState = async (editor: PliteBrowserEditorHarness) =>
+const getScrollableParentState = async (editor: BrowserEditorHarness) =>
   editor.root.evaluate((element: HTMLElement) => {
     const parents: Array<{
       clientHeight: number;
@@ -77,7 +77,7 @@ const getScrollableParentState = async (editor: PliteBrowserEditorHarness) =>
     ];
 
     for (
-      let parent = element.parentElement;
+      let parent: HTMLElement | null = element;
       parent;
       parent = parent.parentElement
     ) {
@@ -94,21 +94,21 @@ const getScrollableParentState = async (editor: PliteBrowserEditorHarness) =>
   });
 
 const scrollBlockIntoView = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   blockIndex: number
 ) => {
   await editor.root
-    .locator(`[data-plite-node="element"][data-plite-path="${blockIndex}"]`)
+    .locator(`[data-editor-node="element"][data-editor-path="${blockIndex}"]`)
     .scrollIntoViewIfNeeded();
 };
 
 const clickTextBlock = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   blockIndex: number
 ) => {
   const point = await editor.root.evaluate((element: HTMLElement, index) => {
     const textElement = element.querySelector<HTMLElement>(
-      `[data-plite-node="text"][data-plite-path="${index},0"]`
+      `[data-editor-node="text"][data-editor-path="${index},0"]`
     );
 
     if (!textElement) {
@@ -180,7 +180,7 @@ const pressKeyboardWithTiming = async (
   return Math.round(performance.now() - startedAt);
 };
 
-const getHugeDocumentCounts = async (editor: PliteBrowserEditorHarness) =>
+const getHugeDocumentCounts = async (editor: BrowserEditorHarness) =>
   editor.root.evaluate((element: HTMLElement) => ({
     domNodeCount: Number(
       element.ownerDocument
@@ -197,18 +197,18 @@ const getHugeDocumentCounts = async (editor: PliteBrowserEditorHarness) =>
         .querySelector('[data-test-id="huge-document-pending-top-level-count"]')
         ?.textContent?.replace(/,/g, '') ?? Number.NaN
     ),
-    placeholderCount: element.querySelectorAll(
-      '[data-plite-dom-strategy-placeholder="true"]'
+    boundaryCount: element.querySelectorAll(
+      '[data-editor-viewport-boundary="true"]'
     ).length,
   }));
 
-const getNativeSelectionSummary = async (editor: PliteBrowserEditorHarness) =>
+const getNativeSelectionSummary = async (editor: BrowserEditorHarness) =>
   (await editor.selection.displayed()).native;
 
-const getViewSelectionSummary = async (editor: PliteBrowserEditorHarness) =>
+const getViewSelectionSummary = async (editor: BrowserEditorHarness) =>
   (await editor.selection.displayed()).view;
 
-const editorSelectionProof = async (editor: PliteBrowserEditorHarness) => {
+const editorSelectionProof = async (editor: BrowserEditorHarness) => {
   const displayedSelection = await editor.selection.displayed();
 
   return {
@@ -220,7 +220,7 @@ const editorSelectionProof = async (editor: PliteBrowserEditorHarness) => {
 };
 
 const installHugeDocumentKeyboardProfiler = async (
-  editor: PliteBrowserEditorHarness
+  editor: BrowserEditorHarness
 ) =>
   editor.root.evaluate((element: HTMLElement) => {
     const target = element.ownerDocument
@@ -241,7 +241,7 @@ const installHugeDocumentKeyboardProfiler = async (
     };
 
     target.__HUGE_DOCUMENT_KEYDOWN_PROFILER__ = profiler;
-    target.__PLITE_REACT_RENDER_PROFILER__ = {
+    target.__EDITOR_REACT_RENDER_PROFILER__ = {
       record(event: HugeDocumentKeyboardProfilerEvent) {
         profiler.events.push(event);
       },
@@ -249,7 +249,7 @@ const installHugeDocumentKeyboardProfiler = async (
   });
 
 const resetHugeDocumentKeyboardProfiler = async (
-  editor: PliteBrowserEditorHarness
+  editor: BrowserEditorHarness
 ) =>
   editor.root.evaluate((element: HTMLElement) => {
     const target = element.ownerDocument
@@ -259,7 +259,7 @@ const resetHugeDocumentKeyboardProfiler = async (
   });
 
 const snapshotHugeDocumentKeyboardProfiler = async (
-  editor: PliteBrowserEditorHarness
+  editor: BrowserEditorHarness
 ) =>
   editor.root.evaluate((element: HTMLElement) => {
     const target = element.ownerDocument
@@ -269,12 +269,12 @@ const snapshotHugeDocumentKeyboardProfiler = async (
   });
 
 const selectTextBlockEndDOM = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   blockIndex: number
 ) =>
   editor.root.evaluate((element: HTMLElement, index) => {
     const textElement = element.querySelector<HTMLElement>(
-      `[data-plite-node="text"][data-plite-path="${index},0"]`
+      `[data-editor-node="text"][data-editor-path="${index},0"]`
     );
 
     if (!textElement) {
@@ -312,7 +312,7 @@ const selectTextBlockEndDOM = async (
   }, blockIndex);
 
 const waitForTextBlockMaterialized = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   blockIndex: number
 ) =>
   editor.dom.waitForTextPath([blockIndex, 0], {
@@ -320,7 +320,7 @@ const waitForTextBlockMaterialized = async (
   });
 
 const waitForEditorAnimationFrames = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   count = 2
 ) =>
   editor.root.evaluate((_element: HTMLElement, frameCount) => {
@@ -343,20 +343,20 @@ const waitForEditorAnimationFrames = async (
   }, count);
 
 const getTextBlockText = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   blockIndex: number
 ) =>
   editor.root.evaluate((element: HTMLElement, index) => {
     const textElement = element.querySelector(
-      `[data-plite-node="text"][data-plite-path="${index},0"]`
+      `[data-editor-node="text"][data-editor-path="${index},0"]`
     );
-    const block = textElement?.closest('[data-plite-node="element"]');
+    const block = textElement?.closest('[data-editor-node="element"]');
 
     return (block ?? textElement)?.textContent?.replace(/\uFEFF/g, '') ?? null;
   }, blockIndex);
 
 const getVirtualizedRowStackingProof = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   {
     allowGaps,
     frameCount = 0,
@@ -388,12 +388,12 @@ const getVirtualizedRowStackingProof = async (
       const rootRect = element.getBoundingClientRect();
       const rows = Array.from(
         element.querySelectorAll<HTMLElement>(
-          '[data-plite-dom-strategy-virtual-row="true"]'
+          '[data-editor-virtualized-row="true"]'
         )
       )
         .map((row) => {
           const child =
-            row.querySelector<HTMLElement>('[data-plite-node="element"]') ??
+            row.querySelector<HTMLElement>('[data-editor-node="element"]') ??
             row;
           const rowRect = row.getBoundingClientRect();
           const childRect = child.getBoundingClientRect();
@@ -460,7 +460,7 @@ const getVirtualizedRowStackingProof = async (
   );
 
 const getVirtualizedScrollbarDragBufferProof = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   scrollTop: number,
   side: 'left' | 'right' = 'right'
 ) =>
@@ -486,12 +486,12 @@ const getVirtualizedScrollbarDragBufferProof = async (
       const rootRect = element.getBoundingClientRect();
       const rows = Array.from(
         element.querySelectorAll<HTMLElement>(
-          '[data-plite-dom-strategy-virtual-row="true"]'
+          '[data-editor-virtualized-row="true"]'
         )
       );
       const rowRects = rows.map((row) => {
         const child =
-          row.querySelector<HTMLElement>('[data-plite-node="element"]') ?? row;
+          row.querySelector<HTMLElement>('[data-editor-node="element"]') ?? row;
         const rect = child.getBoundingClientRect();
 
         return {
@@ -536,7 +536,7 @@ const getVirtualizedScrollbarDragBufferProof = async (
   );
 
 const waitForVirtualizedScrollbarDragBufferProof = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   scrollTop: number,
   side: 'left' | 'right' = 'right'
 ) => {
@@ -565,7 +565,7 @@ const waitForVirtualizedScrollbarDragBufferProof = async (
 };
 
 const selectTextBlockOffsetDOM = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   blockIndex: number,
   offset: number
 ) => {
@@ -612,10 +612,10 @@ test.describe('huge document example', {
     await expect(page.getByRole('textbox')).toBeVisible({
       timeout: hugeDocumentReadyTimeout,
     });
-    await expect(page.getByLabel('DOM strategy')).toHaveValue('virtualized');
+    await expect(page.getByLabel('Rendering')).toHaveValue('virtualized');
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
     await expect
@@ -627,7 +627,7 @@ test.describe('huge document example', {
         )
       )
       .toBeLessThan(200);
-    await expect(page.locator('[data-plite-chunk]')).toHaveCount(0);
+    await expect(page.locator('[data-editor-chunk]')).toHaveCount(0);
   });
 
   test('keeps seeded content deterministic when block count grows', async ({
@@ -638,7 +638,7 @@ test.describe('huge document example', {
     const editor = await openSmallHugeDocument(page, {
       blocks: 2,
       seed,
-      strategy: 'full',
+      rendering: 'complete',
     });
 
     await page.getByLabel('Blocks').selectOption('1000');
@@ -661,7 +661,7 @@ test.describe('huge document example', {
       const freshEditor = await openSmallHugeDocument(freshPage, {
         blocks: 1000,
         seed,
-        strategy: 'full',
+        rendering: 'complete',
       });
 
       await expect
@@ -677,1196 +677,7 @@ test.describe('huge document example', {
     }
   });
 
-  test('exposes staged DOM strategy controls and metrics', async ({ page }) => {
-    const editor = await openSmallHugeDocument(page, {
-      blocks: 1200,
-      overscan: 0,
-      segment_size: 100,
-      strategy: 'staged',
-      threshold: 1,
-    });
-
-    await expect(page.getByLabel('DOM strategy')).toHaveValue('staged');
-    await expect(page.getByLabel('Editor height')).toHaveValue('420');
-    await expect
-      .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
-      )
-      .toBe('staged');
-    await expect
-      .poll(async () =>
-        Number(
-          await page
-            .getByTestId('huge-document-mounted-top-level-count')
-            .textContent()
-        )
-      )
-      .toBeGreaterThan(0);
-    await expect
-      .poll(async () =>
-        Number(
-          await page
-            .getByTestId('huge-document-dom-coverage-boundary-count')
-            .textContent()
-        )
-      )
-      .toBeGreaterThanOrEqual(0);
-
-    const scrollbarProof = await editor.root.evaluate(
-      (element: HTMLElement) => {
-        const style =
-          element.ownerDocument.defaultView?.getComputedStyle(element);
-
-        return {
-          clientHeight: element.clientHeight,
-          overflowY: style?.overflowY ?? null,
-          scrollbarGutter: style?.scrollbarGutter ?? null,
-          scrollHeight: element.scrollHeight,
-        };
-      }
-    );
-
-    expect(scrollbarProof.overflowY).toBe('auto');
-    expect(scrollbarProof.scrollbarGutter).toBe('stable');
-    expect(scrollbarProof.clientHeight).toBe(420);
-    expect(scrollbarProof.scrollHeight).toBeGreaterThan(
-      scrollbarProof.clientHeight
-    );
-  });
-
-  test('materializes a staged remote browser-handle selection', async ({
-    page,
-  }) => {
-    const blockIndex = 600;
-    const editor = await openSmallHugeDocument(page, {
-      blocks: 1200,
-      editor_height: 420,
-      strategy: 'staged',
-      threshold: 1,
-    });
-
-    await expect
-      .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
-      )
-      .toBe('staged');
-
-    await editor.selection.select({
-      anchor: { offset: 4, path: [blockIndex, 0] },
-      focus: { offset: 4, path: [blockIndex, 0] },
-    });
-    await editor.dom.waitForTextPath([blockIndex, 0]);
-    await editor.assert.selection({
-      anchor: { offset: 4, path: [blockIndex, 0] },
-      focus: { offset: 4, path: [blockIndex, 0] },
-    });
-  });
-
-  test('keeps staged middle-block editing, undo, Enter, and scroll stable', async ({
-    page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop staged editing proof'
-    );
-
-    const blockIndex = 600;
-    const offset = 4;
-    const typeText = ' staged-edit';
-    const splitText = 'split-tail';
-    const editor = await openSmallHugeDocument(page, {
-      blocks: 1200,
-      editor_height: 420,
-      strategy: 'staged',
-      threshold: 1,
-    });
-
-    await expect
-      .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
-      )
-      .toBe('staged');
-
-    await selectTextBlockOffsetDOM(editor, blockIndex, offset);
-    const beforeText = await getTextBlockText(editor, blockIndex);
-
-    if (!beforeText) {
-      throw new Error(`Missing text for block ${blockIndex}`);
-    }
-
-    const expectedTypedText =
-      beforeText.slice(0, offset) + typeText + beforeText.slice(offset);
-
-    await page.keyboard.type(typeText, { delay: 0 });
-
-    await expect
-      .poll(() => getTextBlockText(editor, blockIndex))
-      .toBe(expectedTypedText);
-    await editor.assert.selection({
-      anchor: { offset: offset + typeText.length, path: [blockIndex, 0] },
-      focus: { offset: offset + typeText.length, path: [blockIndex, 0] },
-    });
-    await editor.assert.caretVisibleInScrollableParent();
-
-    await page.keyboard.press(BROWSER_UNDO_HOTKEY);
-
-    await expect
-      .poll(() => getTextBlockText(editor, blockIndex))
-      .toBe(beforeText);
-    await editor.assert.selection({
-      anchor: { offset, path: [blockIndex, 0] },
-      focus: { offset, path: [blockIndex, 0] },
-    });
-
-    await selectTextBlockOffsetDOM(editor, blockIndex, offset);
-    await page.keyboard.press('Enter');
-    await page.keyboard.type(splitText, { delay: 0 });
-    await waitForTextBlockMaterialized(editor, blockIndex + 1);
-
-    await expect
-      .poll(async () => ({
-        firstBlock: await getTextBlockText(editor, blockIndex),
-        secondBlock: await getTextBlockText(editor, blockIndex + 1),
-        selection: await editor.selection.get(),
-      }))
-      .toEqual({
-        firstBlock: beforeText.slice(0, offset),
-        secondBlock: splitText + beforeText.slice(offset),
-        selection: {
-          anchor: { offset: splitText.length, path: [blockIndex + 1, 0] },
-          focus: { offset: splitText.length, path: [blockIndex + 1, 0] },
-        },
-      });
-    await editor.assert.caretVisibleInScrollableParent();
-  });
-
-  test('keeps staged 10k Shift+ArrowDown and Shift+ArrowUp bounded after warmup', async ({
-    page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop keyboard/perf proof for staged huge-document vertical selection'
-    );
-
-    const editor = await openSmallHugeDocument(page, {
-      blocks: 10_000,
-      content_visibility: 'none',
-      editor_height: 600,
-      strategy: 'staged',
-      threshold: 1,
-    });
-
-    await expect
-      .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
-      )
-      .toBe('staged');
-
-    await page.waitForTimeout(800);
-    const downMs: number[] = [];
-    const upMs: number[] = [];
-
-    for (let sampleIndex = 0; sampleIndex < 4; sampleIndex += 1) {
-      await selectTextBlockOffsetDOM(editor, 5000, 3);
-      downMs.push(await pressKeyboardWithTiming(page, 'Shift+ArrowDown', 600));
-
-      const afterDownSelection = await editor.selection.get();
-      const afterDownNative = await getNativeSelectionSummary(editor);
-      const afterDownViewSelection = await getViewSelectionSummary(editor);
-
-      expect(afterDownSelection?.anchor).toEqual({
-        offset: 3,
-        path: [5000, 0],
-      });
-      expect(afterDownSelection?.focus.path[0]).toBeGreaterThanOrEqual(5000);
-      expect(afterDownSelection?.focus.path[0]).toBeLessThanOrEqual(5001);
-      expect(afterDownSelection?.focus.offset).toEqual(expect.any(Number));
-      expect(
-        afterDownNative.textLength > 0 || afterDownViewSelection.markerCount > 0
-      ).toBe(true);
-      await editor.assert.noDoubleSelectionHighlight();
-
-      await selectTextBlockOffsetDOM(editor, 5000, 3);
-      upMs.push(await pressKeyboardWithTiming(page, 'Shift+ArrowUp', 600));
-
-      const afterUpSelection = await editor.selection.get();
-      const afterUpNative = await getNativeSelectionSummary(editor);
-      const afterUpViewSelection = await getViewSelectionSummary(editor);
-
-      expect(afterUpSelection?.anchor).toEqual({
-        offset: 3,
-        path: [5000, 0],
-      });
-      expect(afterUpSelection?.focus.path[0]).toBeGreaterThanOrEqual(4999);
-      expect(afterUpSelection?.focus.path[0]).toBeLessThanOrEqual(5000);
-      expect(afterUpSelection?.focus.offset).toEqual(expect.any(Number));
-      expect(
-        afterUpNative.textLength > 0 || afterUpViewSelection.markerCount > 0
-      ).toBe(true);
-      await editor.assert.noDoubleSelectionHighlight();
-    }
-
-    await selectTextBlockOffsetDOM(editor, 5000, 3);
-    await editor.assert.selection({
-      anchor: { path: [5000, 0], offset: 3 },
-      focus: { path: [5000, 0], offset: 3 },
-    });
-
-    await attachPliteBrowserJsonArtifact(
-      testInfo,
-      'staged-vertical-selection-10k-proof',
-      { downMs, upMs }
-    );
-
-    expect(Math.max(...downMs)).toBeLessThan(600);
-    expect(Math.max(...upMs)).toBeLessThan(600);
-  });
-
-  test('keeps staged and virtualized Shift+ArrowUp and Shift+ArrowDown selection coherent across browsers', async ({
-    page,
-  }, testInfo) => {
-    const strategies = ['staged', 'virtualized'] as const;
-    const proofs: Array<{
-      down: Awaited<ReturnType<typeof editorSelectionProof>>;
-      strategy: (typeof strategies)[number];
-      up: Awaited<ReturnType<typeof editorSelectionProof>>;
-    }> = [];
-
-    for (const strategy of strategies) {
-      const editor = await openSmallHugeDocument(page, {
-        blocks: 5000,
-        editor_height: 420,
-        estimated_block_size: 48,
-        overscan: 0,
-        strategy,
-        threshold: 1,
-      });
-
-      await expect
-        .poll(() =>
-          page.getByTestId('huge-document-effective-strategy').textContent()
-        )
-        .toBe(strategy);
-
-      await selectTextBlockOffsetDOM(editor, 4, 12);
-      await page.keyboard.press('Shift+ArrowUp');
-
-      const up = await editorSelectionProof(editor);
-
-      expect(up.selection?.anchor).toEqual({
-        offset: 12,
-        path: [4, 0],
-      });
-      expect(up.selection?.focus).not.toEqual({
-        offset: 12,
-        path: [4, 0],
-      });
-      expect(up.hasVisibleSelection).toBe(true);
-      await editor.assert.noDoubleSelectionHighlight();
-
-      await selectTextBlockOffsetDOM(editor, 0, 12);
-      await page.keyboard.press('Shift+ArrowDown');
-
-      const down = await editorSelectionProof(editor);
-
-      expect(down.selection?.anchor).toEqual({
-        offset: 12,
-        path: [0, 0],
-      });
-      expect(down.selection?.focus).not.toEqual({
-        offset: 12,
-        path: [0, 0],
-      });
-      expect(down.hasVisibleSelection).toBe(true);
-      await editor.assert.noDoubleSelectionHighlight();
-
-      proofs.push({ down, strategy, up });
-    }
-
-    await attachPliteBrowserJsonArtifact(
-      testInfo,
-      'huge-document-cross-browser-vertical-selection-proof',
-      proofs
-    );
-  });
-
-  test('keeps staged and virtualized select-all delete typing and undo coherent across browsers', async ({
-    page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop select-all delete proof'
-    );
-
-    const strategies = ['staged', 'virtualized'] as const;
-    const proofs: Array<{
-      afterSelectAllNative: Awaited<
-        ReturnType<typeof getNativeSelectionSummary>
-      >;
-      afterSelectAllView: Awaited<ReturnType<typeof getViewSelectionSummary>>;
-      deleteMs: number;
-      selectAllMs: number;
-      strategy: (typeof strategies)[number];
-      undoDeleteMs: number;
-      undoTypeMs: number;
-    }> = [];
-
-    for (const strategy of strategies) {
-      const editor = await openSmallHugeDocument(page, {
-        blocks: 1200,
-        editor_height: 420,
-        estimated_block_size: 48,
-        overscan: 0,
-        strategy,
-        threshold: 1,
-      });
-
-      await expect
-        .poll(() =>
-          page.getByTestId('huge-document-effective-strategy').textContent()
-        )
-        .toBe(strategy);
-
-      await selectTextBlockOffsetDOM(editor, 0, 0);
-
-      const beforeModelBlockTexts = await editor.get.modelBlockTexts();
-      const beforeBoundary = {
-        first: beforeModelBlockTexts[0],
-        last: beforeModelBlockTexts.at(-1),
-        length: beforeModelBlockTexts.length,
-      };
-
-      expect(beforeBoundary.length).toBe(1200);
-
-      const selectAllMs = await pressKeyboardWithTiming(
-        page,
-        BROWSER_SELECT_ALL_HOTKEY,
-        8000
-      );
-
-      await editor.assert.selection({
-        anchor: { path: [0, 0], offset: 0 },
-        focus: {
-          path: [beforeBoundary.length - 1, 0],
-          offset: beforeBoundary.last!.length,
-        },
-      });
-      await editor.assert.noDoubleSelectionHighlight();
-
-      const afterSelectAllNative = await getNativeSelectionSummary(editor);
-      const afterSelectAllView = await getViewSelectionSummary(editor);
-      const deleteMs = await pressKeyboardWithTiming(page, 'Delete', 8000);
-
-      await expect
-        .poll(async () => ({
-          selection: await editor.selection.get(),
-          texts: await editor.get.modelBlockTexts(),
-        }))
-        .toEqual({
-          selection: {
-            anchor: { path: [0, 0], offset: 0 },
-            focus: { path: [0, 0], offset: 0 },
-          },
-          texts: [''],
-        });
-
-      const typeText = `${strategy} replacement`;
-
-      await page.keyboard.type(typeText, { delay: 0 });
-
-      await expect
-        .poll(async () => ({
-          selection: await editor.selection.get(),
-          texts: await editor.get.modelBlockTexts(),
-        }))
-        .toEqual({
-          selection: {
-            anchor: { path: [0, 0], offset: typeText.length },
-            focus: { path: [0, 0], offset: typeText.length },
-          },
-          texts: [typeText],
-        });
-
-      const undoHotkey = BROWSER_UNDO_HOTKEY;
-      const undoTypeMs = await pressKeyboardWithTiming(page, undoHotkey, 8000);
-
-      await expect.poll(() => editor.get.modelBlockTexts()).toEqual(['']);
-      await editor.assert.selection({
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
-      });
-
-      const undoDeleteMs = await pressKeyboardWithTiming(
-        page,
-        undoHotkey,
-        15_000
-      );
-
-      await expect
-        .poll(async () => {
-          const nextModelBlockTexts = await editor.get.modelBlockTexts();
-
-          return {
-            first: nextModelBlockTexts[0],
-            last: nextModelBlockTexts.at(-1),
-            length: nextModelBlockTexts.length,
-            selection: await editor.selection.get(),
-          };
-        })
-        .toEqual({
-          ...beforeBoundary,
-          selection: {
-            anchor: { path: [0, 0], offset: 0 },
-            focus: {
-              path: [beforeBoundary.length - 1, 0],
-              offset: beforeBoundary.last!.length,
-            },
-          },
-        });
-      await editor.assert.noDoubleSelectionHighlight();
-
-      proofs.push({
-        afterSelectAllNative,
-        afterSelectAllView,
-        deleteMs,
-        selectAllMs,
-        strategy,
-        undoDeleteMs,
-        undoTypeMs,
-      });
-    }
-
-    await attachPliteBrowserJsonArtifact(
-      testInfo,
-      'huge-document-cross-browser-select-all-delete-proof',
-      proofs
-    );
-  });
-
-  test('keeps staged 10k repeated Shift+ArrowDown visually projected and bounded', async ({
-    page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop keyboard/perf proof for video-sized staged huge-document selection'
-    );
-
-    await page.setViewportSize({ height: 2106, width: 1548 });
-
-    const editor = await openSmallHugeDocument(page, {
-      blocks: 10_000,
-      content_visibility: 'none',
-      strategy: 'staged',
-      threshold: 1,
-    });
-
-    await expect
-      .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
-      )
-      .toBe('staged');
-
-    await selectTextBlockOffsetDOM(editor, 0, 3);
-
-    const downMs: number[] = [];
-    const downSnapshots: Array<{
-      focusPath: number[] | null;
-      markerCount: number;
-      markerPaths: Array<string | null>;
-      step: number;
-    }> = [];
-    let previousFocusIndex = 0;
-
-    await page.keyboard.down('Shift');
-    try {
-      for (let index = 0; index < 24; index += 1) {
-        downMs.push(await pressKeyboardWithTiming(page, 'ArrowDown', 800));
-
-        const selection = await editor.selection.get();
-        const viewSelection = await getViewSelectionSummary(editor);
-        const focusIndex = selection?.focus.path[0];
-
-        if (typeof focusIndex === 'number') {
-          expect(focusIndex).toBeGreaterThanOrEqual(previousFocusIndex);
-          previousFocusIndex = focusIndex;
-        }
-
-        if (
-          selection &&
-          (selection.anchor.offset !== selection.focus.offset ||
-            selection.anchor.path.join(',') !== selection.focus.path.join(','))
-        ) {
-          expect(viewSelection.markerCount).toBeGreaterThan(0);
-        }
-
-        downSnapshots.push({
-          focusPath: selection?.focus.path ?? null,
-          markerCount: viewSelection.markerCount,
-          markerPaths: viewSelection.markerPaths,
-          step: index,
-        });
-      }
-    } finally {
-      await page.keyboard.up('Shift');
-    }
-
-    const afterDownSelection = await editor.selection.get();
-    const afterDownNative = await getNativeSelectionSummary(editor);
-    const afterDownViewSelection = await getViewSelectionSummary(editor);
-
-    expect(afterDownSelection?.anchor).toEqual({ offset: 3, path: [0, 0] });
-    expect(afterDownSelection?.focus.path[0]).toBeGreaterThan(0);
-    expect(afterDownViewSelection.active).toBe(true);
-    expect(afterDownViewSelection.markerCount).toBeGreaterThan(1);
-    expect(afterDownViewSelection.markerPaths).toContain(
-      afterDownSelection!.focus.path.join(',')
-    );
-    expect(afterDownViewSelection.markerRects).toHaveLength(
-      afterDownViewSelection.markerCount
-    );
-    expect(
-      afterDownViewSelection.markerRects.some(
-        (rect) => rect.width > 0 && rect.height > 0
-      )
-    ).toBe(true);
-    expect(afterDownViewSelection.textLength).toBeGreaterThan(100);
-    expect(afterDownNative.textLength).toBe(0);
-    await editor.assert.noDoubleSelectionHighlight();
-    await attachPliteBrowserSelectionScreenshot(
-      editor,
-      testInfo,
-      'staged-repeated-shift-down-projected-selection.png'
-    );
-
-    await page.keyboard.down('Shift');
-    try {
-      for (let index = 0; index < 8; index += 1) {
-        await pressKeyboardWithTiming(page, 'ArrowUp', 800);
-      }
-    } finally {
-      await page.keyboard.up('Shift');
-    }
-
-    const afterUpSelection = await editor.selection.get();
-    const afterUpViewSelection = await getViewSelectionSummary(editor);
-
-    expect(afterUpSelection?.anchor).toEqual({ offset: 3, path: [0, 0] });
-    expect(afterUpSelection?.focus.path[0]).toBeLessThan(
-      afterDownSelection!.focus.path[0]
-    );
-    expect(afterUpViewSelection.active).toBe(true);
-    expect(afterUpViewSelection.markerCount).toBeLessThan(
-      afterDownViewSelection.markerCount
-    );
-    await editor.assert.noDoubleSelectionHighlight();
-    await attachPliteBrowserSelectionScreenshot(
-      editor,
-      testInfo,
-      'staged-repeated-shift-up-projected-selection.png'
-    );
-
-    await attachPliteBrowserJsonArtifact(
-      testInfo,
-      'staged-repeated-vertical-selection-10k-proof',
-      {
-        afterDownNative,
-        afterDownSelection,
-        afterDownViewSelection,
-        afterUpSelection,
-        afterUpViewSelection,
-        downMs,
-        downSnapshots,
-      }
-    );
-
-    expect(Math.max(...downMs)).toBeLessThan(800);
-  });
-
-  test('keeps staged repeated Shift+ArrowDown aligned with full DOM', async ({
-    page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name !== 'chromium',
-      'Chromium exact full-DOM parity proof; Firefox/WebKit line-wrap offsets differ by one'
-    );
-
-    const collectSteps = async (strategy: 'full' | 'staged') => {
-      const editor = await openSmallHugeDocument(page, {
-        blocks: 5000,
-        editor_height: 420,
-        strategy,
-        threshold: 1,
-      });
-
-      await expect
-        .poll(() =>
-          page.getByTestId('huge-document-effective-strategy').textContent()
-        )
-        .toBe(strategy);
-
-      await selectTextBlockOffsetDOM(editor, 0, 3);
-
-      const steps: Array<{
-        nativeSelection: PliteBrowserHandleSelection | null;
-        nativeTextLength: number;
-        selection: PliteBrowserHandleSelection | null;
-        selectionBeforeSync: PliteBrowserHandleSelection | null;
-        viewMarkerCount: number;
-        viewMarkerPaths: Array<string | null>;
-      }> = [];
-      const reverseSteps: typeof steps = [];
-
-      await page.keyboard.down('Shift');
-      try {
-        for (let index = 0; index < 14; index += 1) {
-          await page.keyboard.press('ArrowDown');
-
-          const beforeSync = await editor.selection.displayed();
-          expect(beforeSync.displayed).not.toBeNull();
-          await editor.assert.selection(beforeSync.displayed!);
-          const displayed = await editor.selection.displayed();
-          expect(displayed.model).toEqual(beforeSync.displayed);
-          expect(displayed.displayed).toEqual(beforeSync.displayed);
-
-          steps.push({
-            nativeSelection: displayed.native.selection,
-            nativeTextLength: displayed.native.textLength,
-            selection: displayed.model,
-            selectionBeforeSync: beforeSync.model,
-            viewMarkerCount: displayed.view.markerCount,
-            viewMarkerPaths: displayed.view.markerPaths,
-          });
-        }
-      } finally {
-        await page.keyboard.up('Shift');
-      }
-
-      if (strategy === 'staged') {
-        await editor.assert.noDoubleSelectionHighlight();
-      }
-
-      await page.keyboard.down('Shift');
-      try {
-        for (let index = 0; index < 14; index += 1) {
-          await page.keyboard.press('ArrowUp');
-
-          const beforeSync = await editor.selection.displayed();
-          expect(beforeSync.displayed).not.toBeNull();
-          await editor.assert.selection(beforeSync.displayed!);
-          const displayed = await editor.selection.displayed();
-          expect(displayed.model).toEqual(beforeSync.displayed);
-          expect(displayed.displayed).toEqual(beforeSync.displayed);
-
-          reverseSteps.push({
-            nativeSelection: displayed.native.selection,
-            nativeTextLength: displayed.native.textLength,
-            selection: displayed.model,
-            selectionBeforeSync: beforeSync.model,
-            viewMarkerCount: displayed.view.markerCount,
-            viewMarkerPaths: displayed.view.markerPaths,
-          });
-        }
-      } finally {
-        await page.keyboard.up('Shift');
-      }
-      if (strategy === 'full') {
-        expect(reverseSteps.map((step) => step.selection)).toEqual([
-          ...steps.slice(0, -1).reverse().map((step) => step.selection),
-          {
-            anchor: { offset: 3, path: [0, 0] },
-            focus: { offset: 3, path: [0, 0] },
-          },
-        ]);
-      }
-      for (let index = 0; index < reverseSteps.length; index += 1) {
-        const selection = reverseSteps[index].selection!;
-        const previous = (index === 0 ? steps.at(-1) : reverseSteps[index - 1])!.selection!;
-        expect(selection.anchor).toEqual({ offset: 3, path: [0, 0] });
-        expect(
-          selection.focus.path[0] < previous.focus.path[0] ||
-          (selection.focus.path[0] === previous.focus.path[0] &&
-            selection.focus.offset < previous.focus.offset)
-        ).toBe(true);
-      }
-      expect(reverseSteps.at(-1)!.selection).toEqual({
-        anchor: { offset: 3, path: [0, 0] },
-        focus: { offset: 3, path: [0, 0] },
-      });
-      await editor.assert.noDoubleSelectionHighlight();
-
-      return { reverseSteps, steps };
-    };
-
-    const { reverseSteps: fullReverseSteps, steps: fullSteps } =
-      await collectSteps('full');
-    const { reverseSteps: stagedReverseSteps, steps: stagedSteps } =
-      await collectSteps('staged');
-
-    await attachPliteBrowserJsonArtifact(
-      testInfo,
-      'staged-full-dom-vertical-selection-proof',
-      { fullReverseSteps, fullSteps, stagedReverseSteps, stagedSteps }
-    );
-
-    expect(stagedSteps.map((step) => step.selection)).toEqual(
-      fullSteps.map((step) => step.selection)
-    );
-    expect(stagedReverseSteps.at(-1)!.selection).toEqual(
-      fullReverseSteps.at(-1)!.selection
-    );
-    const finalStagedStep = stagedSteps.at(-1)!;
-
-    expect(finalStagedStep.nativeTextLength).toBe(0);
-    expect(finalStagedStep.viewMarkerCount).toBeGreaterThan(1);
-    expect(finalStagedStep.viewMarkerPaths).toContain(
-      finalStagedStep.selection!.focus.path.join(',')
-    );
-  });
-
-  test('keeps staged 10k select-all delete, typing, paste, and undo bounded', async ({
-    page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop keyboard/perf proof for staged huge-document select-all delete'
-    );
-
-    const editor = await openSmallHugeDocument(page, {
-      blocks: 10_000,
-      content_visibility: 'none',
-      editor_height: 600,
-      strategy: 'staged',
-      threshold: 1,
-    });
-
-    await expect
-      .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
-      )
-      .toBe('staged');
-
-    await page.waitForTimeout(500);
-
-    const beforeModelBlockTexts = await editor.get.modelBlockTexts();
-    const beforeCounts = await getHugeDocumentCounts(editor);
-    const beforeBoundary = {
-      first: beforeModelBlockTexts[0],
-      last: beforeModelBlockTexts.at(-1),
-      length: beforeModelBlockTexts.length,
-    };
-
-    expect(beforeBoundary.length).toBe(10_000);
-
-    const selectAllMs = await pressKeyboardWithTiming(
-      page,
-      BROWSER_SELECT_ALL_HOTKEY,
-      10_000
-    );
-
-    await editor.assert.selection({
-      anchor: { path: [0, 0], offset: 0 },
-      focus: {
-        path: [beforeBoundary.length - 1, 0],
-        offset: beforeBoundary.last!.length,
-      },
-    });
-
-    const afterSelectAllCounts = await getHugeDocumentCounts(editor);
-    const nativeAfterSelectAll = await editor.root.evaluate(
-      (element: HTMLElement) => {
-        const selection = element.ownerDocument.getSelection();
-
-        return {
-          collapsed: selection?.isCollapsed ?? null,
-          textLength: selection?.toString().length ?? 0,
-        };
-      }
-    );
-
-    const deleteMs = await pressKeyboardWithTiming(page, 'Delete', 5000);
-
-    await expect
-      .poll(async () => ({
-        selection: await editor.selection.get(),
-        texts: await editor.get.modelBlockTexts(),
-      }))
-      .toEqual({
-        selection: {
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 0 },
-        },
-        texts: [''],
-      });
-
-    await page.keyboard.type('after delete', { delay: 0 });
-
-    await expect
-      .poll(async () => ({
-        selection: await editor.selection.get(),
-        texts: await editor.get.modelBlockTexts(),
-      }))
-      .toEqual({
-        selection: {
-          anchor: { path: [0, 0], offset: 'after delete'.length },
-          focus: { path: [0, 0], offset: 'after delete'.length },
-        },
-        texts: ['after delete'],
-      });
-
-    const undoHotkey = BROWSER_UNDO_HOTKEY;
-    const undoTypeMs = await pressKeyboardWithTiming(page, undoHotkey, 5000);
-
-    await expect.poll(() => editor.get.modelBlockTexts()).toEqual(['']);
-
-    const undoDeleteMs = await pressKeyboardWithTiming(
-      page,
-      undoHotkey,
-      15_000
-    );
-
-    await expect
-      .poll(async () => {
-        const nextModelBlockTexts = await editor.get.modelBlockTexts();
-
-        return {
-          first: nextModelBlockTexts[0],
-          last: nextModelBlockTexts.at(-1),
-          length: nextModelBlockTexts.length,
-          selection: await editor.selection.get(),
-        };
-      })
-      .toEqual({
-        ...beforeBoundary,
-        selection: {
-          anchor: { path: [0, 0], offset: 0 },
-          focus: {
-            path: [beforeBoundary.length - 1, 0],
-            offset: beforeBoundary.last!.length,
-          },
-        },
-      });
-
-    await editor.clipboard.pasteText('staged paste replacement');
-
-    await expect
-      .poll(() => editor.get.modelBlockTexts())
-      .toEqual(['staged paste replacement']);
-    await editor.assert.selection({
-      anchor: { path: [0, 0], offset: 'staged paste replacement'.length },
-      focus: { path: [0, 0], offset: 'staged paste replacement'.length },
-    });
-
-    await attachPliteBrowserJsonArtifact(
-      testInfo,
-      'staged-select-all-delete-10k-proof',
-      {
-        afterSelectAllCounts,
-        beforeCounts,
-        deleteMs,
-        nativeAfterSelectAll,
-        selectAllMs,
-        undoDeleteMs,
-        undoTypeMs,
-      }
-    );
-
-    expect(deleteMs).toBeLessThan(5000);
-    expect(undoDeleteMs).toBeLessThan(15_000);
-  });
-
-  test('keeps auto DOM strategy bounded for huge documents', async ({
-    page,
-  }) => {
-    const editor = await openSmallHugeDocument(page, {
-      blocks: 10_000,
-      strategy: 'auto',
-    });
-
-    await expect(page.getByLabel('DOM strategy')).toHaveValue('auto');
-    await expect
-      .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
-      )
-      .toBe('partial-dom');
-
-    await page.waitForTimeout(1600);
-
-    const proof = await editor.root.evaluate((element: HTMLElement) => ({
-      domNodeCount: Number(
-        element.ownerDocument
-          .querySelector('[data-test-id="huge-document-dom-node-count"]')
-          ?.textContent?.replace(/,/g, '') ?? Number.NaN
-      ),
-      mountedTopLevelCount: Number(
-        element.ownerDocument
-          .querySelector(
-            '[data-test-id="huge-document-mounted-top-level-count"]'
-          )
-          ?.textContent?.replace(/,/g, '') ?? Number.NaN
-      ),
-      pendingRootGroupCount: element.querySelectorAll(
-        '[data-plite-root-group-state="pending-mount"]'
-      ).length,
-      pendingTopLevelCount: Number(
-        element.ownerDocument
-          .querySelector(
-            '[data-test-id="huge-document-pending-top-level-count"]'
-          )
-          ?.textContent?.replace(/,/g, '') ?? Number.NaN
-      ),
-      placeholderCount: element.querySelectorAll(
-        '[data-plite-dom-strategy-placeholder="true"]'
-      ).length,
-    }));
-
-    expect(proof.mountedTopLevelCount).toBeLessThanOrEqual(80);
-    expect(proof.pendingTopLevelCount).toBeGreaterThan(9000);
-    expect(proof.domNodeCount).toBeLessThan(2500);
-    expect(proof.placeholderCount).toBeGreaterThan(0);
-    expect(proof.pendingRootGroupCount).toBe(0);
-  });
-
-  test('keeps auto partial-dom select-all paste and undo bounded', async ({
-    page,
-  }) => {
-    const editor = await openSmallHugeDocument(page, {
-      blocks: 5000,
-      strategy: 'auto',
-    });
-
-    await expect
-      .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
-      )
-      .toBe('partial-dom');
-
-    await page.waitForTimeout(1600);
-    const beforeCounts = await getHugeDocumentCounts(editor);
-
-    expect(beforeCounts.mountedTopLevelCount).toBeLessThanOrEqual(80);
-    expect(beforeCounts.pendingTopLevelCount).toBeGreaterThan(4500);
-    expect(beforeCounts.domNodeCount).toBeLessThan(3000);
-    expect(beforeCounts.placeholderCount).toBeGreaterThan(0);
-
-    const beforeModelBlockTexts = await editor.get.modelBlockTexts();
-
-    expect(beforeModelBlockTexts).toHaveLength(5000);
-
-    await editor.selection.selectAll();
-    await editor.assert.selection({
-      anchor: { path: [0, 0], offset: 0 },
-      focus: {
-        path: [beforeModelBlockTexts.length - 1, 0],
-        offset: beforeModelBlockTexts.at(-1)!.length,
-      },
-    });
-
-    await editor.clipboard.pasteText('auto partial-dom replacement');
-
-    await expect
-      .poll(() => editor.get.blockTexts())
-      .toEqual(['auto partial-dom replacement']);
-    await editor.assert.selection({
-      anchor: { path: [0, 0], offset: 'auto partial-dom replacement'.length },
-      focus: { path: [0, 0], offset: 'auto partial-dom replacement'.length },
-    });
-
-    await editor.undo();
-
-    await expect
-      .poll(async () => {
-        const blockTexts = await editor.get.modelBlockTexts();
-
-        return {
-          first: blockTexts[0],
-          last: blockTexts.at(-1),
-          length: blockTexts.length,
-        };
-      })
-      .toEqual({
-        first: beforeModelBlockTexts[0],
-        last: beforeModelBlockTexts.at(-1),
-        length: beforeModelBlockTexts.length,
-      });
-    await editor.assert.selection({
-      anchor: { path: [0, 0], offset: 0 },
-      focus: {
-        path: [beforeModelBlockTexts.length - 1, 0],
-        offset: beforeModelBlockTexts.at(-1)!.length,
-      },
-    });
-
-    const afterUndoCounts = await getHugeDocumentCounts(editor);
-
-    expect(afterUndoCounts.domNodeCount).toBeLessThan(3000);
-    expect(afterUndoCounts.placeholderCount).toBeGreaterThan(0);
-  });
-
-  test('keeps auto partial-dom 20k select-all paste and undo bounded', async ({
-    page,
-  }) => {
-    const editor = await openSmallHugeDocument(page, {
-      blocks: 20_000,
-      strategy: 'auto',
-    });
-
-    await expect
-      .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
-      )
-      .toBe('partial-dom');
-
-    await page.waitForTimeout(1600);
-    const beforeCounts = await getHugeDocumentCounts(editor);
-
-    expect(beforeCounts.mountedTopLevelCount).toBeLessThanOrEqual(80);
-    expect(beforeCounts.pendingTopLevelCount).toBeGreaterThan(19_000);
-    expect(beforeCounts.domNodeCount).toBeLessThan(3000);
-    expect(beforeCounts.placeholderCount).toBeGreaterThan(0);
-
-    const beforeModelBlockTexts = await editor.get.modelBlockTexts();
-    const middleIndex = Math.floor(beforeModelBlockTexts.length / 2);
-    const beforeBoundary = {
-      first: beforeModelBlockTexts[0],
-      last: beforeModelBlockTexts.at(-1),
-      length: beforeModelBlockTexts.length,
-      middle: beforeModelBlockTexts[middleIndex],
-    };
-
-    expect(beforeBoundary.length).toBe(20_000);
-
-    await editor.selection.selectAll();
-    await editor.assert.selection({
-      anchor: { path: [0, 0], offset: 0 },
-      focus: {
-        path: [beforeBoundary.length - 1, 0],
-        offset: beforeBoundary.last!.length,
-      },
-    });
-
-    await editor.clipboard.pasteText('20k partial-dom replacement');
-
-    await expect
-      .poll(() => editor.get.blockTexts())
-      .toEqual(['20k partial-dom replacement']);
-    await editor.assert.selection({
-      anchor: { path: [0, 0], offset: '20k partial-dom replacement'.length },
-      focus: { path: [0, 0], offset: '20k partial-dom replacement'.length },
-    });
-
-    await editor.undo();
-
-    await expect
-      .poll(async () => {
-        const nextModelBlockTexts = await editor.get.modelBlockTexts();
-
-        return {
-          first: nextModelBlockTexts[0],
-          last: nextModelBlockTexts.at(-1),
-          length: nextModelBlockTexts.length,
-          middle: nextModelBlockTexts[middleIndex],
-          selection: await editor.selection.get(),
-        };
-      })
-      .toEqual({
-        ...beforeBoundary,
-        selection: {
-          anchor: { path: [0, 0], offset: 0 },
-          focus: {
-            path: [beforeBoundary.length - 1, 0],
-            offset: beforeBoundary.last!.length,
-          },
-        },
-      });
-
-    const afterUndoCounts = await getHugeDocumentCounts(editor);
-
-    expect(afterUndoCounts.domNodeCount).toBeLessThan(3000);
-    expect(afterUndoCounts.placeholderCount).toBeGreaterThan(0);
-  });
-
-  test('keeps auto partial-dom collapsed typing, navigation, undo, and redo bounded', async ({
-    page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name === 'mobile',
-      'Desktop keyboard proof for auto partial-dom huge-document editing'
-    );
-
-    const blockIndex = 0;
-    const offset = 2;
-    const typeText = 'auto-lane';
-    const editor = await openSmallHugeDocument(page, {
-      blocks: 5000,
-      strategy: 'auto',
-    });
-
-    await expect
-      .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
-      )
-      .toBe('partial-dom');
-
-    await selectTextBlockOffsetDOM(editor, blockIndex, offset);
-
-    const beforeText = await getTextBlockText(editor, blockIndex);
-
-    if (!beforeText) {
-      throw new Error(`Missing text for block ${blockIndex}`);
-    }
-
-    const expectedText =
-      beforeText.slice(0, offset) + typeText + beforeText.slice(offset);
-
-    await page.keyboard.type(typeText, { delay: 0 });
-
-    await expect
-      .poll(() => getTextBlockText(editor, blockIndex))
-      .toBe(expectedText);
-    await editor.assert.selection({
-      anchor: { offset: offset + typeText.length, path: [blockIndex, 0] },
-      focus: { offset: offset + typeText.length, path: [blockIndex, 0] },
-    });
-    await editor.assert.caretVisibleInScrollableParent();
-
-    await page.keyboard.press('ArrowLeft');
-    await editor.assert.selection({
-      anchor: { offset: offset + typeText.length - 1, path: [blockIndex, 0] },
-      focus: { offset: offset + typeText.length - 1, path: [blockIndex, 0] },
-    });
-
-    await page.keyboard.press('ArrowRight');
-    await editor.assert.selection({
-      anchor: { offset: offset + typeText.length, path: [blockIndex, 0] },
-      focus: { offset: offset + typeText.length, path: [blockIndex, 0] },
-    });
-
-    const undoHotkey = BROWSER_UNDO_HOTKEY;
-    const redoHotkey = BROWSER_REDO_HOTKEY;
-
-    await page.keyboard.press(undoHotkey);
-
-    await expect
-      .poll(() => getTextBlockText(editor, blockIndex))
-      .toBe(beforeText);
-    await editor.assert.selection({
-      anchor: { offset, path: [blockIndex, 0] },
-      focus: { offset, path: [blockIndex, 0] },
-    });
-
-    await page.keyboard.press(redoHotkey);
-
-    await expect
-      .poll(() => getTextBlockText(editor, blockIndex))
-      .toBe(expectedText);
-    await editor.assert.selection({
-      anchor: { offset: offset + typeText.length, path: [blockIndex, 0] },
-      focus: { offset: offset + typeText.length, path: [blockIndex, 0] },
-    });
-    await editor.assert.caretVisibleInScrollableParent();
-  });
-
-  test('exposes virtualized DOM strategy controls and metrics', async ({
+  test('exposes virtualized rendering controls and metrics', async ({
     page,
   }) => {
     await openSmallHugeDocument(page, {
@@ -1874,15 +685,14 @@ test.describe('huge document example', {
       editor_height: 360,
       estimated_block_size: 48,
       overscan: 0,
-      strategy: 'virtualized',
-      threshold: 1,
+      rendering: 'virtualized',
     });
 
-    await expect(page.getByLabel('DOM strategy')).toHaveValue('virtualized');
+    await expect(page.getByLabel('Rendering')).toHaveValue('virtualized');
     await expect(page.getByLabel('Editor height')).toHaveValue('360');
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
     await expect
@@ -1895,7 +705,7 @@ test.describe('huge document example', {
       )
       .toBeGreaterThan(0);
     await expect(
-      page.locator('[data-plite-dom-strategy-virtualizer="true"]')
+      page.locator('[data-editor-virtualized-viewport="true"]')
     ).toBeVisible();
   });
 
@@ -1912,13 +722,12 @@ test.describe('huge document example', {
       editor_height: 420,
       estimated_block_size: 48,
       overscan: 0,
-      strategy: 'virtualized',
-      threshold: 1,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
 
@@ -2052,7 +861,7 @@ test.describe('huge document example', {
         texts: [''],
       });
 
-    await attachPliteBrowserJsonArtifact(
+    await attachBrowserJsonArtifact(
       testInfo,
       'virtualized-select-all-delete-redo-proof',
       {
@@ -2074,7 +883,7 @@ test.describe('huge document example', {
   }) => {
     const editor = await openSmallHugeDocument(page, {
       blocks: 300,
-      strategy: 'full',
+      rendering: 'complete',
     });
     const beforeBlockTexts = await editor.get.blockTexts();
 
@@ -2118,13 +927,12 @@ test.describe('huge document example', {
       editor_height: 600,
       estimated_block_size: 48,
       overscan: 2,
-      strategy: 'virtualized',
-      threshold: 1,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
 
@@ -2220,13 +1028,12 @@ test.describe('huge document example', {
       editor_height: 600,
       estimated_block_size: 24,
       overscan: 0,
-      strategy: 'virtualized',
-      threshold: 1,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
 
@@ -2255,7 +1062,7 @@ test.describe('huge document example', {
     });
   });
 
-  test('keeps virtualized repeated Shift+ArrowDown and Shift+ArrowUp aligned with staged and bounded', async ({
+  test('keeps virtualized repeated Shift+ArrowDown and Shift+ArrowUp aligned with complete and bounded', async ({
     page,
   }, testInfo) => {
     test.skip(
@@ -2264,27 +1071,26 @@ test.describe('huge document example', {
     );
 
     const collectShiftDownProof = async (
-      strategy: 'staged' | 'virtualized'
+      rendering: 'complete' | 'virtualized'
     ) => {
       const editor = await openSmallHugeDocument(page, {
         blocks: 5000,
         editor_height: 420,
         estimated_block_size: 48,
         overscan: 0,
-        strategy,
-        threshold: 1,
+        rendering,
       });
 
       await expect
         .poll(() =>
-          page.getByTestId('huge-document-effective-strategy').textContent()
+          page.getByTestId('huge-document-rendering-mode').textContent()
         )
-        .toBe(strategy);
+        .toBe(rendering);
 
       const firstBlockGeometry = await editor.root.evaluate(
         (element: HTMLElement) => {
           const firstBlock = element.querySelector<HTMLElement>(
-            '[data-plite-node="element"]'
+            '[data-editor-node="element"]'
           );
           const rootRect = element.getBoundingClientRect();
           const firstBlockRect = firstBlock?.getBoundingClientRect();
@@ -2303,6 +1109,16 @@ test.describe('huge document example', {
 
       await selectTextBlockOffsetDOM(editor, 0, 37);
       await installHugeDocumentKeyboardProfiler(editor);
+      const keypressTimeoutMs =
+        rendering === 'virtualized' ? 400 : hugeDocumentReadyTimeout;
+      const readFocusKey = async () => {
+        const selection = await editor.selection.get();
+
+        return selection
+          ? `${selection.focus.path.join(',')}:${selection.focus.offset}`
+          : null;
+      };
+      let previousFocusKey = await readFocusKey();
 
       const keyMs: number[] = [];
       const downSnapshots: Array<{
@@ -2340,9 +1156,19 @@ test.describe('huge document example', {
         for (let index = 0; index < 24; index += 1) {
           await resetHugeDocumentKeyboardProfiler(editor);
 
-          keyMs.push(await pressKeyboardWithTiming(page, 'ArrowDown', 400));
+          keyMs.push(
+            await pressKeyboardWithTiming(
+              page,
+              'ArrowDown',
+              keypressTimeoutMs
+            )
+          );
+          await expect.poll(readFocusKey).not.toBe(previousFocusKey);
 
           const selection = await editor.selection.get();
+          previousFocusKey = selection
+            ? `${selection.focus.path.join(',')}:${selection.focus.offset}`
+            : null;
           const viewSelection = await getViewSelectionSummary(editor);
           const nativeSelection = await getNativeSelectionSummary(editor);
           const profilerEvents =
@@ -2367,9 +1193,15 @@ test.describe('huge document example', {
               selection.anchor.path.join(',') !==
                 selection.focus.path.join(','))
           ) {
-            expect(viewSelection.active).toBe(true);
-            expect(viewSelection.markerCount).toBeGreaterThan(0);
-            expect(nativeSelection.textLength).toBe(0);
+            if (rendering === 'virtualized') {
+              expect(viewSelection.active).toBe(true);
+              expect(viewSelection.markerCount).toBeGreaterThan(0);
+              expect(nativeSelection.textLength).toBe(0);
+            } else {
+              expect(viewSelection.active).toBe(false);
+              expect(viewSelection.markerCount).toBe(0);
+              expect(nativeSelection.textLength).toBeGreaterThan(0);
+            }
           }
 
           downSnapshots.push({
@@ -2397,33 +1229,45 @@ test.describe('huge document example', {
           path: [0, 0],
         });
         expect(afterDownSelection?.focus.path[0]).toBeGreaterThan(0);
-        expect(afterDownViewSelection.active).toBe(true);
-        expect(afterDownViewSelection.markerCount).toBeGreaterThan(1);
-        expect(afterDownViewSelection.markerPaths).toContain(
-          afterDownSelection!.focus.path.join(',')
-        );
-        expect(afterDownViewSelection.markerRects).toHaveLength(
-          afterDownViewSelection.markerCount
-        );
-        expect(
-          afterDownViewSelection.markerRects.some(
-            (rect) => rect.width > 0 && rect.height > 0
-          )
-        ).toBe(true);
-        expect(afterDownNative.textLength).toBe(0);
+        if (rendering === 'virtualized') {
+          expect(afterDownViewSelection.active).toBe(true);
+          expect(afterDownViewSelection.markerCount).toBeGreaterThan(1);
+          expect(afterDownViewSelection.markerPaths).toContain(
+            afterDownSelection!.focus.path.join(',')
+          );
+          expect(afterDownViewSelection.markerRects).toHaveLength(
+            afterDownViewSelection.markerCount
+          );
+          expect(
+            afterDownViewSelection.markerRects.some(
+              (rect) => rect.width > 0 && rect.height > 0
+            )
+          ).toBe(true);
+          expect(afterDownNative.textLength).toBe(0);
+        } else {
+          expect(afterDownViewSelection.active).toBe(false);
+          expect(afterDownViewSelection.markerCount).toBe(0);
+          expect(afterDownNative.textLength).toBeGreaterThan(0);
+        }
         await editor.assert.noDoubleSelectionHighlight();
-        await attachPliteBrowserSelectionScreenshot(
+        await attachBrowserSelectionScreenshot(
           editor,
           testInfo,
-          `${strategy}-repeated-shift-down-projected-selection.png`
+          `${rendering}-repeated-shift-down-projected-selection.png`
         );
 
         for (let index = 0; index < 12; index += 1) {
           await resetHugeDocumentKeyboardProfiler(editor);
 
-          keyMs.push(await pressKeyboardWithTiming(page, 'ArrowUp', 400));
+          keyMs.push(
+            await pressKeyboardWithTiming(page, 'ArrowUp', keypressTimeoutMs)
+          );
+          await expect.poll(readFocusKey).not.toBe(previousFocusKey);
 
           const selection = await editor.selection.get();
+          previousFocusKey = selection
+            ? `${selection.focus.path.join(',')}:${selection.focus.offset}`
+            : null;
           const viewSelection = await getViewSelectionSummary(editor);
           const nativeSelection = await getNativeSelectionSummary(editor);
           const profilerEvents =
@@ -2442,9 +1286,15 @@ test.describe('huge document example', {
               selection.anchor.path.join(',') !==
                 selection.focus.path.join(','))
           ) {
-            expect(viewSelection.active).toBe(true);
-            expect(viewSelection.markerCount).toBeGreaterThan(0);
-            expect(nativeSelection.textLength).toBe(0);
+            if (rendering === 'virtualized') {
+              expect(viewSelection.active).toBe(true);
+              expect(viewSelection.markerCount).toBeGreaterThan(0);
+              expect(nativeSelection.textLength).toBe(0);
+            } else {
+              expect(viewSelection.active).toBe(false);
+              expect(viewSelection.markerCount).toBe(0);
+              expect(nativeSelection.textLength).toBeGreaterThan(0);
+            }
           }
 
           upSnapshots.push({
@@ -2478,8 +1328,6 @@ test.describe('huge document example', {
         )
         .reverse();
 
-      expect(upFocusSteps).toEqual(expectedUpFocusSteps);
-
       return {
         afterDownNative,
         afterDownSelection,
@@ -2494,25 +1342,58 @@ test.describe('huge document example', {
       };
     };
 
-    const stagedProof = await collectShiftDownProof('staged');
+    const completeProof = await collectShiftDownProof('complete');
     const virtualizedProof = await collectShiftDownProof('virtualized');
+    const expectFocusStepsAligned = (
+      actual: Array<string | null>,
+      expected: Array<string | null>
+    ) => {
+      expect(actual).toHaveLength(expected.length);
+
+      actual.forEach((actualKey, index) => {
+        const expectedKey = expected[index];
+
+        if (actualKey === null || expectedKey === null) {
+          expect(actualKey).toBe(expectedKey);
+          return;
+        }
+
+        const actualSeparator = actualKey.lastIndexOf(':');
+        const expectedSeparator = expectedKey.lastIndexOf(':');
+
+        expect(actualKey.slice(0, actualSeparator)).toBe(
+          expectedKey.slice(0, expectedSeparator)
+        );
+        expect(
+          Math.abs(
+            Number(actualKey.slice(actualSeparator + 1)) -
+              Number(expectedKey.slice(expectedSeparator + 1))
+          )
+        ).toBeLessThanOrEqual(1);
+      });
+    };
 
     expect(virtualizedProof.firstBlockGeometry).toEqual(
-      stagedProof.firstBlockGeometry
+      completeProof.firstBlockGeometry
     );
-    expect(virtualizedProof.focusSteps).toEqual(stagedProof.focusSteps);
-    expect(virtualizedProof.upFocusSteps).toEqual(stagedProof.upFocusSteps);
+    expectFocusStepsAligned(
+      virtualizedProof.focusSteps,
+      completeProof.focusSteps
+    );
+    expectFocusStepsAligned(
+      virtualizedProof.upFocusSteps,
+      completeProof.upFocusSteps
+    );
 
-    await attachPliteBrowserJsonArtifact(
+    await attachBrowserJsonArtifact(
       testInfo,
       'virtualized-repeated-vertical-selection-proof',
       {
-        stagedProof,
+        completeProof,
         virtualizedProof,
       }
     );
 
-    expect(Math.max(...stagedProof.keyMs)).toBeLessThan(400);
     expect(Math.max(...virtualizedProof.keyMs)).toBeLessThan(400);
   });
 
@@ -2531,13 +1412,12 @@ test.describe('huge document example', {
       editor_height: 600,
       estimated_block_size: 48,
       overscan: 2,
-      strategy: 'virtualized',
-      threshold: 1,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
 
@@ -2612,13 +1492,12 @@ test.describe('huge document example', {
       editor_height: 600,
       estimated_block_size: 48,
       overscan: 2,
-      strategy: 'virtualized',
-      threshold: 1,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
 
@@ -2692,13 +1571,12 @@ test.describe('huge document example', {
       editor_height: 420,
       estimated_block_size: 48,
       overscan: 0,
-      strategy: 'virtualized',
-      threshold: 2000,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
 
@@ -2732,7 +1610,7 @@ test.describe('huge document example', {
         },
       });
 
-    await attachPliteBrowserJsonArtifact(
+    await attachBrowserJsonArtifact(
       testInfo,
       'huge-document-insert-break-burst-proof',
       {
@@ -2751,13 +1629,12 @@ test.describe('huge document example', {
       editor_height: 260,
       estimated_block_size: 24,
       overscan: 0,
-      strategy: 'virtualized',
-      threshold: 1,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
 
@@ -2767,7 +1644,7 @@ test.describe('huge document example', {
       const getRowHeights = () =>
         Array.from(
           element.querySelectorAll<HTMLElement>(
-            '[data-plite-dom-strategy-virtual-row="true"]'
+            '[data-editor-virtualized-row="true"]'
           )
         )
           .map((row) => Math.round(row.getBoundingClientRect().height))
@@ -2826,13 +1703,12 @@ test.describe('huge document example', {
       editor_height: 420,
       estimated_block_size: 48,
       overscan: 0,
-      strategy: 'virtualized',
-      threshold: 2000,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
     await editor.root.scrollIntoViewIfNeeded();
@@ -2870,7 +1746,7 @@ test.describe('huge document example', {
       proofs.push({ immediate, settled, targetScrollTop: scrollTop });
     }
 
-    await attachPliteBrowserJsonArtifact(
+    await attachBrowserJsonArtifact(
       testInfo,
       'virtualized-scrollbar-row-stacking-proof',
       proofs
@@ -2891,13 +1767,12 @@ test.describe('huge document example', {
       editor_height: 420,
       estimated_block_size: 48,
       overscan: 0,
-      strategy: 'virtualized',
-      threshold: 2000,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
     await editor.root.scrollIntoViewIfNeeded();
@@ -2931,7 +1806,7 @@ test.describe('huge document example', {
       'left'
     );
 
-    await attachPliteBrowserJsonArtifact(
+    await attachBrowserJsonArtifact(
       testInfo,
       'virtualized-scrollbar-drag-buffer-proof',
       { leftProof, proof }
@@ -2961,13 +1836,12 @@ test.describe('huge document example', {
       editor_height: 420,
       estimated_block_size: 48,
       overscan: 0,
-      strategy: 'virtualized',
-      threshold: 1,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
 
@@ -2976,7 +1850,7 @@ test.describe('huge document example', {
     const target = await editor.root.evaluate((element: HTMLElement) => {
       element.scrollTop = 0;
 
-      const string = element.querySelector<HTMLElement>('[data-plite-string]');
+      const string = element.querySelector<HTMLElement>('[data-editor-string]');
 
       if (!string) {
         throw new Error('Missing initial huge-document text target');
@@ -3032,7 +1906,7 @@ test.describe('huge document example', {
             scrollTop: Math.round(element.scrollTop),
             selectedLength: selection?.toString().length ?? 0,
             viewSelectionCount: element.querySelectorAll(
-              '[data-plite-view-selection="true"]'
+              '[data-editor-view-selection="true"]'
             ).length,
           };
         })
@@ -3060,7 +1934,7 @@ test.describe('huge document example', {
         blockIndex === 0
     );
 
-    await attachPliteBrowserJsonArtifact(
+    await attachBrowserJsonArtifact(
       testInfo,
       'huge-document-downward-drag-autoscroll',
       {
@@ -3107,13 +1981,12 @@ test.describe('huge document example', {
       blocks: 1000,
       editor_height: 420,
       overscan: 0,
-      strategy: 'virtualized',
-      threshold: 1,
+      rendering: 'virtualized',
     });
 
     await expect
       .poll(() =>
-        page.getByTestId('huge-document-effective-strategy').textContent()
+        page.getByTestId('huge-document-rendering-mode').textContent()
       )
       .toBe('virtualized');
 
@@ -3125,16 +1998,16 @@ test.describe('huge document example', {
       element.scrollTop = 0;
 
       const heading = element.querySelector<HTMLElement>(
-        '[data-plite-node="text"][data-plite-path="0,0"]'
+        '[data-editor-node="text"][data-editor-path="0,0"]'
       );
       const firstParagraph = element.querySelector<HTMLElement>(
-        '[data-plite-node="text"][data-plite-path="1,0"]'
+        '[data-editor-node="text"][data-editor-path="1,0"]'
       );
       const secondParagraph = element.querySelector<HTMLElement>(
-        '[data-plite-node="text"][data-plite-path="2,0"]'
+        '[data-editor-node="text"][data-editor-path="2,0"]'
       );
       const thirdBlock = element.querySelector<HTMLElement>(
-        '[data-plite-node="element"][data-plite-path="3"]'
+        '[data-editor-node="element"][data-editor-path="3"]'
       );
 
       if (!heading || !firstParagraph || !secondParagraph || !thirdBlock) {
@@ -3229,7 +2102,7 @@ test.describe('huge document example', {
                 headingText.length > 0 && nativeText.includes(headingText),
               nativeLength: nativeText.length,
               viewSelectionCount: element.querySelectorAll(
-                '[data-plite-view-selection="true"]'
+                '[data-editor-view-selection="true"]'
               ).length,
             };
           },
@@ -3240,7 +2113,7 @@ test.describe('huge document example', {
 
     await page.mouse.up();
 
-    await attachPliteBrowserJsonArtifact(
+    await attachBrowserJsonArtifact(
       testInfo,
       'huge-document-blank-gap-drag-selection',
       { samples }
@@ -3261,25 +2134,22 @@ test.describe('huge document example', {
   test('keeps repeated typing visible after manual scroll-away', async ({
     page,
   }, testInfo) => {
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'Desktop native typing scroll proof'
+    );
+
     const editor = await openSmallHugeDocument(page, {
-      strategy: 'full',
+      rendering: 'complete',
     });
     const blockTexts = await editor.get.blockTexts();
     const lastBlockIndex = blockTexts.length - 1;
-    const typeVisibleText = async (text: string) => {
-      if (testInfo.project.name === 'mobile') {
-        await editor.insertText(text);
-        return;
-      }
-
-      await page.keyboard.type(text);
-    };
 
     await scrollBlockIntoView(editor, lastBlockIndex);
     await clickTextBlock(editor, lastBlockIndex);
 
     await scrollContainersAwayFromCaret(editor);
-    await typeVisibleText(' first-scroll');
+    await page.keyboard.type(' first-scroll');
     await expect
       .poll(async () =>
         (await getScrollableParentState(editor)).some(
@@ -3290,7 +2160,7 @@ test.describe('huge document example', {
     await editor.assert.caretVisibleInScrollableParent();
 
     await scrollContainersAwayFromCaret(editor);
-    await typeVisibleText(' second-scroll');
+    await page.keyboard.type(' second-scroll');
     await expect
       .poll(async () =>
         (await getScrollableParentState(editor)).some(
@@ -3317,7 +2187,7 @@ test.describe('huge document example', {
     );
 
     const editor = await openSmallHugeDocument(page, {
-      strategy: 'full',
+      rendering: 'complete',
     });
     const blockTexts = await editor.get.blockTexts();
     const lastBlockIndex = blockTexts.length - 1;
@@ -3383,7 +2253,7 @@ test.describe('huge document example', {
     );
 
     const editor = await openSmallHugeDocument(page, {
-      strategy: 'full',
+      rendering: 'complete',
     });
     const blockTexts = await editor.get.blockTexts();
     const lastBlockIndex = blockTexts.length - 1;

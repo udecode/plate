@@ -2,7 +2,7 @@ import { distance } from 'fastest-levenshtein';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
-  defineBasePlugin,
+  definePlugin,
   defineEffect,
   defineStateField,
   type DefinitionOf,
@@ -25,7 +25,6 @@ import {
   target,
   type Value,
 } from '../../core';
-import { SUGGESTION_TRANSIENT_KEY } from '../../features/suggestion';
 
 export const AI_PREVIEW_KEY = 'aiPreview';
 
@@ -55,7 +54,7 @@ const aiPreviewField = defineStateField<AIPreviewState | null>({
   initial: null,
 });
 
-export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
+export const BaseAIPlugin = definePlugin(PLUGINS.ai, {
   api: () => ({
     findTextRangeInBlock: ({
       block,
@@ -269,13 +268,6 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
         });
       }
 
-      const aiChat = editor.plugin(PLUGINS.aiChat);
-
-      tx.nodes.remove({
-        at: [],
-        type: aiChat.schema.type,
-      });
-
       tx.setField(aiPreviewField, null);
       context.afterCommit(() => {
         if (!preview.selectionBefore) return;
@@ -430,22 +422,16 @@ export const BaseAIPlugin = defineBasePlugin(PLUGINS.ai, {
       undo: () => {
         if (tx.getField(aiPreviewField)) return cancelPreview();
 
-        const hasAINodeOrAISuggestion =
-          tx.nodes.some({
-            at: [],
-            match: (node) => Boolean(Reflect.get(node, key)),
-          }) ||
-          tx.nodes.some({
-            at: [],
-            match: (node) =>
-              Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
-          });
+        const hasAINode = tx.nodes.some({
+          at: [],
+          match: (node) => Boolean(Reflect.get(node, key)),
+        });
         const lastBatch = editor.read.history.undos().at(-1);
         const isAIBatch = lastBatch?.effects.some(
           (effect) => effect.type === aiBatchEffect
         );
 
-        if (!isAIBatch || !hasAINodeOrAISuggestion) return false;
+        if (!isAIBatch || !hasAINode) return false;
 
         tx.history.undo();
         tx.history.discardRedo();

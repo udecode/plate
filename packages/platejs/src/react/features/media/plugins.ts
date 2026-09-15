@@ -5,13 +5,13 @@ import {
   BaseMediaEmbedPlugin,
   BaseVideoPlugin,
 } from '../../../features/media/lib';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
-export const ImagePlugin = toPlatePlugin(BaseImagePlugin);
-export const MediaEmbedPlugin = toPlatePlugin(BaseMediaEmbedPlugin);
-export const AudioPlugin = toPlatePlugin(BaseAudioPlugin);
-export const FilePlugin = toPlatePlugin(BaseFilePlugin);
-export const VideoPlugin = toPlatePlugin(BaseVideoPlugin);
+export const ImagePlugin = toReactPlugin(BaseImagePlugin);
+export const MediaEmbedPlugin = toReactPlugin(BaseMediaEmbedPlugin);
+export const AudioPlugin = toReactPlugin(BaseAudioPlugin);
+export const FilePlugin = toReactPlugin(BaseFilePlugin);
+export const VideoPlugin = toReactPlugin(BaseVideoPlugin);
 
 /** Exact React media descriptors accepted by shared media controls. */
 export type MediaPlugin =

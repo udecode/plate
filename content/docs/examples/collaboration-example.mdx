@@ -14,21 +14,23 @@ persistence, authentication, room name, and cursor data.
 ## Source
 
 The demo creates two provider endpoints, two editor `Y.Doc` instances, and one
-room document. The provider is credential-free and development-only.
+central room document. The room seeds its document before either endpoint
+attaches, so both editor bindings omit `seed`. The provider is credential-free
+and development-only.
 
 <ComponentSource name="collaboration-demo" />
 
 ## Runtime shape
 
-| Piece | Owner | Notes |
-| --- | --- | --- |
-| `YjsPlugin` | Copied `remote-cursor-overlay` file | Configures the package Yjs adapter with selection highlights, carets, and labels. |
-| Provider wrapper | App infrastructure | Wrap Hocuspocus, WebRTC, IndexedDB, or custom transport as `YjsProviderLike`. |
-| Local room | Registry example | Exchanges document and awareness updates between two independent peers. |
-| Production room state | App | Keep room ids, auth tokens, persistence, and provider URLs outside Plate packages. |
-| Connection commands | `tx.yjs` | Connect, disconnect, reconnect, publish selection, and clear selection. |
-| Connection reads | `state.yjs` | Read connected, synced, and provider status from `editor.read`. |
-| Undo and redo | `platejs/history` | Replay canonical editor changes through the same Yjs bridge. |
+| Piece                 | Owner                               | Notes                                                                                                       |
+| --------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `CollaborationPlugin` | Copied `remote-cursor-overlay` file | Binds an explicit document and readiness source, then adds selection highlights, carets, and labels.        |
+| Provider endpoints    | App infrastructure                  | Own connection state, transport, persistence, and cleanup outside the editor plugin.                        |
+| Local room            | Registry example                    | Preseeds one central document, then exchanges document and awareness updates between two independent peers. |
+| Production room state | App                                 | Keep room ids, auth tokens, persistence, and provider URLs outside Plate packages.                          |
+| Provider controls     | App                                 | Clear selection, then disconnect the provider; reconnect it directly, then synchronize selection.           |
+| Admission state       | `editor.api.yjs`                    | Gate editing on waiting, ready, or error independently from provider status.                                |
+| Undo and redo         | `platejs/history`                   | Replay canonical editor changes through the same Yjs bridge.                                                |
 
 Use the full [Yjs guide](/docs/yjs) when wiring a real provider.
 
@@ -39,9 +41,10 @@ Remote cursor UI belongs at the app edge. The reusable registry component is
 
 <ComponentSource name="remote-cursor-overlay" />
 
-Import `YjsPlugin` from the copied file and configure its `initialState` with
-your provider. It styles remote selections and installs the caret overlay beside
-the Editable. Edit this file to customize colors, opacity, and labels.
+Call `CollaborationPlugin.create()` from the copied file with `doc`,
+`initialReady`, and awareness from your app-owned provider. It styles remote
+selections and installs the caret overlay beside the Editable. Edit this file to
+customize colors, opacity, and labels.
 
 The overlay reads cursor state and DOM geometry from `platejs/yjs/react`,
 excludes the local cursor, and ignores unresolved ranges.
@@ -50,10 +53,10 @@ excludes the local cursor, and ignores unresolved ranges.
 
 Type in either editor to see remote document and cursor updates. Disconnect one
 peer to queue local work, reconnect it, then use the standard history controls
-to undo or redo only that peer's local change. The schema controls show a
-rejected incompatible join and a compatible recovery without replacing either
-editor.
+to undo or redo only that peer's local change. Each card reports provider and
+admission status separately. The schema controls show a rejected incompatible
+join and a compatible recovery without replacing either editor.
 
 ## Related
 
-- [Yjs](/docs/yjs) covers provider setup, connection commands, and React cursor UI.
+- [Yjs](/docs/yjs) covers provider ownership, admission, seeding, and React cursor UI.

@@ -17,7 +17,7 @@ import { getInternalDocumentChangeEntries } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
 import type { RootChange } from './change/root-change';
 import { getEditorRuntimeOwner } from './editor-runtime';
-import { getExtensionRegistry } from './extension-registry';
+import { getPluginRegistry } from './plugin-registry';
 import { toPublicRoot } from './public-root';
 import { buildSnapshotIndex } from './snapshot-index';
 
@@ -496,7 +496,7 @@ export const notifyEditorChangeListeners = <TEditor extends Editor>(
   beforeValue: EditorDocumentValue<ValueOf<TEditor>>,
   afterValue: EditorDocumentValue<ValueOf<TEditor>>
 ) => {
-  const registry = getExtensionRegistry(editor);
+  const registry = getPluginRegistry(editor);
 
   if (registry.nodeChangeListeners.size > 0) {
     forEachEditorNodeChange(

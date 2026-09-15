@@ -1,22 +1,22 @@
-import { defineBasePlugin, DOMPlugin } from '../../lib';
-import { plateDOMExtension } from '../../lib/plugins/dom/plateDOMExtension.internal';
-import { react, type ReactExtension } from '../plite-react';
-import { toPlatePlugin } from '../plugin/toPlatePlugin';
+import { definePlugin, DOMPlugin } from '../../lib';
+import { plateDOMPlugin } from '../../lib/plugins/dom/plateDOMPlugin.internal';
+import { react, type ReactPlugin as RuntimeReactPlugin } from '../plite-react';
+import { toReactPlugin } from '../plugin/toReactPlugin';
 import { ParagraphPlugin } from '../plugins';
 import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/NavigationFeedbackPlugin';
 import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
 
-const ReactDOMPlugin = toPlatePlugin(DOMPlugin);
-const plateReactExtension: ReactExtension = react({
-  dom: plateDOMExtension,
+const ReactDOMPlugin = toReactPlugin(DOMPlugin);
+const plateReactPlugin: RuntimeReactPlugin = react({
+  dom: plateDOMPlugin,
 });
-const ReactPlugin = toPlatePlugin(
-  defineBasePlugin('react', {
+const ReactPlugin = toReactPlugin(
+  definePlugin('react', {
     dependencies: [DOMPlugin],
-  }).extend<ReactExtension>(plateReactExtension)
+  }).extend<RuntimeReactPlugin>(plateReactPlugin)
 );
 
-export type PlateCorePlugins = readonly [
+export type ReactCorePlugins = readonly [
   typeof ReactDOMPlugin,
   typeof ReactPlugin,
   ReturnType<typeof NavigationFeedbackPlugin.configure>,
@@ -27,7 +27,7 @@ export const getPlateCorePlugins = ({
   navigationFeedback,
 }: {
   navigationFeedback?: Partial<NavigationFeedbackPluginState> | boolean;
-} = {}): PlateCorePlugins => [
+} = {}): ReactCorePlugins => [
   ReactDOMPlugin,
   ReactPlugin,
   NavigationFeedbackPlugin.configure({

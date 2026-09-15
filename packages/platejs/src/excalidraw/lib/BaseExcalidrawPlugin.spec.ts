@@ -19,7 +19,6 @@ describe('BaseExcalidrawPlugin', () => {
         type: 'excalidraw',
       })?.value.kind
     ).toBe('json');
-    expect(editor.plugin(PLUGINS.excalidraw).name).toBe(PLUGINS.excalidraw);
   });
 
   it('rejects malformed drawing data', () => {

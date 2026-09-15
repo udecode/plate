@@ -53,9 +53,9 @@ const getParentEntry = (editor: unknown, at: Location) =>
 
 const trimSplitRangeEndAtTextStart = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>,
+  editor: Editor<V, TPlugins>,
   range: Range,
   match: NodeMatchPredicate
 ): Range => {

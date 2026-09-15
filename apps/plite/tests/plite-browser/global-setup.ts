@@ -30,7 +30,7 @@ export default async function globalSetup(config: FullConfig) {
 
   if (!payload.plite || !payload.devSource) {
     throw new Error(
-      `Plite browser tests require PLATE_WWW_PLITE=1 and PLATE_WWW_DEV_SOURCE=1; got ${JSON.stringify(
+      `Editor browser tests require PLATE_WWW_PLITE=1 and PLATE_WWW_DEV_SOURCE=1; got ${JSON.stringify(
         payload
       )}`
     );

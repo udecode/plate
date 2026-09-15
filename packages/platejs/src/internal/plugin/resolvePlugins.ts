@@ -1,12 +1,16 @@
+import {
+  compilePluginInput,
+  type InternalCompiledPluginPublicationEntry,
+} from 'plitejs/internal';
+
 import type {
-  EditorExtensionDefinitionInput,
-  EditorExtensionReference,
+  RuntimePluginDefinitionInput,
   EditorReadMethodTree,
   EditorStateSchemaApi,
 } from '../../facade';
 import {
-  defineExtension,
   getCompiledEditorSchemaFromApi,
+  isRuntimePlugin,
   schema as schemaDefinition,
   txRead,
 } from '../../facade';
@@ -18,9 +22,12 @@ import type {
   Editor,
 } from '../../lib';
 import type { EditorSchemaIdentity } from '../../lib/editor/editorApplicationSchema';
-import type { PlateBlockInsertOptions } from '../../lib/editor/pluginRuntimeTypes';
+import type { BlockInsertOptions } from '../../lib/editor/pluginRuntimeTypes';
 import { createZustandStore } from '../../lib/libs/zustand';
-import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
+import {
+  createPlatePluginPortal,
+  createPluginContext,
+} from '../../lib/plugin/createPluginContext.internal';
 import {
   createBlockFenceInputRule,
   createBlockStartInputRule,
@@ -34,9 +41,15 @@ import type {
 } from '../../lib/plugins/input-rules/types';
 import { failInvariant } from '../failInvariant';
 import {
+  clonePlateRenderedAttributes,
+  EMPTY_RENDERED_ATTRIBUTES,
+  mergePlateRenderedAttributes,
+} from '../mergePlateRenderedAttributes';
+import {
   brandPluginDescriptor,
   freezePluginDataSnapshot,
   getPluginDescriptorMetadata,
+  getPluginSourceReferences,
   getPluginSchemaFamily,
   isImmutablePluginData,
   isNominalPluginDescriptor,
@@ -56,6 +69,7 @@ import {
   withCompiledPlatePluginCandidate,
 } from './compilePlateModel';
 import { compilePlateShortcuts } from './compilePlateShortcuts';
+import { isEditOnly } from './isEditOnlyDisabled';
 import { mergePluginCapabilities } from './mergePluginCapabilities';
 import {
   setPlateRuntimeCandidate,
@@ -76,65 +90,6 @@ import {
   type ResolvedPluginCapabilityContribution,
   type ResolvedPluginConfiguration,
 } from './resolvePlugin';
-
-type PlateRuntimeExtensionBinding = Readonly<{
-  extension: EditorExtensionReference;
-  family: object;
-}>;
-
-export type PlateRuntimeExtensionBindings = Readonly<{
-  aliases: ReadonlyMap<EditorExtensionReference, EditorExtensionReference>;
-  plugins: ReadonlyMap<string, PlateRuntimeExtensionBinding>;
-}>;
-
-const plateRuntimeExtensionBindings = new WeakMap<
-  object,
-  PlateRuntimeExtensionBindings
->();
-
-export const getPlateRuntimeExtensionBindings = (editor: object) =>
-  plateRuntimeExtensionBindings.get(editor);
-
-export const restorePlateRuntimeExtensionBindings = (
-  editor: object,
-  bindings: PlateRuntimeExtensionBindings | undefined
-) => {
-  if (bindings) {
-    plateRuntimeExtensionBindings.set(editor, bindings);
-  } else {
-    plateRuntimeExtensionBindings.delete(editor);
-  }
-};
-
-/**
- * Resolve one authored Plate descriptor to the exact native extension compiled
- * for this editor. Raw Plite descriptors keep their own identity.
- */
-export const resolvePlateRuntimeExtension = (
-  editor: object,
-  reference: EditorExtensionReference
-): EditorExtensionReference => {
-  const bindings = plateRuntimeExtensionBindings.get(editor);
-
-  if (!isNominalPluginDescriptor(reference)) {
-    return bindings?.aliases.get(reference) ?? reference;
-  }
-
-  const binding = bindings?.plugins.get(reference.name);
-
-  if (!binding) {
-    throw new Error(
-      `Plate plugin "${reference.name}" is not installed as an editor extension.`
-    );
-  }
-  if (getPluginSchemaFamily(reference) !== binding.family) {
-    throw new Error(
-      `Plate plugin "${reference.name}" resolves to a different descriptor family.`
-    );
-  }
-
-  return binding.extension;
-};
 
 type PluginDescriptorSnapshotContext = Readonly<{
   name: string;
@@ -172,7 +127,6 @@ const opaqueNativeResourceFields = new Set<PropertyKey>([
   'contributions',
   'corrections',
   'effectTypes',
-  'facetProviders',
   'stateFields',
 ]);
 
@@ -182,6 +136,13 @@ const isOpaquePluginDescriptorResource = (
   const { path } = context;
   const key = path.at(-1);
   const parent = path.at(-2);
+
+  if (
+    typeof key === 'number' &&
+    (parent === 'dependencies' || parent === 'conflicts')
+  ) {
+    return true;
+  }
 
   if (
     key === 'component' &&
@@ -218,7 +179,10 @@ type MutableDeep<T> = T extends (...args: never[]) => unknown
       ? { -readonly [K in keyof T]: MutableDeep<T[K]> }
       : T;
 
-type MutablePlatePluginCache = MutableDeep<PlatePluginCache>;
+type MutablePlatePluginCache = MutableDeep<
+  Omit<PlatePluginCache, 'contentAttributes'>
+> &
+  Pick<PlatePluginCache, 'contentAttributes'>;
 type MutableResolvedInputRulesMeta = {
   insertBreak: Array<Extract<ResolvedInputRule, { target: 'insertBreak' }>>;
   insertData: Array<Extract<ResolvedInputRule, { target: 'insertData' }>>;
@@ -236,8 +200,8 @@ type ShortcutApiOwner = Readonly<{
   api: Readonly<Record<string, unknown>>;
 }>;
 
-type PlateRuntimeExtensionsResult = Readonly<{
-  extensions: readonly EditorExtensionReference[];
+type PlateRuntimePluginsResult = Readonly<{
+  entries: readonly InternalCompiledPluginPublicationEntry[];
   resolveApiPublication: () => Readonly<{
     apiByPlugin: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
     shortcutApiByPlugin: Readonly<Record<string, ShortcutApiOwner>>;
@@ -246,6 +210,7 @@ type PlateRuntimeExtensionsResult = Readonly<{
 }>;
 
 const createMutablePlatePluginCache = (): MutablePlatePluginCache => ({
+  contentAttributes: { editable: {}, readOnly: {} },
   decorate: [],
   on: {
     nodeChange: [],
@@ -290,6 +255,9 @@ const snapshotPluginDescriptorValue = (
   publishedPlugins?: ReadonlyMap<string, AnyBasePlugin>
 ): unknown => {
   if (!value || typeof value !== 'object') return value;
+  if (isRuntimePlugin(value) && !isNominalPluginDescriptor(value)) {
+    return value;
+  }
   if (isOpaquePluginDescriptorResource(context)) return value;
   if (isImmutablePluginData(value)) return value;
   if (isNominalPluginDescriptor(value)) {
@@ -486,15 +454,23 @@ const publishPlatePluginDescriptors = (
           : [];
 
         value = Object.freeze(
-          references.flatMap((reference: unknown) => {
-            if (!isNominalPluginDescriptor(reference)) return [];
-            const installed = publishedByName.get(reference.name);
+          references.flatMap<AnyBasePlugin['dependencies'][number]>(
+            (reference: unknown) => {
+              if (
+                isRuntimePlugin(reference) &&
+                !isNominalPluginDescriptor(reference)
+              ) {
+                return [reference];
+              }
+              if (!isNominalPluginDescriptor(reference)) return [];
+              const installed = publishedByName.get(reference.name);
 
-            if (installed) return [installed];
-            throw new Error(
-              `Plate plugin "${plugin.name}" lost installed dependency "${reference.name}" during publication.`
-            );
-          })
+              if (installed) return [installed];
+              throw new Error(
+                `Plate plugin "${plugin.name}" lost installed dependency "${reference.name}" during publication.`
+              );
+            }
+          )
         );
       } else if (key === 'initialState') {
         value = snapshotPluginState(descriptor.value);
@@ -734,7 +710,7 @@ const publishCompiledSchemaHandles = (
   });
 };
 
-/** Compile the Plate runtime projection published by the schema extension. */
+/** Compile the Plate runtime projection published by the schema plugin. */
 export const createPlateModelPublication = (
   editor: Editor,
   identity: EditorSchemaIdentity | null,
@@ -836,6 +812,9 @@ export const createPlateModelPublication = (
   });
   const pluginCache = createMutablePlatePluginCache();
 
+  let contentAttributes = EMPTY_RENDERED_ATTRIBUTES;
+  let readOnlyContentAttributes = EMPTY_RENDERED_ATTRIBUTES;
+
   pluginCache.node.containerTypes.push(...containerTypes);
   pluginCache.node.leafAttributeMarks.push(...leafAttributeMarks);
   pluginCache.node.leafRenderers.push(...leafRenderers);
@@ -843,6 +822,46 @@ export const createPlateModelPublication = (
   pluginCache.node.textRenderers.push(...textRenderers);
 
   publishedPluginList.forEach((plugin) => {
+    if (plugin.render.contentAttributes != null) {
+      if (
+        typeof plugin.render.contentAttributes !== 'object' ||
+        Array.isArray(plugin.render.contentAttributes)
+      ) {
+        throw new Error(
+          'Content attributes must be a static attribute object.'
+        );
+      }
+      for (const name of Object.keys(plugin.render.contentAttributes)) {
+        if (
+          name === 'placeholder' ||
+          name === 'data-editor' ||
+          name === 'data-editor-node' ||
+          name === 'data-editor-root' ||
+          name === 'data-editor-viewport-selection' ||
+          name === 'data-readonly' ||
+          name === 'aria-disabled' ||
+          name === 'aria-multiline' ||
+          name === 'aria-readonly'
+        ) {
+          throw new Error(
+            `Content attribute "${name}" is reserved by the editor.`
+          );
+        }
+      }
+      const attributes = clonePlateRenderedAttributes(
+        plugin.render.contentAttributes
+      );
+      contentAttributes = mergePlateRenderedAttributes(
+        contentAttributes,
+        attributes
+      );
+      if (!isEditOnly(true, plugin, 'render')) {
+        readOnlyContentAttributes = mergePlateRenderedAttributes(
+          readOnlyContentAttributes,
+          attributes
+        );
+      }
+    }
     if (plugin.inject.nodeProps) {
       if (!plugin.inject.isLeaf) {
         pluginCache.inject.nodeProps.element.push(plugin.name);
@@ -900,6 +919,10 @@ export const createPlateModelPublication = (
 
   const freezeList = <T>(value: T[]) => Object.freeze(value);
   const publishedPluginCache: PlatePluginCache = Object.freeze({
+    contentAttributes: Object.freeze({
+      editable: snapshotApiValue(contentAttributes),
+      readOnly: snapshotApiValue(readOnlyContentAttributes),
+    }),
     decorate: freezeList(pluginCache.decorate),
     on: Object.freeze({
       nodeChange: freezeList(pluginCache.on.nodeChange),
@@ -1094,32 +1117,26 @@ const createPluginLifecycleHandlers = (
 };
 
 /**
- * Lower every resolved Plate plugin to exactly one native Plite extension.
+ * Lower every resolved Plate plugin to exactly one native Plite plugin.
  *
  * Plate-only schema/render/store fields stay in the Plate publication. Native
  * behavior and the plugin-owned api/read/update namespaces install directly.
  */
-export const createPlateRuntimeExtensions = (
+export const createPlateRuntimePlugins = (
   editor: Editor,
   pluginList: readonly AnyBasePlugin[],
   model: CompiledPlateModel,
   lowerNodeType: (type: unknown) => unknown,
   options: Readonly<{ includeSchemaContributions?: boolean }> = {}
-): PlateRuntimeExtensionsResult => {
+): PlateRuntimePluginsResult => {
   const apiSnapshots = new WeakMap<object, unknown>();
-  const extensions: EditorExtensionReference[] = [];
-  const extensionByName = new Map<string, EditorExtensionReference>();
-  const extensionAliases = new Map<
-    EditorExtensionReference,
-    EditorExtensionReference
-  >();
-  const pluginBindings = new Map<string, PlateRuntimeExtensionBinding>();
+  const entries: InternalCompiledPluginPublicationEntry[] = [];
   const fallbackApiByPlugin = new Map<
     string,
     Readonly<Record<string, unknown>>
   >();
 
-  pluginList.forEach((plugin, index) => {
+  pluginList.forEach((plugin) => {
     if (plugin.api !== undefined && !isApiRecord(plugin.api)) {
       throw new Error(
         `Plate plugin "${plugin.name}" API must resolve to an object before lowering.`
@@ -1132,34 +1149,7 @@ export const createPlateRuntimeExtensions = (
     const exposesApi =
       apiContributions.length > 0 ||
       Reflect.ownKeys(frozenPluginApi).length > 0;
-    const dependencies = plugin.dependencies.map((dependency) => {
-      const extension = extensionByName.get(dependency.name);
-
-      if (!extension) {
-        throw new Error(
-          `Plate plugin "${plugin.name}" dependency "${dependency.name}" was not lowered before its owner.`
-        );
-      }
-
-      return extension;
-    });
-    const conflicts = [
-      ...plugin.conflicts.flatMap((conflict) => {
-        const extension = extensionByName.get(conflict.name);
-
-        return extension ? [extension] : [];
-      }),
-      ...pluginList
-        .slice(0, index)
-        .flatMap((previous) =>
-          previous.conflicts.some((conflict) => conflict.name === plugin.name)
-            ? [
-                extensionByName.get(previous.name) ??
-                  failInvariant('Expected value to be defined'),
-              ]
-            : []
-        ),
-    ];
+    const { conflicts, dependencies } = plugin;
     const on = createPluginLifecycleHandlers(editor, plugin);
     const pluginContext = createPluginContext(editor, plugin);
     const stateFields = plugin.stateFields ?? [];
@@ -1176,7 +1166,7 @@ export const createPlateRuntimeExtensions = (
             binding.textPropertyId &&
           property.value.kind === 'boolean'
       );
-    const definition: EditorExtensionDefinitionInput<Editor> = {
+    const definition: RuntimePluginDefinitionInput<Editor> = {
       ...(plugin.enabled === false ? { enabled: false } : {}),
       ...(dependencies.length > 0 ? { dependencies } : {}),
       ...(conflicts.length > 0 ? { conflicts } : {}),
@@ -1338,7 +1328,7 @@ export const createPlateRuntimeExtensions = (
                         properties: Readonly<Record<string, unknown>> = {},
                         insertOptions?: Readonly<Record<string, unknown>> &
                           Pick<
-                            PlateBlockInsertOptions,
+                            BlockInsertOptions,
                             'at' | 'after' | 'replaceEmpty'
                           >
                       ) => {
@@ -1444,20 +1434,20 @@ export const createPlateRuntimeExtensions = (
       ...(plugin.readMiddleware
         ? {
             readMiddleware:
-              plugin.readMiddleware as EditorExtensionDefinitionInput<Editor>['readMiddleware'],
+              plugin.readMiddleware as RuntimePluginDefinitionInput<Editor>['readMiddleware'],
           }
         : {}),
       ...(plugin.commands
         ? {
             commands:
-              plugin.commands as EditorExtensionDefinitionInput<Editor>['commands'],
+              plugin.commands as RuntimePluginDefinitionInput<Editor>['commands'],
           }
         : {}),
       ...(plugin.corrections
         ? {
             corrections: (
               plugin.corrections as NonNullable<
-                EditorExtensionDefinitionInput<Editor>['corrections']
+                RuntimePluginDefinitionInput<Editor>['corrections']
               >
             ).map((correction) => {
               const { query } = correction;
@@ -1475,44 +1465,38 @@ export const createPlateRuntimeExtensions = (
                 ...correction,
                 query: { ...query, type: lowerNodeType(query.type) },
               };
-            }) as EditorExtensionDefinitionInput<Editor>['corrections'],
+            }) as RuntimePluginDefinitionInput<Editor>['corrections'],
           }
         : {}),
       ...(stateFields.length > 0
         ? {
             stateFields:
-              stateFields as EditorExtensionDefinitionInput<Editor>['stateFields'],
+              stateFields as RuntimePluginDefinitionInput<Editor>['stateFields'],
           }
         : {}),
       ...(effectTypes.length > 0
         ? {
             effectTypes:
-              effectTypes as EditorExtensionDefinitionInput<Editor>['effectTypes'],
-          }
-        : {}),
-      ...(plugin.facetProviders
-        ? {
-            facetProviders:
-              plugin.facetProviders as EditorExtensionDefinitionInput<Editor>['facetProviders'],
+              effectTypes as RuntimePluginDefinitionInput<Editor>['effectTypes'],
           }
         : {}),
       ...(plugin.contributions
         ? {
             contributions:
-              plugin.contributions as EditorExtensionDefinitionInput<Editor>['contributions'],
+              plugin.contributions as RuntimePluginDefinitionInput<Editor>['contributions'],
           }
         : {}),
       ...(Reflect.ownKeys(on).length > 0 ? { on } : {}),
       ...(plugin.activate
         ? {
             activate:
-              plugin.activate as EditorExtensionDefinitionInput<Editor>['activate'],
+              plugin.activate as RuntimePluginDefinitionInput<Editor>['activate'],
           }
         : {}),
       ...(plugin.validate
         ? {
             validate:
-              plugin.validate as EditorExtensionDefinitionInput<Editor>['validate'],
+              plugin.validate as RuntimePluginDefinitionInput<Editor>['validate'],
           }
         : {}),
       ...(options.includeSchemaContributions !== false &&
@@ -1521,45 +1505,25 @@ export const createPlateRuntimeExtensions = (
         : {}),
     };
     // The resolved graph has no static tuple; its authoring contracts are checked before lowering.
-    const extension = (
-      defineExtension as (
-        name: string,
-        definition: EditorExtensionDefinitionInput<Editor>
-      ) => EditorExtensionReference
-    )(plugin.name, definition);
-    const family = getPluginSchemaFamily(plugin);
-
-    extensions.push(extension);
-    extensionByName.set(plugin.name, extension);
-    if (!family) {
-      throw new Error(
-        `Plate plugin "${plugin.name}" is missing its descriptor family.`
-      );
-    }
-    pluginBindings.set(
-      plugin.name,
-      Object.freeze({
-        extension,
-        family,
-      })
-    );
-    capabilities.nativeSources.forEach((source) => {
-      extensionAliases.set(source, extension);
+    const sourceReferences = [
+      ...new Set([
+        ...getPluginSourceReferences(plugin),
+        ...capabilities.nativeSources,
+      ]),
+    ];
+    const entry = compilePluginInput(plugin, definition, {
+      createPortal: createPlatePluginPortal,
+      editor,
+      sources: sourceReferences,
     });
+
+    entries.push(entry);
     fallbackApiByPlugin.set(plugin.name, frozenPluginApi);
   });
   const updateMethods = inspectPluginUpdateMethods(editor, pluginList, model);
 
-  plateRuntimeExtensionBindings.set(
-    editor,
-    Object.freeze({
-      aliases: extensionAliases,
-      plugins: pluginBindings,
-    })
-  );
-
   return Object.freeze({
-    extensions: Object.freeze(extensions),
+    entries: Object.freeze(entries),
     resolveApiPublication: () => {
       const apiByPlugin: Record<
         string,
@@ -1959,7 +1923,6 @@ const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
   'dependencies',
   'effectTypes',
   'extend',
-  'facetProviders',
   'name',
   'override',
   'read',
@@ -2304,6 +2267,10 @@ const resolveAndSortPluginsCandidate = (
     reference: unknown,
     index: number
   ) => {
+    if (isRuntimePlugin(reference) && !isNominalPluginDescriptor(reference)) {
+      return;
+    }
+
     const ownerPlugin =
       owner.resolved ?? failInvariant('Expected value to be defined');
     const path = `${owner.origin.path}.dependencies[${index}]`;

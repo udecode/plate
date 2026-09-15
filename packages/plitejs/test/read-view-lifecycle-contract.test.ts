@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   createEditorView,
-  defineExtension,
+  definePlugin,
   type EditorStateView,
   setEditorReadOnly,
 } from 'plitejs';
@@ -48,11 +48,11 @@ describe('read view lifecycle', () => {
     insert('!', { at: { path: [0, 0], offset: 3 } });
     assert.equal(sibling.read.text.string([]), 'one!');
   });
-  it('builds one state view per published extension configuration', () => {
+  it('builds one state view per published plugin configuration', () => {
     let builds = 0;
     const editor = createEditor({
-      extensions: [
-        defineExtension('counter', {
+      plugins: [
+        definePlugin('counter', {
           read: ({ state }) => {
             builds += 1;
 
@@ -87,7 +87,7 @@ describe('read view lifecycle', () => {
     assert.equal(builds, 1);
 
     const removeReplacement = editor.install(
-      defineExtension('counterReplacement', {
+      definePlugin('counterReplacement', {
         read: () => ({ enabled: () => true }),
       })
     );
@@ -107,8 +107,8 @@ describe('read view lifecycle', () => {
 
   it('keeps retained read-factory state reflection live', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('reflection', {
+      plugins: [
+        definePlugin('reflection', {
           read: ({ state }) => ({
             childrenFromDescriptor: () =>
               (
@@ -134,14 +134,14 @@ describe('read view lifecycle', () => {
   });
 
   it('freezes guarded read subtrees reused by later factories', () => {
-    const BaseRead = defineExtension('reusedReadBase', {
+    const BaseRead = definePlugin('reusedReadBase', {
       read: () => ({ nested: { ready: () => true } }),
     });
-    const ReusedRead = defineExtension('reusedReadConsumer', {
+    const ReusedRead = definePlugin('reusedReadConsumer', {
       dependencies: [BaseRead],
       read: ({ state }) => ({ nested: state.reusedReadBase.nested }),
     });
-    const editor = createEditor({ extensions: [ReusedRead] });
+    const editor = createEditor({ plugins: [ReusedRead] });
 
     assert.equal(editor.read.reusedReadConsumer.nested.ready(), true);
     assert.equal(
@@ -184,7 +184,7 @@ describe('read view lifecycle', () => {
     );
 
     const remove = editor.install(
-      defineExtension('viewCapability', {
+      definePlugin('viewCapability', {
         read: () => ({ ready: () => true }),
       })
     );
@@ -206,8 +206,8 @@ describe('read view lifecycle', () => {
   it('keeps cached read methods live against the active transaction draft', () => {
     let builds = 0;
     const editor = createEditor({
-      extensions: [
-        defineExtension('draft', {
+      plugins: [
+        definePlugin('draft', {
           read: ({ state }) => {
             builds += 1;
 
@@ -254,10 +254,10 @@ describe('read view lifecycle', () => {
     assert.equal(builds, 1);
   });
 
-  it('invokes direct extension read methods inside editor.read', () => {
+  it('invokes direct plugin read methods inside editor.read', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('guard', {
+      plugins: [
+        definePlugin('guard', {
           read: ({ editor: innerEditor }) => ({
             nested: {
               attemptUpdate() {
@@ -288,8 +288,8 @@ describe('read view lifecycle', () => {
 
   it('keeps dynamic read and update facades serialization-safe', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('serializableFacade', {
+      plugins: [
+        definePlugin('serializableFacade', {
           read: () => ({ ready: () => true }),
           update: () => ({ run: () => {} }),
         }),
@@ -318,8 +318,8 @@ describe('read view lifecycle', () => {
 
   it('resolves method names that overlap Function properties', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('collisions', {
+      plugins: [
+        definePlugin('collisions', {
           read: () => ({
             nested: {
               bind: () => 'bind',
@@ -375,8 +375,8 @@ describe('read view lifecycle', () => {
       },
     };
     const editor = createEditor({
-      extensions: [
-        defineExtension('receivers', {
+      plugins: [
+        definePlugin('receivers', {
           read: () => readMethods,
           update: () => updateMethods,
         }),
@@ -404,8 +404,8 @@ describe('read view lifecycle', () => {
   it('supports compiled function invocation while retaining the method receiver', () => {
     let updates = 0;
     const editor = createEditor({
-      extensions: [
-        defineExtension('invocation', {
+      plugins: [
+        definePlugin('invocation', {
           read: () => ({
             nested: {
               other: () => updates,
@@ -440,8 +440,8 @@ describe('read view lifecycle', () => {
 
   it('rejects read groups with state-derived data properties', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('invalidRead', {
+      plugins: [
+        definePlugin('invalidRead', {
           // @ts-expect-error read groups only expose callable method trees
           read: () => ({ count: 0 }),
         }),
@@ -457,8 +457,8 @@ describe('read view lifecycle', () => {
   it('rejects hidden read accessors without invoking them', () => {
     let getterCalls = 0;
     const editor = createEditor({
-      extensions: [
-        defineExtension('hiddenAccessor', {
+      plugins: [
+        definePlugin('hiddenAccessor', {
           read: (() =>
             Object.defineProperty({}, 'method', {
               configurable: true,
@@ -481,8 +481,8 @@ describe('read view lifecycle', () => {
 
   it('rejects hidden read data and symbol members', () => {
     const hiddenDataEditor = createEditor({
-      extensions: [
-        defineExtension('hiddenData', {
+      plugins: [
+        definePlugin('hiddenData', {
           read: (() =>
             Object.defineProperty({}, 'count', {
               value: 1,
@@ -491,8 +491,8 @@ describe('read view lifecycle', () => {
       ],
     });
     const symbolEditor = createEditor({
-      extensions: [
-        defineExtension('symbolRead', {
+      plugins: [
+        definePlugin('symbolRead', {
           read: (() => ({ [Symbol('method')]: () => true })) as never,
         }),
       ],
@@ -522,8 +522,8 @@ describe('read view lifecycle', () => {
       },
     });
     const editor = createEditor({
-      extensions: [
-        defineExtension('functionIntrinsic', {
+      plugins: [
+        definePlugin('functionIntrinsic', {
           read: () => ({ method }),
         }),
       ],
@@ -539,8 +539,8 @@ describe('read view lifecycle', () => {
   it('keeps internal tx-read markers outside the callable method tree', () => {
     const method = txRead(() => true);
     const editor = createEditor({
-      extensions: [
-        defineExtension('markedRead', {
+      plugins: [
+        definePlugin('markedRead', {
           read: () => ({ method }),
         }),
       ],
@@ -555,8 +555,8 @@ describe('read view lifecycle', () => {
 
   it('rejects reentrant reads while constructing a read group', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('reentrantRead', {
+      plugins: [
+        definePlugin('reentrantRead', {
           read: ({ editor: innerEditor2 }) => {
             innerEditor2.read.value();
 

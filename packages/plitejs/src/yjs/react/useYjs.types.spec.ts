@@ -1,11 +1,11 @@
+import * as Y from 'yjs';
+
 import type { Value } from '../../index';
-import type {
-  PliteWidgetGeometry,
-  Editor as ReactViewEditor,
-} from '../../react';
-import { yjs } from '../core';
-import { getEditorYjsTx } from '../core/editor-yjs';
+import type { Editor as ReactViewEditor } from '../../react';
+import type { RangeGeometry } from '../../react/range-geometry';
+import { yjs, type YjsAwarenessLike } from '../core';
 import {
+  useYjsAdmissionStatus,
   useYjsRemoteCursor,
   useYjsRemoteCursorGeometry,
   useYjsRemoteCursorIds,
@@ -15,7 +15,17 @@ type CursorData = {
   readonly name: string;
 };
 
+const doc = new Y.Doc();
+const awareness = {
+  doc,
+  getLocalState: () => null,
+  getStates: () => new Map(),
+  off: () => {},
+  on: () => {},
+  setLocalStateField: () => {},
+} satisfies YjsAwarenessLike;
 const CursorYjs = yjs({
+  awareness,
   cursorData: {
     validate: (value): value is CursorData =>
       typeof value === 'object' &&
@@ -23,6 +33,9 @@ const CursorYjs = yjs({
       'name' in value &&
       typeof value.name === 'string',
   },
+  doc,
+  initialReady: true,
+  seed: true,
 });
 
 type CursorEditor = ReactViewEditor<Value, readonly [typeof CursorYjs]>;
@@ -30,28 +43,44 @@ type CursorEditor = ReactViewEditor<Value, readonly [typeof CursorYjs]>;
 const editableRef = { current: null as HTMLDivElement | null };
 
 const useVerifyCursorOutputTypes = (editor: CursorEditor) => {
-  editor.update((tx) => {
-    const yjsTx = getEditorYjsTx(tx);
+  editor.api.yjs.setCursorData({ name: 'Ada' });
+  editor.api.yjs.syncSelection();
+  // @ts-expect-error Cursor metadata is owned by the installed Yjs descriptor.
+  editor.api.yjs.setCursorData({ color: 'red' });
 
-    yjsTx.sendCursorData({ name: 'Ada' });
-    // @ts-expect-error Cursor metadata is owned by the installed Yjs descriptor.
-    yjsTx.sendCursorData({ color: 'red' });
-  });
-
+  const status = useYjsAdmissionStatus(editor);
   const cursor = useYjsRemoteCursor(editor, 101);
   const ids: readonly number[] = useYjsRemoteCursorIds(editor);
-  const geometry: PliteWidgetGeometry | null = useYjsRemoteCursorGeometry(
+  const geometry: RangeGeometry | null = useYjsRemoteCursorGeometry(
     editor,
     101,
     { editableRef }
   );
 
   cursor?.data?.name;
+  status.state;
 
-  return {
-    geometry,
-    ids,
-  };
+  return { geometry, ids };
+};
+
+const DocumentOnlyYjs = yjs({
+  doc: new Y.Doc(),
+  initialReady: true,
+  seed: true,
+});
+type DocumentOnlyEditor = ReactViewEditor<
+  Value,
+  readonly [typeof DocumentOnlyYjs]
+>;
+
+const useVerifyCapabilityNegatives = (
+  documentOnlyEditor: DocumentOnlyEditor
+) => {
+  // @ts-expect-error Presence hooks require an awareness-capable descriptor.
+  useYjsRemoteCursor(documentOnlyEditor, 1);
+  // @ts-expect-error Presence methods are absent without awareness.
+  documentOnlyEditor.api.yjs.syncSelection();
 };
 
 void useVerifyCursorOutputTypes;
+void useVerifyCapabilityNegatives;

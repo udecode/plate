@@ -22,7 +22,7 @@ This is the most straightforward approach: each time the editor changes, update 
 ```tsx
 import { useForm } from "react-hook-form";
 import { NodeApi, type EditorDocumentValue } from "platejs";
-import { Plate, PlateContent, useCreateEditor } from "platejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "platejs/react";
 
 type FormData = {
   content: EditorDocumentValue;
@@ -57,15 +57,15 @@ export function RHFEditorForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Plate
+      <EditorRoot
         editor={editor}
         onValueChange={({ value }) => {
           // Sync editor changes to the form
           setValue("content", value);
         }}
       >
-        <PlateContent placeholder="Type here..." />
-      </Plate>
+        <EditorContent placeholder="Type here..." />
+      </EditorRoot>
 
       <button type="submit">Submit</button>
     </form>
@@ -93,7 +93,7 @@ import {
 } from "@/components/ui/field";
 import { Controller, useForm } from "react-hook-form";
 import type { EditorDocumentValue } from "platejs";
-import { Plate, PlateContent, useCreateEditor } from "platejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "platejs/react";
 
 type FormValues = {
   content: EditorDocumentValue;
@@ -128,15 +128,15 @@ export function EditorForm() {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel>Content</FieldLabel>
-              <Plate
+              <EditorRoot
                 editor={editor}
                 onValueChange={({ value }) => field.onChange(value)}
               >
-                <PlateContent
+                <EditorContent
                   aria-invalid={fieldState.invalid}
                   placeholder="Type..."
                 />
-              </Plate>
+              </EditorRoot>
               <FieldError errors={[fieldState.error]} />
             </Field>
           )}
@@ -159,14 +159,14 @@ Instead of syncing on every keystroke, you might only need the final value when 
 - Reaches certain form submission logic.
 
 ```tsx
-<Plate editor={editor}>
-  <PlateContent
+<EditorRoot editor={editor}>
+  <EditorContent
     onBlur={() => {
       // Only sync on blur
       setValue("content", editor.read.value());
     }}
   />
-</Plate>
+</EditorRoot>
 ```
 
 This reduces overhead but your form state won't reflect partial updates while the user is typing.
@@ -195,7 +195,7 @@ Here's a more complete form demonstrating both saving and resetting the editor/f
 
 ```tsx
 import { useForm } from "react-hook-form";
-import { Plate, PlateContent, useCreateEditor } from "platejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "platejs/react";
 
 function MyForm() {
   const form = useForm({
@@ -216,12 +216,12 @@ function MyForm() {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
-      <Plate
+      <EditorRoot
         editor={editor}
         onValueChange={({ value }) => form.setValue("content", value)}
       >
-        <PlateContent />
-      </Plate>
+        <EditorContent />
+      </EditorRoot>
 
       <button type="submit">Save</button>
 
@@ -280,7 +280,7 @@ Create a new `EditorField` component:
 
 import * as React from "react";
 import type { EditorDocumentValue, Value } from "platejs";
-import { Plate, PlateContent, useCreateEditor } from "platejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "platejs/react";
 
 /**
  * A reusable uncontrolled editor field. `initialValue` is read once, while
@@ -313,7 +313,7 @@ export type EditorFieldProps = Omit<
   "onChange"
 > & {
   /**
-   * The initial Plate document or primary-root value.
+   * The initial EditorRoot document or primary-root value.
    */
   initialValue?: EditorDocumentValue | Value;
 
@@ -340,9 +340,9 @@ export function EditorField({
   });
 
   return (
-    <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)}>
-      <PlateContent {...props} placeholder={placeholder} ref={ref} />
-    </Plate>
+    <EditorRoot editor={editor} onValueChange={({ value }) => onChange?.(value)}>
+      <EditorContent {...props} placeholder={placeholder} ref={ref} />
+    </EditorRoot>
   );
 }
 ```

@@ -14,10 +14,7 @@ import {
   writeRuntimeMarks,
   writeRuntimeSelection,
 } from '../../src/react/editable/runtime-mutation-state';
-import {
-  readLiveSelection,
-  readRuntimeSelection,
-} from '../../src/react/editable/runtime-selection-state';
+import { readRuntimeSelection } from '../../src/react/editable/runtime-selection-state';
 
 describe('plite-react runtime live state facade', () => {
   test('resolves live nodes and text through root view editors', () => {
@@ -88,7 +85,6 @@ describe('plite-react runtime live state facade', () => {
 
     try {
       writeRuntimeSelection(editor, selection);
-      expect(readLiveSelection(editor)).toEqual(selection);
       expect(readRuntimeSelection(editor)).toEqual(selection);
       expect(commitCount).toBe(1);
       expect(lastCommit?.selectionChanged).toBe(true);

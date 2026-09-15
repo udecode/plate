@@ -24,8 +24,8 @@ const typeOps = Number(process.env.HUGE_DOC_FULL_TYPE_OPS || (smoke ? 3 : 10));
 const overlayBlocks = Number(
   process.env.HUGE_DOC_FULL_OVERLAY_BLOCKS || (smoke ? 40 : blocks)
 );
-const overlayIslandSize = Number(
-  process.env.HUGE_DOC_FULL_OVERLAY_ISLAND_SIZE || (smoke ? 10 : 32)
+const overlayEstimatedBlockSize = Number(
+  process.env.HUGE_DOC_FULL_OVERLAY_ESTIMATED_BLOCK_SIZE || 32
 );
 const skipBrowserBuild = process.env.HUGE_DOC_FULL_SKIP_BROWSER_BUILD === '1';
 const strictBudget = process.env.HUGE_DOC_FULL_STRICT_BUDGET === '1';
@@ -275,76 +275,6 @@ const summarizeCoreCompare = (artifact) => {
   };
 };
 
-const summarizeLegacyCompare = (artifact) => {
-  const legacy = artifact?.surfaces?.legacyChunkOn;
-  const comparableProductLanes = [
-    'readyMs',
-    'middleBlockTypeMs',
-    'middleBlockSelectThenTypeMs',
-    'replaceFullDocumentWithTextMs',
-    'insertFragmentFullDocumentMs',
-  ];
-  const v2OnlyProductLanes = ['middleBlockPromoteThenTypeMs'];
-  const rows = ['v2DefaultRenderAuto', 'v2DomPresent'].flatMap((surfaceName) =>
-    comparableProductLanes.flatMap((laneName) => {
-      const currentP95 = p95(artifact?.surfaces?.[surfaceName]?.[laneName]);
-      const legacyP95 = p95(legacy?.[laneName]);
-
-      if (!currentP95 || !legacyP95) {
-        return [];
-      }
-
-      return [
-        {
-          currentP95Ms: currentP95,
-          laneName,
-          legacyP95Ms: legacyP95,
-          ratio: round(currentP95 / legacyP95),
-          surfaceName,
-        },
-      ];
-    })
-  );
-  const v2OnlyRows = ['v2DefaultRenderAuto', 'v2DomPresent'].flatMap(
-    (surfaceName) =>
-      v2OnlyProductLanes.flatMap((laneName) => {
-        const currentP95 = p95(artifact?.surfaces?.[surfaceName]?.[laneName]);
-
-        if (!currentP95) {
-          return [];
-        }
-
-        return [
-          {
-            currentP95Ms: currentP95,
-            laneName,
-            surfaceName,
-          },
-        ];
-      })
-  );
-  const partialDOMPromotionThenType = v2OnlyRows.find(
-    (row) =>
-      row.surfaceName === 'v2DefaultRenderAuto' &&
-      row.laneName === 'middleBlockPromoteThenTypeMs'
-  );
-  const worst = rows.reduce(
-    (winner, row) => (!winner || row.ratio > winner.ratio ? row : winner),
-    null
-  );
-
-  return {
-    blocks: artifact?.config?.blocks ?? null,
-    lanes: rows,
-    partialDOMPromotionThenTypeP95Ms:
-      partialDOMPromotionThenType?.currentP95Ms ?? null,
-    v2OnlyLanes: v2OnlyRows,
-    worstP95Ratio: worst?.ratio ?? null,
-    worstP95RatioLane: worst?.laneName ?? null,
-    worstP95RatioSurface: worst?.surfaceName ?? null,
-  };
-};
-
 const browserLaneRows = (artifact) =>
   Object.entries(artifact?.surfaces ?? {}).flatMap(([surfaceName, surface]) =>
     Object.entries(surface.lanes ?? {}).map(([laneName, lane]) => ({
@@ -549,18 +479,10 @@ const summarizeOverlays = (artifact) => ({
   activeEditP95Ms: p95(artifact?.activeEditAfterOverlay?.editMs),
   blocks: artifact?.config?.blockCount ?? null,
   overlayToggleP95Ms: p95(artifact?.overlayToggle?.overlayToggleMs),
-  partialDOMPromotionColdP95Ms: p95(
-    artifact?.partialDOMPromotion?.coldPromotionMs
-  ),
-  partialDOMPromotionSteadyP75Ms: p75(
-    artifact?.partialDOMPromotion?.promotionMs
-  ),
-  partialDOMPromotionSteadyP95Ms: p95(
-    artifact?.partialDOMPromotion?.promotionMs
-  ),
-  partialDOMPromotionTextAfterP95: p95(
-    artifact?.partialDOMPromotion?.mountedTextAfter
-  ),
+  viewportMountColdP95Ms: p95(artifact?.viewportMount?.coldMountMs),
+  viewportMountSteadyP75Ms: p75(artifact?.viewportMount?.mountMs),
+  viewportMountSteadyP95Ms: p95(artifact?.viewportMount?.mountMs),
+  viewportMountTextAfterP95: p95(artifact?.viewportMount?.mountedTextAfter),
 });
 
 const summarizeStepArtifact = (id, artifact) => {
@@ -571,12 +493,8 @@ const summarizeStepArtifact = (id, artifact) => {
   if (id === 'core-huge-document-compare') {
     return summarizeCoreCompare(artifact);
   }
-  if (id === 'react-huge-document-legacy-compare') {
-    return summarizeLegacyCompare(artifact);
-  }
   if (
     id === 'react-huge-document-browser-trace' ||
-    id === 'react-huge-document-staged-diagnostic-trace' ||
     id === 'react-huge-document-virtualized-type-to-paint' ||
     id === 'react-huge-document-slate-browser-trace'
   ) {
@@ -587,13 +505,6 @@ const summarizeStepArtifact = (id, artifact) => {
   }
 
   return null;
-};
-
-const diagnosticBudgetMetadata = {
-  diagnostic: true,
-  owner: 'staged-full-dom-debt',
-  reason:
-    'Measured for honesty, but not a strict promotion gate until staged/full-DOM correctness is promoted.',
 };
 
 const metricBudgetRows = (stepResults) => {
@@ -642,21 +553,6 @@ const metricBudgetRows = (stepResults) => {
     });
   }
 
-  if (!smoke) {
-    add({
-      budget: 1.5,
-      metric: 'legacyCompareWorstP95Ratio',
-      value: byId['react-huge-document-legacy-compare']?.summary?.worstP95Ratio,
-    });
-  }
-  add({
-    budget: 100,
-    metric: 'legacyComparePartialDOMPromotionThenTypeP95Ms',
-    ...diagnosticBudgetMetadata,
-    value:
-      byId['react-huge-document-legacy-compare']?.summary
-        ?.partialDOMPromotionThenTypeP95Ms,
-  });
   add({
     budget: 75,
     metric: 'browserTraceTypeToPaintP95Ms',
@@ -883,19 +779,15 @@ const metricBudgetRows = (stepResults) => {
   });
   add({
     budget: 60,
-    metric: 'partialDOMPromotionSteadyP75Ms',
-    ...diagnosticBudgetMetadata,
+    metric: 'viewportMountSteadyP75Ms',
     value:
-      byId['react-huge-document-overlays']?.summary
-        ?.partialDOMPromotionSteadyP75Ms,
+      byId['react-huge-document-overlays']?.summary?.viewportMountSteadyP75Ms,
   });
   add({
     budget: 75,
-    metric: 'partialDOMPromotionSteadyP95Ms',
-    ...diagnosticBudgetMetadata,
+    metric: 'viewportMountSteadyP95Ms',
     value:
-      byId['react-huge-document-overlays']?.summary
-        ?.partialDOMPromotionSteadyP95Ms,
+      byId['react-huge-document-overlays']?.summary?.viewportMountSteadyP95Ms,
   });
 
   return rows;
@@ -916,9 +808,7 @@ const failedBudgetRows = (budgetRows) =>
       row.value > row.budget
   );
 
-const diagnosticStepIds = new Set([
-  'react-huge-document-staged-diagnostic-trace',
-]);
+const diagnosticStepIds = new Set();
 
 const steps = [
   {
@@ -934,23 +824,6 @@ const steps = [
     id: 'core-huge-document-compare',
   },
   {
-    artifactPath: 'tmp/slate-react-huge-document-legacy-compare-benchmark.json',
-    command:
-      'bun benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs',
-    env: {
-      REACT_HUGE_COMPARE_BLOCKS: blocks,
-      REACT_HUGE_COMPARE_DISPOSE_DELAY_MS: 0,
-      REACT_HUGE_COMPARE_ISOLATE_SURFACES: 1,
-      REACT_HUGE_COMPARE_ITERATIONS: iterations,
-      REACT_HUGE_COMPARE_LEGACY_REPO: legacyRepo,
-      REACT_HUGE_COMPARE_SKIP_BUILD: skipBrowserBuild ? 1 : 0,
-      REACT_HUGE_COMPARE_SPLIT_SELECTION: 1,
-      REACT_HUGE_COMPARE_SURFACES: 'v2DefaultRenderAuto,v2DomPresent',
-      REACT_HUGE_COMPARE_TYPE_OPS: typeOps,
-    },
-    id: 'react-huge-document-legacy-compare',
-  },
-  {
     artifactPath: browserTraceLatestArtifactPath,
     command:
       'bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs',
@@ -958,24 +831,10 @@ const steps = [
       PLITE_BROWSER_TRACE_BLOCKS: blocks,
       PLITE_BROWSER_TRACE_ITERATIONS: traceIterations,
       PLITE_BROWSER_TRACE_SKIP_BUILD: skipBrowserBuild ? 1 : 0,
-      PLITE_BROWSER_TRACE_SURFACES: 'defaultAuto',
+      PLITE_BROWSER_TRACE_SURFACES: 'pliteComplete',
       PLITE_BROWSER_TRACE_TYPE_OPS: typeOps,
     },
     id: 'react-huge-document-browser-trace',
-  },
-  {
-    artifactPath: browserTraceLatestArtifactPath,
-    command:
-      'bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs',
-    env: {
-      PLITE_BROWSER_TRACE_BLOCKS: blocks,
-      PLITE_BROWSER_TRACE_ITERATIONS: traceIterations,
-      PLITE_BROWSER_TRACE_SKIP_BUILD: 1,
-      PLITE_BROWSER_TRACE_SURFACES:
-        'stagedActiveDOMGroup,stagedContentVisibility',
-      PLITE_BROWSER_TRACE_TYPE_OPS: typeOps,
-    },
-    id: 'react-huge-document-staged-diagnostic-trace',
   },
   {
     artifactPath: browserTraceLatestArtifactPath,
@@ -999,7 +858,7 @@ const steps = [
       REACT_HUGE_DOC_ACTIVE_RADIUS: 1,
       REACT_HUGE_DOC_BENCH_ITERATIONS: iterations,
       REACT_HUGE_DOC_BLOCKS: overlayBlocks,
-      REACT_HUGE_DOC_ISLAND_SIZE: overlayIslandSize,
+      REACT_HUGE_DOC_ESTIMATED_BLOCK_SIZE: overlayEstimatedBlockSize,
     },
     id: 'react-huge-document-overlays',
   },
@@ -1061,7 +920,7 @@ const summary = {
     iterations,
     legacyRepo,
     overlayBlocks,
-    overlayIslandSize,
+    overlayEstimatedBlockSize,
     skipBrowserBuild,
     smoke,
     strictBudget,
@@ -1105,18 +964,6 @@ const summary = {
     browserDomNodesP95BySurface:
       byId['react-huge-document-browser-trace']?.summary
         ?.domNodesP95BySurface ?? null,
-    stagedDiagnosticBurstToPaintPerOpP95Ms:
-      byId['react-huge-document-staged-diagnostic-trace']?.summary
-        ?.burstToPaintPerOpP95Ms ?? null,
-    stagedDiagnosticDomNodesP95:
-      byId['react-huge-document-staged-diagnostic-trace']?.summary
-        ?.domNodesP95 ?? null,
-    stagedDiagnosticTypeToPaintP95Ms:
-      byId['react-huge-document-staged-diagnostic-trace']?.summary
-        ?.typeToPaintP95Ms ?? null,
-    stagedDiagnosticSelectToPaintP95Ms:
-      byId['react-huge-document-staged-diagnostic-trace']?.summary
-        ?.selectToPaintP95Ms ?? null,
     virtualizedDomNodesP95:
       byId['react-huge-document-virtualized-type-to-paint']?.summary
         ?.domNodesP95 ?? null,
@@ -1219,9 +1066,6 @@ const summary = {
           ?.heapMBP95,
       ].filter(Number.isFinite)
     ),
-    legacyCompareWorstP95Ratio:
-      byId['react-huge-document-legacy-compare']?.summary?.worstP95Ratio ??
-      null,
     longTaskMaxP95Ms: maxFinite(
       [
         byId['react-huge-document-browser-trace']?.summary?.longTaskMaxP95Ms,
@@ -1231,15 +1075,15 @@ const summary = {
     ),
     maxBudgetRatio,
     diagnosticMaxBudgetRatio,
-    partialDOMPromotionColdP95Ms:
-      byId['react-huge-document-overlays']?.summary
-        ?.partialDOMPromotionColdP95Ms ?? null,
-    partialDOMPromotionSteadyP75Ms:
-      byId['react-huge-document-overlays']?.summary
-        ?.partialDOMPromotionSteadyP75Ms ?? null,
-    partialDOMPromotionSteadyP95Ms:
-      byId['react-huge-document-overlays']?.summary
-        ?.partialDOMPromotionSteadyP95Ms ?? null,
+    viewportMountColdP95Ms:
+      byId['react-huge-document-overlays']?.summary?.viewportMountColdP95Ms ??
+      null,
+    viewportMountSteadyP75Ms:
+      byId['react-huge-document-overlays']?.summary?.viewportMountSteadyP75Ms ??
+      null,
+    viewportMountSteadyP95Ms:
+      byId['react-huge-document-overlays']?.summary?.viewportMountSteadyP95Ms ??
+      null,
     materializedSelectionReadyP95Ms: maxFinite(
       [
         byId['react-huge-document-browser-trace']?.summary
@@ -1441,11 +1285,6 @@ console.log(
   )}`
 );
 console.log(
-  `METRIC react_huge_doc_full_legacy_compare_worst_p95_ratio=${round(
-    summary.metrics.legacyCompareWorstP95Ratio ?? 0
-  )}`
-);
-console.log(
   `METRIC react_huge_doc_full_core_worst_p95_ratio=${round(
     summary.metrics.coreWorstP95Ratio ?? 0
   )}`
@@ -1597,28 +1436,18 @@ console.log(
   )}`
 );
 console.log(
-  `METRIC react_huge_doc_full_staged_diagnostic_burst_to_paint_per_op_p95_ms=${round(
-    summary.metrics.stagedDiagnosticBurstToPaintPerOpP95Ms ?? 0
+  `METRIC react_huge_doc_full_viewport_mount_steady_p75_ms=${round(
+    summary.metrics.viewportMountSteadyP75Ms ?? 0
   )}`
 );
 console.log(
-  `METRIC react_huge_doc_full_staged_diagnostic_dom_nodes_p95=${round(
-    summary.metrics.stagedDiagnosticDomNodesP95 ?? 0
+  `METRIC react_huge_doc_full_viewport_mount_steady_p95_ms=${round(
+    summary.metrics.viewportMountSteadyP95Ms ?? 0
   )}`
 );
 console.log(
-  `METRIC react_huge_doc_full_partial_dom_promotion_steady_p75_ms=${round(
-    summary.metrics.partialDOMPromotionSteadyP75Ms ?? 0
-  )}`
-);
-console.log(
-  `METRIC react_huge_doc_full_partial_dom_promotion_steady_p95_ms=${round(
-    summary.metrics.partialDOMPromotionSteadyP95Ms ?? 0
-  )}`
-);
-console.log(
-  `METRIC react_huge_doc_full_partial_dom_promotion_cold_p95_ms=${round(
-    summary.metrics.partialDOMPromotionColdP95Ms ?? 0
+  `METRIC react_huge_doc_full_viewport_mount_cold_p95_ms=${round(
+    summary.metrics.viewportMountColdP95Ms ?? 0
   )}`
 );
 console.log(

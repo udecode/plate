@@ -21,18 +21,18 @@ mock.module('platejs', () => ({
 }));
 
 mock.module('platejs/static', () => ({
-  PliteElement: ({
+  EditorElement: ({
     attributes,
     children,
     className,
   }: React.ComponentProps<'div'> & {
     attributes?: React.ComponentProps<'div'>;
   }) => (
-    <div className={className} data-testid="plite-element" {...attributes}>
+    <div className={className} data-testid="editor-element" {...attributes}>
       {children}
     </div>
   ),
-  PliteLeaf: ({ children, className }: React.ComponentProps<'span'>) => (
+  EditorLeaf: ({ children, className }: React.ComponentProps<'span'>) => (
     <span className={className}>{children}</span>
   ),
 }));

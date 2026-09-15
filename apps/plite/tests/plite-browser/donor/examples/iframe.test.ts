@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
 
 test.describe('iframe editor', () => {
   test.beforeEach(async ({ page }) => {
@@ -43,11 +43,11 @@ test.describe('iframe editor', () => {
   test('clicks mounted iframe content without DOM node resolution errors', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const frame = page.frameLocator('iframe');
     const textbox = frame.locator('body').getByRole('textbox');
     const firstParagraph = textbox
-      .locator('[data-plite-node="element"]')
+      .locator('[data-editor-node="element"]')
       .first();
 
     try {
@@ -74,7 +74,7 @@ test.describe('iframe editor', () => {
   test('applies parent toolbar formatting to selected iframe text', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const frame = page.frameLocator('iframe');
     const textbox = frame.locator('body').getByRole('textbox');
 
@@ -82,7 +82,7 @@ test.describe('iframe editor', () => {
       await textbox.evaluate((element: HTMLElement) => {
         const handle = (element as Record<string, any>).__pliteBrowserHandle;
         const mediaQueries = Array.from(
-          element.querySelectorAll('[data-plite-string="true"]')
+          element.querySelectorAll('[data-editor-string="true"]')
         ).find((node) => node.textContent === 'media queries');
         const textNode = mediaQueries?.firstChild;
 

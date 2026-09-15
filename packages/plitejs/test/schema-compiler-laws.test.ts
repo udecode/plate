@@ -41,9 +41,9 @@ const assertLaw = (
   });
 
 const record = (
-  extensionName: string,
+  pluginName: string,
   contribution: EditorSchemaDeclaration
-): EditorSchemaContributionRecord => ({ contribution, extensionName });
+): EditorSchemaContributionRecord => ({ contribution, pluginName });
 
 const createBaseSchema = (properties: readonly SchemaProperty[] = []) =>
   defineEditorSchema('schema:generated-laws', {

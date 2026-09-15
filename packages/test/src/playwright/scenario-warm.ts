@@ -1,7 +1,7 @@
 import type {
-  PliteBrowserScenarioStep,
-  PliteBrowserWarmLoopOptions,
-  PliteBrowserWarmToolbarArrowGauntletOptions,
+  BrowserScenarioStep,
+  BrowserWarmLoopOptions,
+  BrowserWarmToolbarArrowGauntletOptions,
 } from './types';
 
 const requirePositiveIterationCount = (value: number) => {
@@ -12,7 +12,7 @@ const requirePositiveIterationCount = (value: number) => {
   return value;
 };
 
-const createWarmTimingWaitStep = (label: string): PliteBrowserScenarioStep => ({
+const createWarmTimingWaitStep = (label: string): BrowserScenarioStep => ({
   kind: 'settle',
   label,
   timeoutMs: 25,
@@ -21,18 +21,18 @@ const createWarmTimingWaitStep = (label: string): PliteBrowserScenarioStep => ({
 const createToolbarMarkClickStep = (
   label: string,
   markButtonTestId: string
-): PliteBrowserScenarioStep => ({
+): BrowserScenarioStep => ({
   kind: 'clickTestId',
   label,
   testId: markButtonTestId,
 });
 
 /** Create repeated warm-up steps for a scenario packet. */
-export const createPliteBrowserWarmLoopSteps = ({
+export const createBrowserWarmLoopSteps = ({
   createIteration,
   iterations = 1,
   label = 'warm-loop',
-}: PliteBrowserWarmLoopOptions): PliteBrowserScenarioStep[] => {
+}: BrowserWarmLoopOptions): BrowserScenarioStep[] => {
   const count = requirePositiveIterationCount(iterations);
 
   return Array.from({ length: count }, (_, index) =>
@@ -53,14 +53,14 @@ const createWarmToolbarArrowIteration = ({
   selectionAfterArrowLeft,
   selectionAfterCollapse,
 }: Omit<
-  PliteBrowserWarmToolbarArrowGauntletOptions,
+  BrowserWarmToolbarArrowGauntletOptions,
   | 'domCaretAfterInsert'
   | 'insertedText'
   | 'selectionAfterInsert'
   | 'textAfterInsert'
 > & {
   iteration: number;
-}): PliteBrowserScenarioStep[] => [
+}): BrowserScenarioStep[] => [
   {
     kind: 'selectDOM',
     label: `warm-select-word-${iteration}`,
@@ -134,7 +134,7 @@ const createWarmToolbarArrowIteration = ({
 ];
 
 /** Create a warm toolbar and arrow-navigation scenario. */
-export const createPliteBrowserWarmToolbarArrowGauntlet = ({
+export const createBrowserWarmToolbarArrowGauntlet = ({
   domCaretAfterInsert,
   insertedText,
   markDOMSelection,
@@ -147,12 +147,12 @@ export const createPliteBrowserWarmToolbarArrowGauntlet = ({
   textAfterInsert,
   warmIterationOverrides,
   warmIterations = 1,
-}: PliteBrowserWarmToolbarArrowGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserWarmToolbarArrowGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'rootMouseDown',
     label: 'activate-editor-before-warm-selection',
   },
-  ...createPliteBrowserWarmLoopSteps({
+  ...createBrowserWarmLoopSteps({
     createIteration: (iteration) =>
       createWarmToolbarArrowIteration({
         iteration,

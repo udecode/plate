@@ -1,6 +1,6 @@
 import { insertText } from '../../../testing';
 import { createEditor as createRuntimeEditor } from '../../editor';
-import { defineBasePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { createTextSubstitutionInputRule } from './createInputRules';
 
 const createEditor = (
@@ -8,7 +8,7 @@ const createEditor = (
 ) =>
   createRuntimeEditor({
     plugins: [
-      defineBasePlugin('shortcuts', {
+      definePlugin('shortcuts', {
         inputRules: [rule],
       }),
     ],

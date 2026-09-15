@@ -1,4 +1,4 @@
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
@@ -11,14 +11,14 @@ import { cn } from '@/lib/utils';
 export function TableElementStatic({
   children,
   ...props
-}: PliteElementProps<typeof BaseTablePlugin>) {
+}: EditorElementProps<typeof BaseTablePlugin>) {
   const { disableMarginLeft } = props.editor
     .plugin(BaseTablePlugin)
     .store.get();
   const marginLeft = disableMarginLeft ? 0 : props.element.marginLeft;
 
   return (
-    <PliteElement
+    <EditorElement
       {...props}
       className="overflow-x-auto py-5"
       style={{ paddingLeft: marginLeft }}
@@ -31,22 +31,22 @@ export function TableElementStatic({
           <tbody className="min-w-full">{children}</tbody>
         </table>
       </div>
-    </PliteElement>
+    </EditorElement>
   );
 }
 
 export function TableRowElementStatic(
-  props: PliteElementProps<typeof BaseTableRowPlugin>
+  props: EditorElementProps<typeof BaseTableRowPlugin>
 ) {
   return (
-    <PliteElement {...props} as="tr" className="h-full">
+    <EditorElement {...props} as="tr" className="h-full">
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 
 export function TableCellElementStatic(
-  props: PliteElementProps<typeof BaseTableCellPlugin>
+  props: EditorElementProps<typeof BaseTableCellPlugin>
 ) {
   const { editor, element } = props;
   const isHeader = element.header === true;
@@ -56,7 +56,7 @@ export function TableCellElementStatic(
   const borders = table.read.getCellBorders({ element });
 
   return (
-    <PliteElement
+    <EditorElement
       {...props}
       as={isHeader ? 'th' : 'td'}
       className={cn(
@@ -92,7 +92,7 @@ export function TableCellElementStatic(
       >
         {props.children}
       </div>
-    </PliteElement>
+    </EditorElement>
   );
 }
 

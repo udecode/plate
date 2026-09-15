@@ -1,4 +1,4 @@
-import type { PliteDecorationSlice } from './decoration-source';
+import type { DecorationSlice } from './decoration-source';
 
 /** An exact replacement in the observed text's UTF-16 before coordinates. */
 export type ExternalTextChange = Readonly<{
@@ -17,8 +17,8 @@ export type ExternalTextSelection = Readonly<{
 export type ExternalTextSelectionState = ExternalTextSelection &
   Readonly<{ mode: 'model' | 'native' }>;
 
-/** A keyed Plite decoration clipped to this Text's offsets. */
-export type ExternalTextDecoration = PliteDecorationSlice;
+/** A keyed editor decoration clipped to this Text's offsets. */
+export type ExternalTextDecoration = DecorationSlice;
 
 /** Canonical state delivered to one mounted external text view. */
 export type ExternalTextState<TConfig = undefined> = Readonly<{
@@ -37,7 +37,7 @@ export type ExternalTextDispatchResult = Readonly<{
   status: 'applied' | 'read-only' | 'stale';
 }>;
 
-/** The only mutation bridge from an external view to its owning Plite runtime. */
+/** The only mutation bridge from an external view to its owning editor runtime. */
 export type ExternalTextActions = Readonly<{
   composition: (phase: 'end' | 'start') => void;
   deleteOut: (input: {
@@ -50,7 +50,7 @@ export type ExternalTextActions = Readonly<{
     intent: 'composition' | 'cut' | 'drop' | 'input' | 'paste';
     selection: ExternalTextSelection;
   }) => ExternalTextDispatchResult;
-  /** Delegate to installed Plite history; adapters must disable local history. */
+  /** Delegate to installed editor history; adapters must disable local history. */
   history: (direction: 'redo' | 'undo') => boolean;
   navigateOut: (input: {
     baseVersion: number;

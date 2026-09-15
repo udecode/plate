@@ -1,16 +1,16 @@
 import { property, createEditor as createPliteEditor } from '../../facade';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
-import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { someHtmlElement } from '../../lib/plugins/html/htmlDom';
 import { createEditor, createEditorWithEditor } from './withPlate';
 
 describe('Editor', () => {
-  const MyCustomPlugin = defineBasePlugin('myCustom', {
+  const MyCustomPlugin = definePlugin('myCustom', {
     api: () => ({ myCustomMethod: () => {} }),
   });
 
-  const TextFormattingPlugin = defineBasePlugin('textFormatting', {
+  const TextFormattingPlugin = definePlugin('textFormatting', {
     api: () => ({
       bold: () => {},
       italic: () => {},
@@ -18,20 +18,20 @@ describe('Editor', () => {
     }),
   });
 
-  const ListPlugin = defineBasePlugin('list', {
+  const ListPlugin = definePlugin('list', {
     api: () => ({
       createBulletedList: () => {},
     }),
   });
 
-  const TablePlugin = defineBasePlugin('table', {
+  const TablePlugin = definePlugin('table', {
     api: () => ({
       addRow: () => {},
       insertTable: () => {},
     }),
   });
 
-  const ImagePlugin = defineBasePlugin('image', {
+  const ImagePlugin = definePlugin('image', {
     api: () => ({
       insertImage: () => {},
       resizeImage: () => {},
@@ -117,7 +117,7 @@ describe('Editor', () => {
     });
 
     it('isolates overlapping API names by plugin namespace', () => {
-      const OverlappingPlugin = defineBasePlugin('overlapping', {
+      const OverlappingPlugin = definePlugin('overlapping', {
         api: () => ({
           bold: (_: number) => {},
           insertImage: (_: number) => {},
@@ -141,7 +141,7 @@ describe('Editor', () => {
   });
 
   describe('Plugin', () => {
-    const BoldPlugin = defineBasePlugin('bold', {
+    const BoldPlugin = definePlugin('bold', {
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       codecs: ({ defineCodecs }) =>
         defineCodecs({

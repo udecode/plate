@@ -33,8 +33,8 @@ export const useDndPlugin = (editableElement: HTMLElement | null): void => {
           : relatedTarget instanceof Node
             ? relatedTarget.parentElement
             : null;
-      const targetBlock = targetElement?.closest('[data-plite-node-key]');
-      const relatedBlock = relatedElement?.closest('[data-plite-node-key]');
+      const targetBlock = targetElement?.closest('[data-editor-node-key]');
+      const relatedBlock = relatedElement?.closest('[data-editor-node-key]');
       const isLeavingEditor = !(
         event.target === editorDOMNode || editorDOMNode.contains(event.target)
       );

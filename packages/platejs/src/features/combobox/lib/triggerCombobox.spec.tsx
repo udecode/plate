@@ -7,7 +7,7 @@ import {
   BaseParagraphPlugin,
   type BasePluginInput,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   type Element,
   property,
 } from '../../../core';
@@ -16,7 +16,7 @@ import {
   type TriggerComboboxPluginState,
 } from './triggerCombobox';
 
-const ExampleComboboxInputPlugin = defineBasePlugin('mentionInput', {
+const ExampleComboboxInputPlugin = definePlugin('mentionInput', {
   schema: {
     element: {
       inline: true,
@@ -33,7 +33,7 @@ const createExampleComboboxPlugin = <const TName extends string>(
   name: TName,
   initialState: TriggerComboboxPluginState
 ) =>
-  defineBasePlugin(name, {
+  definePlugin(name, {
     dependencies: [ExampleComboboxInputPlugin],
     initialState,
   }).extend(({ editor, store }) => ({
@@ -73,7 +73,7 @@ const plugins = [
   }),
 ];
 
-const RegexComboboxPlugin = defineBasePlugin('regexCombobox', {
+const RegexComboboxPlugin = definePlugin('regexCombobox', {
   dependencies: [ExampleComboboxInputPlugin],
   initialState: {
     createComboboxInput: null,

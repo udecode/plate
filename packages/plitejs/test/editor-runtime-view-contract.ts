@@ -7,8 +7,8 @@ import {
   createEditorView,
   type Descendant,
   type Element,
-  defineExtension,
-  defineExtensionPoint,
+  definePlugin,
+  definePluginPoint,
   type EditorUpdateTransaction,
   NodeApi,
   type Path,
@@ -20,7 +20,7 @@ import { history } from 'plitejs/history';
 import {
   above as editorAbove,
   deleteBackward as editorDeleteBackward,
-  getExtensionRegistry as editorGetExtensionRegistry,
+  getPluginRegistry as editorGetPluginRegistry,
   getEditorLiveSelection,
   getLastCommit as editorGetLastCommit,
   insertText as editorInsertText,
@@ -96,8 +96,8 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('resolves extension API factories against each view root', () => {
-    const rootAware = defineExtension('rootAware', {
+  it('resolves plugin API factories against each view root', () => {
+    const rootAware = definePlugin('rootAware', {
       api({ editor, root }) {
         return {
           append: (text: string) => {
@@ -116,7 +116,7 @@ describe('editor runtime/view contract', () => {
       },
     });
     const runtime = createEditor({
-      extensions: [rootAware],
+      plugins: [rootAware],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -130,7 +130,7 @@ describe('editor runtime/view contract', () => {
     assert.equal(headerEditor.api.rootAware.root(), 'header');
     assert.equal(headerEditor.api.rootAware.text(), 'header');
     assert.equal(
-      headerEditor.extension(rootAware).api,
+      headerEditor.plugin(rootAware).api,
       headerEditor.api.rootAware
     );
 
@@ -275,11 +275,11 @@ describe('editor runtime/view contract', () => {
     );
   });
 
-  it('shares extension capabilities with root-bound views', () => {
-    const output = defineExtensionPoint<boolean>('shared-output');
+  it('shares plugin capabilities with root-bound views', () => {
+    const output = definePluginPoint<boolean>('shared-output');
     const runtime = createEditor({
-      extensions: [
-        defineExtension('custom-clipboard', {
+      plugins: [
+        definePlugin('custom-clipboard', {
           contributions: [output.of(true)],
         }),
       ] as const,
@@ -289,16 +289,16 @@ describe('editor runtime/view contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const runtimeRegistry = editorGetExtensionRegistry(runtime);
-    const viewRegistry = editorGetExtensionRegistry(headerEditor);
+    const runtimeRegistry = editorGetPluginRegistry(runtime);
+    const viewRegistry = editorGetPluginRegistry(headerEditor);
 
     assert.equal(viewRegistry, runtimeRegistry);
     assert.equal(viewRegistry.contributions.get(output)?.length, 1);
   });
 
-  it('binds dynamically installed extensions to the invoking root view', () => {
+  it('binds dynamically installed plugins to the invoking root view', () => {
     const commitEditors: string[] = [];
-    const baseExtension = defineExtension('base-bound-extension', {
+    const basePlugin = definePlugin('base-bound-plugin', {
       on: {
         commit({ editor }) {
           commitEditors.push(`base:${editor.read.view.root()}`);
@@ -306,7 +306,7 @@ describe('editor runtime/view contract', () => {
       },
     });
     const runtime = createEditor({
-      extensions: [baseExtension] as const,
+      plugins: [basePlugin] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -321,7 +321,7 @@ describe('editor runtime/view contract', () => {
     let textChangeEditor: unknown;
     let transactionChangeEditor: unknown;
     let txEditor: unknown;
-    const headerExtension = defineExtension('header-bound-extension', {
+    const headerPlugin = definePlugin('header-bound-plugin', {
       activate(context) {
         const { editor } = context;
         activationEditor = editor;
@@ -364,7 +364,7 @@ describe('editor runtime/view contract', () => {
       }),
     });
 
-    const cleanup = headerEditor.install(headerExtension);
+    const cleanup = headerEditor.install(headerPlugin);
 
     assert.equal(activationEditor, headerEditor);
     assert.equal(activationRoot, 'header');
@@ -373,9 +373,9 @@ describe('editor runtime/view contract', () => {
       headerEditor.read((state) =>
         (
           state as unknown as {
-            'header-bound-extension': { hostState: () => unknown };
+            'header-bound-plugin': { hostState: () => unknown };
           }
-        )['header-bound-extension'].hostState()
+        )['header-bound-plugin'].hostState()
       ),
       headerEditor
     );
@@ -385,9 +385,9 @@ describe('editor runtime/view contract', () => {
       assert.equal(
         (
           tx as unknown as {
-            'header-bound-extension': { hostTx: () => unknown };
+            'header-bound-plugin': { hostTx: () => unknown };
           }
-        )['header-bound-extension'].hostTx(),
+        )['header-bound-plugin'].hostTx(),
         'header'
       );
       tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
@@ -501,8 +501,8 @@ describe('editor runtime/view contract', () => {
 
   it('keeps main-root view afterCommit selection from the committed snapshot', () => {
     const runtime = createEditor({
-      extensions: [
-        defineExtension('move-selection-on-commit', {
+      plugins: [
+        definePlugin('move-selection-on-commit', {
           on: {
             commit({ commit, editor }) {
               if (commit.changed.has('text')) {
@@ -1569,7 +1569,7 @@ describe('editor runtime/view contract', () => {
 
   it("preserves the focused root selection when undoing another root's batch", () => {
     const runtime = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1647,7 +1647,7 @@ describe('editor runtime/view contract', () => {
 
   it("preserves the focused root selection when redoing another root's batch", () => {
     const runtime = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1707,7 +1707,7 @@ describe('editor runtime/view contract', () => {
 
   it('restores null selection when undoing a programmatic non-main root batch', () => {
     const runtime = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1756,7 +1756,7 @@ describe('editor runtime/view contract', () => {
 
   it('applies main-root history changes while inside a non-main view update', () => {
     const runtime = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },

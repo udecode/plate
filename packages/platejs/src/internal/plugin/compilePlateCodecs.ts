@@ -12,7 +12,7 @@ import { compilePlateHtmlCodec } from '../../lib/plugins/html/HtmlPlugin';
 import { failInvariant } from '../failInvariant';
 import type {
   CompiledPlateModel,
-  CompiledPlateModelBinding,
+  CompiledModelBinding,
 } from './compilePlateModel';
 
 type CodecDeclaration = Readonly<{
@@ -57,7 +57,7 @@ const formatUnknownValue = (value: unknown): string => {
 const getClaims = (
   owner: string,
   scope: unknown,
-  binding: CompiledPlateModelBinding | undefined
+  binding: CompiledModelBinding | undefined
 ): readonly HostCodecSchemaTarget[] => {
   if (scope === 'document') {
     return Object.freeze([{ kind: 'schema' }]);
@@ -244,7 +244,7 @@ const compileFormat = (
                     Object.freeze({
                       cause: error,
                       editor,
-                      extensionName: 'plate:codecs',
+                      pluginName: 'plate:codecs',
                       format,
                       key: `plate:${declaration.owner}:${format}:query`,
                       phase: 'query' as const,
@@ -270,7 +270,7 @@ const compileFormat = (
                   Object.freeze({
                     cause: error,
                     editor,
-                    extensionName: 'plate:codecs',
+                    pluginName: 'plate:codecs',
                     format,
                     key: `plate:${declaration.owner}:${format}:decode`,
                     phase: 'parse' as const,
@@ -303,7 +303,7 @@ const compileFormat = (
                   Object.freeze({
                     cause: error,
                     editor,
-                    extensionName: 'plate:codecs',
+                    pluginName: 'plate:codecs',
                     format,
                     key: `plate:${declaration.owner}:${format}:encode`,
                     phase: 'serialize' as const,

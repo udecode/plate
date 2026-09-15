@@ -622,6 +622,13 @@ export type InternalRootChangeSection = Readonly<{
   from: number;
 }>;
 
+export type InternalRootNodeChangeSection = Readonly<{
+  after: readonly JsonNode[];
+  before: readonly JsonNode[];
+  /** Top-level child index in the current root. */
+  from: number;
+}>;
+
 /**
  * Build one sparse root change without exposing the compact root
  * algebra to sibling packages.
@@ -703,6 +710,49 @@ export const createInternalRootChangeFromSections = (
     ),
     changedSections: Object.freeze(changedSections),
   });
+};
+
+/**
+ * Build one sparse root change from top-level node sections.
+ *
+ * @internal
+ */
+export const createInternalRootChangeFromNodeSections = (
+  root: string,
+  source: readonly JsonNode[],
+  sections: readonly InternalRootNodeChangeSection[],
+  isSetValued: DocumentSetPropertyResolver = () => false
+) => {
+  const document = DocumentIndex.fromValue(source);
+  let childPosition = 0;
+
+  const tokenSections = sections.map((section) => {
+    if (
+      !Number.isSafeInteger(section.from) ||
+      section.from < childPosition ||
+      section.from + section.before.length > source.length ||
+      !jsonEqual(
+        source.slice(section.from, section.from + section.before.length),
+        section.before
+      )
+    ) {
+      throw new Error('Invalid internal root node change section.');
+    }
+    childPosition = section.from + section.before.length;
+
+    return Object.freeze({
+      after: section.after,
+      before: section.before,
+      from: document.childPosition([], section.from),
+    });
+  });
+
+  return createInternalRootChangeFromSections(
+    root,
+    document.length,
+    tokenSections,
+    isSetValued
+  );
 };
 
 export class DocumentChange {

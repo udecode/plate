@@ -28,7 +28,7 @@ const editor = createEditor({
   initialValue: [
     {
       type: 'paragraph',
-      children: [{ text: 'Hello, Plate!' }],
+      children: [{ text: 'Hello, EditorRoot!' }],
     },
   ],
 });
@@ -94,11 +94,11 @@ only when the application needs a different top-level grammar.
 import { schema } from 'platejs';
 import {
   createEditor,
-  definePlatePlugin,
+  definePlugin,
   ParagraphPlugin,
 } from 'platejs/react';
 
-const SectionPlugin = definePlatePlugin('section', {
+const SectionPlugin = definePlugin('section', {
   schema: {
     element: {
       content: schema.content.element(ParagraphPlugin, { min: 1 }),
@@ -135,7 +135,7 @@ plugin preparation and schema fitting.
 import { ParagraphPlugin } from 'platejs/react';
 import {
   defineDocumentMigrations,
-  migratePlateV54,
+  migrateV54,
 } from 'platejs/migrations';
 
 import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
@@ -149,7 +149,7 @@ export const EditorSchema = {
 
 export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
   sourceFingerprints: { 53: v53Fingerprint },
-  steps: { 54: migratePlateV54 },
+  steps: { 54: migrateV54 },
   unversioned: 53,
 });
 ```
@@ -159,7 +159,7 @@ floor for stored documents without schema metadata; remove it when that data is
 no longer supported.
 
 ```tsx title="src/document-editor.tsx" showLineNumbers
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { EditorKit, EditorMigrations, EditorSchema } from './editor';
 
@@ -171,7 +171,7 @@ export function DocumentEditor({ persisted }) {
     schema: EditorSchema,
   });
 
-  return <Plate editor={editor} />;
+  return <EditorRoot editor={editor} />;
 }
 ```
 
@@ -225,17 +225,17 @@ initial document.
 
 ```tsx
 import type { Value } from 'platejs';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 function DocumentEditor({ initialValue }: { initialValue: Value }) {
   const editor = useCreateEditor({ initialValue });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -326,7 +326,7 @@ The generated module exports exact editor/value types, static schema handles,
 and a fingerprint. It does not own runtime plugin composition:
 
 ```tsx title="src/editor/document-editor.tsx"
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import {
   schema as generatedSchema,
@@ -349,7 +349,7 @@ export function DocumentEditor({ initialValue }: { initialValue: Value }) {
 
   generatedSchema.properties.reviewState.key;
 
-  return <Plate editor={editor} />;
+  return <EditorRoot editor={editor} />;
 }
 
 export type DocumentEditorInstance = Editor;
@@ -417,7 +417,7 @@ The result contains recursively frozen JSON data:
 | `bindings` | Installed capability names, final element types and mark keys; `authoredToggle` identifies an authored toggle command. |
 
 Compilation evaluates configuration, API factories and validators. It does
-not activate extensions or generate an initial document. The result contains
+not activate plugins or generate an initial document. The result contains
 no editor, stores or callbacks. `schema` is optional, as with editor creation.
 
 `plate generate` also emits exact application types. Its type-only
@@ -630,9 +630,9 @@ it or controlling the consumer's editor kit:
 
 ```ts
 import { PLUGINS } from 'platejs';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-const SingleBlockPlugin = definePlatePlugin(PLUGINS.singleBlock, {
+const SingleBlockPlugin = definePlugin(PLUGINS.singleBlock, {
   override: {
     [PLUGINS.trailingBlock]: {
       enabled: false,
@@ -699,7 +699,7 @@ const editor = createEditor({
   initialValue: [
     {
       type: 'paragraph',
-      children: [{ text: 'Hello, Plate!' }],
+      children: [{ text: 'Hello, EditorRoot!' }],
     },
   ],
 });
@@ -712,9 +712,12 @@ A component reads the current editor from context without repeating its plugin
 tuple:
 
 ```ts
+import { useEditor } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
+
 const editor = useEditor();
-const table = useEditorPlugin(TablePlugin);
+const table = editor.plugin(TablePlugin);
 ```
 
-Use `useEditorPlugin(Plugin)` when the component needs an exact plugin
+Use `useEditor().plugin(Plugin)` when the component needs an exact plugin
 capability. Generated application types stay at explicit static boundaries.

@@ -47,10 +47,10 @@ const editor = createEditor({
 
 ### 渲染编辑器
 
-`DndKit` 提供 HTML5 backend，并将清理绑定到每个已挂载的 Editable，包括禁用自动滚动时的清理。在 `Plate` 内渲染编辑器即可：
+`DndKit` 提供 HTML5 backend，并将清理绑定到每个已挂载的 Editable，包括禁用自动滚动时的清理。在 `EditorRoot` 内渲染编辑器即可：
 
 ```tsx
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import { DndKit } from '@/components/editor/dnd';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -58,11 +58,11 @@ export function DraggableEditor() {
   const editor = useCreateEditor({ plugins: DndKit });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -173,7 +173,7 @@ DndPlugin.configure({
 
 `editor.plugin(DndPlugin).read.dragEntries(element)` 读取当前拖拽区块及其嵌套列表项，不修改选择。
 `api.prepareDrag(element)` 选择完整拖拽内容，并返回已挂载区块的 `{ node, domNode, preview }`。
-预览副本为 inert、设置 `aria-hidden`，且不包含 Plite DOM 绑定；未挂载的选中区块仍保留在拖拽内容中。
+预览副本为 inert、设置 `aria-hidden`，且不包含 Plate DOM 绑定；未挂载的选中区块仍保留在拖拽内容中。
 预览的位置、间距和滚动补偿由组件负责。
 
 `canDropNode` 对每个拖拽区块执行检查，并提供目标 `editor` 与 `sourceEditor`。

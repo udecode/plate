@@ -1,5 +1,5 @@
 ---
-description: Clean architecture, code shape, and AI-generated sludge across Plate and Slate with source-backed delete/merge/inline/split decisions, anti-confetti proof, and agent-navigation scoring.
+description: Audit or simplify Plate/Plite code ownership through source-backed deletion, merging, inlining and focused proof.
 argument-hint: '[surface | package | docs path | broad] [audit | implement | loop | timed <duration>]'
 disable-model-invocation: true
 name: architecture-cleanup

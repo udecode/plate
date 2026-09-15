@@ -86,17 +86,17 @@ describe('BaseMediaEmbedPlugin', () => {
       safeData.getData('text/html'),
       'text/html'
     );
-    const figure = safeDocument.body.querySelector('figure.plate-media-embed');
+    const figure = safeDocument.body.querySelector('figure.editor-media-embed');
     const iframe = figure?.querySelector<HTMLElement>(':scope > iframe');
 
     expect(iframe?.getAttribute('src')).toBe('https://example.com/embed');
     expect(iframe?.hasAttribute('allowfullscreen')).toBe(true);
     expect(iframe?.style.width).toBe('640px');
     expect(iframe?.hasAttribute('srcdoc')).toBe(false);
-    expect(figure?.getAttribute('data-plate-media-url')).toBe(
+    expect(figure?.getAttribute('data-editor-media-url')).toBe(
       'https://example.com/embed'
     );
-    expect(figure?.getAttribute('data-plate-media-width')).toBe('640px');
+    expect(figure?.getAttribute('data-editor-media-width')).toBe('640px');
     expect(
       iframe?.getAttributeNames().some((name) => name.startsWith('on'))
     ).toBe(false);
@@ -131,9 +131,9 @@ describe('BaseMediaEmbedPlugin', () => {
     expect(
       safe.api.html.deserialize({
         element:
-          '<figure class="plate-media-embed" ' +
-          'data-plate-media-url="https://example.com/embed" ' +
-          'data-plate-media-width="not a width">' +
+          '<figure class="editor-media-embed" ' +
+          'data-editor-media-url="https://example.com/embed" ' +
+          'data-editor-media-width="not a width">' +
           '<figcaption>Embed caption</figcaption></figure>',
       })
     ).toEqual([
@@ -147,8 +147,8 @@ describe('BaseMediaEmbedPlugin', () => {
       safe.api.html
         .deserialize({
           element:
-            '<figure class="plate-media-embed" ' +
-            'data-plate-media-url="javascript:alert(1)">' +
+            '<figure class="editor-media-embed" ' +
+            'data-editor-media-url="javascript:alert(1)">' +
             '<figcaption>Embed caption</figcaption></figure>',
         })
         ?.some(
@@ -180,7 +180,7 @@ describe('BaseMediaEmbedPlugin', () => {
 
     expect(unsafeDocument.body.querySelector('iframe')).toBeNull();
     expect(
-      unsafeDocument.body.querySelector('[data-plite-fragment]')
+      unsafeDocument.body.querySelector('[data-editor-fragment]')
     ).not.toBeNull();
     expect(reports).toHaveLength(1);
   });

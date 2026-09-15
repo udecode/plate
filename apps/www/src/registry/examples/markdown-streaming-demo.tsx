@@ -6,9 +6,8 @@ import {
   PlayIcon,
   RotateCcwIcon,
 } from 'lucide-react';
-import { PLUGINS } from 'platejs';
-import { AIChatPlugin } from 'platejs/ai/react';
-import { Plate, useCreateEditor, useStaticEditor } from 'platejs/react';
+import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
+import { EditorRoot, useCreateEditor, useStaticEditor } from 'platejs/react';
 import {
   type HTMLAttributes,
   useEffect,
@@ -213,7 +212,7 @@ const testScenarios = {
     '.js',
     '                                     ',
     ' ',
-    '| %%PLITE_JS%%                                     ',
+    '| %%EDITOR%%                                       ',
     ' ',
     '|\n|------------------',
     '|--------------------------------',
@@ -376,7 +375,7 @@ export default function MarkdownStreamingDemo() {
         forceUpdate();
       } else {
         aiChat.update.insertChunk(chunk.chunk, {
-          textProps: { [editor.plugin(PLUGINS.ai).schema.key]: true },
+          textProps: { [editor.plugin(AIPlugin).schema.key]: true },
         });
       }
       setActiveIndex(i + 1);
@@ -411,7 +410,7 @@ export default function MarkdownStreamingDemo() {
       });
       for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
         aiChat.update.insertChunk(chunk.chunk, {
-          textProps: { [editor.plugin(PLUGINS.ai).schema.key]: true },
+          textProps: { [editor.plugin(AIPlugin).schema.key]: true },
         });
       }
     }
@@ -556,7 +555,7 @@ export default function MarkdownStreamingDemo() {
               editor={editorStatic}
             />
           ) : (
-            <Plate editor={editor}>
+            <EditorRoot editor={editor}>
               <EditorContainer className="h-[500px] overflow-y-auto rounded border">
                 <Editor
                   variant="demo"
@@ -565,7 +564,7 @@ export default function MarkdownStreamingDemo() {
                   spellCheck={false}
                 />
               </EditorContainer>
-            </Plate>
+            </EditorRoot>
           )}
         </div>
       </div>

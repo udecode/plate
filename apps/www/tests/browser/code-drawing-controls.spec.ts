@@ -1,4 +1,4 @@
-import { createPliteBrowserEditorHarness } from '@platejs/test/playwright';
+import { createBrowserEditorHarness } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 import type { Value } from 'platejs';
 
@@ -6,19 +6,19 @@ test('code, language, and view controls follow a drawing after its path changes'
   page,
 }) => {
   await page.goto('/blocks/code-drawing-demo', { waitUntil: 'commit' });
-  const root = page.locator('.plite-editor');
-  const editor = createPliteBrowserEditorHarness(
+  const root = page.locator('.editor-editor');
+  const editor = createBrowserEditorHarness(
     page,
     'code-drawing:controls',
     root
   );
   await editor.ready({ editor: 'visible', text: 'Code Drawing' });
-  const drawing = root.locator('.plite-codeDrawing');
-  await expect(drawing).toHaveAttribute('data-plite-path', '2');
+  const drawing = root.locator('.editor-codeDrawing');
+  await expect(drawing).toHaveAttribute('data-editor-path', '2');
   await editor.selection.collapse({ path: [1, 0], offset: 0 });
   await editor.focus();
   await page.keyboard.press('Enter');
-  await expect(drawing).toHaveAttribute('data-plite-path', '3');
+  await expect(drawing).toHaveAttribute('data-editor-path', '3');
   const getDrawing = async () => {
     const value = (await editor.get.modelValue()) as { children: Value };
 
@@ -40,7 +40,7 @@ test('code, language, and view controls follow a drawing after its path changes'
     language: 'graphviz',
     view: 'code',
   });
-  await expect(drawing).toHaveAttribute('data-plite-path', '3');
+  await expect(drawing).toHaveAttribute('data-editor-path', '3');
   await expect(root).toContainText('Create diagrams from code');
 });
 
@@ -49,7 +49,7 @@ test('drawing controls follow the mobile breakpoint and toolbar overflow remains
 }, testInfo) => {
   await page.setViewportSize({ width: 767, height: 844 });
   await page.goto('/blocks/code-drawing-demo', { waitUntil: 'commit' });
-  const drawing = page.locator('.plite-codeDrawing');
+  const drawing = page.locator('.editor-codeDrawing');
   const layout = drawing.locator('.my-4').first();
   const controls = drawing.getByRole('toolbar').first();
 

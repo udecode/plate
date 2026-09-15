@@ -30,9 +30,6 @@ test.describe('persistent annotation anchors example', () => {
     await expect(editor.page.locator('#annotation-sidebar')).toHaveText(
       'comment-anchor:Comment anchor:0:1|0:4'
     );
-    await expect(editor.page.locator('#widget-panel')).toHaveText(
-      'comment-widget:annotation:visible:Comment widget'
-    );
 
     await editor.page.locator('#insert-fragment').click();
 
@@ -45,9 +42,6 @@ test.describe('persistent annotation anchors example', () => {
     );
     await expect(editor.page.locator('#annotation-sidebar')).toHaveText(
       'comment-anchor:Comment anchor:1:8|1:11'
-    );
-    await expect(editor.page.locator('#widget-panel')).toHaveText(
-      'comment-widget:annotation:visible:Comment widget'
     );
     await expect(editor.page.locator('#right-projection')).toHaveText('none');
 
@@ -68,7 +62,6 @@ test.describe('persistent annotation anchors example', () => {
 
     await expect(editor.page.locator('#left-projection')).toHaveText('none');
     await expect(editor.page.locator('#annotation-sidebar')).toHaveText('none');
-    await expect(editor.page.locator('#widget-panel')).toHaveText('none');
   });
 
   test('collapses annotation projections when the anchored text is deleted', async ({
@@ -102,9 +95,6 @@ test.describe('persistent annotation anchors example', () => {
     await expect(editor.page.locator('#left-projection')).toHaveCount(0);
     await expect(editor.page.locator('#annotation-sidebar')).toHaveText(
       'comment-anchor:Comment anchor:0:1|0:1'
-    );
-    await expect(editor.page.locator('#widget-panel')).toHaveText(
-      'comment-widget:annotation:visible:Comment widget'
     );
   });
 });

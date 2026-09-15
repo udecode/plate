@@ -73,12 +73,90 @@ const cases: ReadonlyArray<
 ];
 
 describe('authored structural decisions', () => {
-  for (const [name, before, after] of cases)
-    for (const action of ['accept', 'reject'] as const)
+  it('retains each node property when one canonical delta covers multiple nodes', () => {
+    const initial = [
+      { ...paragraph('First'), align: 'start' },
+      { ...paragraph('Second'), align: 'end' },
+    ];
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: initial,
+    });
+    editor.update((tx) => {
+      tx.authored.propose();
+      tx.changes.apply(
+        DocumentChange.fromJSON({
+          version: 3,
+          primary: [
+            {
+              length: 1,
+              properties: {
+                version: 1,
+                operations: [{ type: 'set', key: 'align', value: 'center' }],
+              },
+            },
+            {
+              length: 1,
+              properties: {
+                version: 1,
+                operations: [{ type: 'set', key: 'align', value: 'center' }],
+              },
+            },
+            { length: 7 },
+            {
+              length: 1,
+              properties: {
+                version: 1,
+                operations: [{ type: 'set', key: 'align', value: 'center' }],
+              },
+            },
+            {
+              length: 1,
+              properties: {
+                version: 1,
+                operations: [{ type: 'set', key: 'align', value: 'center' }],
+              },
+            },
+            { length: 8 },
+          ],
+        })
+      );
+      assert.deepEqual(tx.children(), [
+        {
+          type: 'paragraph',
+          align: 'center',
+          children: [{ text: 'First', align: 'center' }],
+        },
+        {
+          type: 'paragraph',
+          align: 'center',
+          children: [{ text: 'Second', align: 'center' }],
+        },
+      ]);
+    });
+    const restored = createEditor({
+      plugins: [authored({ authorId: 'reviewer' })],
+      initialValue: JSON.parse(JSON.stringify(editor.read.value())),
+    });
+    assert.equal(
+      restored.update.authored.decide({
+        action: 'reject',
+        selection: restored.read.authored.select({ status: 'pending' }),
+      }).status,
+      'applied'
+    );
+    restored.update((tx) => {
+      tx.authored.propose();
+      assert.deepEqual(tx.children(), initial);
+    });
+  });
+
+  for (const [name, before, after] of cases) {
+    for (const action of ['accept', 'reject'] as const) {
       it(`${action}: ${name} survives decision and reload`, () => {
-        const extension = authored({ authorId: 'alice' });
+        const plugin = authored({ authorId: 'alice' });
         const editor = createEditor({
-          extensions: [extension],
+          plugins: [plugin],
           initialValue: before,
         });
         editor.update((tx) => {
@@ -95,7 +173,7 @@ describe('authored structural decisions', () => {
         assert.deepEqual(editor.read.children(), expected.children);
         assert.deepEqual(editor.read.value().roots ?? {}, expected.roots ?? {});
         const restored = createEditor({
-          extensions: [extension],
+          plugins: [plugin],
           initialValue: JSON.parse(JSON.stringify(editor.read.value())),
         });
         restored.update((tx) => {
@@ -104,11 +182,13 @@ describe('authored structural decisions', () => {
           assert.deepEqual(tx.value().roots ?? {}, expected.roots ?? {});
         });
       });
+    }
+  }
 
   it('keeps independent property provenance after rejecting a different property', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [authored({ authorId: () => authorId })],
+      plugins: [authored({ authorId: () => authorId })],
       initialValue: [paragraph('Text')],
     });
     let bold = '';
@@ -143,60 +223,176 @@ describe('authored structural decisions', () => {
     ]);
   });
 
-  for (const action of ['accept', 'reject'] as const)
-    it(`preserves a later accepted scalar value when attempting to ${action} an older proposal`, () => {
+  for (const scope of ['element', 'text'] as const) {
+    for (const action of ['accept', 'reject'] as const) {
+      it(`preserves a later accepted ${scope} scalar value when attempting to ${action} an older proposal`, () => {
+        let authorId = 'alice';
+        const editor = createEditor({
+          plugins: [authored({ authorId: () => authorId })],
+          initialValue: [paragraph('Text')],
+        });
+        let proposal = '';
+        const at = scope === 'element' ? [0] : [0, 0];
+        const expectedChildren =
+          scope === 'element'
+            ? [{ ...paragraph('Text'), tone: 'accepted' }]
+            : [
+                {
+                  type: 'paragraph',
+                  children: [{ text: 'Text', tone: 'accepted' }],
+                },
+              ];
+        editor.update((tx) => {
+          proposal = tx.authored.propose();
+          tx.nodes.set({ tone: 'proposal' }, { at });
+        });
+        authorId = 'bob';
+        editor.update.nodes.set({ tone: 'accepted' }, { at });
+        const accepted = editor.read.authored.changes({ authorId: 'bob' })
+          .items[0].id;
+        const before = JSON.stringify(editor.read.value());
+        const input = {
+          action,
+          selection: editor.read.authored.select({ ids: [proposal] }),
+        };
+        const expected =
+          action === 'accept'
+            ? {
+                status: 'blocked',
+                ids: [proposal],
+                dependencies: [],
+                dependants: [],
+                conflicts: [accepted],
+              }
+            : { status: 'applied', ids: [proposal] };
+        assert.deepEqual(editor.read.authored.preview(input), expected);
+        assert.deepEqual(editor.update.authored.decide(input), expected);
+        assert.deepEqual(editor.read.children(), expectedChildren);
+        if (action === 'accept') {
+          assert.equal(JSON.stringify(editor.read.value()), before);
+        }
+        const restored = createEditor({
+          plugins: [authored({ authorId: 'reviewer' })],
+          initialValue: JSON.parse(JSON.stringify(editor.read.value())),
+        });
+        restored.update((tx) => {
+          tx.authored.propose();
+          assert.deepEqual(tx.children(), expectedChildren);
+        });
+      });
+    }
+  }
+
+  it('reloads the unsuperseded properties of a partially overwritten proposal', () => {
+    let authorId = 'alice';
+    const editor = createEditor({
+      plugins: [authored({ authorId: () => authorId })],
+      initialValue: [paragraph('Text')],
+    });
+    let proposal = '';
+    editor.update((tx) => {
+      proposal = tx.authored.propose();
+      tx.nodes.set({ tone: 'proposal', align: 'center' }, { at: [0] });
+    });
+    authorId = 'bob';
+    editor.update.nodes.set({ tone: 'accepted' }, { at: [0] });
+    const restored = createEditor({
+      plugins: [authored({ authorId: 'reviewer' })],
+      initialValue: JSON.parse(JSON.stringify(editor.read.value())),
+    });
+    restored.update((tx) => {
+      tx.authored.propose();
+      assert.deepEqual(tx.children(), [
+        { ...paragraph('Text'), tone: 'accepted', align: 'center' },
+      ]);
+    });
+    assert.equal(
+      restored.update.authored.decide({
+        action: 'reject',
+        selection: restored.read.authored.select({ ids: [proposal] }),
+      }).status,
+      'applied'
+    );
+    assert.deepEqual(restored.read.children(), [
+      { ...paragraph('Text'), tone: 'accepted' },
+    ]);
+  });
+
+  for (const scalar of [false, true]) {
+    it(`reloads a proposed set after a later accepted ${scalar ? 'scalar replacement' : 'member write'}`, () => {
       let authorId = 'alice';
       const editor = createEditor({
-        extensions: [authored({ authorId: () => authorId })],
-        initialValue: [paragraph('Text')],
+        plugins: [authored({ authorId: () => authorId })],
+        initialValue: [{ ...paragraph('Text'), tags: [] }],
       });
       let proposal = '';
       editor.update((tx) => {
         proposal = tx.authored.propose();
-        tx.nodes.set({ tone: 'proposal' }, { at: [0] });
+        tx.changes.apply(
+          DocumentChange.fromJSON({
+            version: 3,
+            primary: [
+              {
+                length: 1,
+                properties: {
+                  version: 1,
+                  operations: [
+                    { type: 'add', key: 'tags', values: ['red', 'blue'] },
+                  ],
+                },
+              },
+              { length: 7 },
+            ],
+          })
+        );
       });
       authorId = 'bob';
-      editor.update.nodes.set({ tone: 'accepted' }, { at: [0] });
-      const accepted = editor.read.authored.changes({ authorId: 'bob' })
-        .items[0].id;
-      const before = JSON.stringify(editor.read.value());
-      const input = {
-        action,
-        selection: editor.read.authored.select({ ids: [proposal] }),
-      };
-      const expected =
-        action === 'accept'
-          ? {
-              status: 'blocked',
-              ids: [proposal],
-              dependencies: [],
-              dependants: [],
-              conflicts: [accepted],
-            }
-          : { status: 'applied', ids: [proposal] };
-      assert.deepEqual(editor.read.authored.preview(input), expected);
-      assert.deepEqual(editor.update.authored.decide(input), expected);
-      assert.deepEqual(editor.read.children(), [
-        { ...paragraph('Text'), tone: 'accepted' },
-      ]);
-      if (action === 'accept')
-        assert.equal(JSON.stringify(editor.read.value()), before);
+      if (scalar) {
+        editor.update.nodes.set({ tags: ['green'] }, { at: [0] });
+      } else {
+        editor.update.changes.apply(
+          DocumentChange.fromJSON({
+            version: 3,
+            primary: [
+              {
+                length: 1,
+                properties: {
+                  version: 1,
+                  operations: [{ type: 'add', key: 'tags', values: ['red'] }],
+                },
+              },
+              { length: 7 },
+            ],
+          })
+        );
+      }
       const restored = createEditor({
-        extensions: [authored({ authorId: 'reviewer' })],
+        plugins: [authored({ authorId: 'reviewer' })],
         initialValue: JSON.parse(JSON.stringify(editor.read.value())),
       });
       restored.update((tx) => {
         tx.authored.propose();
         assert.deepEqual(tx.children(), [
-          { ...paragraph('Text'), tone: 'accepted' },
+          { ...paragraph('Text'), tags: scalar ? ['green'] : ['blue', 'red'] },
         ]);
       });
+      assert.equal(
+        restored.update.authored.decide({
+          action: 'reject',
+          selection: restored.read.authored.select({ ids: [proposal] }),
+        }).status,
+        'applied'
+      );
+      assert.deepEqual(restored.read.children(), [
+        { ...paragraph('Text'), tags: scalar ? ['green'] : ['red'] },
+      ]);
     });
+  }
 
   it('reviews distinct set members independently and tracks repeated member writes', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [authored({ authorId: () => authorId })],
+      plugins: [authored({ authorId: () => authorId })],
       initialValue: [{ ...paragraph('Text'), tags: [] }],
     });
     const proposeMember = (value: string, type: 'add' | 'remove') => {
@@ -243,7 +439,7 @@ describe('authored structural decisions', () => {
       { ...paragraph('Text'), tags: ['b'] },
     ]);
     const restored = createEditor({
-      extensions: [authored({ authorId: 'reviewer' })],
+      plugins: [authored({ authorId: 'reviewer' })],
       initialValue: JSON.parse(JSON.stringify(editor.read.value())),
     });
     restored.update((tx) => {
@@ -255,7 +451,7 @@ describe('authored structural decisions', () => {
   it('treats creation of an empty named root as a prerequisite for later content', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [authored({ authorId: () => authorId })],
+      plugins: [authored({ authorId: () => authorId })],
       initialValue: base,
     });
     let root = '';
@@ -301,7 +497,7 @@ describe('authored structural decisions', () => {
       'applied'
     );
     const restored = createEditor({
-      extensions: [authored({ authorId: 'reviewer' })],
+      plugins: [authored({ authorId: 'reviewer' })],
       initialValue: JSON.parse(JSON.stringify(editor.read.value())),
     });
     restored.update((tx) => {
@@ -310,11 +506,11 @@ describe('authored structural decisions', () => {
     });
   });
 
-  for (const action of ['accept', 'reject'] as const)
+  for (const action of ['accept', 'reject'] as const) {
     it(`preserves accepted edits inside content hidden by a proposed deletion on ${action}`, () => {
       let authorId = 'alice';
       const editor = createEditor({
-        extensions: [authored({ authorId: () => authorId })],
+        plugins: [authored({ authorId: () => authorId })],
         initialValue: base,
       });
       let deletion = '';
@@ -349,7 +545,7 @@ describe('authored structural decisions', () => {
       ]);
       if (action === 'reject') {
         const restored = createEditor({
-          extensions: [authored({ authorId: 'reviewer' })],
+          plugins: [authored({ authorId: 'reviewer' })],
           initialValue: JSON.parse(JSON.stringify(editor.read.value())),
         });
         restored.update((tx) => {
@@ -361,8 +557,9 @@ describe('authored structural decisions', () => {
         });
       }
     });
+  }
 
-  for (const action of ['accept', 'reject'] as const)
+  for (const action of ['accept', 'reject'] as const) {
     it(`retains lifecycle dependencies when a deleted root name is reused: ${action}`, () => {
       let authorId = 'alice';
       const original = {
@@ -374,7 +571,7 @@ describe('authored structural decisions', () => {
         roots: { note: [paragraph('Replacement')] },
       };
       const editor = createEditor({
-        extensions: [authored({ authorId: () => authorId })],
+        plugins: [authored({ authorId: () => authorId })],
         initialValue: original,
       });
       let first = '';
@@ -403,7 +600,7 @@ describe('authored structural decisions', () => {
       const expected = action === 'accept' ? replacement : original;
       assert.deepEqual(editor.read.value().roots, expected.roots);
       const restored = createEditor({
-        extensions: [authored({ authorId: 'reviewer' })],
+        plugins: [authored({ authorId: 'reviewer' })],
         initialValue: JSON.parse(JSON.stringify(editor.read.value())),
       });
       restored.update((tx) => {
@@ -411,11 +608,12 @@ describe('authored structural decisions', () => {
         assert.deepEqual(tx.value().roots, expected.roots);
       });
     });
+  }
 
   it('keeps accepted operation identities when one transaction edits hidden and visible content', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [authored({ authorId: () => authorId })],
+      plugins: [authored({ authorId: () => authorId })],
       initialValue: base,
     });
     let deletion = '';
@@ -429,7 +627,7 @@ describe('authored structural decisions', () => {
       tx.text.insert(' shown', { at: { path: [1, 0], offset: 6 } });
     });
     const restored = createEditor({
-      extensions: [authored({ authorId: 'reviewer' })],
+      plugins: [authored({ authorId: 'reviewer' })],
       initialValue: JSON.parse(JSON.stringify(editor.read.value())),
     });
     restored.update((tx) => {
@@ -454,7 +652,7 @@ describe('authored structural decisions', () => {
 
   it('refuses an accepted deletion that would consume a pending contribution', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: base,
     });
     let proposal = '';
@@ -482,7 +680,7 @@ describe('authored structural decisions', () => {
 
   it('deletes proposed text through the native text command and keeps accepted anchors separate', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('')],
     });
     const anchor = editor.anchor(
@@ -521,7 +719,7 @@ describe('authored structural decisions', () => {
     assert.deepEqual(editor.read.children(), [paragraph('Seed')]);
     anchor.release();
     const restored = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: JSON.parse(JSON.stringify(editor.read.value())),
     });
     assert.deepEqual(restored.read.children(), [paragraph('Seed')]);

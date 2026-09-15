@@ -11,7 +11,7 @@ const getDateDisplayLabelMock = mock((value: string) => {
 });
 
 mock.module('platejs/static', () => ({
-  PliteElement: ({ children }: React.ComponentProps<'span'>) => (
+  EditorElement: ({ children }: React.ComponentProps<'span'>) => (
     <span>{children}</span>
   ),
 }));

@@ -1,7 +1,7 @@
 'use client';
 
 import { Link } from 'lucide-react';
-import { useEditor, useEditorPlugin, useEditorSelector } from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 import * as React from 'react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
@@ -12,7 +12,7 @@ export function LinkToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
   const editor = useEditor();
-  const { api } = useEditorPlugin(linkPlugin);
+  const { api } = useEditor().plugin(linkPlugin);
   const pressed = useEditorSelector((innerEditor) => {
     const selection = innerEditor.read.selection();
 
@@ -41,7 +41,7 @@ export function LinkToolbarButton(
           api.trigger({ focused: true });
         }
       }}
-      data-plite-keep-selection-visible
+      data-editor-keep-selection-visible
       tooltip="Link"
     >
       <Link />

@@ -1,9 +1,4 @@
-import {
-  defineBasePlugin,
-  type ElementOf,
-  property,
-  PLUGINS,
-} from '../../core';
+import { definePlugin, type ElementOf, property, PLUGINS } from '../../core';
 
 export const CODE_DRAWING_LANGUAGES = [
   'flowchart',
@@ -19,7 +14,7 @@ export const CODE_DRAWING_VIEWS = ['code', 'preview', 'split'] as const;
 export type CodeDrawingView = (typeof CODE_DRAWING_VIEWS)[number];
 
 /** Enables support for PlantUML, Graphviz, Flowchart, and Mermaid drawings. */
-export const BaseCodeDrawingPlugin = defineBasePlugin(PLUGINS.codeDrawing, {
+export const BaseCodeDrawingPlugin = definePlugin(PLUGINS.codeDrawing, {
   codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {

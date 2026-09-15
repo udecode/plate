@@ -14,7 +14,7 @@ registries finish a descriptor with one terminal `.configure()` call, including
 | `.extend()` | Adapt an imported/prebuilt descriptor, use a constructor-inaccessible shared factory, or consume an earlier-stage type. | Widens the plugin type. |
 | `.configure()` | Override existing fields for one consumer. | Terminal and non-widening. |
 
-`defineBasePlugin()` and `definePlatePlugin()` own every independent author
+`definePlugin()` and `definePlugin()` own every independent author
 contribution:
 
 | Field | Owns |
@@ -24,7 +24,7 @@ contribution:
 | `read` | Snapshot or transaction-local reads. |
 | `selectors` | Pure state-first derivations, including React subscriptions. |
 | `update` | Transaction-bound plugin mutations. |
-| Native Plite fields | Read middleware, commands, corrections, state/effect/facet/selection descriptors, contributions, lifecycle, activation, and validation. |
+| Editor fields | Read middleware, commands, corrections, state/effect/facet/selection descriptors, contributions, lifecycle, activation, and validation. |
 | `codecs` | Plugin-owned format decoding and encoding. |
 
 Callbacks receive the inferred [Plugin Context](/docs/plugin-context), including
@@ -38,13 +38,13 @@ Put independent fields and their context callbacks in the constructor. Use
 earlier stage.
 
 ```tsx title="counter-plugin.tsx" showLineNumbers
-import { definePlatePlugin, usePluginStore } from 'platejs/react';
+import { definePlugin, usePluginStore } from 'platejs/react';
 
 export type CounterPluginState = {
   value: number;
 };
 
-export const CounterPlugin = definePlatePlugin('counter', {
+export const CounterPlugin = definePlugin('counter', {
   api: ({ store }) => ({
     isEmpty: () => store.get('value') === 0,
   }),
@@ -87,31 +87,33 @@ editor.plugin(CounterPlugin).update.insertLabel();
 ```
 
 Inside a later update contribution, reuse an earlier update through the active
-transaction group:
+transaction selector. Pass the capability name when the caller should not take
+a descriptor dependency:
 
 ```ts
 export const CounterPairPlugin = CounterPlugin.extend(() => ({
   update: ({ tx }) => ({
     insertPair: () => {
-      tx.plugin(CounterPlugin).insertLabel();
-      tx.plugin(CounterPlugin).insertLabel();
+      tx.plugin(CounterPlugin.name).insertLabel();
+      tx.plugin(CounterPlugin.name).insertLabel();
     },
   }),
 }));
 ```
 
-Calling a portal one-shot update there would open a nested transaction.
+The selector reuses the active transaction. Calling an editor portal one-shot
+update there would open a nested transaction.
 
-## Install Plite capabilities
+## Commands
 
-Declare generic editor substrate directly on the plugin: schema, commands,
+Declare editor behavior directly on the plugin: schema, commands,
 corrections, read middleware, state/effect/facet/selection descriptors,
 contributions, lifecycle, activation, and validation.
 
 ```ts title="single-line-plugin.ts" showLineNumbers
-import { defineBasePlugin, editorCommands } from 'platejs';
+import { definePlugin, editorCommands } from 'platejs';
 
-export const SingleLinePlugin = defineBasePlugin('singleLine', {
+export const SingleLinePlugin = definePlugin('singleLine', {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction(() => {})
@@ -120,15 +122,15 @@ export const SingleLinePlugin = defineBasePlugin('singleLine', {
 });
 ```
 
-Native callbacks receive only their Plite capability context. When one needs
+Command and correction callbacks receive their declared capability context. When one needs
 an earlier plugin-owned store, read, API, or update group, add one staged
 `.extend()` and close over that capability. Do not pass owner context through a
 new helper parameter:
 
 ```ts title="trigger-plugin.ts" showLineNumbers
-import { defineBasePlugin, editorCommands } from 'platejs';
+import { definePlugin, editorCommands } from 'platejs';
 
-export const TriggerPlugin = defineBasePlugin('trigger', {
+export const TriggerPlugin = definePlugin('trigger', {
   initialState: { enabled: true },
 }).extend(({ store }) => ({
   commands: ({ handle }) => [
@@ -141,13 +143,31 @@ export const TriggerPlugin = defineBasePlugin('trigger', {
 }));
 ```
 
-For an independently reusable Plite descriptor, import
-`defineExtension` from `platejs` and list the descriptor in
+For an independently reusable Plate descriptor, import
+`definePlugin` from `platejs` and list the descriptor in
 `dependencies`.
 
 Plugin-specific and editor-wide host services share the root `api` channel;
-Plite projects that API under the plugin name. Do not publish the same
+Plate projects that API under the plugin name. Do not publish the same
 implementation twice.
+
+### Pure command builders
+
+Use `defineCommand` from `platejs` when an action needs a typed, reusable intent
+that handlers can intercept. Its builder returns `false` or a frozen
+`TransactionSpec`. `state.transaction(...)` constructs that spec without
+publishing; `editor.update.command(descriptor, input)` applies the handled spec
+in one update.
+
+Both `state.transaction(...)` and `state.transaction.extend(...)` callbacks
+must finish synchronously. A returned Promise or thenable throws and discards
+the draft. Complete asynchronous work before building the command.
+
+Use `handle(descriptor, handler)` for fallback policy. Returning `false` runs the
+next handler or descriptor default. Use `around(descriptor, handler)` when the
+policy must rewrite downstream input or compose a prefix. Its `next.after(prefix)`
+evaluates downstream behavior against the state produced by that prefix.
+Plugin order determines handler order; the descriptor preserves input inference.
 
 ## Declare product codecs
 
@@ -156,9 +176,9 @@ inline inference anchor for codec callbacks.
 
 ```ts title="records-plugin.ts" showLineNumbers
 import { ContentSlice } from 'platejs';
-import { defineBasePlugin } from 'platejs';
+import { definePlugin } from 'platejs';
 
-export const RecordsPlugin = defineBasePlugin('records', {
+export const RecordsPlugin = definePlugin('records', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'application/json': {
@@ -228,13 +248,13 @@ type CellPluginState = {
   padding: number;
 };
 
-const CellPlugin = definePlatePlugin('cell', {
+const CellPlugin = definePlugin('cell', {
   initialState: {
     padding: 12,
   } satisfies CellPluginState,
 });
 
-const GridPlugin = definePlatePlugin('grid', {
+const GridPlugin = definePlugin('grid', {
   dependencies: [CellPlugin],
 });
 
@@ -249,24 +269,24 @@ derived from the same authored plugin compose in array order: earlier fields
 survive unless a later configuration defines the same field. Unrelated plugins
 and divergent authoring branches cannot share a name.
 
-## Convert Plite plugins
+## Add React bindings
 
-Use `toPlatePlugin()` in the owning React entrypoint to publish a reusable
-Plate descriptor or add Plate-only behavior. App consumers do not insert a
+Use `toReactPlugin()` in the owning React entrypoint to add React behavior to a reusable
+headless plugin. App consumers do not insert a
 conversion merely to set a component.
 
 ```tsx title="script-plugin.tsx" showLineNumbers
 import { BaseScriptPlugin } from 'platejs';
-import { PlateLeaf, toPlatePlugin } from 'platejs/react';
+import { EditorLeaf, toReactPlugin } from 'platejs/react';
 
-export const ScriptPlugin = toPlatePlugin(BaseScriptPlugin, {
+export const ScriptPlugin = toReactPlugin(BaseScriptPlugin, {
   component: (props) => (
-    <PlateLeaf
+    <EditorLeaf
       {...props}
       as={props.leaf.script === 'sub' ? 'sub' : 'sup'}
     >
       {props.children}
-    </PlateLeaf>
+    </EditorLeaf>
   ),
 });
 ```

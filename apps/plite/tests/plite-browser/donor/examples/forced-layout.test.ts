@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 
 test.describe('forced layout example', () => {
   const elements = [
-    { tag: '[data-plite-example="forced-layout"] h2', count: 1 },
-    { tag: '[data-plite-example="forced-layout"] p', count: 1 },
+    { tag: '[data-editor-example="forced-layout"] h2', count: 1 },
+    { tag: '[data-editor-example="forced-layout"] p', count: 1 },
   ];
 
   test.beforeEach(async ({ page }) => {

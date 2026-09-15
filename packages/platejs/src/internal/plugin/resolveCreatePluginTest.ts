@@ -6,5 +6,5 @@ export const resolvePluginTest = (plugin: BasePluginInput) => {
     plugins: [plugin],
   });
 
-  return editor.plugin(plugin.name);
+  return editor.plugin(plugin);
 };

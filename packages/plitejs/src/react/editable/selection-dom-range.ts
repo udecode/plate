@@ -7,6 +7,8 @@ import {
 } from '../..';
 import { isDOMElement, isDOMText } from '../../dom';
 import {
+  getPliteStringLength,
+  getPliteTextHostBounds,
   getPliteTextHostStrings,
   resolveDOMTextFlowEntry,
   resolveDOMTextFlowOffset,
@@ -55,9 +57,9 @@ const resolvePliteTextPointFromDOMPoint = (
     : isDOMElement(anchorNode)
       ? anchorNode
       : null;
-  const textHost = anchorElement?.closest('[data-plite-node="text"]');
+  const textHost = anchorElement?.closest('[data-editor-node="text"]');
   const stringHost = anchorElement?.closest(
-    '[data-plite-string], [data-plite-zero-width]'
+    '[data-editor-string], [data-editor-zero-width]'
   );
 
   if (!anchorNode || !textHost || !stringHost) {
@@ -71,7 +73,7 @@ const resolvePliteTextPointFromDOMPoint = (
 
   if (requireCurrentRuntimeBinding) {
     const nodeKey = textHost.getAttribute(
-      'data-plite-node-key'
+      'data-editor-node-key'
     ) as NodeKey | null;
     const currentPath = nodeKey
       ? editorGetPathByNodeKey(editor, nodeKey)
@@ -100,15 +102,9 @@ const resolvePliteTextPointFromDOMPoint = (
   }
 
   const strings = getPliteTextHostStrings(textHost);
-  let offset = 0;
+  let offset = getPliteTextHostBounds(textHost).start;
 
   for (const string of strings) {
-    const lengthAttribute = string.getAttribute('data-plite-length');
-    const length =
-      lengthAttribute == null
-        ? (string.textContent?.length ?? 0)
-        : Number.parseInt(lengthAttribute, 10);
-
     if (string === stringHost) {
       const nextOffset = Math.max(
         0,
@@ -118,7 +114,7 @@ const resolvePliteTextPointFromDOMPoint = (
       return { path, offset: nextOffset };
     }
 
-    offset += Number.isFinite(length) ? length : 0;
+    offset += getPliteStringLength(string);
   }
 
   return null;

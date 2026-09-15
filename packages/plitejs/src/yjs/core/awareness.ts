@@ -7,9 +7,9 @@ import {
   readYjsAwarenessRelativeSelection,
 } from './awareness-relative-selection';
 import {
-  pliteRangeToYjsRelativeRange,
+  rangeToYjsRelativeRange,
   yjsRelativeRangesEqual,
-  yjsRelativeRangeToPliteRange,
+  yjsRelativeRangeToRange,
 } from './selection';
 import type { YjsAwarenessSelection } from './types';
 
@@ -18,7 +18,7 @@ export const createYjsAwarenessSelection = (
   rootKey: string,
   range: Range
 ): YjsAwarenessSelection => {
-  const relative = pliteRangeToYjsRelativeRange(root, range);
+  const relative = rangeToYjsRelativeRange(root, range);
 
   return {
     anchor: Y.relativePositionToJSON(relative.anchor),
@@ -40,7 +40,7 @@ export const readYjsAwarenessSelection = (
 
     if (root === null) return null;
 
-    const range = yjsRelativeRangeToPliteRange(root, relativeSelection.range);
+    const range = yjsRelativeRangeToRange(root, relativeSelection.range);
 
     if (range === null || relativeSelection.root === 'main') return range;
 

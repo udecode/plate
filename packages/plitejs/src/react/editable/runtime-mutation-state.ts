@@ -1,5 +1,7 @@
 import type { EditorMarks, EditorTargetRuntime } from '../..';
-import { type AnyEditor, getActiveEditorTransaction } from '../../internal';
+import { withAuthoredUpdateView } from '../../core/authored-runtime';
+import { getActiveEditorTransaction } from '../../core/public-state';
+import type { AnyEditor } from '../../interfaces/editor';
 import {
   getEditorRuntimeOwner,
   setEditorMarks,
@@ -13,10 +15,11 @@ export const writeRuntimeSelection = (
 ) => {
   if (editor.read.view.isReadOnly()) {
     const owner = getEditorRuntimeOwner(editor);
-    // A read-only view forbids commands, not the document owner's selection.
-    withEditorUpdateRootScope(owner, editor.read.view.root(), () => {
-      owner.update((tx) => tx.selection.set(target));
-    });
+    withAuthoredUpdateView(owner, editor, () =>
+      withEditorUpdateRootScope(owner, editor.read.view.root(), () => {
+        owner.update((tx) => tx.selection.set(target));
+      })
+    );
     return;
   }
   const transaction = getActiveEditorTransaction(editor);

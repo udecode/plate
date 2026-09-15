@@ -3,13 +3,13 @@
 import { useDraggable } from 'platejs/dnd/react';
 import { ImagePlugin } from 'platejs/media/react';
 import {
-  PlateElement,
+  EditorElement,
   useEditor,
   useEditorFocused,
   useElementSelected,
   usePath,
   usePluginStore,
-  type PlateElementProps,
+  type EditorElementProps,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -24,7 +24,7 @@ import {
   ResizeHandle,
 } from './resize-handle';
 
-export function ImageElement(props: PlateElementProps<typeof imagePlugin>) {
+export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
   const path = usePath();
   const focused = useEditorFocused();
   const selected = useElementSelected({ mode: 'node' });
@@ -48,8 +48,8 @@ export function ImageElement(props: PlateElementProps<typeof imagePlugin>) {
       plugin={ImagePlugin}
       selected={selected}
     >
-      <PlateElement {...props} className="py-2.5">
-        <figure className="relative m-0 hover:[&_.plite-media-resize-handle]:after:opacity-100">
+      <EditorElement {...props} className="py-2.5">
+        <figure className="relative m-0 hover:[&_.editor-media-resize-handle]:after:opacity-100">
           <div contentEditable={false}>
             <Resizable
               align={textAlign}
@@ -100,7 +100,7 @@ export function ImageElement(props: PlateElementProps<typeof imagePlugin>) {
             {props.children}
           </Caption>
         </figure>
-      </PlateElement>
+      </EditorElement>
     </MediaToolbar>
   );
 }

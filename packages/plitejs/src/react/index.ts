@@ -4,24 +4,19 @@ export * from '..';
 
 // Utils
 export type {
-  PliteAnnotation,
-  PliteAnnotationAnchor,
-  PliteAnnotationChange,
-  PliteAnnotationRefreshOptions,
-  PliteAnnotationSnapshot,
-  PliteAnnotationStore,
-  PliteAnnotationStoreMetrics,
-  PliteAnnotationStoreOptions,
-  PliteResolvedAnnotation,
+  Annotation,
+  AnnotationAnchor,
+  AnnotationChange,
+  AnnotationRefreshOptions,
+  AnnotationSnapshot,
+  AnnotationStore,
+  AnnotationStoreMetrics,
+  AnnotationStoreOptions,
+  ResolvedAnnotation,
 } from '../annotations';
 export type {
   EditableDOMBeforeInputContext,
   EditableDOMBeforeInputHandler,
-  EditableDOMStrategyCohort,
-  EditableDOMStrategyDegradationMode,
-  EditableDOMStrategyEffectiveType,
-  EditableDOMStrategyMetrics,
-  EditableDOMStrategyMetricsBase,
   EditableHandlerResult,
   EditableInputEventContext,
   EditableKeyDownContext,
@@ -56,30 +51,22 @@ export type {
   ExternalTextView,
 } from './external-text';
 export {
-  Plite,
-  type PliteCommitContext,
-  type PliteProps,
-  type PliteSelectionChangeContext,
-  type PliteValueChangeContext,
+  EditorRoot,
+  type CommitContext,
+  type EditorRootProps,
+  type SelectionChangeContext,
+  type ValueChangeContext,
 } from './components/plite';
-export { PliteElement } from './components/plite-element';
-export { PliteLeaf } from './components/plite-leaf';
-export { PlitePlaceholder } from './components/plite-placeholder';
-export { PliteText } from './components/plite-text';
+export { EditorElement } from './components/plite-element';
+export { EditorLeaf } from './components/plite-leaf';
+export { EditorPlaceholder } from './components/plite-placeholder';
+export { EditorText } from './components/plite-text';
 export type {
-  PliteDecorationAttributes,
-  PliteDecoration,
-  PliteDecorationRefresh,
-  PliteDecorationSource,
+  DecorationAttributes,
+  Decoration,
+  DecorationRefresh,
+  DecorationSource,
 } from './decoration-source';
-export type {
-  DOMStrategyOptions,
-  DOMStrategyType,
-  DOMStrategyVirtualizedLayout,
-  VirtualizedPageLayoutItem,
-  VirtualizedTopLevelLayoutItem,
-} from './dom-strategy/create-segment-plan';
-export { useDOMStrategyVirtualOffset } from './hooks/use-dom-strategy-virtual-offset';
 export {
   useEditorContext,
   useOptionalEditorContext,
@@ -129,19 +116,19 @@ export {
   useTextSelector,
 } from './hooks/use-node-selector';
 export {
-  type UsePliteAnnotationStoreOptions,
-  usePliteAnnotationStore,
+  type UseAnnotationStoreOptions,
+  useAnnotationStore,
 } from './hooks/use-plite-annotation-store';
 export {
-  PliteAnnotationProvider,
-  usePliteAnnotation,
-  usePliteAnnotations,
+  AnnotationProvider,
+  useAnnotation,
+  useAnnotations,
 } from './hooks/use-plite-annotations';
-export { usePliteChildRoot } from './hooks/use-plite-child-root';
+export { useChildRoot } from './hooks/use-plite-child-root';
 export {
-  type PliteContentRootController,
-  type UsePliteContentRootOptions,
-  usePliteContentRoot,
+  type ContentRootController,
+  type UseContentRootOptions,
+  useContentRoot,
 } from './hooks/use-plite-content-root';
 export { type UseEditorOptions, useEditor } from './hooks/use-editor';
 export { useClaimEditableDOMCommit } from './hooks/use-claim-editable-dom-commit';
@@ -150,50 +137,32 @@ export {
   setDOMTextSyncRendererCapability,
 } from './dom-text-sync';
 export {
-  type PliteHistoryController,
-  type PliteHistoryFocusPolicy,
-  type UsePliteHistoryOptions,
-  usePliteHistory,
+  type EditorHistoryController,
+  type EditorHistoryFocusPolicy,
+  type UseEditorHistoryOptions,
+  useEditorHistory,
 } from './hooks/use-plite-history';
 export {
-  type PliteRootChromeController,
-  type UsePliteRootChromeOptions,
-  usePliteRootChrome,
+  type RootChromeController,
+  type UseRootChromeOptions,
+  useRootChrome,
 } from './hooks/use-plite-root-chrome';
 export {
-  type PliteCommandFocusPolicy,
-  type PliteRootEditor,
-  PliteRuntime,
-  type PliteRuntimeProps,
-  type PliteRuntimeStateSelectorOptions,
-  type PliteRuntimeValue,
-  type PliteCommandDispatcher,
-  type UsePliteCommandOptions,
-  type UsePliteRootEditorOptions,
-  type UsePliteRootEffectOptions,
-  type UsePliteRuntimeOptions,
-  usePliteActiveEditor,
-  usePliteActiveRoot,
-  usePliteCommand,
-  usePliteRootEditor,
-  usePliteRootEffect,
-  usePliteRootState,
-  usePliteRuntime,
-  usePliteRuntimeState,
+  type CommandFocusPolicy,
+  type RootEditor,
+  type RuntimeStateSelectorOptions,
+  type CommandDispatcher,
+  type UseCommandOptions,
+  type UseRootEditorOptions,
+  type UseRootEffectOptions,
+  useActiveEditor,
+  useActiveRoot,
+  useCommand,
+  useRootEditor,
+  useRootEffect,
+  useRootState,
+  useRuntimeState,
 } from './hooks/use-plite-runtime';
-export {
-  type UsePliteWidgetStoreOptions,
-  usePliteWidgetStore,
-} from './hooks/use-plite-widget-store';
-export {
-  type UsePliteWidgetGeometryOptions,
-  usePliteWidgetGeometry,
-} from './hooks/use-plite-widget-geometry';
-export {
-  usePliteWidget,
-  usePliteWidgetIds,
-  usePliteWidgets,
-} from './hooks/use-plite-widgets';
 export {
   type UseSelectionGeometryOptions,
   useSelectionGeometry,
@@ -210,25 +179,16 @@ export {
   createEditor,
   type Editor,
   type ReactApi,
-  type ReactExtensionOptions,
-  type ReactExtension,
+  type ReactPluginOptions,
+  type ReactPlugin,
   react,
 } from './plugin/with-react';
-export { PliteReactUpdatePolicy } from './update-policy';
+export { ReactUpdatePolicy } from './update-policy';
+export type { RangeGeometry, ViewportRect } from './range-geometry';
 export type {
-  PliteResolvedWidget,
-  PliteWidget,
-  PliteWidgetSnapshot,
-  PliteWidgetStore,
-  PliteWidgetStoreMetrics,
-  PliteWidgetStoreOptions,
-  PliteWidgetTarget,
-} from './widget-store';
-export type { PliteViewportRect, PliteWidgetGeometry } from './widget-geometry';
-export type {
-  PliteViewSourceError,
-  PliteViewSourceErrorSink,
-  PliteViewSourceOptions,
-  PliteViewSourcePhase,
-  PliteViewSourceStatus,
+  ViewSourceError,
+  ViewSourceErrorSink,
+  ViewSourceOptions,
+  ViewSourcePhase,
+  ViewSourceStatus,
 } from '../internal/view/view-source';

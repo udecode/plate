@@ -1,21 +1,21 @@
 import { expect, test } from '@playwright/test';
 import {
-  createPliteBrowserEditorHarness,
+  createBrowserEditorHarness,
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 
 test('publishes schema-only behavior atomically across primary, named, and projected roots', async ({
   page,
 }) => {
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openExample(page, 'plite/schema-reconfiguration', {
       ready: { editor: 'visible', text: 'probe' },
       surface: { scope: '#schema-reconfiguration-main' },
     });
-    const primary = createPliteBrowserEditorHarness(
+    const primary = createBrowserEditorHarness(
       page,
       'schema-reconfiguration-main',
       page.locator('#schema-reconfiguration-main')
@@ -27,12 +27,12 @@ test('publishes schema-only behavior atomically across primary, named, and proje
       page.locator('#schema-reconfiguration-projected'),
     ];
     const probe = (root: (typeof roots)[number]) =>
-      root.locator(':scope > [data-plite-node="element"][data-plite-path="0"]');
+      root.locator(':scope > [data-editor-node="element"][data-editor-path="0"]');
     const status = page.getByTestId('schema-reconfiguration-status');
     const document = page.getByTestId('schema-reconfiguration-document');
     const initialDocument = await document.textContent();
     const initialNodeKeys = await Promise.all(
-      roots.map((root) => probe(root).getAttribute('data-plite-node-key'))
+      roots.map((root) => probe(root).getAttribute('data-editor-node-key'))
     );
     const expectDocumentAndNodeKeysStable = async () => {
       await expect
@@ -40,7 +40,7 @@ test('publishes schema-only behavior atomically across primary, named, and proje
         .toEqual(JSON.parse(initialDocument ?? 'null'));
       expect(
         await Promise.all(
-          roots.map((root) => probe(root).getAttribute('data-plite-node-key'))
+          roots.map((root) => probe(root).getAttribute('data-editor-node-key'))
         )
       ).toEqual(initialNodeKeys);
     };
@@ -58,17 +58,17 @@ test('publishes schema-only behavior atomically across primary, named, and proje
     for (const root of roots) {
       await expect(probe(root)).toHaveCount(1);
       await expect(probe(root)).not.toHaveAttribute(
-        'data-plite-inline',
+        'data-editor-inline',
         'true'
       );
-      await expect(probe(root)).not.toHaveAttribute('data-plite-void', 'true');
+      await expect(probe(root)).not.toHaveAttribute('data-editor-void', 'true');
     }
 
     await page.getByRole('button', { name: 'Use inline schema' }).click();
 
     for (const root of roots) {
-      await expect(probe(root)).toHaveAttribute('data-plite-inline', 'true');
-      await expect(probe(root)).not.toHaveAttribute('data-plite-void', 'true');
+      await expect(probe(root)).toHaveAttribute('data-editor-inline', 'true');
+      await expect(probe(root)).not.toHaveAttribute('data-editor-void', 'true');
     }
     await expectSchemaOnlyPublication(
       'inline:true;void:false;readOnly:false;selectable:true;document:unchanged'
@@ -78,10 +78,10 @@ test('publishes schema-only behavior atomically across primary, named, and proje
 
     for (const root of roots) {
       await expect(probe(root)).not.toHaveAttribute(
-        'data-plite-inline',
+        'data-editor-inline',
         'true'
       );
-      await expect(probe(root)).toHaveAttribute('data-plite-void', 'true');
+      await expect(probe(root)).toHaveAttribute('data-editor-void', 'true');
     }
     await expect(page.getByTestId('schema-reconfiguration-void')).toHaveCount(
       3

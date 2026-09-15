@@ -3,7 +3,7 @@
 import {
   CodeBlockPlugin,
   CodeHighlightPlugin,
-  Plate,
+  EditorRoot,
   useCreateEditor,
 } from 'platejs/react';
 
@@ -30,10 +30,10 @@ export default function CodeBlockCodeMirrorDemo({ id }: { id: string }) {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer variant="demo">
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

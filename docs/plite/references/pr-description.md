@@ -47,7 +47,7 @@ Current summary:
   improved claims from that sync: `0`.
 - Plate-fit API hard-cut sync reverses the earlier raw Plite renderer/key
   helper target: raw Plite keeps `Editable render*` and browser event props,
-  model/runtime behavior stays in extensions, and Plate owns renderer/keymap
+  model/runtime behavior stays in plugins, and Plate owns renderer/keymap
   product packaging. New exact fixed or improved claims from that sync: `0`.
 - Table transform-boundary sync clarifies that Backspace/Delete/Enter table-cell
   boundary behavior, markdown Enter/Backspace model behavior, and richtext
@@ -275,31 +275,31 @@ Accepted current shape:
 - Reads use state accessors and plain helper functions.
 - Writes use transaction methods.
 - Primitive editor methods live on the editor instance.
-- Extensions use owner-local `api`, `read`, and `update` factories. Plite
-  publishes their results under the extension name.
+- Plugins use owner-local `api`, `read`, and `update` factories. Plite
+  publishes their results under the plugin name.
 - `EditorCommit` is the post-commit truth object for subscribers and integration
   layers.
 - Collaboration adapters lower canonical `DocumentChange` values into their
   transport and import remote events as canonical changes. Typed commit metadata,
   anchors, and local runtime targets stay separate from adapter-specific APIs.
 - The public `Editor.*` static method namespace is not the v2 teaching or
-  extension surface.
+  plugin surface.
 - Public data helper values use `*Api` names such as `NodeApi`, `ElementApi`,
   `PathApi`, and `RangeApi`; model type names stay `Node`, `Element`, `Path`,
   and `Range`.
-- Editors compose behavior through creation-time `extensions`, not public
+- Editors compose behavior through creation-time `plugins`, not public
   `with*` wrappers, `withEditor`, or author-facing `editor.extend`.
-- Built-in packages expose lowercase extension factories such as `history()`,
+- Built-in packages expose lowercase plugin factories such as `history()`,
   `dom()`, and `react({ dom })`. React receives the exact DOM descriptor it
   installs as a dependency.
-- Custom extension factories use the same lower camel-case singular shape, such
+- Custom plugin factories use the same lower camel-case singular shape, such
   as `editableVoid()`, `checklist()`, `mention()`, or `table()`. Plural names
   are reserved for naturally plural domains such as `shortcuts()` or
-  `normalizers()`. PascalCase `NameExtension` is reserved for static extension
+  `normalizers()`. PascalCase `NamePlugin` is reserved for static plugin
   values. Plate's `NamePlugin` suffix belongs to Plate's product plugin layer,
-  not raw Plite extensions.
-- Replayable extension reads live under `editor.read((state) => state.<group>)`;
-  replayable extension writes/actions live under
+  not raw Plite plugins.
+- Replayable plugin reads live under `editor.read((state) => state.<group>)`;
+  replayable plugin writes/actions live under
   `editor.update((tx) => tx.<group>)`.
 - Installed runtime/control APIs live under `editor.api.<extensionName>`, so
   history controls use `editor.api.history`, DOM/React runtime APIs use
@@ -307,13 +307,13 @@ Accepted current shape:
   `editor.api.dom.clipboard`, and public editor-bound helper namespaces such as
   `HistoryEditor`, `DOMEditor`, and a runtime `ReactEditor` namespace are not
   app-facing APIs. The app-facing React editor instance type is the generic
-  extension-derived `ReactEditor<Value, Extensions>`.
-- Each extension installs one name-scoped API object. Split independently
+  plugin-derived `ReactEditor<Value, Plugins>`.
+- Each plugin installs one name-scoped API object. Split independently
   installable capabilities into their own descriptors instead of publishing
   parallel root handles.
-- Generic extension-aware code uses
-  `editor.extension(extensionToken).api`, where the token is the branded factory
-  or static extension value. String lookup and a fresh factory result are not
+- Generic plugin-aware code uses
+  `editor.plugin(extensionToken).api`, where the token is the branded factory
+  or static plugin value. String lookup and a fresh factory result are not
   descriptor portals.
 - Type tests include negative contracts for uninstalled APIs, string-based
   portal lookup, and fresh-instance lookup.
@@ -325,8 +325,8 @@ Accepted current shape:
 - Element void config is string-only: `void: 'block'`,
   `void: 'inline'`, or `void: 'markable-inline'`. Absence means non-void; `void: true` is fixture
   data only when a matcher maps it to an explicit schema spec.
-- Mutable editor fields, direct `apply` extension points, direct `onChange`
-  extension points, and `Transforms.*` teaching are outside the final public
+- Mutable editor fields, direct `apply` plugin points, direct `onChange`
+  plugin points, and `Transforms.*` teaching are outside the final public
   posture.
 
 Why it belongs in the PR:
@@ -486,9 +486,9 @@ Accepted current shape:
   payloads and embedded `data-plite-fragment` HTML fallback. Mismatched
   embedded fragments fall back to safe import behavior instead of importing
   schema-private JSON.
-- DOM adapter settings are passed to extension factories, not wrappers:
+- DOM adapter settings are passed to plugin factories, not wrappers:
   `dom({ clipboardFormatKey: 'x-product-fragment' })` in the editor
-  `extensions` list.
+  `plugins` list.
 - `DOMClipboardInsertDataHandler` is public from `plite-dom`; app-owned rich
   HTML/image paste behavior runs through typed clipboard ingress authoring.
 - Foreign or malformed internal fragment payloads must fail closed and fall
@@ -561,7 +561,7 @@ Proof references:
 - `.tmp/completion-checks/plite-clawsweeper-v2-clipboard-fragment-insertion-shape-execution.md`
 - `.tmp/completion-checks/plite-clawsweeper-v2-clipboard-inline-void-execution.md`
 - `.tmp/completion-checks/plite-clawsweeper-v2-clipboard-structural-cut-delete-execution.md`
-- `.tmp/completion-checks/plite-clawsweeper-v2-clipboard-api-extension-surface-execution.md`
+- `.tmp/completion-checks/plite-clawsweeper-v2-clipboard-api-plugin-surface-execution.md`
 
 ## 6. React Runtime Closure
 
@@ -644,9 +644,9 @@ Accepted current shape:
 
 - `createEditor({ initialValue, initialSelection })` seeds public editor state
   synchronously before React provider render.
-- `usePliteEditor({ initialValue, extensions })` is the React helper for
-  creation-time extension composition.
-- A direct `createReactEditor({ initialValue, extensions })` constructor can
+- `usePliteEditor({ initialValue, plugins })` is the React helper for
+  creation-time plugin composition.
+- A direct `createReactEditor({ initialValue, plugins })` constructor can
   support tests and non-hook React setup without introducing a second
   composition model.
 - `<Plite editor={editor}>` provides context, subscriptions, decoration sources,
@@ -687,18 +687,18 @@ Affected:
 - `packages/plitejs/src/core/command-definition.ts`
 - `packages/plitejs/src/core/command-registry.ts`
 - `packages/plitejs/src/core/editor-commands.ts`
-- `packages/plitejs/src/core/editor-extension.ts`
+- `packages/plitejs/src/core/editor-plugin.ts`
 - `packages/plitejs/src/core/query-middleware.ts`
 - `packages/plitejs/src/interfaces/editor.ts`
 - `packages/plitejs/src/react/editable/mutation-controller.ts`
 - `packages/plitejs/test/command-spec.test.ts`
-- `packages/plitejs/test/extension-configuration.test.ts`
+- `packages/plitejs/test/plugin-configuration.test.ts`
 - `packages/plitejs/test/react/mutation-command-dispatch-contract.test.ts`
 
 Current implemented shape:
 
 - `editorCommands` exposes typed definitions for semantic document actions.
-- Extension `commands` register pure handlers that receive committed `state`
+- Plugin `commands` register pure handlers that receive committed `state`
   and a typed command value.
 - A handler returns `false` or an immutable `TransactionSpec`; it cannot mutate
   live editor state while evaluating.
@@ -720,11 +720,11 @@ Current implemented shape:
 - Read middleware is keyed by group/method, supports `next(overrides)`,
   preserves generator reads during default delegation, rejects double `next()`,
   and prevents `editor.update` from starting inside query middleware.
-- Deterministic structural repair belongs in extension `corrections` over
+- Deterministic structural repair belongs in plugin `corrections` over
   canonical changed ranges.
 - `on.transactionChange` receives canonical incremental changes with the active
   transaction, `on.commit` observes publication, and `activate` owns
-  extension-local runtime resources.
+  plugin-local runtime resources.
 - Refs, raw snapshots, node keys, and lifecycle controls remain engine-owned.
 
 Why it belongs in the PR:
@@ -739,22 +739,22 @@ Why it belongs in the PR:
 
 Not claimed:
 
-- A full extension keyboard shortcut system.
+- A full plugin keyboard shortcut system.
 - A replacement for every app-owned `onKeyDown` escape hatch.
 - A new fixed or improved issue claim for the adjacent input-runtime issues or
-  `#3557`; extension pressure is related proof, not an exact upstream repro
+  `#3557`; plugin pressure is related proof, not an exact upstream repro
   closure.
 
 Proof references:
 
 - `packages/plitejs/src/core/command-registry.ts`
 - `packages/plitejs/src/core/editor-commands.ts`
-- `packages/plitejs/src/core/editor-extension.ts`
+- `packages/plitejs/src/core/editor-plugin.ts`
 - `packages/plitejs/src/core/query-middleware.ts`
 - `packages/plitejs/src/interfaces/editor.ts`
 - `packages/plitejs/test/command-spec.test.ts`
-- `packages/plitejs/test/extension-configuration.test.ts`
-- `packages/plitejs/test/query-extension-contract.ts`
+- `packages/plitejs/test/plugin-configuration.test.ts`
+- `packages/plitejs/test/query-plugin-contract.ts`
 - `packages/plitejs/test/react/mutation-command-dispatch-contract.test.ts`
 - `packages/plitejs/test/transaction-contract.ts`
 - `packages/plitejs/test/transforms-contract.ts`
@@ -1073,7 +1073,7 @@ Accepted current shape:
 - `RenderVoidProps` receives `{ element }`; it does not expose eager `path`.
 - Event handlers resolve the current location with
   `editor.api.dom.findPath(element)`.
-- The installed DOM extension handle resolves by node key before stale
+- The installed DOM plugin handle resolves by node key before stale
   weak-map indexes.
 - `useElementPath()` is the opt-in render-time path subscription.
 - `useElementSelected()` keeps intersection semantics; block voids that only

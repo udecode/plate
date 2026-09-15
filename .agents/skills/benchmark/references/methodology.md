@@ -111,7 +111,8 @@ Record before measuring:
 - exact Slate commit and remote for Plite/Slate comparison;
 - lockfile/package-manager identity, production or development build mode,
   browser/version, machine, viewport, DPR, and relevant flags;
-- route, fixture, document shape, plugin set, DOM strategy, setup, and action.
+- route, fixture, document shape, plugin set, rendering component and options,
+  setup, and action.
 - target-specific materiality and noise rule. Reuse an existing budget when it
   is honest; otherwise predeclare both an absolute and relative delta against
   observed baseline variability before reading the candidate result.
@@ -139,7 +140,7 @@ are product cost and must be reported, not silently normalized away.
 ### Engine comparison
 
 Use a matched fixture and behavior contract across Plate, Plite, and Slate to
-attribute runtime cost. Match document, renderer intent, DOM strategy,
+attribute runtime cost. Match document, renderer intent, rendering component and options,
 selection, action, warmup, and sample collection. Engine comparison cannot
 replace product comparison.
 
@@ -151,7 +152,8 @@ Mount rows:
 
 - navigation or construction start to `interactiveReady`;
 - React mount/commit duration as a separate diagnostic;
-- `nativeSurfaceComplete` only when staged/virtualized DOM is involved;
+- complete-DOM readiness for complete components; mounted-window readiness and
+  native-surface scope for components that explicitly omit DOM;
 - cold and warm distributions kept separate.
 
 Editing rows:

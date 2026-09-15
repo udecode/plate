@@ -29,7 +29,7 @@ export type TxReadMethod<TMethod extends (...args: any[]) => any> = TMethod & {
 };
 
 /**
- * Mark an extension method that only has meaning inside an existing update.
+ * Mark an plugin method that only has meaning inside an existing update.
  * The method stays available on `tx` and is omitted from `editor.update`.
  */
 export const txOnly = <TMethod extends (...args: any[]) => any>(

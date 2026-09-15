@@ -40,7 +40,7 @@ Follow the consumer graph through package components, adapters, barrels, and
 reexports until reaching the product surfaces that actually use the behavior.
 Intermediate package wrappers do not create reuse.
 
-A React hook, store, provider, hotkey controller, or plugin extension belongs in
+A React hook, store, provider, hotkey controller, or plugin definition belongs in
 a package only when:
 
 - multiple independent terminal owners reuse its contract; or
@@ -49,7 +49,7 @@ a package only when:
 
 When every terminal consumer is copied registry UI and the behavior is UI or
 product policy, move the complete owner into that registry component family or
-kit. Move its private state and plugin extension with it; moving only the hook
+kit. Move its private state and plugin definition with it; moving only the hook
 leaves a dishonest split owner. Multiple subcomponents, live/static siblings,
 or registry files inside one family are one terminal owner.
 

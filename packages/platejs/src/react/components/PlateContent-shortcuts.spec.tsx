@@ -1,9 +1,9 @@
 import { fireEvent, render } from '@testing-library/react';
 import React from 'react';
 
-import { TestPlate as Plate } from '../__tests__/TestPlate';
+import { TestPlate as EditorRoot } from '../__tests__/TestPlate';
 import { createEditor } from '../editor';
-import { PlateContent } from './PlateContent';
+import { EditorContent } from './PlateContent';
 
 describe('PlateContent shortcuts', () => {
   describe('default', () => {
@@ -18,9 +18,9 @@ describe('PlateContent shortcuts', () => {
       });
       const { container } = render(
         <div onKeyDown={ancestorHandler}>
-          <Plate editor={editor}>
-            <PlateContent onKeyDown={editableHandler} />
-          </Plate>
+          <EditorRoot editor={editor}>
+            <EditorContent onKeyDown={editableHandler} />
+          </EditorRoot>
         </div>
       );
       const editable = container.querySelector('[contenteditable="true"]');
@@ -53,9 +53,9 @@ describe('PlateContent shortcuts', () => {
       });
       const { container } = render(
         <div onKeyDown={ancestorHandler}>
-          <Plate editor={editor}>
-            <PlateContent onKeyDown={editableHandler} />
-          </Plate>
+          <EditorRoot editor={editor}>
+            <EditorContent onKeyDown={editableHandler} />
+          </EditorRoot>
         </div>
       );
       const editable = container.querySelector('[contenteditable="true"]');

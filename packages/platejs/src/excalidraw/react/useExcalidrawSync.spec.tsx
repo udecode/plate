@@ -4,7 +4,7 @@ import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import { act, render } from '@testing-library/react';
 import * as React from 'react';
 
-import { createEditor, Plate, PlateContent } from '../../react/core';
+import { createEditor, EditorRoot, EditorContent } from '../../react/core';
 import { ExcalidrawPlugin } from './ExcalidrawPlugin';
 import { useExcalidrawSync } from './useExcalidrawSync';
 
@@ -96,9 +96,9 @@ function setup({ loading = false, strict = false } = {}) {
     commits += 1;
   });
   const content = (readOnly = false) => (
-    <Plate editor={editor} readOnly={readOnly}>
-      <PlateContent />
-    </Plate>
+    <EditorRoot editor={editor} readOnly={readOnly}>
+      <EditorContent />
+    </EditorRoot>
   );
   const view = render(
     strict ? <React.StrictMode>{content()}</React.StrictMode> : content()

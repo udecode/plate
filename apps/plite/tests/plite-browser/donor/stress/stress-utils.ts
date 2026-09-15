@@ -4,11 +4,11 @@ import { dirname,resolve } from 'node:path';
 
 import type {
 EditorSurfaceOptions,
-PliteBrowserRenderStateSnapshot,
-PliteBrowserScenarioReductionCandidateSummary,
-PliteBrowserScenarioReplay,
-PliteBrowserScenarioResult,
-PliteBrowserScenarioStep,
+BrowserRenderStateSnapshot,
+BrowserScenarioReductionCandidateSummary,
+BrowserScenarioReplay,
+BrowserScenarioResult,
+BrowserScenarioStep,
 } from '@platejs/test/playwright';
 import {
 createScenarioReductionCandidates,
@@ -29,7 +29,7 @@ export type StressArtifact = {
   id: string;
   projectName: string;
   reductionCandidates?: StressReductionCandidate[];
-  replay: PliteBrowserScenarioReplay;
+  replay: BrowserScenarioReplay;
   replayCommand: string;
   resultPath?: string;
   route: string;
@@ -48,7 +48,7 @@ type StressReplayArtifact = Pick<
 };
 
 export type StressReductionCandidate =
-  PliteBrowserScenarioReductionCandidateSummary & {
+  BrowserScenarioReductionCandidateSummary & {
     replayCommand: string;
   };
 
@@ -65,11 +65,11 @@ export type StressCase = {
   route: string;
   seed: string;
   surface?: EditorSurfaceOptions;
-  steps: PliteBrowserScenarioStep[];
+  steps: BrowserScenarioStep[];
 };
 
 export type StressFinalSnapshot = Pick<
-  PliteBrowserRenderStateSnapshot,
+  BrowserRenderStateSnapshot,
   'domSelection' | 'focusOwner' | 'lastCommit' | 'renderCounts' | 'selection'
 >;
 
@@ -147,7 +147,7 @@ const createStressReductionCandidates = (
   }: {
     artifactPath: string;
     projectName: string;
-    reductionCandidates?: PliteBrowserScenarioReductionCandidateSummary[];
+    reductionCandidates?: BrowserScenarioReductionCandidateSummary[];
   }
 ): StressReductionCandidate[] =>
   (
@@ -187,8 +187,8 @@ export const createStressArtifact = ({
   error?: unknown;
   finalSnapshot?: StressFinalSnapshot;
   projectName: string;
-  reductionCandidates?: PliteBrowserScenarioReductionCandidateSummary[];
-  result?: PliteBrowserScenarioResult;
+  reductionCandidates?: BrowserScenarioReductionCandidateSummary[];
+  result?: BrowserScenarioResult;
   resultPath?: string;
   status: StressArtifactStatus;
   stressCase: StressCase;
@@ -325,7 +325,7 @@ export const readStressArtifact = (
 export const artifactStepsToScenarioSteps = (
   artifact: StressReplayArtifact,
   { reductionLabel }: { reductionLabel?: string } = {}
-): PliteBrowserScenarioStep[] => {
+): BrowserScenarioStep[] => {
   if (!reductionLabel) {
     return artifact.replay.steps.map((step) => step.value);
   }

@@ -1,33 +1,33 @@
 import { BaseColumnItemPlugin, BaseColumnPlugin } from 'platejs/layout';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 export function ColumnElementStatic(
-  props: PliteElementProps<typeof BaseColumnItemPlugin>
+  props: EditorElementProps<typeof BaseColumnItemPlugin>
 ) {
   const { width } = props.element;
 
   return (
     <div className="group/column relative" style={{ width: width ?? '100%' }}>
-      <PliteElement
+      <EditorElement
         className="h-full px-2 pt-2 group-first/column:pl-0 group-last/column:pr-0"
         {...props}
       >
         <div className="relative h-full border border-transparent p-1.5">
           {props.children}
         </div>
-      </PliteElement>
+      </EditorElement>
     </div>
   );
 }
 
 export function ColumnGroupElementStatic(
-  props: PliteElementProps<typeof BaseColumnPlugin>
+  props: EditorElementProps<typeof BaseColumnPlugin>
 ) {
   return (
-    <PliteElement className="mb-2" {...props}>
+    <EditorElement className="mb-2" {...props}>
       <div className="flex size-full rounded">{props.children}</div>
-    </PliteElement>
+    </EditorElement>
   );
 }
 
@@ -35,12 +35,12 @@ export function ColumnGroupElementStatic(
  * DOCX-compatible column component using table cell.
  */
 export function ColumnElementDocx(
-  props: PliteElementProps<typeof BaseColumnItemPlugin>
+  props: EditorElementProps<typeof BaseColumnItemPlugin>
 ) {
   const { width } = props.element;
 
   return (
-    <PliteElement
+    <EditorElement
       {...props}
       as="td"
       style={{
@@ -51,7 +51,7 @@ export function ColumnElementDocx(
       }}
     >
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 
@@ -59,10 +59,10 @@ export function ColumnElementDocx(
  * DOCX-compatible column group component using table layout.
  */
 export function ColumnGroupElementDocx(
-  props: PliteElementProps<typeof BaseColumnPlugin>
+  props: EditorElementProps<typeof BaseColumnPlugin>
 ) {
   return (
-    <PliteElement {...props}>
+    <EditorElement {...props}>
       <table
         style={{
           width: '100%',
@@ -75,7 +75,7 @@ export function ColumnGroupElementDocx(
           <tr>{props.children}</tr>
         </tbody>
       </table>
-    </PliteElement>
+    </EditorElement>
   );
 }
 

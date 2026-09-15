@@ -2,7 +2,7 @@ import remarkMath from 'remark-math';
 
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  definePlugin,
   NodeApi,
   property,
   schema,
@@ -16,7 +16,7 @@ import { AIChatPlugin } from './AIChatPlugin';
 const createEditor = (paragraphType = 'paragraph') => {
   const plugins = [
     BaseParagraphPlugin,
-    defineBasePlugin(PLUGINS.codeBlock, {
+    definePlugin(PLUGINS.codeBlock, {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/markdown': {
@@ -37,7 +37,7 @@ const createEditor = (paragraphType = 'paragraph') => {
         },
       },
     }),
-    defineBasePlugin(PLUGINS.equation, {
+    definePlugin(PLUGINS.equation, {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/markdown': {
@@ -55,7 +55,7 @@ const createEditor = (paragraphType = 'paragraph') => {
         },
       },
     }),
-    defineBasePlugin(PLUGINS.heading, {
+    definePlugin(PLUGINS.heading, {
       codecs: ({ defineCodecs, schema: { type } }) =>
         defineCodecs({
           'text/markdown': {
@@ -91,6 +91,7 @@ const createEditor = (paragraphType = 'paragraph') => {
   return createProductEditor({
     plugins,
     schema: applicationSchema,
+    userId: 'alice',
     selection: {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
@@ -123,21 +124,19 @@ describe('AIChatPlugin streaming', () => {
     ]);
   });
 
-  it('does not carry suggestion metadata into applied AI content', () => {
+  it('stores tracked AI content as one native proposal', () => {
     const editor = createEditor();
     const aiChat = editor.plugin(AIChatPlugin);
     const nodeKey = editor.key([0])!;
 
+    editor.api.authored.setView({
+      intent: 'propose',
+      projection: 'markup',
+    });
     aiChat.store.set({
       chatNodes: [
         {
-          node: {
-            children: [{ suggestion: true, text: 'hello' }],
-            suggestionData: [],
-            suggestionTransient: true,
-            suggestion_old: { id: 'old' },
-            type: 'paragraph',
-          },
+          node: { children: [{ text: '' }], type: 'paragraph' },
           nodeKey,
         },
       ],
@@ -145,11 +144,13 @@ describe('AIChatPlugin streaming', () => {
 
     aiChat.update.applySuggestions('hello');
 
-    const serialized = JSON.stringify(editor.read.children());
-
-    expect(serialized).not.toContain('suggestionData');
-    expect(serialized).not.toContain('suggestion_old');
-    expect(serialized).not.toContain('"suggestion":');
+    expect(editor.read.value().children).toEqual([
+      { children: [{ text: '' }], type: 'paragraph' },
+    ]);
+    expect(editor.read.text.string([])).toBe('hello');
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(1);
   });
 
   it('preserves closing code and math fences before trailing newlines', () => {

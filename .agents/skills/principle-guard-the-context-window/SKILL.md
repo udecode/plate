@@ -1,18 +1,16 @@
 ---
 name: principle-guard-the-context-window
-description: "Apply when context is filling up: large outputs, long files, repeated reads, fan-out planning. Route bulk to subagents; keep summaries in the main thread, not raw payloads."
+description: "Reduce large or repeated context loads while preserving the current task, latest corrections and evidence."
 ---
-
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
 
 # Guard the Context Window
 
-The context window is finite and non-renewable within a session. Every token that enters should earn its place.
+The active context is finite. Keep the current objective, latest user corrections, open acceptance and evidence reachable across compaction; load only what the next decision needs.
 
-**Why:** Context overflow degrades reasoning quality, creates compression artifacts, and halts progress. Unlike compute or time, context spent inside a session cannot be reclaimed.
+**Why:** Context overflow degrades reasoning quality, creates compression artifacts, and halts progress. A compact checkpoint lets later context recover the current task without restarting intake.
 
 **Pattern:**
-- **Isolate large payloads.** Route verbose outputs, screenshots, and large documents to subagents. The main context gets summaries, not raw data.
+- **Isolate large payloads.** Use bounded searches and artifacts for verbose output. Delegate independent source questions when permitted and useful, then inspect the evidence behind the returned summary.
 - **Don't read what you won't use.** Read selectively based on relevance. If a file isn't needed for the current task, skip it.
 - **Keep frequently used content inline.** Templates and references used on every invocation belong in the skill file, not in separate files that cost a read each time.
-- **Size phases and cap scope.** Limit files per phase, set turn budgets, account for mechanism costs.
+- **Size coherent units.** Bound output and working batches without shrinking the accepted outcome or inventing a turn budget. Compaction is neither a pause nor a new task.

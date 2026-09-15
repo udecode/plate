@@ -1,11 +1,10 @@
+import type { RuntimeAnyEditor } from '../../../facade';
 import {
   getPluginStore as getInternalPluginStore,
   type InternalPluginStore,
 } from '../../../internal/plugin/pluginStore';
 import type {
-  AnyBasePlugin,
   AnyBasePluginDefinition,
-  AnyPluginBase,
   DefinitionOf,
   InferPluginStoreState,
   InferSelectors,
@@ -13,18 +12,10 @@ import type {
   PluginSelectorReturn,
   PluginReference,
 } from '../../../lib';
-import type { Editor } from '../../editor';
 import { useZustandSelector } from '../../internal/useZustandSelector';
-import type { AnyResolvedPlatePlugin, AnyPlatePlugin } from '../../plugin';
 import { useEditor } from './useEditor';
 
-type PluginStoreDescriptor = (
-  | AnyBasePlugin
-  | AnyResolvedPlatePlugin
-  | AnyPlatePlugin
-  | AnyPluginBase
-) &
-  PluginReference;
+type PluginStoreDescriptor = Readonly<{ name: string }>;
 
 type PluginStoreKey<C extends AnyBasePluginDefinition> =
   | keyof InferPluginStoreState<C>
@@ -91,7 +82,7 @@ export function useEditorPluginStore<
   P extends PluginStoreDescriptor,
   K extends PluginStoreKey<DefinitionOf<P>> = PluginStoreKey<DefinitionOf<P>>,
 >(
-  editor: Editor,
+  editor: RuntimeAnyEditor,
   plugin: P,
   key: K,
   ...args: PluginStoreArgs<DefinitionOf<P>, K>
@@ -100,7 +91,7 @@ export function useEditorPluginStore<
   P extends PluginStoreDescriptor,
   U = unknown,
 >(
-  editor: Editor,
+  editor: RuntimeAnyEditor,
   plugin: P,
   selector: (state: InferPluginStoreState<DefinitionOf<P>>) => U,
   options?: {
@@ -109,7 +100,7 @@ export function useEditorPluginStore<
   }
 ): U;
 export function useEditorPluginStore(
-  editor: Editor,
+  editor: RuntimeAnyEditor,
   plugin: PluginStoreDescriptor,
   keyOrSelector: PropertyKey | ErasedPluginStateSelector,
   ...args: unknown[]
@@ -118,17 +109,17 @@ export function useEditorPluginStore(
 }
 
 function useResolvedPluginStore(
-  editor: Editor,
+  editor: RuntimeAnyEditor,
   plugin: PluginStoreDescriptor,
   keyOrSelector: PropertyKey | ErasedPluginStateSelector,
   args: readonly unknown[]
 ): unknown {
-  const portal = editor.plugin(plugin);
+  const portal = editor.plugin(plugin as PluginReference);
 
   if (!portal.installed) {
     throw new Error(`Plate plugin "${plugin.name}" is not installed.`);
   }
-  const store = getInternalPluginStore(editor, portal.name);
+  const store = getInternalPluginStore(editor, plugin.name);
 
   if (!store) {
     throw new Error(`Plate plugin "${plugin.name}" store is not installed.`);

@@ -44,7 +44,7 @@ export const getEditableInteractionOwner = (
   const node = target as Node;
   const element = node.nodeType === 1 ? (node as Element) : node.parentElement;
   if (!root.contains(node)) return 'outside' as const;
-  const editor = element?.closest('[data-plite-editor="true"]');
+  const editor = element?.closest('[data-editor="true"]');
   if (editor && editor !== root) return 'nested-editor' as const;
   if (element?.closest('input,textarea,select,button,[role="button"]')) {
     return 'control' as const;

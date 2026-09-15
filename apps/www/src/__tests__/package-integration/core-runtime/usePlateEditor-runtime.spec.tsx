@@ -1,10 +1,6 @@
 import { render } from '@testing-library/react';
 import type { Value } from 'platejs';
-import {
-  createEditor,
-  definePlatePlugin,
-  useCreateEditor,
-} from 'platejs/react';
+import { createEditor, definePlugin, useCreateEditor } from 'platejs/react';
 import React from 'react';
 
 describe('useCreateEditor Plate runtime route', () => {
@@ -15,7 +11,7 @@ describe('useCreateEditor Plate runtime route', () => {
     const nextValue: Value = [
       { children: [{ text: 'runtime hook' }], type: 'paragraph' },
     ];
-    const TxPlugin = definePlatePlugin('txPlugin', {
+    const TxPlugin = definePlugin('txPlugin', {
       update: ({ tx }) => ({
         replace: () => tx.value.replace({ children: nextValue }),
       }),
@@ -63,7 +59,7 @@ describe('useCreateEditor Plate runtime route', () => {
     const nextValue: Value = [
       { children: [{ text: 'runtime factory' }], type: 'paragraph' },
     ];
-    const TxPlugin = definePlatePlugin('txPlugin', {
+    const TxPlugin = definePlugin('txPlugin', {
       update: ({ tx }) => ({
         replace: () => tx.value.replace({ children: nextValue }),
       }),

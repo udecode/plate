@@ -7,8 +7,8 @@ import { isHotkey, NodeApi } from 'platejs';
 import { MathRules } from 'platejs/math';
 import { EquationPlugin, InlineEquationPlugin } from 'platejs/math/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditor,
   useEditorReadOnly,
   useEditorSelector,
@@ -49,7 +49,7 @@ function useEquation({
 }
 
 export function EquationElement(
-  props: PlateElementProps<typeof EquationPlugin> & {
+  props: EditorElementProps<typeof EquationPlugin> & {
     lineBreakBadge?: React.ReactNode;
   }
 ) {
@@ -75,7 +75,7 @@ export function EquationElement(
   });
 
   return (
-    <PlateElement className="my-1" {...props}>
+    <EditorElement className="my-1" {...props}>
       <FloatingPopover open={open} onOpenChange={setOpen} modal={false}>
         <FloatingPopoverTrigger>
           <button
@@ -115,12 +115,12 @@ export function EquationElement(
       </FloatingPopover>
 
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 
 export function InlineEquationElement(
-  props: PlateElementProps<typeof InlineEquationPlugin>
+  props: EditorElementProps<typeof InlineEquationPlugin>
 ) {
   const { element } = props;
   const katexRef = React.useRef<HTMLDivElement | null>(null);
@@ -166,7 +166,7 @@ export function InlineEquationElement(
   });
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       className={cn(
         'mx-1 inline-block select-none rounded-sm [&_.katex-display]:my-0!'
@@ -225,7 +225,7 @@ export function InlineEquationElement(
       </FloatingPopover>
 
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 

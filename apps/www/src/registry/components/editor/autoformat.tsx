@@ -3,7 +3,7 @@
 import {
   BaseCodeBlockPlugin,
   createTextSubstitutionInputRule,
-  defineBasePlugin,
+  definePlugin,
   type Editor,
 } from 'platejs';
 
@@ -159,7 +159,7 @@ const superscriptSymbolsRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const AutoformatShortcutsPlugin = defineBasePlugin('autoformatShortcuts', {
+const AutoformatShortcutsPlugin = definePlugin('autoformatShortcuts', {
   inputRules: [
     legalRule,
     legalHtmlRule,

@@ -1,5 +1,5 @@
 import {
-  defineExtension,
+  definePlugin,
   defineStateField,
   type EditorCommit,
   type Node,
@@ -8,13 +8,13 @@ import {
 import { history } from 'plitejs/history';
 import {
   Editable,
-  Plite,
+  EditorRoot,
   useEditorState,
   useSetStateField,
   useEditor,
-  usePliteHistory,
-  usePliteRootChrome,
-  usePliteRootState,
+  useEditorHistory,
+  useRootChrome,
+  useRootState,
   useStateFieldValue,
 } from 'plitejs/react';
 import type { ChangeEvent } from 'react';
@@ -32,7 +32,7 @@ const documentTitle = defineStateField({
   persist: valueCodecs.string,
 });
 
-const documentTitleExtension = defineExtension('documentTitle', {
+const documentTitlePlugin = definePlugin('documentTitle', {
   stateFields: [documentTitle],
 });
 
@@ -103,7 +103,7 @@ const RootStatus = ({
   label: string;
   root?: string;
 }) => {
-  const text = usePliteRootState(root, rootText);
+  const text = useRootState(root, rootText);
 
   return (
     <Badge
@@ -117,7 +117,7 @@ const RootStatus = ({
 };
 
 const RootEditor = ({
-  className = 'plite-multi-root-document-editor',
+  className = 'editor-multi-root-document-editor',
   id,
   label,
   placeholder,
@@ -130,15 +130,15 @@ const RootEditor = ({
   root?: string;
 }) => {
   const rootLabel = root ?? 'body';
-  const chrome = usePliteRootChrome(root);
+  const chrome = useRootChrome(root);
 
   return (
     <section
-      className="plite-multi-root-document-root-section"
+      className="editor-multi-root-document-root-section"
       id={`${id}-surface`}
       {...chrome.props}
     >
-      <div className="plite-multi-root-document-root-header">
+      <div className="editor-multi-root-document-root-header">
         <span>{label}</span>
         <RootStatus id={`${id}-status`} label={rootLabel} root={root} />
       </div>
@@ -156,8 +156,8 @@ const RootEditor = ({
 };
 
 const MultiRootPanel = () => {
-  const innerHistory = usePliteHistory();
-  const titleHistory = usePliteHistory({ focusPolicy: 'preserve' });
+  const innerHistory = useEditorHistory();
+  const titleHistory = useEditorHistory({ focusPolicy: 'preserve' });
   const title = useStateFieldValue(documentTitle);
   const setTitleField = useSetStateField(documentTitle);
   const commitSummary = useEditorState((state) =>
@@ -173,9 +173,9 @@ const MultiRootPanel = () => {
   };
 
   return (
-    <div className="plite-multi-root-document-page">
-      <div className="plite-multi-root-document-top-bar">
-        <Label className="plite-multi-root-document-title-label">
+    <div className="editor-multi-root-document-page">
+      <div className="editor-multi-root-document-top-bar">
+        <Label className="editor-multi-root-document-title-label">
           Document title
           <Input
             aria-label="Document title"
@@ -210,7 +210,7 @@ const MultiRootPanel = () => {
           Redo document change
         </Button>
       </div>
-      <div className="plite-multi-root-document-document">
+      <div className="editor-multi-root-document-document">
         <RootEditor
           id="multi-root-header"
           label="Header editor"
@@ -218,7 +218,7 @@ const MultiRootPanel = () => {
           root="header"
         />
         <RootEditor
-          className="plite-multi-root-document-editor plite-multi-root-document-body-editor"
+          className="editor-multi-root-document-editor editor-multi-root-document-body-editor"
           id="multi-root-body"
           label="Body editor"
           placeholder="Draft the body"
@@ -230,7 +230,7 @@ const MultiRootPanel = () => {
           root="footer"
         />
       </div>
-      <div className="plite-multi-root-document-status">
+      <div className="editor-multi-root-document-status">
         <Badge
           className="max-w-full min-w-0 shrink justify-start truncate font-mono"
           id="multi-root-title"
@@ -252,7 +252,7 @@ const MultiRootPanel = () => {
 
 const MultiRootDocumentExample = () => {
   const editor = useEditor({
-    extensions: [history(), documentTitleExtension],
+    plugins: [history(), documentTitlePlugin],
     initialValue: {
       children: [
         {
@@ -285,9 +285,9 @@ const MultiRootDocumentExample = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <MultiRootPanel />
-    </Plite>
+    </EditorRoot>
   );
 };
 

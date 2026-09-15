@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   type Element,
   defineStateField,
   type EditorUpdatePolicy,
@@ -37,13 +37,13 @@ const privateNote = defineStateField({
   persist: valueCodecs.string,
 });
 
-const documentStateExtension = defineExtension('document-state', {
+const documentStatePlugin = definePlugin('document-state', {
   stateFields: [documentTitle, privateNote],
 });
 
 const createDocumentStateEditor = () =>
   createEditor({
-    extensions: [history(), documentStateExtension] as const,
+    plugins: [history(), documentStatePlugin] as const,
     initialValue: {
       children: [paragraph('body')],
       meta: {

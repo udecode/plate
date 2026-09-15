@@ -49,10 +49,10 @@ const editor = createEditor({
 
 ### Render the editor
 
-`DndKit` provides the HTML5 backend and binds cleanup to each mounted Editable, including when automatic scrolling is disabled. Render the editor inside `Plate`:
+`DndKit` provides the HTML5 backend and binds cleanup to each mounted Editable, including when automatic scrolling is disabled. Render the editor inside `EditorRoot`:
 
 ```tsx
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import { DndKit } from '@/components/editor/dnd';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -60,11 +60,11 @@ export function DraggableEditor() {
   const editor = useCreateEditor({ plugins: DndKit });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -190,7 +190,7 @@ selected parent. The read does not change selection.
 
 `api.prepareDrag(element)` selects that payload, records its drag keys and
 returns `{ node, domNode, preview }` pairs for mounted blocks. Clones are inert,
-hidden from accessibility and contain no Plite DOM bindings. Selected blocks
+hidden from accessibility and contain no Plate DOM bindings. Selected blocks
 without mounted views stay in the payload. Read-only or removed elements do not
 start preparation. The copied component owns preview placement and styling.
 

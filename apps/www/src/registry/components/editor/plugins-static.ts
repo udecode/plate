@@ -16,7 +16,6 @@ import { MarkdownKit } from './markdown';
 import { BaseMathKit } from './math-static';
 import { BaseMediaKit } from './media-static';
 import { BaseMentionKit } from './mention-static';
-import { BaseSuggestionKit } from './suggestion-static';
 import { BaseTableKit } from './table-static';
 import { BaseTocKit } from './toc-static';
 
@@ -40,6 +39,5 @@ export const BaseEditorKit = [
   ...BaseListKit,
   ...BaseAlignKit,
   ...BaseLineHeightKit,
-  ...BaseSuggestionKit,
   ...MarkdownKit,
 ] as const;

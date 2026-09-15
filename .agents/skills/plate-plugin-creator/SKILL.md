@@ -1,5 +1,5 @@
 ---
-description: Build or refactor Plate plugins and entrypoints with owner-first colocation, inference, scoped capabilities, React families, and package proof.
+description: Build Plate plugins and entrypoints with semantic ownership, inference, scoped capabilities and package proof.
 name: plate-plugin-creator
 metadata:
   skiller:
@@ -64,15 +64,15 @@ later migration pass or wait for the user to notice the drift.
 **Semantic base first, Plate second.**
 
 - If behavior matters without React, author it in `src/lib` with
-  `defineBasePlugin`.
-- Lift an existing semantic base with `toPlatePlugin` only in its live React
-  adapter; do not re-author it with `definePlatePlugin`.
+  `definePlugin`.
+- Lift an existing semantic base with `toReactPlugin` only in its live React
+  adapter; do not re-author it with `definePlugin`.
 - Base and Plate constructors accept root-level `component`; Base `.extend()`
   does not. A static/base kit declares or terminally replaces a server-safe
   component without importing a Plate React entrypoint.
 - A static/base kit binds the Base descriptor to a static renderer module,
   never a live/client node component.
-- Use `definePlatePlugin` directly only for a real React/Plate-native plugin.
+- Use `definePlugin` directly only for a real React/Plate-native plugin.
 - Package roots never export named plugin-array `*Kit` presets. Feature and
   facade packages export individual descriptors, operations, and types; a
   facade may reexport them but never their composition policy.
@@ -133,7 +133,10 @@ Colocation is the default.
   object or pure inferred-context callback; `null` clears inherited presentation.
   Existing capabilities accept presentation-only patches without repeating their
   reader or observer. New capabilities require `read`. Keep generic Editor skins
-  free of optional feature selectors. Author sparse whole-element attributes through
+  free of optional feature selectors. Use `render.contentAttributes` for a
+  safe attribute object on the existing live/static content root; `null` clears
+  inherited configuration. The copied feature owns its styling values, and
+  core owns composition. Author sparse whole-element attributes through
   `render.useViewElementAttributes`, which receives the mounted `view` and
   returns `{ key, attributes }[]` from one hook host per enabled plugin per
   view. Keep per-node attribute and injection callbacks pure and hook-free.

@@ -69,7 +69,7 @@ const freezePropertyContext = (
   property: EditorSchemaValidationPropertyContext
 ): EditorSchemaValidationPropertyContext =>
   Object.freeze({
-    extensions: Object.freeze([...new Set(property.extensions)].sort()),
+    plugins: Object.freeze([...new Set(property.plugins)].sort()),
     ids: Object.freeze([...property.ids]),
     key: property.key,
     placement: property.placement,
@@ -173,7 +173,7 @@ export const createEditorSchemaValidationError = (
       ...(options.property
         ? {
             property: {
-              extensions: candidates.map(({ owner }) => owner),
+              plugins: candidates.map(({ owner }) => owner),
               ids: candidates.map(({ id }) => id),
               key: options.property.key,
               placement: options.property.placement,

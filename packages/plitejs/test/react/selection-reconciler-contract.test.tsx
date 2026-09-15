@@ -49,7 +49,7 @@ test('initial unselected mounts do not read native selection between sibling vie
     .mockReturnValue(document);
   const Harness = () => {
     useEditableSelectionReconciler({
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       runtime,
       scrollSelectionIntoView: vi.fn(),
     });
@@ -102,7 +102,7 @@ test.each(['before-frame', 'after-frame'] as const)(
     };
     function Harness() {
       useEditableSelectionReconciler({
-        partialDOMBackedSelection: false,
+        viewportBackedSelection: false,
         runtime,
         scrollSelectionIntoView: vi.fn(),
       });
@@ -125,7 +125,7 @@ test.each(['before-frame', 'after-frame'] as const)(
     range.setStart(text, 0);
     range.setEnd(text, 1);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(range);
     const selectionWrite = vi.spyOn(selection, 'setBaseAndExtent');
@@ -188,9 +188,9 @@ test('beforeinput preserves pending native text repair selection over mismatched
     throw new Error('Expected document selection');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   leaf.append(string);
   textHost.append(leaf);
@@ -253,9 +253,9 @@ test('beforeinput keeps a projected view selection authoritative over the DOM ca
     throw new Error('Expected document selection');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -325,9 +325,9 @@ test('beforeinput ignores stale backward target range while model owns insert', 
     throw new Error('Expected document selection');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -395,10 +395,10 @@ test('beforeinput preserves model selection for decorated text target ranges', (
     throw new Error('Expected document selection');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  textHost.setAttribute('data-plite-dom-sync-reason', 'decoration');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  textHost.setAttribute('data-editor-dom-sync-reason', 'decoration');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -516,9 +516,9 @@ test('beforeinput returns same-path pending native text repair DOM range without
     throw new Error('Expected document selection');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -585,9 +585,9 @@ test('beforeinput imports same-path native selection when pending repair owns a 
     throw new Error('Expected document selection');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -644,9 +644,9 @@ test('beforeinput imports backward native text caret when no pending repair owns
     throw new Error('Expected document selection');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -711,9 +711,9 @@ test('beforeinput ignores an ahead DOM caret while text input is model-owned', (
     throw new Error('Expected document selection');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -800,9 +800,9 @@ test('beforeinput ignores repair-induced backward text caret when no pending rep
     throw new Error('Expected document selection');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -866,9 +866,9 @@ test('beforeinput ignores text host target ranges while the node map is dirty', 
     throw new Error('Expected document selection');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -956,10 +956,10 @@ test('beforeinput keeps current text host target ranges while the node map is di
     throw new Error('Expected text node key');
   }
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  textHost.setAttribute('data-plite-node-key', nodeKey);
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  textHost.setAttribute('data-editor-node-key', nodeKey);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -1037,15 +1037,15 @@ test('beforeinput uses event target range instead of later live DOM selection', 
     },
   });
 
-  firstTextHost.setAttribute('data-plite-node', 'text');
-  firstTextHost.setAttribute('data-plite-path', '0,0');
-  firstString.setAttribute('data-plite-string', 'true');
+  firstTextHost.setAttribute('data-editor-node', 'text');
+  firstTextHost.setAttribute('data-editor-path', '0,0');
+  firstString.setAttribute('data-editor-string', 'true');
   firstString.append(firstText);
   firstTextHost.append(firstString);
 
-  secondTextHost.setAttribute('data-plite-node', 'text');
-  secondTextHost.setAttribute('data-plite-path', '1,0');
-  secondString.setAttribute('data-plite-string', 'true');
+  secondTextHost.setAttribute('data-editor-node', 'text');
+  secondTextHost.setAttribute('data-editor-path', '1,0');
+  secondString.setAttribute('data-editor-string', 'true');
   secondString.append(secondText);
   secondTextHost.append(secondString);
 
@@ -1133,19 +1133,19 @@ test('beforeinput resolves block-spanning element target ranges before live sele
   });
 
   root.setAttribute('contenteditable', 'true');
-  root.setAttribute('data-plite-editor', 'true');
-  firstBlock.setAttribute('data-plite-node', 'element');
-  firstBlock.setAttribute('data-plite-path', '0');
-  firstTextHost.setAttribute('data-plite-node', 'text');
-  firstTextHost.setAttribute('data-plite-path', '0,0');
-  firstLeaf.setAttribute('data-plite-leaf', 'true');
-  firstString.setAttribute('data-plite-string', 'true');
-  secondBlock.setAttribute('data-plite-node', 'element');
-  secondBlock.setAttribute('data-plite-path', '1');
-  secondTextHost.setAttribute('data-plite-node', 'text');
-  secondTextHost.setAttribute('data-plite-path', '1,0');
-  secondLeaf.setAttribute('data-plite-leaf', 'true');
-  secondString.setAttribute('data-plite-string', 'true');
+  root.setAttribute('data-editor', 'true');
+  firstBlock.setAttribute('data-editor-node', 'element');
+  firstBlock.setAttribute('data-editor-path', '0');
+  firstTextHost.setAttribute('data-editor-node', 'text');
+  firstTextHost.setAttribute('data-editor-path', '0,0');
+  firstLeaf.setAttribute('data-editor-leaf', 'true');
+  firstString.setAttribute('data-editor-string', 'true');
+  secondBlock.setAttribute('data-editor-node', 'element');
+  secondBlock.setAttribute('data-editor-path', '1');
+  secondTextHost.setAttribute('data-editor-node', 'text');
+  secondTextHost.setAttribute('data-editor-path', '1,0');
+  secondLeaf.setAttribute('data-editor-leaf', 'true');
+  secondString.setAttribute('data-editor-string', 'true');
 
   firstString.append(firstText);
   firstLeaf.append(firstString);
@@ -1295,15 +1295,15 @@ test('beforeinput does not import only the first range from multiple target rang
     },
   });
 
-  firstTextHost.setAttribute('data-plite-node', 'text');
-  firstTextHost.setAttribute('data-plite-path', '0,0');
-  firstString.setAttribute('data-plite-string', 'true');
+  firstTextHost.setAttribute('data-editor-node', 'text');
+  firstTextHost.setAttribute('data-editor-path', '0,0');
+  firstString.setAttribute('data-editor-string', 'true');
   firstString.append(firstText);
   firstTextHost.append(firstString);
 
-  secondTextHost.setAttribute('data-plite-node', 'text');
-  secondTextHost.setAttribute('data-plite-path', '1,0');
-  secondString.setAttribute('data-plite-string', 'true');
+  secondTextHost.setAttribute('data-editor-node', 'text');
+  secondTextHost.setAttribute('data-editor-path', '1,0');
+  secondString.setAttribute('data-editor-string', 'true');
   secondString.append(secondText);
   secondTextHost.append(secondString);
 
@@ -1378,7 +1378,7 @@ test('selection reconciler preserves node selection while clearing native select
 
   const Harness = () => {
     useEditableSelectionReconciler({
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       runtime,
       scrollSelectionIntoView: vi.fn(),
     });
@@ -1406,7 +1406,7 @@ test('selection reconciler preserves node selection while clearing native select
 
     vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
     vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
@@ -1463,7 +1463,7 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
 
   const Harness = () => {
     useEditableSelectionReconciler({
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       runtime,
       scrollSelectionIntoView: vi.fn(),
     });
@@ -1493,7 +1493,7 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
 
     vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(
       domRange
@@ -1544,7 +1544,7 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
 
   const Harness = () => {
     useEditableSelectionReconciler({
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       runtime,
       scrollSelectionIntoView: vi.fn(),
     });
@@ -1572,7 +1572,7 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
 
     vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     const staleRange = document.createRange();
     staleRange.setStart(textNode, 0);
@@ -1630,7 +1630,6 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     copyPolicy: 'model',
     coveredPathRanges: [{ anchor: [1], focus: [1] }],
     coveredRuntimeRanges: [],
-    findPolicy: 'native',
     ownerPath: [],
     ownerNodeKey: null,
     reason: 'app-hidden',
@@ -1641,7 +1640,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
 
   const Harness = () => {
     useEditableSelectionReconciler({
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       runtime,
       scrollSelectionIntoView: vi.fn(),
     });
@@ -1669,7 +1668,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
 
     vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
 
@@ -1726,7 +1725,6 @@ test('DOM coverage selection materializes every covered materialize boundary wit
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: path, focus: path }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -1791,7 +1789,6 @@ test('forced DOM coverage export rebuilds a fresh native range', () => {
     copyPolicy: 'model',
     coveredPathRanges: [{ anchor: [0], focus: [0] }],
     coveredRuntimeRanges: [],
-    findPolicy: 'native',
     ownerPath: [],
     ownerNodeKey: null,
     reason: 'app-hidden',
@@ -1861,7 +1858,6 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
     copyPolicy: 'model',
     coveredPathRanges: [{ anchor: [1], focus: [1] }],
     coveredRuntimeRanges: [],
-    findPolicy: 'native',
     ownerPath: [],
     ownerNodeKey: null,
     reason: 'app-hidden',
@@ -1872,27 +1868,27 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
 
   const Harness = () => {
     useEditableSelectionReconciler({
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       runtime,
       scrollSelectionIntoView: vi.fn(),
     });
 
     return (
       <div
-        data-plite-editor="true"
+        data-editor="true"
         data-render-tick={renderTick}
         data-selection-test-root
         ref={rootRef}
       >
-        <span data-plite-node="text" data-plite-path="0,0">
-          <span data-plite-leaf="true">
-            <span data-plite-string="true">one</span>
+        <span data-editor-node="text" data-editor-path="0,0">
+          <span data-editor-leaf="true">
+            <span data-editor-string="true">one</span>
           </span>
         </span>
         <button type="button">hidden shell</button>
-        <span data-plite-node="text" data-plite-path="2,0">
-          <span data-plite-leaf="true">
-            <span data-plite-string="true">two</span>
+        <span data-editor-node="text" data-editor-path="2,0">
+          <span data-editor-leaf="true">
+            <span data-editor-string="true">two</span>
           </span>
         </span>
       </div>
@@ -1905,13 +1901,13 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
       '[data-selection-test-root]'
     ) as HTMLElement | null;
     const [firstString, secondString] = container.querySelectorAll(
-      '[data-plite-string]'
+      '[data-editor-string]'
     );
     const firstElement = firstString?.closest(
-      '[data-plite-node]'
+      '[data-editor-node]'
     ) as HTMLElement | null;
     const secondElement = secondString?.closest(
-      '[data-plite-node]'
+      '[data-editor-node]'
     ) as HTMLElement | null;
     const firstText = firstString?.firstChild;
     const secondText = secondString?.firstChild;
@@ -1958,7 +1954,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
 
     vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
     const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
 
@@ -2010,8 +2006,8 @@ test('read-only triple-click stays native and does not update model selection', 
   });
 
   const target = document.createElement('span');
-  target.setAttribute('data-plite-node', 'element');
-  target.setAttribute('data-plite-path', '0');
+  target.setAttribute('data-editor-node', 'element');
+  target.setAttribute('data-editor-path', '0');
   document.body.append(target);
 
   const update = vi.spyOn(editor, 'update');

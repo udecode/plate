@@ -1,0 +1,97 @@
+---
+title: "DOM Coverage Boundaries"
+description: "Keep hidden Plate content selectable, copyable, and materializable without mounting its DOM."
+---
+
+DOM coverage boundaries let Plate keep model content selectable and copyable when the matching editable DOM is intentionally not mounted. Use them for closed accordions, inactive tab panels, collapsed sections, and app-hidden element shells. They are React rendering tools; the document content stays in the Plate value, and [Selection And DOM](/docs/selection) owns the broader model-selection and native-selection boundary.
+
+## Render a boundary
+
+A plugin element component receives `slots.contentBoundary`. Wrap the hidden part of an
+element with a boundary and tell Plate which children it covers. This example assumes an application `SectionPlugin` with a `collapsed` property, a heading as its first child, and an `openSection` action that clears that property.
+
+```tsx
+const CollapsibleSectionPlugin = SectionPlugin.configure({
+  component: ({ attributes, children, element, slots }) => (
+    <section {...attributes}>
+      {React.Children.toArray(children)[0]}
+      {slots.contentBoundary({
+        mounted: !element.collapsed,
+        onMaterialize: () => openSection(editor.key(element)),
+        renderPlaceholder: ({ materialize }) => (
+          <button onClick={materialize} type="button">
+            Show section
+          </button>
+        ),
+        scope: { from: 1, type: 'children' },
+        selectionPolicy: 'materialize',
+      })}
+    </section>
+  ),
+});
+```
+
+Use `scope={{ type: 'children', from, to }}` when the boundary covers child
+nodes. Use `scope={{ type: 'self' }}` when the whole element is hidden by app
+chrome.
+
+## Selection policy
+
+`selectionPolicy` controls keyboard and model selection through hidden content.
+
+| Policy        | Behavior                                                              |
+| ------------- | --------------------------------------------------------------------- |
+| `skip`        | Move selection outside the hidden range. Use it for closed UI chrome. |
+| `model`       | Let the model selection include hidden content without mounting it.   |
+| `materialize` | Mount the hidden content before Plate moves selection into it.        |
+
+`materialize` calls `onMaterialize({ boundary, reason, range, rangeRole })`.
+Use that callback to open the accordion, activate the tab, or reveal the
+collapsed panel.
+
+## Copy policy
+
+`copyPolicy` controls clipboard output when a copied selection crosses hidden
+content.
+
+| Policy    | Behavior                                                                  |
+| --------- | ------------------------------------------------------------------------- |
+| `model`   | Serialize selected model content to plain text, HTML, and a fragment.     |
+| `exclude` | Omit covered content from all three clipboard representations.            |
+
+`model` is the right default for document content. `exclude` is usually better
+for app-hidden wrappers, private metadata, and chrome-only shells.
+
+Native browser find cannot search content that is not mounted in the DOM. If a
+product needs Cmd+F over collapsed content, its model-search owner must reveal
+or otherwise present the matching content.
+
+Screen readers also traverse mounted DOM, not hidden Plate model children. If
+collapsed content must remain available to assistive technology, keep an
+accessible summary mounted, materialize the content from the boundary, or render
+an app-owned accessible representation outside the editable surface.
+
+## Boundary identity
+
+`boundaryId` is optional. Plate derives a stable view-local boundary id from
+the rendered element and scope. Pass an explicit id when tests or diagnostics
+need a predictable name.
+
+Each mounted editor surface owns an independent coverage session. Two views of the
+same document may cover different ranges or use the same boundary id without
+sharing registration or cleanup.
+
+Boundary placeholders are runtime-owned non-editable DOM. Keep tab triggers,
+accordion buttons, and other app chrome outside the editable text flow so native
+selection does not grab UI labels instead of document text.
+
+## Boundaries versus content roots
+
+Use DOM coverage boundaries when content belongs to the current root but its
+DOM is hidden. Use [content roots](/docs/roots#content-roots)
+when an element owns another editable root, such as a synced block body or an
+editable card body.
+
+Use [External Text Views](/docs/external-text) when another editing engine renders
+one Text in the same root. That slot owns model-copy integration and local
+search; it is not a void, a separate content root, or a generic virtualizer.

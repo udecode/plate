@@ -23,6 +23,7 @@ export const createTestEditor = (value?: EditorDocumentValue) => {
 
   const editor = createEditor({
     plugins: defaultPlugins,
+    userId: 'alice',
     ...(value ? {} : { selection: input.selection }),
     initialValue: value ?? { children: input.children },
   });

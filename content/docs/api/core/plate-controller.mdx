@@ -3,19 +3,19 @@ title: Plate Controller
 description: Connect shared React UI to the active Plate editor.
 ---
 
-`PlateController` lets shared toolbars, panels, and inspectors resolve an editor
-outside a single `Plate` subtree.
+`EditorController` lets shared toolbars, panels, and inspectors resolve an editor
+outside a single `EditorRoot` subtree.
 
 ## Usage
 
-Wrap the shared UI and participating editors in `PlateController`.
-`PlateContent` automatically registers each editor for its mounted lifetime.
+Wrap the shared UI and participating editors in `EditorController`.
+`EditorContent` automatically registers each editor for its mounted lifetime.
 
 ```tsx title="components/editor-shell.tsx"
 import {
-  Plate,
-  PlateContent,
-  PlateController,
+  EditorRoot,
+  EditorContent,
+  EditorController,
   useCreateEditor,
   useOptionalEditor,
 } from 'platejs/react';
@@ -25,15 +25,15 @@ export function EditorShell() {
   const secondary = useCreateEditor({ id: 'secondary' });
 
   return (
-    <PlateController>
+    <EditorController>
       <ActiveEditorLabel />
-      <Plate editor={main}>
-        <PlateContent />
-      </Plate>
-      <Plate editor={secondary} primary={false}>
-        <PlateContent />
-      </Plate>
-    </PlateController>
+      <EditorRoot editor={main}>
+        <EditorContent />
+      </EditorRoot>
+      <EditorRoot editor={secondary} primary={false}>
+        <EditorContent />
+      </EditorRoot>
+    </EditorController>
   );
 }
 
@@ -44,18 +44,18 @@ function ActiveEditorLabel() {
 }
 ```
 
-Set `primary` on `Plate`; it defaults to `true`. A view with `primary={false}` can become active when focused. IDs are application labels; one model and ID can have several mounted views.
+Set `primary` on `EditorRoot`; it defaults to `true`. A view with `primary={false}` can become active when focused. IDs are application labels; one model and ID can have several mounted views.
 
 ## Editor lookup
 
 `useEditor()` returns the nearest provider’s selected editor and throws when no target exists. `useOptionalEditor()` uses the same selection and returns `null` without a provider or target.
 
-- Inside `PlateContent`, hooks use that exact editable view, including its root, DOM, and current read-only state.
-- Inside `Plate`, outside its content, UI follows that Plate’s last focused view, then its first mounted view. A Plate without content provides its model.
+- Inside `EditorContent`, hooks use that exact editable view, including its root, DOM, and current read-only state.
+- Inside `EditorRoot`, outside its content, UI follows that Plate’s last focused view, then its first mounted view. A Plate without content provides its model.
 - Shared UI under the controller uses the last focused mounted view, then the first mounted primary view before focus or after target removal.
-- Nested `Plate` and `PlateController` components scope their descendants independently.
+- Nested `EditorRoot` and `EditorController` components scope their descendants independently.
 
-Blur retains the active view for toolbar interaction. `PlateContent` owns registration and cleanup; only views with editable DOM participate in controller selection.
+Blur retains the active view for toolbar interaction. `EditorContent` owns registration and cleanup; only views with editable DOM participate in controller selection.
 
 ## Captured interactions
 
@@ -73,6 +73,6 @@ import { EditorProvider } from 'platejs/react';
 
 ## API Reference
 
-`PlateController` accepts only `children: React.ReactNode`. The `primary` prop on `Plate` controls initial and fallback eligibility.
+`EditorController` accepts only `children: React.ReactNode`. The `primary` prop on `EditorRoot` controls initial and fallback eligibility.
 
 For state and focus subscriptions, see [Editor Context](/docs/api/core/plate-store).

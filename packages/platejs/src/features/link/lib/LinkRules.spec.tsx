@@ -4,7 +4,7 @@ import { createDataTransfer } from '#platejs-test-internal';
 
 import {
   createEditor as createProductEditor,
-  defineBasePlugin,
+  definePlugin,
   schema,
   type Selection,
   type Value,
@@ -12,7 +12,7 @@ import {
 import type { BaseLinkDefinition } from './BaseLinkPlugin';
 import { BaseLinkPlugin, LinkRules } from './BaseLinkPlugin';
 
-const BaseCodeBlockPlugin = defineBasePlugin('codeBlock', {
+const BaseCodeBlockPlugin = definePlugin('codeBlock', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1, max: 1 }),

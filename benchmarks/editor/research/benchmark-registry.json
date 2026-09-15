@@ -17,18 +17,6 @@
   "runtimeAdapters": [],
   "artifacts": [
     {
-      "id": "react-huge-document-legacy-compare",
-      "category": "slate-react-huge-document-legacy-compare",
-      "kind": "slate-legacy-compare",
-      "owner": "slate-v2",
-      "family": "react-large-document",
-      "cwd": "../..",
-      "command": "REACT_HUGE_COMPARE_LEGACY_REPO=../../../slate bun run bench:react:huge-document:legacy-compare:local",
-      "path": "../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json",
-      "required": true,
-      "decision": "Does Slate v2 beat legacy Slate for 5,000-block React editing, selection, startup, and full-document replacement?"
-    },
-    {
       "id": "react-rerender-breadth",
       "category": "slate-react-rerender-breadth",
       "kind": "current",
@@ -52,7 +40,7 @@
       "command": "bun ../../scripts/benchmarks/browser/react/huge-document-overlays.tsx",
       "path": "../../packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json",
       "required": true,
-      "decision": "Do overlay and partial-DOM promotion paths stay local in huge documents?"
+      "decision": "Do overlay updates, requested viewport mounts, and active edits stay local in virtualized huge documents?"
     },
     {
       "id": "react-active-typing-breakdown",
@@ -74,12 +62,11 @@
       "owner": "slate-v2",
       "family": "react-large-document",
       "cwd": "../..",
-      "command": "bun run bench:react:huge-document:browser-trace:local",
-      "path": "../../tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
+      "command": "PLITE_BROWSER_TRACE_SURFACES=pliteComplete bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
+      "path": "../../tmp/slate-react-huge-document-default-browser-trace-benchmark.json",
       "required": true,
       "surfaceLibraries": {
-        "defaultAuto": "slate-v2:default-render-auto",
-        "stagedDomPresent": "slate-v2:dom-present"
+        "pliteComplete": "slate-v2:complete-dom"
       },
       "decision": "What DOM count, heap, long-frame, and interaction traces does Slate v2 produce in Chromium?"
     },
@@ -317,13 +304,6 @@
   ],
   "workloads": [
     {
-      "id": "react-huge-document-legacy-compare",
-      "legacy": true,
-      "slateV2": true,
-      "artifactIds": ["react-huge-document-legacy-compare"],
-      "workload": "React 5,000-block editing, selection, startup, full-document replacement"
-    },
-    {
       "id": "react-rerender-breadth",
       "legacy": false,
       "slateV2": true,
@@ -335,7 +315,7 @@
       "legacy": false,
       "slateV2": true,
       "artifactIds": ["react-huge-document-overlays"],
-      "workload": "Huge-document overlay toggle, partial DOM promotion, active edit locality"
+      "workload": "Huge-document overlay toggle, requested viewport mount, and active edit locality"
     },
     {
       "id": "react-huge-document-browser-trace",

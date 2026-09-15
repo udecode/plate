@@ -33,6 +33,6 @@ export {
 export { isNominalPluginDescriptor } from './utils/mergePlugins';
 export {
   getPlateNodeCodecContributions,
-  type PlateNodeCodecContribution,
+  type NodeCodecContribution,
 } from './plugin/collectPlateNodeCodecs';
 export type { PlatePluginCache, PlateRuntime } from './plugin/plateRuntime';

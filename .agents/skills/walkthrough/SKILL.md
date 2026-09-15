@@ -1,6 +1,6 @@
 ---
 name: walkthrough
-description: Create a short annotated visual walkthrough from real final-state screenshots or rendered artifacts. Use when a user asks for demo screenshots or a caller requires visual evidence after UI or rendered-output changes.
+description: "Present final screenshots or rendered artifacts as an annotated walkthrough when visual evidence is requested."
 ---
 
 # Walkthrough
@@ -40,11 +40,12 @@ Read only what explains the completed result:
 Reuse valid final-state screenshots. Do not rerun an expensive flow only to
 capture the same state.
 
-Do not stop at a link or button that promises a result. Open the result and
-show the saved record, receipt, message, packet, or other final artifact. When a
-preview and its downloadable or readable artifact both exist, inspect both and
-fail the walkthrough if their material claims disagree. Report the
-contradiction instead of choosing the friendlier surface.
+Show the inspected saved record, receipt, message, packet or final artifact,
+not just a control that promises it. Reuse the verifier's recorded artifact
+inspection when its source, identity, state and hash still match; open only
+missing or stale evidence. When a preview and a downloadable/readable artifact
+both exist, their material claims must agree. Report a contradiction as a
+failure without repeating an already-proved operation just for presentation.
 
 ## Pick The Shortest Story
 

@@ -18,7 +18,7 @@ export const readBrowserTextTarget = ({
     while (text) {
       if (
         text.textContent?.replace(/\uFEFF/g, '').trim() &&
-        text.parentElement?.closest('[data-plite-node="text"]')
+        text.parentElement?.closest('[data-editor-node="text"]')
       ) {
         // Text flows can omit leaf wrappers or give them display: contents.
         const range = document.createRange();
@@ -44,7 +44,7 @@ export const readBrowserTextTarget = ({
 
     return {
       blockText: element.textContent ?? '',
-      path: element.getAttribute('data-plite-path'),
+      path: element.getAttribute('data-editor-path'),
       x:
         placement === 'end'
           ? right

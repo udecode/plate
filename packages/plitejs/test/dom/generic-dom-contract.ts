@@ -1,20 +1,12 @@
 import {
   ContentSlice,
   createEditor,
-  defineExtension,
+  definePlugin,
   type Editor,
-  type EditorExtensionContribution,
-  type EditorExtensionDefinitionInput,
   type Node as PliteNode,
   type Value,
 } from 'plitejs';
-import {
-  clipboardHandler,
-  dom,
-  type DOMClipboardHandler,
-  type HostCodec,
-  hostCodecs,
-} from 'plitejs/dom';
+import { dom, domCommands, type HostCodec, hostCodecs } from 'plitejs/dom';
 
 type CustomText = {
   text: string;
@@ -51,64 +43,46 @@ const jsonCodec: HostCodec<CustomValue> = {
   },
 };
 
-const DomExtension = dom();
-const ImageExtension = defineExtension('img', {
+const DomPlugin = dom();
+const ImagePlugin = definePlugin('img', {
   update: () => ({
     insert: ({ url }: { url: string }) => {
       void url;
     },
   }),
 });
-type ImageEditor = Editor<Value, readonly [typeof ImageExtension]>;
-const typedClipboardContribution = clipboardHandler<ImageEditor>({
-  insertData(_data, { tx }) {
-    tx.img.insert({ url: 'https://example.com/image.png' });
+type ImageEditor = Editor<Value, readonly [typeof ImagePlugin]>;
+const TypedClipboardPlugin = definePlugin('typed-clipboard-handler', {
+  dependencies: [ImagePlugin],
+  commands: ({ around }) => [
+    around(domCommands.insertData, ({ state }) =>
+      state.transaction((tx) => {
+        tx.img.insert({ url: 'https://example.com/image.png' });
 
-    // @ts-expect-error Dependency transactions preserve command inputs.
-    tx.img.insert({ src: 'https://example.com/image.png' });
-
-    return true;
-  },
+        // @ts-expect-error Dependency transactions preserve command inputs.
+        tx.img.insert({ src: 'https://example.com/image.png' });
+      })
+    ),
+  ],
 });
-const TypedClipboardExtension = defineExtension('typed-clipboard-handler', {
-  dependencies: [ImageExtension],
-  contributions: [typedClipboardContribution],
-});
-const ClipboardExtension = defineExtension('clipboard-handler', {
-  contributions: [
-    clipboardHandler({
-      insertData(_data, { next, tx }) {
-        tx.selection();
+const ClipboardPlugin = definePlugin('clipboard-handler', {
+  commands: ({ around }) => [
+    around(domCommands.insertData, ({ next, state }) => {
+      state.selection();
 
-        return next();
-      },
+      return next();
     }),
   ],
 });
-const HostCodecsExtension = hostCodecs('custom-value-host-codecs', [jsonCodec]);
+const HostCodecsPlugin = hostCodecs('custom-value-host-codecs', [jsonCodec]);
 const editor = createEditor({
-  extensions: [
-    DomExtension,
-    HostCodecsExtension,
-    ClipboardExtension,
-    TypedClipboardExtension,
-  ],
+  plugins: [DomPlugin, HostCodecsPlugin, ClipboardPlugin, TypedClipboardPlugin],
   initialValue,
 });
 
-declare const imageClipboardContribution: EditorExtensionContribution<
-  DOMClipboardHandler<ImageEditor>,
-  ImageEditor
->;
+declare const imageEditor: ImageEditor;
 
-const weakEditorContributions: NonNullable<
-  EditorExtensionDefinitionInput<Editor<CustomValue>>['contributions']
-> = [
-  // @ts-expect-error A contribution cannot require unavailable editor capabilities.
-  imageClipboardContribution,
-];
-
-void weakEditorContributions;
+void imageEditor;
 
 editor.api.dom.focus();
 editor.api.dom.resolvePath(pliteNode);
@@ -117,17 +91,17 @@ editor.api.dom.clipboard.writeSelection(dataTransfer);
 
 const plainEditor = createEditor({ initialValue });
 
-// @ts-expect-error DOM methods are installed extension API only
+// @ts-expect-error DOM methods are installed plugin API only
 plainEditor.api.dom.focus();
 
-// @ts-expect-error clipboard is installed by the DOM extension only
+// @ts-expect-error clipboard is installed by the DOM plugin only
 plainEditor.api.dom.clipboard.insertData(dataTransfer);
 
-// @ts-expect-error clipboard export is installed by the DOM extension only
+// @ts-expect-error clipboard export is installed by the DOM plugin only
 plainEditor.api.dom.clipboard.writeSelection(dataTransfer);
 
 const insertionOnlyEditor = createEditor({
-  extensions: [dom({ clipboard: false })],
+  plugins: [dom({ clipboard: false })],
   initialValue,
 });
 
@@ -138,7 +112,7 @@ insertionOnlyEditor.api.dom.clipboard.insertData(dataTransfer);
 insertionOnlyEditor.api.dom.clipboard.writeSelection(dataTransfer);
 
 const maybeClipboardEditor = createEditor({
-  extensions: [dom(domOptions)],
+  plugins: [dom(domOptions)],
   initialValue,
 });
 
@@ -161,7 +135,7 @@ editor.update((tx) => {
 });
 
 plainEditor.update((tx) => {
-  // @ts-expect-error clipboard is installed by the DOM extension only
+  // @ts-expect-error clipboard is installed by the DOM plugin only
   tx.dom.insertData(dataTransfer);
 });
 

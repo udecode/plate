@@ -3,8 +3,8 @@
 import type { LinkProps } from 'next/link';
 import Link from 'next/link';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditorFocused,
   useEditorReadOnly,
   useElementSelected,
@@ -24,7 +24,9 @@ function toLinkHref(href: string): LinkProps<string>['href'] {
   return { pathname: href };
 }
 
-export function TagElement(props: PlateElementProps<typeof MultiSelectPlugin>) {
+export function TagElement(
+  props: EditorElementProps<typeof MultiSelectPlugin>
+) {
   const { element } = props;
   const selected = useElementSelected();
   const focused = useEditorFocused();
@@ -51,7 +53,7 @@ export function TagElement(props: PlateElementProps<typeof MultiSelectPlugin>) {
     );
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       className="m-0.5 inline-flex cursor-pointer select-none"
       attributes={{
@@ -61,6 +63,6 @@ export function TagElement(props: PlateElementProps<typeof MultiSelectPlugin>) {
     >
       {content}
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }

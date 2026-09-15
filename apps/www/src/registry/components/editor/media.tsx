@@ -88,7 +88,6 @@ export function MediaUploadToast() {
 export const MediaKit = [
   imagePlugin.configure({
     component: ImageElement,
-    initialState: { disableUploadInsert: true },
     slots: { afterEditable: MediaPreviewDialog },
   }),
   MediaEmbedPlugin.configure({ component: MediaEmbedElement }),

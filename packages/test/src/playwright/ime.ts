@@ -11,14 +11,14 @@ export const enableCompositionKeyEvents = async (
 ) => {
   await surface.evaluate(() => {
     const target = window as Window & {
-      __PLITE_BROWSER_COMPOSITION_KEY_EVENTS__?: boolean;
+      __EDITOR_BROWSER_COMPOSITION_KEY_EVENTS__?: boolean;
     };
 
-    if (target.__PLITE_BROWSER_COMPOSITION_KEY_EVENTS__) {
+    if (target.__EDITOR_BROWSER_COMPOSITION_KEY_EVENTS__) {
       return;
     }
 
-    target.__PLITE_BROWSER_COMPOSITION_KEY_EVENTS__ = true;
+    target.__EDITOR_BROWSER_COMPOSITION_KEY_EVENTS__ = true;
 
     window.addEventListener(
       'compositionstart',
@@ -85,7 +85,7 @@ export const commitSyntheticCompositionText = async (
       }
 
       const root =
-        active.closest<HTMLElement>('[data-plite-editor="true"]') ?? active;
+        active.closest<HTMLElement>('[data-editor="true"]') ?? active;
       const handle = (
         root as HTMLElement & {
           __pliteBrowserHandle?: {

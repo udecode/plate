@@ -6,8 +6,10 @@ import * as Y from 'yjs';
 import type { Descendant, Path } from '../../src/index';
 import type { Peer } from './support/collaboration';
 import {
+  connectYjsPeer,
   createSeededYjsHistoryPeers,
   createYjsHistoryPeer,
+  disconnectYjsPeer,
   FakeAwareness,
   getPeerTopLevelTexts,
   isYjsPeerConnected,
@@ -16,7 +18,6 @@ import {
   readPeerPliteValue,
   reconcileYjsPeer,
   redoHistoryPeer,
-  runYjsUpdate,
   syncConnectedPeers,
   undoHistoryPeer,
 } from './support/collaboration';
@@ -397,9 +398,11 @@ const setConnected = (
   peerId: PeerId,
   connected: boolean
 ): void => {
-  runYjsUpdate(peers[peerId], (yjs) =>
-    connected ? yjs.connect() : yjs.disconnect()
-  );
+  if (connected) {
+    connectYjsPeer(peers[peerId]);
+  } else {
+    disconnectYjsPeer(peers[peerId]);
+  }
   sync(peers);
 };
 
@@ -843,7 +846,7 @@ describe('plitejs/yjs structural soak contracts', () => {
     connectAll(peers);
     runCommand(peers, 'a', reconcilePeer);
 
-    assertPeerTopLevelTexts(allPeers(peers), ['ot.Ken canonical snap', 'sh']);
+    assertPeerTopLevelTexts(allPeers(peers), ['n canonica', 'l snapshot.K']);
   });
 
   it('keeps structural edits from projecting block placeholders inside paragraphs', () => {

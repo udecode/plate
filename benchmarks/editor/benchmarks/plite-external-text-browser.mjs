@@ -123,14 +123,14 @@ const pageFor = async (bundle) => {
   page.on('pageerror', (error) => failures.push(`browser: ${error.message}`));
   await page.setContent(html(bundle), { waitUntil: 'load' });
   await page.waitForFunction(
-    () => globalThis.__PLITE_EXTERNAL_TEXT_BENCHMARK_READY__
+    () => globalThis.__EDITOR_EXTERNAL_TEXT_BENCHMARK_READY__
   );
   return page;
 };
 const call = (page, method, input) =>
   page.evaluate(
     (request) =>
-      globalThis.__PLITE_EXTERNAL_TEXT_BENCHMARK__[request.method](
+      globalThis.__EDITOR_EXTERNAL_TEXT_BENCHMARK__[request.method](
         request.input
       ),
     { method, input }

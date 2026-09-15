@@ -26,10 +26,6 @@ import {
   getLocalizedNavTitle,
   normalizeDocsHref,
 } from '@/lib/docs-nav-metadata';
-import {
-  getDocsRootFromPathname,
-  getSidebarNavForDocsRoot,
-} from '@/lib/docs-root-nav';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 import type { SidebarNavItem } from '@/types/nav';
@@ -55,11 +51,7 @@ function isNavItemActive(item: SidebarNavItem, pathname: string): boolean {
     const href = normalizeDocsHref(item.href);
 
     if (href === pathname) return true;
-    if (
-      href !== '/docs' &&
-      href !== '/docs/plite' &&
-      pathname.startsWith(`${href}/`)
-    ) {
+    if (href !== '/docs' && pathname.startsWith(`${href}/`)) {
       return true;
     }
   }
@@ -163,14 +155,9 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
   const locale = useLocale();
   const pathname = usePathname();
   const normalizedPathname = normalizeDocsHref(pathname ?? '');
-  const docsRoot = getDocsRootFromPathname(normalizedPathname);
-  const rootSidebarNav = React.useMemo(
-    () => getSidebarNavForDocsRoot(sidebarNav, docsRoot),
-    [docsRoot, sidebarNav]
-  );
   const navSections = React.useMemo(
-    () => foldMatchingSectionsIntoItems(rootSidebarNav),
-    [rootSidebarNav]
+    () => foldMatchingSectionsIntoItems(sidebarNav),
+    [sidebarNav]
   );
   const activeSectionKey = React.useMemo(
     () => getActiveSectionKey(navSections, normalizedPathname),
@@ -196,71 +183,28 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
     >
       <div className="h-9" />
       <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) gap-0 overflow-x-hidden px-2.5">
-        {docsRoot === 'plite'
-          ? navSections.map((section, index) => (
-              <DocsNavStaticGroup
-                key={getSectionKey(section, index)}
-                index={index}
-                pathname={normalizedPathname}
-                section={section}
-              />
-            ))
-          : navSections.map((section, index) => {
-              const sectionKey = getSectionKey(section, index);
+        {navSections.map((section, index) => {
+          const sectionKey = getSectionKey(section, index);
 
-              return (
-                <DocsNavGroup
-                  key={sectionKey}
-                  index={index}
-                  open={openSectionKey === sectionKey}
-                  pathname={normalizedPathname}
-                  section={section}
-                  onOpenChange={(open) => {
-                    setOpenSection({
-                      key: open ? sectionKey : undefined,
-                      pathname: normalizedPathname,
-                    });
-                  }}
-                />
-              );
-            })}
+          return (
+            <DocsNavGroup
+              key={sectionKey}
+              index={index}
+              open={openSectionKey === sectionKey}
+              pathname={normalizedPathname}
+              section={section}
+              onOpenChange={(open) => {
+                setOpenSection({
+                  key: open ? sectionKey : undefined,
+                  pathname: normalizedPathname,
+                });
+              }}
+            />
+          );
+        })}
         <div className="sticky -bottom-1 z-10 h-16 shrink-0 bg-linear-to-t from-background via-background/80 to-background/50 blur-xs" />
       </SidebarContent>
     </Sidebar>
-  ) : null;
-}
-
-function DocsNavStaticGroup({
-  index,
-  pathname,
-  section,
-}: {
-  index: number;
-  pathname: string;
-  section: SidebarNavItem;
-}) {
-  const locale = useLocale();
-  const sectionTitle = getSectionTitle(section, index, locale);
-  const standalone =
-    section.items?.length === 1 && section.items[0]?.title === section.title;
-
-  return section.items?.length ? (
-    <SidebarGroup
-      className={cn('shrink-0 py-0', index === 0 && sectionTitle && 'pt-6')}
-    >
-      {standalone || !sectionTitle ? null : (
-        <SidebarGroupLabel className="font-medium text-muted-foreground">
-          {sectionTitle}
-        </SidebarGroupLabel>
-      )}
-      <SidebarGroupContent>
-        <DocsNavItems
-          dense={!standalone && index > 0}
-          items={section.items}
-          pathname={pathname}
-        />
-      </SidebarGroupContent>
-    </SidebarGroup>
   ) : null;
 }
 

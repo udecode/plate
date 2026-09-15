@@ -1126,7 +1126,7 @@ describe('plite delete contract', () => {
       focus: { path: [1, 0], offset: 'If you are using'.length },
     };
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:closed-cross-block-delete', {
           elements: {
             'code-block': {
@@ -1196,7 +1196,7 @@ describe('plite delete contract', () => {
       paragraph('after'),
     ];
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:closed-backward-boundary-delete', {
           elements: {
             paragraph: {

@@ -10,11 +10,11 @@ export type RenderTextProps<N extends Text = Text> = {
   children: any;
   /**
    * HTML attributes to be spread onto the rendered container element. Includes
-   * `data-plite-node="text"` and `ref`.
+   * `data-editor-node="text"` and `ref`.
    */
   attributes: {
     [key: string]: unknown;
-    'data-plite-node': 'text';
+    'data-editor-node': 'text';
     ref?: any;
     className?: string;
     style?: any;

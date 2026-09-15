@@ -1,13 +1,13 @@
 import imageExtensions from 'image-extensions';
 import isUrl from 'is-url';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
-import { defineExtension } from 'plitejs';
-import { clipboardHandler } from 'plitejs/dom';
+import { definePlugin } from 'plitejs';
+import { domCommands } from 'plitejs/dom';
 import {
   Editable,
   type RenderElementProps,
   type RenderVoidProps,
-  Plite,
+  EditorRoot,
   useEditorContext,
   useEditorFocused,
   useElementSelected,
@@ -134,12 +134,12 @@ const ImagesExample = () => {
 
 const ImagesEditor = ({ exampleCase }: { exampleCase: ImageExampleCase }) => {
   const editor = useEditor({
-    extensions: [image()],
+    plugins: [image()],
     initialValue: createInitialValue(exampleCase),
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Toolbar>
         <InsertImageButton />
       </Toolbar>
@@ -148,47 +148,75 @@ const ImagesEditor = ({ exampleCase }: { exampleCase: ImageExampleCase }) => {
         renderElement={renderElement}
         renderVoid={renderVoid}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
+const ImagePlugin = definePlugin('image', {
+  schema: { elements: { image: { void: 'block' } } },
+  update: ({ context: { afterCommit }, editor, tx }) => ({
+    insertFromClipboard(sources: Array<File | string>) {
+      const pendingFiles: Array<
+        [NonNullable<ReturnType<typeof tx.key>>, File]
+      > = [];
+
+      for (const source of sources) {
+        const element: ImageElement = {
+          type: 'image',
+          url: typeof source === 'string' ? source : '',
+          children: [{ text: '' }],
+        };
+
+        tx.nodes.insert(element);
+        tx.nodes.insert({
+          type: 'paragraph',
+          children: [{ text: '' }],
+        });
+
+        const key = tx.key(element);
+
+        if (source instanceof File && key !== null) {
+          pendingFiles.push([key, source]);
+        }
+      }
+
+      if (pendingFiles.length > 0) {
+        afterCommit(() => {
+          for (const [key, file] of pendingFiles) {
+            editor.update((nextTx) => {
+              nextTx.nodes.set({ url: URL.createObjectURL(file) }, { at: key });
+            });
+          }
+        });
+      }
+    },
+  }),
+});
+
 const image = () =>
-  defineExtension('image', {
-    contributions: [
-      clipboardHandler({
-        insertData(data, { next, tx }) {
-          const text = data.getData('text/plain');
-          const imageFiles = Array.from(data.files ?? []).filter(
-            (file) => file.type.split('/')[0] === 'image'
-          );
-          const insert = (url: string) => {
-            tx.nodes.insert({
-              type: 'image',
-              url,
-              children: [{ text: '' }],
-            });
-            tx.nodes.insert({
-              type: 'paragraph',
-              children: [{ text: '' }],
-            });
-          };
+  definePlugin('imageClipboard', {
+    commands: ({ around }) => [
+      around(domCommands.insertData, ({ input, next, state }) => {
+        const imageFiles = Array.from(input.files ?? []).filter(
+          (file) => file.type.split('/')[0] === 'image'
+        );
 
-          if (imageFiles.length > 0) {
-            imageFiles.forEach((file) => {
-              insert(URL.createObjectURL(file));
-            });
-            return true;
-          }
+        if (imageFiles.length > 0) {
+          return state.transaction((tx) => {
+            tx.image.insertFromClipboard(imageFiles);
+          });
+        }
 
-          if (isImageUrl(text)) {
-            insert(text);
-            return true;
-          }
-          return next();
-        },
+        const text = input.getData('text/plain');
+
+        if (!isImageUrl(text)) return next();
+
+        return state.transaction((tx) => {
+          tx.image.insertFromClipboard([text]);
+        });
       }),
     ],
-    schema: { elements: { image: { void: 'block' } } },
+    dependencies: [ImagePlugin],
   });
 
 const renderElement = (props: RenderElementProps<CustomElement>) => {
@@ -231,12 +259,12 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
   const selected = useElementSelected({ mode: 'collapsed' });
 
   return (
-    <div className="plite-images-figure">
+    <div className="editor-images-figure">
       {/* oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] This editor example renders the document-owned image URL as a native selected void node. */}
       <img
         alt=""
         className={cn(
-          'plite-images-image',
+          'editor-images-image',
           selected && focused && 'is-selected'
         )}
         height={90}
@@ -246,7 +274,7 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
       <Button
         active
         className={cn(
-          'plite-images-remove-button',
+          'editor-images-remove-button',
           selected && focused && 'is-visible'
         )}
         onClick={() => {

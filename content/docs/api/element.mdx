@@ -1,0 +1,87 @@
+---
+title: "Element API"
+description: "Element node API for schema behavior, void rendering, and element checks."
+---
+
+`Element` objects are a type of `Node` in a Plate document that contain other `Element` nodes or `Text` nodes.
+
+## Interface
+
+```typescript
+interface Element {
+  children: Node[];
+}
+```
+
+## On this page
+
+- [Behavior Types](/docs/api/element#element-behavior-types)
+  - [Block vs. Inline](/docs/api/element#block-vs-inline)
+  - [Void vs Not Void](/docs/api/element#void-vs-not-void)
+    - [Rendering Void Elements](/docs/api/element#rendering-void-elements)
+- [Static methods](/docs/api/element#static-methods)
+  - [Retrieval methods](/docs/api/element#retrieval-methods)
+  - [Check methods](/docs/api/element#check-methods)
+
+## Element behavior types
+
+Element nodes behave differently depending on the [Plate editor's schema](/docs/api/editor-api#schema-behavior). An element can be:
+
+- "block" or "inline" as defined by `state.schema.isInline(element)`
+- either "void" or "not void" as defined by `state.schema.isVoid(element)`
+
+### Block vs. inline
+
+A "block" element can only be siblings with other "block" elements. An "inline" node can be siblings with `Text` nodes or other "inline" elements.
+
+### Void vs not void
+
+In a not "void" element, Plate handles the rendering of its `children` (e.g. in a paragraph where the `Text` and `Inline` children are rendered by Plate). In a "void" element, Plate owns the DOM shell and selection anchor while app code renders only the visible content.
+
+#### Voids that support marks
+
+Some void elements are effectively stand-ins for text, such as with the
+[mentions](/docs/mention) example, where the
+mention element renders the character's name. Users might want to format Void
+elements like this with bold, or set their font and size, so
+`state.schema.isMarkableVoid(element)` tells Plate whether or not to apply Marks
+to the text children of void elements.
+
+#### Rendering void elements
+
+Keep the empty text child in the document. Bind a component to the owning plugin and render `EditorElement` with its `children` so Plate preserves the editable shell and selection anchor.
+
+Use the [Image](/docs/media), [Mention](/docs/mention), or [Horizontal Rule](/docs/horizontal-rule) component for a complete example. `useElementSelected()` subscribes to selection for the rendered element; keep its selection ring in that component.
+
+Marks on a markable void's text child can control its visible style. The schema's `isMarkableVoid` policy determines whether the editor applies those marks.
+
+## Static methods
+
+### Retrieval methods
+
+#### `ElementApi.matches(element: Element, props: Partial<Element>) => boolean`
+
+Check if an element matches a set of `props`. Note: This checks custom properties, but it does not ensure that any children are equivalent.
+
+### Check methods
+
+#### `ElementApi.isAncestor(value: unknown) => value is Ancestor`
+
+Check if a value implements the 'Ancestor' interface.
+
+#### `ElementApi.isElement(value: unknown) => value is Element`
+
+Check if a `value` implements the `Element` interface.
+
+#### `ElementApi.isElementList(value: unknown) => value is Element[]`
+
+Check if a `value` is an array of `Element` objects.
+
+#### `ElementApi.isElementProps(props: unknown) => props is Partial<Element>`
+
+Check if a value is an object that can be used as partial `Element` props.
+
+#### `ElementApi.isElementType<T extends Element>(value: unknown, elementVal: string, elementKey: string = 'type'): value is T`
+
+Check if a value implements the `Element` interface and has `elementKey` with
+the selected value. The default key is `type`.

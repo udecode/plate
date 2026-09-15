@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { PLITE_BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY } from './constants';
 import type {
   CollapsedModelDOMSelectionExpectation,
   DOMSelectionLocationSnapshot,
@@ -99,7 +99,7 @@ export const assertCollapsedModelDOMSelectionExpectation = async (
 
                 return handle?.getInputState?.() ?? null;
               },
-              { key: PLITE_BROWSER_HANDLE_KEY }
+              { key: BROWSER_HANDLE_KEY }
             ),
             root.evaluate(
               (element: HTMLElement, { key }: { key: string }) => {
@@ -107,7 +107,7 @@ export const assertCollapsedModelDOMSelectionExpectation = async (
 
                 return handle?.getKernelTrace?.()?.slice(-8) ?? [];
               },
-              { key: PLITE_BROWSER_HANDLE_KEY }
+              { key: BROWSER_HANDLE_KEY }
             ),
           ]);
 
@@ -168,7 +168,7 @@ export const assertCollapsedModelDOMSelectionExpectation = async (
       .toBe(true);
   } catch {
     throw new Error(
-      `Expected collapsed Plite/DOM selection ${JSON.stringify(
+      `Expected collapsed editor/DOM selection ${JSON.stringify(
         expected
       )} but received ${JSON.stringify(actual)}`
     );
@@ -190,7 +190,7 @@ export const assertSelectionExpectation = async (
       .toBe(true);
   } catch {
     throw new Error(
-      `Expected Plite selection ${JSON.stringify(
+      `Expected EditorRoot selection ${JSON.stringify(
         expected
       )} but received ${JSON.stringify(actual)}`
     );
@@ -217,14 +217,14 @@ export const assertDOMSelectionExpectation = async (
       root.evaluate(
         (element: HTMLElement, { key }: { key: string }) =>
           (element as Record<string, any>)[key]?.getInputState?.() ?? null,
-        { key: PLITE_BROWSER_HANDLE_KEY }
+        { key: BROWSER_HANDLE_KEY }
       ),
       root.evaluate(
         (element: HTMLElement, { key }: { key: string }) =>
           (element as Record<string, any>)[key]
             ?.getKernelTrace?.()
             ?.slice(-8) ?? [],
-        { key: PLITE_BROWSER_HANDLE_KEY }
+        { key: BROWSER_HANDLE_KEY }
       ),
     ]);
 
@@ -349,7 +349,7 @@ const takeResolvedDOMSelectionSnapshotForRoot = async (
         },
       };
     },
-    { key: PLITE_BROWSER_HANDLE_KEY }
+    { key: BROWSER_HANDLE_KEY }
   );
 
 export const takeDOMSelectionLocationSnapshotForRoot = async (
@@ -373,9 +373,9 @@ export const takeDOMSelectionLocationSnapshotForRoot = async (
         : anchorNode instanceof HTMLElement
           ? anchorNode
           : null;
-    const textElement = anchorElement?.closest('[data-plite-node="text"]');
+    const textElement = anchorElement?.closest('[data-editor-node="text"]');
     const anchorPath = textElement
-      ?.getAttribute('data-plite-path')
+      ?.getAttribute('data-editor-path')
       ?.split(',')
       .filter(Boolean)
       .map(Number);
@@ -388,13 +388,13 @@ export const takeDOMSelectionLocationSnapshotForRoot = async (
     };
   });
 
-/** Capture the current Plite model selection from a Playwright page. */
+/** Capture the current editor model selection from a Playwright page. */
 export const takeSelectionSnapshot = async (
   page: Page
 ): Promise<SelectionSnapshot | null> =>
   page.evaluate(
     ({ key }) => {
-      const root = document.querySelector('[data-plite-editor="true"]');
+      const root = document.querySelector('[data-editor="true"]');
 
       if (!root) {
         return null;
@@ -413,11 +413,13 @@ export const takeSelectionSnapshot = async (
 
       const getTextSegments = (owner: Element) =>
         Array.from(
-          owner.querySelectorAll('[data-plite-string], [data-plite-zero-width]')
+          owner.querySelectorAll(
+            '[data-editor-string], [data-editor-zero-width]'
+          )
         ).map((segment) => {
           const leafNode = segment.firstChild;
           const domLength = leafNode?.textContent?.length ?? 0;
-          const attr = segment.getAttribute('data-plite-length');
+          const attr = segment.getAttribute('data-editor-length');
           const trueLength =
             attr == null ? domLength : Number.parseInt(attr, 10);
 
@@ -431,20 +433,20 @@ export const takeSelectionSnapshot = async (
         const element =
           node?.nodeType === 1 ? (node as Element) : node?.parentElement;
 
-        return element?.closest('[data-plite-zero-width]') ?? null;
+        return element?.closest('[data-editor-zero-width]') ?? null;
       };
       const toEditorOffset = (node: Node | null, offset: number) => {
         const owner =
           node?.nodeType === 1
-            ? (node as Element).closest('[data-plite-node="text"]')
-            : node?.parentElement?.closest('[data-plite-node="text"]');
+            ? (node as Element).closest('[data-editor-node="text"]')
+            : node?.parentElement?.closest('[data-editor-node="text"]');
         const segment =
           node?.nodeType === 1
             ? (node as Element).closest(
-                '[data-plite-string], [data-plite-zero-width]'
+                '[data-editor-string], [data-editor-zero-width]'
               )
             : node?.parentElement?.closest(
-                '[data-plite-string], [data-plite-zero-width]'
+                '[data-editor-string], [data-editor-zero-width]'
               );
 
         const isZeroWidth = Boolean(findZeroWidthMarker(node));
@@ -484,21 +486,21 @@ export const takeSelectionSnapshot = async (
       const getPath = (node: Node | null) => {
         const owner =
           node?.nodeType === 1
-            ? (node as Element).closest('[data-plite-node="text"]')
-            : node?.parentElement?.closest('[data-plite-node="text"]');
+            ? (node as Element).closest('[data-editor-node="text"]')
+            : node?.parentElement?.closest('[data-editor-node="text"]');
 
         if (!owner) {
-          throw new Error('Cannot resolve selection to a Plite text node');
+          throw new Error('Cannot resolve selection to a editor text node');
         }
 
         if (!root.contains(owner)) {
           throw new Error('Selection text node is outside the editor root');
         }
 
-        const pathAttribute = owner.getAttribute('data-plite-path');
+        const pathAttribute = owner.getAttribute('data-editor-path');
 
         if (!pathAttribute) {
-          throw new Error('Cannot resolve selection to a Plite DOM path');
+          throw new Error('Cannot resolve selection to a editor DOM path');
         }
 
         const path = pathAttribute
@@ -506,7 +508,7 @@ export const takeSelectionSnapshot = async (
           .map((part) => Number.parseInt(part, 10));
 
         if (path.some((part) => !Number.isInteger(part))) {
-          throw new Error('Invalid Plite DOM path');
+          throw new Error('Invalid editor DOM path');
         }
 
         return path;
@@ -523,7 +525,7 @@ export const takeSelectionSnapshot = async (
         },
       };
     },
-    { key: PLITE_BROWSER_HANDLE_KEY }
+    { key: BROWSER_HANDLE_KEY }
   );
 
 export const takeSelectionSnapshotForRoot = async (
@@ -556,11 +558,13 @@ export const takeSelectionSnapshotForRoot = async (
 
       const getTextSegments = (owner: Element) =>
         Array.from(
-          owner.querySelectorAll('[data-plite-string], [data-plite-zero-width]')
+          owner.querySelectorAll(
+            '[data-editor-string], [data-editor-zero-width]'
+          )
         ).map((segment) => {
           const leafNode = segment.firstChild;
           const domLength = leafNode?.textContent?.length ?? 0;
-          const attr = segment.getAttribute('data-plite-length');
+          const attr = segment.getAttribute('data-editor-length');
           const trueLength =
             attr == null ? domLength : Number.parseInt(attr, 10);
 
@@ -575,21 +579,21 @@ export const takeSelectionSnapshotForRoot = async (
         const markerElement =
           node?.nodeType === 1 ? (node as Element) : node?.parentElement;
 
-        return markerElement?.closest('[data-plite-zero-width]') ?? null;
+        return markerElement?.closest('[data-editor-zero-width]') ?? null;
       };
 
       const toEditorOffset = (node: Node | null, offset: number) => {
         const owner =
           node?.nodeType === 1
-            ? (node as Element).closest('[data-plite-node="text"]')
-            : node?.parentElement?.closest('[data-plite-node="text"]');
+            ? (node as Element).closest('[data-editor-node="text"]')
+            : node?.parentElement?.closest('[data-editor-node="text"]');
         const segment =
           node?.nodeType === 1
             ? (node as Element).closest(
-                '[data-plite-string], [data-plite-zero-width]'
+                '[data-editor-string], [data-editor-zero-width]'
               )
             : node?.parentElement?.closest(
-                '[data-plite-string], [data-plite-zero-width]'
+                '[data-editor-string], [data-editor-zero-width]'
               );
 
         const isZeroWidth = Boolean(findZeroWidthMarker(node));
@@ -630,21 +634,21 @@ export const takeSelectionSnapshotForRoot = async (
       const getPath = (node: Node | null) => {
         const owner =
           node?.nodeType === 1
-            ? (node as Element).closest('[data-plite-node="text"]')
-            : node?.parentElement?.closest('[data-plite-node="text"]');
+            ? (node as Element).closest('[data-editor-node="text"]')
+            : node?.parentElement?.closest('[data-editor-node="text"]');
 
         if (!owner) {
-          throw new Error('Cannot resolve selection to a Plite text node');
+          throw new Error('Cannot resolve selection to a editor text node');
         }
 
         if (!element.contains(owner)) {
           throw new Error('Selection text node is outside the editor root');
         }
 
-        const pathAttribute = owner.getAttribute('data-plite-path');
+        const pathAttribute = owner.getAttribute('data-editor-path');
 
         if (!pathAttribute) {
-          throw new Error('Cannot resolve selection to a Plite DOM path');
+          throw new Error('Cannot resolve selection to a editor DOM path');
         }
 
         const path = pathAttribute
@@ -652,7 +656,7 @@ export const takeSelectionSnapshotForRoot = async (
           .map((part) => Number.parseInt(part, 10));
 
         if (path.some((part) => !Number.isInteger(part))) {
-          throw new Error('Invalid Plite DOM path');
+          throw new Error('Invalid editor DOM path');
         }
 
         return path;
@@ -669,7 +673,7 @@ export const takeSelectionSnapshotForRoot = async (
         },
       };
     },
-    { key: PLITE_BROWSER_HANDLE_KEY }
+    { key: BROWSER_HANDLE_KEY }
   );
 
 export const waitForSelectionSync = async (
@@ -734,12 +738,12 @@ export const waitForSelectionSync = async (
           const getTextSegments = (owner: Element) =>
             Array.from(
               owner.querySelectorAll(
-                '[data-plite-string], [data-plite-zero-width]'
+                '[data-editor-string], [data-editor-zero-width]'
               )
             ).map((segment) => {
               const leafNode = segment.firstChild;
               const domLength = leafNode?.textContent?.length ?? 0;
-              const attr = segment.getAttribute('data-plite-length');
+              const attr = segment.getAttribute('data-editor-length');
               const trueLength =
                 attr == null ? domLength : Number.parseInt(attr, 10);
 
@@ -753,21 +757,21 @@ export const waitForSelectionSync = async (
             const markerElement =
               node?.nodeType === 1 ? (node as Element) : node?.parentElement;
 
-            return markerElement?.closest('[data-plite-zero-width]') ?? null;
+            return markerElement?.closest('[data-editor-zero-width]') ?? null;
           };
 
           const toEditorOffset = (node: Node | null, offset: number) => {
             const owner =
               node?.nodeType === 1
-                ? (node as Element).closest('[data-plite-node="text"]')
-                : node?.parentElement?.closest('[data-plite-node="text"]');
+                ? (node as Element).closest('[data-editor-node="text"]')
+                : node?.parentElement?.closest('[data-editor-node="text"]');
             const segment =
               node?.nodeType === 1
                 ? (node as Element).closest(
-                    '[data-plite-string], [data-plite-zero-width]'
+                    '[data-editor-string], [data-editor-zero-width]'
                   )
                 : node?.parentElement?.closest(
-                    '[data-plite-string], [data-plite-zero-width]'
+                    '[data-editor-string], [data-editor-zero-width]'
                   );
 
             const isZeroWidth = Boolean(findZeroWidthMarker(node));
@@ -809,15 +813,15 @@ export const waitForSelectionSync = async (
           const getPath = (node: Node | null) => {
             const owner =
               node?.nodeType === 1
-                ? (node as Element).closest('[data-plite-node="text"]')
-                : node?.parentElement?.closest('[data-plite-node="text"]');
+                ? (node as Element).closest('[data-editor-node="text"]')
+                : node?.parentElement?.closest('[data-editor-node="text"]');
 
             if (!owner || !element.contains(owner)) {
               return null;
             }
 
             const path = owner
-              .getAttribute('data-plite-path')
+              .getAttribute('data-editor-path')
               ?.split(',')
               .map((part) => Number.parseInt(part, 10));
 
@@ -874,11 +878,11 @@ export const waitForSelectionSync = async (
             ? handle.getDOMSelection()
             : getNativeSelectionSnapshot();
         const hasProjectedSelectionMarkers = !!element.querySelector(
-          '[data-plite-view-selection="true"]'
+          '[data-editor-view-selection="true"]'
         );
         const modelBackedSelection =
-          element.getAttribute('data-plite-dom-strategy-selection') ===
-            'partial-dom-backed' ||
+          element.getAttribute('data-editor-viewport-selection') ===
+            'viewport-backed' ||
           hasProjectedSelectionMarkers ||
           handle?.getInputState?.()?.modelOwnedDOMCoverageSelection === true;
         const projectedSelectionMatches = (
@@ -928,7 +932,7 @@ export const waitForSelectionSync = async (
         allowMissingNativeSelection:
           options.allowMissingNativeSelection ?? false,
         expectedSelection,
-        key: PLITE_BROWSER_HANDLE_KEY,
+        key: BROWSER_HANDLE_KEY,
       }
     );
 

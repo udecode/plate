@@ -22,7 +22,7 @@ npx shadcn@latest add @plate/editor
 接下来，在主应用文件（如 `src/App.tsx`）中创建基础编辑器。此示例在 `EditorContainer` 内设置了一个简单编辑器。
 
 ```tsx showLineNumbers title="src/App.tsx"
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -30,11 +30,11 @@ export default function App() {
   const editor = useCreateEditor();
 
   return (
-    <Plate editor={editor}>      {/* 提供编辑器上下文 */}
+    <EditorRoot editor={editor}>      {/* 提供编辑器上下文 */}
       <EditorContainer>         {/* 设置编辑器区域样式 */}
         <Editor placeholder="输入您精彩的内容..." />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -70,7 +70,7 @@ import {
   UnderlinePlugin,
 } from 'platejs/react';
 import {
-  Plate,
+  EditorRoot,
   useCreateEditor,
 } from 'platejs/react';
 
@@ -100,7 +100,7 @@ export default function App() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <FixedToolbar className="justify-start rounded-t-lg">
         <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
         <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
@@ -109,7 +109,7 @@ export default function App() {
       <EditorContainer>
         <Editor placeholder="输入您精彩的内容..." />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -132,7 +132,7 @@ import {
   UnderlinePlugin,
 } from 'platejs/react';
 import {
-  Plate,
+  EditorRoot,
   useCreateEditor,
 } from 'platejs/react';
 
@@ -180,7 +180,7 @@ export default function App() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
         {/* 元素工具栏按钮 */}
         <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
@@ -195,7 +195,7 @@ export default function App() {
       <EditorContainer>
         <Editor placeholder="输入您精彩的内容..." />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -228,7 +228,7 @@ import {
   UnderlinePlugin,
 } from 'platejs/react';
 import {
-  Plate,
+  EditorRoot,
   useCreateEditor,
 } from 'platejs/react';
 
@@ -279,7 +279,7 @@ export default function App() {
   });
 
   return (
-    <Plate
+    <EditorRoot
       editor={editor}
       onValueChange={({ value }) => {
         localStorage.setItem('installation-react-demo', JSON.stringify(value));
@@ -306,7 +306,7 @@ export default function App() {
       <EditorContainer>
         <Editor placeholder="输入您精彩的内容..." />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```

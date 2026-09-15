@@ -12,7 +12,7 @@ import type {
   RenderElementProps,
 } from '../lib';
 import { createPluginContext } from '../lib/plugin/createPluginContext.internal';
-import { PliteElement } from './components/plite-nodes';
+import { EditorElement } from './components/plite-nodes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps.internal';
 
 export type PliteRenderElement = (
@@ -30,7 +30,7 @@ export const pluginRenderElementStatic = (
       nodeComponent && typeof nodeComponent !== 'string'
         ? nodeComponent
         : undefined;
-    const Element = Component ?? PliteElement;
+    const Element = Component ?? EditorElement;
 
     let { children } = nodeProps;
 

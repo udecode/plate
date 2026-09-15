@@ -7,7 +7,7 @@ import {
   type TestEditor,
 } from '#platejs-test-internal';
 
-import { defineBasePlugin, schema } from '../../../core';
+import { definePlugin, schema } from '../../../core';
 import {
   createTestBaseTableEditor,
   createTestTableEditor,
@@ -279,7 +279,7 @@ describe('BaseTablePlugin deletion', () => {
       children: [{ text: '' }],
       type: 'tableTestRootOwner',
     };
-    const RootOwnerPlugin = defineBasePlugin('tableTestRootOwner', {
+    const RootOwnerPlugin = definePlugin('tableTestRootOwner', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),

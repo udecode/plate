@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   editorCommands,
 } from '../../../../../packages/plitejs/src/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
@@ -22,7 +22,7 @@ const retainedPolicies = Number.parseInt(
 );
 
 // Isolate policy dispatch from history recording while providing its required namespace.
-const historyCapability = defineExtension('history', {
+const historyCapability = definePlugin('history', {
   update: () => ({
     noop() {},
   }),
@@ -30,7 +30,7 @@ const historyCapability = defineExtension('history', {
 
 const createBenchmarkEditor = () =>
   createEditor({
-    extensions: [historyCapability],
+    plugins: [historyCapability],
     initialValue: [
       {
         type: 'paragraph',

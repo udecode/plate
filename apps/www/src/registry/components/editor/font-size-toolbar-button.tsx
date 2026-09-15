@@ -149,7 +149,7 @@ export function FontSizeToolbarButton() {
                   handleInputChange();
                 }
               }}
-              data-plite-keep-selection-visible="true"
+              data-editor-keep-selection-visible="true"
               type="text"
             />
           }

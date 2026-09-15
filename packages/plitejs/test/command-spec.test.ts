@@ -7,14 +7,14 @@ import {
   createEditor,
   createEditorView,
   defineCommand,
-  defineExtension,
+  definePlugin,
   defineEditorSchema,
   defineUpdateAnnotation,
   editorCommands,
   type Editor,
   type EditorCommand,
-  type EditorExtensionDefinitionInput,
-  type EditorExtensionReference,
+  type PluginDefinitionInput,
+  type PluginReference,
   type EditorTransactionAnchor,
   type Point,
   property,
@@ -28,11 +28,11 @@ import {
 import { createCommandRegistration } from '../src/core/command-definition';
 import { registerCommandInRegistry } from '../src/core/command-registry';
 import {
-  createExtensionRegistry,
-  finalizeExtensionRegistry,
-  initializeBaseExtensionRegistry,
-  validateConfiguredExtensionRegistry,
-} from '../src/core/extension-registry';
+  createPluginRegistry,
+  finalizePluginRegistry,
+  initializeBasePluginRegistry,
+  validateConfiguredPluginRegistry,
+} from '../src/core/plugin-registry';
 import {
   dispatchCommand,
   evaluateCommand,
@@ -47,11 +47,11 @@ type InsertCommand = {
 
 const publicRange = ({ anchor, focus }: Range): Range => ({ anchor, focus });
 
-const createTextEditorWithExtensions = (
-  extensions: readonly EditorExtensionReference[] = []
+const createTextEditorWithPlugins = (
+  plugins: readonly PluginReference[] = []
 ): Editor<Value> =>
   createEditor({
-    extensions,
+    plugins,
     initialSelection: SelectionApi.text({
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
@@ -59,17 +59,15 @@ const createTextEditorWithExtensions = (
     initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }] as Value,
   });
 
-type CommandDeclarations = NonNullable<
-  EditorExtensionDefinitionInput['commands']
->;
+type CommandDeclarations = NonNullable<PluginDefinitionInput['commands']>;
 
 const createTextEditor = (commands?: CommandDeclarations) =>
-  createTextEditorWithExtensions(
-    commands ? [defineExtension('test.commands', { commands })] : []
+  createTextEditorWithPlugins(
+    commands ? [definePlugin('test.commands', { commands })] : []
   );
 
-const commandExtension = (name: string, commands: CommandDeclarations) =>
-  defineExtension(name, { commands });
+const commandPlugin = (name: string, commands: CommandDeclarations) =>
+  definePlugin(name, { commands });
 
 const insert = defineCommand<InsertCommand>('test.insert', {
   build: ({ input, state }) =>
@@ -178,8 +176,8 @@ describe('pure command transaction specs', () => {
   it('keeps cached command state scoped to the dispatching editor view', () => {
     const observed: string[] = [];
     const runtime = createEditor({
-      extensions: [
-        defineExtension('test.view-command-state', {
+      plugins: [
+        definePlugin('test.view-command-state', {
           commands: ({ around }) => [
             around(editorCommands.insertText, ({ next, state }) => {
               observed.push(state.text.string([]));
@@ -366,7 +364,11 @@ describe('pure command transaction specs', () => {
     let commits = 0;
 
     editor.subscribeCommit(() => (commits += 1) - 1);
-    const spec = editor.read((state) => insert.build(state, { text: '!' }));
+    const spec = editor.read((state) =>
+      state.transaction((tx) => {
+        tx.text.insert('!');
+      })
+    );
 
     assert.notEqual(spec, false);
     if (spec === false) throw new Error('Expected a transaction spec.');
@@ -799,17 +801,17 @@ describe('pure command transaction specs', () => {
     let commits = 0;
     const profiledIds: string[] = [];
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
 
     void editor.read.runtime.snapshot().index;
     editor.subscribeCommit(() => (commits += 1) - 1);
 
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind === 'core-time') profiledIds.push(event.id);
         },
@@ -817,7 +819,7 @@ describe('pure command transaction specs', () => {
 
       assert.equal(editor.update.command(insert, { text: '!' }), true);
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     assert.equal(
@@ -855,15 +857,15 @@ describe('pure command transaction specs', () => {
     let commits = 0;
     const profiledIds: string[] = [];
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
 
     editor.subscribeCommit(() => (commits += 1) - 1);
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind === 'core-time') profiledIds.push(event.id);
         },
@@ -874,7 +876,7 @@ describe('pure command transaction specs', () => {
         tx.command(insert, { text: 'y' });
       });
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     assert.equal(editor.read.text.string([]), 'axyb');
@@ -936,7 +938,7 @@ describe('pure command transaction specs', () => {
   it('keeps a node selection intact when a replacement slice cannot fit', () => {
     const selection = SelectionApi.nodes([[0], [2]]);
     const editor = createEditor({
-      extensions: [CommandScriptSchema],
+      plugins: [CommandScriptSchema],
       initialSelection: selection,
       initialValue: [
         { type: 'paragraph', children: [{ text: 'one' }] },
@@ -958,7 +960,7 @@ describe('pure command transaction specs', () => {
 
   it('removes the remaining selected nodes after an open slice fits', () => {
     const editor = createEditor({
-      extensions: [CommandScriptSchema],
+      plugins: [CommandScriptSchema],
       initialSelection: SelectionApi.nodes([[0], [2]]),
       initialValue: [
         { type: 'paragraph', children: [{ text: 'one' }] },
@@ -988,7 +990,7 @@ describe('pure command transaction specs', () => {
   it('removes an empty block after a block void before deleting the void', () => {
     const createBlockVoidEditor = () =>
       createEditor({
-        extensions: [
+        plugins: [
           defineTestSchema('test.block-void-boundary', {
             image: { void: 'block' },
           }),
@@ -1029,7 +1031,7 @@ describe('pure command transaction specs', () => {
   it('preserves leading inline voids when deleting their split-block boundary', () => {
     const boundaryOffset = 'before'.length;
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineTestSchema('test.inline-void-boundary', {
           mention: { void: 'markable-inline' },
         }),
@@ -1242,7 +1244,7 @@ describe('pure command transaction specs', () => {
   it('dispatches collapse and block toggle as pure semantic commands', () => {
     const seen: string[] = [];
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:semantic-block-commands', {
           elements: {
             'heading-one': { content: schema.content.text() },
@@ -1253,7 +1255,7 @@ describe('pure command transaction specs', () => {
             min: 1,
           }),
         }),
-        defineExtension('test.semantic-selection-and-block-commands', {
+        definePlugin('test.semantic-selection-and-block-commands', {
           commands: ({ handle }) => [
             handle(editorCommands.collapse, () => {
               seen.push(editorCommands.collapse.id);
@@ -1304,7 +1306,7 @@ describe('pure command transaction specs', () => {
 
   it('applies schema-exclusive marks and collapses in one semantic command', () => {
     const editor = createEditor({
-      extensions: [CommandScriptSchema],
+      plugins: [CommandScriptSchema],
       initialSelection: SelectionApi.text({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
@@ -1357,17 +1359,17 @@ describe('pure command transaction specs', () => {
     let commits = 0;
     const profiledIds: string[] = [];
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     const mainNodeKey = runtime.key([0]);
     const headerNodeKey = header.key([0]);
 
     runtime.subscribeCommit(() => (commits += 1) - 1);
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind === 'core-time') profiledIds.push(event.id);
         },
@@ -1378,7 +1380,7 @@ describe('pure command transaction specs', () => {
         assert.equal(tx.command(insert, { text: '?' }), true);
       });
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     assert.deepEqual(
@@ -1493,8 +1495,8 @@ describe('pure command transaction specs', () => {
 
   it('preserves application order and next command overrides before dispatch', () => {
     const seen: string[] = [];
-    const editor = createTextEditorWithExtensions([
-      defineExtension('low-command-priority', {
+    const editor = createTextEditorWithPlugins([
+      definePlugin('low-command-priority', {
         commands: ({ around }) => [
           around(insert, ({ input, next }) => {
             seen.push(`low:${input.text}`);
@@ -1502,7 +1504,7 @@ describe('pure command transaction specs', () => {
           }),
         ],
       }),
-      defineExtension('high-command-priority', {
+      definePlugin('high-command-priority', {
         commands: ({ around }) => [
           around(insert, ({ input, next }) => {
             seen.push(`high:${input.text}`);
@@ -1520,7 +1522,7 @@ describe('pure command transaction specs', () => {
 
   it('keeps dependency-resolved command order ahead of application order', () => {
     const seen: string[] = [];
-    const dependency = defineExtension('command-order-dependency', {
+    const dependency = definePlugin('command-order-dependency', {
       commands: ({ around }) => [
         around(insert, ({ input, next }) => {
           seen.push(`dependency:${input.text}`);
@@ -1528,7 +1530,7 @@ describe('pure command transaction specs', () => {
         }),
       ],
     });
-    const dependent = defineExtension('command-order-dependent', {
+    const dependent = definePlugin('command-order-dependent', {
       commands: ({ around }) => [
         around(insert, ({ input, next }) => {
           seen.push(`dependent:${input.text}`);
@@ -1537,7 +1539,7 @@ describe('pure command transaction specs', () => {
       ],
       dependencies: [dependency],
     });
-    const editor = createTextEditorWithExtensions([dependent]);
+    const editor = createTextEditorWithPlugins([dependent]);
 
     dispatchCommand(editor, insert, { text: 'z' });
 
@@ -1548,8 +1550,8 @@ describe('pure command transaction specs', () => {
   it('keeps configured command policy ahead of built-in fallback policy', () => {
     const calls: string[] = [];
     const editor = {} as Editor;
-    const base = createExtensionRegistry();
-    const configured = createExtensionRegistry({ configurationRevision: 1 });
+    const base = createPluginRegistry();
+    const configured = createPluginRegistry({ configurationRevision: 1 });
 
     registerCommandInRegistry(
       base.commands,
@@ -1567,11 +1569,11 @@ describe('pure command transaction specs', () => {
       }),
       'configured'
     );
-    initializeBaseExtensionRegistry(editor, finalizeExtensionRegistry(base));
+    initializeBasePluginRegistry(editor, finalizePluginRegistry(base));
 
-    const registry = validateConfiguredExtensionRegistry(
+    const registry = validateConfiguredPluginRegistry(
       editor,
-      finalizeExtensionRegistry(configured)
+      finalizePluginRegistry(configured)
     );
     const entries = registry.commands.byDescriptor.get(insert)?.entries as
       | ReadonlyArray<Readonly<{ run: () => false }>>
@@ -1635,8 +1637,8 @@ describe('pure command transaction specs', () => {
 
   it('runs downstream handlers against the prefix state', () => {
     const observed: string[] = [];
-    const editor = createTextEditorWithExtensions([
-      commandExtension('prefix-writer', ({ around }) => [
+    const editor = createTextEditorWithPlugins([
+      commandPlugin('prefix-writer', ({ around }) => [
         around(insert, ({ state, next }) =>
           next.after(
             state.transaction((tx) => {
@@ -1645,7 +1647,7 @@ describe('pure command transaction specs', () => {
           )
         ),
       ]),
-      commandExtension('prefix-observer', ({ handle }) => [
+      commandPlugin('prefix-observer', ({ handle }) => [
         handle(insert, ({ state }) => {
           observed.push(state.text.string([]));
 
@@ -1727,13 +1729,13 @@ describe('pure command transaction specs', () => {
   });
 
   it('composes nested prepared continuations in handler order', () => {
-    const editor = createTextEditorWithExtensions([
-      commandExtension('nested-prefix-high', ({ around }) => [
+    const editor = createTextEditorWithPlugins([
+      commandPlugin('nested-prefix-high', ({ around }) => [
         around(insert, ({ state, next }) =>
           next.after(state.transaction((tx) => tx.text.insert('x')))
         ),
       ]),
-      commandExtension('nested-prefix-low', ({ around }) => [
+      commandPlugin('nested-prefix-low', ({ around }) => [
         around(insert, ({ state, next }) =>
           next.after(state.transaction((tx) => tx.text.insert('y')))
         ),
@@ -1748,15 +1750,15 @@ describe('pure command transaction specs', () => {
 
   it('discards prepared contexts after a downstream exception', () => {
     let active = true;
-    const editor = createTextEditorWithExtensions([
-      commandExtension('throwing-prefix', ({ around }) => [
+    const editor = createTextEditorWithPlugins([
+      commandPlugin('throwing-prefix', ({ around }) => [
         around(insert, ({ state, next }) =>
           active
             ? next.after(state.transaction((tx) => tx.text.insert('x')))
             : next()
         ),
       ]),
-      commandExtension('throwing-handler', ({ handle }) => [
+      commandPlugin('throwing-handler', ({ handle }) => [
         handle(insert, () => {
           if (active) throw new Error('downstream failed');
 
@@ -1821,8 +1823,8 @@ describe('pure command transaction specs', () => {
 
   it('keeps split node keys injective while extending a delegated spec', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('test.extend-split-command', {
+      plugins: [
+        definePlugin('test.extend-split-command', {
           commands: ({ around }) => [
             around(editorCommands.insertBreak, ({ next, state }) => {
               const delegated = next();
@@ -2047,7 +2049,7 @@ describe('pure command transaction specs', () => {
       focus: { offset: 'heading'.length, path: [0, 0] },
     });
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:derived', {
           elements: {
             heading: {
@@ -2088,7 +2090,7 @@ describe('pure command transaction specs', () => {
       focus: { offset: 'one'.length, path: [0, 0, 0] },
     });
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:test.structural-blocks', {
           elements: {
             'bulleted-list': {

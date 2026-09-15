@@ -13,7 +13,7 @@ import {
 const createRootChrome = () => {
   const root = document.createElement('section');
 
-  root.dataset.pliteRootChrome = 'body';
+  root.dataset.editorRootChrome = 'body';
 
   return root;
 };
@@ -105,7 +105,7 @@ describe('root interaction resolver', () => {
   test('restores selection for editable root surface clicks without coordinates', () => {
     const editable = document.createElement('div');
 
-    editable.dataset.pliteEditor = 'true';
+    editable.dataset.editor = 'true';
 
     const target = resolveRootInteractionTarget({
       currentTarget: editable,
@@ -158,8 +158,8 @@ describe('root interaction resolver', () => {
     const editable = document.createElement('div');
     const text = document.createElement('span');
 
-    editable.dataset.pliteEditor = 'true';
-    text.dataset.pliteString = 'true';
+    editable.dataset.editor = 'true';
+    text.dataset.editorString = 'true';
     editable.append(text);
 
     const target = resolveRootInteractionTarget({
@@ -195,8 +195,8 @@ describe('root interaction resolver', () => {
     const editable = document.createElement('div');
     const text = document.createElement('span');
 
-    editable.dataset.pliteEditor = 'true';
-    text.dataset.pliteString = 'true';
+    editable.dataset.editor = 'true';
+    text.dataset.editorString = 'true';
     editable.append(text);
 
     const target = resolveRootInteractionTarget({
@@ -218,11 +218,11 @@ describe('root interaction resolver', () => {
     const link = document.createElement('a');
     const text = document.createElement('span');
 
-    editable.dataset.pliteEditor = 'true';
-    link.dataset.pliteInline = 'true';
-    link.dataset.pliteNode = 'element';
+    editable.dataset.editor = 'true';
+    link.dataset.editorInline = 'true';
+    link.dataset.editorNode = 'element';
     link.href = '/docs';
-    text.dataset.pliteString = 'true';
+    text.dataset.editorString = 'true';
     link.append(text);
     editable.append(link);
 
@@ -245,8 +245,8 @@ describe('root interaction resolver', () => {
     const editable = document.createElement('div');
     const text = document.createElement('span');
 
-    editable.dataset.pliteEditor = 'true';
-    text.dataset.pliteString = 'true';
+    editable.dataset.editor = 'true';
+    text.dataset.editorString = 'true';
     editable.append(text);
     root.append(editable);
 
@@ -263,9 +263,9 @@ describe('root interaction resolver', () => {
     const root = createRootChrome();
     const editable = document.createElement('div');
 
-    root.dataset.pliteRootChrome = 'header';
-    editable.dataset.pliteEditor = 'true';
-    editable.dataset.pliteRoot = 'header';
+    root.dataset.editorRootChrome = 'header';
+    editable.dataset.editor = 'true';
+    editable.dataset.editorRoot = 'header';
     root.append(editable);
 
     const target = resolveRootInteractionTarget({
@@ -289,9 +289,9 @@ describe('root interaction resolver', () => {
     const nested = document.createElement('div');
     const text = document.createElement('span');
 
-    root.dataset.pliteEditor = 'true';
-    nested.dataset.pliteEditor = 'true';
-    text.dataset.pliteString = 'true';
+    root.dataset.editor = 'true';
+    nested.dataset.editor = 'true';
+    text.dataset.editorString = 'true';
     nested.append(text);
     root.append(nested);
 

@@ -24,9 +24,9 @@ const expectedCommit =
   }).trim();
 
 const {
-  assertPliteRawMobileProof,
+  assertRawMobileProof,
   classifyBrowserMobileTransportProof,
-  validatePliteRawMobileProof,
+  validateRawMobileProof,
 } = await import(
   pathToFileURL(resolve(repoRoot, 'packages/test/src/proof/index.ts')).href
 );
@@ -95,7 +95,7 @@ const verifyReadback = (bundle) => {
 if (rawRequired) {
   const bundle = readArtifacts();
 
-  assertPliteRawMobileProof({ bundle, expectedCommit });
+  assertRawMobileProof({ bundle, expectedCommit });
   verifyReadback(bundle);
 
   console.log(
@@ -128,7 +128,7 @@ if (rawRequired) {
     );
   }
 
-  const incompleteRawResult = validatePliteRawMobileProof({
+  const incompleteRawResult = validateRawMobileProof({
     bundle: { receipts: [], schemaVersion: 1 },
     expectedCommit,
   });

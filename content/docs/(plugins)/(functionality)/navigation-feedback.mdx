@@ -40,8 +40,8 @@ to disable the plugin.
 
 ### Flash a target
 
-Call the API from the mounted editor returned by `useEditor()` or
-`useEditorPlugin()`. Resolve an element's `NodeKey` in that view and pass the
+Call the API from the mounted editor returned by `useEditor()`.
+Resolve an element's `NodeKey` in that view and pass the
 presentation for this action:
 
 ```tsx title="flash-first-block.tsx" showLineNumbers
@@ -100,18 +100,18 @@ animation, use `data-nav-cycle` to alternate between two animation names so a
 repeated flash restarts. Put the corresponding styles in the copied feature
 that requests the feedback.
 
-A standard `PlateElement` receives the attributes on its root. To highlight a
+A standard `EditorElement` receives the attributes on its root. To highlight a
 nested control, style it from the neutral marker on its element:
 
 ```tsx
 import type { FootnotePlugin } from 'platejs/footnote/react';
-import { PlateElement, type PlateElementProps } from 'platejs/react';
+import { EditorElement, type EditorElementProps } from 'platejs/react';
 
 export function FootnoteReferenceElement(
-  props: PlateElementProps<typeof FootnotePlugin>
+  props: EditorElementProps<typeof FootnotePlugin>
 ) {
   return (
-    <PlateElement {...props} as="sup" className="group/footnote">
+    <EditorElement {...props} as="sup" className="group/footnote">
       <button
         className="group-data-[nav-target=true]/footnote:bg-yellow-100"
         contentEditable={false}
@@ -120,7 +120,7 @@ export function FootnoteReferenceElement(
         [{props.element.ref}]
       </button>
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 ```
@@ -160,7 +160,7 @@ current target and restarts its timer.
       <APISubListItem parent="options" name="key" type="NodeKey">
         Element identity from the current editor and content root.
       </APISubListItem>
-      <APISubListItem parent="options" name="attributes" type="PlateViewElementAttributes" optional>
+      <APISubListItem parent="options" name="attributes" type="ViewElementAttributes" optional>
         Safe whole-element presentation for this flash.
       </APISubListItem>
       <APISubListItem parent="options" name="duration" type="number" optional>

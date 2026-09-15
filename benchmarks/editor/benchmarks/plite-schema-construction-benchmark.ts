@@ -1,6 +1,6 @@
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   ElementApi,
   property,
   schema,
@@ -27,7 +27,7 @@ if (!Number.isInteger(iterations) || iterations < 1) {
 const percentile = (values: readonly number[], ratio: number) =>
   values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 
-const schemaExtension = defineExtension('schema-construction-benchmark', {
+const schemaPlugin = definePlugin('schema-construction-benchmark', {
   schema: {
     elements: {
       paragraph: {
@@ -55,7 +55,7 @@ const schemaExtension = defineExtension('schema-construction-benchmark', {
   },
 });
 
-const sentinelEditor = createEditor({ extensions: [schemaExtension] });
+const sentinelEditor = createEditor({ plugins: [schemaPlugin] });
 const sentinelSchema = getCompiledEditorSchema(sentinelEditor);
 
 if (
@@ -73,7 +73,7 @@ const cohorts = [100, 1000, 10_000, 50_000] as const;
 const rows = cohorts.map((blocks) => {
   const innerTarget = Math.floor(blocks / 2);
   const editor = createEditor({
-    extensions: [schemaExtension],
+    plugins: [schemaPlugin],
     initialValue: [
       {
         type: 'section',

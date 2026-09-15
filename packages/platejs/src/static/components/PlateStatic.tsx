@@ -14,6 +14,7 @@ import {
   MAIN_ROOT_KEY,
 } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
+import { mergePlateRenderedAttributes } from '../../internal/mergePlateRenderedAttributes';
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
@@ -21,28 +22,28 @@ import {
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import type { Editor, RenderElementSlots } from '../../lib';
 import type {
-  PliteDecoration,
-  PliteDecorationAttributes,
-  PliteDecorationSource,
+  Decoration,
+  DecorationAttributes,
+  DecorationSource,
 } from '../internal/plite-react';
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic.internal';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic.internal';
 import { pipeRenderTextStatic } from '../pluginRenderTextStatic.internal';
-import type { PliteRenderElementProps } from '../types';
+import type { RenderElementProps } from '../types';
 
 const EMPTY_PATH: Path = [];
 const EMPTY_ROOT_STACK: readonly string[] = [];
 
 type StaticDecorationSlice = Readonly<{
-  attributes: PliteDecorationAttributes;
+  attributes: DecorationAttributes;
   end: number;
   key: string;
   start: number;
 }>;
 
 const areStaticDecorationsEqual = (
-  left: readonly PliteDecoration[],
-  right: readonly PliteDecoration[]
+  left: readonly Decoration[],
+  right: readonly Decoration[]
 ) =>
   left === right ||
   (left.length === right.length &&
@@ -59,7 +60,7 @@ const areStaticDecorationsEqual = (
 
 const getStaticDecorationSlices = (
   text: Text,
-  decorations: readonly PliteDecoration[]
+  decorations: readonly Decoration[]
 ): readonly StaticDecorationSlice[] =>
   decorations.flatMap(({ attributes, key, range }) => {
     const start = RangeApi.start(range);
@@ -77,10 +78,7 @@ const getStaticDecorationSlices = (
     ];
   });
 
-const splitStaticText = (
-  text: Text,
-  decorations: readonly PliteDecoration[]
-) => {
+const splitStaticText = (text: Text, decorations: readonly Decoration[]) => {
   const slices = getStaticDecorationSlices(text, decorations);
 
   if (text.text.length === 0) {
@@ -124,8 +122,8 @@ function BaseElementStatic({
   rootStack,
 }: {
   contentRootValues: ReadonlyArray<readonly Descendant[]>;
-  sources: readonly PliteDecorationSource[];
-  decorations: readonly PliteDecoration[];
+  sources: readonly DecorationSource[];
+  decorations: readonly Decoration[];
   editor: Editor;
   element: Element;
   path: Path;
@@ -135,10 +133,10 @@ function BaseElementStatic({
 }) {
   const renderElement = pipeRenderElementStatic(editor);
 
-  const attributes: PliteRenderElementProps['attributes'] = {
-    'data-plite-node': 'element',
-    'data-plite-path': path.join(','),
-    'data-plite-root': rootStack.at(-1) ?? MAIN_ROOT_KEY,
+  const attributes: RenderElementProps['attributes'] = {
+    'data-editor-node': 'element',
+    'data-editor-path': path.join(','),
+    'data-editor-root': rootStack.at(-1) ?? MAIN_ROOT_KEY,
   };
 
   const renderChildren = (range: { from?: number; to?: number } = {}) => (
@@ -193,7 +191,7 @@ function BaseElementStatic({
   } satisfies RenderElementSlots;
 
   if (editor.read.schema.isVoid(element)) {
-    attributes['data-plite-void'] = true;
+    attributes['data-editor-void'] = true;
     children = (
       <span
         style={{
@@ -201,14 +199,14 @@ function BaseElementStatic({
           height: '0',
           position: 'absolute',
         }}
-        data-plite-spacer
+        data-editor-spacer
       >
         {renderChildren()}
       </span>
     );
   }
   if (editor.read.schema.isInline(element)) {
-    attributes['data-plite-inline'] = true;
+    attributes['data-editor-inline'] = true;
   }
 
   return <>{renderElement?.({ attributes, children, element, path, slots })}</>;
@@ -217,6 +215,9 @@ function BaseElementStatic({
 const ElementStatic = React.memo(
   BaseElementStatic,
   (prev, next) =>
+    prev.editor === next.editor &&
+    prev.path.join(',') === next.path.join(',') &&
+    prev.rootStack.at(-1) === next.rootStack.at(-1) &&
     prev.element === next.element &&
     prev.contentRootValues.length === next.contentRootValues.length &&
     prev.contentRootValues.every(
@@ -229,11 +230,13 @@ function BaseLeafStatic({
   decorations,
   editor,
   path,
+  rootStack,
   text,
 }: {
-  decorations: readonly PliteDecoration[];
+  decorations: readonly Decoration[];
   editor: Editor;
   path: Path;
+  rootStack: readonly string[];
   text: Text;
 }) {
   const renderLeaf = pipeRenderLeafStatic(editor);
@@ -257,12 +260,16 @@ function BaseLeafStatic({
           {children}
         </span>
       ),
-      <span data-plite-string={true}>
+      <span
+        data-editor-end={segment.end}
+        data-editor-start={segment.start}
+        data-editor-string={true}
+      >
         {segment.text === '' ? '\uFEFF' : segment.text}
       </span>
     );
     const leafElement = renderLeaf({
-      attributes: { 'data-plite-leaf': true },
+      attributes: { 'data-editor-leaf': true },
       children: content,
       leaf,
       leafPosition: position,
@@ -280,7 +287,12 @@ function BaseLeafStatic({
   });
 
   return renderText({
-    attributes: { 'data-plite-node': 'text' as const, ref: null },
+    attributes: {
+      'data-editor-node': 'text' as const,
+      'data-editor-path': path.join(','),
+      'data-editor-root': rootStack.at(-1) ?? MAIN_ROOT_KEY,
+      ref: null,
+    },
     children: leafElements,
     path,
     text,
@@ -290,6 +302,9 @@ function BaseLeafStatic({
 const LeafStatic = React.memo(
   BaseLeafStatic,
   (prev, next) =>
+    prev.editor === next.editor &&
+    prev.path.join(',') === next.path.join(',') &&
+    prev.rootStack.at(-1) === next.rootStack.at(-1) &&
     TextApi.equals(next.text, prev.text) &&
     areStaticDecorationsEqual(next.decorations, prev.decorations)
 );
@@ -305,8 +320,8 @@ function Children({
   rootStack = EMPTY_ROOT_STACK,
   to,
 }: {
-  sources: readonly PliteDecorationSource[];
-  decorations: readonly PliteDecoration[];
+  sources: readonly DecorationSource[];
+  decorations: readonly Decoration[];
   editor: Editor;
   from?: number;
   nodes: readonly Descendant[];
@@ -327,7 +342,7 @@ function Children({
 
         const p = [...parentPath, i];
 
-        let ds: PliteDecoration[] = [];
+        let ds: Decoration[] = [];
 
         const [first, firstPath] = NodeApi.first(root, p);
         const [last, lastPath] = NodeApi.last(root, p);
@@ -373,6 +388,7 @@ function Children({
             decorations={ds}
             editor={editor}
             path={p}
+            rootStack={rootStack}
             text={child}
           />
         );
@@ -381,24 +397,28 @@ function Children({
   );
 }
 
-export type PlateStaticProps<E = Editor> = {
+export type EditorStaticProps<E = Editor> = {
   /** Editor instance. */
   editor: E;
   style?: React.CSSProperties;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-export function PlateStatic<E = Editor>(props: PlateStaticProps<E>) {
-  const { className, editor: editorInput, ...rest } = props;
+export function EditorStatic<E = Editor>(props: EditorStaticProps<E>) {
+  const { editor: editorInput, ...rest } = props;
   const editor = editorInput as Editor;
+  const attributes = mergePlateRenderedAttributes(
+    getPlateRuntime(editor).pluginCache.contentAttributes.readOnly,
+    rest
+  );
 
   const sources = getPlateDecorationSources(editor);
 
   const content = (
     <div
-      className={clsx('plite-editor', className)}
-      data-plite-editor
-      data-plite-node="value"
-      {...rest}
+      {...attributes}
+      className={clsx('editor-editor', attributes.className)}
+      data-editor
+      data-editor-node="value"
     >
       <Children
         sources={sources}

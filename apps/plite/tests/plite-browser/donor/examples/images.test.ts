@@ -1,11 +1,11 @@
 // Donor rows preserve the shared cross-browser fixture signature.
 import { expect, type Locator, test } from "@playwright/test";
 import {
-  installPliteReactRenderProfiler,
+  installReactRenderProfiler,
   openExample,
-  recordPliteBrowserRuntimeErrors,
-  resetPliteReactRenderProfiler,
-  takePliteBrowserRenderStateSnapshot,
+  recordBrowserRuntimeErrors,
+  resetReactRenderProfiler,
+  takeBrowserRenderStateSnapshot,
 } from "@platejs/test/playwright";
 
 type BlockDropCursorEdge = "bottom" | "top";
@@ -48,7 +48,7 @@ const getClosestImageVoidBox = async (
 ): Promise<ElementBoxSnapshot | null> =>
   image.evaluate((element) => {
     const rect = element
-      .closest('[data-plite-void="true"]')
+      .closest('[data-editor-void="true"]')
       ?.getBoundingClientRect();
 
     if (!rect) {
@@ -97,7 +97,7 @@ const expectImageDropCursorAligned = async ({
 
 test.describe("images example", () => {
   test.beforeEach(async ({ page }) => {
-    await installPliteReactRenderProfiler(page);
+    await installReactRenderProfiler(page);
     await page.goto("/examples/plite/images");
     await expect(page.getByRole("textbox")).toBeVisible();
   });
@@ -199,7 +199,7 @@ test.describe("images example", () => {
       "Desktop rapid node-selection proof"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, "plite/images", {
@@ -258,7 +258,7 @@ test.describe("images example", () => {
       "Desktop blurred node-selection proof"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, "plite/images", {
@@ -342,7 +342,7 @@ test.describe("images example", () => {
       "Desktop adjacent block-void drag selection proof"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, "plite/images", {
@@ -399,8 +399,8 @@ test.describe("images example", () => {
         ({ x, y }) =>
           document
             .elementFromPoint(x, y)
-            ?.closest("[data-plite-node]")
-            ?.getAttribute("data-plite-path"),
+            ?.closest("[data-editor-node]")
+            ?.getAttribute("data-editor-path"),
         { x, y }
       );
 
@@ -456,7 +456,7 @@ test.describe("images example", () => {
       "Firefox synthetic DragEvent drop-cursor proof is not stable"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, "plite/images", {
@@ -472,7 +472,7 @@ test.describe("images example", () => {
         .poll(() => editor.get.modelText())
         .toBe("Before adjacent images.After adjacent images.");
       const image = editor.root.locator("img").nth(1);
-      const cursor = editor.root.locator("[data-plite-drop-cursor]");
+      const cursor = editor.root.locator("[data-editor-drop-cursor]");
 
       await dispatchImageDragOver(image, "top");
       await expectImageDropCursorAligned({
@@ -517,7 +517,7 @@ test.describe("images example", () => {
       "Firefox synthetic DragEvent drop-cursor proof is not stable"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, "plite/images", {
@@ -539,7 +539,7 @@ test.describe("images example", () => {
       });
 
       const image = editor.root.locator("img").nth(1);
-      const cursor = editor.root.locator("[data-plite-drop-cursor]");
+      const cursor = editor.root.locator("[data-editor-drop-cursor]");
 
       await dispatchImageDragOver(image, "top");
       await expectImageDropCursorAligned({
@@ -584,7 +584,7 @@ test.describe("images example", () => {
       "Firefox synthetic DragEvent reorder proof is not stable"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     try {
       const editor = await openExample(page, "plite/images", {
         query: { case: "adjacent-voids" },
@@ -617,7 +617,7 @@ test.describe("images example", () => {
 
       const payloadTypes = await editor.root.evaluate(() => {
         const images = document
-          .querySelector('[data-plite-editor="true"]')
+          .querySelector('[data-editor="true"]')
           ?.querySelectorAll("img");
 
         if (!images || images.length < 3) {
@@ -678,7 +678,7 @@ test.describe("images example", () => {
         return [...dragData.types];
       });
 
-      expect(payloadTypes).toContain("application/x-plite-fragment");
+      expect(payloadTypes).toContain("application/x-editor-fragment");
       await expect
         .poll(imageUrls)
         .toEqual([
@@ -697,7 +697,7 @@ test.describe("images example", () => {
         anchorPath: [3, 0],
         isCollapsed: true,
       });
-      await expect(editor.root.locator("[data-plite-drop-cursor]")).toHaveCount(
+      await expect(editor.root.locator("[data-editor-drop-cursor]")).toHaveCount(
         0
       );
       await editor.assert.noDoubleSelectionHighlight();
@@ -715,7 +715,7 @@ test.describe("images example", () => {
       "Desktop node-selection drag/drop proof"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const introText =
       "In addition to nodes that contain editable text, you can also create other types of nodes, like images or videos.";
     const targetText =
@@ -739,7 +739,7 @@ test.describe("images example", () => {
       const payloadTypes = await editor.root.evaluate((root, text) => {
         const firstImage = root.querySelector("img");
         const targetParagraph = Array.from(
-          root.querySelectorAll<HTMLElement>('[data-plite-node="element"]')
+          root.querySelectorAll<HTMLElement>('[data-editor-node="element"]')
         ).find((element) => element.textContent === text);
 
         if (!firstImage || !targetParagraph) {
@@ -800,7 +800,7 @@ test.describe("images example", () => {
         return [...dragData.types];
       }, targetText);
 
-      expect(payloadTypes).toContain("application/x-plite-fragment");
+      expect(payloadTypes).toContain("application/x-editor-fragment");
       await expect
         .poll(() => editor.get.modelBlockTexts())
         .toEqual([introText, targetText, "", trailingText, ""]);
@@ -815,7 +815,7 @@ test.describe("images example", () => {
         anchorPath: [2, 0],
         isCollapsed: true,
       });
-      await expect(editor.root.locator("[data-plite-drop-cursor]")).toHaveCount(
+      await expect(editor.root.locator("[data-editor-drop-cursor]")).toHaveCount(
         0
       );
       await editor.assert.noDoubleSelectionHighlight();
@@ -943,7 +943,7 @@ test.describe("images example", () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === "mobile", "Desktop image proof");
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, "plite/images", {
       ready: {
         editor: "visible",
@@ -1001,7 +1001,7 @@ test.describe("images example", () => {
     const payload = await editor.clipboard.copyNativeEventPayload();
 
     expect(payload.types).toContain("text/html");
-    expect(payload.html).toContain("data-plite-fragment=");
+    expect(payload.html).toContain("data-editor-fragment=");
     expect(payload.html).toContain("<img");
     expect(payload.html).toContain(firstExampleImageUrl);
     expect(payload.text).not.toContain("\uFEFF");
@@ -1276,7 +1276,7 @@ test.describe("images example", () => {
       });
 
     const contentOffset = await editor.root.evaluate(() => {
-      const imageNode = document.querySelector('[data-plite-path="1"]');
+      const imageNode = document.querySelector('[data-editor-path="1"]');
       const content = imageNode?.querySelector('[contenteditable="false"]');
 
       if (!(imageNode instanceof HTMLElement) || !content) {
@@ -1315,7 +1315,7 @@ test.describe("images example", () => {
       isCollapsed: true,
     });
 
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await page.keyboard.press("ArrowRight");
     await expect
       .poll(() => editor.selection.get())
@@ -1329,7 +1329,7 @@ test.describe("images example", () => {
       isCollapsed: true,
     });
 
-    const proof = await takePliteBrowserRenderStateSnapshot(editor);
+    const proof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
       anchor: { path: [1, 0], offset: 0 },
@@ -1347,7 +1347,7 @@ test.describe("images example", () => {
     expect(proof.renderCounts.byKind.spacer ?? 0).toBeLessThanOrEqual(1);
     expect(proof.renderCounts.total).toBeLessThanOrEqual(4);
 
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await page.keyboard.press("ArrowRight");
     await expect
       .poll(() => editor.selection.get())
@@ -1361,7 +1361,7 @@ test.describe("images example", () => {
       isCollapsed: true,
     });
 
-    const afterImageProof = await takePliteBrowserRenderStateSnapshot(editor);
+    const afterImageProof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(afterImageProof.selection).toEqual({
       anchor: { path: [2, 0], offset: 0 },
@@ -1482,8 +1482,8 @@ test.describe("images example", () => {
                 : null;
             return (
               current
-                ?.closest('[data-plite-node="text"]')
-                ?.getAttribute("data-plite-path")
+                ?.closest('[data-editor-node="text"]')
+                ?.getAttribute("data-editor-path")
                 ?.split(",")
                 .filter(Boolean)
                 .map(Number) ?? null

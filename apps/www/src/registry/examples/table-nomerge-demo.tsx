@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import { TablePlugin } from 'platejs/table/react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
@@ -21,10 +21,10 @@ export default function TableNoMergeDemo() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer variant="demo">
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

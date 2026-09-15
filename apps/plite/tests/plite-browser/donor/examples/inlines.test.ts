@@ -2,9 +2,9 @@
 import { expect, type Page, test } from '@playwright/test';
 import {
   assertNoIllegalKernelTransitions,
-  createPliteBrowserInlineCutTypingGauntlet,
+  createBrowserInlineCutTypingGauntlet,
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 
 const getBrowserWordBackwardDeleteCandidates = async (page: Page) =>
@@ -28,12 +28,12 @@ const getPlainContenteditableWordDeleteResult = async ({
   await page.evaluate(
     ({ caretOffset, text }) => {
       document
-        .querySelector('[data-plite-plain-word-delete-host="true"]')
+        .querySelector('[data-editor-plain-word-delete-host="true"]')
         ?.remove();
 
       const host = document.createElement('div');
       host.contentEditable = 'true';
-      host.dataset.plitePlainWordDeleteHost = 'true';
+      host.dataset.editorPlainWordDeleteHost = 'true';
       host.style.cssText =
         'position: fixed; left: 0; top: 0; width: 1200px; min-height: 1px; opacity: 0; white-space: pre-wrap;';
       host.textContent = text;
@@ -61,7 +61,7 @@ const getPlainContenteditableWordDeleteResult = async ({
 
   return page.evaluate(() => {
     const host = document.querySelector(
-      '[data-plite-plain-word-delete-host="true"]'
+      '[data-editor-plain-word-delete-host="true"]'
     ) as HTMLElement | null;
 
     if (!host) {
@@ -434,7 +434,7 @@ test.describe('Inlines example', {
       'Desktop inline editing proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/inlines', {
@@ -995,7 +995,7 @@ test.describe('Inlines example', {
     );
 
     await page
-      .locator('[data-plite-editor] p')
+      .locator('[data-editor] p')
       .first()
       .click({ clickCount: 3 });
 
@@ -1025,7 +1025,7 @@ test.describe('Inlines example', {
       ''
     );
 
-    await page.locator('[data-plite-path="0,5"]').click({ clickCount: 3 });
+    await page.locator('[data-editor-path="0,5"]').click({ clickCount: 3 });
 
     await expect
       .poll(async () =>
@@ -1042,7 +1042,7 @@ test.describe('Inlines example', {
       'Desktop inline editing proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/inlines', {
@@ -1081,7 +1081,7 @@ test.describe('Inlines example', {
       'Desktop inline editing proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/inlines', {
@@ -1133,7 +1133,7 @@ test.describe('Inlines example', {
       'Desktop inline editing proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/inlines', {
@@ -1201,7 +1201,7 @@ test.describe('Inlines example', {
       (await editor.get.blockTexts())[1]?.replaceAll('\u00A0', '') ?? '';
 
     await expect(trailingLink).toHaveCount(1);
-    await page.locator('[data-plite-editor] p').nth(1).click({ clickCount: 3 });
+    await page.locator('[data-editor] p').nth(1).click({ clickCount: 3 });
     await editor.assert.selection({
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
@@ -1238,7 +1238,7 @@ test.describe('Inlines example', {
     );
 
     await expect(trailingLink).toHaveCount(1);
-    await page.locator('[data-plite-editor] p').nth(1).click({ clickCount: 3 });
+    await page.locator('[data-editor] p').nth(1).click({ clickCount: 3 });
     await editor.assert.selection({
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
@@ -1342,18 +1342,21 @@ test.describe('Inlines example', {
     await expect
       .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
       .toBe(text);
+    await expect
+      .poll(async () => {
+        const selection = await editor.get.selection();
+
+        return [selection?.anchor.offset, selection?.focus.offset].sort(
+          (a, b) => (a ?? 0) - (b ?? 0)
+        );
+      })
+      .toEqual([0, text.length]);
     const draggedSelection = await editor.get.selection();
 
     expect(draggedSelection).toMatchObject({
       anchor: { path: [0, 1, 0] },
       focus: { path: [0, 1, 0] },
     });
-    expect(
-      [draggedSelection?.anchor.offset, draggedSelection?.focus.offset].sort(
-        (a, b) => (a ?? 0) - (b ?? 0)
-      )
-    ).toEqual([0, text.length]);
-
     await page.keyboard.type('wiki');
     await expect(editor.root.locator('a').first()).toHaveText('wiki');
 
@@ -1585,7 +1588,7 @@ test.describe('Inlines example', {
     });
     await editor.clipboard.pasteText(pastedText);
 
-    await expect(editor.root.locator('.plite-inlines-badge')).toHaveText(
+    await expect(editor.root.locator('.editor-inlines-badge')).toHaveText(
       'Approved'
     );
     await expect
@@ -1639,7 +1642,7 @@ test.describe('Inlines example', {
   test('backspaces through a read-only inline after insert-delete before it without segment errors', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/inlines', {
@@ -1853,7 +1856,7 @@ test.describe('Inlines example', {
 
     const result = await editor.scenario.run(
       'inlines-generated-cut-typing-gauntlet',
-      createPliteBrowserInlineCutTypingGauntlet({
+      createBrowserInlineCutTypingGauntlet({
         domShape: {
           afterCut: {
             blockIndex: 0,

@@ -51,14 +51,14 @@ for (const suffix of ['mdx', 'cn.mdx']) {
 import assert from 'node:assert/strict';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { BaseParagraphPlugin as Paragraph, createEditor } from 'platejs';
-import { PlateStatic } from 'platejs/static';
+import { EditorStatic } from 'platejs/static';
 
 const editor = createEditor({
   plugins: [Paragraph.configure({ component: ParagraphElementStatic })],
   initialValue: [{ type: 'paragraph', children: [{ text: 'Static snippet proof' }] }],
 });
 
-assert.match(renderToStaticMarkup(<PlateStatic editor={editor} />), /Static snippet proof/);
+assert.match(renderToStaticMarkup(<EditorStatic editor={editor} />), /Static snippet proof/);
 `
     );
   });

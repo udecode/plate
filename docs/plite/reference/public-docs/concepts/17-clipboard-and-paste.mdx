@@ -1,0 +1,204 @@
+---
+title: "Clipboard And Paste"
+description: "Route copy, paste, drop, and fitted slice replacement through Plite's editor, DOM, and plugin layers."
+---
+
+Clipboard work crosses browser events, Plite fragments, transactions, DOM
+coverage, and browser proof. Use this page to decide whether a paste, copy, or
+drop policy belongs in `Editable`, a plugin, `editor.api.dom.clipboard`, or a
+fragment transform.
+
+## Choose the right surface
+
+Paste bugs usually come from mixing browser event ownership with model
+insertion ownership.
+
+| Need                                                 | Start with                                                 | Owner                                               |
+| ---------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
+| One editor instance needs a local paste/drop hook    | `Editable` `onPaste` or `onDrop`                           | `plitejs/react`                              |
+| A reusable package owns paste/drop import policy     | `domCommands.insertData` interceptor in plugin `commands` | `plitejs/dom`                                |
+| A host format needs parsing or serialization         | Inline a codec in `hostCodecs`                             | `plitejs/dom`                                |
+| Framework code needs to import a `DataTransfer`      | `editor.api.dom.clipboard.insertData(data)`                    | `plitejs/dom` through `plitejs/react` |
+| Parsed or structural content is already decoded      | `tx.slice.replace(slice, options?)`                        | `plitejs`                                    |
+| Decoded content must fit a detached parent           | `state.slice.fitContent(slice, { parent, root? })`         | `plitejs`                                    |
+| Copy or drag must include hidden model content       | DOM coverage `copyPolicy` plus model-backed clipboard data | `plitejs/dom` and `plitejs/react`     |
+| The claim depends on real browser clipboard behavior | `@platejs/test` clipboard helpers                       | `@platejs/test`                                  |
+
+Use `Editable` for local event interception. Use the DOM insert-data command when
+the behavior should apply to native paste, drop, browser tests, and every React
+surface that installs the plugin.
+
+## Runtime pipeline
+
+Clipboard data enters Plite through explicit layers.
+
+| Stage                | What happens                                                                                                           | Owner                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| Browser event        | The browser produces `paste`, `cut`, `copy`, `dragstart`, or `drop` with a `DataTransfer`.                             | Browser                                     |
+| Editable handler     | App handlers can handle the event or let Plite continue.                                                               | `plitejs/react`                      |
+| Insert-data command  | Typed `domCommands.insertData` interceptors can claim, transform, or delegate the payload.                              | `plitejs/dom`                        |
+| DOM clipboard import | Plite reads its internal fragment, then registered host codecs, then plain text.                                       | `plitejs/dom`                        |
+| Transaction          | A parsed slice is fitted at the actual range and applied through one canonical replacement.                            | `plitejs`                            |
+| Commit and render    | Plite publishes one change; React renders and repairs selection.                                                       | `plitejs` and `plitejs/react` |
+| Proof                | Browser tests assert model content, DOM/native selection where needed, focus, clipboard payload, and follow-up typing. | `@platejs/test`                          |
+
+Do not close a paste bug with only a model assertion when the failure was in the
+browser event, DOM clipboard payload, native selection, or follow-up typing.
+
+## Plugin clipboard policy
+
+Intercept `domCommands.insertData` when a feature owns a reusable DOM import
+rule.
+
+```ts
+import { definePlugin } from "plitejs";
+import { domCommands } from "plitejs/dom";
+
+const pasteTodoPrefix = definePlugin("paste-todo-prefix", {
+  commands: ({ around }) => [
+    around(domCommands.insertData, ({ input, next, state }) => {
+      const text = input.getData("text/plain");
+
+      if (!text.startsWith("todo:")) return next();
+
+      return state.transaction((tx) => {
+        tx.text.insert(text.slice("todo:".length).trim());
+      });
+    }),
+  ],
+});
+```
+
+The interceptor receives the `DataTransfer` as `input` and returns a pure
+transaction spec. Return `next()` when Plite should keep running the internal
+slice, host-codec, and plain-text import path. `DataTransfer` does not enter
+`plitejs`; headless code starts from a `ContentSlice`.
+
+Use this for package-owned import rules such as custom inline syntax, pasted
+URLs, product fragments, and table-specific paste policy. Do not put those rules
+in Plite core unless the rule is part of Plite's model contract.
+
+## DOM clipboard API
+
+React editors expose DOM clipboard helpers through `editor.api.dom.clipboard`.
+
+```ts
+editor.api.dom.clipboard.insertData(dataTransfer);
+editor.api.dom.clipboard.insertFragmentData(dataTransfer);
+editor.api.dom.clipboard.insertTextData(dataTransfer);
+editor.api.dom.clipboard.readSlice(dataTransfer);
+editor.api.dom.clipboard.writeSelection(dataTransfer);
+editor.api.dom.clipboard.writeSlice(dataTransfer, { slice });
+```
+
+Use these APIs from framework bridges, tests, or low-level event code that
+already has a `DataTransfer`. `insertData` owns a transaction when called
+directly and joins the active transaction when framework code already opened
+one. Command interceptors compose a transaction spec through `state`.
+
+`readSlice` distinguishes `{ kind: "absent" }`, malformed MIME or HTML data as
+`{ kind: "invalid", source }`, and `{ kind: "slice", slice }`. `writeSlice`
+writes one exact `ContentSlice` plus optional host formats. This keeps missing,
+invalid, and valid empty clipboard payloads distinct.
+Formats supplied to `writeSlice` are authoritative, including an intentional
+empty string. Installed serializers fill only formats the caller omitted.
+
+Plite writes plain text, HTML, and an internal Plite fragment payload. The
+fragment payload uses `application/${clipboardFormatKey}`, so editors with
+different keys do not blindly import each other's internal JSON.
+
+Registered host codecs add schema-aware MIME formats without putting DOM types
+in Plite core. A parser returns one intact `ContentSlice`; Plite preserves its
+open edge depths and detached secondary roots, then fits the complete slice
+against the actual paste range. Keep a codec inline in `hostCodecs`; name shared
+definitions with the `HostCodec<V>` type. Configuration
+fails for duplicate codec keys, unknown schema targets, and overlapping
+element/text-property claims. A codec rejects invalid external payloads with
+`null`.
+Well-formed slices that do not fit leave the transaction untouched and continue
+to the next codec or plain-text fallback. Returning a malformed slice is a codec
+programming error reported to the editor lifecycle error sink; the dispatcher
+continues to the next eligible codec without publishing a partial write.
+
+## Fragment and slice replacement
+
+Use `tx.fragment.replace(...)` for known-closed content. The compiled schema
+fits the content at the actual target.
+
+```ts
+editor.update((tx) => {
+  tx.fragment.replace([
+    {
+      type: "paragraph",
+      children: [{ text: "Pasted paragraph" }],
+    },
+  ]);
+});
+```
+
+Codecs and transport boundaries preserve open edges with `ContentSlice`.
+
+```ts
+import { ContentSlice } from "plitejs";
+
+const slice = ContentSlice.fromJSON({
+  content: decodedContent,
+  openEnd: 1,
+  openStart: 1,
+  roots: {
+    "note:1": decodedNote,
+  },
+});
+
+editor.update.slice.replace(slice);
+```
+
+`ContentSlice` has one transport shape:
+`{ content, openStart, openEnd, roots? }`. `roots` carries the transitive
+detached secondary roots referenced by the slice content. Inserting the slice
+remaps copied keys deterministically and keeps shared aliases together.
+
+Core slice replacement is structural and schema-fitted. Grid-aware table paste,
+spreadsheet mapping, and product-specific merge rules belong in the table or
+product plugin that understands those structures.
+
+When table code has a detached destination cell, call
+`state.slice.fitContent(slice, { parent, root? })`. It returns frozen,
+grammar-valid children or `null` without publishing editor state. The table
+plugin still owns row/column mapping, spans, and multi-cell replacement.
+
+## Hidden and projected content
+
+Copy and drag can involve app-hidden or virtualized model content whose DOM is
+not mounted. DOM coverage boundaries decide whether covered content uses model
+serialization or is excluded. Model serialization writes the selected plain
+text, HTML, and Plite fragment without mounting every selected block.
+
+Use [DOM Coverage Boundaries](../libraries/plite-react/dom-coverage-boundaries)
+for `copyPolicy`, `selectionPolicy`, and materialization behavior.
+Use [Selection And DOM](16-selection-and-dom) when a copy or paste bug also
+depends on caret position or native selection repair.
+
+## Browser proof
+
+Clipboard proof should name the layer that can fail.
+
+| Claim                                  | Useful proof                                                                 |
+| -------------------------------------- | ---------------------------------------------------------------------------- |
+| The model inserted the right content   | model text, fragment, canonical change, and selection                        |
+| The DOM payload was imported correctly | browser clipboard helper or dispatched `DataTransfer`                        |
+| Hidden content copied correctly        | copied plain text, HTML, Plite fragment, and DOM coverage policy             |
+| Selection survived paste               | model selection, DOM/native selection where observable, and follow-up typing |
+| A feature owns paste policy            | focused DOM contribution test plus browser paste smoke                       |
+
+Use [Browser](/docs/browser) for clipboard helpers and
+[Editing Behavior](15-editing-behavior) for the full event-to-commit pipeline.
+
+## Related docs
+
+- [Editable Component](../libraries/plite-react/editable)
+- [React Editor](../libraries/plite-react/react-editor)
+- [Plite DOM](../libraries/plite-dom)
+- [DOM Coverage Boundaries](../libraries/plite-react/dom-coverage-boundaries)
+- [Canonical Change Substrate](../walkthroughs/07-canonical-change-substrate)
+- [Transforms API](../api/transforms)

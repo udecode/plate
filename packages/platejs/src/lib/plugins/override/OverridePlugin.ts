@@ -15,11 +15,11 @@ import {
 } from '../../../internal/plugin/compilePlateModel';
 import type { AnyBasePlugin } from '../../plugin/BasePlugin';
 import { createPluginContext } from '../../plugin/createPluginContext.internal';
-import { defineBasePlugin } from '../../plugin/defineBasePlugin';
+import { definePlugin } from '../../plugin/definePlugin';
 import type { DefinitionOf, MatchRules } from '../../plugin/PluginDefinition';
 
 /** Override the editor based on resolved Plate plugin node behavior. */
-export const OverridePlugin = defineBasePlugin('override', {}).extend(
+export const OverridePlugin = definePlugin('override', {}).extend(
   ({ editor }) => {
     const getRuleOverridePlugin = (
       rule: MatchRules,

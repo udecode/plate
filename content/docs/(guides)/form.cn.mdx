@@ -22,7 +22,7 @@ description: 如何将 Plate 编辑器与 react-hook-form 集成。
 ```tsx
 import { useForm } from "react-hook-form";
 import { NodeApi, type EditorDocumentValue } from "platejs";
-import { Plate, PlateContent, useCreateEditor } from "platejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "platejs/react";
 
 type FormData = {
   content: EditorDocumentValue;
@@ -40,7 +40,7 @@ export function RHFEditorForm() {
     },
   });
 
-  // 创建/配置 Plate 编辑器
+  // 创建/配置 EditorRoot 编辑器
   const editor = useCreateEditor({ initialValue });
 
   // 为 react-hook-form 注册字段
@@ -57,15 +57,15 @@ export function RHFEditorForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Plate
+      <EditorRoot
         editor={editor}
         onValueChange={({ value }) => {
           // 将编辑器更改同步到表单
           setValue("content", value);
         }}
       >
-        <PlateContent placeholder="在此输入..." />
-      </Plate>
+        <EditorContent placeholder="在此输入..." />
+      </EditorRoot>
 
       <button type="submit">提交</button>
     </form>
@@ -96,7 +96,7 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import type { EditorDocumentValue } from "platejs";
-import { Plate, PlateContent, useCreateEditor } from "platejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "platejs/react";
 
 type FormValues = {
   content: EditorDocumentValue;
@@ -114,7 +114,7 @@ export function EditorForm() {
     },
   });
 
-  // 2. 创建 Plate 编辑器
+  // 2. 创建 EditorRoot 编辑器
   const editor = useCreateEditor({
     initialValue: form.getValues("content"),
   });
@@ -133,15 +133,15 @@ export function EditorForm() {
             <FormItem>
               <FormLabel>内容</FormLabel>
               <FormControl>
-                <Plate
+                <EditorRoot
                   editor={editor}
                   onValueChange={({ value }) => {
                     // 同步到表单
                     field.onChange(value);
                   }}
                 >
-                  <PlateContent placeholder="输入..." />
-                </Plate>
+                  <EditorContent placeholder="输入..." />
+                </EditorRoot>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -166,14 +166,14 @@ export function EditorForm() {
 - 达到某些表单提交逻辑
 
 ```tsx
-<Plate editor={editor}>
-  <PlateContent
+<EditorRoot editor={editor}>
+  <EditorContent
     onBlur={() => {
       // 仅在失焦时同步
       setValue("content", editor.read.value());
     }}
   />
-</Plate>
+</EditorRoot>
 ```
 
 这减少了开销，但您的表单状态在用户输入时不会反映部分更新。
@@ -200,7 +200,7 @@ editor.update((tx) => {
 
 ```tsx
 import { useForm } from "react-hook-form";
-import { Plate, PlateContent, useCreateEditor } from "platejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "platejs/react";
 
 function MyForm() {
   const form = useForm({
@@ -221,12 +221,12 @@ function MyForm() {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
-      <Plate
+      <EditorRoot
         editor={editor}
         onValueChange={({ value }) => form.setValue("content", value)}
       >
-        <PlateContent />
-      </Plate>
+        <EditorContent />
+      </EditorRoot>
 
       <button type="submit">保存</button>
 
@@ -287,7 +287,7 @@ function MyForm() {
 
 import * as React from "react";
 import type { EditorDocumentValue, Value } from "platejs";
-import { Plate, PlateContent, useCreateEditor } from "platejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "platejs/react";
 
 /**
  * 一个可重用的非受控编辑器字段。`initialValue` 只读取一次，
@@ -321,7 +321,7 @@ export type EditorFieldProps = Omit<
   "onChange"
 > & {
   /**
-   * 初始 Plate 文档或主根值。
+   * 初始 EditorRoot 文档或主根值。
    */
   initialValue?: EditorDocumentValue | Value;
 
@@ -348,9 +348,9 @@ export function EditorField({
   });
 
   return (
-    <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)}>
-      <PlateContent {...props} placeholder={placeholder} ref={ref} />
-    </Plate>
+    <EditorRoot editor={editor} onValueChange={({ value }) => onChange?.(value)}>
+      <EditorContent {...props} placeholder={placeholder} ref={ref} />
+    </EditorRoot>
   );
 }
 ```

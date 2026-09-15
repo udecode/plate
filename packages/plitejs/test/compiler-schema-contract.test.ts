@@ -3,13 +3,13 @@ import { describe, expect, it } from 'bun:test';
 import {
   createEditor,
   defineEditorSchema,
-  defineExtension,
+  definePlugin,
   defineStateField,
   property,
   schema,
 } from 'plitejs';
 
-import { getExtensionRegistry } from '../src/core/extension-registry';
+import { getPluginRegistry } from '../src/core/plugin-registry';
 import { createEditorSchemaContract } from '../src/core/schema-compiler';
 import { compileEditorSchemaContract } from '../src/create-editor';
 
@@ -40,7 +40,7 @@ describe('compileEditorSchemaContract', () => {
       root: schema.content.type('section', { min: 1 }),
       unknown: 'reject',
     });
-    const Runtime = defineExtension('compile-runtime', {
+    const Runtime = definePlugin('compile-runtime', {
       activate({ onCleanup }) {
         calls.push('activate');
         onCleanup(() => calls.push('cleanup'));
@@ -56,14 +56,14 @@ describe('compileEditorSchemaContract', () => {
       },
     });
     const editor = createEditor();
-    const registry = getExtensionRegistry(editor);
+    const registry = getPluginRegistry(editor);
     const snapshot = editor.read.runtime.snapshot();
     const result = compileEditorSchemaContract(editor, [Document, Runtime]);
 
     expect(JSON.parse(JSON.stringify(result))).toStrictEqual(result);
     expect(calls).toEqual(['api', 'validate']);
     expect(editor.read.runtime.snapshot()).toBe(snapshot);
-    expect(getExtensionRegistry(editor)).toBe(registry);
+    expect(getPluginRegistry(editor)).toBe(registry);
     expect(result.elements.byType.some(({ type }) => type === 'section')).toBe(
       true
     );
@@ -75,12 +75,12 @@ describe('compileEditorSchemaContract', () => {
     );
     expect(calls).toEqual(['api', 'validate', 'api', 'validate']);
     expect(editor.read.runtime.snapshot()).toBe(snapshot);
-    expect(getExtensionRegistry(editor)).toBe(registry);
+    expect(getPluginRegistry(editor)).toBe(registry);
 
-    const committed = createEditor({ extensions: [Document, Runtime] });
+    const committed = createEditor({ plugins: [Document, Runtime] });
     expect(
       createEditorSchemaContract(
-        getExtensionRegistry(committed).schemaContributions.compiled
+        getPluginRegistry(committed).schemaContributions.compiled
       )
     ).toEqual(result);
     expect(calls).toContain('activate');
@@ -90,8 +90,8 @@ describe('compileEditorSchemaContract', () => {
 
   it('releases failed and reentrant candidate preparation and enforces bootstrap authority', () => {
     const editor = createEditor();
-    const before = getExtensionRegistry(editor);
-    const Failure = defineExtension('compile-failure', {
+    const before = getPluginRegistry(editor);
+    const Failure = definePlugin('compile-failure', {
       validate() {
         throw new Error('candidate rejected');
       },
@@ -99,7 +99,7 @@ describe('compileEditorSchemaContract', () => {
     expect(() => compileEditorSchemaContract(editor, [Failure])).toThrow(
       'candidate rejected'
     );
-    const Reentrant = defineExtension('compile-reentrant', {
+    const Reentrant = definePlugin('compile-reentrant', {
       validate() {
         compileEditorSchemaContract(editor, []);
       },
@@ -107,7 +107,7 @@ describe('compileEditorSchemaContract', () => {
     expect(() => compileEditorSchemaContract(editor, [Reentrant])).toThrow(
       'publication'
     );
-    expect(getExtensionRegistry(editor)).toBe(before);
+    expect(getPluginRegistry(editor)).toBe(before);
     expect(compileEditorSchemaContract(editor, [])).toEqual(
       createEditorSchemaContract(before.schemaContributions.compiled)
     );
@@ -116,7 +116,7 @@ describe('compileEditorSchemaContract', () => {
       root: schema.content.type('paragraph'),
     });
     expect(() =>
-      compileEditorSchemaContract(createEditor({ extensions: [Document] }), [])
+      compileEditorSchemaContract(createEditor({ plugins: [Document] }), [])
     ).toThrow('without an installed schema');
     expect(() =>
       compileEditorSchemaContract(
@@ -131,14 +131,14 @@ describe('compileEditorSchemaContract', () => {
   it('rejects active anchors and changed documents without publishing', () => {
     const editor = createEditor();
     const snapshot = editor.read.runtime.snapshot();
-    const registry = getExtensionRegistry(editor);
+    const registry = getPluginRegistry(editor);
     const anchor = editor.anchor([], { deletion: 'nearest' });
 
     expect(() => compileEditorSchemaContract(editor, [])).toThrow(
       'without active anchors'
     );
     expect(editor.read.runtime.snapshot()).toBe(snapshot);
-    expect(getExtensionRegistry(editor)).toBe(registry);
+    expect(getPluginRegistry(editor)).toBe(registry);
     expect(anchor.release()).toEqual([]);
     expect(compileEditorSchemaContract(editor, [])).toEqual(
       createEditorSchemaContract(registry.schemaContributions.compiled)
@@ -153,6 +153,6 @@ describe('compileEditorSchemaContract', () => {
       'unchanged document'
     );
     expect(editor.read.runtime.snapshot()).toBe(changedSnapshot);
-    expect(getExtensionRegistry(editor)).toBe(registry);
+    expect(getPluginRegistry(editor)).toBe(registry);
   });
 });

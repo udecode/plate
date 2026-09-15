@@ -5,5 +5,5 @@
 export * from './DOMHandlers';
 export * from './KeyboardHandler';
 export * from './PlatePlugin';
-export * from './definePlatePlugin';
-export * from './toPlatePlugin';
+export * from './definePlugin';
+export * from './toReactPlugin';

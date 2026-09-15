@@ -44,7 +44,7 @@ import {
   type PlateRuntime,
 } from './plateRuntime';
 
-export type CompiledPlateModelBinding = Readonly<{
+export type CompiledModelBinding = Readonly<{
   elementPropertyKeys: readonly string[];
   elementType: string | null;
   family: object | null;
@@ -65,10 +65,10 @@ export type CompiledPlateModelBinding = Readonly<{
 }>;
 
 export type CompiledPlateModel = Readonly<{
-  bindings: readonly CompiledPlateModelBinding[];
-  byKey: Readonly<Record<string, CompiledPlateModelBinding | undefined>>;
-  byName: Readonly<Record<string, CompiledPlateModelBinding | undefined>>;
-  byType: Readonly<Record<string, CompiledPlateModelBinding | undefined>>;
+  bindings: readonly CompiledModelBinding[];
+  byKey: Readonly<Record<string, CompiledModelBinding | undefined>>;
+  byName: Readonly<Record<string, CompiledModelBinding | undefined>>;
+  byType: Readonly<Record<string, CompiledModelBinding | undefined>>;
   contribution: EditorSchemaContribution;
   contributions: Readonly<Record<string, EditorSchemaContribution | undefined>>;
   revision: object;
@@ -197,10 +197,11 @@ const resolvedTargetBindings = new WeakMap<
 >();
 const candidatePluginSets = new WeakMap<
   object,
-  Readonly<{
-    byName: Readonly<Record<string, AnyBasePlugin | undefined>>;
-    list: readonly AnyBasePlugin[];
-  }>
+  {
+    byName: Record<string, AnyBasePlugin | undefined>;
+    indexByName: Map<string, number>;
+    list: AnyBasePlugin[];
+  }
 >();
 
 type PendingReference = Readonly<{
@@ -1130,11 +1131,11 @@ export const compilePlateModel = (editor: Editor): CompiledPlateModel => {
       textPropertyId: textProperty
         ? schema.handle.property(textProperty).id
         : null,
-    }) satisfies CompiledPlateModelBinding;
+    }) satisfies CompiledModelBinding;
   });
-  const byKey: Record<string, CompiledPlateModelBinding> = Object.create(null);
-  const byName: Record<string, CompiledPlateModelBinding> = Object.create(null);
-  const byType: Record<string, CompiledPlateModelBinding> = Object.create(null);
+  const byKey: Record<string, CompiledModelBinding> = Object.create(null);
+  const byName: Record<string, CompiledModelBinding> = Object.create(null);
+  const byType: Record<string, CompiledModelBinding> = Object.create(null);
 
   for (const binding of bindings) {
     byName[binding.name] = binding;
@@ -1590,9 +1591,9 @@ export const applyEditorApplicationSchema = (
       }),
     });
   });
-  const byName: Record<string, CompiledPlateModelBinding> = Object.create(null);
-  const byType: Record<string, CompiledPlateModelBinding> = Object.create(null);
-  const byKey: Record<string, CompiledPlateModelBinding> = Object.create(null);
+  const byName: Record<string, CompiledModelBinding> = Object.create(null);
+  const byType: Record<string, CompiledModelBinding> = Object.create(null);
+  const byKey: Record<string, CompiledModelBinding> = Object.create(null);
 
   for (const binding of bindings) {
     byName[binding.name] = binding;
@@ -1663,7 +1664,7 @@ export const getCompiledPlateModel = (editor: object) =>
 
 export const getCompiledPlateModelBinding = (
   editor: object,
-  plugin: PluginReference | string
+  plugin: Readonly<{ name: string }> | string
 ) =>
   getCompiledPlateModel(editor).byName[
     typeof plugin === 'string' ? plugin : plugin.name
@@ -1675,6 +1676,9 @@ export const getCompiledPlatePluginList = (editor: object) =>
 
 export const hasCompiledPlatePluginCandidate = (editor: object) =>
   candidatePluginSets.has(getPlateRuntimeOwner(editor));
+
+export const hasCompiledPlateModelCandidate = (editor: object) =>
+  candidateModels.has(getPlateRuntimeOwner(editor));
 
 export function getCompiledPlatePlugin<
   P extends AnyBasePlugin & PluginReference,
@@ -1756,24 +1760,15 @@ export const setCompiledPlatePluginCandidate = (
   const candidate = candidatePluginSets.get(owner);
 
   if (!candidate) return;
-  const list = [...candidate.list];
-  const index = list.findIndex(({ name }) => name === plugin.name);
+  const index = candidate.indexByName.get(plugin.name);
 
-  if (index === -1) list.push(plugin);
-  else list[index] = plugin;
-  const byName: Record<string, AnyBasePlugin> = Object.assign(
-    Object.create(null),
-    candidate.byName,
-    { [plugin.name]: plugin }
-  );
-
-  candidatePluginSets.set(
-    owner,
-    Object.freeze({
-      byName: Object.freeze(byName),
-      list: Object.freeze(list),
-    })
-  );
+  if (index === undefined) {
+    candidate.indexByName.set(plugin.name, candidate.list.length);
+    candidate.list.push(plugin);
+  } else {
+    candidate.list[index] = plugin;
+  }
+  candidate.byName[plugin.name] = plugin;
 };
 
 export const withCompiledPlatePluginCandidate = <T>(
@@ -1784,17 +1779,13 @@ export const withCompiledPlatePluginCandidate = <T>(
   const owner = getPlateRuntimeOwner(editor);
   const previous = candidatePluginSets.get(owner);
   const byName: Record<string, AnyBasePlugin> = Object.create(null);
+  const indexByName = new Map<string, number>();
 
-  list.forEach((plugin) => {
+  list.forEach((plugin, index) => {
     byName[plugin.name] = plugin;
+    indexByName.set(plugin.name, index);
   });
-  candidatePluginSets.set(
-    owner,
-    Object.freeze({
-      byName: Object.freeze(byName),
-      list: Object.freeze([...list]),
-    })
-  );
+  candidatePluginSets.set(owner, { byName, indexByName, list: [...list] });
   try {
     return run();
   } finally {

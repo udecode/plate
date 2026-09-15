@@ -1,5 +1,5 @@
 import { createEditor } from '../../lib/editor';
-import { defineBasePlugin } from '../../lib/plugin';
+import { definePlugin } from '../../lib/plugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { defineInputRule } from '../../lib/plugins/input-rules';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph';
@@ -8,15 +8,15 @@ import { getPlateRuntime } from './compilePlateModel';
 import { validatePlugin } from './resolvePlugin';
 
 describe('resolvePlugin', () => {
-  it('exposes consumer configuration to extensions and keeps it final', () => {
+  it('exposes consumer configuration to stages and keeps it final', () => {
     const seen: string[] = [];
-    const plugin = defineBasePlugin('orderedConfiguration', {
+    const plugin = definePlugin('orderedConfiguration', {
       initialState: { label: 'base', mode: 'base' },
     })
       .extend(({ plugin: innerPlugin }) => {
         seen.push(innerPlugin.initialState.label);
 
-        return { initialState: { label: 'extension' } };
+        return { initialState: { label: 'stage' } };
       })
       .configure({
         initialState: {
@@ -45,7 +45,7 @@ describe('resolvePlugin', () => {
     const config = {
       inputRules: [configuredRule],
     };
-    const plugin = defineBasePlugin('inputRulesPlugin', {}).configure(config);
+    const plugin = definePlugin('inputRulesPlugin', {}).configure(config);
     const firstEditor = createEditor({
       plugins: [plugin],
     });
@@ -62,13 +62,13 @@ describe('resolvePlugin', () => {
     ).toHaveLength(1);
   });
 
-  it('keeps terminal inputRules configuration final over extensions', () => {
-    const extensionRule = defineInputRule({
+  it('keeps terminal inputRules configuration final over stages', () => {
+    const stageRule = defineInputRule({
       apply: () => true,
       target: 'insertText',
-      trigger: 'extension',
+      trigger: 'stage',
     });
-    const plugin = defineBasePlugin('configuredInputRulesFinal', {
+    const plugin = definePlugin('configuredInputRulesFinal', {
       inputRules: [
         defineInputRule({
           apply: () => true,
@@ -78,7 +78,7 @@ describe('resolvePlugin', () => {
       ],
     })
       .extend(() => ({
-        inputRules: [extensionRule],
+        inputRules: [stageRule],
       }))
       .configure({
         inputRules: [],
@@ -96,7 +96,7 @@ describe('resolvePlugin', () => {
       target: 'insertText',
       trigger: 'configured',
     });
-    const plugin = defineBasePlugin('configuredInputRulesFactory', {
+    const plugin = definePlugin('configuredInputRulesFactory', {
       inputRules: [
         defineInputRule({
           apply: () => true,
@@ -119,7 +119,7 @@ describe('resolvePlugin', () => {
     expect(rules[0].trigger).toBe('configured');
   });
 
-  it('reports plugins that do not come from defineBasePlugin', () => {
+  it('reports plugins that do not come from definePlugin', () => {
     const errorLogger = mock();
     const editor = createEditor({
       plugins: [
@@ -134,7 +134,7 @@ describe('resolvePlugin', () => {
     validatePlugin(editor, { name: 'broken' });
 
     expect(errorLogger).toHaveBeenCalledWith(
-      "Invalid plugin 'broken', use defineBasePlugin.",
+      "Invalid plugin 'broken', use definePlugin.",
       'USE_CREATE_PLUGIN',
       undefined
     );

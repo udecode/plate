@@ -9,13 +9,13 @@ import {
   BaseParagraphPlugin,
   type Editor,
   createEditor as createHeadlessEditor,
-  defineBasePlugin,
+  definePlugin,
 } from '../../lib';
 import { getEditorLiveSelection } from '../../testing';
-import { PlateStatic } from './PlateStatic';
-import { PliteElement, PliteLeaf } from './plite-nodes';
+import { EditorStatic } from './PlateStatic';
+import { EditorElement, EditorLeaf } from './plite-nodes';
 
-const RevisionPlugin = defineBasePlugin('revision', {
+const RevisionPlugin = definePlugin('revision', {
   schema: {
     properties: {
       revision: schema.elementProperty(property.number(), {
@@ -25,9 +25,56 @@ const RevisionPlugin = defineBasePlugin('revision', {
   },
 });
 
+it('composes base plugin content attributes on the static root without editing-only paint', () => {
+  const BasePaint = definePlugin('baseContentPaint', {
+    render: {
+      contentAttributes: {
+        className: 'base',
+        style: { color: 'red', backgroundColor: 'white' },
+        'data-feature': 'base',
+      },
+    },
+  });
+  const editor = createHeadlessEditor({
+    initialValue: [
+      { children: [{ text: 'static content' }], type: 'paragraph' },
+    ],
+    plugins: [
+      BasePaint,
+      definePlugin('secondStaticContentPaint', {
+        render: {
+          contentAttributes: { className: 'second', 'data-feature': 'second' },
+        },
+      }),
+      definePlugin('staticEditingPaint', {
+        editOnly: { render: true },
+        render: { contentAttributes: { className: 'editing' } },
+      }),
+      definePlugin('disabledStaticContentPaint', {
+        enabled: false,
+        render: { contentAttributes: { className: 'disabled' } },
+      }),
+    ],
+  });
+  const { container } = render(
+    <EditorStatic
+      editor={editor}
+      className="consumer"
+      style={{ color: 'blue' }}
+      data-feature="consumer"
+    />
+  );
+  const root = container.firstElementChild!;
+  expect(root).toHaveAttribute('data-editor-node', 'value');
+  expect(root.className).toBe('editor-editor base second consumer');
+  expect(root).toHaveStyle({ color: 'blue', backgroundColor: 'white' });
+  expect(root).toHaveAttribute('data-feature', 'consumer');
+  expect(root.textContent).toBe('static content');
+});
+
 it('renders feature-owned decoration attributes without observing the source', () => {
   const observe = mock(() => () => {});
-  const plugin = defineBasePlugin('staticPaint', {
+  const plugin = definePlugin('staticPaint', {
     decorate: {
       observe,
       read: ({ entry: [node, path] }) =>
@@ -54,7 +101,7 @@ it('renders feature-owned decoration attributes without observing the source', (
     plugins: [plugin],
   });
   const html = ReactDOMServer.renderToStaticMarkup(
-    <PlateStatic editor={editor} />
+    <EditorStatic editor={editor} />
   );
 
   expect(html).toContain('class="semantic feature-paint"');
@@ -79,7 +126,7 @@ const createEditor = ({
 } = {}) =>
   createHeadlessEditor({
     plugins: [
-      defineBasePlugin('bold', {
+      definePlugin('bold', {
         component: LeafStaticMock,
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
@@ -116,7 +163,7 @@ const createEditorWithMultipleElements = ({
 } = {}) =>
   createHeadlessEditor({
     plugins: [
-      defineBasePlugin('bold', {
+      definePlugin('bold', {
         component: LeafStaticMock,
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
@@ -137,10 +184,10 @@ const replaceRoot = (editor: Editor, children: Value) => {
 
 let elementRenderCount = 0;
 
-function ElementStaticMock(props: Parameters<typeof PliteElement>[0]) {
+function ElementStaticMock(props: Parameters<typeof EditorElement>[0]) {
   elementRenderCount += 1;
 
-  return <PliteElement {...props} />;
+  return <EditorElement {...props} />;
 }
 
 /** Expose the render count so our tests can read it */
@@ -154,10 +201,10 @@ function resetElementRenderCount() {
 
 let leafRenderCount = 0;
 
-function LeafStaticMock(props: Parameters<typeof PliteLeaf>[0]) {
+function LeafStaticMock(props: Parameters<typeof EditorLeaf>[0]) {
   leafRenderCount += 1;
 
-  return <PliteLeaf {...props} />;
+  return <EditorLeaf {...props} />;
 }
 
 function getLeafRenderCount() {
@@ -177,7 +224,7 @@ describe('PlateStatic Memoization', () => {
   it('render elements/leaves initially', () => {
     const editor = createEditor();
 
-    render(<PlateStatic editor={editor} />);
+    render(<EditorStatic editor={editor} />);
 
     // We expect at least 1 element (the <p>...) and 1 leaf
     expect(getElementRenderCount()).toBe(1);
@@ -187,10 +234,10 @@ describe('PlateStatic Memoization', () => {
   it('does not re-render elements/leaves if the same `value` reference is passed', () => {
     const editor = createEditor();
 
-    const { rerender } = render(<PlateStatic editor={editor} />);
+    const { rerender } = render(<EditorStatic editor={editor} />);
 
     // Re-render with the **same** editor.read.children() reference:
-    rerender(<PlateStatic editor={editor} />);
+    rerender(<EditorStatic editor={editor} />);
 
     // Expect no additional renders of elements/leaves
     expect(getElementRenderCount()).toEqual(1);
@@ -200,7 +247,7 @@ describe('PlateStatic Memoization', () => {
   it('re-render elements/leaves if editor children changes by reference', () => {
     const editor = createEditor();
 
-    const { rerender } = render(<PlateStatic editor={editor} />);
+    const { rerender } = render(<EditorStatic editor={editor} />);
 
     // Create a new array reference with the same content (just to test reference changes)
     const newValueRef = [
@@ -212,7 +259,7 @@ describe('PlateStatic Memoization', () => {
     ];
 
     replaceRoot(editor, newValueRef);
-    rerender(<PlateStatic editor={editor} />);
+    rerender(<EditorStatic editor={editor} />);
 
     // Now we expect re-renders because the array reference changed
     expect(getElementRenderCount()).toBe(2);
@@ -222,14 +269,14 @@ describe('PlateStatic Memoization', () => {
   it('re-render if Plite mutation', () => {
     const editor = createEditor();
 
-    render(<PlateStatic editor={editor} />);
+    render(<EditorStatic editor={editor} />);
 
     // This will mutate the text but also element reference
     editor.update.text.insert('+');
 
     // Re-render with the updated children
     // (the reference changed as well as the text)
-    render(<PlateStatic editor={editor} />);
+    render(<EditorStatic editor={editor} />);
 
     expect(getElementRenderCount()).toBe(2);
     expect(getLeafRenderCount()).toBe(2);
@@ -238,7 +285,7 @@ describe('PlateStatic Memoization', () => {
   it('only re-render modified element and leaf when editing a single element', () => {
     const editor = createEditorWithMultipleElements();
 
-    const { rerender } = render(<PlateStatic editor={editor} />);
+    const { rerender } = render(<EditorStatic editor={editor} />);
 
     expect(getElementRenderCount()).toBe(2);
     expect(getLeafRenderCount()).toBe(2);
@@ -246,7 +293,7 @@ describe('PlateStatic Memoization', () => {
     editor.update.nodes.set({ bold: true, text: 'Modified' }, { at: [1, 2] });
 
     // Re-render with the modified editor
-    rerender(<PlateStatic editor={editor} />);
+    rerender(<EditorStatic editor={editor} />);
 
     // We expect only one element to re-render (the modified one)
     expect(getElementRenderCount()).toBe(3);
@@ -254,7 +301,7 @@ describe('PlateStatic Memoization', () => {
     expect(getLeafRenderCount()).toBe(3);
 
     editor.update.nodes.set({ revision: 1 }, { at: [1] });
-    rerender(<PlateStatic editor={editor} />);
+    rerender(<EditorStatic editor={editor} />);
 
     expect(getElementRenderCount()).toBe(4);
     expect(getLeafRenderCount()).toBe(3);
@@ -263,7 +310,7 @@ describe('PlateStatic Memoization', () => {
   it('preserve memoization when adding and removing new elements', () => {
     const editor = createEditorWithMultipleElements();
 
-    const { rerender } = render(<PlateStatic editor={editor} />);
+    const { rerender } = render(<EditorStatic editor={editor} />);
 
     const initialValue = editor.read.children();
 
@@ -272,14 +319,14 @@ describe('PlateStatic Memoization', () => {
       { children: [{ text: 'New Paragraph' }], type: 'paragraph' },
     ]);
 
-    rerender(<PlateStatic editor={editor} />);
+    rerender(<EditorStatic editor={editor} />);
 
     // We expect only the new element to render
     expect(getElementRenderCount()).toBe(3);
 
     replaceRoot(editor, [...initialValue]);
 
-    rerender(<PlateStatic editor={editor} />);
+    rerender(<EditorStatic editor={editor} />);
 
     expect(getElementRenderCount()).toBe(3);
   });
@@ -288,7 +335,7 @@ describe('PlateStatic Memoization', () => {
     it('uses the registered element fallback', () => {
       const editor = createHeadlessEditor({
         plugins: [
-          defineBasePlugin('fallbackElement', {
+          definePlugin('fallbackElement', {
             schema: {
               element: {
                 content: schema.content.text({ default: 'text', min: 1 }),
@@ -309,13 +356,13 @@ describe('PlateStatic Memoization', () => {
       });
 
       expect(() => {
-        render(<PlateStatic editor={editor} />);
+        render(<EditorStatic editor={editor} />);
       }).not.toThrow();
     });
   });
 
   it('renders text node injections when the path is already known', () => {
-    const TonePlugin = defineBasePlugin('tone', {
+    const TonePlugin = definePlugin('tone', {
       schema: { mark: { property: property.string() } },
       inject: {
         nodeProps: {
@@ -334,7 +381,7 @@ describe('PlateStatic Memoization', () => {
       ],
     });
     const markup = ReactDOMServer.renderToStaticMarkup(
-      <PlateStatic editor={editor} />
+      <EditorStatic editor={editor} />
     );
 
     expect(markup).toContain('color:red');
@@ -343,7 +390,7 @@ describe('PlateStatic Memoization', () => {
   it('renders and refreshes element-owned content roots through ordinary components', () => {
     const editor = createHeadlessEditor({
       plugins: [
-        defineBasePlugin('figure', {
+        definePlugin('figure', {
           component: ({ slots }) => (
             <figure>
               <figcaption>{slots.contentRoot('caption')}</figcaption>
@@ -367,7 +414,7 @@ describe('PlateStatic Memoization', () => {
         }),
         BaseParagraphPlugin.configure({
           component: (props) => (
-            <PliteElement
+            <EditorElement
               {...props}
               attributes={{
                 ...props.attributes,
@@ -392,23 +439,28 @@ describe('PlateStatic Memoization', () => {
         },
       },
     });
-    const view = render(<PlateStatic editor={editor} />);
+    const view = render(<EditorStatic editor={editor} />);
     const caption = view
       .getByText('First caption')
       .closest('[data-caption-block]');
+    const captionText = view
+      .getByText('First caption')
+      .closest('[data-editor-node="text"]');
 
     expect(view.getByText('First caption')).toBeInTheDocument();
     expect(caption).toBeInTheDocument();
-    expect(caption?.getAttribute('data-plite-node-key')).toBeNull();
-    expect(caption?.getAttribute('data-plite-path')).toBe('0');
-    expect(caption?.getAttribute('data-plite-root')).toBe('caption:1');
+    expect(caption?.getAttribute('data-editor-node-key')).toBeNull();
+    expect(caption?.getAttribute('data-editor-path')).toBe('0');
+    expect(caption?.getAttribute('data-editor-root')).toBe('caption:1');
+    expect(captionText?.getAttribute('data-editor-path')).toBe('0,0');
+    expect(captionText?.getAttribute('data-editor-root')).toBe('caption:1');
 
     editor.update((tx) => {
       tx.roots.replace('caption:1', [
         { children: [{ text: 'Updated caption' }], type: 'paragraph' },
       ]);
     });
-    view.rerender(<PlateStatic editor={editor} />);
+    view.rerender(<EditorStatic editor={editor} />);
 
     expect(view.getByText('Updated caption')).toBeInTheDocument();
     expect(view.queryByText('First caption')).not.toBeInTheDocument();
@@ -426,7 +478,7 @@ describe('PlateStatic render slots', () => {
     const editor = createHeadlessEditor({
       initialValue: [{ children: [{ text: 'static' }], type: 'paragraph' }],
       plugins: [
-        defineBasePlugin('dynamicSibling', {
+        definePlugin('dynamicSibling', {
           slots: {
             afterEditable: DynamicSibling,
             beforeEditable: DynamicSibling,
@@ -434,7 +486,7 @@ describe('PlateStatic render slots', () => {
         }),
       ],
     });
-    const view = render(<PlateStatic editor={editor} />);
+    const view = render(<EditorStatic editor={editor} />);
 
     expect(view.queryByTestId('dynamic-sibling')).not.toBeInTheDocument();
     expect(siblingRenderCount).toBe(0);

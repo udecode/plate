@@ -1,8 +1,9 @@
 # Complex decisions
 
 Use this for architecture, framework comparison, migration or a substantial
-proposal. Task's workflow owns the lifecycle. Poteto supplies the full matched
-engineering method; Technical Writing shapes the decision document.
+proposal. Task owns the lifecycle. Use the complete selected Poteto method
+when the decision needs it; Technical Writing shapes substantial prose.
+An accepted plan proceeds through adoption and proof without another method chain.
 
 State the decision, existing owner, hard laws, alternatives and evidence that
 would change the recommendation. Reuse the active plan. The `task-complex`

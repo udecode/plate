@@ -10,7 +10,7 @@ status: active
 
 Plite keeps a JSON-like document model and uses a Lexical-style read/update
 lifecycle, ProseMirror-style transaction and DOM selection authority,
-Tiptap-style extension ergonomics, and a React 19.2 runtime built around live
+Tiptap-style plugin ergonomics, and a React 19.2 runtime built around live
 reads, canonical changes, semantic islands, projection sources, and strict
 browser conformance proof.
 
@@ -77,9 +77,9 @@ External parsed or clipboard content enters as a `ContentSlice` through
 `tx.fragment.replace(...)`. The compiled schema fits containment, wrapping,
 defaults, and open edges before the transaction publishes one change.
 
-## Extension Contract
+## Plugin Contract
 
-Extensions add named `read`, `update`, and `api` groups, typed commands, schema,
+Plugins add named `read`, `update`, and `api` groups, typed commands, schema,
 state fields, effects, facets, and corrections.
 
 Public dependency references are shallow, non-generic identity values. Finite
@@ -89,7 +89,7 @@ supports static portal checks without replacing runtime exact-descriptor
 identity.
 
 ```ts
-const TodoExtension = defineEditorExtension({
+const TodoPlugin = definePlugin({
   name: 'todo',
   update: ({ tx }) => ({
     toggle() {
@@ -98,19 +98,19 @@ const TodoExtension = defineEditorExtension({
   }),
 })
 
-const editor = createEditor({ extensions: [TodoExtension] })
+const editor = createEditor({ plugins: [TodoPlugin] })
 
 editor.update.todo.toggle()
 ```
 
-Extension groups compose through the read/update runtime. Direct method
-replacement is not the public extension model.
+Plugin groups compose through the read/update runtime. Direct method
+replacement is not the public plugin model.
 
-Extension declarations compile into a detached immutable candidate.
+Plugin declarations compile into a detached immutable candidate.
 `validate(context)` checks that candidate before synchronous activation;
 `activate(editor, context)` registers cleanup and schedules publication work
 with `context.afterPublish(...)`. Runtime replacement uses a named slot through
-`tx.extensions.reconfigure(...)`, so extension and document changes publish
+`tx.plugins.reconfigure(...)`, so plugin and document changes publish
 atomically.
 
 ## Hard Cuts
@@ -121,8 +121,8 @@ These are not primary public API:
 - mutable `editor.selection`
 - mutable `editor.children`
 - mutable `editor.marks`
-- direct `editor.apply` as an extension point
-- direct `editor.onChange` as an extension point
+- direct `editor.apply` as an plugin point
+- direct `editor.onChange` as an plugin point
 - command policy objects
 - exposed `tx.resolveTarget()`
 - child-count chunking
@@ -250,7 +250,7 @@ Private-alpha closure requires these gates at the claim width being made:
 
 - public hard-cut contracts
 - read/update and primitive method runtime contracts
-- extension method runtime contracts
+- plugin method runtime contracts
 - kernel authority audit contracts
 - generated browser gauntlet release gates
 - scoped mobile/IME proof contracts

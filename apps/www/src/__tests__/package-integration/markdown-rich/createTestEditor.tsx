@@ -54,7 +54,7 @@ import {
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
-    plainMarks: ['suggestion', 'comment'],
+    plainMarks: ['comment'],
     remarkPlugins: [
       remarkMath,
       remarkGfm,

@@ -14,7 +14,7 @@ import {
 } from '../../src/index';
 import type { AnyEditor } from '../../src/interfaces/editor';
 import { readPliteValueFromYjs } from '../../src/yjs/core/document';
-import { yjs } from '../../src/yjs/core/extension';
+import { yjs } from '../../src/yjs/core/plugin';
 import {
   createYjsTestEditor,
   undoEditorHistory,
@@ -62,7 +62,7 @@ const ContentRootSchema = defineEditorSchema('schema:yjs-content-root', {
 
 const createPeer = (
   doc: Y.Doc,
-  clientId: string
+  _clientId: string
 ): {
   cleanup: () => void;
   doc: Y.Doc;
@@ -71,9 +71,10 @@ const createPeer = (
   const editor = createYjsTestEditor({ children: [media()] });
   const cleanup = editor.install(
     yjs({
-      clientId,
       doc,
+      initialReady: true,
       rootName: 'plitejs',
+      ...(doc.getMap('plitejs:schema').size === 0 ? { seed: true } : {}),
     })
   );
 
@@ -82,21 +83,22 @@ const createPeer = (
 
 const createContentRootPeer = (
   doc: Y.Doc,
-  clientId: string
+  _clientId: string
 ): {
   cleanup: () => void;
   doc: Y.Doc;
   editor: AnyEditor;
 } => {
   const editor = createEditor({
-    extensions: [ContentRootSchema, history()],
+    plugins: [ContentRootSchema, history()],
     initialValue: [paragraph('Body')],
   });
   const cleanup = editor.install(
     yjs({
-      clientId,
       doc,
+      initialReady: true,
       rootName: 'plitejs',
+      ...(doc.getMap('plitejs:schema').size === 0 ? { seed: true } : {}),
     })
   );
 
@@ -122,7 +124,9 @@ describe('plitejs/yjs multi-root document contract', () => {
     const cleanup = header.install(
       yjs({
         doc,
+        initialReady: true,
         rootName: 'plitejs',
+        seed: true,
       })
     );
 

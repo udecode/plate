@@ -37,12 +37,12 @@ mock.module('platejs', () => ({
 mock.module('platejs/react', () => ({
   CodeBlockPlugin: mockPlugin('codeBlock'),
   CodeHighlightPlugin: mockPlugin('codeHighlight'),
-  PlateElement: ({ children, className, ...props }: any) => (
+  EditorElement: ({ children, className, ...props }: any) => (
     <div className={className} data-testid="plate-element" {...props}>
       {children}
     </div>
   ),
-  PlateLeaf: ({ children, className }: any) => (
+  EditorLeaf: ({ children, className }: any) => (
     <span className={className}>{children}</span>
   ),
   useEditor: () => ({
@@ -101,7 +101,7 @@ describe('CodeBlockElement', () => {
     const view = render(
       <CodeBlockElement
         {...pluginContext}
-        attributes={{ 'data-plite-node': 'element' }}
+        attributes={{ 'data-editor-node': 'element' }}
         editor={editor}
         element={currentElement}
       >
@@ -130,7 +130,7 @@ describe('CodeBlockElement', () => {
     const view = render(
       <CodeBlockElement
         {...pluginContext}
-        attributes={{ 'data-plite-node': 'element' }}
+        attributes={{ 'data-editor-node': 'element' }}
         editor={editor}
         element={currentElement}
       >

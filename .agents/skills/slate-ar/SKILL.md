@@ -1,5 +1,5 @@
 ---
-description: Slate v2 Codex Autoresearch wrapper. Owns Slate-specific AR defaults, status, gate, quality, recipe, stabilize, perfect, finalize, and ship modes. Performance benchmarking and optimization belong to benchmark.
+description: Operate Slate v2 Autoresearch status, quality, recipe and release modes; use Benchmark for performance diagnosis.
 argument-hint: '[status | continue | next | gate <cmd/surface> | stabilize <surface> | quality <slug> | recipe <id> | finalize preview | ship | perfect <surface>]'
 disable-model-invocation: true
 name: slate-ar

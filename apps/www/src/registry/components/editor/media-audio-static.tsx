@@ -1,5 +1,5 @@
 import type { BaseAudioPlugin } from 'platejs/media';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -7,10 +7,10 @@ import { cn } from '@/lib/utils';
 import { CaptionStatic } from './caption-static';
 
 export function AudioElementStatic(
-  props: PliteElementProps<typeof BaseAudioPlugin>
+  props: EditorElementProps<typeof BaseAudioPlugin>
 ) {
   return (
-    <PliteElement {...props} className="mb-1">
+    <EditorElement {...props} className="mb-1">
       <figure className="group relative cursor-default">
         <div className={cn('h-16 rounded-sm')}>
           {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- [P0 behavior-boundary] User media has no caption-track field; an empty fabricated track would falsely claim accessibility. */}
@@ -18,6 +18,6 @@ export function AudioElementStatic(
         </div>
         <CaptionStatic element={props.element}>{props.children}</CaptionStatic>
       </figure>
-    </PliteElement>
+    </EditorElement>
   );
 }

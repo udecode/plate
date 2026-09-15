@@ -1,11 +1,11 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
-import { createPliteBrowserEditorHarness, recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { createBrowserEditorHarness, recordBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { createEditor, type DocumentChange, type JsonEditorValue } from 'plitejs';
 
 const original = 'One canonical text.\nEdit either view.\nUndo is shared.';
 const primary = (page: Page) => page.locator('#external-text-primary');
 const input = (page: Page) => primary(page).getByRole('textbox', { name: 'External text', exact: true });
-const harness = (page: Page) => createPliteBrowserEditorHarness(page, 'external-text-primary', primary(page));
+const harness = (page: Page) => createBrowserEditorHarness(page, 'external-text-primary', primary(page));
 type Metrics = { callbackFailures: number; destroyedViews: number; mountedViews: number; patches: number; resets: number; viewCount: number };
 type Handle = {
   applyChange: (change: ReturnType<DocumentChange['toJSON']>, policy: { tags: string[] }) => void;
@@ -22,7 +22,7 @@ const select = async (target: Locator, anchor: number, focus = anchor) => {
 const expectText = async (page: Page, text: string) => {
   await expect(input(page)).toHaveValue(text);
   await expect.poll(() => harness(page).get.modelBlockText(1)).toBe(text);
-  await expect(page.locator('#external-text-native [data-plite-path="1"]')).toHaveText(text);
+  await expect(page.locator('#external-text-native [data-editor-path="1"]')).toHaveText(text);
 };
 const applyPeerUpdate = async (page: Page, update: (peer: ReturnType<typeof createEditor>) => void) => {
   const value = await harness(page).get.modelValue() as JsonEditorValue;
@@ -43,9 +43,9 @@ const compose = (target: Locator, phase: 'start' | 'update' | 'end', text = '') 
 }, { phase, text });
 
 test.describe('external text', () => {
-  let errors: ReturnType<typeof recordPliteBrowserRuntimeErrors>;
+  let errors: ReturnType<typeof recordBrowserRuntimeErrors>;
   test.beforeEach(async ({ page }) => {
-    errors = recordPliteBrowserRuntimeErrors(page);
+    errors = recordBrowserRuntimeErrors(page);
     await page.goto('/examples/plite/external-text', { waitUntil: 'domcontentloaded' });
     await expect(input(page)).toHaveValue(original);
   });
@@ -143,7 +143,7 @@ test.describe('external text', () => {
   test('external-text-clipboard: native local copy, cut, and paste have one owner', async ({ page }, info) => {
     test.skip(info.project.name === 'mobile', 'Native clipboard shortcuts are a desktop-browser claim.');
     const target = input(page);
-    const local = createPliteBrowserEditorHarness(page, 'external-text-input-clipboard', target);
+    const local = createBrowserEditorHarness(page, 'external-text-input-clipboard', target);
     await select(target, 4, 13);
     const copy = await local.clipboard.copyNativeEventPayload();
     expect(copy.text).toBe('canonical');
@@ -161,7 +161,7 @@ test.describe('external text', () => {
     await outer.selection.select({ anchor: { path: [0, 0], offset: 0 }, focus: { path: [1, 0], offset: 13 } });
     const payload = await outer.clipboard.copyNativeEventPayload();
     expect(payload.text).toBe('Before the external view.\nOne canonical');
-    expect(payload.pliteFragment).toBeTruthy();
+    expect(payload.fragment).toBeTruthy();
     expect((await outer.clipboard.cutNativeEventPayload()).text).toBe(payload.text);
     expect((await outer.get.modelBlockTexts()).join('\n')).not.toContain('One canonical');
     await expect.poll(() => outer.selection.get()).toEqual({
@@ -191,7 +191,7 @@ test.describe('external text', () => {
     await select(input(page), 4, 13);
     await primary(page).evaluate((element) => {
       const source = element.querySelector('textarea')!;
-      const target = element.querySelector('[data-plite-path="0"]')!;
+      const target = element.querySelector('[data-editor-path="0"]')!;
       const text = element.ownerDocument.createTreeWalker(target, NodeFilter.SHOW_TEXT).nextNode()!;
       const range = element.ownerDocument.createRange();
       range.setStart(text, 3);
@@ -313,9 +313,9 @@ test.describe('external text', () => {
   test('external-text-hydration: server host is empty and client mount has no duplicate canonical DOM', async ({ page, request }) => {
     const response = await request.get('/examples/plite/external-text');
     const html = await response.text();
-    expect(html).toContain('data-plite-external-text');
+    expect(html).toContain('data-editor-external-text');
     expect(html).not.toContain('<textarea');
-    await expect(primary(page).locator('[data-plite-path="1,0"]')).toHaveCount(0);
+    await expect(primary(page).locator('[data-editor-path="1,0"]')).toHaveCount(0);
     await expect(primary(page).locator('textarea')).toHaveCount(1);
     const counts = await metrics(page);
     expect(counts.mountedViews - counts.destroyedViews).toBe(1);
@@ -324,15 +324,15 @@ test.describe('external text', () => {
   test('external-text-decorations: source refresh delivers keyed ranges without duplicate canonical DOM', async ({ page }) => {
     await page.getByLabel('Show decorations').check();
     await expect(input(page)).toHaveAttribute('data-decorations', '2');
-    await expect(primary(page).locator('[data-plite-external-text] [data-example-decoration]')).toHaveCount(0);
-    await expect(primary(page).locator('[data-plite-path="1,0"]')).toHaveCount(0);
+    await expect(primary(page).locator('[data-editor-external-text] [data-example-decoration]')).toHaveCount(0);
+    await expect(primary(page).locator('[data-editor-path="1,0"]')).toHaveCount(0);
     await page.getByLabel('Show decorations').uncheck();
     await expect(input(page)).toHaveAttribute('data-decorations', '0');
     expect((await metrics(page)).resets).toBe(0);
   });
 
   test('external-text-a11y: one labelled native textbox and keyboard entry', async ({ page }) => {
-    const host = primary(page).locator('[data-plite-external-text]');
+    const host = primary(page).locator('[data-editor-external-text]');
     await expect(host.getByRole('textbox', { name: 'External text', exact: true })).toHaveCount(1);
     await expect(host).toMatchAriaSnapshot(`- group "External text":\n  - textbox "External text"`);
     await page.getByRole('combobox', { name: 'View root' }).focus();

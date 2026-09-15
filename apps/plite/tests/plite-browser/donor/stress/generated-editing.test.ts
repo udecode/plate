@@ -1,17 +1,17 @@
 import { faker } from '@faker-js/faker';
 import { expect, test } from '@playwright/test';
 import {
-  assertPliteBrowserFirstPartyParityContracts,
-  PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
+  assertBrowserFirstPartyParityContracts,
+  BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
 } from '@platejs/test/proof';
 import {
   assertNoIllegalKernelTransitions,
-  createPliteBrowserInternalControlGauntlet,
+  createBrowserInternalControlGauntlet,
   type EditorSurfaceOptions,
-  installPliteReactRenderProfiler,
+  installReactRenderProfiler,
   openExample,
-  type PliteBrowserScenarioStep,
-  takePliteBrowserRenderStateSnapshot,
+  type BrowserScenarioStep,
+  takeBrowserRenderStateSnapshot,
 } from '@platejs/test/playwright';
 
 import {
@@ -53,10 +53,10 @@ const routeEnabled = (route: string) =>
 const familyEnabled = (family: string) =>
   enabledFamilies.size === 0 || enabledFamilies.has(family);
 
-assertPliteBrowserFirstPartyParityContracts();
+assertBrowserFirstPartyParityContracts();
 
 const contractByFamily =
-  PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY.rowByFamily;
+  BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY.rowByFamily;
 
 const point = (path: number[], offset: number) => ({ path, offset });
 
@@ -84,7 +84,7 @@ const createStressCase = ({
 }: {
   family: string;
   route: string;
-  steps: PliteBrowserScenarioStep[];
+  steps: BrowserScenarioStep[];
   surface?: EditorSurfaceOptions;
 }): StressCase => ({
   contract: contractByFamily.get(family),
@@ -205,7 +205,7 @@ const hugeDocumentCut = (): StressCase => {
         contains: followingText,
         kind: 'assertLocatorText',
         label: 'assert-following-block-shifted-up',
-        selector: `[data-plite-path="${cutIndex}"]`,
+        selector: `[data-editor-path="${cutIndex}"]`,
       },
     ],
   });
@@ -329,14 +329,14 @@ const markableInlineVoidFormatting = (): StressCase => {
         count: 0,
         kind: 'assertLocatorCount',
         label: 'assert-visible-mention-does-not-own-hidden-anchor',
-        selector: '[data-cy="mention-R2-D2"] [data-plite-zero-width]',
+        selector: '[data-cy="mention-R2-D2"] [data-editor-zero-width]',
       },
       {
         kind: 'assertLocatorCount',
         label: 'assert-inline-void-shells-own-hidden-anchor',
         min: 2,
         selector:
-          '[data-plite-inline="true"][data-plite-void="true"] [data-plite-zero-width]',
+          '[data-editor-inline="true"][data-editor-void="true"] [data-editor-zero-width]',
       },
       {
         kind: 'select',
@@ -403,21 +403,21 @@ const blockVoidNavigation = (route: 'embeds' | 'images'): StressCase => {
               label: 'assert-image-visible-content-offset',
               max: 1,
               min: 0,
-              selector: '[data-plite-path="1"]',
+              selector: '[data-editor-path="1"]',
             },
-          ] satisfies PliteBrowserScenarioStep[])
+          ] satisfies BrowserScenarioStep[])
         : []),
       ...(route === 'embeds'
         ? ([
             {
-              afterSelector: '[data-plite-path="2"]',
+              afterSelector: '[data-editor-path="2"]',
               beforeSelector: 'input[type="text"]',
               kind: 'assertLocatorVerticalGap',
               label: 'assert-embed-url-input-gap',
               max: 24,
               min: 12,
             },
-          ] satisfies PliteBrowserScenarioStep[])
+          ] satisfies BrowserScenarioStep[])
         : []),
       { kind: 'resetRenderProfiler', label: 'reset-render-before-void-enter' },
       {
@@ -561,7 +561,7 @@ const staleTargetRemoteRebase = (): StressCase => {
         kind: 'assertLocatorCount',
         label: 'assert-second-image-moved-by-canonical-change',
         selector:
-          '[data-plite-path="1"] img[src="https://picsum.photos/id/1025/160/90.jpg"]',
+          '[data-editor-path="1"] img[src="https://picsum.photos/id/1025/160/90.jpg"]',
       },
       {
         kind: 'assertLastCommitTags',
@@ -609,19 +609,19 @@ const pasteHtmlImageVoid = (): StressCase =>
         count: 2,
         kind: 'assertLocatorCount',
         label: 'assert-pasted-image-void-shell',
-        selector: '[data-plite-void="true"]',
+        selector: '[data-editor-void="true"]',
       },
       {
         count: 2,
         kind: 'assertLocatorCount',
         label: 'assert-pasted-image-runtime-spacer',
-        selector: '[data-plite-void="true"] [data-plite-spacer]',
+        selector: '[data-editor-void="true"] [data-editor-spacer]',
       },
       {
         count: 2,
         kind: 'assertLocatorCount',
         label: 'assert-pasted-image-visible-content-wrapper',
-        selector: '[data-plite-void="true"] > [contenteditable="false"]',
+        selector: '[data-editor-void="true"] > [contenteditable="false"]',
       },
       { focusOwner: 'editor', kind: 'assertFocusOwner', label: 'assert-focus' },
       { kind: 'assertLastCommit', label: 'assert-paste-commit' },
@@ -648,15 +648,15 @@ const trueVoidNativeFocus = (): StressCase =>
         count: 1,
         kind: 'assertLocatorCount',
         label: 'assert-true-void-shell',
-        selector: '[data-plite-void="true"]',
+        selector: '[data-editor-void="true"]',
       },
       {
         count: 1,
         kind: 'assertLocatorCount',
         label: 'assert-true-void-spacer',
-        selector: '[data-plite-void="true"] [data-plite-spacer]',
+        selector: '[data-editor-void="true"] [data-editor-spacer]',
       },
-      ...createPliteBrowserInternalControlGauntlet({
+      ...createBrowserInternalControlGauntlet({
         controlSelector: 'input[type="text"]',
         controlValue: 'Typing',
         followUpText: 'Outer ',
@@ -791,7 +791,7 @@ const overlayManyDecorationSources = (): StressCase =>
     ],
   });
 
-const addReviewCommentSteps = (): PliteBrowserScenarioStep[] => [
+const addReviewCommentSteps = (): BrowserScenarioStep[] => [
   {
     kind: 'clickSelector',
     label: 'seed-review-comment',
@@ -806,8 +806,8 @@ const addReviewCommentSteps = (): PliteBrowserScenarioStep[] => [
   {
     count: 1,
     kind: 'assertLocatorCount',
-    label: 'assert-review-comment-widget',
-    selector: 'text=comment-1-widget:Comment 1',
+    label: 'assert-review-comment-sidebar-row',
+    selector: 'text=comment-1:Comment 1',
   },
 ];
 
@@ -838,8 +838,8 @@ const overlayAnnotationMetadataOnly = (): StressCase =>
       {
         count: 1,
         kind: 'assertLocatorCount',
-        label: 'assert-retone-widget-stable',
-        selector: 'text=comment-1-widget:Comment 1',
+        label: 'assert-retone-sidebar-row-stable',
+        selector: 'text=comment-1:Comment 1',
       },
     ],
   });
@@ -870,43 +870,43 @@ const overlayAnnotationBookmarkRebase = (): StressCase =>
       {
         count: 1,
         kind: 'assertLocatorCount',
-        label: 'assert-rebased-widget-visible',
-        selector: 'text=comment-1-widget:Comment 1',
+        label: 'assert-rebased-sidebar-row-visible',
+        selector: 'text=comment-1:Comment 1',
       },
     ],
   });
 
-const overlayWidgetDirtyId = (): StressCase =>
+const overlayAnnotationDirtyId = (): StressCase =>
   createStressCase({
-    family: 'overlay-widget-dirty-id',
+    family: 'overlay-annotation-dirty-id',
     route: 'comment-mode',
     steps: [
       ...addReviewCommentSteps(),
       {
         kind: 'resetRenderProfiler',
-        label: 'reset-render-before-widget-retone',
+        label: 'reset-render-before-annotation-retone',
       },
       {
         kind: 'clickSelector',
-        label: 'retone-widget-comment',
+        label: 'retone-annotation-comment',
         selector: 'button:has-text("Retone first comment")',
       },
       {
         count: 1,
         kind: 'assertLocatorCount',
-        label: 'assert-widget-survives-metadata-update',
-        selector: 'text=comment-1-widget:Comment 1',
+        label: 'assert-sidebar-row-survives-metadata-update',
+        selector: 'text=comment-1:Comment 1',
       },
       {
         kind: 'clickSelector',
-        label: 'clear-widget-comment',
+        label: 'clear-annotation-comment',
         selector: 'button:has-text("Clear comments")',
       },
       {
         count: 0,
         kind: 'assertLocatorCount',
-        label: 'assert-widget-cleared',
-        selector: 'text=comment-1-widget:Comment 1',
+        label: 'assert-sidebar-row-cleared',
+        selector: 'text=comment-1:Comment 1',
       },
     ],
   });
@@ -931,8 +931,8 @@ const overlayMixedUpdate = (): StressCase =>
       {
         count: 1,
         kind: 'assertLocatorCount',
-        label: 'assert-mixed-widget-visible',
-        selector: 'text=comment-1-widget:Comment 1',
+        label: 'assert-mixed-sidebar-row-visible',
+        selector: 'text=comment-1:Comment 1',
       },
       {
         kind: 'clickSelector',
@@ -948,8 +948,8 @@ const overlayMixedUpdate = (): StressCase =>
       {
         count: 0,
         kind: 'assertLocatorCount',
-        label: 'assert-mixed-widget-cleared',
-        selector: 'text=comment-1-widget:Comment 1',
+        label: 'assert-mixed-sidebar-row-cleared',
+        selector: 'text=comment-1:Comment 1',
       },
     ],
   });
@@ -970,7 +970,7 @@ const mouseSelectionToolbar = (): StressCase =>
       {
         kind: 'dragTextSelection',
         label: 'drag-first-text-range',
-        selector: 'span[data-plite-string="true"]',
+        selector: 'span[data-editor-string="true"]',
         steps: 12,
       },
       {
@@ -1208,7 +1208,7 @@ const imeCompositionInlineVoidBoundary = (): StressCase => {
         contains: 'like すし@R2-D2',
         kind: 'assertLocatorText',
         label: 'assert-inline-void-composition-text',
-        selector: '[data-plite-path="1"]',
+        selector: '[data-editor-path="1"]',
       },
       {
         kind: 'assertSelectionLocation',
@@ -1286,7 +1286,7 @@ const stressCases: StressCase[] = [
   overlayManyDecorationSources(),
   overlayAnnotationMetadataOnly(),
   overlayAnnotationBookmarkRebase(),
-  overlayWidgetDirtyId(),
+  overlayAnnotationDirtyId(),
   overlayMixedUpdate(),
   mouseSelectionToolbar(),
   webkitBackwardSelection(),
@@ -1335,7 +1335,7 @@ for (const stressCase of stressCases) {
       );
 
       try {
-        await installPliteReactRenderProfiler(page);
+        await installReactRenderProfiler(page);
         const editor = await openExample(
           page,
           stressCase.route.startsWith('plite/')
@@ -1362,7 +1362,7 @@ for (const stressCase of stressCases) {
             tracePath: resultPath,
           }
         );
-        const finalState = await takePliteBrowserRenderStateSnapshot(editor);
+        const finalState = await takeBrowserRenderStateSnapshot(editor);
 
         assertNoIllegalKernelTransitions(result);
         expect(result.replay.replayable).toBe(true);

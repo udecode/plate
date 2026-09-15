@@ -24,7 +24,8 @@ redundant prose without deleting meaningful negative type proofs. TypeScript
 Best Practices supplements the installed advanced-type reference and Plate's
 descriptor-derived inference law; it does not replace those owners.
 
-Show Me Your Work keeps long-running decisions reviewable. Show Me is a visual
+Show Me Your Work keeps a separately requested or necessary experiment history;
+otherwise decisions stay in the existing plan. Show Me is a visual
 explanation tool, while Walkthrough presents final visual evidence. These jobs
 are distinct; a decision trail is not a reason to replay a verified browser
 journey. Technical Writing contains the prose-editing method, pattern catalog and

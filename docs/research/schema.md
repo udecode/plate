@@ -111,13 +111,28 @@ If a page type does not need more fields, do not add more fields.
 [review-index.json](review-index.json). Stable scope IDs identify the user
 question across package or symbol renames. Source-derived feature IDs identify
 its current members; reconcile a rename explicitly rather than losing history.
-Feature groups may share one scope. Each member retains its disposition and
-source fingerprint. The index records the inventory boundary and exclusions.
+Source groups have a primary review address; that address is not a verdict
+about every job in the directory. Each question names actual owners,
+materially different consumers and selected proof. Shared owners can appear
+in several questions. Each census member retains its disposition and source
+fingerprint. The index records the inventory boundary and exclusions.
 
 For a new proposal with no matching scope, add the semantic question and its
-current comparison owners/dependencies to the index. A proposed scope can have
-no current members. Its draft fingerprints the actual comparator dependencies;
+current comparison owners and evidence inputs to the index. A proposed scope
+can have no current members. Its draft fingerprints the actual comparator files;
 proposed APIs are not counted as existing features or given invented paths.
+
+Keep three relationships separate:
+
+- `dependsOn` names the minimal review prerequisites and
+  `prerequisiteReason` explains the governing law. Existing evidence can settle
+  a prerequisite without another review.
+- `relatedScopes` links contextual questions and their original history. It
+  does not block queue order, adopt a verdict or supply the new record's
+  `previous` value. Use it to retain context when a broad question is split.
+- `evidenceInputs` names additional decision-critical files or directories,
+  including shared contracts, fixtures and runners. These inputs contribute
+  fingerprints; queue dependencies do not.
 
 The opportunity score uses `review-payoff-v1`: 0 means no expected value from
 review, 5 means a bounded feature question, and 10 means a large shared-owner
@@ -135,18 +150,56 @@ Scope state stays independent:
 | `proofState` | `not-replayed`, `partial`, or `verified`; only matching execution evidence changes it |
 | record freshness | `matching`, `stale`, or `unknown`, computed from source identity; matching is not a behavior pass |
 | `historyCandidates` | Filename-discovered plan links for intake, not inspected verdicts |
+| `inspection` | Actual inspection depth; located entrypoints are not completed source or assertion reviews |
+| `gaps` | Unresolved scope-specific ownership, provenance, behavior or proof limits |
 
 The inventory observes editable source, exported package entrypoints, copied
-registry UI, and proof/tooling inputs. It also names every capability in the
+registry components/examples/values, actual shared Plite examples, editor
+browser specs, AI service routes and proof/tooling inputs. It also names every capability in the
 canonical `PLUGINS` catalog, including marks and styles sharing one file, with
 their literal property consumers. A catalog entry with no such read is a
 declared capability, not proof of unreachable code; dynamic use is not ruled out.
-Its count is feature/entrypoint groups, not independent reviews. See the index's
+The Plite example table reconciles exact catalog keys with actual dynamic
+loaders and implementation files; display labels do not invent route names.
+Its count is source/capability/entrypoint groups, not independent reviews. See the index's
 `inventory` fields for exact roots and exclusions. `discover` lists each
 group's file count, fingerprint and source example. A new or removed group
 fails `check` until explicitly reconciled. Changes within a group invalidate
 its inventory fingerprint. `refresh` updates that observation without
-altering any review or proof record.
+altering any review or proof record. The snapshot records the base Git commit
+and a fingerprint of local inventory observations. Local source may differ
+from that commit or GitHub, including files that are not published. The
+generated view and `lookup` expose observation freshness separately from a
+record's evidence freshness.
+
+### Core architecture review groups
+
+`reviewGroups` in the index groups only approved core architecture questions
+into one investigation. Each group declares a unique `id`, `title`, `reason`
+and at least two existing `scopes`. A question belongs to at most one group.
+Ungrouped questions each remain a separate review; features such as math,
+emoji, tables and comments are independent.
+
+The current groups are `plite-core` (runtime, state, schema and commands),
+`plite-view` (React, selection, native input, accessibility and geometry), and
+`plate-core` (Plate API and distribution). Compiler/CLI and registry kits remain
+separate questions.
+
+`node tooling/scripts/review-ledger.mjs queue` returns the ordered review units.
+Groups inherit their highest member payoff and external prerequisites; internal
+prerequisites stay attached to their questions. Grouping cannot introduce a
+dependency cycle or bypass AI-last. The generated ledger counts a group as
+pending while any member lacks a recorded review. Source freshness, adoption
+and proof remain separate from this count.
+
+Use `$best-api-review audit plite-core` for the combined investigation and
+`node tooling/scripts/review-ledger.mjs lookup plite-core` for every member's
+source, proof and history. Compare the whole architecture, then give each
+question a verdict. One finding does not end the remaining group coverage.
+Use the existing `draft <scope>` and `record <json>` commands for each member's
+record; groups do not own verdicts or copy records. Exact scope lookup still
+selects that one question and reports its group; broader text searches remain
+available.
 
 ### Record a review
 
@@ -167,9 +220,15 @@ node tooling/scripts/review-ledger.mjs render
 node tooling/scripts/review-ledger.mjs check
 ```
 
-The draft is not a verdict. It captures the scope and transitive dependency
-fingerprints, current owner/consumer files, and durable law. Include any
-additional decision-critical dependency or source observation. Complete:
+Historical references keep their recorded paths when adoption deletes a file.
+Missing captured evidence makes source freshness stale; it does not invalidate
+the immutable record. New records and current scope evidence must exist.
+
+The draft is not a verdict. It captures the scope's source groups, declared
+owners, consumers, selected proof, additional evidence inputs and durable law.
+Directory fingerprints detect added or removed files. Add any further
+decision-critical source or runner before recording. An empty proof list must
+have an explicit gap; an unrelated test cannot fill it. Complete:
 
 - `id`: unique lowercase slug, usually date, scope and iteration.
 - `scope`, `date`, `question`, `requirements`: stable question and current jobs
@@ -187,7 +246,9 @@ additional decision-critical dependency or source observation. Complete:
   `supersedes`, `reverses`, or `defers`; use `null` and `initial` on first review.
 - `references`, `proofLimits`: repository-relative evidence artifacts and the
   precise limits of source, behavior, browser and performance claims.
-- `source`: SHA-256 file and feature fingerprints. Optional `upstreams` entries
+- `source`: SHA-256 file, directory-membership and source-group fingerprints.
+  Every declared owner, consumer, proof and evidence input must be captured.
+  Optional `upstreams` entries
   contain a local `checkout`, full `commit`, and repository-relative `files`
   with hashes. Lookup checks their current commit and selected file hashes;
   missing clones yield unknown. A recorded clone is not asserted latest.

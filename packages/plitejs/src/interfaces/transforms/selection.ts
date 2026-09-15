@@ -27,39 +27,39 @@ export interface SelectionMutationMethods {
   /**
    * Collapse the selection.
    */
-  collapse: <V extends Value, TExtensions extends readonly unknown[]>(
-    editor: Editor<V, TExtensions>,
+  collapse: <V extends Value, TPlugins extends readonly unknown[]>(
+    editor: Editor<V, TPlugins>,
     options?: SelectionCollapseOptions
   ) => void;
 
   /**
    * Unset the selection.
    */
-  deselect: <V extends Value, TExtensions extends readonly unknown[]>(
-    editor: Editor<V, TExtensions>
+  deselect: <V extends Value, TPlugins extends readonly unknown[]>(
+    editor: Editor<V, TPlugins>
   ) => void;
 
   /**
    * Move the selection's point forward or backward.
    */
-  move: <V extends Value, TExtensions extends readonly unknown[]>(
-    editor: Editor<V, TExtensions>,
+  move: <V extends Value, TPlugins extends readonly unknown[]>(
+    editor: Editor<V, TPlugins>,
     options?: SelectionMoveOptions
   ) => void;
 
   /**
    * Set the selection to a new value.
    */
-  select: <V extends Value, TExtensions extends readonly unknown[]>(
-    editor: Editor<V, TExtensions>,
+  select: <V extends Value, TPlugins extends readonly unknown[]>(
+    editor: Editor<V, TPlugins>,
     target: EditorSelection | Location
   ) => void;
 
   /**
    * Set new properties on one of the selection's points.
    */
-  setPoint: <V extends Value, TExtensions extends readonly unknown[]>(
-    editor: Editor<V, TExtensions>,
+  setPoint: <V extends Value, TPlugins extends readonly unknown[]>(
+    editor: Editor<V, TPlugins>,
     props: Partial<Point>,
     options?: SelectionSetPointOptions
   ) => void;
@@ -67,8 +67,8 @@ export interface SelectionMutationMethods {
   /**
    * Set new properties on the selection.
    */
-  setSelection: <V extends Value, TExtensions extends readonly unknown[]>(
-    editor: Editor<V, TExtensions>,
+  setSelection: <V extends Value, TPlugins extends readonly unknown[]>(
+    editor: Editor<V, TPlugins>,
     props: Partial<Range>
   ) => void;
 }

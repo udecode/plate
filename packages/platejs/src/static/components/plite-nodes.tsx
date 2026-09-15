@@ -24,7 +24,7 @@ import type { UnknownObject } from '../../lib/types/AnyObject';
 type NodeAttributeProps = {
   attributes: UnknownObject & {
     className?: string;
-    'data-plite-inline'?: boolean;
+    'data-editor-inline'?: boolean;
     style?: React.CSSProperties;
   };
   className?: string;
@@ -47,43 +47,40 @@ const getNodeAttributes = <E extends HTMLElement>(
   style: { ...props.attributes.style, ...props.style },
 });
 
-type PliteNodePropsDescriptor = EditorSchemaSource & PluginReference;
+type NodePropsDescriptor = EditorSchemaSource & PluginReference;
 
-type PliteElementPropsNode<TPlugin extends PliteNodePropsDescriptor> = Extract<
+type ElementPropsNode<TPlugin extends NodePropsDescriptor> = Extract<
   ElementOf<TPlugin>,
   Element
 >;
 
-type PliteElementPropsConfig<TPlugin extends PliteNodePropsDescriptor> =
+type ElementPropsConfig<TPlugin extends NodePropsDescriptor> =
   InternalPluginDefinitionOf<TPlugin>;
 
-type PliteTextPropsNode<TPlugin extends PliteNodePropsDescriptor> = Extract<
+type TextPropsNode<TPlugin extends NodePropsDescriptor> = Extract<
   TextOf<TPlugin>,
   Text
 >;
 
-type PliteTextPropsConfig<TPlugin extends PliteNodePropsDescriptor> =
+type TextPropsConfig<TPlugin extends NodePropsDescriptor> =
   InternalPluginDefinitionOf<TPlugin>;
 
-type PliteElementRenderProps<
+type ElementRenderProps<
   N extends Element = Element,
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = PliteNodeProps<C> &
+> = EditorNodeProps<C> &
   RenderElementProps<N> & {
     attributes: UnknownObject;
     path: Path;
   };
 
 /** Props for the static element component owned by a plugin descriptor. */
-export type PliteElementProps<TPlugin extends PliteNodePropsDescriptor> =
-  TPlugin extends PliteNodePropsDescriptor
-    ? PliteElementRenderProps<
-        PliteElementPropsNode<TPlugin>,
-        PliteElementPropsConfig<TPlugin>
-      >
+export type EditorElementProps<TPlugin extends NodePropsDescriptor> =
+  TPlugin extends NodePropsDescriptor
+    ? ElementRenderProps<ElementPropsNode<TPlugin>, ElementPropsConfig<TPlugin>>
     : never;
 
-export type PliteNodeProps<
+export type EditorNodeProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = Omit<BasePluginContext<C>, 'slots'> & {
   /**
@@ -94,10 +91,10 @@ export type PliteNodeProps<
   ref?: React.Ref<HTMLElement>;
 };
 
-export type PliteHTMLProps<
+export type EditorHTMLProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'div',
-> = PliteNodeProps<C> & {
+> = EditorNodeProps<C> & {
   /** HTML attributes to pass to the underlying HTML element. */
   attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
     UnknownObject;
@@ -108,13 +105,13 @@ export type PliteHTMLProps<
   style?: React.CSSProperties;
 };
 
-export const PliteElement = function PliteElement({
+export const EditorElement = function EditorElement({
   as: Tag = 'div',
   children,
   ref,
   ...props
 }: Omit<RenderElementProps, 'attributes'> &
-  Pick<PliteNodeProps<any>, 'ref'> & {
+  Pick<EditorNodeProps<any>, 'ref'> & {
     attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements['div']> &
       UnknownObject;
     as?: 'div';
@@ -129,8 +126,8 @@ export const PliteElement = function PliteElement({
 
   return (
     <Tag
-      data-plite-node="element"
-      data-plite-inline={attributes['data-plite-inline']}
+      data-editor-node="element"
+      data-editor-inline={attributes['data-editor-inline']}
       {...attributes}
       style={{
         position: 'relative',
@@ -147,7 +144,7 @@ export const PliteElement = function PliteElement({
     T extends keyof HTMLElementTagNameMap = 'div',
   >(
     props: Omit<RenderElementProps<N>, 'attributes'> &
-      Pick<PliteNodeProps<C>, 'ref'> & {
+      Pick<EditorNodeProps<C>, 'ref'> & {
         attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
           UnknownObject;
         as?: T;
@@ -158,7 +155,7 @@ export const PliteElement = function PliteElement({
   ): React.ReactElement;
   <T extends keyof HTMLElementTagNameMap = 'div'>(
     props: Omit<RenderElementProps, 'attributes'> &
-      Pick<PliteNodeProps<never>, 'ref'> & {
+      Pick<EditorNodeProps<never>, 'ref'> & {
         attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
           UnknownObject;
         as?: T;
@@ -170,24 +167,24 @@ export const PliteElement = function PliteElement({
 };
 
 /** Props for the static text component owned by a plugin descriptor. */
-export type PliteTextProps<TPlugin extends PliteNodePropsDescriptor> =
-  TPlugin extends PliteNodePropsDescriptor
-    ? PliteNodeProps<PliteTextPropsConfig<TPlugin>> &
-        RenderTextProps<PliteTextPropsNode<TPlugin>> & {
+export type EditorTextProps<TPlugin extends NodePropsDescriptor> =
+  TPlugin extends NodePropsDescriptor
+    ? EditorNodeProps<TextPropsConfig<TPlugin>> &
+        RenderTextProps<TextPropsNode<TPlugin>> & {
           attributes: UnknownObject;
         }
     : never;
 
-export const PliteText = function PliteText({
+export const EditorText = function EditorText({
   as: Tag = 'span',
   children,
   ref,
   ...props
-}: (PliteNodeProps<any> &
+}: (EditorNodeProps<any> &
   RenderTextProps & {
     attributes: UnknownObject;
   }) &
-  PliteHTMLProps<any, 'span'>) {
+  EditorHTMLProps<any, 'span'>) {
   const attributes = getNodeAttributes(props, ref);
 
   return <Tag {...attributes}>{children}</Tag>;
@@ -196,29 +193,26 @@ export const PliteText = function PliteText({
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'span',
 >(
-  props: (PliteNodeProps<C> &
+  props: (EditorNodeProps<C> &
     RenderTextProps<N> & {
       attributes: UnknownObject;
     }) &
-    PliteHTMLProps<C, T>
+    EditorHTMLProps<C, T>
 ) => React.ReactElement;
 
-type PliteLeafRenderProps<
+type LeafRenderProps<
   N extends Text = Text,
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = PliteNodeProps<C> &
+> = EditorNodeProps<C> &
   RenderLeafProps<N, N> & {
     attributes: UnknownObject;
     inset?: boolean;
   };
 
 /** Props for the static leaf component owned by a plugin descriptor. */
-export type PliteLeafProps<TPlugin extends PliteNodePropsDescriptor> =
-  TPlugin extends PliteNodePropsDescriptor
-    ? PliteLeafRenderProps<
-        PliteTextPropsNode<TPlugin>,
-        PliteTextPropsConfig<TPlugin>
-      >
+export type EditorLeafProps<TPlugin extends NodePropsDescriptor> =
+  TPlugin extends NodePropsDescriptor
+    ? LeafRenderProps<TextPropsNode<TPlugin>, TextPropsConfig<TPlugin>>
     : never;
 
 const NonBreakingSpace = () => (
@@ -227,18 +221,18 @@ const NonBreakingSpace = () => (
   </span>
 );
 
-export const PliteLeaf = function PliteLeaf({
+export const EditorLeaf = function EditorLeaf({
   as: Tag = 'span',
   children,
   inset,
   ref,
   ...props
-}: (PliteNodeProps<any> &
+}: (EditorNodeProps<any> &
   RenderLeafProps<Text, Text> & {
     attributes: UnknownObject;
     inset?: boolean;
   }) &
-  PliteHTMLProps<any, 'span'>) {
+  EditorHTMLProps<any, 'span'>) {
   const attributes = getNodeAttributes(props, ref);
 
   if (inset) {
@@ -261,9 +255,9 @@ export const PliteLeaf = function PliteLeaf({
 >({
   className,
   ...props
-}: (PliteNodeProps<C> &
+}: (EditorNodeProps<C> &
   RenderLeafProps<N, N> & {
     attributes: UnknownObject;
     inset?: boolean;
   }) &
-  PliteHTMLProps<C, T>) => React.ReactElement;
+  EditorHTMLProps<C, T>) => React.ReactElement;

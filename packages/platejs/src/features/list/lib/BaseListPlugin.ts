@@ -1,7 +1,7 @@
 import {
   BaseParagraphPlugin,
   createRuleFactory,
-  defineBasePlugin,
+  definePlugin,
   editorCommands,
   ElementApi,
   getInjectMatch,
@@ -23,8 +23,9 @@ import {
   type NodeEntry,
   type NodeKey,
   type NodeSelection,
-  type PlateBlockInsertOptions,
+  type BlockInsertOptions,
 } from '../../../core';
+import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import { BaseIndentPlugin } from '../../indent';
 
 export const ListStyle = {
@@ -382,7 +383,7 @@ export type BaseListPluginState = {
   getSiblingListOptions: GetSiblingListOptions;
 };
 
-export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
+export const BaseListPlugin = definePlugin(PLUGINS.list, {
   dependencies: [BaseIndentPlugin],
   initialState: (): BaseListPluginState => ({ getSiblingListOptions: {} }),
   schema: ({ targetElementTypes }) => ({
@@ -425,8 +426,10 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
   }),
   targetPlugins: [BaseParagraphPlugin],
   codecs: ({ defineCodecs, editor, store }) => {
-    const heading = editor.plugin(PLUGINS.heading);
-    const headingType = heading.installed ? heading.schema.type : undefined;
+    const headingDescriptor = getCompiledPlatePlugin(editor, PLUGINS.heading);
+    const headingType = headingDescriptor
+      ? editor.plugin(headingDescriptor).schema.type
+      : undefined;
     const decodeListProperties = ({ element }: { element: HTMLElement }) => {
       const listParent = element.closest('ul, ol') as HTMLElement | null;
       const readNumber = (value: null | string | undefined) => {
@@ -767,93 +770,102 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
     match: ({ node }) => isListItem(node),
   },
 })
-  .extend(({ defineCodecs, editor }) => ({
-    codecs: defineCodecs(BaseParagraphPlugin, {
-      'text/markdown': {
-        from: 'list',
-        kind: 'node',
-        priority: 40,
-        decode: ({ build, node, schema: { type } }) => {
-          const parseList = (
-            list: typeof node,
-            indent = 1,
-            startIndex = 1
-          ): Element[] => {
-            const items: Element[] = [];
-            const ordered = Boolean(list.ordered);
+  .extend(({ defineCodecs, editor }) => {
+    const imageDescriptor = getCompiledPlatePlugin(editor, PLUGINS.image);
+    const imageType = imageDescriptor
+      ? editor.plugin(imageDescriptor).schema.type
+      : undefined;
 
-            list.children.forEach((listItem, index) => {
-              const { checked } = listItem;
-              const task = typeof checked === 'boolean';
-              const listType = task
-                ? ListType.Task
-                : ordered
-                  ? ListType.Numbered
-                  : ListType.Bulleted;
+    return {
+      codecs: defineCodecs(BaseParagraphPlugin, {
+        'text/markdown': {
+          from: 'list',
+          kind: 'node',
+          priority: 40,
+          decode: ({ build, node, schema: { type } }) => {
+            const parseList = (
+              list: typeof node,
+              indent = 1,
+              startIndex = 1
+            ): Element[] => {
+              const items: Element[] = [];
+              const ordered = Boolean(list.ordered);
 
-              const [paragraph, ...nested] = listItem.children;
-              const nodes: Descendant[] = paragraph
-                ? build(paragraph)
-                : [
-                    {
-                      children: [{ text: '' }],
-                      type: 'paragraph',
-                    },
-                  ];
+              list.children.forEach((listItem, index) => {
+                const { checked } = listItem;
+                const task = typeof checked === 'boolean';
+                const listType = task
+                  ? ListType.Task
+                  : ordered
+                    ? ListType.Numbered
+                    : ListType.Bulleted;
 
-              nodes.forEach((child, childIndex) => {
-                const element = TextApi.isText(child)
-                  ? {
-                      children: [child],
-                      type: 'paragraph',
-                    }
-                  : child;
-                const image = editor.plugin(PLUGINS.image);
+                const [paragraph, ...nested] = listItem.children;
+                const nodes: Descendant[] = paragraph
+                  ? build(paragraph)
+                  : [
+                      {
+                        children: [{ text: '' }],
+                        type: 'paragraph',
+                      },
+                    ];
 
-                items.push({
-                  ...element,
-                  ...(task ? { checked } : {}),
-                  indent,
-                  listType,
-                  ...(ordered &&
-                  index === 0 &&
-                  childIndex === 0 &&
-                  startIndex !== 1
-                    ? { listRestart: startIndex }
-                    : {}),
-                  type:
-                    image.installed && element.type === image.schema.type
-                      ? element.type
-                      : type,
+                nodes.forEach((child, childIndex) => {
+                  const element = TextApi.isText(child)
+                    ? {
+                        children: [child],
+                        type: 'paragraph',
+                      }
+                    : child;
+                  items.push({
+                    ...element,
+                    ...(task ? { checked } : {}),
+                    indent,
+                    listType,
+                    ...(ordered &&
+                    index === 0 &&
+                    childIndex === 0 &&
+                    startIndex !== 1
+                      ? { listRestart: startIndex }
+                      : {}),
+                    type:
+                      imageType && element.type === imageType
+                        ? element.type
+                        : type,
+                  });
+                });
+
+                nested.forEach((child) => {
+                  if (child.type === 'list') {
+                    items.push(
+                      ...parseList(child, indent + 1, child.start ?? 1)
+                    );
+                    return;
+                  }
+
+                  items.push(
+                    ...build(child)
+                      .filter((item): item is Element => !TextApi.isText(item))
+                      .map((item) => ({ ...item, indent: indent + 1 }))
+                  );
                 });
               });
 
-              nested.forEach((child) => {
-                if (child.type === 'list') {
-                  items.push(...parseList(child, indent + 1, child.start ?? 1));
-                  return;
-                }
+              return items;
+            };
 
-                items.push(
-                  ...build(child)
-                    .filter((item): item is Element => !TextApi.isText(item))
-                    .map((item) => ({ ...item, indent: indent + 1 }))
-                );
-              });
-            });
-
-            return items;
-          };
-
-          return parseList(node, 1, node.start ?? 1);
+            return parseList(node, 1, node.start ?? 1);
+          },
         },
-      },
-    }),
-  }))
+      }),
+    };
+  })
   .extend(({ editor }) => ({
     api: () => {
-      const heading = editor.plugin(PLUGINS.heading);
-      const headingType = heading.installed ? heading.schema.type : undefined;
+      const headingDescriptor = getCompiledPlatePlugin(editor, PLUGINS.heading);
+      const headingType = headingDescriptor
+        ? editor.plugin(headingDescriptor).schema.type
+        : undefined;
       const isSequenceBoundary = (siblingNode: Element, currentNode: Element) =>
         !!getSequenceSiblingOptions(undefined, headingType).breakQuery?.(
           siblingNode,
@@ -915,13 +927,18 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
         /** Get the previous indent-list item. */
         getPrevious,
         ordinal: (element: Element) => {
-          const heading = editor.plugin(PLUGINS.heading);
+          const headingDescriptor = getCompiledPlatePlugin(
+            editor,
+            PLUGINS.heading
+          );
 
           return getListOrdinal(
             state,
             element,
             store.get().getSiblingListOptions,
-            heading.installed ? heading.schema.type : undefined
+            headingDescriptor
+              ? editor.plugin(headingDescriptor).schema.type
+              : undefined
           );
         },
         expandItemsWithChildren: (
@@ -1093,7 +1110,7 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
       },
       insert: (
         { type }: { type: ListType },
-        options: PlateBlockInsertOptions = {}
+        options: BlockInsertOptions = {}
       ) => {
         const element = tx.schema.create(
           editor.plugin(BaseParagraphPlugin).schema.type,
@@ -1165,13 +1182,18 @@ export const BaseListPlugin = defineBasePlugin(PLUGINS.list, {
         const targets = [...entries];
         const boundaryPath = entries[0][1];
         if (entries.length === 1 && isListItem(entries[0][0])) {
-          const heading = editor.plugin(PLUGINS.heading);
+          const headingDescriptor = getCompiledPlatePlugin(
+            editor,
+            PLUGINS.heading
+          );
           const siblingOptions = getSequenceSiblingOptions(
             {
               ...store.get().getSiblingListOptions,
               ...getSiblingListOptions,
             },
-            heading.installed ? heading.schema.type : undefined
+            headingDescriptor
+              ? editor.plugin(headingDescriptor).schema.type
+              : undefined
           );
           let sibling = Object.hasOwn(entries[0][0], 'listRestart')
             ? undefined
@@ -1401,12 +1423,15 @@ export const BulletedListRules = {
     type: 'blockStart',
     variant: '-',
     enabled: ({ editor, tx }) => {
-      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+      const codeBlockDescriptor = getCompiledPlatePlugin(
+        editor,
+        PLUGINS.codeBlock
+      );
 
-      if (!codeBlock.installed) return true;
+      if (!codeBlockDescriptor) return true;
 
       return !tx.nodes.some({
-        type: [codeBlock.schema.type],
+        type: [editor.plugin(codeBlockDescriptor).schema.type],
       });
     },
     trigger: ' ',
@@ -1429,12 +1454,15 @@ export const OrderedListRules = {
     type: 'blockStart',
     variant: '.',
     enabled: ({ editor, tx }) => {
-      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+      const codeBlockDescriptor = getCompiledPlatePlugin(
+        editor,
+        PLUGINS.codeBlock
+      );
 
-      if (!codeBlock.installed) return true;
+      if (!codeBlockDescriptor) return true;
 
       return !tx.nodes.some({
-        type: [codeBlock.schema.type],
+        type: [editor.plugin(codeBlockDescriptor).schema.type],
       });
     },
     trigger: ' ',
@@ -1460,12 +1488,15 @@ export const TaskListRules = {
     type: 'blockStart',
     checked: false,
     enabled: ({ editor, tx }) => {
-      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+      const codeBlockDescriptor = getCompiledPlatePlugin(
+        editor,
+        PLUGINS.codeBlock
+      );
 
-      if (!codeBlock.installed) return true;
+      if (!codeBlockDescriptor) return true;
 
       return !tx.nodes.some({
-        type: [codeBlock.schema.type],
+        type: [editor.plugin(codeBlockDescriptor).schema.type],
       });
     },
     trigger: ' ',

@@ -59,16 +59,13 @@ describe('PlaceholderPlugin', () => {
       },
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
-    const event = {
-      clipboardData: {
-        files: [new File(['image'], 'image.png', { type: 'image/png' })],
-        types: [],
-      },
-      preventDefault: mock(),
-      stopPropagation: mock(),
-    } as unknown as React.ClipboardEvent;
+    const data = {
+      files: [new File(['image'], 'image.png', { type: 'image/png' })],
+      getData: () => '',
+      types: [],
+    };
 
-    pipeHandler(editor, { handlerKey: 'onPaste' })?.(event);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: '' }], type: 'placeholder' },
@@ -85,16 +82,13 @@ describe('PlaceholderPlugin', () => {
       },
       initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
     });
-    const event = {
-      clipboardData: {
-        files: [new File(['image'], 'image.png', { type: 'image/png' })],
-        types: [],
-      },
-      preventDefault: mock(),
-      stopPropagation: mock(),
-    } as unknown as React.ClipboardEvent;
+    const data = {
+      files: [new File(['image'], 'image.png', { type: 'image/png' })],
+      getData: () => '',
+      types: [],
+    };
 
-    pipeHandler(editor, { handlerKey: 'onPaste' })?.(event);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toMatchObject([
       { children: [{ text: 'text' }], type: 'paragraph' },

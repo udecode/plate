@@ -46,7 +46,7 @@ describe('command dispatch benchmark authority', () => {
     assert.match(targets[0].correctness.command, /command-spec\.test\.ts/u);
     assert.match(
       targets[0].correctness.command,
-      /extension-configuration\.test\.ts/u
+      /plugin-configuration\.test\.ts/u
     );
     assert.match(
       targets[0].correctness.command,

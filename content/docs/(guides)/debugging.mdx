@@ -81,7 +81,7 @@ By default, the `DebugPlugin` throws errors when `error` is called. You can catc
 try {
   editor.api.debug.error('An error occurred', 'CUSTOM_ERROR', { details: 'Additional information' });
 } catch (error) {
-  if (error instanceof PlateError) {
+  if (error instanceof EditorError) {
     console.debug(error.type); // 'CUSTOM_ERROR'
     console.debug(error.message); // '[CUSTOM_ERROR] An error occurred'
   }
@@ -125,7 +125,7 @@ unsubscribe();
 ```
 
 Use `editor.subscribe(...)` instead when the listener also needs the current
-snapshot. For a reusable editing policy, contribute a Plite command handler or
+snapshot. For a reusable editing policy, contribute a Plate command handler or
 correction through the constructor's root `commands` or `corrections` field and
 test that behavior directly.
 
@@ -183,7 +183,7 @@ Follow the [zustand documentation](https://zustand.docs.pmnd.rs/middlewares/devt
 ## Debug error types
 
 `editor.api.debug.error(message, type, details)` uses the supplied type as
-a log prefix. In development, enabling `throwErrors` makes it throw a `PlateError`;
+a log prefix. In development, enabling `throwErrors` makes it throw an `EditorError`;
 the default type is `DEFAULT`. You can supply an application-specific
 string for your own diagnostics.
 
@@ -191,7 +191,7 @@ Plugin setup also validates descriptors, dependencies, and schema ownership:
 
 | Message | Check |
 | --- | --- |
-| `USE_CREATE_PLUGIN` | Create plugins with `defineBasePlugin` or `definePlatePlugin`. |
+| `USE_CREATE_PLUGIN` | Create plugins with `definePlugin` from the appropriate entrypoint. |
 | `Pass a plugin descriptor, not its name.` | Put descriptors in `dependencies`, not strings. |
 | `requires disabled plugin` | Keep required dependencies enabled. |
 | `Circular plugin dependency` | Remove the dependency cycle shown in the error. |
@@ -199,3 +199,21 @@ Plugin setup also validates descriptors, dependencies, and schema ownership:
 
 Dependencies are installed from their descriptors. A required dependency does
 not need a duplicate entry in the application's plugin list.
+
+## Scrubbing values
+
+Plate redacts text in formatted error details. Install a value scrubber when
+other document fields also need redaction:
+
+```ts
+import { setDebugValueScrubber } from 'platejs';
+
+setDebugValueScrubber((key, value) => {
+  if (key === 'text' || key === 'src') return '[redacted]';
+  return value;
+});
+```
+
+The callback has type `(key: string, value: unknown) => unknown` and runs before
+default text redaction. Returning the original value preserves that default
+processing. Pass `null` or `undefined` to restore the default scrubber.

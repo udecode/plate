@@ -16,8 +16,8 @@ export type EditorSchemaValidationCode =
 
 /** Compiled property candidates relevant to one validation failure. */
 export type EditorSchemaValidationPropertyContext = Readonly<{
-  /** Contributing extension names, sorted and deduplicated. */
-  extensions: readonly string[];
+  /** Contributing plugin names, sorted and deduplicated. */
+  plugins: readonly string[];
   /** Stable compiled property IDs, in the same order as `targets`. */
   ids: readonly string[];
   /** Exact property key encountered in the document. */

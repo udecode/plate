@@ -12,7 +12,11 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
-import { resourcePairs, retiredGeneratedPaths } from './sync-resources.mjs';
+import {
+  discoverOrphanedGeneratedResources,
+  resourcePairs,
+  retiredGeneratedPaths,
+} from './sync-resources.mjs';
 
 const scriptPath = fileURLToPath(import.meta.url);
 const defaultRoot = resolve(dirname(scriptPath), '../../../..');
@@ -223,6 +227,7 @@ export const haveMatchingRequiredResources = (root) =>
       readFileSync(source).equals(readFileSync(generated))
     );
   }) &&
+  discoverOrphanedGeneratedResources(root).length === 0 &&
   retiredGeneratedPaths.every(
     (generatedPath) => !existsSync(join(root, generatedPath))
   );

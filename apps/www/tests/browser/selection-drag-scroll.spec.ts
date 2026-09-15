@@ -1,11 +1,11 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 const CASE_ID = 'keeps native selection drag scrolling outside the editor';
-const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
+const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 
 type SelectionSnapshot = {
   anchorOffset: number;
@@ -21,7 +21,7 @@ type ScrollSample = {
 };
 
 const readNativeSelection = async (
-  page: Parameters<typeof recordPliteBrowserRuntimeErrors>[0]
+  page: Parameters<typeof recordBrowserRuntimeErrors>[0]
 ) =>
   page.evaluate((): SelectionSnapshot => {
     const selection = window.getSelection();
@@ -37,7 +37,7 @@ const readNativeSelection = async (
 test(CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.setViewportSize({ height: 1026, width: 1540 });
@@ -98,7 +98,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
     await nativeControl.evaluate((element) => element.remove());
 
     const editorRoot = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(page, CASE_ID, editorRoot);
+    const editor = createBrowserEditorHarness(page, CASE_ID, editorRoot);
 
     await editor.ready({
       editor: 'visible',
@@ -106,7 +106,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
     });
 
     const heading = editorRoot
-      .locator('[data-plite-string="true"]')
+      .locator('[data-editor-string="true"]')
       .filter({ hasText: 'Welcome to the Plate Playground!' })
       .first();
     const scroller = editorRoot.locator(
@@ -123,7 +123,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
           document.querySelector<HTMLElement>(editorSelector);
         const headingElement = Array.from(
           editorElement?.querySelectorAll<HTMLElement>(
-            '[data-plite-string="true"]'
+            '[data-editor-string="true"]'
           ) ?? []
         ).find((element) => element.textContent?.includes(headingText));
         const scrollerElement =
@@ -141,7 +141,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
           pointerTrace.push({
             buttons: mouseEvent.buttons,
             target:
-              target?.closest('[data-plite-editor="true"]') === null
+              target?.closest('[data-editor="true"]') === null
                 ? (target?.tagName ?? 'none')
                 : 'editor',
             type: event.type,
@@ -300,7 +300,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
     });
 
     const upwardHeading = editorRoot
-      .locator('[data-plite-string="true"]')
+      .locator('[data-editor-string="true"]')
       .filter({ hasText: 'How Plate Compares' })
       .first();
 

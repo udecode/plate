@@ -1,11 +1,11 @@
 import type { Locator, Page } from '@playwright/test';
 
-import { PLITE_BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY } from './constants';
 import { takeDisplayedSelectionSnapshotForRoot } from './displayed-selection';
 import {
-  getPliteBrowserEditable,
-  locatePliteBrowserBlock,
-  locatePliteBrowserText,
+  getBrowserEditable,
+  locateBrowserBlock,
+  locateBrowserText,
 } from './dom-locators';
 import { getRenderedBlockDOMShapes } from './dom-shape';
 import { getBlockTexts, getSelectedText } from './dom-text';
@@ -72,10 +72,10 @@ import type {
   SelectionCaptureOptions,
   SelectionPoint,
   SelectionSnapshot,
-  PliteBrowserDoubleClickDragTextRangeOptions,
-  PliteBrowserDragTextRangeOptions,
-  PliteBrowserEditorHarness,
-  PliteBrowserKernelTraceEntry,
+  BrowserDoubleClickDragTextRangeOptions,
+  BrowserDragTextRangeOptions,
+  BrowserEditorHarness,
+  BrowserKernelTraceEntry,
 } from './types';
 
 export const createEditorHarness = (
@@ -84,12 +84,12 @@ export const createEditorHarness = (
   surface: SurfaceTarget,
   surfaceOptions: EditorSurfaceOptions = {},
   explicitRoot?: Locator
-): PliteBrowserEditorHarness => {
-  const root = explicitRoot ?? getPliteBrowserEditable(surface, surfaceOptions);
+): BrowserEditorHarness => {
+  const root = explicitRoot ?? getBrowserEditable(surface, surfaceOptions);
   const activateNestedContentRootForDOMSelection = async () => {
     const isNestedContentRoot = await root
       .evaluate((element: HTMLElement) =>
-        Boolean(element.closest('[data-plite-content-root-slot]'))
+        Boolean(element.closest('[data-editor-content-root-slot]'))
       )
       .catch(() => false);
 
@@ -118,7 +118,7 @@ export const createEditorHarness = (
     await page.waitForTimeout(0);
   };
 
-  const harness: PliteBrowserEditorHarness = {
+  const harness: BrowserEditorHarness = {
     name,
     page,
     root,
@@ -170,8 +170,8 @@ export const createEditorHarness = (
 
             return handle?.getKernelTrace ? handle.getKernelTrace() : [];
           },
-          { key: PLITE_BROWSER_HANDLE_KEY }
-        ) as Promise<PliteBrowserKernelTraceEntry[]>,
+          { key: BROWSER_HANDLE_KEY }
+        ) as Promise<BrowserKernelTraceEntry[]>,
       history: async () =>
         root.evaluate(
           (element: HTMLElement, { key }: { key: string }) => {
@@ -179,7 +179,7 @@ export const createEditorHarness = (
 
             return handle?.getHistory ? handle.getHistory() : null;
           },
-          { key: PLITE_BROWSER_HANDLE_KEY }
+          { key: BROWSER_HANDLE_KEY }
         ),
       lastCommit: async () =>
         root.evaluate(
@@ -188,9 +188,9 @@ export const createEditorHarness = (
 
             return handle?.getLastCommit ? handle.getLastCommit() : null;
           },
-          { key: PLITE_BROWSER_HANDLE_KEY }
+          { key: BROWSER_HANDLE_KEY }
         ),
-      placeholderShape: async (selector = '[data-plite-zero-width]') => {
+      placeholderShape: async (selector = '[data-editor-zero-width]') => {
         const count = await root.locator(selector).count();
 
         if (count === 0) {
@@ -203,7 +203,7 @@ export const createEditorHarness = (
           .evaluate((element: Element) => ({
             hasBr: !!element.querySelector('br'),
             hasFEFF: element.textContent?.includes('\uFEFF') ?? false,
-            kind: element.getAttribute('data-plite-zero-width'),
+            kind: element.getAttribute('data-editor-zero-width'),
           }));
       },
     },
@@ -294,7 +294,7 @@ export const createEditorHarness = (
 
               handle.importDOMSelection();
             },
-            { key: PLITE_BROWSER_HANDLE_KEY }
+            { key: BROWSER_HANDLE_KEY }
           );
           await page.waitForTimeout(0);
           await root.evaluate(
@@ -307,7 +307,7 @@ export const createEditorHarness = (
 
               handle.importDOMSelection();
             },
-            { key: PLITE_BROWSER_HANDLE_KEY }
+            { key: BROWSER_HANDLE_KEY }
           );
           if (!(await handleSelectionMatches(root, selection))) {
             await setSelectionWithHandle(root, selection);
@@ -327,17 +327,17 @@ export const createEditorHarness = (
 
                 handle.importDOMSelection();
               },
-              { key: PLITE_BROWSER_HANDLE_KEY }
+              { key: BROWSER_HANDLE_KEY }
             );
           }
           await waitForHandleSelection(root, selection);
         }
       },
-      dragTextRange: async (options: PliteBrowserDragTextRangeOptions) => {
+      dragTextRange: async (options: BrowserDragTextRangeOptions) => {
         await dragTextRange(root, options);
       },
       doubleClickDragTextRange: async (
-        options: PliteBrowserDoubleClickDragTextRangeOptions
+        options: BrowserDoubleClickDragTextRangeOptions
       ) => {
         await doubleClickDragTextRange(root, options);
       },
@@ -411,8 +411,8 @@ export const createEditorHarness = (
       },
     },
     locator: {
-      block: (path: number[]) => locatePliteBrowserBlock(root, path),
-      text: (path: number[]) => locatePliteBrowserText(root, path),
+      block: (path: number[]) => locateBrowserBlock(root, path),
+      text: (path: number[]) => locateBrowserText(root, path),
     },
     ready: async (options: ReadyOptions) => {
       await waitForReady(harness, surface, options);
@@ -437,7 +437,7 @@ export const createEditorHarness = (
             const handle = (element as Record<string, any>)[key];
             return handle?.getSelection ? handle.getSelection() : null;
           },
-          { key: PLITE_BROWSER_HANDLE_KEY }
+          { key: BROWSER_HANDLE_KEY }
         );
 
       const selectionBeforeFocus = await readHandleSelection();

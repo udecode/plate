@@ -1,14 +1,14 @@
 import {
-  defineBasePlugin,
+  definePlugin,
   ElementApi,
-  type PlatePluginTransaction,
+  type PluginTransaction,
   type NodeKey,
   type Point,
   PLUGINS,
 } from '../../../core';
 
 /** Completes transient inline inputs at their current document location. */
-export const BaseComboboxPlugin = defineBasePlugin(PLUGINS.combobox, {
+export const BaseComboboxPlugin = definePlugin(PLUGINS.combobox, {
   read: ({ editor, state }) => ({
     /** Whether this editor may finish the live input supplied by its renderer. */
     canEdit: (input: NodeKey) => {
@@ -29,7 +29,7 @@ export const BaseComboboxPlugin = defineBasePlugin(PLUGINS.combobox, {
   api: () => {
     const finish = (
       input: NodeKey,
-      callback: (tx: PlatePluginTransaction, point: Point) => void
+      callback: (tx: PluginTransaction, point: Point) => void
     ) => {
       if (!editor.plugin(plugin).read.canEdit(input)) return false;
 
@@ -82,10 +82,7 @@ export const BaseComboboxPlugin = defineBasePlugin(PLUGINS.combobox, {
        * The callback starts at the input's current insertion point. Throwing
        * rolls back both removal and insertion. Returns false for a stale input.
        */
-      commit: (
-        input: NodeKey,
-        callback: (tx: PlatePluginTransaction) => void
-      ) =>
+      commit: (input: NodeKey, callback: (tx: PluginTransaction) => void) =>
         finish(input, (tx, at) => {
           tx.selection.set(at);
           callback(tx);

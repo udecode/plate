@@ -1,4 +1,8 @@
-import type { Value } from '../../facade';
+import type {
+  RuntimePluginPortal,
+  RuntimePluginReference,
+  Value,
+} from '../../facade';
 import type { GeneratedEditorMutations } from '../../internal/editor/generatedEditorTypes';
 import type {
   AnyBasePlugin,
@@ -11,11 +15,11 @@ import type {
   PluginReference,
 } from '../plugin/PluginDefinition';
 import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
-import type { CorePlugins } from '../plugins/getCorePlugins';
+import type { CorePlugins } from '../plugins/getCorePlugins.internal';
 import type {
   BasePluginInput,
-  InternalPliteEditorWithInstalledPlateDefinitions,
-  PliteEditorWithPlatePlugins,
+  InternalEditorWithInstalledPluginDefinitions,
+  EditorWithPlugins,
   InferEditorRuntimePlugins,
   InternalEditorMutationProvider,
   InternalInstalledSchemaMutationProvider,
@@ -30,7 +34,7 @@ export type {
   MergeInstalledPluginDefinitions,
 } from './pluginRuntimeTypes';
 
-type PlateEditorRuntime = {
+type PluginEditorRuntime = {
   runtime: {
     /**
      * Current user ID for collaborative features (e.g., Yjs). Used to identify
@@ -42,10 +46,6 @@ type PlateEditorRuntime = {
   };
 };
 
-type PlatePluginRuntime<S> = {
-  plugin: GetBasePluginPortal<S>;
-};
-
 type BasePortalFor<P, S> = [InternalPluginDefinitionOf<P>] extends [never]
   ? DynamicBasePluginPortal
   : BasePluginPortal<
@@ -53,13 +53,18 @@ type BasePortalFor<P, S> = [InternalPluginDefinitionOf<P>] extends [never]
       S
     >;
 
-type GetBasePluginPortal<S> = {
-  <P extends (AnyBasePlugin | AnyPluginBase) & PluginReference>(
-    plugin: P
-  ): BasePortalFor<P, S>;
+type GetBasePluginPortal<V extends Value, S> = {
+  <P extends PluginReference>(plugin: P): BasePortalFor<P, S>;
   (
-    plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
+    plugin: AnyBasePlugin | AnyPluginBase | PluginReference
   ): DynamicBasePluginPortal;
+  <const TPlugin extends RuntimePluginReference>(
+    plugin: TPlugin
+  ): RuntimePluginPortal<TPlugin, V>;
+};
+
+type PluginRuntime<V extends Value, S> = {
+  plugin: GetBasePluginPortal<V, S>;
 };
 
 type NormalizeBasePluginInput<TPlugins> =
@@ -87,17 +92,17 @@ export type InternalBaseEditorMutationProvider<
  *
  * @internal
  */
-export type InternalBaseEditorWithPlatePlugins<
+export type InternalBaseEditorWithPlugins<
   V extends Value,
   P extends AnyBasePluginDefinition,
-> = PliteEditorWithPlatePlugins<V, P> &
-  PlateEditorRuntime &
-  PlatePluginRuntime<P>;
+> = Omit<EditorWithPlugins<V, P>, 'plugin'> &
+  PluginEditorRuntime &
+  PluginRuntime<V, P>;
 
-/** Editor selected by value, low-level extensions, Plate plugins, and schema. */
+/** Editor selected by value, runtime plugins, Plate plugins, and schema. */
 export type Editor<
   V extends Value = never,
-  TExtensions extends readonly unknown[] = never,
+  TRuntimePlugins extends readonly unknown[] = never,
   TPlugins = never,
   TSchema = undefined,
 > = [TPlugins] extends [never]
@@ -105,20 +110,23 @@ export type Editor<
     ? InternalBaseEditorWithInstalledPlugins<
         any,
         AnyBasePluginDefinition,
-        AnyBasePluginDefinition
+        AnyBasePluginDefinition,
+        readonly RuntimePluginReference[]
       >
     : InternalBaseEditorWithInstalledPlugins<
         V,
         AnyBasePluginDefinition,
         AnyBasePluginDefinition,
-        [TExtensions] extends [never] ? readonly [] : TExtensions
+        [TRuntimePlugins] extends [never]
+          ? readonly RuntimePluginReference[]
+          : TRuntimePlugins
       >
   : InferBaseEditorPlugins<TPlugins> extends infer D
     ? InternalBaseEditorWithInstalledPlugins<
         [V] extends [never] ? Value : V,
         D,
         InternalBaseEditorMutationProvider<TPlugins, D, TSchema>,
-        [TExtensions] extends [never] ? readonly [] : TExtensions
+        [TRuntimePlugins] extends [never] ? readonly [] : TRuntimePlugins
       >
     : never;
 
@@ -131,7 +139,10 @@ export type InternalBaseEditorWithInstalledPlugins<
   V extends Value,
   D,
   S = D,
-  TExtensions extends readonly unknown[] = readonly [],
-> = InternalPliteEditorWithInstalledPlateDefinitions<V, D, S, TExtensions> &
-  PlateEditorRuntime &
-  PlatePluginRuntime<S>;
+  TRuntimePlugins extends readonly unknown[] = readonly [],
+> = Omit<
+  InternalEditorWithInstalledPluginDefinitions<V, D, S, TRuntimePlugins>,
+  'plugin'
+> &
+  PluginEditorRuntime &
+  PluginRuntime<V, S>;

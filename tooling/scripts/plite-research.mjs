@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -15,9 +15,6 @@ const slateV2Cwd = root;
 const slateV2Tmp = path.join(root, '.tmp');
 const focusedFailureLinePattern =
   /expected .*Received|failed|selector-runtime-node|shifted rerender/i;
-const reactHugeCompareArtifactPattern =
-  /^slate-react-huge-document-legacy-compare-benchmark-.*\.json$/;
-
 const [command, ...rawArgs] = process.argv.slice(2);
 
 if (!command) {
@@ -73,24 +70,6 @@ function artifactInfo(fileName) {
     file: path.relative(root, filePath),
     mtime: statSync(filePath).mtime.toISOString(),
   };
-}
-
-function latestArtifact(pattern) {
-  if (!existsSync(slateV2Tmp)) return null;
-
-  const matches = readdirSync(slateV2Tmp)
-    .filter((fileName) => pattern.test(fileName))
-    .map((fileName) => {
-      const filePath = path.join(slateV2Tmp, fileName);
-      return {
-        fileName,
-        filePath,
-        mtimeMs: statSync(filePath).mtimeMs,
-      };
-    })
-    .sort((left, right) => right.mtimeMs - left.mtimeMs);
-
-  return matches[0] ?? null;
 }
 
 function compareRows(artifact, target) {
@@ -232,7 +211,11 @@ function summarizePagination() {
     priority: value >= 2 ? 'P1' : 'P2',
     primaryMetric: 'pagination_virtualized_vs_table_ratio',
     direction: 'lower',
-    baseline: `${round(value)}x staged table (${round(metrics.pagination_virtualized_burst_ms)}ms virtualized burst vs ${round(metrics.pagination_staged_table_burst_ms)}ms staged table burst)`,
+    baseline: `${round(value)}x staged table (${round(
+      metrics.pagination_virtualized_burst_ms
+    )}ms virtualized burst vs ${round(
+      metrics.pagination_staged_table_burst_ms
+    )}ms staged table burst)`,
     benchmarkCommand:
       'pnpm bench:targets:run -- react-pagination-virtualized-char-burst',
     correctnessCommand:
@@ -448,7 +431,6 @@ function runSuggestLoops(innerArgs) {
     limitIndex !== -1 && innerArgs[limitIndex + 1]
       ? Number(innerArgs[limitIndex + 1])
       : Number.POSITIVE_INFINITY;
-  const latestReactCompare = latestArtifact(reactHugeCompareArtifactPattern);
   const loops = [
     summarizeRuntimeFanout(withChecks),
     summarizeRichTextStructural(),
@@ -467,9 +449,6 @@ function runSuggestLoops(innerArgs) {
     generatedAt: new Date().toISOString(),
     source: 'current Plate repo Plite v2 state plus latest benchmark artifacts',
     withChecks,
-    latestReactCompareArtifact: latestReactCompare
-      ? path.relative(root, latestReactCompare.filePath)
-      : null,
     loops,
   };
 

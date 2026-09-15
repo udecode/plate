@@ -9,13 +9,14 @@
       "upstream": "skills/principle-boundary-discipline/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "ab3c690ce361542ca00446b8406f5afd47776f544b8ce06a9ef2eaa2338bde6d",
-      "destinationSha256": "8e288c458888b774578608d82404f9e39b73f5a12ec9b0d24b9997b8d74e3897",
+      "destinationSha256": "7b79dead179166fc73fca56287765b4b57e588927dee6778a66beec92bd5b83e",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-boundary-discipline/SKILL.md\n+++ skills/principle-boundary-discipline/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-boundary-discipline\n description: \"Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Boundary Discipline\n \n"
+      "unifiedDiff": "--- skills/principle-boundary-discipline/SKILL.md\n+++ skills/principle-boundary-discipline/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-boundary-discipline\n-description: \"Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions.\"\n-disable-model-invocation: true\n+description: \"Place validation and error handling when an external boundary or framework adapter has unclear ownership.\"\n ---\n \n # Boundary Discipline\n"
     }
   ],
   "ownedFiles": [

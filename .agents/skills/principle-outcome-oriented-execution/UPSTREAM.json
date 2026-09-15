@@ -9,13 +9,14 @@
       "upstream": "skills/principle-outcome-oriented-execution/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "beedcaed75572a6a1662d47f16da203c2bd2c9dbffbbd678d4ba187d67b7e670",
-      "destinationSha256": "a6375b5562f58783d45d7fa10374636cbcf6705cdccb4f426fafcf7ad8bb03d2",
+      "destinationSha256": "4fc679bd3131ae8af494710920fd20f63bd6e46ebf6043d868f55e23c7c9ea74",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-outcome-oriented-execution/SKILL.md\n+++ skills/principle-outcome-oriented-execution/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-outcome-oriented-execution\n description: \"Apply during planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture; don't preserve smooth intermediate states with throwaway compatibility code.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Outcome-Oriented Execution\n \n"
+      "unifiedDiff": "--- skills/principle-outcome-oriented-execution/SKILL.md\n+++ skills/principle-outcome-oriented-execution/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-outcome-oriented-execution\n-description: \"Apply during planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture; don't preserve smooth intermediate states with throwaway compatibility code.\"\n-disable-model-invocation: true\n+description: \"Sequence an accepted migration with explicit temporary breakage and a verifiable final state.\"\n ---\n \n # Outcome-Oriented Execution\n@@ -19,4 +18,4 @@\n - Use this for planned rewrites and migrations with explicit phase boundaries\n - Declare where temporary breakage is acceptable\n - Keep high-signal checks for actively touched areas while migrating\n-- Require full static and runtime verification at plan completion\n+- Complete the static and runtime proof required by the acceptance and owning project; repeat only invalidated or failed checks\n"
     }
   ],
   "ownedFiles": [

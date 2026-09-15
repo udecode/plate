@@ -11,9 +11,9 @@ import { isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
   Editable,
-  Plite,
-  type PliteDecoration,
-  type PliteDecorationSource,
+  EditorRoot,
+  type Decoration,
+  type DecorationSource,
   type RenderElementProps,
   useEditor,
   useEditorContext,
@@ -76,7 +76,7 @@ const App = () => {
     {
       type: ParagraphType,
       children: toChildren(
-        'If you are using TypeScript, create the editor from the final value shape and pass extension factories at creation time. The example below includes the custom types required for the rest of this example.'
+        'If you are using TypeScript, create the editor from the final value shape and pass plugin factories at creation time. The example below includes the custom types required for the rest of this example.'
       ),
     },
     {
@@ -97,10 +97,10 @@ const editor = useEditor<CustomValue>({ initialValue })`),
       children: toChildren('There you have it!'),
     },
   ];
-  const editor = useEditor({ extensions: [history()], initialValue });
+  const editor = useEditor({ plugins: [history()], initialValue });
 
   return (
-    <Plite decorations={[codeHighlightingSource]} editor={editor}>
+    <EditorRoot decorations={[codeHighlightingSource]} editor={editor}>
       <ExampleToolbar />
       <Editable
         onKeyDown={(event) => {
@@ -138,7 +138,7 @@ const editor = useEditor<CustomValue>({ initialValue })`),
         renderElement={ElementWrapper}
       />
       <style>{prismThemeStyles}</style>
-    </Plite>
+    </EditorRoot>
   );
 };
 
@@ -154,7 +154,7 @@ const ElementWrapper = (props: RenderElementProps<CustomElement>) => {
     return (
       <div
         {...attributes}
-        className="plite-code-highlighting-block plite-code-highlighting-positioned"
+        className="editor-code-highlighting-block editor-code-highlighting-positioned"
         spellCheck={false}
       >
         <LanguageSelect
@@ -170,7 +170,7 @@ const ElementWrapper = (props: RenderElementProps<CustomElement>) => {
 
   const Tag = editor.read.schema.isInline(element) ? 'span' : 'div';
   return (
-    <Tag {...attributes} className="plite-code-highlighting-positioned">
+    <Tag {...attributes} className="editor-code-highlighting-positioned">
       {children}
     </Tag>
   );
@@ -286,7 +286,7 @@ const collectCodeTextRanges = (
   text: string,
   path: Path,
   language = 'jsx'
-): PliteDecoration[] => {
+): Decoration[] => {
   const grammar = Prism.languages[language];
 
   if (!grammar) {
@@ -295,7 +295,7 @@ const collectCodeTextRanges = (
 
   const tokens = Prism.tokenize(text, grammar);
   const normalizedTokens = normalizeTokens(tokens);
-  const ranges: PliteDecoration[] = [];
+  const ranges: Decoration[] = [];
   let start = 0;
 
   normalizedTokens.forEach((lineTokens, lineIndex) => {
@@ -340,7 +340,7 @@ const codeHighlightingSource = {
           (node as CodeBlockElement).language
         )
       : [],
-} satisfies PliteDecorationSource<CustomEditor>;
+} satisfies DecorationSource<CustomEditor>;
 
 type CodeIndentAction = 'indent' | 'outdent';
 

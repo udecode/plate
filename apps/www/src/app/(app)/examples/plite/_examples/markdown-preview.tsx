@@ -2,16 +2,16 @@ import { cva } from 'class-variance-authority';
 import { NodeApi, type Path } from 'plitejs';
 import {
   Editable,
-  Plite,
-  type PliteDecoration,
-  type PliteDecorationSource,
+  EditorRoot,
+  type Decoration,
+  type DecorationSource,
   useEditor,
 } from 'plitejs/react';
 import { useMemo } from 'react';
 
 import { Prism } from './utils/prism-runtime';
 
-const markdownSegmentVariants = cva('plite-markdown-preview-segment', {
+const markdownSegmentVariants = cva('editor-markdown-preview-segment', {
   variants: {
     blockquote: {
       false: null,
@@ -69,7 +69,7 @@ const MarkdownPreviewExample = () => {
       },
     ],
   });
-  const markdownSource = useMemo<PliteDecorationSource<typeof editor>>(
+  const markdownSource = useMemo<DecorationSource<typeof editor>>(
     () => ({
       id: 'markdown-preview',
       read: ({ entry: [node, path] }) =>
@@ -79,9 +79,9 @@ const MarkdownPreviewExample = () => {
   );
 
   return (
-    <Plite decorations={[markdownSource]} editor={editor}>
+    <EditorRoot decorations={[markdownSource]} editor={editor}>
       <Editable id="markdown-preview" placeholder="Write some markdown..." />
-    </Plite>
+    </EditorRoot>
   );
 };
 
@@ -109,9 +109,9 @@ const markdownTokenClassNames: Record<string, string> = {
   underlined: markdownSegmentVariants({ underlined: true }),
 };
 
-const collectMarkdownRanges = (text: string, path: Path): PliteDecoration[] => {
+const collectMarkdownRanges = (text: string, path: Path): Decoration[] => {
   const tokens = Prism.tokenize(text, Prism.languages.markdown);
-  const ranges: PliteDecoration[] = [];
+  const ranges: Decoration[] = [];
   let start = 0;
 
   for (const token of tokens) {
@@ -123,7 +123,7 @@ const collectMarkdownRanges = (text: string, path: Path): PliteDecoration[] => {
         attributes: {
           className:
             markdownTokenClassNames[token.type] ??
-            'plite-markdown-preview-segment',
+            'editor-markdown-preview-segment',
           'data-markdown-token': token.type,
         },
         key: `markdown:${path.join('.')}:${start}:${end}`,

@@ -1,4 +1,4 @@
-/** Hook for replacing values before Plite debug output is stringified. */
+/** Hook for replacing values before debug output is stringified. */
 export type DebugValueScrubber = (key: string, value: unknown) => unknown;
 
 let debugValueScrubber: DebugValueScrubber | undefined;
@@ -11,7 +11,7 @@ const defaultDebugValueScrubber = (key: string, value: unknown): unknown => {
   return value;
 };
 
-/** Override the debug value scrubber used by Plite diagnostic formatting. */
+/** Override the debug value scrubber used by diagnostic formatting. */
 export const setDebugValueScrubber = (
   scrubber: DebugValueScrubber | null | undefined
 ) => {

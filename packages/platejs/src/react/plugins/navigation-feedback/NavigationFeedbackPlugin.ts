@@ -3,10 +3,7 @@ import React from 'react';
 import { ElementApi, type NodeKey } from '../../../facade';
 import { DOMPlugin } from '../../../lib/plugins/dom/DOMPlugin';
 import { useEditorRootElement } from '../../plite-react';
-import {
-  definePlatePlugin,
-  type PlateViewElementAttributes,
-} from '../../plugin';
+import { definePlugin, type ViewElementAttributes } from '../../plugin';
 import type {
   NavigationFeedbackPluginState,
   NavigationFlashTargetOptions,
@@ -14,7 +11,7 @@ import type {
 
 type FeedbackTarget = Readonly<{
   key: NodeKey;
-  attributes: PlateViewElementAttributes;
+  attributes: ViewElementAttributes;
   duration: number;
   pulse: number;
 }>;
@@ -46,7 +43,7 @@ const clear = (state: MountedFeedback) => {
 
 const initialState: NavigationFeedbackPluginState = { duration: 1600 };
 
-export const NavigationFeedbackPlugin = definePlatePlugin('navigation', {
+export const NavigationFeedbackPlugin = definePlugin('navigation', {
   dependencies: [DOMPlugin],
   initialState,
   api: ({ editor, store }) => ({

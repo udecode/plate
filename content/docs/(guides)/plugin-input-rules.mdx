@@ -413,14 +413,14 @@ The helper takes a `patterns` array and builds a single `insertText` rule. Each 
 
 ```tsx showLineNumbers
 import {
-  defineBasePlugin,
+  BaseCodeBlockPlugin,
+  definePlugin,
   createTextSubstitutionInputRule,
-  PLUGINS,
 } from 'platejs';
 
 const arrowsRule = createTextSubstitutionInputRule({
   enabled: ({ editor }) => {
-    const codeBlock = editor.plugin(PLUGINS.codeBlock);
+    const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
     return (
       !codeBlock.installed ||
@@ -435,7 +435,7 @@ const arrowsRule = createTextSubstitutionInputRule({
   ],
 });
 
-export const ArrowsShortcutsPlugin = defineBasePlugin('arrowsShortcuts', {
+export const ArrowsShortcutsPlugin = definePlugin('arrowsShortcuts', {
   inputRules: [arrowsRule],
 });
 ```
@@ -456,9 +456,9 @@ your app and edit the patterns.
 
 ```tsx showLineNumbers title="autoformat.tsx"
 import {
-  defineBasePlugin,
+  BaseCodeBlockPlugin,
+  definePlugin,
   createTextSubstitutionInputRule,
-  PLUGINS,
 } from 'platejs';
 
 const createAutoformatTextSubstitutionRule = ({
@@ -468,7 +468,7 @@ const createAutoformatTextSubstitutionRule = ({
 }) =>
   createTextSubstitutionInputRule({
     enabled: ({ editor }) => {
-      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
       return (
         !codeBlock.installed ||
@@ -493,7 +493,7 @@ const smartQuotesRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const AutoformatShortcutsPlugin = defineBasePlugin('autoformatShortcuts', {
+const AutoformatShortcutsPlugin = definePlugin('autoformatShortcuts', {
   inputRules: [legalRule, smartQuotesRule],
 });
 
@@ -571,9 +571,9 @@ state or when you want your rule wiring to live next to the plugin's types.
 
 ```tsx showLineNumbers
 import { BaseCodeBlockPlugin } from 'platejs';
-import { defineBasePlugin } from 'platejs';
+import { definePlugin } from 'platejs';
 
-const CustomPlugin = defineBasePlugin('custom', {
+const CustomPlugin = definePlugin('custom', {
   dependencies: [BaseCodeBlockPlugin],
   inputRules: ({ rule }) => [
     rule.mark({
@@ -625,7 +625,7 @@ When you're shipping a package, you usually want a public factory like
 low-level rule plumbing. Reach for `createRuleFactory`.
 
 ```tsx showLineNumbers
-import { createRuleFactory, PLUGINS } from 'platejs';
+import { BaseCodeBlockPlugin, createRuleFactory } from 'platejs';
 
 export const BlockquoteRules = {
   markdown: createRuleFactory<{}, { marker: string }>({
@@ -635,7 +635,7 @@ export const BlockquoteRules = {
     mode: 'wrap',
     match: ({ marker }) => marker,
     enabled: ({ editor }) => {
-      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
       return (
         !codeBlock.installed ||
@@ -660,10 +660,10 @@ A few things to notice:
   them onto the base payload before `apply` runs.
 - `enabled` and `priority` stay available as runtime overrides on the returned rule instance — callers can override them even when your factory sets a default.
 
-That's the pattern every `*Rules.markdown(...)` family in Plate uses. Clone it when you need your own.
+That's the pattern every `*Rules.markdown(...)` family in EditorRoot uses. Clone it when you need your own.
 
 Done. Between `defineInputRule`, the four specialized builders, the plugin-side
-`rule` builder, and `createRuleFactory`, every rule in Plate — yours included —
+`rule` builder, and `createRuleFactory`, every rule in EditorRoot — yours included —
 comes from the same small core.
 
 ## How rule execution works
@@ -725,7 +725,7 @@ For each transform call, the runtime walks rules in priority order (highest firs
    treats the rule as not consumed and continues; any other return value
    consumes the input and short-circuits the rest of the walk.
 
-If no rule consumes the input, the default Plite transform runs as normal.
+If no rule consumes the input, the default EditorRoot transform runs as normal.
 
 | Field | Purpose |
 | ----- | ------- |
@@ -794,7 +794,7 @@ runtime fields like `enabled` and `priority`, and hide the low-level rule
 construction details.
 
 ```ts
-import { createRuleFactory, PLUGINS } from 'platejs';
+import { BaseCodeBlockPlugin, createRuleFactory } from 'platejs';
 
 export const BlockquoteRules = {
   markdown: createRuleFactory<{}, { marker: string }>({
@@ -804,7 +804,7 @@ export const BlockquoteRules = {
     match: ({ marker }) => marker,
     mode: 'wrap',
     enabled: ({ editor }) => {
-      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
       return (
         !codeBlock.installed ||

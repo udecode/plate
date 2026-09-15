@@ -1,17 +1,17 @@
 import {
   BaseParagraphPlugin,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   defineDocumentMigrations,
   migrateDocument,
 } from 'platejs';
 
 import { type Element, property, schema, target } from '../core';
-import { migratePlateV54 } from './index';
+import { migrateV54 } from './index';
 
 const MigrationSchema = { id: 'plate', version: 54 } as const;
 const requiredRef = property.string({ required: true });
-const BaseDatePlugin = defineBasePlugin('date', {
+const BaseDatePlugin = definePlugin('date', {
   schema: {
     element: {
       properties: { value: property.string({ required: true }) },
@@ -19,7 +19,7 @@ const BaseDatePlugin = defineBasePlugin('date', {
     },
   },
 });
-const BaseMentionPlugin = defineBasePlugin('mention', {
+const BaseMentionPlugin = definePlugin('mention', {
   schema: {
     element: {
       properties: { label: property.string(), ref: requiredRef },
@@ -27,12 +27,12 @@ const BaseMentionPlugin = defineBasePlugin('mention', {
     },
   },
 });
-const BaseDetailsSummaryPlugin = defineBasePlugin('detailsSummary', {
+const BaseDetailsSummaryPlugin = definePlugin('detailsSummary', {
   schema: {
     element: { ...schema.element.textBlock(), type: 'summary' },
   },
 });
-const BaseDetailsPlugin = defineBasePlugin('details', {
+const BaseDetailsPlugin = definePlugin('details', {
   dependencies: [BaseDetailsSummaryPlugin, BaseParagraphPlugin],
   schema: ({ plugins }) => ({
     element: {
@@ -46,7 +46,7 @@ const BaseDetailsPlugin = defineBasePlugin('details', {
     },
   }),
 });
-const BaseFootnotePlugin = defineBasePlugin('footnote', {
+const BaseFootnotePlugin = definePlugin('footnote', {
   schema: {
     element: {
       properties: { ref: requiredRef },
@@ -55,7 +55,7 @@ const BaseFootnotePlugin = defineBasePlugin('footnote', {
     },
   },
 });
-const BaseFootnoteDefinitionPlugin = defineBasePlugin('footnoteDefinition', {
+const BaseFootnoteDefinitionPlugin = definePlugin('footnoteDefinition', {
   dependencies: [BaseParagraphPlugin],
   schema: ({ plugins }) => ({
     element: {
@@ -67,7 +67,7 @@ const BaseFootnoteDefinitionPlugin = defineBasePlugin('footnoteDefinition', {
     },
   }),
 });
-const BaseInlineEquationPlugin = defineBasePlugin('inlineEquation', {
+const BaseInlineEquationPlugin = definePlugin('inlineEquation', {
   schema: {
     element: {
       properties: {
@@ -77,7 +77,7 @@ const BaseInlineEquationPlugin = defineBasePlugin('inlineEquation', {
     },
   },
 });
-const BaseEquationPlugin = defineBasePlugin('equation', {
+const BaseEquationPlugin = definePlugin('equation', {
   schema: {
     element: {
       properties: {
@@ -87,7 +87,7 @@ const BaseEquationPlugin = defineBasePlugin('equation', {
     },
   },
 });
-const BaseColumnItemPlugin = defineBasePlugin('column', {
+const BaseColumnItemPlugin = definePlugin('column', {
   dependencies: [BaseParagraphPlugin],
   schema: ({ plugins }) => ({
     element: {
@@ -100,7 +100,7 @@ const BaseColumnItemPlugin = defineBasePlugin('column', {
     },
   }),
 });
-const BaseColumnPlugin = defineBasePlugin('columnGroup', {
+const BaseColumnPlugin = definePlugin('columnGroup', {
   dependencies: [BaseColumnItemPlugin],
   schema: {
     element: {
@@ -117,12 +117,12 @@ const mediaElement = (
       url: property.string({ required: true }),
     },
   });
-const BaseFilePlugin = defineBasePlugin('file', {
+const BaseFilePlugin = definePlugin('file', {
   schema: {
     element: mediaElement({ name: property.string() }),
   },
 });
-const BaseImagePlugin = defineBasePlugin('image', {
+const BaseImagePlugin = definePlugin('image', {
   schema: {
     element: schema.element.textBlock({
       properties: {
@@ -133,10 +133,10 @@ const BaseImagePlugin = defineBasePlugin('image', {
     }),
   },
 });
-const BaseMediaEmbedPlugin = defineBasePlugin('mediaEmbed', {
+const BaseMediaEmbedPlugin = definePlugin('mediaEmbed', {
   schema: { element: mediaElement({}) },
 });
-const BaseCodeDrawingPlugin = defineBasePlugin('codeDrawing', {
+const BaseCodeDrawingPlugin = definePlugin('codeDrawing', {
   schema: {
     element: {
       properties: {
@@ -154,7 +154,7 @@ const BaseCodeDrawingPlugin = defineBasePlugin('codeDrawing', {
     },
   },
 });
-const BaseTableCellPlugin = defineBasePlugin('tableCell', {
+const BaseTableCellPlugin = definePlugin('tableCell', {
   dependencies: [BaseParagraphPlugin],
   schema: ({ plugins }) => ({
     element: {
@@ -171,7 +171,7 @@ const BaseTableCellPlugin = defineBasePlugin('tableCell', {
     },
   }),
 });
-const BaseTableRowPlugin = defineBasePlugin('tableRow', {
+const BaseTableRowPlugin = definePlugin('tableRow', {
   dependencies: [BaseTableCellPlugin],
   schema: {
     element: {
@@ -181,7 +181,7 @@ const BaseTableRowPlugin = defineBasePlugin('tableRow', {
     },
   },
 });
-const BaseTablePlugin = defineBasePlugin('table', {
+const BaseTablePlugin = definePlugin('table', {
   dependencies: [BaseTableRowPlugin],
   schema: {
     element: {
@@ -190,7 +190,7 @@ const BaseTablePlugin = defineBasePlugin('table', {
     },
   },
 });
-const BaseIndentPlugin = defineBasePlugin('indent', {
+const BaseIndentPlugin = definePlugin('indent', {
   schema: {
     properties: {
       indent: schema.elementProperty(property.number(), {
@@ -199,7 +199,7 @@ const BaseIndentPlugin = defineBasePlugin('indent', {
     },
   },
 });
-const BaseListPlugin = defineBasePlugin('list', {
+const BaseListPlugin = definePlugin('list', {
   schema: {
     properties: {
       checked: schema.elementProperty(property.boolean(), {
@@ -221,7 +221,7 @@ const BaseListPlugin = defineBasePlugin('list', {
     },
   },
 });
-const BaseTextAlignPlugin = defineBasePlugin('textAlign', {
+const BaseTextAlignPlugin = definePlugin('textAlign', {
   schema: {
     properties: {
       textAlign: schema.elementProperty(
@@ -236,7 +236,7 @@ const BaseTextAlignPlugin = defineBasePlugin('textAlign', {
     },
   },
 });
-const BaseElementIdPlugin = defineBasePlugin('elementId', {
+const BaseElementIdPlugin = definePlugin('elementId', {
   schema: {
     properties: {
       id: schema.elementProperty(property.string(), {
@@ -268,7 +268,7 @@ const plugins = [
 
 const createMigrationEditor = () => {
   const migrations = defineDocumentMigrations(MigrationSchema, {
-    steps: { 54: migratePlateV54 },
+    steps: { 54: migrateV54 },
     unversioned: 53,
   });
   const editor = createEditor({
@@ -1205,7 +1205,7 @@ describe('migratePlateV54 AST contracts', () => {
     ).toThrow(/indentation must be finite/);
 
     const missingMigrations = defineDocumentMigrations(MigrationSchema, {
-      steps: { 54: migratePlateV54 },
+      steps: { 54: migrateV54 },
       unversioned: 53,
     });
     const missingEditor = createEditor({

@@ -1,7 +1,7 @@
 import { afterEach, expect, it } from 'bun:test';
 
 import { act, cleanup, render } from '@testing-library/react';
-import { createEditor, Plate, PlateContent } from 'platejs/react';
+import { createEditor, EditorRoot, EditorContent } from 'platejs/react';
 import * as React from 'react';
 
 import { BasicBlocksKit } from './basic-blocks';
@@ -30,12 +30,12 @@ const mount = () => {
     initialValue: [table('first'), table('second')],
   });
   const view = render(
-    <Plate editor={editor}>
-      <PlateContent />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent />
+    </EditorRoot>
   );
   const highlightedCells = () =>
-    [...view.container.querySelectorAll('td[data-plite-node="element"]')]
+    [...view.container.querySelectorAll('td[data-editor-node="element"]')]
       .filter((cell) =>
         cell.querySelector(':scope > [data-slot="node-selection-highlight"]')
       )

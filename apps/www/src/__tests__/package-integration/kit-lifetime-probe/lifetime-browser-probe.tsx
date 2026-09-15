@@ -3,7 +3,7 @@ import { NodeApi } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { DndPlugin } from 'platejs/dnd/react';
 import { MarkdownPlugin } from 'platejs/markdown';
-import { createEditor, ParagraphPlugin, Plate } from 'platejs/react';
+import { createEditor, ParagraphPlugin, EditorRoot } from 'platejs/react';
 import * as React from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
@@ -47,7 +47,7 @@ function BaselineView({
   );
   return (
     <BaselineDndRoot editableElement={element}>
-      <Editor domStrategy="full" ref={ref} readOnly={readOnly} />
+      <Editor ref={ref} readOnly={readOnly} />
     </BaselineDndRoot>
   );
 }
@@ -82,13 +82,13 @@ function Assembly({
       variant === 'current' && cohort.features ? (
         <BaselineView attach={attach} index={index} readOnly={viewReadOnly} />
       ) : (
-        <Editor domStrategy="full" readOnly={viewReadOnly} />
+        <Editor readOnly={viewReadOnly} />
       );
     return index === 0 ? (
       // oxlint-disable-next-line react-doctor/no-array-index-as-key -- Each fixed view position is its identity; hiding a view never reindexes siblings.
       <React.Fragment key={index}>{view}</React.Fragment>
     ) : (
-      <Plate
+      <EditorRoot
         // oxlint-disable-next-line react-doctor/no-array-index-as-key -- Fixed view positions retain their identity through detach and reattach.
         key={index}
         editor={editor}
@@ -96,11 +96,11 @@ function Assembly({
         readOnly={viewReadOnly}
       >
         {view}
-      </Plate>
+      </EditorRoot>
     );
   });
   return (
-    <Plate editor={editor} suppressInstanceWarning readOnly={readOnly}>
+    <EditorRoot editor={editor} suppressInstanceWarning readOnly={readOnly}>
       {variant === 'current' && cohort.features && (
         <AIChatSession
           elements={elements.filter(
@@ -109,7 +109,7 @@ function Assembly({
         />
       )}
       {content}
-    </Plate>
+    </EditorRoot>
   );
 }
 function makeEditor(variant: Variant) {
@@ -336,7 +336,7 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
     const ownedListeners = tracked.listeners();
     const ownedObservers = tracked.observers();
     const mountedDOM = container.querySelectorAll(
-      '[data-plite-node="element"]'
+      '[data-editor-node="element"]'
     ).length;
     check(
       mountedDOM === cohort.blocks * cohort.views * cohort.editors,
@@ -387,16 +387,14 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
         streaming: store.get('streaming'),
         mode: store.get('mode'),
         aborted: http.requests.map(({ signal }) => signal.aborted),
-        views: [
-          ...container.querySelectorAll('[data-plite-editor="true"]'),
-        ].map((element) => ({
-          connected: element.isConnected,
-          readOnly: element.getAttribute('data-readonly'),
-        })),
+        views: [...container.querySelectorAll('[data-editor="true"]')].map(
+          (element) => ({
+            connected: element.isConnected,
+            readOnly: element.getAttribute('data-readonly'),
+          })
+        ),
       });
-      container
-        .querySelector<HTMLElement>('[data-plite-editor="true"]')!
-        .focus();
+      container.querySelector<HTMLElement>('[data-editor="true"]')!.focus();
       editor.update.selection.set({
         anchor: { path: [0, 0], offset: 7 },
         focus: { path: [0, 0], offset: 7 },
@@ -430,7 +428,7 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
         flushSync(() => root.render(tree()));
         siblingDetach = performance.now() - detachStart;
         check(
-          container.querySelectorAll('[data-plite-editor="true"]').length ===
+          container.querySelectorAll('[data-editor="true"]').length ===
             (cohort.views - 1) * cohort.editors,
           'first view actually detached'
         );

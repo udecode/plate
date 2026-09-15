@@ -1,5 +1,5 @@
-import { type Descendant, defineExtension, schema } from 'plitejs';
-import { clipboardHandler, parseDOMClipboardHtml } from 'plitejs/dom';
+import { type Descendant, definePlugin, schema } from 'plitejs';
+import { domCommands, parseDOMClipboardHtml } from 'plitejs/dom';
 import { jsx } from 'plitejs/hyperscript';
 
 import { failInvariant } from '../../../../../lib/failInvariant';
@@ -677,35 +677,34 @@ export const deserialize = (
 };
 
 export const html = () =>
-  defineExtension('paste-html', {
-    contributions: [
-      clipboardHandler({
-        insertData(data, { next, tx }) {
-          const innerHtml = data.getData('text/html');
+  definePlugin('paste-html', {
+    commands: ({ around }) => [
+      around(domCommands.insertData, ({ input, next, state }) => {
+        const innerHtml = input.getData('text/html');
 
-          if (!innerHtml) return next();
+        if (!innerHtml) return next();
 
-          const hasPlainText = Array.from(data.types).includes('text/plain');
-          const text = hasPlainText ? data.getData('text/plain') : '';
+        const hasPlainText = Array.from(input.types).includes('text/plain');
+        const text = hasPlainText ? input.getData('text/plain') : '';
 
-          // Prediction/autocorrect paste can carry plain text as identical or wrapper-only HTML.
-          if (isPlainTextClipboardHtml(innerHtml, text)) return next();
+        // Prediction/autocorrect paste can carry plain text as identical or wrapper-only HTML.
+        if (isPlainTextClipboardHtml(innerHtml, text)) return next();
 
-          const parsed = parseDOMClipboardHtml(innerHtml);
-          const deserialized = deserialize(
-            getCommentBoundedFragmentRoot(parsed.body)
-          );
-          const fragment = (
-            Array.isArray(deserialized)
-              ? deserialized
-              : deserialized == null
-                ? []
-                : [deserialized]
-          ).filter(isDescendant);
+        const parsed = parseDOMClipboardHtml(innerHtml);
+        const deserialized = deserialize(
+          getCommentBoundedFragmentRoot(parsed.body)
+        );
+        const fragment = (
+          Array.isArray(deserialized)
+            ? deserialized
+            : deserialized == null
+              ? []
+              : [deserialized]
+        ).filter(isDescendant);
 
+        return state.transaction((tx) => {
           tx.fragment.replace(fragment);
-          return true;
-        },
+        });
       }),
     ],
     schema: {

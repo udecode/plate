@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
@@ -12,15 +12,15 @@ const ROUTE = '/blocks/autoformat-demo';
 test(CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto(ROUTE, { waitUntil: 'commit' });
 
     const root = page
-      .locator('[data-plite-editor="true"][contenteditable="true"]')
+      .locator('[data-editor="true"][contenteditable="true"]')
       .first();
-    const editor = createPliteBrowserEditorHarness(page, CASE_ID, root);
+    const editor = createBrowserEditorHarness(page, CASE_ID, root);
 
     await editor.ready({ editor: 'visible', text: INTRO_TEXT });
 

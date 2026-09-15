@@ -1,4 +1,4 @@
-import { failInvariant } from '../../internal';
+import { failInvariant } from '../../internal/fail-invariant';
 import { usesAppleDOMHotkeys } from './environment';
 
 export type HotkeyPlatform = 'apple' | 'other' | 'windows';
@@ -248,7 +248,9 @@ const getCachedHotkeyMatcher = (
   hotkey: HotkeySpec,
   options?: HotkeyMatchOptions
 ) => {
-  const cacheKey = `${options?.platform ?? 'default'}:${JSON.stringify(hotkey)}`;
+  const cacheKey = `${options?.platform ?? 'default'}:${JSON.stringify(
+    hotkey
+  )}`;
   let matcher = MATCHER_CACHE.get(cacheKey);
 
   if (!matcher) {

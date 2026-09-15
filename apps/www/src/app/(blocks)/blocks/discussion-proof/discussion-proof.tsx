@@ -3,7 +3,7 @@
 import type { Range, Value } from 'platejs';
 import { BaseCommentsPlugin, type CommentThread } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -73,32 +73,6 @@ const initialThreads: readonly CommentThread[] = [
     target: { type: 'range', range },
     userId: index === 0 ? 'alice' : 'bob',
   })),
-  {
-    createdAt: '2026-09-09T12:00:00.000Z',
-    excerpt: 'tighten the wording',
-    id: 'suggestion-thread',
-    messages: [
-      {
-        body: [
-          {
-            children: [
-              { text: 'This suggestion is ' },
-              { bold: true, text: 'clearer' },
-              { text: '; keep it concise.' },
-            ],
-            type: 'paragraph',
-          },
-        ],
-        createdAt: '2026-09-09T12:00:00.000Z',
-        id: 'suggestion-message',
-        userId: 'charlie',
-      },
-    ],
-    resolved: false,
-    status: 'published',
-    target: { type: 'suggestion', id: 'tighten' },
-    userId: 'charlie',
-  },
 ];
 
 const initialState = {
@@ -153,6 +127,7 @@ export default function DiscussionProof() {
       DiscussionDemoToolbarPlugin,
       CommentsPlugin.configure({ initialState }),
     ],
+    userId: 'alice',
     initialValue: createInitialValue(),
   });
   const reviewerEditor = useCreateEditor({
@@ -164,6 +139,7 @@ export default function DiscussionProof() {
         decorate: { attributes: commentDecorationAttributes },
       }),
     ],
+    userId: 'alice',
     initialValue: createInitialValue(),
   });
   const staticEditor = useCreateEditor({
@@ -177,11 +153,29 @@ export default function DiscussionProof() {
     initialValue: createInitialValue(),
   });
   React.useEffect(() => {
+    for (const current of [editor, reviewerEditor]) {
+      if (
+        current.read.authored.changes({ status: 'pending' }).items.length > 0
+      ) {
+        continue;
+      }
+      current.update((tx) => {
+        tx.authored.propose();
+        tx.text.insert('suggested ', {
+          at: { offset: 14, path: [1, 0] },
+        });
+      });
+    }
+  }, [editor, reviewerEditor]);
+
+  React.useEffect(() => {
     const comments = editor.plugin(CommentsPlugin).api;
+    const reviewerComments = reviewerEditor.plugin(BaseCommentsPlugin).api;
+    const staticComments = staticEditor.plugin(BaseCommentsPlugin).api;
+
     return comments.subscribeThreads(({ ids, reason }) => {
       if (reason !== 'data') return;
-      for (const snapshot of [reviewerEditor, staticEditor]) {
-        const target = snapshot.plugin(BaseCommentsPlugin).api;
+      for (const target of [reviewerComments, staticComments]) {
         target.setThreads(
           target.getThreads().flatMap((thread) => {
             if (!ids.includes(thread.id)) return [thread];
@@ -233,14 +227,14 @@ export default function DiscussionProof() {
 
       <div className="grid gap-4">
         <div className="min-w-0" data-comment-editor="primary">
-          <Plate editor={editor}>
+          <EditorRoot editor={editor}>
             <EditorContainer
               className="grid h-[520px] grid-cols-1 grid-rows-[auto_minmax(0,1fr)]"
               variant="demo"
             >
               <Editor className="px-8" variant="fullWidth" />
             </EditorContainer>
-          </Plate>
+          </EditorRoot>
         </div>
 
         <div
@@ -248,7 +242,7 @@ export default function DiscussionProof() {
           data-comment-editor="reviewer"
         >
           <h2 className="text-sm font-medium">Read-only reviewer</h2>
-          <Plate editor={reviewerEditor} readOnly>
+          <EditorRoot editor={reviewerEditor} readOnly>
             <EditorContainer
               className="grid h-[180px] grid-rows-[auto_minmax(0,1fr)]"
               variant="demo"
@@ -258,7 +252,7 @@ export default function DiscussionProof() {
                 variant="none"
               />
             </EditorContainer>
-          </Plate>
+          </EditorRoot>
         </div>
 
         <div

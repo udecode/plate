@@ -1,56 +1,76 @@
-import { type BasePluginInput, TrailingBlockPlugin } from 'platejs';
+import { DefaultAuthoredPlugin } from 'platejs/authored';
 import { createEditor } from 'platejs/react';
+import { SuggestionPlugin } from 'platejs/suggestion/react';
 
-import { suggestionPlugin, SuggestionKit } from './suggestion';
+import { AIKit } from './ai';
+import { SuggestionKit } from './suggestion';
 
-const createSuggestionEditor = <const P extends readonly BasePluginInput[]>(
-  plugins: P
-) =>
-  createEditor({
-    plugins,
-  });
+const value = [
+  { children: [{ text: 'Accepted' }], type: 'paragraph' },
+] as const;
 
 describe('SuggestionKit', () => {
-  it('keeps suggestion and trailing block independently composable', () => {
-    const suggestionOnly = createSuggestionEditor(SuggestionKit);
-
-    expect(suggestionOnly.plugin(suggestionPlugin).installed).toBe(true);
-    expect(suggestionOnly.plugin(TrailingBlockPlugin).installed).toBe(false);
-    expect(suggestionOnly.plugin(suggestionPlugin).store.get()).toMatchObject({
-      activeId: null,
+  it('shares one authored extension identity with AIKit', () => {
+    const editor = createEditor({
+      initialValue: value,
+      plugins: [...AIKit, ...SuggestionKit],
+      userId: 'alice',
     });
 
-    const trailingOnly = createEditor({
-      plugins: [TrailingBlockPlugin],
+    expect(editor.plugin(DefaultAuthoredPlugin).read.view()).toEqual({
+      intent: 'edit',
+      projection: 'accepted',
     });
-
-    expect(trailingOnly.plugin(suggestionPlugin).installed).toBe(false);
-    expect(trailingOnly.plugin(TrailingBlockPlugin).installed).toBe(true);
-    expect(
-      trailingOnly.plugin(TrailingBlockPlugin).initialState.insert
-    ).toBeNull();
-
-    const both = createSuggestionEditor([
-      ...SuggestionKit,
-      TrailingBlockPlugin,
-    ]);
-
-    expect(both.plugin(suggestionPlugin).installed).toBe(true);
-    expect(both.plugin(TrailingBlockPlugin).installed).toBe(true);
-    expect(typeof both.plugin(TrailingBlockPlugin).initialState.insert).toBe(
-      'function'
-    );
   });
 
-  it('lets direct trailing-block configuration beat the weak suggestion override', () => {
-    const insert = () => {};
-    const editor = createSuggestionEditor([
-      ...SuggestionKit,
-      TrailingBlockPlugin.configure({
-        initialState: { insert },
-      }),
-    ]);
+  it('uses the package plugin over native authored changes', () => {
+    const editor = createEditor({
+      initialValue: value,
+      plugins: SuggestionKit,
+      userId: 'alice',
+    });
+    const suggestion = editor.plugin(SuggestionPlugin);
+    const authored = editor.plugin(DefaultAuthoredPlugin);
 
-    expect(editor.plugin(TrailingBlockPlugin).initialState.insert).toBe(insert);
+    expect(suggestion.installed).toBe(true);
+    expect(suggestion.read.mode()).toBe('editing');
+    expect(authored.read.view()).toEqual({
+      intent: 'edit',
+      projection: 'accepted',
+    });
+
+    suggestion.api.setMode('suggesting');
+    editor.update.text.insert(' proposed', {
+      at: { offset: 8, path: [0, 0] },
+    });
+
+    expect(editor.read.value().children).toEqual([
+      { children: [{ text: 'Accepted' }], type: 'paragraph' },
+    ]);
+    expect(suggestion.read.mode()).toBe('suggesting');
+    expect(authored.read.view()).toEqual({
+      intent: 'propose',
+      projection: 'markup',
+    });
+    expect(authored.read.changes().items).toEqual([
+      expect.objectContaining({ authorId: 'alice', status: 'pending' }),
+    ]);
+  });
+
+  it('keeps presentation optional and preserves authored identity checks', () => {
+    const plain = createEditor({ initialValue: value });
+
+    expect(plain.plugin(SuggestionPlugin).installed).toBe(false);
+
+    const editor = createEditor({
+      initialValue: value,
+      plugins: SuggestionKit,
+    });
+
+    editor.plugin(SuggestionPlugin).api.setMode('suggesting');
+    expect(() => editor.update.text.insert(' lost')).toThrow(
+      'author is required'
+    );
+    expect(editor.read.children()).toEqual(value);
   });
 });

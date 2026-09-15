@@ -398,7 +398,7 @@ export default function KitProof() {
           project,
           directory,
           'editor',
-          'plate-editor.tsx'
+          'rich-text-editor.tsx'
         );
         await fs.access(candidate);
         return candidate;
@@ -444,6 +444,26 @@ export default function KitProof() {
         );
       }
     }
+
+    const nextConfigPath = path.join(project, 'next.config.ts');
+    const nextConfig = await fs.readFile(nextConfigPath, 'utf-8');
+    const configExport = 'export default nextConfig';
+    if (!nextConfig.includes(configExport)) {
+      throw new Error(`${name} has an unsupported Next.js config export`);
+    }
+    // The nested Git project cannot infer its disposable pnpm workspace root.
+    await fs.writeFile(
+      nextConfigPath,
+      nextConfig.replace(
+        configExport,
+        `nextConfig.turbopack = {
+  ...nextConfig.turbopack,
+  root: ${JSON.stringify(await fs.realpath(workspace))},
+};
+
+${configExport}`
+      )
+    );
 
     await run(
       process.execPath,

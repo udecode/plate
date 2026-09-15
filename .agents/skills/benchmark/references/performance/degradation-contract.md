@@ -1,7 +1,7 @@
 # Degradation Contract
 
 Use this when considering virtualization, shell islands, model-backed selection,
-or staged mounting.
+or another surface that omits canonical content from native DOM.
 
 ## Rule
 
@@ -12,7 +12,7 @@ state which native behaviors change.
 
 For each degraded mode, record:
 
-- cohort threshold
+- named cohort and explicit product choice
 - browser find behavior
 - screen-reader behavior
 - native selection behavior
@@ -21,10 +21,10 @@ For each degraded mode, record:
 - mobile behavior
 - undo/history behavior
 - collaboration behavior
-- escape hatch or explicit opt-in
+- complete-DOM alternative
 
 ## Reject
 
-- virtualization as a default before repeated-unit budgets are exhausted
+- automatic or threshold-selected virtualization
 - shell mode described as "same editor, just faster"
 - model-backed copy/paste without visible contract

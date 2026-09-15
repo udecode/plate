@@ -301,7 +301,7 @@ test('root selector source ownership is fenced to named source modules', () => {
     editableRootRuntimeFiles,
     {
       'packages/plitejs/src/react/editable/root-selector-sources.ts': {
-        count: 6,
+        count: 5,
         next: 'root-source',
         owner: 'Editable root selector sources',
         rationale:
@@ -609,7 +609,7 @@ test('root runtime cells are owned by EditableDOMRuntime', () => {
   );
 
   expectSourceOwnershipInventory(
-    /\bisSelectionPartialDOMBacked\(/g,
+    /\bisSelectionViewportBacked\(/g,
     rootRuntimeStateFiles,
     {
       'packages/plitejs/src/react/editable/editable-dom-runtime.ts': {
@@ -617,7 +617,7 @@ test('root runtime cells are owned by EditableDOMRuntime', () => {
         next: 'root-runtime',
         owner: 'Editable DOM runtime',
         rationale:
-          'Partial-DOM-backed selection policy belongs to the runtime that owns the mounted root.',
+          'Viewport-backed selection policy belongs to the runtime that owns the mounted root.',
       },
     }
   );
@@ -697,15 +697,13 @@ test('source timing and document focus primitives have named owners', () => {
     )
   ).toEqual({
     'packages/plitejs/src/react/components/editable-rendered-element.tsx': 1,
-    'packages/plitejs/src/react/components/editable-text-blocks.tsx': 2,
     'packages/plitejs/src/react/components/editable-text-flow.tsx': 1,
     'packages/plitejs/src/react/components/plite.tsx': 1,
     'packages/plitejs/src/react/decoration-source.ts': 5,
     'packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx': 1,
-    'packages/plitejs/src/react/hooks/use-plite-widget-geometry.tsx': 1,
-    'packages/plitejs/src/react/hooks/use-plite-widget-store.tsx': 1,
+    'packages/plitejs/src/react/hooks/use-plite-runtime.tsx': 2,
     'packages/plitejs/src/react/hooks/use-editor-selector.tsx': 1,
-    'packages/plitejs/src/react/widget-geometry.ts': 1,
+    'packages/plitejs/src/react/range-geometry.ts': 2,
   });
   expect(
     getMatchesByFiles(
@@ -1135,7 +1133,7 @@ test('direct force render calls have explicit runtime owners', () => {
       next: 'worker',
       owner: 'Keyboard input worker',
       rationale:
-        'Keyboard worker still directly forces render for select-all partial-dom-backed selection before repair/view runtime owns that request.',
+        'Keyboard worker still directly forces render for select-all viewport-backed selection before repair/view runtime owns that request.',
     },
     'packages/plitejs/src/react/editable/runtime-repair-engine.ts': {
       count: 1,

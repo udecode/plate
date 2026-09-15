@@ -5,7 +5,7 @@ import { AIChatPlugin } from 'platejs/ai/react';
 import type { CommentTarget } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { MarkdownPlugin } from 'platejs/markdown';
-import { createEditor, ParagraphPlugin, Plate } from 'platejs/react';
+import { createEditor, ParagraphPlugin, EditorRoot } from 'platejs/react';
 import React from 'react';
 
 import { AIKit } from '@/registry/components/editor/ai';
@@ -62,12 +62,13 @@ for (const [result, retirement] of [
     const editor = createEditor({
       plugins: [ParagraphPlugin, MarkdownPlugin, ...AIKit, commentsPlugin],
       initialValue: [{ type: 'paragraph', children: [{ text: 'original' }] }],
+      userId: 'alice',
     });
     const comments = editor.plugin(commentsPlugin).api;
     const renderAssembly = (readOnly = false, sessionKey = 0) => (
-      <Plate editor={editor} readOnly={readOnly}>
+      <EditorRoot editor={editor} readOnly={readOnly}>
         <Body editor={editor} readOnly={[readOnly]} sessionKey={sessionKey} />
-      </Plate>
+      </EditorRoot>
     );
     const view = render(renderAssembly());
     const warn = spyOn(console, 'warn').mockImplementation(() => {});

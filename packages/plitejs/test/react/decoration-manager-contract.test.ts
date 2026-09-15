@@ -1,13 +1,20 @@
-import { TextApi, createEditor, type NodeKey, RangeApi } from 'plitejs';
+import {
+  TextApi,
+  createEditor,
+  createEditorView,
+  type NodeKey,
+  RangeApi,
+} from 'plitejs';
+import { authored } from 'plitejs/authored';
 
-import { createPliteAnnotationStore } from '../../src/annotations';
+import { createAnnotationStore } from '../../src/annotations';
 import { getNodeKey, replace } from '../../src/internal';
 import {
   createPliteDecorationManager,
   getDecorationPaintChange,
   getNativeMappedDecorationInsertion,
-  type PliteDecoration,
-  type PliteDecorationSource,
+  type Decoration,
+  type DecorationSource,
 } from '../../src/react/decoration-source';
 
 const createViewEditor = () => {
@@ -29,6 +36,157 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+test('refreshes proposal decorations when the authored projection changes without a commit', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [{ type: 'paragraph', children: [{ text: 'Review this.' }] }],
+  });
+  source.update((tx) => {
+    tx.authored.propose();
+    tx.text.insert('carefully ', { at: { path: [0, 0], offset: 7 } });
+  });
+  const view = createEditorView(source);
+  const manager = createPliteDecorationManager(view, [
+    {
+      id: 'proposals',
+      read: ({ entry: [node, path] }) => {
+        if (!TextApi.isText(node)) return [];
+        const entryRange = view.read.ranges.get(path);
+        if (!entryRange) return [];
+        return view.read.authored.changesAt(entryRange).flatMap((change) =>
+          change.ranges.map((range, index) => ({
+            key: `${change.id}:${index}`,
+            attributes: { 'data-proposal': change.id },
+            range,
+          }))
+        );
+      },
+    },
+  ]);
+  const unmount = manager.mount();
+  const key = view.key([0, 0])!;
+  expect(manager.getNodeSnapshot(key)).toHaveLength(0);
+
+  view.api.authored.setView({ intent: 'propose', projection: 'markup' });
+  await Promise.resolve();
+  expect(manager.getNodeSnapshot(key)).toEqual([
+    expect.objectContaining({ start: 7, end: 17 }),
+  ]);
+
+  view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+  await Promise.resolve();
+  expect(manager.getNodeSnapshot(key)).toHaveLength(0);
+  unmount();
+  view.api.authored.setView({ intent: 'propose', projection: 'markup' });
+  await Promise.resolve();
+  expect(manager.getNodeSnapshot(key)).toHaveLength(0);
+  manager.mount();
+  expect(manager.getNodeSnapshot(key)).toEqual([
+    expect.objectContaining({ start: 7, end: 17 }),
+  ]);
+  manager.destroy();
+});
+
+test('does not remap an observer refresh through the same native insertion', async () => {
+  vi.useFakeTimers();
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
+  });
+  const view = createEditorView(source, {
+    authored: { intent: 'propose', projection: 'markup' },
+  });
+  const manager = createPliteDecorationManager(view, [
+    {
+      id: 'proposals',
+      observe: ({ editor, refresh }) => {
+        const stop = editor.subscribeCommit((commit) => {
+          const nodeKeys = commit.changed.nodeKeysAll('text');
+
+          if (nodeKeys.length > 0) refresh({ nodeKeys });
+        });
+
+        return stop;
+      },
+      read: ({ entry: [node, path] }) => {
+        if (!TextApi.isText(node)) return [];
+        const range = view.read.ranges.get(path);
+        if (!range) return [];
+
+        return view.read.authored.changesAt(range).flatMap((change) =>
+          change.ranges.map((changeRange, index) => ({
+            attributes: { 'data-proposal': change.id },
+            key: `${change.id}:${index}`,
+            range: changeRange,
+          }))
+        );
+      },
+    },
+  ]);
+  const unmount = manager.mount();
+  const key = view.key([0, 0])!;
+
+  view.update.selection.set({ path: [0, 0], offset: 2 });
+  view.update({ tags: 'native-text-input' }, (tx) => tx.text.insert('X'));
+  await Promise.resolve();
+
+  expect(manager.getNodeSnapshot(key)).toEqual([
+    expect.objectContaining({ start: 2, end: 3 }),
+  ]);
+  vi.advanceTimersByTime(300);
+  expect(manager.getNodeSnapshot(key)).toEqual([
+    expect.objectContaining({ start: 2, end: 3 }),
+  ]);
+  unmount();
+  manager.destroy();
+});
+
+test('registers a source against edits made while the manager was empty', () => {
+  const editor = createViewEditor();
+  const manager = createPliteDecorationManager(editor, []);
+  const unmount = manager.mount();
+  editor.update.nodes.insert(
+    { type: 'paragraph', children: [{ text: 'inserted' }] },
+    { at: [0] }
+  );
+  editor.update.text.insert('!', { at: { path: [1, 0], offset: 5 } });
+  const source: DecorationSource<typeof editor> = {
+    id: 'late',
+    read: ({ entry: [node, path] }) =>
+      TextApi.isText(node)
+        ? [
+            {
+              key: path.join(','),
+              attributes: { 'data-current-text': node.text },
+              range: {
+                anchor: { path, offset: 0 },
+                focus: { path, offset: node.text.length },
+              },
+            },
+          ]
+        : [],
+  };
+  const unregister = manager.registerSource(source);
+  expect(
+    [0, 1, 2].map(
+      (index) =>
+        manager.getNodeSnapshot(editor.key([index, 0])!)[0].attributes[
+          'data-current-text'
+        ]
+    )
+  ).toEqual(['inserted', 'alpha!', 'beta']);
+  unregister();
+  editor.update.nodes.remove({ at: [0] });
+  manager.registerSource(source);
+  expect(
+    manager.getNodeSnapshot(editor.key([0, 0])!)[0].attributes[
+      'data-current-text'
+    ]
+  ).toBe('alpha!');
+  unmount();
+  manager.destroy();
+});
+
 test.each(['native-text-input', 'dom-text-input'])(
   'preserves queued document work when an independent source refreshes during %s',
   (tag) => {
@@ -37,7 +195,7 @@ test.each(['native-text-input', 'dom-text-input'])(
     const reads: string[] = [];
     const refreshes = new Map<
       string,
-      Parameters<NonNullable<PliteDecorationSource['observe']>>[0]['refresh']
+      Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
     >();
     const manager = createPliteDecorationManager(
       editor,
@@ -228,10 +386,10 @@ test.each([true, false])(
 test('invalidates old source observers and discards an older reentrant read', () => {
   const editor = createViewEditor();
   let refresh:
-    | Parameters<NonNullable<PliteDecorationSource['observe']>>[0]['refresh']
+    | Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
     | undefined;
   let editDuringRead = false;
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'reentrant',
     observe: ({ refresh: nextRefresh }) => {
       refresh = nextRefresh;
@@ -324,7 +482,7 @@ test('retains immutable compiled inputs while checking duplicate keys and curren
   let revision = 0;
   let duplicate = false;
   let refresh:
-    | Parameters<NonNullable<PliteDecorationSource['observe']>>[0]['refresh']
+    | Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
     | undefined;
   const errors: unknown[] = [];
   const manager = createPliteDecorationManager(
@@ -402,7 +560,7 @@ test.each(['getter', 'inherited', 'mutable-path'] as const)(
             },
           })
         : Object.freeze({ className: 'match' });
-    const decoration: PliteDecoration = Object.freeze({
+    const decoration: Decoration = Object.freeze({
       attributes,
       key: 'match',
       range: Object.freeze({
@@ -424,7 +582,7 @@ test.each(['getter', 'inherited', 'mutable-path'] as const)(
       }),
     });
     let refresh:
-      | Parameters<NonNullable<PliteDecorationSource['observe']>>[0]['refresh']
+      | Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
       | undefined;
     const manager = createPliteDecorationManager(editor, [
       {
@@ -470,11 +628,11 @@ test('reads mapped annotations once per editor commit without observer duplicati
     },
     { association: 'inward', deletion: 'drop' }
   );
-  const annotations = createPliteAnnotationStore(editor, [
+  const annotations = createAnnotationStore(editor, [
     { anchor, id: 'comment-1' },
   ]);
   let observerRefreshes = 0;
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'comments',
     observe: ({ refresh }) =>
       annotations.subscribeChanges(({ nodeKeys, reason }) => {
@@ -554,7 +712,7 @@ test('compiles sources once and refreshes one merged node bucket', () => {
   let revision = 0;
   let reads = 0;
   let cleanups = 0;
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'search',
     observe: ({ refresh }) => {
       observers.add(refresh);
@@ -654,7 +812,7 @@ test('wakes one shared listener once for a multi-bucket publication', () => {
     current: ((input: { nodeKeys: 'all' | readonly NodeKey[] }) => void) | null;
   } = { current: null };
   let revision = 0;
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'shared-listener',
     observe: ({ refresh: nextRefresh }) => {
       refresh.current = nextRefresh;
@@ -697,7 +855,7 @@ test('rereads observed sources after subscribing on mount', () => {
   const editor = createViewEditor();
   const firstKey = getNodeKey(editor, [0, 0])!;
   let ready = false;
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'late-ready',
     observe: () => () => {},
     read: ({ entry: [node, path] }) => {
@@ -808,7 +966,7 @@ test('maps native insertions immediately and revalidates the source after input 
 
 test('rejects duplicate source ids before observation', () => {
   const editor = createViewEditor();
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'duplicate',
     read: () => [],
   };
@@ -856,7 +1014,7 @@ test('keeps the last valid buckets when an incremental source read fails', () =>
   let fail = false;
   let revision = 0;
   const failures: unknown[] = [];
-  const source: PliteDecorationSource<typeof editor> = {
+  const source: DecorationSource<typeof editor> = {
     id: 'recoverable',
     observe: ({ refresh: nextRefresh }) => {
       refresh.current = nextRefresh;

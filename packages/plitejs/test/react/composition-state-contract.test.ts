@@ -81,7 +81,7 @@ const readVisibleEditorState = (editor: Editor) =>
   }));
 
 const createMarkedHistoryEditor = () => {
-  const editor = createEditor({ extensions: [history()] });
+  const editor = createEditor({ plugins: [history()] });
 
   editorReplace(editor, {
     children: [
@@ -371,7 +371,7 @@ describe('composition state', () => {
   });
 
   it('does not merge collapsed composition input with an unrelated edit', () => {
-    const editor = createEditor({ extensions: [history()] });
+    const editor = createEditor({ plugins: [history()] });
     const firstSelection = {
       kind: 'text' as const,
       anchor: { path: [0, 0], offset: 1 },

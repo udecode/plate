@@ -43,7 +43,7 @@ export const getPointAtCoordinates = (
   }).pointAtCoordinates({ x, y });
 
   return result
-    ? editor.api.dom.resolvePlitePoint([...result.point], {
+    ? editor.api.dom.resolvePoint([...result.point], {
         exactMatch: false,
       })
     : null;

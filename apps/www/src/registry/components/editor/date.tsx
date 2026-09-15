@@ -7,8 +7,8 @@ import {
 } from 'platejs/date';
 import { DatePlugin } from 'platejs/date/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditorReadOnly,
 } from 'platejs/react';
 import * as React from 'react';
@@ -22,7 +22,7 @@ import {
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
-export function DateElement(props: PlateElementProps<typeof DatePlugin>) {
+export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
   const { editor, element } = props;
   const readOnly = useEditorReadOnly();
   // Radix Slot needs one stable child ref, and focus can open before the same
@@ -70,7 +70,7 @@ export function DateElement(props: PlateElementProps<typeof DatePlugin>) {
   );
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       className="inline-block"
       attributes={{
@@ -112,7 +112,7 @@ export function DateElement(props: PlateElementProps<typeof DatePlugin>) {
         </Popover>
       )}
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 

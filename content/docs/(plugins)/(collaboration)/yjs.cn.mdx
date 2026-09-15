@@ -6,20 +6,18 @@ toc: true
 
 <ComponentPreview name="collaboration-demo" />
 
-预览通过无需凭证的本地房间运行两个独立编辑器，展示远程文档和光标更新、断开与
-重连、schema 拒绝与恢复，以及远程编辑后的 Plite History 撤销。生产环境的传输、
-认证、持久化和房间命名仍由应用负责。
+预览通过无需凭证的本地房间运行两个独立编辑器。房间在任一编辑器连接前，只初始化一次中央
+`Y.Doc`。每个编辑器再把自己的 `Y.Doc` 和 Awareness 接入 Plate。
 
 <PackageInfo>
 
 ## 功能特性
 
-- **提供者边界：** 应用负责 Hocuspocus、WebSocket、WebRTC、IndexedDB 或自定义传输代码。`platejs/yjs` 负责把 `Y.Doc`、提供者生命周期、Awareness、选择状态和规范编辑器更改接入编辑器。
-- **自定义提供者：** 将提供者包包装成 `YjsProviderLike`，然后通过 `YjsPlugin.configure` 配置。
-- **Awareness 与光标：** 通过 Yjs Awareness 共享光标位置和元数据。安装复制的光标 UI，即可显示选区高亮、光标和标签。
-- **多根文档：** 通过同一个编辑器扩展和 Yjs 事务边界同步主 `children`、命名 `roots` 和带根信息的 Awareness。
-- **自定义光标：** 通过 `tx.yjs.sendSelection` 发送光标名称、颜色和其他元数据。
-- **显式命令：** 插件会安装 Plite Yjs 扩展，并添加 `state.yjs` 读取和 `tx.yjs` 命令，用于连接、Awareness 和选择。撤销和重做由 Plite History 负责。
+- **应用拥有传输：** Hocuspocus、WebSocket、WebRTC、IndexedDB、认证、持久化、房间名和 provider 生命周期都由应用负责。
+- **显式就绪状态：** 应用的本地或远程文档源就绪后，绑定才接纳编辑。
+- **Awareness 与光标：** Yjs Awareness 传输光标位置和经过校验的元数据。复制的光标组件渲染选区、光标和标签。
+- **多根文档：** 一个 Yjs 事务可以同步主 `children`、命名 `roots` 和带根信息的选区。
+- **规范历史记录：** 本地与远程更改使用同一条 Plate 更改路径。Plate History 只把本地提交作为本地撤销项。
 
 </PackageInfo>
 
@@ -29,218 +27,188 @@ toc: true
 
 ### 安装
 
-安装 Yjs 插件包。
-
 ```bash
-npm install platejs @tanstack/react-virtual diff-match-patch-ts yjs
+npm install platejs yjs
 ```
 
-如果应用使用 Hocuspocus：
+再安装应用使用的 provider。例如：
 
 ```bash
 npm install @hocuspocus/provider
 ```
 
-如果应用使用 WebRTC：
+### 创建 provider 和就绪适配器
 
-```bash
-npm install y-webrtc
-```
+Provider 包留在应用边界。绑定只接收 provider 的确切 `Y.Doc`、可选的 Awareness，
+以及显式就绪源；它不会连接、断开或销毁 provider。
 
-### 添加插件
-
-同一房间内的所有节点必须使用相同的编译后 schema 身份。派生 schema 通过指纹匹配。
-持久房间使用显式的 `id` 和 `version` 作为谱系；递增版本前先迁移房间。
+Provider 版本的事件契约可能不同，因此 Hocuspocus 就绪适配器放在应用代码中：
 
 ```tsx
-import { YjsPlugin } from "platejs/yjs/react";
+import type { HocuspocusProvider } from "@hocuspocus/provider";
+import type { YjsInitialReadiness } from "platejs/yjs";
+
+const createHocuspocusInitialReadiness = (
+  provider: HocuspocusProvider
+): YjsInitialReadiness => ({
+  doc: provider.document,
+  getSnapshot: () => provider.synced,
+  subscribe(listener) {
+    const onSynced = () => listener();
+    provider.on("synced", onSynced);
+
+    let active = true;
+    return () => {
+      if (!active) return;
+      active = false;
+      provider.off("synced", onSynced);
+    };
+  },
+});
+```
+
+`initialReady: true` 表示这个文档世代的本地或持久化加载已经完成；它不代表应用有权初始化空房间。
+
+### 添加 Plate 插件
+
+同一房间内的所有 peer 必须使用相同的编译后 schema 身份。持久房间应使用稳定的 schema
+`id` 和 `version`。
+
+```tsx
 import { createEditor } from "platejs/react";
+import { YjsPlugin } from "platejs/yjs/react";
+
+const Collaboration = YjsPlugin.create({
+  doc: provider.document,
+  initialReady: createHocuspocusInitialReadiness(provider),
+  awareness: provider.awareness,
+  rootName: roomId,
+  cursorData: { validate: isCollaborator },
+});
 
 const editor = createEditor({
   schema: { id: "yjs-example", version: 1 },
-  plugins: [
-    YjsPlugin.configure({
-      initialState: {
-        clientId: "local-user",
-        doc,
-        provider,
-        rootName: roomId,
-      },
-    }),
-  ],
+  plugins: [Collaboration],
   initialValue,
 });
 ```
 
-<Callout type="warning" title="提供者边界">
-  应用代码负责提供者包、房间名、认证、持久化和服务扩容。`YjsPlugin` 负责 Plate
-  组合并安装 Plite/Yjs 同步扩展。
-</Callout>
+`doc` 和 `initialReady` 是必填项。传入 `awareness` 时，`awareness.doc` 必须与 `doc`
+是同一对象。只有带 Awareness 的绑定才拥有 presence 方法和光标 hooks。
 
-### 配置提供者和光标
+普通服务端房间应在服务端保存规范 Yjs 更新，并省略 `seed`。只有应用已经为全新的空房间选定唯一
+初始化所有者时，才使用 `seed: true`。同步到空副本不能证明 seed 所有权；多个 seeder
+可能产生重复内容。
 
-把你的提供者包装成 `YjsProviderLike`，然后通过插件的 `initialState` 配置。
-安装 `remote-cursor-overlay`，为协作编辑器添加选区高亮、光标和标签。
+### 添加复制的光标 UI
 
 ```bash
 npx shadcn@latest add @plate/remote-cursor-overlay
 ```
 
-从复制的文件导入 `YjsPlugin`，即可使用这些光标样式。
+复制的组件导出 factory，让每个编辑器传入自己的绑定资源：
 
 ```tsx
-import { YjsPlugin } from "@/components/editor/remote-cursor-overlay";
+import { CollaborationPlugin } from "@/components/editor/remote-cursor-overlay";
 
-export const yjsPlugin = YjsPlugin.configure({
-  initialState: {
-    clientId: user.id,
-    doc,
-    provider,
-    rootName: roomId,
-  },
+const Collaboration = CollaborationPlugin.create({
+  doc: provider.document,
+  initialReady: createHocuspocusInitialReadiness(provider),
+  awareness: provider.awareness,
+  rootName: roomId,
+  cursorData: { validate: isCollaborator },
 });
 ```
 
-复制的插件通过 `decorate.attributes` 和按 ID 查询的 `read.remoteCursor(clientId)`
-为选区装饰添加样式，并通过 `slots.afterEditable` 安装
-`RemoteCursorOverlay`。插槽传入当前挂载的 Editable ref。修改复制文件中的颜色函数、
-透明度和 className，即可一起定制选区、光标和标签。只需要协作行为时，从
-`platejs/yjs/react` 导入不带这些默认样式的 `YjsPlugin`。
+`CollaborationPlugin` 会为创建的每个 Yjs descriptor 添加选区样式和 `afterEditable` 光标覆盖层。
+颜色、透明度和标签都可以在复制的文件中调整。
 
-- `provider`: 应用拥有的传输包装器，类型为 `YjsProviderLike`。
-- `doc`: 共享的 `Y.Doc`。
-- `rootName`: 协作文档的命名空间。主根和命名根一起同步。
-- 本地选择变化时，通过 `tx.yjs.sendSelection(...)` 发送光标数据。
+### 根据 admission 状态控制编辑
 
-一次同时修改主根和命名根的 Plate 提交会生成一个 Yjs 事务和一个撤销步骤。
-命名根无需挂载 `PlateContent` 也会同步；远程选区保留其根 key，且一个选区不能跨越
-两个根。
-
-### 渲染编辑器
-
-使用复制的 [Editor](/docs/editor) 组件渲染已配置的编辑器。光标覆盖层使用当前挂载的
-Editable 提供的视口坐标。
+连接状态直接从 provider 读取。Yjs admission hook 表示文档绑定状态：
 
 ```tsx
-import { Plate } from "platejs/react";
-import { Editor, EditorContainer } from "@/components/editor/editor";
+import { useYjsAdmissionStatus } from "platejs/yjs/react";
+
+const status = useYjsAdmissionStatus(editor);
 
 return (
-  <Plate editor={editor}>
-    <EditorContainer>
-      <Editor />
-    </EditorContainer>
-  </Plate>
+  <Editor
+    readOnly={status.state !== "ready"}
+    aria-busy={status.state === "waiting"}
+  />
 );
 ```
 
-### 读取和控制连接状态
+应用应显示 `error` 状态。在修复底层原因后，可以调用
+`editor.api.yjs.retryImport()` 重试。UI 负责避免令人困惑的输入；绑定本身也会在
+waiting 或 error 时拒绝文档提交。
 
-插件会在 `editor.read` 和 `editor.update` 中安装 `yjs` 组。
-
-```tsx
-const connected = editor.read((state) => state.yjs.connected());
-const providerStatus = editor.read((state) => state.yjs.providerStatus());
-
-editor.update((tx) => {
-  tx.yjs.connect();
-  tx.yjs.sendSelection(selection, { name: "Ada", color: "#aabbcc" });
-});
-```
-
-插件安装的扩展会在清理时销毁编辑器拥有的监听器。提供者是否销毁，取决于提供者包装器是否声明自己由编辑器拥有。
-
-### 监听连接状态（可选）
-
-读取提供者状态，给 UI 显示同步状态。
+### 发布 presence 并控制 provider
 
 ```tsx
-import React from "react";
-import { useEditor } from "platejs/react";
-import { useYjsProviderStatus, useYjsProviderSynced } from "platejs/yjs/react";
+editor.api.yjs.setCursorData({ name: "Ada", color: "#7c3aed" });
 
-function EditorStatus() {
-  const editor = useEditor();
-  const status = useYjsProviderStatus(editor);
-  const synced = useYjsProviderSynced(editor);
+const disconnect = () => {
+  editor.api.yjs.clearSelection();
+  provider.disconnect();
+};
 
-  return (
-    <div>
-      {status} {synced ? "Synced" : "Syncing"}
-    </div>
-  );
-}
+const reconnect = async () => {
+  await provider.connect();
+  if (editor.api.yjs.admissionStatus().state === "ready") {
+    editor.api.yjs.syncSelection();
+  }
+};
 ```
+
+`syncSelection()` 读取当前挂载视图的选择。共享 provider 断开某个视图前，先调用
+`clearSelection()` 撤回该视图的选择。Provider 状态、错误和清理由应用负责。首次
+admission 会自动发布当前选择；显式 reconnect 调用适用于已经 admission 的绑定。
 
 </Steps>
 
-## 提供者边界
+## 所有权
 
-提供者包留在应用边界。把 Hocuspocus、WebSocket、WebRTC、IndexedDB 或其他传输包装成 `YjsProviderLike`，再通过 `YjsPlugin.configure` 配置。包装器负责网络连接状态，插件负责安装 Plite/Yjs 同步扩展。
+| 关注点                            | 所有者                                 |
+| --------------------------------- | -------------------------------------- |
+| `Y.Doc`、就绪状态和 seed 权限     | 应用                                   |
+| Provider 连接、认证、持久化和清理 | 应用                                   |
+| 文档 admission 和 Yjs 转换        | `platejs/yjs`                          |
+| 光标元数据和远程光标快照          | 提供 Awareness 时由 `platejs/yjs` 负责 |
+| 选择、编辑和撤销/重做             | `platejs` 与 `platejs/history`         |
+| 光标展示                          | 复制的 `remote-cursor-overlay` 组件    |
 
-| 关注点                         | 所有者                                   |
-| ------------------------------ | ---------------------------------------- |
-| `Y.Doc` 和根名                 | 应用加 `YjsPlugin` 配置                  |
-| 提供者包安装                   | 应用                                     |
-| 房间命名和认证                 | 应用                                     |
-| 持久化和服务扩容               | 应用                                     |
-| 编辑器操作、选择、撤销/重做    | `platejs` 和 `platejs/history` |
-| Awareness 和远程光标           | `platejs/yjs`                           |
-
-## 连接命令
-
-用 `editor.read` 读取提供者状态，用 `editor.update` 执行命令。
-
-```tsx
-const connected = editor.read((state) => state.yjs.connected());
-const synced = editor.read((state) => state.yjs.providerSynced());
-
-editor.update((tx) => {
-  tx.yjs.connect();
-  tx.yjs.sendSelection(selection, { name: "Ada", color: "#aabbcc" });
-});
-```
-
-| 命令                                | 用途                        |
-| ----------------------------------- | --------------------------- |
-| `tx.yjs.connect()`                  | 连接提供者。                |
-| `tx.yjs.disconnect()`               | 断开连接，但不销毁编辑器。  |
-| `tx.yjs.reconnect()`                | 提供者中断后重新连接。      |
-| `tx.yjs.sendSelection(range, data)` | 发布本地选择和光标元数据。  |
-| `tx.yjs.clearSelection()`           | 清空本地 Awareness 选择。   |
-
-安装 Plite history 来提供撤销和重做。它的规范重放和其他编辑器更新一样，通过同一个 Yjs 同步桥发送：
-
-```tsx
-editor.update.history.undo();
-editor.update.history.redo();
-```
-
-## 后端设置
+## 后端
 
 ### Hocuspocus
 
-在应用代码中安装并配置 `@hocuspocus/provider`。把共享的 `Y.Doc` 和提供者包装器传给 `YjsPlugin.configure`。认证令牌、房间名和服务器 URL 不属于 Plate 包。
+在应用代码中创建 `HocuspocusProvider`，把 `provider.document` 和
+`provider.awareness` 传给插件。服务器 URL、token、房间名、连接状态和销毁逻辑都放在
+provider 旁边。
 
 ### WebRTC
 
-需要点对点协作时，在应用代码中安装 `y-webrtc`。生产环境要使用自己的信令和 TURN 基础设施。编辑器包只需要包装后的提供者和共享的 `Y.Doc`。
+在应用代码中创建 `y-webrtc` provider，把它的确切文档和 Awareness 对象传给绑定。
+生产环境的信令和 TURN 基础设施仍由应用负责。
 
 ### IndexedDB
 
-如果想在远程同步完成前恢复本地文档，可以在应用层使用 `y-indexeddb`。IndexedDB 本身不传输远程 Awareness 或光标。
+使用 `y-indexeddb` 恢复 `Y.Doc`，完成后再声明初始就绪。IndexedDB 本身不提供远程
+Awareness 或光标传输。
 
 ## 排错
 
-- 确认所有协作者使用相同的 `Y.Doc` 根名。
-- 在应用日志中暴露提供者连接错误。
-- 编辑器挂载时，不要绕过编辑器直接修改共享 `Y.Doc`。
-- 临时断开连接用 `tx.yjs.disconnect()`，卸载清理交给扩展生命周期。
-- 如果远程光标错误，确认应用通过 `tx.yjs.sendSelection(...)` 发送光标元数据，并从复制的 `remote-cursor-overlay` 文件导入 `YjsPlugin`。
+- 确认 `awareness.doc === doc`。
+- 确认所有协作者使用相同的 Yjs 根名和 Plate schema 身份。
+- 在应用 UI 或日志中显示 provider 连接和认证错误。
+- `seed: true` 只交给一个由应用选定的所有者。
+- 从共享 provider 分离视图前先清空选择。
+- 显示 admission 错误，并只在修复原因后调用 `retryImport()`。
 
 ## 相关资源
 
-- [Plite Yjs](/docs/plite/libraries/plite-yjs)
+- [History](/docs/history)
 - [Yjs](https://github.com/yjs/yjs)
 - [Hocuspocus](https://tiptap.dev/hocuspocus)
 - [y-webrtc](https://github.com/yjs/y-webrtc)

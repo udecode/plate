@@ -3,7 +3,7 @@ title: Plate 文档模型
 description: Plate 文档、节点、Schema、迁移和格式适配器的规范 JSON 合约。
 ---
 
-Plate 保存编辑器原生 JSON。Plite 定义树结构，Plate 插件添加由 Schema 校验的属性，Codec 负责与外部格式互转。
+Plate 保存编辑器原生 JSON。Plate 定义树结构，Plate 插件添加由 Schema 校验的属性，Codec 负责与外部格式互转。
 
 ## 核心树
 
@@ -47,7 +47,7 @@ const EditorSchema = {
 
 `defineDocumentMigrations` 将递增迁移链绑定到应用 Schema。运行时和 CLI 都在 Schema
 适配前调用同一个 `migrateDocument`。命名 Schema 的 root 语法变化时，应递增版本并迁移
-已存储文档。`migratePlateV54` 将冻结的 v53.3.6 结构迁移到 v54，包括最终 AST
+已存储文档。`migrateV54` 将冻结的 v53.3.6 结构迁移到 v54，包括最终 AST
 约束，并把每个旧代码块的行元素序列合并为一个带换行符的文本子节点。
 
 ## 代表性功能结构
@@ -148,4 +148,4 @@ listStart 保存条件作者意图：仅在该项是有序序列第一项时生�
 | Portable Text | 可移植性参考，不是 Plate 的存储格式。 |
 | Block Protocol | 块嵌入协议，不是富文本 AST 合约。 |
 
-Plate 文档有意保持 Plate 原生。兼容性由 Codec 或适配器提供。
+Codec 和适配器负责将文档契约映射为外部格式。

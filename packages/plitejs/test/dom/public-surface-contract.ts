@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { createEditor } from 'plitejs';
 
-import * as PliteDOM from '../../src/dom';
+import * as DOMModule from '../../src/dom';
 
 const packageJsonPath = fileURLToPath(
   new URL('../../package.json', import.meta.url)
@@ -13,17 +13,11 @@ const packageJsonPath = fileURLToPath(
 const tsdownConfigPath = fileURLToPath(
   new URL('../../tsdown.config.mts', import.meta.url)
 );
-const reactEditorDocsPath = fileURLToPath(
-  new URL(
-    '../../../../content/docs/plite/libraries/plite-react/react-editor.mdx',
-    import.meta.url
-  )
+const domDocsPath = fileURLToPath(
+  new URL('../../../../content/docs/api/dom.mdx', import.meta.url)
 );
-const pliteDomDocsPath = fileURLToPath(
-  new URL(
-    '../../../../content/docs/plite/libraries/plite-dom.mdx',
-    import.meta.url
-  )
+const coverageDocsPath = fileURLToPath(
+  new URL('../../../../content/docs/(guides)/dom-coverage.mdx', import.meta.url)
 );
 
 const typePrefixPattern = /^type\s+/;
@@ -32,10 +26,7 @@ const immediateJsdocPattern = /\/\*\*[\s\S]*?\*\/\s*$/;
 const readmeDomFocusPattern = /editor\.api\.dom\.focus\(\)/;
 const readmeClipboardPattern = /editor\.api\.dom\.clipboard\.insertTextData/;
 const readmeRootImportPattern =
-  /import \{ DOMCoverage, Hotkeys, isDOMNode \} from "plitejs\/dom"/;
-const readmeCoveragePattern = /DOM coverage boundaries model same-root content/;
-const readmeBridgeOwnerPattern =
-  /Framework runtimes usually call the DOM bridge/;
+  /import \{ createEditor \} from ['"]platejs\/react['"]/;
 const tsdownRootEntryPattern = /index:\s*'src\/index\.ts'/;
 const tsdownDOMEntryPattern = /'dom\/index':\s*'src\/dom\/index\.ts'/;
 const defaultHotkeysAliasPattern = /default as Hotkeys/;
@@ -62,20 +53,20 @@ const extractDocumentedCapabilityMethods = (
     .sort();
 };
 
-const expectedPliteDOMRuntimeRootExports = [
+const expectedDOMRuntimeRootExports = [
   'CAN_USE_DOM',
   'DOMCoverage',
   'DOMEditor',
   'Hotkeys',
   'Key',
-  'PliteDOMResolutionError',
+  'DOMResolutionError',
   'TRIPLE_CLICK',
   'applyStringDiff',
-  'clipboardHandler',
   'closestShadowAware',
   'containsShadowAware',
   'createCompiledHotkeyMatcher',
   'dom',
+  'domCommands',
   'getActiveElement',
   'getDOMClipboardFormatKey',
   'getDefaultView',
@@ -117,11 +108,11 @@ const expectedPliteDOMRuntimeRootExports = [
   'writeHostFragmentData',
 ];
 
-describe('plite-dom public surface contract', () => {
+describe('DOM public surface contract', () => {
   it('keeps public root runtime values exact', () => {
     assert.deepEqual(
-      Object.keys(PliteDOM).sort(),
-      expectedPliteDOMRuntimeRootExports
+      Object.keys(DOMModule).sort(),
+      expectedDOMRuntimeRootExports.toSorted()
     );
   });
 
@@ -176,76 +167,43 @@ describe('plite-dom public surface contract', () => {
     assert.deepEqual(missing, []);
   });
 
-  it('keeps the package README aligned to the public DOM and coverage APIs', () => {
-    const readme = readFileSync(pliteDomDocsPath, 'utf-8');
+  it('documents mounted DOM services and component-owned coverage', () => {
+    const docs = readFileSync(domDocsPath, 'utf-8');
+    const coverage = readFileSync(coverageDocsPath, 'utf-8');
 
-    assert.match(readme, readmeDomFocusPattern);
-    assert.match(readme, readmeClipboardPattern);
-    assert.match(readme, readmeRootImportPattern);
-    assert.match(readme, readmeCoveragePattern);
-    assert.match(readme, readmeBridgeOwnerPattern);
+    assert.match(docs, readmeDomFocusPattern);
+    assert.match(docs, readmeClipboardPattern);
+    assert.match(docs, readmeRootImportPattern);
+    assert.match(coverage, /slots\.contentBoundary/);
+    assert.match(
+      coverage,
+      /Each mounted editor surface owns an independent coverage session/
+    );
+    assert.match(
+      coverage,
+      /onMaterialize\(\{ boundary, reason, range, rangeRole \}\)/
+    );
+    for (const policy of ['skip', 'model', 'materialize', 'exclude']) {
+      assert.ok(
+        coverage.includes(`\`${policy}\``),
+        `${policy} should be documented`
+      );
+    }
   });
 
-  it('keeps grouped root utility exports named in package docs', () => {
-    const docs = [
-      readFileSync(pliteDomDocsPath, 'utf-8'),
-      existsSync(pliteDomDocsPath)
-        ? readFileSync(pliteDomDocsPath, 'utf-8')
-        : readFileSync(
-            fileURLToPath(new URL('../../src/dom/index.ts', import.meta.url)),
-            'utf-8'
-          ),
-    ].join('\n');
+  it('documents application host utilities and DOM primitive types', () => {
+    const docs = readFileSync(domDocsPath, 'utf-8');
 
     for (const name of [
-      'dom()',
-      'DOMCoverage',
-      'Hotkeys',
+      'platejs/dom',
       'isHotkey',
-      'Key',
-      'TRIPLE_CLICK',
-      'closestShadowAware',
-      'containsShadowAware',
-      'getActiveElement',
-      'getDefaultView',
-      'getElements',
-      'getNodeDataAttributeKeys',
-      'getSelection',
-      'hasShadowRoot',
-      'isAfter',
-      'isBefore',
-      'isDOMElement',
-      'isDOMNode',
-      'isDOMSelection',
-      'isDOMText',
-      'isEditor',
-      'isElement',
-      'isPlainTextOnlyPaste',
-      'isLeaf',
-      'isNode',
-      'isString',
-      'isText',
-      'isTrackedMutation',
-      'isVoid',
-      'keyToDataAttribute',
-      'normalizeDOMPoint',
-      'applyStringDiff',
-      'mergeStringDiffs',
-      'normalizePoint',
-      'normalizeRange',
-      'normalizeStringDiff',
-      'targetRange',
-      'verifyDiffState',
-      'CAN_USE_DOM',
-      'PliteDOMResolutionError',
+      'domCommands',
+      'hostCodecs',
+      'parseDOMClipboardHtml',
+      'writeHostFragmentData',
+      'DOMResolutionError',
       'DOMApi',
       'DOMClipboardApi',
-      'DOMClipboardInsertDataHandler',
-      'DOMEditorOptions',
-      'DOMCoverageBoundary',
-      'DOMCoverageSelectionPolicy',
-      'DOMCoveragePlitePointResult',
-      'DOMCoverageDOMRangeResult',
       'DOMNode',
       'DOMElement',
       'DOMText',
@@ -253,12 +211,6 @@ describe('plite-dom public surface contract', () => {
       'DOMRange',
       'DOMStaticRange',
       'DOMSelection',
-      'HotkeySpec',
-      'HotkeyPlatform',
-      'HotkeyMatchOptions',
-      'KeyboardEventLike',
-      'StringDiff',
-      'TextDiff',
     ]) {
       assert.ok(docs.includes(name), `${name} should be named in docs`);
     }
@@ -280,7 +232,11 @@ describe('plite-dom public surface contract', () => {
       import: './dist/dom/index.js',
       default: './dist/dom/index.js',
     });
-    assert.equal(packageJson.exports['./internal'], undefined);
+    assert.deepEqual(packageJson.exports['./internal'], {
+      types: './dist/internal/index.d.ts',
+      import: './dist/internal/index.js',
+      default: './dist/internal/index.js',
+    });
     assert.equal(
       packageJson.scripts.build,
       'tsdown --config tsdown.config.mts --log-level warn'
@@ -295,9 +251,9 @@ describe('plite-dom public surface contract', () => {
   });
 
   it('keeps DOMEditor public without exposing the old wrapper', () => {
-    assert.equal('DOMEditor' in PliteDOM, true);
-    assert.equal('withDOM' in PliteDOM, false);
-    assert.equal(typeof PliteDOM.dom, 'function');
+    assert.equal('DOMEditor' in DOMModule, true);
+    assert.equal('withDOM' in DOMModule, false);
+    assert.equal(typeof DOMModule.dom, 'function');
   });
 
   it('keeps weak-map runtime state out of the public root at runtime', () => {
@@ -328,12 +284,12 @@ describe('plite-dom public surface contract', () => {
       'NODE_TO_RUNTIME_ID',
       'PLACEHOLDER_SYMBOL',
     ]) {
-      assert.equal(name in PliteDOM, false, `${name} must stay internal`);
+      assert.equal(name in DOMModule, false, `${name} must stay internal`);
     }
   });
 
   it('keeps the public dom capability surface explicit', () => {
-    const editor = createEditor({ extensions: [PliteDOM.dom()] });
+    const editor = createEditor({ plugins: [DOMModule.dom()] });
 
     assert.deepEqual(
       Object.keys(editor.api.dom).sort(),
@@ -343,9 +299,9 @@ describe('plite-dom public surface contract', () => {
         'assertDOMRange',
         'assertEventRange',
         'assertPath',
-        'assertPliteNode',
-        'assertPlitePoint',
-        'assertPliteRange',
+        'assertNode',
+        'assertPoint',
+        'assertRange',
         'blur',
         'clipboard',
         'deselect',
@@ -373,72 +329,17 @@ describe('plite-dom public surface contract', () => {
         'root',
         'scroll',
         'scrollIntoView',
-        'resolvePliteNode',
-        'resolvePlitePoint',
-        'resolvePliteRange',
+        'resolveNode',
+        'resolvePoint',
+        'resolveRange',
       ].sort()
     );
   });
 
   it('keeps React DOM API docs aligned to the runtime capability surface', () => {
-    const editor = createEditor({ extensions: [PliteDOM.dom()] });
+    const editor = createEditor({ plugins: [DOMModule.dom()] });
 
-    if (!existsSync(reactEditorDocsPath)) {
-      assert.deepEqual(
-        Object.keys(editor.api.dom).sort(),
-        [
-          'assertDOMNode',
-          'assertDOMPoint',
-          'assertDOMRange',
-          'assertEventRange',
-          'assertPath',
-          'assertPliteNode',
-          'assertPlitePoint',
-          'assertPliteRange',
-          'blur',
-          'clipboard',
-          'deselect',
-          'editable',
-          'findDocumentOrShadowRoot',
-          'findKey',
-          'focus',
-          'getWindow',
-          'hasDOMNode',
-          'hasEditableTarget',
-          'hasRange',
-          'hasSelectableTarget',
-          'hasTarget',
-          'isComposing',
-          'isFocused',
-          'isReadOnly',
-          'isTargetInsideNonReadonlyVoid',
-          'resolveDOMNode',
-          'resolveDOMPoint',
-          'resolveDOMRange',
-          'resolveEventRange',
-          'resolvePath',
-          'resolveRangeRect',
-          'resolveVisualPoint',
-          'root',
-          'scroll',
-          'scrollIntoView',
-          'resolvePliteNode',
-          'resolvePlitePoint',
-          'resolvePliteRange',
-        ].sort()
-      );
-      assert.deepEqual(Object.keys(editor.api.dom.clipboard).sort(), [
-        'insertData',
-        'insertFragmentData',
-        'insertTextData',
-        'readSlice',
-        'writeSelection',
-        'writeSlice',
-      ]);
-      return;
-    }
-
-    const docs = readFileSync(reactEditorDocsPath, 'utf-8');
+    const docs = readFileSync(domDocsPath, 'utf-8');
 
     assert.deepEqual(
       [...extractDocumentedCapabilityMethods(docs, 'dom'), 'clipboard'].sort(),
@@ -451,8 +352,8 @@ describe('plite-dom public surface contract', () => {
   });
 
   it('publishes DOM coverage boundaries for public examples and docs', () => {
-    assert.equal(typeof PliteDOM.DOMCoverage, 'object');
-    const coverage = PliteDOM.DOMCoverage.create(createEditor());
+    assert.equal(typeof DOMModule.DOMCoverage, 'object');
+    const coverage = DOMModule.DOMCoverage.create(createEditor());
     assert.equal(typeof coverage.registerBoundary, 'function');
     assert.equal(typeof coverage.getBoundaries, 'function');
     assert.equal(typeof coverage.materializeBoundary, 'function');
@@ -469,8 +370,8 @@ describe('plite-dom public surface contract', () => {
       'utf-8'
     );
 
-    assert.equal(typeof PliteDOM.Hotkeys, 'object');
-    assert.equal(typeof PliteDOM.Hotkeys.isUndo, 'function');
+    assert.equal(typeof DOMModule.Hotkeys, 'object');
+    assert.equal(typeof DOMModule.Hotkeys.isUndo, 'function');
     assert.doesNotMatch(rootSource, defaultHotkeysAliasPattern);
     assert.match(hotkeySource, hotkeysNamedExportPattern);
     assert.doesNotMatch(hotkeySource, defaultExportPattern);
@@ -484,13 +385,13 @@ describe('plite-dom public surface contract', () => {
       },
     };
 
-    assert.doesNotThrow(() => PliteDOM.isDOMNode(tornDownTextNode));
-    assert.equal(PliteDOM.isDOMNode(tornDownTextNode), false);
-    assert.equal(PliteDOM.isDOMText(tornDownTextNode), false);
+    assert.doesNotThrow(() => DOMModule.isDOMNode(tornDownTextNode));
+    assert.equal(DOMModule.isDOMNode(tornDownTextNode), false);
+    assert.equal(DOMModule.isDOMText(tornDownTextNode), false);
   });
 
   it('exposes nullable resolver methods without try-style aliases', () => {
-    const editor = createEditor({ extensions: [PliteDOM.dom()] });
+    const editor = createEditor({ plugins: [DOMModule.dom()] });
     const resolverNames = [
       'resolveDOMNode',
       'resolveDOMPoint',
@@ -498,9 +399,9 @@ describe('plite-dom public surface contract', () => {
       'resolveEventRange',
       'resolvePath',
       'resolveRangeRect',
-      'resolvePliteNode',
-      'resolvePlitePoint',
-      'resolvePliteRange',
+      'resolveNode',
+      'resolvePoint',
+      'resolveRange',
     ];
 
     for (const name of resolverNames) {
@@ -520,23 +421,23 @@ describe('plite-dom public surface contract', () => {
   });
 
   it('keeps Android text-repair internals off the public dom capability', () => {
-    const editor = createEditor({ extensions: [PliteDOM.dom()] });
+    const editor = createEditor({ plugins: [DOMModule.dom()] });
 
     assert.equal('androidPendingDiffs' in editor.api.dom, false);
     assert.equal('androidScheduleFlush' in editor.api.dom, false);
   });
 
   it('uses resolve/assert names for DOM mapping contracts', () => {
-    const editor = createEditor({ extensions: [PliteDOM.dom()] });
+    const editor = createEditor({ plugins: [DOMModule.dom()] });
     const assertNames = [
       'assertDOMNode',
       'assertDOMPoint',
       'assertDOMRange',
       'assertEventRange',
       'assertPath',
-      'assertPliteNode',
-      'assertPlitePoint',
-      'assertPliteRange',
+      'assertNode',
+      'assertPoint',
+      'assertRange',
     ];
     const removedStrictMappingNames = [
       'findEventRange',

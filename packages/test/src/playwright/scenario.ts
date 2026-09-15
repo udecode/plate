@@ -1,17 +1,17 @@
 import type {
-  PliteBrowserClipboardPasteGauntletOptions,
-  PliteBrowserCompositionGauntletOptions,
-  PliteBrowserDropDataGauntletOptions,
-  PliteBrowserInlineCutTypingGauntletOptions,
-  PliteBrowserInternalControlGauntletOptions,
-  PliteBrowserMarkClickTypingGauntletOptions,
-  PliteBrowserMarkTypingGauntletOptions,
-  PliteBrowserNavigationTypingGauntletOptions,
-  PliteBrowserScenarioStep,
-  PliteBrowserShellActivationGauntletOptions,
-  PliteBrowserTextInsertionGauntletOptions,
-  PliteBrowserToolbarMarkClickTypingGauntletOptions,
-  PliteBrowserFillStepOptions,
+  BrowserClipboardPasteGauntletOptions,
+  BrowserCompositionGauntletOptions,
+  BrowserDropDataGauntletOptions,
+  BrowserInlineCutTypingGauntletOptions,
+  BrowserInternalControlGauntletOptions,
+  BrowserMarkClickTypingGauntletOptions,
+  BrowserMarkTypingGauntletOptions,
+  BrowserNavigationTypingGauntletOptions,
+  BrowserScenarioStep,
+  BrowserShellActivationGauntletOptions,
+  BrowserTextInsertionGauntletOptions,
+  BrowserToolbarMarkClickTypingGauntletOptions,
+  BrowserFillStepOptions,
 } from './types';
 
 /** Frozen constructors for canonical serializable browser steps. */
@@ -20,8 +20,8 @@ export const browserStep = Object.freeze({
     label,
     target,
     value,
-  }: PliteBrowserFillStepOptions): Extract<
-    PliteBrowserScenarioStep,
+  }: BrowserFillStepOptions): Extract<
+    BrowserScenarioStep,
     { kind: 'fillControl' }
   > =>
     Object.freeze({
@@ -33,12 +33,12 @@ export const browserStep = Object.freeze({
 });
 
 /** Create a scenario that mixes navigation and typing through editor content. */
-export const createPliteBrowserNavigationTypingGauntlet = ({
+export const createBrowserNavigationTypingGauntlet = ({
   insertedText,
   movedSelection,
   startSelection,
   textAfterInsert,
-}: PliteBrowserNavigationTypingGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserNavigationTypingGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'select',
     label: 'select-start',
@@ -67,11 +67,11 @@ export const createPliteBrowserNavigationTypingGauntlet = ({
 ];
 
 /** Create a scenario that validates clipboard paste behavior. */
-export const createPliteBrowserClipboardPasteGauntlet = ({
+export const createBrowserClipboardPasteGauntlet = ({
   html,
   plainText,
   textAfterPaste,
-}: PliteBrowserClipboardPasteGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserClipboardPasteGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'selectAll',
     label: 'select-all',
@@ -107,11 +107,11 @@ export const createPliteBrowserClipboardPasteGauntlet = ({
 ];
 
 /** Create a scenario that validates drag/drop data insertion behavior. */
-export const createPliteBrowserDropDataGauntlet = ({
+export const createBrowserDropDataGauntlet = ({
   html,
   plainText,
   textAfterDrop,
-}: PliteBrowserDropDataGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserDropDataGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'dropHtml',
     label: 'drop-html',
@@ -135,12 +135,12 @@ export const createPliteBrowserDropDataGauntlet = ({
 ];
 
 /** Create a scenario that validates inline cut followed by typing. */
-export const createPliteBrowserInlineCutTypingGauntlet = ({
+export const createBrowserInlineCutTypingGauntlet = ({
   domShape,
   replacementText,
   selection,
   textAfterTyping,
-}: PliteBrowserInlineCutTypingGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserInlineCutTypingGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'select',
     label: 'select-inline-text',
@@ -199,13 +199,13 @@ export const createPliteBrowserInlineCutTypingGauntlet = ({
 ];
 
 /** Create a scenario for editor behavior around internal native controls. */
-export const createPliteBrowserInternalControlGauntlet = ({
+export const createBrowserInternalControlGauntlet = ({
   controlSelector,
   controlValue,
   followUpText,
   outerSelection,
   textAfterFollowUp,
-}: PliteBrowserInternalControlGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserInternalControlGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'select',
     label: 'select-outer-editor',
@@ -254,14 +254,14 @@ export const createPliteBrowserInternalControlGauntlet = ({
 ];
 
 /** Create a scenario that validates composition/IME input behavior. */
-export const createPliteBrowserCompositionGauntlet = ({
+export const createBrowserCompositionGauntlet = ({
   committedText,
   selection,
   steps,
   text,
   textAfterComposition,
   transport,
-}: PliteBrowserCompositionGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserCompositionGauntletOptions): BrowserScenarioStep[] => [
   ...(selection
     ? [
         {
@@ -311,10 +311,10 @@ export const createPliteBrowserCompositionGauntlet = ({
 ];
 
 /** Create a scenario for plain text insertion behavior. */
-export const createPliteBrowserTextInsertionGauntlet = ({
+export const createBrowserTextInsertionGauntlet = ({
   insertedText,
   textAfterInsert,
-}: PliteBrowserTextInsertionGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserTextInsertionGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'insertText',
     label: 'insert-text',
@@ -337,10 +337,10 @@ export const createPliteBrowserTextInsertionGauntlet = ({
 ];
 
 /** Create a scenario for shell activation and editor focus ownership. */
-export const createPliteBrowserShellActivationGauntlet = ({
+export const createBrowserShellActivationGauntlet = ({
   buttonName,
   expectedSelection,
-}: PliteBrowserShellActivationGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserShellActivationGauntletOptions): BrowserScenarioStep[] => [
   {
     buttonName,
     expectedSelection,
@@ -350,12 +350,12 @@ export const createPliteBrowserShellActivationGauntlet = ({
 ];
 
 /** Create a scenario that validates mark toggling followed by typing. */
-export const createPliteBrowserMarkTypingGauntlet = ({
+export const createBrowserMarkTypingGauntlet = ({
   hotkey,
   insertedText,
   selection,
   textAfterInsert,
-}: PliteBrowserMarkTypingGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserMarkTypingGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'select',
     label: 'select-mark-start',
@@ -375,7 +375,7 @@ export const createPliteBrowserMarkTypingGauntlet = ({
 ];
 
 /** Create a scenario that validates mark toolbar clicks followed by typing. */
-export const createPliteBrowserMarkClickTypingGauntlet = ({
+export const createBrowserMarkClickTypingGauntlet = ({
   clickPoint,
   domCaretAfterInsert,
   hotkey,
@@ -384,7 +384,7 @@ export const createPliteBrowserMarkClickTypingGauntlet = ({
   selectionAfterInsert,
   selectionTransport = 'model',
   textAfterInsert,
-}: PliteBrowserMarkClickTypingGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserMarkClickTypingGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: selectionTransport === 'dom' ? 'selectDOM' : 'select',
     label: 'select-mark-range',
@@ -433,7 +433,7 @@ export const createPliteBrowserMarkClickTypingGauntlet = ({
 ];
 
 /** Create a scenario that validates toolbar mark clicks and editor typing. */
-export const createPliteBrowserToolbarMarkClickTypingGauntlet = ({
+export const createBrowserToolbarMarkClickTypingGauntlet = ({
   clickPoint,
   domCaretAfterInsert,
   insertedText,
@@ -442,7 +442,7 @@ export const createPliteBrowserToolbarMarkClickTypingGauntlet = ({
   selectionTransport = 'model',
   selectionAfterInsert,
   textAfterInsert,
-}: PliteBrowserToolbarMarkClickTypingGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserToolbarMarkClickTypingGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: selectionTransport === 'dom' ? 'selectDOM' : 'select',
     label: 'select-mark-range',

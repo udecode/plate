@@ -108,7 +108,26 @@ export const getContentRootNavigationAction = ({
   event: ReactKeyboardEvent<HTMLDivElement>;
   isRTL: boolean;
 }): ContentRootNavigationAction | null => {
+  if (
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    (event.key === 'Home' || event.key === 'End')
+  ) {
+    const direction = event.key === 'Home' ? 'backward' : 'forward';
+    return event.ctrlKey
+      ? { direction, kind: 'document-boundary' }
+      : { axis: 'line', direction, kind: 'move' };
+  }
   if (event.metaKey && !event.shiftKey && !event.altKey && !event.ctrlKey) {
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      return {
+        axis: 'line',
+        direction:
+          (event.key === 'ArrowRight') !== isRTL ? 'forward' : 'backward',
+        kind: 'move',
+      };
+    }
     if (event.key === 'ArrowUp') {
       return { direction: 'backward', kind: 'document-boundary' };
     }
@@ -156,6 +175,17 @@ export const getProjectedSelectionAction = ({
   event: ReactKeyboardEvent<HTMLDivElement>;
   isRTL: boolean;
 }): ContentRootViewSelectionAction | null => {
+  if (
+    event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    (event.key === 'Home' || event.key === 'End')
+  ) {
+    const direction = event.key === 'Home' ? 'backward' : 'forward';
+    return event.ctrlKey
+      ? { direction, kind: 'document-boundary' }
+      : { axis: 'line', direction, kind: 'move' };
+  }
   if (Hotkeys.isExtendWordBackward(event.nativeEvent)) {
     return {
       axis: 'word',

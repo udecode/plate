@@ -16,23 +16,123 @@ import {
   valueCodecs,
   evaluateCommand,
 } from '../../core';
-import { defineBasePlugin } from '../../lib';
+import { definePlugin as defineHeadlessPlugin } from '../../lib';
 import { createEditor } from '../editor';
 import { useEditorViewState, useStateFieldValue } from '../plite-react';
 import {
   type ContainerSiblingProps,
-  definePlatePlugin,
+  definePlugin,
   type EditableSiblingProps,
 } from '../plugin';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { useEditor } from '../stores';
-import { Plate } from './Plate';
-import { PlateContainer } from './PlateContainer';
-import { PlateContent } from './PlateContent';
+import { EditorRoot } from './Plate';
+import { EditorContainer } from './PlateContainer';
+import { EditorContent } from './PlateContent';
 
 const value = [{ children: [{ text: 'one' }], type: 'paragraph' }] as const;
 
-const VariantPlugin = defineBasePlugin('variant', {
+test('plugin content attributes compose on the exact Editable and preserve explicit props', () => {
+  const First = definePlugin('firstContentPaint', {
+    render: {
+      contentAttributes: {
+        className: 'first',
+        style: { color: 'red', backgroundColor: 'white' },
+        'data-feature': 'first',
+        'data-editor-feature': 'allowed',
+      },
+    },
+  });
+  const Second = definePlugin('secondContentPaint', {
+    render: {
+      contentAttributes: {
+        className: 'second',
+        style: { color: 'green' },
+        'data-feature': 'second',
+        'aria-label': 'plugin label',
+      },
+    },
+  });
+  const Cleared = definePlugin('clearedContentPaint', {
+    render: { contentAttributes: { className: 'cleared' } },
+  }).configure({ render: { contentAttributes: null } });
+  const editor = createEditor({
+    plugins: [
+      First,
+      Second,
+      Cleared,
+      definePlugin('disabledContentPaint', {
+        enabled: false,
+        render: { contentAttributes: { className: 'disabled' } },
+      }),
+    ],
+    initialValue: value,
+  });
+  const ref = React.createRef<HTMLDivElement>();
+  const onKeyDown = mock(() => true);
+  const { container } = render(
+    <EditorRoot editor={editor}>
+      <EditorContent
+        ref={ref}
+        className="consumer"
+        style={{ color: 'blue' }}
+        aria-label="consumer label"
+        onKeyDown={onKeyDown}
+      />
+    </EditorRoot>
+  );
+  const editable = container.querySelector('[data-editor="true"]')!;
+
+  expect(editable.parentElement).toBe(container);
+  expect(ref.current).toBe(editable);
+  expect(editable.className).toBe('editor-editor first second consumer');
+  expect(editable).toHaveStyle({ color: 'blue', backgroundColor: 'white' });
+  expect(editable).toHaveAttribute('data-feature', 'second');
+  expect(editable).toHaveAttribute('data-editor-feature', 'allowed');
+  expect(editable).toHaveAttribute('aria-label', 'consumer label');
+  expect(editable).toHaveAttribute('contenteditable', 'true');
+  fireEvent.keyDown(editable, { key: 'F8' });
+  expect(onKeyDown).toHaveBeenCalledTimes(1);
+});
+
+test('content attributes honor editOnly.render when a view becomes read-only', () => {
+  const editor = createEditor({
+    initialValue: value,
+    plugins: [
+      definePlugin('viewPaint', {
+        render: { contentAttributes: { className: 'always' } },
+      }),
+      definePlugin('editingPaint', {
+        editOnly: true,
+        render: { contentAttributes: { className: 'editing' } },
+      }),
+      definePlugin('persistentPaint', {
+        editOnly: { render: false },
+        render: { contentAttributes: { className: 'persistent' } },
+      }),
+    ],
+  });
+  const { container, rerender } = render(
+    <EditorRoot editor={editor}>
+      <EditorContent />
+    </EditorRoot>
+  );
+  expect(container.querySelector('[data-editor="true"]')).toHaveClass(
+    'editing'
+  );
+  rerender(
+    <EditorRoot editor={editor}>
+      <EditorContent readOnly />
+    </EditorRoot>
+  );
+  const editable = container.querySelector('[data-editor="true"]')!;
+  expect(editable).toHaveClass('always', 'persistent');
+  expect(editable).not.toHaveClass('editing');
+  expect(editable).toHaveAttribute('data-readonly', 'true');
+  expect(editable).toHaveAttribute('aria-readonly', 'true');
+});
+
+const VariantPlugin = defineHeadlessPlugin('variant', {
   schema: {
     properties: {
       variant: schema.elementProperty(property.string(), {
@@ -42,7 +142,7 @@ const VariantPlugin = defineBasePlugin('variant', {
   },
 });
 
-const AtomicParserBPlugin = defineBasePlugin('atomicParserB', {
+const AtomicParserBPlugin = defineHeadlessPlugin('atomicParserB', {
   component: 'u',
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
@@ -71,7 +171,7 @@ const AtomicParserBPlugin = defineBasePlugin('atomicParserB', {
 
 let storeDecorationReadCount = 0;
 
-const StoreDecorationPlugin = definePlatePlugin('storeDecoration', {
+const StoreDecorationPlugin = definePlugin('storeDecoration', {
   decorate: {
     observe: ({ refresh, store }) =>
       store.subscribe(() => refresh({ nodeKeys: 'all' })),
@@ -99,7 +199,7 @@ const StoreDecorationPlugin = definePlatePlugin('storeDecoration', {
 
 let idleDecorationReadCount = 0;
 
-const IdleDecorationPlugin = definePlatePlugin('idleDecoration', {
+const IdleDecorationPlugin = definePlugin('idleDecoration', {
   decorate: {
     read: () => {
       idleDecorationReadCount += 1;
@@ -117,7 +217,7 @@ const EditableRefProbe = (props: EditableSiblingProps) => {
   const [isEditable, setIsEditable] = React.useState(false);
 
   React.useEffect(() => {
-    setIsEditable(editableRef.current?.dataset.pliteEditor === 'true');
+    setIsEditable(editableRef.current?.dataset.editor === 'true');
   }, [editableRef]);
 
   return (
@@ -148,7 +248,7 @@ const ContainerRefProbe = (props: ContainerSiblingProps) => {
   );
 };
 
-const RefScopePlugin = definePlatePlugin('refScope', {
+const RefScopePlugin = definePlugin('refScope', {
   slots: {
     beforeContainer: ContainerRefProbe,
     beforeEditable: EditableRefProbe,
@@ -158,7 +258,7 @@ const RefScopePlugin = definePlatePlugin('refScope', {
 test('wrapRoot receives the exact Editable of each independent view and releases it on detach', () => {
   const attached = new Set<HTMLDivElement>();
   const observed = new Set<React.RefObject<HTMLDivElement | null>>();
-  const Integration = definePlatePlugin('viewIntegration', {
+  const Integration = definePlugin('viewIntegration', {
     slots: {
       // oxlint-disable-next-line eslint/func-name-matching -- Hooks require a named React component in this slot.
       wrapRoot: function ViewIntegration({ children, editableRef }) {
@@ -182,13 +282,13 @@ test('wrapRoot receives the exact Editable of each independent view and releases
   const assembly = (first = true) => (
     <React.StrictMode>
       {first && (
-        <Plate editor={editor} suppressInstanceWarning>
-          <PlateContent data-testid="first-view" />
-        </Plate>
+        <EditorRoot editor={editor} suppressInstanceWarning>
+          <EditorContent data-testid="first-view" />
+        </EditorRoot>
       )}
-      <Plate editor={editor} suppressInstanceWarning readOnly>
-        <PlateContent data-testid="second-view" />
-      </Plate>
+      <EditorRoot editor={editor} suppressInstanceWarning readOnly>
+        <EditorContent data-testid="second-view" />
+      </EditorRoot>
     </React.StrictMode>
   );
   const view = render(assembly());
@@ -252,9 +352,9 @@ describe('PlateContent', () => {
       ],
     });
     const { getByTestId, queryByTestId } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
 
     expect(queryByTestId('store-decoration')).toBeNull();
@@ -280,9 +380,9 @@ describe('PlateContent', () => {
       plugins: [StoreDecorationPlugin],
     });
     const { queryByTestId } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
 
     expect(queryByTestId('store-decoration')).not.toBeInTheDocument();
@@ -306,9 +406,9 @@ describe('PlateContent', () => {
     });
 
     render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
 
     const storeBaseline = storeDecorationReadCount;
@@ -331,11 +431,11 @@ describe('PlateContent', () => {
     });
 
     const view = render(
-      <Plate editor={editor}>
-        <PlateContainer data-testid="plate-container">
-          <PlateContent />
-        </PlateContainer>
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContainer data-testid="plate-container">
+          <EditorContent />
+        </EditorContainer>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -350,7 +450,7 @@ describe('PlateContent', () => {
     );
   });
 
-  it('provides the Plite runtime for state-field-only extensions', () => {
+  it('provides the Plite runtime for state-field-only plugins', () => {
     const title = defineStateField({
       initial: 'Untitled',
       key: 'document.title',
@@ -358,7 +458,7 @@ describe('PlateContent', () => {
     });
     const editor = createEditor({
       plugins: [
-        defineBasePlugin('documentStateRuntime', {
+        definePlugin('documentStateRuntime', {
           stateFields: [title],
         }),
       ],
@@ -368,9 +468,9 @@ describe('PlateContent', () => {
     );
 
     const { getByTestId } = render(
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <StateProbe />
-      </Plate>
+      </EditorRoot>
     );
 
     expect(getByTestId('document-title')).toHaveTextContent('Untitled');
@@ -396,14 +496,16 @@ describe('PlateContent', () => {
       </p>
     );
     const editor = createEditor({
-      extensions: [CompleteSchema],
-      plugins: [ParagraphPlugin.configure({ component: ParagraphComponent })],
+      plugins: [
+        CompleteSchema,
+        ParagraphPlugin.configure({ component: ParagraphComponent }),
+      ],
       initialValue: value,
     });
     const { container } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
 
     expect(container.querySelector('p')).not.toHaveStyle({
@@ -425,16 +527,16 @@ describe('PlateContent', () => {
       initialValue: value,
     });
     const { container } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
 
-    const textHost = container.querySelector('[data-plite-node="text"]');
+    const textHost = container.querySelector('[data-editor-node="text"]');
 
     expect({
-      reason: textHost?.getAttribute('data-plite-dom-sync-reason'),
-      synced: textHost?.getAttribute('data-plite-dom-sync'),
+      reason: textHost?.getAttribute('data-editor-dom-sync-reason'),
+      synced: textHost?.getAttribute('data-editor-dom-sync'),
     }).toEqual({ reason: null, synced: 'true' });
   });
 
@@ -449,20 +551,20 @@ describe('PlateContent', () => {
       ],
     });
     const { container } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
-    const textHost = container.querySelector('[data-plite-node="text"]');
+    const textHost = container.querySelector('[data-editor-node="text"]');
 
     expect({
-      reason: textHost?.getAttribute('data-plite-dom-sync-reason'),
-      synced: textHost?.getAttribute('data-plite-dom-sync'),
+      reason: textHost?.getAttribute('data-editor-dom-sync-reason'),
+      synced: textHost?.getAttribute('data-editor-dom-sync'),
     }).toEqual({ reason: null, synced: 'true' });
   });
 
   it('fails closed only where a custom Plate text component is active', () => {
-    const CustomMarkPlugin = definePlatePlugin('customMark', {
+    const CustomMarkPlugin = definePlugin('customMark', {
       component: ({ children }) => <strong>{children}</strong>,
       render: { mark: { placement: 'text' } },
       schema: {
@@ -480,24 +582,24 @@ describe('PlateContent', () => {
       ],
     });
     const { container } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
-    const textHosts = container.querySelectorAll('[data-plite-node="text"]');
+    const textHosts = container.querySelectorAll('[data-editor-node="text"]');
 
     expect({
-      reason: textHosts[0]?.getAttribute('data-plite-dom-sync-reason'),
-      synced: textHosts[0]?.getAttribute('data-plite-dom-sync'),
+      reason: textHosts[0]?.getAttribute('data-editor-dom-sync-reason'),
+      synced: textHosts[0]?.getAttribute('data-editor-dom-sync'),
     }).toEqual({ reason: 'custom-text', synced: null });
     expect({
-      reason: textHosts[1]?.getAttribute('data-plite-dom-sync-reason'),
-      synced: textHosts[1]?.getAttribute('data-plite-dom-sync'),
+      reason: textHosts[1]?.getAttribute('data-editor-dom-sync-reason'),
+      synced: textHosts[1]?.getAttribute('data-editor-dom-sync'),
     }).toEqual({ reason: null, synced: 'true' });
   });
 
   it('fails closed where arbitrary text props are active', () => {
-    const TextPropsPlugin = definePlatePlugin('textProps', {
+    const TextPropsPlugin = definePlugin('textProps', {
       render: {
         mark: {
           placement: 'text',
@@ -519,20 +621,20 @@ describe('PlateContent', () => {
       ],
     });
     const { container } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
-    const textHosts = container.querySelectorAll('[data-plite-node="text"]');
+    const textHosts = container.querySelectorAll('[data-editor-node="text"]');
 
-    expect(textHosts[0]?.getAttribute('data-plite-dom-sync-reason')).toBe(
+    expect(textHosts[0]?.getAttribute('data-editor-dom-sync-reason')).toBe(
       'custom-text'
     );
-    expect(textHosts[1]?.getAttribute('data-plite-dom-sync')).toBe('true');
+    expect(textHosts[1]?.getAttribute('data-editor-dom-sync')).toBe('true');
   });
 
   it('fails closed for text-capable arbitrary injected props', () => {
-    const InputInjectPlugin = definePlatePlugin('inputInject', {
+    const InputInjectPlugin = definePlugin('inputInject', {
       inject: {
         isLeaf: true,
         nodeProps: {
@@ -548,13 +650,13 @@ describe('PlateContent', () => {
       initialValue: value,
     });
     const { container } = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
-    const textHost = container.querySelector('[data-plite-node="text"]');
+    const textHost = container.querySelector('[data-editor-node="text"]');
 
-    expect(textHost?.getAttribute('data-plite-dom-sync-reason')).toBe(
+    expect(textHost?.getAttribute('data-editor-dom-sync-reason')).toBe(
       'custom-leaf'
     );
   });
@@ -577,13 +679,13 @@ describe('PlateContent', () => {
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const { container } = render(
-      <Plate editor={editor}>
-        <PlateContent placeholder="Type something" />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent placeholder="Type something" />
+      </EditorRoot>
     );
     await waitFor(() => {
       const placeholder = container.querySelector<HTMLElement>(
-        '[data-plite-placeholder="true"]'
+        '[data-editor-placeholder="true"]'
       );
       expect(placeholder?.textContent).toBe('Type something');
       expect(placeholder?.getAttribute('contenteditable')).toBe('false');
@@ -599,20 +701,26 @@ describe('PlateContent', () => {
       commandEditor = useEditor();
       return null;
     }
-    const { getByTestId } = render(
-      <Plate editor={editor}>
-        <PlateContainer data-testid="plate-shell">
-          <PlateContent data-testid="runtime-editable" />
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <EditorContainer data-testid="plate-shell">
+          <EditorContent data-testid="runtime-editable" />
           <CommandProbe />
-        </PlateContainer>
-      </Plate>
+        </EditorContainer>
+      </EditorRoot>
     );
+    const { getByTestId } = rendered;
 
     expect(getByTestId('plate-shell')).toContainElement(
       getByTestId('runtime-editable')
     );
+    expect(commandEditor).not.toBe(editor);
     expect(commandEditor!.api.dom.scroll()).toBe(getByTestId('plate-shell'));
     expect(Object.hasOwn(editor.runtime, 'uid')).toBe(false);
+    const staleInsert = commandEditor!.update.text.insert;
+
+    rendered.unmount();
+    expect(() => staleInsert('x')).toThrow(/read-only/);
   });
 
   it('syncs readOnly and disabled into the Plite view state', async () => {
@@ -627,10 +735,10 @@ describe('PlateContent', () => {
       disabled?: boolean;
       readOnly?: boolean;
     }) => (
-      <Plate editor={editor}>
-        <PlateContent disabled={disabled} readOnly={readOnly} />
+      <EditorRoot editor={editor}>
+        <EditorContent disabled={disabled} readOnly={readOnly} />
         <ReadOnlyProbe />
-      </Plate>
+      </EditorRoot>
     );
 
     const { getByTestId, rerender } = render(<Shell readOnly={false} />);
@@ -658,10 +766,10 @@ describe('PlateContent', () => {
       initialValue: value,
     });
     const { getByTestId } = render(
-      <Plate editor={editor}>
-        <PlateContent data-testid="runtime-editable" />
+      <EditorRoot editor={editor}>
+        <EditorContent data-testid="runtime-editable" />
         <ReadOnlyProbe />
-      </Plate>
+      </EditorRoot>
     );
 
     act(() => setEditorReadOnly(editor, true));
@@ -687,13 +795,13 @@ describe('PlateContent', () => {
     const editor = createEditor({ initialValue: value });
     const { getByTestId } = render(
       <>
-        <Plate editor={editor} suppressInstanceWarning>
-          <PlateContent data-testid="first-view" />
+        <EditorRoot editor={editor} suppressInstanceWarning>
+          <EditorContent data-testid="first-view" />
           <ReadOnlyToggle />
-        </Plate>
-        <Plate editor={editor} suppressInstanceWarning>
-          <PlateContent data-testid="second-view" />
-        </Plate>
+        </EditorRoot>
+        <EditorRoot editor={editor} suppressInstanceWarning>
+          <EditorContent data-testid="second-view" />
+        </EditorRoot>
       </>
     );
 
@@ -724,13 +832,13 @@ describe('PlateContent', () => {
     const onTextChange = mock();
 
     render(
-      <Plate
+      <EditorRoot
         editor={editor}
         onNodeChange={onNodeChange}
         onTextChange={onTextChange}
       >
         <span>provider only</span>
-      </Plate>
+      </EditorRoot>
     );
 
     act(() => {
@@ -744,6 +852,8 @@ describe('PlateContent', () => {
       expect(onNodeChange).toHaveBeenCalledTimes(1);
       expect(onTextChange).toHaveBeenCalledTimes(1);
     });
+    expect(onNodeChange.mock.calls[0]![0].editor).toBe(editor);
+    expect(onTextChange.mock.calls[0]![0].editor).toBe(editor);
   });
 
   it('publishes canonical commit, value, and selection contexts for the provider lifetime', async () => {
@@ -755,14 +865,14 @@ describe('PlateContent', () => {
     const onValueChange = mock();
 
     render(
-      <Plate
+      <EditorRoot
         editor={editor}
         onCommit={onCommit}
         onSelectionChange={onSelectionChange}
         onValueChange={onValueChange}
       >
         <span>provider only</span>
-      </Plate>
+      </EditorRoot>
     );
 
     onCommit.mockClear();
@@ -831,7 +941,7 @@ describe('PlateContent', () => {
     });
     const editor = createEditor({
       plugins: [
-        defineBasePlugin('figure', {
+        definePlugin('figure', {
           schema: {
             element: {
               contentRoots: {
@@ -848,7 +958,7 @@ describe('PlateContent', () => {
             },
           },
         }),
-        defineBasePlugin('documentState', {
+        definePlugin('documentState', {
           stateFields: [revision, localState],
         }),
       ],
@@ -870,9 +980,9 @@ describe('PlateContent', () => {
     const onValueChange = mock();
 
     render(
-      <Plate editor={editor} onValueChange={onValueChange}>
+      <EditorRoot editor={editor} onValueChange={onValueChange}>
         <span>provider only</span>
-      </Plate>
+      </EditorRoot>
     );
 
     act(() => {
@@ -930,9 +1040,9 @@ describe('PlateContent', () => {
       onCommit: typeof initialOnCommit;
       text?: string;
     }) => (
-      <Plate editor={editor} onCommit={onCommit}>
+      <EditorRoot editor={editor} onCommit={onCommit}>
         <CommitFromLayoutEffect text={text} />
-      </Plate>
+      </EditorRoot>
     );
 
     const { rerender } = render(<Shell onCommit={initialOnCommit} />);
@@ -953,9 +1063,9 @@ describe('PlateContent', () => {
     );
 
     const Shell = ({ readOnly }: { readOnly: boolean }) => (
-      <Plate editor={editor}>
-        <PlateContent autoFocusOnEditable readOnly={readOnly} />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent autoFocusOnEditable readOnly={readOnly} />
+      </EditorRoot>
     );
 
     const { rerender } = render(<Shell readOnly />);
@@ -982,17 +1092,18 @@ describe('PlateContent', () => {
     });
 
     const { getByTestId } = render(
-      <Plate editor={editor} readOnly>
-        <PlateContent data-testid="runtime-editable" />
+      <EditorRoot editor={editor} readOnly>
+        <EditorContent data-testid="runtime-editable" />
         <ReadOnlyProbe />
-      </Plate>
+      </EditorRoot>
     );
 
     await waitFor(() => {
       expect(getByTestId('read-only')).toHaveTextContent('true');
-      expect(
-        document.querySelector('[data-plite-editor="true"]')
-      ).toHaveAttribute('aria-readonly', 'true');
+      expect(document.querySelector('[data-editor="true"]')).toHaveAttribute(
+        'aria-readonly',
+        'true'
+      );
     });
   });
 
@@ -1003,16 +1114,16 @@ describe('PlateContent', () => {
     });
 
     const { getByTestId } = render(
-      <Plate editor={editor} readOnly>
-        <PlateContent data-testid="runtime-editable" />
+      <EditorRoot editor={editor} readOnly>
+        <EditorContent data-testid="runtime-editable" />
         <ReadOnlyProbe />
-      </Plate>
+      </EditorRoot>
     );
 
     await waitFor(() => {
       expect(getByTestId('read-only')).toHaveTextContent('true');
       expect(getByTestId('runtime-editable')).toHaveAttribute(
-        'data-plite-editor',
+        'data-editor',
         'true'
       );
       expect(getByTestId('runtime-editable')).toHaveAttribute(
@@ -1028,11 +1139,11 @@ describe('PlateContent', () => {
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const { container, getByTestId, queryByTestId } = render(
-      <Plate editor={editor}>
-        <PlateContainer>
-          <PlateContent />
-        </PlateContainer>
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContainer>
+          <EditorContent />
+        </EditorContainer>
+      </EditorRoot>
     );
 
     expect(queryByTestId('renderer-a')).not.toBeInTheDocument();

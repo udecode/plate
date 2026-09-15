@@ -143,7 +143,7 @@ const clear = () => {
 }
 
 const getHandle = () => {
-  const root = app.querySelector('[data-plite-editor="true"]')
+  const root = app.querySelector('[data-editor="true"]')
   const handle = root?.__pliteBrowserHandle
 
   if (!root || !handle) throw new Error('Missing Plate browser handle')
@@ -155,7 +155,7 @@ const waitForMount = async () => {
   let paintedFrames = 0
 
   for (let attempt = 0; attempt < 300; attempt += 1) {
-    const root = app.querySelector('[data-plite-editor="true"]')
+    const root = app.querySelector('[data-editor="true"]')
     const handle = root?.__pliteBrowserHandle
 
     if (root && handle && state.highlightCalls.length > 0 && paintedFrames >= 2) {
@@ -171,7 +171,7 @@ const waitForMount = async () => {
         editorRoots: document.querySelectorAll('[contenteditable="true"]').length,
         highlightCalls: state.highlightCalls.length,
         html: app.innerHTML.slice(0, 500),
-        pliteRoots: document.querySelectorAll('[data-plite-editor="true"]').length,
+        pliteRoots: document.querySelectorAll('[data-editor="true"]').length,
       })
   )
 }
@@ -285,8 +285,8 @@ const snapshot = () => {
   const modelText = handle.getText()
   const code = root.querySelector('pre code')
   const textHost =
-    root.querySelector('[data-plite-text-flow-host="true"]') ??
-    root.querySelector('[data-plite-node="text"]')
+    root.querySelector('[data-editor-text-flow-host="true"]') ??
+    root.querySelector('[data-editor-node="text"]')
   const codeBlock = state.editor.read.children()[0]
   let domTextNodes = 0
   let domTotalNodes = 0
@@ -323,7 +323,7 @@ const snapshot = () => {
       0
     ),
     reactCommitCount: state.reactEvents.length,
-    textHosts: root.querySelectorAll('[data-plite-node="text"]').length,
+    textHosts: root.querySelectorAll('[data-editor-node="text"]').length,
     textHostAttributes: textHost
       ? Object.fromEntries(
           textHost
@@ -336,31 +336,31 @@ const snapshot = () => {
           attributes: Object.fromEntries(
             textHost
               .getAttributeNames()
-              .filter((name) => name.startsWith('data-plite-text-flow'))
+              .filter((name) => name.startsWith('data-editor-text-flow'))
               .map((name) => [name, textHost.getAttribute(name)])
           ),
           boundaryVisits: Number(
-            textHost.dataset.pliteTextFlowBoundaryVisits ?? 0
+            textHost.dataset.editorTextFlowBoundaryVisits ?? 0
           ),
           createdSegments: Number(
-            textHost.dataset.pliteTextFlowCreatedSegments ?? 0
+            textHost.dataset.editorTextFlowCreatedSegments ?? 0
           ),
           deferredTextChangeCount: Number(
-            textHost.dataset.pliteTextFlowDeferredTextChangeCount ?? 0
+            textHost.dataset.editorTextFlowDeferredTextChangeCount ?? 0
           ),
           incrementalTextChangeCount: Number(
-            textHost.dataset.pliteTextFlowIncrementalTextChangeCount ?? 0
+            textHost.dataset.editorTextFlowIncrementalTextChangeCount ?? 0
           ),
           reconcileCount: Number(
-            textHost.dataset.pliteTextFlowReconcileCount ?? 0
+            textHost.dataset.editorTextFlowReconcileCount ?? 0
           ),
           reconcileMs: Number(
-            textHost.dataset.pliteTextFlowReconcileMs ?? 0
+            textHost.dataset.editorTextFlowReconcileMs ?? 0
           ),
           rebuildCount: Number(
-            textHost.dataset.pliteTextFlowRebuildCount ?? 0
+            textHost.dataset.editorTextFlowRebuildCount ?? 0
           ),
-          segments: Number(textHost.dataset.pliteTextFlowSegments ?? 0),
+          segments: Number(textHost.dataset.editorTextFlowSegments ?? 0),
         }
       : null,
     tokenElements: root.querySelectorAll('[class*="hljs-"]').length,

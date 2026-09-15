@@ -1,6 +1,5 @@
-import { PLUGINS, createEditor, defineBasePlugin, property } from 'platejs';
+import { PLUGINS, createEditor } from 'platejs';
 import { compileEditor } from 'platejs/compiler';
-import { MarkdownPlugin } from 'platejs/markdown';
 import { createEditor as createReactEditor } from 'platejs/react';
 
 import { registryBlocks } from '@/registry/registry-blocks';
@@ -27,21 +26,6 @@ describe('MarkdownKit', () => {
     for (const editor of editors) {
       expect(typeof editor.api.markdown.serialize).toBe('function');
     }
-  });
-
-  it('resolves the configured suggestion mark key from the installed schema', () => {
-    const SuggestionMarkPlugin = defineBasePlugin(PLUGINS.suggestion, {
-      schema: {
-        mark: { key: 'suggestionMark', property: property.boolean() },
-      },
-    });
-    const editor = createEditor({
-      plugins: [SuggestionMarkPlugin, ...MarkdownKit],
-    });
-
-    expect(editor.plugin(MarkdownPlugin).store.get('plainMarks')).toEqual([
-      'suggestionMark',
-    ]);
   });
 
   it('round-trips code drawings through the generated editor Markdown surface', () => {

@@ -4,17 +4,17 @@ import type { Value } from '../../facade';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type {
-  InternalPlateEditorWithInstalledPlugins,
+  InternalReactEditorWithInstalledPlugins,
   Editor,
 } from '../editor/Editor';
-import type { AnyResolvedPlatePlugin } from '../plugin';
+import type { AnyResolvedPlugin } from '../plugin';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
 import type { DOMHandlers } from '../plugin/DOMHandlers';
 import type { DOMHandlerProp } from './dom-attributes.internal';
 
 type DOMHandlerName = keyof DOMHandlers;
 
-type PluginWithDOMHandlers = AnyResolvedPlatePlugin & {
+type PluginWithDOMHandlers = AnyResolvedPlugin & {
   on?: DOMHandlers;
 };
 
@@ -107,7 +107,7 @@ type PipeHandlerOptions<K extends DOMHandlerProp> = {
 type PipedDOMHandler = ((event: any) => boolean | void) | undefined;
 
 export function pipeHandler<V extends Value, D, K extends DOMHandlerProp>(
-  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
+  editor: InternalReactEditorWithInstalledPlugins<V, D>,
   options: PipeHandlerOptions<K>
 ): PipedDOMHandler;
 export function pipeHandler<K extends DOMHandlerProp>(
@@ -121,8 +121,7 @@ export function pipeHandler<K extends DOMHandlerProp>(
 
   const pluginHandlerName = getDOMHandlerName(handlerKey);
   const relevantPlugins = (
-    getPlateRuntime(plateEditor)
-      .pluginList as unknown as AnyResolvedPlatePlugin[]
+    getPlateRuntime(plateEditor).pluginList as unknown as AnyResolvedPlugin[]
   ).filter(
     (plugin) => (plugin as PluginWithDOMHandlers).on?.[pluginHandlerName]
   );

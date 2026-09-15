@@ -1,13 +1,13 @@
 import {
-  defineBasePlugin,
+  definePlugin,
   PLUGINS,
   property,
   type ElementOf,
-  type PlateNodeInsertOptions,
+  type NodeInsertOptions,
 } from '../../../core';
 import { normalizeDateValue, parseCanonicalDateValue } from './dateValue';
 
-export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
+export const BaseDatePlugin = definePlugin(PLUGINS.date, {
   codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {
@@ -69,7 +69,7 @@ export const BaseDatePlugin = defineBasePlugin(PLUGINS.date, {
   update: ({ tx }) => ({
     insert: (
       { value }: { value?: Date | string } = {},
-      options: PlateNodeInsertOptions = {}
+      options: NodeInsertOptions = {}
     ) => {
       const normalized = normalizeDateValue(value ?? new Date());
 

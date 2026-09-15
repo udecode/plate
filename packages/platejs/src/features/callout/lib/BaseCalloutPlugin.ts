@@ -1,5 +1,5 @@
 import {
-  defineBasePlugin,
+  definePlugin,
   ElementApi,
   type ElementOf,
   property,
@@ -7,7 +7,7 @@ import {
   PLUGINS,
 } from '../../../core';
 
-export const BaseCalloutPlugin = defineBasePlugin(PLUGINS.callout, {
+export const BaseCalloutPlugin = definePlugin(PLUGINS.callout, {
   codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {

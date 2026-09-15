@@ -23,7 +23,6 @@
     "bench:history:compare:local": "bun ./scripts/benchmarks/core/compare/history.mjs",
     "bench:react:rerender-breadth:local": "cd ./packages/slate-react && bun ../../scripts/benchmarks/browser/react/rerender-breadth.tsx",
     "bench:react:huge-document-overlays:local": "cd ./packages/slate-react && bun ../../scripts/benchmarks/browser/react/huge-document-overlays.tsx",
-    "bench:react:huge-document:legacy-compare:local": "bun ./scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs",
     "bench:react:huge-document:browser-trace:local": "bun ./scripts/benchmarks/browser/react/huge-document-browser-trace.mjs",
     "bench:react:huge-document:slate-browser-trace:local": "bun ./scripts/benchmarks/browser/react/huge-document-slate-browser-trace.mjs",
     "bench:browser:rich-text-replay-coverage:local": "bun ./scripts/benchmarks/browser/rich-text-replay-coverage.mjs",

@@ -50,7 +50,10 @@ import type {
 } from '../interfaces';
 import { RangeApi } from '../interfaces';
 import { failInvariant } from '../internal/fail-invariant';
-import { getCommonLocationRoot } from '../internal/root-location';
+import {
+  getCommonLocationRoot,
+  MAIN_ROOT_KEY,
+} from '../internal/root-location';
 import type { InternalEditorReadRuntime } from './editor-runtime';
 import { getFragment } from './get-fragment';
 import {
@@ -124,7 +127,7 @@ const withExplicitPointRoot = <TPoint extends Point | undefined>(
   innerPoint: TPoint,
   root: string | undefined
 ): TPoint =>
-  root && innerPoint && innerPoint.root === undefined
+  root && root !== MAIN_ROOT_KEY && innerPoint && innerPoint.root === undefined
     ? { ...innerPoint, root }
     : innerPoint;
 

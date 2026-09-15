@@ -437,7 +437,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.insertAfter replaces an empty source in one undoable commit', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('before'), paragraph('')],
       initialSelection: collapsedSelection([1, 0], 0),
     });
@@ -471,7 +471,7 @@ describe('plite transforms contract', () => {
 
   it('recognizes an empty draft after inline removal before replacing its block', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         history(),
         defineTestSchema('draft-empty-inline', { input: { void: 'inline' } }),
       ],
@@ -582,7 +582,7 @@ describe('plite transforms contract', () => {
   it('blocks.insertAfter retains an empty atomic block', () => {
     const image = { type: 'image', children: [{ text: '' }] };
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineTestSchema('insert-after-atom', { image: { void: 'block' } }),
       ],
       initialValue: [image],
@@ -600,9 +600,7 @@ describe('plite transforms contract', () => {
   it('blocks.insertAfter preserves an empty structural container', () => {
     const container = { type: 'container', children: [] };
     const editor = createEditor({
-      extensions: [
-        defineTestSchema('insert-after-container', { container: {} }),
-      ],
+      plugins: [defineTestSchema('insert-after-container', { container: {} })],
       initialValue: [container],
     });
     assert.deepEqual(editor.read.children(), [container]);
@@ -914,7 +912,7 @@ describe('plite transforms contract', () => {
 
   it('node selection text replacement removes only exact selected blocks', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:node-selection-text-replacement', {
           elements: {
             paragraph: { content: schema.content.text() },
@@ -1436,7 +1434,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.toggle uses the grammar default block type', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:toggle-block-default', {
           elements: {
             blockquote: { content: schema.content.text() },
@@ -1470,7 +1468,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.toggle owns target properties with the type', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:toggle-block-props', {
           elements: {
             heading: {
@@ -1510,7 +1508,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.toggle uses the immediate parent default when deactivating', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:toggle-nested-default', {
           elements: {
             paragraph: { content: schema.content.text() },
@@ -1552,7 +1550,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.reset uses the immediate schema default', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:reset-immediate-default', {
           elements: {
             paragraph: { content: schema.content.text() },
@@ -1656,7 +1654,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.reset changes only exact disjoint node selections', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:reset-disjoint-selection', {
           elements: {
             paragraph: { content: schema.content.text() },
@@ -1693,7 +1691,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.reset uses the editor view root default', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:reset-view-root', {
           elements: {
             heading: { content: schema.content.text() },
@@ -1733,7 +1731,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.reset rejects a parent without an element default', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:reset-missing-default', {
           elements: {
             paragraph: { content: schema.content.text() },
@@ -1753,7 +1751,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.toggle changes only exact disjoint node selections', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:toggle-disjoint-node-selection', {
           elements: {
             blockquote: { content: schema.content.text() },
@@ -1792,7 +1790,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.toggle keeps a named-root node selection in that root', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:toggle-named-root-node-selection', {
           elements: {
             blockquote: { content: schema.content.text() },
@@ -1830,7 +1828,7 @@ describe('plite transforms contract', () => {
 
   it('blocks.toggle unwraps a named-root node selection in that root', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:toggle-named-root-node-wrapper', {
           elements: {
             'code-block': {

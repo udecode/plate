@@ -1,6 +1,14 @@
 import type { Descendant } from '../interfaces/node';
 import { MAIN_ROOT_KEY } from '../internal/root-location';
-import { snapshotEditorJsonValue } from './value-codec';
+import { isOwnedJsonValue } from './clone';
+import {
+  assertEditorDocumentShape,
+  type EditorDocumentShapeIssue,
+} from './document-shape';
+import {
+  getEditorJsonRecordEntries,
+  snapshotEditorJsonValue,
+} from './value-codec';
 
 export type NormalizedInitialValue = {
   children: Descendant[];
@@ -9,57 +17,35 @@ export type NormalizedInitialValue = {
   roots: Record<string, Descendant[]>;
 };
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value);
-
-export const cloneDocumentMeta = (
-  meta: unknown
-): Record<string, unknown> | undefined => {
-  if (meta === undefined) {
-    return undefined;
-  }
-
-  if (!isRecord(meta)) {
-    throw new Error(
-      '[Plite] initialValue.meta is invalid! Expected an object.'
-    );
-  }
-
-  return snapshotEditorJsonValue(meta, '[Plite] initialValue.meta');
-};
-
-const cloneInitialExtraRoots = (
-  rootsInput: unknown
-): Record<string, Descendant[]> => {
-  if (rootsInput === undefined) {
-    return {};
-  }
-
-  if (!isRecord(rootsInput)) {
-    throw new Error(
-      '[Plite] initialValue.roots is invalid! Expected an object.'
-    );
-  }
-
-  const roots: Record<string, Descendant[]> = {};
-
-  for (const [key, value] of Object.entries(rootsInput)) {
-    if (key === MAIN_ROOT_KEY) {
+const rejectInitialDocumentShape = (issue: EditorDocumentShapeIssue): never => {
+  switch (issue.kind) {
+    case 'document':
+    case 'children': {
+      throw new Error(
+        '[Plite] initialValue is invalid! Expected a list of elements or a document value with children.'
+      );
+    }
+    case 'meta': {
+      throw new Error(
+        '[Plite] initialValue.meta is invalid! Expected an object.'
+      );
+    }
+    case 'roots': {
+      throw new Error(
+        '[Plite] initialValue.roots is invalid! Expected an object.'
+      );
+    }
+    case 'primary-root': {
       throw new Error(
         '[Plite] initialValue.roots.main is invalid. Use initialValue.children for the primary document.'
       );
     }
-
-    if (!Array.isArray(value)) {
+    case 'root': {
       throw new Error(
-        `[Plite] initialValue.roots.${key} is invalid! Expected a list of elements.`
+        `[Plite] initialValue.roots.${issue.root} is invalid! Expected a list of elements.`
       );
     }
-
-    roots[key] = value as Descendant[];
   }
-
-  return Object.freeze(roots);
 };
 
 export const normalizeEditorValue = (
@@ -90,33 +76,54 @@ export const normalizeEditorValue = (
     };
   }
 
-  if (!isRecord(input)) {
-    throw new Error(
-      '[Plite] initialValue is invalid! Expected a list of elements or a document value with children.'
-    );
+  const entries = getEditorJsonRecordEntries(input);
+
+  if (!entries) {
+    // Preserve shape errors for valid JSON scalars while classifying unsafe
+    // containers, accessors, and other noncanonical objects at the JSON boundary.
+    snapshotEditorJsonValue(input, '[Plite] initialValue');
+    return rejectInitialDocumentShape({ kind: 'document' });
   }
+  const value = Object.fromEntries(entries);
+  assertEditorDocumentShape(value, rejectInitialDocumentShape);
+  const children = snapshotEditorJsonValue(
+    value.children,
+    '[Plite] initialValue.children'
+  ) as Descendant[];
+  const meta =
+    value.meta === undefined
+      ? undefined
+      : (() => {
+          const metaEntries = isOwnedJsonValue(value.meta)
+            ? Object.entries(value.meta)
+            : getEditorJsonRecordEntries(value.meta);
 
-  const value = snapshotEditorJsonValue(input, '[Plite] initialValue');
+          if (!metaEntries) return rejectInitialDocumentShape({ kind: 'meta' });
 
-  if (Array.isArray(value.children)) {
-    const children = value.children as Descendant[];
-    const roots = cloneInitialExtraRoots(value.roots);
-
-    if (value.meta !== undefined && !isRecord(value.meta)) {
-      throw new Error(
-        '[Plite] initialValue.meta is invalid! Expected an object.'
-      );
-    }
-
-    return {
-      children,
-      explicit: true,
-      meta: value.meta,
-      roots: Object.freeze({ [MAIN_ROOT_KEY]: children, ...roots }),
-    };
-  }
-
-  throw new Error(
-    '[Plite] initialValue is invalid! Expected a list of elements or a document value with children.'
+          return Object.freeze(Object.fromEntries(metaEntries));
+        })();
+  const roots = Object.fromEntries(
+    Object.entries(value.roots ?? {}).map(([key, root]) => [
+      key,
+      snapshotEditorJsonValue(
+        root,
+        `[Plite] initialValue.roots.${key}`
+      ) as Descendant[],
+    ])
   );
+  for (const [key, nested] of entries) {
+    if (key !== 'children' && key !== 'meta' && key !== 'roots') {
+      snapshotEditorJsonValue(nested, `[Plite] initialValue.${key}`);
+    }
+  }
+
+  return {
+    children,
+    explicit: true,
+    meta,
+    roots: Object.freeze({
+      [MAIN_ROOT_KEY]: children,
+      ...roots,
+    }),
+  };
 };

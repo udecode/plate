@@ -1,6 +1,6 @@
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  definePlugin,
   type DefinitionOf,
   type Element,
   ElementApi,
@@ -10,7 +10,7 @@ import {
   type NodeEntry,
   type NodeTarget,
   PathApi,
-  type PlateBlockInsertOptions,
+  type BlockInsertOptions,
   PLUGINS,
   property,
   RangeApi,
@@ -41,7 +41,7 @@ const getMarkdownAttributes = (element: Element) =>
     )
   );
 
-export const BaseColumnItemPlugin = defineBasePlugin(PLUGINS.column, {
+export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
   dependencies: [BaseParagraphPlugin],
   schema: ({ plugins }) => ({
     element: {
@@ -144,7 +144,7 @@ export const BaseColumnItemPlugin = defineBasePlugin(PLUGINS.column, {
 
 export type ColumnElement = ElementOf<typeof BaseColumnItemPlugin>;
 
-export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
+export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
   dependencies: [BaseColumnItemPlugin],
   schema: {
     element: {
@@ -288,7 +288,7 @@ export const BaseColumnPlugin = defineBasePlugin(PLUGINS.columnGroup, {
     return {
       insert: (
         { columns = 2 }: { columns?: number } = {},
-        { select, ...options }: PlateBlockInsertOptions = {}
+        { select, ...options }: BlockInsertOptions = {}
       ) => {
         const width = 100 / columns;
 

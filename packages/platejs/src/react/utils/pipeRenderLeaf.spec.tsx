@@ -4,14 +4,14 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import { property } from '../../core';
-import { defineBasePlugin } from '../../lib/plugin';
+import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createEditor } from '../editor/withPlate';
-import { definePlatePlugin } from '../plugin/definePlatePlugin';
+import { definePlugin } from '../plugin/definePlugin';
 import { pipeRenderLeaf } from './pipeRenderLeaf.internal';
 import { pipeRenderText } from './pipeRenderText.internal';
 
-const attributes = { 'data-plite-leaf': true, 'data-testid': 'Leaf' } as any;
+const attributes = { 'data-editor-leaf': true, 'data-testid': 'Leaf' } as any;
 const retainedTextFlowCapability = Symbol.for(
   'plitejs/react/retained-text-flow-renderer-capability'
 );
@@ -57,7 +57,7 @@ it('render the default leaf', () => {
   );
 
   (expect(getByTestId('Leaf')) as any).toHaveAttribute(
-    'data-plite-leaf',
+    'data-editor-leaf',
     'true'
   );
   expect(getByTestId('Leaf').tagName).toBe('SPAN');
@@ -80,7 +80,7 @@ it('returns the custom leaf renderer unchanged when no plugin work exists', () =
 });
 
 it('keeps element-targeted injection transforms out of leaf capability', () => {
-  const injectionPlugin = defineBasePlugin('injection', {
+  const injectionPlugin = defineHeadlessPlugin('injection', {
     targetPlugins: [BaseParagraphPlugin],
     inject: {
       nodeProps: {
@@ -104,7 +104,7 @@ it('keeps element-targeted injection transforms out of leaf capability', () => {
 });
 
 it('fails DOM text sync closed for untargeted text injection transforms', () => {
-  const injectionPlugin = defineBasePlugin('injection', {
+  const injectionPlugin = defineHeadlessPlugin('injection', {
     inject: {
       nodeProps: {
         transformProps: ({ props }) => props,
@@ -129,7 +129,7 @@ it('fails DOM text sync closed for untargeted text injection transforms', () => 
 });
 
 it('fails DOM text sync closed for untargeted text style transforms', () => {
-  const injectionPlugin = defineBasePlugin('styleInjection', {
+  const injectionPlugin = defineHeadlessPlugin('styleInjection', {
     inject: {
       nodeProps: {
         transformStyle: ({ value }) => ({ color: String(value) }),
@@ -154,7 +154,7 @@ it('fails DOM text sync closed for untargeted text style transforms', () => {
 });
 
 it('fails DOM text sync closed for active custom plugin components', () => {
-  const componentPlugin = definePlatePlugin('componentMark', {
+  const componentPlugin = definePlugin('componentMark', {
     component: ({ children }: ChildrenProps) => <>{children}</>,
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
@@ -181,7 +181,7 @@ it('fails DOM text sync closed for active custom plugin components', () => {
 });
 
 it('renders a secondary leaf component for a text-placed mark', () => {
-  const testPlugin = defineBasePlugin('test', {
+  const testPlugin = defineHeadlessPlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       mark: {
@@ -214,7 +214,7 @@ it('renders a secondary leaf component for a text-placed mark', () => {
 });
 
 it('renders the primary component at leaf placement', () => {
-  const testPlugin = defineBasePlugin('test', {
+  const testPlugin = defineHeadlessPlugin('test', {
     component: ({ children }: ChildrenProps) => (
       <span data-testid="leaf-wrapper">{children}</span>
     ),
@@ -242,7 +242,7 @@ it('renders the primary component at leaf placement', () => {
 });
 
 it('keeps the outer leaf attributes for intrinsic leaf components', () => {
-  const testPlugin = defineBasePlugin('test', {
+  const testPlugin = defineHeadlessPlugin('test', {
     component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
@@ -265,18 +265,18 @@ it('keeps the outer leaf attributes for intrinsic leaf components', () => {
   );
 
   (expect(getByTestId('Leaf')) as any).toHaveAttribute(
-    'data-plite-leaf',
+    'data-editor-leaf',
     'true'
   );
-  expect(container.querySelector('strong')).not.toBeNull();
+  expect(container.querySelector('strong')).toHaveClass('editor-test');
 });
 
 it('nests multiple intrinsic leaf components without losing outer attributes', () => {
-  const boldPlugin = defineBasePlugin('bold', {
+  const boldPlugin = defineHeadlessPlugin('bold', {
     component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
-  const italicPlugin = defineBasePlugin('italic', {
+  const italicPlugin = defineHeadlessPlugin('italic', {
     component: 'em',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
@@ -299,7 +299,7 @@ it('nests multiple intrinsic leaf components without losing outer attributes', (
   );
 
   (expect(getByTestId('Leaf')) as any).toHaveAttribute(
-    'data-plite-leaf',
+    'data-editor-leaf',
     'true'
   );
   expect(container.querySelector('strong')).not.toBeNull();
@@ -311,7 +311,7 @@ it('skips inactive leaf renderers', () => {
   let activeCalls = 0;
   let inactiveCalls = 0;
 
-  const boldPlugin = defineBasePlugin('bold', {
+  const boldPlugin = defineHeadlessPlugin('bold', {
     component: ({ children }: ChildrenProps) => {
       activeCalls += 1;
 
@@ -319,7 +319,7 @@ it('skips inactive leaf renderers', () => {
     },
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
-  const italicPlugin = defineBasePlugin('italic', {
+  const italicPlugin = defineHeadlessPlugin('italic', {
     component: ({ children }: ChildrenProps) => {
       inactiveCalls += 1;
 
@@ -355,7 +355,7 @@ it('keeps complex leaf renderer hooks stable when a mark activates', () => {
   const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
 
   try {
-    const testPlugin = defineBasePlugin('test', {
+    const testPlugin = defineHeadlessPlugin('test', {
       component: ({ children }: ChildrenProps) => (
         <span data-testid="complex-leaf">{children}</span>
       ),
@@ -405,7 +405,7 @@ it('keeps hooks stable when the rendered leaf count changes', () => {
   const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
 
   try {
-    const testPlugin = defineBasePlugin('test', {
+    const testPlugin = defineHeadlessPlugin('test', {
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     });
     const editor = createEditor({
@@ -441,11 +441,11 @@ it('keeps hooks stable when the rendered leaf count changes', () => {
 });
 
 it('uses plugin names to activate leaf renderers', () => {
-  const simplePlugin = defineBasePlugin('simple', {
+  const simplePlugin = definePlugin('simple', {
     component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
-  const complexPlugin = defineBasePlugin('complex', {
+  const complexPlugin = definePlugin('complex', {
     component: ({ children }: ChildrenProps) => (
       <span data-testid="complex-leaf">{children}</span>
     ),
@@ -480,7 +480,7 @@ it('uses plugin names to activate leaf renderers', () => {
 });
 
 it('keeps plugin leafAttributes behavior', () => {
-  const testPlugin = defineBasePlugin('test', {
+  const testPlugin = definePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       mark: {
@@ -525,7 +525,7 @@ it('keeps plugin leafAttributes behavior', () => {
 });
 
 it('renders a mark at text placement', () => {
-  const testPlugin = defineBasePlugin('test', {
+  const testPlugin = definePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: { mark: { placement: 'text' } },
   });
@@ -543,7 +543,7 @@ it('renders a mark at text placement', () => {
   );
 
   (expect(getByTestId('Leaf')) as any).toHaveAttribute(
-    'data-plite-leaf',
+    'data-editor-leaf',
     'true'
   );
   expect(getByTestId('Leaf').tagName).toBe('SPAN');
@@ -572,7 +572,7 @@ it('keeps text hooks stable when the rendered text count changes', () => {
   const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
 
   try {
-    const testPlugin = defineBasePlugin('test', {
+    const testPlugin = definePlugin('test', {
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       render: { mark: { placement: 'text' } },
     });
@@ -608,7 +608,7 @@ it('keeps text hooks stable when the rendered text count changes', () => {
 });
 
 it('keeps the outer text attributes for intrinsic text components', () => {
-  const testPlugin = defineBasePlugin('test', {
+  const testPlugin = definePlugin('test', {
     component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: { mark: { placement: 'text' } },
@@ -627,7 +627,7 @@ it('keeps the outer text attributes for intrinsic text components', () => {
   );
 
   (expect(getByTestId('Leaf')) as any).toHaveAttribute(
-    'data-plite-leaf',
+    'data-editor-leaf',
     'true'
   );
   expect(container.querySelector('strong')).not.toBeNull();
@@ -637,7 +637,7 @@ it('skips inactive text renderers', () => {
   let activeCalls = 0;
   let inactiveCalls = 0;
 
-  const boldPlugin = definePlatePlugin('bold', {
+  const boldPlugin = definePlugin('bold', {
     component: ({ children }: ChildrenProps) => {
       activeCalls += 1;
 
@@ -646,7 +646,7 @@ it('skips inactive text renderers', () => {
     render: { mark: { placement: 'text' } },
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
-  const italicPlugin = definePlatePlugin('italic', {
+  const italicPlugin = definePlugin('italic', {
     component: ({ children }: ChildrenProps) => {
       inactiveCalls += 1;
 
@@ -678,7 +678,7 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
   const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
 
   try {
-    const testPlugin = definePlatePlugin('test', {
+    const testPlugin = definePlugin('test', {
       component: ({ children }: ChildrenProps) => (
         <span data-testid="complex-text">{children}</span>
       ),
@@ -716,12 +716,12 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
 });
 
 it('renders present falsy mark values and keeps DOM text sync closed', () => {
-  const booleanPlugin = defineBasePlugin('booleanMark', {
+  const booleanPlugin = definePlugin('booleanMark', {
     component: 'u',
     render: { mark: { placement: 'text' } },
     schema: { mark: property.boolean({ default: false }) },
   });
-  const numericPlugin = defineBasePlugin('numericMark', {
+  const numericPlugin = definePlugin('numericMark', {
     component: 'strong',
     render: {
       mark: {
@@ -759,7 +759,7 @@ it('renders present falsy mark values and keeps DOM text sync closed', () => {
 });
 
 it('keeps plugin textAttributes behavior', () => {
-  const testPlugin = defineBasePlugin('test', {
+  const testPlugin = definePlugin('test', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       mark: {

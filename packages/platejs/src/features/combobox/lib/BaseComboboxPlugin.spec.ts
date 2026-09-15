@@ -1,9 +1,4 @@
-import {
-  createEditor,
-  defineBasePlugin,
-  schema,
-  type Point,
-} from '../../../core';
+import { createEditor, definePlugin, schema, type Point } from '../../../core';
 import { BaseEmojiPlugin } from '../../../emoji/lib/BaseEmojiPlugin';
 import {
   BaseFootnoteDefinitionPlugin,
@@ -49,7 +44,7 @@ describe('combobox input completion', () => {
 
     expect(
       editor.plugin(BaseComboboxPlugin).api.commit(input, (tx) => {
-        tx.plugin(BaseEmojiPlugin).insert({
+        tx.plugin(BaseEmojiPlugin.name).insert({
           id: 'fire',
           keywords: ['flame'],
           name: 'Fire',
@@ -81,7 +76,7 @@ describe('combobox input completion', () => {
 
     expect(
       editor.plugin(BaseComboboxPlugin).api.commit(input, (tx) => {
-        tx.plugin(BaseFootnotePlugin).insert({
+        tx.plugin(BaseFootnotePlugin.name).insert({
           ref: 'proof',
           trigger: '[',
           focusDefinition: false,
@@ -131,7 +126,10 @@ describe('combobox input completion', () => {
 
     expect(
       combobox.api.commit(input, (tx) => {
-        tx.plugin(BaseMentionPlugin).insert({ ref: 'alice', label: 'Alice' });
+        tx.plugin(BaseMentionPlugin.name).insert({
+          ref: 'alice',
+          label: 'Alice',
+        });
       })
     ).toBe(true);
     expect(editor.read.children()[2].children[1]).toMatchObject({
@@ -238,7 +236,7 @@ describe('combobox input completion', () => {
     const { version } = editor.read.lastCommit()!;
     expect(() =>
       combobox.api.commit(input, (tx) => {
-        tx.plugin(BaseMentionPlugin).insert({ ref: '' });
+        tx.plugin(BaseMentionPlugin.name).insert({ ref: '' });
       })
     ).toThrow('Mention ref must be a non-empty string.');
     expect(editor.read.children()).toEqual(before);
@@ -258,7 +256,7 @@ describe('combobox input completion', () => {
   });
 
   it('restores a named-root input inside its original root', () => {
-    const FigurePlugin = defineBasePlugin('comboboxFigure', {
+    const FigurePlugin = definePlugin('comboboxFigure', {
       schema: {
         element: {
           contentRoots: {

@@ -3,14 +3,14 @@ title: Plate 组件
 description: Plate React 组件的 API 参考。
 ---
 
-Plate 组件将 `Editor` 接入 React 渲染。可编辑编辑器使用 `Plate` 和 `PlateContent`，只读静态视图使用 `PlateView`，自定义插件组件则使用节点原语。
+Plate 组件将 `Editor` 接入 React 渲染。可编辑编辑器使用 `EditorRoot` 和 `EditorContent`，只读静态视图使用 `EditorPreview`，自定义插件组件则使用节点原语。
 
 ## 可编辑编辑器
 
-`Plate` 管理编辑器 store，`PlateContent` 在该 store 下渲染可编辑区域。
+`EditorRoot` 管理编辑器 store，`EditorContent` 在该 store 下渲染可编辑区域。
 
 ```tsx title="components/editor.tsx"
-import { Plate, PlateContent, useCreateEditor } from "platejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "platejs/react";
 
 export function Editor() {
   const editor = useCreateEditor({
@@ -23,25 +23,25 @@ export function Editor() {
   });
 
   return (
-    <Plate editor={editor}>
-      <PlateContent placeholder="Write..." />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent placeholder="Write..." />
+    </EditorRoot>
   );
 }
 ```
 
 <Callout type="warning" title="需要 Provider">
-  `PlateContent` 必须渲染在 `Plate` 下方。`useEditor()`
+  `EditorContent` 必须渲染在 `EditorRoot` 下方。`useEditor()`
   需要活动编辑器，否则会抛出错误。只有在控制器 UI 明确处理无活动编辑器时的
   `null` 状态时，才使用 `useOptionalEditor()`。
 </Callout>
 
 ## 只读视图
 
-需要渲染内容和 Plate 复制行为，但不需要可编辑区域时，请为静态编辑器使用 `PlateView`。
+需要渲染内容和 Plate 复制行为，但不需要可编辑区域时，请为静态编辑器使用 `EditorPreview`。
 
 ```tsx title="components/read-only-editor.tsx"
-import { PlateView, useStaticEditor } from "platejs/react";
+import { EditorPreview, useStaticEditor } from "platejs/react";
 
 const value = [
   {
@@ -55,53 +55,53 @@ export function ReadOnlyEditor() {
 
   if (!editor) return null;
 
-  return <PlateView editor={editor} />;
+  return <EditorPreview editor={editor} />;
 }
 ```
 
-`PlateView` 默认通过 `onCopy` 将 Plate fragment 数据写入剪贴板；传入自定义 `onCopy` prop 后则使用你的处理器。
+`EditorPreview` 默认通过 `onCopy` 将 Plate fragment 数据写入剪贴板；传入自定义 `onCopy` prop 后则使用你的处理器。
 
 ## 组件映射
 
 | 组件             | 用途                                                                                |
 | ---------------- | ----------------------------------------------------------------------------------- |
-| `Plate`          | 单个编辑器实例的 context provider。                                                   |
-| `PlateContent`   | 可编辑 Plite 区域，支持插件事件、Decoration、renderer、快捷键和编辑器 effect。      |
-| `PlateView`      | 支持 Plate fragment 复制的静态只读渲染。                                            |
-| `PlateContainer` | 编辑器容器 `div`，并提供 `beforeContainer` 和 `afterContainer` 插件 slot。          |
-| `PlateElement`   | block 和 inline 元素的默认 renderer。                                               |
-| `PlateLeaf`      | 文本片段的默认持久 mark renderer。                                                    |
-| `PlateText`      | 单个文本节点全部渲染片段的默认外层 wrapper。                                         |
+| `EditorRoot`          | 单个编辑器实例的 context provider。                                                   |
+| `EditorContent`   | 可编辑 Plate 区域，支持插件事件、Decoration、renderer、快捷键和编辑器 effect。      |
+| `EditorPreview`      | 支持 Plate fragment 复制的静态只读渲染。                                            |
+| `EditorContainer` | 编辑器容器 `div`，并提供 `beforeContainer` 和 `afterContainer` 插件 slot。          |
+| `EditorElement`   | block 和 inline 元素的默认 renderer。                                               |
+| `EditorLeaf`      | 文本片段的默认持久 mark renderer。                                                    |
+| `EditorText`      | 单个文本节点全部渲染片段的默认外层 wrapper。                                         |
 
 ## 渲染管线
 
-`PlateContent` 通过自身的编辑区域 props 和已安装插件组合行为。结构 renderer 和 Decoration source 由插件持有。通过公开的组件和插件 slot 组合界面；`PlateContent` 负责内部生命周期。
+`EditorContent` 通过自身的编辑区域 props 和已安装插件组合行为。结构 renderer 和 Decoration source 由插件持有。通过公开的组件和插件 slot 组合界面；`EditorContent` 负责内部生命周期。
 
-`PlateContent` 将 `slots.wrapRoot` 组合在每个可编辑视图的外层，并向每个根 slot 提供该视图的 `editableRef`。挂载前和卸载后，ref 为 `null`；集成在提交后读取它，并清理当时捕获的元素。功能 kit 使用此边界管理必需的 React 集成。
+`EditorContent` 将 `slots.wrapRoot` 组合在每个可编辑视图的外层，并向每个根 slot 提供该视图的 `editableRef`。挂载前和卸载后，ref 为 `null`；集成在提交后读取它，并清理当时捕获的元素。功能 kit 使用此边界管理必需的 React 集成。
 
 | 阶段           | 来源                                                                                                |
 | -------------- | --------------------------------------------------------------------------------------------------- |
-| 编辑器上下文 | `Plate` 提供编辑器及插件 Decoration source，`PlateContent` 选择内容根。 |
-| Editable props | `PlateContent` 串联插件 DOM 事件，以及插件持有的 element、leaf 和 text renderer。                    |
+| 编辑器上下文 | `EditorRoot` 提供编辑器及插件 Decoration source，`EditorContent` 选择内容根。 |
+| Editable props | `EditorContent` 串联插件 DOM 事件，以及插件持有的 element、leaf 和 text renderer。                    |
 | 插件 slot      | `slots.wrapRoot`、`slots.wrapContent`、`slots.beforeEditable` 和 `slots.afterEditable` 组合可编辑区域。               |
-| 生命周期 | `PlateContent` 自动管理快捷键、编辑器引用、控制器注册和清理。 |
-| 只读状态 | `disabled` 强制只读；`PlateContent` 的 `readOnly` 优先于 `Plate` 提供的值。 |
+| 生命周期 | `EditorContent` 自动管理快捷键、编辑器引用、控制器注册和清理。 |
+| 只读状态 | `disabled` 强制只读；`EditorContent` 的 `readOnly` 优先于 `EditorRoot` 提供的值。 |
 
 ## 节点原语
 
-在插件组件中使用 `PlateElement`、`PlateLeaf` 和 `PlateText`。它们会将 Plite attributes 与你的 `className`、`style` 和 `ref` 合并。
+在插件组件中使用 `EditorElement`、`EditorLeaf` 和 `EditorText`。它们会将 Plate attributes 与你的 `className`、`style` 和 `ref` 合并。
 
 ```tsx title="components/paragraph-element.tsx"
 import {
   ParagraphPlugin,
-  PlateElement,
-  type PlateElementProps,
+  EditorElement,
+  type EditorElementProps,
 } from "platejs/react";
 
 export function ParagraphElement(
-  props: PlateElementProps<typeof ParagraphPlugin>
+  props: EditorElementProps<typeof ParagraphPlugin>
 ) {
-  return <PlateElement as="p" className="leading-7" {...props} />;
+  return <EditorElement as="p" className="leading-7" {...props} />;
 }
 ```
 
@@ -109,10 +109,10 @@ export function ParagraphElement(
 
 ```tsx title="components/quote-element.tsx"
 import { QuotePlugin } from "@/components/editor/quote-plugin";
-import { PlateElement, type PlateElementProps } from "platejs/react";
+import { EditorElement, type EditorElementProps } from "platejs/react";
 
-export function QuoteElement(props: PlateElementProps<typeof QuotePlugin>) {
-  return <PlateElement as="blockquote" {...props} />;
+export function QuoteElement(props: EditorElementProps<typeof QuotePlugin>) {
+  return <EditorElement as="blockquote" {...props} />;
 }
 ```
 
@@ -132,13 +132,13 @@ export function TypedElement<TElement extends Element>(
 
 ```tsx title="components/figure-element.tsx"
 import { FigurePlugin } from "@/components/editor/figure-plugin";
-import type { PlateElementProps } from "platejs/react";
+import type { EditorElementProps } from "platejs/react";
 
 export function FigureElement({
   attributes,
   children,
   slots,
-}: PlateElementProps<typeof FigurePlugin>) {
+}: EditorElementProps<typeof FigurePlugin>) {
   return (
     <figure {...attributes}>
       {children}
@@ -150,20 +150,20 @@ export function FigureElement({
 
 | 原语                | 行为                                                                                                                                                                                          |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PlateElement`      | 添加 `data-plite-node="element"`，保留 Plite 的 `data-plite-node-key`，提供类型化的元素自有 content-root slot，并在需要时添加 directional-affinity spacer。 |
-| `PlateLeaf`         | 在文本片段外渲染持久 mark，并在需要时添加 hard-affinity spacer。                                                                                                                              |
-| `PlateText`         | 在所有 mark 和 Decoration 片段外渲染单个文本节点 wrapper。                                                                                                                                   |
+| `EditorElement`      | 添加 `data-editor-node="element"`，保留 Plate 的 `data-editor-node-key`，提供类型化的元素自有 content-root slot，并在需要时添加 directional-affinity spacer。 |
+| `EditorLeaf`         | 在文本片段外渲染持久 mark，并在需要时添加 hard-affinity spacer。                                                                                                                              |
+| `EditorText`         | 在所有 mark 和 Decoration 片段外渲染单个文本节点 wrapper。                                                                                                                                   |
 
 ## API 参考
 
-### `Plate`
+### `EditorRoot`
 
 单个编辑器实例的根 provider。
 
 <API name="Plate">
   <APIProps>
     <APIItem name="editor" type="Editor | null">
-      编辑器实例。为 `null` 时，`Plate` 不渲染任何内容。
+      编辑器实例。为 `null` 时，`EditorRoot` 不渲染任何内容。
     </APIItem>
     <APIItem name="children" type="React.ReactNode">
       可读取 Plate store 的 React 子节点。
@@ -172,14 +172,14 @@ export function FigureElement({
       提供给内容区域的只读状态。默认为 `editor.read.view.isReadOnly()`。
     </APIItem>
     <APIItem name="primary" type="boolean" optional>
-      将编辑器注册为 `PlateController` 的主编辑器。
+      将编辑器注册为 `EditorController` 的主编辑器。
     </APIItem>
     <APIItem
       name="onCommit"
       type="({ commit, editor, snapshot }) => void"
       optional
     >
-      在 `Plate` provider 的生命周期内观察每个已发布的编辑器 commit。
+      在 `EditorRoot` provider 的生命周期内观察每个已发布的编辑器 commit。
     </APIItem>
     <APIItem
       name="onValueChange"
@@ -201,14 +201,14 @@ export function FigureElement({
       type="({ editor, kind, node, path, previousNode, previousPath, commit }) => void"
       optional
     >
-      在 `Plate` provider 的生命周期内观察规范化节点变更。
+      在 `EditorRoot` provider 的生命周期内观察规范化节点变更。
     </APIItem>
     <APIItem
       name="onTextChange"
       type="({ editor, node, path, previousPath, previousText, text, commit }) => void"
       optional
     >
-      在 `Plate` provider 的生命周期内观察规范化文本变更。
+      在 `EditorRoot` provider 的生命周期内观察规范化文本变更。
     </APIItem>
     <APIItem name="suppressInstanceWarning" type="boolean" optional>
       禁止对同一编辑器实例的多次挂载发出警告。
@@ -216,11 +216,11 @@ export function FigureElement({
   </APIProps>
 </API>
 
-### `PlateContent`
+### `EditorContent`
 
-`Plate` 编辑器的可编辑区域。
+`EditorRoot` 编辑器的可编辑区域。
 
-<API name="PlateContent">
+<API name="EditorContent">
   <APIProps>
     <APIItem name="autoFocusOnEditable" type="boolean" optional>
       `readOnly` 从 `true` 变为 `false` 时，将焦点移到编辑器末尾。
@@ -229,7 +229,7 @@ export function FigureElement({
       强制只读状态并设置 `aria-disabled`。
     </APIItem>
     <APIItem name="readOnly" type="boolean" optional>
-      覆盖 `Plate` 提供的只读值。`disabled` 为 `true` 时始终只读。
+      覆盖 `EditorRoot` 提供的只读值。`disabled` 为 `true` 时始终只读。
     </APIItem>
     <APIItem name="placeholder" type="React.ReactNode" optional>
       可编辑区域的占位内容。
@@ -239,7 +239,7 @@ export function FigureElement({
       type="(editor, domRange) => void"
       optional
     >
-      Plite 的选区滚动 hook。
+      Plate 的选区滚动 hook。
     </APIItem>
     <APIItem
       name="onDOMBeforeInput"
@@ -256,24 +256,24 @@ export function FigureElement({
       通过插件 handler 管线传递的键盘 handler。
     </APIItem>
     <APIItem name="disableDefaultStyles" type="boolean" optional>
-      传给 Plite `Editable`。
+      传给 Plate `Editable`。
     </APIItem>
     <APIItem name="role" type="string" optional>
-      传给 Plite `Editable` 的 ARIA role。
+      传给 Plate `Editable` 的 ARIA role。
     </APIItem>
     <APIItem name="style" type="React.CSSProperties" optional>
-      传给 Plite `Editable` 的 style 对象。
+      传给 Plate `Editable` 的 style 对象。
     </APIItem>
   </APIProps>
 </API>
 
-`PlateContent` 还接受 `DOMHandlers` 中列出的 DOM handler props，包括剪贴板、composition、焦点、键盘、pointer、鼠标、drag、touch、media 和表单 handler。
+`EditorContent` 还接受 `DOMHandlers` 中列出的 DOM handler props，包括剪贴板、composition、焦点、键盘、pointer、鼠标、drag、touch、media 和表单 handler。
 
-### `PlateView`
+### `EditorPreview`
 
 支持 Plate 复制的只读静态 renderer。
 
-<API name="PlateView">
+<API name="EditorPreview">
   <APIProps>
     <APIItem name="editor" type="Editor">
       静态编辑器实例。
@@ -286,7 +286,7 @@ export function FigureElement({
       覆盖默认的 Plate fragment 复制 handler。
     </APIItem>
     <APIItem name="className" type="string" optional>
-      由 `PlateStatic` 与 `plite-editor` class 合并。
+      由 `EditorStatic` 与 `editor-editor` class 合并。
     </APIItem>
     <APIItem name="style" type="React.CSSProperties" optional>
       传给静态根 `div` 的 style 对象。
@@ -294,11 +294,11 @@ export function FigureElement({
   </APIProps>
 </API>
 
-### `PlateContainer`
+### `EditorContainer`
 
 带插件容器 slot 的容器 `div`。
 
-<API name="PlateContainer">
+<API name="EditorContainer">
   <APIProps>
     <APIItem name="children" type="React.ReactNode" optional>
       渲染在容器内的内容。
@@ -317,6 +317,6 @@ export function FigureElement({
 
 | API            | 默认元素           | 说明                                                                                                         |
 | -------------- | ------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `PlateElement` | `div`              | 接受 `as`、`attributes`、`className`、`style`、`ref`、`element`、`path`、`editor`、`plugin` 和 `insetProp`。 |
-| `PlateLeaf`    | `span`             | 接受 `as`、`attributes`、`className`、`style`、`ref`、`leaf`、`text`、`editor`、`plugin` 和 `inset`。        |
-| `PlateText`    | `span`             | 接受 `as`、`attributes`、`className`、`style`、`ref`、`text`、`editor` 和 `plugin`。                         |
+| `EditorElement` | `div`              | 接受 `as`、`attributes`、`className`、`style`、`ref`、`element`、`path`、`editor`、`plugin` 和 `insetProp`。 |
+| `EditorLeaf`    | `span`             | 接受 `as`、`attributes`、`className`、`style`、`ref`、`leaf`、`text`、`editor`、`plugin` 和 `inset`。        |
+| `EditorText`    | `span`             | 接受 `as`、`attributes`、`className`、`style`、`ref`、`text`、`editor` 和 `plugin`。                         |

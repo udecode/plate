@@ -133,8 +133,21 @@ type ActiveAnchorState = {
   value: EditorDocumentValue;
 };
 
-const ACTIVE_ANCHORS = new WeakMap<Editor, ActiveAnchorState>();
-const ANCHOR_SCOPES = new WeakMap<Editor, ActiveAnchorState[]>();
+const ACTIVE_ANCHORS = new WeakMap<object, ActiveAnchorState>();
+const ANCHOR_SCOPES = new WeakMap<object, ActiveAnchorState[]>();
+const BOUND_ANCHORS = new WeakMap<object, number>();
+
+export const registerBoundAnchor = (editor: Editor) => {
+  BOUND_ANCHORS.set(editor, (BOUND_ANCHORS.get(editor) ?? 0) + 1);
+  let active = true;
+  return () => {
+    if (!active) return;
+    active = false;
+    const remaining = (BOUND_ANCHORS.get(editor) ?? 1) - 1;
+    if (remaining) BOUND_ANCHORS.set(editor, remaining);
+    else BOUND_ANCHORS.delete(editor);
+  };
+};
 const ANCHOR_STATE_WORK_OBSERVERS = new WeakMap<
   Editor,
   (work: AnchorStateWork) => void
@@ -178,7 +191,7 @@ const recordAnchorStateWork = (
   });
 };
 
-const getActiveAnchorState = (editor: Editor) =>
+const getActiveAnchorState = (editor: object) =>
   ANCHOR_SCOPES.get(editor)?.at(-1) ?? ACTIVE_ANCHORS.get(editor);
 
 const createActiveAnchorState = (
@@ -327,8 +340,9 @@ export const enterAnchorScope = (
   };
 };
 
-export const hasActiveAnchors = (editor: Editor) =>
-  (getActiveAnchorState(editor)?.listeners.size ?? 0) > 0;
+export const hasActiveAnchors = (editor: object) =>
+  (getActiveAnchorState(editor)?.listeners.size ?? 0) > 0 ||
+  (BOUND_ANCHORS.get(editor) ?? 0) > 0;
 
 export const getAnchorStateValue = (editor: Editor) =>
   getActiveAnchorState(editor)?.value;

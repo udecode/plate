@@ -1,13 +1,17 @@
-import type { Editor, PlateContentProps, PlateProps } from '../../src/react';
+import type {
+  Editor,
+  EditorContentProps,
+  EditorRootProps,
+} from '../../src/react';
 import type { EditorReference } from '../../src/react/editor/Editor';
 
-export declare function PlateTest<E extends EditorReference = Editor>({
+export declare function EditorTest<E extends EditorReference = Editor>({
   editableProps,
   editor,
   variant,
   ...props
-}: Omit<PlateProps<E>, 'children' | 'editor'> & {
-  editableProps?: PlateContentProps;
+}: Omit<EditorRootProps<E>, 'children' | 'editor'> & {
+  editableProps?: EditorContentProps;
   editor: E;
   variant?: 'comment' | 'wordProcessor';
 }): import('react/jsx-runtime').JSX.Element;

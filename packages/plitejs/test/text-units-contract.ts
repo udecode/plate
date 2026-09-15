@@ -101,7 +101,7 @@ const lexical7163GraphemeCases: readonly LexicalGraphemeCase[] = [
   },
   {
     backwardDistances: [2],
-    description: 'surrogate-pair CJK extension character',
+    description: 'surrogate-pair CJK plugin character',
     forwardDistances: [2],
     text: '\uD862\uDF4E',
   },
@@ -158,7 +158,7 @@ const unicodeWordCases = [
   },
   {
     backwardDistances: [2, 2, 2, 2, 2, 2, 2, 2, 2],
-    description: 'CJK unified ideograph extensions B through J',
+    description: 'CJK unified ideograph plugins B through J',
     forwardDistances: [2, 2, 2, 2, 2, 2, 2, 2, 2],
     text: '\u{20000}\u{2A700}\u{2B740}\u{2B820}\u{2CEB0}\u{2EBF0}\u{30000}\u{31350}\u{323B0}',
   },

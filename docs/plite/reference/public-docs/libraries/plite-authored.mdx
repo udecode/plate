@@ -1,0 +1,117 @@
+---
+title: Plite Authored Changes
+description: Capture attributed edits, review native proposals, and retain accepted work by author.
+---
+
+`plitejs/authored` owns attributed document changes. It keeps accepted content and native operation records in one persisted document, then derives proposed and markup views without adding review properties to nodes.
+
+## Install
+
+```tsx
+import { createEditor, createEditorView } from 'plitejs';
+import { authored } from 'plitejs/authored';
+import { history } from 'plitejs/history';
+
+const editor = createEditor({
+  plugins: [
+    authored({
+      authorId: () => session.user.id,
+      retainHistory: true,
+    }),
+    history(),
+  ],
+  initialValue,
+});
+
+const reviewView = createEditorView(editor, {
+  authored: { intent: 'propose', projection: 'markup' },
+});
+```
+
+The author callback must return a nonempty authenticated identity for every write. `retainHistory` keeps closed edit bodies for selective author-history revert.
+
+## Views
+
+| Policy | Content and input |
+| --- | --- |
+| `{ intent: 'edit', projection: 'accepted' }` | Show and edit accepted content. |
+| `{ intent: 'propose', projection: 'proposed' }` | Show the proposed result and record input as proposals. |
+| `{ intent: 'propose', projection: 'markup' }` | Show the proposed result with retained review fragments and record input as proposals. |
+
+Call `view.api.authored.setView(policy)` to change one view. The source editor and sibling views keep their own policies and selections.
+
+## Propose and decide
+
+```tsx
+let id = '';
+
+reviewView.update((tx) => {
+  id = tx.authored.propose();
+  tx.text.insert('draft');
+});
+
+const selection = editor.read.authored.select({ ids: [id] });
+const result = editor.update.authored.decide({
+  action: 'accept',
+  selection,
+});
+```
+
+Pass `{ changeId: id }` to `tx.authored.propose(...)` to amend an owned logical change. Decisions are atomic and snapshot-bound. Use `read.authored.preview(...)` before presenting a bulk decision and handle every `AuthoredResult` status.
+
+## Query changes
+
+```tsx
+const page = editor.read.authored.changes({
+  authorId: 'alice',
+  cursor,
+  from,
+  limit: 50,
+  status: 'pending',
+  to,
+});
+const change = editor.read.authored.change(id);
+const changesAtRange = editor.read.authored.changesAt(range);
+```
+
+`AuthoredChange` exposes stable identity, author and timestamps, revision, status, kind, dependencies, and current ranges. Use cursor paging for lists and `change(id)` for keyed readers.
+
+## Retained author history
+
+```tsx
+const alice = editor.read.authored.select({
+  authorId: 'alice',
+  status: 'accepted',
+});
+const result = editor.update.authored.revert({ selection: alice });
+```
+
+Revert creates a new compensating authored contribution. It does not rewrite the original author. A dependency can block compensation, and disabled or expired retention returns `unavailable`.
+
+History undo and redo retain their local interaction lifetime. They can reverse an authored transaction and restore its mapped selection, but they do not act as collaborative review decisions.
+
+## Persistence and collaboration
+
+Save `editor.read.value()` as one document. The native codec validates document identity, operation identity, checkpoints, positions, retained content, and decisions on load. Unknown or malformed data fails before publication.
+
+Install `yjs` from `plitejs/yjs` on every peer to transport authored operation batches and checkpoints. The adapter preserves causal decisions, duplicate delivery idempotence, offline tails, named roots, and retained history through compaction.
+
+## Format helpers
+
+`plitejs/authored` exports `readAuthoredFormatSnapshot`, `serializeAuthoredJson`, `deserializeAuthoredJson`, and `createAuthoredReviewDocument`. The Plate facade adds Markdown, HTML, and DOCX adapters. See [Authored Changes](/docs/authored-changes).
+
+## API reference
+
+| Surface | Purpose |
+| --- | --- |
+| `tx.authored.propose(options?)` | Start or amend a proposal in the active transaction. |
+| `read.authored.view()` | Read the current view policy. |
+| `read.authored.change(id)` | Read one keyed change. |
+| `read.authored.changes(query?)` | Read a cursor-paged change list. |
+| `read.authored.changesAt(range)` | Read changes intersecting a range. |
+| `read.authored.select(query)` | Capture a snapshot-bound selection. |
+| `read.authored.preview(decision)` | Validate a decision without applying it. |
+| `update.authored.decide(decision)` | Accept or reject selected changes. |
+| `update.authored.resolve(decision)` | Apply an explicit conflict resolution. |
+| `update.authored.revert({ selection })` | Compensate retained accepted changes. |
+| `api.authored.setView(policy)` | Set one view's authored policy. |

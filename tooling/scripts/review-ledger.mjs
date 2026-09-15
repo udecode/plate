@@ -16,6 +16,7 @@ const hash = (value) => createHash('sha256').update(value).digest('hex');
 const json = (value) => `${JSON.stringify(value, null, 2)}\n`;
 const read = (root, path) => readFileSync(join(root, path), 'utf-8');
 const parse = (root, path) => JSON.parse(read(root, path));
+const compareStrings = (a, b) => a.localeCompare(b);
 const latestRecord = (all, scope) =>
   all.findLast(
     (record) => record.scope === scope && record.kind === 'review'
@@ -38,6 +39,9 @@ export function files(root, path, exclusions = []) {
           'node_modules',
           '.next',
           '.git',
+          '.turbo',
+          '.tmp',
+          '.cache',
           'dist',
           'test-results',
           'playwright-report',
@@ -62,29 +66,25 @@ export function featureId(path) {
     if (pkg === 'platejs' && parts[3] === 'features') {
       return `platejs/${parts[4]}`;
     }
-    if (pkg === 'plitejs' && parts[3] === 'core') {
-      const name = parts[4];
-      if (
-        /schema|extension|facet|command|read-definition|read-registry/.test(
-          name
-        )
-      ) {
-        return 'plitejs/schema-composition';
-      }
-      if (/anchor|range|selection/.test(name)) return 'plitejs/positions';
-      if (/authored/.test(name)) return 'plitejs/authored';
-      if (/slice|fragment|codec/.test(name)) return 'plitejs/content-slices';
+    if (
+      pkg === 'platejs' &&
+      parts[3] === 'code-block' &&
+      parts[4] === 'codemirror'
+    ) {
+      return 'platejs/code-block/codemirror';
     }
-    if (pkg === 'plitejs' && parts[3] === 'react' && parts[4] === 'editable') {
-      const name = parts[5];
-      if (/clipboard|drag/.test(name)) return 'plitejs/native-transfer';
-      if (/composition|android|input|keyboard/.test(name)) {
-        return 'plitejs/native-input';
-      }
-      if (/selection|caret|navigation|focus|mouse/.test(name)) {
-        return 'plitejs/native-selection';
-      }
-      if (/mutation|repair/.test(name)) return 'plitejs/dom-reconciliation';
+    if (pkg === 'plitejs' && parts[3] === 'core') {
+      return `plitejs/core/${parts[4].replace(/\.[^.]+$/, '')}`;
+    }
+    if (pkg === 'plitejs' && parts[3] === 'react') {
+      const owner = parts[4] === 'editable' ? `editable/${parts[5]}` : parts[4];
+      return `plitejs/react/${owner.replace(/\.[^.]+$/, '')}`;
+    }
+    if (pkg === 'platejs' && parts[3] === 'lib') {
+      return `platejs/lib/${parts[4].replace(/\.[^.]+$/, '')}`;
+    }
+    if (pkg === 'plitejs' && parts[3] === 'editor') {
+      return `plitejs/editor/${parts[4].replace(/\.[^.]+$/, '')}`;
     }
     return `${pkg}/${parts.length > 4 ? parts[3] : 'entrypoints'}`;
   }
@@ -93,6 +93,35 @@ export function featureId(path) {
       .replace(/\.(spec|test|slow|lifecycle|keyboard|navigation|type).*$/, '')
       .replace(/\.[^.]+$/, '')
       .replace(/-static$/, '')}`;
+  }
+  if (path.startsWith('apps/www/src/registry/examples/')) {
+    if (parts[5] === 'values') {
+      return `example/value/${parts[6] === 'cn' ? parts[7] : parts[6]}`
+        .replace(/\.(spec|test).*$/, '')
+        .replace(/\.[^.]+$/, '');
+    }
+    return `example/registry/${parts[5].replace(/\.(spec|test).*$/, '').replace(/\.[^.]+$/, '')}`;
+  }
+  if (
+    path.startsWith('apps/www/src/registry/lib/') ||
+    path.startsWith('apps/www/src/registry/hooks/')
+  ) {
+    return `registry/${parts[4]}/${parts[5].replace(/\.[^.]+$/, '')}`;
+  }
+  if (path.startsWith('apps/www/src/registry/app/api/')) {
+    return `application/${parts[6]}`;
+  }
+  if (path.startsWith('apps/www/src/app/(app)/examples/plite/_examples/')) {
+    return `example/plite/${parts[8].replace(/\.[^.]+$/, '')}`;
+  }
+  if (path.startsWith('apps/www/src/app/(app)/examples/plite/')) {
+    return 'application/plite-examples';
+  }
+  if (path.startsWith('apps/www/tests/browser/')) {
+    return `browser/${parts[4].replace(/\.spec\.ts$/, '')}`;
+  }
+  if (path.startsWith('apps/www/src/app/api/ai/')) {
+    return `application/ai-${parts[6]}`;
   }
   if (path.startsWith('apps/www/src/registry/')) return `registry/${parts[4]}`;
   if (path.startsWith('apps/plite/')) return 'tooling/browser-proof';
@@ -109,8 +138,10 @@ export function discover(root, index) {
       ),
       ...(index.inventory.inputs ?? []),
     ]),
-  ].sort()) {
-    if (!/\.(?:[cm]?[jt]sx?|json|css|mdx?)$/.test(path)) continue;
+  ].sort(compareStrings)) {
+    if (!/\.(?:[cm]?[jt]sx?|json|css|mdx?|snap|html|txt|ya?ml)$/.test(path)) {
+      continue;
+    }
     if (
       index.inventory.exclusions.some((item) =>
         new RegExp(item.pattern).test(path)
@@ -122,7 +153,7 @@ export function discover(root, index) {
     if (!groups.has(id)) groups.set(id, []);
     groups.get(id).push(path);
   }
-  for (const pkg of readdirSync(join(root, 'packages')).sort()) {
+  for (const pkg of readdirSync(join(root, 'packages')).sort(compareStrings)) {
     const path = `packages/${pkg}/package.json`;
     if (!existsSync(join(root, path))) continue;
     const manifest = parse(root, path);
@@ -139,7 +170,7 @@ export function discover(root, index) {
       body,
       'Capability catalog changed shape; reconcile its inventory parser'
     );
-    const keys = [...body.matchAll(/^\s+(\w+): '[^']+',?$/gm)].map(
+    const keys = [...body.matchAll(/^\s+(\w+): (["'])[^"']+\2,?$/gm)].map(
       (match) => match[1]
     );
     assert.equal(
@@ -163,9 +194,18 @@ export function discover(root, index) {
           ...sources
             .filter(([path, text]) => path !== catalogPath && use.test(text))
             .map(([path]) => path),
-        ].sort()
+        ].sort(compareStrings)
       );
     }
+  }
+  for (const example of pliteExamples(root)) {
+    const id = `example/plite/${example.id}`;
+    groups.set(
+      id,
+      [...new Set([...(groups.get(id) ?? []), ...example.paths])].sort(
+        compareStrings
+      )
+    );
   }
   return [...groups]
     .map(([id, paths]) => ({
@@ -181,11 +221,72 @@ export function discover(root, index) {
     .sort((a, b) => a.id.localeCompare(b.id));
 }
 
+export function pliteExamples(root) {
+  const directory = 'apps/www/src/app/(app)/examples/plite';
+  const catalog = `${directory}/plite-example-registry.ts`;
+  if (!existsSync(join(root, catalog))) return [];
+  const loaders = `${directory}/plite-example-loaders.tsx`;
+  const body = read(root, catalog).match(
+    /export const EXAMPLE_NAMES_AND_PATHS = \[([\s\S]*?)\] as const/
+  )?.[1];
+  assert.ok(body, 'Plite example catalog changed shape');
+  const entries = [...body.matchAll(/\['([^']+)', '([^']+)'\]/g)];
+  assert.equal(
+    entries.length,
+    body.split('\n').filter((line) => line.trim()).length,
+    'Unparsed Plite example declaration'
+  );
+  const source = read(root, loaders);
+  const starts = [
+    ...source.matchAll(
+      /^ {2}(?:'([^']+)'|(\w+)): (?:createPliteExampleLoader|dynamic)\(/gm
+    ),
+  ];
+  assert.deepEqual(
+    entries.map((entry) => entry[2]).sort(compareStrings),
+    starts.map((entry) => entry[1] ?? entry[2]).sort(compareStrings),
+    'Plite example catalog and loaders disagree'
+  );
+  return entries.map((entry) => {
+    const i = starts.findIndex((item) => (item[1] ?? item[2]) === entry[2]);
+    const imported = source
+      .slice(starts[i].index, starts[i + 1]?.index)
+      .match(/import\('([^']+)'\)/)?.[1];
+    assert.ok(imported, `Missing loader for ${entry[2]}`);
+    const stem = imported.startsWith('@/')
+      ? `apps/www/src/${imported.slice(2)}`
+      : `${directory}/${imported.replace(/^\.\//, '')}`;
+    const implementation = [`${stem}.tsx`, `${stem}.ts`].find((path) =>
+      existsSync(join(root, path))
+    );
+    assert.ok(implementation, `Missing example implementation: ${entry[2]}`);
+    return {
+      id: entry[2],
+      title: entry[1],
+      paths: [catalog, loaders, implementation],
+    };
+  });
+}
+
+const directoryFingerprint = (root, path) =>
+  hash(
+    files(root, path)
+      .map((file) => `${file}\0${hash(readFileSync(join(root, file)))}`)
+      .join('\n')
+  );
+
+const inventoryFingerprint = (inventory) =>
+  hash(json(inventory.map(({ id, fingerprint }) => ({ id, fingerprint }))));
+
 export function freshness(root, record, inventory = []) {
   if (!record.source) return 'unknown';
   const inputs = record.source.files ?? {};
   const features = record.source.features ?? {};
-  if (!Object.keys(inputs).length && !Object.keys(features).length) {
+  if (
+    !Object.keys(inputs).length &&
+    !Object.keys(features).length &&
+    !Object.keys(record.source.directories ?? {}).length
+  ) {
     return 'unknown';
   }
   if (
@@ -201,6 +302,15 @@ export function freshness(root, record, inventory = []) {
     Object.entries(features).some(
       ([id, digest]) =>
         inventory.find((item) => item.id === id)?.fingerprint !== digest
+    )
+  ) {
+    return 'stale';
+  }
+  if (
+    Object.entries(record.source.directories ?? {}).some(
+      ([path, digest]) =>
+        !existsSync(join(root, path)) ||
+        directoryFingerprint(root, path) !== digest
     )
   ) {
     return 'stale';
@@ -235,20 +345,9 @@ export function freshness(root, record, inventory = []) {
 export function draftReview(root, index, scopeId) {
   const scope = index.scopes.find((item) => item.id === scopeId);
   assert.ok(scope, 'Unknown scope');
-  const scopeIds = new Set([scopeId]);
-  const include = (id) => {
-    for (const dependency of index.scopes.find((item) => item.id === id)
-      .dependsOn) {
-      if (!scopeIds.has(dependency)) {
-        scopeIds.add(dependency);
-        include(dependency);
-      }
-    }
-  };
-  include(scopeId);
   const members = new Set(
     index.features
-      .filter((feature) => scopeIds.has(feature.scope))
+      .filter((feature) => feature.scope === scopeId)
       .map((feature) => feature.id)
   );
   const previous = latestRecord(records(root, index), scopeId)?.id ?? null;
@@ -256,6 +355,8 @@ export function draftReview(root, index, scopeId) {
     ...new Set([
       ...scope.owners,
       ...scope.consumers,
+      ...scope.proof,
+      ...(scope.evidenceInputs ?? []),
       'VISION.md',
       'docs/vision/common.md',
       'package.json',
@@ -263,11 +364,7 @@ export function draftReview(root, index, scopeId) {
       '.agents/skills/best-api-review/SKILL.md',
       '.agents/rules/task/references/best-api-review.md',
     ]),
-  ].flatMap((path) =>
-    existsSync(join(root, path)) && readdirSafe(root, path)
-      ? files(root, path)
-      : [path]
-  );
+  ];
   return {
     id: '',
     scope: scopeId,
@@ -275,7 +372,7 @@ export function draftReview(root, index, scopeId) {
     date: new Date().toISOString().slice(0, 10),
     question: scope.question,
     model: null,
-    method: 'best-api-review/history-v1',
+    method: 'best-api-review/history-v2',
     trigger: '',
     requirements: [],
     evidenceReuse: '',
@@ -289,8 +386,17 @@ export function draftReview(root, index, scopeId) {
     source: {
       files: Object.fromEntries(
         paths
-          .filter((path) => existsSync(join(root, path)))
+          .filter(
+            (path) => existsSync(join(root, path)) && !readdirSafe(root, path)
+          )
           .map((path) => [path, hash(readFileSync(join(root, path)))])
+      ),
+      directories: Object.fromEntries(
+        paths
+          .filter(
+            (path) => existsSync(join(root, path)) && readdirSafe(root, path)
+          )
+          .map((path) => [path, directoryFingerprint(root, path)])
       ),
       features: Object.fromEntries(
         discover(root, index)
@@ -339,7 +445,68 @@ export function orderScopes(scopes) {
   return result;
 }
 
-function localPath(root, path) {
+export function reviewQueue(index) {
+  orderScopes(index.scopes);
+  const scopes = new Map(index.scopes.map((scope) => [scope.id, scope]));
+  const groups = index.reviewGroups ?? [];
+  const membership = new Map();
+  const ids = new Set(scopes.keys());
+
+  for (const group of groups) {
+    assert.ok(
+      /^[a-z0-9][a-z0-9-]+$/.test(group.id) && !ids.has(group.id),
+      `Invalid or duplicate review group: ${group.id}`
+    );
+    ids.add(group.id);
+    assert.ok(
+      group.title?.trim() &&
+        group.reason?.trim() &&
+        Array.isArray(group.scopes) &&
+        group.scopes.length > 1,
+      `Incomplete review group: ${group.id}`
+    );
+    for (const id of group.scopes) {
+      assert.ok(scopes.has(id), `Unknown review group member: ${id}`);
+      assert.ok(!membership.has(id), `Repeated review group member: ${id}`);
+      membership.set(id, group.id);
+    }
+  }
+
+  const units = [
+    ...groups,
+    ...index.scopes
+      .filter((scope) => !membership.has(scope.id))
+      .map((scope) => ({
+        id: scope.id,
+        title: scope.title,
+        scopes: [scope.id],
+      })),
+  ].map((unit) => {
+    const members = unit.scopes.map((id) => scopes.get(id));
+    const dependsOn = [
+      ...new Set(
+        members.flatMap((scope) =>
+          scope.dependsOn.map((id) => membership.get(id) ?? id)
+        )
+      ),
+    ].filter((id) => id !== unit.id);
+
+    return {
+      ...unit,
+      dependsOn,
+      last: members.some((scope) => scope.last),
+      opportunity: {
+        score: Math.max(...members.map((scope) => scope.opportunity.score)),
+      },
+      reviewed: members.filter((scope) => scope.review === 'reviewed').length,
+      pending: members.filter((scope) => scope.review !== 'reviewed').length,
+    };
+  });
+
+  return orderScopes(units);
+}
+
+function localPath(root, path, requireExists = true) {
   assert.ok(
     typeof path === 'string' &&
       path &&
@@ -347,7 +514,9 @@ function localPath(root, path) {
       !path.split('/').includes('..'),
     `Expected repository-relative path: ${path}`
   );
-  assert.ok(existsSync(join(root, path)), `Missing evidence: ${path}`);
+  if (requireExists) {
+    assert.ok(existsSync(join(root, path)), `Missing evidence: ${path}`);
+  }
 }
 
 export function validateRecord(
@@ -399,7 +568,7 @@ export function validateRecord(
     'Invalid review relation'
   );
   assert.ok(record.references?.length, 'Record requires evidence references');
-  record.references.forEach((path) => localPath(root, path));
+  record.references.forEach((path) => localPath(root, path, recording));
   if (record.previous) {
     assert.ok(
       prior.some(
@@ -432,8 +601,13 @@ export function validateRecord(
       'Alternatives require concise findings'
     );
     assert.ok(
-      record.source && Object.keys(record.source.features ?? {}).length,
-      'Review requires feature fingerprints'
+      record.source &&
+        [
+          record.source.features,
+          record.source.files,
+          record.source.directories,
+        ].some((input) => Object.keys(input ?? {}).length),
+      'Review requires current evidence fingerprints'
     );
     const expected = index.features
       .filter((feature) => feature.scope === record.scope)
@@ -443,6 +617,18 @@ export function validateRecord(
         expected.every((id) => record.source.features[id]),
         'Review source must cover every scope member'
       );
+      const scope = index.scopes.find((item) => item.id === record.scope);
+      for (const path of [
+        ...scope.owners,
+        ...scope.consumers,
+        ...scope.proof,
+        ...(scope.evidenceInputs ?? []),
+      ]) {
+        assert.ok(
+          record.source.files?.[path] || record.source.directories?.[path],
+          `Review must capture declared evidence: ${path}`
+        );
+      }
     }
     assert.ok(
       !prior.some((item) => item.scope === record.scope) || record.previous,
@@ -498,8 +684,8 @@ export function validate(root, index, { current = true } = {}) {
     'record path'
   );
   assert.deepEqual(
-    index.features.map((item) => item.id).sort(),
-    live.map((item) => item.id).sort(),
+    index.features.map((item) => item.id).sort(compareStrings),
+    live.map((item) => item.id).sort(compareStrings),
     'Inventory changed; reconcile added/removed feature identities'
   );
   for (const feature of index.features) {
@@ -538,17 +724,40 @@ export function validate(root, index, { current = true } = {}) {
       `Invalid scope or opportunity: ${scope.id}`
     );
     assert.ok(
-      scope.owners.length && scope.consumers.length && scope.proof.length,
+      scope.owners.length &&
+        scope.consumers.length &&
+        Array.isArray(scope.proof),
       `Missing owner/consumer/proof: ${scope.id}`
+    );
+    assert.ok(
+      scope.proof.length || scope.gaps?.trim(),
+      `Missing proof gap: ${scope.id}`
     );
     [
       ...scope.owners,
       ...scope.consumers,
       ...scope.proof,
+      ...(scope.evidenceInputs ?? []),
       ...scope.plans,
       ...(scope.historyCandidates ?? []),
       ...(scope.decision ? [scope.decision] : []),
     ].forEach((path) => localPath(root, path));
+    for (const id of scope.relatedScopes ?? []) {
+      assert.ok(
+        id !== scope.id && index.scopes.some((item) => item.id === id),
+        `Unknown related scope: ${id}`
+      );
+    }
+    if (index.inventory.snapshot) {
+      assert.ok(
+        scope.inspection?.trim() && scope.gaps?.trim(),
+        `Missing inspection limits: ${scope.id}`
+      );
+      assert.ok(
+        !scope.dependsOn.length || scope.prerequisiteReason?.trim(),
+        `Missing prerequisite reason: ${scope.id}`
+      );
+    }
     assert.ok(
       ['unassessed', 'historical', 'reviewed'].includes(scope.review),
       `Invalid review state: ${scope.id}`
@@ -564,7 +773,15 @@ export function validate(root, index, { current = true } = {}) {
       `Invalid proof state: ${scope.id}`
     );
   }
+  if (current && index.inventory.snapshot) {
+    assert.equal(
+      index.inventory.snapshot.fingerprint,
+      inventoryFingerprint(live),
+      'Inventory snapshot fingerprint is stale'
+    );
+  }
   orderScopes(index.scopes);
+  reviewQueue(index);
   const all = records(root, index);
   unique(
     all.map((item) => item.id),
@@ -700,28 +917,75 @@ export function render(root, index) {
   const all = records(root, index);
   const live = discover(root, index);
   const link = (path) => `[${path.split('/').at(-1)}](../../${path})`;
-  const ordered = orderScopes(index.scopes);
+  const queue = reviewQueue(index);
   const lines = [
     '# Feature review ledger',
     '',
     'Generated by `node tooling/scripts/review-ledger.mjs render`. Edit `review-index.json`, then regenerate.',
     '',
-    `Inventory: ${index.features.length} feature/entrypoint groups in ${index.scopes.length} semantic review scopes. Snapshot: ${index.inventory.checkedAt}.`,
+    `Inventory: ${index.features.length} source/capability/entrypoint groups across ${index.scopes.length} semantic review questions. Observation: ${index.inventory.checkedAt}.`,
     '',
-    'Scores estimate review payoff (0–10), not architecture quality. Dependencies determine eligible reviews; payoff ranks eligible scopes, with AI last. A directly requested feature still takes precedence. Product implementation stays in its owning plan.',
+    `Review queue: ${queue.filter((unit) => unit.pending > 0).length} pending reviews across ${queue.reduce((count, unit) => count + unit.pending, 0)} pending questions; ${queue.length} reviews in total. Only the configured core architecture questions share a review. Other features remain independent.`,
     '',
-    'Source matching does not certify behavior. Review, adoption and proof states remain independent. Grouped members share the scope question; support members expose or verify that job. Neither disposition is an architecture verdict.',
+    `Local working-tree snapshot; base commit: ${index.inventory.snapshot?.baseCommit ?? 'unknown'}. Source fingerprint: ${index.inventory.snapshot?.fingerprint ?? 'not recorded'}. Current inventory observation: ${index.inventory.snapshot ? (index.inventory.snapshot.fingerprint === inventoryFingerprint(live) ? 'matching' : 'stale; inspect changes before refresh') : 'unknown'}. This includes local files and does not claim that they are on GitHub.`,
     '',
-    '| Order | Scope | Payoff | Review | Adoption | Proof | Latest record / freshness |',
-    '| --- | --- | ---: | --- | --- | --- | --- |',
+    `Bounded coverage: ${new Set(live.flatMap((item) => item.paths)).size} distinct files, ${live.filter((item) => item.id.startsWith('capability/')).length} declared PLUGINS names, ${pliteExamples(root).length} actual Plite example catalog keys. Source groups are census entries, not independently reviewed features. Membership can overlap; totals do not add to a count of user capabilities.`,
+    '',
+    `Boundary: ${index.inventory.boundary ?? 'See the configured roots and exclusions in review-index.json.'}`,
+    '',
+    'Scores estimate review payoff (0–10), not architecture quality. Only justified review prerequisites constrain order; related questions supply context. Payoff ranks eligible scopes, with AI last. A directly requested feature still takes precedence. Product implementation stays in its owning plan.',
+    '',
+    'Source matching does not certify behavior. Review, adoption, proof and inspection depth remain independent. Each question names actual owners, consumers, selected proof inputs and remaining gaps; a file assigned to a census group is not a completed architecture assessment. Draft evidence includes those declared inputs; queue prerequisites never silently expand its fingerprints.',
+    '',
+    'Groups are one investigation with a verdict for every member question. Review completion counts recorded assessments; source freshness, adoption and proof remain visible under each question.',
+    '',
+    '| Order | Review | Payoff | Questions | Reviewed | Pending |',
+    '| --- | --- | ---: | ---: | ---: | ---: |',
   ];
-  for (const [i, scope] of ordered.entries()) {
-    const latest = latestRecord(all, scope.id);
+  for (const [i, unit] of queue.entries()) {
     lines.push(
-      `| ${i + 1} | [${scope.title}](#${scope.id}) | ${scope.opportunity.score} | ${scope.review} | ${scope.adoption} | ${scope.proofState} | ${latest ? `${latest.id} / ${freshness(root, latest, live)}` : 'none / unknown'} |`
+      `| ${i + 1} | [${unit.title}](#${unit.id}) | ${unit.opportunity.score} | ${unit.scopes.length} | ${unit.reviewed} | ${unit.pending} |`
     );
   }
+  for (const group of index.reviewGroups ?? []) {
+    lines.push(
+      '',
+      `<a id="${group.id}"></a>`,
+      `## ${group.title}`,
+      '',
+      group.reason,
+      '',
+      `Run \`$best-api-review audit ${group.id}\`. Use \`node tooling/scripts/review-ledger.mjs lookup ${group.id}\` for every member's owners, consumers, proof and history. Draft and record each member by its stable question ID.`,
+      '',
+      ...group.scopes.map((id) => {
+        const scope = index.scopes.find((item) => item.id === id);
+        return `- [${scope.title}](#${id}) (\`${id}\`): ${scope.question}`;
+      })
+    );
+  }
+  const examples = pliteExamples(root);
+  if (examples.length) {
+    lines.push(
+      '',
+      '## Plite example catalog',
+      '',
+      'Exact source-declared keys and their loaded implementation. Labels are not converted into invented route names. Shared loaders and helper files remain census support.',
+      '',
+      '| Catalog key | Review question | Implementation |',
+      '| --- | --- | --- |'
+    );
+    for (const example of examples) {
+      const scopeId = index.features.find(
+        (feature) => feature.id === `example/plite/${example.id}`
+      )?.scope;
+      assert.ok(scopeId, `Unmapped example: ${example.id}`);
+      lines.push(
+        `| ${example.id} | [${scopeId}](#${scopeId}) | ${link(example.paths.at(-1))} |`
+      );
+    }
+  }
   for (const scope of orderScopes(index.scopes)) {
+    const latest = latestRecord(all, scope.id);
     lines.push(
       '',
       `<a id="${scope.id}"></a>`,
@@ -729,15 +993,25 @@ export function render(root, index) {
       '',
       scope.question,
       '',
+      `Review: ${scope.review}. Adoption: ${scope.adoption}. Proof: ${scope.proofState}. Latest record / freshness: ${latest ? `${latest.id} / ${freshness(root, latest, live)}` : 'none / unknown'}.`,
+      '',
       `Payoff ${scope.opportunity.score}/10: ${scope.opportunity.reason}`,
       '',
-      `Depends on: ${scope.dependsOn.join(', ') || 'none'}. Next owner: ${scope.nextOwner}.`,
+      `Review prerequisites: ${scope.dependsOn.map((id) => `[${id}](#${id})`).join(', ') || 'none'}. ${scope.prerequisiteReason ?? ''} Next owner: ${scope.nextOwner}.`,
+      '',
+      `Related questions/history (not prerequisites): ${(scope.relatedScopes ?? []).map((id) => `[${id}](#${id})`).join(', ') || 'none'}.`,
       '',
       `Owners: ${scope.owners.map(link).join(', ')}.`,
       '',
       `Consumers: ${scope.consumers.map(link).join(', ')}.`,
       '',
-      `Proof entry points (not replayed by this ledger): ${scope.proof.map(link).join(', ')}.`,
+      `Proof entry points (not replayed by this ledger): ${scope.proof.map(link).join(', ') || 'none located; see gaps'}.`,
+      '',
+      `Additional evidence inputs: ${(scope.evidenceInputs ?? []).map(link).join(', ') || 'none declared'}.`,
+      '',
+      `Inspection: ${scope.inspection ?? 'Entry points located; full review not executed.'}`,
+      '',
+      `Gaps: ${scope.gaps ?? 'Behavior, adoption and proof remain unassessed.'}`,
       '',
       `Plans/context: ${scope.plans.map(link).join(', ') || 'No specific prior plan linked; search before review.'}`
     );
@@ -799,23 +1073,59 @@ export function main(root, args) {
     }));
   }
   if (command === 'research') return searchResearch(root, argument);
+  if (command === 'queue') return reviewQueue(index);
   if (command === 'draft') return draftReview(root, index, argument);
   if (command === 'lookup') {
     assert.ok(argument, 'Supply a scope, feature or search term');
-    const scopes = index.scopes.filter(
-      (scope) =>
-        `${scope.id} ${scope.title} ${scope.question}`
-          .toLowerCase()
-          .includes(argument.toLowerCase()) ||
-        index.features.some(
-          (feature) =>
-            feature.scope === scope.id &&
-            feature.id.toLowerCase().includes(argument.toLowerCase())
-        )
+    const group = (index.reviewGroups ?? []).find(
+      (item) => item.id === argument.toLowerCase()
+    );
+    const exact = index.scopes.find(
+      (scope) => scope.id === argument.toLowerCase()
+    );
+    const scopes = index.scopes.filter((scope) =>
+      group
+        ? group.scopes.includes(scope.id)
+        : exact
+          ? scope === exact
+          : `${scope.id} ${scope.title} ${scope.question}`
+              .toLowerCase()
+              .includes(argument.toLowerCase()) ||
+            index.features.some(
+              (feature) =>
+                feature.scope === scope.id &&
+                feature.id.toLowerCase().includes(argument.toLowerCase())
+            )
     );
     const live = discover(root, index);
     return scopes.map((scope) => ({
       ...scope,
+      reviewGroup:
+        (index.reviewGroups ?? []).find((item) =>
+          item.scopes.includes(scope.id)
+        ) ?? null,
+      observation: {
+        snapshot: index.inventory.snapshot ?? null,
+        inventoryStatus: index.inventory.snapshot
+          ? index.inventory.snapshot.fingerprint === inventoryFingerprint(live)
+            ? 'matching'
+            : 'stale'
+          : 'unknown',
+        status: index.features
+          .filter((feature) => feature.scope === scope.id)
+          .some(
+            (feature) =>
+              live.find((item) => item.id === feature.id)?.fingerprint !==
+              feature.fingerprint
+          )
+          ? 'stale'
+          : 'matching',
+      },
+      related: (scope.relatedScopes ?? []).map((id) => ({
+        id,
+        title: index.scopes.find((item) => item.id === id)?.title,
+        history: records(root, index).filter((record) => record.scope === id),
+      })),
       features: index.features.filter((feature) => feature.scope === scope.id),
       history: records(root, index)
         .filter((record) => record.scope === scope.id)
@@ -841,6 +1151,20 @@ export function main(root, args) {
       };
     });
     index.inventory.checkedAt = new Date().toISOString().slice(0, 10);
+    let baseCommit = null;
+    try {
+      baseCommit = execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], {
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim();
+    } catch {
+      baseCommit = null;
+    }
+    index.inventory.snapshot = {
+      kind: 'working-tree',
+      baseCommit,
+      fingerprint: inventoryFingerprint(live),
+    };
     writeFileSync(join(root, indexPath), json(index));
     return 'Inventory refreshed; reviews and proof statuses unchanged. Run render and check.';
   }
@@ -868,7 +1192,7 @@ export function main(root, args) {
     return counts;
   }
   throw new Error(
-    'Usage: node tooling/scripts/review-ledger.mjs discover|lookup <scope>|research <key>|draft <scope>|record <json>|refresh|render|check'
+    'Usage: node tooling/scripts/review-ledger.mjs discover|queue|lookup <scope-or-group>|research <key>|draft <scope>|record <json>|refresh|render|check'
   );
 }
 

@@ -9,7 +9,7 @@ import type {
 } from 'plitejs';
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   editorCommands,
   SelectionApi,
 } from 'plitejs';
@@ -30,7 +30,7 @@ const paragraph = (text: string): Descendant => ({
   children: [{ text }],
 });
 
-const historyTestEditor = () => createEditor({ extensions: [history()] });
+const historyTestEditor = () => createEditor({ plugins: [history()] });
 
 const getHistory = (editor: EditorType) =>
   editor.read((state: any) => state.history());
@@ -93,7 +93,7 @@ describe('plite-history integrity contract', () => {
 
     try {
       const editor = createEditor({
-        extensions: [history({ newBatchDelay: 500 })],
+        plugins: [history({ newBatchDelay: 500 })],
         initialSelection: {
           kind: 'text',
           anchor: { path: [0, 0], offset: 0 },
@@ -162,9 +162,9 @@ describe('plite-history integrity contract', () => {
 
   it('keeps extender-added edits in one isolated undo and redo batch', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         history(),
-        defineExtension('test-history-command-extender', {
+        definePlugin('test-history-command-extender', {
           commands: ({ around }) => [
             around(editorCommands.insertText, ({ input, next, state }) => {
               const spec = next(input);
@@ -324,7 +324,7 @@ describe('plite-history integrity contract', () => {
     });
 
     const unsubscribe = editor.install(
-      defineExtension('test-move-command', {
+      definePlugin('test-move-command', {
         commands: ({ handle }) => [
           handle(editorCommands.move, () => {
             seenCommands.push(editorCommands.move.id);
@@ -356,7 +356,7 @@ describe('plite-history integrity contract', () => {
     });
 
     const unsubscribe = editor.install(
-      defineExtension('test-add-mark-command', {
+      definePlugin('test-add-mark-command', {
         commands: ({ handle }) => [
           handle(editorCommands.addMark, () => {
             seenCommands.push(editorCommands.addMark.id);

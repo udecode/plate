@@ -1,7 +1,7 @@
 'use client';
 
-import { defineDocumentMigrations, migratePlateV54 } from 'platejs/migrations';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { defineDocumentMigrations, migrateV54 } from 'platejs/migrations';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
@@ -97,7 +97,7 @@ const MigrationDemoSchema = {
 } as const;
 
 const MigrationDemoMigrations = defineDocumentMigrations(MigrationDemoSchema, {
-  steps: { 54: migratePlateV54 },
+  steps: { 54: migrateV54 },
   unversioned: 53,
 });
 
@@ -110,10 +110,10 @@ export default function DocumentMigrationDemo() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor placeholder="Type something..." />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

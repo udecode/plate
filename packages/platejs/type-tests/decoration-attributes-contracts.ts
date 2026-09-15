@@ -1,7 +1,7 @@
-import { defineBasePlugin } from 'platejs';
-import { definePlatePlugin, toPlatePlugin } from 'platejs/react';
+import { definePlugin as defineHeadlessPlugin } from 'platejs';
+import { definePlugin, toReactPlugin } from 'platejs/react';
 
-const BasePaint = defineBasePlugin('basePaint', {
+const BasePaint = defineHeadlessPlugin('basePaint', {
   decorate: {
     attributes: ({ decoration, entry, plugin, store }) => {
       decoration.key satisfies string;
@@ -33,7 +33,7 @@ BasePaint.configure({
   },
 });
 
-export const ReactPaint = definePlatePlugin('reactPaint', {
+export const ReactPaint = definePlugin('reactPaint', {
   decorate: {
     attributes: ({ decoration, editor, entry, plugin, store }) => {
       decoration.key satisfies string;
@@ -66,7 +66,7 @@ export const ReactPaint = definePlatePlugin('reactPaint', {
     decorate: { attributes: { className: 'configured' } },
   });
 
-export const ConvertedPaint = toPlatePlugin(BasePaint).configure({
+export const ConvertedPaint = toReactPlugin(BasePaint).configure({
   decorate: {
     attributes: ({ editor, store }) => {
       editor.api.dom;
@@ -75,19 +75,19 @@ export const ConvertedPaint = toPlatePlugin(BasePaint).configure({
   },
 });
 
-defineBasePlugin('missingBaseReader', {
+defineHeadlessPlugin('missingBaseReader', {
   // @ts-expect-error A new decoration capability requires a semantic reader.
   decorate: { attributes: { className: 'paint' } },
 });
-definePlatePlugin('missingReactReader', {
+definePlugin('missingReactReader', {
   // @ts-expect-error A new decoration capability requires a semantic reader.
   decorate: { attributes: null },
 });
-defineBasePlugin('noBasePaint', {}).extend({
+defineHeadlessPlugin('noBasePaint', {}).extend({
   // @ts-expect-error A stage introducing decorations must supply a reader.
   decorate: { attributes: { className: 'paint' } },
 });
-definePlatePlugin('noReactPaint', {}).extend({
+definePlugin('noReactPaint', {}).extend({
   // @ts-expect-error A stage introducing decorations must supply a reader.
   decorate: { attributes: { className: 'paint' } },
 });

@@ -5,6 +5,7 @@ import {
   TextApi,
   type Value,
 } from '../facade';
+import { getCompiledPlatePlugin } from '../internal/plugin/compilePlateModel';
 import type { DocumentMigration } from '../lib/editor/documentMigrations';
 
 const CODE_DRAWING_LANGUAGES = new Set([
@@ -56,9 +57,9 @@ const safeInteger = (value: unknown) => {
 /** Apply the final AST contracts inside the Plate v54 migration. */
 export const migratePlateV54Ast: DocumentMigration = ({ document, editor }) => {
   const resolveElementType = (name: string) => {
-    const plugin = editor.plugin(name);
+    const descriptor = getCompiledPlatePlugin(editor, name);
 
-    return plugin.installed ? plugin.schema.type : undefined;
+    return descriptor ? editor.plugin(descriptor).schema.type : undefined;
   };
   const ownsProperty = (type: string, key: string) =>
     editor.read.schema.property({ key, placement: 'element', type }) !== null;

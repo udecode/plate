@@ -1,9 +1,9 @@
 import type { Locator } from '@playwright/test';
 
-import { PLITE_BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY } from './constants';
 import type { SelectionSnapshot } from './types';
 
-type PliteBrowserHarnessHandle = {
+type BrowserHarnessHandle = {
   deleteBackward: () => void;
   deleteForward: () => void;
   deleteFragment: () => void;
@@ -18,7 +18,7 @@ type PliteBrowserHarnessHandle = {
   undo: () => void;
 };
 
-type PliteBrowserHarnessHandleMethod = keyof PliteBrowserHarnessHandle;
+type BrowserHarnessHandleMethod = keyof BrowserHarnessHandle;
 
 /**
  * Typed evaluator used only behind the curated editor harness.
@@ -26,13 +26,13 @@ type PliteBrowserHarnessHandleMethod = keyof PliteBrowserHarnessHandle;
  * @internal
  */
 export const evaluateHarnessHandle = async <
-  TMethod extends PliteBrowserHarnessHandleMethod,
+  TMethod extends BrowserHarnessHandleMethod,
 >(
   root: Locator,
   method: TMethod,
-  args?: Parameters<PliteBrowserHarnessHandle[TMethod]>,
+  args?: Parameters<BrowserHarnessHandle[TMethod]>,
   errorMessage = `This editor surface does not expose ${method}`
-): Promise<ReturnType<PliteBrowserHarnessHandle[TMethod]>> =>
+): Promise<ReturnType<BrowserHarnessHandle[TMethod]>> =>
   root.evaluate(
     (
       element: HTMLElement,
@@ -57,5 +57,5 @@ export const evaluateHarnessHandle = async <
 
       return fn(...innerArgs);
     },
-    { args: args ?? [], errorMessage, key: PLITE_BROWSER_HANDLE_KEY, method }
-  ) as Promise<ReturnType<PliteBrowserHarnessHandle[TMethod]>>;
+    { args: args ?? [], errorMessage, key: BROWSER_HANDLE_KEY, method }
+  ) as Promise<ReturnType<BrowserHarnessHandle[TMethod]>>;

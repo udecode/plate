@@ -1,5 +1,5 @@
 import { type EditorDocumentValue, NodeApi } from '../../core';
-import { defineBasePlugin } from '../plugin';
+import { definePlugin } from '../plugin';
 import {
   defineDocumentMigrations,
   migrateDocument,
@@ -140,7 +140,7 @@ describe('document migrations', () => {
   });
 
   it('runs migration before installed document preparation', () => {
-    const PreparePlugin = defineBasePlugin('prepareAfterMigration', {
+    const PreparePlugin = definePlugin('prepareAfterMigration', {
       prepareDocument: ({ document }) => append(document, 'p'),
     });
     const editor = createEditor({

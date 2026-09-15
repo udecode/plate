@@ -4,9 +4,9 @@ import { act, render } from '@testing-library/react';
 import React from 'react';
 
 import { property, schema, type Element } from '../../../core';
-import { defineBasePlugin } from '../../../lib';
+import { definePlugin } from '../../../lib';
 import { DebugPlugin } from '../../../lib/plugins/debug/DebugPlugin';
-import { TestPlate as Plate } from '../../__tests__/TestPlate';
+import { TestPlate as EditorRoot } from '../../__tests__/TestPlate';
 import { createEditor } from '../../editor';
 import { useElement } from './useElement';
 import {
@@ -28,7 +28,7 @@ describe('ElementProvider', () => {
       ],
     });
 
-    return <Plate editor={editor}>{children}</Plate>;
+    return <EditorRoot editor={editor}>{children}</EditorRoot>;
   };
 
   interface NameElement extends Element {
@@ -41,7 +41,7 @@ describe('ElementProvider', () => {
     type: 'age';
   }
 
-  const NamePlugin = defineBasePlugin('name', {
+  const NamePlugin = definePlugin('name', {
     schema: {
       element: {
         content: schema.content.text(),
@@ -49,7 +49,7 @@ describe('ElementProvider', () => {
       },
     },
   });
-  const AgePlugin = defineBasePlugin('age', {
+  const AgePlugin = definePlugin('age', {
     schema: {
       element: {
         content: schema.content.text(),
@@ -57,7 +57,7 @@ describe('ElementProvider', () => {
       },
     },
   });
-  const MissingPlugin = defineBasePlugin('missing', {
+  const MissingPlugin = definePlugin('missing', {
     schema: { element: { content: schema.content.text() } },
   });
 

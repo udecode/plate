@@ -14,7 +14,7 @@ import {
   Editable,
   type EditableProps,
   type RenderElementProps,
-  Plite,
+  EditorRoot,
 } from '../../src/react';
 import { writeCollapsedModelSelectionDOMPreference } from '../../src/react/editable/model-selection-dom-preference';
 
@@ -68,20 +68,19 @@ const renderKeyboardSelectableEditor = (
   options: { history?: boolean } = {}
 ) => {
   const editor = createEditor({
-    extensions: [
+    plugins: [
       ...(options.history ? [history()] : []),
       keyboardSelectableSchema,
     ],
     initialValue: initialValue(),
   });
   const rendered = render(
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable {...props} renderElement={renderElement} />
-    </Plite>
+    </EditorRoot>
   );
-  const editable = rendered.container.querySelector<HTMLElement>(
-    '[data-plite-editor]'
-  );
+  const editable =
+    rendered.container.querySelector<HTMLElement>('[data-editor]');
 
   expect(editable).toBeTruthy();
   Object.defineProperty(editable!, 'isContentEditable', {
@@ -111,11 +110,11 @@ describe('keyboard-selectable element selection', () => {
   test('keeps node focus DOM-less and moves between owner and direct text', async () => {
     const getTextNodeAtPath = (path: string) => {
       const host = document.querySelector<HTMLElement>(
-        `[data-plite-path="${path}"]`
+        `[data-editor-path="${path}"]`
       );
-      const string = host?.matches('[data-plite-string]')
+      const string = host?.matches('[data-editor-string]')
         ? host
-        : host?.querySelector<HTMLElement>('[data-plite-string]');
+        : host?.querySelector<HTMLElement>('[data-editor-string]');
 
       return string?.firstChild;
     };
@@ -180,8 +179,8 @@ describe('keyboard-selectable element selection', () => {
     expect(
       document
         .getSelection()
-        ?.anchorNode?.parentElement?.closest('[data-plite-path]')
-        ?.getAttribute('data-plite-path')
+        ?.anchorNode?.parentElement?.closest('[data-editor-path]')
+        ?.getAttribute('data-editor-path')
     ).toBe('2,0');
 
     await act(async () => {
@@ -264,7 +263,7 @@ describe('keyboard-selectable element selection', () => {
       fireEvent.copy(editable, { clipboardData: copyClipboard });
     });
 
-    const encoded = copyClipboard.getData('application/x-plite-fragment');
+    const encoded = copyClipboard.getData('application/x-editor-fragment');
 
     expect(encoded).not.toBe('');
     expect(JSON.parse(decodeURIComponent(atob(encoded)))).toEqual({
@@ -291,7 +290,7 @@ describe('keyboard-selectable element selection', () => {
     expect(
       JSON.parse(
         decodeURIComponent(
-          atob(cutClipboard.getData('application/x-plite-fragment'))
+          atob(cutClipboard.getData('application/x-editor-fragment'))
         )
       )
     ).toEqual({

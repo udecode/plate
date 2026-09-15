@@ -1,10 +1,8 @@
 import { useSyncExternalStore } from 'react';
 
-import { PathApi, RangeApi, type Range } from '..';
-import type {
-  PliteDecoration,
-  PliteDecorationSource,
-} from './decoration-source';
+import { PathApi, RangeApi, type Range, type Value } from '..';
+import { readAuthoredFragmentView } from '../core/authored-runtime';
+import type { Decoration, DecorationSource } from './decoration-source';
 import {
   getSnapshot as editorGetSnapshot,
   toInternalRoot,
@@ -27,13 +25,13 @@ import {
 export const PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID = 'plite-view-selection';
 
 const VIEW_SELECTION_ATTRIBUTES = Object.freeze({
-  'data-plite-view-selection': 'true',
+  'data-editor-view-selection': 'true',
   style: Object.freeze({
     backgroundColor: 'Highlight',
     color: 'HighlightText',
   }),
 });
-const EMPTY_DECORATIONS = Object.freeze([]) as readonly PliteDecoration[];
+const EMPTY_DECORATIONS = Object.freeze([]) as readonly Decoration[];
 
 const rootPointForSegment = (
   point: Range['anchor'],
@@ -53,10 +51,10 @@ const resolveEndpoint = (
     ? rootPointForSegment(endpoint.point, segment.root)
     : resolvePliteViewBoundarySegmentEndpoint(roots, segment, endpoint);
 
-const readDecorations = (
-  editor: ReactRuntimeEditor<any>,
+const readDecorations = <V extends Value>(
+  editor: ReactRuntimeEditor<V>,
   ownerKey: string | null
-): readonly PliteDecoration[] => {
+): readonly Decoration[] => {
   const selection = readPliteViewSelection(editor);
 
   if (!selection || isPliteViewSelectionCollapsed(selection)) {
@@ -64,11 +62,19 @@ const readDecorations = (
   }
 
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
-  const roots = editor.read((state) =>
-    createPliteViewBoundaryRootMap(state.value())
-  );
+  const fragmentId = readAuthoredFragmentView(editor)?.fragment.id ?? null;
+  const roots = editor.read((state) => ({
+    ...createPliteViewBoundaryRootMap(state.value()),
+    [viewRoot]: state.children(),
+  }));
   const decorations = selection.segments.parts.flatMap((segment, index) => {
-    if (segment.root !== viewRoot || segment.ownerKey !== ownerKey) return [];
+    if (
+      segment.root !== viewRoot ||
+      segment.ownerKey !== ownerKey ||
+      (segment.fragment?.id ?? null) !== fragmentId
+    ) {
+      return [];
+    }
 
     const anchor = resolveEndpoint(roots, segment, segment.start);
     const focus = resolveEndpoint(roots, segment, segment.end);
@@ -82,7 +88,9 @@ const readDecorations = (
     return [
       Object.freeze({
         attributes: VIEW_SELECTION_ATTRIBUTES,
-        key: `${PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID}:${segment.root}:${segment.ownerKey ?? 'main'}:${index}`,
+        key: `${PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID}:${segment.root}:${
+          segment.ownerKey ?? 'main'
+        }:${index}`,
         range,
       }),
     ];
@@ -93,9 +101,9 @@ const readDecorations = (
     : Object.freeze(decorations);
 };
 
-const getInputKeys = (
-  editor: ReactRuntimeEditor<any>,
-  decorations: readonly PliteDecoration[]
+const getInputKeys = <V extends Value>(
+  editor: ReactRuntimeEditor<V>,
+  decorations: readonly Decoration[]
 ) => {
   const snapshot = editorGetSnapshot(editor);
 
@@ -107,10 +115,10 @@ const getInputKeys = (
   });
 };
 
-export const createPliteViewSelectionDecorationSource = (
-  editor: ReactRuntimeEditor<any>,
+export const createPliteViewSelectionDecorationSource = <V extends Value>(
+  editor: ReactRuntimeEditor<V>,
   owner: PliteViewBoundaryOwner | null = null
-): PliteDecorationSource<unknown> => {
+): DecorationSource<unknown> => {
   const ownerKey = owner ? getPliteViewBoundaryOwnerKey(owner) : null;
   let cachedSelection = readPliteViewSelection(editor);
   let cachedDecorations = readDecorations(editor, ownerKey);
@@ -157,4 +165,37 @@ export const usePliteViewSelectionPresence = (editor: object) =>
     (listener) => subscribePliteViewSelection(editor, listener),
     () => readPliteViewSelection(editor) !== null,
     () => false
+  );
+
+const EMPTY_FRAGMENT_KEYS = Object.freeze([]) as readonly string[];
+const FRAGMENT_KEYS = new WeakMap<
+  object,
+  Readonly<{ identity: string; keys: readonly string[] }>
+>();
+
+const readViewSelectionFragmentKeys = (editor: object) => {
+  const selection = readPliteViewSelection(editor);
+  if (!selection) return EMPTY_FRAGMENT_KEYS;
+  const keys = [
+    ...new Set(
+      selection.segments.parts.flatMap(({ fragment }) =>
+        fragment ? [JSON.stringify([fragment.changeId, fragment.id])] : []
+      )
+    ),
+  ].sort();
+  if (keys.length === 0) return EMPTY_FRAGMENT_KEYS;
+  const identity = JSON.stringify(keys);
+  const cached = FRAGMENT_KEYS.get(editor);
+  if (cached?.identity === identity) return cached.keys;
+  const snapshot = Object.freeze(keys);
+
+  FRAGMENT_KEYS.set(editor, { identity, keys: snapshot });
+  return snapshot;
+};
+
+export const usePliteViewSelectionFragmentKeys = (editor: object) =>
+  useSyncExternalStore(
+    (listener) => subscribePliteViewSelection(editor, listener),
+    () => readViewSelectionFragmentKeys(editor),
+    () => EMPTY_FRAGMENT_KEYS
   );

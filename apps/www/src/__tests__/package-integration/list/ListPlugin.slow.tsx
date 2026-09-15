@@ -8,7 +8,7 @@ import {
   type BasePluginInput,
   type Editor,
 } from 'platejs';
-import { DocxPlugin } from 'platejs/docx';
+import { WordPastePlugin } from 'platejs/docx/paste';
 import { ImagePlugin } from 'platejs/media/react';
 import {
   BlockquotePlugin,
@@ -56,7 +56,7 @@ const listTestPlugins: BasePluginInput[] = [
   TextAlignPlugin.configure(targetPluginConfig),
   IndentPlugin.configure(targetPluginConfig),
   BaseListPlugin.configure(targetPluginConfig),
-  DocxPlugin,
+  WordPastePlugin,
 ];
 
 const createClipboardData = (html: string, rtf?: string): DataTransfer =>

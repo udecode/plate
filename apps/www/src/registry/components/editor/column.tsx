@@ -6,8 +6,8 @@ import { useDraggable, useDropLine } from 'platejs/dnd/react';
 import { BaseColumnItemPlugin, BaseColumnPlugin } from 'platejs/layout';
 import { ColumnItemPlugin, ColumnPlugin } from 'platejs/layout/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditor,
   useEditorReadOnly,
   useEditorSelector,
@@ -38,7 +38,7 @@ export function ColumnElement({
   element,
   ref,
   ...props
-}: PlateElementProps<typeof ColumnItemPlugin>) {
+}: EditorElementProps<typeof ColumnItemPlugin>) {
   const editor = useEditor();
   const { width } = element;
   const readOnly = useEditorReadOnly();
@@ -57,7 +57,7 @@ export function ColumnElement({
 
   return (
     <div
-      className="group/column relative hover:[&>.plite-column-drag-handle]:opacity-100"
+      className="group/column relative hover:[&>.editor-column-drag-handle]:opacity-100"
       style={{ width: width ?? '100%' }}
     >
       {!readOnly && (
@@ -66,14 +66,14 @@ export function ColumnElement({
           className={cn(
             '-translate-x-1/2 -translate-y-1/2 absolute top-2 left-1/2 z-50',
             'pointer-events-auto flex items-center',
-            'plite-column-drag-handle opacity-0 transition-opacity'
+            'editor-column-drag-handle opacity-0 transition-opacity'
           )}
         >
           <ColumnDragHandle />
         </div>
       )}
 
-      <PlateElement
+      <EditorElement
         {...props}
         ref={composedRef}
         element={element}
@@ -90,7 +90,7 @@ export function ColumnElement({
 
           {!readOnly && <DropLine />}
         </div>
-      </PlateElement>
+      </EditorElement>
     </div>
   );
 }
@@ -125,7 +125,7 @@ function DropLine() {
   return (
     <div
       className={cn(
-        'plite-dropLine',
+        'editor-dropLine',
         'absolute bg-brand/50',
         dropLine === 'left' &&
           'group-first/column:-left-1 inset-y-0 left-[-10.5px] w-1',
@@ -137,14 +137,14 @@ function DropLine() {
 }
 
 export function ColumnGroupElement(
-  props: PlateElementProps<typeof ColumnPlugin>
+  props: EditorElementProps<typeof ColumnPlugin>
 ) {
   return (
-    <PlateElement className="mb-2" {...props}>
+    <EditorElement className="mb-2" {...props}>
       <ColumnFloatingToolbar>
         <div className="flex size-full rounded">{props.children}</div>
       </ColumnFloatingToolbar>
-    </PlateElement>
+    </EditorElement>
   );
 }
 

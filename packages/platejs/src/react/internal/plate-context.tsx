@@ -1,10 +1,11 @@
 import React from 'react';
 
+import type { EditorViewOptions } from '../../facade';
 import type { Editor } from '../editor/Editor';
 import { useEditorRootElement, useEditorViewState } from '../plite-react';
 import { bindDocumentFocus } from '../stores/plate-controller/document-focus.internal';
 import type { createPlateTargetScope } from './createPlateTargetScope';
-import { useEditorContext } from './plite-components';
+import { useEditorContext, useOptionalEditorContext } from './plite-components';
 
 export type PlateTarget = {
   editor: Editor;
@@ -22,6 +23,7 @@ export const PlateEditorContext = React.createContext<PlateTarget | null>(null);
 export const PlateControllerContext =
   React.createContext<PlateTargetScope | null>(null);
 export const PlateModelContext = React.createContext<{
+  authored?: EditorViewOptions['authored'];
   editor: Editor;
   containerRef: React.RefObject<HTMLDivElement | null>;
   primary: boolean;
@@ -42,6 +44,35 @@ export function usePlateModel() {
 }
 
 type PlateViewFacts = React.ContextType<typeof PlateViewFactsContext>;
+
+/** Bind node renderers to the native view that owns their snapshot. */
+export function usePlateRenderContext(fallbackEditor: Editor) {
+  const nativeEditor = useOptionalEditorContext();
+  const editor = nativeEditor ?? fallbackEditor;
+  const inherited = React.useContext(PlateEditorContext);
+  const emptyRef = React.useRef<HTMLDivElement | null>(null);
+  const target = React.useMemo(
+    () =>
+      inherited?.editor === editor
+        ? inherited
+        : {
+            editor,
+            containerRef: inherited?.containerRef ?? emptyRef,
+            editableRef: emptyRef,
+          },
+    [editor, inherited]
+  );
+
+  return {
+    editor,
+    wrap: (children: React.ReactNode) =>
+      !nativeEditor || inherited?.editor === editor ? (
+        children
+      ) : (
+        <PlateTargetProvider target={target}>{children}</PlateTargetProvider>
+      ),
+  };
+}
 
 export function PlateTargetProvider({
   children,

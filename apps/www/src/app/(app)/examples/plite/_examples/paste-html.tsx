@@ -1,8 +1,8 @@
-import type { Element as PliteElement } from 'plitejs';
+import type { Element as EditorElement } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
-  Plite,
+  EditorRoot,
   useEditor,
   useEditorFocused,
   useElementSelected,
@@ -24,7 +24,7 @@ import { html } from './paste-html-import';
 
 const PasteHtmlExample = () => {
   const editor = useEditor({
-    extensions: [history(), html()],
+    plugins: [history(), html()],
     initialValue: [
       {
         type: 'paragraph',
@@ -56,7 +56,7 @@ const PasteHtmlExample = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable
         placeholder="Paste in some HTML..."
         renderElement={Element}
@@ -73,7 +73,7 @@ const PasteHtmlExample = () => {
           }
         }}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
@@ -190,7 +190,7 @@ const Element = (props: RenderElementProps<CustomElement>) => {
 };
 
 const getElementStyle = (
-  element: PliteElement
+  element: EditorElement
 ): React.CSSProperties | undefined => {
   const align =
     'align' in element && typeof element.align === 'string'
@@ -242,7 +242,7 @@ const ImageElement = ({ element }: RenderVoidProps<ImageElementType>) => {
     <img
       alt=""
       className={cn(
-        'plite-paste-html-image',
+        'editor-paste-html-image',
         selected && focused && 'is-selected'
       )}
       src={element.url}

@@ -102,8 +102,8 @@ export const kbdPlugin = KbdPlugin.configure({ component: KbdLeaf });
 |---------|-------|--------------|
 | `BaseKbdPlugin` | `platejs` | Headless keyboard-input mark, HTML parser, render tag, selection rule, and `toggle` transform. |
 | `KbdPlugin` | `platejs/react` | React wrapper for the headless keyboard-input mark. |
-| `KbdLeaf` | Registry UI | Styled client `<kbd>` leaf using `PlateLeaf`. |
-| `KbdLeafStatic` | Registry UI | Static rendering version using `PliteLeaf`. |
+| `KbdLeaf` | Registry UI | Styled client `<kbd>` leaf using `EditorLeaf`. |
+| `KbdLeafStatic` | Registry UI | Static rendering version using `EditorLeaf`. |
 | `BasicMarksKit` | Registry | Adds `KbdPlugin.configure({ component: KbdLeaf })`. |
 | `MoreToolbarButton` | Registry UI | Calls `editor.plugin(KbdPlugin).update.toggle()` from the More menu. |
 

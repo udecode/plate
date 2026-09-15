@@ -1,4 +1,4 @@
-import { Editable, Plite, useEditor } from 'plitejs/react';
+import { Editable, EditorRoot, useEditor } from 'plitejs/react';
 
 const ReadOnlyExample = () => {
   const editor = useEditor({
@@ -14,9 +14,9 @@ const ReadOnlyExample = () => {
     ],
   });
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable placeholder="Enter some plain text..." readOnly />
-    </Plite>
+    </EditorRoot>
   );
 };
 

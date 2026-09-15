@@ -1,5 +1,5 @@
 export {
-  clipboardHandler,
+  domCommands,
   createCompiledHotkeyMatcher,
   dom,
   DOMEditor,
@@ -17,7 +17,7 @@ export type {
   DOMApi,
   DOMClipboardApi,
   DOMElement,
-  DOMExtension,
+  DOMPlugin,
   DOMNode,
   DOMRange,
   DOMText,

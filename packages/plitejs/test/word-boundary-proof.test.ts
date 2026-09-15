@@ -7,7 +7,7 @@ import {
   defineEditorSchema,
   type Descendant,
   type Editor,
-  type EditorExtensionReference,
+  type PluginReference,
   type Element,
   type Value,
   schema,
@@ -145,10 +145,10 @@ const assertMovementSequence = (
 const createMovementEditor = (
   children: Descendant[],
   selection: Point,
-  extensions: readonly EditorExtensionReference[] = []
+  plugins: readonly PluginReference[] = []
 ) =>
   createEditor({
-    extensions,
+    plugins,
     initialSelection: {
       kind: 'text',
       anchor: selection,
@@ -289,10 +289,10 @@ describe('deterministic logical word-boundary proof', () => {
         ],
       },
     ];
-    const extensions = [InlineVoidSchema];
+    const plugins = [InlineVoidSchema];
 
     assertMovementSequence(
-      createMovementEditor(children, { path: [0, 0], offset: 0 }, extensions),
+      createMovementEditor(children, { path: [0, 0], offset: 0 }, plugins),
       [
         { path: [0, 0], offset: 0 },
         { path: [0, 0], offset: 3 },
@@ -301,7 +301,7 @@ describe('deterministic logical word-boundary proof', () => {
       false
     );
     assertMovementSequence(
-      createMovementEditor(children, { path: [0, 2], offset: 4 }, extensions),
+      createMovementEditor(children, { path: [0, 2], offset: 4 }, plugins),
       [
         { path: [0, 2], offset: 4 },
         { path: [0, 2], offset: 1 },

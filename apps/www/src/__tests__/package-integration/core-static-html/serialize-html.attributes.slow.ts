@@ -25,15 +25,15 @@ describe('core static renderStaticHtml attributes', () => {
           BaseItalicPlugin.configure({
             render: {
               attributes: {
-                'data-plite-test': true,
+                'data-editor-test': true,
               },
               mark: {
                 leafAttributes: {
-                  'data-plite-test': 'leaf',
+                  'data-editor-test': 'leaf',
                 },
                 placement: 'text',
                 textAttributes: {
-                  'data-plite-test': 'text',
+                  'data-editor-test': 'text',
                 },
               },
             },
@@ -45,10 +45,11 @@ describe('core static renderStaticHtml attributes', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
     expect(html).toEqual(
-      '<div data-plite-editor="true" data-plite-node="value"><div data-plite-node="element" data-plite-path="0" data-plite-root="main" style="position:relative"><span data-plite-node="text" data-plite-test="text"><em data-plite-test="true"><span data-plite-leaf="true" data-plite-test="leaf"><strong><span data-plite-string="true">Right Aligned Heading</span></strong></span></em></span><span data-plite-node="text" data-plite-test="text"><em data-plite-test="true"><span data-plite-leaf="true" data-plite-test="leaf"><span data-plite-string="true">Right Aligned Heading</span></span></em></span></div></div>'
+      '<div><div style="position:relative"><span data-editor-test="text"><em data-editor-test="true"><span data-editor-test="leaf"><strong><span>Right Aligned Heading</span></strong></span></em></span><span data-editor-test="text"><em data-editor-test="true"><span data-editor-test="leaf"><span>Right Aligned Heading</span></span></em></span></div></div>'
     );
   });
 });

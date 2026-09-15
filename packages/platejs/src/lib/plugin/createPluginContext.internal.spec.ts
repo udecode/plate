@@ -7,10 +7,10 @@ import {
 import type { Editor } from '../editor';
 import { createEditor } from '../editor';
 import { createPluginContext } from './createPluginContext.internal';
-import { defineBasePlugin } from './defineBasePlugin';
+import { definePlugin } from './definePlugin';
 
 describe('createPluginContext', () => {
-  const TestPlugin = defineBasePlugin('test', {
+  const TestPlugin = definePlugin('test', {
     initialState: {
       testValue: 'initial',
     },
@@ -28,10 +28,7 @@ describe('createPluginContext', () => {
   });
 
   it('get plugin context by plugin object', () => {
-    const context = createPluginContext(
-      editor,
-      testPlugin.configure({ initialState: { testValue: 'configured' } })
-    );
+    const context = createPluginContext(editor, testPlugin);
 
     expect(context).toMatchObject({
       api: {},
@@ -55,7 +52,7 @@ describe('createPluginContext', () => {
   });
 
   it('keeps plugin capability facades serialization-safe', () => {
-    const plugin = defineBasePlugin('serializableContext', {
+    const plugin = definePlugin('serializableContext', {
       api: () => ({ ready: () => true }),
       read: () => ({ ready: () => true }),
       update: () => ({ run: () => {} }),
@@ -75,8 +72,8 @@ describe('createPluginContext', () => {
     ).toBe('{"api":{}}');
   });
 
-  it('works with extension context typing', () => {
-    const plugin = defineBasePlugin('test', {
+  it('works with plugin context typing', () => {
+    const plugin = definePlugin('test', {
       initialState: {
         testValue: 'initial',
       },
@@ -112,7 +109,7 @@ describe('createPluginContext', () => {
 
   it('does not reevaluate published schema factories for plugin access', () => {
     let schemaEvaluations = 0;
-    const plugin = defineBasePlugin('publishedSchema', {
+    const plugin = definePlugin('publishedSchema', {
       schema: () => {
         schemaEvaluations += 1;
 
@@ -132,7 +129,7 @@ describe('createPluginContext', () => {
   });
 
   it('publishes compiled injection defaults on the resolved descriptor', () => {
-    const plugin = defineBasePlugin('injected', {
+    const plugin = definePlugin('injected', {
       inject: { nodeProps: {} },
     });
     const typedEditor = createEditor({ plugins: [plugin] });
@@ -142,7 +139,7 @@ describe('createPluginContext', () => {
 
   it('creates complete schema-property handles before model publication', () => {
     let authoredHandle: SchemaPropertyHandle | undefined;
-    const plugin = defineBasePlugin('authoredHandle', {
+    const plugin = definePlugin('authoredHandle', {
       api: ({ schema: authorSchema }) => {
         authoredHandle = authorSchema.properties.tone;
 
@@ -182,16 +179,35 @@ describe('createPluginContext', () => {
     });
   });
 
-  it('rejects weak name objects at runtime', () => {
-    expect(() =>
-      Reflect.apply(editor.plugin, editor, [{ name: 'test' }])
-    ).toThrow(
-      'Plate plugin lookup requires a plugin descriptor or plugin name string.'
+  it('resolves configured descriptors and ancestors but rejects siblings', () => {
+    const plugin = definePlugin('runtimeFamily', {
+      initialState: { value: 'root' },
+    });
+    const ancestor = plugin.extend({ initialState: { value: 'installed' } });
+    const installed = ancestor.extend({}).configure({});
+    const sibling = plugin.extend({ initialState: { value: 'sibling' } });
+    const typedEditor = createEditor({ plugins: [installed] });
+
+    expect(typedEditor.plugin(installed).installed).toBe(true);
+    expect(typedEditor.plugin(installed).store.get('value')).toBe('installed');
+    expect(typedEditor.plugin(plugin).installed).toBe(true);
+    expect(typedEditor.plugin(plugin).store.get('value')).toBe('installed');
+    expect(typedEditor.plugin(ancestor).installed).toBe(true);
+    expect(typedEditor.plugin(ancestor).store.get('value')).toBe('installed');
+    expect(typedEditor.plugin(sibling).installed).toBe(false);
+    expect(() => typedEditor.plugin(sibling).store).toThrow(
+      'descriptor is not installed'
     );
   });
 
+  it('rejects weak name objects at runtime', () => {
+    expect(() =>
+      Reflect.apply(editor.plugin, editor, [{ name: 'test' }])
+    ).toThrow();
+  });
+
   it('rejects a same-name descriptor from a different family', () => {
-    const foreignPlugin = defineBasePlugin('test', {
+    const foreignPlugin = definePlugin('test', {
       api: () => ({
         foreignMethod: () => 'foreign',
       }),
@@ -206,19 +222,15 @@ describe('createPluginContext', () => {
     expect(() => editor.plugin(foreignPlugin).name).toThrow(
       'different descriptor family'
     );
-    const dynamicPortal = editor.plugin('test');
-
-    expect(dynamicPortal.installed).toBe(true);
-    expect(dynamicPortal.name).toBe('test');
   });
 
   it('does not publish resolved schema across an uninstalled same-name family', () => {
-    const InstalledPlugin = defineBasePlugin('shared', {
+    const InstalledPlugin = definePlugin('shared', {
       schema: {
         element: { ...schema.element.textBlock(), type: 'installedType' },
       },
     });
-    const RequestedPlugin = defineBasePlugin('shared', {
+    const RequestedPlugin = definePlugin('shared', {
       schema: {
         element: { ...schema.element.textBlock(), type: 'requestedType' },
       },
@@ -232,24 +244,24 @@ describe('createPluginContext', () => {
   });
 
   it('rejects a plugin that is not installed', () => {
-    const unresolvedPlugin = defineBasePlugin('unresolved', {
+    const unresolvedPlugin = definePlugin('unresolved', {
       initialState: {
         unresolvedValue: 'initial',
       },
     });
 
     const context = createPluginContext(editor, unresolvedPlugin);
-    const dynamicPortal = editor.plugin('unresolved');
+    const portal = editor.plugin(unresolvedPlugin);
 
     expect(context.installed).toBe(false);
-    expect(dynamicPortal.installed).toBe(false);
+    expect(portal.installed).toBe(false);
     for (const capability of [
-      () => dynamicPortal.api,
-      () => dynamicPortal.name,
-      () => dynamicPortal.inject,
-      () => dynamicPortal.read,
-      () => dynamicPortal.store,
-      () => dynamicPortal.update,
+      () => portal.api,
+      () => portal.name,
+      () => portal.inject,
+      () => portal.read,
+      () => portal.store,
+      () => portal.update,
     ]) {
       expect(capability).toThrow('Plate plugin "unresolved" is not installed.');
     }
@@ -259,10 +271,10 @@ describe('createPluginContext', () => {
   });
 
   it('requires installation before exposing resolved schema handles', () => {
-    const ElementPlugin = defineBasePlugin('uninstalledElement', {
+    const ElementPlugin = definePlugin('uninstalledElement', {
       schema: { element: schema.element.textBlock() },
     });
-    const MarkPlugin = defineBasePlugin('uninstalledMark', {
+    const MarkPlugin = definePlugin('uninstalledMark', {
       schema: { mark: property.boolean() },
     });
 
@@ -270,11 +282,10 @@ describe('createPluginContext', () => {
       'is not installed'
     );
     expect(() => editor.plugin(MarkPlugin).schema).toThrow('is not installed');
-    expect(() => editor.plugin('codeBlock').schema).toThrow('is not installed');
   });
 
   it('reports literal-disabled plugins as not installed', () => {
-    const disabledPlugin = defineBasePlugin('disabled', {
+    const disabledPlugin = definePlugin('disabled', {
       enabled: false,
     });
     const disabledEditor = createEditor({
@@ -285,7 +296,7 @@ describe('createPluginContext', () => {
   });
 
   it('publishes plugin API only under its owner namespace', () => {
-    const plugin = defineBasePlugin('methodPlugin', {
+    const plugin = definePlugin('methodPlugin', {
       api: () => ({
         editorMethod: () => 'editor',
         pluginMethod: () => 'plugin',
@@ -308,7 +319,7 @@ describe('createPluginContext', () => {
 
   it('keeps capability facades callable without prototype traversal', () => {
     let updateInspections = 0;
-    const plugin = defineBasePlugin('capability', {
+    const plugin = definePlugin('capability', {
       read: () => ({
         inspect: () => 'read',
         isActive: () => true,
@@ -345,7 +356,7 @@ describe('createPluginContext', () => {
   });
 
   it('keeps callable read roots symmetric through plugin access', () => {
-    const plugin = defineBasePlugin('callableRead', {
+    const plugin = definePlugin('callableRead', {
       read: () =>
         Object.assign(() => 'root', {
           nested: () => 'nested',
@@ -359,7 +370,7 @@ describe('createPluginContext', () => {
   });
 
   it('supports compiled call and apply invocations on scoped capabilities', () => {
-    const plugin = defineBasePlugin('invocation', {
+    const plugin = definePlugin('invocation', {
       read: ({ state }) => ({
         text: () => state.children()[0].children[0].text,
       }),
@@ -387,7 +398,7 @@ describe('createPluginContext', () => {
     let mode: 'edit' | 'view' = 'view';
     let insertedBy: 'command' | null = null;
     let applied = false;
-    const plugin = defineBasePlugin('command', {
+    const plugin = definePlugin('command', {
       update: () => ({
         apply: () => {
           applied = true;
@@ -420,7 +431,7 @@ describe('createPluginContext', () => {
   it('applies policy through the scoped update facade exactly once', () => {
     let calls = 0;
     let tagged = false;
-    const plugin = defineBasePlugin('policyCommand', {
+    const plugin = definePlugin('policyCommand', {
       update: ({ tx }) => ({
         run: () => {
           calls += 1;

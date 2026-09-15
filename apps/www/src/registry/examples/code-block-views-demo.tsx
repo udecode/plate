@@ -3,9 +3,9 @@
 import { TextApi } from 'platejs';
 import {
   CodeBlockPlugin,
-  definePlatePlugin,
-  Plate,
-  type PlateElementProps,
+  definePlugin,
+  EditorRoot,
+  type EditorElementProps,
   useCreateEditor,
 } from 'platejs/react';
 import * as React from 'react';
@@ -20,7 +20,7 @@ import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 
 const NativeCode = React.createContext(false);
 
-function CodeElement(props: PlateElementProps<typeof CodeBlockPlugin>) {
+function CodeElement(props: EditorElementProps<typeof CodeBlockPlugin>) {
   return React.useContext(NativeCode) ? (
     <CodeBlockElement {...props} />
   ) : (
@@ -28,7 +28,7 @@ function CodeElement(props: PlateElementProps<typeof CodeBlockPlugin>) {
   );
 }
 
-const RangeHighlights = definePlatePlugin('codeRangeHighlights', {
+const RangeHighlights = definePlugin('codeRangeHighlights', {
   decorate: {
     read: ({ entry: [node, path] }) => {
       if (!TextApi.isText(node) || node.text.length < 12) return [];
@@ -75,7 +75,7 @@ export default function CodeBlockViewsDemo() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <div className="grid gap-6 p-4 md:grid-cols-2">
         <section aria-label="CodeMirror view" className="space-y-2">
           <p>CodeMirror</p>
@@ -92,6 +92,6 @@ export default function CodeBlockViewsDemo() {
           </NativeCode.Provider>
         </section>
       </div>
-    </Plate>
+    </EditorRoot>
   );
 }

@@ -46,7 +46,6 @@ import {
   BaseVideoPlugin,
 } from '../../../features/media';
 import { BaseMentionPlugin } from '../../../features/mention';
-import { BaseSuggestionPlugin } from '../../../features/suggestion';
 import { BaseTablePlugin } from '../../../features/table';
 import { BaseTocPlugin } from '../../../features/toc';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '../../../math';
@@ -95,13 +94,11 @@ const testSchemaPlugins: readonly BasePluginInput[] = [
   BaseColumnPlugin,
   BaseTablePlugin,
   BaseCalloutPlugin,
-  BaseSuggestionPlugin,
   BaseTocPlugin,
 ];
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
-    plainMarks: ['suggestion'],
     remarkPlugins: [
       remarkMath,
       remarkGfm,

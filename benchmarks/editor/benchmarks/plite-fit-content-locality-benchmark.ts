@@ -104,7 +104,7 @@ const createMeasuredEditor = (
   const definition = createFitSchema(elementTypes);
   const before = performance.now();
   const editor = createEditor({
-    extensions: [definition],
+    plugins: [definition],
     initialValue: value,
   });
 

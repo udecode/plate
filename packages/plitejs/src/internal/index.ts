@@ -3,12 +3,15 @@ export type {
   BaseEditor,
   Editor,
   EditorCommandContext,
-  EditorExtensionDependencyReferenceFor,
-  EditorExtensionDependencyContractReference,
-  EditorExtensionInstalledCapabilitiesOf,
-  EditorExtensionTypeProviderOf,
-  EditorExtensionWitnessFor,
-  EditorExtensionTypeLambda,
+  PluginDependencyReferenceFor,
+  PluginDependencyContractReference,
+  PluginFactoryTypeLambda,
+  PluginFactoryTypeProvider,
+  PluginFactoryTypeProviderOf,
+  PluginInstalledCapabilitiesOf,
+  PluginTypeProviderOf,
+  PluginWitnessFor,
+  PluginTypeLambda,
   EditorGenericMethod,
   EditorStateViewProvider,
   EditorUpdateTransactionOf,
@@ -45,7 +48,7 @@ export {
   fragment,
   getChildren,
   getCollabEffects,
-  getExtensionRegistry,
+  getPluginRegistry,
   getFragment,
   getLastCommit,
   getPathByNodeKey,
@@ -143,9 +146,11 @@ export {
   type DocumentChangeRelocation,
 } from '../core/change/mapping';
 export {
-  type EditorExtensionsFromOptions,
+  compileEditorSchemaContractEntries,
+  type PluginsFromOptions,
   type EditorValueFromOptions,
-  initializeEditorExtensions,
+  initializePluginEntries,
+  initializePlugins,
 } from '../create-editor';
 export {
   areEditorSchemaIdentitiesEqual,
@@ -169,16 +174,21 @@ export {
 } from '../core/schema-compiler';
 export { getSchemaElementSourceReference } from '../core/schema-definition';
 export {
-  compileEditorExtension,
-  defineExtension,
+  brandPluginDescriptor,
+  compilePlugin,
+  compilePluginInput,
+  definePlugin,
   getCompiledEditorConfiguration,
-  getCandidateEditorExtensionApi,
-  getEditorExtensionContributions,
-  getInstalledEditorExtension,
-  getInstalledEditorExtensionApi,
-  isEditorExtension,
+  getCandidatePluginApi,
+  getPluginContributions,
+  getInstalledPlugin,
+  getInstalledPluginApi,
+  isPlugin,
   reportEditorLifecycleError,
-} from '../core/editor-extension';
+  resolveInstalledPlugin,
+  setPluginPortalFactory,
+  withPluginPortalCandidates,
+} from '../core/plugin';
 export {
   assertPublicRootKey,
   toInternalRoot,
@@ -195,11 +205,16 @@ export {
   hasEditorRuntime,
   setEditorRuntime,
 } from '../core/editor-runtime';
+export type {
+  InternalCompiledPluginPublicationEntry,
+  InternalPluginPublicationEntry,
+} from '../core/editor-runtime';
 export {
   getCompiledEditorSchema,
-  getExtensionRegistry as getEditorExtensionRegistry,
-  inheritExtensionRegistry as inheritEditorExtensionRegistry,
-} from '../core/extension-registry';
+  getPluginRegistry as getInternalPluginRegistry,
+  inheritPluginRegistry,
+} from '../core/plugin-registry';
+export { exportContentSlice } from '../core/editor-read-execution';
 export {
   applyBuiltDocumentChange,
   getActiveEditorTransaction,
@@ -212,6 +227,8 @@ export {
   getEditorStateView,
   getEditorUpdateRoot,
   getEditorNodeKeyForNode,
+  fitSliceChildren,
+  fitSlicePlacements,
   getLiveNode as getEditorLiveNode,
   getLiveSelection as getEditorLiveSelection,
   getLiveText as getEditorLiveText,
@@ -235,6 +252,10 @@ export {
   subscribeEditorViewState,
   toEditorCoreStateView,
   withEditorUpdateRootScope,
+} from '../core/public-state';
+export type {
+  InternalSliceChildrenTarget,
+  InternalSlicePlacement,
 } from '../core/public-state';
 export { projectRangeInSnapshot } from '../range-projection';
 export { mapSemanticUpdateMethodArguments } from '../core/semantic-update-method';

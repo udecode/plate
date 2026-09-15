@@ -4,13 +4,13 @@ import {
   parseTwitterUrl,
   parseVideoUrl,
 } from 'platejs/media';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 import { CaptionStatic, getMediaTextAlign } from './caption-static';
 
 export function MediaEmbedElementStatic(
-  props: PliteElementProps<typeof BaseMediaEmbedPlugin>
+  props: EditorElementProps<typeof BaseMediaEmbedPlugin>
 ) {
   const { url, width } = props.element;
   const textAlign = getMediaTextAlign(props.element);
@@ -19,7 +19,7 @@ export function MediaEmbedElementStatic(
   });
 
   return (
-    <PliteElement className="py-2.5" {...props}>
+    <EditorElement className="py-2.5" {...props}>
       <figure
         className="group relative m-0 inline-block max-w-full cursor-default"
         style={{ textAlign, width }}
@@ -47,6 +47,6 @@ export function MediaEmbedElementStatic(
           {props.children}
         </CaptionStatic>
       </figure>
-    </PliteElement>
+    </EditorElement>
   );
 }

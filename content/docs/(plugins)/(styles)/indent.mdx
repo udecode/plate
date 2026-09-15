@@ -222,8 +222,13 @@ Used to provide options for setting the indentation of a block of text.
 Toolbar components call the descriptor-scoped updates directly:
 
 ```tsx
-const { update } = useEditorPlugin(IndentPlugin);
+import { IndentPlugin, useEditor } from 'platejs/react';
 
-<ToolbarButton onClick={() => update.increase()}>Indent</ToolbarButton>
-<ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
+const editor = useEditor();
+const { update } = editor.plugin(IndentPlugin);
+
+<>
+  <ToolbarButton onClick={() => update.increase()}>Indent</ToolbarButton>
+  <ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
+</>
 ```

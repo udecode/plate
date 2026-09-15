@@ -24,7 +24,7 @@ export type InputIntent =
   | 'internal-control'
   | 'model-selection-move'
   | 'native-selection-move'
-  | 'partial-dom-selection'
+  | 'viewport-selection'
   | 'text-insert';
 
 export type SelectionSource =
@@ -33,7 +33,7 @@ export type SelectionSource =
   | 'dom-current'
   | 'internal-control'
   | 'model-owned'
-  | 'partial-dom-backed'
+  | 'viewport-backed'
   | 'unknown';
 
 export type SelectionChangeOrigin =
@@ -52,7 +52,7 @@ export type ModelSelectionPreferenceReason =
   | 'decoration-refresh'
   | 'programmatic-export'
   | 'repair-induced'
-  | 'partial-dom-backed'
+  | 'viewport-backed'
   | 'unknown';
 
 export type ModelSelectionPreference = {

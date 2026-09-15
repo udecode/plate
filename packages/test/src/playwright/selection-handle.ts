@@ -1,6 +1,6 @@
 import { expect, type Locator } from '@playwright/test';
 
-import { PLITE_BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY } from './constants';
 import { waitForSelectionSync } from './selection-snapshots';
 import type { SelectionSnapshot } from './types';
 
@@ -9,7 +9,7 @@ export const hasSelectionHandle = async (root: Locator) =>
     .evaluate(
       (element: HTMLElement, { key }: { key: string }) =>
         !!(element as Record<string, any>)[key]?.selectRange,
-      { key: PLITE_BROWSER_HANDLE_KEY }
+      { key: BROWSER_HANDLE_KEY }
     )
     .catch(() => false);
 
@@ -42,7 +42,7 @@ export const waitForHandleFocus = async (root: Locator, timeout = 2000) => {
 
             return hasFocus && !!handle?.getSelection?.();
           },
-          { key: PLITE_BROWSER_HANDLE_KEY }
+          { key: BROWSER_HANDLE_KEY }
         ),
       { timeout }
     )
@@ -124,7 +124,7 @@ export const setSelectionWithHandle = async (
       return true;
     },
     {
-      key: PLITE_BROWSER_HANDLE_KEY,
+      key: BROWSER_HANDLE_KEY,
       nextSelection: selection,
     }
   );
@@ -141,7 +141,7 @@ export const selectAllWithHandle = async (root: Locator) =>
       handle.selectAll();
       return true;
     },
-    { key: PLITE_BROWSER_HANDLE_KEY }
+    { key: BROWSER_HANDLE_KEY }
   );
 
 export const focusWithHandle = async (root: Locator) =>
@@ -156,7 +156,7 @@ export const focusWithHandle = async (root: Locator) =>
       handle.focus();
       return true;
     },
-    { key: PLITE_BROWSER_HANDLE_KEY }
+    { key: BROWSER_HANDLE_KEY }
   );
 
 export const hasExpandedSelection = (selection: SelectionSnapshot | null) =>

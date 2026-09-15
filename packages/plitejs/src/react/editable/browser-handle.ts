@@ -12,10 +12,7 @@ import {
 } from '../..';
 import { getSelection } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
-import type {
-  EditableDOMStrategyMetrics,
-  EditableDOMStrategyScrollAlign,
-} from '../components/editable';
+import type { EditableViewportScrollAlign } from '../components/editable';
 import {
   didSyncTextPathToDOM,
   getPliteNodeElementByPath,
@@ -39,6 +36,7 @@ import {
   getEditableKernelTrace,
   recordEditableKernelTrace,
 } from './editing-kernel';
+import type { ExternalTextRuntime } from './external-text-runtime';
 import type { EditableInputController } from './input-state';
 import {
   applyEditableCommand,
@@ -96,9 +94,9 @@ export type PliteBrowserHandle = {
   getKernelTrace: () => readonly EditableKernelTraceEntry[];
   getHistory: () => unknown;
   getInputState: () => unknown;
-  getExternalTextMetrics: () =>
-    | EditableDOMStrategyMetrics['externalText']
-    | null;
+  getExternalTextMetrics: () => ReturnType<
+    ExternalTextRuntime['metrics']
+  > | null;
   getLastCommit: () => unknown;
   getBlockText: (index: number) => string | null;
   getBlockTexts: () => string[];
@@ -113,7 +111,7 @@ export type PliteBrowserHandle = {
   resolveDOMPoint: (point: Point) => readonly [globalThis.Node, number] | null;
   getModelSelection: () => EditorSelection;
   getSelection: () => Range | null;
-  getText: () => string;
+  getText: (path?: Path) => string;
   getValue: () => JsonEditorValue;
   getViewSelection: () => unknown;
   importDOMSelection: () => Range | null;
@@ -136,7 +134,7 @@ export type PliteBrowserHandle = {
   setNativeDOMSelection: (selection: Range) => boolean;
   scrollPathIntoView: (
     path: Path,
-    align?: EditableDOMStrategyScrollAlign
+    align?: EditableViewportScrollAlign
   ) => boolean;
   setViewSelection: (
     selection: {
@@ -191,7 +189,7 @@ const createBrowserHandleDataTransfer = ({
     records.set('text/plain', text);
   }
   if (pliteFragment) {
-    records.set('application/x-plite-fragment', pliteFragment);
+    records.set('application/x-editor-fragment', pliteFragment);
   }
 
   return {
@@ -226,9 +224,9 @@ export const attachPliteBrowserHandle = ({
   inputController,
   forceRender,
   flushPendingNativeTextInput,
-  isPartialDOMBackedSelection,
+  isViewportBackedSelection,
   scrollPathIntoView,
-  setExplicitPartialDOMBackedSelection,
+  setExplicitViewportBackedSelection,
 }: {
   browserHandleNextId: RefBox<number>;
   browserHandleRangeAnchors: RefBox<Map<string, Anchor<Range>>>;
@@ -238,12 +236,12 @@ export const attachPliteBrowserHandle = ({
   inputController: EditableInputController;
   forceRender: () => void;
   flushPendingNativeTextInput?: () => void;
-  isPartialDOMBackedSelection: (selection: Range | null) => boolean;
+  isViewportBackedSelection: (selection: Range | null) => boolean;
   scrollPathIntoView?: (
     path: Path,
-    align?: EditableDOMStrategyScrollAlign
+    align?: EditableViewportScrollAlign
   ) => boolean;
-  setExplicitPartialDOMBackedSelection: (nextValue: boolean) => void;
+  setExplicitViewportBackedSelection: (nextValue: boolean) => void;
 }) => {
   const getCurrentHandleElement = () => {
     if (element.isConnected) return element;
@@ -303,25 +301,25 @@ export const attachPliteBrowserHandle = ({
 
     applyEditableCommand({ command, editor });
     const selectionAfter = readRuntimeSelection(editor);
-    const partialDOMBackedSelection = isPartialDOMBackedSelection(
+    const viewportBackedSelection = isViewportBackedSelection(
       getSelectionDOMRange(editor, selectionAfter)
     );
 
-    if (partialDOMBackedSelection) {
+    if (viewportBackedSelection) {
       setEditableModelSelectionPreference({
         inputController,
         preferModelSelection: true,
-        reason: 'partial-dom-backed',
-        selectionSource: 'partial-dom-backed',
+        reason: 'viewport-backed',
+        selectionSource: 'viewport-backed',
       });
     }
-    setExplicitPartialDOMBackedSelection(partialDOMBackedSelection);
+    setExplicitViewportBackedSelection(viewportBackedSelection);
     syncEditableDOMSelectionToEditor({
       editor,
       editorElement: getCurrentHandleElement(),
       options: { forceModelExport: true },
       scrollSelectionIntoView: () => {},
-      partialDOMBackedSelection,
+      viewportBackedSelection,
       state: inputController.state,
     });
     refocusHandleElement();
@@ -337,8 +335,8 @@ export const attachPliteBrowserHandle = ({
         selectionChangeOrigin: 'browser-handle',
         selectionAfter,
         selectionBefore,
-        selectionSource: partialDOMBackedSelection
-          ? 'partial-dom-backed'
+        selectionSource: viewportBackedSelection
+          ? 'viewport-backed'
           : 'model-owned',
         stateAfter: 'model-owned',
         stateBefore: 'model-owned',
@@ -452,7 +450,7 @@ export const attachPliteBrowserHandle = ({
         return false;
       }
 
-      const domRange = ReactEditor.resolvePliteRange(editor, selection, {
+      const domRange = ReactEditor.resolveRange(editor, selection, {
         exactMatch: false,
       });
 
@@ -472,13 +470,13 @@ export const attachPliteBrowserHandle = ({
           : anchorNode instanceof Element
             ? anchorNode
             : null;
-      const textHost = anchorElement?.closest('[data-plite-node="text"]');
+      const textHost = anchorElement?.closest('[data-editor-node="text"]');
       const pliteText = readRuntimeText(editor, domRange.anchor.path)?.text;
       const domText = textHost?.textContent?.replace(/\uFEFF/g, '') ?? null;
 
       if (
         !textHost ||
-        textHost.getAttribute('data-plite-path') !== pathKey ||
+        textHost.getAttribute('data-editor-path') !== pathKey ||
         pliteText == null ||
         domText !== pliteText
       ) {
@@ -515,17 +513,17 @@ export const attachPliteBrowserHandle = ({
       editorElement.focus({ preventScroll: true });
       forceRender();
       const selection = readRuntimeSelection(editor);
-      const partialDOMBackedSelection = isPartialDOMBackedSelection(
+      const viewportBackedSelection = isViewportBackedSelection(
         getSelectionDOMRange(editor, selection)
       );
 
-      setExplicitPartialDOMBackedSelection(partialDOMBackedSelection);
+      setExplicitViewportBackedSelection(viewportBackedSelection);
       syncEditableDOMSelectionToEditor({
         editor,
         editorElement,
         options: { forceModelExport: true },
         scrollSelectionIntoView: () => {},
-        partialDOMBackedSelection,
+        viewportBackedSelection,
         state: inputController.state,
       });
     },
@@ -647,7 +645,7 @@ export const attachPliteBrowserHandle = ({
       }
 
       try {
-        return ReactEditor.resolvePliteRange(editor, selection, {
+        return ReactEditor.resolveRange(editor, selection, {
           exactMatch: false,
         });
       } catch {
@@ -656,7 +654,7 @@ export const attachPliteBrowserHandle = ({
     },
     getDOMPhaseSchedulerDiagnostics: () =>
       domPhaseScheduler?.diagnostics() ?? null,
-    getText: () => editorString(editor, []),
+    getText: (path = []) => editorString(editor, path),
     getValue: () => editor.read((state) => state.value()),
     getViewSelection: () => readPliteViewSelection(editor),
     importDOMSelection: () => {
@@ -761,7 +759,7 @@ export const attachPliteBrowserHandle = ({
       flushPendingNativeTextInput?.();
       const previousIsUpdatingSelection =
         inputController.state.isUpdatingSelection;
-      const partialDOMBackedSelection = isPartialDOMBackedSelection(selection);
+      const viewportBackedSelection = isViewportBackedSelection(selection);
       setEditableModelSelectionPreference({
         inputController,
         preferModelSelection: true,
@@ -772,8 +770,8 @@ export const attachPliteBrowserHandle = ({
       inputController.state.selectionChangeOrigin = 'browser-handle';
       writePliteViewSelection(editor, null);
       writeRuntimeSelection(editor, selection);
-      setExplicitPartialDOMBackedSelection(partialDOMBackedSelection);
-      if (partialDOMBackedSelection) {
+      setExplicitViewportBackedSelection(viewportBackedSelection);
+      if (viewportBackedSelection) {
         scrollPathIntoView?.(RangeApi.start(selection).path, 'center');
       }
       getCurrentHandleElement().focus({ preventScroll: true });
@@ -787,7 +785,7 @@ export const attachPliteBrowserHandle = ({
           editorElement: getCurrentHandleElement(),
           options: { forceModelExport: true },
           scrollSelectionIntoView: () => {},
-          partialDOMBackedSelection,
+          viewportBackedSelection,
           state: inputController.state,
         });
       };

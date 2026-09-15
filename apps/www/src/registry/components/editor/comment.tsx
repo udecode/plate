@@ -14,13 +14,13 @@ import {
   TrashIcon,
   XIcon,
 } from 'lucide-react';
-import { type PliteDecorationAttributes, type Value, NodeApi } from 'platejs';
+import { type DecorationAttributes, type Value, NodeApi } from 'platejs';
 import type { CommentMessage, CommentThread } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
-  Plate,
+  EditorRoot,
   useCreateEditor,
-  useEditorPlugin,
+  useEditor,
   usePluginStore,
   useStaticEditor,
 } from 'platejs/react';
@@ -41,7 +41,7 @@ import {
 
 import { Editor, EditorContainer, EditorView } from './editor';
 
-export const commentDecorationAttributes: PliteDecorationAttributes = {
+export const commentDecorationAttributes: DecorationAttributes = {
   className:
     'border-b-2 border-b-highlight/40 bg-highlight/15 transition-colors hover:border-b-highlight/70 hover:bg-highlight/25 data-comment-active:border-b-highlight! data-comment-active:bg-highlight/30! [&_[data-comment-id]]:border-b-highlight/80 [&_[data-comment-id]]:bg-highlight/25',
 };
@@ -71,7 +71,7 @@ const useCurrentCommentUserId = () =>
   usePluginStore(CommentsPlugin, 'currentUserId');
 
 export const usePendingComment = () => {
-  const { api: comments } = useEditorPlugin(CommentsPlugin);
+  const { api: comments } = useEditor().plugin(CommentsPlugin);
 
   return React.useSyncExternalStore(
     comments.subscribePending,
@@ -81,7 +81,7 @@ export const usePendingComment = () => {
 };
 
 export const useCommentThread = (id: string) => {
-  const { api: comments } = useEditorPlugin(CommentsPlugin);
+  const { api: comments } = useEditor().plugin(CommentsPlugin);
   const subscribe = React.useCallback(
     (listener: () => void) => comments.subscribeThread(id, listener),
     [comments, id]
@@ -95,7 +95,7 @@ export const useCommentThread = (id: string) => {
 };
 
 export const useVisibleCommentThreadIds = () => {
-  const portal = useEditorPlugin(CommentsPlugin);
+  const portal = useEditor().plugin(CommentsPlugin);
   const comments = portal.installed ? portal.api : null;
   const subscribe = React.useCallback(
     (listener: () => void) =>
@@ -111,7 +111,7 @@ export const useVisibleCommentThreadIds = () => {
 };
 
 export const useDraftCommentThreadIds = () => {
-  const portal = useEditorPlugin(CommentsPlugin);
+  const portal = useEditor().plugin(CommentsPlugin);
   const comments = portal.installed ? portal.api : null;
   const subscribe = React.useCallback(
     (listener: () => void) =>
@@ -207,7 +207,7 @@ function CommentInput({
     <form
       aria-busy={saving}
       className="flex w-full"
-      data-plite-keep-selection-visible
+      data-editor-keep-selection-visible
       onSubmit={(event) => {
         event.preventDefault();
         void submit();
@@ -223,7 +223,7 @@ function CommentInput({
       )}
 
       <div className="relative flex grow flex-col gap-2">
-        <Plate
+        <EditorRoot
           editor={commentEditor}
           readOnly={saving}
           onValueChange={({ value }) => {
@@ -304,7 +304,7 @@ function CommentInput({
               </Button>
             )}
           </EditorContainer>
-        </Plate>
+        </EditorRoot>
         {failed && (
           <p className="text-xs text-destructive" role="alert">
             Could not save comment. Try again.
@@ -335,7 +335,7 @@ function CommentBody({ body }: { body: Value }) {
 }
 
 export function CommentThreadCard({ id }: { id: string }) {
-  const { api: comments } = useEditorPlugin(CommentsPlugin);
+  const { api: comments } = useEditor().plugin(CommentsPlugin);
   const thread = useCommentThread(id);
   const currentUserId = useCurrentCommentUserId();
   const [editingId, setEditingId] = React.useState<string | null>(null);
@@ -404,13 +404,13 @@ function CommentMessageRow({
   status: CommentThread['status'];
   threadLength: number;
 }) {
-  const { api: comments } = useEditorPlugin(CommentsPlugin);
+  const { api: comments } = useEditor().plugin(CommentsPlugin);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const user = useCommentUser(message.userId);
 
   return (
     <div
-      className="focus-within:[&>div>.plite-comment-actions]:pointer-events-auto focus-within:[&>div>.plite-comment-actions]:opacity-100 hover:[&>div>.plite-comment-actions]:pointer-events-auto hover:[&>div>.plite-comment-actions]:opacity-100"
+      className="focus-within:[&>div>.editor-comment-actions]:pointer-events-auto focus-within:[&>div>.editor-comment-actions]:opacity-100 hover:[&>div>.editor-comment-actions]:pointer-events-auto hover:[&>div>.editor-comment-actions]:opacity-100"
       data-comment-message={message.id}
     >
       <div className="relative flex items-center">
@@ -434,7 +434,7 @@ function CommentMessageRow({
         {mine && !editing && (
           <div
             className={cn(
-              'plite-comment-actions pointer-events-none absolute top-0 right-0 flex gap-1 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100',
+              'editor-comment-actions pointer-events-none absolute top-0 right-0 flex gap-1 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100',
               menuOpen && 'pointer-events-auto opacity-100'
             )}
           >

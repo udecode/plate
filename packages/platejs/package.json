@@ -129,10 +129,10 @@
       "import": "./dist/dnd/react/index.js",
       "default": "./dist/dnd/react/index.js"
     },
-    "./docx": {
-      "types": "./dist/docx/index.d.ts",
-      "import": "./dist/docx/index.js",
-      "default": "./dist/docx/index.js"
+    "./docx/paste": {
+      "types": "./dist/docx/paste/index.d.ts",
+      "import": "./dist/docx/paste/index.js",
+      "default": "./dist/docx/paste/index.js"
     },
     "./docx/export": {
       "types": "./dist/docx/export/index.d.ts",
@@ -269,6 +269,11 @@
       "import": "./dist/react/index.js",
       "default": "./dist/react/index.js"
     },
+    "./react/virtualized": {
+      "types": "./dist/react/virtualized.d.ts",
+      "import": "./dist/react/virtualized.js",
+      "default": "./dist/react/virtualized.js"
+    },
     "./resizable/react": {
       "types": "./dist/react/features/resizable/index.d.ts",
       "import": "./dist/react/features/resizable/index.js",
@@ -360,7 +365,7 @@
   },
   "scripts": {
     "brl": "node ../../tooling/scripts/plate-pkg.cjs p:brl",
-    "build": "tsdown --config tsdown.config.mts --log-level warn && tsc --project tsconfig.build.json --pretty false && node ../../tooling/scripts/fix-declaration-specifiers.mjs dist",
+    "build": "tsdown --config tsdown.config.mts --log-level warn && tsdown --config tsdown.declarations.config.mts --log-level warn && node ../../tooling/scripts/fix-declaration-specifiers.mjs dist && node ../../tooling/scripts/finalize-plate-declarations.mjs dist",
     "build:watch": "node ../../tooling/scripts/plate-pkg.cjs p:build:watch",
     "clean": "node ../../tooling/scripts/plate-pkg.cjs p:clean",
     "lint": "node ../../tooling/scripts/run-entrypoint-package-task.mjs platejs lint",
@@ -393,10 +398,11 @@
     "lint:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs details",
     "lint:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs details-react",
     "lint:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs dnd-react",
-    "lint:partition:docx": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx",
     "lint:partition:docx-export": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-export",
     "lint:partition:docx-html": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-html",
     "lint:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-import",
+    "lint:partition:docx-internal": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-internal",
+    "lint:partition:docx-paste": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-paste",
     "lint:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs emoji",
     "lint:partition:emoji-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs emoji-react",
     "lint:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw",
@@ -417,6 +423,7 @@
     "lint:partition:proxies": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs proxies",
     "lint:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs react",
     "lint:partition:react-core": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs react-core",
+    "lint:partition:react-virtualized": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs react-virtualized",
     "lint:partition:resizable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs resizable-react",
     "lint:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs root",
     "lint:partition:slash-command": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs slash-command",
@@ -473,10 +480,10 @@
     "test:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details",
     "test:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details-react",
     "test:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs dnd-react",
-    "test:partition:docx": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx",
     "test:partition:docx-export": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-export",
     "test:partition:docx-html": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-html",
     "test:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-import",
+    "test:partition:docx-paste": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-paste",
     "test:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs emoji",
     "test:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw",
     "test:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw-react",
@@ -546,10 +553,11 @@
     "typecheck:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs details",
     "typecheck:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs details-react",
     "typecheck:partition:dnd-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs dnd-react",
-    "typecheck:partition:docx": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx",
     "typecheck:partition:docx-export": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-export",
     "typecheck:partition:docx-html": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-html",
     "typecheck:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-import",
+    "typecheck:partition:docx-internal": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-internal",
+    "typecheck:partition:docx-paste": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-paste",
     "typecheck:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs emoji",
     "typecheck:partition:emoji-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs emoji-react",
     "typecheck:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs excalidraw",
@@ -570,6 +578,7 @@
     "typecheck:partition:proxies": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs proxies",
     "typecheck:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs react",
     "typecheck:partition:react-core": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs react-core",
+    "typecheck:partition:react-virtualized": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs react-virtualized",
     "typecheck:partition:resizable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs resizable-react",
     "typecheck:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs root",
     "typecheck:partition:slash-command": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs slash-command",
@@ -605,6 +614,7 @@
     "@types/is-hotkey": "0.1.10",
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.3",
+    "@zip.js/zip.js": "2.15.0",
     "clsx": "^2.1.1",
     "csstype": "3.2.3",
     "dequal": "2.0.3",
@@ -620,6 +630,7 @@
     "nanoid": "^5.1.5",
     "optics-ts": "2.4.1",
     "plitejs": "workspace:*",
+    "saxes": "6.0.0",
     "unist-util-visit": "5.0.0",
     "zustand": "^5.0.5"
   },
@@ -631,6 +642,7 @@
     "@codemirror/view": "6.41.0",
     "@emoji-mart/data": "^1.2.0",
     "@excalidraw/excalidraw": "0.18.0",
+    "@tanstack/react-virtual": "^3.13.25",
     "@testing-library/react": "16.3.0",
     "@types/katex": "0.16.7",
     "@types/lodash": "^4.17.13",
@@ -685,6 +697,7 @@
     "@codemirror/view": "^6.41.0",
     "@emoji-mart/data": ">=1.2.0",
     "@excalidraw/excalidraw": "0.18.0",
+    "@tanstack/react-virtual": "^3.13.25",
     "@types/papaparse": "^5.3.16",
     "ai": "^6.0.0",
     "color-name": "^2.0.0",
@@ -736,6 +749,9 @@
       "optional": true
     },
     "@excalidraw/excalidraw": {
+      "optional": true
+    },
+    "@tanstack/react-virtual": {
       "optional": true
     },
     "@types/papaparse": {

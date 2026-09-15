@@ -12,7 +12,7 @@ export const createStaticEditor = <
 >(
   value: Value,
   options?: Omit<
-    CreateEditorOptions<Value, readonly [], TPlugins>,
+    CreateEditorOptions<Value, TPlugins>,
     'initialValue' | 'plugins'
   > & { plugins?: TPlugins }
 ) => {

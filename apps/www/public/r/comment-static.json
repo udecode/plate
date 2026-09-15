@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/comment-static.ts",
-      "content": "import type { PliteDecorationAttributes } from 'platejs';\n\nexport const commentDecorationAttributes: PliteDecorationAttributes = {\n  className:\n    'border-b-2 border-b-highlight/40 bg-highlight/15 [&_[data-comment-id]]:border-b-highlight/80 [&_[data-comment-id]]:bg-highlight/25',\n};\n",
+      "content": "import type { DecorationAttributes } from 'platejs';\n\nexport const commentDecorationAttributes: DecorationAttributes = {\n  className:\n    'border-b-2 border-b-highlight/40 bg-highlight/15 [&_[data-comment-id]]:border-b-highlight/80 [&_[data-comment-id]]:bg-highlight/25',\n};\n",
       "type": "registry:component",
       "target": "@components/editor/comment-static.ts"
     }

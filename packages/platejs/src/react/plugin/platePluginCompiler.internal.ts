@@ -1,15 +1,9 @@
 import type { NormalizeBasePluginInput } from '../../lib/plugin/basePluginCompiler.internal';
 
-export type NormalizePlatePluginAuthorInput<TInput> = Omit<
-  TInput,
-  'component'
-> &
+export type NormalizePluginAuthorInput<TInput> = Omit<TInput, 'component'> &
   ('component' extends keyof TInput ? Readonly<{ render: true }> : {});
 
-export type NormalizePlatePluginInput<
+export type NormalizePluginInput<
   TInput,
   TFallbackName extends string = string,
-> = NormalizeBasePluginInput<
-  NormalizePlatePluginAuthorInput<TInput>,
-  TFallbackName
->;
+> = NormalizeBasePluginInput<NormalizePluginAuthorInput<TInput>, TFallbackName>;

@@ -1,8 +1,9 @@
 'use client';
 
-import { PLUGINS, ElementApi } from 'platejs';
+import { BaseCodeBlockPlugin, PLUGINS, ElementApi } from 'platejs';
 import type { TabbablePluginState } from 'platejs/tabbable';
 import { TabbablePlugin } from 'platejs/tabbable/react';
+import { BaseTablePlugin } from 'platejs/table';
 
 export type TabbableKitPluginState = Pick<TabbablePluginState, 'query'>;
 
@@ -26,9 +27,9 @@ export const TabbableKit = [
           return false;
         }
 
-        const blockingTypes = new Set(
-          [PLUGINS.codeBlock, PLUGINS.table].flatMap((name) => {
-            const plugin = editor.plugin(name);
+        const blockingTypes = new Set<string>(
+          [BaseCodeBlockPlugin, BaseTablePlugin].flatMap((descriptor) => {
+            const plugin = editor.plugin(descriptor);
 
             return plugin.installed ? [plugin.schema.type] : [];
           })

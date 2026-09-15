@@ -9,13 +9,14 @@
       "upstream": "skills/principle-prove-it-works/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "9bbe6138505be34d81e9395d95d3639b384f71d71d65cc1903075126e1da1508",
-      "destinationSha256": "57aa4909cd07dcf0958082418ec2d076aceebc4adfda4d64891d8b1bba7c05b4",
+      "destinationSha256": "2ea479da2a8357cbe28339331242bf25c1108fbaacce1cb521a16a9ff60b4831",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-prove-it-works/SKILL.md\n+++ skills/principle-prove-it-works/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-prove-it-works\n description: \"Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Prove It Works\n \n"
+      "unifiedDiff": "--- skills/principle-prove-it-works/SKILL.md\n+++ skills/principle-prove-it-works/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-prove-it-works\n-description: \"Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'\"\n-disable-model-invocation: true\n+description: \"Choose direct evidence when a completion claim relies on proxies, a self-report or an uncertain verifier.\"\n ---\n \n # Prove It Works\n@@ -28,6 +27,6 @@\n \n ## Script the check when you can\n \n-The strongest proof is a deterministic script that re-runs the same comparison, not a one-time eyeball. Write the script, run it, and keep its output as an artifact a reviewer can re-run instead of trusting your word. A script comparing the old and new compiled output catches what a glance misses.\n+Use an existing deterministic check when it proves the requested behavior. Write a new script only when it supplies otherwise missing evidence; direct runtime or artifact inspection can be sufficient. Keep the actual result visible and rerunnable where useful. A script comparing the old and new compiled output catches what a glance misses.\n \n-Keep the artifact visible for the human. Commit it only for large or complex work where the trail has to be auditable later, like a big port or migration (the **show-me-your-work** skill). Most work just needs it visible, not committed.\n+Keep the artifact visible for the human. Commit only when authorized and useful for later review; a separate **show-me-your-work** trail is conditional on its own trigger. Most work just needs it visible, not committed.\n"
     }
   ],
   "ownedFiles": [

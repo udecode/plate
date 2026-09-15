@@ -3,8 +3,8 @@
 import { DndPlugin, useDndPlugin, useDraggable } from 'platejs/dnd/react';
 import {
   ParagraphPlugin,
-  Plate,
-  PlateContent,
+  EditorRoot,
+  EditorContent,
   type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
   useEditorValue,
@@ -82,9 +82,9 @@ const DndEditor = ({
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <DndEditorView id={id} label={label} />
-    </Plate>
+    </EditorRoot>
   );
 };
 
@@ -96,7 +96,7 @@ const DndEditorView = ({ id, label }: { id: string; label: string }) => {
   return (
     <>
       <EditorModel id={id} />
-      <PlateContent
+      <EditorContent
         ref={setEditableElement}
         aria-label={label}
         className="grid min-h-24 gap-2 rounded border p-3 outline-none"

@@ -1,22 +1,22 @@
 import type { Locator } from '@playwright/test';
 
 import { toPlainText } from './clipboard';
-import { PLITE_BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY } from './constants';
 import type { SurfaceTarget } from './surface';
 import type { HtmlNormalizationOptions } from './types';
 
 export const getBlockTexts = async (root: Locator): Promise<string[]> =>
   root.evaluate((element: HTMLElement) =>
     Array.from(
-      element.querySelectorAll(':scope > [data-plite-node="element"]')
+      element.querySelectorAll(':scope > [data-editor-node="element"]')
     ).map((block) => {
       const logicalBlock = block.cloneNode(true) as Element;
 
       logicalBlock
-        .querySelectorAll('[data-plite-string][data-plite-length]')
+        .querySelectorAll('[data-editor-string][data-editor-length]')
         .forEach((string) => {
           const length = Number.parseInt(
-            string.getAttribute('data-plite-length') ?? '',
+            string.getAttribute('data-editor-length') ?? '',
             10
           );
 
@@ -69,7 +69,7 @@ export const insertTextThroughHandle = async (root: Locator, text: string) =>
 
       handle.insertText(nextText);
     },
-    { key: PLITE_BROWSER_HANDLE_KEY, nextText: text }
+    { key: BROWSER_HANDLE_KEY, nextText: text }
   );
 
 export const dropHtml = async (

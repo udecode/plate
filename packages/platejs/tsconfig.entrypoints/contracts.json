@@ -20,7 +20,16 @@
       "path": "./core.json"
     },
     {
+      "path": "./docx-export.json"
+    },
+    {
+      "path": "./docx-import.json"
+    },
+    {
       "path": "./footnote-react.json"
+    },
+    {
+      "path": "./markdown.json"
     },
     {
       "path": "./mention.json"
@@ -44,10 +53,22 @@
       "path": "./static.json"
     },
     {
+      "path": "./suggestion.json"
+    },
+    {
+      "path": "./suggestion-react.json"
+    },
+    {
       "path": "./table.json"
     },
     {
       "path": "./table-react.json"
+    },
+    {
+      "path": "./yjs.json"
+    },
+    {
+      "path": "./yjs-react.json"
     }
   ]
 }

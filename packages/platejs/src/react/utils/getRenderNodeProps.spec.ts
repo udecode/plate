@@ -1,6 +1,6 @@
 import { property, schema, target } from '../../core';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
-import { BaseParagraphPlugin, defineBasePlugin } from '../../lib';
+import { BaseParagraphPlugin, definePlugin } from '../../lib';
 import { createEditor } from '../editor/withPlate';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { getRenderNodeProps } from './getRenderNodeProps.internal';
@@ -37,7 +37,7 @@ describe('getRenderNodeProps', () => {
 
     expect(result.api).toBe(editor.api);
     expect(result.editor).toBe(editor);
-    expect(result.attributes?.className).toContain('plite-paragraph');
+    expect(result.attributes?.className).toContain('editor-paragraph');
     expect(result.attributes?.className).toContain('attr-class');
     expect(result.attributes?.className).toContain('user-class');
     expect(result.attributes).not.toHaveProperty('style');
@@ -57,7 +57,7 @@ describe('getRenderNodeProps', () => {
         }) as any,
       },
     }));
-    const AttributesPlugin = defineBasePlugin('paragraphAttributes', {
+    const AttributesPlugin = definePlugin('paragraphAttributes', {
       schema: () => ({
         properties: {
           attributes: schema.elementProperty(property.json(), {
@@ -66,7 +66,7 @@ describe('getRenderNodeProps', () => {
         },
       }),
     });
-    const AlignPlugin = defineBasePlugin('align', {
+    const AlignPlugin = definePlugin('align', {
       targetPlugins: [BaseParagraphPlugin],
       schema: () => ({
         properties: {
@@ -100,7 +100,7 @@ describe('getRenderNodeProps', () => {
       editor,
       plugin: getCompiledPlatePlugin(editor, CustomParagraphPlugin) as any,
       props: {
-        attributes: { 'data-plite-align': 'center' },
+        attributes: { 'data-editor-align': 'center' },
         children: null,
         className: 'user-class',
         element,
@@ -115,13 +115,13 @@ describe('getRenderNodeProps', () => {
     });
     expect(result.attributes?.ignored).toBeUndefined();
     expect(result.attributes?.title).toBeUndefined();
-    expect(result.attributes?.className).toContain('plite-paragraph');
+    expect(result.attributes?.className).toContain('editor-paragraph');
     expect(result.attributes?.className).toContain('user-class');
-    expect(result.attributes?.className).toContain('plite-align-center');
+    expect(result.attributes?.className).toContain('editor-align-center');
   });
 
   it('keeps untargeted mark injection on text nodes', () => {
-    const ColorPlugin = defineBasePlugin('color', {
+    const ColorPlugin = definePlugin('color', {
       inject: { nodeProps: { styleKey: 'color' } },
       schema: { mark: property.string() },
     });

@@ -1,7 +1,5 @@
 import type { EditorDocumentValue } from 'platejs';
 
-const PLAYGROUND_CREATED_AT = 1_704_067_200_000;
-
 export const playgroundValue: EditorDocumentValue = {
   children: [
     // Intro
@@ -42,13 +40,6 @@ export const playgroundValue: EditorDocumentValue = {
         {
           children: [
             {
-              suggestion: true,
-              suggestion_playground1: {
-                id: 'playground1',
-                createdAt: PLAYGROUND_CREATED_AT,
-                type: 'insert',
-                userId: 'alice',
-              },
               text: '建议',
             },
           ],
@@ -56,71 +47,17 @@ export const playgroundValue: EditorDocumentValue = {
           url: '/docs/suggestion',
         },
         {
-          suggestion: true,
-          suggestion_playground1: {
-            id: 'playground1',
-            createdAt: PLAYGROUND_CREATED_AT,
-            type: 'insert',
-            userId: 'alice',
-          },
-          text: ' ',
+          text: ' 像这样添加文本，或者标记要删除的文本。使用 ',
         },
-        {
-          suggestion: true,
-          suggestion_playground1: {
-            id: 'playground1',
-            createdAt: PLAYGROUND_CREATED_AT,
-            type: 'insert',
-            userId: 'alice',
-          },
-          text: '像这样添加文本',
-        },
-        { text: ' 或者 ' },
-        {
-          suggestion: true,
-          suggestion_playground2: {
-            id: 'playground2',
-            createdAt: PLAYGROUND_CREATED_AT,
-            type: 'remove',
-            userId: 'bob',
-          },
-          text: '标记要删除的文本',
-        },
-        { text: '。使用 ' },
         {
           children: [{ text: '评论' }],
           type: 'link',
           url: '/docs/comment',
         },
-        { text: ' 讨论多个文本段落的变更' },
-        { text: '。你甚至可以有 ' },
-        {
-          suggestion: true,
-          suggestion_playground3: {
-            id: 'playground3',
-            createdAt: PLAYGROUND_CREATED_AT,
-            type: 'insert',
-            userId: 'charlie',
-          },
-          text: '重叠的',
-        },
-        { text: ' 评论！' },
+        { text: ' 讨论多个文本段落的变更。你甚至可以有重叠的评论！' },
       ],
       type: 'paragraph',
     },
-    // {
-    //   children: [
-    //     {
-    //       text: 'Block-level suggestions are also supported for broader feedback.',
-    //     },
-    //   ],
-    //   suggestion: {
-    //     suggestionId: 'suggestionBlock1',
-    //     type: 'block',
-    //     userId: 'charlie',
-    //   },
-    //   type: 'paragraph',
-    // },
     // AI Section
     {
       children: [{ text: 'AI 辅助编辑' }],

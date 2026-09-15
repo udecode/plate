@@ -20,8 +20,8 @@ const hasNativeBlockingMarks = (marks: Record<string, unknown> | null) =>
   marks != null && Object.keys(marks).length > 0;
 
 const canUseNativeTextHost = (textHost: Element | null | undefined) =>
-  textHost?.getAttribute('data-plite-dom-sync') === 'true' &&
-  textHost.getAttribute('data-plite-dom-sync-reason') !== 'decoration';
+  textHost?.getAttribute('data-editor-dom-sync') === 'true' &&
+  textHost.getAttribute('data-editor-dom-sync-reason') !== 'decoration';
 
 export const getNativeSingleCharacterInputDecision = ({
   allowDirtyDOMText = false,
@@ -70,11 +70,11 @@ export const getNativeSingleCharacterInputDecision = ({
   }
 
   const [node, offset] = domPoint;
-  const textHost = node.parentElement?.closest('[data-plite-node="text"]');
+  const textHost = node.parentElement?.closest('[data-editor-node="text"]');
 
   if (!textHost || !canUseNativeTextHost(textHost)) {
     return blocked(
-      textHost?.getAttribute('data-plite-dom-sync-reason') ??
+      textHost?.getAttribute('data-editor-dom-sync-reason') ??
         'unsynced-text-host'
     );
   }
@@ -83,7 +83,7 @@ export const getNativeSingleCharacterInputDecision = ({
     const textFlowEntry = resolveDOMTextFlowEntry(node, offset);
     const textHostPath = textFlowEntry
       ? textFlowEntry.path.join(',')
-      : textHost.getAttribute('data-plite-path');
+      : textHost.getAttribute('data-editor-path');
 
     if (textHostPath !== anchor.path.join(',')) {
       return blocked('dirty-text-path');

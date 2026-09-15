@@ -2,13 +2,14 @@ import React from 'react';
 
 import type { NodeKey } from '../../facade';
 import {
+  clonePlateRenderedAttributes,
   EMPTY_RENDERED_ATTRIBUTES,
   mergePlateRenderedAttributes,
 } from '../../internal/mergePlateRenderedAttributes';
 import type { UnknownObject } from '../../lib/types/AnyObject';
 import type {
-  PlateViewElementAttributeEntry,
-  PlateViewElementAttributes,
+  ViewElementAttributeEntry,
+  ViewElementAttributes,
 } from '../plugin/PlatePlugin';
 import { useIsomorphicLayoutEffect } from './react-helpers';
 
@@ -22,11 +23,11 @@ export type PlateRenderedAttributeStoreMetrics = Readonly<{
 export type PlateRenderedAttributeStore = Readonly<{
   clearSource: (sourceId: string) => void;
   getMetrics: () => PlateRenderedAttributeStoreMetrics;
-  getNodeSnapshot: (nodeKey: NodeKey) => PlateViewElementAttributes;
+  getNodeSnapshot: (nodeKey: NodeKey) => ViewElementAttributes;
   replaceSource: (
     sourceId: string,
     sourceOrder: number,
-    entries: readonly PlateViewElementAttributeEntry[]
+    entries: readonly ViewElementAttributeEntry[]
   ) => void;
   subscribeNodeKey: (nodeKey: NodeKey, listener: () => void) => () => void;
 }>;
@@ -45,8 +46,8 @@ const areStylesEqual = (
 };
 
 const areAttributesEqual = (
-  left: PlateViewElementAttributes,
-  right: PlateViewElementAttributes
+  left: ViewElementAttributes,
+  right: ViewElementAttributes
 ) => {
   if (left === right) return true;
   const names = Object.keys(left);
@@ -66,57 +67,8 @@ const areAttributesEqual = (
   });
 };
 
-const cloneAttributes = (
-  attributes: PlateViewElementAttributes
-): PlateViewElementAttributes => {
-  const cloned: UnknownObject = {};
-
-  Object.keys(attributes).forEach((name) => {
-    const value = (attributes as UnknownObject)[name];
-
-    if (value === undefined) return;
-    if (name === 'className' || name === 'placeholder') {
-      if (typeof value !== 'string') {
-        throw new Error(`Rendered attribute "${name}" must be a string.`);
-      }
-    } else if (name === 'style') {
-      if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-        throw new Error('Rendered attribute "style" must be an object.');
-      }
-      Object.entries(value).forEach(([styleName, styleValue]) => {
-        if (
-          styleValue !== undefined &&
-          typeof styleValue !== 'number' &&
-          typeof styleValue !== 'string'
-        ) {
-          throw new Error(
-            `Rendered style "${styleName}" must be a string or number.`
-          );
-        }
-      });
-    } else if (!name.startsWith('aria-') && !name.startsWith('data-')) {
-      throw new Error(`Unsupported rendered attribute "${name}".`);
-    } else if (
-      typeof value !== 'boolean' &&
-      typeof value !== 'number' &&
-      typeof value !== 'string'
-    ) {
-      throw new Error(
-        `Rendered attribute "${name}" must be a primitive value.`
-      );
-    }
-
-    cloned[name] =
-      name === 'style'
-        ? Object.freeze({ ...(value as Record<string, unknown>) })
-        : value;
-  });
-
-  return Object.freeze(cloned) as PlateViewElementAttributes;
-};
-
 const mergeSourceAttributes = (
-  sourceMaps: Iterable<ReadonlyMap<NodeKey, PlateViewElementAttributes>>,
+  sourceMaps: Iterable<ReadonlyMap<NodeKey, ViewElementAttributes>>,
   nodeKey: NodeKey
 ) => {
   let merged = EMPTY_RENDERED_ATTRIBUTES;
@@ -128,23 +80,23 @@ const mergeSourceAttributes = (
     merged = mergePlateRenderedAttributes(
       merged as UnknownObject,
       attributes
-    ) as unknown as PlateViewElementAttributes;
+    ) as unknown as ViewElementAttributes;
   }
 
   return merged === EMPTY_RENDERED_ATTRIBUTES
     ? merged
-    : (Object.freeze(merged) as PlateViewElementAttributes);
+    : (Object.freeze(merged) as ViewElementAttributes);
 };
 
 type PlateRenderedAttributeSource = Readonly<{
-  attributes: ReadonlyMap<NodeKey, PlateViewElementAttributes>;
+  attributes: ReadonlyMap<NodeKey, ViewElementAttributes>;
   order: number;
 }>;
 
 export const createPlateRenderedAttributeStore =
   (): PlateRenderedAttributeStore => {
     const listenersByNodeKey = new Map<NodeKey, Set<() => void>>();
-    const mergedByNodeKey = new Map<NodeKey, PlateViewElementAttributes>();
+    const mergedByNodeKey = new Map<NodeKey, ViewElementAttributes>();
     const sources = new Map<string, PlateRenderedAttributeSource>();
     const metrics = {
       changedNodeCount: 0,
@@ -156,7 +108,7 @@ export const createPlateRenderedAttributeStore =
     const replaceSource = (
       sourceId: string,
       sourceOrder: number,
-      entries: readonly PlateViewElementAttributeEntry[]
+      entries: readonly ViewElementAttributeEntry[]
     ) => {
       if (sourceId.length === 0) {
         throw new Error('Rendered attribute source ids must be non-empty.');
@@ -169,7 +121,7 @@ export const createPlateRenderedAttributeStore =
 
       const previous = sources.get(sourceId);
       const previousAttributes = previous?.attributes ?? new Map();
-      const nextAttributes = new Map<NodeKey, PlateViewElementAttributes>();
+      const nextAttributes = new Map<NodeKey, ViewElementAttributes>();
 
       entries.forEach(({ attributes, key }) => {
         if (nextAttributes.has(key)) {
@@ -177,7 +129,7 @@ export const createPlateRenderedAttributeStore =
             `Rendered attribute source "${sourceId}" returned duplicate node key "${key}".`
           );
         }
-        nextAttributes.set(key, cloneAttributes(attributes));
+        nextAttributes.set(key, clonePlateRenderedAttributes(attributes));
       });
 
       const unchanged =
@@ -315,7 +267,7 @@ export const usePlateRenderedAttributes = (nodeKey: NodeKey | null) => {
 export const usePublishPlateRenderedAttributes = (
   sourceId: string,
   sourceOrder: number,
-  entries: readonly PlateViewElementAttributeEntry[]
+  entries: readonly ViewElementAttributeEntry[]
 ) => {
   const store = React.useContext(PlateRenderedAttributeContext);
 

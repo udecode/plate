@@ -1,7 +1,7 @@
 'use client';
 
 import type { Value } from 'platejs';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
@@ -21,11 +21,11 @@ function WithPlate({ id, value }: { id: string; value: Value }) {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor spellCheck={false} />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 

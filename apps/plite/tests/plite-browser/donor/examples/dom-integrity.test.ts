@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test';
 import {
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 
 test('external DOM corruption is repaired from the model without moving selection', async ({
   page,
 }) => {
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     const editor = await openExample(page, 'plite/plaintext', {
@@ -22,7 +22,7 @@ test('external DOM corruption is repaired from the model without moving selectio
     await editor.selection.collapse(point);
     await editor.root.evaluate((root) => {
       const textHost = root.querySelector<HTMLElement>(
-        '[data-plite-node="text"][data-plite-path="0,0"]'
+        '[data-editor-node="text"][data-editor-path="0,0"]'
       );
 
       if (!textHost) throw new Error('Missing first Plite text host');
@@ -42,7 +42,8 @@ test('external DOM corruption is repaired from the model without moving selectio
       wrapper.append(text);
       text.replaceData(0, text.length, 'external corruption');
       textHost.setAttribute('data-app-presentation', 'retained');
-      textHost.setAttribute('data-plite-external-corruption', 'true');
+      textHost.setAttribute('data-editor-presentation', 'retained');
+      textHost.setAttribute('data-editor-void', 'true');
       const rogue = root.ownerDocument.createElement('span');
 
       rogue.dataset.externalRogue = 'true';
@@ -55,20 +56,24 @@ test('external DOM corruption is repaired from the model without moving selectio
         editor.root.evaluate((root) => ({
           hasRogue: !!root.querySelector('[data-external-rogue="true"]'),
           hasWrapper: !!root.querySelector('[data-external-wrapper="true"]'),
+          editorPresentationAttribute: root
+            .querySelector('[data-editor-path="0,0"]')
+            ?.getAttribute('data-editor-presentation'),
           presentationAttribute: root
-            .querySelector('[data-plite-path="0,0"]')
+            .querySelector('[data-editor-path="0,0"]')
             ?.getAttribute('data-app-presentation'),
-          reservedCorruption: root
-            .querySelector('[data-plite-path="0,0"]')
-            ?.hasAttribute('data-plite-external-corruption'),
+          ownedCorruption: root
+            .querySelector('[data-editor-path="0,0"]')
+            ?.hasAttribute('data-editor-void'),
           text: root.textContent?.replaceAll('\uFEFF', '') ?? '',
         }))
       )
       .toEqual({
         hasRogue: false,
         hasWrapper: false,
+        editorPresentationAttribute: 'retained',
         presentationAttribute: 'retained',
-        reservedCorruption: false,
+        ownedCorruption: false,
         text: domText,
       });
     expect(await editor.get.text()).toBe(modelText);
@@ -87,8 +92,8 @@ test('external DOM corruption is repaired from the model without moving selectio
             offset: selection?.anchorOffset ?? null,
             path:
               selection?.anchorNode?.parentElement
-                ?.closest('[data-plite-path]')
-                ?.getAttribute('data-plite-path') ?? null,
+                ?.closest('[data-editor-path]')
+                ?.getAttribute('data-editor-path') ?? null,
           };
         })
       )

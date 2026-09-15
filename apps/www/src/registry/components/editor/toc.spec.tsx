@@ -52,7 +52,10 @@ const editor = {
       scrollIntoView: scrollIntoViewMock,
     },
   },
-  plugin: () => ({ read: { headings: () => headings } }),
+  plugin: () => ({
+    api: { flashTarget: flashTargetMock },
+    read: { headings: () => headings },
+  }),
   read: {
     nodes: {
       get: (key: string) => [
@@ -85,10 +88,9 @@ mock.module('platejs/react', () => ({
     configure: mock(() => ({ name: 'toc' })),
     name: 'toc',
   },
-  PlateElement: PlateElementMock,
+  EditorElement: PlateElementMock,
   NavigationFeedbackPlugin: {},
   useEditor: () => editor,
-  useEditorPlugin: () => ({ api: { flashTarget: flashTargetMock } }),
   useEditorScrollElement: () => null,
   useEditorRootElement: () => headingElement,
   useEditorSelector: useEditorSelectorMock,
@@ -99,7 +101,7 @@ mock.module('@/components/ui/button', () => ({
 }));
 
 const tocProps = {
-  attributes: { 'data-plite-node': 'element' },
+  attributes: { 'data-editor-node': 'element' },
   element: { children: [{ text: '' }], type: 'toc' },
 } as unknown as React.ComponentProps<typeof import('./toc').TocElement>;
 

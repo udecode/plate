@@ -9,7 +9,7 @@ export type { EditorCompilation } from '../lib/editor/withPlite';
 
 /**
  * Compile nominal plugins and optional application schema into immutable JSON data.
- * Evaluates configuration, API factories and validators without activating extensions
+ * Evaluates configuration, API factories and validators without activating plugins
  * or constructing an initial document.
  */
 export const compileEditor = (

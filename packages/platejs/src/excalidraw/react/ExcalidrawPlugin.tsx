@@ -1,4 +1,4 @@
-import { toPlatePlugin } from '../../react/core';
+import { toReactPlugin } from '../../react/core';
 import { BaseExcalidrawPlugin } from '../lib';
 
-export const ExcalidrawPlugin = toPlatePlugin(BaseExcalidrawPlugin);
+export const ExcalidrawPlugin = toReactPlugin(BaseExcalidrawPlugin);

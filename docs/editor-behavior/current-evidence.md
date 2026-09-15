@@ -7,28 +7,29 @@ choose an exact replay; a replacement path does not inherit a previous
 `tested` or `locked` result.
 
 The ledger observes current editable package source, copied registry UI,
-exports and proof tooling. Its per-scope files, fingerprints and historical
+actual shared examples, exports and editor proof tooling. Its per-scope files, fingerprints and historical
 records are the shared navigation owner; this page does not keep another
 source map. The normative editing spec remains in this directory.
 
 | Behavior or spec family | Current source, consumers and proof entry points |
 | --- | --- |
 | Paragraph, heading, quote, rule; `EDIT-P-*`, `EDIT-H-*`, `EDIT-BQ-*` | [Blocks and styles](../research/reviews.md#basic) |
-| Marks and affinity; `EDIT-AFF-*`; autoformat and exit breaks | [Editing](../research/reviews.md#editing), [blocks and styles](../research/reviews.md#basic) |
+| Marks and affinity; `EDIT-AFF-*`; autoformat and exit breaks | [Styles](../research/reviews.md#styles), [selection](../research/reviews.md#selection), [editing](../research/reviews.md#editing) |
 | Lists and indentation; `EDIT-LIST-*` | [Lists](../research/reviews.md#list) |
-| Code; `EDIT-CB-*` | [Code text](../research/reviews.md#code) |
+| Code; `EDIT-CB-*` | [Native code](../research/reviews.md#code), [external text](../research/reviews.md#external-text) |
 | Links | [Links and source entry](../research/reviews.md#link) |
 | Math; `EDIT-MATH-*` | [Math](../research/reviews.md#math) |
 | Tables; `EDIT-TABLE-*` | [Tables and cell selection](../research/reviews.md#table) |
-| Images, audio, video, files and embeds | [Media](../research/reviews.md#media) |
+| Images, audio, video, files and embeds | [Media](../research/reviews.md#media), [uploads](../research/reviews.md#uploads) |
 | Dates, callouts, details and footnotes | [Dates](../research/reviews.md#date), [callout/disclosure](../research/reviews.md#callout), [footnotes](../research/reviews.md#footnote) |
 | Find and outline navigation | [Find](../research/reviews.md#search), [TOC](../research/reviews.md#toc) |
-| Mentions, tags, emoji and slash entry | [Autocomplete](../research/reviews.md#autocomplete) |
-| Markdown and source-entry round trips | [Markdown](../research/reviews.md#markdown) |
-| Clipboard, selection, IME, focus and accessibility | [Native interaction](../research/reviews.md#native) |
-| Comments and Suggestions | [Comments](../research/reviews.md#comments), [authored changes](../research/reviews.md#authored) |
-| Static rendering and document interchange | [HTML/static](../research/reviews.md#html), [DOCX/CSV](../research/reviews.md#documents) |
-| Layout, drawings and large documents | [Layout](../research/reviews.md#layout), [drawings](../research/reviews.md#drawing), [pagination](../research/reviews.md#pagination) |
+| Mentions, tags, emoji and slash entry | [Combobox](../research/reviews.md#autocomplete), [mentions](../research/reviews.md#mentions), [tags](../research/reviews.md#tags), [emoji](../research/reviews.md#emoji), [slash](../research/reviews.md#slash) |
+| Markdown and source-entry round trips | [Markdown](../research/reviews.md#markdown), [streaming](../research/reviews.md#streaming) |
+| Clipboard, selection, IME, focus and accessibility | [Clipboard](../research/reviews.md#clipboard), [selection](../research/reviews.md#selection), [native input](../research/reviews.md#native), [accessibility](../research/reviews.md#accessibility) |
+| Comments and Suggestions | [Comments](../research/reviews.md#comments), [Suggestions](../research/reviews.md#suggestions), [authored changes](../research/reviews.md#authored) |
+| Static rendering and document interchange | [HTML/static](../research/reviews.md#html), [DOCX](../research/reviews.md#documents), [CSV](../research/reviews.md#csv), [exports](../research/reviews.md#exports) |
+| Layout, drawings and large documents | [Layout](../research/reviews.md#layout), [diagrams](../research/reviews.md#drawing), [canvas](../research/reviews.md#canvas), [large documents](../research/reviews.md#large-documents), [pagination](../research/reviews.md#pagination) |
+| Runtime roots, reads, history and saved values | [Runtime](../research/reviews.md#runtime), [reads](../research/reviews.md#reads), [history](../research/reviews.md#history), [persistence](../research/reviews.md#persistence) |
 
 Before carrying a historical matrix result forward, resolve its spec ID,
 inspect the owning implementation and current oracle, and run the affected

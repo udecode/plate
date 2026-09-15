@@ -1,5 +1,6 @@
 import { type Node, type Path, ElementApi } from '../../facade';
 import {
+  getCompiledPlatePlugin,
   getCompiledPlatePluginByType,
   getResolvedPluginTargetBinding,
 } from '../../internal/plugin/compilePlateModel';
@@ -37,8 +38,13 @@ export const getInjectMatch =
       if (
         elementPlugin &&
         excludePlugins?.some((target) => {
-          const portal = editor.plugin(target);
+          const descriptor =
+            typeof target === 'string'
+              ? getCompiledPlatePlugin(editor, target)
+              : target;
 
+          if (!descriptor) return false;
+          const portal = editor.plugin(descriptor);
           return portal.installed && portal.name === elementPlugin.name;
         })
       ) {
@@ -62,11 +68,16 @@ export const getInjectMatch =
       if (excludeBelowPlugins) {
         const installedExcludePlugins = excludeBelowPlugins.flatMap(
           (target) => {
-            const portal = editor.plugin(target);
+            const descriptor =
+              typeof target === 'string'
+                ? getCompiledPlatePlugin(editor, target)
+                : target;
 
+            if (!descriptor) return [];
+            const portal = editor.plugin(descriptor);
             if (!portal.installed) return [];
 
-            return [typeof target === 'string' ? portal.schema.type : target];
+            return [portal.schema.type];
           }
         );
         const isBelow =

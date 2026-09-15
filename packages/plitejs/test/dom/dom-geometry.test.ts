@@ -64,9 +64,9 @@ const createTextHost = (
   const host = document.createElement('span');
   const string = document.createElement('span');
 
-  host.dataset.pliteNode = 'text';
+  host.dataset.editorNode = 'text';
   host.style.direction = direction;
-  string.dataset.pliteString = 'true';
+  string.dataset.editorString = 'true';
   string.textContent = text;
   host.append(string);
 
@@ -97,8 +97,8 @@ describe('Plite DOM geometry kernel', () => {
     const outer = createTextHost(document, 'outer');
     const nested = createTextHost(document, 'nested');
 
-    root.dataset.pliteEditor = 'true';
-    nestedRoot.dataset.pliteEditor = 'true';
+    root.dataset.editor = 'true';
+    nestedRoot.dataset.editor = 'true';
     setBoundingRect(root, rect(dom.window, { bottom: 160, right: 300 }));
     setClientRects(outer.string, [
       rect(dom.window, { left: 20, right: 80, top: 100 }),
@@ -160,13 +160,13 @@ describe('Plite DOM geometry kernel', () => {
     const firstSpacer = createTextHost(document, '');
     const secondSpacer = createTextHost(document, '');
 
-    root.dataset.pliteEditor = 'true';
-    firstVoid.dataset.pliteNode = 'element';
-    firstVoid.dataset.pliteVoid = 'true';
-    secondVoid.dataset.pliteNode = 'element';
-    secondVoid.dataset.pliteVoid = 'true';
-    firstSpacer.string.dataset.pliteZeroWidth = 'n';
-    secondSpacer.string.dataset.pliteZeroWidth = 'n';
+    root.dataset.editor = 'true';
+    firstVoid.dataset.editorNode = 'element';
+    firstVoid.dataset.editorVoid = 'true';
+    secondVoid.dataset.editorNode = 'element';
+    secondVoid.dataset.editorVoid = 'true';
+    firstSpacer.string.dataset.editorZeroWidth = 'n';
+    secondSpacer.string.dataset.editorZeroWidth = 'n';
     setBoundingRect(root, rect(dom.window, { bottom: 160, right: 300 }));
     setClientRects(firstSpacer.string, [
       rect(dom.window, { bottom: 80, left: 20, right: 20, top: 70 }),
@@ -197,7 +197,7 @@ describe('Plite DOM geometry kernel', () => {
     const rendered = createTextHost(document, 'alpha');
     const nativeRange = document.createRange();
 
-    root.dataset.pliteEditor = 'true';
+    root.dataset.editor = 'true';
     root.append(rendered.host);
     document.body.append(root);
     nativeRange.setStart(rendered.text, 3);
@@ -224,7 +224,7 @@ describe('Plite DOM geometry kernel', () => {
     const familyStart = 1;
     const familyEnd = value.length - 1;
 
-    root.dataset.pliteEditor = 'true';
+    root.dataset.editor = 'true';
     setBoundingRect(root, rect(dom.window, { bottom: 40, right: 200 }));
     setClientRects(rendered.string, [
       rect(dom.window, { bottom: 20, left: 0, right: 120 }),
@@ -263,7 +263,7 @@ describe('Plite DOM geometry kernel', () => {
     const root = document.createElement('div');
     const rendered = createTextHost(document, 'ab');
 
-    root.dataset.pliteEditor = 'true';
+    root.dataset.editor = 'true';
     root.append(rendered.host);
     document.body.append(root);
     Object.defineProperty(dom.window.Range.prototype, 'getClientRects', {
@@ -301,7 +301,7 @@ describe('Plite DOM geometry kernel', () => {
     const sibling = createTextHost(document, 'sibling');
     const nativeRange = document.createRange();
 
-    root.dataset.pliteEditor = 'true';
+    root.dataset.editor = 'true';
     block.append(rendered.host);
     siblingBlock.append(sibling.host);
     root.append(block, siblingBlock);
@@ -343,7 +343,7 @@ describe('Plite DOM geometry kernel', () => {
     const root = document.createElement('div');
     const rendered = createTextHost(document, 'a');
 
-    root.dataset.pliteEditor = 'true';
+    root.dataset.editor = 'true';
     root.append(rendered.host);
     document.body.append(root);
     Object.defineProperty(document, 'caretRangeFromPoint', {
@@ -378,7 +378,7 @@ describe('Plite DOM geometry kernel', () => {
     const root = document.createElement('div');
     const source = createTextHost(document, 'source');
 
-    root.dataset.pliteEditor = 'true';
+    root.dataset.editor = 'true';
     setBoundingRect(source.host, rect(dom.window, { left: 0, right: 100 }));
     root.append(source.host);
     document.body.append(root);

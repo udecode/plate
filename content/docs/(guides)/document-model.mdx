@@ -3,7 +3,7 @@ title: Plate Document Model
 description: The canonical JSON contract for Plate documents, nodes, schemas, migrations, and format adapters.
 ---
 
-Plate stores editor-native JSON. Plite owns the tree contract; Plate plugins add schema-checked properties and codecs map documents to external formats.
+Plate stores editor-native JSON. Plate owns the tree contract; Plate plugins add schema-checked properties and codecs map documents to external formats.
 
 ## Core tree
 
@@ -48,7 +48,7 @@ The minimum is required and must be a positive integer. The descriptor must matc
 
 `defineDocumentMigrations` binds an ascending chain to the application schema. Runtime loading and the CLI call the same `migrateDocument` runner before schema fitting. Increment a named schema's version and migrate stored documents when its root grammar changes.
 
-`migratePlateV54` converts the frozen v53.3.6 profile to v54, including the final AST contracts and one newline-bearing text child per code block.
+`migrateV54` converts the frozen v53.3.6 profile to v54, including the final AST contracts and one newline-bearing text child per code block.
 
 ## Representative feature shapes
 
@@ -162,4 +162,36 @@ Image naturalWidth and naturalHeight store source-image geometry; media width st
 | Portable Text | A portability reference, not Plate storage. Plate keeps nested editor nodes and live selection semantics. |
 | Block Protocol | A block embedding protocol, not a rich-text AST contract. |
 
-Plate is intentionally Plate-native. Compatibility belongs in a codec or adapter, not in the live document shape.
+Codecs and adapters map this document contract to external formats.
+
+## Structural constraints
+
+Roots contain blocks. An element contains block children or inline/text children;
+its compiled schema chooses the allowed grammar. Elements retain a text
+descendant, including the empty anchor used by voids. Adjacent text leaves with
+the same properties merge, and text spacing around inline nodes supplies valid
+caret positions.
+
+Marks are schema-declared properties on text nodes. Decorations can split a text
+node into rendered leaf segments without changing those persisted properties.
+Use [Schema](/docs/schema) for validation and fitting, and
+[Editing Behavior](/docs/editing-behavior#normalize-behavior) for semantic
+corrections after schema-valid writes.
+
+## Helper namespaces
+
+Import `NodeApi`, `ElementApi`, `TextApi`, `PathApi`, `PointApi`, `RangeApi`, or
+`SelectionApi` from `platejs` for pure tree checks and location math. Inside
+editor callbacks, grouped `state` and `tx` methods also understand the active
+root, schema, and draft.
+
+```ts
+import { ElementApi, NodeApi } from 'platejs';
+
+const label = NodeApi.string(element);
+const isElement = ElementApi.isElement(value);
+const link = editor.read.nodes.above({ type: 'link' });
+```
+
+Use a live node directly as a supported `at` target when a component already
+owns it. Use [anchors](/docs/api/anchor) when a position must follow later edits.

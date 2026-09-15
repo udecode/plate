@@ -1,7 +1,7 @@
 import type { ContentSlice, Descendant, Range } from '../..';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 
-const CROSS_EDITOR_DRAG_FORMAT = 'application/x-plite-drag-session';
+const CROSS_EDITOR_DRAG_FORMAT = 'application/x-editor-drag-session';
 const SESSIONS = new WeakMap<Document, CrossEditorDragSession>();
 
 let nextSessionId = 0;

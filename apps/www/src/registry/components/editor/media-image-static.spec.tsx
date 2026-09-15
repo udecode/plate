@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 import * as React from 'react';
 
 mock.module('platejs/static', () => ({
-  PliteElement: ({ children }: React.ComponentProps<'div'>) => (
+  EditorElement: ({ children }: React.ComponentProps<'div'>) => (
     <div>{children}</div>
   ),
 }));

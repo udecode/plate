@@ -1,0 +1,86 @@
+{
+  "id": "2026-09-14-collaboration-plan-readiness",
+  "scope": "collaboration",
+  "kind": "review",
+  "date": "2026-09-14",
+  "question": "Which native change and identity contracts should providers reuse for local, remote and reconnect behavior?",
+  "model": "GPT-6 / Codex",
+  "method": "best-api-review/history-v2; Task final-plan adversarial review; Redesign from First Principles; Benchmark performance-review lens; three bounded independent source/caller/proof challenges",
+  "trigger": "After the collaboration design plan was presented as ready, the user asked to make sure nothing was forgotten and requested harsh honest feedback. Scope is planning and review repair only; no product implementation or publication.",
+  "requirements": [
+    "Reject waiting/error document and shared-effect work before publication and history; compensation after an invalid commit is insufficient.",
+    "Surface shared-effect decode/import failure as stable admission error, retain unacknowledged work, and recover exactly once through retry.",
+    "Preserve one controller and compaction authority per Y.Doc namespace while allowing same-factory presentation extension and multiple mounted views.",
+    "Keep provider resources and provider-specific readiness adapters app-owned; a seed grant requires an exclusive external room-creation decision.",
+    "Remove live collaboration state from replayable read.yjs and infer presence/compaction API methods only when their capabilities are configured.",
+    "Preserve the independent public YjsUpdatePolicy custom-adapter job and specify exact Plite/Plate headless and React exports.",
+    "Prove the combined lifecycle/API target with balanced A/A and A/B measurements, real-provider/browser behavior, TypeScript 7 inference and packed declarations before implementation-ready status."
+  ],
+  "evidenceReuse": "Reused current-source initial review, API/admission probes and benchmark receipts only within their recorded limits. Rechecked live Yjs controller, shared-effect log, Plate facade, package barrels, Hocuspocus and registry consumers, public Plite docs, generated/export tooling and benchmark harness. Three independent read-only challenges covered state/lifetime failure modes, public callers/exports and measurement validity. A disposable source-backed claimed-empty probe observed convergent concurrent block insertions. No product source was changed.",
+  "summary": "Defer product implementation. The ownership cuts remain directionally sound, especially deleting transport commands, the duplicate Plate store and live read.yjs, but the plan was falsely labeled ready. It lacked a composite candidate; swallowed shared-effect failures, invalid waiting/error commit compensation, compaction replacement conflict, post-publication failure semantics and multi-view awareness arbitration remain unresolved. The review also cuts the unearned public Hocuspocus helper, retains YjsUpdatePolicy, makes API capabilities conditional, selects concrete demo seed ownership, adds an exact export/adoption matrix and rejects the order-confounded benchmark as acceptance.",
+  "verdict": "defer",
+  "previous": "2026-09-14-collaboration-lifetime-ownership",
+  "relation": "defers",
+  "alternatives": [
+    "Execute the former plan unchanged: reject; separate API/admission prototypes and an order-confounded benchmark cannot support implementation-ready status.",
+    "Keep current APIs and patch local defects: reject as the durable target because transport commands, duplicate Plate configuration and live ambient state remain under the wrong lifetimes.",
+    "Export a neutral Hocuspocus readiness helper: cut; one real app caller already owns the adapter and this checkout installs materially different Hocuspocus versions without package-level compatibility proof.",
+    "Privatize YjsUpdatePolicy with diagnostics: reject; current public Plite docs use it for an independent host-owned canonical-change adapter job.",
+    "Expose all API methods and throw when capabilities are missing: reject for typed callers; infer presence and compaction methods only when awareness or compaction authority is supplied, with erased-boundary guards.",
+    "Grant seed:true to every demo peer after sync: reject; choose one externally exclusive room-generation owner, using unique ephemeral Hocus rooms or a single in-memory DemoRoom owner.",
+    "Pursue one composite native candidate under the corrected ownership and export target: selected investigation; it can settle lifecycle feasibility and performance before product adoption."
+  ],
+  "proofLimits": "No product implementation, TypeScript 7 packed declaration proof, real Hocuspocus server run, mounted browser proof or combined lifecycle/API candidate exists. Current shared-effect errors are swallowed, waiting/error writes use commit-plus-compensation, same-document replacement can conflict with compaction authority and post-publication observer failure cannot restore the old binding. The calibrated benchmark reports 15 passes but gives baseline the cold-first construction position twice, compares independent medians, misses a direct normal construction pair and measures only cursor-data API relocation. Claimed-empty required-minimum behavior was observed only in a disposable native probe. The corrected plan intentionally remains incomplete.",
+  "references": [
+    "docs/plans/2026-09-14-collaboration-lifetimes.md",
+    "docs/research/decisions/collaboration-ownership.md",
+    "docs/plans/artifacts/2026-09-14-collaboration-api-probe.test.ts",
+    "docs/plans/artifacts/2026-09-14-collaboration-admission-probe.test.ts",
+    "docs/plans/artifacts/2026-09-14-collaboration-calibrated.json",
+    "docs/plans/artifacts/2026-09-14-collaboration-calibrated-control.json",
+    "packages/plitejs/src/yjs/core/controller.ts",
+    "packages/plitejs/src/yjs/core/shared-effect-log.ts",
+    "packages/plitejs/src/yjs/core/types.ts",
+    "packages/plitejs/src/yjs/core/editor-adapter.ts",
+    "packages/plitejs/src/yjs/react/useYjs.ts",
+    "packages/platejs/src/yjs/index.tsx",
+    "packages/platejs/src/yjs/react/index.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/yjs-hocuspocus.tsx",
+    "apps/www/src/registry/examples/collaboration-demo.tsx",
+    "docs/plite/reference/public-docs/walkthroughs/07-canonical-change-substrate.mdx",
+    "docs/plite/reference/public-docs/concepts/07-editor.mdx",
+    "benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/app/(app)/examples/plite/_examples/yjs-collaboration.tsx": "c942e88cb5df5552e208800f44e74ebce13fb32d65f06435d257f71b33976219",
+      "apps/www/src/app/(app)/examples/plite/_examples/yjs-hocuspocus.tsx": "a60082a0674182697ca258b86a1457e0eeea2a970f7f1fcd22aa88b91c863970",
+      "packages/platejs/src/yjs/BaseYjsPlugin.api.spec.ts": "83ab3121b4c17e28e76653394ee0e8d37d38695847c3bc5d21aea150a876b2c9",
+      "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "1fa76acafbc99819722bfe1454b0ae9cd3c94d82387991d09d4182982a9d2de2",
+      "pnpm-lock.yaml": "c5d7bd6cc28fc66d9df9487315553937af41ec1cbfd4a88362a8d22609c81e5a",
+      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
+    },
+    "directories": {
+      "packages/plitejs/src/yjs": "486ef924fa3c86b3c4502718ead2a9f69d90b4fda83d4da1fd32018f527184ec",
+      "packages/platejs/src/yjs": "95e2a76e1da2c5738f6b14b531936bc24dfc442b2cb98ad5d185687f771bcefa"
+    },
+    "features": {
+      "capability/yjs": "814ec10f94d7f63f516ec7291d33561f25a2b717d3391accb88c4193382cf3e5",
+      "example/plite/collaboration-demo": "c2c45a631b0e4c77d60fb7353b42f3a6d2eb5f5786c4f1b093c7f5b6589228e5",
+      "example/plite/yjs-collaboration": "71eeea94ce190576ce2a80d4baff764dae6030078dfb8efa58415cbc0bae3033",
+      "example/plite/yjs-hocuspocus": "eea1f652cc10d7a4b19611249dd2b0bba5bf98db1651084e409f68b73ff1664b",
+      "example/registry/collaboration-demo": "e389c6bc101fbdbc5703b052e8caf4eb5e4f0f2a819a6c172bcd1391f1914c36",
+      "export/platejs/./yjs": "66269fdc4d24f16fba0b51fd11362e4ce60ea70a96ed2f97109f9aa5862d2e08",
+      "export/platejs/./yjs/react": "66269fdc4d24f16fba0b51fd11362e4ce60ea70a96ed2f97109f9aa5862d2e08",
+      "export/plitejs/./yjs": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "export/plitejs/./yjs/react": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "platejs/yjs": "95e2a76e1da2c5738f6b14b531936bc24dfc442b2cb98ad5d185687f771bcefa",
+      "plitejs/yjs": "486ef924fa3c86b3c4502718ead2a9f69d90b4fda83d4da1fd32018f527184ec",
+      "ui/remote-cursor-overlay": "8b687411866e184c55f8cd60c15351245872e3394a799b0959e6a9fe9c806688"
+    },
+    "upstreams": []
+  }
+}

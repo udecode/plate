@@ -29,7 +29,7 @@ const range = (start: number, end: number, root?: string): Range => ({
 const proposal = { intent: 'propose', projection: 'proposed' } as const;
 const setup = () => {
   const source = createEditor({
-    extensions: [history(), authored({ authorId: 'alice' })],
+    plugins: [history(), authored({ authorId: 'alice' })],
     initialValue: [paragraph('Base text')],
   });
   return { source, proposed: createEditorView(source, { authored: proposal }) };
@@ -47,7 +47,7 @@ describe('native document range persistence', () => {
       view.update.history.undo();
       assert.deepEqual(anchor.resolve(), range(1, 3));
       const reopened = createEditor({
-        extensions: [authored({ authorId: 'alice' })],
+        plugins: [authored({ authorId: 'alice' })],
         initialValue: JSON.parse(JSON.stringify(source.read.value())),
       });
       const restored = (
@@ -227,7 +227,7 @@ describe('native document range persistence', () => {
     assert.deepEqual(anchor.resolve(), range(12, 17));
     const saved = proposed.anchor.save(anchor);
     const restored = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: JSON.parse(JSON.stringify(source.read.value())),
     });
     const restoredView = createEditorView(restored, { authored: proposal });
@@ -322,7 +322,7 @@ describe('native document range persistence', () => {
 
   it('restores named-root ranges and rejects a different document or missing capability', () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: {
         children: [paragraph('Main')],
         roots: { note: [paragraph('Note text')] },
@@ -338,7 +338,7 @@ describe('native document range persistence', () => {
       /Install authored/
     );
     const other = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: source.read.children(),
     });
     assert.throws(() => other.anchor.restore(saved), /another document/);

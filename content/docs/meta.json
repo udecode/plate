@@ -14,72 +14,6 @@
     "[Node.js](/docs/installation/node)",
     "[Local Docs](/docs/installation/docs)",
     "[MCP](/docs/installation/mcp)",
-    "---Plite---",
-    "[Overview](/docs/plite)",
-    "[Examples](/examples/plite/richtext)",
-    "[Anchor API](/docs/plite/api/locations/anchor)",
-    "[Location API](/docs/plite/api/locations/location)",
-    "[Path API](/docs/plite/api/locations/path)",
-    "[PointEntry API](/docs/plite/api/locations/point-entry)",
-    "[Point API](/docs/plite/api/locations/point)",
-    "[Range API](/docs/plite/api/locations/range)",
-    "[Location Types APIs](/docs/plite/api/locations)",
-    "[Span API](/docs/plite/api/locations/span)",
-    "[Editor](/docs/plite/api/nodes/editor)",
-    "[Element API](/docs/plite/api/nodes/element)",
-    "[NodeEntry API](/docs/plite/api/nodes/node-entry)",
-    "[Node API](/docs/plite/api/nodes/node)",
-    "[Node Types APIs](/docs/plite/api/nodes)",
-    "[Text API](/docs/plite/api/nodes/text)",
-    "[Debug Value Scrubbing](/docs/plite/api/scrubber)",
-    "[Transforms API](/docs/plite/api/transforms)",
-    "[Interfaces](/docs/plite/concepts/01-interfaces)",
-    "[Nodes](/docs/plite/concepts/02-nodes)",
-    "[Locations](/docs/plite/concepts/03-locations)",
-    "[Transforms](/docs/plite/concepts/04-transforms)",
-    "[Document Changes](/docs/plite/concepts/05-document-changes)",
-    "[Commands](/docs/plite/concepts/06-commands)",
-    "[Editor](/docs/plite/concepts/07-editor)",
-    "[Extensions](/docs/plite/concepts/08-extensions)",
-    "[Rendering](/docs/plite/concepts/09-rendering)",
-    "[Serializing](/docs/plite/concepts/10-serializing)",
-    "[Normalizing](/docs/plite/concepts/11-normalizing)",
-    "[Using TypeScript](/docs/plite/concepts/12-typescript)",
-    "[Roots](/docs/plite/concepts/13-roots)",
-    "[Document State](/docs/plite/concepts/14-document-state)",
-    "[Contributing](/docs/plite/general/contributing)",
-    "[Docs Proof Map](/docs/plite/general/docs-proof-map)",
-    "[FAQ](/docs/plite/general/faq)",
-    "[Resources](/docs/plite/general/resources)",
-    "[Plite DOM](/docs/plite/libraries/plite-dom)",
-    "[History Editor API](/docs/plite/libraries/plite-history/history-editor)",
-    "[History Extension Setup](/docs/plite/libraries/plite-history/history-extension-setup)",
-    "[History](/docs/plite/libraries/plite-history/history)",
-    "[Plite History](/docs/plite/libraries/plite-history)",
-    "[Plite Hyperscript](/docs/plite/libraries/plite-hyperscript)",
-    "[Plite Pagination](/docs/plite/libraries/plite-pagination)",
-    "[Annotations](/docs/plite/libraries/plite-react/annotations)",
-    "[DOM Coverage Boundaries](/docs/plite/libraries/plite-react/dom-coverage-boundaries)",
-    "[Editable Component](/docs/plite/libraries/plite-react/editable)",
-    "[Plite React Event Handling](/docs/plite/libraries/plite-react/event-handling)",
-    "[Virtualized Rendering](/docs/plite/libraries/plite-react/experimental-virtualized-rendering)",
-    "[Plite React Hooks](/docs/plite/libraries/plite-react/hooks)",
-    "[React Editor Setup](/docs/plite/libraries/plite-react/react-editor-setup)",
-    "[React Editor](/docs/plite/libraries/plite-react/react-editor)",
-    "[Plite React](/docs/plite/libraries/plite-react)",
-    "[Plite Component](/docs/plite/libraries/plite-react/plite)",
-    "[Plite Yjs](/docs/plite/libraries/plite-yjs)",
-    "[Plite](/docs/plite/libraries/plite)",
-    "[Why This Fork](/docs/plite/why-this-fork)",
-    "[Migration](/docs/plite/migration)",
-    "[Installing Plite](/docs/plite/walkthroughs/01-installing-plite)",
-    "[Adding Event Handlers](/docs/plite/walkthroughs/02-adding-event-handlers)",
-    "[Defining Custom Elements](/docs/plite/walkthroughs/03-defining-custom-elements)",
-    "[Applying Custom Formatting](/docs/plite/walkthroughs/04-applying-custom-formatting)",
-    "[Executing Commands](/docs/plite/walkthroughs/05-executing-commands)",
-    "[Saving to a Database](/docs/plite/walkthroughs/06-saving-to-a-database)",
-    "[Canonical Change Substrate](/docs/plite/walkthroughs/07-canonical-change-substrate)",
-    "[Improving Performance](/docs/plite/walkthroughs/09-performance)",
     "---Guides---",
     "[Feature Kits](/docs/feature-kits)",
     "[Plugin](/docs/plugin)",
@@ -89,6 +23,7 @@
     "[Plugin Components](/docs/plugin-components)",
     "[Plugin Rules](/docs/plugin-rules)",
     "[Editing Behavior](/docs/editing-behavior)",
+    "[Authored Changes](/docs/authored-changes)",
     "[Plugin Input Rules](/docs/plugin-input-rules)",
     "[Editor](/docs/editor)",
     "[Selection](/docs/selection)",
@@ -105,13 +40,27 @@
     "[Unit Testing](/docs/unit-testing)",
     "[Browser](/docs/browser)",
     "[Troubleshooting](/docs/troubleshooting)",
+    "[Locations](/docs/locations)",
+    "[Transactions](/docs/transactions)",
+    "[Serializing](/docs/serializing)",
+    "[Roots](/docs/roots)",
+    "[Document Meta](/docs/document-meta)",
+    "[Clipboard and Paste](/docs/clipboard)",
+    "[Decorations, annotations, and widgets](/docs/decorations)",
+    "[Schema](/docs/schema)",
+    "[History](/docs/history)",
+    "[Pagination](/docs/pagination)",
+    "[Annotations](/docs/annotations)",
+    "[DOM Coverage](/docs/dom-coverage)",
+    "[External Text Views](/docs/external-text)",
+    "[Virtualized Rendering](/docs/virtualized-rendering)",
     "---Plugins---",
     "[Overview](/docs/plugins)",
     "[Stream](/docs/ai)",
     "[Copilot](/docs/copilot)",
     "[Comments](/docs/comment)",
     "[Discussion](/docs/discussion)",
-    "[Suggestion](/docs/suggestion)",
+    "[Suggestions](/docs/suggestion)",
     "[Basic Blocks](/docs/basic-blocks)",
     "[Blockquote](/docs/blockquote)",
     "[Heading](/docs/heading)",
@@ -209,7 +158,7 @@
     "[Code Leaf](/docs/components/code)",
     "[Column Nodes](/docs/components/column)",
     "[Comments UI](/docs/components/comment)",
-    "[Suggestion Leaf](/docs/components/suggestion)",
+    "[Suggestion UI](/docs/components/suggestion)",
     "[Date Element](/docs/components/date)",
     "[Equation Element](/docs/components/math)",
     "[Equation Toolbar Button](/docs/components/equation-toolbar-button)",
@@ -223,7 +172,6 @@
     "[Image Element](/docs/components/media-image)",
     "[Media Preview Dialog](/docs/components/media-preview-dialog)",
     "[Keyboard Input Leaf](/docs/components/kbd)",
-    "[Link Element](/docs/components/link)",
     "[Media Audio Element](/docs/components/media-audio)",
     "[Media Embed Element](/docs/components/media-embed)",
     "[Media File Element](/docs/components/media-file)",
@@ -239,7 +187,7 @@
     "[Details Element](/docs/components/details)",
     "---Examples---",
     "[Overview](/docs/examples)",
-    "[Plate to HTML](/docs/examples/plate-to-html)",
+    "[HTML Export](/docs/examples/html-export)",
     "[Export](/docs/examples/export)",
     "[Server-Side](/docs/examples/server-side)",
     "[Version History](/docs/examples/version-history)",
@@ -293,18 +241,17 @@
     "---API---",
     "[Overview](/docs/api)",
     "[Plate](/docs/api/plate)",
-    "[Plite](/docs/api/plite)",
-    "[Editor API](/docs/api/plite/editor-api)",
-    "[Editor Transforms](/docs/api/plite/editor-transforms)",
-    "[Node](/docs/api/plite/node)",
-    "[Element](/docs/api/plite/element)",
-    "[Text](/docs/api/plite/text)",
-    "[Path](/docs/api/plite/path)",
-    "[Point](/docs/api/plite/point)",
-    "[Range](/docs/api/plite/range)",
-    "[Location](/docs/api/plite/location)",
-    "[Location Ref](/docs/api/plite/location-ref)",
-    "[Document Change](/docs/api/plite/document-change)",
+    "[Editor API](/docs/api/editor-api)",
+    "[Editor Transforms](/docs/api/editor-transforms)",
+    "[Node](/docs/api/node)",
+    "[Element](/docs/api/element)",
+    "[Text](/docs/api/text)",
+    "[Path](/docs/api/path)",
+    "[Point](/docs/api/point)",
+    "[Range](/docs/api/range)",
+    "[Location](/docs/api/location)",
+    "[Location Ref](/docs/api/anchor)",
+    "[Document Change](/docs/api/document-change)",
     "[Plate Core](/docs/api/core)",
     "[Plate Components](/docs/api/core/plate-components)",
     "[Plate Editor](/docs/api/core/plate-editor)",
@@ -312,7 +259,10 @@
     "[Editor Context](/docs/api/core/plate-store)",
     "[Plate Controller](/docs/api/core/plate-controller)",
     "[Plate Utils](/docs/api/utils)",
-    "[Resizable](/docs/api/resizable)"
+    "[Resizable](/docs/api/resizable)",
+    "[Selection](/docs/api/selection)",
+    "[DOM API](/docs/api/dom)",
+    "[React Hooks](/docs/api/react-hooks)"
   ],
   "_plate": {
     "categoryGroups": {
@@ -325,56 +275,74 @@
               "title": "Plate"
             },
             {
-              "description": "Plite API.",
-              "href": "/docs/api/plite",
-              "items": [
-                {
-                  "href": "/docs/api/plite/editor-api",
-                  "title": "Editor API",
-                  "titleCn": "编辑器 API"
-                },
-                {
-                  "href": "/docs/api/plite/editor-transforms",
-                  "title": "Editor Transforms"
-                },
-                {
-                  "href": "/docs/api/plite/node",
-                  "title": "Node"
-                },
-                {
-                  "href": "/docs/api/plite/element",
-                  "title": "Element"
-                },
-                {
-                  "href": "/docs/api/plite/text",
-                  "title": "Text"
-                },
-                {
-                  "href": "/docs/api/plite/path",
-                  "title": "Path"
-                },
-                {
-                  "href": "/docs/api/plite/point",
-                  "title": "Point"
-                },
-                {
-                  "href": "/docs/api/plite/range",
-                  "title": "Range"
-                },
-                {
-                  "href": "/docs/api/plite/location",
-                  "title": "Location"
-                },
-                {
-                  "href": "/docs/api/plite/location-ref",
-                  "title": "Location Ref"
-                },
-                {
-                  "href": "/docs/api/plite/document-change",
-                  "title": "Document Change"
-                }
-              ],
-              "title": "Plite"
+              "href": "/docs/api/editor-api",
+              "title": "Editor API",
+              "titleCn": "编辑器 API"
+            },
+            {
+              "href": "/docs/api/editor-transforms",
+              "title": "Editor Transforms",
+              "titleCn": "编辑器事务"
+            },
+            {
+              "href": "/docs/api/node",
+              "title": "Node",
+              "titleCn": "节点"
+            },
+            {
+              "href": "/docs/api/element",
+              "title": "Element",
+              "titleCn": "元素"
+            },
+            {
+              "href": "/docs/api/text",
+              "title": "Text",
+              "titleCn": "文本"
+            },
+            {
+              "href": "/docs/api/path",
+              "title": "Path",
+              "titleCn": "路径"
+            },
+            {
+              "href": "/docs/api/point",
+              "title": "Point",
+              "titleCn": "点"
+            },
+            {
+              "href": "/docs/api/range",
+              "title": "Range",
+              "titleCn": "范围"
+            },
+            {
+              "href": "/docs/api/location",
+              "title": "Location",
+              "titleCn": "位置"
+            },
+            {
+              "href": "/docs/api/anchor",
+              "title": "Anchor",
+              "titleCn": "锚点"
+            },
+            {
+              "href": "/docs/api/selection",
+              "title": "Selection",
+              "titleCn": "选择"
+            },
+            {
+              "href": "/docs/api/document-change",
+              "title": "Document Change",
+              "titleCn": "文档变更"
+            },
+            {
+              "href": "/docs/api/dom",
+              "title": "DOM API",
+              "titleCn": "DOM API"
+            },
+            {
+              "href": "/docs/api/react-hooks",
+              "title": "React Hooks",
+              "titleCn": "React Hooks"
             },
             {
               "description": "Core utilities for Plate.",
@@ -712,10 +680,10 @@
               "titleCn": "Comments UI"
             },
             {
-              "description": "A text component for suggestion.",
+              "description": "Copied UI for native authored-change highlighting and review controls.",
               "href": "/docs/components/suggestion",
-              "title": "Suggestion",
-              "titleCn": "Suggestion"
+              "title": "Suggestion UI",
+              "titleCn": "建议 UI"
             },
             {
               "description": "A date field component with calendar picker.",
@@ -888,10 +856,10 @@
         {
           "items": [
             {
-              "description": "Plate to HTML",
-              "href": "/docs/examples/plate-to-html",
-              "title": "Plate to HTML",
-              "titleCn": "Plite 转 HTML"
+              "description": "Export editor content to HTML.",
+              "href": "/docs/examples/html-export",
+              "title": "HTML Export",
+              "titleCn": "HTML 导出"
             },
             {
               "description": "Export a Plate document to a file.",
@@ -906,7 +874,7 @@
               "titleCn": "服务端"
             },
             {
-              "description": "Show a diff of two different points in a Plate document's history.",
+              "description": "Retain accepted changes by author and selectively revert one contribution.",
               "href": "/docs/examples/version-history",
               "title": "Version History",
               "titleCn": "版本历史"
@@ -918,7 +886,7 @@
               "titleCn": "可编辑的空节点"
             },
             {
-              "description": "Compare Plate and Plite on a large document.",
+              "description": "Compare Plate and Plate on a large document.",
               "href": "/docs/examples/huge-document",
               "title": "Huge Document",
               "titleCn": "大型文档"
@@ -1129,25 +1097,25 @@
               "titleCn": "Block Placeholder"
             },
             {
-              "description": "Copy paste from CSV to Plite.",
+              "description": "Copy paste from CSV to Plate.",
               "href": "/docs/examples/csv",
               "title": "Serializing CSV Demo",
               "titleCn": "Serializing CSV"
             },
             {
-              "description": "Copy paste from DOCX to Plite.",
+              "description": "Copy paste from DOCX to Plate.",
               "href": "/docs/examples/docx",
               "title": "Serializing Docx Demo",
               "titleCn": "Serializing Docx"
             },
             {
-              "description": "Copy paste from HTML to Plite.",
+              "description": "Copy paste from HTML to Plate.",
               "href": "/docs/examples/html",
               "title": "Serializing HTML Demo",
               "titleCn": "Serializing HTML"
             },
             {
-              "description": "Copy paste from Markdown to Plite.",
+              "description": "Copy paste from Markdown to Plate.",
               "href": "/docs/examples/markdown",
               "title": "Serializing Markdown Demo",
               "titleCn": "Serializing Markdown"
@@ -1201,7 +1169,7 @@
             {
               "href": "/docs/releases",
               "title": "Releases",
-              "titleCn": "版本发布"
+              "titleCn": "版本更新"
             }
           ],
           "title": "Overview",
@@ -1324,10 +1292,21 @@
               "titleCn": "编辑器"
             },
             {
+              "description": "Capture attributed edits, review proposals, retain author history, and export explicit projections.",
+              "href": "/docs/authored-changes",
+              "keywords": [
+                "review",
+                "history"
+              ],
+              "title": "Authored Changes",
+              "titleCn": "Authored Changes"
+            },
+            {
               "href": "/docs/performance",
               "label": "New",
               "title": "Performance",
-              "titleCn": "性能"
+              "titleCn": "性能",
+              "description": "Compare Plate and Slate on a large document."
             },
             {
               "href": "/docs/static",
@@ -1378,6 +1357,76 @@
               ],
               "title": "Troubleshooting",
               "titleCn": "故障排除"
+            },
+            {
+              "href": "/docs/locations",
+              "title": "Locations",
+              "titleCn": "位置"
+            },
+            {
+              "href": "/docs/transactions",
+              "title": "Transactions",
+              "titleCn": "事务"
+            },
+            {
+              "href": "/docs/serializing",
+              "title": "Serializing",
+              "titleCn": "序列化"
+            },
+            {
+              "href": "/docs/roots",
+              "title": "Roots",
+              "titleCn": "根"
+            },
+            {
+              "href": "/docs/document-meta",
+              "title": "Document Meta",
+              "titleCn": "文档元数据"
+            },
+            {
+              "href": "/docs/clipboard",
+              "title": "Clipboard and Paste",
+              "titleCn": "剪贴板与粘贴"
+            },
+            {
+              "href": "/docs/decorations",
+              "title": "Decorations, annotations, and widgets",
+              "titleCn": "装饰、注释和浮层"
+            },
+            {
+              "href": "/docs/schema",
+              "title": "Schema",
+              "titleCn": "Schema"
+            },
+            {
+              "href": "/docs/history",
+              "title": "History",
+              "titleCn": "撤销与重做"
+            },
+            {
+              "href": "/docs/pagination",
+              "title": "Pagination",
+              "titleCn": "分页"
+            },
+            {
+              "href": "/docs/annotations",
+              "title": "Annotations",
+              "titleCn": "注释"
+            },
+            {
+              "href": "/docs/dom-coverage",
+              "title": "DOM Coverage",
+              "titleCn": "DOM 覆盖"
+            },
+            {
+              "href": "/docs/external-text",
+              "title": "External Text Views",
+              "titleCn": "外部文本视图"
+            },
+            {
+              "href": "/docs/virtualized-rendering",
+              "title": "Virtualized Rendering",
+              "titleCn": "虚拟化渲染"
             }
           ],
           "title": "Guides",
@@ -1441,12 +1490,12 @@
               "titleCn": "讨论"
             },
             {
-              "description": "Record proposed document edits for review.",
+              "description": "Record native authored changes and review them with copied Plate UI.",
               "href": "/docs/suggestion",
               "keywords": [
                 "editing"
               ],
-              "title": "Suggestion",
+              "title": "Suggestions",
               "titleCn": "建议"
             },
             {
@@ -1833,7 +1882,7 @@
             {
               "items": [
                 {
-                  "description": "Copy paste from CSV to Plite.",
+                  "description": "Copy paste from CSV to Plate.",
                   "href": "/docs/csv",
                   "title": "CSV",
                   "titleCn": "CSV"
@@ -1845,13 +1894,13 @@
                   "titleCn": "DOCX"
                 },
                 {
-                  "description": "Copy paste from HTML to Plite.",
+                  "description": "Copy paste from HTML to Plate.",
                   "href": "/docs/html",
                   "title": "HTML",
                   "titleCn": "HTML"
                 },
                 {
-                  "description": "Copy paste from Markdown to Plite.",
+                  "description": "Copy paste from Markdown to Plate.",
                   "href": "/docs/markdown",
                   "title": "Markdown",
                   "titleCn": "Markdown"
@@ -1921,7 +1970,7 @@
       },
       "/docs/releases": {
         "title": "Releases",
-        "titleCn": "版本发布"
+        "titleCn": "版本更新"
       },
       "/docs/installation/plate-ui": {
         "title": "Plate UI",
@@ -2012,15 +2061,16 @@
       "/docs/performance": {
         "label": "New",
         "title": "Performance",
-        "titleCn": "性能"
+        "titleCn": "性能",
+        "description": "Compare Plate and Slate on a large document."
       },
       "/docs/html": {
-        "description": "Copy paste from HTML to Plite.",
+        "description": "Copy paste from HTML to Plate.",
         "title": "HTML",
         "titleCn": "HTML"
       },
       "/docs/markdown": {
-        "description": "Copy paste from Markdown to Plite.",
+        "description": "Copy paste from Markdown to Plate.",
         "title": "Markdown",
         "titleCn": "Markdown"
       },
@@ -2394,7 +2444,7 @@
         "titleCn": "Multi Select"
       },
       "/docs/csv": {
-        "description": "Copy paste from CSV to Plite.",
+        "description": "Copy paste from CSV to Plate.",
         "title": "CSV",
         "titleCn": "CSV"
       },
@@ -2780,10 +2830,10 @@
         "title": "Overview",
         "titleCn": "概览"
       },
-      "/docs/examples/plate-to-html": {
-        "description": "Plate to HTML",
-        "title": "Plate to HTML",
-        "titleCn": "Plite 转 HTML"
+      "/docs/examples/html-export": {
+        "description": "Export editor content to HTML.",
+        "title": "HTML Export",
+        "titleCn": "HTML 导出"
       },
       "/docs/examples/export": {
         "description": "Export a Plate document to a file.",
@@ -2805,7 +2855,7 @@
         "titleCn": "Editable Voids"
       },
       "/docs/examples/huge-document": {
-        "description": "Compare Plate and Plite on a large document.",
+        "description": "Compare Plate and Plate on a large document.",
         "title": "Huge Document",
         "titleCn": "大型文档"
       },
@@ -2981,22 +3031,22 @@
         "titleCn": "Block Placeholder"
       },
       "/docs/examples/csv": {
-        "description": "Copy paste from CSV to Plite.",
+        "description": "Copy paste from CSV to Plate.",
         "title": "Serializing CSV Demo",
         "titleCn": "Serializing CSV"
       },
       "/docs/examples/docx": {
-        "description": "Copy paste from DOCX to Plite.",
+        "description": "Copy paste from DOCX to Plate.",
         "title": "Serializing Docx Demo",
         "titleCn": "Serializing Docx"
       },
       "/docs/examples/html": {
-        "description": "Copy paste from HTML to Plite.",
+        "description": "Copy paste from HTML to Plate.",
         "title": "Serializing HTML Demo",
         "titleCn": "Serializing HTML"
       },
       "/docs/examples/markdown": {
-        "description": "Copy paste from Markdown to Plite.",
+        "description": "Copy paste from Markdown to Plate.",
         "title": "Serializing Markdown Demo",
         "titleCn": "Serializing Markdown"
       },
@@ -3025,10 +3075,6 @@
         "title": "Details Demo",
         "titleCn": "详细信息"
       },
-      "/docs/migration/v48": {
-        "title": "v48",
-        "titleCn": "v48"
-      },
       "/docs/migration/plite-to-plate": {
         "title": "From Plite to Plate",
         "titleCn": "从 Plite 到 Plate"
@@ -3041,43 +3087,49 @@
         "description": "Plate API.",
         "title": "Plate"
       },
-      "/docs/api/plite": {
-        "description": "Plite API.",
-        "title": "Plite"
-      },
-      "/docs/api/plite/editor-api": {
+      "/docs/api/editor-api": {
         "title": "Editor API",
         "titleCn": "编辑器 API"
       },
-      "/docs/api/plite/editor-transforms": {
-        "title": "Editor Transforms"
+      "/docs/api/editor-transforms": {
+        "title": "Editor Transforms",
+        "titleCn": "编辑器事务"
       },
-      "/docs/api/plite/node": {
-        "title": "Node"
+      "/docs/api/node": {
+        "title": "Node",
+        "titleCn": "节点"
       },
-      "/docs/api/plite/element": {
-        "title": "Element"
+      "/docs/api/element": {
+        "title": "Element",
+        "titleCn": "元素"
       },
-      "/docs/api/plite/text": {
-        "title": "Text"
+      "/docs/api/text": {
+        "title": "Text",
+        "titleCn": "文本"
       },
-      "/docs/api/plite/path": {
-        "title": "Path"
+      "/docs/api/path": {
+        "title": "Path",
+        "titleCn": "路径"
       },
-      "/docs/api/plite/point": {
-        "title": "Point"
+      "/docs/api/point": {
+        "title": "Point",
+        "titleCn": "点"
       },
-      "/docs/api/plite/range": {
-        "title": "Range"
+      "/docs/api/range": {
+        "title": "Range",
+        "titleCn": "范围"
       },
-      "/docs/api/plite/location": {
-        "title": "Location"
+      "/docs/api/location": {
+        "title": "Location",
+        "titleCn": "位置"
       },
-      "/docs/api/plite/location-ref": {
-        "title": "Location Ref"
+      "/docs/api/anchor": {
+        "title": "Anchor",
+        "titleCn": "锚点"
       },
-      "/docs/api/plite/document-change": {
-        "title": "Document Change"
+      "/docs/api/document-change": {
+        "title": "Document Change",
+        "titleCn": "文档变更"
       },
       "/docs/api/core": {
         "description": "Core utilities for Plate.",
@@ -3113,6 +3165,74 @@
         "description": "API reference for platejs/react",
         "title": "Resizable",
         "titleCn": "Resizable"
+      },
+      "/docs/locations": {
+        "title": "Locations",
+        "titleCn": "位置"
+      },
+      "/docs/transactions": {
+        "title": "Transactions",
+        "titleCn": "事务"
+      },
+      "/docs/serializing": {
+        "title": "Serializing",
+        "titleCn": "序列化"
+      },
+      "/docs/roots": {
+        "title": "Roots",
+        "titleCn": "根"
+      },
+      "/docs/document-meta": {
+        "title": "Document Meta",
+        "titleCn": "文档元数据"
+      },
+      "/docs/clipboard": {
+        "title": "Clipboard and Paste",
+        "titleCn": "剪贴板与粘贴"
+      },
+      "/docs/decorations": {
+        "title": "Decorations, annotations, and widgets",
+        "titleCn": "装饰、注释和浮层"
+      },
+      "/docs/schema": {
+        "title": "Schema",
+        "titleCn": "Schema"
+      },
+      "/docs/history": {
+        "title": "History",
+        "titleCn": "撤销与重做"
+      },
+      "/docs/pagination": {
+        "title": "Pagination",
+        "titleCn": "分页"
+      },
+      "/docs/annotations": {
+        "title": "Annotations",
+        "titleCn": "注释"
+      },
+      "/docs/dom-coverage": {
+        "title": "DOM Coverage",
+        "titleCn": "DOM 覆盖"
+      },
+      "/docs/external-text": {
+        "title": "External Text Views",
+        "titleCn": "外部文本视图"
+      },
+      "/docs/virtualized-rendering": {
+        "title": "Virtualized Rendering",
+        "titleCn": "虚拟化渲染"
+      },
+      "/docs/api/selection": {
+        "title": "Selection",
+        "titleCn": "选择"
+      },
+      "/docs/api/dom": {
+        "title": "DOM API",
+        "titleCn": "DOM API"
+      },
+      "/docs/api/react-hooks": {
+        "title": "React Hooks",
+        "titleCn": "React Hooks"
       }
     }
   }

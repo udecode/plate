@@ -3,8 +3,9 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
+  ContentSlice,
   defineCommand,
-  defineExtension,
+  definePlugin,
   editorReads,
   type Element,
   type NodeEntry,
@@ -13,17 +14,17 @@ import {
 
 import { defineRead } from '../src/core/read-definition';
 import { executeEditorRead } from '../src/core/read-registry';
-import { dispatchCommand } from '../src/internal';
+import { dispatchCommand, exportContentSlice } from '../src/internal';
 
 const entry = (text: string, path: number): NodeEntry<Element> => [
   { children: [{ text }], type: 'paragraph' },
   [path],
 ];
 
-describe('descriptor-based extension read middleware', () => {
-  it('composes descriptor middleware in extension order', () => {
+describe('descriptor-based plugin read middleware', () => {
+  it('composes descriptor middleware in plugin order', () => {
     const seen: string[] = [];
-    const first = defineExtension('first-merge-read', {
+    const first = definePlugin('first-merge-read', {
       readMiddleware: ({ around }) => [
         around(editorReads.nodes.shouldMergeNodesRemovePrevNode, ({ next }) => {
           seen.push('first:before');
@@ -34,7 +35,7 @@ describe('descriptor-based extension read middleware', () => {
         }),
       ],
     });
-    const second = defineExtension('second-merge-read', {
+    const second = definePlugin('second-merge-read', {
       readMiddleware: ({ around }) => [
         around(editorReads.nodes.shouldMergeNodesRemovePrevNode, ({ next }) => {
           seen.push('second');
@@ -46,7 +47,7 @@ describe('descriptor-based extension read middleware', () => {
     });
     const current = entry('current', 1);
     const previous = entry('', 0);
-    const editor = createEditor({ extensions: [first, second] });
+    const editor = createEditor({ plugins: [first, second] });
 
     assert.equal(
       executeEditorRead(
@@ -61,23 +62,23 @@ describe('descriptor-based extension read middleware', () => {
   });
 
   it('lets read middleware veto a schema-selectable node', () => {
-    const allow = defineExtension('allow-selection', {
+    const allow = definePlugin('allow-selection', {
       readMiddleware: ({ around }) => [
         around(editorReads.nodes.isSelectable, ({ next }) => next()),
       ],
     });
-    const deny = defineExtension('deny-selection', {
+    const deny = definePlugin('deny-selection', {
       readMiddleware: ({ around }) => [
         around(editorReads.nodes.isSelectable, () => false),
       ],
     });
-    const editor = createEditor({ extensions: [allow, deny] });
+    const editor = createEditor({ plugins: [allow, deny] });
 
     assert.equal(editor.read.nodes.isSelectable(entry('text', 0)[0]), false);
   });
 
   it('runs middleware inside the pure read boundary', () => {
-    const impure = defineExtension('impure-selection-policy', {
+    const impure = definePlugin('impure-selection-policy', {
       readMiddleware: ({ around }) => [
         around(editorReads.nodes.isSelectable, ({ editor }) => {
           editor.update(() => {});
@@ -86,7 +87,7 @@ describe('descriptor-based extension read middleware', () => {
         }),
       ],
     });
-    const editor = createEditor({ extensions: [impure] });
+    const editor = createEditor({ plugins: [impure] });
 
     assert.throws(
       () => editor.read.nodes.isSelectable(entry('text', 0)[0]),
@@ -94,9 +95,9 @@ describe('descriptor-based extension read middleware', () => {
     );
   });
 
-  it('composes export projections once in extension order', () => {
+  it('composes export projections once in plugin order', () => {
     const seen: string[] = [];
-    const first = defineExtension('first-export', {
+    const first = definePlugin('first-export', {
       readMiddleware: ({ around }) => [
         around(editorReads.slice.export, ({ next }) => {
           seen.push('first');
@@ -105,7 +106,7 @@ describe('descriptor-based extension read middleware', () => {
         }),
       ],
     });
-    const second = defineExtension('second-export', {
+    const second = definePlugin('second-export', {
       readMiddleware: ({ around }) => [
         around(editorReads.slice.export, ({ next }) => {
           seen.push('second');
@@ -115,7 +116,7 @@ describe('descriptor-based extension read middleware', () => {
       ],
     });
     const editor = createEditor({
-      extensions: [first, second],
+      plugins: [first, second],
       initialSelection: SelectionApi.text({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
@@ -127,12 +128,48 @@ describe('descriptor-based extension read middleware', () => {
     assert.deepEqual(seen, ['first', 'second']);
   });
 
+  it('exports an assembled slice once without rereading selection', () => {
+    const sources: string[] = [];
+    const policy = definePlugin('assembled-export', {
+      readMiddleware: ({ around }) => [
+        around(editorReads.slice.export, ({ input, next }) => {
+          sources.push(input.source);
+          const slice = next();
+
+          return ContentSlice.withContent(
+            slice,
+            slice.content.map((node) => ({ ...node, exported: true })),
+            { open: 'preserve' }
+          );
+        }),
+      ],
+    });
+    const editor = createEditor({
+      plugins: [policy],
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      }),
+      initialValue: [entry('live', 0)[0]],
+    });
+    const supplied = ContentSlice.closed([entry('supplied', 0)[0]]);
+
+    assert.deepEqual(exportContentSlice(editor, supplied).content, [
+      { ...entry('supplied', 0)[0], exported: true },
+    ]);
+    assert.deepEqual(sources, ['assembled']);
+    assert.deepEqual(editor.read.slice.export().content, [
+      { ...entry('live', 0)[0], exported: true },
+    ]);
+    assert.deepEqual(sources, ['assembled', 'selection']);
+  });
+
   it('rejects duplicate descriptor ids', () => {
     const first = defineRead<void, boolean>('test:duplicate-read');
     const second = defineRead<void, boolean>('test:duplicate-read');
     const editor = createEditor({
-      extensions: [
-        defineExtension('first-duplicate-read', {
+      plugins: [
+        definePlugin('first-duplicate-read', {
           readMiddleware: ({ around }) => [around(first, ({ next }) => next())],
         }),
       ],
@@ -141,7 +178,7 @@ describe('descriptor-based extension read middleware', () => {
     assert.throws(
       () =>
         editor.install(
-          defineExtension('second-duplicate-read', {
+          definePlugin('second-duplicate-read', {
             readMiddleware: ({ around }) => [
               around(second, ({ next }) => next()),
             ],
@@ -154,8 +191,8 @@ describe('descriptor-based extension read middleware', () => {
   it('rejects delegating twice', () => {
     const read = defineRead<void, boolean>('test:double-next-read');
     const editor = createEditor({
-      extensions: [
-        defineExtension('double-next-read', {
+      plugins: [
+        definePlugin('double-next-read', {
           readMiddleware: ({ around }) => [
             around(read, ({ next }) => {
               next();
@@ -180,8 +217,8 @@ describe('descriptor-based extension read middleware', () => {
       'test:undefined-read-result'
     );
     const editor = createEditor({
-      extensions: [
-        defineExtension('undefined-read-result', {
+      plugins: [
+        definePlugin('undefined-read-result', {
           readMiddleware: ({ around }) => [
             around(read, ({ next }) => {
               assert.equal(next(), true);
@@ -204,8 +241,8 @@ describe('descriptor-based extension read middleware', () => {
     const seen: string[] = [];
     const inspect = defineCommand('test:inspect-read-draft');
     const editor = createEditor({
-      extensions: [
-        defineExtension('transaction-local-read', {
+      plugins: [
+        definePlugin('transaction-local-read', {
           commands: ({ around, handle }) => [
             around(inspect, ({ state, next }) =>
               next.after(
@@ -246,8 +283,8 @@ describe('descriptor-based extension read middleware', () => {
       'test:generator-read'
     );
     const editor = createEditor({
-      extensions: [
-        defineExtension('generator-read', {
+      plugins: [
+        definePlugin('generator-read', {
           readMiddleware: ({ around }) => [
             around(read, ({ editor: innerEditor, next }) =>
               (function* lazyReadMiddleware() {
@@ -286,8 +323,8 @@ describe('descriptor-based extension read middleware', () => {
     let caught = false;
     let cleaned = false;
     const editor = createEditor({
-      extensions: [
-        defineExtension('generator-protocol-read', {
+      plugins: [
+        definePlugin('generator-protocol-read', {
           readMiddleware: ({ around }) => [
             around(read, ({ next }) =>
               (function* protocolReadMiddleware() {

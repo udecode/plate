@@ -2,10 +2,10 @@ import {
   BaseSlashInputPlugin,
   BaseSlashPlugin,
 } from '../../../features/slash-command/lib';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
-export const SlashInputPlugin = toPlatePlugin(BaseSlashInputPlugin);
+export const SlashInputPlugin = toReactPlugin(BaseSlashInputPlugin);
 
-export const SlashPlugin = toPlatePlugin(BaseSlashPlugin, {
+export const SlashPlugin = toReactPlugin(BaseSlashPlugin, {
   dependencies: [SlashInputPlugin],
 });

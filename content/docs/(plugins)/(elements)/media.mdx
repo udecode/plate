@@ -259,8 +259,8 @@ Asset focus and caption editing are separate selection states:
 
 | Selection | Behavior |
 | --- | --- |
-| Plite `NodeSelection` at the media path | Focuses the asset, shows its selection ring and empty-caption placeholder, lets `ArrowDown` enter the caption, and lets Delete remove the media node. |
-| Plite `TextSelection` inside the media children | Edits the caption and lets `ArrowUp` at the caption start return focus to the asset. |
+| Plate `NodeSelection` at the media path | Focuses the asset, shows its selection ring and empty-caption placeholder, lets `ArrowDown` enter the caption, and lets Delete remove the media node. |
+| Plate `TextSelection` inside the media children | Edits the caption and lets `ArrowUp` at the caption start return focus to the asset. |
 
 ### Custom upload implementation
 
@@ -554,7 +554,7 @@ Inserts one headless placeholder for an image, video, audio, or file.
     The resolved persisted media type created after upload, such as
     `editor.plugin(ImagePlugin).schema.type`.
   </APIItem>
-  <APIItem name="options" type="PlateNodeInsertOptions" optional>
+  <APIItem name="options" type="NodeInsertOptions" optional>
     Exact-path and selection options.
   </APIItem>
 </APIParameters>
@@ -569,12 +569,12 @@ Inserts an image element into the editor.
   <APIItem name="url" type="string">
     The image URL.
   </APIItem>
-  <APIItem name="options" type="PlateNodeInsertOptions" optional>
+  <APIItem name="options" type="NodeInsertOptions" optional>
     Exact-path and selection options.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="PlateNodeInsertOptions">
+<APIOptions type="NodeInsertOptions">
   <APIItem name="at" type="Location" optional>
     Exact insertion target. When omitted, the image is inserted after the
     selected block.
@@ -594,12 +594,12 @@ Transforms and normalizes a URL, then inserts a media embed.
   <APIItem name="url" type="string">
     A media URL or embed snippet.
   </APIItem>
-  <APIItem name="options" type="PlateNodeInsertOptions" optional>
+  <APIItem name="options" type="NodeInsertOptions" optional>
     Exact-path and selection options.
   </APIItem>
 </APIParameters>
 
-<APIOptions type="PlateNodeInsertOptions">
+<APIOptions type="NodeInsertOptions">
   <APIItem name="at" type="Location" optional>
     Exact insertion target. When omitted, the current selection is required.
   </APIItem>

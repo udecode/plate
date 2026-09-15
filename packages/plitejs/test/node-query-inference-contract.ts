@@ -43,7 +43,7 @@ const ArticleSchema = defineEditorSchema('schema:node-query-inference', {
 });
 
 const assertNodeQueryInference = () => {
-  const editor = createEditor({ extensions: [ArticleSchema] });
+  const editor = createEditor({ plugins: [ArticleSchema] });
   const heading = schema.handle.element(ArticleSchema, 'heading');
   const paragraph = schema.handle.element(ArticleSchema, 'paragraph');
   const maybeHeading = null as unknown as typeof heading | undefined;
@@ -155,7 +155,7 @@ const assertNodeQueryInference = () => {
   editor.read.nodes.find({ match: { type: 'paragraph' } });
   // @ts-expect-error node output types cannot be selected by a caller generic
   editor.read.nodes.find<SchemaElementFor<typeof ArticleSchema, 'paragraph'>>();
-  // @ts-expect-error transaction capabilities come only from installed extensions
+  // @ts-expect-error transaction capabilities come only from installed plugins
   editor.update<{ forged: () => void }>((tx) => tx.forged());
   editor.update(
     // @ts-expect-error an annotated callback cannot forge transaction capabilities

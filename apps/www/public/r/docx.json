@@ -9,7 +9,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/docx.tsx",
-      "content": "'use client';\n\nimport { DocxPlugin } from 'platejs/docx';\n\nexport const DocxKit = [DocxPlugin] as const;\n",
+      "content": "'use client';\n\nimport { WordPastePlugin } from 'platejs/docx/paste';\n\nexport const DocxKit = [WordPastePlugin] as const;\n",
       "type": "registry:component",
       "target": "@components/editor/docx.tsx"
     }

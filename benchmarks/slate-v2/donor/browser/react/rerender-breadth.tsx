@@ -26,20 +26,20 @@ import {
 import {
   createEditor,
   Editable,
-  Plite,
-  PliteElement,
-  type PliteAnnotation,
-  type PliteAnnotationStore,
-  type PliteDecorationSource,
-  type PliteWidget,
-  type PliteWidgetStore,
+  EditorRoot,
+  EditorElement,
+  type Annotation,
+  type AnnotationStore,
+  type DecorationSource,
+  type Widget,
+  type WidgetStore,
   useEditorContext,
   useEditorSelection,
   useEditorSelector,
-  usePliteAnnotationStore,
-  usePliteAnnotations,
-  usePliteWidgetStore,
-  usePliteWidgets,
+  useAnnotationStore,
+  useAnnotations,
+  useWidgetStore,
+  useWidgets,
 } from '../../../../../packages/plitejs/src/react/index.ts';
 import { usePliteDecorationEntries } from '../../../../../packages/plitejs/src/react/decoration-context.tsx';
 import {
@@ -175,7 +175,7 @@ const createDecorationToggleChildren = (): Descendant[] => [
 type DecorationProbe = Readonly<{
   getReadCount: () => number;
   refresh: () => void;
-  source: PliteDecorationSource<ReturnType<typeof createEditor>>;
+  source: DecorationSource<ReturnType<typeof createEditor>>;
 }>;
 
 const createDecorationProbe = (
@@ -186,7 +186,7 @@ const createDecorationProbe = (
   let refreshSource:
     | ((input: { nodeKeys: readonly NodeKey[] }) => void)
     | null = null;
-  const source: PliteDecorationSource<ReturnType<typeof createEditor>> = {
+  const source: DecorationSource<ReturnType<typeof createEditor>> = {
     id: 'overlay-toggle',
     observe: ({ refresh }) => {
       refreshSource = refresh;
@@ -308,12 +308,12 @@ const SelectionBreadthApp = ({
   counts: Record<string, number>;
   editor: ReturnType<typeof createEditor>;
 }) => (
-  <Plite editor={editor}>
+  <EditorRoot editor={editor}>
     <BroadEditorSlice counts={counts} />
     <SelectionSlice counts={counts} />
     <TopLevelBlockSlice counts={counts} index={0} slot="leftBlock" />
     <TopLevelBlockSlice counts={counts} index={1} slot="rightBlock" />
-  </Plite>
+  </EditorRoot>
 );
 
 const LeafRenderMarker = ({
@@ -344,9 +344,9 @@ const ElementRenderMarker = ({
 }) => {
   increment(counts, nodeKey);
   return (
-    <PliteElement as={as} isInline={isInline}>
+    <EditorElement as={as} isInline={isInline}>
       {children}
-    </PliteElement>
+    </EditorElement>
   );
 };
 
@@ -355,10 +355,10 @@ const assertSingleElementHosts = (
   expectedCount: number,
 ) => {
   const elementHosts = Array.from(
-    container.querySelectorAll<HTMLElement>('[data-plite-node="element"]'),
+    container.querySelectorAll<HTMLElement>('[data-editor-node="element"]'),
   );
   const runtimeIds = elementHosts.map(
-    (elementHost) => elementHost.dataset.pliteNodeKey,
+    (elementHost) => elementHost.dataset.editorNodeKey,
   );
 
   assert.equal(
@@ -386,7 +386,7 @@ const ManyLeafApp = ({
   editor: ReturnType<typeof createEditor>;
   leafCounts: Record<string, number>;
 }) => (
-  <Plite editor={editor}>
+  <EditorRoot editor={editor}>
     <Editable
       renderElement={({ children, element }) => (
         <ElementRenderMarker
@@ -405,7 +405,7 @@ const ManyLeafApp = ({
         </LeafRenderMarker>
       )}
     />
-  </Plite>
+  </EditorRoot>
 );
 
 const DeepAncestorApp = ({
@@ -417,7 +417,7 @@ const DeepAncestorApp = ({
   elementCounts: Record<string, number>;
   leafCounts: Record<string, number>;
 }) => (
-  <Plite editor={editor}>
+  <EditorRoot editor={editor}>
     <Editable
       renderElement={({ children, element, isInline }) => (
         <ElementRenderMarker
@@ -440,7 +440,7 @@ const DeepAncestorApp = ({
         </LeafRenderMarker>
       )}
     />
-  </Plite>
+  </EditorRoot>
 );
 
 const DecorationSourceToggleApp = ({
@@ -465,7 +465,7 @@ const DecorationSourceToggleApp = ({
   }, [decorationProbe, onDecorationProbe]);
 
   return (
-    <Plite decorations={[decorationProbe.source]} editor={editor}>
+    <EditorRoot decorations={[decorationProbe.source]} editor={editor}>
       <button
         id="overlay-toggle"
         onClick={() => {
@@ -480,7 +480,7 @@ const DecorationSourceToggleApp = ({
         {active ? 'on' : 'off'}
       </button>
       <DecorationSourceToggleSlices counts={counts} />
-    </Plite>
+    </EditorRoot>
   );
 };
 
@@ -514,17 +514,17 @@ const DecorationSourceToggleSlices = ({
   );
 };
 
-type HiddenPanelAnnotation = PliteAnnotation<{
+type HiddenPanelAnnotation = Annotation<{
   label: string;
 }>;
 
-type AnnotationBreadthAnnotation = PliteAnnotation<{
+type AnnotationBreadthAnnotation = Annotation<{
   kind: string;
   label: string;
   tone: string;
 }>;
 
-type AnnotationBreadthWidget = PliteWidget<
+type AnnotationBreadthWidget = Widget<
   {
     label: string;
   },
@@ -540,12 +540,12 @@ const arePathsEqual = (left: readonly number[], right: readonly number[]) =>
   left.every((value, index) => value === right[index]);
 
 const createAnnotationDecorationSource = (
-  store: PliteAnnotationStore<{
+  store: AnnotationStore<{
     kind: string;
     label: string;
     tone: string;
   }>,
-): PliteDecorationSource<ReturnType<typeof createEditor>> => ({
+): DecorationSource<ReturnType<typeof createEditor>> => ({
   id: 'annotation-breadth',
   observe: ({ editor, refresh }) => {
     let previous = store.getSnapshot();
@@ -602,8 +602,8 @@ const HiddenPanelSidebar = ({
   counts: Record<string, number>;
   editor: ReturnType<typeof createEditor>;
 }) => {
-  const store = usePliteAnnotationStore(editor, annotations);
-  const snapshot = usePliteAnnotations(store);
+  const store = useAnnotationStore(editor, annotations);
+  const snapshot = useAnnotations(store);
   const [localCount, setLocalCount] = useState(0);
   const firstAnnotation = snapshot.allIds[0]
     ? (snapshot.byId.get(snapshot.allIds[0]) ?? null)
@@ -643,7 +643,7 @@ const HiddenPanelActivityApp = ({
   const [hidden, setHidden] = useState(false);
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <button
         id="toggle-activity"
         onClick={() => {
@@ -662,7 +662,7 @@ const HiddenPanelActivityApp = ({
           editor={editor}
         />
       </Activity>
-    </Plite>
+    </EditorRoot>
   );
 };
 
@@ -685,14 +685,14 @@ const AnnotationSidebarSlice = memo(
     annotationStore,
     counts,
   }: {
-    annotationStore: PliteAnnotationStore<{
+    annotationStore: AnnotationStore<{
       kind: string;
       label: string;
       tone: string;
     }>;
     counts: Record<string, number>;
   }) => {
-    usePliteAnnotations(annotationStore);
+    useAnnotations(annotationStore);
     increment(counts, 'annotationSidebar');
     return <span id="annotation-sidebar">sidebar</span>;
   },
@@ -705,7 +705,7 @@ const AnnotationWidgetSlice = memo(
   }: {
     counts: Record<string, number>;
     widgetStore: ReturnType<
-      typeof usePliteWidgetStore<
+      typeof useWidgetStore<
         {
           label: string;
         },
@@ -717,7 +717,7 @@ const AnnotationWidgetSlice = memo(
       >
     >;
   }) => {
-    usePliteWidgets(widgetStore);
+    useWidgets(widgetStore);
     increment(counts, 'annotationWidget');
     return <span id="annotation-widget">widget</span>;
   },
@@ -728,14 +728,14 @@ const AnnotationWidgetBreadthSlices = ({
   counts,
   widgetStore,
 }: {
-  annotationStore: PliteAnnotationStore<{
+  annotationStore: AnnotationStore<{
     kind: string;
     label: string;
     tone: string;
   }>;
   counts: Record<string, number>;
   widgetStore: ReturnType<
-    typeof usePliteWidgetStore<
+    typeof useWidgetStore<
       {
         label: string;
       },
@@ -780,12 +780,12 @@ const AnnotationWidgetBreadthApp = ({
   counts: Record<string, number>;
   editor: ReturnType<typeof createEditor>;
   onStores?: (stores: {
-    annotationStore: PliteAnnotationStore<{
+    annotationStore: AnnotationStore<{
       kind: string;
       label: string;
       tone: string;
     }>;
-    widgetStore: PliteWidgetStore<
+    widgetStore: WidgetStore<
       {
         label: string;
       },
@@ -798,8 +798,8 @@ const AnnotationWidgetBreadthApp = ({
   }) => void;
   widgets: readonly AnnotationBreadthWidget[];
 }) => {
-  const annotationStore = usePliteAnnotationStore(editor, annotations);
-  const widgetStore = usePliteWidgetStore(editor, widgets, annotationStore);
+  const annotationStore = useAnnotationStore(editor, annotations);
+  const widgetStore = useWidgetStore(editor, widgets, annotationStore);
   const decorationSource = useMemo(
     () => createAnnotationDecorationSource(annotationStore),
     [annotationStore],
@@ -813,13 +813,13 @@ const AnnotationWidgetBreadthApp = ({
   }, [annotationStore, onStores, widgetStore]);
 
   return (
-    <Plite decorations={[decorationSource]} editor={editor}>
+    <EditorRoot decorations={[decorationSource]} editor={editor}>
       <AnnotationWidgetBreadthSlices
         annotationStore={annotationStore}
         counts={counts}
         widgetStore={widgetStore}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
@@ -1170,12 +1170,12 @@ const measureAnnotationWidgetBreadth = async () =>
   measureLane(async () => {
     const editor = createEditor();
     const counts: Record<string, number> = {};
-    let annotationStore: PliteAnnotationStore<{
+    let annotationStore: AnnotationStore<{
       kind: string;
       label: string;
       tone: string;
     }> | null = null;
-    let widgetStore: PliteWidgetStore<
+    let widgetStore: WidgetStore<
       {
         label: string;
       },

@@ -2,8 +2,8 @@ import { act, render } from '@testing-library/react';
 import React from 'react';
 
 import { DOMEditor } from '../../../dom/plite-dom.internal';
-import { TestPlate as Plate } from '../../__tests__/TestPlate';
-import { PlateContent } from '../../components/PlateContent';
+import { TestPlate as EditorRoot } from '../../__tests__/TestPlate';
+import { EditorContent } from '../../components/PlateContent';
 import { createEditor } from '../../core';
 import { useEditor } from '../../stores';
 import { FootnoteDefinitionPlugin, FootnotePlugin } from './FootnotePlugin';
@@ -45,16 +45,16 @@ describe('FootnotePlugin', () => {
         React.useLayoutEffect(() => {
           views[index] = view;
         }, [index, view]);
-        return <PlateContent readOnly={readOnly} />;
+        return <EditorContent readOnly={readOnly} />;
       }
       const tree = (readOnly = false) => (
         <>
-          <Plate editor={editor}>
+          <EditorRoot editor={editor}>
             <Capture index={0} readOnly={false} />
-          </Plate>
-          <Plate editor={editor} readOnly={readOnly}>
+          </EditorRoot>
+          <EditorRoot editor={editor} readOnly={readOnly}>
             <Capture index={1} readOnly={readOnly} />
-          </Plate>
+          </EditorRoot>
         </>
       );
       const rendered = render(tree());

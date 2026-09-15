@@ -10,8 +10,8 @@ export const PLITE_REACT_PRESERVE_SELECTION_TAGS = Object.freeze([
   'skip-scroll-into-view',
 ] as const);
 
-/** Selection-effect policies owned by the Plite React runtime. */
-export const PliteReactUpdatePolicy = Object.freeze({
+/** Selection-effect policies owned by the editor React runtime. */
+export const ReactUpdatePolicy = Object.freeze({
   preserveSelection: Object.freeze({
     tags: PLITE_REACT_PRESERVE_SELECTION_TAGS,
   }),

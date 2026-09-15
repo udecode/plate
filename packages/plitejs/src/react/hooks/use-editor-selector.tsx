@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
 import type {
   EditorCommit,
   EditorStateView,
-  ExtensionsOf,
+  PluginsOf,
   NodeKey,
   ValueOf,
 } from '../..';
@@ -174,7 +174,7 @@ export function useEditorSelector<T>(
  */
 export function useEditorState<T>(
   selector: (
-    state: EditorStateView<ValueOf<ContextEditor>, ExtensionsOf<ContextEditor>>
+    state: EditorStateView<ValueOf<ContextEditor>, PluginsOf<ContextEditor>>
   ) => T,
   {
     deferred,
@@ -232,86 +232,63 @@ export function useEditorSelectorContext() {
       });
 
       const shouldRouteRootOrderRuntimeListeners = Boolean(
+        rootOrderRuntimeEventListeners.current.size &&
         change?.changed.hasAny('root-order')
-      );
-      const affectedNodeKeys = change?.changed.nodeKeysAll('node') ?? [];
-      const affectedPathNodeKeys = change?.changed.nodeKeysAll('path') ?? [];
-      const affectedSelectionNodeKeys =
-        change?.changed.nodeKeysAll('selection') ?? [];
-      const syncedTextOnlyChange = Boolean(
-        change?.changed.hasAny('text') &&
-        !change.tags.includes('historic') &&
-        !change.changed.hasAny('structure') &&
-        !change.changed.hasAny('properties')
-      );
-      const shouldRouteRenderRuntimeListeners = Boolean(
-        !change || !syncedTextOnlyChange
       );
       const runtimeCallbacks = new Set<Callback>();
       const invalidatedRuntimeCallbacks = new Set<Callback>();
+      const collect = (
+        listeners: Map<NodeKey, Set<Callback>>,
+        keys: readonly NodeKey[]
+      ) => {
+        for (const key of keys) {
+          listeners
+            .get(key)
+            ?.forEach((listener) => runtimeCallbacks.add(listener));
+        }
+      };
 
       if (!change) {
-        runtimeEventListeners.current.forEach((listeners) => {
-          listeners.forEach((listener) => {
-            runtimeCallbacks.add(listener);
-          });
-        });
-      } else {
-        for (const nodeKey of new Set([
-          ...affectedNodeKeys,
-          ...affectedPathNodeKeys,
-          ...affectedSelectionNodeKeys,
-        ])) {
-          runtimeEventListeners.current.get(nodeKey)?.forEach((listener) => {
-            runtimeCallbacks.add(listener);
+        for (const map of [
+          runtimeEventListeners.current,
+          runtimePathEventListeners.current,
+          runtimeRenderEventListeners.current,
+          runtimeSelectionEventListeners.current,
+        ]) {
+          map.forEach((listeners) => {
+            listeners.forEach((listener) => runtimeCallbacks.add(listener));
           });
         }
-      }
-      if (!change) {
-        runtimePathEventListeners.current.forEach((listeners) => {
-          listeners.forEach((listener) => {
-            runtimeCallbacks.add(listener);
-          });
-        });
       } else {
-        for (const nodeKey of affectedPathNodeKeys) {
-          runtimePathEventListeners.current
-            .get(nodeKey)
-            ?.forEach((listener) => {
-              runtimeCallbacks.add(listener);
-            });
+        const nodes = runtimeEventListeners.current;
+        const paths = runtimePathEventListeners.current;
+        const renders = runtimeRenderEventListeners.current;
+        const selections = runtimeSelectionEventListeners.current;
+        const syncedTextOnlyChange =
+          renders.size > 0 &&
+          change.changed.hasAny('text') &&
+          !change.tags.includes('historic') &&
+          !change.changed.hasAny('structure') &&
+          !change.changed.hasAny('properties');
+
+        if (nodes.size || (renders.size && !syncedTextOnlyChange)) {
+          const keys = change.changed.nodeKeysAll('node');
+          collect(nodes, keys);
+          if (!syncedTextOnlyChange) collect(renders, keys);
         }
-      }
-      if (shouldRouteRenderRuntimeListeners) {
-        if (!change) {
-          runtimeRenderEventListeners.current.forEach((listeners) => {
-            listeners.forEach((listener) => {
-              runtimeCallbacks.add(listener);
-            });
-          });
-        } else {
-          for (const nodeKey of affectedNodeKeys) {
-            runtimeRenderEventListeners.current
-              .get(nodeKey)
-              ?.forEach((listener) => {
-                runtimeCallbacks.add(listener);
-              });
+        if (nodes.size || selections.size) {
+          const keys = change.changed.nodeKeysAll('selection');
+          collect(nodes, keys);
+          collect(selections, keys);
+        }
+        if ((nodes.size || paths.size) && change.changed.hasAny('structure')) {
+          for (const map of [nodes, paths]) {
+            for (const [key, listeners] of map) {
+              if (change.changed.hasNodeKey(key, 'path')) {
+                listeners.forEach((listener) => runtimeCallbacks.add(listener));
+              }
+            }
           }
-        }
-      }
-      if (!change) {
-        runtimeSelectionEventListeners.current.forEach((listeners) => {
-          listeners.forEach((listener) => {
-            runtimeCallbacks.add(listener);
-          });
-        });
-      } else {
-        for (const nodeKey of affectedSelectionNodeKeys) {
-          runtimeSelectionEventListeners.current
-            .get(nodeKey)
-            ?.forEach((listener) => {
-              runtimeCallbacks.add(listener);
-            });
         }
       }
       for (const nodeKey of invalidatedNodeKeys) {

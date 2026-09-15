@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import type { Element } from '../../../core';
-import { createEditor, Plate, PlateContent } from '../../core';
+import { createEditor, EditorRoot, EditorContent } from '../../core';
 import { ListPlugin } from './ListPlugin';
 
 describe('ListPlugin rendering', () => {
@@ -31,9 +31,9 @@ describe('ListPlugin rendering', () => {
       plugins: [ListPlugin],
     });
     const { container } = render(
-      <Plate editor={editor} suppressInstanceWarning>
-        <PlateContent readOnly />
-      </Plate>
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent readOnly />
+      </EditorRoot>
     );
 
     expect(container.querySelector('ol')?.getAttribute('start')).toBe('4');

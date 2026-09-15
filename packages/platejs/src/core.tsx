@@ -14,13 +14,13 @@ export {
 } from './lib/editor/documentMigrations';
 export type {
   BasePluginInput,
-  PlateBlockInsertOptions,
-  PlateNodeInsertOptions,
-  PlatePluginOwnUpdate,
-  PlatePluginReadState,
-  PlatePluginState,
-  PlatePluginTransaction,
-  PlatePluginUpdate,
+  BlockInsertOptions,
+  NodeInsertOptions,
+  PluginOwnUpdate,
+  PluginReadState,
+  PluginState,
+  PluginTransaction,
+  PluginUpdate,
 } from './lib/editor/pluginRuntimeTypes';
 export {
   createEditor,
@@ -30,11 +30,14 @@ export {
 export * from './lib/libs/nanoid';
 export type {
   BasePlugin,
+  BasePlugin as Plugin,
   BasePluginConfiguration,
   BasePluginContext,
+  BasePluginDefinitionInput as PluginDefinitionInput,
   BasePluginDefinitionInput,
   BasePluginExtendInput,
   BasePluginImplementationContext,
+  BasePluginPortal as PluginPortal,
   BasePluginOn,
   BasePluginOverride,
   BasePluginPortal,
@@ -96,7 +99,7 @@ export type {
   MergeRules,
   NodeComponent,
   NormalizeRules,
-  PlateSchemaElement,
+  PluginSchemaElement,
   PluginBaseContext,
   PluginDependency,
   PluginReference,
@@ -115,7 +118,7 @@ export type {
   WithAnyName,
   WithRequiredName,
 } from './lib/plugin/PluginDefinition';
-export { defineBasePlugin } from './lib/plugin/defineBasePlugin';
+export { definePlugin } from './lib/plugin/definePlugin';
 export * from './lib/plugins/HistoryPlugin';
 export * from './lib/plugins/affinity/index';
 export * from './lib/plugins/debug/index';
@@ -127,13 +130,12 @@ export type {
   DomApi,
   DomPluginState,
   DomPluginUpdate,
-  PlateDomApi,
+  AutoScrollApi,
   ScrollIntoViewTarget,
   ScrollMode,
 } from './lib/plugins/dom/DOMPlugin';
 export * from './lib/plugins/element-id/index';
 export * from './lib/plugins/element-state/index';
-export * from './lib/plugins/getCorePlugins';
 export {
   collapseWhiteSpace,
   type HtmlApi,

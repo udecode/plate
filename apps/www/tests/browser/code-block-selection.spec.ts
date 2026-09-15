@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
@@ -62,13 +62,13 @@ for (const backward of [false, true]) {
     page,
   }, info) => {
     expect(info.retry).toBe(0);
-    const errors = recordPliteBrowserRuntimeErrors(page);
+    const errors = recordBrowserRuntimeErrors(page);
     try {
       await page.goto(ROUTE, { waitUntil: 'commit' });
       const root = page
-        .locator('.plite-editor[contenteditable="true"]')
+        .locator('.editor-editor[contenteditable="true"]')
         .first();
-      const editor = createPliteBrowserEditorHarness(
+      const editor = createBrowserEditorHarness(
         page,
         'code-block:selection-paint',
         root

@@ -1,48 +1,31 @@
-import { defineBasePlugin } from 'platejs';
+import { definePlugin } from 'platejs';
 
-import { clipboardHandler } from '../src/dom';
+import { domCommands } from '../src/dom';
 
-const ImagePlugin = defineBasePlugin('img', {
+const ImagePlugin = definePlugin('img', {
   update: () => ({
     insert: ({ url }: { url: string }) => {
       void url;
     },
   }),
 }).extend(() => ({
-  contributions: [
-    clipboardHandler({
-      insertData(_data, { tx }) {
+  commands: ({ around }) => [
+    around(domCommands.insertData, ({ state }) =>
+      state.transaction((tx) => {
         tx.img.insert({ url: 'https://example.com/image.png' });
 
         // @ts-expect-error The installed image transaction keeps its input type.
         tx.img.insert({ src: 'https://example.com/image.png' });
-
-        return true;
-      },
-    }),
+      })
+    ),
   ],
 }));
 
-const ContextFreeClipboardPlugin = defineBasePlugin('contextFreeClipboard', {
-  contributions: [
-    clipboardHandler({
-      insertData() {
-        return true;
-      },
-    }),
+const ContextFreeClipboardPlugin = definePlugin('contextFreeClipboard', {
+  commands: ({ handle }) => [
+    handle(domCommands.insertData, ({ state }) => state.transaction(() => {})),
   ],
 });
-
-declare const editor: import('platejs').Editor;
-
-const rejectedEditorFirstHandler = {
-  insertData() {
-    return true;
-  },
-};
-
-// @ts-expect-error clipboardHandler accepts exactly one handler argument.
-clipboardHandler(editor, rejectedEditorFirstHandler);
 
 void ImagePlugin;
 void ContextFreeClipboardPlugin;

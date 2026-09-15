@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 import type { Value } from 'platejs';
@@ -23,13 +23,13 @@ test('code-block: native and CodeMirror views share edits, neutral paint and lan
   page,
 }, info) => {
   expect(info.retry).toBe(0);
-  const errors = recordPliteBrowserRuntimeErrors(page);
+  const errors = recordBrowserRuntimeErrors(page);
   try {
     await page.goto('/blocks/code-block-views-demo', { waitUntil: 'commit' });
     const external = page.getByRole('region', { name: 'CodeMirror view' });
     const native = page.getByRole('region', { name: 'Native view' });
-    const root = external.locator('.plite-editor');
-    const editor = createPliteBrowserEditorHarness(
+    const root = external.locator('.editor-editor');
+    const editor = createBrowserEditorHarness(
       page,
       'code-block:mixed-views',
       root

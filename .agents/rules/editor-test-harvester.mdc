@@ -1,5 +1,5 @@
 ---
-description: Mine external editor repositories and issue corpora for portable editor-behavior tests with ClawSweeper-style discipline, then optionally turn a completed harvest into a lane-specific Slate v2 or Plate plan with an explicit execution boundary.
+description: Harvest portable behavior evidence from external editors and optionally prepare a lane-specific adoption plan.
 argument-hint: '[<repo-path-or-owner/repo> [--since <commit>] [--issues [--state all|open|closed]] [--apply] [surface/tag/filter] | plan <slate-v2|plate> <harvest-report-or-repo-key> | <harvest-report-or-repo-key> --lane <slate-v2|plate>]'
 disable-model-invocation: true
 ---

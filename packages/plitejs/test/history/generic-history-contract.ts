@@ -1,6 +1,6 @@
 import { createEditor } from 'plitejs';
 import * as PliteHistory from 'plitejs/history';
-import { history, type HistoryExtensionTypeProvider } from 'plitejs/history';
+import { history, type HistoryPluginTypeProvider } from 'plitejs/history';
 
 type CustomText = {
   text: string;
@@ -18,9 +18,9 @@ const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: '' }] },
 ];
 
-const HistoryExtension = history();
-const historyTypeProvider: HistoryExtensionTypeProvider = HistoryExtension;
-const editor = createEditor({ extensions: [HistoryExtension], initialValue });
+const HistoryPlugin = history();
+const historyTypeProvider: HistoryPluginTypeProvider = HistoryPlugin;
+const editor = createEditor({ plugins: [HistoryPlugin], initialValue });
 
 editor.update((tx) => {
   tx.text.insert('a');
@@ -65,7 +65,7 @@ const assertHistoryTypeErrors = () => {
   // @ts-expect-error history controls are tx/update methods, not runtime api methods
   void editor.api.history;
 
-  // @ts-expect-error history is extension state, not an editor root field
+  // @ts-expect-error history is plugin state, not an editor root field
   void editor.history;
 
   // @ts-expect-error undo is exposed on editor.update.history, not the editor root

@@ -1,0 +1,31 @@
+---
+title: Point
+description: Plate 点类型和编辑器点读取。
+---
+
+点由文本路径和 UTF-16 偏移量组成。纯函数位于 `PointApi`，编辑器读取位于
+`editor.read.points` 下。
+
+## 类型与方法
+
+```ts
+import { PointApi, type Point } from 'platejs';
+
+const point: Point = { path: [0, 0], offset: 2 };
+const same = PointApi.equals(point, { path: [0, 0], offset: 2 });
+```
+
+`compare` 返回 `-1`、`0` 或 `1`；`isBefore`、`isAfter` 比较文档顺序。
+`isPoint` 检查结构，不验证路径与偏移量是否仍在当前文档中。
+
+用户可见的左右移动受浏览器双向文本布局影响；逻辑点运算不读取 DOM。
+参见[选区](/docs/selection)。
+
+## PointEntry
+
+`RangeApi.points(range)` 遍历范围中的点，并返回 `PointEntry`：只读的
+`[Point, 'anchor' | 'focus']` 元组。第二项说明该点是锚点还是焦点。
+
+这两个角色保留用户的选择方向，不等同于文档顺序中的起点和终点。
+需要按文档顺序读取边界时，使用 `RangeApi.edges(range)`、
+`RangeApi.start(range)` 或 `RangeApi.end(range)`。

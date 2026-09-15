@@ -51,7 +51,7 @@ test('reuses a complete build of the published browser helper entrypoints', asyn
   );
   const environment = {};
   const outputRoot = path.join(packageRoot, 'dist');
-  const manifestPath = path.join(outputRoot, '.plite-browser-build.json');
+  const manifestPath = path.join(outputRoot, '.editor-browser-build.json');
   const { inputDigest } = inspectBrowserBuild(environment);
   fs.writeFileSync(
     manifestPath,

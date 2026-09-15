@@ -1,4 +1,4 @@
 import { BaseTocPlugin } from '../../../features/toc/lib';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
-export const TocPlugin = toPlatePlugin(BaseTocPlugin);
+export const TocPlugin = toReactPlugin(BaseTocPlugin);

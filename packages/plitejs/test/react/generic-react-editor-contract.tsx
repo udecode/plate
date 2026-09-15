@@ -1,19 +1,21 @@
 import {
   type CompatibleEditorCommand,
   createEditor as createHeadlessEditor,
+  createEditorView,
   defineCommand,
   defineEditorSchema,
-  defineExtension,
+  definePlugin,
   type EditorCommandDescriptor,
   type EditorCommandInput,
   editorCommands,
   type EditorCommit,
-  type EditorValueFromExtensions,
+  type EditorValueFromPlugins,
   type Node as PliteNode,
   property,
   schema,
   type ValueOf,
 } from 'plitejs';
+import { authored } from 'plitejs/authored';
 import { dom } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import * as PliteReact from 'plitejs/react';
@@ -23,17 +25,17 @@ import {
   type EditableProps,
   type Editor,
   type EditorSelectorOptions,
-  Plite,
+  EditorRoot,
   react,
   type StateFieldSetter,
   type Value,
   useEditor,
   useEditorSelector,
-  usePliteCommand,
-  usePliteHistory,
-  usePliteRootChrome,
-  usePliteRootEditor,
-  usePliteRootState,
+  useCommand,
+  useEditorHistory,
+  useRootChrome,
+  useRootEditor,
+  useRootState,
 } from 'plitejs/react';
 
 type CustomText = {
@@ -57,9 +59,10 @@ type CustomElement = ParagraphElement | LinkElement;
 type CustomValue = CustomElement[];
 
 type ExpectFalse<T extends false> = T;
-type EditableHasDOMStrategyLayout =
-  'domStrategyLayout' extends keyof EditableProps ? true : false;
-type EditableHidesDOMStrategyLayout = ExpectFalse<EditableHasDOMStrategyLayout>;
+type EditableHasViewportPlan = 'viewportPlan' extends keyof EditableProps
+  ? true
+  : false;
+type EditableHidesViewportPlan = ExpectFalse<EditableHasViewportPlan>;
 
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: 'initial', bold: true }] },
@@ -68,8 +71,8 @@ const initialValue: CustomValue = [
 declare const dataTransfer: DataTransfer;
 declare const pliteNode: PliteNode;
 
-const ReactExtension = react({ dom: dom() });
-const _reactExtensionName: 'react' = ReactExtension.name;
+const ReactPlugin = react({ dom: dom() });
+const _reactPluginName: 'react' = ReactPlugin.name;
 // @ts-expect-error react requires an exact DOM descriptor
 const _invalidZeroArgumentReact = react();
 // @ts-expect-error react does not accept flattened DOM options
@@ -77,26 +80,26 @@ const _invalidFlattenedReact = react({ clipboardFormatKey: 'x-test' });
 const DOMWithoutClipboard = dom({ clipboard: false });
 const ReactWithoutClipboard = react({ dom: DOMWithoutClipboard });
 const reactWithoutClipboardEditor = createHeadlessEditor({
-  extensions: [ReactWithoutClipboard],
+  plugins: [ReactWithoutClipboard],
   initialValue,
 });
-const HistoryExtension = history();
-const _historyExtensionName: 'history' = HistoryExtension.name;
-const DisabledHistoryExtension = history({ enabled: false });
-const CustomApiExtension = defineExtension('custom-api', {
+const HistoryPlugin = history();
+const _historyPluginName: 'history' = HistoryPlugin.name;
+const DisabledHistoryPlugin = history({ enabled: false });
+const CustomApiPlugin = definePlugin('custom-api', {
   api: () => ({
     ping: () => 'pong' as const,
   }),
 });
-const SpecialCommandExtension = defineExtension('special-command', {
+const SpecialCommandPlugin = definePlugin('special-command', {
   read: () => ({ value: () => 1 }),
 });
-const ExtraCommandExtension = defineExtension('extra-command', {
+const ExtraCommandPlugin = definePlugin('extra-command', {
   read: () => ({ value: () => 2 }),
 });
 type SpecialCommandEditor = Editor<
   Value,
-  readonly [typeof SpecialCommandExtension]
+  readonly [typeof SpecialCommandPlugin]
 >;
 const specialCommand = defineCommand<{ amount: number }, SpecialCommandEditor>(
   'react.special',
@@ -118,29 +121,37 @@ const specialCommandPayload: SpecialCommandPayload = { amount: 1 };
 const commandDescriptor: EditorCommandDescriptor = specialCommand;
 const baseEditor = createHeadlessEditor({ initialValue });
 const historyOnlyEditor = createHeadlessEditor({
-  extensions: [HistoryExtension],
+  plugins: [HistoryPlugin],
   initialValue,
 });
 const manualReactHistoryEditor = createHeadlessEditor({
-  extensions: [ReactExtension, HistoryExtension],
+  plugins: [ReactPlugin, HistoryPlugin],
   initialValue,
 });
 const reactEditor = createHeadlessEditor({
-  extensions: [ReactExtension],
+  plugins: [ReactPlugin],
   initialValue,
 });
 const historyReactEditor = createEditor({
-  extensions: [HistoryExtension],
+  plugins: [HistoryPlugin],
   initialValue,
 });
 const defaultReactEditor = createEditor({ initialValue });
 const noHistoryReactEditor = createEditor({
-  extensions: [DisabledHistoryExtension],
+  plugins: [DisabledHistoryPlugin],
   initialValue,
 });
 const customApiReactEditor = createEditor({
-  extensions: [CustomApiExtension],
+  plugins: [CustomApiPlugin],
   initialValue,
+});
+const AuthoredPlugin = authored({ authorId: 'type-contract' });
+const authoredReactEditor = createEditor({
+  plugins: [CustomApiPlugin, AuthoredPlugin],
+  initialValue,
+});
+const configuredAuthoredView = createEditorView(authoredReactEditor, {
+  authored: { intent: 'propose', projection: 'proposed' },
 });
 const InferredSchema = defineEditorSchema('schema:derived', {
   elements: {
@@ -152,11 +163,11 @@ const InferredSchema = defineEditorSchema('schema:derived', {
   root: schema.content.type('paragraph'),
   unknown: 'reject',
 });
-type InferredSchemaValue = EditorValueFromExtensions<
+type InferredSchemaValue = EditorValueFromPlugins<
   readonly [typeof InferredSchema]
 >;
 const inferredSchemaReactEditor = createEditor({
-  extensions: [InferredSchema],
+  plugins: [InferredSchema],
   initialValue: [
     {
       align: 'center',
@@ -199,7 +210,7 @@ manualReactHistoryEditor.update((tx) => tx.history.undo());
 reactEditor.api.dom.resolvePath(pliteNode);
 reactEditor.api.dom.clipboard.insertData(dataTransfer);
 reactEditor.api.react.isComposing();
-reactEditor.extension(ReactExtension).api.isComposing();
+reactEditor.plugin(ReactPlugin).api.isComposing();
 reactWithoutClipboardEditor.api.dom.focus();
 // @ts-expect-error react({ dom }) preserves the exact disabled clipboard owner
 reactWithoutClipboardEditor.api.dom.clipboard.insertData(dataTransfer);
@@ -226,11 +237,11 @@ const typedNamespaceReactEditor: PliteReact.Editor<CustomValue> =
   defaultReactEditor;
 const typedCustomApiReactEditor: Editor<
   CustomValue,
-  readonly [typeof CustomApiExtension]
+  readonly [typeof CustomApiPlugin]
 > = customApiReactEditor;
 const typedNoHistoryReactEditor: Editor<
   CustomValue,
-  readonly [typeof DisabledHistoryExtension]
+  readonly [typeof DisabledHistoryPlugin]
 > = noHistoryReactEditor;
 
 const assertStateFieldSetterPolicies = (
@@ -250,10 +261,16 @@ typedNamespaceReactEditor.api.react.isFocused();
 const customApiResult: 'pong' =
   typedCustomApiReactEditor.api['custom-api'].ping();
 
-// @ts-expect-error Plite React no longer exports extension-owned renderer maps
+// @ts-expect-error Plite React no longer exports plugin-owned renderer maps
 void PliteReact.editableRenderers;
+// @ts-expect-error public Runtime was removed; EditorRoot owns the mount
+void PliteReact.Runtime;
+// @ts-expect-error public useRuntime was removed; useEditor constructs editors
+void PliteReact.useRuntime;
+// @ts-expect-error public RuntimeValue was removed with Runtime
+type _NoRuntimeValue = PliteReact.RuntimeValue;
 
-// @ts-expect-error Plite React no longer exports extension-owned key commands
+// @ts-expect-error Plite React no longer exports plugin-owned key commands
 void PliteReact.editableKeyCommands;
 
 // @ts-expect-error public Editable command types are not root exports
@@ -302,7 +319,7 @@ const SelectorProbe = () => {
 
 const ContextCapabilityProbe = () => {
   const editor = PliteReact.useEditorContext();
-  const result: 'pong' = editor.extension(CustomApiExtension).api.ping();
+  const result: 'pong' = editor.plugin(CustomApiPlugin).api.ping();
 
   void result;
 
@@ -311,7 +328,7 @@ const ContextCapabilityProbe = () => {
 
 const HookProbe = () => {
   const hookEditor = useEditor({
-    extensions: [HistoryExtension],
+    plugins: [HistoryPlugin],
     initialValue,
   });
   const valueFromHook: Readonly<CustomValue> = hookEditor.read((state) =>
@@ -339,7 +356,7 @@ const HookProbe = () => {
 
 const SchemaHookProbe = () => {
   const editor = useEditor({
-    extensions: [InferredSchema],
+    plugins: [InferredSchema],
     initialValue: [
       { children: [{ text: 'hook inferred' }], type: 'paragraph' },
     ],
@@ -359,17 +376,17 @@ const SchemaHookProbe = () => {
 };
 
 const CommandHookProbe = () => {
-  const insertText = usePliteCommand(editorCommands.insertText);
-  const insertBreak = usePliteCommand(editorCommands.insertBreak);
-  const runSpecial = usePliteCommand<
+  const insertText = useCommand(editorCommands.insertText);
+  const insertBreak = useCommand(editorCommands.insertBreak);
+  const runSpecial = useCommand<
     typeof specialCommand,
     CustomValue,
-    readonly [typeof SpecialCommandExtension]
+    readonly [typeof SpecialCommandPlugin]
   >(specialCommand);
-  const runSpecialWithExtra = usePliteCommand<
+  const runSpecialWithExtra = useCommand<
     typeof specialCommand,
     CustomValue,
-    readonly [typeof SpecialCommandExtension, typeof ExtraCommandExtension]
+    readonly [typeof SpecialCommandPlugin, typeof ExtraCommandPlugin]
   >(specialCommand);
   const typedSpecialDispatcher: (input: { amount: number }) => boolean =
     runSpecial;
@@ -384,13 +401,13 @@ const CommandHookProbe = () => {
   insertText();
   // @ts-expect-error insertText text must be a string
   insertText({ text: 1 });
-  // @ts-expect-error extension-owned command requires SpecialCommandExtension
-  usePliteCommand<typeof specialCommand, CustomValue>(specialCommand);
-  // @ts-expect-error default runtime lacks SpecialCommandExtension
-  usePliteCommand(specialCommand);
-  // @ts-expect-error extension-owned command requires its payload
+  // @ts-expect-error plugin-owned command requires SpecialCommandPlugin
+  useCommand<typeof specialCommand, CustomValue>(specialCommand);
+  // @ts-expect-error default runtime lacks SpecialCommandPlugin
+  useCommand(specialCommand);
+  // @ts-expect-error plugin-owned command requires its payload
   runSpecial();
-  // @ts-expect-error extension-owned command payload is typed
+  // @ts-expect-error plugin-owned command payload is typed
   runSpecial({ amount: '1' });
 
   return null;
@@ -398,7 +415,7 @@ const CommandHookProbe = () => {
 
 const NoHistoryHookProbe = () => {
   const hookEditor = useEditor({
-    extensions: [history({ enabled: false })],
+    plugins: [history({ enabled: false })],
     initialValue,
   });
 
@@ -410,22 +427,75 @@ const NoHistoryHookProbe = () => {
 
 const NamedRootRejectionProbe = () => {
   // @ts-expect-error omit root to address the primary editor
-  usePliteRootEditor('main');
+  useRootEditor('main');
   // @ts-expect-error omit root to address primary root state
-  usePliteRootState('main', (state) => state.children());
+  useRootState('main', (state) => state.children());
   // @ts-expect-error omit root to create primary root chrome
-  usePliteRootChrome('main');
+  useRootChrome('main');
   // @ts-expect-error omit root to bind history to the primary document
-  usePliteHistory({ root: 'main' });
+  useEditorHistory({ root: 'main' });
 
   return (
     // @ts-expect-error omit root to render the primary document
-    <Plite root="main">
+    <EditorRoot editor={defaultReactEditor} root="main">
       {/* @ts-expect-error omit root to render the primary editable */}
       <Editable root="main" />
-    </Plite>
+    </EditorRoot>
   );
 };
+
+const EditorRootInferenceProbe = () => (
+  <>
+    <EditorRoot
+      decorations={[
+        {
+          id: 'typed-root-decoration',
+          read: ({ editor }) => {
+            const result: 'pong' = editor.api['custom-api'].ping();
+
+            // @ts-expect-error decoration callbacks retain exact capabilities
+            editor.api.missing.run();
+            void result;
+
+            return [];
+          },
+        },
+      ]}
+      editor={authoredReactEditor}
+      onCommit={({ editor }) => {
+        const result: 'pong' = editor.api['custom-api'].ping();
+
+        // @ts-expect-error commit callbacks retain exact capabilities
+        editor.api.missing.run();
+        void result;
+      }}
+      root="notes"
+    >
+      {null}
+    </EditorRoot>
+    <EditorRoot
+      authored={{ intent: 'edit', projection: 'accepted' }}
+      editor={configuredAuthoredView}
+      onValueChange={({ editor, value }) => {
+        const result: 'pong' = editor.api['custom-api'].ping();
+
+        value.forEach((node) => node.children);
+        void result;
+      }}
+    >
+      {null}
+    </EditorRoot>
+    {/* @ts-expect-error every public root requires an editor */}
+    <EditorRoot>{null}</EditorRoot>
+    <EditorRoot
+      // @ts-expect-error authored policy requires the installed capability
+      authored={{ intent: 'propose', projection: 'markup' }}
+      editor={defaultReactEditor}
+    >
+      {null}
+    </EditorRoot>
+  </>
+);
 
 // @ts-expect-error React is not installed on a plain editor
 baseEditor.api.react.isComposing();
@@ -437,18 +507,18 @@ baseEditor.api.dom.focus();
 void PliteReact.withReact;
 
 const _placeholderAsSpan = (
-  <PliteReact.PlitePlaceholder as="span">
+  <PliteReact.EditorPlaceholder as="span">
     placeholder
-  </PliteReact.PlitePlaceholder>
+  </PliteReact.EditorPlaceholder>
 );
 
 const _placeholderAsInput = (
-  <PliteReact.PlitePlaceholder
+  <PliteReact.EditorPlaceholder
     // @ts-expect-error PlitePlaceholder cannot render children inside void elements
     as="input"
   >
     placeholder
-  </PliteReact.PlitePlaceholder>
+  </PliteReact.EditorPlaceholder>
 );
 
 const useInvalidWithEditorContract = () => {
@@ -471,7 +541,7 @@ void useInvalidWithEditorContract;
 void typedInferredSchemaReactEditor;
 void _placeholderAsSpan;
 void _placeholderAsInput;
-void (null as unknown as EditableHidesDOMStrategyLayout);
+void (null as unknown as EditableHidesViewportPlan);
 void SelectorProbe;
 void ContextCapabilityProbe;
 void HookProbe;
@@ -479,3 +549,4 @@ void SchemaHookProbe;
 void CommandHookProbe;
 void NoHistoryHookProbe;
 void NamedRootRejectionProbe;
+void EditorRootInferenceProbe;

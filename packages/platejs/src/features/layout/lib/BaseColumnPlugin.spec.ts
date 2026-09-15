@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   BaseParagraphPlugin,
   createEditor as createRuntimeEditor,
-  defineBasePlugin,
+  definePlugin,
   type Element,
   ElementApi,
   schema,
@@ -22,7 +22,7 @@ import {
 } from './BaseColumnPlugin';
 
 const columnPlugins = [BaseColumnPlugin] as const;
-const TestColumnHostPlugin = defineBasePlugin('testColumnHost', {
+const TestColumnHostPlugin = definePlugin('testColumnHost', {
   dependencies: [BaseColumnItemPlugin],
   schema: {
     element: {

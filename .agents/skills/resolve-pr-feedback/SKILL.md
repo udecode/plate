@@ -1,6 +1,6 @@
 ---
 name: resolve-pr-feedback
-description: Resolve GitHub PR review feedback with source-backed triage, fixes, a scoped feedback ledger, focused proof, replies, and thread resolution.
+description: "Resolve GitHub PR review feedback through source-backed triage, fixes, focused proof and authorized replies."
 argument-hint: "[PR number, comment URL, or blank for current branch's PR]"
 disable-model-invocation: true
 ---

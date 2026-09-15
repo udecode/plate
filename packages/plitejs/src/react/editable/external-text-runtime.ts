@@ -7,6 +7,7 @@ import {
   type Range,
   SelectionApi,
 } from '../..';
+import { readAuthoredView } from '../../core/authored-runtime';
 import { createInternalDocumentChange } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
 import { RootChange } from '../../core/change/root-change';
@@ -15,7 +16,7 @@ import { PreparedTokenSlice } from '../../core/change/tokens';
 import { reportEditorLifecycleError } from '../../core/lifecycle-error';
 import { IS_FOCUSED } from '../../dom/internal';
 import type { PliteDecorationStore } from '../decoration-context';
-import type { PliteDecorationSlice } from '../decoration-source';
+import type { DecorationSlice } from '../decoration-source';
 import type {
   ExternalTextActions,
   ExternalTextAdapter,
@@ -48,6 +49,7 @@ type Binding = NonNullable<ReturnType<typeof readExternalTextBinding>>;
 type Entry = {
   active: boolean;
   adapter: ExternalTextAdapter<unknown>;
+  authoredView: ReturnType<typeof readAuthoredView>;
   ariaLabel: string | null;
   disposeCoverage: (() => void) | null;
   disposeHost: (() => void) | null;
@@ -64,22 +66,23 @@ type Entry = {
     selection: ExternalTextSelection;
   } | null;
   state: ExternalTextState<unknown>;
+  sourceVersion: number;
   textKey: NodeKey;
   view: ExternalTextView<unknown> | null;
 };
 
 const EMPTY = Object.freeze([]);
 const DECORATIONS = new WeakMap<
-  readonly PliteDecorationSlice[],
-  readonly PliteDecorationSlice[]
+  readonly DecorationSlice[],
+  readonly DecorationSlice[]
 >();
-const externalDecorations = (bucket: readonly PliteDecorationSlice[]) => {
+const externalDecorations = (bucket: readonly DecorationSlice[]) => {
   if (bucket.length === 0) return EMPTY;
   let result = DECORATIONS.get(bucket);
   if (!result) {
-    const isSelection = (decoration: PliteDecorationSlice) =>
-      'data-plite-view-selection' in decoration.attributes ||
-      'data-plite-inactive-selection' in decoration.attributes;
+    const isSelection = (decoration: DecorationSlice) =>
+      'data-editor-view-selection' in decoration.attributes ||
+      'data-editor-inactive-selection' in decoration.attributes;
     result = bucket.some(isSelection)
       ? Object.freeze(bucket.filter((decoration) => !isSelection(decoration)))
       : bucket;
@@ -228,25 +231,25 @@ export class ExternalTextRuntime {
         'Plite permits only one external text projection per element in each Editable.'
       );
     }
-    const root = host.closest('[data-plite-editor="true"]');
+    const root = host.closest('[data-editor="true"]');
     if (!root) failTextProjectionConflict();
     if (!this.projectionSnapshot || this.projectionSnapshot.root !== root) {
       const projections = new Map<string, HTMLElement[]>();
       const native = new Set<string>();
       for (const projection of root.querySelectorAll<HTMLElement>(
-        '[data-plite-external-text-path]'
+        '[data-editor-external-text-path]'
       )) {
         this.counters.validationVisits += 1;
-        const path = projection.dataset.pliteExternalTextPath ?? '';
+        const path = projection.dataset.editorExternalTextPath ?? '';
         const siblings = projections.get(path);
         if (siblings) siblings.push(projection);
         else projections.set(path, [projection]);
       }
       for (const text of root.querySelectorAll<HTMLElement>(
-        '[data-plite-node="text"][data-plite-node-key]'
+        '[data-editor-node="text"][data-editor-node-key]'
       )) {
         this.counters.validationVisits += 1;
-        native.add(text.dataset.pliteNodeKey ?? '');
+        native.add(text.dataset.editorNodeKey ?? '');
       }
       this.projectionSnapshot = { root, projections, native };
     }
@@ -263,6 +266,7 @@ export class ExternalTextRuntime {
     const entry: Entry = {
       active: true,
       adapter: adapter as ExternalTextAdapter<unknown>,
+      authoredView: readAuthoredView(this.runtime.editor),
       ariaLabel: host.getAttribute('aria-label'),
       disposeCoverage: null,
       disposeHost: null,
@@ -276,6 +280,7 @@ export class ExternalTextRuntime {
       inCallback: false,
       origin: null,
       state: null as unknown as ExternalTextState<unknown>,
+      sourceVersion: binding.snapshot.version,
       textKey: binding.textKey,
       view: null,
     };
@@ -457,7 +462,7 @@ export class ExternalTextRuntime {
     const entry = key ? this.byText.get(key) : undefined;
     if (!entry?.view || entry.invalid) return false;
     // Focus can run from a commit listener before this view's source fence.
-    if (entry.state.version !== snapshot.version) this.refresh(entry);
+    if (entry.sourceVersion !== snapshot.version) this.refresh(entry);
     if (!entry.view || entry.invalid) return false;
     const { view } = entry;
     const active = entry.host.ownerDocument.activeElement;
@@ -500,7 +505,6 @@ export class ExternalTextRuntime {
         { anchor: binding.textPath, focus: binding.textPath },
       ],
       coveredRuntimeRanges: [{ anchor: entry.textKey, focus: entry.textKey }],
-      findPolicy: 'custom',
       ownerNodeKey: entry.elementKey,
       ownerPath: binding.path,
       reason: 'external-text',
@@ -515,6 +519,7 @@ export class ExternalTextRuntime {
     binding: Binding
   ): ExternalTextState<unknown> {
     const { snapshot, text, textPath } = binding;
+    entry.sourceVersion = snapshot.version;
     let selection: ExternalTextSelectionState | null = null;
     if (
       RangeApi.isRange(snapshot.selection) &&
@@ -552,7 +557,7 @@ export class ExternalTextRuntime {
       readOnly: this.runtime.readOnly || binding.readOnly,
       selection,
       text: text.text,
-      version: snapshot.version,
+      version: entry.state?.version ?? 0,
     });
   }
 
@@ -589,8 +594,10 @@ export class ExternalTextRuntime {
     const { view } = entry;
     if (changes === null || state.readOnly) this.endComposition(entry);
     const previous = entry.state;
+    const authoredView = readAuthoredView(this.runtime.editor);
     if (
       !force &&
+      authoredView === entry.authoredView &&
       changes?.length === 0 &&
       state.text === previous.text &&
       state.config === previous.config &&
@@ -603,13 +610,15 @@ export class ExternalTextRuntime {
     if (changes === null) this.counters.resets += 1;
     else this.counters.patches += changes.length;
     this.counters.updates += 1;
+    const next = Object.freeze({ ...state, version: previous.version + 1 });
     const accepted = this.call(entry, 'update', () =>
-      view.update({ changes, state })
+      view.update({ changes, state: next })
     );
     if (accepted) {
       this.counters.canonicalCodeUnits +=
         state.text.length - previous.text.length;
-      entry.state = state;
+      entry.state = next;
+      entry.authoredView = authoredView;
       entry.invalid = false;
     }
     return accepted;
@@ -723,6 +732,7 @@ export class ExternalTextRuntime {
       !binding ||
       binding.textKey !== entry.textKey ||
       binding.text.text !== entry.state.text ||
+      readAuthoredView(this.runtime.editor) !== entry.authoredView ||
       entry.invalid ||
       version !== entry.state.version
     ) {

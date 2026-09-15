@@ -6,6 +6,7 @@ import type {
   NamedRootKey,
   RootKey,
   NodeKey,
+  EditorAnchorApi,
 } from '../interfaces/editor';
 import { LocationApi } from '../interfaces/location';
 import { PathApi, type Path } from '../interfaces/path';
@@ -44,7 +45,9 @@ import {
   RECOVERY_PATH_MODE_SHIFT,
   RECOVERY_ROOT,
   subscribeAnchorState,
+  registerBoundAnchor,
 } from './anchor-state';
+import { bindAuthoredRange, bindAuthoredPath } from './authored-runtime';
 import {
   DocumentChange,
   getInternalDocumentRootChange,
@@ -52,18 +55,202 @@ import {
 import { DocumentIndex, nodeAtPath } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
-import { getEditorRuntime } from './editor-runtime';
-import { toPublicRoot } from './public-root';
+import { getEditorRuntime, getEditorRuntimeOwner } from './editor-runtime';
+import {
+  assertPublicLocationRoot,
+  assertPublicRootKey,
+  toPublicRoot,
+} from './public-root';
 import {
   getEditorDocumentValue,
   getEditorUpdateRoot,
   withEditorRootChildren,
 } from './public-state';
+import { snapshotEditorJsonValue } from './value-codec';
 
 export type AnchorValue = Path | Point | Range;
 export type AnchorAssociation = 'backward' | 'forward';
 export type RangeAnchorAssociation = AnchorAssociation | 'inward' | 'outward';
 export type AnchorDeletionPolicy = 'drop' | 'nearest';
+
+/** Opaque, versioned range JSON saved alongside its document. */
+export type EditorDocumentRange = Readonly<{
+  kind: 'range';
+  version: 1;
+  value: unknown;
+}>;
+
+type SavedRange = Readonly<{
+  association: RangeAnchorAssociation;
+  authored?: unknown;
+  deletion: AnchorDeletionPolicy;
+  range: Range | null;
+  root: string;
+}>;
+
+const SAVED_RANGES = new WeakMap<
+  Anchor<Range>,
+  {
+    editor: Editor;
+    save: () => SavedRange;
+  }
+>();
+const RELEASED_RANGES = new WeakSet<Anchor<Range>>();
+
+const createBoundAnchor = <TValue extends AnchorValue>(
+  editor: Editor,
+  saved: Omit<SavedRange, 'range' | 'authored'>,
+  binding:
+    | { resolve: () => TValue | null; serialize?: () => unknown }
+    | undefined,
+  kind: 'path' | 'point' | 'range'
+): Anchor<TValue> => {
+  let released = false;
+  let activeBinding = binding;
+  let releaseBinding = binding
+    ? registerBoundAnchor(getEditorRuntimeOwner(editor))
+    : undefined;
+  const anchor = Object.freeze({
+    association: saved.association,
+    deletion: saved.deletion,
+    kind,
+    root: toPublicRoot(saved.root),
+    release() {
+      const value = this.resolve();
+      released = true;
+      activeBinding = undefined;
+      releaseBinding?.();
+      releaseBinding = undefined;
+      if (kind === 'range') {
+        SAVED_RANGES.delete(anchor as Anchor<Range>);
+        RELEASED_RANGES.add(anchor as Anchor<Range>);
+      }
+      return value;
+    },
+    resolve() {
+      if (released) return null;
+      return activeBinding?.resolve() ?? null;
+    },
+  }) as Anchor<TValue>;
+  if (kind === 'range') {
+    SAVED_RANGES.set(anchor as Anchor<Range>, {
+      editor: getEditorRuntimeOwner(editor),
+      save() {
+        if (released) throw new Error('Cannot save a released range anchor.');
+        return {
+          ...saved,
+          range: anchor.resolve() as Range | null,
+          ...(activeBinding?.serialize
+            ? { authored: activeBinding.serialize() }
+            : {}),
+        };
+      },
+    });
+  }
+  return anchor;
+};
+
+const decodeSavedRange = (input: unknown): SavedRange => {
+  const value = snapshotEditorJsonValue(input, 'Saved editor range');
+  const record = (data: unknown): Record<string, unknown> => {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new Error('Invalid saved editor range.');
+    }
+    return data as Record<string, unknown>;
+  };
+  const envelope = record(value);
+  if (
+    envelope.kind !== 'range' ||
+    envelope.version !== 1 ||
+    Object.keys(envelope).length !== 3 ||
+    !Object.hasOwn(envelope, 'value')
+  ) {
+    throw new Error('Invalid saved editor range envelope.');
+  }
+  const data = record(envelope.value);
+  if (
+    Object.keys(data).some(
+      (key) =>
+        !['association', 'authored', 'deletion', 'range', 'root'].includes(key)
+    ) ||
+    !['backward', 'forward', 'inward', 'outward'].includes(
+      String(data.association)
+    ) ||
+    (data.deletion !== 'drop' && data.deletion !== 'nearest') ||
+    typeof data.root !== 'string' ||
+    !data.root ||
+    data.root.includes('\u0000') ||
+    (data.range !== null && !RangeApi.isRange(data.range))
+  ) {
+    throw new Error('Invalid saved editor range data.');
+  }
+  const { range } = data;
+  if (range) assertPublicLocationRoot(range);
+  const rangeRoot = Object.hasOwn(data, 'authored') ? 'main' : data.root;
+  if (
+    range &&
+    ((range.anchor.root ?? rangeRoot) !== (range.focus.root ?? rangeRoot) ||
+      (!Object.hasOwn(data, 'authored') &&
+        (range.anchor.root ?? data.root) !== data.root))
+  ) {
+    throw new Error('Saved range endpoints must address the same root.');
+  }
+  return data as SavedRange;
+};
+
+/** @internal */
+export const createEditorAnchorApi = (
+  getEditor: () => Editor
+): EditorAnchorApi =>
+  Object.assign(
+    <TValue extends AnchorValue>(
+      value: TValue,
+      options: AnchorOptions<TValue>
+    ) => {
+      assertPublicLocationRoot(value);
+      assertPublicRootKey(options.root);
+      return createAnchor(getEditor(), value, options);
+    },
+    {
+      save(anchor: Anchor<Range>): EditorDocumentRange {
+        if (RELEASED_RANGES.has(anchor)) {
+          throw new Error('Cannot save a released range anchor.');
+        }
+        const saved = SAVED_RANGES.get(anchor);
+        if (!saved || saved.editor !== getEditorRuntimeOwner(getEditor())) {
+          throw new Error('Save a range anchor owned by this editor.');
+        }
+        return snapshotEditorJsonValue(
+          { kind: 'range', version: 1, value: saved.save() },
+          'Saved editor range'
+        );
+      },
+      restore(input: unknown): Anchor<Range> {
+        const editor = getEditor();
+        const saved = decodeSavedRange(input);
+        const options: AnchorOptions<Range> = {
+          association: saved.association,
+          deletion: saved.deletion,
+          ...(saved.root === 'main' ? {} : { root: saved.root }),
+        };
+        if (Object.hasOwn(saved, 'authored')) {
+          const binding = bindAuthoredRange(editor, {
+            saved: saved.authored,
+            options,
+          });
+          if (!binding) {
+            throw new Error(
+              'An authored range cannot be restored in a detached transaction.'
+            );
+          }
+          return createBoundAnchor<Range>(editor, saved, binding, 'range');
+        }
+        return saved.range
+          ? createAnchor(editor, saved.range, options)
+          : createBoundAnchor<Range>(editor, saved, undefined, 'range');
+      },
+    }
+  );
 
 export type AnchorOptions<
   TValue extends AnchorValue,
@@ -226,9 +413,11 @@ const createPointState = (
 export function createAnchor<TValue extends AnchorValue>(
   editor: BaseEditor<any, any>,
   value: TValue,
-  options: Omit<AnchorOptions<TValue>, 'root'> & Readonly<{ root?: RootKey }>
+  options: Omit<AnchorOptions<TValue>, 'root'> & Readonly<{ root?: RootKey }>,
+  scope: 'document' | 'transaction' = 'document'
 ): Anchor<TValue> {
-  const runtimeEditor = editor as Editor;
+  const viewEditor = editor as Editor;
+  const runtimeEditor = getEditorRuntimeOwner(viewEditor);
   const kind = LocationApi.isPath(value)
     ? 'path'
     : PointApi.isPoint(value)
@@ -245,7 +434,7 @@ export function createAnchor<TValue extends AnchorValue>(
 
   const firstPoint = pointValue ?? rangeValue?.anchor ?? null;
   const root =
-    firstPoint?.root ?? options.root ?? getEditorUpdateRoot(runtimeEditor);
+    firstPoint?.root ?? options.root ?? getEditorUpdateRoot(viewEditor);
 
   if (rangeValue && pointRoot(rangeValue.focus, root) !== root) {
     throw new Error('A range anchor cannot cross document roots.');
@@ -253,6 +442,44 @@ export function createAnchor<TValue extends AnchorValue>(
 
   const association =
     options.association ?? (kind === 'range' ? 'inward' : 'forward');
+  if (pathValue && scope === 'document') {
+    const binding = bindAuthoredPath(viewEditor, pathValue, {
+      association: association as AnchorAssociation,
+      deletion: options.deletion,
+      ...(root === 'main' ? {} : { root }),
+    });
+    if (binding) {
+      return createBoundAnchor<Path>(
+        runtimeEditor,
+        { association, deletion: options.deletion, root },
+        binding,
+        'path'
+      ) as Anchor<TValue>;
+    }
+  }
+  if ((rangeValue || pointValue) && scope === 'document') {
+    const binding = bindAuthoredRange(viewEditor, {
+      range: rangeValue ?? {
+        anchor: getDefined(pointValue),
+        focus: getDefined(pointValue),
+      },
+      options: {
+        association,
+        deletion: options.deletion,
+        ...(root === 'main' ? {} : { root }),
+      },
+    });
+    if (binding) {
+      return createBoundAnchor<Range | Point>(
+        runtimeEditor,
+        { association, deletion: options.deletion, root },
+        pointValue
+          ? { resolve: () => binding.resolve()?.anchor ?? null }
+          : binding,
+        pointValue ? 'point' : 'range'
+      ) as Anchor<TValue>;
+    }
+  }
   let sourceValue =
     (getAnchorStateValue(runtimeEditor) as JsonEditorValue | undefined) ??
     readValue(runtimeEditor);
@@ -1320,7 +1547,7 @@ export function createAnchor<TValue extends AnchorValue>(
     () => readValue(runtimeEditor) as unknown as EditorDocumentValue
   );
 
-  return Object.freeze({
+  const anchor = Object.freeze({
     association,
     deletion: options.deletion,
     kind,
@@ -1331,6 +1558,10 @@ export function createAnchor<TValue extends AnchorValue>(
         released = true;
         current = null;
         subscription.unsubscribe();
+        if (kind === 'range') {
+          SAVED_RANGES.delete(anchor as Anchor<Range>);
+          RELEASED_RANGES.add(anchor as Anchor<Range>);
+        }
       }
 
       return resolved;
@@ -1366,4 +1597,19 @@ export function createAnchor<TValue extends AnchorValue>(
     },
     root: toPublicRoot(root),
   }) as Anchor<TValue>;
+  if (kind === 'range') {
+    SAVED_RANGES.set(anchor as Anchor<Range>, {
+      editor: getEditorRuntimeOwner(runtimeEditor),
+      save() {
+        if (released) throw new Error('Cannot save a released range anchor.');
+        return {
+          association,
+          deletion: options.deletion,
+          range: anchor.resolve() as Range | null,
+          root,
+        };
+      },
+    });
+  }
+  return anchor;
 }

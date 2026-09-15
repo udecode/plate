@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "use-floating-rect",
+  "dependencies": [
+    "@floating-ui/react",
+    "platejs"
+  ],
+  "files": [
+    {
+      "path": "src/registry/hooks/use-floating-rect.ts",
+      "content": "'use client';\n\nimport {\n  type UseFloatingOptions,\n  type UseFloatingReturn,\n  type VirtualElement,\n  useFloating,\n} from '@floating-ui/react';\nimport { type ViewportRect, useIsomorphicLayoutEffect } from 'platejs/react';\nimport * as React from 'react';\n\nexport type UseFloatingRectOptions = Omit<\n  UseFloatingOptions,\n  'elements' | 'whileElementsMounted'\n>;\n\nexport type UseFloatingRectReturn = UseFloatingReturn<VirtualElement> & {\n  style: React.CSSProperties;\n};\n\nconst HIDDEN_RECT = Object.freeze({\n  bottom: -9999,\n  height: 0,\n  left: -9999,\n  right: -9999,\n  top: -9999,\n  width: 0,\n  x: -9999,\n  y: -9999,\n});\n\n/** Position copied UI from one immutable viewport rectangle. */\nexport function useFloatingRect(\n  rect: ViewportRect | null,\n  options: UseFloatingRectOptions = {}\n): UseFloatingRectReturn {\n  const rectRef = React.useRef(rect ?? HIDDEN_RECT);\n  const virtualRef = React.useRef<VirtualElement>({\n    getBoundingClientRect: () => rectRef.current,\n  });\n  const floating = useFloating<VirtualElement>(options);\n  const { elements, floatingStyles, middlewareData, refs, update } = floating;\n\n  useIsomorphicLayoutEffect(() => {\n    rectRef.current = rect ?? HIDDEN_RECT;\n    refs.setReference(rect ? virtualRef.current : null);\n\n    if (rect && options.open !== false) update();\n  }, [options.open, rect, refs, update]);\n\n  React.useEffect(() => {\n    const element = elements.floating;\n    const ResizeObserver = element?.ownerDocument.defaultView?.ResizeObserver;\n\n    if (!element || !ResizeObserver) return undefined;\n\n    const observer = new ResizeObserver(() => {\n      update();\n    });\n\n    observer.observe(element);\n\n    return () => observer.disconnect();\n  }, [elements.floating, update]);\n\n  return {\n    ...floating,\n    style: {\n      ...floatingStyles,\n      display: options.open === false || !rect ? 'none' : undefined,\n      visibility:\n        !floating.isPositioned || middlewareData.hide?.referenceHidden === true\n          ? 'hidden'\n          : undefined,\n    },\n  };\n}\n",
+      "type": "registry:hook"
+    }
+  ],
+  "type": "registry:hook"
+}

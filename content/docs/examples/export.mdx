@@ -29,10 +29,14 @@ component to add the menu to an editor toolbar.
 | PDF      | `html2canvas-pro` snapshot converted with `pdf-lib`                                                           | `plate.pdf`  |
 | Image    | `html2canvas-pro` snapshot                                                                                    | `plate.png`  |
 | Markdown | `editor.api.markdown.serialize()` from `MarkdownPlugin`                                                       | `plate.md`   |
-| Word     | `exportToDocx(editor.read.children(), { editorPlugins, stylesheet: DOCX_EXPORT_STYLES })` from `platejs/docx/export` | `plate.docx` |
+| Word     | `exportToDocx(model, { projection, editorPlugins, stylesheet: DOCX_EXPORT_STYLES })` from `platejs/docx/export` | `plate.docx` |
 
 The PDF and image exporters snapshot the current editable DOM. Use them for a
 quick client-side download, not for paginated print layout.
+
+The copied toolbar gets `model` from `useModelEditor()` for Word export. The
+mounted view from `useEditor()` remains the owner for DOM, Markdown, and
+root-scoped command behavior.
 
 ## DOCX static kit
 

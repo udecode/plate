@@ -6,12 +6,13 @@ import {
   HeadingPlugin,
   createEditor,
   ParagraphPlugin,
-  Plate,
-  PlateContent,
-  PlateElement,
-  type PlateElementProps,
+  EditorRoot,
+  EditorContent,
+  EditorElement,
+  type EditorElementProps,
   useElementSelected,
 } from 'platejs/react';
+import { VirtualizedEditorContent } from 'platejs/react/virtualized';
 import React, {
   type CSSProperties,
   type Dispatch,
@@ -325,7 +326,7 @@ const Chunk = ({
 };
 
 const HugeDocumentPlateHeading = (
-  props: PlateElementProps<typeof HeadingPlugin>
+  props: EditorElementProps<typeof HeadingPlugin>
 ) => {
   const { contentVisibility, showSelectedHeadings } = React.useContext(
     PlateRenderConfigContext
@@ -335,7 +336,7 @@ const HugeDocumentPlateHeading = (
   const tag = `h${props.element.level}` as const;
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       as={tag}
       attributes={{
@@ -351,12 +352,12 @@ const HugeDocumentPlateHeading = (
 };
 
 const HugeDocumentPlateParagraph = (
-  props: PlateElementProps<typeof ParagraphPlugin>
+  props: EditorElementProps<typeof ParagraphPlugin>
 ) => {
   const { contentVisibility } = React.useContext(PlateRenderConfigContext);
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       as="p"
       style={{ contentVisibility: contentVisibility ? 'auto' : undefined }}
@@ -551,20 +552,20 @@ function EnginePane({
       />
     </Slate>
   ) : (
-    <Plate
+    <EditorRoot
       editor={editor}
       onCommit={() => {
         afterChange.current = true;
       }}
     >
       <PlateRenderConfigContext.Provider value={plateRenderConfig}>
-        <PlateContent
-          domStrategy={config.chunking ? ('auto' as const) : ('full' as const)}
-          placeholder="Enter some text…"
-          spellCheck
-        />
+        {config.chunking ? (
+          <VirtualizedEditorContent placeholder="Enter some text…" spellCheck />
+        ) : (
+          <EditorContent placeholder="Enter some text…" spellCheck />
+        )}
       </PlateRenderConfigContext.Provider>
-    </Plate>
+    </EditorRoot>
   );
 
   const editableWithStrictMode = config.strictMode ? (

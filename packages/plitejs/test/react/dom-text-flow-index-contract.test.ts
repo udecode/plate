@@ -17,7 +17,7 @@ test('maps raw and wrapped retained text in both directions', () => {
   const styledTail = document.createTextNode('fg');
   const tail = document.createTextNode('hi');
 
-  stringElement.setAttribute('data-plite-string', 'true');
+  stringElement.setAttribute('data-editor-string', 'true');
   stringElement.append(styledHead, styledTail);
   host.append(raw, stringElement, tail);
   setDOMTextFlowIndex(host, [
@@ -171,7 +171,7 @@ test('releases replaced segments when the same record receives a new segment arr
 test('releases the previously bound text node when a retained segment adopts browser text', () => {
   const host = document.createElement('span');
 
-  host.setAttribute('data-plite-string', 'true');
+  host.setAttribute('data-editor-string', 'true');
   const oldText = document.createTextNode('text');
   const nextText = document.createTextNode('text');
   const segment = {

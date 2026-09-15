@@ -1,5 +1,5 @@
 import type { EditorApplicationSchema } from 'platejs';
-import { createEditor, definePlatePlugin, type Editor } from 'platejs/react';
+import { createEditor, definePlugin, type Editor } from 'platejs/react';
 
 import {
   property,
@@ -11,7 +11,7 @@ import {
   type ValueOf,
 } from '../src/core';
 import type { GeneratedEditorTypeProvider } from '../src/internal/editor/generatedEditorTypes';
-import type { InferPlateEditorPlugins } from '../src/react/editor/Editor';
+import type { InferEditorPlugins } from '../src/react/editor/Editor';
 
 type LayoutVariant = 'compact' | 'full';
 type EditorSummary = `${LayoutVariant}:@`;
@@ -25,7 +25,7 @@ const layoutInitialState: LayoutPluginState = {
   variant: 'full',
 };
 
-const LayoutPlugin = definePlatePlugin('layout', {
+const LayoutPlugin = definePlugin('layout', {
   api: ({ store }) => ({
     getVariant: () => store.get().variant,
   }),
@@ -55,7 +55,7 @@ const ConfiguredLayoutPlugin = LayoutPlugin.configure({
   },
 });
 
-const MentionPlugin = definePlatePlugin('mention', {
+const MentionPlugin = definePlugin('mention', {
   api: ({ store }) => ({
     getTrigger: () => store.get().trigger,
   }),
@@ -64,7 +64,7 @@ const MentionPlugin = definePlatePlugin('mention', {
   },
 });
 
-const ToolbarPlugin = definePlatePlugin('toolbar', {
+const ToolbarPlugin = definePlugin('toolbar', {
   api: () => ({
     describeToolbar: () => 'toolbar' as const,
   }),
@@ -75,7 +75,7 @@ const ToolbarPlugin = definePlatePlugin('toolbar', {
   }),
 });
 
-const SharedPropertyPlugin = definePlatePlugin('sharedProperty', {
+const SharedPropertyPlugin = definePlugin('sharedProperty', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
     properties: {
@@ -98,13 +98,13 @@ const SharedPropertyPlugin = definePlatePlugin('sharedProperty', {
 
 void SharedPropertyPlugin;
 
-const QuotePlugin = definePlatePlugin('quote', {
+const QuotePlugin = definePlugin('quote', {
   schema: { element: schema.element.textBlock() },
 });
 
 QuotePlugin.extend({ shortcuts: { toggle: { keys: 'mod+shift+q' } } });
 
-const CalloutPlugin = definePlatePlugin('calloutCapability', {
+const CalloutPlugin = definePlugin('calloutCapability', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -164,7 +164,7 @@ type GeneratedEditorPlugins = typeof EditorPlugins &
     value: GeneratedBodyValue;
   }>;
 
-type EditorPluginNames = InferPlateEditorPlugins<typeof EditorPlugins>['name'];
+type EditorPluginNames = InferEditorPlugins<typeof EditorPlugins>['name'];
 const exactEditorPluginNames: string extends EditorPluginNames ? true : false =
   false;
 
@@ -212,8 +212,8 @@ const isDense: boolean = exactEditor
   .store.get('isDense');
 
 exactEditor.update((tx) => {
-  tx.plugin(ConfiguredLayoutPlugin).setDensity(1);
-  tx.plugin('layout').setDensity(2);
+  tx.plugin(ConfiguredLayoutPlugin.name).setDensity(1);
+  tx.layout.setDensity(2);
   tx.layout.setDensity(1);
   tx.paragraph.set({ align: 'right' });
   tx.quote.remove();
@@ -276,7 +276,7 @@ exactEditor.update.nodes.set({ citation: 42 }, { type: QuotePlugin });
 
 const rawElementEditor = createEditor({ plugins: [CalloutPlugin] });
 const rawCallout = rawElementEditor.plugin(CalloutPlugin);
-const BooleanMarkPlugin = definePlatePlugin('booleanMark', {
+const BooleanMarkPlugin = definePlugin('booleanMark', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 declare const broadPlateEditor: Editor;
@@ -306,13 +306,13 @@ rawCallout.update.remove();
 // @ts-expect-error required-construction text blocks have no generic toggle
 rawCallout.update.toggle({ at: [0] });
 broadPlateEditor.update((tx) => {
-  tx.plugin(LayoutPlugin).setDensity(1);
-  tx.plugin(BooleanMarkPlugin).toggle();
+  tx.plugin(LayoutPlugin.name).setDensity(1);
+  tx.plugin(BooleanMarkPlugin.name).toggle();
 });
 // @ts-expect-error mark-only plugins are not structural node selectors
 broadPlateEditor.update.nodes.remove({ type: BooleanMarkPlugin });
 
-const VoidPlugin = definePlatePlugin('voidCapability', {
+const VoidPlugin = definePlugin('voidCapability', {
   schema: { element: { void: 'block' } },
 });
 
@@ -327,7 +327,7 @@ const voidPortal = createEditor({ plugins: [VoidPlugin] }).plugin(VoidPlugin);
 // @ts-expect-error void elements do not expose a generic block toggle
 voidPortal.update.toggle();
 
-const TextContentPlugin = definePlatePlugin('textContentCapability', {
+const TextContentPlugin = definePlugin('textContentCapability', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -346,10 +346,10 @@ createEditor({
   .plugin(TextContentPlugin)
   .update.toggle();
 
-const OverriddenTextBlockPlugin = definePlatePlugin('overriddenTextBlock', {
+const OverriddenTextBlockPlugin = definePlugin('overriddenTextBlock', {
   schema: { element: schema.element.textBlock() },
 });
-const StructuralChildPlugin = definePlatePlugin('structuralChild', {
+const StructuralChildPlugin = definePlugin('structuralChild', {
   schema: { element: schema.element.textBlock() },
 });
 const overriddenPlugins = [
@@ -466,7 +466,7 @@ exactEditor.update((tx) => {
 
 exactEditor.update((tx) => {
   // @ts-expect-error uninstalled plugin names have no transaction capability
-  tx.plugin('missingPlugin').run();
+  tx.missingPlugin.run();
 });
 
 // @ts-expect-error required element construction property is missing

@@ -43,7 +43,7 @@ const requiredOutputs = [
     path.join(appRoot, `out/examples/plite/${examplePath}.html`)
   ),
 ];
-const manifestPath = path.join(appRoot, 'out/.plite-proof-build.json');
+const manifestPath = path.join(appRoot, 'out/.editor-proof-build.json');
 const manifestVersion = 4;
 const outputRoot = path.join(appRoot, 'out');
 

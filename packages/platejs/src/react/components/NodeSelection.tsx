@@ -17,7 +17,7 @@ import { useEditorEditableElement, useEditorViewState } from '../plite-react';
 import { useEditor } from '../stores/plate/useEditor';
 import { useEditorSelector } from '../stores/plate/useEditorSelector';
 
-const EDITOR_ELEMENT_SELECTOR = '[data-plite-node="element"]';
+const EDITOR_ELEMENT_SELECTOR = '[data-editor-node="element"]';
 
 const isSelectionCandidate = (editor: Editor, element: Element) =>
   editor.read.schema.isBlockContent(element) &&
@@ -98,7 +98,7 @@ function NodeSelectionHighlightPortalComponent({
       aria-hidden
       className={className}
       contentEditable={false}
-      data-plite-root-chrome-ignore="true"
+      data-editor-root-chrome-ignore="true"
       data-slot="node-selection-highlight"
       style={{
         ...style,
@@ -210,7 +210,7 @@ const getSelectionCandidates = (
   editable
     .querySelectorAll<HTMLElement>(EDITOR_ELEMENT_SELECTOR)
     .forEach((element) => {
-      const node = editor.api.dom.resolvePliteNode(element);
+      const node = editor.api.dom.resolveNode(element);
 
       if (!ElementApi.isElement(node) || !isSelectionCandidate(editor, node)) {
         return;

@@ -51,7 +51,7 @@ test('browser handle applies direct text writes and canonical document changes',
     { type: 'paragraph', children: [{ text: 'one' }] },
   ];
   const editor = createEditor({
-    extensions: [history()],
+    plugins: [history()],
     initialValue,
   });
   const element = document.createElement('div') as PliteBrowserHandleElement;
@@ -64,8 +64,8 @@ test('browser handle applies direct text writes and canonical document changes',
     element,
     forceRender,
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   element.__pliteBrowserHandle?.insertTextAt('!', {
@@ -137,8 +137,8 @@ test('browser handle focuses its attached root when one runtime has multiple roo
     element,
     forceRender: vi.fn(),
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   element.__pliteBrowserHandle?.focus();
@@ -150,7 +150,7 @@ test('browser handle focuses its attached root when one runtime has multiple roo
 
 test('browser handle undo and redo no-op when history is disabled', () => {
   const editor = createEditor({
-    extensions: [history({ enabled: false })],
+    plugins: [history({ enabled: false })],
   });
   const element = document.createElement('div') as PliteBrowserHandleElement;
   const forceRender = vi.fn();
@@ -162,8 +162,8 @@ test('browser handle undo and redo no-op when history is disabled', () => {
     element,
     forceRender,
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   expect(() => element.__pliteBrowserHandle?.undo()).not.toThrow();
@@ -185,7 +185,7 @@ test('browser handle leaves text-only multi-root history to direct DOM sync', ()
     },
   };
   const editor = createEditor({
-    extensions: [history()],
+    plugins: [history()],
     initialValue: before,
   });
   const element = document.createElement('div') as PliteBrowserHandleElement;
@@ -198,8 +198,8 @@ test('browser handle leaves text-only multi-root history to direct DOM sync', ()
     element,
     forceRender,
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   element.__pliteBrowserHandle?.applyValueChange(after);
@@ -232,8 +232,8 @@ test('browser handle selectAll selects the whole editor', () => {
     element,
     forceRender: vi.fn(),
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   element.__pliteBrowserHandle?.selectAll();
@@ -260,8 +260,8 @@ test('browser handle preserves multi-node selection', () => {
     element,
     forceRender: vi.fn(),
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   editor.update.selection.set(SelectionApi.nodes([[0], [1]]));
@@ -297,8 +297,8 @@ test('browser handle keeps named-root selections local to its attached root', ()
     element,
     forceRender: vi.fn(),
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   editor.update.selection.set({ path: [0, 0], offset: 2 });
@@ -337,8 +337,8 @@ test('browser handle exposes model block texts independently of rendered DOM', (
     element,
     forceRender: vi.fn(),
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   expect(element.__pliteBrowserHandle?.getBlockTexts()).toEqual(['one', 'two']);
@@ -371,8 +371,8 @@ test('browser handle selectRange flushes pending native text repair first', () =
     flushPendingNativeTextInput,
     forceRender: vi.fn(),
     inputController,
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   element.__pliteBrowserHandle?.selectRange({
@@ -406,8 +406,8 @@ test('browser handle selectRange clears projected view selection', () => {
     element,
     forceRender: vi.fn(),
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   element.__pliteBrowserHandle?.setViewSelection({
@@ -449,8 +449,8 @@ test('browser handle importDOMSelection clears projected view selection', () => 
     element,
     forceRender: vi.fn(),
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => false,
-    setExplicitPartialDOMBackedSelection: vi.fn(),
+    isViewportBackedSelection: () => false,
+    setExplicitViewportBackedSelection: vi.fn(),
   });
 
   element.__pliteBrowserHandle?.setViewSelection({
@@ -471,7 +471,7 @@ test('browser handle importDOMSelection clears projected view selection', () => 
   expect(element.__pliteBrowserHandle?.getViewSelection()).toBeNull();
 });
 
-test('browser handle selectAll marks partial-DOM-backed selections', () => {
+test('browser handle selectAll marks viewport-backed selections', () => {
   const editor = createEditor<Value>({
     initialValue: [
       { type: 'paragraph', children: [{ text: 'one' }] },
@@ -479,7 +479,7 @@ test('browser handle selectAll marks partial-DOM-backed selections', () => {
     ],
   });
   const element = document.createElement('div') as PliteBrowserHandleElement;
-  const setExplicitPartialDOMBackedSelection = vi.fn();
+  const setExplicitViewportBackedSelection = vi.fn();
 
   attachPliteBrowserHandle({
     browserHandleNextId: { current: 0 },
@@ -488,19 +488,19 @@ test('browser handle selectAll marks partial-DOM-backed selections', () => {
     element,
     forceRender: vi.fn(),
     inputController: createInputController(),
-    isPartialDOMBackedSelection: () => true,
-    setExplicitPartialDOMBackedSelection,
+    isViewportBackedSelection: () => true,
+    setExplicitViewportBackedSelection,
   });
 
   element.__pliteBrowserHandle?.selectAll();
 
-  expect(setExplicitPartialDOMBackedSelection).toHaveBeenCalledWith(true);
+  expect(setExplicitViewportBackedSelection).toHaveBeenCalledWith(true);
   expect(element.__pliteBrowserHandle?.getInputState()).toMatchObject({
     modelSelectionPreference: {
-      reason: 'partial-dom-backed',
-      selectionSource: 'partial-dom-backed',
+      reason: 'viewport-backed',
+      selectionSource: 'viewport-backed',
     },
-    selectionSource: 'partial-dom-backed',
+    selectionSource: 'viewport-backed',
   });
   const trace = element.__pliteBrowserHandle?.getKernelTrace().at(-1);
 
@@ -508,10 +508,10 @@ test('browser handle selectAll marks partial-DOM-backed selections', () => {
     command: { kind: 'select-all' },
     commandDefinition: { kind: 'select-all', modelOwned: true },
     selectionPolicy: {
-      kind: 'partial-dom',
-      reason: 'partial-dom-backed',
+      kind: 'viewport',
+      reason: 'viewport-backed',
     },
-    selectionSource: 'partial-dom-backed',
+    selectionSource: 'viewport-backed',
   });
   expect(Object.hasOwn(trace ?? {}, 'intents')).toBe(false);
 });

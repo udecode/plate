@@ -1,15 +1,15 @@
 import type { BaseParagraphPlugin } from 'platejs';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
 export function ParagraphElementStatic(
-  props: PliteElementProps<typeof BaseParagraphPlugin>
+  props: EditorElementProps<typeof BaseParagraphPlugin>
 ) {
   return (
-    <PliteElement {...props} className={cn('m-0 px-0 py-1')}>
+    <EditorElement {...props} className={cn('m-0 px-0 py-1')}>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }

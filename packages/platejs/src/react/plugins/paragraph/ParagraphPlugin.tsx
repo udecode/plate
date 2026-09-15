@@ -1,7 +1,7 @@
 import { BaseParagraphPlugin } from '../../../lib';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
-export const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin).extend({
+export const ParagraphPlugin = toReactPlugin(BaseParagraphPlugin).extend({
   shortcuts: {
     toggle: {
       handler: ({ editor }) => {

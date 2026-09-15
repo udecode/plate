@@ -1,18 +1,18 @@
 // Donor rows preserve the shared cross-browser fixture signature.
 import { expect, test } from '@playwright/test';
 import {
-  installPliteReactRenderProfiler,
+  installReactRenderProfiler,
   openExample,
-  recordPliteBrowserRuntimeErrors,
-  resetPliteReactRenderProfiler,
-  takePliteBrowserRenderStateSnapshot,
+  recordBrowserRuntimeErrors,
+  resetReactRenderProfiler,
+  takeBrowserRenderStateSnapshot,
 } from '@platejs/test/playwright';
 
 test.describe('embeds example', () => {
-  const pliteEditor = 'div[data-plite-editor="true"]';
+  const pliteEditor = 'div[data-editor="true"]';
 
   test.beforeEach(async ({ page }) => {
-    await installPliteReactRenderProfiler(page);
+    await installReactRenderProfiler(page);
     await page.goto('/examples/plite/embeds', { waitUntil: 'commit' });
     await expect(page.locator(pliteEditor)).toBeVisible();
   });
@@ -28,7 +28,7 @@ test.describe('embeds example', () => {
     await expect(page.getByText('Try it out!')).toBeVisible();
 
     const gap = await page.evaluate(() => {
-      const editor = document.querySelector('[data-plite-editor="true"]');
+      const editor = document.querySelector('[data-editor="true"]');
       const input = editor?.querySelector('input[type="text"]');
       const nextParagraph = Array.from(
         editor?.querySelectorAll('p') ?? []
@@ -75,7 +75,7 @@ test.describe('embeds example', () => {
       isCollapsed: true,
     });
 
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await page.keyboard.press('ArrowRight');
     await expect
       .poll(() => editor.selection.get())
@@ -89,7 +89,7 @@ test.describe('embeds example', () => {
       isCollapsed: true,
     });
 
-    const embedProof = await takePliteBrowserRenderStateSnapshot(editor);
+    const embedProof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(embedProof.selection).toEqual({
       anchor: { path: [1, 0], offset: 0 },
@@ -109,7 +109,7 @@ test.describe('embeds example', () => {
     expect(embedProof.renderCounts.byKind.void ?? 0).toBeLessThanOrEqual(1);
     expect(embedProof.renderCounts.total).toBeLessThanOrEqual(5);
 
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await page.keyboard.press('ArrowRight');
     await expect
       .poll(() => editor.selection.get())
@@ -123,7 +123,7 @@ test.describe('embeds example', () => {
       isCollapsed: true,
     });
 
-    const afterEmbedProof = await takePliteBrowserRenderStateSnapshot(editor);
+    const afterEmbedProof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(afterEmbedProof.selection).toEqual({
       anchor: { path: [2, 0], offset: 0 },
@@ -158,7 +158,7 @@ test.describe('embeds example', () => {
 
     const payload = await editor.root.evaluate(() => {
       const shell = document.querySelector<HTMLElement>(
-        '[data-plite-editor="true"] [data-plite-node="element"][data-plite-void="true"][data-plite-path="1"]'
+        '[data-editor="true"] [data-editor-node="element"][data-editor-void="true"][data-editor-path="1"]'
       );
 
       if (!shell) {
@@ -191,7 +191,7 @@ test.describe('embeds example', () => {
       return {
         draggable: shell.getAttribute('draggable'),
         html: dragData.getData('text/html'),
-        pliteFragment: dragData.getData('application/x-plite-fragment'),
+        fragment: dragData.getData('application/x-editor-fragment'),
         text: dragData.getData('text/plain'),
         types: [...dragData.types],
       };
@@ -200,13 +200,13 @@ test.describe('embeds example', () => {
     expect(payload.draggable).toBe('true');
     expect(payload.types).toEqual(
       expect.arrayContaining([
-        'application/x-plite-fragment',
+        'application/x-editor-fragment',
         'text/html',
         'text/plain',
       ])
     );
-    expect(payload.pliteFragment.length).toBeGreaterThan(0);
-    expect(payload.html).toContain('data-plite-fragment');
+    expect(payload.fragment.length).toBeGreaterThan(0);
+    expect(payload.html).toContain('data-editor-fragment');
     expect(payload.text.trim()).toBe('');
     await expect
       .poll(() => editor.selection.get())
@@ -219,7 +219,7 @@ test.describe('embeds example', () => {
   test('moves a custom block void over a paragraph margin instead of duplicating it', async ({
     page,
   }) => {
-    const runtimeErrors = await recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = await recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/embeds', {
@@ -240,10 +240,10 @@ test.describe('embeds example', () => {
 
       const payloadTypes = await editor.root.evaluate((root) => {
         const shell = root.querySelector<HTMLElement>(
-          '[data-plite-node="element"][data-plite-void="true"][data-plite-path="1"]'
+          '[data-editor-node="element"][data-editor-void="true"][data-editor-path="1"]'
         );
         const targetParagraph = Array.from(
-          root.querySelectorAll<HTMLElement>('[data-plite-node="element"]')
+          root.querySelectorAll<HTMLElement>('[data-editor-node="element"]')
         ).find((element) => element.textContent?.startsWith('Try it out!'));
 
         if (!shell || !targetParagraph) {
@@ -306,7 +306,7 @@ test.describe('embeds example', () => {
         return [...dragData.types];
       });
 
-      expect(payloadTypes).toContain('application/x-plite-fragment');
+      expect(payloadTypes).toContain('application/x-editor-fragment');
       await expect
         .poll(() => editor.get.modelBlockTexts())
         .toEqual([introText, targetText, '']);
@@ -314,9 +314,9 @@ test.describe('embeds example', () => {
       await expect
         .poll(() =>
           editor.root
-            .locator('[data-plite-node="element"][data-plite-void="true"]')
+            .locator('[data-editor-node="element"][data-editor-void="true"]')
             .evaluateAll((elements) =>
-              elements.map((element) => element.getAttribute('data-plite-path'))
+              elements.map((element) => element.getAttribute('data-editor-path'))
             )
         )
         .toEqual(['2']);
@@ -336,7 +336,7 @@ test.describe('embeds example', () => {
   test('keeps the editor editable after a quick click on a draggable custom void', async ({
     page,
   }, testInfo) => {
-    const runtimeErrors = await recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = await recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/embeds', {
@@ -354,7 +354,7 @@ test.describe('embeds example', () => {
 
       const contentEditableState = await editor.root.evaluate(async (root) => {
         const shell = root.querySelector<HTMLElement>(
-          '[data-plite-node="element"][data-plite-void="true"][data-plite-path="1"]'
+          '[data-editor-node="element"][data-editor-void="true"][data-editor-path="1"]'
         );
 
         if (!shell) {
@@ -396,8 +396,8 @@ test.describe('embeds example', () => {
         )
           .map((element) =>
             element
-              .closest('[data-plite-node="element"]')
-              ?.getAttribute('data-plite-path')
+              .closest('[data-editor-node="element"]')
+              ?.getAttribute('data-editor-path')
           )
           .filter((path) => path === '0' || path === '2');
 
@@ -432,7 +432,7 @@ test.describe('embeds example', () => {
   test('deselects a selected draggable custom void when clicking back into text', async ({
     page,
   }, testInfo) => {
-    const runtimeErrors = await recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = await recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/embeds', {

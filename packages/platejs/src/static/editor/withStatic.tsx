@@ -10,13 +10,12 @@ import type {
   MergeInstalledPluginDefinitions,
 } from '../../lib/editor';
 import { applyEditor } from '../../lib/editor/withPlite';
-import type { CorePluginDefinition, CorePlugins } from '../../lib/plugins';
-import { getStaticPlugins } from '../plugins/getStaticPlugins';
+import type {
+  CorePluginDefinition,
+  CorePlugins,
+} from '../../lib/plugins/getCorePlugins.internal';
 
-type StaticPluginTuple<P extends readonly unknown[]> = readonly [
-  ...ReturnType<typeof getStaticPlugins>,
-  ...P,
-];
+type StaticPluginTuple<P extends readonly unknown[]> = P;
 
 type StaticEditorRuntimePlugins<P extends readonly unknown[] = readonly []> =
   MergeInstalledPluginDefinitions<
@@ -34,7 +33,7 @@ type CreateStaticEditorOptionsForValue<
   V extends Value,
   P extends readonly BasePluginInput[] = readonly [],
 > = Omit<
-  CreateEditorOptions<Value, readonly [], StaticPluginTuple<P>>,
+  CreateEditorOptions<Value, StaticPluginTuple<P>>,
   'initialValue' | 'plugins'
 > & {
   initialValue?:
@@ -81,7 +80,7 @@ export function createStaticEditor<
     editor,
     {
       ...options,
-      plugins: [...getStaticPlugins(), ...(options.plugins ?? [])],
+      plugins: options.plugins ?? [],
     } as unknown as Parameters<typeof applyEditor>[1],
     true
   );

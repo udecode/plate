@@ -1,24 +1,16 @@
 import { extendEditor, getFragment } from './core';
-import { createAnchor } from './core/anchor';
+import { createEditorAnchorApi } from './core/anchor';
 import { hasActiveAnchors } from './core/anchor-state';
+import { initializeAuthoredDocument } from './core/authored-runtime';
 import { createCommandDispatch } from './core/command-registry';
-import {
-  getCandidateEditorApiValue,
-  createEditorExtensionUpdatePortal,
-  getInstalledEditorExtensionApi,
-  getCandidateEditorExtensionApi,
-  prepareInitialEditorExtensionPublication,
-  prepareScopedEditorExtensionPublication,
-  resolveInstalledEditorExtension,
-  setEditorLifecycleErrorSink,
-} from './core/editor-extension';
 import {
   createEditorReadApi,
   createEditorUpdateApi,
 } from './core/editor-lifecycle-api';
 import { createEditorReadRuntime } from './core/editor-read-runtime';
 import {
-  type InternalEditorExtensionRuntime,
+  type InternalPluginPublicationEntry,
+  type InternalPluginRuntime,
   type InternalEditorRuntime,
   type InternalEditorSnapshotRuntime,
   type InternalEditorTransactionRuntime,
@@ -30,18 +22,20 @@ import {
   type InternalEditorSchemaApi,
 } from './core/editor-schema';
 import {
-  assertEditorExtensionPublicationInactive,
-  createExtensionRegistry,
-  finalizeExtensionRegistry,
-  getExtensionRegistry,
-  initializeBaseExtensionRegistry,
-  registerEffectTypeInRegistry,
-} from './core/extension-registry';
+  createEditorViewPluginApis,
+  prepareInitialPluginPublication,
+  prepareScopedPluginPublication,
+  setEditorLifecycleErrorSink,
+} from './core/plugin';
 import {
-  assertPublicLocationRoot,
-  assertPublicRootKey,
-  MAIN_ROOT_KEY,
-} from './core/public-root';
+  assertPluginPublicationInactive,
+  createPluginRegistry,
+  finalizePluginRegistry,
+  getPluginRegistry,
+  initializeBasePluginRegistry,
+  registerEffectTypeInRegistry,
+} from './core/plugin-registry';
+import { MAIN_ROOT_KEY } from './core/public-root';
 import {
   getChildren,
   getCurrentSelectionRoot,
@@ -60,6 +54,7 @@ import {
   initializePublicState,
   readEditor,
   repairEditorValue,
+  snapshotInitialDocumentState,
   subscribe,
   subscribeCommit,
   subscribeSource,
@@ -79,19 +74,16 @@ import type {
   DescendantIn,
   Descendant,
   Editor,
-  EditorAnchorApi,
   EditorKeyApi,
   EditorCommit,
-  EditorExtensionReference,
-  EditorExtensionApiMap,
-  EditorExtensionInput,
+  PluginInput,
   EditorSnapshot,
   EditorTransactionSpecBuilder,
   EditorUpdateContext,
   EditorUpdateTransaction,
-  EditorValueFromExtensions,
-  ExtensionsOf,
-  SchemaExtensionsOf,
+  EditorValueFromPlugins,
+  PluginsOf,
+  SchemaPluginsOf,
   Location,
   SnapshotInput,
   ValueOf,
@@ -123,11 +115,11 @@ const armSchemaBootstrap = (editor: AnyEditor) => {
   SCHEMA_BOOTSTRAP_CLEANUPS.set(editor, cleanup);
 };
 
-/** Extension tuple inferred from a `createEditor` options object. */
-export type EditorExtensionsFromOptions<TOptions> = TOptions extends {
-  extensions: infer TExtensions extends readonly unknown[];
+/** Plugin tuple inferred from a `createEditor` options object. */
+export type PluginsFromOptions<TOptions> = TOptions extends {
+  plugins: infer TPlugins extends readonly unknown[];
 }
-  ? TExtensions
+  ? TPlugins
   : readonly [];
 
 type ReadonlyJson<T> = T extends (...args: any[]) => unknown
@@ -164,56 +156,47 @@ type InitialValueFromOptions<TOptions> = TOptions extends {
 
 /** Editor value inferred from installed schema or initial data. */
 export type EditorValueFromOptions<TOptions> = [
-  SchemaExtensionsOf<EditorExtensionsFromOptions<TOptions>>,
+  SchemaPluginsOf<PluginsFromOptions<TOptions>>,
 ] extends [never]
   ? InitialValueFromOptions<TOptions>
-  : EditorValueFromExtensions<EditorExtensionsFromOptions<TOptions>>;
+  : EditorValueFromPlugins<PluginsFromOptions<TOptions>>;
 
 const createEditorId = () => `plite-editor-${(nextEditorId += 1)}`;
 
-const isMergeableApiCapability = (
-  capability: unknown
-): capability is Record<PropertyKey, unknown> =>
-  typeof capability === 'object' &&
-  capability !== null &&
-  !Array.isArray(capability);
-
-const resolveApiCapability = (capabilities: unknown[]) => {
-  if (capabilities.length === 1) {
-    return capabilities[0];
-  }
-
-  if (capabilities.every(isMergeableApiCapability)) {
-    return Object.freeze(Object.assign({}, ...capabilities));
-  }
-
-  return capabilities.at(-1);
-};
-
-const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
+const publishInitialPlugins = <TEditor extends AnyEditor>(
   editor: TEditor,
-  input: EditorExtensionInput,
+  input: PluginInput | readonly InternalPluginPublicationEntry[],
   explicitInitialDocument: boolean,
   options: Readonly<{
     initialize?: (
       transaction: EditorTransactionSpecBuilder<
         ValueOf<TEditor>,
-        ExtensionsOf<TEditor>
+        PluginsOf<TEditor>
       >
     ) => void;
     initialValue?: () => SnapshotInput<ValueOf<TEditor>>;
-  }> = {}
+  }> = {},
+  compiledEntries = false
 ) => {
   if (hasActiveAnchors(editor)) {
     throw new Error(
       'Editor schema initialization requires an editor without active anchors.'
     );
   }
-  const publication = prepareInitialEditorExtensionPublication(
-    editor,
-    input,
-    !explicitInitialDocument
-  );
+  const publication = compiledEntries
+    ? prepareScopedPluginPublication(
+        editor,
+        input as readonly InternalPluginPublicationEntry[],
+        {
+          initialPublication: true,
+          initializeDocument: !explicitInitialDocument,
+        }
+      )
+    : prepareInitialPluginPublication(
+        editor,
+        input as PluginInput,
+        !explicitInitialDocument
+      );
   const initialDocument = getEditorDocumentValue(editor);
   const initialSelection = getLiveSelection(editor);
   const initialSelectionRoot = getCurrentSelectionRoot(editor);
@@ -319,6 +302,7 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
         explicitInitialDocument || !!options.initialValue
       );
     }
+    initializeAuthoredDocument(editor);
     publication.finalize();
     invalidateEditorTransactionSpecs(editor);
   } catch (error) {
@@ -333,7 +317,7 @@ const publishInitialEditorExtensions = <TEditor extends AnyEditor>(
   }
   publication.afterPublish();
 
-  if (getExtensionRegistry(editor).schemaContributions.records.size > 0) {
+  if (getPluginRegistry(editor).schemaContributions.records.size > 0) {
     disarmSchemaBootstrap(editor);
   }
 };
@@ -344,7 +328,7 @@ const assertEditorSchemaBootstrap = (editor: AnyEditor) => {
       'Editor schema initialization requires an editor without an installed schema.'
     );
   }
-  if (getExtensionRegistry(editor).schemaContributions.records.size > 0) {
+  if (getPluginRegistry(editor).schemaContributions.records.size > 0) {
     disarmSchemaBootstrap(editor);
     throw new Error('Editor schema is already initialized.');
   }
@@ -364,14 +348,14 @@ const assertEditorSchemaBootstrap = (editor: AnyEditor) => {
 };
 
 /**
- * Compile extensions against one unchanged raw editor without publishing them.
+ * Compile plugins against one unchanged raw editor without publishing them.
  * API factories and schema validators run; document defaults and activation do not.
  */
 export const compileEditorSchemaContract = (
   editor: AnyEditor,
-  input: EditorExtensionInput
+  input: PluginInput
 ) => {
-  assertEditorExtensionPublicationInactive(editor);
+  assertPluginPublicationInactive(editor);
   const hasDocument = assertEditorSchemaBootstrap(editor);
 
   if (hasDocument || hasActiveAnchors(editor)) {
@@ -379,7 +363,7 @@ export const compileEditorSchemaContract = (
       'Editor schema compilation requires an empty editor without active anchors.'
     );
   }
-  const publication = prepareInitialEditorExtensionPublication(
+  const publication = prepareInitialPluginPublication(
     editor,
     input,
     'schema-contract'
@@ -392,22 +376,47 @@ export const compileEditorSchemaContract = (
   }
 };
 
+/** Compile owner-provided plugin entries without publishing them. @internal */
+export const compileEditorSchemaContractEntries = (
+  editor: AnyEditor,
+  entries: readonly InternalPluginPublicationEntry[]
+) => {
+  assertPluginPublicationInactive(editor);
+  const hasDocument = assertEditorSchemaBootstrap(editor);
+
+  if (hasDocument || hasActiveAnchors(editor)) {
+    throw new Error(
+      'Editor schema compilation requires an empty editor without active anchors.'
+    );
+  }
+  const publication = prepareScopedPluginPublication(editor, entries, {
+    initialPublication: true,
+    validateDocument: false,
+  });
+
+  try {
+    return publication.schemaContract();
+  } finally {
+    publication.rollback();
+  }
+};
+
 /** Replace the derived base schema on one unchanged raw editor. @internal */
-export const initializeEditorExtensions = <TEditor extends AnyEditor>(
+export const initializePlugins = <TEditor extends AnyEditor>(
   editor: TEditor,
-  input: EditorExtensionInput,
+  input: PluginInput,
   options: Readonly<{
     initialize?: (
       transaction: EditorTransactionSpecBuilder<
         ValueOf<TEditor>,
-        ExtensionsOf<TEditor>
+        PluginsOf<TEditor>
       >
     ) => void;
     /** Resolve one post-publication initial value for direct schema adoption. */
     initialValue?: () => SnapshotInput<ValueOf<TEditor>>;
   }> = {}
 ) => {
-  publishInitialEditorExtensions(
+  publishInitialPlugins(
     editor,
     input,
     assertEditorSchemaBootstrap(editor),
@@ -415,46 +424,66 @@ export const initializeEditorExtensions = <TEditor extends AnyEditor>(
   );
 };
 
+/** Publish owner-compiled plugin entries against one unchanged editor. @internal */
+export const initializePluginEntries = <TEditor extends AnyEditor>(
+  editor: TEditor,
+  entries: readonly InternalPluginPublicationEntry[],
+  options: Readonly<{
+    initialize?: (
+      transaction: EditorTransactionSpecBuilder<
+        ValueOf<TEditor>,
+        PluginsOf<TEditor>
+      >
+    ) => void;
+    initialValue?: () => SnapshotInput<ValueOf<TEditor>>;
+  }> = {}
+) => {
+  publishInitialPlugins(
+    editor,
+    entries,
+    assertEditorSchemaBootstrap(editor),
+    options,
+    true
+  );
+};
+
 /**
  * Create a mutable Plite editor with schema, command, query, state, and
- * extension runtime APIs installed.
+ * plugin runtime APIs installed.
  */
 export function createEditor<
   const TOptions extends CreateEditorOptions<any, readonly unknown[]> & {
-    extensions: readonly unknown[];
+    plugins: readonly unknown[];
   },
 >(
   options: TOptions
-): Editor<
-  EditorValueFromOptions<TOptions>,
-  EditorExtensionsFromOptions<TOptions>
->;
+): Editor<EditorValueFromOptions<TOptions>, PluginsFromOptions<TOptions>>;
 
 export function createEditor<
   V extends Value,
-  const TExtensions extends readonly unknown[],
+  const TPlugins extends readonly unknown[],
 >(
-  options: CreateEditorOptions<V, TExtensions> & {
-    extensions: TExtensions;
+  options: CreateEditorOptions<V, TPlugins> & {
+    plugins: TPlugins;
   }
-): Editor<V, TExtensions>;
+): Editor<V, TPlugins>;
 
 export function createEditor<
-  const TOptions extends Omit<CreateEditorOptions<any>, 'extensions'> & {
-    extensions?: never;
+  const TOptions extends Omit<CreateEditorOptions<any>, 'plugins'> & {
+    plugins?: never;
   },
 >(options: TOptions): Editor<EditorValueFromOptions<TOptions>>;
 
 export function createEditor<V extends Value = Value>(
-  options?: Omit<CreateEditorOptions<V>, 'extensions'> & {
-    extensions?: never;
+  options?: Omit<CreateEditorOptions<V>, 'plugins'> & {
+    plugins?: never;
   }
 ): Editor<V>;
 
 export function createEditor<
   V extends Value = Value,
-  const TExtensions extends readonly unknown[] = readonly [],
->(options: CreateEditorOptions<V, TExtensions> = {}): Editor<V, TExtensions> {
+  const TPlugins extends readonly unknown[] = readonly [],
+>(options: CreateEditorOptions<V, TPlugins> = {}): Editor<V, TPlugins> {
   return createEditorImplementation(options);
 }
 
@@ -465,32 +494,28 @@ export function createEditor<
  */
 export const createEditorUnchecked = <
   V extends Value = Value,
-  const TExtensions extends readonly unknown[] = readonly [],
+  const TPlugins extends readonly unknown[] = readonly [],
 >(
-  options: CreateEditorOptions<V, TExtensions> = {}
-): Editor<V, TExtensions> => createEditorImplementation(options);
+  options: CreateEditorOptions<V, TPlugins> = {}
+): Editor<V, TPlugins> => createEditorImplementation(options);
 
 const createEditorImplementation = <
   V extends Value,
-  const TExtensions extends readonly unknown[],
+  const TPlugins extends readonly unknown[],
 >(
-  options: CreateEditorOptions<V, TExtensions>
-): Editor<V, TExtensions> => {
-  let editor!: Editor<V, TExtensions>;
+  options: CreateEditorOptions<V, TPlugins>
+): Editor<V, TPlugins> => {
+  let editor!: Editor<V, TPlugins>;
   const runtimeEditor = () => editor;
   const schema: InternalEditorSchemaApi<V> = createEditorSchema(runtimeEditor);
 
-  const extensionRuntime = {
+  const pluginRuntime = {
     schema,
-    install: (extension, extensionOptions) =>
-      extendEditor(editor, extension, extensionOptions),
-    prepareExtensionPublication: (entries, publicationOptions) =>
-      prepareScopedEditorExtensionPublication(
-        editor,
-        entries,
-        publicationOptions
-      ),
-  } satisfies InternalEditorExtensionRuntime<V>;
+    install: (plugin, pluginOptions) =>
+      extendEditor(editor, plugin, pluginOptions),
+    preparePluginPublication: (entries, publicationOptions) =>
+      prepareScopedPluginPublication(editor, entries, publicationOptions),
+  } satisfies InternalPluginRuntime<V>;
 
   const snapshotRuntime = {
     getChildren: () => getChildren(editor),
@@ -520,145 +545,19 @@ const createEditorImplementation = <
     ) => updateEditor(runtimeBoundaryEditor(), fn, innerOptions),
   } satisfies InternalEditorTransactionRuntime<V>;
 
-  const anchorApi: EditorAnchorApi = (value, anchorOptions) => {
-    assertPublicLocationRoot(value);
-    assertPublicRootKey(anchorOptions.root);
-
-    return createAnchor(editor, value, anchorOptions);
-  };
-  const api = new Proxy(Object.create(null) as Record<string, unknown>, {
-    get(_target, property) {
-      if (typeof property !== 'string') {
-        return undefined;
-      }
-      const candidateValue = getCandidateEditorApiValue(
-        editor as AnyEditor,
-        property
-      );
-
-      if (candidateValue !== undefined) return candidateValue;
-      const apiValues = getExtensionRegistry(editor as AnyEditor).apiGroups.get(
-        property
-      );
-
-      if (!apiValues || apiValues.length === 0) {
-        return undefined;
-      }
-
-      return resolveApiCapability(apiValues);
-    },
-  }) as Editor<V, TExtensions>['api'];
-
-  const extensionPortal = (extension: EditorExtensionReference) => {
-    const resolveValue = (installedApi: EditorExtensionApiMap) => {
-      const capability = installedApi[extension.name];
-
-      if (capability === undefined) {
-        throw new Error(
-          `Editor extension "${extension.name}" does not expose an API.`
-        );
-      }
-
-      return capability;
-    };
-    const createPortal = (
-      requested: EditorExtensionReference,
-      enforceIdentity: boolean
-    ) => {
-      const { name } = requested;
-      const update = createEditorExtensionUpdatePortal(
-        editor as AnyEditor,
-        name,
-        enforceIdentity ? requested : undefined
-      );
-      const assertCurrentDescriptor = () => {
-        if (
-          enforceIdentity &&
-          getCandidateEditorExtensionApi(editor as AnyEditor, requested) ===
-            undefined &&
-          resolveInstalledEditorExtension(editor as AnyEditor, requested) !==
-            requested
-        ) {
-          throw new Error(
-            `Editor extension "${name}" descriptor is no longer installed.`
-          );
-        }
-      };
-
-      return Object.freeze({
-        get api() {
-          const candidateApi = getCandidateEditorExtensionApi(
-            editor as AnyEditor,
-            extension
-          );
-
-          if (candidateApi) return resolveValue(candidateApi);
-
-          assertCurrentDescriptor();
-          const installedApi = getInstalledEditorExtensionApi(
-            editor as AnyEditor,
-            name
-          );
-
-          if (!installedApi) {
-            throw new Error(
-              `Editor extension "${name}" is not installed on this editor.`
-            );
-          }
-
-          return resolveValue(installedApi);
-        },
-        get read() {
-          assertCurrentDescriptor();
-          const capability = Reflect.get(read, name);
-
-          if (capability === undefined) {
-            throw new Error(
-              `Editor extension "${name}" does not expose read methods.`
-            );
-          }
-
-          return capability;
-        },
-        get update() {
-          return update;
-        },
-      });
-    };
-    const candidateApi = getCandidateEditorExtensionApi(
-      editor as AnyEditor,
-      extension
-    );
-
-    if (candidateApi) {
-      return createPortal(extension, true);
-    }
-    const installedExtension = resolveInstalledEditorExtension(
-      editor as AnyEditor,
-      extension
-    );
-
-    if (!installedExtension) {
-      throw new Error(
-        `Editor extension "${extension.name}" is not installed on this editor.`
-      );
-    }
-
-    return createPortal(installedExtension, true);
-  };
-
-  const read = createEditorReadApi<V, TExtensions>((fn) =>
+  const anchorApi = createEditorAnchorApi(() => editor);
+  const read = createEditorReadApi<V, TPlugins>((fn) =>
     withEditorRootChildren(editor, 'main', () => readEditor(editor, fn))
   );
   const key = ((target: Descendant | Location) =>
     withEditorRootChildren(editor, MAIN_ROOT_KEY, () =>
       readEditor(editor, (state) => state.key(target as never))
     )) as EditorKeyApi;
-  const update = createEditorUpdateApi<V, TExtensions>(
+  const update = createEditorUpdateApi<V, TPlugins>(
     (fn, policy) => updateEditor(editor, fn, { tags: policy.tags }),
     {
       hasTxGroup: (groupName) =>
-        getExtensionRegistry(editor).txGroups.has(groupName),
+        getPluginRegistry(editor).txGroups.has(groupName),
       repairValue: () =>
         updateEditor(
           editor,
@@ -672,21 +571,18 @@ const createEditorImplementation = <
     }
   );
 
-  const baseEditor: Editor<V, TExtensions> = {
-    api,
+  const baseEditor: Editor<V, TPlugins> = {
+    api: Object.create(null) as Editor<V, TPlugins>['api'],
     anchor: anchorApi,
     id: options.id ?? createEditorId(),
-    extension: extensionPortal as unknown as Editor<
-      V,
-      TExtensions
-    >['extension'],
+    plugin: undefined as unknown as Editor<V, TPlugins>['plugin'],
     key,
     read,
     subscribe: (listener) => subscribe(editor, listener),
     subscribeCommit: (listener) => subscribeCommit(editor, listener),
     update,
-    install: (extension, extensionOptions) =>
-      extendEditor(editor, extension, extensionOptions),
+    install: (plugin, pluginOptions) =>
+      extendEditor(editor, plugin, pluginOptions),
   };
 
   editor = baseEditor;
@@ -695,7 +591,7 @@ const createEditorImplementation = <
   const readRuntime = createEditorReadRuntime(editor);
 
   const runtime = {
-    ...extensionRuntime,
+    ...pluginRuntime,
     ...readRuntime,
     ...snapshotRuntime,
     ...transactionRuntime,
@@ -703,25 +599,23 @@ const createEditorImplementation = <
 
   setEditorRuntime(editor, runtime);
 
-  const baseRegistry = createExtensionRegistry();
+  const baseRegistry = createPluginRegistry();
 
   registerEffectTypeInRegistry(
     baseRegistry,
     'plite:screen-reader-announcement',
     screenReaderAnnouncementEffect
   );
-  initializeBaseExtensionRegistry(
-    editor,
-    finalizeExtensionRegistry(baseRegistry)
-  );
+  initializeBasePluginRegistry(editor, finalizePluginRegistry(baseRegistry));
+  Object.assign(editor, createEditorViewPluginApis(editor, editor));
   const initialState = initializePublicState(editor, options);
 
   armSchemaBootstrap(editor);
 
-  if (options.extensions) {
-    publishInitialEditorExtensions(
+  if (options.plugins) {
+    publishInitialPlugins(
       editor as AnyEditor,
-      options.extensions as EditorExtensionInput,
+      options.plugins as PluginInput,
       initialState.explicit
     );
   } else {
@@ -735,6 +629,8 @@ const createEditorImplementation = <
     assertSelectionSupported(editor, getLiveSelection(editor), initialDocument);
     schema.assertDocument(initialDocument);
   }
+
+  snapshotInitialDocumentState(editor);
 
   return editor;
 };

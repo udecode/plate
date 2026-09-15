@@ -8,13 +8,13 @@ import {
 } from 'platejs/media';
 import { MediaEmbedPlugin } from 'platejs/media/react';
 import {
-  PlateElement,
+  EditorElement,
   useEditor,
   useEditorFocused,
   useEditorReadOnly,
   useElementSelected,
   usePath,
-  type PlateElementProps,
+  type EditorElementProps,
 } from 'platejs/react';
 import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
@@ -31,7 +31,7 @@ import {
 } from './resize-handle';
 
 export function MediaEmbedElement(
-  props: PlateElementProps<typeof MediaEmbedPlugin>
+  props: EditorElementProps<typeof MediaEmbedPlugin>
 ) {
   const path = usePath();
   const focused = useEditorFocused();
@@ -61,8 +61,8 @@ export function MediaEmbedElement(
 
   return (
     <MediaToolbar plugin={MediaEmbedPlugin} selected={selected}>
-      <PlateElement className="py-2.5" {...props}>
-        <figure className="relative m-0 w-full cursor-default hover:[&_.plite-media-resize-handle]:after:opacity-100">
+      <EditorElement className="py-2.5" {...props}>
+        <figure className="relative m-0 w-full cursor-default hover:[&_.editor-media-resize-handle]:after:opacity-100">
           <div contentEditable={false}>
             <Resizable
               align={textAlign}
@@ -159,7 +159,7 @@ export function MediaEmbedElement(
             {props.children}
           </Caption>
         </figure>
-      </PlateElement>
+      </EditorElement>
     </MediaToolbar>
   );
 }

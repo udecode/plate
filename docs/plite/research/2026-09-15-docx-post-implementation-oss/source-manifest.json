@@ -1,0 +1,215 @@
+{
+  "scope": "documents",
+  "checkedAt": "2026-09-15",
+  "claim": "Pinned local repository trees and selected GitHub issue or pull-request records used for architecture evidence; external suites were not executed.",
+  "githubSearch": {
+    "rawHitsScreened": 70,
+    "recordsDeepRead": 8
+  },
+  "repositories": [
+    {
+      "key": "casualoffice/opendoc",
+      "repo": "CasualOffice/opendoc",
+      "path": "/Users/zbeyens/git/opendoc",
+      "commit": "7a408cf034f3efdc1ed2101c640ce296a6ba4d5b",
+      "tree": "4a9f7e23220ab38d2a29b18f993d62f11521501b",
+      "commitDate": "2026-09-10T01:50:19+05:30",
+      "license": "Apache-2.0",
+      "files": [
+        "crates/casual-doc-io/src/docx.rs",
+        "crates/casual-doc-package/src/limits.rs",
+        "crates/casual-doc-export/src/semantic.rs",
+        "docs/21-PARSER-LIMITS.md",
+        "docs/34-OOXML-FIDELITY-ARCHITECTURE.md"
+      ]
+    },
+    {
+      "key": "truespar/scriptor",
+      "repo": "truespar/scriptor",
+      "path": "/Users/zbeyens/git/scriptor",
+      "commit": "46559bbb1eac15b18335cd19249120393fddd853",
+      "tree": "79fa31aaacb893ce497a9f1f952ca91f145e9635",
+      "commitDate": "2026-09-03T19:37:57+02:00",
+      "license": "MIT OR Apache-2.0",
+      "files": [
+        "docs/passthrough.md",
+        "crates/scriptor-ooxml/src/lib.rs",
+        "crates/scriptor-crdt/src/doc/import.rs",
+        "crates/scriptor-crdt/src/doc/save.rs",
+        "crates/scriptor-crdt/src/doc/lifecycle.rs",
+        "crates/scriptor-crdt/src/model/passthrough.rs",
+        "crates/scriptor-crdt/src/tests/export.rs"
+      ]
+    },
+    {
+      "key": "stella/folio",
+      "repo": "stella/folio",
+      "path": "/Users/zbeyens/git/folio",
+      "commit": "b931cd379bf8eed3a0a3ee31128ee0a72ecce18a",
+      "tree": "ecaa32226a1b31a9eded5e9e5c426a32510c3155",
+      "commitDate": "2026-09-14T16:02:27+02:00",
+      "license": "Apache-2.0",
+      "files": [
+        "packages/core/src/docx/rezip.ts",
+        "packages/core/src/docx/selectiveSave.ts",
+        "packages/core/src/docx/unzip.ts",
+        "packages/core/src/docx/compatibility.ts",
+        "packages/core/src/docx/__tests__/corpusEditRoundtrip.test.ts"
+      ]
+    },
+    {
+      "key": "eigenpal/docx-editor",
+      "repo": "eigenpal/docx-editor",
+      "path": "/Users/zbeyens/git/eigenpal-docx-editor",
+      "commit": "84c46227d4ce4c4098a04dbccc4516578f2ab72d",
+      "tree": "bc473f5e668c9ecd74fc09be8d1dc63c06649868",
+      "commitDate": "2026-09-14T16:48:11-07:00",
+      "license": "Apache-2.0 core; EigenPal Pro Evaluation License for packages/editor-api and packages/pro",
+      "files": [
+        "docs/site/content/core/architecture.mdx",
+        "packages/core/src/contracts/editor.ts",
+        "packages/core/src/store/package/ooxml-package.ts",
+        "packages/core/src/binding/tree-binding.ts"
+      ]
+    },
+    {
+      "key": "kklimuk/docx-cli",
+      "repo": "kklimuk/docx-cli",
+      "path": "/Users/zbeyens/git/docx-cli",
+      "commit": "e528738ed22d1294be7938d7614525b4a585fa56",
+      "tree": "60b4083d037c645c963cbc52a03a6dbf587ffd62",
+      "commitDate": "2026-09-04T16:13:14-07:00",
+      "license": "MIT",
+      "files": [
+        "src/core/ast/document/package.ts",
+        "src/core/ast/document/index.ts"
+      ]
+    },
+    {
+      "key": "ansonlai/docx-redline-js",
+      "repo": "AnsonLai/docx-redline-js",
+      "path": "/Users/zbeyens/git/docx-redline-js",
+      "commit": "616b7f515c44a417f3700b84847ad6be21aeea74",
+      "tree": "67886ef5921c512bde1de90ba6a94ceba20df6ca",
+      "commitDate": "2026-09-14T20:21:44-07:00",
+      "license": "MIT",
+      "files": [
+        "node/docx-document.js",
+        "node/zip-archive.js",
+        "services/document-operation-session.js",
+        "tests/helpers/package-fidelity.mjs"
+      ]
+    },
+    {
+      "key": "dotnet/open-xml-sdk",
+      "repo": "dotnet/Open-XML-SDK",
+      "path": "/Users/zbeyens/git/Open-XML-SDK",
+      "commit": "431ab05cf160248cc3885a4a766026d4f8243792",
+      "tree": "5ba79532bc9171ef759cf3155130aabaa8938de7",
+      "commitDate": "2026-08-18T10:11:23-07:00",
+      "license": "MIT",
+      "files": [
+        "src/DocumentFormat.OpenXml.Framework/Packaging/OpenSettings.cs",
+        "src/DocumentFormat.OpenXml.Framework/OpenXmlUnknownElement.cs",
+        "test/DocumentFormat.OpenXml.Tests/DocxTests01.cs"
+      ]
+    },
+    {
+      "key": "python-openxml/python-docx",
+      "repo": "python-openxml/python-docx",
+      "path": "/Users/zbeyens/git/python-docx",
+      "commit": "e45454602b53e8e572b179ccf1c91093ec9f4ed7",
+      "tree": "23a8d30c586aaf5bfcd6886c1a4c4f158435fe31",
+      "commitDate": "2025-06-16T14:24:39-07:00",
+      "license": "MIT",
+      "files": [
+        "src/docx/opc/pkgreader.py",
+        "src/docx/opc/pkgwriter.py",
+        "src/docx/opc/part.py",
+        "src/docx/opc/package.py"
+      ]
+    }
+  ],
+  "githubRecords": [
+    {
+      "kind": "pr",
+      "repo": "CasualOffice/opendoc",
+      "number": 98,
+      "title": "feat(import,export): opaque part side-table through the semantic writer (P1F-2)",
+      "state": "MERGED",
+      "updatedAt": "2026-07-26T03:11:55Z",
+      "url": "https://github.com/CasualOffice/opendoc/pull/98",
+      "fingerprint": "efac7ba36e2a4ee90695b24f25af44d95d077a9e4c7347bbff340cafd8056e43"
+    },
+    {
+      "kind": "pr",
+      "repo": "stella/folio",
+      "number": 697,
+      "title": "fix: keep every package part a save does not model",
+      "state": "MERGED",
+      "updatedAt": "2026-09-06T04:18:23Z",
+      "url": "https://github.com/stella/folio/pull/697",
+      "fingerprint": "ab1c34e467b289757cb483dc5825e5902dda0d9b2a2a4bfa6bd7e8801b946fab"
+    },
+    {
+      "kind": "pr",
+      "repo": "stella/folio",
+      "number": 795,
+      "title": "fix(core): preserve authored run formatting provenance",
+      "state": "MERGED",
+      "updatedAt": "2026-09-09T20:21:12Z",
+      "url": "https://github.com/stella/folio/pull/795",
+      "fingerprint": "f2b0acf1af7501d7ecbe36555346144cce20ef9c68dec566bb947fcbc327a499"
+    },
+    {
+      "kind": "issue",
+      "repo": "stella/folio",
+      "number": 806,
+      "title": "React: native comment mutations are lost because replaceComments bypasses the state update",
+      "state": "CLOSED",
+      "updatedAt": "2026-09-11T06:44:36Z",
+      "url": "https://github.com/stella/folio/issues/806",
+      "fingerprint": "3270133815ab99ffe52ef4955db400131da848ad431970cc1a5c5cdc8f34266d"
+    },
+    {
+      "kind": "issue",
+      "repo": "eigenpal/docx-editor",
+      "number": 56,
+      "title": "No-op editor save drops page/line breaks and changes a 4-page DOCX to 3 pages",
+      "state": "CLOSED",
+      "updatedAt": "2026-08-29T18:46:53Z",
+      "url": "https://github.com/eigenpal/docx-editor/issues/56",
+      "fingerprint": "57a9b061b4418702fed3f65f2ed84f259856212b20c28bafac36439647346c1e"
+    },
+    {
+      "kind": "issue",
+      "repo": "eigenpal/docx-editor",
+      "number": 70,
+      "title": "Header/footer images are re-emitted as new media parts on every round-trip, growing the file without bound",
+      "state": "CLOSED",
+      "updatedAt": "2026-08-29T18:46:50Z",
+      "url": "https://github.com/eigenpal/docx-editor/issues/70",
+      "fingerprint": "206f080fe0b6a8094aa8671b4182f4d2b41c790eb2b25dd9f5a92cb1b0c96024"
+    },
+    {
+      "kind": "issue",
+      "repo": "eigenpal/docx-editor",
+      "number": 113,
+      "title": "Bug: DOCX round-trip corrupts merge fields and document formatting",
+      "state": "OPEN",
+      "updatedAt": "2026-08-31T06:21:07Z",
+      "url": "https://github.com/eigenpal/docx-editor/issues/113",
+      "fingerprint": "f87200fd367d5e9c4735c21e27844ae3651e60988a8e99f6d65560855dd70dae"
+    },
+    {
+      "kind": "pr",
+      "repo": "eigenpal/docx-editor",
+      "number": 243,
+      "title": "docs: align lossless round-trip claims",
+      "state": "MERGED",
+      "updatedAt": "2026-08-09T13:48:04Z",
+      "url": "https://github.com/eigenpal/docx-editor/pull/243",
+      "fingerprint": "0cce12a15c9b64f6ecb1c680d001e413715fe83b70b50b5b750a257827929605"
+    }
+  ]
+}

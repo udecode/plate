@@ -115,6 +115,34 @@ test('module mocks stay isolated and their JUnit cases survive report merging', 
   assert.match(report, /original value/);
 });
 
+test('runs performance benchmark files in separate processes', (t) => {
+  const cwd = mkdtempSync(path.join(tmpdir(), 'plate-runner-benchmarks-'));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  const runner = fileURLToPath(new URL('test-suite.mjs', import.meta.url));
+  const directory = path.join(cwd, 'benchmarks/editor/benchmarks');
+  mkdirSync(directory, { recursive: true });
+
+  for (const name of ['first', 'second']) {
+    writeFileSync(
+      path.join(directory, `${name}.test.ts`),
+      `import { test } from 'bun:test'; test('${name}', () => console.log('BENCHMARK_PID', process.pid));`
+    );
+  }
+
+  const result = spawnSync('bun', [runner, 'fast'], {
+    cwd,
+    encoding: 'utf-8',
+  });
+  const output = result.stdout + result.stderr;
+  const processIds = [...output.matchAll(/BENCHMARK_PID (\d+)/g)].map(
+    ([, processId]) => processId
+  );
+
+  assert.equal(result.status, 0, output);
+  assert.equal(processIds.length, 2, output);
+  assert.equal(new Set(processIds).size, 2, output);
+});
+
 test('routes tooling slow contracts exclusively through the slow suite', (t) => {
   const fixtureRoot = mkdtempSync(path.join(tmpdir(), 'plate-test-suites-'));
   const toolingRoot = path.join(fixtureRoot, 'tooling/scripts');

@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   defineCommand,
-  defineExtension,
+  definePlugin,
   defineStateField,
   type Element,
   type EditorUpdateTransaction,
@@ -19,11 +19,11 @@ const paragraph = (text: string): Element => ({
   children: [{ text }],
 });
 
-const historyCapability = defineExtension('history', {
+const historyCapability = definePlugin('history', {
   update: () => ({}),
 });
 
-const workflowCapability = defineExtension('workflow', {
+const workflowCapability = definePlugin('workflow', {
   update: ({ tx }) => ({
     direct(text: string) {
       tx.text.insert(text);
@@ -42,7 +42,7 @@ const escapedState = defineStateField({
 describe('update policy contract', () => {
   it('configures one direct update with semantic history policy', () => {
     const editor = createEditor({
-      extensions: [historyCapability] as const,
+      plugins: [historyCapability] as const,
     });
 
     replaceEditorValue(editor, {
@@ -65,7 +65,7 @@ describe('update policy contract', () => {
 
   it('runs a policy-first callback as one atomic commit', () => {
     const editor = createEditor({
-      extensions: [historyCapability] as const,
+      plugins: [historyCapability] as const,
     });
 
     replaceEditorValue(editor, {
@@ -96,7 +96,7 @@ describe('update policy contract', () => {
 
   it('keeps only the last history intent', () => {
     const editor = createEditor({
-      extensions: [historyCapability] as const,
+      plugins: [historyCapability] as const,
     });
 
     replaceEditorValue(editor, {
@@ -121,7 +121,7 @@ describe('update policy contract', () => {
 
   it('lets the active transaction replace history intent and inspect tags', () => {
     const editor = createEditor({
-      extensions: [historyCapability] as const,
+      plugins: [historyCapability] as const,
     });
 
     replaceEditorValue(editor, {
@@ -165,7 +165,7 @@ describe('update policy contract', () => {
         return state.transaction((tx) => tx.text.insert(input.text));
       },
     });
-    const extension = defineExtension('update-policy.command-tag-observer', {
+    const plugin = definePlugin('update-policy.command-tag-observer', {
       commands: ({ around, handle }) => [
         around(command, ({ state, next }) =>
           next.after(state.transaction((tx) => tx.tags.add('command-prefix')))
@@ -180,7 +180,7 @@ describe('update policy contract', () => {
       ],
     });
 
-    const editor = createEditor({ extensions: [extension] as const });
+    const editor = createEditor({ plugins: [plugin] as const });
     replaceEditorValue(editor, {
       children: [paragraph('one')],
       selection: {
@@ -222,7 +222,7 @@ describe('update policy contract', () => {
             policy: Record<string, string>
           ) => typeof editor.update
         )({ history: 'skip' }).text.insert('!'),
-      /requires the history extension/
+      /requires the history plugin/
     );
     assert.equal(editor.read.text.string([]), 'one');
     assert.equal(editor.read.runtime.snapshot().version, version);
@@ -230,7 +230,7 @@ describe('update policy contract', () => {
 
   it('rejects nested public updates and discards the outer draft', () => {
     const editor = createEditor({
-      extensions: [historyCapability] as const,
+      plugins: [historyCapability] as const,
     });
 
     replaceEditorValue(editor, {
@@ -261,10 +261,10 @@ describe('update policy contract', () => {
 
   it('rejects thenable callbacks and disables the escaped transaction', async () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         historyCapability,
         workflowCapability,
-        defineExtension('escaped-state', { stateFields: [escapedState] }),
+        definePlugin('escaped-state', { stateFields: [escapedState] }),
       ] as const,
     });
 
@@ -337,7 +337,7 @@ describe('update policy contract', () => {
 
   it('reuses semantic facades and materialized method paths', () => {
     const editor = createEditor({
-      extensions: [historyCapability] as const,
+      plugins: [historyCapability] as const,
     });
     const taggedPolicy = { tags: ['paste'] } as const;
 
@@ -375,10 +375,7 @@ describe('update policy contract', () => {
 
     removeHistory();
 
-    assert.throws(
-      () => skip.text.insert('!'),
-      /requires the history extension/
-    );
+    assert.throws(() => skip.text.insert('!'), /requires the history plugin/);
     assert.equal(editor.read.text.string([]), 'one');
   });
 
@@ -407,7 +404,7 @@ describe('update policy contract', () => {
 
   it('rejects transaction-only methods from dynamic direct dispatch', () => {
     const editor = createEditor({
-      extensions: [workflowCapability] as const,
+      plugins: [workflowCapability] as const,
     });
 
     replaceEditorValue(editor, {

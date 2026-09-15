@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 import { chromium } from '@playwright/test';
 
-const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
+const repoRoot = fileURLToPath(new URL('../../../..', import.meta.url));
 const port = process.env.PORT ?? '3100';
 const baseUrl =
   process.env.PERSISTENT_SOAK_BASE_URL ??
@@ -18,7 +18,7 @@ const baseUrl =
   `http://localhost:${port}`;
 const targetUrl =
   process.env.PERSISTENT_SOAK_URL ??
-  `${baseUrl.replace(/\/$/, '')}/examples/yjs-hocuspocus`;
+  `${baseUrl.replace(/\/$/, '')}/examples/plite/yjs-hocuspocus`;
 const yjsUrl = process.env.PERSISTENT_SOAK_YJS_URL ?? 'ws://localhost:4444/yjs';
 const yjsPort = Number(new URL(yjsUrl).port || 4444);
 const runId =
@@ -183,7 +183,7 @@ async function startServers() {
   try {
     await waitForPort(yjsPort, '127.0.0.1', 1000);
   } catch {
-    yjsServer = spawn('bun', ['start:yjs'], {
+    yjsServer = spawn(process.execPath, ['tooling/plite/donor/yjs/hocuspocus-server.ts'], {
       cwd: repoRoot,
       env: {
         ...process.env,
@@ -200,7 +200,7 @@ async function startServers() {
   try {
     await waitForUrl(targetUrl, 1000);
   } catch {
-    siteServer = spawn('bun', ['serve'], {
+    siteServer = spawn('node', ['apps/plite/scripts/serve.mjs'], {
       cwd: repoRoot,
       env: {
         ...process.env,
@@ -323,11 +323,11 @@ async function snapshotPeer(peer) {
     const root = document.querySelector('[contenteditable="true"]');
     const blocks = root
       ? Array.from(
-          root.querySelectorAll(':scope > [data-plite-node="element"]')
+          root.querySelectorAll(':scope > [data-editor-node="element"]')
         ).map((el) => ({
-          childElementCount: el.querySelectorAll('[data-plite-node="element"]')
+          childElementCount: el.querySelectorAll('[data-editor-node="element"]')
             .length,
-          path: el.getAttribute('data-plite-path'),
+          path: el.getAttribute('data-editor-path'),
           text: normalize(el.textContent),
         }))
       : [];

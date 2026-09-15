@@ -1,11 +1,11 @@
 import {
-  createPliteBrowserEditorHarness,
-  measurePliteTrustedTyping,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  measureTrustedTyping,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
-const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
+const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 const FRAME_BUDGET_MS = 16.67;
 const MEASURED_TEXT = 'qwertyuiopasdfghjklz';
 const CASES = [
@@ -26,12 +26,12 @@ const percentile = (values: readonly number[], ratio: number) => {
 test.describe('runtime read interaction performance', () => {
   for (const { offset, route } of CASES) {
     test(`${route}: trusted typing burst stays bounded`, async ({ page }) => {
-      const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+      const runtimeErrors = recordBrowserRuntimeErrors(page);
 
       try {
         await page.goto(`/blocks/${route}`, { waitUntil: 'commit' });
         const root = page.locator(EDITOR_ROOT).first();
-        const editor = createPliteBrowserEditorHarness(
+        const editor = createBrowserEditorHarness(
           page,
           `runtime-read-performance:${route}`,
           root
@@ -43,7 +43,7 @@ test.describe('runtime read interaction performance', () => {
         await editor.type('zz');
         const beforeMeasuredBlocks = await editor.get.modelBlockTexts();
 
-        const result = await measurePliteTrustedTyping({
+        const result = await measureTrustedTyping({
           delay: 0,
           page,
           root,

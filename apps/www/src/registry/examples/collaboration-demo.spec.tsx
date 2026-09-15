@@ -1,17 +1,17 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import { render, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
 
 const createPlateEditorMock = mock();
+const collaborationCreateMock = mock((options: any) => ({
+  name: 'yjs',
+  options,
+}));
+const yjsMock = mock((options: any) => ({ name: 'yjs', options }));
 const overlayPositionsMock = mock();
 const EditorContext = React.createContext<any>(null);
-const yjsPluginMock = {
-  configure: (configuration: any) => ({ ...configuration, name: 'yjs' }),
-  extend: () => yjsPluginMock,
-};
-
 let currentOverlayEditor: any;
 let currentPositions: any[] = [];
 let editableRef: React.RefObject<HTMLDivElement | null>;
@@ -19,27 +19,12 @@ let editableRef: React.RefObject<HTMLDivElement | null>;
 mock.module('platejs/react', () => ({
   ...actualCoreReact,
   createEditor: (options: any) => {
-    const yjsPlugin = options.plugins.find(
-      (plugin: any) => plugin?.name === 'yjs'
-    );
     const update = Object.assign(
-      (callback: (tx: any) => void) =>
-        callback({
-          yjs: {
-            connect: () => {},
-            disconnect: () => {},
-            sendCursorData: () => {},
-          },
-        }),
+      (callback: (tx: any) => void) => callback({}),
       {
         history: {
           redo: () => {},
           undo: () => {},
-        },
-        yjs: {
-          connect: () => {},
-          disconnect: () => {},
-          sendCursorData: () => {},
         },
       }
     );
@@ -51,8 +36,17 @@ mock.module('platejs/react', () => ({
       }),
     };
     const editor = {
+      api: {
+        yjs: {
+          admissionStatus: () => ({ state: 'ready' }),
+          clearSelection: mock(),
+          retryImport: mock(),
+          setCursorData: mock(),
+          syncSelection: mock(),
+        },
+      },
       id: options.id,
-      provider: yjsPlugin.initialState.provider,
+      install: mock(() => () => {}),
       read: Object.assign(
         (callback: (value: typeof state) => unknown) => callback(state),
         state
@@ -65,14 +59,22 @@ mock.module('platejs/react', () => ({
 
     return editor;
   },
-  Plate: ({ children, editor }: React.PropsWithChildren<{ editor: any }>) => (
+  EditorRoot: ({
+    children,
+    editor,
+  }: React.PropsWithChildren<{ editor: any }>) => (
     <EditorContext value={editor}>{children}</EditorContext>
   ),
   useEditor: () => React.useContext(EditorContext) ?? currentOverlayEditor,
 }));
 
 mock.module('platejs/yjs/react', () => ({
-  YjsPlugin: yjsPluginMock,
+  YjsPlugin: {
+    require: () => ({
+      map: () => ({ create: collaborationCreateMock }),
+    }),
+  },
+  useYjsAdmissionStatus: () => ({ state: 'ready' }),
   useYjsRemoteCursor: (_editor: unknown, clientId: number) =>
     currentPositions.find((position) => position.clientId === clientId)
       ?.cursor ?? null,
@@ -90,8 +92,10 @@ mock.module('platejs/yjs/react', () => ({
 
     return currentPositions.map((position) => position.clientId);
   },
-  useYjsProviderStatus: (editor: any) => editor.provider.status,
-  useYjsProviderSynced: (editor: any) => editor.provider.synced,
+}));
+
+mock.module('platejs/yjs', () => ({
+  yjs: yjsMock,
 }));
 
 mock.module('@/registry/components/editor/basic-nodes', () => ({
@@ -99,8 +103,21 @@ mock.module('@/registry/components/editor/basic-nodes', () => ({
 }));
 
 mock.module('@/registry/components/editor/editor', () => ({
-  Editor: ({ 'aria-label': ariaLabel }: { 'aria-label': string }) => (
-    <div aria-label={ariaLabel} contentEditable />
+  Editor: ({
+    'aria-busy': ariaBusy,
+    'aria-label': ariaLabel,
+    readOnly,
+  }: {
+    'aria-busy'?: boolean;
+    'aria-label': string;
+    readOnly?: boolean;
+  }) => (
+    <div
+      aria-busy={ariaBusy}
+      aria-label={ariaLabel}
+      contentEditable={!readOnly}
+      data-read-only={readOnly ? '' : undefined}
+    />
   ),
   EditorContainer: ({ children }: React.PropsWithChildren) => (
     <div>{children}</div>
@@ -108,13 +125,15 @@ mock.module('@/registry/components/editor/editor', () => ({
 }));
 
 mock.module('@/registry/components/editor/remote-cursor-overlay', () => ({
-  YjsPlugin: yjsPluginMock,
+  CollaborationPlugin: { create: collaborationCreateMock },
   RemoteCursorOverlay: () => <div data-remote-cursor-overlay="" />,
 }));
 
 describe('CollaborativeEditingDemo', () => {
   beforeEach(() => {
     createPlateEditorMock.mockClear();
+    collaborationCreateMock.mockClear();
+    yjsMock.mockClear();
     overlayPositionsMock.mockClear();
     currentPositions = [];
     currentOverlayEditor = {};
@@ -125,7 +144,7 @@ describe('CollaborativeEditingDemo', () => {
     mock.restore();
   });
 
-  it('creates two independent providers and destroys every room listener', async () => {
+  it('preseeds one central room before binding two independent peers', async () => {
     const { default: CollaborativeEditingDemo } = await import(
       `./collaboration-demo?test=${Math.random().toString(36).slice(2)}`
     );
@@ -137,20 +156,47 @@ describe('CollaborativeEditingDemo', () => {
       ).not.toBeNull();
     });
 
-    expect(createPlateEditorMock).toHaveBeenCalledTimes(2);
+    expect(createPlateEditorMock).toHaveBeenCalledTimes(3);
+    expect(collaborationCreateMock).toHaveBeenCalledTimes(2);
+    expect(yjsMock).toHaveBeenCalledTimes(1);
 
-    const editors = createPlateEditorMock.mock.calls.map((call) => call[1]);
-    const providers = editors.map((editor) => editor.provider);
+    const [adaCall, linCall] = collaborationCreateMock.mock.calls;
+    const seed = yjsMock.mock.calls[0][0];
+    const ada = adaCall[0];
+    const lin = linCall[0];
 
-    expect(editors[0]).not.toBe(editors[1]);
-    expect(providers[0]).not.toBe(providers[1]);
-    expect(providers[0].doc).not.toBe(providers[1].doc);
-    expect(providers[0].listenerCount()).toBeGreaterThan(0);
-    expect(providers[1].listenerCount()).toBeGreaterThan(0);
+    expect(seed.seed).toBe(true);
+    expect(seed.initialReady).toBe(true);
+    expect(seed.awareness).toBeUndefined();
+    expect(ada.seed).toBeUndefined();
+    expect(lin.seed).toBeUndefined();
+    expect(ada.doc).not.toBe(lin.doc);
+    expect(seed.doc).not.toBe(ada.doc);
+    expect(seed.doc).not.toBe(lin.doc);
+    expect(ada.awareness.doc).toBe(ada.doc);
+    expect(lin.awareness.doc).toBe(lin.doc);
     expect(view.container.querySelectorAll('[data-peer]')).toHaveLength(2);
+    expect(
+      view.container.querySelectorAll('[data-admission-status="ready"]')
+    ).toHaveLength(2);
+
+    ada.awareness.setLocalStateField('data', { name: 'Ada' });
+    lin.awareness.setLocalStateField('data', { name: 'Lin' });
+    expect(ada.awareness.getStates().has(202)).toBe(true);
+    expect(lin.awareness.getStates().has(101)).toBe(true);
+
+    const adaCard = view.container.querySelector('[data-peer="ada"]');
+    const connectionButton = () =>
+      adaCard?.querySelector<HTMLButtonElement>('[data-connection-action]');
+
+    fireEvent.click(connectionButton()!);
+    expect(ada.awareness.getStates().has(202)).toBe(false);
+    expect(lin.awareness.getStates().has(101)).toBe(false);
+
+    fireEvent.click(connectionButton()!);
+    expect(ada.awareness.getStates().has(202)).toBe(true);
+    expect(lin.awareness.getStates().has(101)).toBe(true);
     expect(() => view.unmount()).not.toThrow();
-    expect(providers[0].listenerCount()).toBe(0);
-    expect(providers[1].listenerCount()).toBe(0);
   });
 
   it('renders remote carets from focus geometry', async () => {
@@ -188,9 +234,16 @@ describe('CollaborativeEditingDemo', () => {
     ];
 
     const { RemoteCursorOverlay } = await import(
-      `../components/editor/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
+      `../components/editor/remote-cursor-overlay?test=${Math.random()
+        .toString(36)
+        .slice(2)}`
     );
-    const view = render(<RemoteCursorOverlay editableRef={editableRef} />);
+    const view = render(
+      <RemoteCursorOverlay
+        editableRef={editableRef}
+        editor={currentOverlayEditor}
+      />
+    );
     const adaCaret = view.container.querySelector(
       '[data-remote-caret][data-client-id="101"]'
     );
@@ -238,9 +291,16 @@ describe('CollaborativeEditingDemo', () => {
     ];
 
     const { RemoteCursorOverlay } = await import(
-      `../components/editor/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
+      `../components/editor/remote-cursor-overlay?test=${Math.random()
+        .toString(36)
+        .slice(2)}`
     );
-    const view = render(<RemoteCursorOverlay editableRef={editableRef} />);
+    const view = render(
+      <RemoteCursorOverlay
+        editableRef={editableRef}
+        editor={currentOverlayEditor}
+      />
+    );
     const caret = view.container.querySelector(
       '[data-remote-caret][data-client-id="2"]'
     );
@@ -269,9 +329,16 @@ describe('CollaborativeEditingDemo', () => {
     ];
 
     const { RemoteCursorOverlay } = await import(
-      `../components/editor/remote-cursor-overlay?test=${Math.random().toString(36).slice(2)}`
+      `../components/editor/remote-cursor-overlay?test=${Math.random()
+        .toString(36)
+        .slice(2)}`
     );
-    const view = render(<RemoteCursorOverlay editableRef={editableRef} />);
+    const view = render(
+      <RemoteCursorOverlay
+        editableRef={editableRef}
+        editor={currentOverlayEditor}
+      />
+    );
 
     expect(view.container.querySelector('[data-remote-caret]')).toBeNull();
   });

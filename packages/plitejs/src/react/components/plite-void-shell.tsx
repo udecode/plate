@@ -2,7 +2,7 @@ import React, { type ReactNode } from 'react';
 
 import { useEditableDOMHostFact } from '../hooks/use-claim-editable-dom-commit';
 import { recordPliteReactRender } from '../render-profiler';
-import { PliteElement } from './plite-element';
+import { EditorElement } from './plite-element';
 import { PliteSpacer } from './plite-spacer';
 
 const useApplePlatformAfterHydration = () =>
@@ -18,10 +18,10 @@ export const PliteVoidShell = ({
   recordPliteReactRender({ kind: 'void' });
 
   return (
-    <PliteElement draggable isVoid style={{ position: 'relative' }}>
+    <EditorElement draggable isVoid style={{ position: 'relative' }}>
       <div contentEditable={false}>{content}</div>
       <PliteSpacer>{children}</PliteSpacer>
-    </PliteElement>
+    </EditorElement>
   );
 };
 
@@ -37,10 +37,10 @@ export const PliteInlineVoidShell = ({
   recordPliteReactRender({ kind: 'void' });
 
   return (
-    <PliteElement as="span" contentEditable={false} isInline isVoid>
+    <EditorElement as="span" contentEditable={false} isInline isVoid>
       {anchorBeforeContent ? children : null}
       <span contentEditable={false}>{content}</span>
       {anchorBeforeContent ? null : children}
-    </PliteElement>
+    </EditorElement>
   );
 };

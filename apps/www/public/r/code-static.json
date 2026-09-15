@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/code-static.tsx",
-      "content": "import type { BaseCodePlugin } from 'platejs';\nimport { type PliteLeafProps, PliteLeaf } from 'platejs/static';\nimport * as React from 'react';\n\nexport function CodeLeafStatic(props: PliteLeafProps<typeof BaseCodePlugin>) {\n  return (\n    <PliteLeaf\n      {...props}\n      as=\"code\"\n      className=\"rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm whitespace-pre-wrap\"\n    >\n      {props.children}\n    </PliteLeaf>\n  );\n}\n",
+      "content": "import type { BaseCodePlugin } from 'platejs';\nimport { type EditorLeafProps, EditorLeaf } from 'platejs/static';\nimport * as React from 'react';\n\nexport function CodeLeafStatic(props: EditorLeafProps<typeof BaseCodePlugin>) {\n  return (\n    <EditorLeaf\n      {...props}\n      as=\"code\"\n      className=\"rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm whitespace-pre-wrap\"\n    >\n      {props.children}\n    </EditorLeaf>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/code-static.tsx"
     }

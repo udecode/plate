@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import {
-  createPliteBrowserEditorHarness,
+  createBrowserEditorHarness,
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from "@platejs/test/playwright";
 
 test("compiles Plate element and mark descriptors into HTML parsing, rendering, and Markdown clipboard bindings", async ({
@@ -10,14 +10,14 @@ test("compiles Plate element and mark descriptors into HTML parsing, rendering, 
 }, testInfo) => {
   test.skip(testInfo.project.name === "mobile", "Desktop clipboard proof");
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openExample(page, "plite/plate-schema-descriptors", {
       ready: { editor: "visible" },
     });
 
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       "plate-schema-descriptor",
       page.locator("#plate-schema-descriptor-editor")
@@ -53,10 +53,10 @@ test("compiles Plate element and mark descriptors into HTML parsing, rendering, 
     await expect(editor.root.locator("article")).toHaveCount(1);
     await expect(editor.root.locator("strong")).toHaveText("Descriptor proof");
     await expect(editor.root.locator("mark")).toHaveText("Descriptor proof");
-    await expect(editor.root.locator(".plite-fontSize")).toHaveText(
+    await expect(editor.root.locator(".editor-fontSize")).toHaveText(
       "Descriptor proof"
     );
-    await expect(editor.root.locator(".plite-fontSize")).toHaveCSS(
+    await expect(editor.root.locator(".editor-fontSize")).toHaveCSS(
       "font-size",
       "22px"
     );
@@ -70,13 +70,13 @@ test("compiles Plate element and mark descriptors into HTML parsing, rendering, 
 
     expect(payload.types).toEqual(
       expect.arrayContaining([
-        "application/x-plite-fragment",
+        "application/x-editor-fragment",
         "text/html",
         "text/markdown",
         "text/plain",
       ])
     );
-    expect(payload.html).toContain("data-plite-fragment=");
+    expect(payload.html).toContain("data-editor-fragment=");
     expect(payload.markdown).toBe("**Descriptor proof**\n");
     expect(payload.text).toBe("Descriptor proof");
 
@@ -106,14 +106,14 @@ test("projects rich Plate descriptors to standalone HTML while the fragment enve
 }, testInfo) => {
   test.skip(testInfo.project.name === "mobile", "Desktop clipboard proof");
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openExample(page, "plite/plate-schema-descriptors", {
       ready: { editor: "visible" },
     });
 
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       "plate-schema-rich-descriptor",
       page.locator("#plate-schema-descriptor-editor")
@@ -210,13 +210,13 @@ test("projects rich Plate descriptors to standalone HTML while the fragment enve
 
     expect(payload.types).toEqual(
       expect.arrayContaining([
-        "application/x-plite-fragment",
+        "application/x-editor-fragment",
         "text/html",
         "text/plain",
       ])
     );
-    expect(payload.pliteFragment).toBeTruthy();
-    expect(payload.html).toContain("data-plite-fragment=");
+    expect(payload.fragment).toBeTruthy();
+    expect(payload.html).toContain("data-editor-fragment=");
     expect(payload.html).toContain("<strong");
     expect(payload.html).toContain('data-schema-advanced="rich-proof"');
     expect(payload.html).toContain(
@@ -232,9 +232,9 @@ test("projects rich Plate descriptors to standalone HTML while the fragment enve
     expect(payload.html).toContain('data-code-trailing-newlines="1"');
     expect(payload.html).toContain('data-language="typescript"');
     expect(payload.html).toContain("const codec = true;\n");
-    expect(payload.html).toContain('<figure class="plate-image"');
+    expect(payload.html).toContain('<figure class="editor-image"');
     expect(payload.html).toContain('alt="Plate codec image"');
-    expect(payload.html).toContain('<figure class="plate-media-embed"');
+    expect(payload.html).toContain('<figure class="editor-media-embed"');
     expect(payload.html).toContain(
       'src="https://www.youtube.com/embed/M7lc1UVf-VE"'
     );
@@ -242,11 +242,11 @@ test("projects rich Plate descriptors to standalone HTML while the fragment enve
     expect(payload.html).toContain("Media caption");
 
     const standaloneHtml = payload.html.replace(
-      /\sdata-plite-fragment(?:-format)?=(?:"[^"]*"|'[^']*')/g,
+      /\sdata-editor-fragment(?:-format)?=(?:"[^"]*"|'[^']*')/g,
       ""
     );
 
-    expect(standaloneHtml).not.toContain("data-plite-fragment");
+    expect(standaloneHtml).not.toContain("data-editor-fragment");
     expect(standaloneHtml).not.toContain(
       "https://www.youtube.com/watch?v=M7lc1UVf-VE"
     );
@@ -309,14 +309,14 @@ test("projects rich Plate descriptors to standalone HTML while the fragment enve
 test("preserves exact product codec slices across priority, fallback, errors, configuration, and roots", async ({
   page,
 }) => {
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openExample(page, "plite/plate-schema-descriptors", {
       ready: { editor: "visible" },
     });
 
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       "plate-codec-proof",
       page.locator("#plate-schema-descriptor-editor")

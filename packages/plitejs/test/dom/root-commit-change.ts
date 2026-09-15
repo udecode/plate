@@ -16,7 +16,7 @@ const paragraph = (text: string) =>
 describe('root commit handling', () => {
   test('uses change roots for DOM key preservation during sibling-root history replay', () => {
     const editor = createEditor({
-      extensions: [history(), dom()],
+      plugins: [history(), dom()],
       initialValue: {
         children: [paragraph('first'), paragraph('second')],
         roots: { header: [paragraph('header')] },
@@ -48,7 +48,7 @@ describe('root commit handling', () => {
 
   test('clears root view user selection anchors on explicit selection changes', () => {
     const editor = createEditor({
-      extensions: [dom()],
+      plugins: [dom()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },

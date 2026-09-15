@@ -14,7 +14,7 @@ import type {
   AnyPluginBase,
 } from '../lib/plugin/BasePlugin';
 import type { RenderTextProps } from '../lib/types/RenderTextProps';
-import { PliteText } from './components';
+import { EditorText } from './components';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps.internal';
 
 export type PliteRenderText = (
@@ -33,7 +33,7 @@ export const pluginRenderTextStatic = (
       const { component } = plugin;
       const Component =
         component && typeof component !== 'string' ? component : undefined;
-      const Text = Component ?? PliteText;
+      const Text = Component ?? EditorText;
 
       const ctxProps = getRenderNodeStaticProps({
         editor,
@@ -131,6 +131,6 @@ export const pipeRenderTextStatic = (
       props: { attributes, ...props, children } as any,
     });
 
-    return <PliteText {...ctxProps} />;
+    return <EditorText {...ctxProps} />;
   };
 };

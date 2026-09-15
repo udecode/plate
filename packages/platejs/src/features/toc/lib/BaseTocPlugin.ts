@@ -1,11 +1,12 @@
 import {
-  defineBasePlugin,
+  definePlugin,
   NodeApi,
   PLUGINS,
   type DefinitionOf,
   type EditorStateView,
   type NodeKey,
 } from '../../../core';
+import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 
 export type Heading = {
   depth: number;
@@ -18,7 +19,7 @@ export type TocPluginState = {
   queryHeading: ((state: EditorStateView) => Heading[]) | null;
 };
 
-export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
+export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
   codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {
@@ -50,9 +51,10 @@ export const BaseTocPlugin = defineBasePlugin(PLUGINS.toc, {
       if (queryHeading) return queryHeading(state);
 
       const headings: Heading[] = [];
-      const heading = editor.plugin(PLUGINS.heading);
+      const headingDescriptor = getCompiledPlatePlugin(editor, PLUGINS.heading);
 
-      if (!heading.installed) return headings;
+      if (!headingDescriptor) return headings;
+      const heading = editor.plugin(headingDescriptor);
 
       for (const [node] of state.nodes.entries({
         at: [],

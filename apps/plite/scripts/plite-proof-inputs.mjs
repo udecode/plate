@@ -113,6 +113,14 @@ export const browserBuildEntries = [
 
 export const browserPlanEntries = [
   path.join(appRoot, 'tests/plite-browser'),
+  path.join(
+    repoRoot,
+    'docs/plans/artifacts/native-authored-changes/browser-typing-contract.json'
+  ),
+  path.join(
+    repoRoot,
+    'docs/plans/artifacts/native-authored-changes/browser-mounted-contract.json'
+  ),
   path.join(appRoot, 'playwright.config.ts'),
   path.join(appRoot, 'package.json'),
   path.join(appRoot, 'scripts/plite-browser-runner.mjs'),

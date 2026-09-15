@@ -2,6 +2,7 @@ import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Pluggable } from 'unified';
 import type { Node as UnistNode } from 'unist';
 
+import type { AuthoredFormatDiagnostic } from '../../authored';
 import type {
   MarkdownPluginRegistry,
   Descendant,
@@ -81,6 +82,18 @@ export type SerializeMdOptions = {
   withBlockId?: boolean;
 };
 
+export type AuthoredMarkdownResult = Readonly<{
+  data: string;
+  diagnostics: readonly AuthoredFormatDiagnostic[];
+}>;
+
+export type SerializeAuthoredMarkdownOptions = Omit<
+  SerializeMdOptions,
+  'value'
+> & {
+  projection: 'accepted' | 'proposed' | 'review';
+};
+
 export type MarkdownConversionContext = Readonly<{
   isBlock: (node: Descendant) => boolean;
   isInline: (node: Descendant) => boolean;
@@ -116,13 +129,12 @@ export type SerializeMdContext = Readonly<
   };
 
 export type MdRules = Partial<{
-  [K in keyof PlateNodeMap & keyof MdNodeMap]: Nullable<MdNodeParser<K>>;
+  [K in keyof NodeMap & keyof MdNodeMap]: Nullable<MdNodeParser<K>>;
 }> &
   Record<string, Nullable<AnyNodeParser>>;
 
 export type MdNodeParser<
-  K extends keyof PlateNodeMap & keyof MdNodeMap = keyof PlateNodeMap &
-    keyof MdNodeMap,
+  K extends keyof NodeMap & keyof MdNodeMap = keyof NodeMap & keyof MdNodeMap,
 > = {
   mark?: boolean;
   deserialize?(
@@ -130,10 +142,7 @@ export type MdNodeParser<
     deco: MdDecoration,
     options: DeserializeMdContext
   ): Descendant | Descendant[] | undefined;
-  serialize?(
-    slateNode: PlateNodeMap[K],
-    options: SerializeMdContext
-  ): MdRootContent;
+  serialize?(slateNode: NodeMap[K], options: SerializeMdContext): MdRootContent;
 };
 
 type BivariantCallback<TArgs extends readonly unknown[], TResult> = {
@@ -212,7 +221,6 @@ export type StrictMarkdownNodeName =
   | 'paragraph'
   | 'script'
   | 'strikethrough'
-  | 'suggestion'
   | 'table'
   | 'tableCell'
   | 'tableRow'
@@ -224,7 +232,7 @@ export type StrictMarkdownNodeName =
 
 export type MarkdownNodeName = (string & {}) | StrictMarkdownNodeName;
 
-type PlateNodeMap = {
+type NodeMap = {
   [K in StrictMarkdownNodeName]: K extends
     | 'bold'
     | 'break'
@@ -232,7 +240,6 @@ type PlateNodeMap = {
     | 'italic'
     | 'script'
     | 'strikethrough'
-    | 'suggestion'
     | 'text'
     | 'underline'
     ? Text
@@ -310,7 +317,6 @@ type MdNodeMap = {
   underline: MdMdxJsxTextElement;
   comment: MdMdxJsxTextElement;
   script: MdMdxJsxTextElement;
-  suggestion: MdMdxJsxTextElement;
   file: MdMdxJsxFlowElement;
   mediaEmbed: MdMdxJsxFlowElement;
   video: MdMdxJsxFlowElement;

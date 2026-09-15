@@ -6,6 +6,6 @@ describe('getPluginNodeClass', () => {
   });
 
   it('returns the owning plugin class', () => {
-    expect(getPluginNodeClass('paragraph')).toBe('plite-paragraph');
+    expect(getPluginNodeClass('paragraph')).toBe('editor-paragraph');
   });
 });

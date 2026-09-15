@@ -1,7 +1,7 @@
 import {
   BaseParagraphPlugin,
   createEditor as createProductEditor,
-  defineBasePlugin,
+  definePlugin,
   ElementApi,
   PLUGINS,
   schema,
@@ -131,7 +131,7 @@ describe('BaseListPlugin canonical model', () => {
   });
 
   it('keeps single-item toggles inside heading sequence boundaries', () => {
-    const HeadingPlugin = defineBasePlugin(PLUGINS.heading, {
+    const HeadingPlugin = definePlugin(PLUGINS.heading, {
       schema: { element: schema.element.textBlock() },
     });
     const editor = createProductEditor({
@@ -1080,7 +1080,7 @@ describe('BaseListPlugin canonical model', () => {
   });
 
   it('supports configured list target types', () => {
-    const CalloutPlugin = defineBasePlugin('callout', {
+    const CalloutPlugin = definePlugin('callout', {
       schema: {
         element: schema.element.textBlock(),
       },

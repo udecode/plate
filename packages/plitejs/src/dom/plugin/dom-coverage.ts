@@ -3,8 +3,8 @@ import {
   type Point,
   RangeApi,
   type NodeKey,
-  type Path as PlitePath,
-  type Range as PliteRange,
+  type Path as ModelPath,
+  type Range as ModelRange,
 } from '../..';
 import {
   type AnyEditor as EditorType,
@@ -13,7 +13,7 @@ import {
   getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
   getSnapshot,
-} from '../../internal';
+} from '../../interfaces/editor';
 import {
   type DOMElement,
   type DOMPoint,
@@ -25,9 +25,9 @@ import { resolveDOMPointInRoot, resolveDOMRangeInRoot } from './dom-editor';
 import type { DOMEditor as DOMEditorType } from './with-dom';
 
 export const DOM_COVERAGE_BOUNDARY_ATTRIBUTE =
-  'data-plite-dom-coverage-boundary';
+  'data-editor-dom-coverage-boundary';
 export const DOM_COVERAGE_BOUNDARY_EDGE_ATTRIBUTE =
-  'data-plite-dom-coverage-edge';
+  'data-editor-dom-coverage-edge';
 
 /** Mounted state for a model range represented by a DOM coverage boundary. */
 export type DOMCoverageBoundaryState =
@@ -42,28 +42,19 @@ export type DOMCoverageReason =
   | 'external-text'
   | 'app-collapse'
   | 'app-hidden'
-  | 'rendering-staged'
   | 'viewport-virtualization'
-  | 'partial-dom-aggressive'
   | 'runtime-atom';
 
 /** Selection behavior when navigation reaches covered content. */
 export type DOMCoverageSelectionPolicy = 'materialize' | 'skip' | 'model';
 
 /** Clipboard behavior when a copied range crosses covered content. */
-export type DOMCoverageCopyPolicy =
-  | 'model'
-  | 'summary'
-  | 'exclude'
-  | 'materialize';
-
-/** Search ownership for covered content. */
-export type DOMCoverageFindPolicy = 'native' | 'custom';
+export type DOMCoverageCopyPolicy = 'model' | 'exclude';
 
 /** Inclusive path range covered by a boundary. */
 export interface DOMCoveragePathRange {
-  anchor: PlitePath;
-  focus: PlitePath;
+  anchor: ModelPath;
+  focus: ModelPath;
 }
 
 /** Runtime-id range that can be rebased into current paths. */
@@ -82,7 +73,7 @@ export type DOMCoverageBoundaryAnchor =
 export interface DOMCoverageBoundary {
   boundaryId: string;
   ownerNodeKey: NodeKey | null;
-  ownerPath: PlitePath;
+  ownerPath: ModelPath;
   coveredPathRanges: readonly DOMCoveragePathRange[];
   coveredRuntimeRanges: readonly DOMCoverageRuntimeRange[];
   state: DOMCoverageBoundaryState;
@@ -90,7 +81,6 @@ export interface DOMCoverageBoundary {
   anchor: DOMCoverageBoundaryAnchor;
   selectionPolicy: DOMCoverageSelectionPolicy;
   copyPolicy: DOMCoverageCopyPolicy;
-  findPolicy: DOMCoverageFindPolicy;
   version: number;
 }
 
@@ -107,12 +97,12 @@ export type DOMCoverageDOMRangeResult =
   | { domRange: DOMRange; type: 'dom-range' }
   | {
       boundaries: readonly DOMCoverageBoundary[];
-      range: PliteRange;
+      range: ModelRange;
       type: 'boundary-range';
     };
 
 /** DOM-to-Plite point conversion result for native boundary DOM. */
-export type DOMCoveragePlitePointResult =
+export type DOMCoveragePointResult =
   | { point: Point; type: 'plite-point' }
   | {
       boundary: DOMCoverageBoundary;
@@ -153,7 +143,7 @@ export type DOMCoverageMaterializeResult =
 
 /** Context passed to a materialization handler. */
 export type DOMCoverageMaterializeOptions = {
-  range?: PliteRange;
+  range?: ModelRange;
   rangeRole?: DOMCoverageMaterializeRangeRole;
 };
 
@@ -175,9 +165,9 @@ interface DOMCoverageRegistry {
 }
 
 const rebasePathFromOwner = (
-  path: PlitePath,
-  previousOwnerPath: PlitePath,
-  nextOwnerPath: PlitePath
+  path: ModelPath,
+  previousOwnerPath: ModelPath,
+  nextOwnerPath: ModelPath
 ) => {
   if (PathApi.equals(path, previousOwnerPath)) {
     return [...nextOwnerPath];
@@ -228,7 +218,7 @@ const resolveBoundary = (
   };
 };
 
-const pathIsInsideOwner = (path: PlitePath, ownerPath: PlitePath) => {
+const pathIsInsideOwner = (path: ModelPath, ownerPath: ModelPath) => {
   if (ownerPath.length === 0) {
     return true;
   }
@@ -251,7 +241,7 @@ const resolveRuntimePath = (editor: EditorType, nodeKey: NodeKey) => {
 const resolveCoveredPathRanges = (
   editor: EditorType,
   boundary: DOMCoverageBoundary,
-  nextOwnerPath: PlitePath
+  nextOwnerPath: ModelPath
 ): readonly DOMCoveragePathRange[] | null => {
   if (boundary.coveredRuntimeRanges.length > 0) {
     const ranges: DOMCoveragePathRange[] = [];
@@ -287,7 +277,7 @@ const resolveCoveredPathRanges = (
   }));
 };
 
-const comparePathBounds = (path: PlitePath, another: PlitePath) => {
+const comparePathBounds = (path: ModelPath, another: ModelPath) => {
   const comparison = PathApi.compare(path, another);
 
   if (comparison !== 0) {
@@ -318,7 +308,7 @@ const ROOT_KEY_PREFIX = 'root:';
 const ALL_ROOTS_KEY = 'root:*';
 const ROOT_SPAN_INDEX_LIMIT = 128;
 
-const getRootKey = (path: PlitePath) => `${ROOT_KEY_PREFIX}${path[0] ?? ''}`;
+const getRootKey = (path: ModelPath) => `${ROOT_KEY_PREFIX}${path[0] ?? ''}`;
 
 const getRootKeysForPathRange = (range: DOMCoveragePathRange) => {
   const orderedRange = getOrderedPathRange(range);
@@ -470,7 +460,7 @@ const syncRegistryToEditor = (
   return registry;
 };
 
-const pathIsCoveredByRange = (path: PlitePath, range: DOMCoveragePathRange) => {
+const pathIsCoveredByRange = (path: ModelPath, range: DOMCoveragePathRange) => {
   const orderedRange = getOrderedPathRange(range);
   const afterStart = PathApi.compare(path, orderedRange.anchor) >= 0;
   const beforeEnd = PathApi.compare(path, orderedRange.focus) <= 0;
@@ -484,7 +474,7 @@ const boundaryContainsPoint = (boundary: DOMCoverageBoundary, point: Point) =>
   );
 
 const rangeIntersectsBoundary = (
-  range: PliteRange,
+  range: ModelRange,
   boundary: DOMCoverageBoundary
 ) => {
   if (
@@ -594,7 +584,7 @@ export const createDOMCoverageSession = (
     },
 
     /** Return boundaries whose covered ranges intersect a Plite range. */
-    getBoundariesForRange(range: PliteRange): readonly DOMCoverageBoundary[] {
+    getBoundariesForRange(range: ModelRange): readonly DOMCoverageBoundary[] {
       const orderedRange = getOrderedPathRange({
         anchor: range.anchor.path,
         focus: range.focus.path,
@@ -784,7 +774,7 @@ export const createDOMCoverageSession = (
     },
 
     /** Resolve a Plite range to mounted DOM or to covered boundary ranges. */
-    resolveDOMRangeOrBoundary(range: PliteRange): DOMCoverageDOMRangeResult {
+    resolveDOMRangeOrBoundary(range: ModelRange): DOMCoverageDOMRangeResult {
       const boundaries = coverage.getBoundariesForRange(range);
 
       if (boundaries.length > 0) {
@@ -810,14 +800,14 @@ export const createDOMCoverageSession = (
     },
 
     /** Resolve native boundary DOM back to the Plite point it represents. */
-    resolvePlitePointFromBoundary(
+    resolvePointFromBoundary(
       domPoint: DOMPoint
-    ): DOMCoveragePlitePointResult | null {
+    ): DOMCoveragePointResult | null {
       const element = getDOMCoverageElementFromPoint(domPoint);
 
       if (
         !element ||
-        (getRoot && element.closest('[data-plite-editor="true"]') !== getRoot())
+        (getRoot && element.closest('[data-editor="true"]') !== getRoot())
       ) {
         return null;
       }

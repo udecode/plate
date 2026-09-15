@@ -3,7 +3,7 @@ import { hydrateRoot, type Root } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { expect, test, vi } from 'vitest';
 
-import { createEditor, Editable, Plite } from '../../src/react';
+import { createEditor, Editable, EditorRoot } from '../../src/react';
 
 const createFixture = () => {
   const editor = createEditor({
@@ -15,9 +15,9 @@ const createFixture = () => {
     ],
   });
   const renderFixture = () => (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable autoCapitalize="sentences" autoCorrect="on" spellCheck />
-    </Plite>
+    </EditorRoot>
   );
 
   return { editor, fixture: renderFixture(), renderFixture };
@@ -39,7 +39,7 @@ test('Editable hydrates replacement-input attributes before applying mounted-roo
     container.innerHTML = renderToString(fixture);
     document.body.appendChild(container);
 
-    const serverEditable = container.querySelector('[data-plite-editor]');
+    const serverEditable = container.querySelector('[data-editor]');
 
     expect(serverEditable).toHaveAttribute('autocapitalize', 'sentences');
     expect(serverEditable).toHaveAttribute('autocorrect', 'on');
@@ -54,7 +54,7 @@ test('Editable hydrates replacement-input attributes before applying mounted-roo
       await Promise.resolve();
     });
 
-    const hydratedEditable = container.querySelector('[data-plite-editor]');
+    const hydratedEditable = container.querySelector('[data-editor]');
 
     expect(recoverableErrors).toEqual([]);
     expect(consoleErrors).toEqual([]);
@@ -90,10 +90,10 @@ test('Editable hydrates separate editor runtimes without exposing their key scop
     document.body.appendChild(container);
 
     const serverElement = container.querySelector(
-      '[data-plite-node="element"]'
+      '[data-editor-node="element"]'
     );
 
-    expect(serverElement).toHaveAttribute('data-plite-node-key', 'n0');
+    expect(serverElement).toHaveAttribute('data-editor-node-key', 'n0');
 
     await act(async () => {
       root = hydrateRoot(container, client.fixture, {
@@ -105,13 +105,13 @@ test('Editable hydrates separate editor runtimes without exposing their key scop
     });
 
     const clientElement = container.querySelector(
-      '[data-plite-node="element"]'
+      '[data-editor-node="element"]'
     );
 
     expect(recoverableErrors).toEqual([]);
     expect(consoleErrors).toEqual([]);
     expect(clientElement).toHaveAttribute(
-      'data-plite-node-key',
+      'data-editor-node-key',
       client.editor.key([0])
     );
 
@@ -121,8 +121,8 @@ test('Editable hydrates separate editor runtimes without exposing their key scop
     });
 
     expect(
-      container.querySelector('[data-plite-node="element"]')
-    ).toHaveAttribute('data-plite-node-key', client.editor.key([0]));
+      container.querySelector('[data-editor-node="element"]')
+    ).toHaveAttribute('data-editor-node-key', client.editor.key([0]));
   } finally {
     if (root) {
       await act(async () => {
@@ -165,9 +165,9 @@ test('content boundaries hydrate without exposing server runtime key scopes', as
       </div>
     );
     const renderFixture = () => (
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={renderElement} />
-      </Plite>
+      </EditorRoot>
     );
 
     return { editor, fixture: renderFixture(), renderFixture };
@@ -182,11 +182,11 @@ test('content boundaries hydrate without exposing server runtime key scopes', as
     document.body.appendChild(container);
 
     const serverBoundary = container.querySelector(
-      '[data-plite-dom-coverage-boundary]'
+      '[data-editor-dom-coverage-boundary]'
     );
 
     expect(serverBoundary).toHaveAttribute(
-      'data-plite-dom-coverage-boundary',
+      'data-editor-dom-coverage-boundary',
       'content-boundary:n0:children:0:0'
     );
 
@@ -202,9 +202,9 @@ test('content boundaries hydrate without exposing server runtime key scopes', as
     expect(recoverableErrors).toEqual([]);
     expect(consoleErrors).toEqual([]);
     expect(
-      container.querySelector('[data-plite-dom-coverage-boundary]')
+      container.querySelector('[data-editor-dom-coverage-boundary]')
     ).toHaveAttribute(
-      'data-plite-dom-coverage-boundary',
+      'data-editor-dom-coverage-boundary',
       `content-boundary:${client.editor.key([0])}:children:0:0`
     );
 

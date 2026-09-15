@@ -47,7 +47,7 @@ test('caret movement tags the semantic command commit', () => {
   const runtime = new EditableDOMRuntime({ editor });
   const result = applyEditableCaretMovement({
     domPhaseScheduler: runtime.domPhaseScheduler,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
     editor,
     event: createKeyDownEvent('ArrowRight'),
     selection,
@@ -85,7 +85,7 @@ test.each([
     const runtime = new EditableDOMRuntime({ editor });
     const result = applyEditableCaretMovement({
       domPhaseScheduler: runtime.domPhaseScheduler,
-      domStrategyRuntime: null,
+      viewportRuntime: null,
       editor,
       event: createKeyDownEvent(key),
       selection: getEditorLiveSelection(editor),

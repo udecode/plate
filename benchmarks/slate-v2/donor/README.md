@@ -117,7 +117,6 @@ Current artifact owners:
 
 - `tmp/plite-transaction-execution-benchmark.json`
 - `tmp/slate-clipboard-large-payload-benchmark.json`
-- `tmp/slate-react-huge-document-legacy-compare-benchmark.json`
 - `tmp/slate-react-huge-document-cross-editor-benchmark.json`
 - `tmp/slate-react-huge-document-cross-editor-benchmark-*.json`
 - `tmp/slate-react-huge-document-browser-trace-benchmark.json`

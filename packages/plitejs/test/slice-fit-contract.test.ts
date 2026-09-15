@@ -5,7 +5,7 @@ import {
   ContentSlice,
   createEditor,
   defineEditorSchema,
-  defineExtension,
+  definePlugin,
   type Descendant,
   DocumentChange,
   type Element,
@@ -82,7 +82,7 @@ const SliceFitSchema = defineEditorSchema('schema:slice-fit-contract', {
 });
 
 const createSchemaEditor = (initialValue: Element[]) =>
-  createEditor({ extensions: [SliceFitSchema], initialValue });
+  createEditor({ plugins: [SliceFitSchema], initialValue });
 
 const CoveredDeletionSchema = defineEditorSchema(
   'schema:covered-deletion-contract',
@@ -133,7 +133,7 @@ const CoveredDeletionSchema = defineEditorSchema(
 );
 
 const createCoveredDeletionEditor = (initialValue: Element[]) =>
-  createEditor({ extensions: [CoveredDeletionSchema], initialValue });
+  createEditor({ plugins: [CoveredDeletionSchema], initialValue });
 
 const CoveredReplacementSchema = defineEditorSchema(
   'schema:covered-replacement-contract',
@@ -186,7 +186,7 @@ const CoveredReplacementSchema = defineEditorSchema(
 );
 
 const createCoveredReplacementEditor = (initialValue: Element[]) =>
-  createEditor({ extensions: [CoveredReplacementSchema], initialValue });
+  createEditor({ plugins: [CoveredReplacementSchema], initialValue });
 
 const defineMentionSchema = (id: string) =>
   defineEditorSchema('schema:derived', {
@@ -357,7 +357,7 @@ describe('contextual schema slice fitting', () => {
   });
 
   it('keeps compiled context barriers closed across extraction and fitting', () => {
-    const extension = defineEditorSchema('schema:slice-context-barrier', {
+    const plugin = defineEditorSchema('schema:slice-context-barrier', {
       elements: {
         container: {
           content: schema.content.group('block', {
@@ -388,7 +388,7 @@ describe('contextual schema slice fitting', () => {
 
     for (const type of ['preserved', 'isolated']) {
       const source = createEditor({
-        extensions: [extension],
+        plugins: [plugin],
         initialValue: [{ children: [{ text: 'hello' }], type }],
       });
       const slice = source.read.slice.get({
@@ -398,7 +398,7 @@ describe('contextual schema slice fitting', () => {
         },
       });
       const target = createEditor({
-        extensions: [extension],
+        plugins: [plugin],
         initialValue: [paragraph('')],
       });
       const fitted = target.read.slice.fit(slice, {
@@ -420,7 +420,7 @@ describe('contextual schema slice fitting', () => {
     }
 
     const nestedSource = createEditor({
-      extensions: [extension],
+      plugins: [plugin],
       initialValue: [
         {
           children: [{ children: [{ text: 'hello' }], type: 'preserved' }],
@@ -471,7 +471,7 @@ describe('contextual schema slice fitting', () => {
       },
     });
     const target = createEditor({
-      extensions: [extension],
+      plugins: [plugin],
       initialValue: [paragraph('')],
     });
     const fitted = target.read.slice.fit(extracted, {
@@ -529,7 +529,7 @@ describe('contextual schema slice fitting', () => {
   });
 
   it('selects a grammar-valid candidate before one canonical lowering', () => {
-    const extension = defineEditorSchema('schema:bounded-slice-fit-candidate', {
+    const plugin = defineEditorSchema('schema:bounded-slice-fit-candidate', {
       elements: {
         paragraph: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -552,21 +552,21 @@ describe('contextual schema slice fitting', () => {
     });
     const value = { children: [paragraph('left')] };
     const editor = createEditor({
-      extensions: [extension],
+      plugins: [plugin],
       initialValue: value.children,
     });
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     let canonicalized = 0;
     let materialized = 0;
     let fitted: ReturnType<typeof editor.read.slice.fit>;
 
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind !== 'core-time') return;
           if (event.id === 'slice-fit-canonicalize') canonicalized += 1;
@@ -585,7 +585,7 @@ describe('contextual schema slice fitting', () => {
         }
       );
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     assert.ok(fitted);
@@ -660,14 +660,14 @@ describe('contextual schema slice fitting', () => {
       ),
     });
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record: (event: { id: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     const events: string[] = [];
 
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
       record: ({ id }) => events.push(id),
     };
 
@@ -690,7 +690,7 @@ describe('contextual schema slice fitting', () => {
         );
       });
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     assert.equal(events.includes('change-set-local-root-window-decode'), true);
@@ -760,7 +760,7 @@ describe('contextual schema slice fitting', () => {
   });
 
   it('splits an active inline around a closed inline slice', () => {
-    const extension = defineEditorSchema('schema:closed-inline-split', {
+    const plugin = defineEditorSchema('schema:closed-inline-split', {
       elements: {
         link: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -791,7 +791,7 @@ describe('contextual schema slice fitting', () => {
       ],
     };
     const editor = createEditor({
-      extensions: [extension],
+      plugins: [plugin],
       initialValue: value.children,
     });
     const fitted = editor.read.slice.fit(
@@ -824,7 +824,7 @@ describe('contextual schema slice fitting', () => {
   });
 
   it('fits a nested leading spine without consuming its target suffix', () => {
-    const extension = defineEditorSchema('schema:nested-leading-spine', {
+    const plugin = defineEditorSchema('schema:nested-leading-spine', {
       elements: {
         container: {
           content: schema.content.group('block', {
@@ -861,7 +861,7 @@ describe('contextual schema slice fitting', () => {
       ]),
     ]);
     const editor = createEditor({
-      extensions: [extension],
+      plugins: [plugin],
       initialValue: value.children,
     });
     const fitted = editor.read.slice.fit(slice, {
@@ -898,11 +898,11 @@ describe('contextual schema slice fitting', () => {
     const fullInsert = encodeContentSliceContent(slice);
     const editor = createSchemaEditor([paragraph('leftright')]);
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     const events: string[] = [];
     let fitted: ReturnType<typeof editor.read.slice.fit>;
 
@@ -910,7 +910,7 @@ describe('contextual schema slice fitting', () => {
     assert.equal(hasMaterializedDocumentSliceTokens(fullInsert), false);
 
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind === 'core-time') events.push(event.id);
         },
@@ -922,7 +922,7 @@ describe('contextual schema slice fitting', () => {
         },
       });
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     assert.ok(fitted);
@@ -1069,15 +1069,15 @@ describe('contextual schema slice fitting', () => {
     const editor = createSchemaEditor([paragraph('leftright')]);
     const events: string[] = [];
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     let correctionVisits = 0;
 
     editor.install(
-      defineExtension('prepared-open-block-correction', {
+      definePlugin('prepared-open-block-correction', {
         corrections: [
           {
             event: 'content',
@@ -1090,7 +1090,7 @@ describe('contextual schema slice fitting', () => {
     );
 
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind === 'core-time') events.push(event.id);
         },
@@ -1107,7 +1107,7 @@ describe('contextual schema slice fitting', () => {
         );
       });
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     assert.equal(events.includes('transaction-active-change'), true);
@@ -1203,16 +1203,16 @@ describe('contextual schema slice fitting', () => {
     });
     const editor = createSchemaEditor([paragraph('')]);
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     let materialized = 0;
     let fitted: ReturnType<typeof editor.read.slice.fit>;
 
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (
             event.kind === 'core-time' &&
@@ -1229,7 +1229,7 @@ describe('contextual schema slice fitting', () => {
         },
       });
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     assert.ok(fitted);
@@ -1385,14 +1385,14 @@ describe('contextual schema slice fitting', () => {
     const after = change.apply(before);
     const proof = bindCanonicalFitPreparation(prepared.preparation, insert);
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     let proofHits = 0;
     const construct = (candidate: DocumentChange) => {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (
             event.kind === 'core-time' &&
@@ -1424,7 +1424,7 @@ describe('contextual schema slice fitting', () => {
       construct(copiedInsert);
       assert.equal(proofHits, 0);
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
   });
 
@@ -1691,7 +1691,7 @@ describe('contextual schema slice fitting', () => {
     });
     const value = { children: [paragraph('target')] };
     const editor = createEditor({
-      extensions: [wrappingSchema],
+      plugins: [wrappingSchema],
       initialValue: value.children,
     });
     const slice = ContentSlice.closed([
@@ -1760,7 +1760,7 @@ describe('contextual schema slice fitting', () => {
     });
     const value = { children: [paragraph('target')] };
     const editor = createEditor({
-      extensions: [wrappingSchema],
+      plugins: [wrappingSchema],
       initialValue: value.children,
     });
     const fitted = editor.read.slice.fit(
@@ -1819,7 +1819,7 @@ describe('contextual schema slice fitting', () => {
 
   it('composes inline void deletion and fitted reinsertion in one transaction', () => {
     const editor = createEditor({
-      extensions: [defineMentionSchema('inline-void-move-transaction')],
+      plugins: [defineMentionSchema('inline-void-move-transaction')],
       initialValue: [
         paragraph('', [
           { text: 'Create links, mention ' },
@@ -1903,7 +1903,7 @@ describe('contextual schema slice fitting', () => {
       version: 1,
     });
     const editor = createEditor({
-      extensions: [namedSchema],
+      plugins: [namedSchema],
       initialValue: {
         children: [paragraph('body')],
         roots: {
@@ -1961,7 +1961,7 @@ describe('contextual schema slice fitting', () => {
       version: 1,
     });
     const editor = createEditor({
-      extensions: [rootSchema],
+      plugins: [rootSchema],
       initialValue: {
         children: [paragraph('body')],
         roots: {
@@ -1996,7 +1996,7 @@ describe('contextual schema slice fitting', () => {
 
   it('maps external root selections through synthesized wrappers', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:root-fit-selection-provenance', {
           elements: {
             caption: {
@@ -2055,7 +2055,7 @@ describe('contextual schema slice fitting', () => {
   it('retains an initial selection in a wide unchanged root fit', () => {
     const target = 500;
     const editor = createEditor({
-      extensions: [SliceFitSchema],
+      plugins: [SliceFitSchema],
       initialSelection: SelectionApi.text({
         anchor: { offset: 3, path: [target, 0] },
         focus: { offset: 3, path: [target, 0] },
@@ -2073,7 +2073,7 @@ describe('contextual schema slice fitting', () => {
 
   it('maps a selection from a merged text leaf to retained fitted content', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:root-fit-merged-selection-provenance', {
           elements: {
             paragraph: {
@@ -2116,7 +2116,7 @@ describe('contextual schema slice fitting', () => {
 
   it('preserves an inline spacer selected through its adjacent inline', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:root-fit-selected-spacer-provenance', {
           elements: {
             link: {
@@ -2217,7 +2217,7 @@ describe('contextual schema slice fitting', () => {
       type: 'mention',
     });
     const editor = createEditor({
-      extensions: [defineMentionSchema('bounded-inline-void-construction')],
+      plugins: [defineMentionSchema('bounded-inline-void-construction')],
       initialValue: [
         paragraph('', [
           { text: 'before' },
@@ -2275,7 +2275,7 @@ describe('contextual schema slice fitting', () => {
       }
     );
     const editor = createEditor({
-      extensions: [inlineBoundarySchema],
+      plugins: [inlineBoundarySchema],
       initialSelection: {
         anchor: { offset: 1, path: [0, 1, 0] },
         focus: { offset: 1, path: [0, 1, 0] },
@@ -2320,7 +2320,7 @@ describe('contextual schema slice fitting', () => {
       { text: '' },
     ];
     const editor = createEditor({
-      extensions: [defineMentionSchema('bounded-marked-spacer-construction')],
+      plugins: [defineMentionSchema('bounded-marked-spacer-construction')],
       initialValue: [paragraph('', inlineChildren)],
     });
     const before = { children: editor.read.children() };
@@ -2376,7 +2376,7 @@ describe('contextual schema slice fitting', () => {
       }
     );
     const editor = createEditor({
-      extensions: [measuredSchema],
+      plugins: [measuredSchema],
       initialValue: [
         paragraph(
           '',
@@ -2486,7 +2486,7 @@ describe('contextual schema slice fitting', () => {
         paragraph(`line ${index}`)
       );
       const editor = createEditor({
-        extensions: [SliceFitSchema],
+        plugins: [SliceFitSchema],
         initialSelection: SelectionApi.text({
           anchor: { offset: 2, path: [target, 0] },
           focus: { offset: 2, path: [target, 0] },

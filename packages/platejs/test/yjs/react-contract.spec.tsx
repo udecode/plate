@@ -4,27 +4,19 @@ import { after, describe, it } from 'node:test';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import * as Y from 'yjs';
 
-import {
-  FakeAwareness,
-  FakeProvider,
-  type Peer,
-  paragraph,
-  runYjsUpdate,
-} from '../../../plitejs/test/yjs/support/collaboration';
+import { FakeAwareness } from '../../../plitejs/test/yjs/support/provider';
 import type { Range, Value } from '../../src/index';
 import { BaseParagraphPlugin } from '../../src/index';
-import type { Editor as ReactViewEditor } from '../../src/react/core';
-import { createEditor, Plate, PlateContent } from '../../src/react/core';
+import { createEditor, EditorContent, EditorRoot } from '../../src/react/core';
 import {
-  useYjsProviderStatus,
-  useYjsProviderSynced,
+  YjsPlugin,
+  useYjsAdmissionStatus,
   useYjsRemoteCursor,
   useYjsRemoteCursorGeometry,
   useYjsRemoteCursorIds,
 } from '../../src/yjs/react';
-import { YjsPlugin } from '../../src/yjs/react/index';
-import { createYjsReactPeer } from './support/react-collaboration';
 
 const shouldUnregisterHappyDOM = !GlobalRegistrator.isRegistered;
 
@@ -41,10 +33,24 @@ after(() => {
   }
 });
 
+type CursorData = Readonly<{
+  color: string;
+  name: string;
+}>;
+
+class DocumentAwareness extends FakeAwareness {
+  override readonly doc: Y.Doc;
+
+  constructor(doc: Y.Doc, clientId: number) {
+    super(clientId);
+    this.doc = doc;
+  }
+}
+
 const initialValue = (): Value => [
-  paragraph('alpha'),
-  paragraph('beta'),
-  paragraph('gamma'),
+  { children: [{ text: 'alpha' }], type: 'paragraph' },
+  { children: [{ text: 'beta' }], type: 'paragraph' },
+  { children: [{ text: 'gamma' }], type: 'paragraph' },
 ];
 
 const selection = (
@@ -54,6 +60,33 @@ const selection = (
   anchor: { path, offset },
   focus: { path, offset: offset + 2 },
 });
+
+const isCursorData = (value: unknown): value is CursorData =>
+  typeof value === 'object' &&
+  value !== null &&
+  'color' in value &&
+  typeof value.color === 'string' &&
+  'name' in value &&
+  typeof value.name === 'string';
+
+const createFixture = () => {
+  const doc = new Y.Doc();
+  const awareness = new DocumentAwareness(doc, doc.clientID);
+  const Collaboration = YjsPlugin.create({
+    awareness,
+    cursorData: { validate: isCursorData },
+    doc,
+    initialReady: true,
+    seed: true,
+  });
+  const editor = createEditor({
+    initialValue: initialValue(),
+    plugins: [BaseParagraphPlugin, Collaboration],
+    schema: { id: 'plate:yjs-react-contract', version: 1 },
+  });
+
+  return { awareness, Collaboration, doc, editor };
+};
 
 type RenderedView = {
   readonly container: HTMLDivElement;
@@ -80,311 +113,156 @@ const render = (element: React.ReactNode): RenderedView => {
   };
 };
 
-const sendRemoteSelection = (
-  peer: Peer,
-  awareness: FakeAwareness,
-  range: Range,
-  clientId = 101
-): void => {
-  runYjsUpdate(peer, (yjs) => {
-    yjs.sendSelection(range);
-    awareness.setRemoteState(clientId, {
-      data: { color: 'tomato', name: 'Ada' },
-      selection: awareness.getLocalState()?.selection,
-    });
-  });
-};
+describe('platejs/yjs React facade', () => {
+  it('renders and moves remote selections from the factory decoration', () => {
+    const { awareness, Collaboration, doc, editor } = createFixture();
+    const AdmissionProbe = () => {
+      const status = useYjsAdmissionStatus(editor);
 
-void describe('platejs/yjs react contract', () => {
-  void it('rerenders provider status hooks from provider lifecycle events', () => {
-    const provider = new FakeProvider({
-      awarenessClientId: 7,
-      status: 'connecting',
-    });
-    const peer = createYjsReactPeer({
-      children: initialValue(),
-      clientId: 'a',
-      provider,
-    });
+      return <output data-admission={status.state} />;
+    };
+    const view = render(
+      <EditorRoot editor={editor}>
+        <AdmissionProbe />
+        <EditorContent aria-label="Editor" />
+      </EditorRoot>
+    );
+    const portal = editor.plugin(Collaboration);
 
-    const ProviderProbe = ({
-      editor,
-    }: {
-      readonly editor: ReactViewEditor;
-    }): React.ReactElement => {
-      const status = useYjsProviderStatus(editor);
-      const synced = useYjsProviderSynced(editor);
-
-      return (
-        <output>
-          {status ?? 'none'}:{String(synced)}
-        </output>
+    try {
+      assert.equal(
+        view.container
+          .querySelector('[data-admission]')
+          ?.getAttribute('data-admission'),
+        'ready'
       );
-    };
 
-    const view = render(<ProviderProbe editor={peer.editor} />);
-
-    assert.equal(view.container.textContent, 'connecting:false');
-
-    act(() => {
-      provider.emitStatus('connected');
-    });
-    assert.equal(view.container.textContent, 'connected:false');
-
-    act(() => {
-      provider.emitSynced(true);
-    });
-    assert.equal(view.container.textContent, 'connected:true');
-
-    view.unmount();
-    peer.cleanup();
-  });
-
-  void it('rerenders provider status after a Plate update portal disconnect', () => {
-    const provider = new FakeProvider({
-      awarenessClientId: 7,
-      status: 'connected',
-    });
-    const editor = createEditor({
-      initialValue: [{ children: [{ text: 'alpha' }], type: 'paragraph' }],
-      plugins: [
-        BaseParagraphPlugin,
-        YjsPlugin.configure({
-          initialState: { clientId: 'a', provider },
-        }),
-      ],
-      schema: { id: 'plate:yjs-react-contract', version: 1 },
-    });
-
-    const ProviderProbe = (): React.ReactElement => {
-      const status = useYjsProviderStatus(editor);
-
-      return <output>{status ?? 'none'}</output>;
-    };
-
-    const view = render(<ProviderProbe />);
-
-    assert.equal(view.container.textContent, 'connected');
-
-    act(() => {
-      editor.update.yjs.disconnect();
-    });
-
-    assert.equal(view.container.textContent, 'disconnected');
-
-    view.unmount();
-  });
-
-  void it('publishes YjsPlugin selections through its keyed decoration source', () => {
-    const provider = new FakeProvider({
-      awarenessClientId: 101,
-      status: 'connected',
-      synced: true,
-    });
-    const editor = createEditor({
-      initialValue: initialValue(),
-      plugins: [
-        BaseParagraphPlugin,
-        YjsPlugin.configure({
-          initialState: { clientId: 'local', provider },
-        }),
-      ],
-      schema: { id: 'plate:yjs-keyed-decoration', version: 1 },
-    });
-    const view = render(
-      <Plate editor={editor}>
-        <PlateContent aria-label="Editor" />
-      </Plate>
-    );
-
-    act(() => {
-      editor.update.selection.set(selection([0, 0], 1));
-      editor.update.yjs.sendSelection();
-      provider.awareness.setRemoteState(202, {
-        data: { name: 'Ada' },
-        selection: provider.awareness.getLocalState()?.selection,
+      act(() => {
+        editor.update.selection.set(selection([0, 0], 1));
+        portal.api.setCursorData({ color: 'tomato', name: 'Ada' });
+        portal.api.syncSelection();
+        awareness.setRemoteState(
+          202,
+          awareness.getLocalState() ?? { data: null, selection: null }
+        );
       });
-    });
 
-    assert.equal(
-      view.container.querySelector(
-        '[data-remote-selection][data-client-id="202"]'
-      )?.textContent,
-      'lp'
-    );
+      assert.equal(
+        view.container.querySelector(
+          '[data-remote-selection][data-client-id="202"]'
+        )?.textContent,
+        'lp'
+      );
 
-    act(() => {
-      editor.update.selection.set(selection([1, 0], 0));
-      editor.update.yjs.sendSelection();
-      provider.awareness.setRemoteState(202, {
-        data: { name: 'Ada' },
-        selection: provider.awareness.getLocalState()?.selection,
+      act(() => {
+        editor.update.selection.set(selection([1, 0], 0));
+        portal.api.syncSelection();
+        awareness.setRemoteState(
+          202,
+          awareness.getLocalState() ?? { data: null, selection: null }
+        );
       });
-    });
 
-    assert.equal(
-      view.container.querySelector(
-        '[data-remote-selection][data-client-id="202"]'
-      )?.textContent,
-      'be'
-    );
-
-    view.unmount();
+      assert.equal(
+        view.container.querySelector(
+          '[data-remote-selection][data-client-id="202"]'
+        )?.textContent,
+        'be'
+      );
+    } finally {
+      view.unmount();
+      doc.destroy();
+    }
   });
 
-  void it('removes and restores keyed YjsPlugin selections across reconnect', () => {
-    const provider = new FakeProvider({
-      awarenessClientId: 101,
-      status: 'connected',
-      synced: true,
-    });
-    const editor = createEditor({
-      initialValue: initialValue(),
-      plugins: [
-        BaseParagraphPlugin,
-        YjsPlugin.configure({
-          initialState: { clientId: 'local', provider },
-        }),
-      ],
-      schema: { id: 'plate:yjs-keyed-decoration-reconnect', version: 1 },
-    });
-    const view = render(
-      <Plate editor={editor}>
-        <PlateContent aria-label="Editor" />
-      </Plate>
-    );
-
-    act(() => {
-      editor.update.selection.set(selection([0, 0], 1));
-      editor.update.yjs.sendSelection();
-      provider.awareness.setRemoteState(202, {
-        data: { name: 'Ada' },
-        selection: provider.awareness.getLocalState()?.selection,
-      });
-    });
-
-    assert.equal(
-      view.container.querySelectorAll(
-        '[data-remote-selection][data-client-id="202"]'
-      ).length,
-      1
-    );
-
-    act(() => {
-      editor.update.yjs.disconnect();
-    });
-    assert.equal(
-      view.container.querySelectorAll(
-        '[data-remote-selection][data-client-id="202"]'
-      ).length,
-      0
-    );
-
-    act(() => {
-      editor.update.yjs.connect();
-    });
-    assert.equal(
-      view.container.querySelectorAll(
-        '[data-remote-selection][data-client-id="202"]'
-      ).length,
-      1
-    );
-
-    view.unmount();
-  });
-
-  void it('fans remote cursor React updates out by client id', () => {
-    const awareness = new FakeAwareness(3);
-    const peer = createYjsReactPeer({
-      awareness,
-      children: initialValue(),
-      clientId: 'c',
-      numericClientId: 3,
-    });
+  it('keeps explicit-editor cursor hooks typed and keyed by client id', () => {
+    const { awareness, Collaboration, doc, editor } = createFixture();
     const renders = new Map<number, number>();
-
-    const CursorProbe = ({
-      clientId,
-      editor,
-    }: {
-      readonly editor: ReactViewEditor;
-    } & { readonly clientId: number }) => {
+    const Cursor = ({ clientId }: { readonly clientId: number }) => {
       const cursor = useYjsRemoteCursor(editor, clientId);
+      const name: string | undefined = cursor?.data?.name;
 
       renders.set(clientId, (renders.get(clientId) ?? 0) + 1);
 
-      return (
-        <output data-client-id={clientId}>
-          {typeof cursor?.data?.name === 'string' ? cursor.data.name : 'none'}
-        </output>
-      );
+      return <output data-client-id={clientId}>{name ?? 'none'}</output>;
     };
+    const CursorList = () => {
+      const clientIds = useYjsRemoteCursorIds(editor);
 
-    const CursorList = ({ editor }: { readonly editor: ReactViewEditor }) => {
-      const ids = useYjsRemoteCursorIds(editor);
-
-      return ids.map((clientId) => (
-        <CursorProbe clientId={clientId} editor={editor} key={clientId} />
+      return clientIds.map((clientId) => (
+        <Cursor clientId={clientId} key={clientId} />
       ));
     };
+    const view = render(<CursorList />);
+    const portal = editor.plugin(Collaboration);
 
-    const view = render(<CursorList editor={peer.editor} />);
+    try {
+      act(() => {
+        editor.update.selection.set(selection([0, 0], 1));
+        portal.api.setCursorData({ color: 'tomato', name: 'Ada' });
+        portal.api.syncSelection();
+        awareness.setRemoteState(
+          202,
+          awareness.getLocalState() ?? { data: null, selection: null }
+        );
 
-    act(() => {
-      sendRemoteSelection(peer, awareness, selection([0, 0], 1), 101);
-      sendRemoteSelection(peer, awareness, selection([1, 0], 1), 102);
-    });
-
-    const secondRenders = renders.get(102);
-
-    act(() => {
-      awareness.setRemoteState(101, {
-        data: { name: 'Grace' },
-        selection: awareness.getStates().get(101)?.selection,
+        editor.update.selection.set(selection([1, 0], 1));
+        portal.api.setCursorData({ color: 'purple', name: 'Grace' });
+        portal.api.syncSelection();
+        awareness.setRemoteState(
+          303,
+          awareness.getLocalState() ?? { data: null, selection: null }
+        );
       });
-    });
 
-    assert.equal(
-      view.container.querySelector('[data-client-id="101"]')?.textContent,
-      'Grace'
-    );
-    assert.equal(renders.get(102), secondRenders);
+      const graceRenders = renders.get(303);
 
-    view.unmount();
-    peer.cleanup();
+      act(() => {
+        awareness.setRemoteState(202, {
+          ...awareness.getStates().get(202),
+          data: { color: 'red', name: 'Lin' },
+        });
+      });
+
+      assert.equal(
+        view.container.querySelector('[data-client-id="202"]')?.textContent,
+        'Lin'
+      );
+      assert.equal(renders.get(303), graceRenders);
+    } finally {
+      view.unmount();
+      doc.destroy();
+    }
   });
 
-  void it('returns null geometry without the exact mounted Editable', () => {
-    const awareness = new FakeAwareness(5);
-    const peer = createYjsReactPeer({
-      awareness,
-      children: initialValue(),
-      clientId: 'e',
-      numericClientId: 5,
-    });
-
-    const GeometryProbe = ({
-      editor,
-    }: {
-      readonly editor: ReactViewEditor;
-    }) => {
+  it('returns null geometry without the exact mounted editable', () => {
+    const { awareness, Collaboration, doc, editor } = createFixture();
+    const GeometryProbe = () => {
       const editableRef = React.useRef<HTMLDivElement>(null);
-      const geometry = useYjsRemoteCursorGeometry(editor, 101, {
+      const geometry = useYjsRemoteCursorGeometry(editor, 202, {
         editableRef,
       });
 
       return <output>{geometry ? 'measured' : 'none'}</output>;
     };
+    const view = render(<GeometryProbe />);
+    const portal = editor.plugin(Collaboration);
 
-    const view = render(<GeometryProbe editor={peer.editor} />);
+    try {
+      act(() => {
+        editor.update.selection.set(selection([1, 0], 1));
+        portal.api.setCursorData({ color: 'tomato', name: 'Ada' });
+        portal.api.syncSelection();
+        awareness.setRemoteState(
+          202,
+          awareness.getLocalState() ?? { data: null, selection: null }
+        );
+      });
 
-    act(() => {
-      sendRemoteSelection(peer, awareness, selection([1, 0], 1));
-    });
-
-    assert.equal(view.container.textContent, 'none');
-
-    view.unmount();
-    peer.cleanup();
+      assert.equal(view.container.textContent, 'none');
+    } finally {
+      view.unmount();
+      doc.destroy();
+    }
   });
 });

@@ -1,5 +1,5 @@
 ---
-description: Verify Plate and Plite package APIs, editor routes, CLI outputs, docs and registry artifacts through existing runners and real browser/native controls. Collect exact source, host, action and outcome evidence.
+description: Verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners.
 argument-hint: '[changed surface | package | route | cli | collaboration | browser-tool-issue]'
 name: verify-plate
 metadata:
@@ -112,6 +112,10 @@ Repair only within Task's authority; never use stubs to certify the product.
 
 ## Doctor
 
+For package-resolution or local React corruption signals, use the one-time
+[install recovery](./references/commands.md#local-install-recovery) before
+reopening product diagnosis.
+
 Run `node apps/plite/scripts/inspect-plite-browser.mjs doctor` for read-only
 local artifact freshness using the same checks as the managed builders. It
 reports Node, source identity and stale build inputs without building or
@@ -196,7 +200,7 @@ Read the actual consumer before claiming an external service worked:
   media examples can show local fallback output after an API failure. Remote
   success requires the installed handler, credentials and a real successful
   response; a blob preview or demo stream is insufficient.
-- `/blocks/plate-to-html` reads `public/tailwind.css`; generate it with
+- `/blocks/html-export` reads `public/tailwind.css`; generate it with
   `pnpm --filter www build:tw` when missing. Use Chrome for the download,
   then inspect the saved file. A browser-rendering claim also needs an allowed
   view of that file; record a URL-policy block as a capability gap.
@@ -226,7 +230,7 @@ Capture the action and resulting state, including follow-up input and side
 effects when the claim needs them. Internal setters or model-only assertions
 cannot replace the actual reporter path. A visual claim needs an inspected
 image; a native paint defect uses Regression's classified pixel controls.
-Use the shared `recordPliteBrowserRuntimeErrors` helper for browser errors.
+Use the shared `recordBrowserRuntimeErrors` helper for browser errors.
 Pass `{ strict: true }` when the case requires every console/page error to fail;
 default capture retains the helper's targeted filters and approved ignores.
 Mock only an already isolated external boundary and label what it cannot prove.

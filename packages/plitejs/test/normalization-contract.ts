@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   type Descendant,
   type Editor,
   ElementApi,
@@ -20,7 +20,7 @@ import {
   withTransactionDocumentChangeObserver,
 } from '../src/core/public-state';
 import {
-  getExtensionRegistry as editorGetExtensionRegistry,
+  getPluginRegistry as editorGetPluginRegistry,
   getSnapshot as editorGetSnapshot,
   isEditor as editorIsEditor,
   replace as editorReplace,
@@ -104,21 +104,21 @@ describe('plite normalization contract', () => {
     });
     const profiledIds: string[] = [];
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
 
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind === 'core-time') profiledIds.push(event.id);
         },
       };
       editor.update((tx) => tx.text.insert('!'));
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     assert.equal(profiledIds.includes('transaction-active-change'), false);
@@ -139,12 +139,12 @@ describe('plite normalization contract', () => {
     ]);
   });
 
-  it('runs extension corrections in order before the built-in fallback', () => {
+  it('runs plugin corrections in order before the built-in fallback', () => {
     const editor = createEditor();
     const seen: string[] = [];
 
     editor.install([
-      defineExtension('first-correction', {
+      definePlugin('first-correction', {
         corrections: [
           {
             event: 'content',
@@ -156,7 +156,7 @@ describe('plite normalization contract', () => {
           },
         ],
       }),
-      defineExtension('second-correction', {
+      definePlugin('second-correction', {
         corrections: [
           {
             event: 'content',
@@ -170,7 +170,7 @@ describe('plite normalization contract', () => {
       }),
     ]);
 
-    assert.equal(editorGetExtensionRegistry(editor).corrections.size, 2);
+    assert.equal(editorGetPluginRegistry(editor).corrections.size, 2);
 
     editorReplace(editor, {
       children: [{ type: 'block', children: [] }],
@@ -183,7 +183,7 @@ describe('plite normalization contract', () => {
     assert.deepEqual(seen.slice(0, 2), ['first', 'second']);
   });
 
-  it('runs extension corrections during automatic update closeout', () => {
+  it('runs plugin corrections during automatic update closeout', () => {
     const editor = createEditor({
       initialValue: [
         {
@@ -195,7 +195,7 @@ describe('plite normalization contract', () => {
     });
 
     editor.install(
-      defineExtension('automatic-closeout-correction', {
+      definePlugin('automatic-closeout-correction', {
         corrections: [
           {
             event: 'properties',
@@ -226,7 +226,7 @@ describe('plite normalization contract', () => {
     });
 
     editor.install(
-      defineExtension('shifted-path-correction', {
+      definePlugin('shifted-path-correction', {
         corrections: [
           {
             event: 'properties',
@@ -257,7 +257,7 @@ describe('plite normalization contract', () => {
     assert.equal(editor.read.children()[3]?.invalid, false);
   });
 
-  it('runs extension corrections for directly applied document changes', () => {
+  it('runs plugin corrections for directly applied document changes', () => {
     const initialValue = [
       {
         type: 'paragraph',
@@ -276,7 +276,7 @@ describe('plite normalization contract', () => {
     const editor = createEditor({ initialValue });
 
     editor.install(
-      defineExtension('direct-change-correction', {
+      definePlugin('direct-change-correction', {
         corrections: [
           {
             event: 'properties',
@@ -395,7 +395,7 @@ describe('plite normalization contract', () => {
     let sawPartiallyUnwrappedTree = false;
 
     editor.install(
-      defineExtension('unwrap-correction-spy', {
+      definePlugin('unwrap-correction-spy', {
         schema: defineTestSchema('unwrap-correction-schema', {
           link: { inline: true },
         }).schema,
@@ -449,7 +449,7 @@ describe('plite normalization contract', () => {
     const seen: string[] = [];
 
     editor.install(
-      defineExtension('split-corrections', {
+      definePlugin('split-corrections', {
         corrections: [
           {
             event: 'children',
@@ -506,7 +506,7 @@ describe('plite normalization contract', () => {
     });
 
     editor.install(
-      defineExtension('composed-sparse-correction-proof', {
+      definePlugin('composed-sparse-correction-proof', {
         corrections: [
           {
             event: 'children',
@@ -601,12 +601,12 @@ describe('plite normalization contract', () => {
     assert.equal(throwingCalls, 1);
   });
 
-  it('uses extension-local correction ids for same-lane registration', () => {
+  it('uses plugin-local correction ids for same-lane registration', () => {
     const editor = createEditor();
     const seen: string[] = [];
 
     editor.install([
-      defineExtension('same-lane-a', {
+      definePlugin('same-lane-a', {
         corrections: [
           {
             event: 'content',
@@ -618,7 +618,7 @@ describe('plite normalization contract', () => {
           },
         ],
       }),
-      defineExtension('same-lane-b', {
+      definePlugin('same-lane-b', {
         corrections: [
           {
             event: 'content',
@@ -633,7 +633,7 @@ describe('plite normalization contract', () => {
     ]);
 
     assert.deepEqual(
-      [...editorGetExtensionRegistry(editor).corrections.keys()],
+      [...editorGetPluginRegistry(editor).corrections.keys()],
       ['same-lane-a:corrections.0', 'same-lane-b:corrections.0']
     );
 
@@ -650,7 +650,7 @@ describe('plite normalization contract', () => {
     let rootCalls = 0;
 
     editor.install(
-      defineExtension('layout-correction', {
+      definePlugin('layout-correction', {
         corrections: [
           {
             event: 'children',
@@ -699,7 +699,7 @@ describe('plite normalization contract', () => {
 
   it('preserves installed transaction groups in correction tx', () => {
     let correctionCalls = 0;
-    const listExtension = defineExtension('list', {
+    const listPlugin = definePlugin('list', {
       update({ tx }) {
         return {
           hasInvalid: () =>
@@ -710,7 +710,7 @@ describe('plite normalization contract', () => {
         };
       },
     });
-    const correctionExtension = defineExtension('list-correction', {
+    const correctionPlugin = definePlugin('list-correction', {
       corrections: [
         {
           event: 'properties',
@@ -729,10 +729,10 @@ describe('plite normalization contract', () => {
           },
         },
       ],
-      dependencies: [listExtension] as const,
+      dependencies: [listPlugin] as const,
     });
     const editor = createEditor({
-      extensions: [correctionExtension] as const,
+      plugins: [correctionPlugin] as const,
       initialValue: [
         {
           type: 'paragraph',
@@ -748,12 +748,12 @@ describe('plite normalization contract', () => {
     assert.equal(correctionCalls, 1);
   });
 
-  it('cleans up extension corrections', () => {
+  it('cleans up plugin corrections', () => {
     const editor = createEditor();
     let calls = 0;
 
     const unextend = editor.install(
-      defineExtension('temporary-correction', {
+      definePlugin('temporary-correction', {
         corrections: [
           {
             event: 'content',
@@ -777,7 +777,7 @@ describe('plite normalization contract', () => {
 
     editor.update.value.repair();
 
-    assert.equal(editorGetExtensionRegistry(editor).corrections.size, 0);
+    assert.equal(editorGetPluginRegistry(editor).corrections.size, 0);
     assert.equal(calls, 0);
   });
 
@@ -930,7 +930,7 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
 
     editor.install(
-      defineExtension('cycling-correction', {
+      definePlugin('cycling-correction', {
         corrections: [
           {
             event: 'children',
@@ -973,7 +973,7 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
 
     editor.install(
-      defineExtension('multi-pass-correction', {
+      definePlugin('multi-pass-correction', {
         corrections: [
           {
             event: 'content',
@@ -1026,7 +1026,7 @@ describe('plite normalization contract', () => {
 
   it('converges to the same fixed point across correction registration order', () => {
     const create = (reverse: boolean) => {
-      const contentCorrection = defineExtension('order-independent-content', {
+      const contentCorrection = definePlugin('order-independent-content', {
         corrections: [
           {
             event: 'content',
@@ -1042,26 +1042,23 @@ describe('plite normalization contract', () => {
           },
         ],
       });
-      const propertyCorrection = defineExtension(
-        'order-independent-properties',
-        {
-          corrections: [
-            {
-              event: 'properties',
-              correct({ entry: [node, path], tx }) {
-                if (
-                  path.length === 1 &&
-                  ElementApi.isElement(node) &&
-                  node.type === 'paragraph' &&
-                  node.ready !== true
-                ) {
-                  tx.nodes.set({ ready: true }, { at: path });
-                }
-              },
+      const propertyCorrection = definePlugin('order-independent-properties', {
+        corrections: [
+          {
+            event: 'properties',
+            correct({ entry: [node, path], tx }) {
+              if (
+                path.length === 1 &&
+                ElementApi.isElement(node) &&
+                node.type === 'paragraph' &&
+                node.ready !== true
+              ) {
+                tx.nodes.set({ ready: true }, { at: path });
+              }
             },
-          ],
-        }
-      );
+          },
+        ],
+      });
       const editor = createEditor();
 
       editor.install(
@@ -1093,7 +1090,7 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
 
     editor.install(
-      defineExtension('generated-target-corrections', {
+      definePlugin('generated-target-corrections', {
         corrections: [
           {
             event: 'children',
@@ -1148,7 +1145,7 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
 
     editor.install(
-      defineExtension('parent-cardinality-corrections', {
+      definePlugin('parent-cardinality-corrections', {
         corrections: [
           {
             event: 'properties',
@@ -1213,7 +1210,7 @@ describe('plite normalization contract', () => {
     let rootCalls = 0;
 
     editor.install(
-      defineExtension('root-lifecycle-correction', {
+      definePlugin('root-lifecycle-correction', {
         corrections: [
           {
             event: 'children',
@@ -1254,7 +1251,7 @@ describe('plite normalization contract', () => {
       const editor = createEditor();
 
       editor.install(
-        defineExtension('deterministic-cycle', {
+        definePlugin('deterministic-cycle', {
           corrections: [
             {
               event: 'children',
@@ -1319,7 +1316,7 @@ describe('plite normalization contract', () => {
     });
 
     editor.install(
-      defineExtension('multi-root-correction', {
+      definePlugin('multi-root-correction', {
         corrections: [
           {
             event: 'properties',
@@ -1349,7 +1346,7 @@ describe('plite normalization contract', () => {
     });
 
     editor.install(
-      defineExtension('large-document-target-probe', {
+      definePlugin('large-document-target-probe', {
         corrections: [
           {
             event: 'properties',
@@ -1382,7 +1379,7 @@ describe('plite normalization contract', () => {
       });
 
       editor.install(
-        defineExtension(name, {
+        definePlugin(name, {
           corrections: [
             {
               event: 'content',
@@ -1400,16 +1397,16 @@ describe('plite normalization contract', () => {
     const warm = createCorrectingEditor('warm-runtime-index-probe');
     const profiledIds: string[] = [];
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
 
     void warm.editor.read.runtime.snapshot().index.keyAt([0]);
 
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind === 'core-time') profiledIds.push(event.id);
         },
@@ -1450,7 +1447,7 @@ describe('plite normalization contract', () => {
         0
       );
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
   });
 
@@ -1466,9 +1463,9 @@ describe('plite normalization contract', () => {
     };
     const assertCorrected = <
       V extends Value,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
     >(
-      editor: Editor<V, TExtensions>,
+      editor: Editor<V, TPlugins>,
       node: Element,
       path: readonly number[]
     ) => {
@@ -1539,7 +1536,7 @@ describe('plite normalization contract', () => {
         children: [{ text: value }],
       });
       const editor = createEditor({
-        extensions: [
+        plugins: [
           defineTestSchema(`malformed-fuzz-schema-${seed}`, {
             empty: {
               content: schema.content.text({ default: 'text', min: 1 }),

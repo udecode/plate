@@ -1,9 +1,9 @@
 import type { Range } from '../../../core';
 import { BaseCommentsPlugin } from '../../../features/comments';
-import { RangeApi, toPlatePlugin } from '../../core';
+import { RangeApi, toReactPlugin } from '../../core';
 
 /** Comment data and mapped ranges with interaction for the exact mounted view. */
-export const CommentsPlugin = toPlatePlugin(BaseCommentsPlugin).extend(
+export const CommentsPlugin = toReactPlugin(BaseCommentsPlugin).extend(
   ({ api: commentsApi }) => ({
     api: ({ editor, api }) => ({
       begin: (at: Range | null = editor.read.selection()) =>

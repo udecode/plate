@@ -1,8 +1,8 @@
 import { createEditor } from '../../editor';
-import { defineBasePlugin } from '../../plugin';
-import { DebugPlugin, PlateError } from './DebugPlugin';
+import { definePlugin } from '../../plugin';
+import { DebugPlugin, EditorError } from './DebugPlugin';
 
-const SamplePlugin = defineBasePlugin('sample', {
+const SamplePlugin = definePlugin('sample', {
   api: () => ({
     sampleMethod: () => {},
   }),
@@ -76,15 +76,15 @@ describe('DebugPlugin', () => {
 
     expect(() => {
       editor.plugin(DebugPlugin).api.error('Test error', 'TEST_ERROR');
-    }).toThrow(PlateError);
+    }).toThrow(EditorError);
 
     try {
       editor
         .plugin(DebugPlugin)
         .api.error('Test error', 'TEST_ERROR', { foo: 'bar' });
     } catch (error) {
-      expect(error).toBeInstanceOf(PlateError);
-      if (!(error instanceof PlateError)) throw error;
+      expect(error).toBeInstanceOf(EditorError);
+      if (!(error instanceof EditorError)) throw error;
 
       expect(error.message).toBe('[TEST_ERROR] Test error');
       expect(error.type).toBe('TEST_ERROR');

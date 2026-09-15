@@ -3,12 +3,14 @@
 
 import assert from 'node:assert/strict';
 
+import * as Y from 'yjs';
+
 import { jsxt, type TestEditor } from '#platejs-test-internal';
 
 import type { Element, Value } from '../../../core';
 import { ElementIdPlugin, NodeApi } from '../../../core';
 import type { Editor } from '../../../react/core';
-import { BaseYjsPlugin } from '../../../yjs/react';
+import { YjsPlugin } from '../../../yjs/react';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -160,7 +162,7 @@ describe('BaseTablePlugin prepared paste', () => {
       const data = new DataTransfer();
 
       if (format === 'fragment MIME') {
-        data.setData('application/x-plite-fragment', 'not-valid-base64');
+        data.setData('application/x-editor-fragment', 'not-valid-base64');
         data.setData(
           'text/html',
           '<table><tbody><tr><td>html fallback</td></tr></tbody></table>'
@@ -168,7 +170,7 @@ describe('BaseTablePlugin prepared paste', () => {
       } else {
         data.setData(
           'text/html',
-          '<table data-plite-fragment="not-valid-base64" data-plite-fragment-format="x-plite-fragment"><tbody><tr><td>html fallback</td></tr></tbody></table>'
+          '<table data-editor-fragment="not-valid-base64" data-editor-fragment-format="x-editor-fragment"><tbody><tr><td>html fallback</td></tr></tbody></table>'
         );
       }
       data.setData('text/plain', 'plain fallback');
@@ -211,7 +213,7 @@ describe('BaseTablePlugin prepared paste', () => {
     });
     const data = new DataTransfer();
 
-    data.setData('application/x-plite-fragment', 'not-valid-base64');
+    data.setData('application/x-editor-fragment', 'not-valid-base64');
     data.setData('text/plain', 'plain fallback');
 
     expect(
@@ -272,24 +274,27 @@ describe('BaseTablePlugin prepared paste', () => {
       focus: { offset: 0, path: [0, 0, 0, 0, 0] },
       kind: 'text' as const,
     };
+    const sourceDoc = new Y.Doc();
+    const SourceCollaboration = YjsPlugin.create({
+      doc: sourceDoc,
+      initialReady: true,
+      seed: true,
+    });
     const source = createTestTableEditor({
-      plugins: [
-        ElementIdPlugin,
-        BaseTablePlugin,
-        BaseYjsPlugin.configure({ initialState: { clientId: 'source' } }),
-      ],
+      plugins: [ElementIdPlugin, BaseTablePlugin, SourceCollaboration],
       selection,
       initialValue,
     });
-    const doc = source.extension(BaseYjsPlugin).read.doc();
+    const replayDoc = new Y.Doc();
+
+    Y.applyUpdate(replayDoc, Y.encodeStateAsUpdate(sourceDoc));
+
+    const ReplayCollaboration = YjsPlugin.create({
+      doc: replayDoc,
+      initialReady: true,
+    });
     const replay = createTestTableEditor({
-      plugins: [
-        ElementIdPlugin,
-        BaseTablePlugin,
-        BaseYjsPlugin.configure({
-          initialState: { clientId: 'replay', doc },
-        }),
-      ],
+      plugins: [ElementIdPlugin, BaseTablePlugin, ReplayCollaboration],
       initialValue: [{ children: [{ text: 'local' }], type: 'paragraph' }],
     });
     const pasted = (
@@ -308,7 +313,10 @@ describe('BaseTablePlugin prepared paste', () => {
     ) as Element[];
     let updateCount = 0;
 
-    doc.on('update', () => (updateCount += 1) - 1);
+    sourceDoc.on('update', (update) => {
+      updateCount += 1;
+      Y.applyUpdate(replayDoc, update);
+    });
     expect(source.update.fragment.replace(pasted)).toBe(true);
 
     expect(updateCount).toBe(1);

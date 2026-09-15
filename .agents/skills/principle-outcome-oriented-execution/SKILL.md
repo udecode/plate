@@ -1,9 +1,7 @@
 ---
 name: principle-outcome-oriented-execution
-description: "Apply during planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture; don't preserve smooth intermediate states with throwaway compatibility code."
+description: "Sequence an accepted migration with explicit temporary breakage and a verifiable final state."
 ---
-
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
 
 # Outcome-Oriented Execution
 
@@ -20,4 +18,4 @@ Optimize for the intended, verifiable end state rather than preserving smooth in
 - Use this for planned rewrites and migrations with explicit phase boundaries
 - Declare where temporary breakage is acceptable
 - Keep high-signal checks for actively touched areas while migrating
-- Require full static and runtime verification at plan completion
+- Complete the static and runtime proof required by the acceptance and owning project; repeat only invalidated or failed checks

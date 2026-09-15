@@ -1,9 +1,9 @@
 ---
 name: teach
-description: "Explain a body of work plainly so a person actually understands it. Runs the `how` and `why` skills and weaves what they find into one clear explanation. Use for 'teach me this', 'help me really understand X', 'explain this change or subsystem to me'."
+description: "Explain a body of work through source-grounded behavior and rationale when asked to teach or build understanding."
 ---
 
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
+For platform-specific commands or delegation, read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md). Use the complete domain method below under current project scope and proof requirements.
 
 # Teach
 

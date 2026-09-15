@@ -5,6 +5,10 @@ export const TEST_NODE_FILE_PATTERNS = [
   'apps/plite/scripts/**/*.test.mjs',
 ];
 
+export const TEST_ISOLATED_FILE_PATTERNS = [
+  'benchmarks/editor/benchmarks/*.test.ts',
+];
+
 export const TEST_FILE_PATTERNS = [
   'apps/**/*.spec.{ts,tsx}',
   'apps/**/*.test.{ts,tsx,mts,mjs}',

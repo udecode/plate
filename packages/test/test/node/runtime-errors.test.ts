@@ -4,12 +4,12 @@ import { EventEmitter } from 'node:events';
 
 import type { Page } from '@playwright/test';
 
-import { recordPliteBrowserRuntimeErrors } from '../../src/playwright/runtime-errors';
+import { recordBrowserRuntimeErrors } from '../../src/playwright/runtime-errors';
 
 describe('browser runtime error capture', () => {
   test('strict capture retains every error, supports reset, and detaches listeners', () => {
     const page = new EventEmitter();
-    const recorder = recordPliteBrowserRuntimeErrors(page as unknown as Page, {
+    const recorder = recordBrowserRuntimeErrors(page as unknown as Page, {
       strict: true,
     });
     const ignoredByDefault =
@@ -36,10 +36,9 @@ describe('browser runtime error capture', () => {
   test('default and custom policies keep their console filters and approved ignores', () => {
     for (const patterns of [undefined, ['custom failure']]) {
       const page = new EventEmitter();
-      const recorder = recordPliteBrowserRuntimeErrors(
-        page as unknown as Page,
-        { patterns }
-      );
+      const recorder = recordBrowserRuntimeErrors(page as unknown as Page, {
+        patterns,
+      });
       const matched = patterns ? 'custom failure' : 'Cannot resolve a DOM node';
       for (const text of ['unclassified error', matched]) {
         page.emit('console', { type: () => 'error', text: () => text });

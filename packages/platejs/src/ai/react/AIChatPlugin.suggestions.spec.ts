@@ -1,19 +1,14 @@
-import { getEditorLiveSelection } from '#platejs-test-internal';
-
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  definePlugin,
   createEditorView,
   type Element,
   schema,
-  SelectionApi,
   type TextSelection,
   type Value,
 } from '../../core';
-import { SUGGESTION_TRANSIENT_KEY } from '../../features/suggestion';
 import { MarkdownPlugin } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
-import { SuggestionPlugin } from '../../react/features/suggestion';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
@@ -23,15 +18,15 @@ const createEditor = (
   selection: TextSelection | null = null
 ) => {
   const editor = createProductEditor({
-    plugins: [
-      BaseParagraphPlugin,
-      BaseAIPlugin,
-      MarkdownPlugin,
-      SuggestionPlugin,
-      AIChatPlugin,
-    ],
+    plugins: [BaseParagraphPlugin, BaseAIPlugin, MarkdownPlugin, AIChatPlugin],
+    userId: 'alice',
     selection,
     initialValue: value,
+  });
+
+  editor.api.authored.setView({
+    intent: 'propose',
+    projection: 'markup',
   });
 
   editor.plugin(AIChatPlugin).store.set({
@@ -90,10 +85,76 @@ describe('AIChatPlugin suggestions', () => {
 
     ai.update.applySuggestions('new');
     ai.update.applySuggestions('new text');
-    editor.plugin(BaseAIPlugin).update.undo();
+    const result = ai.update.rejectSuggestions();
 
-    expect(editor.read.value()).toEqual(before);
+    expect(result?.status).toBe('applied');
+    expect(editor.read.value().children).toEqual(before.children);
+    expect(editor.read.text.string([])).toBe('oldtail');
     expect(editor.key([1])).toBe(tailKey);
+  });
+
+  it('cancels only the AI proposal and preserves an independent foreign edit', () => {
+    const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(
+      [
+        ...structuredClone(chatNodes),
+        { children: [{ text: 'tail' }], type: 'paragraph' },
+      ],
+      chatNodes,
+      {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      }
+    );
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.update.applySuggestions('new');
+    Reflect.set(editor.runtime, 'userId', 'bob');
+    editor.api.authored.setView({
+      intent: 'edit',
+      projection: 'accepted',
+    });
+    editor.update.text.insert(' foreign', {
+      at: { offset: 4, path: [1, 0] },
+    });
+
+    const result = ai.api.reset();
+
+    expect(result?.status).toBe('applied');
+    expect(editor.read.text.string([])).toBe('oldtail foreign');
+    expect(editor.read.authored.changes({ status: 'pending' }).items).toEqual(
+      []
+    );
+  });
+
+  it('reports a dependent foreign proposal instead of erasing it on cancel', () => {
+    const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes, {
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.update.applySuggestions('new');
+    const aiChangeId = ai.store.get('_changeId');
+    Reflect.set(editor.runtime, 'userId', 'bob');
+    editor.update.text.insert('!', {
+      at: { offset: 3, path: [0, 0] },
+    });
+
+    const result = ai.api.reset();
+
+    expect(result?.status).toBe('blocked');
+    if (result?.status !== 'blocked') throw new Error('Expected blocked reset');
+    expect(result.ids).toEqual([aiChangeId]);
+    expect(result.dependants).toHaveLength(1);
+    expect(ai.store.get('_changeId')).toBe(aiChangeId);
+    expect(editor.read.text.string([])).toBe('new!');
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(2);
   });
 
   it('stops later chunks when a single-block preview target is deleted', () => {
@@ -136,13 +197,8 @@ describe('AIChatPlugin suggestions', () => {
       .store.get('_replaceNodeKeys');
 
     expect(replacementIds).toHaveLength(2);
-    const selection = getEditorLiveSelection(editor);
-
-    expect(SelectionApi.isNode(selection)).toBe(true);
     expect(
-      SelectionApi.isNode(selection)
-        ? selection.paths.map((path) => editor.key(path))
-        : []
+      editor.read.selection.nodes().map(([node]) => editor.key(node))
     ).toEqual([...replacementIds]);
     expect(replacementIds.every((id) => editor.read.nodes.path(id))).toBe(true);
     expect(editor.read.text.string([])).toContain('next-a');
@@ -275,7 +331,6 @@ describe('AIChatPlugin suggestions', () => {
       [
         ...structuredClone(chatNodes),
         {
-          [SUGGESTION_TRANSIENT_KEY]: true,
           children: [{ text: 'unrelated' }],
           type: 'paragraph',
         },
@@ -292,13 +347,8 @@ describe('AIChatPlugin suggestions', () => {
 
     expect(replacementKeys).toHaveLength(2);
     expect(replacementKeys).not.toContain(unrelatedKey);
-    const selection = getEditorLiveSelection(editor);
-
-    expect(SelectionApi.isNode(selection)).toBe(true);
     expect(
-      SelectionApi.isNode(selection)
-        ? selection.paths.map((path) => editor.key(path))
-        : []
+      editor.read.selection.nodes().map(([node]) => editor.key(node))
     ).toEqual([...replacementKeys]);
   });
 
@@ -333,7 +383,7 @@ describe('AIChatPlugin suggestions', () => {
       { children: [{ text: 'old-a' }], type: 'paragraph' },
       { children: [{ text: 'old-b' }], type: 'paragraph' },
     ];
-    const RootHolderPlugin = defineBasePlugin('aiRootHolder', {
+    const RootHolderPlugin = definePlugin('aiRootHolder', {
       schema: {
         element: {
           blockContent: true,
@@ -355,7 +405,6 @@ describe('AIChatPlugin suggestions', () => {
         BaseParagraphPlugin,
         BaseAIPlugin,
         MarkdownPlugin,
-        SuggestionPlugin,
         AIChatPlugin,
         RootHolderPlugin,
       ],
@@ -374,6 +423,7 @@ describe('AIChatPlugin suggestions', () => {
         ],
         roots: { header: structuredClone(chatNodes) },
       },
+      userId: 'alice',
     });
     editor.plugin(AIChatPlugin).api.submit('edit');
 
@@ -396,7 +446,7 @@ describe('AIChatPlugin suggestions', () => {
       { children: [{ text: 'old-a' }], type: 'paragraph' },
       { children: [{ text: 'old-b' }], type: 'paragraph' },
     ];
-    const RootHolderPlugin = defineBasePlugin('aiReplacementRootHolder', {
+    const RootHolderPlugin = definePlugin('aiReplacementRootHolder', {
       schema: {
         element: {
           blockContent: true,
@@ -427,7 +477,6 @@ describe('AIChatPlugin suggestions', () => {
         BaseParagraphPlugin,
         BaseAIPlugin,
         MarkdownPlugin,
-        SuggestionPlugin,
         AIChatPlugin,
         RootHolderPlugin,
       ],
@@ -440,6 +489,7 @@ describe('AIChatPlugin suggestions', () => {
         children: structuredClone(mainChildren),
         roots: { header: structuredClone(chatNodes) },
       },
+      userId: 'alice',
     });
     const header = createEditorView(editor, { root: 'header' });
 
@@ -453,14 +503,6 @@ describe('AIChatPlugin suggestions', () => {
       })),
       previewValue: [{ children: [{ text: 'new' }], type: 'paragraph' }],
     });
-    editor.update({ history: 'new-batch' }, (tx) => {
-      tx.ai.markBatch();
-      tx.nodes.insert(
-        { [SUGGESTION_TRANSIENT_KEY]: true, text: ' ai' },
-        { at: [1, 1] }
-      );
-    });
-
     editor.plugin(AIChatPlugin).update.replaceSelection({ format: 'none' });
 
     expect(editor.read.children()).toEqual(mainChildren);
@@ -497,7 +539,7 @@ describe('AIChatPlugin suggestions', () => {
     expect(editor.plugin(AIChatPlugin).store.get('previewValue')).toEqual([]);
   });
 
-  it('inserts fragment suggestions and selects transient text for one block', () => {
+  it('stores one native proposal and selects its replacement block', () => {
     const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
     const editor = createEditor(structuredClone(chatNodes), chatNodes, {
       kind: 'text',
@@ -507,21 +549,14 @@ describe('AIChatPlugin suggestions', () => {
 
     editor.plugin(AIChatPlugin).update.applySuggestions('done');
 
-    const transientNodes = editor.read.nodes.toArray({
-      at: [],
-      mode: 'lowest',
-      match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
+    const changeId = editor.plugin(AIChatPlugin).store.get('_changeId');
+    expect(changeId).not.toBeNull();
+    expect(editor.read.authored.change(changeId!)).toMatchObject({
+      authorId: 'alice',
+      status: 'pending',
     });
-    const transientRange = editor.read.ranges.fromEntries(transientNodes);
-
-    if (!transientRange) throw new Error('Expected transient suggestion range');
-
-    expect(
-      editor.read.nodes.some({
-        at: [],
-        match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
-      })
-    ).toBe(true);
-    expect(editor.read.selection()).toEqual(transientRange);
+    expect(editor.read.value().children).toEqual(chatNodes);
+    expect(editor.read.text.string([])).toBe('done');
+    expect(editor.read.selection.nodes()).toHaveLength(1);
   });
 });

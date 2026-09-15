@@ -37,7 +37,7 @@ const createHarness = () => {
   const createRoot = () => {
     const root = dom.window.document.createElement('div');
 
-    root.setAttribute('data-plite-editor', 'true');
+    root.setAttribute('data-editor', 'true');
     dom.window.document.body.append(root);
 
     return root;
@@ -151,8 +151,8 @@ test('DOM input runtime cancels frames, composition, and native repair on root r
   const firstRoot = harness.createRoot();
   const secondRoot = harness.createRoot();
 
-  firstRoot.setAttribute('data-plite-root', 'first');
-  secondRoot.setAttribute('data-plite-root', 'second');
+  firstRoot.setAttribute('data-editor-root', 'first');
+  secondRoot.setAttribute('data-editor-root', 'second');
   harness.runtime.setRoot(firstRoot);
   harness.runtime.connect();
 
@@ -541,8 +541,8 @@ test('DOM root runtime rolls back a failed root activation', () => {
   });
   const scheduled = mock();
 
-  firstRoot.setAttribute('data-plite-editor', 'true');
-  secondRoot.setAttribute('data-plite-editor', 'true');
+  firstRoot.setAttribute('data-editor', 'true');
+  secondRoot.setAttribute('data-editor', 'true');
   dom.window.document.body.append(firstRoot, secondRoot);
   runtime.setRoot(firstRoot);
   runtime.connect();

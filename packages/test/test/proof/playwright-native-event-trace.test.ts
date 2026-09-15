@@ -3,10 +3,10 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
 import {
-  resetPliteBrowserNativeEventTrace,
-  startPliteBrowserNativeEventTrace,
-  stopPliteBrowserNativeEventTrace,
-  takePliteBrowserNativeEventTrace,
+  resetBrowserNativeEventTrace,
+  startBrowserNativeEventTrace,
+  stopBrowserNativeEventTrace,
+  takeBrowserNativeEventTrace,
 } from '../../src/playwright';
 
 const createRootLocator = (root: HTMLElement) =>
@@ -15,19 +15,19 @@ const createRootLocator = (root: HTMLElement) =>
       callback: (root: HTMLElement, arg: A) => T,
       arg: A
     ) => callback(root, arg),
-  }) as Parameters<typeof startPliteBrowserNativeEventTrace>[0];
+  }) as Parameters<typeof startBrowserNativeEventTrace>[0];
 
 const installEditorDOM = () => {
   document.body.innerHTML = `
-    <div data-plite-editor="true">
-      <span data-plite-node="text" data-plite-path="0,0">
-        <span data-plite-string="true">hello</span>
+    <div data-editor="true">
+      <span data-editor-node="text" data-editor-path="0,0">
+        <span data-editor-string="true">hello</span>
       </span>
     </div>
   `;
 
-  const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
-  const text = document.querySelector('[data-plite-string]')!
+  const root = document.querySelector<HTMLElement>('[data-editor]')!;
+  const text = document.querySelector('[data-editor-string]')!
     .firstChild as Text;
 
   return { root, text };
@@ -81,7 +81,7 @@ describe('playwright native event trace', () => {
     const { root, text } = installEditorDOM();
     const locator = createRootLocator(root);
 
-    await startPliteBrowserNativeEventTrace(locator, {
+    await startBrowserNativeEventTrace(locator, {
       events: ['beforeinput', 'input'],
     });
 
@@ -107,7 +107,7 @@ describe('playwright native event trace', () => {
       inputType: 'insertText',
     });
 
-    const trace = await takePliteBrowserNativeEventTrace(locator);
+    const trace = await takeBrowserNativeEventTrace(locator);
 
     expect(trace.anomalies).toEqual([]);
     expect(trace.entries.map((entry) => entry.type)).toEqual([
@@ -132,7 +132,7 @@ describe('playwright native event trace', () => {
     const { root, text } = installEditorDOM();
     const locator = createRootLocator(root);
 
-    await startPliteBrowserNativeEventTrace(locator, {
+    await startBrowserNativeEventTrace(locator, {
       events: ['beforeinput', 'input'],
     });
 
@@ -143,7 +143,7 @@ describe('playwright native event trace', () => {
       inputType: 'insertText',
     });
 
-    const trace = await takePliteBrowserNativeEventTrace(locator);
+    const trace = await takeBrowserNativeEventTrace(locator);
 
     expect(trace.entries.map((entry) => entry.type)).toEqual(['input']);
     expect(trace.anomalies).toEqual([
@@ -158,7 +158,7 @@ describe('playwright native event trace', () => {
     const { root } = installEditorDOM();
     const locator = createRootLocator(root);
 
-    await startPliteBrowserNativeEventTrace(locator, {
+    await startBrowserNativeEventTrace(locator, {
       events: ['beforeinput', 'input'],
     });
     dispatchInputEvent(root, 'beforeinput', {
@@ -166,22 +166,22 @@ describe('playwright native event trace', () => {
       inputType: 'insertText',
     });
 
-    const firstTrace = await takePliteBrowserNativeEventTrace(locator);
+    const firstTrace = await takeBrowserNativeEventTrace(locator);
 
     expect(firstTrace.entries).toHaveLength(1);
 
-    await resetPliteBrowserNativeEventTrace(locator);
-    const resetTrace = await takePliteBrowserNativeEventTrace(locator);
+    await resetBrowserNativeEventTrace(locator);
+    const resetTrace = await takeBrowserNativeEventTrace(locator);
 
     expect(resetTrace.entries).toEqual([]);
 
-    await stopPliteBrowserNativeEventTrace(locator);
+    await stopBrowserNativeEventTrace(locator);
     dispatchInputEvent(root, 'beforeinput', {
       data: 'x',
       inputType: 'insertText',
     });
 
-    const stoppedTrace = await takePliteBrowserNativeEventTrace(locator);
+    const stoppedTrace = await takeBrowserNativeEventTrace(locator);
 
     expect(stoppedTrace.entries).toEqual([]);
   });
@@ -198,7 +198,7 @@ describe('playwright native event trace', () => {
       Number.NaN,
     ]) {
       await expect(
-        startPliteBrowserNativeEventTrace(locator, { maxEntries })
+        startBrowserNativeEventTrace(locator, { maxEntries })
       ).rejects.toThrow();
     }
   });
@@ -207,7 +207,7 @@ describe('playwright native event trace', () => {
     const { root } = installEditorDOM();
     const locator = createRootLocator(root);
 
-    await startPliteBrowserNativeEventTrace(locator, {
+    await startBrowserNativeEventTrace(locator, {
       events: ['beforeinput', 'input'],
       maxEntries: 1,
     });
@@ -220,7 +220,7 @@ describe('playwright native event trace', () => {
       inputType: 'insertText',
     });
 
-    const trace = await takePliteBrowserNativeEventTrace(locator);
+    const trace = await takeBrowserNativeEventTrace(locator);
 
     expect(trace.entries).toEqual([expect.objectContaining({ type: 'input' })]);
   });

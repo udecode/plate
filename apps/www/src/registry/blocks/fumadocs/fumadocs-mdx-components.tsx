@@ -22,18 +22,18 @@ import {
   KeyTable,
   KeyTableItem,
   Steps,
-} from './mdx-plate-components';
+} from './mdx-api-components';
 
 // use this function to get MDX components, you will need it for rendering MDX
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
     ...defaultMdxComponents,
     ...components,
-    ...plateMdxComponents,
+    ...apiMdxComponents,
   };
 }
 
-const plateMdxComponents = {
+const apiMdxComponents = {
   Accordion,
   Accordions,
   API,

@@ -99,7 +99,7 @@ export const fixtureSchema = defineEditorSchema('fixture-schema', {
 const createFixtureEditor = (tagName, attributes, children) => {
   const fixture = createEditorFixture(tagName, {}, children);
   const editor = createEditor({
-    extensions: [fixtureSchema],
+    plugins: [fixtureSchema],
   });
 
   initializeEditorSchemaDocument(editor, { children: fixture.children });

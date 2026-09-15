@@ -12,7 +12,7 @@ import {
 import type { AnyObject } from '../../lib/types/AnyObject';
 import type { Editor } from '../editor';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
+import type { AnyResolvedPlugin } from '../plugin/PlatePlugin';
 
 /**
  * Merge explicitly projected plugin props and extend the class name with the
@@ -44,7 +44,7 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
   editor: Editor;
   props: TProps;
   disableInjectNodeProps?: boolean;
-  plugin?: AnyBasePlugin | AnyResolvedPlatePlugin;
+  plugin?: AnyBasePlugin | AnyResolvedPlugin;
   pluginContext?: AnyObject;
   readOnly?: boolean;
 }) => {

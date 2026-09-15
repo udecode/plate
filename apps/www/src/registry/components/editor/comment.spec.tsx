@@ -10,7 +10,7 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { createEditor, Plate } from 'platejs/react';
+import { createEditor, EditorRoot } from 'platejs/react';
 import * as React from 'react';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -62,9 +62,9 @@ it('renders optional comment subscribers without installing comments', () => {
     return <output>{JSON.stringify({ drafts, visible })}</output>;
   };
   const view = render(
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <Inspector />
-    </Plate>
+    </EditorRoot>
   );
 
   expect(view.container.textContent).toBe('{"drafts":[],"visible":[]}');
@@ -100,14 +100,14 @@ it.each(['empty', 'rejected', 'pending'] as const)(
       },
     ];
     const view = render(
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <CommentComposer
           ariaLabel="Reply"
           initialBody={body}
           onSubmit={submit}
           placeholder="Reply"
         />
-      </Plate>
+      </EditorRoot>
     );
     const textbox = view.getByRole('textbox', { name: 'Reply' });
     const initialText = textbox.textContent;
@@ -116,7 +116,7 @@ it.each(['empty', 'rejected', 'pending'] as const)(
         textbox.focus();
         const selection = document.createRange();
         selection.selectNodeContents(
-          textbox.querySelector('[data-plite-node="text"]')!
+          textbox.querySelector('[data-editor-node="text"]')!
         );
         selection.collapse(false);
         window.getSelection()!.removeAllRanges();
@@ -131,7 +131,7 @@ it.each(['empty', 'rejected', 'pending'] as const)(
         });
       });
       expect(
-        textbox.querySelectorAll('[data-plite-node="element"]')
+        textbox.querySelectorAll('[data-editor-node="element"]')
       ).toHaveLength(1);
       expect(textbox.textContent).toBe(initialText);
       expect(submit).toHaveBeenCalledTimes(outcome === 'empty' ? 0 : 1);

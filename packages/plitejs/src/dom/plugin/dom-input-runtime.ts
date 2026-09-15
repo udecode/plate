@@ -1,5 +1,5 @@
 import type { Range, RootKey } from '../..';
-import { failInvariant } from '../../internal';
+import { failInvariant } from '../../internal/fail-invariant';
 
 type DOMInputEventFamily =
   | 'beforeinput'
@@ -35,7 +35,7 @@ type DOMInputTargetOwner =
   | 'editor'
   | 'internal-control'
   | 'outside-editor'
-  | 'partial-dom'
+  | 'viewport'
   | 'unknown';
 
 type DOMInputSelectionSource =
@@ -44,7 +44,7 @@ type DOMInputSelectionSource =
   | 'dom-current'
   | 'internal-control'
   | 'model-owned'
-  | 'partial-dom-backed'
+  | 'viewport-backed'
   | 'unknown';
 
 type DOMInputSelectionChangeOrigin =
@@ -60,14 +60,14 @@ type DOMInputSelectionPolicy = Readonly<{
     | 'export-model'
     | 'import-dom'
     | 'none'
-    | 'partial-dom'
+    | 'viewport'
     | 'preserve-model';
   reason:
     | 'internal-control'
     | 'model-owned'
     | 'native-selection'
     | 'not-requested'
-    | 'partial-dom-backed'
+    | 'viewport-backed'
     | 'selection-clear'
     | 'unknown-selection';
 }>;
@@ -97,7 +97,7 @@ type DOMInputKernelState =
   | 'idle'
   | 'internal-control'
   | 'model-owned'
-  | 'partial-dom-backed'
+  | 'viewport-backed'
   | 'repairing';
 
 type DOMInputSelectionSourceTransition = Readonly<{
@@ -357,7 +357,9 @@ const describeDOMInputEditingCommand = (command: unknown) => {
       }
 
       return {
-        commandKey: `delete:${value.direction}:${typeof value.unit === 'string' ? value.unit : 'character'}`,
+        commandKey: `delete:${value.direction}:${
+          typeof value.unit === 'string' ? value.unit : 'character'
+        }`,
         kind: 'destructive' as const,
       };
     }
@@ -371,7 +373,9 @@ const describeDOMInputEditingCommand = (command: unknown) => {
     }
     case 'delete-fragment': {
       return {
-        commandKey: `delete-fragment:${typeof value.direction === 'string' ? value.direction : 'selection'}`,
+        commandKey: `delete-fragment:${
+          typeof value.direction === 'string' ? value.direction : 'selection'
+        }`,
         kind: 'destructive' as const,
       };
     }
@@ -414,8 +418,8 @@ export const resolveDOMInputKernelState = (
     case 'model-owned': {
       return 'model-owned';
     }
-    case 'partial-dom-backed': {
-      return 'partial-dom-backed';
+    case 'viewport-backed': {
+      return 'viewport-backed';
     }
     case 'unknown': {
       return 'idle';
@@ -567,8 +571,8 @@ export const resolveDOMInputSelectionPolicy = ({
   if (targetOwner === 'internal-control') {
     return { kind: 'none', reason: 'internal-control' };
   }
-  if (selectionSource === 'partial-dom-backed') {
-    return { kind: 'partial-dom', reason: 'partial-dom-backed' };
+  if (selectionSource === 'viewport-backed') {
+    return { kind: 'viewport', reason: 'viewport-backed' };
   }
   if (eventFamily === 'selectionchange' && ownership === 'native-allowed') {
     return { kind: 'import-dom', reason: 'native-selection' };

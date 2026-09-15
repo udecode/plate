@@ -1,0 +1,528 @@
+{
+  "scope": "documents",
+  "checkedAt": "2026-09-14",
+  "claim": "Selected original-file hashes at exact fetched revisions; not whole-repository or runtime proof.",
+  "repositories": [
+    {
+      "key": "mammoth",
+      "repo": "mwilliamson/mammoth.js",
+      "path": "/Users/zbeyens/git/mammoth.js",
+      "commit": "71fe5daa50f85939efc9ea546ac588c4dba56d4c",
+      "commitDate": "2026-09-12T10:13:22+01:00",
+      "license": "BSD-2-Clause",
+      "signal": "6300 stars; Plate import dependency",
+      "activity": "2026-09-12T09:13:48Z",
+      "freshness": "HEAD matched official master via ls-remote on 2026-09-14",
+      "lead": "semantic-projection",
+      "files": [
+        [
+          "README.md",
+          "1-41;323-340;525-548",
+          "Declared semantic HTML goal, comment-reference conversion and external-file default; declaration only."
+        ],
+        [
+          "lib/docx/body-reader.js",
+          "37-70;267-278;437-461;699-740",
+          "Actual readers unwrap insertions, discard deletions and comment range boundaries; known ignored elements bypass generic warnings."
+        ],
+        [
+          "test/docx/body-reader.tests.js",
+          "1888-1925",
+          "Assertions cover comment references, unknown-element warnings and intentional silent ignores; read, not run."
+        ],
+        [
+          "LICENSE",
+          "1-22",
+          "License conditions read; no copied source."
+        ]
+      ],
+      "fileHashes": {
+        "README.md": "c35813ebd8cc6b8d6f1769242117eb81d958ceef8dc8785ebc58ad780015d430",
+        "lib/docx/body-reader.js": "f1470d5abbd44f60bb15d0e90112de3234de3528e891943d2c9420cd479c5f4c",
+        "test/docx/body-reader.tests.js": "61ef3222ed44e1a77913056cbb5114792da5ff44973f7ec3b05370e4eb418d55",
+        "LICENSE": "6663bbd049205d38a496ccacb412a151980b444627d38de218b3b809aef330f1"
+      },
+      "sourceFingerprint": "bddfcb15e72b4e0966caacaf51a4d54cc8ed64f1827633a23466d586cce14970"
+    },
+    {
+      "key": "html-to-docx",
+      "repo": "TurboDocx/html-to-docx",
+      "path": "/Users/zbeyens/git/html-to-docx",
+      "commit": "571d2e471f005a88b4af74fa5a49154fc8dd7b56",
+      "commitDate": "2026-09-11T12:10:25-04:00",
+      "license": "MIT",
+      "signal": "230 stars; current upstream of Plate converter family",
+      "activity": "2026-09-11T16:34:35Z",
+      "freshness": "Fetched develop and read exact commit with git show; checkout remains d00407d41fa251f612c88b8a22da0fb6f23d1764",
+      "lead": "projection-not-preservation",
+      "files": [
+        [
+          "package.json",
+          "1-213",
+          "Current browser/node export conditions and converter dependencies inspected."
+        ],
+        [
+          "src/html-to-docx.js",
+          "60-143",
+          "Generates Word parts, relationships, styles and numbering from document instance; not an input-package preservation mechanism."
+        ],
+        [
+          "src/helpers/render-document-file.js",
+          "1-160;450-480",
+          "Builds HTML list ordering and run/paragraph representations; ins/del route through formatting builder."
+        ],
+        [
+          "src/helpers/xml-builder.js",
+          "712-744",
+          "HTML ins becomes underline; del becomes strike, not tracked-change identity."
+        ],
+        [
+          "src/utils/image.js",
+          "284-319;435-490",
+          "Remote image downloader has timeout/size controls; buildImage catches failures and returns null after logging."
+        ],
+        [
+          "tests/rpr-child-order.test.js",
+          "1-95",
+          "OOXML element-order assertions are a useful artifact oracle; native rendering explanation is upstream claim, not replayed here."
+        ],
+        [
+          "LICENSE",
+          "1-22",
+          "MIT conditions read; no copied source."
+        ]
+      ],
+      "fileHashes": {
+        "package.json": "ecfbe5a05afd16341186eba6f45467342d66c7bfa1a6c052ce8acd074b9df686",
+        "src/html-to-docx.js": "55bdab445c90b5fceb71a57a8e1f1ed33dad584f65dcc5c8b1937932660b253d",
+        "src/helpers/render-document-file.js": "1d227c9ad02504dbc6d80d2800c4b49e4e92791b855433bfb478abc9dfd0241e",
+        "src/helpers/xml-builder.js": "851243de12509a40bb22cee4f04583a62e3ec40a53c0548977937a83df8189c3",
+        "src/utils/image.js": "ded2dd1dbd62caf812290aba56c7fd8ff6efb23641a529c6b69a161560ca5083",
+        "tests/rpr-child-order.test.js": "6aaf318f7b7a201597650fd33967844f5e95286a4a5bf1a18f2e40a291eec92c",
+        "LICENSE": "0d884149eb47e556659cfc4edb6a079f6834f083099ace94ae3d8960098037f7"
+      },
+      "sourceFingerprint": "b910130b323b7e2d4bcf8ab4b5bb46fd30590f49cca34cbebdd9438e1670f5d0"
+    },
+    {
+      "key": "docx",
+      "repo": "dolanmiu/docx",
+      "path": "/Users/zbeyens/git/docx",
+      "commit": "fda088d1da3772474bec9c40feb210cebb304f97",
+      "commitDate": "2026-08-07T11:23:49+01:00",
+      "license": "MIT",
+      "signal": "5903 stars; direct OOXML generator and template patcher",
+      "activity": "2026-08-07T11:45:52Z",
+      "freshness": "HEAD matched official master via ls-remote on 2026-09-14",
+      "lead": "direct-ooxml",
+      "files": [
+        [
+          "src/patcher/from-docx.ts",
+          "1-260;265-335;355-434",
+          "Template patching retains unrelated binary entries and reserializes XML; it is not a general rich-editor import contract or byte-for-byte preservation claim."
+        ],
+        [
+          "src/file/paragraph/run/comment-run.ts",
+          "1-41;158-206;431-455",
+          "Explicit paired comment range markers, author/date and threaded/durable comment metadata."
+        ],
+        [
+          "src/file/track-revision/track-revision-components/inserted-text-run.ts",
+          "63-75",
+          "Direct w:ins generation carries id, author, date and TextRun content."
+        ],
+        [
+          "src/file/track-revision/track-revision-components/deleted-text-run.ts",
+          "68-146",
+          "Direct w:del generation carries identity and deleted run content."
+        ],
+        [
+          "src/file/track-revision/track-revision-components/inserted-text-run.spec.ts",
+          "1-39",
+          "Exact emitted insertion identity and XML text assertion; inspected, not run."
+        ],
+        [
+          "src/file/paragraph/run/comment-run.spec.ts",
+          "1-43",
+          "Exact paired range marker assertions; inspected, not run."
+        ],
+        [
+          "LICENSE",
+          "1-21",
+          "MIT conditions read; no copied source."
+        ]
+      ],
+      "fileHashes": {
+        "src/patcher/from-docx.ts": "87d2b986a6db30018c0d3b21271b0e99041a326a4dbe3c9bde29176532532e92",
+        "src/file/paragraph/run/comment-run.ts": "f0e7e5f01213139313fe39355e8e61705af280e6df7165f574691d93f86bb5b9",
+        "src/file/track-revision/track-revision-components/inserted-text-run.ts": "6a7f03625ffff8c0ff851618399b32fbc38e752e4b6c4afb912574fb08a7f655",
+        "src/file/track-revision/track-revision-components/deleted-text-run.ts": "559d3400f37ec713a2988c33dcc678b50e712fbceda387c4a9c3b00cf6dafc4c",
+        "src/file/track-revision/track-revision-components/inserted-text-run.spec.ts": "f41ea933a21f6b9df925480c592bb44c6383c0168274b710c7d523a5a53b2a81",
+        "src/file/paragraph/run/comment-run.spec.ts": "fd39f1f37e82a6d1f90f139a0d140617913432bebbb782a742ee2f9ed9eb0193",
+        "LICENSE": "b5b2364c0c95a26b2a2399d7e706a61acac680be1d5b180b00592ee85830bffb"
+      },
+      "sourceFingerprint": "d1ef98d5612e276dde14f2b544052f1d77778904171353c17482a5548c1d29d7"
+    },
+    {
+      "key": "superdoc",
+      "repo": "superdoc/docx-editor",
+      "path": "/Users/zbeyens/git/docx-editor",
+      "commit": "3bad86724392f1b91685a3b0cc1f82c9d998b410",
+      "commitDate": "2026-09-14T13:11:31Z",
+      "license": "AGPL-3.0 public shell; separate proprietary engine",
+      "signal": "public v2 integration and export contracts",
+      "activity": "2026-09-14T15:33:47Z",
+      "freshness": "Fetched exact current default-branch commit; inspected via git show; checkout unchanged. See sidecar identity table.",
+      "lead": "package-authority",
+      "files": [
+        [
+          "README.md",
+          "1-111",
+          "Independent source sidecar R10; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "LICENSE",
+          "1-40;520-550",
+          "Independent source sidecar R11; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/document-api/src/export/export.types.ts",
+          "1-56",
+          "Independent source sidecar R12; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/document-api/src/export/export.ts",
+          "1-73",
+          "Independent source sidecar R13; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/superdoc/src/core/helpers/export.js",
+          "1-107",
+          "Independent source sidecar R17; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/document-api/src/export/export.test.ts",
+          "1-72",
+          "Independent source sidecar R18; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/superdoc/package.json",
+          "1-45;90-138",
+          "Independent source sidecar R19; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "scripts/ci-docx-engine-artifact.mjs",
+          "1-24",
+          "Independent source sidecar R20; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/superdoc/src/core/v2-integration/v2-integration.js",
+          "1-125",
+          "Independent source sidecar R21; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/superdoc/src/core/SuperDoc.ts",
+          "4150-4230",
+          "Independent source sidecar R22; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/superdoc/src/core/SuperDoc.export.test.ts",
+          "1-130",
+          "Independent source sidecar R23; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "apps/docs/content/docs/resources/docx-engine-license.mdx",
+          "1-23;111-143",
+          "Independent source sidecar R45; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ]
+      ],
+      "fileHashes": {
+        "README.md": "8931cad8825f841df292be76f7b425361a57c2ab50ecc52305ed60d43b26ca18",
+        "LICENSE": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+        "packages/document-api/src/export/export.types.ts": "2e6c1c64db240a33195bbca5485941a8ed65c58f1571f32b06f1d3b4e1142096",
+        "packages/document-api/src/export/export.ts": "23f5d2e4e8ef6f97016f2a8277a4810c587b411079d5f70e6b493a596fda00bb",
+        "packages/superdoc/src/core/helpers/export.js": "d9f015952095d7ccc93e7ffdc7e9cbedf42f479f5b915c29a3134f7c4f122cc2",
+        "packages/document-api/src/export/export.test.ts": "770685a3f73bd499308afe9a8a1865d760bd1ac2c357fac908a0c32b091b604f",
+        "packages/superdoc/package.json": "33cc7c608eb29b8dbf0aa486d3253b7ddd61d1218a30bcd898b18876b1c241ef",
+        "scripts/ci-docx-engine-artifact.mjs": "0558ae0a5d46a3e99e7573145973008ba983955ea46412fc3a93ab4f56c15120",
+        "packages/superdoc/src/core/v2-integration/v2-integration.js": "8068bff5be5438937c7921fc423df9cbdbe3f75e52676c341dbafa4eb35607ab",
+        "packages/superdoc/src/core/SuperDoc.ts": "349363f735c103336b788043ea680b32efaa3aad19099ebd0f2ea2ee9fbbe476",
+        "packages/superdoc/src/core/SuperDoc.export.test.ts": "e545989809f3adb8be3d6c93e10cce1ad4162d8b4a7791d6d78d8a095be74fcb",
+        "apps/docs/content/docs/resources/docx-engine-license.mdx": "c03e38b127f1f5e3e78cfe36e80a6c520406d56fa466deb0ebe892f7855cde08"
+      },
+      "sourceFingerprint": "e0755290b06bae93ee0ce5ce05668a27932ad6ef61eb952e422f8871fde4de68"
+    },
+    {
+      "key": "ckeditor",
+      "repo": "ckeditor/ckeditor5",
+      "path": "/Users/zbeyens/git/ckeditor5",
+      "commit": "d2e9dac45fd2af5de02c20aefeea1024c7bb489f",
+      "commitDate": "2026-09-14T13:47:30Z",
+      "license": "GPL-2.0-or-later or commercial",
+      "signal": "Word-paste source and captured fixture harness",
+      "activity": "2026-09-14T13:47:31Z",
+      "freshness": "Fetched exact current default-branch commit; inspected via git show; checkout unchanged. See sidecar identity table.",
+      "lead": "paste-evidence-before-cleanup",
+      "files": [
+        [
+          "packages/ckeditor5/LICENSE.md",
+          "1-52",
+          "Independent source sidecar R24; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/LICENSE.md",
+          "1-22",
+          "Independent source sidecar R25; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/src/pastefromoffice.ts",
+          "80-153",
+          "Independent source sidecar R26; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/src/normalizers/mswordnormalizer.ts",
+          "1-80",
+          "Independent source sidecar R27; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/src/filters/parse.ts",
+          "1-172",
+          "Independent source sidecar R28; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "docs/features/cloud-services-overview.md",
+          "47-69",
+          "Independent source sidecar R30; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/src/filters/list.ts",
+          "40-157",
+          "Independent source sidecar R31; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/src/filters/image.ts",
+          "18-44;236-354",
+          "Independent source sidecar R32; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/src/filters/replacemsfootnotes.ts",
+          "1-140",
+          "Independent source sidecar R33; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-clipboard/src/clipboardpipeline.ts",
+          "249-300",
+          "Independent source sidecar R34; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/tests/README.md",
+          "1-100",
+          "Independent source sidecar R35; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/tests/data/normalization.js",
+          "1-64",
+          "Independent source sidecar R36; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/tests/data/integration.js",
+          "1-130",
+          "Independent source sidecar R37; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/tests/filters/image.js",
+          "17-65",
+          "Independent source sidecar R38; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/tests/filters/replacemsfootnotes.js",
+          "185-221",
+          "Independent source sidecar R39; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/tests/_data/list/continuation-after-different-list/normalized.word.html",
+          "1-31",
+          "Independent source sidecar R40; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/tests/_data/list/continuation-after-different-list/model.word.html",
+          "1-9",
+          "Independent source sidecar R41; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/tests/_utils/utils.js",
+          "185-207;229-247;307-352",
+          "Independent source sidecar R42; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/src/filters/removemsattributes.ts",
+          "1-56",
+          "Independent source sidecar R43; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ],
+        [
+          "packages/ckeditor5-paste-from-office/docs/features/paste-from-office.md",
+          "12-41;64-94",
+          "Independent source sidecar R44; see shards/ckeditor-superdoc.md for exact claim and limits."
+        ]
+      ],
+      "fileHashes": {
+        "packages/ckeditor5/LICENSE.md": "a117cfe0ba5684fd8734ef9e36781f3f9ced6ccde6144a9c1622997b5e99cc0e",
+        "packages/ckeditor5-paste-from-office/LICENSE.md": "e2160085b4425822582cf8754123e10a115d8228a7657b9e39cebeead2cb89b6",
+        "packages/ckeditor5-paste-from-office/src/pastefromoffice.ts": "50bf1e457c50d04a46621273075103cd2d67abe8e5b1f5339fb516365f082c5f",
+        "packages/ckeditor5-paste-from-office/src/normalizers/mswordnormalizer.ts": "782dd77a12c5b489996798ef521fc061ff8f4918618bb982f02cff7a32c2e959",
+        "packages/ckeditor5-paste-from-office/src/filters/parse.ts": "d68dfa3b18f108f85a38a2657951ff3d9611105cfb0b8ebb12d516b1d3670069",
+        "docs/features/cloud-services-overview.md": "0f792f83a85f848a219e7861321b7a85c766fca519e1720b3c0c85f7a0203d84",
+        "packages/ckeditor5-paste-from-office/src/filters/list.ts": "44cc3f4f0eb0b117c5f2577790cca20808e6a243c695bb1dca779329f373a416",
+        "packages/ckeditor5-paste-from-office/src/filters/image.ts": "f2d78cdedc978c6b997b4fd5bbb4e366722b192974888f3031c59dce4496e0b9",
+        "packages/ckeditor5-paste-from-office/src/filters/replacemsfootnotes.ts": "81aa4d1a1cdd5c4a56fe4f8c2b182fc8cc18a53fd08d28744ddb59cfa855992c",
+        "packages/ckeditor5-clipboard/src/clipboardpipeline.ts": "6547803beb3f8cd175fd37be7df39674ac6af468ef9eb22e51efe102e889019f",
+        "packages/ckeditor5-paste-from-office/tests/README.md": "b34d5a4ee03f18ad0f88b41c42a4db12a21bd858f10c50fa816fffe1e8084e5d",
+        "packages/ckeditor5-paste-from-office/tests/data/normalization.js": "e182f171d3b3b99f2f627b763202a1af6a7426e613a86e47c0282fa9873fa4ce",
+        "packages/ckeditor5-paste-from-office/tests/data/integration.js": "44027608d081f6f1dac587e24053b9578b36c300aee3a4468302ec3c9e9624af",
+        "packages/ckeditor5-paste-from-office/tests/filters/image.js": "7ce0e6ff41ffbf68928549099e863b61632e8889d915876d117c19020a2ee6a1",
+        "packages/ckeditor5-paste-from-office/tests/filters/replacemsfootnotes.js": "202a4504cbd736cb2a1783e95e9737b9423770f3268294c4beac71a56b3727df",
+        "packages/ckeditor5-paste-from-office/tests/_data/list/continuation-after-different-list/normalized.word.html": "74b63063c1c24808cdb382bb2d86ddcbbff888450475d9a10b1e37a63a36e8f9",
+        "packages/ckeditor5-paste-from-office/tests/_data/list/continuation-after-different-list/model.word.html": "3bf9552c16c43cb336f96267d8fcf155625587eaf72b78229882c317ee8cf7c1",
+        "packages/ckeditor5-paste-from-office/tests/_utils/utils.js": "9750ad5f525e519311faf3d5b2d2be9ecab741fd8d78e7fac142a2b56baf14ad",
+        "packages/ckeditor5-paste-from-office/src/filters/removemsattributes.ts": "a034d6cba3b40fecd438db47164f8f28e7ac0712f14cdfc11109f0cef1e7cd68",
+        "packages/ckeditor5-paste-from-office/docs/features/paste-from-office.md": "5a760b82532001c1850198e7318d8b8f67ea9f452f66d82343c1a4a4c5339ee8"
+      },
+      "sourceFingerprint": "4b9567006fa69b2c3cd10978106df55ee535cb0de51aaa871f4f08a61bd76d9a"
+    },
+    {
+      "key": "pandoc",
+      "repo": "jgm/pandoc",
+      "path": "/Users/zbeyens/git/pandoc",
+      "commit": "bde8c297ee68c07a037f06971aa0f1cce8a876cb",
+      "commitDate": "2026-09-14T16:20:05Z",
+      "license": "GPL-2.0-or-later",
+      "signal": "DOCX semantic converter",
+      "activity": "2026-09-14T16:20:05Z",
+      "freshness": "HEAD matches official default branch as of 2026-09-14T18:08:39Z; release distinction retained in shards/pandoc-preview.md",
+      "lead": "explicit-projections",
+      "files": [
+        [
+          "src/Text/Pandoc/Readers/Docx.hs",
+          "107-122;328-427;725-785;893-922",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "src/Text/Pandoc/Readers/Docx/Parse.hs",
+          "140-156;385-472;491-515;554-565;734-745;1150-1260;1340-1380",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "src/Text/Pandoc/Writers/Docx.hs",
+          "65-171;496-513;842-877",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "src/Text/Pandoc/Writers/Docx/OpenXML.hs",
+          "309-327;528-545;845-947;947-954",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "test/Tests/Readers/Docx.hs",
+          "30-57;397-487",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "test/Tests/Writers/Docx.hs",
+          "1-96;206-232;270-325",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "COPYING.md",
+          "1-9;64-78;82-109;142-179;249-260",
+          "Independent exact-source read (license); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "pandoc.cabal",
+          "1-35",
+          "Independent exact-source read (package_metadata); see shards/pandoc-preview.md for findings and limits."
+        ]
+      ],
+      "fileHashes": {
+        "src/Text/Pandoc/Readers/Docx.hs": "7ddcbe483c0efd1c6e07236cb858d50041dfb7e3908ab25cc1f768688152b731",
+        "src/Text/Pandoc/Readers/Docx/Parse.hs": "a92dbb764b3afe97eb76f5dd2f9c6a6683847ad8e1393cc111ca16365632c6a6",
+        "src/Text/Pandoc/Writers/Docx.hs": "5cad23e9a212de54873f9d77ee318982613775cf2bb3ae64e5df31071a3bfca8",
+        "src/Text/Pandoc/Writers/Docx/OpenXML.hs": "b7d97c3dc9736ae936032858eab10bf5c7ef7f64350fcd84ae50d47f53efc1c2",
+        "test/Tests/Readers/Docx.hs": "50b080044de08dca578b34831c8f26dc76b268ecc2ad852da534aa994d62c2ce",
+        "test/Tests/Writers/Docx.hs": "6c34f1fc05f581b491a60cb6940527bbae66289d22f5e9243c6fbe567c6ac09a",
+        "COPYING.md": "3ebfbf9235b049d384cdba5a66a1a3434bb544391e720b76faa8e1b3ee61a4e5",
+        "pandoc.cabal": "3d28dc8ce4ba27f8c29d2c28003d3e4021e913dd958a68a9caa9afb776946dea"
+      },
+      "sourceFingerprint": "14cdeb28dad664d85d4740e3a0bdf817c60751e669155de961d863e2d1ccdb70"
+    },
+    {
+      "key": "docx-preview",
+      "repo": "VolodymyrBaydalka/docxjs",
+      "path": "/Users/zbeyens/git/docxjs",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "commitDate": "2026-07-07T18:54:12Z",
+      "license": "Apache-2.0",
+      "signal": "OOXML HTML preview",
+      "activity": "2026-07-07T18:54:12Z",
+      "freshness": "HEAD matches official default branch as of 2026-09-14T18:08:39Z; release distinction retained in shards/pandoc-preview.md",
+      "lead": "retention-is-not-editing",
+      "files": [
+        [
+          "src/docx-preview.ts",
+          "1-77",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "src/word-document.ts",
+          "25-165",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "src/common/open-xml-package.ts",
+          "1-65",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "src/common/part.ts",
+          "1-32",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "src/document-parser.ts",
+          "87-155;269-291;472-550;631-704;1378-1393",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "src/html-renderer.ts",
+          "75-134;325-373;402-414;421-509;870-896;947-1005;1044-1073",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "tests/render-test/test.spec.js",
+          "1-54",
+          "Independent exact-source read (implementation_or_test); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "LICENSE",
+          "1-4;66-122",
+          "Independent exact-source read (license); see shards/pandoc-preview.md for findings and limits."
+        ],
+        [
+          "package.json",
+          "1-24",
+          "Independent exact-source read (package_metadata); see shards/pandoc-preview.md for findings and limits."
+        ]
+      ],
+      "fileHashes": {
+        "src/docx-preview.ts": "9986ce067d896a5fd2ffc51846f98c66f1a06fefce1cea5497a58cedaa11bb40",
+        "src/word-document.ts": "3aafdf21fbf407324136bc0f822d8d72788b49f7c2c0f878168d26180c42896d",
+        "src/common/open-xml-package.ts": "ba17ff0b377d4a87ffd8fff173cfc2efc7758ad7f8aa746d689a93e88d1c5d45",
+        "src/common/part.ts": "3494f88a68d4484f3df5788a2cf4c90e6132e9a39a6a355f7fda6d78d4719932",
+        "src/document-parser.ts": "e9233ad1e15c1efe524f7349cf04e76c7b980988481934277796dc060a515c2d",
+        "src/html-renderer.ts": "a2b7d54609cb2360cf7b2b0f7137bf85014ffb0100e7447346d4f1d184eeea51",
+        "tests/render-test/test.spec.js": "b81e5952ae1aca31742279897530dfb7933170ff01386eccafc51a56621831bd",
+        "LICENSE": "0ed0b35bd10cb0d990fbecf7f1e05d113d785dfbbef8332e139fc10b84a4c3d7",
+        "package.json": "46cf90c1554b425883095786f5f374ace181f858c7e5c15e13077110df507a65"
+      },
+      "sourceFingerprint": "742f99546e6a0da2adabe148903f265b31fdef18620ca2b5343f648f197cdac1"
+    }
+  ]
+}

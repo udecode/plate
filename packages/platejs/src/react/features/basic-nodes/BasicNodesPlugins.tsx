@@ -13,43 +13,43 @@ import {
   BaseStrikethroughPlugin,
   BaseUnderlinePlugin,
 } from '../../../features/basic-nodes/lib';
-import { PlateElement, PlateLeaf, toPlatePlugin } from '../../core';
+import { EditorElement, EditorLeaf, toReactPlugin } from '../../core';
 
-export const BlockquotePlugin = toPlatePlugin(BaseBlockquotePlugin);
+export const BlockquotePlugin = toReactPlugin(BaseBlockquotePlugin);
 
-export const BoldPlugin = toPlatePlugin(BaseBoldPlugin, {
+export const BoldPlugin = toReactPlugin(BaseBoldPlugin, {
   shortcuts: { toggle: { keys: 'mod+b' } },
 });
 
-export const CodePlugin = toPlatePlugin(BaseCodePlugin);
+export const CodePlugin = toReactPlugin(BaseCodePlugin);
 
-export const HeadingPlugin = toPlatePlugin(BaseHeadingPlugin, {
+export const HeadingPlugin = toReactPlugin(BaseHeadingPlugin, {
   component: (props) => {
     const Tag = `h${props.element.level}` as const;
 
-    return <PlateElement {...props} as={Tag} />;
+    return <EditorElement {...props} as={Tag} />;
   },
 });
 
-export const HighlightPlugin = toPlatePlugin(BaseHighlightPlugin);
-export const HorizontalRulePlugin = toPlatePlugin(BaseHorizontalRulePlugin);
+export const HighlightPlugin = toReactPlugin(BaseHighlightPlugin);
+export const HorizontalRulePlugin = toReactPlugin(BaseHorizontalRulePlugin);
 
-export const ItalicPlugin = toPlatePlugin(BaseItalicPlugin, {
+export const ItalicPlugin = toReactPlugin(BaseItalicPlugin, {
   shortcuts: { toggle: { keys: 'mod+i' } },
 });
 
-export const KbdPlugin = toPlatePlugin(BaseKbdPlugin);
+export const KbdPlugin = toReactPlugin(BaseKbdPlugin);
 
-export const ScriptPlugin = toPlatePlugin(BaseScriptPlugin, {
+export const ScriptPlugin = toReactPlugin(BaseScriptPlugin, {
   component: (props) => (
-    <PlateLeaf {...props} as={props.leaf.script === 'sub' ? 'sub' : 'sup'}>
+    <EditorLeaf {...props} as={props.leaf.script === 'sub' ? 'sub' : 'sup'}>
       {props.children}
-    </PlateLeaf>
+    </EditorLeaf>
   ),
 });
 
-export const StrikethroughPlugin = toPlatePlugin(BaseStrikethroughPlugin);
+export const StrikethroughPlugin = toReactPlugin(BaseStrikethroughPlugin);
 
-export const UnderlinePlugin = toPlatePlugin(BaseUnderlinePlugin, {
+export const UnderlinePlugin = toReactPlugin(BaseUnderlinePlugin, {
   shortcuts: { toggle: { keys: 'mod+u' } },
 });

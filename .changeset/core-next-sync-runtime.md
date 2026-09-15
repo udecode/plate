@@ -8,9 +8,10 @@
 - Preserve exact dependency, API, read, update, selector, and store inference through plugin construction, conversion, and heterogeneous runtime publication
 - Require standalone resolved-plugin lookup to return an installed descriptor; absent and disabled plugins throw instead of producing a fallback descriptor
 - Infer plugin transaction groups in `createRuleFactory(plugin)`
-- Preserve editor extension state types through `toPlatePlugin`
+- Invoke plugin-owned transaction methods through `tx.plugin(Plugin)` for exact descriptor ownership or `tx.plugin(pluginName)` for package-decoupled callbacks, while generated editor types retain direct named groups
+- Preserve editor plugin state types through `toPlatePlugin`
 - Declare plugin element behavior, marks, properties, and targeted content roots through plugin `schema` contributions compiled by Plite
-- Publish Plate schema installation and an empty primary-root default as one atomic extension migration
+- Publish Plate schema installation and an empty primary-root default as one atomic plugin migration
 - Author MIME-keyed product codecs through context-bound constructor `codecs: ({ defineCodecs }) => defineCodecs(...)` declarations; infer same-plugin APIs in that callback and compile them to schema-bound exact-slice Plite DOM codecs
 - Provide schema-inferred Markdown node codec contracts directly from `platejs`, with one `defineCodecs` object for every format owned by a plugin
 - Derive element and text property-capability types with `ElementWith` and `TextWith`, including authored aliases, prefixes, defaults, and value domains
@@ -24,8 +25,8 @@
 - Own the default Plate placeholder presentation above Plite's structural DOM
 - Keep inserted inline elements outside the default node-ID policy, including inline void elements inserted beside text
 - Resolve plugin dependencies and conflicts by descriptor, install required dependencies transitively, and expose typed dependency APIs without string capability lookup
-- Declare host clipboard insertion as typed Plite DOM extension contributions
-- Publish static View rendering and Plite DOM strategy contributions under distinct extension identities
+- Declare host clipboard insertion through the typed Plite DOM `domCommands.insertData` command
+- Copy exact model-backed selections from `EditorPreview`, including partial text, void elements, and named roots
 - Compile merge, selectability, and slice-export policy into typed Plite read middleware
 - Avoid reevaluating published plugin schema factories during plugin access
 - Fix `PlateElement` and `PliteElement` composition across descriptor-owned component families

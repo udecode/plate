@@ -1,6 +1,6 @@
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  definePlugin,
   createEditorView,
   schema,
   SelectionApi,
@@ -19,6 +19,7 @@ const createEditor = (
 ) => {
   const editor = createProductEditor({
     plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+    userId: 'alice',
     selection: {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
@@ -237,7 +238,7 @@ describe('AIChatPlugin submit', () => {
 
   it('localizes named-root request context while retaining local key ownership', () => {
     const sendMessage = mock();
-    const RootHolderPlugin = defineBasePlugin('aiRootHolder', {
+    const RootHolderPlugin = definePlugin('aiRootHolder', {
       schema: {
         element: {
           blockContent: true,
@@ -261,6 +262,7 @@ describe('AIChatPlugin submit', () => {
         AIChatPlugin,
         RootHolderPlugin,
       ],
+      userId: 'alice',
       selection: SelectionApi.nodes([[0]], { root: 'header' }),
       initialValue: {
         children: [

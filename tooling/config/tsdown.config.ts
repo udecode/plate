@@ -89,13 +89,17 @@ const enableSourcemaps = !process.env.CI;
 
 export const createPlatePackageConfig = ({
   additionalEntries = [],
+  bundleDeclarationDependencies = [],
   bundleDependencies = [],
+  declarationsOnly = false,
   directDeclarations = false,
   runtimeImportBoundaries = [],
   unbundle = false,
 }: {
   additionalEntries?: string[];
+  bundleDeclarationDependencies?: Array<RegExp | string>;
   bundleDependencies?: string[];
+  declarationsOnly?: boolean;
   directDeclarations?: boolean;
   runtimeImportBoundaries?: readonly RuntimeImportBoundary[];
   unbundle?: boolean;
@@ -104,51 +108,61 @@ export const createPlatePackageConfig = ({
     const config = {
       ...opts,
       cwd: PACKAGE_ROOT_PATH,
-      deps: { alwaysBundle: bundleDependencies, neverBundle: true },
+      deps: {
+        alwaysBundle: bundleDependencies,
+        dts:
+          bundleDeclarationDependencies.length > 0
+            ? { alwaysBundle: bundleDeclarationDependencies }
+            : undefined,
+        neverBundle: true,
+      },
       entry: [
         ...entry,
         ...additionalEntries.map((input) =>
           convertPathToPattern(path.join(PACKAGE_ROOT_PATH, input))
         ),
       ],
+      clean: declarationsOnly ? false : opts.clean,
       platform: 'neutral',
       tsconfig: 'tsconfig.build.json',
-      sourcemap: enableSourcemaps,
-      unbundle,
-      dts: false,
+      sourcemap: declarationsOnly ? false : enableSourcemaps,
+      unbundle: declarationsOnly ? false : unbundle,
+      dts: declarationsOnly ? { emitDtsOnly: true, sourcemap: false } : false,
       exports: false,
       failOnWarn: 'ci-only',
-      plugins: [
-        ...(bundleDependencies.length > 0
-          ? [esmExternalRequirePlugin({ external: ['react'] })]
-          : []),
-        pluginBabel({
-          babelHelpers: 'bundled',
-          exclude: '**/static/**',
-          overrides: [
-            {
-              parserOpts: {
-                plugins: ['typescript'],
-                sourceType: 'module',
-              },
-              test: TS_FILE_RE,
-            },
-            {
-              parserOpts: {
-                plugins: [['typescript', { isTSX: true }], 'jsx'],
-                sourceType: 'module',
-              },
-              test: TSX_FILE_RE,
-            },
+      plugins: declarationsOnly
+        ? []
+        : [
+            ...(bundleDependencies.length > 0
+              ? [esmExternalRequirePlugin({ external: ['react'] })]
+              : []),
+            pluginBabel({
+              babelHelpers: 'bundled',
+              exclude: '**/static/**',
+              overrides: [
+                {
+                  parserOpts: {
+                    plugins: ['typescript'],
+                    sourceType: 'module',
+                  },
+                  test: TS_FILE_RE,
+                },
+                {
+                  parserOpts: {
+                    plugins: [['typescript', { isTSX: true }], 'jsx'],
+                    sourceType: 'module',
+                  },
+                  test: TSX_FILE_RE,
+                },
+              ],
+              plugins: [['babel-plugin-react-compiler', { target: '19' }]],
+              extensions: ['.js', '.jsx', '.ts', '.tsx'],
+            }),
           ],
-          plugins: [['babel-plugin-react-compiler', { target: '19' }]],
-          extensions: ['.js', '.jsx', '.ts', '.tsx'],
-        }),
-      ],
     };
 
     return [
-      directDeclarations
+      declarationsOnly || directDeclarations
         ? withDirectPackageConfig(config, { runtimeImportBoundaries })
         : withRuntimeImportBoundaryConfig(config, {
             runtimeImportBoundaries,

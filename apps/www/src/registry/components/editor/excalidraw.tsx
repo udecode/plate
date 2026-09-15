@@ -8,8 +8,8 @@ import type {
 } from '@excalidraw/excalidraw/types';
 import { ExcalidrawPlugin, useExcalidrawSync } from 'platejs/excalidraw/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditorReadOnly,
 } from 'platejs/react';
 import * as React from 'react';
@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import '@excalidraw/excalidraw/index.css';
 
 export function ExcalidrawElement(
-  props: PlateElementProps<typeof ExcalidrawPlugin>
+  props: EditorElementProps<typeof ExcalidrawPlugin>
 ) {
   const { children, element } = props;
   const [excalidraw, setExcalidraw] = React.useState<
@@ -58,8 +58,8 @@ export function ExcalidrawElement(
   }));
 
   return (
-    <PlateElement {...props}>
-      <div contentEditable={false} data-plite-root-chrome-ignore="true">
+    <EditorElement {...props}>
+      <div contentEditable={false} data-editor-root-chrome-ignore="true">
         <div
           className={cn(
             'mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border'
@@ -76,7 +76,7 @@ export function ExcalidrawElement(
         </div>
       </div>
       {children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 

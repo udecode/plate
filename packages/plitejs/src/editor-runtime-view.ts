@@ -1,9 +1,13 @@
+import { createEditorAnchorApi } from './core/anchor';
+import {
+  configureAuthoredView,
+  getAuthoredViewCommit,
+  subscribeAuthoredFragment,
+  withAuthoredUpdateView,
+  withAuthoredViewRead,
+} from './core/authored-runtime';
 import { createCommandDispatch } from './core/command-registry';
 import { getEditorCommitSnapshot } from './core/commit';
-import {
-  createEditorViewExtensionApis,
-  extendEditor,
-} from './core/editor-extension';
 import {
   createEditorReadApi,
   createEditorUpdateApi,
@@ -15,10 +19,12 @@ import {
   type InternalEditorRuntime,
   setEditorRuntime,
 } from './core/editor-runtime';
+import { getSourcesForChange } from './core/listener-state';
+import { createEditorViewPluginApis, extendEditor } from './core/plugin';
 import {
-  getExtensionRegistry,
-  inheritExtensionRegistry,
-} from './core/extension-registry';
+  getPluginRegistry,
+  inheritPluginRegistry,
+} from './core/plugin-registry';
 import {
   MAIN_ROOT_KEY,
   toInternalRoot,
@@ -26,6 +32,8 @@ import {
 } from './core/public-root';
 import {
   doesSelectionContain,
+  createEditorViewReadState,
+  createEditorViewTransactionState,
   doesSelectionIntersect,
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -36,11 +44,9 @@ import {
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
   isSelectionWithinBlock,
-  readEditor,
   replaceTransformedSnapshot,
   transformEditorSnapshotInput,
   withEditorRootChildren,
-  withEditorRootChildrenGenerator,
   withEditorTargetRuntime,
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
@@ -49,11 +55,12 @@ import type {
   AnyEditor as Editor,
   EditorAnchorApi,
   EditorCommitContext,
-  EditorExtensionReference,
+  PluginReference,
   EditorKeyApi,
   EditorParentOptions,
   EditorSelectionBlockOptions,
   EditorSnapshot,
+  EditorCommit,
   EditorStateSliceApi,
   EditorStateView,
   EditorStateViewApi,
@@ -81,6 +88,7 @@ import { getDefined } from './internal/get-defined';
 import { withImplicitRangeRoot } from './internal/root-location';
 
 type ViewState = {
+  editor: Editor | null;
   composing: boolean;
   focused: boolean;
   readOnly: boolean;
@@ -96,16 +104,22 @@ type CreateEditorView = {
     const TRoot extends RootKey = RootKey,
   >(
     sourceEditor: TEditor,
-    options?: EditorViewOptions<TRoot>
+    options?: EditorViewOptions<TRoot> &
+      (TEditor extends { read: { authored: unknown } }
+        ? unknown
+        : { authored?: never })
   ): LayeredEditorView<TEditor>;
   <
     V extends Value,
-    TExtensions extends readonly unknown[] = readonly [],
+    TPlugins extends readonly unknown[] = readonly [],
     const TRoot extends RootKey = RootKey,
   >(
-    sourceEditor: Editor<V, TExtensions>,
-    options?: EditorViewOptions<TRoot>
-  ): EditorView<V, TExtensions>;
+    sourceEditor: Editor<V, TPlugins>,
+    options?: EditorViewOptions<TRoot> &
+      (Editor<V, TPlugins> extends { read: { authored: unknown } }
+        ? unknown
+        : { authored?: never })
+  ): EditorView<V, TPlugins>;
 };
 
 type ViewStateTransformInput<V extends Value> = Pick<
@@ -140,14 +154,30 @@ const withRootRead = <T>(
   editor: Editor,
   viewState: ViewState,
   fn: () => T
-): T => withEditorRootChildren(editor, viewState.root, fn);
+): T =>
+  withAuthoredViewRead(editor, viewState.editor ?? editor, () =>
+    withEditorRootChildren(editor, viewState.root, fn)
+  );
 
 const withRootGenerator = <T>(
   editor: Editor,
   viewState: ViewState,
   create: () => Iterable<T>
 ): Generator<T, void, undefined> =>
-  withEditorRootChildrenGenerator(editor, viewState.root, create);
+  (function* iterateViewRoot() {
+    const iterator = withRootRead(editor, viewState, () =>
+      create()[Symbol.iterator]()
+    );
+    try {
+      while (true) {
+        const result = withRootRead(editor, viewState, () => iterator.next());
+        if (result.done) return;
+        yield result.value;
+      }
+    } finally {
+      withRootRead(editor, viewState, () => iterator.return?.());
+    }
+  })();
 
 const rootMethod = <TMethod extends (...args: any[]) => any>(
   editor: Editor,
@@ -205,8 +235,13 @@ const withViewRange = (
 };
 
 const hasViewSelection = (editor: Editor, viewState: ViewState) =>
-  !getCurrentSelection(editor) ||
-  getCurrentSelectionRoot(editor) === viewState.root;
+  withRootRead(
+    editor,
+    viewState,
+    () =>
+      !getCurrentSelection(editor) ||
+      getCurrentSelectionRoot(editor) === viewState.root
+  );
 
 const runWithViewSelection = <T>(
   editor: Editor,
@@ -309,19 +344,23 @@ const withRootMarks = <V extends Value, T extends ViewStateTransformInput<V>>(
   viewState: ViewState
 ): T['marks'] =>
   Object.freeze(
-    Object.assign(() => {
-      if (getCurrentSelectionRoot(editor) !== viewState.root) {
-        return null;
-      }
+    Object.assign(
+      () =>
+        withRootRead(editor, viewState, () => {
+          if (getCurrentSelectionRoot(editor) !== viewState.root) {
+            return null;
+          }
 
-      const selection = getCurrentSelection(editor);
+          const selection = getCurrentSelection(editor);
 
-      if (!selection) {
-        return null;
-      }
+          if (!selection) {
+            return null;
+          }
 
-      return withRootRead(editor, viewState, () => state.marks());
-    }, state.marks)
+          return state.marks();
+        }),
+      state.marks
+    )
   );
 
 const withRootRuntime = <V extends Value, T extends ViewStateTransformInput<V>>(
@@ -345,16 +384,20 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
   viewState: ViewState
 ): T & { view: EditorStateViewApi } => {
   const semanticSelection = () =>
-    withViewSelection(
-      getCurrentSelection(editor),
-      viewState,
-      getCurrentSelectionRoot(editor)
+    withRootRead(editor, viewState, () =>
+      withViewSelection(
+        getCurrentSelection(editor),
+        viewState,
+        getCurrentSelectionRoot(editor)
+      )
     );
   const selection = () =>
-    withViewRange(
-      state.selection(),
-      viewState,
-      getCurrentSelectionRoot(editor)
+    withRootRead(editor, viewState, () =>
+      withViewRange(
+        state.selection(),
+        viewState,
+        getCurrentSelectionRoot(editor)
+      )
     );
   const baseSliceFit = state.slice.fit;
   const baseSliceFitContent = state.slice.fitContent;
@@ -380,10 +423,12 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
   const transaction = state.transaction
     ? Object.assign(
         (fn: (transaction: EditorTransactionSpecBuilder<V, any>) => void) =>
-          runRootTransform(editor, viewState, () =>
-            getDefined(state.transaction)((tx) => {
-              fn(withViewSpecTransaction(editor, tx, viewState));
-            })
+          withRootRead(editor, viewState, () =>
+            runRootTransform(editor, viewState, () =>
+              getDefined(state.transaction)((tx) =>
+                fn(withViewSpecTransaction(editor, tx, viewState))
+              )
+            )
           ),
         {
           extend: (
@@ -392,10 +437,12 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
             >[0],
             fn: (transaction: EditorTransactionSpecBuilder<V, any>) => void
           ) =>
-            runRootTransform(editor, viewState, () =>
-              getDefined(state.transaction).extend(base, (tx) => {
-                fn(withViewSpecTransaction(editor, tx, viewState));
-              })
+            withRootRead(editor, viewState, () =>
+              runRootTransform(editor, viewState, () =>
+                getDefined(state.transaction).extend(base, (tx) =>
+                  fn(withViewSpecTransaction(editor, tx, viewState))
+                )
+              )
             ),
         }
       )
@@ -405,7 +452,9 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
   const selectionRanges = () => {
     if (!semanticSelection()) return [];
 
-    const projected = state.selection.ranges();
+    const projected = withRootRead(editor, viewState, () =>
+      state.selection.ranges()
+    );
 
     return viewState.root === MAIN_ROOT_KEY
       ? projected
@@ -420,10 +469,11 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
 
   const scopedState: T & { view: EditorStateViewApi } = Object.freeze({
     ...state,
-    children: () =>
+    children: rootMethod(editor, viewState, () =>
       viewState.root === MAIN_ROOT_KEY
         ? state.children()
-        : state.root(viewState.root),
+        : state.root(viewState.root)
+    ),
     fragment: Object.freeze(
       Object.assign(
         rootMethod(editor, viewState, state.fragment),
@@ -435,6 +485,7 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
     nodes: withRootChildren<V, T>(editor, state, viewState),
     points: withRootPoints<V, T>(editor, state, viewState),
     ranges,
+    root: rootMethod(editor, viewState, state.root),
     runtime: withRootRuntime<V, T>(editor, state, viewState),
     slice: Object.freeze({
       ...(fitSlice ? { fit: fitSlice } : {}),
@@ -538,6 +589,11 @@ const withViewTransaction = <V extends Value>(
         'A persisted document envelope can replace only the complete editor, not one editor view root.'
       );
     }
+    if (input.meta !== undefined || input.roots !== undefined) {
+      throw new Error(
+        'Document metadata and roots can be loaded only through the complete editor.'
+      );
+    }
 
     runRootTransform(editor, viewState, () => {
       const value = transaction.value();
@@ -588,7 +644,7 @@ const withViewTransaction = <V extends Value>(
         );
       }
 
-      replaceTransformedSnapshot(editor, transformedInput);
+      replaceTransformedSnapshot(editor, transformedInput, viewState.root);
 
       if (input.selection === 'start' || input.selection === 'end') {
         const point =
@@ -854,7 +910,17 @@ const withViewTransaction = <V extends Value>(
     ),
   });
 
-  return viewTransaction;
+  return createEditorViewTransactionState(
+    viewState.editor ?? editor,
+    viewTransaction,
+    (context) =>
+      withViewUpdateContext(
+        editor,
+        context,
+        viewState,
+        getViewEditor ?? (() => viewState.editor)
+      )
+  );
 };
 
 const withViewUpdateContext = <V extends Value>(
@@ -866,11 +932,15 @@ const withViewUpdateContext = <V extends Value>(
   Object.freeze({
     afterCommit(handler) {
       baseContext.afterCommit((context) => {
+        const projected = getAuthoredViewCommit(
+          getViewEditor() ?? editor,
+          context.commit
+        );
         const viewContext = {
-          commit: context.commit,
+          commit: projected,
           editor: getViewEditor() ?? editor,
           snapshot: withViewSnapshot(
-            getEditorCommitSnapshot(context.commit, viewState.root),
+            getEditorCommitSnapshot(projected, viewState.root),
             viewState,
             viewState.root
           ),
@@ -892,10 +962,9 @@ const createViewRuntime = <V extends Value>(
   const projectState = (state: EditorStateView<V, any>) => {
     if (state !== cachedBaseState) {
       cachedBaseState = state;
-      cachedViewState = withViewState<V, EditorStateView<V, any>>(
-        editor,
-        state,
-        viewState
+      cachedViewState = createEditorViewReadState(
+        getViewEditor() ?? editor,
+        withViewState<V, EditorStateView<V, any>>(editor, state, viewState)
       ) as EditorStateView<V, any>;
     }
 
@@ -924,6 +993,12 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.getChildren()),
     getFragment: () =>
       withRootRead(editor, viewState, () => baseRuntime.getFragment()),
+    getLastCommit: () => {
+      const commit = baseRuntime.getLastCommit();
+      return commit
+        ? getAuthoredViewCommit(getViewEditor() ?? editor, commit)
+        : null;
+    },
     getPathByNodeKey: (...args) =>
       withRootRead(editor, viewState, () =>
         baseRuntime.getPathByNodeKey(...args)
@@ -931,16 +1006,20 @@ const createViewRuntime = <V extends Value>(
     getNodeKey: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.getNodeKey(...args)),
     getSelection: () =>
-      withViewSelection(
-        baseRuntime.getSelection(),
-        viewState,
-        getCurrentSelectionRoot(editor)
+      withRootRead(editor, viewState, () =>
+        withViewSelection(
+          baseRuntime.getSelection(),
+          viewState,
+          getCurrentSelectionRoot(editor)
+        )
       ),
     getSnapshot: () =>
-      withViewSnapshot(
-        withRootRead(editor, viewState, () => baseRuntime.getSnapshot()),
-        viewState,
-        getCurrentSelectionRoot(editor)
+      withRootRead(editor, viewState, () =>
+        withViewSnapshot(
+          baseRuntime.getSnapshot(),
+          viewState,
+          getCurrentSelectionRoot(editor)
+        )
       ),
     hasPath: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.hasPath(...args)),
@@ -1000,8 +1079,13 @@ const createViewRuntime = <V extends Value>(
 
       return viewEditor;
     }),
-    subscribe: (listener) =>
-      baseRuntime.subscribe((_snapshot, change) => {
+    subscribe: (listener) => {
+      const notify: (sourceChange?: EditorCommit<V>) => void = (
+        sourceChange
+      ) => {
+        const change =
+          sourceChange &&
+          getAuthoredViewCommit(getViewEditor() ?? editor, sourceChange);
         listener(
           change
             ? withViewSnapshot(
@@ -1018,9 +1102,20 @@ const createViewRuntime = <V extends Value>(
               ),
           change
         );
-      }),
-    subscribeCommit: (listener) =>
-      baseRuntime.subscribeCommit((change) => {
+      };
+      return (
+        subscribeAuthoredFragment(getViewEditor() ?? editor, notify) ??
+        baseRuntime.subscribe((_snapshot, sourceChange) => notify(sourceChange))
+      );
+    },
+    subscribeCommit: (listener) => {
+      const notify: (sourceChange: EditorCommit<V>) => void = (
+        sourceChange
+      ) => {
+        const change = getAuthoredViewCommit(
+          getViewEditor() ?? editor,
+          sourceChange
+        );
         listener(
           change,
           withViewSnapshot(
@@ -1029,9 +1124,20 @@ const createViewRuntime = <V extends Value>(
             viewState.root
           )
         );
-      }),
-    subscribeSource: (source, listener) =>
-      baseRuntime.subscribeSource(source, (_snapshot, change) => {
+      };
+      return (
+        subscribeAuthoredFragment(getViewEditor() ?? editor, notify) ??
+        baseRuntime.subscribeCommit(notify)
+      );
+    },
+    subscribeSource: (source, listener) => {
+      const notify: (sourceChange?: EditorCommit<V>) => void = (
+        sourceChange
+      ) => {
+        const change =
+          sourceChange &&
+          getAuthoredViewCommit(getViewEditor() ?? editor, sourceChange);
+        if (change && !getSourcesForChange(change).includes(source)) return;
         listener(
           change
             ? withViewSnapshot(
@@ -1048,7 +1154,12 @@ const createViewRuntime = <V extends Value>(
               ),
           change
         );
-      }),
+      };
+      return (
+        subscribeAuthoredFragment(getViewEditor() ?? editor, notify) ??
+        baseRuntime.subscribe((_snapshot, sourceChange) => notify(sourceChange))
+      );
+    },
     string: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.string(...args)),
     update: (fn, updateOptions) => {
@@ -1058,17 +1169,19 @@ const createViewRuntime = <V extends Value>(
 
       const runUpdate = () => {
         withEditorUpdateRoot(editor, viewState.root, () => {
-          baseRuntime.update((transaction, context) => {
-            fn(
-              withViewTransaction(
-                editor,
-                transaction,
-                viewState,
-                getViewEditor
+          baseRuntime.update(
+            (transaction, context) =>
+              fn(
+                withViewTransaction(
+                  editor,
+                  transaction,
+                  viewState,
+                  getViewEditor
+                ),
+                withViewUpdateContext(editor, context, viewState, getViewEditor)
               ),
-              withViewUpdateContext(editor, context, viewState, getViewEditor)
-            );
-          }, updateOptions);
+            updateOptions
+          );
         });
       };
       const targetRuntime = getViewEditor()
@@ -1076,11 +1189,13 @@ const createViewRuntime = <V extends Value>(
         : null;
 
       if (targetRuntime) {
-        withEditorTargetRuntime(editor, targetRuntime, runUpdate);
+        withAuthoredUpdateView(editor, getViewEditor() ?? editor, () =>
+          withEditorTargetRuntime(editor, targetRuntime, runUpdate)
+        );
         return;
       }
 
-      runUpdate();
+      withAuthoredUpdateView(editor, getViewEditor() ?? editor, runUpdate);
     },
     void: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.void(...args)),
@@ -1088,15 +1203,16 @@ const createViewRuntime = <V extends Value>(
 };
 
 /** Create a root-scoped editor view from an existing editor. */
-const createEditorViewRuntime = <
+export const createEditorViewRuntime = <
   V extends Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TPlugins extends readonly unknown[] = readonly [],
   const TRoot extends RootKey = RootKey,
 >(
-  sourceEditor: Editor<V, TExtensions>,
+  sourceEditor: Editor<V, TPlugins>,
   options: EditorViewOptions<TRoot> = {}
-): EditorView<V, TExtensions> => {
+): EditorView<V, TPlugins> => {
   const viewState: ViewState = {
+    editor: null,
     composing: sourceEditor.read.view.isComposing(),
     focused: sourceEditor.read.view.isFocused(),
     readOnly: options.readOnly ?? false,
@@ -1110,12 +1226,12 @@ const createEditorViewRuntime = <
     viewState,
     () => viewEditor
   );
-  const viewRead = createEditorReadApi<V, TExtensions>((fn) =>
-    viewRuntime.read((state) => fn(state as EditorStateView<V, TExtensions>))
+  const viewRead = createEditorReadApi<V, TPlugins>((fn) =>
+    viewRuntime.read((state) => fn(state as EditorStateView<V, TPlugins>))
   );
   // Compiled schema methods belong to the shared model, including layered descriptor accessors.
   viewRead.schema = sourceEditor.read.schema;
-  const viewUpdate = createEditorUpdateApi<V, TExtensions>(
+  const viewUpdate = createEditorUpdateApi<V, TPlugins>(
     (fn, policy) => {
       if (viewState.readOnly) {
         throw new Error('Cannot update a read-only editor view.');
@@ -1131,7 +1247,7 @@ const createEditorViewRuntime = <
     },
     {
       hasTxGroup: (groupName) =>
-        getExtensionRegistry(sourceEditor).txGroups.has(groupName),
+        getPluginRegistry(sourceEditor).txGroups.has(groupName),
       repairValue: () => {
         if (viewState.readOnly) {
           throw new Error('Cannot update a read-only editor view.');
@@ -1141,47 +1257,48 @@ const createEditorViewRuntime = <
       },
     }
   );
-  const createViewAnchor: EditorAnchorApi = (value, anchorOptions) =>
-    runRootTransform(sourceEditor, viewState, () =>
-      sourceEditor.anchor(value, anchorOptions)
-    );
-  const createViewKey: EditorKeyApi = rootMethod(
-    sourceEditor,
-    viewState,
-    (target) => readEditor(sourceEditor, (state) => state.key(target as never))
+  const anchorApi = createEditorAnchorApi(() => getDefined(viewEditor));
+  const createViewAnchor: EditorAnchorApi = Object.assign(
+    ((value, anchorOptions) =>
+      withRootRead(sourceEditor, viewState, () =>
+        anchorApi(value, anchorOptions)
+      )) as EditorAnchorApi,
+    {
+      save: (anchor: Parameters<EditorAnchorApi['save']>[0]) =>
+        anchorApi.save(anchor),
+      restore: (saved: unknown) =>
+        withRootRead(sourceEditor, viewState, () => anchorApi.restore(saved)),
+    }
   );
-  const installView: EditorView<V, TExtensions>['install'] = (
-    extension,
+  const createViewKey: EditorKeyApi = (target) =>
+    viewRead((state) => state.key(target as never));
+  const installView: EditorView<V, TPlugins>['install'] = (
+    plugin,
     innerOptions
-  ) => extendEditor(getDefined(viewEditor), extension, innerOptions);
-  let extensionApis: Pick<Editor<V, TExtensions>, 'api' | 'extension'> | null =
-    null;
+  ) => extendEditor(getDefined(viewEditor), plugin, innerOptions);
+  let pluginApis: Pick<Editor<V, TPlugins>, 'api' | 'plugin'> | null = null;
 
   const view = {
     get api() {
-      return extensionApis?.api ?? sourceEditor.api;
+      return pluginApis?.api ?? sourceEditor.api;
     },
     anchor: createViewAnchor,
     blur: () => {
       viewState.focused = false;
     },
     get children() {
-      return sourceEditor.read((state) =>
-        viewState.root === MAIN_ROOT_KEY
-          ? state.children()
-          : state.root(viewState.root)
-      );
+      return viewRead.children();
     },
     install: installView,
     focus: () => {
       viewState.focused = true;
     },
-    extension: ((descriptor: EditorExtensionReference) =>
+    plugin: ((descriptor: PluginReference) =>
       (
-        (extensionApis?.extension ?? sourceEditor.extension) as unknown as (
-          extension: EditorExtensionReference
+        (pluginApis?.plugin ?? sourceEditor.plugin) as unknown as (
+          plugin: PluginReference
         ) => Readonly<{ api: unknown }>
-      )(descriptor)) as unknown as Editor<V, TExtensions>['extension'],
+      )(descriptor)) as unknown as Editor<V, TPlugins>['plugin'],
     id: sourceEditor.id,
     key: createViewKey,
     read: viewRead,
@@ -1198,6 +1315,7 @@ const createEditorViewRuntime = <
     }
   }
   viewEditor = view;
+  viewState.editor = viewEditor;
 
   setEditorRuntime(
     viewEditor,
@@ -1205,11 +1323,12 @@ const createEditorViewRuntime = <
     getEditorRuntimeOwner(sourceEditor),
     viewState.root
   );
-  inheritExtensionRegistry(viewEditor, sourceEditor);
-  extensionApis = createEditorViewExtensionApis(viewEditor, sourceEditor);
+  inheritPluginRegistry(viewEditor, sourceEditor);
+  configureAuthoredView(viewEditor, options.authored);
+  pluginApis = createEditorViewPluginApis(viewEditor, sourceEditor);
+  view.plugin = pluginApis.plugin;
   return Object.freeze(view);
 };
 
 /** Create a root-scoped editor view while preserving layered capabilities. */
-// oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- [P0 behavior-boundary] The overload preserves framework editor subtypes while the runtime owner keeps the concrete Plite implementation.
-export const createEditorView = createEditorViewRuntime as CreateEditorView;
+export const createEditorView: CreateEditorView = createEditorViewRuntime;

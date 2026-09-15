@@ -88,7 +88,6 @@ const assertConfigureObject = (value: object) => {
     'corrections',
     'dependencies',
     'effectTypes',
-    'facetProviders',
     'key',
     'name',
     'read',
@@ -211,6 +210,7 @@ const attachPluginMethods = (
             },
           }),
         ],
+        sourceReferences: Object.freeze([...metadata.sourceReferences, plugin]),
       });
     } else {
       if (!isObjectRecord(input)) {
@@ -227,6 +227,7 @@ const attachPluginMethods = (
             value: snapshotConfiguration(configuration),
           }),
         ],
+        sourceReferences: Object.freeze([...metadata.sourceReferences, plugin]),
       });
     }
 
@@ -241,6 +242,7 @@ const attachPluginMethods = (
     if (isFunction(input)) {
       setPluginDescriptorMetadata(next, {
         ...metadata,
+        sourceReferences: Object.freeze([...metadata.sourceReferences, plugin]),
         stages: [
           ...metadata.stages,
           (context: AnyBasePluginContext) => {
@@ -272,6 +274,7 @@ const attachPluginMethods = (
 
       setPluginDescriptorMetadata(next, {
         ...metadata,
+        sourceReferences: Object.freeze([...metadata.sourceReferences, plugin]),
         stages: [...metadata.stages, () => contribution],
       });
     }
@@ -279,7 +282,9 @@ const attachPluginMethods = (
     return recreate(next);
   });
 
-  return brandPluginDescriptor(plugin, familySource);
+  return Object.freeze(
+    brandPluginDescriptor(plugin, familySource)
+  ) as MutableBasePlugin;
 };
 
 const defineBasePluginRuntime = (definition: unknown): MutableBasePlugin => {
@@ -326,6 +331,7 @@ const defineBasePluginRuntime = (definition: unknown): MutableBasePlugin => {
     configurationLayers: Object.freeze([]),
     htmlCodecContributions: Object.freeze([]),
     resolved: false,
+    sourceReferences: Object.freeze([]),
     stages: createInitialStage(normalizedDefinition),
   });
 

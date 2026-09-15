@@ -2,7 +2,7 @@ import { expect, it } from 'bun:test';
 
 import { act, render, waitFor } from '@testing-library/react';
 import { PlaceholderPlugin } from 'platejs/media/react';
-import { createEditor, Plate, PlateContent } from 'platejs/react';
+import { createEditor, EditorRoot, EditorContent } from 'platejs/react';
 import * as React from 'react';
 
 import { PlaceholderElement } from './media-placeholder';
@@ -31,9 +31,9 @@ it('keeps one upload and its progress across a real placeholder view remount', a
     ],
   });
   const content = (
-    <Plate editor={editor}>
-      <PlateContent />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent />
+    </EditorRoot>
   );
   const first = render(content);
   expect(first.getByRole('button', { name: 'Add a file' })).toBeTruthy();

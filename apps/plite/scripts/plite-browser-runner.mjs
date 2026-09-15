@@ -956,6 +956,7 @@ export const createBrowserRunSummary = ({
   reusedUnitIds = [],
   scope,
   selectedUnits,
+  sourceInputDigest,
   status,
   unitTimeoutFloorMs,
   unitWorkers,
@@ -1022,6 +1023,7 @@ export const createBrowserRunSummary = ({
     scope,
     selectedUnits: selectedUnits.length,
     skippedTests,
+    sourceInputDigest,
     sourceFingerprint: proofFingerprint,
     status,
     timing: {
@@ -1057,6 +1059,15 @@ export const createBrowserRunSummary = ({
 export const verifyMergedSummaries = (summaries, requiredProjects) => {
   if (requiredProjects.length === 0) {
     throw new Error('At least one required browser project is required');
+  }
+
+  const sourceInputDigest = summaries[0]?.sourceInputDigest;
+
+  if (
+    typeof sourceInputDigest !== 'string' ||
+    summaries.some((summary) => summary.sourceInputDigest !== sourceInputDigest)
+  ) {
+    throw new Error('Browser summaries do not share one source input digest');
   }
 
   const expectedProjects = new Set(requiredProjects);

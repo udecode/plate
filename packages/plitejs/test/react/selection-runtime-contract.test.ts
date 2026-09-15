@@ -565,6 +565,51 @@ describe('selection runtime', () => {
     expect(syncCalls).toBe(0);
   });
 
+  test('replaces a pending deferred DOM export without retaining stale work', () => {
+    const inputController = createInputController();
+    inputController.state.selectionSource = 'dom-current';
+    inputController.state.selectionChangeOrigin = 'native-user';
+    const listener: { current: ((change?: EditorCommit) => void) | null } = {
+      current: null,
+    };
+    const scheduled: Array<() => void> = [];
+    const cancelled: number[] = [];
+    let syncCalls = 0;
+
+    const unsubscribe = subscribeSelectionOnlyDOMExport({
+      addSelectorEventListener(nextListener) {
+        listener.current = nextListener;
+        return () => {};
+      },
+      getModelSelection: () => expandedSelection,
+      inputController,
+      scheduleDOMExport(callback) {
+        const index = scheduled.push(callback) - 1;
+        return () => cancelled.push(index);
+      },
+      syncDOMSelectionToEditor() {
+        syncCalls += 1;
+      },
+    });
+    const commit = createChange({
+      childrenChanged: true,
+      selectionChanged: false,
+      tags: ['semantic-command'],
+    });
+
+    listener.current?.(commit);
+    listener.current?.(commit);
+
+    expect(cancelled).toEqual([0]);
+    scheduled[0]();
+    expect(syncCalls).toBe(0);
+    scheduled[1]();
+    expect(syncCalls).toBe(1);
+
+    unsubscribe();
+    expect(cancelled).toEqual([0]);
+  });
+
   test('does not notify DOM export listener for repaired text input commits', () => {
     const inputController = createInputController();
     inputController.state.activeIntent = 'text-insert';
@@ -756,7 +801,7 @@ describe('selection runtime', () => {
     ).toBe(true);
   });
 
-  test('skips DOM export for selections owned by a synthetic partial-DOM lane', () => {
+  test('skips DOM export for selections owned by a synthetic viewport-backed lane', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'model-owned';
     const listener: { current: ((change?: EditorCommit) => void) | null } = {

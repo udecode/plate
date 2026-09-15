@@ -321,7 +321,10 @@ describe('ContentSlice', () => {
       content: [section('after')],
       openEnd: 0,
       openStart: 0,
+      roots: { caption: [paragraph('root')] },
     });
+    assert.equal(preserved.roots, source.roots);
+    assert.equal(closed.roots, source.roots);
     assert.throws(
       () =>
         ContentSlice.withContent(source, [paragraph('too shallow')], {

@@ -12,12 +12,16 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  authored,
+  readAuthoredFormatSnapshot,
+} from '../../platejs/src/authored/index';
+import {
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   defineDocumentMigrations,
   schema,
 } from '../../platejs/src/index';
-import { migratePlateV54 } from '../../platejs/src/migrations/index';
+import { migrateV54 } from '../../platejs/src/migrations/index';
 import {
   runEditorMigrationInput,
   runEditorMigrations,
@@ -25,14 +29,14 @@ import {
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const temporaryDirectories: string[] = [];
-const RuntimeParagraphPlugin = defineBasePlugin('paragraph', {
+const RuntimeParagraphPlugin = definePlugin('paragraph', {
   schema: { element: schema.element.textBlock() },
 });
 const RuntimeSchema = { id: 'plate', version: 54 } as const;
 const RuntimeMigrations = defineDocumentMigrations(RuntimeSchema, {
   sourceFingerprints: { 53: 'source-53' },
   steps: {
-    54: migratePlateV54,
+    54: migrateV54,
   },
   unversioned: 53,
 });
@@ -42,6 +46,7 @@ const createFixture = (
     applicationRoot?: boolean;
     emptyKit?: boolean;
     persistedSelection?: boolean;
+    suggestions?: boolean;
   } = {}
 ) => {
   const directory = mkdtempSync(join(packageRoot, 'tmp-migration-run-'));
@@ -51,14 +56,18 @@ const createFixture = (
   temporaryDirectories.push(directory);
   writeFileSync(
     entryPath,
-    `import { defineBasePlugin, defineDocumentMigrations, schema } from '../../platejs/src/index';
-import { migratePlateV54 } from '../../platejs/src/migrations/index';
+    `import { definePlugin, defineDocumentMigrations, schema } from '../../platejs/src/index';
+import { authored } from '../../platejs/src/authored/index';
+import { migrateV54 } from '../../platejs/src/migrations/index';
 
-const ParagraphPlugin = defineBasePlugin('paragraph', {
+const ParagraphPlugin = definePlugin('paragraph', {
   schema: { element: schema.element.textBlock() },
 });
 
-export const EditorKit = ${options.emptyKit ? '[]' : '[ParagraphPlugin]'} as const;
+export const EditorKit = [
+  ${options.emptyKit ? '' : 'ParagraphPlugin,'}
+  ${options.suggestions ? "authored({ authorId: 'migration' })," : ''}
+] as const;
 export const OtherEmptyArray = [] as const;
 export const EditorSchema = {
   id: 'plate',
@@ -69,13 +78,43 @@ export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
   sourceFingerprints: { 53: 'source-53' },
   unversioned: 53,
   steps: {
-    54: migratePlateV54,
+    54: migrateV54,
   },
 });
 `,
     'utf-8'
   );
-  const document = { children: [{ children: [{ text: 'v' }], type: 'p' }] };
+  const document = {
+    children: options.suggestions
+      ? [
+          {
+            children: [
+              {
+                suggestion: true,
+                suggestion_change: {
+                  createdAt: 123,
+                  id: 'change',
+                  type: 'remove',
+                  userId: 'alice',
+                },
+                text: 'old',
+              },
+              {
+                suggestion: true,
+                suggestion_change: {
+                  createdAt: 123,
+                  id: 'change',
+                  type: 'insert',
+                  userId: 'alice',
+                },
+                text: 'new',
+              },
+            ],
+            type: 'p',
+          },
+        ]
+      : [{ children: [{ text: 'v' }], type: 'p' }],
+  };
   const source = options.persistedSelection
     ? {
         document,
@@ -188,6 +227,54 @@ describe('plate migrate run', () => {
       { children: [{ text: 'v' }], type: 'paragraph' },
     ]);
     expect(readFileSync(fixture.documentPath, 'utf-8')).toBe(sourceText);
+  });
+
+  it('matches runtime semantics for legacy suggestion migration', async () => {
+    const fixture = createFixture({ suggestions: true });
+    const sourceText = readFileSync(fixture.documentPath, 'utf-8');
+    const result = await runEditorMigrationInput(
+      fixture.entryPath,
+      sourceText,
+      { cwd: fixture.directory }
+    );
+    const output = JSON.parse(result.outputText);
+    const cliEditor = createEditor({
+      initialValue: output,
+      migrations: RuntimeMigrations,
+      plugins: [RuntimeParagraphPlugin, authored({ authorId: 'reader' })],
+      schema: RuntimeSchema,
+    });
+    const runtimeEditor = createEditor({
+      initialValue: JSON.parse(sourceText),
+      migrations: RuntimeMigrations,
+      plugins: [RuntimeParagraphPlugin, authored({ authorId: 'reader' })],
+      schema: RuntimeSchema,
+    });
+    const cli = readAuthoredFormatSnapshot(cliEditor);
+    const runtime = readAuthoredFormatSnapshot(runtimeEditor);
+
+    expect(cli.accepted).toEqual(runtime.accepted);
+    expect(cli.proposed).toEqual(runtime.proposed);
+    expect(
+      cli.changes.map(({ authorId, createdAt, id }) => ({
+        authorId,
+        createdAt,
+        id,
+      }))
+    ).toEqual([{ authorId: 'alice', createdAt: 123, id: 'change' }]);
+    expect(
+      runtime.changes.map(({ authorId, createdAt, id }) => ({
+        authorId,
+        createdAt,
+        id,
+      }))
+    ).toEqual(
+      cli.changes.map(({ authorId, createdAt, id }) => ({
+        authorId,
+        createdAt,
+        id,
+      }))
+    );
   });
 
   it('uses an explicit application root in migration validation and identity', async () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { CopilotKit } from '@/registry/components/editor/copilot';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
@@ -14,10 +14,10 @@ export default function CopilotDemo() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer variant="demo">
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

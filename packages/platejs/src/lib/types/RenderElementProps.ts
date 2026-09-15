@@ -17,11 +17,11 @@ export type RenderElementFn = (props: RenderElementProps) => any;
 export type RenderElementProps<N extends Element = Element> = {
   attributes: {
     [key: string]: unknown;
-    'data-plite-node': 'element';
+    'data-editor-node': 'element';
     ref?: (element: HTMLElement | null) => void;
     className?: string;
-    'data-plite-inline'?: true;
-    'data-plite-void'?: true;
+    'data-editor-inline'?: true;
+    'data-editor-void'?: true;
     dir?: 'auto' | 'ltr' | 'rtl';
     style?: any;
   };

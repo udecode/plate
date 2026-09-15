@@ -7,8 +7,8 @@ import { getPlateDecorationSources } from '../../../internal/plugin/getPlateDeco
 import {
   type Editor,
   createEditor,
-  Plate,
-  PlateContent,
+  EditorRoot,
+  EditorContent,
   useEditor,
 } from '../../core';
 import { pipeHandler } from '../../utils/pipeHandler.internal';
@@ -202,16 +202,16 @@ it('uses the current model selection and the calling view permissions', () => {
     React.useLayoutEffect(() => {
       views[index] = view;
     }, [index, view]);
-    return <PlateContent readOnly={readOnly} />;
+    return <EditorContent readOnly={readOnly} />;
   }
   const tree = (readOnly = false) => (
     <>
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <Capture index={0} />
-      </Plate>
-      <Plate editor={editor} readOnly={readOnly}>
+      </EditorRoot>
+      <EditorRoot editor={editor} readOnly={readOnly}>
         <Capture index={1} readOnly={readOnly} />
-      </Plate>
+      </EditorRoot>
     </>
   );
   const view = render(tree());

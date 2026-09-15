@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test';
 
-import { openExample } from '@platejs/test/playwright';
+import {
+  attachBrowserSelectionScreenshot,
+  openExample,
+  recordBrowserRuntimeErrors,
+} from '@platejs/test/playwright';
 
 const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
 
@@ -11,8 +15,25 @@ const focusRootByLabel = async (
   label: string,
   editor: EditorHarness
 ) => {
-  await page.getByText(label).click({ force: true });
-  await expect(editor.root).toBeFocused();
+  await expect
+    .poll(
+      async () => {
+        await page.getByText(label, { exact: true }).click({ force: true });
+
+        return editor.root.evaluate(
+          (element) =>
+            new Promise<boolean>((resolve) => {
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  resolve(element.ownerDocument.activeElement === element);
+                });
+              });
+            })
+        );
+      },
+      { timeout: 8000 }
+    )
+    .toBe(true);
 };
 
 const insertEditorText = async (
@@ -156,6 +177,73 @@ const clickTextOffset = async (
 };
 
 test.describe('multi-root document example', () => {
+  test('keeps shifted body bindings and follow-up typing rooted after a prefix split', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'Desktop native keyboard and caret proof'
+    );
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
+    const body = await openExample(page, 'plite/multi-root-document', {
+      ready: { editor: 'visible' },
+      surface: { scope: '#multi-root-body-surface' },
+    });
+    const firstText = 'The body root carries the document content.';
+    const secondText = 'Header and footer are editable roots.';
+    const key = await body.root
+      .locator('[data-editor-path="1"]')
+      .getAttribute('data-editor-node-key');
+    expect(key).toBeTruthy();
+
+    try {
+      await focusRootByLabel(page, 'Body editor', body);
+      await body.selection.collapse({ path: [0, 0], offset: 0 });
+      await page.keyboard.press('Enter');
+      await body.assert.blockTexts(['', firstText, secondText]);
+      const shifted = body.root.locator(`[data-editor-node-key="${key}"]`);
+      await expect(shifted).toHaveAttribute('data-editor-path', '2');
+      await body.selection.collapse({ path: [2, 0], offset: secondText.length });
+      await page.keyboard.type(' Follow-up');
+      await body.assert.blockTexts(['', firstText, `${secondText} Follow-up`]);
+      await body.assert.collapsedModelDOMSelection({
+        path: [2, 0],
+        offset: secondText.length + 10,
+        text: `${secondText} Follow-up`,
+      });
+      await body.press(`${modifier}+z`);
+      await body.assert.blockTexts(['', firstText, secondText]);
+      await body.assert.collapsedModelDOMSelection({
+        path: [2, 0],
+        offset: secondText.length,
+        text: secondText,
+      });
+      await page.keyboard.type('!');
+      await body.assert.blockTexts(['', firstText, `${secondText}!`]);
+      await body.assert.collapsedModelDOMSelection({
+        path: [2, 0],
+        offset: secondText.length + 1,
+        text: `${secondText}!`,
+      });
+      await expect(page.locator('#multi-root-header')).toHaveText(
+        'Confidential quarterly plan'
+      );
+      await expect(page.locator('#multi-root-footer')).toHaveText(
+        'Prepared for leadership review'
+      );
+      await expect(shifted).toHaveAttribute('data-editor-path', '2');
+      await body.assert.noDoubleSelectionHighlight();
+      await attachBrowserSelectionScreenshot(
+        body,
+        testInfo,
+        'shifted-body-follow-up.png'
+      );
+      errors.assertNone();
+    } finally {
+      errors.stop();
+    }
+  });
+
   test('keeps root chrome, editors, and status badges inside the document frame', async ({
     page,
   }) => {
@@ -169,13 +257,13 @@ test.describe('multi-root document example', () => {
     });
     const overflow = await page.evaluate(() => {
       const frame = document.querySelector(
-        '.plite-multi-root-document-document'
+        '.editor-multi-root-document-document'
       );
       const elements = Array.from(
         document.querySelectorAll(
           [
-            '.plite-multi-root-document-root-header',
-            '.plite-multi-root-document-editor',
+            '.editor-multi-root-document-root-header',
+            '.editor-multi-root-document-editor',
             '[data-slot="badge"]',
           ].join(',')
         )
@@ -776,6 +864,10 @@ test.describe('multi-root document example', () => {
     await page.keyboard.press('End');
     await page.keyboard.type(' Tail');
     await expect(header).toHaveText(headerTextWithTail);
+    await headerEditor.assert.selection({
+      anchor: { path: [0, 0], offset: headerTextWithTail.length },
+      focus: { path: [0, 0], offset: headerTextWithTail.length },
+    });
 
     await focusRootByLabel(page, 'Body editor', bodyEditor);
 
@@ -903,7 +995,7 @@ test.describe('multi-root document example', () => {
     await page.mouse.up();
 
     await expect
-      .poll(() => page.locator('[data-plite-view-selection="true"]').count())
+      .poll(() => page.locator('[data-editor-view-selection="true"]').count())
       .toBe(0);
     await expect
       .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))

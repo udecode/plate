@@ -1,0 +1,7 @@
+# Working reference comparison
+
+When a migration, parity task or failure investigation has a reportedly working reference implementation, trace that operation before declaring an environment, provider or missing-input blocker. Follow its caller, effective configuration, validation and request construction, provider response, and received or persisted result; compare the target path at those same boundaries. Reuse existing source maps and receipts where current. Source code establishes intended behavior; confirmed success needs matching runtime evidence.
+
+Record the failed attempt separately from the explanation and the scope it proves. One rejected request does not establish that the destination, account or entire integration is unusable. Check supported existing configuration and documented test handling before requesting replacement infrastructure or user input. Do not defeat provider controls, weaken production authentication, or count a test exemption as production proof.
+
+Correct an overbroad blocker in the active plan as soon as contrary evidence appears. Retain the original failure, state the unresolved comparison and next executable check, withdraw unnecessary input requests, and continue independent authorized work. Missing evidence is an investigation obligation until the relevant reference path and supported alternatives have been checked; it is not evidence of impossibility.

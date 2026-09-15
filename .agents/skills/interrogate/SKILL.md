@@ -1,9 +1,9 @@
 ---
 name: interrogate
-description: "Use for \"interrogate\", \"adversarial review\", \"multi-model review\", \"challenge this\", \"stress test this code\", \"find blind spots\", or \"tear this apart\". Multiple LLM reviewers challenge changes from independent angles."
+description: "Challenge a contested design or explicitly requested candidate through independent adversarial reviews."
 ---
 
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
+For platform-specific commands or delegation, read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md). Use the complete domain method below under current project scope and proof requirements.
 
 # Interrogate
 
@@ -48,7 +48,7 @@ For each reviewer:
 - `model`: the configured `interrogate reviewers` entry, or the table default with no configured line
 - permitted operations: read-only evidence inspection
 
-If a model slug is rejected as unresolvable when you try to spawn the subagent, check the valid slugs in the Task tool's error message, pick the closest equivalent (prefer the highest-reasoning tier of the same family), spawn with the valid slug, and open a separate PR to update the configured value or default table. Do not block the review on the slug issue. If the configured value is `inherit-parent` or `auto`, omit `model` instead; never treat those aliases as broken slugs or enter this fallback for them.
+If a configured model is unavailable, inspect the current tool's supported models. Use an already-authorized available fallback; otherwise omit the override and inherit the parent where the method still adds value. Report lost model diversity or independence explicitly. If the requested result requires the unavailable model, report that capability gap rather than claim an equivalent review. Propose or repair the owned configuration within the active edit scope; a separate PR requires publication authority. For `inherit-parent` or `auto`, omit `model`; these aliases are not rejected model names.
 
 Read `references/reviewer-prompt.md` and fill in the template with:
 1. The stated intent

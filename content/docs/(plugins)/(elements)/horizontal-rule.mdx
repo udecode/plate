@@ -131,7 +131,7 @@ export const staticEditor = createStaticEditor({
 
 ## Value shape
 
-Horizontal rules are void block elements. Keep the empty text child so the node remains a valid Plite element.
+Horizontal rules are void block elements. Keep the empty text child so the node remains a valid Plate element.
 
 ```tsx
 const value = [
@@ -173,10 +173,10 @@ The rule resolves `BaseHorizontalRulePlugin` through the editor and passes its `
 | Editable element | Renders a non-editable padded wrapper with an `<hr>` inside it. |
 | Selected + focused | Adds a focus ring around the divider. |
 | Read-only | Removes the pointer cursor from the editable component. |
-| Static element | Renders the same divider inside `PliteElement`. |
+| Static element | Renders the same divider inside `EditorElement`. |
 | Insert toolbar | Adds a `Divider` item with `MinusIcon`; `PLUGINS.horizontalRule` selects the capability. |
 
-The divider component renders `{props.children}` after the non-editable wrapper so Plite can still keep the void child mounted.
+The divider component renders `{props.children}` after the non-editable wrapper so Plate can still keep the void child mounted.
 
 ## API Reference
 

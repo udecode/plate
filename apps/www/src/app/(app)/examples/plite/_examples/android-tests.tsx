@@ -3,7 +3,7 @@ import type { Value } from 'plitejs';
 import {
   Editable,
   type RenderLeafProps,
-  Plite,
+  EditorRoot,
   useEditor,
 } from 'plitejs/react';
 
@@ -246,7 +246,7 @@ const AndroidTestsExample = () => {
         </NativeSelect>
       </div>
 
-      <p className="plite-android-tests-instructions">
+      <p className="editor-android-tests-instructions">
         {testCase.instructions}
       </p>
 
@@ -268,9 +268,9 @@ const TestCase = ({
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable placeholder="Enter some text…" renderLeaf={Leaf} spellCheck />
-    </Plite>
+    </EditorRoot>
   );
 };
 

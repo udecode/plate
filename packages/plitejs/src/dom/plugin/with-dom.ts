@@ -1,13 +1,12 @@
 import {
-  defineExtension,
+  definePlugin,
   type EditorCommit,
-  type EditorExtension,
-  type EditorExtensionApiFactoryContext,
+  type Plugin,
+  type PluginApiFactoryContext,
   type EditorTransactionChangeContext,
   LocationApi,
   type Editor as EditorType,
 } from '../..';
-import { getEditorExtensionContributions } from '../../internal';
 import {
   type TextDiff,
   transformPendingPoint,
@@ -28,20 +27,18 @@ import {
 } from '../utils/weak-maps';
 import {
   clearDOMClipboardFormatKey,
-  dispatchDOMClipboardHandlers,
-  DOM_CLIPBOARD_HANDLERS,
+  domCommands,
   getDOMClipboardFormatKey,
   setDOMClipboardFormatKey,
 } from './dom-clipboard-runtime';
 import {
   createDOMEditorCapability,
-  DOMEditor as DOMEditorApi,
   type DOMApi,
   type DOMClipboardApi,
 } from './dom-editor';
 import { destroyEditorDOMPhaseSchedulerFallback } from './dom-phase-scheduler';
 
-const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
+const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-editor-fragment';
 const DOM_ACTIVATION = new WeakMap<EditorType, object>();
 
 const clearUserSelectionRef = (editor: EditorType) => {
@@ -126,7 +123,7 @@ export interface DOMEditorOptions {
   clipboardFormatKey?: string;
 }
 
-export type DOMExtensionTypes<TClipboard extends boolean = true> = {
+export type DOMPluginTypes<TClipboard extends boolean = true> = {
   api: {
     dom: DOMApi &
       ([TClipboard] extends [true]
@@ -137,52 +134,44 @@ export type DOMExtensionTypes<TClipboard extends boolean = true> = {
   ? { update: { dom: Pick<DOMClipboardApi, 'insertData'> } }
   : Record<never, never>);
 
-type DOMExtensionApi = DOMApi & {
+type DOMPluginApi = DOMApi & {
   clipboard?: DOMClipboardApi;
 };
 
-type DOMExtensionDefinition<TClipboard extends boolean> = {
+type DOMPluginDefinition<TClipboard extends boolean> = {
   activate: true;
-  api: DOMExtensionTypes<TClipboard>['api']['dom'];
+  api: DOMPluginTypes<TClipboard>['api']['dom'];
   name: 'dom';
   on: true;
 } & ([TClipboard] extends [true]
   ? { update: Pick<DOMClipboardApi, 'insertData'> }
   : Record<never, never>);
 
-/** Editor extension installed by `dom()`. */
-export type DOMExtension<TClipboard extends boolean = true> = EditorExtension<
-  DOMExtensionDefinition<TClipboard>
+/** Editor plugin installed by `dom()`. */
+export type DOMPlugin<TClipboard extends boolean = true> = Plugin<
+  DOMPluginDefinition<TClipboard>
 >;
 
 /** Install DOM clipboard, selection, focus, and node-resolution behavior. */
 export function dom(
   options: DOMEditorOptions & { clipboard: false }
-): DOMExtension<false>;
+): DOMPlugin<false>;
 export function dom(
   options?: Omit<DOMEditorOptions, 'clipboard'> & { clipboard?: never }
-): DOMExtension;
-export function dom(options: DOMEditorOptions): DOMExtension<boolean>;
+): DOMPlugin;
+export function dom(options: DOMEditorOptions): DOMPlugin<boolean>;
 export function dom(
   options: DOMEditorOptions = {}
-): DOMExtension | DOMExtension<false> | DOMExtension<boolean> {
-  const createApi = ({
-    editor,
-    getContributions,
-  }: EditorExtensionApiFactoryContext) => {
-    const handlers = getContributions(DOM_CLIPBOARD_HANDLERS);
-
-    const { clipboard, ...domApi } = createDOMEditorCapability(
-      editor,
-      handlers
-    );
+): DOMPlugin | DOMPlugin<false> | DOMPlugin<boolean> {
+  const createApi = ({ editor }: PluginApiFactoryContext) => {
+    const { clipboard, ...domApi } = createDOMEditorCapability(editor);
     return Object.freeze({
       ...domApi,
       ...(options.clipboard === false ? {} : { clipboard }),
-    }) as DOMExtensionApi;
+    }) as DOMPluginApi;
   };
 
-  const extension = defineExtension('dom', {
+  const plugin = definePlugin('dom', {
     activate(context) {
       const { editor } = context;
       const previousActivation = DOM_ACTIVATION.get(editor);
@@ -223,6 +212,21 @@ export function dom(
       }
     },
     api: createApi,
+    ...(options.clipboard === false
+      ? {}
+      : {
+          commands: ({ around }) => [
+            around(domCommands.insertData, ({ next, state }) => {
+              const result = next();
+
+              return result === false
+                ? false
+                : state.transaction.extend(result, (tx) => {
+                    tx.tags.add('paste');
+                  });
+            }),
+          ],
+        }),
     on: {
       commit({ commit, editor }) {
         handleDOMCommit(editor, commit);
@@ -234,30 +238,21 @@ export function dom(
     ...(options.clipboard === false
       ? {}
       : {
-          update: ({ editor, tx }) => ({
-            insertData: (data: DataTransfer) => {
-              tx.tags.add('paste');
-
-              return dispatchDOMClipboardHandlers(
-                getEditorExtensionContributions(editor, DOM_CLIPBOARD_HANDLERS),
-                data,
-                tx,
-                (nextData) =>
-                  DOMEditorApi.clipboard.insertData(editor, nextData)
-              );
-            },
+          update: ({ tx }) => ({
+            insertData: (data: DataTransfer) =>
+              tx.command(domCommands.insertData, data),
           }),
         }),
   });
 
-  return extension as unknown as DOMExtension<boolean>;
+  return plugin as unknown as DOMPlugin<boolean>;
 }
 
-/** Editor with the DOM capability installed over its exact extension set. */
+/** Editor with the DOM capability installed over its exact plugin set. */
 export type DOMEditor<
   V extends import('../..').Value = import('../..').Value,
-  TExtensions extends readonly unknown[] = readonly [],
-> = Omit<EditorType<V, TExtensions>, 'api' | 'update'> & {
-  readonly api: EditorType<V, TExtensions>['api'] & DOMExtensionTypes['api'];
-  update: EditorType<V, TExtensions>['update'] & DOMExtensionTypes['update'];
+  TPlugins extends readonly unknown[] = readonly [],
+> = Omit<EditorType<V, TPlugins>, 'api' | 'update'> & {
+  readonly api: EditorType<V, TPlugins>['api'] & DOMPluginTypes['api'];
+  update: EditorType<V, TPlugins>['update'] & DOMPluginTypes['update'];
 };

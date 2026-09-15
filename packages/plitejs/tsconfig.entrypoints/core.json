@@ -20,6 +20,8 @@
     "../src/pagination/**/*",
     "../src/pagination/react.*",
     "../src/react/**/*",
+    "../src/react/virtualized.*",
+    "../src/react/virtualized/**/*",
     "../src/testing/**/*",
     "../src/yjs/**/*",
     "../src/yjs/react/**/*",
@@ -30,6 +32,10 @@
     "../src/**/__tests__/**"
   ],
   "extends": "../tsconfig.json",
-  "include": ["../src/annotations/**/*", "../src/**/*"],
+  "include": [
+    "../src/annotations/**/*",
+    "../src/internal/index.*",
+    "../src/**/*"
+  ],
   "references": []
 }

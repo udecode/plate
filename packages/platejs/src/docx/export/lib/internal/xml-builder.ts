@@ -619,6 +619,7 @@ type RunAttributes = {
   display?: string;
   font?: string;
   fontSize?: number;
+  formatRevision?: RevisionAttributes;
   highlightColor?: string;
   hyperlink?: boolean;
   i?: boolean;
@@ -653,6 +654,7 @@ interface ParagraphAttributes extends RunAttributes {
   originalWidth?: number;
   paragraphStyle?: string;
   relationshipId?: number;
+  structureRevision?: RevisionAttributes;
   rowSpan?: string;
   tableCellBorder?: TableCellBorder;
   textAlign?: string;
@@ -670,6 +672,13 @@ type TableAttributes = {
   tableRowHeight?: number;
   width?: number;
 };
+
+type RevisionAttributes = Readonly<{
+  author: string;
+  date?: string;
+  id: number;
+  kind: string;
+}>;
 
 type ColumnWidthInfo = {
   type: string;
@@ -1014,6 +1023,33 @@ const modifiedStyleAttributesBuilder = (
 ): ParagraphAttributes => {
   const modifiedAttributes: ParagraphAttributes = { ...attributes };
 
+  if (isVNode(vNode)) {
+    const properties = (vNode as VNodeType).properties?.attributes;
+    const kind = properties?.['data-editor-change-kind'];
+    const id = Number(properties?.['data-editor-revision-id']);
+
+    if (
+      kind &&
+      Number.isSafeInteger(id) &&
+      id >= 0 &&
+      properties?.['data-editor-author-id']
+    ) {
+      const revision = {
+        author: properties['data-editor-author-id'],
+        ...(properties['data-editor-created-at']
+          ? { date: properties['data-editor-created-at'] }
+          : {}),
+        id,
+        kind,
+      };
+
+      if (kind === 'format') modifiedAttributes.formatRevision = revision;
+      if (kind === 'structure' && options?.isParagraph) {
+        modifiedAttributes.structureRevision = revision;
+      }
+    }
+  }
+
   // styles
   if (
     isVNode(vNode) &&
@@ -1132,14 +1168,18 @@ const buildFormatting = (
     case 'i': {
       return buildItalics();
     }
-    case 'ins':
+    case 'ins': {
+      return null;
+    }
     case 'u': {
       return buildUnderline();
     }
     case 'strike':
-    case 'del':
     case 's': {
       return buildStrike();
+    }
+    case 'del': {
+      return null;
     }
     case 'sub': {
       return buildVertAlign('subscript');
@@ -1194,6 +1234,8 @@ const buildRunProperties = (
       // Skip undefined values to prevent default 'black' being applied
       if (value === undefined) return;
 
+      if (key === 'formatRevision') return;
+
       const options: FormattingOptions = {};
       if (
         key === 'color' ||
@@ -1214,6 +1256,18 @@ const buildRunProperties = (
         runPropertiesFragment.import(formattingFragment);
       }
     });
+    if (attributes.formatRevision) {
+      const { author, date, id } = attributes.formatRevision;
+      const change = fragment({ namespaceAlias: { w: namespaces.w } })
+        .ele('@w', 'rPrChange')
+        .att('@w', 'id', String(id))
+        .att('@w', 'author', author);
+
+      if (date) change.att('@w', 'date', date);
+      change.ele('@w', 'rPr').up().up();
+
+      runPropertiesFragment.import(change);
+    }
   }
   runPropertiesFragment.up();
 
@@ -1226,6 +1280,49 @@ const buildRun = async (
   docxDocumentInstance?: DocxDocumentInstance
 ): Promise<XMLBuilderType | XMLBuilderType[]> => {
   let attributes = initialAttributes;
+  const trackedRevision = (() => {
+    if (!isVNode(vNode)) return null;
+    const tag = (vNode as VNodeType).tagName;
+
+    if (tag !== 'ins' && tag !== 'del') return null;
+    const properties = (vNode as VNodeType).properties?.attributes;
+    const id = Number(properties?.['data-editor-revision-id']);
+
+    return {
+      author: properties?.['data-editor-author-id'] ?? 'Unknown',
+      date: properties?.['data-editor-created-at'],
+      id: Number.isSafeInteger(id) && id >= 0 ? id : 0,
+      kind: properties?.['data-editor-change-kind'] ?? tag,
+      tag,
+    };
+  })();
+  const wrapTracked = (
+    runs: XMLBuilderType | XMLBuilderType[]
+  ): XMLBuilderType | XMLBuilderType[] => {
+    if (!trackedRevision) return runs;
+    const name =
+      trackedRevision.kind === 'move-from'
+        ? 'moveFrom'
+        : trackedRevision.kind === 'move-to'
+          ? 'moveTo'
+          : trackedRevision.tag;
+    const wrap = (run: XMLBuilderType) => {
+      const wrapper = fragment({ namespaceAlias: { w: namespaces.w } })
+        .ele('@w', name)
+        .att('@w', 'id', String(trackedRevision.id))
+        .att('@w', 'author', trackedRevision.author);
+
+      if (trackedRevision.date) {
+        wrapper.att('@w', 'date', trackedRevision.date);
+      }
+
+      wrapper.import(run).up();
+
+      return wrapper;
+    };
+
+    return Array.isArray(runs) ? runs.map(wrap) : wrap(runs);
+  };
   const runFragment = fragment({ namespaceAlias: { w: namespaces.w } }).ele(
     '@w',
     'r'
@@ -1301,15 +1398,19 @@ const buildRun = async (
               tempAttributes.i = true;
               break;
             }
-            case 'ins':
+            case 'ins': {
+              break;
+            }
             case 'u': {
               tempAttributes.u = true;
               break;
             }
             case 'strike':
-            case 'del':
             case 's': {
               tempAttributes.strike = true;
+              break;
+            }
+            case 'del': {
               break;
             }
             case 'sub': {
@@ -1373,7 +1474,7 @@ const buildRun = async (
       }
     }
     if (runFragmentsArray.length) {
-      return runFragmentsArray;
+      return wrapTracked(runFragmentsArray);
     }
   }
 
@@ -1430,7 +1531,7 @@ const buildRun = async (
   }
   runFragment.up();
 
-  return runFragment;
+  return wrapTracked(runFragment);
 };
 
 const buildRunOrRuns = async (
@@ -1678,6 +1779,22 @@ const buildParagraphProperties = (
   if (attributes && attributes.constructor === Object) {
     Object.keys(attributes).forEach((key) => {
       switch (key) {
+        case 'structureRevision': {
+          const { author, date, id } =
+            attributes.structureRevision ??
+            failInvariant('Expected value to be defined');
+          const change = fragment({ namespaceAlias: { w: namespaces.w } })
+            .ele('@w', 'pPrChange')
+            .att('@w', 'id', String(id))
+            .att('@w', 'author', author);
+
+          if (date) change.att('@w', 'date', date);
+          change.ele('@w', 'pPr').up().up();
+
+          paragraphPropertiesFragment.import(change);
+          attributes.structureRevision = undefined;
+          break;
+        }
         case 'numbering': {
           const { levelId, numberingId } =
             attributes[key] ?? failInvariant('Expected value to be defined');

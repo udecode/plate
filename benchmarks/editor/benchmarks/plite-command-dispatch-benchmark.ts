@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks';
 import {
   createEditor,
   defineCommand,
-  defineExtension,
+  definePlugin,
   type Value,
 } from '../../../packages/plitejs/src/index';
 import { dispatchCommand } from '../../../packages/plitejs/src/internal/index';
@@ -96,8 +96,8 @@ const createActualLane = (kind: LaneKind, blocks: number, depth: number) => {
       },
     }
   );
-  const extension = defineExtension(
-    `benchmark.command-dispatch.${kind}.${blocks}.${depth}.extension`,
+  const plugin = definePlugin(
+    `benchmark.command-dispatch.${kind}.${blocks}.${depth}.plugin`,
     {
       commands: ({ around, handle }) =>
         Array.from({ length: depth }, (_value, index) =>
@@ -128,7 +128,7 @@ const createActualLane = (kind: LaneKind, blocks: number, depth: number) => {
     }
   );
   const editor = createEditor({
-    extensions: depth === 0 ? [] : [extension],
+    plugins: depth === 0 ? [] : [plugin],
     initialValue: createDocument(blocks),
   });
   let commits = 0;
@@ -498,7 +498,7 @@ const result = {
     reference:
       'The reference is a synthetic handler-chain interpreter in this process, not the deleted implementation and not a substitute for a missing pre-edit baseline.',
     setup:
-      'Editor and 100/20,000-block document construction, extension compilation, warmup, correctness checks, allocation proof, and forced GC before each large-prefix sample are outside timed samples.',
+      'Editor and 100/20,000-block document construction, plugin compilation, warmup, correctness checks, allocation proof, and forced GC before each large-prefix sample are outside timed samples.',
   },
   lanes,
   thresholdPolicy: {

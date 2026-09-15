@@ -3,8 +3,8 @@ import type { Range, Selection } from 'platejs';
 
 import type { PlaceholderShape } from '../browser/zero-width';
 import type {
-  PliteReactRenderKind,
-  PliteReactRenderProfilerSnapshot,
+  ReactRenderKind,
+  ReactRenderProfilerSnapshot,
 } from './render-profiler';
 
 type AtLeastOne<T extends object> = {
@@ -12,7 +12,7 @@ type AtLeastOne<T extends object> = {
 }[keyof T];
 
 /** Exact or bounded numeric assertion used by browser proof steps. */
-export type PliteBrowserNumberBudget =
+export type BrowserNumberBudget =
   | number
   | { exact: number; max?: never; min?: never }
   | (AtLeastOne<{ max: number; min: number }> & { exact?: never });
@@ -24,22 +24,22 @@ export type SelectionSnapshot = {
 };
 
 /** Owner metadata for a raw view-selection snapshot. */
-export type PliteBrowserRawViewSelectionOwner = {
+export type BrowserRawViewSelectionOwner = {
   childRoot: string;
   ownerPath: number[];
   ownerRoot: string;
 };
 
 /** Point in a raw view-selection snapshot. */
-export type PliteBrowserRawViewSelectionPoint = {
-  owner?: PliteBrowserRawViewSelectionOwner;
+export type BrowserRawViewSelectionPoint = {
+  owner?: BrowserRawViewSelectionOwner;
   point: { path: number[]; offset: number; root?: string };
 };
 
-/** Raw view-selection snapshot captured from Plite view state. */
-export type PliteBrowserRawViewSelectionSnapshot = {
-  anchor: PliteBrowserRawViewSelectionPoint;
-  focus: PliteBrowserRawViewSelectionPoint;
+/** Raw view-selection snapshot captured from editor view state. */
+export type BrowserRawViewSelectionSnapshot = {
+  anchor: BrowserRawViewSelectionPoint;
+  focus: BrowserRawViewSelectionPoint;
   segments: { backward: boolean; [key: string]: unknown };
 };
 
@@ -63,15 +63,15 @@ type DOMSelectionLocationExpectation = AtLeastOne<DOMSelectionLocationSnapshot>;
 
 /** Combined model and native-selection summary for one root. */
 /** Combined model and native selection summary for proof assertions. */
-export type PliteBrowserNativeSelectionSummary = {
+export type BrowserNativeSelectionSummary = {
   collapsed: boolean | null;
   rangeCount: number;
   selection: SelectionSnapshot | null;
   textLength: number;
 };
 
-/** Plite view-selection snapshot used by browser proof helpers. */
-export type PliteBrowserViewSelectionSnapshot = {
+/** Editor view-selection snapshot used by browser proof helpers. */
+export type BrowserViewSelectionSnapshot = {
   active: boolean;
   anchor: SelectionPoint | null;
   focus: SelectionPoint | null;
@@ -84,15 +84,15 @@ export type PliteBrowserViewSelectionSnapshot = {
 
 /** Visible selection overlay snapshot for one root. */
 /** Displayed selection snapshot for one root in the rendered document. */
-export type PliteBrowserDisplayedSelectionSnapshot = {
+export type BrowserDisplayedSelectionSnapshot = {
   displayed: SelectionSnapshot | null;
   doubleHighlighted: boolean;
   hasVisibleEditorSelection: boolean;
   hasVisibleSelection: boolean;
   model: SelectionSnapshot | null;
-  native: PliteBrowserNativeSelectionSummary;
+  native: BrowserNativeSelectionSummary;
   source: 'native' | 'none' | 'view';
-  view: PliteBrowserViewSelectionSnapshot;
+  view: BrowserViewSelectionSnapshot;
 };
 
 /** Clipboard payload captured during a browser proof step. */
@@ -100,7 +100,7 @@ export type PliteBrowserDisplayedSelectionSnapshot = {
 export type ClipboardPayloadSnapshot = {
   html: string | null;
   markdown?: string | null;
-  pliteFragment?: string | null;
+  fragment?: string | null;
   text: string;
   types: string[];
 };
@@ -115,7 +115,7 @@ export type SelectionRectSnapshot = {
 };
 
 /** Native event categories recorded by the browser trace helper. */
-export type PliteBrowserNativeEventTraceType =
+export type BrowserNativeEventTraceType =
   | 'beforeinput'
   | 'compositionend'
   | 'compositionstart'
@@ -124,7 +124,7 @@ export type PliteBrowserNativeEventTraceType =
   | 'selectionchange';
 
 /** DOM node summary captured in a native event trace. */
-export type PliteBrowserNativeEventTraceNodeSnapshot = {
+export type BrowserNativeEventTraceNodeSnapshot = {
   nodeName: string | null;
   parentNodeName: string | null;
   parentPath: string | null;
@@ -134,18 +134,18 @@ export type PliteBrowserNativeEventTraceNodeSnapshot = {
 };
 
 /** Selection summary captured during a native event trace. */
-export type PliteBrowserNativeEventTraceSelectionSnapshot = {
-  anchor: PliteBrowserNativeEventTraceNodeSnapshot | null;
+export type BrowserNativeEventTraceSelectionSnapshot = {
+  anchor: BrowserNativeEventTraceNodeSnapshot | null;
   anchorOffset: number | null;
   collapsed: boolean | null;
-  focus: PliteBrowserNativeEventTraceNodeSnapshot | null;
+  focus: BrowserNativeEventTraceNodeSnapshot | null;
   focusOffset: number | null;
   rangeCount: number;
   selectedText: string;
 };
 
 /** Rectangle captured from native event target ranges. */
-export type PliteBrowserNativeEventTraceRect = {
+export type BrowserNativeEventTraceRect = {
   height: number;
   width: number;
   x: number;
@@ -153,17 +153,17 @@ export type PliteBrowserNativeEventTraceRect = {
 };
 
 /** Target-range snapshot captured from a native input event. */
-export type PliteBrowserNativeEventTraceTargetRangeSnapshot = {
+export type BrowserNativeEventTraceTargetRangeSnapshot = {
   collapsed: boolean;
-  end: PliteBrowserNativeEventTraceNodeSnapshot;
+  end: BrowserNativeEventTraceNodeSnapshot;
   endOffset: number;
-  rects: PliteBrowserNativeEventTraceRect[];
-  start: PliteBrowserNativeEventTraceNodeSnapshot;
+  rects: BrowserNativeEventTraceRect[];
+  start: BrowserNativeEventTraceNodeSnapshot;
   startOffset: number;
 };
 
 /** Text-node snapshot captured before or after a native event. */
-export type PliteBrowserNativeEventTraceTextNodeSnapshot = {
+export type BrowserNativeEventTraceTextNodeSnapshot = {
   id: string;
   parentPath: string | null;
   parentSignature: string;
@@ -171,19 +171,19 @@ export type PliteBrowserNativeEventTraceTextNodeSnapshot = {
 };
 
 /** Text-node before/after delta captured by native event tracing. */
-export type PliteBrowserNativeEventTraceTextNodeDelta = {
-  after: PliteBrowserNativeEventTraceTextNodeSnapshot | null;
-  before: PliteBrowserNativeEventTraceTextNodeSnapshot | null;
+export type BrowserNativeEventTraceTextNodeDelta = {
+  after: BrowserNativeEventTraceTextNodeSnapshot | null;
+  before: BrowserNativeEventTraceTextNodeSnapshot | null;
   type: 'added' | 'deleted' | 'modified' | 'moved';
 };
 
 /** DOM delta captured around one native event. */
-export type PliteBrowserNativeEventTraceDOMDelta = {
-  textNodes: PliteBrowserNativeEventTraceTextNodeDelta[];
+export type BrowserNativeEventTraceDOMDelta = {
+  textNodes: BrowserNativeEventTraceTextNodeDelta[];
 };
 
 /** Suspicious native-event trace finding. */
-export type PliteBrowserNativeEventTraceAnomaly = {
+export type BrowserNativeEventTraceAnomaly = {
   detail: string;
   type:
     | 'composition-mismatch'
@@ -197,28 +197,28 @@ export type PliteBrowserNativeEventTraceAnomaly = {
 };
 
 /** One recorded native browser event with selection and DOM evidence. */
-export type PliteBrowserNativeEventTraceEntry = {
+export type BrowserNativeEventTraceEntry = {
   data: string | null;
-  domDelta: PliteBrowserNativeEventTraceDOMDelta | null;
+  domDelta: BrowserNativeEventTraceDOMDelta | null;
   inputType: string | null;
   isComposing: boolean | null;
-  selection: PliteBrowserNativeEventTraceSelectionSnapshot;
-  targetRanges: PliteBrowserNativeEventTraceTargetRangeSnapshot[];
+  selection: BrowserNativeEventTraceSelectionSnapshot;
+  targetRanges: BrowserNativeEventTraceTargetRangeSnapshot[];
   timestamp: number;
-  type: PliteBrowserNativeEventTraceType;
+  type: BrowserNativeEventTraceType;
 };
 
-/** Complete native event trace collected from a Plite browser root. */
+/** Complete native event trace collected from a editor browser root. */
 /** Complete native event trace snapshot. */
-export type PliteBrowserNativeEventTraceSnapshot = {
-  anomalies: PliteBrowserNativeEventTraceAnomaly[];
-  entries: PliteBrowserNativeEventTraceEntry[];
+export type BrowserNativeEventTraceSnapshot = {
+  anomalies: BrowserNativeEventTraceAnomaly[];
+  entries: BrowserNativeEventTraceEntry[];
 };
 
 /** Options controlling which native events are traced. */
 /** Options for installing a native event trace recorder in the page. */
-export type PliteBrowserNativeEventTraceOptions = {
-  events?: readonly PliteBrowserNativeEventTraceType[];
+export type BrowserNativeEventTraceOptions = {
+  events?: readonly BrowserNativeEventTraceType[];
   maxEntries?: number;
 };
 
@@ -233,7 +233,7 @@ export type FocusOwnerSnapshot = {
 };
 
 /** Rendered zero-width node shape captured from the DOM. */
-export type PliteBrowserZeroWidthNodeShape = {
+export type BrowserZeroWidthNodeShape = {
   hasBr: boolean;
   hasFEFF: boolean;
   html: string;
@@ -249,8 +249,8 @@ export type RenderedBlockDOMShapeSnapshot = {
   innerText: string;
   lineBoxCount: number;
   textContent: string;
-  unexpectedZeroWidthBreaks: PliteBrowserZeroWidthNodeShape[];
-  zeroWidthNodes: PliteBrowserZeroWidthNodeShape[];
+  unexpectedZeroWidthBreaks: BrowserZeroWidthNodeShape[];
+  zeroWidthNodes: BrowserZeroWidthNodeShape[];
 };
 
 /** Expected rendered DOM shape for browser proof assertions. */
@@ -268,7 +268,7 @@ export type RenderedDOMShapeExpectation = {
 }>;
 
 /** High-level kernel trace event family. */
-export type PliteBrowserKernelEventFamily =
+export type BrowserKernelEventFamily =
   | 'beforeinput'
   | 'blur'
   | 'click'
@@ -290,7 +290,7 @@ export type PliteBrowserKernelEventFamily =
   | 'selectionchange';
 
 /** Kernel state label captured in trace entries. */
-export type PliteBrowserKernelState =
+export type BrowserKernelState =
   | 'app-owned'
   | 'clipboard'
   | 'composition'
@@ -299,20 +299,20 @@ export type PliteBrowserKernelState =
   | 'idle'
   | 'internal-control'
   | 'model-owned'
-  | 'partial-dom-backed'
+  | 'viewport-backed'
   | 'repairing';
 
 /** Owner classification for the current browser editing target. */
-export type PliteBrowserKernelTargetOwner =
+export type BrowserKernelTargetOwner =
   | 'app-owned'
   | 'editor'
   | 'internal-control'
   | 'outside-editor'
-  | 'partial-dom'
+  | 'viewport'
   | 'unknown';
 
 /** Model/native ownership classification for a kernel event. */
-export type PliteBrowserKernelOwnership =
+export type BrowserKernelOwnership =
   | 'app-owned'
   | 'deferred'
   | 'model-owned'
@@ -321,17 +321,17 @@ export type PliteBrowserKernelOwnership =
   | 'no-op';
 
 /** Source that produced the selection observed by the kernel trace. */
-export type PliteBrowserKernelSelectionSource =
+export type BrowserKernelSelectionSource =
   | 'app-owned'
   | 'composition-owned'
   | 'dom-current'
   | 'internal-control'
   | 'model-owned'
-  | 'partial-dom-backed'
+  | 'viewport-backed'
   | 'unknown';
 
 /** Input intent classified by the editable browser kernel. */
-export type PliteBrowserKernelInputIntent =
+export type BrowserKernelInputIntent =
   | 'clipboard'
   | 'composition'
   | 'delete'
@@ -340,11 +340,11 @@ export type PliteBrowserKernelInputIntent =
   | 'internal-control'
   | 'model-selection-move'
   | 'native-selection-move'
-  | 'partial-dom-selection'
+  | 'viewport-selection'
   | 'text-insert';
 
 /** Origin of a selection change captured by the kernel trace. */
-export type PliteBrowserKernelSelectionChangeOrigin =
+export type BrowserKernelSelectionChangeOrigin =
   | 'browser-handle'
   | 'native-user'
   | 'programmatic-export'
@@ -352,7 +352,7 @@ export type PliteBrowserKernelSelectionChangeOrigin =
   | 'unknown';
 
 /** Editing command observed by the browser kernel trace. */
-export type PliteBrowserKernelCommand =
+export type BrowserKernelCommand =
   | {
       direction: 'backward' | 'forward';
       kind: 'delete';
@@ -379,21 +379,18 @@ export type PliteBrowserKernelCommand =
   | { kind: 'select-all' };
 
 /** Static command metadata captured beside a kernel trace command. */
-export type PliteBrowserKernelCommandDefinition = Readonly<{
-  inputFamilies: readonly PliteBrowserKernelEventFamily[];
-  kind: PliteBrowserKernelCommand['kind'];
+export type BrowserKernelCommandDefinition = Readonly<{
+  inputFamilies: readonly BrowserKernelEventFamily[];
+  kind: BrowserKernelCommand['kind'];
   modelOwned: boolean;
 }>;
 
 /** Ownership trace for keyboard or pointer movement through the editor. */
-export type PliteBrowserKernelMovementOwnershipTrace = {
+export type BrowserKernelMovementOwnershipTrace = {
   axis: 'document' | 'horizontal' | 'line' | 'unknown' | 'vertical' | 'word';
   extend: boolean;
   key: string;
-  ownership: Extract<
-    PliteBrowserKernelOwnership,
-    'model-owned' | 'native-allowed'
-  >;
+  ownership: Extract<BrowserKernelOwnership, 'model-owned' | 'native-allowed'>;
   reason:
     | 'model-document-boundary'
     | 'model-horizontal-inline-void'
@@ -405,26 +402,26 @@ export type PliteBrowserKernelMovementOwnershipTrace = {
 };
 
 /** Selection policy attached to a kernel transition. */
-export type PliteBrowserKernelSelectionPolicy = {
+export type BrowserKernelSelectionPolicy = {
   kind:
     | 'clear'
     | 'export-model'
     | 'import-dom'
     | 'none'
-    | 'partial-dom'
+    | 'viewport'
     | 'preserve-model';
   reason:
     | 'internal-control'
     | 'model-owned'
     | 'native-selection'
     | 'not-requested'
-    | 'partial-dom-backed'
+    | 'viewport-backed'
     | 'selection-clear'
     | 'unknown-selection';
 };
 
 /** Repair policy attached to a kernel transition. */
-export type PliteBrowserKernelRepairPolicy = {
+export type BrowserKernelRepairPolicy = {
   kind:
     | 'force-render'
     | 'none'
@@ -441,36 +438,36 @@ export type PliteBrowserKernelRepairPolicy = {
 };
 
 /** State transition recorded by the browser kernel trace. */
-export type PliteBrowserKernelTransition = {
+export type BrowserKernelTransition = {
   allowed: boolean;
   reason: string | null;
 };
 
 /** Repair request emitted while handling a kernel event frame. */
-export type PliteBrowserKernelRepairRequest =
+export type BrowserKernelRepairRequest =
   | {
       focus?: boolean;
       forceRender?: boolean;
       kind: 'force-render';
-      selectionSourceTransition?: PliteBrowserKernelSelectionSourceTransition;
+      selectionSourceTransition?: BrowserKernelSelectionSourceTransition;
     }
   | {
       focus?: boolean;
       forceRender?: boolean;
       kind: 'sync-selection';
-      selectionSourceTransition?: PliteBrowserKernelSelectionSourceTransition;
+      selectionSourceTransition?: BrowserKernelSelectionSourceTransition;
       syncDOMSelection?: boolean;
     }
   | {
       focus?: boolean;
       forceRender?: boolean;
       kind: 'repair-caret' | 'repair-caret-after-text-insert';
-      selectionSourceTransition?: PliteBrowserKernelSelectionSourceTransition;
+      selectionSourceTransition?: BrowserKernelSelectionSourceTransition;
     }
   | { kind: 'none' | 'skip-dom-sync' };
 
 /** Selection-source transition attached to a kernel repair request. */
-export type PliteBrowserKernelSelectionSourceTransition = {
+export type BrowserKernelSelectionSourceTransition = {
   preferModelSelection: boolean;
   reason:
     | 'internal-control'
@@ -479,65 +476,65 @@ export type PliteBrowserKernelSelectionSourceTransition = {
     | 'projection-refresh'
     | 'repair-induced'
     | 'unknown-selection';
-  selectionSource: PliteBrowserKernelSelectionSource;
+  selectionSource: BrowserKernelSelectionSource;
 };
 
 /** Native event frame and derived editor evidence. */
-export type PliteBrowserKernelEventFrame = {
+export type BrowserKernelEventFrame = {
   active: boolean;
   commitEpoch: number | null;
-  eventFamily: PliteBrowserKernelEventFamily;
-  focusOwner: PliteBrowserKernelTargetOwner;
+  eventFamily: BrowserKernelEventFamily;
+  focusOwner: BrowserKernelTargetOwner;
   id: number;
-  inputIntent: PliteBrowserKernelInputIntent | null;
+  inputIntent: BrowserKernelInputIntent | null;
   lifecyclePhase: 'commit' | 'event' | 'external' | 'layout-effect';
   modelSelectionBefore: Selection;
   root: string;
-  selectionSource: PliteBrowserKernelSelectionSource;
+  selectionSource: BrowserKernelSelectionSource;
   startedAt: number;
-  targetOwner: PliteBrowserKernelTargetOwner;
+  targetOwner: BrowserKernelTargetOwner;
   viewEpoch: number | null;
 };
 
 /** Kernel trace entry used by browser behavior assertions. */
-export type PliteBrowserKernelTraceEntry = {
-  command: PliteBrowserKernelCommand | null;
-  commandDefinition: PliteBrowserKernelCommandDefinition | null;
+export type BrowserKernelTraceEntry = {
+  command: BrowserKernelCommand | null;
+  commandDefinition: BrowserKernelCommandDefinition | null;
   epochId: number | null;
-  eventFamily: PliteBrowserKernelEventFamily;
-  frame: PliteBrowserKernelEventFrame | null;
+  eventFamily: BrowserKernelEventFamily;
+  frame: BrowserKernelEventFrame | null;
   frameId: number | null;
-  intent: PliteBrowserKernelInputIntent | null;
-  movement: PliteBrowserKernelMovementOwnershipTrace | null;
+  intent: BrowserKernelInputIntent | null;
+  movement: BrowserKernelMovementOwnershipTrace | null;
   nativeAllowed: boolean;
-  ownership: PliteBrowserKernelOwnership;
-  repair: PliteBrowserKernelRepairRequest | null;
-  repairPolicy: PliteBrowserKernelRepairPolicy;
-  selectionChangeOrigin: PliteBrowserKernelSelectionChangeOrigin;
+  ownership: BrowserKernelOwnership;
+  repair: BrowserKernelRepairRequest | null;
+  repairPolicy: BrowserKernelRepairPolicy;
+  selectionChangeOrigin: BrowserKernelSelectionChangeOrigin;
   selectionAfter: Selection;
   selectionBefore: Selection;
-  selectionPolicy: PliteBrowserKernelSelectionPolicy;
-  selectionSource: PliteBrowserKernelSelectionSource;
-  stateAfter: PliteBrowserKernelState;
-  stateBefore: PliteBrowserKernelState;
-  targetOwner: PliteBrowserKernelTargetOwner;
-  transition: PliteBrowserKernelTransition;
+  selectionPolicy: BrowserKernelSelectionPolicy;
+  selectionSource: BrowserKernelSelectionSource;
+  stateAfter: BrowserKernelState;
+  stateBefore: BrowserKernelState;
+  targetOwner: BrowserKernelTargetOwner;
+  transition: BrowserKernelTransition;
 };
 
 /** Expected kernel trace properties for one assertion. */
-export type PliteBrowserKernelTraceExpectation = AtLeastOne<{
-  commandKind?: PliteBrowserKernelCommand['kind'] | null;
-  eventFamily?: PliteBrowserKernelEventFamily;
-  movement?: Partial<PliteBrowserKernelMovementOwnershipTrace> | null;
-  ownership?: PliteBrowserKernelOwnership;
-  repairPolicy?: AtLeastOne<PliteBrowserKernelRepairPolicy>;
-  selectionChangeOrigin?: PliteBrowserKernelSelectionChangeOrigin;
-  selectionPolicy?: AtLeastOne<PliteBrowserKernelSelectionPolicy>;
-  selectionSource?: PliteBrowserKernelSelectionSource;
-  stateAfter?: PliteBrowserKernelState;
-  stateBefore?: PliteBrowserKernelState;
-  targetOwner?: PliteBrowserKernelTargetOwner;
-  transition?: AtLeastOne<PliteBrowserKernelTransition>;
+export type BrowserKernelTraceExpectation = AtLeastOne<{
+  commandKind?: BrowserKernelCommand['kind'] | null;
+  eventFamily?: BrowserKernelEventFamily;
+  movement?: Partial<BrowserKernelMovementOwnershipTrace> | null;
+  ownership?: BrowserKernelOwnership;
+  repairPolicy?: AtLeastOne<BrowserKernelRepairPolicy>;
+  selectionChangeOrigin?: BrowserKernelSelectionChangeOrigin;
+  selectionPolicy?: AtLeastOne<BrowserKernelSelectionPolicy>;
+  selectionSource?: BrowserKernelSelectionSource;
+  stateAfter?: BrowserKernelState;
+  stateBefore?: BrowserKernelState;
+  targetOwner?: BrowserKernelTargetOwner;
+  transition?: AtLeastOne<BrowserKernelTransition>;
 }>;
 
 /** Point shape reused from a model selection snapshot. */
@@ -554,32 +551,31 @@ export type SelectionAnchorHandle = {
   id: string;
 };
 
-/** Options for capturing Plite and DOM selection snapshots. */
+/** Options for capturing editor and DOM selection snapshots. */
 /** Options for capturing model and DOM selection snapshots. */
 export type SelectionCaptureOptions = {
   association?: RangeAnchorAssociation;
 };
 
 /** Options for resolving DOM paths in browser helpers. */
-/** Options for resolving a DOM node from a Plite path. */
-export type PliteBrowserDOMPathOptions = {
+/** Options for resolving a DOM node from a editor path. */
+export type BrowserDOMPathOptions = {
   align?: 'center' | 'end' | 'nearest' | 'start';
   timeoutMs?: number;
 };
 
-/** Options for clicking a text range by Plite path. */
-/** Options for clicking a text range resolved by Plite path. */
-export type PliteBrowserTextPathRangeClickOptions =
-  PliteBrowserDOMPathOptions & {
-    endOffset: number;
-    xAffinity?: 'center' | 'end' | 'start';
-    path: number[];
-    startOffset: number;
-  };
+/** Options for clicking a text range by editor path. */
+/** Options for clicking a text range resolved by editor path. */
+export type BrowserTextPathRangeClickOptions = BrowserDOMPathOptions & {
+  endOffset: number;
+  xAffinity?: 'center' | 'end' | 'start';
+  path: number[];
+  startOffset: number;
+};
 
 /** Options for clicking text by visible offset. */
 /** Options for clicking a text node at a character offset. */
-export type PliteBrowserTextOffsetClickOptions = {
+export type BrowserTextOffsetClickOptions = {
   clickCount?: number;
   offset: number;
   path: number[];
@@ -587,7 +583,7 @@ export type PliteBrowserTextOffsetClickOptions = {
 };
 
 /** Options for dragging across a resolved text range. */
-export type PliteBrowserDragTextRangeOptions = {
+export type BrowserDragTextRangeOptions = {
   direction?: 'backward' | 'forward';
   endAffinity?: 'after' | 'inside';
   endOffset: number;
@@ -601,7 +597,7 @@ export type PliteBrowserDragTextRangeOptions = {
 };
 
 /** Options for double-click drag selection across text. */
-export type PliteBrowserDoubleClickDragTextRangeOptions = {
+export type BrowserDoubleClickDragTextRangeOptions = {
   doubleClickOffset: number;
   endOffset: number;
   gestureDelayMs?: number;
@@ -642,7 +638,7 @@ export type HtmlNormalizationOptions = {
 };
 
 /** Options for waiting until an example route is ready. */
-/** Options for waiting until a Plite example route is ready. */
+/** Options for waiting until a editor example route is ready. */
 export type ReadyOptions = {
   editor?: 'visible';
   placeholder?: 'visible' | 'hidden';
@@ -660,7 +656,7 @@ export type EditorSurfaceOptions = {
 };
 
 /** Options for opening an example route in the browser harness. */
-/** Options for opening and preparing a Plite example route. */
+/** Options for opening and preparing a editor example route. */
 export type OpenExampleOptions = {
   query?:
     | Record<string, boolean | null | number | string | undefined>
@@ -680,13 +676,13 @@ export type EditorSnapshot = {
   selection: SelectionSnapshot | null;
   domSelection: DOMSelectionSnapshot | null;
   focusOwner: FocusOwnerSnapshot;
-  kernelTrace: PliteBrowserKernelTraceEntry[];
+  kernelTrace: BrowserKernelTraceEntry[];
   lastCommit: unknown;
   placeholderShape: PlaceholderShape | null;
 };
 
-/** Summary of a rendered Plite shell node. */
-export type PliteBrowserShellSummary = {
+/** Summary of a rendered editor shell node. */
+export type BrowserShellSummary = {
   isInline: boolean;
   isVoid: boolean;
   kind: string | null;
@@ -696,30 +692,30 @@ export type PliteBrowserShellSummary = {
 };
 
 /** Snapshot of selected rendered shell nodes. */
-export type PliteBrowserSelectedShellSnapshot = {
-  element: PliteBrowserShellSummary | null;
-  node: PliteBrowserShellSummary | null;
+export type BrowserSelectedShellSnapshot = {
+  element: BrowserShellSummary | null;
+  node: BrowserShellSummary | null;
   offset: number;
   path: number[];
   point: 'anchor' | 'focus';
 };
 
 /** Snapshot of rendered shell nodes related to selection. */
-export type PliteBrowserSelectionShellsSnapshot = {
-  anchor: PliteBrowserSelectedShellSnapshot;
-  focus: PliteBrowserSelectedShellSnapshot;
+export type BrowserSelectionShellsSnapshot = {
+  anchor: BrowserSelectedShellSnapshot;
+  focus: BrowserSelectedShellSnapshot;
   nodeKeys: string[];
 };
 
 /** Full render state snapshot including selected and selection shells. */
 /** Editor snapshot with rendered shell and DOM shape evidence. */
-export type PliteBrowserRenderStateSnapshot = EditorSnapshot & {
-  renderCounts: PliteReactRenderProfilerSnapshot;
-  selectionShells: PliteBrowserSelectionShellsSnapshot | null;
+export type BrowserRenderStateSnapshot = EditorSnapshot & {
+  renderCounts: ReactRenderProfilerSnapshot;
+  selectionShells: BrowserSelectionShellsSnapshot | null;
 };
 
 /** Browser-side trace entry emitted by scenario runners. */
-export type PliteBrowserTraceEntry = {
+export type BrowserTraceEntry = {
   label: string;
   snapshot: EditorSnapshot;
   stepIndex: number | null;
@@ -727,14 +723,14 @@ export type PliteBrowserTraceEntry = {
 
 /** Caller-provided metadata for browser scenario execution. */
 /** Scenario metadata supplied by a browser scenario step. */
-export type PliteBrowserScenarioMetadata = {
+export type BrowserScenarioMetadata = {
   capabilities?: readonly string[];
   platform?: string;
   transport?: string;
 };
 
 /** Transport capability claim attached to a scenario step. */
-export type PliteBrowserTransportClaim =
+export type BrowserTransportClaim =
   | 'desktop-native-clipboard'
   | 'desktop-native-ime-composition'
   | 'desktop-native-keyboard'
@@ -749,30 +745,30 @@ export type PliteBrowserTransportClaim =
   | 'unspecified';
 
 /** Normalized scenario metadata after transport classification. */
-export type PliteBrowserNormalizedScenarioMetadata = {
+export type BrowserNormalizedScenarioMetadata = {
   capabilities: string[];
-  claim: PliteBrowserTransportClaim;
+  claim: BrowserTransportClaim;
   platform: string | null;
   transport: string | null;
 };
 
 /** Metadata attached to one executable scenario step. */
-export type PliteBrowserScenarioStepMetadata = {
+export type BrowserScenarioStepMetadata = {
   iteration?: number;
   warmLoop?: string;
 };
 
-type PliteBrowserWindowSelectionTextExpectation =
+type BrowserWindowSelectionTextExpectation =
   | { contains: string; notEmpty?: boolean; text?: string }
   | { contains?: string; notEmpty: true; text?: string }
   | { contains?: string; notEmpty?: boolean; text: string };
 
-type PliteBrowserLocatorCountExpectation =
+type BrowserLocatorCountExpectation =
   | { count: number; max?: never; min?: never }
   | ({ count?: never } & AtLeastOne<{ max: number; min: number }>);
 
 /** Executable browser scenario step. */
-export type PliteBrowserScenarioStep = (
+export type BrowserScenarioStep = (
   | {
       change: Record<string, unknown>;
       kind: 'applyChange';
@@ -789,7 +785,7 @@ export type PliteBrowserScenarioStep = (
       kind: 'assertLocatorCount';
       label?: string;
       selector: string;
-    } & PliteBrowserLocatorCountExpectation)
+    } & BrowserLocatorCountExpectation)
   | ({
       index?: number;
       kind: 'assertLocatorCss';
@@ -821,10 +817,8 @@ export type PliteBrowserScenarioStep = (
     }
   | {
       budget: AtLeastOne<{
-        byKind: AtLeastOne<
-          Record<PliteReactRenderKind, PliteBrowserNumberBudget>
-        >;
-        total: PliteBrowserNumberBudget;
+        byKind: AtLeastOne<Record<ReactRenderKind, BrowserNumberBudget>>;
+        total: BrowserNumberBudget;
       }>;
       kind: 'assertRenderBudget';
       label?: string;
@@ -832,7 +826,7 @@ export type PliteBrowserScenarioStep = (
   | ({
       kind: 'assertWindowSelectionText';
       label?: string;
-    } & PliteBrowserWindowSelectionTextExpectation)
+    } & BrowserWindowSelectionTextExpectation)
   | {
       kind: 'assertDOMSelection';
       label?: string;
@@ -846,7 +840,7 @@ export type PliteBrowserScenarioStep = (
   | {
       kind: 'assertKernelTrace';
       label?: string;
-      trace: PliteBrowserKernelTraceExpectation;
+      trace: BrowserKernelTraceExpectation;
     }
   | {
       kind: 'assertSelection';
@@ -854,7 +848,7 @@ export type PliteBrowserScenarioStep = (
       selection: SelectionSnapshotExpectation;
     }
   | {
-      expectation: PliteBrowserSelectionContractExpectation;
+      expectation: BrowserSelectionContractExpectation;
       kind: 'assertSelectionContract';
       label?: string;
     }
@@ -973,20 +967,20 @@ export type PliteBrowserScenarioStep = (
   | { kind: 'type'; label?: string; text: string }
   | { expectedModelTextBefore?: string; kind: 'undo'; label?: string }
 ) &
-  PliteBrowserScenarioStepMetadata;
+  BrowserScenarioStepMetadata;
 
 /** Result returned by a browser scenario run. */
-export type PliteBrowserScenarioResult = {
-  metadata: PliteBrowserNormalizedScenarioMetadata;
+export type BrowserScenarioResult = {
+  metadata: BrowserNormalizedScenarioMetadata;
   name: string;
-  replay: PliteBrowserScenarioReplay;
-  reductionCandidates: PliteBrowserScenarioReductionCandidateSummary[];
-  trace: PliteBrowserTraceEntry[];
+  replay: BrowserScenarioReplay;
+  reductionCandidates: BrowserScenarioReductionCandidateSummary[];
+  trace: BrowserTraceEntry[];
 };
 
 /** Options for running a browser scenario step list. */
-export type PliteBrowserScenarioRunOptions = {
-  metadata?: PliteBrowserScenarioMetadata;
+export type BrowserScenarioRunOptions = {
+  metadata?: BrowserScenarioMetadata;
   runtimeErrors?:
     | false
     | {
@@ -996,67 +990,67 @@ export type PliteBrowserScenarioRunOptions = {
 };
 
 /** Candidate produced while reducing a failing scenario. */
-export type PliteBrowserScenarioReductionCandidate = {
+export type BrowserScenarioReductionCandidate = {
   kind: 'iteration' | 'prefix' | 'single-step' | 'suffix';
   label: string;
   removedRange: { end: number; start: number };
-  removedSteps: readonly PliteBrowserScenarioStep[];
-  steps: readonly PliteBrowserScenarioStep[];
+  removedSteps: readonly BrowserScenarioStep[];
+  steps: readonly BrowserScenarioStep[];
 };
 
 /** Human-readable summary of a scenario reduction candidate. */
-export type PliteBrowserScenarioReductionCandidateSummary = Omit<
-  PliteBrowserScenarioReductionCandidate,
+export type BrowserScenarioReductionCandidateSummary = Omit<
+  BrowserScenarioReductionCandidate,
   'removedSteps' | 'steps'
 > & {
   removedStepLabels: string[];
   removedStepSummaries: string[];
-  replay: PliteBrowserScenarioReplay;
+  replay: BrowserScenarioReplay;
   stepLabels: string[];
   stepSummaries: string[];
 };
 
 /** Serialized scenario step used for replay artifacts. */
-export type PliteBrowserScenarioReplayStep = {
+export type BrowserScenarioReplayStep = {
   iteration?: number;
-  kind: PliteBrowserScenarioStep['kind'];
+  kind: BrowserScenarioStep['kind'];
   label: string;
   replayable: true;
   summary: string;
-  value: PliteBrowserScenarioStep;
+  value: BrowserScenarioStep;
   warmLoop?: string;
 };
 
 /** Replay artifact for reproducing a browser scenario. */
-export type PliteBrowserScenarioReplay = {
+export type BrowserScenarioReplay = {
   replayable: true;
-  steps: PliteBrowserScenarioReplayStep[];
+  steps: BrowserScenarioReplayStep[];
 };
 
 /** Options for one serializable internal-control fill step. */
-export type PliteBrowserFillStepOptions = {
+export type BrowserFillStepOptions = {
   label?: string;
   target: string;
   value: string;
 };
 
 /** Explicitly non-replayable result from an imperative browser experiment. */
-export type PliteBrowserImperativeScenarioResult = Readonly<{
+export type BrowserImperativeScenarioResult = Readonly<{
   kind: 'imperative-scenario';
   name: string;
   reducible: false;
   releaseGateCapable: false;
   replayable: false;
-  steps: readonly PliteBrowserTraceEntry[];
+  steps: readonly BrowserTraceEntry[];
 }>;
 
 /** Controlled executor exposed inside an imperative browser experiment. */
-export type PliteBrowserImperativeScenarioContext = Readonly<{
+export type BrowserImperativeScenarioContext = Readonly<{
   step: (label: string, action: () => Promise<void> | void) => Promise<void>;
 }>;
 
 /** Options for navigation-plus-typing gauntlet generation. */
-export type PliteBrowserNavigationTypingGauntletOptions = {
+export type BrowserNavigationTypingGauntletOptions = {
   insertedText: string;
   movedSelection: SelectionSnapshot;
   startSelection: SelectionSnapshot;
@@ -1064,21 +1058,21 @@ export type PliteBrowserNavigationTypingGauntletOptions = {
 };
 
 /** Options for clipboard paste gauntlet generation. */
-export type PliteBrowserClipboardPasteGauntletOptions = {
+export type BrowserClipboardPasteGauntletOptions = {
   html: string;
   plainText?: string;
   textAfterPaste: string;
 };
 
 /** Options for drag/drop data gauntlet generation. */
-export type PliteBrowserDropDataGauntletOptions = {
+export type BrowserDropDataGauntletOptions = {
   html: string;
   plainText?: string;
   textAfterDrop: string;
 };
 
 /** Options for inline cut-and-type gauntlet generation. */
-export type PliteBrowserInlineCutTypingGauntletOptions = {
+export type BrowserInlineCutTypingGauntletOptions = {
   domShape?: {
     afterCut?: RenderedDOMShapeExpectation;
     afterTyping?: RenderedDOMShapeExpectation;
@@ -1089,7 +1083,7 @@ export type PliteBrowserInlineCutTypingGauntletOptions = {
 };
 
 /** Options for internal native-control gauntlet generation. */
-export type PliteBrowserInternalControlGauntletOptions = {
+export type BrowserInternalControlGauntletOptions = {
   controlSelector: string;
   controlValue: string;
   followUpText: string;
@@ -1098,7 +1092,7 @@ export type PliteBrowserInternalControlGauntletOptions = {
 };
 
 /** Options for composition/IME gauntlet generation. */
-export type PliteBrowserCompositionGauntletOptions = {
+export type BrowserCompositionGauntletOptions = {
   committedText?: string;
   selection?: SelectionSnapshot;
   steps?: readonly string[];
@@ -1108,19 +1102,19 @@ export type PliteBrowserCompositionGauntletOptions = {
 };
 
 /** Options for text insertion gauntlet generation. */
-export type PliteBrowserTextInsertionGauntletOptions = {
+export type BrowserTextInsertionGauntletOptions = {
   insertedText: string;
   textAfterInsert: string;
 };
 
 /** Options for shell activation gauntlet generation. */
-export type PliteBrowserShellActivationGauntletOptions = {
+export type BrowserShellActivationGauntletOptions = {
   buttonName: string;
   expectedSelection: SelectionSnapshotExpectation;
 };
 
 /** Options for mark typing gauntlet generation. */
-export type PliteBrowserMarkTypingGauntletOptions = {
+export type BrowserMarkTypingGauntletOptions = {
   hotkey: string;
   insertedText: string;
   selection: SelectionSnapshot;
@@ -1128,7 +1122,7 @@ export type PliteBrowserMarkTypingGauntletOptions = {
 };
 
 /** Options for mark-click typing gauntlet generation. */
-export type PliteBrowserMarkClickTypingGauntletOptions = {
+export type BrowserMarkClickTypingGauntletOptions = {
   clickPoint: SelectionPoint;
   domCaretAfterInsert?: {
     offset: number;
@@ -1143,8 +1137,8 @@ export type PliteBrowserMarkClickTypingGauntletOptions = {
 };
 
 /** Options for toolbar mark-click typing gauntlet generation. */
-export type PliteBrowserToolbarMarkClickTypingGauntletOptions = Omit<
-  PliteBrowserMarkClickTypingGauntletOptions,
+export type BrowserToolbarMarkClickTypingGauntletOptions = Omit<
+  BrowserMarkClickTypingGauntletOptions,
   'hotkey'
 > & {
   markButtonTestId: string;
@@ -1153,15 +1147,15 @@ export type PliteBrowserToolbarMarkClickTypingGauntletOptions = Omit<
 
 /** Options for repeating warm-up scenario steps. */
 /** Options for warm-loop browser behavior packets. */
-export type PliteBrowserWarmLoopOptions = {
-  createIteration: (iteration: number) => PliteBrowserScenarioStep[];
+export type BrowserWarmLoopOptions = {
+  createIteration: (iteration: number) => BrowserScenarioStep[];
   iterations?: number;
   label?: string;
 };
 
-type PliteBrowserWarmToolbarArrowIterationOverride = Partial<
+type BrowserWarmToolbarArrowIterationOverride = Partial<
   Pick<
-    PliteBrowserWarmToolbarArrowGauntletOptions,
+    BrowserWarmToolbarArrowGauntletOptions,
     | 'markDOMSelection'
     | 'markSelection'
     | 'selectionAfterArrowLeft'
@@ -1170,7 +1164,7 @@ type PliteBrowserWarmToolbarArrowIterationOverride = Partial<
 >;
 
 /** Options for warm toolbar-arrow gauntlet generation. */
-export type PliteBrowserWarmToolbarArrowGauntletOptions = {
+export type BrowserWarmToolbarArrowGauntletOptions = {
   domCaretAfterInsert?: {
     offset: number;
     text: string;
@@ -1184,12 +1178,12 @@ export type PliteBrowserWarmToolbarArrowGauntletOptions = {
   selectionAfterCollapse: SelectionSnapshotExpectation;
   selectionAfterInsert: SelectionSnapshotExpectation;
   textAfterInsert: string;
-  warmIterationOverrides?: readonly PliteBrowserWarmToolbarArrowIterationOverride[];
+  warmIterationOverrides?: readonly BrowserWarmToolbarArrowIterationOverride[];
   warmIterations?: number;
 };
 
 /** Options for mixed editing conformance gauntlet generation. */
-export type PliteBrowserMixedEditingConformanceGauntletOptions = {
+export type BrowserMixedEditingConformanceGauntletOptions = {
   deleteKey: 'Backspace' | 'Delete';
   domCaretAfterDelete?: {
     offset: number;
@@ -1220,7 +1214,7 @@ export type PliteBrowserMixedEditingConformanceGauntletOptions = {
 };
 
 /** Options for destructive editing gauntlet generation. */
-export type PliteBrowserDestructiveEditingGauntletOptions = {
+export type BrowserDestructiveEditingGauntletOptions = {
   deleteAfterPasteKey?: 'Backspace' | 'Delete';
   domShape?: {
     afterDeleteAfterPaste?: RenderedDOMShapeExpectation;
@@ -1245,7 +1239,7 @@ export type PliteBrowserDestructiveEditingGauntletOptions = {
 };
 
 /** Options for semantic editing conformance gauntlet generation. */
-export type PliteBrowserSemanticEditingConformanceGauntletOptions = {
+export type BrowserSemanticEditingConformanceGauntletOptions = {
   insertedText: string;
   selectionAfterDelete: SelectionSnapshotExpectation;
   selectionAfterFollowUp: SelectionSnapshotExpectation;
@@ -1260,19 +1254,19 @@ export type PliteBrowserSemanticEditingConformanceGauntletOptions = {
 };
 
 /** Illegal kernel transition reported by kernel trace validation. */
-export type PliteBrowserIllegalKernelTransition = {
+export type BrowserIllegalKernelTransition = {
   label: string;
   reason: string | null;
   stepIndex: number | null;
 };
 
 /** Playwright helper bundle for opening routes and inspecting editors. */
-/** Browser editor harness returned by `createPliteBrowserEditorHarness`. */
-export type PliteBrowserEditorHarness = {
+/** Browser editor harness returned by `createBrowserEditorHarness`. */
+export type BrowserEditorHarness = {
   name: string;
   page: Page;
   root: Locator;
-  rootAt: (selector: string) => PliteBrowserEditorHarness;
+  rootAt: (selector: string) => BrowserEditorHarness;
   get: {
     modelText: () => Promise<string>;
     modelBlockText: (index: number) => Promise<string | null>;
@@ -1282,12 +1276,12 @@ export type PliteBrowserEditorHarness = {
     blockTexts: () => Promise<string[]>;
     renderedDOMShape: () => Promise<RenderedBlockDOMShapeSnapshot[]>;
     selectedText: () => Promise<string>;
-    displayedSelection: () => Promise<PliteBrowserDisplayedSelectionSnapshot>;
+    displayedSelection: () => Promise<BrowserDisplayedSelectionSnapshot>;
     html: () => Promise<string>;
     selection: () => Promise<SelectionSnapshot | null>;
     domSelection: () => Promise<DOMSelectionSnapshot | null>;
     focusOwner: () => Promise<FocusOwnerSnapshot>;
-    kernelTrace: () => Promise<PliteBrowserKernelTraceEntry[]>;
+    kernelTrace: () => Promise<BrowserKernelTraceEntry[]>;
     history: () => Promise<unknown>;
     lastCommit: () => Promise<unknown>;
     placeholderShape: (selector?: string) => Promise<PlaceholderShape | null>;
@@ -1295,9 +1289,9 @@ export type PliteBrowserEditorHarness = {
   selection: {
     select: (selection: SelectionSnapshot) => Promise<void>;
     selectDOM: (selection: SelectionSnapshot) => Promise<void>;
-    dragTextRange: (options: PliteBrowserDragTextRangeOptions) => Promise<void>;
+    dragTextRange: (options: BrowserDragTextRangeOptions) => Promise<void>;
     doubleClickDragTextRange: (
-      options: PliteBrowserDoubleClickDragTextRangeOptions
+      options: BrowserDoubleClickDragTextRangeOptions
     ) => Promise<void>;
     collapse: (point: SelectionPoint) => Promise<void>;
     anchor: (
@@ -1312,29 +1306,27 @@ export type PliteBrowserEditorHarness = {
     ) => Promise<SelectionSnapshot | null>;
     selectAll: () => Promise<void>;
     get: () => Promise<SelectionSnapshot | null>;
-    displayed: () => Promise<PliteBrowserDisplayedSelectionSnapshot>;
+    displayed: () => Promise<BrowserDisplayedSelectionSnapshot>;
     dom: () => Promise<DOMSelectionSnapshot | null>;
     location: () => Promise<DOMSelectionLocationSnapshot | null>;
     importDOM: () => Promise<SelectionSnapshot | null>;
     rect: () => Promise<SelectionRectSnapshot | null>;
   };
   dom: {
-    clickTextOffset: (
-      options: PliteBrowserTextOffsetClickOptions
-    ) => Promise<void>;
+    clickTextOffset: (options: BrowserTextOffsetClickOptions) => Promise<void>;
     clickTextRange: (
-      options: PliteBrowserTextPathRangeClickOptions
+      options: BrowserTextPathRangeClickOptions
     ) => Promise<void>;
     collapseAtTextPath: (
       point: SelectionPoint,
-      options?: PliteBrowserDOMPathOptions
+      options?: BrowserDOMPathOptions
     ) => Promise<void>;
     waitForPendingNativeTextInputRepair: (options?: {
       timeoutMs?: number;
     }) => Promise<void>;
     waitForTextPath: (
       path: number[],
-      options?: PliteBrowserDOMPathOptions
+      options?: BrowserDOMPathOptions
     ) => Promise<void>;
   };
   locator: {
@@ -1370,9 +1362,7 @@ export type PliteBrowserEditorHarness = {
       options?: HtmlNormalizationOptions
     ) => Promise<void>;
     focusOwner: (expected: FocusOwnerSnapshot['kind']) => Promise<void>;
-    kernelTrace: (
-      expected: PliteBrowserKernelTraceExpectation
-    ) => Promise<void>;
+    kernelTrace: (expected: BrowserKernelTraceExpectation) => Promise<void>;
     selection: (expected: SelectionSnapshotExpectation) => Promise<void>;
     collapsedModelDOMSelection: (
       expected: CollapsedModelDOMSelectionExpectation
@@ -1405,7 +1395,7 @@ export type PliteBrowserEditorHarness = {
     readHtml: () => Promise<string | null>;
     pasteEventPayload: (payload: {
       html?: string | null;
-      pliteFragment?: string | null;
+      fragment?: string | null;
       text: string;
     }) => Promise<void>;
     pasteNativeText: (text: string) => Promise<void>;
@@ -1435,27 +1425,25 @@ export type PliteBrowserEditorHarness = {
     /** Run arbitrary browser work with editor-scoped trace snapshots. */
     runImperative: (
       name: string,
-      run: (
-        context: PliteBrowserImperativeScenarioContext
-      ) => Promise<void> | void
-    ) => Promise<PliteBrowserImperativeScenarioResult>;
+      run: (context: BrowserImperativeScenarioContext) => Promise<void> | void
+    ) => Promise<BrowserImperativeScenarioResult>;
     run: (
       name: string,
-      steps: readonly PliteBrowserScenarioStep[],
-      options?: PliteBrowserScenarioRunOptions
-    ) => Promise<PliteBrowserScenarioResult>;
+      steps: readonly BrowserScenarioStep[],
+      options?: BrowserScenarioRunOptions
+    ) => Promise<BrowserScenarioResult>;
   };
   trace: {
     snapshot: (
       label: string,
       stepIndex?: number | null
-    ) => Promise<PliteBrowserTraceEntry>;
+    ) => Promise<BrowserTraceEntry>;
   };
 };
 
 /** Contract expectation for model, DOM, native, and visual selection proof. */
-/** Expected selection state for `assertPliteBrowserSelectionContract`. */
-export type PliteBrowserSelectionContractExpectation = AtLeastOne<{
+/** Expected selection state for `assertBrowserSelectionContract`. */
+export type BrowserSelectionContractExpectation = AtLeastOne<{
   domSelection?: DOMSelectionSnapshotExpectation;
   domSelectionTarget?: DOMSelectionLocationExpectation;
   hasVisibleEditorSelection?: boolean;

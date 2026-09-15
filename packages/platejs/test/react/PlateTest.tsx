@@ -2,31 +2,31 @@ import React from 'react';
 
 import {
   type Editor,
-  type PlateContentProps,
-  type PlateProps,
-  Plate,
-  PlateContent,
+  type EditorContentProps,
+  type EditorRootProps,
+  EditorRoot,
+  EditorContent,
 } from '../../src/react';
 import type { EditorReference } from '../../src/react/editor/Editor';
 
-export function PlateTest<E extends EditorReference = Editor>({
+export function EditorTest<E extends EditorReference = Editor>({
   editableProps,
   editor,
   variant = 'wordProcessor',
   ...props
-}: Omit<PlateProps<E>, 'children' | 'editor'> & {
-  editableProps?: PlateContentProps;
+}: Omit<EditorRootProps<E>, 'children' | 'editor'> & {
+  editableProps?: EditorContentProps;
   editor: E;
   variant?: 'comment' | 'wordProcessor';
 }) {
   return (
-    <Plate {...props} editor={editor}>
-      <PlateContent
+    <EditorRoot {...props} editor={editor}>
+      <EditorContent
         data-testid="plite-content-editable"
         data-variant={variant}
         autoFocus
         {...editableProps}
       />
-    </Plate>
+    </EditorRoot>
   );
 }

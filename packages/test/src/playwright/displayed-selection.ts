@@ -1,16 +1,16 @@
 import type { Locator } from '@playwright/test';
 
-import { PLITE_BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY } from './constants';
 import type {
   SelectionPoint,
   SelectionSnapshot,
-  PliteBrowserDisplayedSelectionSnapshot,
+  BrowserDisplayedSelectionSnapshot,
 } from './types';
 
 /** Capture displayed selection overlays for one editor root. */
 export const takeDisplayedSelectionSnapshotForRoot = async (
   root: Locator
-): Promise<PliteBrowserDisplayedSelectionSnapshot> =>
+): Promise<BrowserDisplayedSelectionSnapshot> =>
   root.evaluate(
     (element: HTMLElement, { key }: { key: string }) => {
       const handle = (element as Record<string, any>)[key];
@@ -22,7 +22,7 @@ export const takeDisplayedSelectionSnapshotForRoot = async (
       const nativeText = (selection?.toString() ?? '').replace(/\uFEFF/g, '');
       const viewSelection = handle?.getViewSelection?.() ?? null;
       const markers = Array.from(
-        element.querySelectorAll('[data-plite-view-selection="true"]')
+        element.querySelectorAll('[data-editor-view-selection="true"]')
       );
       const pointsEqual = (
         left: SelectionPoint | null | undefined,
@@ -37,11 +37,13 @@ export const takeDisplayedSelectionSnapshotForRoot = async (
         !!range && !pointsEqual(range.anchor, range.focus);
       const getTextSegments = (owner: Element) =>
         Array.from(
-          owner.querySelectorAll('[data-plite-string], [data-plite-zero-width]')
+          owner.querySelectorAll(
+            '[data-editor-string], [data-editor-zero-width]'
+          )
         ).map((segment) => {
           const leafNode = segment.firstChild;
           const domLength = leafNode?.textContent?.length ?? 0;
-          const attr = segment.getAttribute('data-plite-length');
+          const attr = segment.getAttribute('data-editor-length');
           const trueLength =
             attr == null ? domLength : Number.parseInt(attr, 10);
 
@@ -54,20 +56,20 @@ export const takeDisplayedSelectionSnapshotForRoot = async (
         const markerElement =
           node?.nodeType === 1 ? (node as Element) : node?.parentElement;
 
-        return markerElement?.closest('[data-plite-zero-width]') ?? null;
+        return markerElement?.closest('[data-editor-zero-width]') ?? null;
       };
       const toEditorOffset = (node: Node | null, offset: number) => {
         const owner =
           node?.nodeType === 1
-            ? (node as Element).closest('[data-plite-node="text"]')
-            : node?.parentElement?.closest('[data-plite-node="text"]');
+            ? (node as Element).closest('[data-editor-node="text"]')
+            : node?.parentElement?.closest('[data-editor-node="text"]');
         const segment =
           node?.nodeType === 1
             ? (node as Element).closest(
-                '[data-plite-string], [data-plite-zero-width]'
+                '[data-editor-string], [data-editor-zero-width]'
               )
             : node?.parentElement?.closest(
-                '[data-plite-string], [data-plite-zero-width]'
+                '[data-editor-string], [data-editor-zero-width]'
               );
 
         const localOffset = findZeroWidthMarker(node) ? 0 : offset;
@@ -94,15 +96,15 @@ export const takeDisplayedSelectionSnapshotForRoot = async (
       const getPath = (node: Node | null) => {
         const owner =
           node?.nodeType === 1
-            ? (node as Element).closest('[data-plite-node="text"]')
-            : node?.parentElement?.closest('[data-plite-node="text"]');
+            ? (node as Element).closest('[data-editor-node="text"]')
+            : node?.parentElement?.closest('[data-editor-node="text"]');
 
         if (!owner || !element.contains(owner)) {
           return null;
         }
 
         const path = owner
-          .getAttribute('data-plite-path')
+          .getAttribute('data-editor-path')
           ?.split(',')
           .map((part) => Number.parseInt(part, 10));
 
@@ -196,8 +198,8 @@ export const takeDisplayedSelectionSnapshotForRoot = async (
           markerPaths: markers.map(
             (marker) =>
               marker
-                .closest('[data-plite-node="text"]')
-                ?.getAttribute('data-plite-path') ?? null
+                .closest('[data-editor-node="text"]')
+                ?.getAttribute('data-editor-path') ?? null
           ),
           markerRects: markers.map((marker) => {
             const rect = marker.getBoundingClientRect();
@@ -216,7 +218,7 @@ export const takeDisplayedSelectionSnapshotForRoot = async (
             0
           ),
         },
-      } satisfies PliteBrowserDisplayedSelectionSnapshot;
+      } satisfies BrowserDisplayedSelectionSnapshot;
     },
-    { key: PLITE_BROWSER_HANDLE_KEY }
+    { key: BROWSER_HANDLE_KEY }
   );

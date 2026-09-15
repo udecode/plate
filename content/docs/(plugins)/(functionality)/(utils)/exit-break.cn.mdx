@@ -179,7 +179,7 @@ const editor = createEditor({
 import { schema } from 'platejs';
 
 // 表格结构
-const CustomTablePlugin = defineBasePlugin('table', {
+const CustomTablePlugin = definePlugin('table', {
   schema: {
     element: {
       content: schema.content.type('tr', { min: 1 }),
@@ -187,7 +187,7 @@ const CustomTablePlugin = defineBasePlugin('table', {
   },
 });
 
-const CustomTableRowPlugin = defineBasePlugin('tr', {
+const CustomTableRowPlugin = definePlugin('tr', {
   schema: {
     element: {
       content: schema.content.types(['td', 'th'], { min: 1 }),
@@ -195,7 +195,7 @@ const CustomTableRowPlugin = defineBasePlugin('tr', {
   },
 });
 
-const CustomTableCellPlugin = defineBasePlugin('td', {
+const CustomTableCellPlugin = definePlugin('td', {
   schema: {
     element: {
       content: schema.content.group('block', { min: 1 }),

@@ -32,9 +32,12 @@ const project =
 const controlFile = process.env.FAKE_PLAYWRIGHT_CONTROL;
 const logFile = process.env.FAKE_PLAYWRIGHT_LOG;
 const control = JSON.parse(fs.readFileSync(controlFile, 'utf8'));
+const authoredCohort =
+  process.env.PLITE_AUTHORED_MOUNTED_PERFORMANCE_COHORT ??
+  process.env.PLITE_AUTHORED_PERFORMANCE_COHORT;
 const catalog = Array.from({ length: 5 }, (_, index) => ({
   file: 'fake.spec.ts',
-  id: 'fake-' + (index + 1),
+  id: 'fake-' + (index + 1) + (authoredCohort ? '-' + authoredCohort : ''),
   line: index + 1,
   title: 'fake test ' + (index + 1),
 }));
@@ -144,12 +147,26 @@ const createFixture = () => {
   const logFile = path.join(appRoot, '.tmp/fake-playwright-invocations.jsonl');
   const manifestFile = path.join(
     fixtureRoot,
-    'packages/test/dist/.plite-browser-build.json'
+    'packages/test/dist/.editor-browser-build.json'
   );
   const packageRoot = path.join(fixtureRoot, 'node_modules/@playwright/test');
   fs.mkdirSync(path.join(fixtureRoot, 'node_modules'), { recursive: true });
 
   writeFile(testFile, '// fake discovery input\n');
+  writeFile(
+    path.join(
+      fixtureRoot,
+      'docs/plans/artifacts/native-authored-changes/browser-typing-contract.json'
+    ),
+    '{"samples":100}\n'
+  );
+  writeFile(
+    path.join(
+      fixtureRoot,
+      'docs/plans/artifacts/native-authored-changes/browser-mounted-contract.json'
+    ),
+    '{"samples":50}\n'
+  );
   writeFile(path.join(appRoot, 'playwright.config.ts'), 'export default {};\n');
   writeFile(path.join(appRoot, 'package.json'), '{"private":true}\n');
   writeFile(path.join(fixtureRoot, 'package.json'), '{"private":true}\n');
@@ -216,6 +233,12 @@ const readSingleJson = (directory, prefix) => {
 
 const runnerControlEnvironmentNames = [
   'CI',
+  'PLITE_AUTHORED_MOUNTED_PERFORMANCE',
+  'PLITE_AUTHORED_MOUNTED_PERFORMANCE_COHORT',
+  'PLITE_AUTHORED_MOUNTED_PERFORMANCE_OUTPUT',
+  'PLITE_AUTHORED_PERFORMANCE',
+  'PLITE_AUTHORED_PERFORMANCE_COHORT',
+  'PLITE_AUTHORED_PERFORMANCE_OUTPUT',
   'PLAYWRIGHT_BASE_URL',
   'PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH',
   'PLITE_BROWSER_BUILD_SETUP_TIMEOUT_MS',
@@ -274,6 +297,102 @@ const createFixtureRunner = (fixture, overrides = {}) => {
       }),
   };
 };
+
+test(
+  'authored performance modes and cohorts invalidate completed proof',
+  { timeout: 30_000 },
+  async (context) => {
+    const fixture = createFixture();
+    context.after(() =>
+      fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true })
+    );
+    const { environment, run } = createFixtureRunner(fixture, {
+      PLITE_AUTHORED_PERFORMANCE: '1',
+      PLITE_AUTHORED_PERFORMANCE_COHORT: 'normal',
+    });
+    const initial = await run();
+    assert.equal(initial.status, 0, initial.stderr);
+    const reused = await run();
+    assert.equal(reused.status, 0, reused.stderr);
+    assert.match(reused.stdout, /reused 5 passed/);
+    const beforeLarge = readInvocations(fixture.logFile).length;
+    environment.PLITE_AUTHORED_PERFORMANCE_COHORT = 'large';
+    const large = await run();
+    assert.equal(large.status, 0, large.stderr);
+    const largeInvocations = readInvocations(fixture.logFile).slice(
+      beforeLarge
+    );
+    assert.ok(largeInvocations.some(({ kind }) => kind === 'discovery'));
+    assert.equal(
+      largeInvocations.filter(({ kind }) => kind === 'unit').length,
+      3
+    );
+    assert.ok(
+      largeInvocations
+        .flatMap(({ selected }) => selected)
+        .every((id) => id.endsWith('-large'))
+    );
+    const beforeContractChange = readInvocations(fixture.logFile).length;
+    writeFile(
+      path.join(
+        fixture.fixtureRoot,
+        'docs/plans/artifacts/native-authored-changes/browser-typing-contract.json'
+      ),
+      '{"samples":200}\n'
+    );
+    const contractChange = await run();
+    assert.equal(contractChange.status, 0, contractChange.stderr);
+    const contractInvocations = readInvocations(fixture.logFile).slice(
+      beforeContractChange
+    );
+    assert.ok(contractInvocations.some(({ kind }) => kind === 'discovery'));
+    assert.equal(
+      contractInvocations.filter(({ kind }) => kind === 'unit').length,
+      3
+    );
+    const beforeDisabled = readInvocations(fixture.logFile).length;
+    environment.PLITE_AUTHORED_PERFORMANCE = '0';
+    const disabled = await run();
+    assert.equal(disabled.status, 0, disabled.stderr);
+    const disabledInvocations = readInvocations(fixture.logFile).slice(
+      beforeDisabled
+    );
+    assert.ok(disabledInvocations.some(({ kind }) => kind === 'discovery'));
+    assert.equal(
+      disabledInvocations.filter(({ kind }) => kind === 'unit').length,
+      3
+    );
+    const beforeMounted = readInvocations(fixture.logFile).length;
+    environment.PLITE_AUTHORED_MOUNTED_PERFORMANCE = '1';
+    environment.PLITE_AUTHORED_MOUNTED_PERFORMANCE_COHORT = 'views-1';
+    const mounted = await run();
+    assert.equal(mounted.status, 0, mounted.stderr);
+    const mountedInvocations = readInvocations(fixture.logFile).slice(
+      beforeMounted
+    );
+    assert.ok(mountedInvocations.some(({ kind }) => kind === 'discovery'));
+    assert.ok(
+      mountedInvocations
+        .flatMap(({ selected }) => selected)
+        .every((id) => id.endsWith('-views-1'))
+    );
+    const beforeMountedCohort = readInvocations(fixture.logFile).length;
+    environment.PLITE_AUTHORED_MOUNTED_PERFORMANCE_COHORT = 'views-8';
+    const mountedCohort = await run();
+    assert.equal(mountedCohort.status, 0, mountedCohort.stderr);
+    const mountedCohortInvocations = readInvocations(fixture.logFile).slice(
+      beforeMountedCohort
+    );
+    assert.ok(
+      mountedCohortInvocations.some(({ kind }) => kind === 'discovery')
+    );
+    assert.ok(
+      mountedCohortInvocations
+        .flatMap(({ selected }) => selected)
+        .every((id) => id.endsWith('-views-8'))
+    );
+  }
+);
 
 test(
   'orchestrates bounded units, resume, outputs, manifest drift, and sticky invalidation',

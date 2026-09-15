@@ -10,42 +10,45 @@ docs:
 
 <ComponentPreview name="discussion-demo" />
 
-讨论是可复制的 UI，用于在一个锚定浮动面板中打开每个区块的评论和文档建议。Comments 管理线程记录与映射范围；Suggestion 管理文档修改建议。
+Discussion 是复制的 UI，用于在一个锚定 popover 中打开区块的评论和 authored change。Suggestion 包提供可复用的 change 状态和激活行为。Comments 是可选功能，并管理自己的 thread record。
 
 ## 所有权
 
 | 所有者 | 职责 |
 | --- | --- |
-| `platejs/comments` 和 `platejs/comments/react` | 管理评论记录、操作、映射范围、高亮和激活状态 |
-| 复制的 `comment` 项 | 渲染富文本表单与评论卡片，并通过 `CommentKit` 提供默认样式 |
-| `SuggestionPlugin` | 在文档中存储建议，并负责接受或拒绝建议 |
-| 复制的 `discussion` 项 | 一次性索引两种记录，然后渲染每个区块的触发器和 Floating Discussion |
+| `platejs/suggestion` 和 `platejs/suggestion/react` | 提供建议模式、语义 change 属性、精确 view 激活和稳定的 change hooks |
+| `platejs/authored` | 在文档中保存拟议编辑、身份、依赖、决定和保留内容 |
+| `platejs/comments` 和 `platejs/comments/react` | 管理评论记录、操作、映射范围、decoration 和激活状态 |
+| 复制的 `suggestion` 项 | 配置包中 plugin 的内容属性，并组合 `SuggestionKit` |
+| 复制的 `discussion` 项 | 将 authored change 与可选评论 thread 关联，再渲染区块触发器、卡片和 Floating Discussion |
 
-应用负责获取和保存评论记录，并提供用户、权限与当前文档。Comments 插件管理已加载的数据和范围映射。建议数据位于编辑器节点中，因为接受或拒绝建议会修改文档。
+应用负责获取和保存评论记录，并提供用户、权限和当前文档。Authored metadata 保存在 document envelope 中。评论 thread 单独保存，并可指向稳定的 authored change ID。
 
 ## 安装
 
-安装组合视图和评论工具栏操作。Discussion 项会安装它依赖的 Comment 与 Suggestion UI。
+安装组合视图和评论工具栏操作。Registry 命令会复制 Comment 和 Suggestion UI 依赖。
 
 ```bash
 npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/r/comment-toolbar-button.json
 ```
 
+`DiscussionKit` 安装 Comments 和完整的审阅 surface。需要审阅 authored change 的编辑器还要添加 `SuggestionKit`。
+
 ## 用法
 
-安装 `DiscussionKit`，并把获取的评论记录传给 `CommentsPlugin`。该插件集包含评论样式、共享索引、区块触发器和 Floating Discussion。每个编辑器会在内部绑定自己的原生范围。
+将获取的评论记录传给 `CommentsPlugin`。`EditorKit` 包含复制的 `SuggestionKit`；较小的 kit 可以显式安装它。
 
 ```tsx title="components/editor/discussion-editor.tsx" showLineNumbers
-"use client";
+'use client';
 
-import type { CommentThread, CommentUser } from "platejs/comments";
-import type { EditorValueInput } from "platejs";
-import { CommentsPlugin } from "platejs/comments/react";
-import { Plate, useCreateEditor } from "platejs/react";
+import type { EditorValueInput } from 'platejs';
+import type { CommentThread, CommentUser } from 'platejs/comments';
+import { CommentsPlugin } from 'platejs/comments/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
-import { DiscussionKit } from "@/components/editor/discussion";
-import { Editor, EditorContainer } from "@/components/editor/editor";
-import { EditorKit } from "@/components/editor/plugins";
+import { DiscussionKit } from '@/components/editor/discussion';
+import { Editor, EditorContainer } from '@/components/editor/editor';
+import { EditorKit } from '@/components/editor/plugins';
 
 export function DiscussionEditor({
   initialValue,
@@ -67,67 +70,89 @@ export function DiscussionEditor({
       }),
     ],
     initialValue,
+    userId: currentUserId,
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
 
-`EditorKit` 包含复制的 `SuggestionKit`。如果编辑器使用更小的插件集，请加入 `DiscussionSlots` 所读取的同一个 `suggestionPlugin` 导出。
+较小的 editor 组合可以配置 `platejs/suggestion/react` 的 `SuggestionPlugin`，也可以使用包含默认样式的 `SuggestionKit`。`DiscussionSlots` 从包 hooks 读取 suggestion 状态，不需要 registry 局部的语义 plugin。
 
 ## 审阅模型
 
-Discussion 会一次性索引未解决记录，按区块排列，并在每个区块内按时间排序：
+Discussion 按区块组合未解决的记录，并在每个区块内按时间排序：
 
-- 根评论线程显示为评论卡片；
-- 文档建议显示为带有接受和拒绝操作的审阅卡片；
-- 目标指向建议的线程显示在对应建议卡片内；
-- 解决评论线程会移除它的锚点高亮；
-- 接受或拒绝建议会隐藏其卡片和回复；撤销会恢复它们，不改变线程的解决状态。
+- 根评论 thread 显示为评论卡片；
+- 待处理的 authored change 显示为带有接受和拒绝操作的审阅卡片；
+- target 指向 change 的 thread 显示在对应审阅卡片内；
+- 解决 thread 会移除评论 decoration；
+- 接受或拒绝 change 会隐藏其卡片和回复；
+- undo 会恢复待处理 change，而不会改变 thread 的解决状态。
 
-区块触发器只订阅各自的键控摘要。编辑评论正文不会重建编辑器装饰、重新计算索引或唤醒无关区块。
+`useSuggestionChanges(path)` 为每个区块提供原生 `AuthoredChange` record。Discussion 在复制的 registry 代码中派生日期、标签、range 和卡片文本，再关联来自 Comments 的 change-targeted thread。编辑评论正文不会重建 suggestion decoration，也不会唤醒无关区块。
 
-## Floating Discussion
+审阅卡片直接调用 authored：
 
-区块触发器会打开该区块的全部评论和建议。点击行内注解文本会打开该位置的确切项目。两个入口共用同一组插件记录、建议和操作。
+```tsx
+import { DefaultAuthoredPlugin } from 'platejs/authored';
 
-当评论范围重叠时，点击共享文本会按来源顺序打开该位置的所有线程。点击没有标记的编辑器内容会清除当前激活项。
-
-如果编辑删除了评论范围内的全部字符，文档中不会显示行内高亮。区块触发器仍可
-打开该线程，Floating Discussion 会锚定到这个触发器；撤销后会恢复精确的文本范围。
-
-## 建议评论
-
-Discussion 通过建议 ID 关联回复。建议本身提供回复的位置和文档生命周期。
-
-```ts
-editor.plugin(CommentsPlugin).api.createThread({
-  body,
-  excerpt: "insert suggestion",
-  target: { id: suggestionId, type: "suggestion" },
+const authored = editor.plugin(DefaultAuthoredPlugin);
+const selection = authored.read.select({ ids: [changeId] });
+const result = authored.update.decide({
+  action: 'accept',
+  selection,
 });
 ```
 
-回复使用建议的位置，无需创建评论锚点。建议消失时，应用记录保留正文和显式解决状态。如果撤销或文档更新恢复同一个建议 ID，其未解决的回复会再次显示。`SuggestionPlugin` 负责文档修改；Discussion 组合审阅卡片和应用回复。
+使用 `action: 'reject'` 拒绝 change。当结果为 `stale` 或 `blocked` 时，请保持卡片打开，让审阅者刷新记录或显式解决依赖。
 
-## 只读与静态渲染
+## Floating Discussion
 
-将相同的序列化记录及其匹配的文档值传给各个编辑器。只读 React 编辑器使用 `CommentsPlugin`；`EditorStatic` 使用 `BaseCommentsPlugin` 和复制的静态评论样式。包会为每个编辑器绑定独立的原生范围；评论卡片由复制的 UI 渲染。
+区块触发器会打开该区块的全部评论和建议。点击行内评论文本会打开该位置的记录。点击 authored-change marker 会在已挂载的 suggestion view 中激活该 change。所有入口都打开同一个复制的 popover 和卡片。
 
-保存时，将 `editor.plugin(CommentsPlugin).api.getThreads()` 与 `editor.read.value()` 一起持久化。记录加载、保存与操作请参阅[评论](/docs/comment)，建议转换请参阅[建议](/docs/suggestion)。
+当评论 range 重叠时，点击共享文本会按来源顺序打开该位置的全部 thread。选中的组合会在编辑和来源重排后保持不变，直到其他激活操作或 thread 删除改变它。点击未标记的编辑器内容会清除活动审阅。
+
+如果编辑删除了评论 range 内的全部字符，文档中不会显示行内 decoration。区块触发器仍可打开该 thread，Floating Discussion 会锚定到触发器，直到 undo 恢复文本 range。
+
+## Change 评论
+
+以 authored change ID 为 target，即可附加对话：
+
+```tsx
+await editor.plugin(CommentsPlugin).api.createThread({
+  body,
+  excerpt: 'insert suggestion',
+  target: { id: changeId, type: 'change' },
+});
+```
+
+回复使用 change 的位置，无需创建评论 anchor。Change 离开活动 projection 时，评论记录仍保留正文和解决状态。如果 undo 或文档更新恢复同一个 change ID，其未解决的回复会再次显示。
+
+## 不使用 Comments
+
+`SuggestionPlugin` 不依赖 Comments。编辑器无需安装 `CommentsPlugin` 或 `DiscussionKit`，也可以使用建议模式、语义 decoration、活动 change 状态和 `useSuggestionChanges(path)`。
+
+只有产品需要卡片、回复、作者、日期或 popover 时才添加 Discussion。这些展示和 thread 关联逻辑保留在复制的 registry 代码中。
+
+## 只读和静态渲染
+
+将相同的序列化 thread 及其匹配的文档值传给各个编辑器。只读 React 编辑器使用 `CommentsPlugin`；`EditorStatic` 使用 `BaseCommentsPlugin` 和复制的静态评论样式。每个编辑器绑定自己的映射 range 和 suggestion view 状态。
+
+保存时，将 `editor.plugin(CommentsPlugin).api.getThreads()` 与 `editor.read.value()` 一起持久化。记录加载、保存和操作请参阅[评论](/docs/comment)，模式和 authored decision 请参阅[建议](/docs/suggestion)。
 
 ## API 参考
 
 ### `DiscussionKit`
 
-将它加入编辑器的插件列表。它包含 `CommentKit` 和完整的 `DiscussionSlots` 组合。
+将复制的 kit 加入 editor plugin 列表。它包含 `CommentKit` 和完整的 `DiscussionSlots` 组合。审阅 authored change 的编辑器还会安装 `SuggestionKit` 或配置后的 `SuggestionPlugin`。
 
 ### `DiscussionSlots`
 
-自定义组合时，把完整值传给 `CommentsPlugin.configure({ slots: DiscussionSlots })`。它一起安装共享索引、区块触发器和 Floating Discussion；不要单独安装其中的插槽。
+自定义组合时，把完整值传给 `CommentsPlugin.configure({ slots: DiscussionSlots })`。它一起管理共享 discussion index、区块触发器、审阅卡片和 Floating Discussion。

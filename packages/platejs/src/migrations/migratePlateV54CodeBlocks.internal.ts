@@ -10,6 +10,7 @@ import {
   type Selection,
   TextApi,
 } from '../facade';
+import { getCompiledPlatePlugin } from '../internal/plugin/compilePlateModel';
 import type { DocumentMigrationContext } from '../lib/editor/documentMigrations';
 
 type TextPointMapping = Readonly<{ offset: number; path: Path }>;
@@ -28,11 +29,11 @@ export const migratePlateV54CodeBlocks = ({
   editor,
 }: DocumentMigrationContext): PlateV54CodeBlockMigrationResult => {
   const { roots: inputRoots } = document;
-  const codeBlockPlugin = editor.plugin('codeBlock');
+  const codeBlockDescriptor = getCompiledPlatePlugin(editor, 'codeBlock');
 
-  if (!codeBlockPlugin.installed) return { document };
+  if (!codeBlockDescriptor) return { document };
 
-  const codeBlockType = codeBlockPlugin.schema.type;
+  const codeBlockType = editor.plugin(codeBlockDescriptor).schema.type;
   const pointMappings = new Map<string, TextPointMapping>();
   const collectPointMappings = (
     input: Descendant,

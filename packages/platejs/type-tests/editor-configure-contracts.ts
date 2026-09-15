@@ -1,8 +1,8 @@
 import {
   createEditor as createHeadlessEditor,
-  defineBasePlugin,
+  definePlugin as defineHeadlessPlugin,
 } from 'platejs';
-import { createEditor, definePlatePlugin } from 'platejs/react';
+import { createEditor, definePlugin } from 'platejs/react';
 
 import type { ValueOf } from '../src/core';
 
@@ -10,7 +10,7 @@ const childInitialState: { level: 1 | 2 } = {
   level: 1,
 };
 
-const ChildPlugin = defineBasePlugin('child', {
+const ChildPlugin = defineHeadlessPlugin('child', {
   api: ({ plugin, store }) => ({
     getLevel: () => plugin.initialState.level,
     setLevel: (level: 1 | 2) => {
@@ -20,7 +20,7 @@ const ChildPlugin = defineBasePlugin('child', {
   initialState: childInitialState,
 });
 
-const ParentPlugin = defineBasePlugin('parent', {
+const ParentPlugin = defineHeadlessPlugin('parent', {
   dependencies: [ChildPlugin],
 });
 const ConfiguredChildPlugin = ChildPlugin.configure({
@@ -37,7 +37,7 @@ const displayInitialState: { label: 'body' | 'title' } = {
   label: 'title',
 };
 
-const DisplayPlugin = definePlatePlugin('display', {
+const DisplayPlugin = definePlugin('display', {
   api: ({ store }) => ({
     getLabel: () => store.get().label,
   }),
@@ -90,8 +90,12 @@ DisplayPlugin.configure({
 // @ts-expect-error custom editor api should stay narrow
 plateEditor.api.display.getLabel('extra');
 
-const rawValueIsIntentionallyBroad: typeof plateValue = [
-  { children: [{ text: 'nope' }], type: 'applicationNode' },
+const invalidInferredValue: typeof plateValue = [
+  {
+    children: [{ text: 'nope' }],
+    // @ts-expect-error Explicit initial values retain their exact element type.
+    type: 'applicationNode',
+  },
 ];
 
-void rawValueIsIntentionallyBroad;
+void invalidInferredValue;

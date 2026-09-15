@@ -1,5 +1,5 @@
 import { ElementApi, type Path } from '../../facade';
-import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import type { DefinitionOf } from '../../lib/plugin/PluginDefinition';
 import { PLUGINS } from '../plate-keys';
 
@@ -28,7 +28,7 @@ const initialState: NormalizeTypesPluginState = {
   rules: [],
 };
 
-export const NormalizeTypesPlugin = defineBasePlugin(PLUGINS.normalizeTypes, {
+export const NormalizeTypesPlugin = definePlugin(PLUGINS.normalizeTypes, {
   initialState,
   corrections: [
     {

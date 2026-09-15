@@ -66,13 +66,13 @@ another lifetime.
 ## Behavior Promotion
 
 Do not infer public composition boundaries from callbacks, events, native
-extension fields, or files. First classify the behavior:
+plugin fields, or files. First classify the behavior:
 
 | Class                    | Test                                                                     | Default shape                                                               |
 | ------------------------ | ------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
 | invariant                | omission makes the owner invalid, unsafe, or semantically incomplete     | keep inline in the owning plugin or runtime                                 |
 | parameter                | callers want the same capability with different data or thresholds       | declare a named `*PluginState`, type its defaults, and use the scoped store |
-| substitutable capability | omission or replacement leaves a complete editor with a defined fallback | promote to an ordinary plugin or extension candidate                        |
+| substitutable capability | omission or replacement leaves a complete editor with a defined fallback | promote to an ordinary plugin or plugin candidate                        |
 | product policy           | the choice belongs to one app or kit rather than the framework default   | keep it app-owned and inline unless reused                                  |
 
 Non-universal behavior is not automatically a plugin. Universal behavior may
@@ -223,7 +223,7 @@ when absence is itself the intended product state, and it is invalid for a
 required dependency. Do not promote one conflicting member into another public
 plugin unless it independently passes the promotion gates below.
 
-Promote a capability to a public plugin or extension only when all applicable
+Promote a capability to a public plugin or plugin only when all applicable
 gates pass:
 
 1. one stable user-facing capability name covers the behavior;
@@ -235,7 +235,7 @@ gates pass:
 5. the capability has independent default, omitted, and replaced proof, with
    browser proof for native input, clipboard, selection, focus, or DOM behavior;
 6. the full preset remains the obvious common path;
-7. the public composition model reuses ordinary plugin or extension arrays.
+7. the public composition model reuses ordinary plugin arrays.
 
 Behavior specs and scenario matrices provide promotion evidence; they do not map
 one-to-one to plugins. Group rows by user-visible capability, not compiler
@@ -246,7 +246,7 @@ For a concrete inferred editor, `editor.api` is the canonical API discovery
 surface. Publish every non-empty plugin API under its human-readable plugin
 name, while `editor.plugin(Plugin).api` exposes the same immutable API for
 generic package code and exact descriptor ownership. Raw Plite ownership uses
-`editor.extension(Extension).api`. Authors contribute the implementation once
+`editor.plugin(Plugin).api`. Authors contribute the implementation once
 through the descriptor's root `api` field; the compiler projects it under
 `definition.name`. Do not root-merge methods, add `getApi`/`pluginApi`, or
 route document mutations outside
@@ -268,12 +268,12 @@ absent. Do not infer availability from root `editor.api`, node types, schema
 properties, caches, or caught portal errors. Access plugin-owned API, store,
 updates, and descriptor fields only after the check when absence is valid.
 
-`editor.plugin(plugin)` is the only public imperative plugin lookup, where
-`plugin` is an exact descriptor or `string`. Descriptor inputs preserve exact inferred capabilities; runtime names
-return erased portals. Use a name when the input is dynamic or the caller owns
-a family-agnostic slot that intentionally accepts whichever installed
-descriptor owns that name. Do not accept `{ name }`: that weak object shape
-looks typed but cannot prove descriptor identity. The consumer portal is the
+`editor.plugin(plugin)` is the only public imperative plugin lookup, and
+`plugin` must be a nominal descriptor. Configured descriptors and compatible
+ancestors resolve to the installed capability; divergent siblings and foreign
+same-name descriptors do not. Resolve dynamic application input through an
+application-owned descriptor map before lookup. Do not accept strings or
+`{ name }`: neither can prove descriptor identity. The consumer portal is the
 resolved descriptor view: fields such as `name`, `inject`, `render`,
 `initialState`, and `targetPlugins` are direct, while `api`, `read`, `update`,
 `store`, and `installed` expose scoped runtime capabilities. Never nest the
@@ -282,12 +282,11 @@ Callback authoring contexts may expose `plugin` for the current raw descriptor,
 while `editor` and `defineCodecs` stay off consumer portals. Do not add standalone or editor-method
 alternatives for descriptor lookup, name/type reversal, container discovery,
 or injection lookup. Read `.name` from the portal only after lookup when the
-normalized plugin name is needed. Missing runtime names expose
+normalized plugin name is needed. Missing descriptors expose
 `installed: false`; they never expose or invent persisted schema identity.
 Exact installed element and primary-mark portals publish `schema.type` or
-`schema.key`. Name-only portals keep both getters non-optional for
-package-decoupled code, but accessing the wrong kind or a missing plugin throws.
-Capability and descriptor fields throw for missing plugins. Reverse,
+`schema.key`; accessing the wrong kind or a missing plugin throws. Capability
+and descriptor fields throw for missing plugins. Reverse,
 container, and renderer caches stay private. Public node questions use schema
 predicates, compiled injection data lives at `portal.inject.nodeProps`,
 and codec registries expose installation membership without name/type
@@ -308,7 +307,7 @@ not decide source ownership.
 Trace React ownership to terminal product consumers, through package wrappers
 and reexports. A package import, public export, docs page, or test does not count
 as an independent consumer. When every terminal consumer is copied registry UI,
-its UI-only hook, store, provider, hotkey controller, or plugin extension
+its UI-only hook, store, provider, hotkey controller, or plugin definition
 belongs to that registry owner. Publish it from a package only when multiple
 independent terminal owners reuse the contract or it owns a durable headless
 semantic, DOM, accessibility, or integration subsystem. Multiple subcomponents
@@ -354,7 +353,7 @@ and the plugin's resolved `type` is evidence that the plugin boundary is
 missing.
 
 Plugin authoring has one widening vocabulary. Put every independent
-contribution in `defineBasePlugin()` / `definePlatePlugin()`: plugin-scoped
+contribution in the headless or React `definePlugin()` call: plugin-scoped
 `api`, `read`, `selectors`, or `update`, flat native Plite fields, format
 `codecs`, and ordinary Plate fields. There is no nested `extension` wrapper.
 Constructor callbacks already receive the typed authoring context; context
@@ -366,9 +365,11 @@ Treat an exceptional staged chain as a typed capability dependency graph:
 publish the smallest honest read/service in the constructor or an earlier
 stage, then consume the inferred surface from the later builder context. A
 later active update stage calls an earlier mutation through
-`tx.plugin(Plugin).method(...)`. Generated closed editors may use the direct
-`tx.pluginName.method(...)` group. Computed `tx[plugin.name]`,
-`tx.extension(...)`, and a portal one-shot update are rejected.
+`tx.plugin(Plugin).method(...)` when it owns the descriptor or
+`tx.plugin(pluginName).method(...)` across an intentionally decoupled package
+boundary. Generated closed editors may use `tx.pluginName.method(...)` when
+that property is inferred. Do not index the transaction object with a runtime
+plugin name or open an editor portal one-shot inside the active transaction.
 
 Plate constructors and justified `.extend()` stages contextually type their
 flat native Plite fields and callback returns. A public identity helper whose
@@ -377,14 +378,14 @@ machinery: repair the owning generic and hard-cut the helper instead of
 preserving it, renaming it, or hiding the loss with an annotation, cast, or
 `any`. Keep Plate-context capture inside the authoring callback and extract
 domain inputs. Independently reusable standalone descriptors use Plite
-`defineExtension` and compose as dependencies; do not pass Plate plugin
+`definePlugin` and compose as dependencies; do not pass Plate plugin
 context into their factories or copy them through a nested wrapper.
 
 Author codecs through the constructor callback that supplies their inference
 context:
 
 ```ts
-defineBasePlugin("example", {
+definePlugin("example", {
   codecs: ({ defineCodecs }) => defineCodecs(map),
 });
 ```
@@ -452,12 +453,12 @@ cache the immutable compiled view, and keep one-call overrides on the
 conversion operation rather than in shared state.
 
 `component` is ordinary render publication data, not a Plate-only capability.
-Both `defineBasePlugin()` and `definePlatePlugin()` accept it beside the rest of
+The headless and React `definePlugin()` entrypoints accept it beside the rest of
 the declaration, including intrinsic HTML tags, so Base descriptors render directly in static/RSC and live
 Plate consumers. Replace it through one terminal `.configure({ component })`.
 Base `.extend()` rejects it because an independent default belongs in the
 constructor and consumer replacement belongs in `.configure()`. Use
-`toPlatePlugin()` at the owning React adapter to publish a reusable Plate-layer
+`toReactPlugin()` at the owning React adapter to publish a reusable Plate-layer
 descriptor or add genuine Plate-only authoring. A terminal consumer never
 inserts conversion merely to set `component`. Static/base owners may import a
 server-safe component, but never a Plate React entrypoint just to bind it. Do

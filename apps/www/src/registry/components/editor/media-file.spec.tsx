@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 import * as React from 'react';
 
 mock.module('platejs/react', () => ({
-  PlateElement: ({
+  EditorElement: ({
     children,
     className,
     ...props

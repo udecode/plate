@@ -1,16 +1,13 @@
 'use client';
 
 import { RefreshCwIcon, Redo2Icon, Undo2Icon, UnplugIcon } from 'lucide-react';
-import { createEditor, Plate, useEditorRuntimeState } from 'platejs/react';
-import type {
-  YjsAwarenessChange,
-  YjsAwarenessState,
-  YjsProviderEvent,
-  YjsProviderEventHandler,
-  YjsProviderLike,
-  YjsProviderStatus,
+import { createEditor, EditorRoot, useEditorRuntimeState } from 'platejs/react';
+import {
+  yjs,
+  type YjsAwarenessChange,
+  type YjsAwarenessState,
 } from 'platejs/yjs';
-import { useYjsProviderStatus, useYjsProviderSynced } from 'platejs/yjs/react';
+import { useYjsAdmissionStatus } from 'platejs/yjs/react';
 import * as React from 'react';
 import * as Y from 'yjs';
 
@@ -27,7 +24,7 @@ import {
 } from '@/components/ui/card';
 import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
-import { YjsPlugin } from '@/registry/components/editor/remote-cursor-overlay';
+import { CollaborationPlugin } from '@/registry/components/editor/remote-cursor-overlay';
 
 const ROOT_NAME = 'plate-collaboration-demo';
 const SCHEMA = {
@@ -71,7 +68,7 @@ const cloneInitialValue = () => structuredClone(INITIAL_VALUE);
 
 class DemoAwareness {
   readonly clientID: number;
-  readonly doc: { readonly clientID: number };
+  readonly doc: Y.Doc;
 
   private readonly listeners = new Set<(event: YjsAwarenessChange) => void>();
   private readonly publish: () => void;
@@ -79,9 +76,9 @@ class DemoAwareness {
   private readonly states = new Map<number, YjsAwarenessState>();
   private destroyed = false;
 
-  constructor(clientId: number, publish: () => void) {
-    this.clientID = clientId;
-    this.doc = { clientID: clientId };
+  constructor(doc: Y.Doc, publish: () => void) {
+    this.clientID = doc.clientID;
+    this.doc = doc;
     this.publish = publish;
   }
 
@@ -116,6 +113,20 @@ class DemoAwareness {
     if (!this.states.delete(clientId)) return;
 
     this.emit({ added: [], removed: [clientId], updated: [] });
+  }
+
+  removeRemoteStates() {
+    const removed = [...this.states.keys()].filter(
+      (clientId) => clientId !== this.clientID
+    );
+
+    if (removed.length === 0) return;
+
+    for (const clientId of removed) {
+      this.states.delete(clientId);
+    }
+
+    this.emit({ added: [], removed, updated: [] });
   }
 
   setLocalStateField(field: string, value: unknown) {
@@ -156,19 +167,23 @@ class DemoAwareness {
   }
 }
 
-class DemoProvider implements YjsProviderLike {
+type DemoProviderSnapshot = Readonly<{
+  status: 'connected' | 'connecting' | 'disconnected';
+  synced: boolean;
+}>;
+
+class DemoProvider {
   readonly awareness: DemoAwareness;
   readonly doc: Y.Doc;
   readonly peer: DemoPeer;
-  status: YjsProviderStatus = 'connected';
-  synced = true;
 
-  private readonly eventListeners = new Map<
-    YjsProviderEvent,
-    Set<YjsProviderEventHandler>
-  >();
+  private readonly listeners = new Set<() => void>();
   private readonly room: DemoRoom;
   private destroyed = false;
+  private snapshot: DemoProviderSnapshot = Object.freeze({
+    status: 'disconnected',
+    synced: false,
+  });
   private updateListenerAttached = true;
 
   constructor(peer: DemoPeer, room: DemoRoom) {
@@ -176,19 +191,19 @@ class DemoProvider implements YjsProviderLike {
     this.room = room;
     this.doc = new Y.Doc();
     this.doc.clientID = peer.clientId;
-    this.awareness = new DemoAwareness(peer.clientId, () => {
+    this.awareness = new DemoAwareness(this.doc, () => {
       this.room.publishAwareness(this);
     });
     this.doc.on('update', this.handleDocumentUpdate);
   }
 
   connect() {
-    if (this.destroyed || this.status === 'connected') return;
+    if (this.destroyed || this.snapshot.status === 'connected') return;
 
-    this.setStatus('connecting');
-    this.setStatus('connected');
+    this.setSnapshot({ status: 'connecting', synced: false });
+    this.setSnapshot({ status: 'connected', synced: false });
     this.room.connect(this);
-    this.setSynced(true);
+    this.setSnapshot({ status: 'connected', synced: true });
   }
 
   destroy() {
@@ -203,40 +218,40 @@ class DemoProvider implements YjsProviderLike {
     }
 
     this.awareness.destroy();
-    this.eventListeners.clear();
+    this.listeners.clear();
     this.doc.destroy();
   }
 
   disconnect() {
-    if (this.destroyed || this.status === 'disconnected') return;
+    if (this.destroyed || this.snapshot.status === 'disconnected') return;
 
     this.room.disconnect(this);
-    this.setStatus('disconnected');
+    this.setSnapshot({ status: 'disconnected', synced: false });
   }
+
+  getSnapshot = () => this.snapshot;
 
   listenerCount() {
-    let count = this.updateListenerAttached ? 1 : 0;
+    const count = this.updateListenerAttached ? 1 : 0;
 
-    for (const listeners of this.eventListeners.values()) {
-      count += listeners.size;
-    }
-
-    return count + this.awareness.listenerCount();
+    return count + this.listeners.size + this.awareness.listenerCount();
   }
 
-  off(event: YjsProviderEvent, handler: YjsProviderEventHandler) {
-    this.eventListeners.get(event)?.delete(handler);
-  }
+  subscribe = (listener: () => void) => {
+    this.listeners.add(listener);
 
-  on(event: YjsProviderEvent, handler: YjsProviderEventHandler) {
-    const listeners = this.eventListeners.get(event) ?? new Set();
+    let active = true;
 
-    listeners.add(handler);
-    this.eventListeners.set(event, listeners);
-  }
+    return () => {
+      if (!active) return;
+
+      active = false;
+      this.listeners.delete(listener);
+    };
+  };
 
   receive(update: Uint8Array) {
-    if (this.destroyed || this.status !== 'connected') return;
+    if (this.destroyed || this.snapshot.status !== 'connected') return;
 
     Y.applyUpdate(this.doc, update, this.room);
   }
@@ -247,30 +262,45 @@ class DemoProvider implements YjsProviderLike {
   ) => {
     if (
       !this.destroyed &&
-      this.status === 'connected' &&
+      this.snapshot.status === 'connected' &&
       origin !== this.room
     ) {
       this.room.publishDocument(this, update);
     }
   };
 
-  private emit(event: YjsProviderEvent, payload: unknown) {
-    for (const listener of this.eventListeners.get(event) ?? []) {
-      listener(payload as never);
+  private setSnapshot(snapshot: DemoProviderSnapshot) {
+    if (
+      snapshot.status === this.snapshot.status &&
+      snapshot.synced === this.snapshot.synced
+    ) {
+      return;
     }
-  }
 
-  private setStatus(status: YjsProviderStatus) {
-    this.status = status;
-    this.emit('status', { status });
-  }
+    this.snapshot = Object.freeze(snapshot);
 
-  private setSynced(synced: boolean) {
-    this.synced = synced;
-    this.emit('sync', synced);
-    this.emit('synced', synced);
+    for (const listener of this.listeners) listener();
   }
 }
+
+const seedRoomDocument = (doc: Y.Doc) => {
+  const editor = createEditor({
+    id: 'collaboration-demo-seed-owner',
+    initialValue: cloneInitialValue(),
+    plugins: BasicNodesKit,
+    schema: SCHEMA,
+  });
+  const uninstall = editor.install(
+    yjs({
+      doc,
+      initialReady: true,
+      rootName: ROOT_NAME,
+      seed: true,
+    })
+  );
+
+  uninstall();
+};
 
 class DemoRoom {
   readonly providers: readonly [DemoProvider, DemoProvider];
@@ -280,6 +310,8 @@ class DemoRoom {
   private destroyed = false;
 
   constructor() {
+    seedRoomDocument(this.roomDoc);
+
     const providers = PEERS.map((peer) => new DemoProvider(peer, this)) as [
       DemoProvider,
       DemoProvider,
@@ -289,6 +321,7 @@ class DemoRoom {
 
     for (const provider of providers) {
       this.endpointProviders.add(provider);
+      provider.connect();
     }
 
     if (
@@ -314,6 +347,19 @@ class DemoRoom {
     provider.receive(
       Y.encodeStateAsUpdate(this.roomDoc, Y.encodeStateVector(provider.doc))
     );
+
+    for (const source of this.endpointProviders) {
+      if (source === provider || source.getSnapshot().status !== 'connected') {
+        continue;
+      }
+
+      const localState = source.awareness.getLocalState();
+
+      if (localState) {
+        provider.awareness.setRemoteState(source.peer.clientId, localState);
+      }
+    }
+
     this.publishAwareness(provider);
   }
 
@@ -343,8 +389,10 @@ class DemoRoom {
   disconnect(provider: DemoProvider) {
     if (!this.endpointProviders.has(provider)) return;
 
+    provider.awareness.removeRemoteStates();
+
     for (const target of this.endpointProviders) {
-      if (target !== provider && target.status === 'connected') {
+      if (target !== provider && target.getSnapshot().status === 'connected') {
         target.awareness.removeRemoteState(provider.peer.clientId);
       }
     }
@@ -356,9 +404,11 @@ class DemoRoom {
     const localState = source.awareness.getLocalState();
 
     for (const target of this.endpointProviders) {
-      if (target === source || target.status !== 'connected') continue;
+      if (target === source || target.getSnapshot().status !== 'connected') {
+        continue;
+      }
 
-      if (source.status === 'connected' && localState) {
+      if (source.getSnapshot().status === 'connected' && localState) {
         target.awareness.setRemoteState(source.peer.clientId, localState);
       } else {
         target.awareness.removeRemoteState(source.peer.clientId);
@@ -369,7 +419,7 @@ class DemoRoom {
   publishDocument(source: DemoProvider, update: Uint8Array) {
     if (
       this.destroyed ||
-      source.status !== 'connected' ||
+      source.getSnapshot().status !== 'connected' ||
       !this.endpointProviders.has(source)
     ) {
       return;
@@ -393,77 +443,27 @@ class DemoRoom {
   }
 }
 
-class SchemaProbeProvider implements YjsProviderLike {
-  readonly doc = new Y.Doc();
-  status: YjsProviderStatus = 'disconnected';
-  synced = false;
-
-  private readonly eventListeners = new Map<
-    YjsProviderEvent,
-    Set<YjsProviderEventHandler>
-  >();
-
-  constructor(snapshot: Uint8Array) {
-    Y.applyUpdate(this.doc, snapshot);
-  }
-
-  connect() {
-    this.status = 'connected';
-    this.emit('status', { status: this.status });
-    this.synced = true;
-    this.emit('sync', true);
-    this.emit('synced', true);
-  }
-
-  destroy() {
-    this.eventListeners.clear();
-    this.doc.destroy();
-  }
-
-  disconnect() {
-    this.synced = false;
-    this.emit('sync', false);
-    this.status = 'disconnected';
-    this.emit('status', { status: this.status });
-  }
-
-  off(event: YjsProviderEvent, handler: YjsProviderEventHandler) {
-    this.eventListeners.get(event)?.delete(handler);
-  }
-
-  on(event: YjsProviderEvent, handler: YjsProviderEventHandler) {
-    const listeners = this.eventListeners.get(event) ?? new Set();
-
-    listeners.add(handler);
-    this.eventListeners.set(event, listeners);
-  }
-
-  private emit(event: YjsProviderEvent, payload: unknown) {
-    for (const listener of this.eventListeners.get(event) ?? []) {
-      listener(payload as never);
-    }
-  }
-}
-
-const createCollaborationPlugin = (
-  provider: YjsProviderLike,
-  clientId: string
-) =>
-  YjsPlugin.configure({
-    initialState: {
-      clientId,
-      provider,
-      rootName: ROOT_NAME,
-    },
-  });
-
 const createPeerEditor = (
   provider: DemoProvider,
   schemaVersion = SCHEMA.version
 ) => {
   const plugins = [
     ...BasicNodesKit,
-    createCollaborationPlugin(provider, provider.peer.id),
+    CollaborationPlugin.create({
+      awareness: provider.awareness,
+      cursorData: {
+        validate: (value): value is { color: string; name: string } =>
+          typeof value === 'object' &&
+          value !== null &&
+          'color' in value &&
+          typeof value.color === 'string' &&
+          'name' in value &&
+          typeof value.name === 'string',
+      },
+      doc: provider.doc,
+      initialReady: true,
+      rootName: ROOT_NAME,
+    }),
   ] as const;
 
   return createEditor({
@@ -502,23 +502,28 @@ const createDemoRuntime = (): DemoRuntime => {
 };
 
 const testSchemaJoin = (room: DemoRoom, version: number) => {
-  const provider = new SchemaProbeProvider(room.snapshot());
-  const plugins = [
-    ...BasicNodesKit,
-    createCollaborationPlugin(provider, `schema-probe-${version}`),
-  ] as const;
+  const doc = new Y.Doc();
+
+  Y.applyUpdate(doc, room.snapshot());
 
   try {
     const editor = createEditor({
       id: `collaboration-demo-schema-probe-${version}`,
       initialValue: cloneInitialValue(),
-      plugins,
+      plugins: BasicNodesKit,
       schema: { id: SCHEMA.id, version },
     });
+    const uninstall = editor.install(
+      yjs({
+        doc,
+        initialReady: true,
+        rootName: ROOT_NAME,
+      })
+    );
 
-    editor.update.yjs.connect();
+    uninstall();
   } finally {
-    provider.destroy();
+    doc.destroy();
   }
 };
 
@@ -613,9 +618,13 @@ function CollaborationRoom({ runtime }: { runtime: DemoRuntime }) {
           const peer = PEERS[index];
 
           return (
-            <Plate editor={editor} key={peer.id}>
-              <PeerCard editor={editor} peer={peer} />
-            </Plate>
+            <EditorRoot editor={editor} key={peer.id}>
+              <PeerCard
+                editor={editor}
+                peer={peer}
+                provider={runtime.room.providers[index]}
+              />
+            </EditorRoot>
           );
         })}
       </div>
@@ -657,10 +666,23 @@ function CollaborationRoom({ runtime }: { runtime: DemoRuntime }) {
   );
 }
 
-function PeerCard({ editor, peer }: { editor: DemoEditor; peer: DemoPeer }) {
-  const providerStatus = useYjsProviderStatus(editor);
-  const providerSynced = useYjsProviderSynced(editor);
-  const connected = providerStatus === 'connected';
+function PeerCard({
+  editor,
+  peer,
+  provider,
+}: {
+  editor: DemoEditor;
+  peer: DemoPeer;
+  provider: DemoProvider;
+}) {
+  const admission = useYjsAdmissionStatus(editor);
+  const providerSnapshot = React.useSyncExternalStore(
+    provider.subscribe,
+    provider.getSnapshot,
+    provider.getSnapshot
+  );
+  const connected = providerSnapshot.status === 'connected';
+  const ready = admission.state === 'ready';
 
   return (
     <Card className="min-w-0" data-peer={peer.id}>
@@ -671,23 +693,55 @@ function PeerCard({ editor, peer }: { editor: DemoEditor; peer: DemoPeer }) {
             <CardDescription>Independent editor and Y.Doc</CardDescription>
           </div>
           <Badge
-            data-peer-status={providerStatus}
+            data-peer-status={providerSnapshot.status}
             variant={connected ? 'secondary' : 'destructive'}
           >
-            {connected && providerSynced ? 'Synced' : 'Disconnected'}
+            {connected && providerSnapshot.synced ? 'Synced' : 'Disconnected'}
+          </Badge>
+          <Badge
+            data-admission-status={admission.state}
+            variant={ready ? 'secondary' : 'outline'}
+          >
+            {ready ? 'Ready' : admission.state}
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
+        {admission.state === 'error' && (
+          <Alert className="mb-3" variant="destructive">
+            <AlertTitle>Collaboration import failed</AlertTitle>
+            <AlertDescription className="flex items-center justify-between gap-3">
+              <span>
+                {admission.cause instanceof Error
+                  ? admission.cause.message
+                  : String(admission.cause)}
+              </span>
+              <Button
+                onClick={() => editor.api.yjs.retryImport()}
+                size="sm"
+                variant="outline"
+              >
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
         <EditorContainer className="h-64" variant="demo">
           <Editor
             aria-label={`${peer.name} collaborative editor`}
+            aria-busy={admission.state === 'waiting'}
             className="px-6 py-4"
+            readOnly={!ready}
             variant="demo"
           />
         </EditorContainer>
       </CardContent>
-      <PeerControls connected={connected} editor={editor} peer={peer} />
+      <PeerControls
+        connected={connected}
+        editor={editor}
+        peer={peer}
+        provider={provider}
+      />
     </Card>
   );
 }
@@ -696,17 +750,19 @@ function PeerControls({
   connected,
   editor,
   peer,
+  provider,
 }: {
   connected: boolean;
   editor: DemoEditor;
   peer: DemoPeer;
+  provider: DemoProvider;
 }) {
   const history = useEditorRuntimeState(editor, (state) => state.history());
   const redoDepth = history.redos.length;
   const undoDepth = history.undos.length;
 
   React.useEffect(() => {
-    editor.update.yjs.sendCursorData({
+    editor.api.yjs.setCursorData({
       color: peer.color,
       name: peer.name,
     });
@@ -714,9 +770,14 @@ function PeerControls({
 
   const toggleConnection = () => {
     if (connected) {
-      editor.update.yjs.disconnect();
+      editor.api.yjs.clearSelection();
+      provider.disconnect();
     } else {
-      editor.update.yjs.connect();
+      provider.connect();
+
+      if (editor.api.yjs.admissionStatus().state === 'ready') {
+        editor.api.yjs.syncSelection();
+      }
     }
   };
 

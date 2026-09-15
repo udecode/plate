@@ -2,7 +2,7 @@
   "version": 2,
   "registryPath": "benchmarks/targets/slate-v2.json",
   "policy": {
-    "authority": "Benchmark targets are the future source of truth. Evidence Kit is a legacy import/report archive during migration.",
+    "authority": "Benchmark targets are the source of truth. Evidence Kit is a legacy import/report archive.",
     "benchmarkCode": "Benchmark implementation lives with the runtime/package code it measures.",
     "activeLoops": "Autoresearch sessions optimize one target id at a time and own only active loop state.",
     "docs": "Docs and research files are linked evidence, not benchmark control state.",
@@ -12,14 +12,15 @@
     }
   },
   "counts": {
-    "targets": 48,
-    "artifacts": 48,
-    "recordedArtifacts": 48,
+    "targets": 53,
+    "artifacts": 53,
+    "recordedArtifacts": 52,
     "missingOptionalArtifacts": 0,
-    "missingRequiredArtifacts": 0,
-    "requiredArtifacts": 48,
+    "missingRequiredArtifacts": 1,
+    "requiredArtifacts": 53,
     "statusCounts": {
-      "recorded": 48
+      "recorded": 52,
+      "missing-required-artifact": 1
     }
   },
   "targets": [
@@ -239,7 +240,7 @@
       "family": "core-compare",
       "kind": "compare",
       "owner": "slate-v2",
-      "question": "Does Slate v2 match legacy Slate for normalization?",
+      "question": "Does the current Plate wrapper match legacy Slate for normalization?",
       "command": "bun benchmarks/slate-v2/donor/core/compare/normalization.mjs",
       "cwd": ".",
       "metric": "core_benchmark_seconds",
@@ -293,7 +294,7 @@
       "family": "core-compare",
       "kind": "compare",
       "owner": "slate-v2",
-      "question": "Does Slate v2 match legacy Slate for core observation?",
+      "question": "Does Plite match legacy Slate for core observation?",
       "command": "bun benchmarks/slate-v2/donor/core/compare/observation.mjs",
       "cwd": ".",
       "metric": "core_benchmark_seconds",
@@ -369,7 +370,7 @@
       "family": "editing-navigation",
       "kind": "compare",
       "owner": "slate-v2",
-      "question": "Does Slate v2 match legacy Slate for rich-text editing, transforms, selection, and navigation operations?",
+      "question": "Does Plite match legacy Slate for rich-text editing, transforms, selection, and navigation operations?",
       "command": "RICH_TEXT_OPS_COMPARE_ITERATIONS=51 bun benchmarks/slate-v2/donor/core/compare/rich-text-operations.mjs",
       "cwd": ".",
       "metric": "rich_text_structural_ops_p95_ms",
@@ -441,6 +442,28 @@
       "migration": null
     },
     {
+      "id": "cross-editor-human-operations",
+      "family": "editing-navigation",
+      "kind": "compare",
+      "owner": "plite",
+      "question": "How do current source-pinned rich-text editors compare for matched native paragraph editing, history, clipboard, mount, scroll and serialization across document sizes?",
+      "command": "node benchmarks/slate-v2/donor/browser/react/huge-document-cross-editor.mjs",
+      "cwd": ".",
+      "metric": "plite_first_type_p95_ms",
+      "direction": "lower",
+      "printsMetric": false,
+      "correctnessCommand": "CROSS_EDITOR_HUGE_WARMUPS=0 CROSS_EDITOR_HUGE_ITERATIONS=1 node benchmarks/slate-v2/donor/browser/react/huge-document-cross-editor.mjs",
+      "artifacts": [
+        {
+          "path": "tmp/cross-editor-human-operations.json",
+          "required": true,
+          "recorded": false
+        }
+      ],
+      "status": "missing-required-artifact",
+      "migration": null
+    },
+    {
       "id": "decoration-manager-scalability",
       "family": "react-locality",
       "kind": "current",
@@ -489,7 +512,7 @@
       "family": "history",
       "kind": "compare",
       "owner": "slate-v2",
-      "question": "Does Slate v2 match legacy Slate for undo/redo typing and fragment history?",
+      "question": "Does Plite match legacy Slate for undo/redo typing and fragment history?",
       "command": "HISTORY_BENCH_LEGACY_REPO=../slate bun benchmarks/slate-v2/donor/core/compare/history.mjs",
       "cwd": ".",
       "metric": "history_compare_worst_p95_ratio",
@@ -512,33 +535,6 @@
       }
     },
     {
-      "id": "issue-6038-transaction-execution",
-      "family": "issue-replay",
-      "kind": "current",
-      "owner": "slate-v2",
-      "question": "Does the issue #6038 transaction execution replay stay healthy?",
-      "command": "bun benchmarks/slate-v2/donor/slate/6038-transaction-execution.mjs",
-      "cwd": ".",
-      "metric": "benchmark_seconds",
-      "direction": "lower",
-      "printsMetric": false,
-      "correctnessCommand": "pnpm check:plite",
-      "artifacts": [
-        {
-          "path": "tmp/bench-slate-6038.json",
-          "required": true,
-          "recorded": true
-        }
-      ],
-      "status": "recorded",
-      "migration": {
-        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "issue-6038-transaction-execution",
-        "evidenceKitCategory": "slate-6038-transaction-execution",
-        "evidenceKitActive": true
-      }
-    },
-    {
       "id": "plate-code-block-text-flow-browser",
       "family": "react-text-flow",
       "kind": "browser-matrix",
@@ -553,6 +549,138 @@
       "artifacts": [
         {
           "path": "tmp/plate-code-block-text-flow-browser.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "plite-authored-checkpoint",
+      "family": "core-authored",
+      "kind": "current",
+      "owner": "plite",
+      "question": "Does a native proposal amendment publish a coherent immutable checkpoint with logarithmic changed pages and no unrelated payload cloning at 100, 1000 and 10000 retained changes?",
+      "command": "PLITE_AUTHORED_CHECKPOINT_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-checkpoint-benchmark.ts --output=tmp/plite-authored-checkpoint-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_authored_checkpoint_passed",
+      "direction": "higher",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-changes-contract.test.ts packages/plitejs/test/value-codec.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-checkpoint-benchmark.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "plite-authored-collaboration",
+      "family": "collaboration",
+      "kind": "current",
+      "owner": "plitejs/authored+yjs",
+      "question": "Does the installed native authored owner receive one Yjs operation and publish exact accepted and proposed content within the frozen collaboration budgets at 100, 1000 and 10000 pending changes?",
+      "command": "PLITE_AUTHORED_COLLABORATION_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-collaboration-benchmark.ts --output=tmp/plite-authored-collaboration-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_authored_collaboration_passed",
+      "direction": "higher",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/yjs/authored-contract.spec.ts packages/plitejs/test/authored-history-contract.test.ts packages/plitejs/test/authored-retention-contract.test.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-collaboration-benchmark.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "plite-authored-mounted",
+      "family": "browser-authored",
+      "kind": "current",
+      "owner": "plite/react+authored",
+      "question": "Do 1, 2 and 8 actual shared authored views, including a complete 1000-block mounted DOM, meet trusted input and retained browser-heap budgets?",
+      "command": "bun benchmarks/editor/benchmarks/plite-authored-mounted-benchmark.ts --output=tmp/plite-authored-mounted-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_authored_mounted_passed",
+      "direction": "higher",
+      "printsMetric": true,
+      "correctnessCommand": "pnpm --filter plitejs test:react test/react/authored-fragment-provider.test.tsx test/react/authored-view.test.tsx test/react/plite-runtime-provider-contract.test.tsx && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-mounted-benchmark.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "plite-authored-retention",
+      "family": "core-authored",
+      "kind": "current",
+      "owner": "plitejs/authored",
+      "question": "Does installed native authored state retain bounded cold heap for one, 1000 and 10000 closed contribution pairs under default and archival policy?",
+      "command": "PLITE_AUTHORED_RETENTION_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-retention-benchmark.ts --output=tmp/plite-authored-retention-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_authored_retention_passed",
+      "direction": "higher",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-retention-contract.test.ts packages/plitejs/test/authored-history-contract.test.ts packages/plitejs/test/yjs/authored-contract.spec.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-retention-benchmark.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "plite-authored-scale",
+      "family": "core-authored",
+      "kind": "current",
+      "owner": "plite",
+      "question": "Does installed native proposal amendment and current-card reading meet the frozen zero, normal, large, stress, overlap and read-fanout budgets?",
+      "command": "PLITE_AUTHORED_SCALE_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-scale-benchmark.ts --output=tmp/plite-authored-scale-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_authored_scale_passed",
+      "direction": "higher",
+      "printsMetric": true,
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-changes-contract.test.ts packages/plitejs/test/authored-structure-contract.test.ts packages/plitejs/test/authored-view-contract.test.ts packages/platejs/src/authored/authored.api.spec.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-scale-benchmark.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
+      "migration": null
+    },
+    {
+      "id": "plite-authored-typing",
+      "family": "browser-authored",
+      "kind": "current",
+      "owner": "plite",
+      "question": "Does complete trusted typing in native markup meet the normal and large paint-boundary budgets with two actual shared views?",
+      "command": "bun benchmarks/editor/benchmarks/plite-authored-typing-benchmark.ts --output=tmp/plite-authored-typing-benchmark.json",
+      "cwd": ".",
+      "metric": "plite_authored_typing_passed",
+      "direction": "higher",
+      "printsMetric": true,
+      "correctnessCommand": "pnpm --filter plitejs test:react test/react/authored-fragment-provider.test.tsx test/react/dom-repair-policy-contract.test.ts && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-typing-benchmark.json",
           "required": true,
           "recorded": true
         }
@@ -879,7 +1007,7 @@
       "kind": "browser-trace",
       "owner": "slate-v2",
       "question": "What DOM count, heap, long-frame, and interaction traces does Slate v2 produce in Chromium?",
-      "command": "PLITE_BROWSER_TRACE_LATEST_ARTIFACT_PATH=tmp/slate-react-huge-document-default-browser-trace-benchmark.json bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
+      "command": "PLITE_BROWSER_TRACE_LATEST_ARTIFACT_PATH=tmp/slate-react-huge-document-default-browser-trace-benchmark.json PLITE_BROWSER_TRACE_SURFACES=pliteComplete bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
       "cwd": ".",
       "metric": "react_huge_doc_type_to_paint_p95_ms",
       "direction": "lower",
@@ -923,38 +1051,11 @@
       "migration": null
     },
     {
-      "id": "react-huge-document-legacy-compare",
-      "family": "react-large-document",
-      "kind": "slate-legacy-compare",
-      "owner": "slate-v2",
-      "question": "Does Slate v2 beat legacy Slate for 5,000-block React editing, selection, startup, and full-document replacement?",
-      "command": "REACT_HUGE_COMPARE_LEGACY_REPO=../slate REACT_HUGE_COMPARE_DISPOSE_DELAY_MS=0 REACT_HUGE_COMPARE_SPLIT_SELECTION=1 REACT_HUGE_COMPARE_ISOLATE_SURFACES=1 REACT_HUGE_COMPARE_SURFACES=v2DefaultRenderAuto,v2DomPresent REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs",
-      "cwd": ".",
-      "metric": "react_huge_doc_legacy_compare_worst_p95_ratio",
-      "direction": "lower",
-      "printsMetric": true,
-      "correctnessCommand": "pnpm check:plite",
-      "artifacts": [
-        {
-          "path": "tmp/slate-react-huge-document-legacy-compare-benchmark.json",
-          "required": true,
-          "recorded": true
-        }
-      ],
-      "status": "recorded",
-      "migration": {
-        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-huge-document-legacy-compare",
-        "evidenceKitCategory": "slate-react-huge-document-legacy-compare",
-        "evidenceKitActive": true
-      }
-    },
-    {
       "id": "react-huge-document-overlays",
       "family": "react-large-document",
       "kind": "current",
       "owner": "slate-v2",
-      "question": "Do overlay and partial-DOM promotion paths stay local in huge documents?",
+      "question": "Do overlay updates, requested viewport mounts, and active edits stay local in virtualized huge documents?",
       "command": "bun benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx",
       "cwd": ".",
       "metric": "benchmark_seconds",
@@ -1014,7 +1115,7 @@
       "metric": "react_huge_doc_type_to_paint_p95_ms",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite exec playwright test --config playwright.config.ts --project=chromium tests/plite-browser/donor/examples/huge-document.test.ts -g \"exposes virtualized DOM strategy controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",
+      "correctnessCommand": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/huge-document.test.ts -g \"exposes virtualized rendering controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",
       "artifacts": [
         {
           "path": "tmp/slate-react-huge-document-virtualized-browser-trace-benchmark.json",
@@ -1036,7 +1137,7 @@
       "metric": "pagination_virtualized_vs_table_ratio",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite exec playwright test --config playwright.config.ts --project=chromium tests/plite-browser/donor/examples/pagination.test.ts -g \"keeps rows=800 virtualized pagination in the staged-class perf envelope|keeps fast staged text after insert breaks at the model caret|selects projected pagination words on native double click|places virtualized pagination selection at wrapped line ends\"",
+      "correctnessCommand": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/pagination.test.ts -g \"keeps rows=800 virtualized pagination in the staged-class perf envelope|keeps fast staged text after insert breaks at the model caret|selects projected pagination words on native double click|places virtualized pagination selection at wrapped line ends\"",
       "artifacts": [
         {
           "path": "tmp/slate-pagination-virtualized-char-burst-benchmark.json",
@@ -1058,7 +1159,7 @@
       "metric": "pagination_virtualized_real_ops_worst_p95_ms",
       "direction": "lower",
       "printsMetric": true,
-      "correctnessCommand": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite exec playwright test --config playwright.config.ts --project=chromium tests/plite-browser/donor/examples/pagination.test.ts -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
+      "correctnessCommand": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/pagination.test.ts -g \"moves the cursor between the first two virtualized pagination blocks on click|keeps virtualized pagination text aligned when a paragraph becomes selected|selects virtualized pagination text when dragging from the page line margin|places virtualized pagination selection at line start from the page margin|places virtualized pagination selection at wrapped line ends|selects projected pagination words on native double click\"",
       "artifacts": [
         {
           "path": "tmp/slate-pagination-virtualized-real-editor-ops-benchmark.json",

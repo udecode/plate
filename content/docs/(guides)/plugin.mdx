@@ -8,7 +8,7 @@ updates, rendering, or a deliberate combination of them. Define independent
 fields at creation and use terminal configuration only for app-owned values.
 
 - [Getting Started: Components](/docs/installation/plate-ui) - Instructions for adding plugins to your editor
-- [PlatePlugin API](/docs/api/core/plate-plugin) - The complete API reference for creating plugins
+- [Plugin API](/docs/api/core/plate-plugin) - The complete API reference for creating plugins
 
 ## Basic plugin configuration
 
@@ -17,7 +17,7 @@ fields at creation and use terminal configuration only for app-owned values.
 The most basic plugin configuration requires only a `name`:
 
 ```ts
-const MyPlugin = definePlatePlugin("minimal", {});
+const MyPlugin = definePlugin("minimal", {});
 ```
 
 While this plugin doesn't do anything yet, it's a starting point for more complex configurations.
@@ -46,7 +46,7 @@ Declare a new element with `schema.element`:
 ```ts
 import { schema } from "platejs";
 
-const NoticePlugin = definePlatePlugin("noticeFeature", {
+const NoticePlugin = definePlugin("noticeFeature", {
   schema: {
     element: { ...schema.element.textBlock(), type: "notice" },
   },
@@ -58,7 +58,7 @@ You can associate a component with your element. See [Plugin Components](/docs/p
 ```ts
 import { schema } from "platejs";
 
-const NoticePlugin = definePlatePlugin("noticeFeature", {
+const NoticePlugin = definePlugin("noticeFeature", {
   component: NoticeElement,
   schema: {
     element: { ...schema.element.textBlock(), type: "notice" },
@@ -73,7 +73,7 @@ schema declares `blockContent: false`. Use that flag for structural internals,
 not for blocks that should remain selectable.
 
 ```ts
-const RowPlugin = definePlatePlugin("row", {
+const RowPlugin = definePlugin("row", {
   schema: {
     element: {
       ...schema.element.textBlock(),
@@ -102,7 +102,7 @@ with a property descriptor under `schema.mark`:
 ```ts
 import { property, schema } from "platejs";
 
-const CustomLinkPlugin = definePlatePlugin("customLink", {
+const CustomLinkPlugin = definePlugin("customLink", {
   schema: {
     element: {
       content: schema.content.text({ default: "text", min: 1 }),
@@ -111,11 +111,11 @@ const CustomLinkPlugin = definePlatePlugin("customLink", {
   },
 });
 
-const CustomImagePlugin = definePlatePlugin("customImage", {
+const CustomImagePlugin = definePlugin("customImage", {
   schema: { element: { void: "block" } },
 });
 
-const CustomBoldPlugin = definePlatePlugin("customBold", {
+const CustomBoldPlugin = definePlugin("customBold", {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -148,14 +148,14 @@ See the [Plugin Rules guide](/docs/plugin-rules) for a complete list of availabl
 ### Event handlers
 
 The `on` field owns both editor lifecycle and React DOM events. A DOM handler receives a
-`PlatePluginContext & { event }` object.
+`PluginContext & { event }` object.
 
 Child names do not repeat the `on` prefix. Lifecycle handlers use names such as
 `commit`, `nodeChange`, and `textChange`; DOM handlers use `keyDown`, `paste`,
 and `click`.
 
 ```ts showLineNumbers
-const ExamplePlugin = definePlatePlugin("example", {
+const ExamplePlugin = definePlugin("example", {
   on: {
     commit: ({ editor, snapshot }) => {
       console.info(editor, snapshot.children);
@@ -174,7 +174,7 @@ You may want to inject a class name or CSS property into any node having a certa
 ```ts showLineNumbers
 import { PLUGINS, property, schema, target } from "platejs";
 
-const TextAlignPlugin = definePlatePlugin("textAlign", {
+const TextAlignPlugin = definePlugin("textAlign", {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       "text/html": {
@@ -254,7 +254,7 @@ export type CustomPluginState = {
   prefix: string;
 };
 
-const CustomPlugin = definePlatePlugin("custom", {
+const CustomPlugin = definePlugin("custom", {
   api: ({ store }) => ({
     getPrefix: () => store.get("prefix"),
   }),
@@ -281,28 +281,28 @@ An `api` factory receives the exact editor or mounted view that exposes its
 methods. Capture `editor` inside that factory for focus, scrolling, or other
 view work. Outer descriptor-construction callbacks and plugin stores retain
 their shared model lifetime. In React controls, call the API through the
-mounted editor returned by `useEditor()` or `useEditorPlugin()`.
+mounted editor returned by `useEditor()`.
 
 Generic package code can reach the same immutable API object through
 `editor.plugin(CustomPlugin).api.getPrefix()`.
 
-### Native Plite capabilities
+### Editor capabilities
 
-Plate plugins declare Plite capabilities directly at the plugin root. Use
+Plate plugins declare Plate capabilities directly at the plugin root. Use
 `readMiddleware`, `commands`, `corrections`, `stateFields`, `effectTypes`,
-`facetProviders`, `contributions`, `on`, `activate`, and
+`contributions`, `on`, `activate`, and
 `validate` without a second wrapper.
 
 ```ts showLineNumbers
 import { defineStateField } from "platejs";
-import { definePlatePlugin } from "platejs/react";
+import { definePlugin } from "platejs/react";
 
 const enabledField = defineStateField({
   initial: false,
   key: "customState.enabled",
 });
 
-const CustomStatePlugin = definePlatePlugin("customState", {
+const CustomStatePlugin = definePlugin("customState", {
   stateFields: [enabledField],
   read: ({ state }) => ({
     enabled: () => state.getField(enabledField),
@@ -315,15 +315,15 @@ const CustomStatePlugin = definePlatePlugin("customState", {
 });
 ```
 
-<Callout type="info" title="Extensions, APIs, and commands">
+<Callout type="info" title="Plugins, APIs, and commands">
   Put every independent capability in the constructor. Use `.extend()` only for
   an imported/prebuilt descriptor, a shared factory the constructor cannot
   access, or an earlier-stage type.
 </Callout>
 
-An independently reusable standalone Plite descriptor uses
-`defineExtension` from `platejs`. See
-[Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
+An independently reusable standalone Plate descriptor uses
+`definePlugin` from `platejs`. See
+[Plugin Methods](/docs/plugin-methods#commands).
 
 ## Advanced plugin configuration
 
@@ -336,7 +336,7 @@ type MyPluginState = {
   count: number;
 };
 
-const MyPlugin = definePlatePlugin("myPlugin", {
+const MyPlugin = definePlugin("myPlugin", {
   initialState: {
     count: 0,
   } satisfies MyPluginState,
@@ -379,7 +379,7 @@ See more in [Plugin Context](/docs/plugin-context) and [Editor Methods](/docs/ed
 Declare required plugins with their plugin objects. Plate installs the dependency graph recursively, deduplicates plugins by name, and loads dependencies before their dependents.
 
 ```ts
-const MyPlugin = definePlatePlugin("myPlugin", {
+const MyPlugin = definePlugin("myPlugin", {
   dependencies: [ParagraphPlugin, ListPlugin],
 });
 ```
@@ -389,7 +389,7 @@ const MyPlugin = definePlatePlugin("myPlugin", {
 The `enabled` property allows you to conditionally enable or disable a plugin:
 
 ```ts
-const MyPlugin = definePlatePlugin("myPlugin", {
+const MyPlugin = definePlugin("myPlugin", {
   enabled: true, // or false to disable
 });
 ```
@@ -400,7 +400,7 @@ Keep optional capabilities as ordinary plugins in the consumer's plugin array.
 When an enhancement needs a host, the enhancement depends on the host:
 
 ```ts
-const CodeHighlightPlugin = definePlatePlugin("codeHighlight", {
+const CodeHighlightPlugin = definePlugin("codeHighlight", {
   dependencies: [CodeBlockPlugin],
 });
 
@@ -462,7 +462,7 @@ in an HTML input, transform the source string, or transform the decoded
 fragment.
 
 ```ts
-const HtmlCleanupPlugin = definePlatePlugin("htmlCleanup", {
+const HtmlCleanupPlugin = definePlugin("htmlCleanup", {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       "text/html": {
@@ -482,17 +482,17 @@ whole-input hooks.
 
 ## Typed plugins
 
-`definePlatePlugin` infers one exact definition from the author object. Keep
+`definePlugin` infers one exact definition from the author object. Keep
 state contracts explicit with a typed `initialState` value or `satisfies`;
 do not pass caller generics to the factory.
 
-### Using definePlatePlugin
+### Using definePlugin
 
 The inferred definition carries the plugin name, state, API, reads, and updates:
 
 ```ts
 import { property, schema } from "platejs";
-import { definePlatePlugin } from "platejs/react";
+import { definePlugin } from "platejs/react";
 
 export type SnippetPluginState = {
   language: string;
@@ -500,7 +500,7 @@ export type SnippetPluginState = {
   syntaxPopularFirst: boolean;
 };
 
-export const SnippetPlugin = definePlatePlugin("snippet", {
+export const SnippetPlugin = definePlugin("snippet", {
   api: ({ store }) => ({
     getLanguage: () => store.get("language"),
     getSyntaxState: () => store.get("syntax"),
@@ -552,4 +552,4 @@ editor.update.snippet.insertCurrentLanguage();
 
 ## See also
 
-See the [PlatePlugin API](/docs/api/core/plate-plugin) for every plugin field.
+See the [Plugin API](/docs/api/core/plate-plugin) for every plugin field.

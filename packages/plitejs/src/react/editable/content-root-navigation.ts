@@ -8,8 +8,11 @@ import {
   type Point,
   type Range,
   RangeApi,
+  SelectionApi,
   type RootKey,
 } from '../..';
+import { readAuthoredViewFragmentVersion } from '../../core/authored-runtime';
+import { getCharacterDistance, getWordDistance } from '../../utils/string';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { readRootChildren } from '../root-key';
 import {
@@ -25,8 +28,10 @@ import {
   type PliteViewBoundaryPoint,
   samePliteRootPoint,
 } from '../view-boundary-graph';
+import type { PliteViewBoundaryGraphNode } from '../view-boundary-graph-core';
 import {
   createPliteViewSelection,
+  isPliteViewSelectionCollapsed,
   readPliteViewSelection,
   type PliteViewSelection,
   writePliteViewSelection,
@@ -58,6 +63,8 @@ import {
   type ContentRootOwner,
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
+  getContentRootViewBoundaryPoint,
+  readContentRootViewNode,
   getOwnerForCurrentViewEditor,
   getOwnerForRoot,
   getRegisteredRootViewEditor,
@@ -69,6 +76,7 @@ import {
   clamp,
   getPathElement,
   isPointOnVisualBoundaryLine,
+  resolveViewBoundaryVisualMovement,
   resolveVerticalNavigationPoint,
 } from './content-root-vertical-geometry';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
@@ -78,14 +86,34 @@ import {
   before as editorBefore,
   dispatchCommand,
   editorCommands,
+  getEditorRuntimeOwner,
   toInternalRoot,
 } from './runtime-editor-api';
+import { writeRuntimeSelection } from './runtime-mutation-state';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 export {
   type ContentRootOwner,
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
 } from './content-root-owners';
+
+export const readContentRootAwareSelection = ({
+  editor,
+  getActiveContentRootOwner,
+}: {
+  editor: ReactRuntimeEditor;
+  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
+}) => {
+  const selection = readRuntimeSelection(editor);
+
+  if (selection) return selection;
+
+  const ownerSelection = readRuntimeSelection(getEditorRuntimeOwner(editor));
+  const root = SelectionApi.root(ownerSelection);
+
+  return root && getActiveContentRootOwner?.(root) ? ownerSelection : selection;
+};
 
 type ContentRootNavigationTarget = {
   owner?: ContentRootOwner;
@@ -108,6 +136,17 @@ const rootedRange = (point: Point, root: RootKey): Range => {
     anchor: rooted,
     focus: rooted,
   };
+};
+
+const selectContentRoot = (
+  editor: ReactRuntimeEditor,
+  target: NonNullable<Parameters<typeof writeRuntimeSelection>[1]>
+) => {
+  if (editor.read.view.isReadOnly()) {
+    writeRuntimeSelection(editor, target);
+  } else {
+    dispatchCommand(editor, editorCommands.select, { target });
+  }
 };
 
 const toViewBoundaryPoint = ({
@@ -152,6 +191,8 @@ const collapseNativeSelectionForProjectedSelection = (
   }
 
   const clear = () => {
+    const current = readPliteViewSelection(editor);
+    if (!current || isPliteViewSelectionCollapsed(current)) return;
     domSelection.removeAllRanges();
   };
 
@@ -192,7 +233,7 @@ const collapseModelSelectionForProjectedSelection = (
     return;
   }
 
-  dispatchCommand(editor, editorCommands.select, { target: range });
+  selectContentRoot(editor, range);
 };
 
 const getRootViewEditor = ({
@@ -1216,9 +1257,249 @@ export const shouldModelOwnContentRootVerticalSelection = ({
   );
 };
 
+const moveMarkupSelection = ({
+  action,
+  editor,
+  extend,
+  graph,
+  owners,
+  preferredX,
+  selection,
+  viewSelection,
+}: {
+  action: ContentRootViewSelectionAction;
+  editor: ReactRuntimeEditor;
+  extend: boolean;
+  graph: PliteViewBoundaryGraphModel;
+  owners: readonly ContentRootOwner[];
+  preferredX?: number;
+  selection: Range | null;
+  viewSelection: PliteViewSelection | null;
+}): boolean => {
+  const root = toInternalRoot(editor.read((state) => state.view.root()));
+  const initial =
+    viewSelection ??
+    (selection
+      ? createPliteViewSelection(graph, {
+          anchor: {
+            point: rootPlitePoint(selection.anchor, root),
+            affinity:
+              !RangeApi.isCollapsed(selection) &&
+              !RangeApi.isBackward(selection)
+                ? 'forward'
+                : 'backward',
+          },
+          focus: {
+            point: rootPlitePoint(selection.focus, root),
+            affinity:
+              !RangeApi.isCollapsed(selection) && RangeApi.isBackward(selection)
+                ? 'forward'
+                : 'backward',
+          },
+        })
+      : null);
+  if (!initial) return false;
+  const forward = action.direction === 'forward';
+  let target = initial.focus;
+  if (
+    !extend &&
+    !isPliteViewSelectionCollapsed(initial) &&
+    action.kind === 'move' &&
+    (action.axis === 'horizontal' || action.axis === 'word')
+  ) {
+    target =
+      forward !== initial.segments.backward ? initial.focus : initial.anchor;
+  } else {
+    const initialNode = PliteViewBoundaryGraph.resolvePointNode(graph, target);
+    if (!initialNode) return false;
+    const atNode = (
+      current: PliteViewBoundaryGraphNode,
+      offset: number
+    ): PliteViewBoundaryPoint => ({
+      ...(current.fragment ? { fragmentId: current.fragment.id } : {}),
+      ...(current.owner ? { owner: current.owner } : {}),
+      affinity: forward ? 'backward' : 'forward',
+      point: rootPlitePoint({ path: current.path, offset }, current.root),
+    });
+    if (action.kind === 'document-boundary') {
+      const edge = forward ? graph.nodes.at(-1) : graph.nodes[0];
+      const boundary =
+        edge &&
+        getContentRootViewBoundaryPoint(
+          editor,
+          edge,
+          forward ? 'end' : 'start'
+        );
+      if (!boundary) return false;
+      target = boundary;
+    } else if (action.axis === 'line' || action.axis === 'vertical') {
+      const next = resolveViewBoundaryVisualMovement({
+        axis: action.axis,
+        direction: action.direction,
+        editor,
+        graph,
+        owners,
+        point: target,
+        preferredX,
+      });
+      if (!next) return false;
+      target = next;
+    } else if (!initialNode.text) {
+      const adjacent = forward
+        ? PliteViewBoundaryGraph.nextNode(graph, initialNode)
+        : PliteViewBoundaryGraph.previousNode(graph, initialNode);
+      const boundary = getContentRootViewBoundaryPoint(
+        editor,
+        adjacent ?? initialNode,
+        adjacent ? (forward ? 'start' : 'end') : forward ? 'end' : 'start'
+      );
+      if (!boundary) return false;
+      target = boundary;
+    } else {
+      const entry = graph.textRunsByNode.get(initialNode.key);
+      if (!entry || !initialNode.text) return false;
+      const { run } = entry;
+      const offset =
+        entry.offset + target.point.offset - initialNode.text.start;
+      const atBoundary = forward ? offset === run.value.length : offset === 0;
+      if (atBoundary) {
+        const edge = forward ? run.nodes.at(-1) : run.nodes[0];
+        if (!edge?.text) return false;
+        const adjacent = forward
+          ? PliteViewBoundaryGraph.nextNode(graph, edge)
+          : PliteViewBoundaryGraph.previousNode(graph, edge);
+        const content =
+          adjacent &&
+          !adjacent.text &&
+          readContentRootViewNode(editor, adjacent);
+        const next =
+          content &&
+          NodeApi.isElement(content) &&
+          editor.read.schema.isInline(content)
+            ? forward
+              ? PliteViewBoundaryGraph.nextNode(graph, adjacent)
+              : PliteViewBoundaryGraph.previousNode(graph, adjacent)
+            : (adjacent ?? edge);
+        if (!next) return false;
+        const boundary = next.text
+          ? atNode(
+              next,
+              adjacent
+                ? forward
+                  ? next.text.start
+                  : next.text.end
+                : forward
+                  ? next.text.end
+                  : next.text.start
+            )
+          : getContentRootViewBoundaryPoint(
+              editor,
+              next,
+              forward ? 'end' : 'start'
+            );
+        if (!boundary) return false;
+        target = boundary;
+      } else {
+        const text = forward
+          ? run.value.slice(offset)
+          : run.value.slice(0, offset);
+        const distance =
+          action.axis === 'word'
+            ? getWordDistance(text, !forward)
+            : getCharacterDistance(text, !forward);
+        const next = Math.max(
+          0,
+          Math.min(run.value.length, offset + (forward ? distance : -distance))
+        );
+        const ordered = forward ? run.nodes : [...run.nodes].reverse();
+        for (const node of ordered) {
+          const location = graph.textRunsByNode.get(node.key);
+          if (!location || !node.text) continue;
+          const localOffset = next - location.offset;
+          if (
+            localOffset >= 0 &&
+            localOffset <= node.text.end - node.text.start
+          ) {
+            target = atNode(node, node.text.start + localOffset);
+            break;
+          }
+        }
+      }
+    }
+  }
+  if (target.fragmentId) {
+    const node = PliteViewBoundaryGraph.resolvePointNode(graph, target);
+    const adjacent =
+      node?.text &&
+      (forward
+        ? target.point.offset === node.text.end
+        : target.point.offset === node.text.start)
+        ? forward
+          ? PliteViewBoundaryGraph.nextNode(graph, node)
+          : PliteViewBoundaryGraph.previousNode(graph, node)
+        : null;
+    if (
+      node &&
+      adjacent?.text &&
+      !adjacent.fragment &&
+      graph.textRunsByNode.get(node.key)?.run ===
+        graph.textRunsByNode.get(adjacent.key)?.run
+    ) {
+      target = {
+        ...(adjacent.owner ? { owner: adjacent.owner } : {}),
+        affinity: forward ? 'forward' : 'backward',
+        point: rootPlitePoint(
+          {
+            path: adjacent.path,
+            offset: forward ? adjacent.text.start : adjacent.text.end,
+          },
+          adjacent.root
+        ),
+      };
+    }
+  }
+  const projected = createPliteViewSelection(graph, {
+    anchor: extend ? initial.anchor : target,
+    focus: target,
+  });
+  const targetNode = PliteViewBoundaryGraph.resolvePointNode(graph, target);
+  const otherSide = PliteViewBoundaryGraph.resolvePointNode(graph, {
+    ...target,
+    affinity: target.affinity === 'backward' ? 'forward' : 'backward',
+  });
+  const docked = targetNode?.key !== otherSide?.key;
+  const ordinary =
+    projected.segments.parts.length === 1 &&
+    projected.segments.parts.every(
+      (part) => !part.fragment && !part.owner && part.root === root
+    );
+  if (extend && ordinary && !isPliteViewSelectionCollapsed(projected)) {
+    writePliteViewSelection(editor, null);
+    selectContentRoot(editor, {
+      anchor: projected.anchor.point,
+      focus: projected.focus.point,
+    });
+  } else if (!extend && !target.fragmentId) {
+    writePliteViewSelection(editor, docked ? projected : null);
+    selectContentRoot(
+      editor,
+      SelectionApi.text(
+        { anchor: target.point, focus: target.point },
+        docked ? { affinity: target.affinity } : undefined
+      )
+    );
+  } else {
+    writePliteViewSelection(editor, projected);
+    collapseModelSelectionForProjectedSelection(editor, selection);
+    collapseNativeSelectionForProjectedSelection(editor, selection);
+  }
+  return true;
+};
+
 const applyContentRootViewSelectionAction = ({
   editor,
   action,
+  extend = true,
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
@@ -1228,6 +1509,7 @@ const applyContentRootViewSelectionAction = ({
 }: {
   editor: ReactRuntimeEditor;
   action: ContentRootViewSelectionAction | null;
+  extend?: boolean;
   getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
   getContentRootOwnerViewEditor?: (
     owner: ContentRootOwner
@@ -1237,12 +1519,31 @@ const applyContentRootViewSelectionAction = ({
   preferredX?: number;
   selection: Range | null;
 }): ContentRootNavigationResult => {
-  if (!action || !hasContentRootOwner(editor)) {
+  if (!action) {
     return { handled: false };
   }
 
   const owners = findContentRootOwners(editor);
   const viewSelection = readPliteViewSelection(editor);
+  if (readAuthoredViewFragmentVersion(editor)) {
+    const graph = createContentRootViewBoundaryGraph(editor, owners);
+    if (
+      moveMarkupSelection({
+        action,
+        editor,
+        extend,
+        graph,
+        owners,
+        preferredX,
+        selection,
+        viewSelection,
+      })
+    ) {
+      preventDefault?.();
+      return { handled: true };
+    }
+  }
+  if (!extend || !hasContentRootOwner(editor)) return { handled: false };
   const currentViewOwner = getOwnerForCurrentViewEditor({
     editor,
     getContentRootOwnerViewEditor,
@@ -1442,7 +1743,7 @@ export const applyContentRootSelectionMoveCommand = ({
   selection,
 }: {
   command: ContentRootSelectionMoveCommand;
-  editor: ReactRuntimeEditor;
+  editor: ReactRuntimeEditor<any>;
   getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
   getContentRootOwnerViewEditor?: (
     owner: ContentRootOwner
@@ -1452,7 +1753,11 @@ export const applyContentRootSelectionMoveCommand = ({
   selection: Range | null;
 }): ContentRootNavigationResult =>
   applyContentRootViewSelectionAction({
-    action: getProjectedSelectionActionFromMoveCommand({ command, isRTL }),
+    action: getProjectedSelectionActionFromMoveCommand({
+      command: { ...command, extend: true },
+      isRTL,
+    }),
+    extend: Boolean(command.extend),
     editor,
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
@@ -1480,9 +1785,18 @@ export const applyContentRootViewSelection = ({
   isRTL: boolean;
   preferredX?: number;
   selection: Range | null;
-}): ContentRootNavigationResult =>
-  applyContentRootViewSelectionAction({
-    action: getProjectedSelectionAction({ event, isRTL }),
+}): ContentRootNavigationResult => {
+  const plugin = getProjectedSelectionAction({ event, isRTL });
+  const navigation =
+    !plugin &&
+    (event.key.startsWith('Arrow') ||
+      event.key === 'Home' ||
+      event.key === 'End')
+      ? getContentRootNavigationAction({ event, isRTL })
+      : null;
+  return applyContentRootViewSelectionAction({
+    action: plugin ?? (navigation?.kind === 'enter' ? null : navigation),
+    extend: Boolean(plugin),
     editor,
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
@@ -1493,6 +1807,7 @@ export const applyContentRootViewSelection = ({
     },
     selection,
   });
+};
 
 export const applyContentRootNavigation = ({
   editor,
@@ -1540,9 +1855,7 @@ export const applyContentRootNavigation = ({
 
   event.preventDefault();
   writePliteViewSelection(editor, null);
-  dispatchCommand(targetEditor, editorCommands.select, {
-    target: rootedRange(target.point, target.root),
-  });
+  selectContentRoot(targetEditor, rootedRange(target.point, target.root));
 
   if (targetEditor !== editor) {
     focusEditor?.(targetEditor);

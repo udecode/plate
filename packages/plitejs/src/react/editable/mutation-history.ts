@@ -2,6 +2,7 @@ import type { DocumentChange, RootKey } from '../..';
 import {
   readPliteViewSelection,
   readPliteViewSelectionHistoryEntry,
+  withPliteViewSelectionHistory,
   writePliteViewSelection,
 } from '../view-selection';
 import {
@@ -64,23 +65,26 @@ export const applyModelOwnedHistoryIntent = ({
 
   const previousViewSelection = readPliteViewSelection(editor);
 
-  writePliteViewSelection(editor, viewSelectionAfterHistory ?? null);
+  writePliteViewSelection(editor, null);
   try {
-    runTrustedUpdate(editor, (tx) => {
-      const { history } = tx as {
-        history?: {
-          redo?: () => void;
-          undo?: () => void;
+    withPliteViewSelectionHistory(editor, direction, () => {
+      runTrustedUpdate(editor, (tx) => {
+        const { history } = tx as {
+          history?: {
+            redo?: () => void;
+            undo?: () => void;
+          };
         };
-      };
-      const fn = history?.[direction];
+        const fn = history?.[direction];
 
-      if (typeof fn !== 'function') {
-        throw new Error(`Editor history API does not expose ${direction}.`);
-      }
+        if (typeof fn !== 'function') {
+          throw new Error(`Editor history API does not expose ${direction}.`);
+        }
 
-      fn();
+        fn();
+      });
     });
+    writePliteViewSelection(editor, viewSelectionAfterHistory ?? null);
   } catch (error) {
     writePliteViewSelection(editor, previousViewSelection);
     throw error;

@@ -9,7 +9,7 @@ import type { BasePluginInput } from '../../../core';
 import {
   BaseParagraphPlugin,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   PLUGINS,
   property,
   schema,
@@ -29,7 +29,7 @@ import { importDocx } from './importDocx';
 
 void jsx;
 
-const TestLinkPlugin = defineBasePlugin('link', {
+const TestLinkPlugin = definePlugin('link', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -59,7 +59,7 @@ const TestLinkPlugin = defineBasePlugin('link', {
     }),
 });
 
-const TestTableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
+const TestTableRowPlugin = definePlugin(PLUGINS.tableRow, {
   schema: () => ({
     element: {
       content: schema.content.element(TestTableCellPlugin, { min: 1 }),
@@ -75,7 +75,7 @@ const TestTableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
     }),
 });
 
-const TestTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
+const TestTableCellPlugin = definePlugin(PLUGINS.tableCell, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -94,7 +94,7 @@ const TestTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
     }),
 });
 
-const TestTablePlugin = defineBasePlugin(PLUGINS.table, {
+const TestTablePlugin = definePlugin(PLUGINS.table, {
   dependencies: [TestTableRowPlugin, TestTableCellPlugin],
   schema: {
     element: {
@@ -148,9 +148,11 @@ const testDocxImporter = ({
     const arrayBuffer = new ArrayBuffer(buffer.byteLength);
     new Uint8Array(arrayBuffer).set(buffer);
 
-    const { nodes } = await importDocx(editor, arrayBuffer);
+    const result = await importDocx(editor, arrayBuffer);
 
-    expect(nodes).toEqual(expected.children);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.document.children).toEqual(expected.children);
   });
 };
 

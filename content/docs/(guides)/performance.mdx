@@ -80,3 +80,25 @@ story.
 Use the [Huge Document](/docs/examples/huge-document) demo for manual
 inspection. The benchmark route lives at `/dev/editor-perf`, and the runner
 lives in `apps/www/scripts/run-editor-perf.mts`.
+
+## Optimize the measured cost
+
+Profile the complete interaction: typing, selection, paste, undo, and scrolling
+can have different costs. Distinguish transaction work, React subscriptions,
+DOM mounting, and painting before changing the editor's rendering mode.
+
+Keep [corrections](/docs/editing-behavior#correction-timing) local to affected
+entries. Whole-document maintenance belongs in explicit repair, not every
+keystroke. Keep plugin component definitions stable and subscribe UI to the
+smallest state it needs: `useEditorSelection` for selection, `useEditorSelector`
+for derived editor state, and node-scoped hooks for rendered content.
+
+`EditorContent` mounts the complete document. Use
+[`VirtualizedEditorContent`](/docs/virtualized-rendering) only when the measured
+DOM budget requires omission. Offscreen content then needs explicit handling
+for native find, accessibility, printing, and third-party DOM integrations.
+Pagination geometry by itself does not establish a virtualized mounting policy.
+
+Browser painting can dominate a large tree even when transactions and React are
+fast. Measure any `content-visibility` policy in the browsers you support; its
+per-element overhead and accessibility behavior also affect the result.

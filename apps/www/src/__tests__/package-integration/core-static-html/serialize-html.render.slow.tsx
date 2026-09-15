@@ -1,4 +1,4 @@
-import { property, createEditor, defineBasePlugin } from 'platejs';
+import { property, createEditor, definePlugin } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 import React from 'react';
 
@@ -8,7 +8,7 @@ import { createStaticEditor } from './create-static-editor';
 
 describe('core static renderStaticHtml custom render hooks', () => {
   it('wraps node children through slots', async () => {
-    const renderBelowPlugin = defineBasePlugin('testList', {
+    const renderBelowPlugin = definePlugin('testList', {
       slots: {
         wrapNodeChildren: (_injectProps: any) =>
           function Component({ children }: { children: React.ReactNode }) {
@@ -61,20 +61,17 @@ describe('core static renderStaticHtml custom render hooks', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
-    expect(html).toContain(
-      '<span data-plite-string="true">None encoded string 100%</span>'
-    );
-    expect(html).toContain(
-      '<span data-plite-string="true">Encoded string 100%25</span>'
-    );
+    expect(html).toContain('<span>None encoded string 100%</span>');
+    expect(html).toContain('<span>Encoded string 100%25</span>');
   });
 
   it('applies both node and leaf renderers', async () => {
-    const testPlugin = defineBasePlugin('test', {
+    const testPlugin = definePlugin('test', {
       component: ({ children }) => (
-        <span data-plite-test="node-wrapper">{children}</span>
+        <span data-editor-test="node-wrapper">{children}</span>
       ),
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
@@ -82,7 +79,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
       render: {
         mark: {
           leafComponent: ({ children }) => (
-            <span data-plite-test="leaf-wrapper">{children}</span>
+            <span data-editor-test="leaf-wrapper">{children}</span>
           ),
           placement: 'text',
         },
@@ -107,17 +104,18 @@ describe('core static renderStaticHtml custom render hooks', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
     expect(html).toContain(
-      '<span data-plite-node="text"><span data-plite-test="node-wrapper"><span data-plite-leaf="true"><span data-plite-test="leaf-wrapper"><span data-plite-string="true">test content</span></span></span></span></span>'
+      '<span><span data-editor-test="node-wrapper"><span><span data-editor-test="leaf-wrapper"><span>test content</span></span></span></span></span>'
     );
   });
 
   it('applies a component renderer to decoration leaves', async () => {
-    const testPlugin = defineBasePlugin('test', {
+    const testPlugin = definePlugin('test', {
       component: ({ children }) => (
-        <span data-plite-test="node-wrapper">{children}</span>
+        <span data-editor-test="node-wrapper">{children}</span>
       ),
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
@@ -145,17 +143,18 @@ describe('core static renderStaticHtml custom render hooks', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
     expect(html).toContain(
-      '<span data-plite-node="text"><span data-plite-leaf="true"><span data-plite-test="node-wrapper"><span data-plite-string="true">test content</span></span></span></span>'
+      '<span><span><span data-editor-test="node-wrapper"><span>test content</span></span></span></span>'
     );
   });
 
   it('applies a component renderer to non-decoration leaves', async () => {
-    const testPlugin = defineBasePlugin('test', {
+    const testPlugin = definePlugin('test', {
       component: ({ children }) => (
-        <span data-plite-test="node-wrapper">{children}</span>
+        <span data-editor-test="node-wrapper">{children}</span>
       ),
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
@@ -183,10 +182,11 @@ describe('core static renderStaticHtml custom render hooks', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
     expect(html).toContain(
-      '<span data-plite-node="text"><span data-plite-test="node-wrapper"><span data-plite-leaf="true"><span data-plite-string="true">test content</span></span></span></span>'
+      '<span><span data-editor-test="node-wrapper"><span><span>test content</span></span></span></span>'
     );
   });
 });

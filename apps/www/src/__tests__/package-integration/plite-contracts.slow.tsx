@@ -6,7 +6,7 @@ import {
   type Editor,
   NodeApi,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
 } from 'platejs';
 import { BoldPlugin, ItalicPlugin } from 'platejs/react';
 
@@ -20,7 +20,7 @@ const createMarkEditor = (input: any) =>
   });
 
 const createVoidElementPlugin = (name: string) =>
-  defineBasePlugin(name, {
+  definePlugin(name, {
     schema: { element: { void: 'block' } },
   });
 

@@ -4,10 +4,10 @@
 
 import { type Range, RangeApi } from '../..';
 import {
-  failInvariant,
   positions as editorPositions,
   range as editorRange,
-} from '../../internal';
+} from '../../interfaces/editor';
+import { failInvariant } from '../../internal/fail-invariant';
 import { DOMEditor } from '../plugin/dom-editor';
 
 const doRectsIntersect = (rect: DOMRect, compareRect: DOMRect) => {

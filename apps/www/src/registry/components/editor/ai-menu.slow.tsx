@@ -1,11 +1,11 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { act, render } from '@testing-library/react';
-import * as Plate from 'platejs';
+import * as EditorRoot from 'platejs';
 import * as PlateReact from 'platejs/react';
 import * as React from 'react';
 
-const useEditorPluginMock = mock();
+const pluginMock = mock();
 const useEditorSelectorMock = mock();
 const useFocusedLastMock = mock();
 const usePluginStoreMock = mock();
@@ -19,13 +19,6 @@ const Icon = () => <div />;
 mock.module('platejs/ai/react', () => ({
   AIChatPlugin: {},
   AIPlugin: {},
-}));
-
-mock.module('platejs/suggestion', () => ({
-  SUGGESTION_TRANSIENT_KEY: 'suggestion',
-}));
-mock.module('platejs/suggestion/react', () => ({
-  SuggestionPlugin: {},
 }));
 
 mock.module('cmdk', () => ({
@@ -65,7 +58,7 @@ mock.module('lucide-react', () => ({
 }));
 
 mock.module('platejs', () => ({
-  ...Plate,
+  ...EditorRoot,
   ElementApi: {
     isElement: (node: unknown) =>
       !!node && typeof node === 'object' && 'children' in node,
@@ -83,7 +76,6 @@ mock.module('platejs', () => ({
 
 mock.module('platejs/react', () => ({
   ...PlateReact,
-  useEditorPlugin: useEditorPluginMock,
   useEditorSelector: useEditorSelectorMock,
   useEditor: useEditorMock,
   useEditorRuntimeState: () => {},
@@ -134,7 +126,7 @@ describe('AIMenu slow contracts', () => {
   let chatOpen = false;
 
   beforeEach(() => {
-    useEditorPluginMock.mockReset();
+    pluginMock.mockReset();
     useEditorSelectorMock.mockReset();
     useFocusedLastMock.mockReset();
     usePluginStoreMock.mockReset();
@@ -157,10 +149,7 @@ describe('AIMenu slow contracts', () => {
           resolveDOMNode: toDOMNodeMock,
         },
       },
-      plugin: () => ({
-        read: { nodes: () => [] },
-        store: { get: () => false },
-      }),
+      plugin: pluginMock,
       read: {
         nodes: {
           block: () => [
@@ -211,7 +200,7 @@ describe('AIMenu slow contracts', () => {
       return undefined;
     });
 
-    useEditorPluginMock.mockReturnValue({
+    pluginMock.mockReturnValue({
       api: {
         hide: () => {},
         node: () => {},

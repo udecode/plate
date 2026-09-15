@@ -1,12 +1,14 @@
 import Papa, { type ParseConfig } from 'papaparse';
 
 import {
+  BaseParagraphPlugin,
   ContentSlice,
-  defineBasePlugin,
+  definePlugin,
   PLUGINS,
   type DefinitionOf,
   type Descendant,
 } from '../../core';
+import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 
 export type CsvParseOptions = ParseConfig;
 
@@ -29,7 +31,7 @@ export type CsvPluginState = {
 export type DeserializeCsvOptions = { data: string } & CsvParseOptions;
 
 /** Enables support for deserializing CSV content into Plate nodes. */
-export const CsvPlugin = defineBasePlugin(PLUGINS.csv, {
+export const CsvPlugin = definePlugin(PLUGINS.csv, {
   initialState: (): CsvPluginState => ({
     errorTolerance: 0.25,
     parseOptions: { header: true },
@@ -87,14 +89,24 @@ export const CsvPlugin = defineBasePlugin(PLUGINS.csv, {
           return undefined;
         }
 
-        const paragraphPlugin = editor.plugin(PLUGINS.paragraph);
+        const paragraphPlugin = editor.plugin(BaseParagraphPlugin);
         const paragraph = paragraphPlugin.schema.type;
-        const tablePlugin = editor.plugin(PLUGINS.table);
-        const table = tablePlugin.schema.type;
-        const trPlugin = editor.plugin(PLUGINS.tableRow);
-        const tr = trPlugin.schema.type;
-        const tdPlugin = editor.plugin(PLUGINS.tableCell);
-        const td = tdPlugin.schema.type;
+        const tableDescriptor = getCompiledPlatePlugin(editor, PLUGINS.table);
+        const tableRowDescriptor = getCompiledPlatePlugin(
+          editor,
+          PLUGINS.tableRow
+        );
+        const tableCellDescriptor = getCompiledPlatePlugin(
+          editor,
+          PLUGINS.tableCell
+        );
+
+        if (!tableDescriptor || !tableRowDescriptor || !tableCellDescriptor) {
+          return undefined;
+        }
+        const table = editor.plugin(tableDescriptor).schema.type;
+        const tr = editor.plugin(tableRowDescriptor).schema.type;
+        const td = editor.plugin(tableCellDescriptor).schema.type;
         const { fields } = csv.meta;
         const rows = fields
           ? [

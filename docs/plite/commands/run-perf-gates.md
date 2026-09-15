@@ -23,12 +23,13 @@ pnpm plite:packages:test
 pnpm --filter www test:plite-browser
 pnpm bench:targets:run -- react-rerender-breadth
 pnpm bench:targets:run -- react-huge-document-overlays
-pnpm bench:targets:run -- react-huge-document-legacy-compare
+pnpm bench:targets:run -- react-huge-document-virtualized-type-to-paint
+pnpm bench:targets:run -- react-huge-document-full
 ```
 
-The strict product gate and broad direct legacy diagnostic are green for the
-current private-alpha claim. Use the legacy-compare gate as the direct
-diagnostic for claim drift, not as proof that the lane is broadly red.
+The virtualized browser trace proves bounded DOM and interaction latency. The
+aggregate suite combines that result with complete-DOM browser behavior, core
+operations, and overlay locality.
 
 ## Current North-Star Perf Owners
 
@@ -39,7 +40,7 @@ runtime claims:
 - source-scoped overlay invalidation dirtiness
 - huge-document overlay-local cost
 - annotation-backed widget churn
-- direct huge-document comparison against legacy chunking-on and chunking-off
+- explicit complete and virtualized huge-document rendering
 
 ## Remaining Work
 

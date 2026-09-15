@@ -1,13 +1,13 @@
 import type { Path } from '..';
 import type {
-  PlitePageLayoutFragment,
-  PlitePageLayoutGeometry,
-  PlitePageLayoutMode,
-  PlitePageLayoutPage,
+  PageLayoutFragment,
+  PageLayoutGeometry,
+  PageLayoutMode,
+  PageLayoutPage,
 } from './index';
 
 type PageFragmentIndex = Pick<
-  PlitePageLayoutFragment,
+  PageLayoutFragment,
   'blockIndex' | 'pageIndex' | 'path' | 'units'
 >;
 
@@ -33,8 +33,8 @@ export type PagedEditablePageMountViewport = {
 };
 
 const getPageMountGroups = (
-  pages: readonly PlitePageLayoutPage[],
-  mode: PlitePageLayoutMode
+  pages: readonly PageLayoutPage[],
+  mode: PageLayoutMode
 ) => {
   if (mode === 'spread') {
     const groups: number[][] = [];
@@ -62,9 +62,9 @@ export const createPagedEditablePageMountPlan = ({
   pages,
 }: {
   fragments: readonly PageFragmentIndex[];
-  geometry: PlitePageLayoutGeometry;
-  mode: PlitePageLayoutMode;
-  pages: readonly PlitePageLayoutPage[];
+  geometry: PageLayoutGeometry;
+  mode: PageLayoutMode;
+  pages: readonly PageLayoutPage[];
 }): PagedEditablePageMountPlan => {
   const itemIndexesByTopLevelIndex = new Map<number, number[]>();
   const fragmentsByPageIndex = new Map<number, PageFragmentIndex[]>();
@@ -194,7 +194,7 @@ export const getPagedEditableVisiblePageMountItems = (
   }: {
     gap: number;
     overscan: number;
-    pages: readonly PlitePageLayoutPage[];
+    pages: readonly PageLayoutPage[];
     virtualizes: boolean;
     viewport: PagedEditablePageMountViewport | null;
   }

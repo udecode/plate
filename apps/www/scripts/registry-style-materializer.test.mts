@@ -30,7 +30,7 @@ describe('registry style materializer', () => {
       '../../content/docs/(guides)/editor.mdx',
       'src/registry/blocks/fumadocs/content/docs/index.mdx',
       'src/registry/blocks/fumadocs/fumadocs-mdx-components.tsx',
-      'src/registry/blocks/fumadocs/mdx-plate-components.tsx',
+      'src/registry/blocks/fumadocs/mdx-api-components.tsx',
     ];
 
     try {

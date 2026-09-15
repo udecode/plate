@@ -1,7 +1,7 @@
 import {
   type BasePluginDefinitionInput,
   createRuleFactory,
-  defineBasePlugin,
+  definePlugin,
   property,
   schema,
   PLUGINS,
@@ -25,7 +25,7 @@ const rules = {
   merge: { removeEmpty: true },
 } satisfies NonNullable<BasePluginDefinitionInput['rules']>;
 
-export const BaseHeadingPlugin = defineBasePlugin(PLUGINS.heading, {
+export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
   schema: {
     element: {
       ...schema.element.textBlock(),

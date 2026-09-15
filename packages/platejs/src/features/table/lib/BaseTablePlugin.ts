@@ -2,7 +2,7 @@ import {
   BaseParagraphPlugin,
   ContentSlice,
   DebugPlugin,
-  defineBasePlugin,
+  definePlugin,
   type DefinitionOf,
   type Descendant,
   editorCommands,
@@ -19,7 +19,7 @@ import {
   type NodeKey,
   type Path,
   PathApi,
-  type PlateBlockInsertOptions,
+  type BlockInsertOptions,
   PLUGINS,
   PointApi,
   property,
@@ -29,7 +29,8 @@ import {
   SelectionApi,
   TextApi,
 } from '../../../core';
-import { clipboardHandler } from '../../../dom/plite-dom.internal';
+import { domCommands } from '../../../dom/plite-dom.internal';
+import { fitSlicePlacements } from '../../../facade';
 import { failInvariant } from '../internal/failInvariant';
 import {
   getColSpan,
@@ -347,7 +348,7 @@ const parsePositiveHtmlCssNumber = (value: string | null | undefined) => {
   return parsed !== undefined && parsed > 0 ? parsed : undefined;
 };
 
-export const BaseTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
+export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
   dependencies: [BaseParagraphPlugin],
   schema: ({ plugins }) => ({
     element: {
@@ -416,7 +417,7 @@ export const BaseTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
   rules: { merge: { removeEmpty: false } },
 });
 
-export const BaseTableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
+export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
   dependencies: [BaseTableCellPlugin],
   schema: {
     element: {
@@ -471,6 +472,24 @@ export const BaseTableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
 
 const csvSpecialCharacterPattern = /[",\r\n]/;
 const tablePasteSources = new WeakMap<object, TablePasteSource[]>();
+const withTablePasteSource = <T>(
+  editor: object,
+  source: TablePasteSource,
+  run: () => T
+): T => {
+  const stack = tablePasteSources.get(editor) ?? [];
+
+  stack.push(source);
+  tablePasteSources.set(editor, stack);
+
+  try {
+    return run();
+  } finally {
+    stack.pop();
+
+    if (stack.length === 0) tablePasteSources.delete(editor);
+  }
+};
 
 const initialState: TablePluginState = {
   disableExpandOnInsert: false,
@@ -494,7 +513,7 @@ export type TableRowElement = ElementOf<typeof BaseTableRowPlugin>;
 export type TableCellElement = ElementOf<typeof BaseTableCellPlugin>;
 
 /** Enables support for tables. */
-export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
+export const BaseTablePlugin = definePlugin(PLUGINS.table, {
   dependencies: [BaseTableRowPlugin],
   initialState,
   schema: {
@@ -1767,7 +1786,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       return {
         insert: (
           { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
-          options: PlateBlockInsertOptions = {}
+          options: BlockInsertOptions = {}
         ): void => {
           const newTable = api.create({ colCount, header, rowCount });
           if (options.at !== undefined && options.after === undefined) {
@@ -2716,102 +2735,6 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
       },
     };
   })
-  .extend((context) => {
-    const { editor } = context;
-    const withPasteSource = <T>(source: TablePasteSource, run: () => T): T => {
-      const stack = tablePasteSources.get(editor) ?? [];
-
-      stack.push(source);
-      tablePasteSources.set(editor, stack);
-
-      try {
-        return run();
-      } finally {
-        stack.pop();
-
-        if (stack.length === 0) tablePasteSources.delete(editor);
-      }
-    };
-
-    return {
-      contributions: [
-        clipboardHandler({
-          insertData(data, { next }) {
-            const types = new Set(data.types);
-            const read = (format: string) => {
-              try {
-                return data.getData(format);
-              } catch {
-                return '';
-              }
-            };
-            const html = read('text/html');
-            const text =
-              read('text/plain') || read('text/tsv') || read('text/csv');
-            const exact = context.editor.api.dom.clipboard.readSlice(data);
-            const hasRecognizedExact = exact.kind !== 'absent';
-            const view = context.read.selection();
-            const hasStructuralTarget = (view?.anchors.length ?? 0) > 1;
-            const source: TablePasteSource = hasRecognizedExact
-              ? 'model'
-              : html
-                ? 'html'
-                : types.has('text/tsv') ||
-                    types.has('text/tab-separated-values') ||
-                    text.includes('\t')
-                  ? 'tsv'
-                  : 'csv';
-            const exactSlice = exact.kind === 'slice' ? exact.slice : null;
-            const exactTable =
-              exactSlice &&
-              getTablePasteElement(exactSlice, {
-                cellTypes: [
-                  context.editor.plugin(BaseTableCellPlugin).schema.type,
-                ],
-                rowType: context.editor.plugin(BaseTableRowPlugin).schema.type,
-                tableType: context.schema.type,
-              });
-
-            if (hasStructuralTarget && exact.kind === 'invalid') {
-              context.editor
-                .plugin(DebugPlugin)
-                .api.warn(
-                  'Table paste rejected: invalid-source.',
-                  'TABLE_MUTATION_DIAGNOSTIC',
-                  { kind: 'invalid-source', reason: 'malformed-exact' }
-                );
-
-              return true;
-            }
-
-            if (exactSlice && exactTable) {
-              const grid = compileTableGrid(exactTable);
-
-              if (
-                grid.height === 0 ||
-                grid.width === 0 ||
-                grid.anchors.length === 0
-              ) {
-                context.editor
-                  .plugin(DebugPlugin)
-                  .api.warn(
-                    'Table paste rejected: invalid-source.',
-                    'TABLE_MUTATION_DIAGNOSTIC',
-                    { kind: 'invalid-source', reason: 'empty' }
-                  );
-
-                return true;
-              }
-
-              return withPasteSource('model', () => next(data));
-            }
-
-            return withPasteSource(source, () => next(data));
-          },
-        }),
-      ],
-    };
-  })
   .extend((context) => ({
     corrections: [
       {
@@ -2924,6 +2847,9 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
         }),
         around(editorReads.slice.export, ({ input, next, state }) => {
           const slice = next();
+
+          if (input.source === 'assembled') return slice;
+
           const at = SelectionApi.isNode(input.options.at)
             ? (getEditorSelectionRange(
                 context.editor,
@@ -2967,6 +2893,75 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
   })
   .extend((context) => ({
     commands: ({ around, handle }) => [
+      around(domCommands.insertData, ({ input, next, state }) => {
+        const types = new Set(input.types);
+        const read = (format: string) => {
+          try {
+            return input.getData(format);
+          } catch {
+            return '';
+          }
+        };
+        const html = read('text/html');
+        const text = read('text/plain') || read('text/tsv') || read('text/csv');
+        const exact = context.editor.api.dom.clipboard.readSlice(input);
+        const view = state.table.selection();
+        const hasStructuralTarget = (view?.anchors.length ?? 0) > 1;
+        const source: TablePasteSource =
+          exact.kind !== 'absent'
+            ? 'model'
+            : html
+              ? 'html'
+              : types.has('text/tsv') ||
+                  types.has('text/tab-separated-values') ||
+                  text.includes('\t')
+                ? 'tsv'
+                : 'csv';
+        const exactSlice = exact.kind === 'slice' ? exact.slice : null;
+        const exactTable =
+          exactSlice &&
+          getTablePasteElement(exactSlice, {
+            cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
+            rowType: context.editor.plugin(BaseTableRowPlugin).schema.type,
+            tableType: context.schema.type,
+          });
+
+        if (hasStructuralTarget && exact.kind === 'invalid') {
+          context.editor
+            .plugin(DebugPlugin)
+            .api.warn(
+              'Table paste rejected: invalid-source.',
+              'TABLE_MUTATION_DIAGNOSTIC',
+              { kind: 'invalid-source', reason: 'malformed-exact' }
+            );
+
+          return state.transaction(() => {});
+        }
+
+        if (exactSlice && exactTable) {
+          const grid = compileTableGrid(exactTable);
+
+          if (
+            grid.height === 0 ||
+            grid.width === 0 ||
+            grid.anchors.length === 0
+          ) {
+            context.editor
+              .plugin(DebugPlugin)
+              .api.warn(
+                'Table paste rejected: invalid-source.',
+                'TABLE_MUTATION_DIAGNOSTIC',
+                { kind: 'invalid-source', reason: 'empty' }
+              );
+
+            return state.transaction(() => {});
+          }
+
+          return withTablePasteSource(context.editor, 'model', () => next());
+        }
+
+        return withTablePasteSource(context.editor, source, () => next());
+      }),
       around(editorCommands.select, ({ input, state, next }) =>
         next({
           ...input,
@@ -3091,8 +3086,6 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           rowType: context.editor.plugin(BaseTableRowPlugin).schema.type,
           tableType: context.schema.type,
         });
-        let ordinary = false;
-
         if (!source) {
           if (view.anchors.length <= 1) {
             return false;
@@ -3115,7 +3108,6 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
             rowType: context.editor.plugin(BaseTableRowPlugin).schema.type,
             tableType: context.schema.type,
           });
-          ordinary = true;
         }
 
         const prepared = prepareTablePaste(source, {
@@ -3126,6 +3118,7 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
               row: sourceRow,
             }),
           createRow: () => context.api.createRow({ colCount: 0 }),
+          slice,
           source: tablePasteSources.get(context.editor)?.at(-1) ?? 'model',
         });
 
@@ -3144,31 +3137,6 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           createRow: () => context.api.createRow({ colCount: 0 }),
           disableExpand: context.store.get().disableExpandOnInsert,
           ...(fillBounds ? { fillBounds } : {}),
-          fitChildren: ordinary
-            ? (_cell, children) => children
-            : (cell, children) => {
-                const fitted = state.slice.fitContent(
-                  ContentSlice.closed(children),
-                  {
-                    parent: cell,
-                    ...(root === undefined ? {} : { root }),
-                  }
-                );
-
-                if (!fitted) return fitted;
-
-                const anchor = view.context.anchorOf(cell);
-                const at = view.context.tablePath
-                  .concat(anchor?.path ?? [])
-                  .concat(0);
-
-                return fitted.map((node) =>
-                  state.schema.copy(node, {
-                    at,
-                    ...(root === undefined ? {} : { root }),
-                  })
-                );
-              },
           ...(root === undefined ? {} : { root }),
           startCol: fillBounds?.minCol ?? view.anchor.col,
           startRow: fillBounds?.minRow ?? view.anchor.row,
@@ -3178,17 +3146,38 @@ export const BaseTablePlugin = defineBasePlugin(PLUGINS.table, {
           return rejectTablePaste(plan);
         }
 
-        return state.transaction((tx) => {
+        let fitted = true;
+        const transaction = state.transaction((tx) => {
           applyTableMutationPlan(tx, {
             kind: 'plan',
             operations: plan.operations,
             selection: plan.selection,
           });
+
+          for (const group of plan.placementGroups) {
+            if (
+              !fitSlicePlacements(context.editor, group.source, {
+                placements: group.placements,
+              })
+            ) {
+              fitted = false;
+              return;
+            }
+          }
+
+          tx.selection.set(plan.selection);
           const nextView = tx.table.selection(plan.selection);
           const nodeSelection = nextView && createTableNodeSelection(nextView);
 
           if (nodeSelection) tx.selection.set(nodeSelection);
         });
+
+        return fitted
+          ? transaction
+          : rejectTablePaste({
+              kind: 'invalid-source',
+              reason: 'content-rejected',
+            });
       }),
       around(editorCommands.insertText, ({ state, next }) => {
         const selection = state.selection();

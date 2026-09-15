@@ -26,13 +26,13 @@ import type { TextOf } from './text';
 
 /**
  * The `Node` union type represents all of the different types of nodes that
- * occur in a Plite document tree.
+ * occur in a document tree.
  */
 
-type AnyExtensionEditor = EditorType;
+type AnyPluginEditor = EditorType;
 
-export type BaseNode = AnyExtensionEditor | Element | Text;
-export type Node = AnyExtensionEditor | Element | Text;
+export type BaseNode = AnyPluginEditor | Element | Text;
+export type Node = AnyPluginEditor | Element | Text;
 
 export type DescendantOf<N> = N extends { getChildren: () => infer V }
   ? V extends ReadonlyArray<infer Child>
@@ -156,7 +156,7 @@ export interface NodeTextRangeRoot {
 export type NodeTextRangeEntry = readonly [Node | NodeTextRangeRoot, Path];
 
 /**
- * Match text inside a Plite node. String queries are literal, regular
+ * Match text inside an editor node. String queries are literal, regular
  * expressions use their own flags, and callbacks can return custom offsets.
  */
 export type NodeTextRangeQuery =
@@ -296,7 +296,7 @@ export interface NodeInterface {
   /**
    * Check if a node is an `Editor` object.
    */
-  isEditor: (value: unknown) => value is AnyExtensionEditor;
+  isEditor: (value: unknown) => value is AnyPluginEditor;
 
   /**
    * Check if a node is an `Element` object.
@@ -922,7 +922,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
     return NodeApi.isElement(value) || NodeApi.isText(value);
   },
 
-  isEditor(value: unknown): value is AnyExtensionEditor {
+  isEditor(value: unknown): value is AnyPluginEditor {
     return editorIsEditor(value);
   },
 
@@ -1120,10 +1120,10 @@ export type Descendant = Element | Text;
  * than the more generic `Node` union.
  */
 
-export type Ancestor = AnyExtensionEditor | Element;
+export type Ancestor = AnyPluginEditor | Element;
 
 /**
- * `NodeEntry` objects are returned when iterating over the nodes in a Plite
+ * `NodeEntry` objects are returned when iterating over the nodes in a
  * document tree. They consist of the node and its `Path` relative to the root
  * node in the document.
  */

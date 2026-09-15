@@ -7,17 +7,17 @@ Plate plugins are descriptors passed in the `plugins` array of `createEditor`
 or `useCreateEditor`. Installed plugin APIs are inferred on `editor.api` under
 the plugin name. Pass the descriptor to `editor.plugin(MyPlugin)` for its exact
 API, reads, update commands, schema identity, and editor-local state. React
-components use `useEditorPlugin(MyPlugin)` for the portal and `usePluginStore`
+components use `useEditor().plugin(MyPlugin)` for the portal and `usePluginStore`
 for state subscriptions.
 
 ## Authoring context
 
-Plugin constructor, extension, configuration, event, codec, and injection
+Plugin constructor, plugin, configuration, event, codec, and injection
 callbacks receive the current plugin context when their callback contract
 supports it:
 
 ```ts
-import { definePlatePlugin, schema } from 'platejs/react';
+import { definePlugin, schema } from 'platejs/react';
 
 export type UploadPluginState = {
   active: boolean;
@@ -27,7 +27,7 @@ const uploadInitialState: UploadPluginState = {
   active: false,
 };
 
-export const UploadPlugin = definePlatePlugin("upload", {
+export const UploadPlugin = definePlugin("upload", {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -66,7 +66,7 @@ Plugin descriptors or dynamic names targeted by the plugin's schema contribution
 - **Default:** `[]`
 </APIItem>
 
-<APIItem name="api" type="(context: PlatePluginContext<D>) => InferOwnApi<D>">
+<APIItem name="api" type="(context: PluginContext<D>) => InferOwnApi<D>">
   Plugin-owned API functions exposed through `editor.api[MyPlugin.name]` and the
   exact `editor.plugin(MyPlugin).api` portal. Both paths reference the same
   immutable API object. Declare `api` as a factory even when it needs no
@@ -75,12 +75,12 @@ Plugin descriptors or dynamic names targeted by the plugin's schema contribution
   declare independent methods in the constructor and use `.extend({api})` only
   when they need an earlier-stage type or are adapting an imported/prebuilt
   descriptor. Genuinely editor-wide capabilities use the same root `api` field;
-  Plite projects it under the plugin name.
+  Plate projects it under the plugin name.
 </APIItem>
 
 <APIItem
   name="read"
-  type="(context: PlatePluginContext<D> & { state: PlatePluginReadState<D> }) => InferOwnRead<D>"
+  type="(context: PluginContext<D> & { state: PluginReadState<D> }) => InferOwnRead<D>"
 >
   State-bound reads owned by the plugin. Plate publishes them under
   `editor.read[name]` and through `editor.plugin(MyPlugin).read`. Declare
@@ -97,16 +97,17 @@ Plugin descriptors or dynamic names targeted by the plugin's schema contribution
 
 <APIItem
   name="update"
-  type="(context: PlatePluginContext<D> & { context: EditorUpdateContext; tx: PlatePluginTransaction<D> }) => InferOwnUpdate<D>"
+  type="(context: PluginContext<D> & { context: EditorUpdateContext; tx: PluginTransaction<D> }) => InferOwnUpdate<D>"
 >
   Transaction commands provided by the plugin. Call one through
   `editor.plugin(MyPlugin).update.method()` or compose it inside
-  `editor.update((tx) => tx.plugin(MyPlugin).method())`. `update` is factory-only:
-  return the command object from the callback instead of declaring a static
-  object.
+  `editor.update((tx) => tx.plugin(MyPlugin).method())`. Pass `MyPlugin.name`
+  instead when the caller should not depend on the descriptor's package.
+  `update` is factory-only: return the command object from the callback instead
+  of declaring a static object.
 </APIItem>
 
-<APIItem name="initialState" type="Partial<InferPluginStoreState<D>> | ((context: PlatePluginContext<D>) => InferPluginStoreState<D>)">
+<APIItem name="initialState" type="Partial<InferPluginStoreState<D>> | ((context: PluginContext<D>) => InferPluginStoreState<D>)">
 The seed for this plugin's mutable editor-local store. Package authors declare
 an exported `*PluginState` beside an exported plugin and check its defaults
 through a typed constant or explicit factory return type. Use the callback form
@@ -117,25 +118,25 @@ reads and updates the installed store through `editor.plugin(MyPlugin).store`.
 
 <APIItem name="component" type="NodeComponent | keyof HTMLElementTagNameMap" optional>
   The ordinary component or intrinsic HTML tag for this plugin's node. Declare it in
-  `defineBasePlugin(name, { component })` or
-  `definePlatePlugin(name, { component })` for
+  `definePlugin(name, { component })` or
+  `definePlugin(name, { component })` for
   static/RSC and live rendering. Replace it with one terminal
   `.configure({component})`. Base `.extend()` does not accept it. Use
-  `toPlatePlugin()` at the owning React adapter to publish a reusable
+  `toReactPlugin()` at the owning React adapter to publish a reusable
   Plate-layer descriptor or add Plate-only authoring; a terminal consumer does
   not convert merely to set `component`.
 </APIItem>
 
 <APIItem
   name="codecs"
-  type="PluginCodecMapDeclaration | ((context: PlatePluginContext<D>) => PluginCodecMapDeclaration)"
+  type="PluginCodecMapDeclaration | ((context: PluginContext<D>) => PluginCodecMapDeclaration)"
 >
   Schema-aware product and foreign format mappings. Use the contextual
   `defineCodecs(map)` helper for self/product codecs or
   `defineCodecs(TargetPlugin, map)` for foreign contributions.
 </APIItem>
 
-<APIItem name="on" type="EditorExtensionChangeHandlers & DOMHandlers">
+<APIItem name="on" type="PluginChangeHandlers & DOMHandlers">
 Lifecycle and DOM event handlers. Child names do not repeat the `on` prefix:
 use `nodeChange`, `textChange`, `keyDown`, `paste`, and their capture variants.
 
@@ -148,7 +149,7 @@ Called whenever a committed node is inserted, moved, removed, or updated.
 
 ```ts
 type OnNodeChange = (
-  ctx: PlatePluginContext & EditorNodeChangeContext<Editor>
+  ctx: PluginContext & EditorNodeChangeContext<Editor>
 ) => HandlerReturnType;
 ```
 
@@ -166,7 +167,7 @@ Called whenever committed text changes.
 
 ```ts
 type OnTextChange = (
-  ctx: PlatePluginContext & EditorTextChangeContext<Editor>
+  ctx: PluginContext & EditorTextChangeContext<Editor>
 ) => HandlerReturnType;
 ```
 
@@ -229,7 +230,7 @@ Maximum nesting level for node prop injection. Nodes deeper than this level will
 </APIItem>
 
 <APIItem name="schema" type="PluginSchema<D> | null">
-Declares the plugin's Plite model through its `element`, `mark`, keyed
+Declares the plugin's Plate model through its `element`, `mark`, keyed
 `properties`, and `contentRoots` fields. A schema factory receives the plugin
 `name`, its configured `initialState`, `targetElementTypes`, and Plate
 relationship helpers. `name` identifies the capability only. Installed AST
@@ -253,12 +254,12 @@ Defines editing behavior for the plugin's compiled schema identity.
 <APISubListItem parent="rules" name="selection.affinity" type="'default' | 'directional' | 'outward' | 'hard'" optional>
 Defines the selection behavior at the boundaries of nodes. See [Plugin Rules](/docs/plugin-rules#rulesselection).
 
-- `'default'`: Uses Plite's default behavior
+- `'default'`: Uses Plate's default behavior
 - `'directional'`: Selection affinity is determined by the direction of cursor movement. Maintains inward or outward affinity based on approach
 - `'outward'`: Forces outward affinity. Typing at the edge of a mark will not apply the mark to new text
 - `'hard'`: Creates a 'hard' edge that requires two key presses to move across. Uses offset-based navigation
 
-- **Default:** `undefined` (Plite's default behavior)
+- **Default:** `undefined` (Plate's default behavior)
 
 </APISubListItem>
 
@@ -365,6 +366,30 @@ flat siblings. Node, mark, and property mappings use the schema-aware
 Defines rendering for the plugin's primary `component` and mounted views.
 
 <APISubList>
+<APISubListItem parent="render" name="contentAttributes" type="DecorationAttributes | null" optional>
+Adds render-safe attributes to the existing `EditorContent` or `EditorStatic`
+root. Accepts `className`, `style`, and primitive `data-*` or `aria-*` values.
+Use this field for feature-owned content styling without a wrapper:
+
+```tsx
+import { SuggestionPlugin } from 'platejs/suggestion/react';
+
+SuggestionPlugin.configure({
+  render: {
+    contentAttributes: {
+      className: '[&_[data-editor-retained=delete]]:line-through',
+    },
+  },
+});
+```
+
+Enabled plugins compose in plugin order. Class names concatenate, styles merge
+shallowly, and later attributes win. Explicit content component props take
+precedence; core-owned identity, editing controls, events, refs, and children
+remain with the content component. Set `null` to clear inherited configuration.
+This field is a static attribute object; use plugin event handlers for behavior.
+`editOnly.render` excludes the contribution from read-only views and static rendering.
+</APISubListItem>
 <APISubListItem parent="render" name="attributes" type="NodeProps" optional>
 Adds trusted DOM attributes to the primary element, leaf, or text renderer in
 interactive and static rendering. A function value is a pure per-node render
@@ -372,14 +397,14 @@ callback and cannot call React hooks.
 </APISubListItem>
 <APISubListItem parent="render" name="useViewElementAttributes" type="UseViewElementAttributes<D>" optional>
 Plate mounts one React hook host for this enabled plugin in each content view.
-The callback receives the exact Plite root as `view` and returns sparse
+The callback receives the exact Plate root as `view` and returns sparse
 `{ key, attributes }[]` entries for whole element hosts. Return an empty array
 when no element needs attributes.
 
 ```tsx
-import { definePlatePlugin, usePluginStore } from "platejs/react";
+import { definePlugin, usePluginStore } from "platejs/react";
 
-const ActiveFirstBlockPlugin = definePlatePlugin("activeFirstBlock", {
+const ActiveFirstBlockPlugin = definePlugin("activeFirstBlock", {
   initialState: { active: false },
   render: {
     useViewElementAttributes({ editor, plugin, view }) {
@@ -417,10 +442,10 @@ Defines structural composition around Plate surfaces and rendered nodes. Each sl
 
 <APISubList>
 <APISubListItem parent="slots" name="wrapRoot" type="({ children, editableRef }) => ReactNode" optional>
-Wraps the complete Plite root for the mounted Plate view and receives `{ children, editableRef }`. The ref identifies that view’s actual Editable and is `null` before attachment and after detach.
+Wraps the complete Plate root for the mounted Plate view and receives `{ children, editableRef }`. The ref identifies that view’s actual Editable and is `null` before attachment and after detach.
 </APISubListItem>
 <APISubListItem parent="slots" name="wrapContent" type="NodeComponent" optional>
-Wraps Editable content and Plate lifecycle effects inside the Plite root.
+Wraps Editable content and Plate lifecycle effects inside the Plate root.
 </APISubListItem>
 <APISubListItem parent="slots" name="beforeEditable" type="EditableSiblingComponent" optional>
 Renders before Editable and receives `{ editableRef }`.
@@ -429,10 +454,10 @@ Renders before Editable and receives `{ editableRef }`.
 Renders after Editable and receives `{ editableRef }`.
 </APISubListItem>
 <APISubListItem parent="slots" name="beforeContainer" type="ContainerSiblingComponent" optional>
-Renders before `PlateContainer` and receives `{ containerRef }`.
+Renders before `EditorContainer` and receives `{ containerRef }`.
 </APISubListItem>
 <APISubListItem parent="slots" name="afterContainer" type="ContainerSiblingComponent" optional>
-Renders after `PlateContainer` and receives `{ containerRef }`.
+Renders after `EditorContainer` and receives `{ containerRef }`.
 </APISubListItem>
 <APISubListItem parent="slots" name="wrapNode" type="RenderNodeWrapperConfig<D>" optional>
 Wraps the complete rendered node.
@@ -455,24 +480,25 @@ Renders after a node's children inside its primary component.
   rules beside the feature that owns the resulting behavior.
 </APIItem>
 
-<APIItem name="dependencies" type="readonly (EditorExtensionReference | PluginReference)[]">
-  Plate plugin or raw Plite extension descriptors that must be installed before
+<APIItem name="dependencies" type="readonly PluginReference[]">
+  Plugin or plugin descriptors that must be installed before
   this plugin. Pass the descriptor objects themselves so Plate preserves
   dependency identity and type inference.
 </APIItem>
 
-<APIItem name="conflicts" type="readonly (EditorExtensionReference | PluginReference)[]">
-  Plate plugin or raw Plite extension descriptors that cannot be installed
-  with this plugin. Import both reference types from `platejs`; Plite-only
-  libraries can import `EditorExtensionReference` from `plitejs`.
+<APIItem name="conflicts" type="readonly PluginReference[]">
+  Plugin or plugin descriptors that cannot be installed
+  with this plugin. Import both reference types from `platejs`.
 </APIItem>
 
-<APIItem name="readMiddleware" type="EditorExtensionReadMiddlewareFactory">
-  Typed middleware over declared Plite `editorReads` descriptors.
+<APIItem name="readMiddleware" type="PluginReadMiddlewareFactory">
+  Typed middleware over declared Plate `editorReads` descriptors.
 </APIItem>
 
-<APIItem name="commands" type="EditorExtensionCommandFactory">
-  Pure typed command interceptors declared with `handle` or `around`.
+<APIItem name="commands" type="PluginDefinitionInput['commands']">
+  Pure typed command interceptors declared with `handle` or `around`. DOM paste
+  policy intercepts `domCommands.insertData` here and returns a transaction spec
+  from `state.transaction(...)`.
 </APIItem>
 
 <APIItem name="corrections" type="readonly EditorCorrection[]">
@@ -487,24 +513,18 @@ Renders after a node's children inside its primary component.
   Typed commit-effect descriptors and codecs.
 </APIItem>
 
-<APIItem name="facetProviders" type="readonly EditorFacetProvider[]">
-  Derived state providers.
+<APIItem name="contributions" type="readonly PluginContribution[]">
+  Ordered values bound to typed plugin points. Use them for declarative values
+  collected by a specific plugin owner. Clipboard ingress composes through the
+  `domCommands.insertData` command.
 </APIItem>
 
-<APIItem name="contributions" type="readonly EditorExtensionContribution[]">
-  Ordered values bound to typed extension points. Host clipboard insertion is
-  a direct `clipboardHandler(...)` contribution, never a root `clipboard`
-  field. `clipboardHandler({ insertData })` is the sole form. The owning
-  extension or Plate stage contextually infers `transaction` from its installed
-  update capabilities. `next` delegates to the next handler.
-</APIItem>
-
-<APIItem name="activate" type="EditorExtensionActivation">
+<APIItem name="activate" type="PluginDefinitionInput['activate']">
   Owns synchronous resources. Defer work that must observe publication with
   `context.afterPublish(...)`.
 </APIItem>
 
-<APIItem name="validate" type="EditorExtensionValidator">
+<APIItem name="validate" type="PluginDefinitionInput['validate']">
   Validates the detached candidate before activation.
 </APIItem>
 
@@ -518,7 +538,7 @@ Renders after a node's children inside its primary component.
   `observe({ refresh, ...context })` owns source invalidation and cleanup;
   static rendering reads the source without subscribing.
 
-  `attributes` accepts a `PliteDecorationAttributes` object, a pure callback
+  `attributes` accepts a `DecorationAttributes` object, a pure callback
   receiving the inferred plugin context plus `entry` and `decoration`, or
   `null` to clear inherited presentation. Configure an existing source's
   attributes without repeating its reader or observer. A new source requires
@@ -595,11 +615,11 @@ editOnly: {
 
 <API name="Methods">
 <APIMethods>
-<APIItem name="configure" type="(config: PlatePluginConfiguration<D> | ((context: PlatePluginContext<D>) => PlatePluginConfiguration<D>)) => ConfiguredPlatePlugin<D>">
+<APIItem name="configure" type="(config: PluginConfiguration<D> | ((context: PluginContext<D>) => PluginConfiguration<D>)) => ConfiguredPlugin<D>">
 Applies one terminal consumer configuration and returns a descriptor that
 cannot be configured or extended again. Use the object form for definition
 fields. The callback form can derive existing `initialState`, `on`, `render`,
-or `shortcuts` from the resolved editor context. Contextual extensions
+or `shortcuts` from the resolved editor context. Contextual plugins
 declared before this call read the configured values, while the configuration
 remains the final override.
 
@@ -611,12 +631,12 @@ HeadingPlugin.configure({
 
 </APIItem>
 
-<APIItem name="extend" type="<TExtension extends PlatePluginExtendInput<D>>(extension: TExtension) => PlatePlugin">
+<APIItem name="extend" type="<TPlugin extends PluginExtendInput<D>>(plugin: TPlugin) => Plugin">
 Adds a contribution to an imported/prebuilt descriptor, a shared factory the
 constructor cannot access, or types introduced by an earlier contribution. Put independent
-fields directly in `defineBasePlugin()` or `definePlatePlugin()`. Complete
+fields directly in `definePlugin()`. Complete
 every `.extend()` call before applying consumer `.configure()`. The returned
-`PlatePlugin` carries the contribution's inferred capabilities.
+`Plugin` carries the contribution's inferred capabilities.
 
 The contribution fields have distinct owners:
 
@@ -625,12 +645,12 @@ The contribution fields have distinct owners:
 - `selectors`: pure projections of editor-local plugin state
 - `update`: plugin-scoped transaction-bound mutations
 - `readMiddleware`, `commands`, `corrections`, `stateFields`, `effectTypes`,
-  `facetProviders`, `contributions`, `on`, `activate`, and
-  `validate`: native Plite capabilities declared directly on the plugin
+  `contributions`, `on`, `activate`, and
+  `validate`: editor capabilities declared directly on the plugin
 - `codecs`: the declaration returned by context-bound `defineCodecs`
 
-Independently reusable standalone Plite descriptors use
-`defineExtension` from `platejs`. Plate plugins declare the same
+Independently reusable standalone Plate descriptors use
+`definePlugin` from `platejs`. Plate plugins declare the same
 native capabilities at their root.
 
 Use `defineCodecs(map)` for self/product codecs and
@@ -640,8 +660,8 @@ schema-aware rule or a non-empty ordered rule tuple. `defineCodecs` is the one
 inline inference anchor. Do not author direct codec maps or manual `target`
 fields.
 
-`defineBasePlugin()` / `definePlatePlugin()` own every independent declaration
-field, including `api`, `read`, `selectors`, `update`, native Plite fields, and
+`definePlugin()` / `definePlugin()` own every independent declaration
+field, including `api`, `read`, `selectors`, `update`, editor fields, and
 `codecs`.
 
 </APIItem>
@@ -655,10 +675,10 @@ field, including `api`, `read`, `selectors`, `update`, native Plite fields, and
     <APIItem name="editor" type="Editor">
       The current editor instance.
     </APIItem>
-    <APIItem name="plugin" type="PlatePluginContext<D>['plugin']">
+    <APIItem name="plugin" type="PluginContext<D>['plugin']">
       The current plugin supplied by the callback. Let the constructor or
-      extension infer it. Consumer code obtains its portal by passing the
-      descriptor to `editor.plugin(MyPlugin)` or `useEditorPlugin(MyPlugin)`.
+      plugin infer it. Consumer code obtains its portal by passing the
+      descriptor to `editor.plugin(MyPlugin)` or `useEditor().plugin(MyPlugin)`.
     </APIItem>
     <APIItem name="defineCodecs" type="DefinePluginCodecs<D>">
       Creates a schema-checked codec declaration inside the constructor's
@@ -696,7 +716,7 @@ export type MyPluginState = {
   customOption: boolean;
 };
 
-export const MyPlugin = definePlatePlugin("myPlugin", {
+export const MyPlugin = definePlugin("myPlugin", {
   initialState: {
     customOption: false,
   } satisfies MyPluginState,

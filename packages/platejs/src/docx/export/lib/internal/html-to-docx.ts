@@ -413,8 +413,17 @@ async function addFilesToContainer(
     createFolders: false,
   });
 
+  const documentXml = docxDocument
+    .generateDocumentXML()
+    .replaceAll(/<w:(del|moveFrom)\b[\s\S]*?<\/w:\1>/g, (revision) =>
+      revision
+        .replaceAll('<w:t ', '<w:delText ')
+        .replaceAll('<w:t>', '<w:delText>')
+        .replaceAll('</w:t>', '</w:delText>')
+    );
+
   (zip.folder(wordFolder) ?? failInvariant('Expected value to be defined'))
-    .file('document.xml', docxDocument.generateDocumentXML(), {
+    .file('document.xml', documentXml, {
       createFolders: false,
     })
     .file('fontTable.xml', docxDocument.generateFontTableXML(), {

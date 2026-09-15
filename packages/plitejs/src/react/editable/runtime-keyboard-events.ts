@@ -6,23 +6,25 @@ import {
   type DOMPhaseScheduler,
 } from '../../dom/internal';
 import type { EditableKeyDownHandler } from '../components/editable';
-import type { MountedTopLevelRange } from '../dom-strategy/dom-strategy-commands';
 import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY } from '../root-key';
 import { readPliteViewSelection } from '../view-selection';
+import type { MountedTopLevelRange } from '../viewport-commands';
 import { getKeyboardSelectableVerticalNavigationTarget } from './caret-engine';
 import {
   getContentRootNavigationTarget,
+  readContentRootAwareSelection,
   shouldModelOwnContentRootVerticalSelection,
 } from './content-root-navigation';
 import {
   isMountedPlainVerticalLargeDocumentMovement,
-  shouldModelOwnPlainVerticalLargeDocumentExtension,
+  shouldModelOwnPlainVerticalLargeDocumentPlugin,
 } from './dom-coverage-vertical-selection';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableKeyDownKernel } from './editing-kernel';
+import { isNestedEditableDOMTarget } from './input-controller';
 import { useEditableKeyboardHandler } from './input-router';
 import {
   type EditableInputController,
@@ -35,6 +37,7 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import type { EditableEventRuntimeCore } from './runtime-event-engine';
+import { resolveViewBoundaryDOMPoint } from './selection-projected-dom';
 
 const WHITESPACE_KEY_RE = /\s/;
 const MODIFIER_ONLY_KEYS = new Set([
@@ -65,7 +68,10 @@ const resolveVerticalGoalX = (
 ): number | null => {
   try {
     const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);
-    const point = editor.api.dom.resolveDOMPoint(focus);
+    const boundary = readPliteViewSelection(editor)?.focus;
+    const point = boundary
+      ? resolveViewBoundaryDOMPoint(editor, boundary)
+      : editor.api.dom.resolveDOMPoint(focus);
 
     return root && point
       ? createDOMGeometryKernel({ root }).verticalNavigationX(point)
@@ -179,24 +185,24 @@ export const shouldApplyKeyDownSelectionPolicy = (
 };
 
 export const isNativeVerticalKeyFastPathFullyMounted = ({
-  domStrategyRuntime,
+  viewportRuntime,
   editor,
 }: {
-  domStrategyRuntime: {
+  viewportRuntime: {
     mountedTopLevelNodeKeys: ReadonlySet<NodeKey> | null;
     mountedTopLevelRanges?: readonly MountedTopLevelRange[];
   } | null;
   editor: ReactRuntimeEditor;
 }) => {
-  if (!domStrategyRuntime) {
+  if (!viewportRuntime) {
     return true;
   }
 
-  if (!domStrategyRuntime.mountedTopLevelNodeKeys) {
+  if (!viewportRuntime.mountedTopLevelNodeKeys) {
     return true;
   }
 
-  const mountedRanges = domStrategyRuntime.mountedTopLevelRanges;
+  const mountedRanges = viewportRuntime.mountedTopLevelRanges;
 
   if (!mountedRanges || mountedRanges.length === 0) {
     return false;
@@ -235,20 +241,20 @@ export const useRuntimeKeyboardEvents = ({
   domPhaseScheduler,
   editor,
   inputController,
-  domStrategyRuntime,
+  viewportRuntime,
   flushPendingNativeTextInput,
   onKeyDown,
   readOnly,
   runtime,
-  setExplicitPartialDOMBackedSelection,
+  setExplicitViewportBackedSelection,
   verticalNavigation,
-  partialDOMBackedSelection,
+  viewportBackedSelection,
 }: {
   domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
-  domStrategyRuntime: {
-    type: 'staged' | 'partial-dom' | 'virtualized';
+  viewportRuntime: {
+    type: 'virtualized';
     mountedTopLevelNodeKeys: ReadonlySet<NodeKey> | null;
     mountedTopLevelRanges?: readonly MountedTopLevelRange[];
   } | null;
@@ -256,12 +262,12 @@ export const useRuntimeKeyboardEvents = ({
   onKeyDown?: EditableKeyDownHandler;
   readOnly: boolean;
   runtime: EditableEventRuntimeCore;
-  setExplicitPartialDOMBackedSelection: (nextValue: boolean) => void;
+  setExplicitViewportBackedSelection: (nextValue: boolean) => void;
   verticalNavigation: Pick<
     EditableDOMRuntime,
     'clearVerticalGoal' | 'readVerticalGoalX' | 'setVerticalGoalX'
   >;
-  partialDOMBackedSelection: boolean;
+  viewportBackedSelection: boolean;
 }) => {
   const pliteRuntimeContext = useOptionalPliteRuntimeContext();
   const runKeyDownEvent = useCallback(
@@ -278,7 +284,12 @@ export const useRuntimeKeyboardEvents = ({
         isVerticalArrowKey && !event.altKey && !event.ctrlKey && !event.metaKey;
       const snapshotSelection = profilePliteReactDuration(
         'keydown.snapshot-selection',
-        () => editorGetSnapshot(editor).selection
+        () =>
+          readContentRootAwareSelection({
+            editor,
+            getActiveContentRootOwner:
+              pliteRuntimeContext?.getActiveContentRootOwner,
+          })
       );
       const snapshotRange = getSelectionDOMRange(editor, snapshotSelection);
       const verticalFocus = isPhysicalVerticalMove
@@ -297,7 +308,7 @@ export const useRuntimeKeyboardEvents = ({
           })
         : null;
 
-      if (!isPhysicalVerticalMove) {
+      if (!isPhysicalVerticalMove && !MODIFIER_ONLY_KEYS.has(event.key)) {
         verticalNavigation.clearVerticalGoal();
       }
       const modelOwnsVerticalShift = profilePliteReactDuration(
@@ -305,8 +316,8 @@ export const useRuntimeKeyboardEvents = ({
         () =>
           event.shiftKey &&
           isVerticalArrowKey &&
-          shouldModelOwnPlainVerticalLargeDocumentExtension({
-            domStrategyRuntime,
+          shouldModelOwnPlainVerticalLargeDocumentPlugin({
+            viewportRuntime,
             editor,
             event,
           })
@@ -317,7 +328,7 @@ export const useRuntimeKeyboardEvents = ({
           event.shiftKey &&
           isVerticalArrowKey &&
           isMountedPlainVerticalLargeDocumentMovement({
-            domStrategyRuntime,
+            viewportRuntime,
             editor,
             event,
             selection: snapshotRange,
@@ -368,7 +379,7 @@ export const useRuntimeKeyboardEvents = ({
         !modelOwnsContentRootVerticalMove &&
         (nativeMountedVerticalShift ||
           isNativeVerticalKeyFastPathFullyMounted({
-            domStrategyRuntime,
+            viewportRuntime,
             editor,
           })) &&
         isVerticalArrowKey
@@ -382,7 +393,7 @@ export const useRuntimeKeyboardEvents = ({
           editor,
           event,
           inputController,
-          domStrategyRuntime,
+          viewportRuntime,
         })
       );
 
@@ -411,7 +422,7 @@ export const useRuntimeKeyboardEvents = ({
             event,
             forceRender: runtime.repair.forceRender,
             inputController,
-            domStrategyRuntime,
+            viewportRuntime,
             getActiveContentRootOwner:
               pliteRuntimeContext?.getActiveContentRootOwner,
             getContentRootOwnerViewEditor:
@@ -420,9 +431,9 @@ export const useRuntimeKeyboardEvents = ({
             onKeyDown,
             preferredVerticalX,
             readOnly,
-            setExplicitPartialDOMBackedSelection,
+            setExplicitViewportBackedSelection,
             setComposing: runtime.composition.setComposing,
-            partialDOMBackedSelection,
+            viewportBackedSelection,
           })
       );
 
@@ -484,13 +495,13 @@ export const useRuntimeKeyboardEvents = ({
       domPhaseScheduler,
       flushPendingNativeTextInput,
       inputController,
-      domStrategyRuntime,
+      viewportRuntime,
       onKeyDown,
       readOnly,
       runtime,
       pliteRuntimeContext,
-      setExplicitPartialDOMBackedSelection,
-      partialDOMBackedSelection,
+      setExplicitViewportBackedSelection,
+      viewportBackedSelection,
       verticalNavigation,
     ]
   );
@@ -508,13 +519,26 @@ export const useRuntimeKeyboardEvents = ({
         editor,
         event,
         inputController,
-        domStrategyRuntime,
+        viewportRuntime,
       });
 
       const shouldCaptureProjectedSelection =
         decision.targetOwner === 'internal-control' &&
         isProjectedSelectionCaptureKey(event) &&
         (() => {
+          try {
+            const editorElement = editor.api.dom.resolveDOMNode(editor);
+
+            if (
+              editorElement instanceof HTMLElement &&
+              isNestedEditableDOMTarget(editorElement, event.target)
+            ) {
+              return true;
+            }
+          } catch {
+            // Unmounted unit fixtures fall back to the model selection below.
+          }
+
           const { selection } = editorGetSnapshot(editor);
 
           if (!selection) {
@@ -552,7 +576,7 @@ export const useRuntimeKeyboardEvents = ({
         event,
         forceRender: runtime.repair.forceRender,
         inputController,
-        domStrategyRuntime,
+        viewportRuntime,
         getActiveContentRootOwner:
           pliteRuntimeContext?.getActiveContentRootOwner,
         getContentRootOwnerViewEditor:
@@ -560,9 +584,9 @@ export const useRuntimeKeyboardEvents = ({
         getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
         onKeyDown,
         readOnly,
-        setExplicitPartialDOMBackedSelection,
+        setExplicitViewportBackedSelection,
         setComposing: runtime.composition.setComposing,
-        partialDOMBackedSelection,
+        viewportBackedSelection,
       });
 
       if (!keyDownWorkerResult.handled) {
@@ -594,13 +618,13 @@ export const useRuntimeKeyboardEvents = ({
       editor,
       flushPendingNativeTextInput,
       inputController,
-      domStrategyRuntime,
+      viewportRuntime,
       onKeyDown,
       readOnly,
       runtime,
       pliteRuntimeContext,
-      setExplicitPartialDOMBackedSelection,
-      partialDOMBackedSelection,
+      setExplicitViewportBackedSelection,
+      viewportBackedSelection,
     ]
   );
 

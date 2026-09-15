@@ -4,13 +4,22 @@ import type {
   YjsAwarenessChange,
   YjsAwarenessLike,
   YjsAwarenessState,
-  YjsProviderEvent,
-  YjsProviderEventHandler,
-  YjsProviderLike,
-  YjsProviderStatus,
-  YjsProviderStatusPayload,
-  YjsProviderSyncedPayload,
 } from '../../../src/yjs/core/types';
+
+export type YjsProviderStatus =
+  | 'connecting'
+  | 'connected'
+  | 'disconnected'
+  | (string & {});
+export type YjsProviderStatusPayload =
+  | YjsProviderStatus
+  | Readonly<{ status: YjsProviderStatus }>;
+export type YjsProviderSyncedPayload =
+  | boolean
+  | Readonly<{ state: boolean }>
+  | Readonly<{ synced: boolean }>;
+type YjsProviderEvent = 'status' | 'sync' | 'synced';
+type YjsProviderEventHandler = (payload: unknown) => void;
 
 type YjsProviderPayload = YjsProviderStatusPayload | YjsProviderSyncedPayload;
 type YjsProviderPayloadHandler = (payload: YjsProviderPayload) => void;
@@ -18,7 +27,7 @@ type ProviderCall = 'connect' | 'destroy' | 'disconnect';
 
 const toProviderPayloadHandler = (
   handler: YjsProviderEventHandler
-): YjsProviderPayloadHandler => handler as YjsProviderPayloadHandler;
+): YjsProviderPayloadHandler => handler;
 
 const emitProviderPayload = (
   listeners: ReadonlySet<YjsProviderPayloadHandler>,
@@ -31,7 +40,7 @@ const emitProviderPayload = (
 
 export class FakeAwareness implements YjsAwarenessLike {
   readonly clientID: number;
-  readonly doc: { readonly clientID: number };
+  doc: Y.Doc;
 
   private readonly listeners = new Set<(event: YjsAwarenessChange) => void>();
   private localState: YjsAwarenessState | null = null;
@@ -39,7 +48,13 @@ export class FakeAwareness implements YjsAwarenessLike {
 
   constructor(clientID: number) {
     this.clientID = clientID;
-    this.doc = { clientID };
+    this.doc = new Y.Doc();
+    this.doc.clientID = clientID;
+  }
+
+  attachDocument(doc: Y.Doc): void {
+    doc.clientID = this.clientID;
+    this.doc = doc;
   }
 
   getLocalState(): YjsAwarenessState | null {
@@ -88,7 +103,7 @@ export class FakeAwareness implements YjsAwarenessLike {
   }
 }
 
-export class FakeProvider implements YjsProviderLike {
+export class FakeProvider {
   readonly awareness: FakeAwareness;
   readonly calls: ProviderCall[] = [];
   readonly doc?: Y.Doc;
@@ -120,6 +135,7 @@ export class FakeProvider implements YjsProviderLike {
 
     if (exposeDoc) {
       this.doc = doc;
+      this.awareness.attachDocument(doc);
     }
     if (exposeSynced) {
       this.synced = synced;
@@ -170,6 +186,10 @@ export class FakeProvider implements YjsProviderLike {
 
   on(event: YjsProviderEvent, handler: YjsProviderEventHandler): void {
     this.listenersFor(event).add(toProviderPayloadHandler(handler));
+  }
+
+  listenerCount(event: YjsProviderEvent): number {
+    return this.listenersFor(event).size;
   }
 
   private listenersFor(

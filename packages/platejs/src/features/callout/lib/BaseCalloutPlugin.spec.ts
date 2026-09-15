@@ -34,7 +34,7 @@ describe('BaseCalloutPlugin', () => {
     expect(editor.read.children().at(-1)).toMatchObject({
       children: [{ text: '' }],
       icon: '💡',
-      type: editor.plugin('callout').schema.type,
+      type: editor.plugin(BaseCalloutPlugin).schema.type,
       variant: 'info',
     });
   });

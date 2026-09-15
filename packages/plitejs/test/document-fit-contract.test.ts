@@ -52,7 +52,7 @@ const DocumentFitSchema = defineEditorSchema('schema:document-fit-contract', {
 
 const createSchemaEditor = () =>
   createEditor({
-    extensions: [DocumentFitSchema],
+    plugins: [DocumentFitSchema],
     initialValue: [paragraph('initial')],
   });
 

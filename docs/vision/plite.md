@@ -28,45 +28,59 @@ donor checkout as proof after the transplant.
   sole mutation and commit truth. Transactions construct canonical changes
   directly; React does not define the core ontology.
 - Public API should teach `editor.read`, `editor.update`, `state`, `tx`,
-  extension groups, commit listeners, and decoration sources.
-- `<Plite decorations>` is the sole raw Plite input for transient inline paint.
+  plugin groups, commit listeners, and decoration sources.
+- `<EditorRoot decorations>` is the sole raw Plite input for transient inline paint.
   A source returns keyed ranges with `className`, `style`, `aria-*`, or `data-*`
   attributes and may observe an external owner for targeted node-key refresh.
   `Editable` renders the result without another callback. Annotation stores use
-  `PliteAnnotationProvider`; the owning feature adapts resolved annotations into
+  `AnnotationProvider`; the owning feature adapts resolved annotations into
   decorations only when it needs inline paint.
-- React components own annotations through `usePliteAnnotationStore` and
-  `PliteAnnotationProvider`. Framework adapters with an independent lifetime
-  use `createPliteAnnotationStore` from `plitejs/annotations`. Keep that
+- React components own annotations through `useAnnotationStore` and
+  `AnnotationProvider`. Framework adapters with an independent lifetime
+  use `createAnnotationStore` from `plitejs/annotations`. Keep that
   constructor out of `plitejs/react` and reject public `/internal` bridges.
 - Plite stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.
 - Do not make child-count chunking foundational again.
-- Plite supplies typed extension identity, composition, publication, and
+- Plite supplies typed plugin identity, composition, publication, and
   inspection. It does not supply a behavior-profile DSL. Plate specs define
   product law; named kits require real reuse, while runtime control is a
   separate proven job.
-- `EditorExtension` carries one exact normalized definition. `name` is
-  descriptor identity; `type` is serialized node identity. The public factory
-  is `define*(name, definition)` with no caller generics. Its private typing may
+- `Plugin` carries one exact normalized definition. `name` is
+  descriptor identity; `type` is serialized node identity. The public
+  descriptor-definition grammar is `definePlugin(name, definition)` with no
+  caller generics. Its private typing may
   infer a small dependency environment beside the author input when TypeScript
   needs that split for contextual callbacks; do not expose it or pretend one
   self-referential generic can infer everything. Reject excess fields and
   preserve the definition through a private invariant witness without leaking
   raw callbacks into declarations. The required positional name is lower camel
   case and human-readable; a different serialized identity belongs in `type`.
+- A native constructor whose options change its exact descriptor capabilities
+  carries that input-to-output relation through `plitejs/internal` so an owning
+  adapter can derive the result without copying capability groups or overloads.
+  The carrier is not a public factory-definition grammar or an installable
+  value.
 - Public roots expose author contracts, not `Any*`, `Internal*`, compiler and
   normalization graphs, accumulators, or witnesses. An unparameterized editor
   exposes only guaranteed Core capabilities; package consumers carry concrete
-  editor or extension generics. Every `plitejs` entrypoint calls its public
+  editor or plugin generics. Every `plitejs` entrypoint calls its public
   runtime type `Editor`; private layered carriers do not create public branded
   editor variants.
-- Root `EditorExtensionDependencyReference` is a shallow, non-generic identity
-  value with `name` and optional `enabled`. `EditorExtensionTypeProvider` is the
-  sole public value-sensitive capability bridge. Its higher-kinded encoding,
+- Root `PluginDependencyReference` is a shallow, non-generic identity
+  value with `name` and optional `enabled`. `PluginTypeProvider` is the sole
+  public descriptor-to-installed-capability bridge. Its higher-kinded encoding,
   normalized installed-capability carrier, and transitive dependency expansion
-  are internal-only; they do not recursively materialize exact dependency
+  stay in `plitejs/internal`; they do not recursively materialize exact dependency
   ancestry.
+- Descriptor identity and installed state are distinct. Raw `definePlugin`
+  descriptors retain frozen normalized author fields, while editor creation
+  snapshots them into private installed records. Plate publishes its compiled
+  definition through the same internal input. Registry topology binds direct
+  nominal descriptor references and eligible source ancestors to one record;
+  names remain diagnostics and schema keys rather than dependency identity.
+  Portal code reads that record's owner-bound capabilities without raw/Plate
+  kind dispatch, global aliases, or replacement descriptors.
 - Schema is the sole first-party AST-shape truth. Plite derives exact root,
   child, text/property, default/requiredness, named-root, recursive, and
   open-world value types; Plate lowers its installed plugin graph into that
@@ -84,30 +98,33 @@ donor checkout as proof after the transplant.
   Structural ancestor checks stay distinct. Schema assertions own complete
   vocabulary, property, and content-grammar validation.
 - Static portals require a unique literal name and mutually assignable
-  descriptor/installed capabilities. Runtime portals require exact installed
-  descriptor identity, so a same-name object is not an interchangeable token.
+  descriptor/installed capabilities. Runtime portals require the installed
+  descriptor or a compatible source ancestor, so a same-name object is not an
+  interchangeable token.
 - React creation and context retrieval are separate jobs. `useEditor(options,
-  deps?)` owns one editor for a component lifetime. `useEditorContext()` and
+deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   `useOptionalEditorContext()` retrieve the mounted contract without caller
   generics, and selector hooks infer only their selected result. Exact
-  extension capabilities come from `editor.extension(Extension)`. Keep editor
+  plugin capabilities come from `editor.plugin(Plugin)`. Keep editor
   generics only on constructors or hooks whose typed input actually correlates
   with the result.
-- A mounted `Plite` or `PliteRuntime` binds one editor runtime owner. Replacing
-  that owner requires a keyed remount. Root views may change inside the same
-  runtime, but subscription cleanup retires queued work from the prior view
-  before descendants observe the next one.
+- A public `EditorRoot` requires an editor and owns one independent mounted
+  view. Its root, authored, and read-only inputs configure that view through
+  the existing view owner. Replacing the editor requires a keyed remount;
+  changing the root retires queued work and commands from the prior view before
+  descendants observe the next one. Nested same-document roots may share the
+  nearest private provider while retaining independent mounted views.
 - Public generics must correlate with a typed input, installed descriptor, or
   descriptor-owned runtime validator. Update callbacks expose only installed
   transaction groups; commands infer from their descriptors; raw schema
   property names return `unknown`; collaborative metadata remains `unknown`
-  until its installed extension validates it. Never let a method-level generic
+  until its installed plugin validates it. Never let a method-level generic
   manufacture a capability or choose a result type.
 - Low-level React composition receives the actual DOM dependency as
   `react({ dom })`. Its implementation may erase exactly one invariant-union
   boundary when TypeScript 7 cannot reduce it; the public call stays one exact
   object with no caller generics.
-- `DefinitionOf<typeof FooExtension>` is the sole public definition extractor;
+- `DefinitionOf<typeof FooPlugin>` is the sole public definition extractor;
   name the alias `FooDefinition`, never `FooConfig`. True domain/runtime
   config types remain valid.
 - Layering beats feature buckets: document truth, DOM transport, React runtime,
@@ -126,23 +143,34 @@ donor checkout as proof after the transplant.
 - Plite uses `editor.read(fn)`, direct `editor.update.group.method(...)`,
   configured `editor.update(policy).group.method(...)`, and atomic
   `editor.update(policy?, fn)` as the public lifecycle.
-- Extensions install through `editor.install(...)`; DOM/React views use
+- Plugins install through `editor.install(...)`; DOM/React views use
   `createEditorView(editor, options)`. Do not expose an editor runtime wrapper
   or `editor.extend(...)`. Keep root standalone utilities to truly
   editor-independent value operations such as `NodeApi`, `PathApi`, and
   `isEditor`.
 - `state` is the normal read view; `tx` is the normal write view and can read
   transaction-local state.
-- Extension-owned factories are `read` and `update`; the compiler projects
+- Plugin-owned factories are `read` and `update`; the compiler projects
   their methods under `definition.name` onto the read view, active `tx`, and
   direct update surface. Use `txOnly(...)` for controls that require an active
   transaction. Do not restore descriptor `state`/`tx` authoring.
-- A `read` factory constructs one callable method tree per published extension
+- A `read` factory constructs one callable method tree per published plugin
   configuration. Document commits reuse that topology; live values are method
   results, stable host values use `api`, and direct read facades resolve and
   invoke methods inside the read boundary.
+- Native Yjs collaboration receives its exact `Y.Doc`, initial-load readiness,
+  optional awareness and explicit seed authority at descriptor construction.
+  The app owns provider connection, replacement, errors and destruction. The
+  binding admits a compatible room once per document generation, blocks
+  document and shared-effect publication before admission, retains failed
+  imports for explicit retry, and remains admitted during later disconnects so
+  offline edits and local history continue. Presence and compaction methods
+  exist in the inferred `api.yjs` only when their inputs are supplied. Live
+  admission and awareness state never become replayable `read` methods or
+  transaction updates; each `(Y.Doc, rootName)` has one binding owner while
+  mounted views retain exact selection projection.
 - Plite owns the complete editor selection model. It supports text selection
-  and one built-in directional `NodeSelection`; extensions cannot add selection
+  and one built-in directional `NodeSelection`; plugins cannot add selection
   kinds or parallel selection state. Feature owners write exact nodes and
   derive feature geometry from core selection.
 - Each mounted Editable derives inactive canonical-selection paint from its own
@@ -159,6 +187,18 @@ donor checkout as proof after the transplant.
 - Internal projected view selection is input-engine state. Its keyboard,
   clipboard, history, mutation, reconciliation, and navigation semantics make
   it ineligible as a public carrier for presentation-only inactive selection.
+- Authored changes are one optional native document capability. Accepted roots
+  remain the canonical document, while a versioned authored graph retains the
+  operations, identities, dependencies, decisions, positions, and content
+  needed for pending review and selected history. Accepted, proposed, and
+  markup projections belong to exact editor views; their input intent and
+  rendered children never become another saved document or global mode. Review
+  decisions are atomic document writes. Local undo remains local interaction
+  history, and retained author history produces new compensating changes.
+  Persistence checkpoints current authored facts and exact projections
+  directly; opening a document never rebuilds them by reducing retained
+  operations or replaying pending edits. Checksum-bound retained operation
+  bodies stay cold until a decision or history read needs their content.
 - `NodeSelection` stores canonical exact membership as `paths`, directional
   `anchorPath` and `focusPath`, and an optional explicit root. Mapping,
   persistence, history, marks, slices, and collaboration preserve that state.
@@ -182,21 +222,21 @@ donor checkout as proof after the transplant.
   preserves children, selection, and live `NodeKey`; feature commands keep
   their policy guards and delegate this structural mutation instead of
   replacing a node with a handcrafted default.
-- `EditorExtension` stays flat except for the coherent `on.*` event family.
+- `Plugin` stays flat except for the coherent `on.*` event family.
   Lifecycle and host/DOM observation use prefixless child names; Plate extends
   the same family with names such as `keyDown`, `paste`, `nodeChange`,
   `textChange`, and capture variants instead of adding `handlers`. Pure
   core-read policy composes through descriptor-owned `readMiddleware` over
   `editorReads`; app policy does not earn a special root hook.
-- Typed ordered values are extension-point `contributions`, not outputs.
-  Extension declarations use explicit low-level nouns: `stateFields`,
-  `effectTypes`, and `facetProviders`.
-- Extensions have no `config` channel. Immutable construction inputs and
+- Typed ordered values use plugin `contributions`, not outputs.
+  Plugin declarations use explicit low-level nouns: `stateFields` and
+  `effectTypes`.
+- Plugins have no `config` channel. Immutable construction inputs and
   opaque runtime resources stay in factory closures or honest host owners.
   `validate` checks assembled context without a configuration argument.
   Activation schedules publication-dependent work with `afterPublish`.
 - One descriptor-owned `api` projects under `name` to
-  `editor.api.<name>` and `editor.extension(Extension).api`. Do not root-merge
+  `editor.api.<name>` and `editor.plugin(Plugin).api`. Do not root-merge
   methods or expose `getApi`. `api` is always a factory, even for
   context-free values, and receives one context object. A mounted view evaluates
   those factories with its exact editor identity. Its root API and descriptor
@@ -247,17 +287,24 @@ donor checkout as proof after the transplant.
   Plite core naming. Descriptor APIs remain namespaced by `name`.
 - Whole-document replacement should be a transaction write, not public
   `Editor.replace`, `editor.replace`, or `editor.reset` as app-author API.
-- Active transactions expose direct named extension groups such as
-  `tx.writer.method()`. Plite has no `tx.extension(...)` portal. Plate may layer
-  descriptor-aware `tx.plugin(Plugin)` selection without expanding Plite's
-  public surface.
+- Active transactions expose direct named plugin groups such as
+  `tx.writer.method()`. Generated closed editors and code whose transaction
+  type carries the plugin graph may use that direct form. The shared
+  `tx.plugin(pluginOrName)` selector returns the same active group without
+  opening another update: descriptor input preserves nominal validation and
+  exact inference, while name input permits intentionally decoupled package
+  code and uses an erased result when the name is not statically known. Missing
+  descriptors, names, or transaction groups fail at runtime.
 - `EditorCommit` is the local runtime fact for history, collaboration, React,
   DOM repair, proof, and subscribers.
 - Publication is the update outcome boundary. A callback that can still abort
   belongs before publication; observers that run after an `EditorCommit`
   exists report failure through `lifecycleErrorSink` and cannot make the
   committed update appear rejected.
-- Overlay architecture is split into Decoration, Annotation, and Widget lanes.
+- Transient view data keeps its semantic owner: Decoration owns inline paint,
+  Annotation owns durable logical ranges, and selection or keyed cursor owners
+  feed exact-mounted-view geometry. Plite exposes no generic widget target or
+  target-store lane.
 - Commit consumers invalidate by their actual dependency: node presence,
   payload, path, selection, or projection. `commit.changed.nodeKeys('presence')`
   reports identities entering or leaving one root without enumerating shifted
@@ -332,7 +379,7 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
 - Escalate to `plite-plan` when the next useful win is API/runtime boundary.
 - Each mounted `Editable` owns one bounded DOM phase scheduler. Queued root
   work runs in `model -> DOM read -> DOM/React write -> selection/repair ->
-  post-selection navigation` order, coalesces by semantic key, and reports
+post-selection navigation` order, coalesces by semantic key, and reports
   recursive loop-limit hits. Explicit navigation scrolls are final writes;
   selection-preservation restores never override them.
   Scheduled scrolling returns request cleanup from that same owner;
@@ -349,13 +396,20 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
   or browser proof, `METRIC` output when optimizing, and a keep/discard
   decision.
 - If `worst_p95_ms` or a summary hides a hot lane, fix the metric before code.
-- Huge-document truth is corridor-first, semantic islands, occlusion,
-  projection stores, and fair direct comparison against legacy where claimed.
-- DOM-present auto is the safe default direction for huge documents until
-  shell/occlusion modes prove browser find, screen reader, native selection,
-  copy/paste, IME, mobile, undo/history, and collaboration behavior.
-- Degraded modes until native behavior is proved: virtualization, shell
-  islands, model-backed selection, staged mounting, hidden DOM.
+- Ordinary `Editable` mounts the complete document DOM. DOM omission is an
+  explicit mounted-view choice through the dedicated virtualized React
+  component; it never activates from document size, a threshold, or an
+  automatic strategy. The virtualized package entrypoint owns its optional
+  engine and exposes only block estimate and overscan tuning.
+- A virtualized view starts with one deterministic bounded window and retains
+  selected or requested targets. Its document, history and collaboration state
+  stay canonical while native find, accessibility traversal, printing and DOM
+  integrations can observe only mounted content. Product support requires
+  explicit browser, IME and device proof for the claimed matrix.
+- Pagination owns page omission, page surfaces and direct canvas coordinates.
+  It does not route page layouts or a public vertical offset through the generic
+  top-level block virtualizer. Its complete path mounts every page, fragment,
+  layout unit and document root.
 
 ## Plite Skill Topology
 

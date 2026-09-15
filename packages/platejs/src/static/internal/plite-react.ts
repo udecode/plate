@@ -1,6 +1,6 @@
 export type {
   EditableProps,
-  PliteDecoration,
-  PliteDecorationAttributes,
-  PliteDecorationSource,
+  Decoration,
+  DecorationAttributes,
+  DecorationSource,
 } from 'plitejs/react';

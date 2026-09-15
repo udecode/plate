@@ -945,7 +945,9 @@ const replaceCanonicalChildWindow = (
             parent,
             propertyCanonical,
             'main',
-            { schema }
+            {
+              schema,
+            }
           )
     : contentSpec
       ? propertyCanonical.filter((child): child is Element =>

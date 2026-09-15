@@ -2,39 +2,50 @@ import {
   type ContentSlice,
   type DescendantIn,
   type EditorCoreStateView,
+  type EditorStateView,
   type EditorMarks,
   type Element,
   type Editor,
   type SchemaProperty,
   type Value,
   ContentSlice as ContentSliceApi,
-  defineExtension,
-  defineExtensionPoint,
+  definePlugin,
+  definePluginPoint,
   editorCommands,
-  type EditorExtension,
+  type Plugin,
   NodeApi,
   RangeApi,
   SelectionApi,
 } from '../..';
 import {
-  createDetachedContentSlice,
-  dispatchCommand,
-  getActiveEditorTransaction,
+  evaluateCommand,
+  evaluateCommandWithState,
+} from '../../core/command-registry';
+import { createDetachedContentSlice } from '../../core/content-slice';
+import { getCompiledEditorSchemaFromApi } from '../../core/editor-schema';
+import {
+  getPluginContributions,
+  reportEditorLifecycleError,
+} from '../../core/plugin';
+import {
   getCompiledEditorSchema,
-  getCompiledEditorSchemaFromApi,
-  getCompiledSchemaPropertyId,
-  getSelection as getEditorSelection,
-  getEditorExtensionContributions,
+  getPluginRegistry as getInternalPluginRegistry,
+} from '../../core/plugin-registry';
+import {
+  applyTransactionSpec,
+  getActiveEditorTransaction,
   getEditorStateView,
-  getExtensionRegistry,
+  toEditorCoreStateView,
+} from '../../core/public-state';
+import {
+  getCompiledSchemaPropertyId,
   type CompiledEditorSchema,
   type CompiledSchemaProperty,
-  reportEditorLifecycleError,
-  toEditorCoreStateView,
-} from '../../internal';
+} from '../../core/schema-compiler';
+import { getSelection as getEditorSelection } from '../../interfaces/editor';
 
-const HOST_CODECS = defineExtensionPoint<HostCodecRegistration<any>>(
-  'plite-dom:host-codec'
+const HOST_CODECS = definePluginPoint<HostCodecRegistration<any>>(
+  'editor-dom:host-codec'
 );
 const NEWLINE_SPLIT_RE = /\r\n|\r|\n/;
 
@@ -50,7 +61,7 @@ const reportHostCodecError = <V extends Value>(
     Object.freeze({
       cause,
       editor,
-      extensionName: registration.owner,
+      pluginName: registration.owner,
       format: registration.codec.format,
       key: registration.codec.key,
       phase,
@@ -369,7 +380,7 @@ const createDefaultHostCodecRegistration = <V extends Value>(
 ) =>
   Object.freeze({
     codec: createDefaultPlainTextHostCodec<V>(editor),
-    owner: 'plite-dom',
+    owner: 'editor-dom',
   });
 
 const withDefaultHostCodec = <V extends Value>(
@@ -429,7 +440,9 @@ const assertHostCodecTargetAvailable = <V extends Value>(
         : `${codec.format}:${target.type}:${target.id}`;
 
     throw new Error(
-      `Host codecs "${registrationName(conflict)}" and "${registrationName(registration)}" both claim ${direction} target "${claim}".`
+      `Host codecs "${registrationName(conflict)}" and "${registrationName(
+        registration
+      )}" both claim ${direction} target "${claim}".`
     );
   }
 
@@ -461,7 +474,9 @@ const compileHostCodecOwnershipTargets = <V extends Value>(
   if (!codec.owns?.length) return Object.freeze([]);
   if (!schema) {
     throw new Error(
-      `Host codec "${registrationName(registration)}" declares ownership targets without a compiled editor schema.`
+      `Host codec "${registrationName(
+        registration
+      )}" declares ownership targets without a compiled editor schema.`
     );
   }
 
@@ -498,7 +513,9 @@ const compileHostCodecOwnershipTargets = <V extends Value>(
     if ('kind' in target && target.kind === 'element') {
       if (!schema.elements.byType.has(target.type)) {
         throw new Error(
-          `Host codec "${registrationName(registration)}" owns unknown schema element "${target.type}".`
+          `Host codec "${registrationName(
+            registration
+          )}" owns unknown schema element "${target.type}".`
         );
       }
       add(target);
@@ -510,7 +527,9 @@ const compileHostCodecOwnershipTargets = <V extends Value>(
 
     if (!property) {
       throw new Error(
-        `Host codec "${registrationName(registration)}" owns schema property "${propertyId}" that is not installed.`
+        `Host codec "${registrationName(
+          registration
+        )}" owns schema property "${propertyId}" that is not installed.`
       );
     }
     addProperty(property);
@@ -532,7 +551,9 @@ const compileHostCodecs = <V extends Value>(
 
     if (existing) {
       throw new Error(
-        `Host codecs "${registrationName(existing)}" and "${registrationName(registration)}" use the same key "${codec.key}".`
+        `Host codecs "${registrationName(existing)}" and "${registrationName(
+          registration
+        )}" use the same key "${codec.key}".`
       );
     }
     byKey.set(codec.key, registration);
@@ -563,24 +584,24 @@ const compileHostCodecs = <V extends Value>(
   );
 };
 
-type HostCodecsExtensionDefinition<TName extends string> = {
+type HostCodecsPluginDefinition<TName extends string> = {
   contributions: true;
   name: TName;
   validate: true;
 };
 
-/** Install one or more host codecs as a named editor extension. */
+/** Install one or more host codecs as a named editor plugin. */
 export const hostCodecs = <const TName extends string, V extends Value = Value>(
   name: TName,
   codecs: ReadonlyArray<HostCodec<V>>
-): EditorExtension<HostCodecsExtensionDefinition<TName>> => {
+): Plugin<HostCodecsPluginDefinition<TName>> => {
   const registrations = Object.freeze(
     codecs.map((codec) =>
       Object.freeze({ codec: prepareHostCodec(codec), owner: name })
     )
   );
 
-  return defineExtension(name, {
+  return definePlugin(name, {
     contributions: registrations.map((registration) =>
       HOST_CODECS.of(registration)
     ),
@@ -603,13 +624,13 @@ export const hostCodecs = <const TName extends string, V extends Value = Value>(
 const COMPILED_HOST_CODECS = new WeakMap<object, readonly unknown[]>();
 
 const getHostCodecs = <V extends Value>(editor: Editor<V, any>) => {
-  const registry = getExtensionRegistry(editor);
+  const registry = getInternalPluginRegistry(editor);
   const cached = COMPILED_HOST_CODECS.get(registry);
 
   if (cached) return cached as ReadonlyArray<HostCodecRegistration<V>>;
 
   const registered = withDefaultHostCodec(
-    getEditorExtensionContributions(editor, HOST_CODECS) as ReadonlyArray<
+    getPluginContributions(editor, HOST_CODECS) as ReadonlyArray<
       HostCodecRegistration<V>
     >,
     editor
@@ -669,10 +690,13 @@ const readHostCodecState = <V extends Value, TResult>(
   return transaction ? read(getEditorStateView(editor)) : editor.read(read);
 };
 
-export const insertHostData = <V extends Value>(
+export const createHostDataTransactionSpec = <V extends Value>(
   editor: Editor<V, any>,
   dataTransfer: DataTransfer,
-  options?: Readonly<{ format?: string }>
+  options?: Readonly<{
+    format?: string;
+    state?: EditorStateView<V, any>;
+  }>
 ) => {
   const codecs = getHostCodecs(editor);
   const source = createHostDataSource(
@@ -701,9 +725,11 @@ export const insertHostData = <V extends Value>(
     if (codec.query) {
       try {
         if (
-          readHostCodecState(editor, (state) =>
-            codec.query?.(createContext(state))
-          ) === false
+          (options?.state
+            ? codec.query?.(createContext(options.state))
+            : readHostCodecState(editor, (state) =>
+                codec.query?.(createContext(state))
+              )) === false
         ) {
           continue;
         }
@@ -716,9 +742,11 @@ export const insertHostData = <V extends Value>(
     let slice: ContentSlice<V> | null;
 
     try {
-      const parsed = readHostCodecState(editor, (state) =>
-        codec.parse?.(createContext(state))
-      );
+      const parsed = options?.state
+        ? codec.parse?.(createContext(options.state))
+        : readHostCodecState(editor, (state) =>
+            codec.parse?.(createContext(state))
+          );
 
       slice = parsed ? ContentSliceApi.fromJSON<V>(parsed) : null;
     } catch (error) {
@@ -728,31 +756,66 @@ export const insertHostData = <V extends Value>(
 
     if (!slice) continue;
 
-    const handled = dispatchCommand(editor, editorCommands.replaceSlice, {
-      slice,
-    });
+    const input = { slice };
+    const result = options?.state
+      ? evaluateCommandWithState(
+          editor,
+          editorCommands.replaceSlice,
+          options.state,
+          input
+        ).result
+      : evaluateCommand(editor, editorCommands.replaceSlice, input).result;
 
-    if (!handled) continue;
+    if (result === false) continue;
 
-    return true;
+    return result;
   }
 
   return false;
+};
+
+export const insertHostData = <V extends Value>(
+  editor: Editor<V, any>,
+  dataTransfer: DataTransfer,
+  options?: Readonly<{ format?: string }>
+) => {
+  const spec = createHostDataTransactionSpec(editor, dataTransfer, options);
+
+  if (spec === false) return false;
+  const transaction = getActiveEditorTransaction(editor);
+
+  if (transaction) {
+    applyTransactionSpec(editor, spec);
+  } else {
+    editor.update({ tags: 'paste' }, () => {
+      applyTransactionSpec(editor, spec);
+    });
+  }
+
+  return true;
 };
 
 /** Serialize a model fragment through configuration-ordered codecs. */
 export const writeHostFragmentData = <V extends Value>(
   editor: Editor<V, any>,
   data: Pick<DataTransfer, 'setData'>,
-  slice: ContentSlice<V>
+  slice: ContentSlice<V>,
+  options: Readonly<{ excludeFormats?: readonly string[] }> = {}
 ) => {
   const written = new Set<string>();
+  const excluded = options.excludeFormats;
   const sourceSlice = ContentSliceApi.fromJSON<V>(slice);
 
   for (const registration of getHostCodecs(editor)) {
     const { codec } = registration;
 
-    if (!codec.serialize || written.has(codec.format)) continue;
+    if (
+      !codec.serialize ||
+      excluded?.includes(codec.format) ||
+      written.has(codec.format)
+    ) {
+      continue;
+    }
 
     let serialized: null | string | undefined;
 

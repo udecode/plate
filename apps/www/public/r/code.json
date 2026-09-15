@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/code.tsx",
-      "content": "'use client';\n\nimport { type CodePlugin, type PlateLeafProps, PlateLeaf } from 'platejs/react';\nimport * as React from 'react';\n\nexport function CodeLeaf(props: PlateLeafProps<typeof CodePlugin>) {\n  return (\n    <PlateLeaf\n      {...props}\n      as=\"code\"\n      className=\"rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm whitespace-pre-wrap\"\n    >\n      {props.children}\n    </PlateLeaf>\n  );\n}\n",
+      "content": "'use client';\n\nimport {\n  type CodePlugin,\n  type EditorLeafProps,\n  EditorLeaf,\n} from 'platejs/react';\nimport * as React from 'react';\n\nexport function CodeLeaf(props: EditorLeafProps<typeof CodePlugin>) {\n  return (\n    <EditorLeaf\n      {...props}\n      as=\"code\"\n      className=\"rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm whitespace-pre-wrap\"\n    >\n      {props.children}\n    </EditorLeaf>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/code.tsx"
     }

@@ -1,6 +1,13 @@
 import * as Y from 'yjs';
 
+import {
+  bindAuthoredRange,
+  readAuthoredView,
+  type NativeAuthoredRangeBinding,
+} from '../../core/authored-runtime';
+import { registerEditorViewLifetimeCleanup } from '../../core/editor-view-lifetime';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
+import { snapshotEditorJsonValue } from '../../core/value-codec';
 import type { Anchor, Point, Range } from '../../index';
 import { RangeApi } from '../../index';
 import {
@@ -16,7 +23,7 @@ import type { YjsEditor } from './editor-types';
 import { areJsonLikeValuesEqual } from './json-equality';
 import { isRecord } from './record';
 import {
-  yjsRelativePositionToPlitePoint,
+  yjsRelativePositionToPoint,
   yjsRelativeRangesEqual,
 } from './selection';
 import type {
@@ -28,14 +35,9 @@ import type {
 } from './types';
 
 type YjsAwarenessAdapterOptions<TCursorData extends YjsRemoteCursorData> = {
-  readonly awareness?: YjsAwarenessLike;
-  readonly awarenessDataField: string;
-  readonly awarenessSelectionField: string;
-  readonly canSendSelection: () => boolean;
-  readonly clientId: number | string;
-  readonly doc: Y.Doc;
+  readonly awareness: YjsAwarenessLike;
+  readonly canSyncSelection: () => boolean;
   readonly editor: YjsEditor;
-  readonly isConnected: () => boolean;
   readonly rootFor: (root: string) => Y.XmlElement | null;
   readonly validateCursorData: (value: unknown) => value is TCursorData;
 };
@@ -52,6 +54,8 @@ export type YjsRemoteCursorCacheMetrics = Readonly<{
 export type YjsAwarenessAdapter<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
 > = {
+  readonly claimSelection: () => void;
+  readonly forView: (view: YjsEditor) => YjsAwarenessAdapter<TCursorData>;
   readonly clearSelection: () => void;
   readonly currentSelection: () => Range | null;
   readonly destroy: () => void;
@@ -61,17 +65,15 @@ export type YjsAwarenessAdapter<
     roots: ReadonlySet<string>,
     options?: Readonly<{ fallbackRoots?: ReadonlySet<string> }>
   ) => void;
+  readonly publishOwnedSelection: () => void;
   readonly rebuild: () => void;
   readonly remoteCursor: (
     clientId: number
   ) => YjsRemoteCursor<TCursorData> | null;
   readonly remoteCursorIds: () => readonly number[];
   readonly remoteCursors: () => ReadonlyArray<YjsRemoteCursor<TCursorData>>;
-  readonly sendCursorData: (data: TCursorData | null) => void;
-  readonly sendSelection: (
-    range?: Range | null,
-    data?: TCursorData | null
-  ) => void;
+  readonly setCursorData: (data: TCursorData | null) => void;
+  readonly syncSelection: () => void;
   readonly subscribeCursor: (
     clientId: number,
     listener: () => void
@@ -84,25 +86,18 @@ type CachedCursor<TCursorData extends YjsRemoteCursorData> = {
   anchor: Anchor<Point> | null;
   cursor: YjsRemoteCursor<TCursorData>;
   focus: Anchor<Point> | null;
-  rawSelection: YjsAwarenessRelativeSelection | null;
+  rawSelection:
+    | YjsAwarenessRelativeSelection
+    | Readonly<{ authored: unknown; root: string }>
+    | null;
+  views: WeakMap<
+    YjsEditor,
+    {
+      binding: NativeAuthoredRangeBinding | undefined;
+      cursor: YjsRemoteCursor<TCursorData>;
+    }
+  >;
 };
-
-const CURSORS_AT_PATH = Symbol('plitejs/yjs/cursors-at-path');
-
-type IndexedYjsAwarenessAdapter<TCursorData extends YjsRemoteCursorData> =
-  YjsAwarenessAdapter<TCursorData> & {
-    readonly [CURSORS_AT_PATH]: (
-      path: readonly number[]
-    ) => ReadonlyArray<YjsRemoteCursor<TCursorData>>;
-  };
-
-export const getYjsRemoteCursorsAtPath = <
-  TCursorData extends YjsRemoteCursorData,
->(
-  adapter: YjsAwarenessAdapter<TCursorData>,
-  path: readonly number[]
-): ReadonlyArray<YjsRemoteCursor<TCursorData>> =>
-  (adapter as IndexedYjsAwarenessAdapter<TCursorData>)[CURSORS_AT_PATH](path);
 
 const EMPTY_CLIENT_IDS = Object.freeze([]) as readonly number[];
 const EMPTY_CURSORS = Object.freeze([]) as readonly YjsRemoteCursor[];
@@ -133,14 +128,18 @@ const readRemoteCursorRecordData = <TCursorData extends YjsRemoteCursorData>(
 };
 
 const areRelativeSelectionsEqual = (
-  left: YjsAwarenessRelativeSelection | null,
-  right: YjsAwarenessRelativeSelection | null
+  left: CachedCursor<YjsRemoteCursorData>['rawSelection'],
+  right: CachedCursor<YjsRemoteCursorData>['rawSelection']
 ) =>
   left === right ||
   (left !== null &&
     right !== null &&
     left.root === right.root &&
-    yjsRelativeRangesEqual(left.range, right.range));
+    ('authored' in left || 'authored' in right
+      ? 'authored' in left &&
+        'authored' in right &&
+        areJsonLikeValuesEqual(left.authored, right.authored)
+      : yjsRelativeRangesEqual(left.range, right.range)));
 
 const areCursorDataEqual = (
   left: YjsRemoteCursorData | undefined,
@@ -173,26 +172,29 @@ export const createYjsAwarenessAdapter = <
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
 >({
   awareness,
-  awarenessDataField,
-  awarenessSelectionField,
-  canSendSelection,
-  clientId,
-  doc,
+  canSyncSelection,
   editor,
-  isConnected,
   rootFor,
   validateCursorData,
 }: YjsAwarenessAdapterOptions<TCursorData>): YjsAwarenessAdapter<TCursorData> => {
   const cursorListeners = new Map<number, Set<() => void>>();
   const cursors = new Map<number, CachedCursor<TCursorData>>();
-  const cursorIdsByPath = new Map<string, Set<number>>();
-  const cursorPathById = new Map<number, string>();
   const cursorsListeners = new Set<() => void>();
   const idsListeners = new Set<() => void>();
+  const viewAdapters = new WeakMap<
+    YjsEditor,
+    YjsAwarenessAdapter<TCursorData>
+  >();
+  const viewLists = new WeakMap<
+    YjsEditor,
+    ReadonlyArray<YjsRemoteCursor<TCursorData>>
+  >();
   let cursorIdSet = new Set<number>();
   let cursorIds = EMPTY_CLIENT_IDS;
   let cursorList: ReadonlyArray<YjsRemoteCursor<TCursorData>> | null =
     EMPTY_CURSORS as ReadonlyArray<YjsRemoteCursor<TCursorData>>;
+  let selectionOwner: object | null = null;
+  let publishOwnedSelection: (() => void) | null = null;
   const metrics = {
     clientDecodeCount: 0,
     clientPublicationCount: 0,
@@ -204,10 +206,7 @@ export const createYjsAwarenessAdapter = <
 
   const currentSelection = (): Range | null => editor.read.selection();
 
-  const getLocalAwarenessClientId = (): number =>
-    awareness?.doc?.clientID ??
-    awareness?.clientID ??
-    (typeof clientId === 'number' ? clientId : doc.clientID);
+  const getLocalAwarenessClientId = (): number => awareness.doc.clientID;
 
   const isValidYjsSelectionPoint = (point: Range['anchor']): boolean => {
     const root = rootFor(normalizeRootKey(point.root));
@@ -249,13 +248,13 @@ export const createYjsAwarenessAdapter = <
     position: Y.RelativePosition
   ): Point | null => {
     metrics.endpointConversionCount += 1;
-    const point = yjsRelativePositionToPlitePoint(root, position);
+    const point = yjsRelativePositionToPoint(root, position);
 
     return point ? withRoot(point, rootKey) : null;
   };
 
   const resolveSelection = (
-    rawSelection: YjsAwarenessRelativeSelection | null
+    rawSelection: CachedCursor<TCursorData>['rawSelection']
   ): Readonly<{
     anchor: Anchor<Point> | null;
     focus: Anchor<Point> | null;
@@ -266,6 +265,25 @@ export const createYjsAwarenessAdapter = <
     }
 
     metrics.cursorResolutionPassCount += 1;
+    if ('authored' in rawSelection) {
+      try {
+        const binding = bindAuthoredRange(editor, {
+          saved: rawSelection.authored,
+          options: {
+            root: rawSelection.root,
+            deletion: 'drop',
+            association: 'forward',
+          },
+        });
+        return {
+          anchor: null,
+          focus: null,
+          selection: binding?.resolve() ?? null,
+        };
+      } catch {
+        return { anchor: null, focus: null, selection: null };
+      }
+    }
     const root = rootFor(rawSelection.root);
 
     if (!root) return { anchor: null, focus: null, selection: null };
@@ -359,7 +377,7 @@ export const createYjsAwarenessAdapter = <
   };
 
   const decodeClient = (remoteClientId: number) => {
-    if (!awareness || remoteClientId === getLocalAwarenessClientId()) {
+    if (remoteClientId === getLocalAwarenessClientId()) {
       return removeCursor(remoteClientId);
     }
 
@@ -368,14 +386,20 @@ export const createYjsAwarenessAdapter = <
     if (!state) return removeCursor(remoteClientId);
 
     metrics.clientDecodeCount += 1;
-    const data = readRemoteCursorRecordData(
-      state,
-      awarenessDataField,
-      validateCursorData
-    );
-    const rawSelection = readYjsAwarenessRelativeSelection(
-      state[awarenessSelectionField]
-    );
+    const data = readRemoteCursorRecordData(state, 'data', validateCursorData);
+    const saved = state.selection;
+    let rawSelection: CachedCursor<TCursorData>['rawSelection'] = null;
+    try {
+      rawSelection =
+        isRecord(saved) && typeof saved.root === 'string' && 'authored' in saved
+          ? snapshotEditorJsonValue(
+              { root: saved.root, authored: saved.authored },
+              'Authored awareness selection'
+            )
+          : readYjsAwarenessRelativeSelection(saved);
+    } catch {
+      rawSelection = null;
+    }
     const current = cursors.get(remoteClientId);
 
     if (!current) {
@@ -386,6 +410,7 @@ export const createYjsAwarenessAdapter = <
         cursor: createRemoteCursor(remoteClientId, resolved.selection, data),
         focus: resolved.focus,
         rawSelection,
+        views: new WeakMap(),
       });
 
       return true;
@@ -406,6 +431,7 @@ export const createYjsAwarenessAdapter = <
       current.anchor = resolved.anchor;
       current.focus = resolved.focus;
       current.rawSelection = rawSelection;
+      current.views = new WeakMap();
       current.cursor = createRemoteCursor(
         remoteClientId,
         resolved.selection,
@@ -440,29 +466,6 @@ export const createYjsAwarenessAdapter = <
       metrics.idsPublicationCount += 1;
     }
 
-    for (const remoteClientId of changedClientIds) {
-      const previousPath = cursorPathById.get(remoteClientId);
-
-      if (previousPath) {
-        const ids = cursorIdsByPath.get(previousPath);
-
-        ids?.delete(remoteClientId);
-        if (ids?.size === 0) cursorIdsByPath.delete(previousPath);
-        cursorPathById.delete(remoteClientId);
-      }
-
-      const selection = cursors.get(remoteClientId)?.cursor.selection;
-
-      if (selection && !RangeApi.isCollapsed(selection)) {
-        const nextPath = selection.anchor.path.join('.');
-        const ids = cursorIdsByPath.get(nextPath) ?? new Set<number>();
-
-        ids.add(remoteClientId);
-        cursorIdsByPath.set(nextPath, ids);
-        cursorPathById.set(remoteClientId, nextPath);
-      }
-    }
-
     cursorList = null;
     metrics.clientPublicationCount += changedClientIds.size;
 
@@ -481,25 +484,18 @@ export const createYjsAwarenessAdapter = <
     for (const cached of cursors.values()) releaseCursorAnchors(cached);
     cursors.clear();
 
-    if (awareness && isConnected()) {
-      for (const remoteClientId of getSortedAwarenessClientIds(
-        awareness,
-        getLocalAwarenessClientId()
-      )) {
-        decodeClient(remoteClientId);
-        changedClientIds.add(remoteClientId);
-      }
+    for (const remoteClientId of getSortedAwarenessClientIds(
+      awareness,
+      getLocalAwarenessClientId()
+    )) {
+      decodeClient(remoteClientId);
+      changedClientIds.add(remoteClientId);
     }
 
     publish(changedClientIds);
   };
 
   const handleAwarenessChange = (event: YjsAwarenessChange) => {
-    if (!isConnected()) {
-      rebuild();
-      return;
-    }
-
     const changedClientIds = new Set<number>();
 
     for (const remoteClientId of event.removed) {
@@ -522,6 +518,16 @@ export const createYjsAwarenessAdapter = <
       const rootCursors = [...cursors.values()].filter(
         (cached) => cached.rawSelection?.root === root
       );
+      for (const cached of rootCursors) {
+        if (cached.rawSelection && 'authored' in cached.rawSelection) {
+          cached.cursor =
+            readCursor(cached.cursor.clientId, editor) ?? cached.cursor;
+          changedClientIds.add(cached.cursor.clientId);
+        }
+      }
+      const ordinary = rootCursors.filter(
+        (cached) => !cached.rawSelection || !('authored' in cached.rawSelection)
+      );
       let fallback = options.fallbackRoots?.has(root) ?? false;
       const mapped = new Map<
         CachedCursor<TCursorData>,
@@ -530,7 +536,7 @@ export const createYjsAwarenessAdapter = <
 
       if (!fallback) {
         try {
-          for (const cached of rootCursors) {
+          for (const cached of ordinary) {
             const anchor = cached.anchor?.resolve() ?? null;
             const focus = cached.focus?.resolve() ?? null;
 
@@ -545,10 +551,10 @@ export const createYjsAwarenessAdapter = <
         }
       }
 
-      if (fallback && rootCursors.length > 0) {
+      if (fallback && ordinary.length > 0) {
         metrics.fullFallbackCount += 1;
 
-        for (const cached of rootCursors) {
+        for (const cached of ordinary) {
           const resolved = resolveSelection(cached.rawSelection);
 
           if (
@@ -583,23 +589,19 @@ export const createYjsAwarenessAdapter = <
     publish(changedClientIds);
   };
 
-  const clearSelection = (): void => {
-    if (!awareness) return;
-
+  const clearSelectionField = (): void => {
     const localState = awareness.getLocalState();
 
     if (
       localState !== null &&
-      awarenessSelectionField in localState &&
-      localState[awarenessSelectionField] !== null
+      'selection' in localState &&
+      localState.selection !== null
     ) {
-      awareness.setLocalStateField(awarenessSelectionField, null);
+      awareness.setLocalStateField('selection', null);
     }
   };
 
   const setLocalStateFieldIfChanged = (field: string, value: unknown): void => {
-    if (!awareness) return;
-
     const localState = awareness.getLocalState();
 
     if (
@@ -613,25 +615,39 @@ export const createYjsAwarenessAdapter = <
     awareness.setLocalStateField(field, value);
   };
 
-  const sendCursorData = (data: TCursorData | null): void => {
+  const setCursorData = (data: TCursorData | null): void => {
     if (data !== null && !validateCursorData(data)) {
       throw new Error('Yjs cursor data does not match its configured schema.');
     }
-    setLocalStateFieldIfChanged(awarenessDataField, data);
+    setLocalStateFieldIfChanged('data', data);
   };
 
-  const sendSelection = (
-    range: Range | null | undefined = currentSelection(),
-    data?: TCursorData | null
-  ): void => {
-    if (!awareness || !canSendSelection()) return;
-
-    if (data !== undefined) sendCursorData(data);
+  const writeSelection = (view: YjsEditor): void => {
+    const selection = view.read.selection();
+    if (readAuthoredView(view)) {
+      let next = null;
+      if (selection) {
+        const root = normalizeRootKey(
+          selection.anchor.root ?? view.read.view.root()
+        );
+        try {
+          const binding = bindAuthoredRange(view, {
+            range: selection,
+            options: { root, deletion: 'drop', association: 'forward' },
+          });
+          if (binding) next = { authored: binding.serialize(), root };
+        } catch {
+          next = null;
+        }
+      }
+      setLocalStateFieldIfChanged('selection', next);
+      return;
+    }
 
     const nextRange =
-      range === null || range === undefined
+      selection === null || selection === undefined
         ? null
-        : sanitizeYjsSelection(range);
+        : sanitizeYjsSelection(selection);
     const rootKey =
       nextRange === null ? 'main' : normalizeRootKey(nextRange.anchor.root);
     const root = rootFor(rootKey);
@@ -639,13 +655,12 @@ export const createYjsAwarenessAdapter = <
       nextRange === null || root === null
         ? null
         : createYjsAwarenessSelection(root, rootKey, nextRange);
-    const currentAwarenessSelection =
-      awareness.getLocalState()?.[awarenessSelectionField];
+    const currentAwarenessSelection = awareness.getLocalState()?.selection;
 
     if (
       !yjsAwarenessSelectionsEqual(currentAwarenessSelection, nextSelection)
     ) {
-      awareness.setLocalStateField(awarenessSelectionField, nextSelection);
+      awareness.setLocalStateField('selection', nextSelection);
     }
   };
 
@@ -655,25 +670,128 @@ export const createYjsAwarenessAdapter = <
     return () => listeners.delete(listener);
   };
 
+  const readCursor = (
+    remoteClientId: number,
+    view: YjsEditor
+  ): YjsRemoteCursor<TCursorData> | null => {
+    const cached = cursors.get(remoteClientId);
+    if (!cached) return null;
+    if (!cached.rawSelection || !('authored' in cached.rawSelection)) {
+      return cached.cursor;
+    }
+    let current = cached.views.get(view);
+    if (!current?.binding) {
+      let binding: NativeAuthoredRangeBinding | undefined;
+      try {
+        binding = bindAuthoredRange(view, {
+          saved: cached.rawSelection.authored,
+          options: {
+            root: cached.rawSelection.root,
+            deletion: 'drop',
+            association: 'forward',
+          },
+        });
+      } catch {
+        binding = undefined;
+      }
+      current = {
+        binding,
+        cursor: createRemoteCursor(remoteClientId, null, cached.cursor.data),
+      };
+      cached.views.set(view, current);
+    }
+    const selection = current.binding?.resolve() ?? null;
+    if (
+      current.cursor.data !== cached.cursor.data ||
+      (current.cursor.selection === null || selection === null
+        ? current.cursor.selection !== selection
+        : !RangeApi.equals(current.cursor.selection, selection))
+    ) {
+      current.cursor = createRemoteCursor(
+        remoteClientId,
+        selection,
+        cached.cursor.data
+      );
+    }
+    return current.cursor;
+  };
+  const readCursors = (view: YjsEditor) => {
+    const current = cursorIds.flatMap((id) => {
+      const cursor = readCursor(id, view);
+      return cursor ? [cursor] : [];
+    });
+    const previous = viewLists.get(view);
+    if (
+      previous?.length === current.length &&
+      current.every((cursor, index) => previous[index] === cursor)
+    ) {
+      return previous;
+    }
+    const next = Object.freeze(current);
+    viewLists.set(view, next);
+    return next;
+  };
+
   rebuild();
 
-  return {
-    [CURSORS_AT_PATH](path) {
-      return Object.freeze(
-        [...(cursorIdsByPath.get(path.join('.')) ?? [])].flatMap((id) => {
-          const cursor = cursors.get(id)?.cursor;
+  const createSelectionMethods = (view: YjsEditor) => {
+    const token = {};
+    const publishSelection = () => writeSelection(view);
+    const claimSelection = () => {
+      selectionOwner = token;
+      publishOwnedSelection = publishSelection;
+    };
 
-          return cursor ? [cursor] : [];
-        })
-      );
+    return {
+      claimSelection,
+      clearSelection: () => {
+        claimSelection();
+        clearSelectionField();
+      },
+      syncSelection: () => {
+        claimSelection();
+        if (canSyncSelection()) publishSelection();
+      },
+      releaseSelection: () => {
+        if (selectionOwner !== token) return;
+
+        selectionOwner = null;
+        publishOwnedSelection = null;
+        clearSelectionField();
+      },
+    };
+  };
+
+  const rootSelection = createSelectionMethods(editor);
+
+  const adapter: YjsAwarenessAdapter<TCursorData> = {
+    claimSelection: rootSelection.claimSelection,
+    forView(view) {
+      if (view === editor) return adapter;
+      const previous = viewAdapters.get(view);
+      if (previous) return previous;
+      const selection = createSelectionMethods(view);
+      registerEditorViewLifetimeCleanup(view, selection.releaseSelection);
+      const scoped = Object.freeze<YjsAwarenessAdapter<TCursorData>>({
+        ...adapter,
+        claimSelection: selection.claimSelection,
+        clearSelection: selection.clearSelection,
+        currentSelection: () => view.read.selection(),
+        remoteCursor: (id) => readCursor(id, view),
+        remoteCursors: () => readCursors(view),
+        syncSelection: selection.syncSelection,
+      });
+      viewAdapters.set(view, scoped);
+      return scoped;
     },
-    clearSelection,
+    clearSelection: rootSelection.clearSelection,
     currentSelection,
     destroy() {
+      clearSelectionField();
+      selectionOwner = null;
+      publishOwnedSelection = null;
       for (const cached of cursors.values()) releaseCursorAnchors(cached);
       cursors.clear();
-      cursorIdsByPath.clear();
-      cursorPathById.clear();
       cursorIdSet.clear();
       cursorListeners.clear();
       cursorsListeners.clear();
@@ -682,11 +800,16 @@ export const createYjsAwarenessAdapter = <
     getMetrics: () => Object.freeze({ ...metrics }),
     handleAwarenessChange,
     publishMappedRoots,
+    publishOwnedSelection: () => {
+      if (selectionOwner !== null && canSyncSelection()) {
+        publishOwnedSelection?.();
+      }
+    },
     rebuild,
-    remoteCursor: (remoteClientId) =>
-      cursors.get(remoteClientId)?.cursor ?? null,
+    remoteCursor: (remoteClientId) => readCursor(remoteClientId, editor),
     remoteCursorIds: () => cursorIds,
     remoteCursors: () => {
+      if (readAuthoredView(editor)) return readCursors(editor);
       if (cursorList === null) {
         cursorList = Object.freeze(
           cursorIds.flatMap((id) => {
@@ -699,8 +822,7 @@ export const createYjsAwarenessAdapter = <
 
       return cursorList;
     },
-    sendCursorData,
-    sendSelection,
+    setCursorData,
     subscribeCursor(remoteClientId, listener) {
       const listeners = cursorListeners.get(remoteClientId) ?? new Set();
 
@@ -714,5 +836,7 @@ export const createYjsAwarenessAdapter = <
     },
     subscribeCursors: (listener) => subscribe(cursorsListeners, listener),
     subscribeIds: (listener) => subscribe(idsListeners, listener),
-  } as IndexedYjsAwarenessAdapter<TCursorData>;
+    syncSelection: rootSelection.syncSelection,
+  };
+  return adapter;
 };

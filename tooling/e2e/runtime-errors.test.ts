@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
 
-import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+import { recordBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 test('strict recorder captures browser console and page errors and cleans up', async ({
   page,
 }) => {
-  const recorder = recordPliteBrowserRuntimeErrors(page, { strict: true });
+  const recorder = recordBrowserRuntimeErrors(page, { strict: true });
   await page.setContent('<p>Runtime error capture</p>');
   await page.evaluate(() => {
     console.error('unclassified console error');

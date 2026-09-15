@@ -1,6 +1,7 @@
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  BaseListPlugin,
+  definePlugin,
   PLUGINS,
   schema,
   type Editor,
@@ -24,7 +25,7 @@ const ListTargetSchemaPlugins = [
 ] as const;
 
 const ListTargetSchemaKit = ListTargetSchemaPlugins.map((name) =>
-  defineBasePlugin(name, {
+  definePlugin(name, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -53,7 +54,7 @@ type ListNodePropsContract = {
 };
 
 const getListNodeProps = (editor: Editor) =>
-  editor.plugin(PLUGINS.list).inject.nodeProps! as ListNodePropsContract;
+  editor.plugin(BaseListPlugin).inject.nodeProps! as ListNodePropsContract;
 
 describe('ListKit unordered list rendering', () => {
   it('decodes configured list items as paragraphs with list properties', () => {
@@ -106,9 +107,10 @@ describe('ListKit unordered list rendering', () => {
       plugins: [...ListTargetSchemaKit, ...BaseListKit],
     });
 
-    for (const editor of [interactiveEditor, staticEditor]) {
-      expect(editor.plugin(PLUGINS.list).inject.isElement).toBe(true);
-    }
+    expect(interactiveEditor.plugin(BaseListPlugin).inject.isElement).toBe(
+      true
+    );
+    expect(staticEditor.plugin(BaseListPlugin).inject.isElement).toBe(true);
 
     for (const nodeProps of [
       getListNodeProps(interactiveEditor),

@@ -1,35 +1,33 @@
 import type { Locator } from '@playwright/test';
 
-import { getPliteReactRenderProfilerSnapshot } from './render-profiler';
+import { getReactRenderProfilerSnapshot } from './render-profiler';
 import type {
   SelectionPoint,
   SelectionSnapshot,
-  PliteBrowserEditorHarness,
-  PliteBrowserRenderStateSnapshot,
-  PliteBrowserSelectedShellSnapshot,
-  PliteBrowserSelectionShellsSnapshot,
-  PliteBrowserShellSummary,
+  BrowserEditorHarness,
+  BrowserRenderStateSnapshot,
+  BrowserSelectedShellSnapshot,
+  BrowserSelectionShellsSnapshot,
+  BrowserShellSummary,
 } from './types';
 
 const takeSelectionShellsSnapshot = async (
   root: Locator,
   selection: SelectionSnapshot | null
-): Promise<PliteBrowserSelectionShellsSnapshot | null> => {
+): Promise<BrowserSelectionShellsSnapshot | null> => {
   if (!selection) {
     return null;
   }
 
   return root.evaluate((element, currentSelection) => {
-    const summarize = (
-      target: Element | null
-    ): PliteBrowserShellSummary | null =>
+    const summarize = (target: Element | null): BrowserShellSummary | null =>
       target
         ? {
-            isInline: target.getAttribute('data-plite-inline') === 'true',
-            isVoid: target.getAttribute('data-plite-void') === 'true',
-            kind: target.getAttribute('data-plite-node'),
-            path: target.getAttribute('data-plite-path'),
-            nodeKey: target.getAttribute('data-plite-node-key'),
+            isInline: target.getAttribute('data-editor-inline') === 'true',
+            isVoid: target.getAttribute('data-editor-void') === 'true',
+            kind: target.getAttribute('data-editor-node'),
+            path: target.getAttribute('data-editor-path'),
+            nodeKey: target.getAttribute('data-editor-node-key'),
             tagName: target.tagName.toLowerCase(),
           }
         : null;
@@ -37,8 +35,8 @@ const takeSelectionShellsSnapshot = async (
       const key = path.join(',');
 
       return (
-        Array.from(element.querySelectorAll('[data-plite-path]')).find(
-          (node) => node.getAttribute('data-plite-path') === key
+        Array.from(element.querySelectorAll('[data-editor-path]')).find(
+          (node) => node.getAttribute('data-editor-path') === key
         ) ?? null
       );
     };
@@ -53,14 +51,15 @@ const takeSelectionShellsSnapshot = async (
       point: SelectionPoint,
       name: 'anchor' | 'focus',
       domNode: Node | null
-    ): PliteBrowserSelectedShellSnapshot => {
+    ): BrowserSelectedShellSnapshot => {
       const domElement = toElement(domNode);
       const domPathNode =
-        domElement?.closest('[data-plite-path]') ??
-        (domElement?.querySelector('[data-plite-path]') as Element | null) ??
+        domElement?.closest('[data-editor-path]') ??
+        (domElement?.querySelector('[data-editor-path]') as Element | null) ??
         null;
       const node = findPathNode(point.path) ?? domPathNode;
-      const elementShell = node?.closest('[data-plite-node="element"]') ?? null;
+      const elementShell =
+        node?.closest('[data-editor-node="element"]') ?? null;
 
       return {
         element: summarize(elementShell),
@@ -100,14 +99,14 @@ const takeSelectionShellsSnapshot = async (
 };
 
 /** Capture editor render state, selected shells, and selection shells. */
-export const takePliteBrowserRenderStateSnapshot = async (
-  editor: PliteBrowserEditorHarness
-): Promise<PliteBrowserRenderStateSnapshot> => {
+export const takeBrowserRenderStateSnapshot = async (
+  editor: BrowserEditorHarness
+): Promise<BrowserRenderStateSnapshot> => {
   const snapshot = await editor.snapshot();
 
   return {
     ...snapshot,
-    renderCounts: await getPliteReactRenderProfilerSnapshot(editor.page),
+    renderCounts: await getReactRenderProfilerSnapshot(editor.page),
     selectionShells: await takeSelectionShellsSnapshot(
       editor.root,
       snapshot.selection

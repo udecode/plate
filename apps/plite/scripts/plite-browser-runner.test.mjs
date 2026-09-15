@@ -1486,6 +1486,7 @@ test('emits machine-readable coverage, timing, profiles, and failure phases', ()
     reusedUnitIds: [unit.id],
     scope: 'scope',
     selectedUnits: [unit],
+    sourceInputDigest: 'source-digest',
     status: 'passed',
     unitTimeoutFloorMs: 1000,
     unitWorkers: 2,
@@ -1513,6 +1514,7 @@ test('emits machine-readable coverage, timing, profiles, and failure phases', ()
   });
   assert.equal(summary.failurePhase, null);
   assert.equal(summary.reused, true);
+  assert.equal(summary.sourceInputDigest, 'source-digest');
   assert.equal(summary.units[0].reused, true);
   assert.equal(summary.units[0].testTimeoutMs, 45_000);
   assert.equal(summary.units[0].timeoutMs, unit.timeoutMs);
@@ -1534,6 +1536,7 @@ test('emits machine-readable coverage, timing, profiles, and failure phases', ()
     proofFingerprint: 'proof',
     scope: 'scope',
     selectedUnits: [unit],
+    sourceInputDigest: 'source-digest',
     status: 'failed',
     unitTimeoutFloorMs: 1000,
     unitWorkers: 2,
@@ -1556,6 +1559,7 @@ test('requires every requested browser project and job during merge', () => {
     project,
     proofFingerprint: `${project}-proof`,
     skippedTests: [],
+    sourceInputDigest: 'source-digest',
     status: 'passed',
     version: 1,
   });
@@ -1575,6 +1579,12 @@ test('requires every requested browser project and job during merge', () => {
   );
   assert.throws(() =>
     verifyMergedSummaries([summaries[0], summaries[0]], ['chromium'])
+  );
+  assert.throws(() =>
+    verifyMergedSummaries(
+      [summaries[0], { ...summaries[2], sourceInputDigest: 'other-source' }],
+      ['chromium', 'firefox']
+    )
   );
 });
 

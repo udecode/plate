@@ -48,13 +48,15 @@ const withPluginEditor = <T extends TestEditor>(editor: T) => {
       string: editor.read?.text?.string ?? (() => ''),
     },
   };
+  const footnoteUpdate = {
+    createDefinition: () => {},
+    normalizeDuplicateDefinition: () => {},
+    ...editor.update?.footnote,
+  };
   const updateCommands = {
     ...editor.update,
-    footnote: {
-      createDefinition: () => {},
-      normalizeDuplicateDefinition: () => {},
-      ...editor.update?.footnote,
-    },
+    footnote: footnoteUpdate,
+    plugin: editor.update?.plugin ?? (() => footnoteUpdate),
   };
 
   const read = Object.assign(
@@ -76,9 +78,9 @@ const withPluginEditor = <T extends TestEditor>(editor: T) => {
       },
     },
     plugin: () => ({
-      api: editor.api ?? {},
-      read: readState,
-      update: updateCommands,
+      api: editor.api?.footnote ?? {},
+      read: readState.footnote,
+      update: updateCommands.footnote,
     }),
     read,
     update,
@@ -107,15 +109,9 @@ const PliteElementMock = mock(
 
 mock.module('platejs/react', () => ({
   ...PlateReact,
-  PlateElement: PlateElementMock,
-  toPlatePlugin: (plugin: unknown) => plugin,
+  EditorElement: PlateElementMock,
+  toReactPlugin: (plugin: unknown) => plugin,
   useEditor: () => lastPluginEditor ?? withPluginEditor({}),
-  useEditorPlugin: () => ({
-    api: lastPluginEditor?.api?.footnote ?? {},
-    editor: lastPluginEditor ?? withPluginEditor({}),
-    read: lastPluginEditor?.read?.footnote ?? {},
-    update: lastPluginEditor?.update?.footnote ?? {},
-  }),
   useEditorSelection: () => selection,
   useEditorSelector: (selector: any) => {
     const activePluginEditor = lastPluginEditor;
@@ -142,7 +138,7 @@ mock.module('platejs/react', () => ({
 }));
 
 mock.module('platejs/static', () => ({
-  PliteElement: PliteElementMock,
+  EditorElement: PliteElementMock,
 }));
 
 mock.module('@/components/ui/hover-card', () => ({

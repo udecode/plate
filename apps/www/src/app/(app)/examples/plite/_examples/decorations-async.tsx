@@ -7,9 +7,9 @@ import {
 } from 'plitejs';
 import {
   Editable,
-  Plite,
-  type PliteDecoration,
-  type PliteDecorationSource,
+  EditorRoot,
+  type Decoration,
+  type DecorationSource,
   useEditor,
 } from 'plitejs/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -34,7 +34,7 @@ const collectAsyncHighlightDecorations = (
     return [];
   }
 
-  const decorations: PliteDecoration[] = [];
+  const decorations: Decoration[] = [];
   const pattern = /\b(?:here|there)\b/g;
   let match = pattern.exec(node.text);
 
@@ -45,7 +45,7 @@ const collectAsyncHighlightDecorations = (
     if (end <= decoratedLength) {
       decorations.push({
         attributes: {
-          className: 'plite-decorations-async-highlight',
+          className: 'editor-decorations-async-highlight',
           'data-cy': 'async-decoration-highlight',
         },
         key: `async-highlight:${path.join('.')}:${start}:${end}`,
@@ -71,7 +71,7 @@ const AsyncDecorationsExample = () => {
   const [decoratedLength, setDecoratedLength] = useState(INITIAL_TEXT.length);
   const timeoutRef = useRef<number | null>(null);
 
-  const decorationSource = useMemo<PliteDecorationSource<typeof editor>>(
+  const decorationSource = useMemo<DecorationSource<typeof editor>>(
     () => ({
       id: 'async-decoration',
       read: ({ entry: [node, path] }) =>
@@ -108,17 +108,17 @@ const AsyncDecorationsExample = () => {
   );
 
   return (
-    <div className="plite-decorations-async-container">
-      <h1 className="example-page-title plite-decorations-async-title">
+    <div className="editor-decorations-async-container">
+      <h1 className="example-page-title editor-decorations-async-title">
         Async Decorations
       </h1>
       <div
-        className="plite-decorations-async-status"
+        className="editor-decorations-async-status"
         data-testid="async-decoration-status"
       >
         decorated-length:{decoratedLength}
       </div>
-      <Plite
+      <EditorRoot
         decorations={[decorationSource]}
         editor={editor}
         onValueChange={({ value }) => {
@@ -126,10 +126,10 @@ const AsyncDecorationsExample = () => {
         }}
       >
         <Editable
-          className="plite-decorations-async-editor"
+          className="editor-decorations-async-editor"
           id="decorations-async"
         />
-      </Plite>
+      </EditorRoot>
     </div>
   );
 };

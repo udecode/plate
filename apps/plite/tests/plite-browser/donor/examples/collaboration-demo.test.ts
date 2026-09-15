@@ -1,5 +1,5 @@
 import { expect, type Locator, test } from "@playwright/test";
-import { recordPliteBrowserRuntimeErrors } from "@platejs/test/playwright";
+import { recordBrowserRuntimeErrors } from "@platejs/test/playwright";
 
 const INITIAL_TEXT =
   "Ada and Lin edit independent documents through a local Yjs room.";
@@ -20,7 +20,7 @@ test.describe("Plate collaboration registry example", () => {
   test("proves independent peers, cursors, reconnect, history, schema, and teardown", async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const adaEditor = page.getByRole("textbox", {
       name: "Ada collaborative editor",
     });
@@ -144,6 +144,7 @@ test.describe("Plate collaboration registry example", () => {
           remoteLabel.boundingBox(),
           linOverlay.boundingBox(),
         ]);
+      let previousCaretPosition: { x: number; y: number } | null = null;
 
       await expect
         .poll(async () => {
@@ -152,8 +153,15 @@ test.describe("Plate collaboration registry example", () => {
           if (!caret || !label || !overlay) return false;
 
           const overlayRight = overlay.x + overlay.width;
+          const caretIsStable =
+            previousCaretPosition !== null &&
+            Math.abs(caret.x - previousCaretPosition.x) < 0.5 &&
+            Math.abs(caret.y - previousCaretPosition.y) < 0.5;
+
+          previousCaretPosition = { x: caret.x, y: caret.y };
 
           return (
+            caretIsStable &&
             caret.x >= overlay.x &&
             caret.x <= overlayRight &&
             label.x >= overlay.x &&
@@ -245,7 +253,7 @@ test.describe("Plate collaboration registry example", () => {
 
       await page.goto("/examples/plite/plaintext");
       await expect(
-        page.locator('[data-plite-example="plaintext"]')
+        page.locator('[data-editor-example="plaintext"]')
       ).toBeVisible();
 
       runtimeErrors.assertNone();

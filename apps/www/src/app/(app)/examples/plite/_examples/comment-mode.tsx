@@ -6,19 +6,17 @@ import {
   type Range,
   type Value,
 } from 'plitejs';
+import type { AnnotationStore } from 'plitejs/annotations';
 import {
   Editable,
-  Plite,
-  PliteAnnotationProvider,
-  type PliteAnnotationStore,
-  type PliteDecorationSource,
+  EditorRoot,
+  AnnotationProvider,
+  type DecorationSource,
   type Editor,
   useEditorSelection,
-  usePliteAnnotationStore,
-  usePliteAnnotations,
+  useAnnotationStore,
+  useAnnotations,
   useEditor,
-  usePliteWidgetStore,
-  usePliteWidgets,
 } from 'plitejs/react';
 import {
   type Dispatch,
@@ -72,7 +70,7 @@ const initialValue: Value = [
     type: 'paragraph',
     children: [
       {
-        text: 'Select text in comment mode, add a comment, then edit the document to watch the anchor, inline highlight, sidebar, and widget stay in sync.',
+        text: 'Select text in comment mode, add a comment, then edit the document to watch the anchor, inline highlight, and sidebar stay in sync.',
       },
     ],
   },
@@ -98,21 +96,21 @@ const commentVisualState = (
   status: CommentStatus
 ): CommentVisualState => (status === 'resolved' ? 'resolved' : tone);
 
-const commentHighlightVariants = cva('plite-comment-mode-highlight', {
+const commentHighlightVariants = cva('editor-comment-mode-highlight', {
   variants: {
     overlap: {
-      false: 'plite-comment-mode-highlight-single',
-      true: 'plite-comment-mode-highlight-overlap',
+      false: 'editor-comment-mode-highlight-single',
+      true: 'editor-comment-mode-highlight-overlap',
     },
     state: {
-      question: 'plite-comment-mode-highlight-question',
-      resolved: 'plite-comment-mode-highlight-resolved',
-      review: 'plite-comment-mode-highlight-review',
+      question: 'editor-comment-mode-highlight-question',
+      resolved: 'editor-comment-mode-highlight-resolved',
+      review: 'editor-comment-mode-highlight-review',
     },
   },
 });
 
-const commentToneBadgeVariants = cva('plite-comment-mode-tone-badge', {
+const commentToneBadgeVariants = cva('editor-comment-mode-tone-badge', {
   variants: {
     state: {
       question: 'is-question',
@@ -135,8 +133,8 @@ const createCommentAnnotations = (comments: readonly CommentThread[]) =>
   }));
 
 const createCommentDecorationSource = (
-  store: PliteAnnotationStore<CommentData>
-): PliteDecorationSource<CommentEditor> => ({
+  store: AnnotationStore<CommentData>
+): DecorationSource<CommentEditor> => ({
   id: 'comments',
   observe: ({ refresh }) =>
     store.subscribeChanges(({ nodeKeys }) => {
@@ -224,12 +222,16 @@ const CommentedEditable = ({
   id: string;
   readOnly?: boolean;
 }) => (
-  <Editable className="plite-comment-mode-editor" id={id} readOnly={readOnly} />
+  <Editable
+    className="editor-comment-mode-editor"
+    id={id}
+    readOnly={readOnly}
+  />
 );
 
 const WriterPane = ({ editor }: { editor: CommentEditor }) => {
   const selection = useEditorSelection();
-  const annotationSnapshot = usePliteAnnotations<CommentData>();
+  const annotationSnapshot = useAnnotations<CommentData>();
   const firstAnnotation =
     annotationSnapshot.allIds[0] == null
       ? null
@@ -280,15 +282,15 @@ const WriterPane = ({ editor }: { editor: CommentEditor }) => {
   };
 
   return (
-    <div className="plite-comment-mode-pane plite-comment-mode-writer-pane">
-      <div className="plite-comment-mode-pane-header">
-        <span className="plite-comment-mode-title">Edit mode</span>
-        <span className="plite-comment-mode-muted">
+    <div className="editor-comment-mode-pane editor-comment-mode-writer-pane">
+      <div className="editor-comment-mode-pane-header">
+        <span className="editor-comment-mode-title">Edit mode</span>
+        <span className="editor-comment-mode-muted">
           document writes enabled
         </span>
       </div>
       <CommentedEditable id="comment-mode-document" />
-      <div className="plite-comment-mode-controls">
+      <div className="editor-comment-mode-controls">
         <Button
           disabled={!firstAnnotation?.range}
           onClick={insertPrefixBeforeFirstComment}
@@ -305,7 +307,7 @@ const WriterPane = ({ editor }: { editor: CommentEditor }) => {
         >
           Insert paragraph before first comment
         </Button>
-        <span className="plite-comment-mode-code">
+        <span className="editor-comment-mode-code">
           selection:{formatRange(selection)}
         </span>
       </div>
@@ -314,42 +316,19 @@ const WriterPane = ({ editor }: { editor: CommentEditor }) => {
 };
 
 const CommentModePane = ({
-  annotationStore,
   comments,
-  editor,
   onCommentWrite,
   setComments,
   writerEditor,
 }: {
-  annotationStore: PliteAnnotationStore<CommentData>;
   comments: readonly CommentThread[];
-  editor: CommentEditor;
   onCommentWrite: () => void;
   setComments: Dispatch<SetStateAction<CommentThread[]>>;
   writerEditor: CommentEditor;
 }) => {
   const nextCommentId = useRef(1);
   const selection = useEditorSelection();
-  const annotationSnapshot = usePliteAnnotations<CommentData>();
-  const widgets = useMemo(
-    () =>
-      comments.map((comment) => ({
-        target: {
-          annotationId: comment.id,
-          type: 'annotation' as const,
-        },
-        data: {
-          label: comment.label,
-          tone: comment.tone,
-        },
-        id: `${comment.id}-widget`,
-      })),
-    [comments]
-  );
-  const widgetStore = usePliteWidgetStore(editor, widgets, {
-    annotationStore,
-  });
-  const widgetSnapshot = usePliteWidgets(widgetStore);
+  const annotationSnapshot = useAnnotations<CommentData>();
   const commentsRef = useRef(comments);
 
   useEffect(() => {
@@ -484,15 +463,15 @@ const CommentModePane = ({
   };
 
   return (
-    <div className="plite-comment-mode-pane plite-comment-mode-comment-pane">
-      <div className="plite-comment-mode-pane-header">
-        <span className="plite-comment-mode-title">Comment mode</span>
-        <span className="plite-comment-mode-muted">
+    <div className="editor-comment-mode-pane editor-comment-mode-comment-pane">
+      <div className="editor-comment-mode-pane-header">
+        <span className="editor-comment-mode-title">Comment mode</span>
+        <span className="editor-comment-mode-muted">
           read-only document, writable comments
         </span>
       </div>
       <CommentedEditable id="comment-mode" readOnly />
-      <div className="plite-comment-mode-controls">
+      <div className="editor-comment-mode-controls">
         <Button
           disabled={isCollapsed(selection)}
           onClick={addComment}
@@ -539,13 +518,13 @@ const CommentModePane = ({
         >
           Clear comments
         </Button>
-        <span className="plite-comment-mode-code" id="comment-mode-selection">
+        <span className="editor-comment-mode-code" id="comment-mode-selection">
           selection:{formatRange(selection)}
         </span>
       </div>
-      <div className="plite-comment-mode-sidebar">
+      <div className="editor-comment-mode-sidebar">
         {annotationSnapshot.allIds.length === 0 ? (
-          <span className="plite-comment-mode-code" id="comments-empty">
+          <span className="editor-comment-mode-code" id="comments-empty">
             comments:none
           </span>
         ) : (
@@ -556,7 +535,7 @@ const CommentModePane = ({
 
             return (
               <div
-                className="plite-comment-mode-comment-card"
+                className="editor-comment-mode-comment-card"
                 id={`comment-card-${annotation.id}`}
                 key={annotation.id}
               >
@@ -574,7 +553,7 @@ const CommentModePane = ({
                   {annotation.data?.status ?? 'open'}
                 </span>
                 <strong>{annotation.data?.body}</strong>
-                <span className="plite-comment-mode-code">
+                <span className="editor-comment-mode-code">
                   range:{formatRange(annotation.range)}
                 </span>
                 <Button
@@ -590,22 +569,22 @@ const CommentModePane = ({
             );
           })
         )}
-        <div className="plite-comment-mode-widget-row">
-          {widgetSnapshot.allIds.length === 0 ? (
-            <span className="plite-comment-mode-code" id="widgets-empty">
-              widgets:none
+        <div className="editor-comment-mode-annotation-row">
+          {annotationSnapshot.allIds.length === 0 ? (
+            <span className="editor-comment-mode-code" id="annotations-empty">
+              annotations:none
             </span>
           ) : (
-            widgetSnapshot.allIds.map((id) => {
-              const widget =
-                widgetSnapshot.byId.get(id) ??
+            annotationSnapshot.allIds.map((id) => {
+              const annotation =
+                annotationSnapshot.byId.get(id) ??
                 failInvariant('Expected value to be defined');
 
-              return widget.available ? (
-                <span className="plite-comment-mode-code" key={widget.id}>
-                  {widget.id}:{widget.data?.label ?? 'none'}
+              return (
+                <span className="editor-comment-mode-code" key={annotation.id}>
+                  {annotation.id}:{annotation.data?.label ?? 'none'}
                 </span>
-              ) : null;
+              );
             })
           )}
         </div>
@@ -638,11 +617,11 @@ const CommentModeExample = () => {
     () => createCommentAnnotations(comments),
     [comments]
   );
-  const writerAnnotationStore = usePliteAnnotationStore<CommentData>(
+  const writerAnnotationStore = useAnnotationStore<CommentData>(
     writerEditor,
     annotations
   );
-  const commentAnnotationStore = usePliteAnnotationStore<CommentData>(
+  const commentAnnotationStore = useAnnotationStore<CommentData>(
     commentEditor,
     annotations
   );
@@ -668,70 +647,68 @@ const CommentModeExample = () => {
   };
 
   return (
-    <div className="plite-comment-mode-panel">
+    <div className="editor-comment-mode-panel">
       <Instruction>
         Edit mode owns document writes. Comment mode renders the same document
         read-only, creates anchored comments, and writes only to the external
         comment channel.
       </Instruction>
-      <div className="plite-comment-mode-proof-grid">
-        <div className="plite-comment-mode-proof-cell">
+      <div className="editor-comment-mode-proof-grid">
+        <div className="editor-comment-mode-proof-cell">
           <strong>document writes</strong>
           <br />
           <span
-            className="plite-comment-mode-code"
+            className="editor-comment-mode-code"
             id="comment-mode-document-writes"
           >
             {documentWrites}
           </span>
         </div>
-        <div className="plite-comment-mode-proof-cell">
+        <div className="editor-comment-mode-proof-cell">
           <strong>comment writes</strong>
           <br />
           <span
-            className="plite-comment-mode-code"
+            className="editor-comment-mode-code"
             id="comment-mode-comment-writes"
           >
             {commentWrites}
           </span>
         </div>
-        <div className="plite-comment-mode-proof-cell">
+        <div className="editor-comment-mode-proof-cell">
           <strong>read-only document writes</strong>
           <br />
           <span
-            className="plite-comment-mode-code"
+            className="editor-comment-mode-code"
             id="comment-mode-read-only-writes"
           >
             0
           </span>
         </div>
       </div>
-      <div className="plite-comment-mode-layout">
-        <Plite decorations={[commentDecorations]} editor={commentEditor}>
-          <PliteAnnotationProvider store={commentAnnotationStore}>
+      <div className="editor-comment-mode-layout">
+        <EditorRoot decorations={[commentDecorations]} editor={commentEditor}>
+          <AnnotationProvider store={commentAnnotationStore}>
             <CommentModePane
-              annotationStore={commentAnnotationStore}
               comments={comments}
-              editor={commentEditor}
               onCommentWrite={() => {
                 setCommentWrites((count) => count + 1);
               }}
               setComments={setComments}
               writerEditor={writerEditor}
             />
-          </PliteAnnotationProvider>
-        </Plite>
-        <Plite
+          </AnnotationProvider>
+        </EditorRoot>
+        <EditorRoot
           decorations={[writerDecorations]}
           editor={writerEditor}
           onValueChange={({ value }) => {
             handleWriterValueChange(value);
           }}
         >
-          <PliteAnnotationProvider store={writerAnnotationStore}>
+          <AnnotationProvider store={writerAnnotationStore}>
             <WriterPane editor={writerEditor} />
-          </PliteAnnotationProvider>
-        </Plite>
+          </AnnotationProvider>
+        </EditorRoot>
       </div>
     </div>
   );

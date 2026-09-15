@@ -29,7 +29,7 @@ Each generated editor value contains one heading and two paragraphs.
 | --- | --- | --- |
 | `createMultiEditorsValue()` | Registry example | Creates 300 editor values with JSX test-utils syntax. |
 | `WithPlate` | Registry example | Calls `useCreateEditor({ id, initialValue })` for each editor. |
-| `<Plate>` | `platejs/react` | Creates one editor store provider per editor instance. |
+| `<EditorRoot>` | `platejs/react` | Creates one editor store provider per editor instance. |
 | `<EditorContainer>` / `<Editor>` | Registry UI | Renders the shared editor shell for every instance. |
 
 Use this demo to inspect many-editor mounting cost, store isolation, and focus
@@ -37,6 +37,6 @@ behavior. It is a browser stress page, not a production layout recommendation.
 
 ## Related
 
-- [Plate Components](/docs/api/core/plate-components) covers `<Plate>` and editor store providers.
+- [Plate Components](/docs/api/core/plate-components) covers `<EditorRoot>` and editor store providers.
 - [Plate Controller](/docs/api/core/plate-controller) covers cross-editor coordination.
 - [Plate Store](/docs/api/core/plate-store) covers scoped editor store access.

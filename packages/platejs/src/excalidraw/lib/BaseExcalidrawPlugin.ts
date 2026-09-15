@@ -1,7 +1,7 @@
 import type { ImportedDataState } from '@excalidraw/excalidraw/data/types';
 
 import {
-  defineBasePlugin,
+  definePlugin,
   type ElementOf,
   property,
   type PropertyJsonValue,
@@ -17,7 +17,7 @@ type ExcalidrawElementData = {
 } | null;
 
 /** Stores an Excalidraw scene in a void block. */
-export const BaseExcalidrawPlugin = defineBasePlugin(PLUGINS.excalidraw, {
+export const BaseExcalidrawPlugin = definePlugin(PLUGINS.excalidraw, {
   schema: {
     element: {
       properties: {

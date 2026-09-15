@@ -177,10 +177,10 @@ When you trigger exit break:
 Declare each custom element's allowed child content:
 
 ```tsx
-import { defineBasePlugin, schema } from 'platejs';
+import { definePlugin, schema } from 'platejs';
 
 // Table structure
-const CustomTablePlugin = defineBasePlugin('table', {
+const CustomTablePlugin = definePlugin('table', {
   schema: {
     element: {
       content: schema.content.type('tr', { min: 1 }),
@@ -188,7 +188,7 @@ const CustomTablePlugin = defineBasePlugin('table', {
   },
 });
 
-const CustomTableRowPlugin = defineBasePlugin('tr', {
+const CustomTableRowPlugin = definePlugin('tr', {
   schema: {
     element: {
       content: schema.content.types(['td', 'th'], { min: 1 }),
@@ -196,7 +196,7 @@ const CustomTableRowPlugin = defineBasePlugin('tr', {
   },
 });
 
-const CustomTableCellPlugin = defineBasePlugin('td', {
+const CustomTableCellPlugin = definePlugin('td', {
   schema: {
     element: {
       content: schema.content.group('block', { min: 1 }),

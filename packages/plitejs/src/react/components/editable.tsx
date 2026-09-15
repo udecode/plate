@@ -1,13 +1,8 @@
-import React, { useCallback, useRef, useSyncExternalStore } from 'react';
+import React, { useCallback, useSyncExternalStore } from 'react';
 
 import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
 import { type DOMRange, isDOMNode } from '../../dom';
-import {
-  createDOMGeometryKernel,
-  type DOMCoverageSession,
-} from '../../dom/internal';
-import type { MountedTopLevelRange } from '../dom-strategy/dom-strategy-commands';
-import type { ExternalTextRuntime } from '../editable/external-text-runtime';
+import { createDOMGeometryKernel } from '../../dom/internal';
 import type {
   EditableRepairRequest,
   InputIntent,
@@ -21,7 +16,7 @@ import {
   toInternalRoot,
 } from '../editable/runtime-editor-api';
 import { useEditableRootRuntime } from '../editable/runtime-root-engine';
-import { readLiveSelection } from '../editable/runtime-selection-state';
+import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import {
   EditableDOMRuntimeContext,
   useEditableDOMHostFact,
@@ -29,155 +24,21 @@ import {
 import { ComposingContext } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { ReadOnlyContext } from '../hooks/use-editor-read-only';
-import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import { usePliteViewSelectionPresence } from '../view-selection-decoration';
+import type { MountedTopLevelRange } from '../viewport-commands';
 import { EditableDOMCommitFence } from './editable-dom-commit-fence';
 
-export type EditableDOMStrategyScrollAlign =
-  | 'auto'
-  | 'center'
-  | 'end'
-  | 'start';
+export type EditableViewportScrollAlign = 'auto' | 'center' | 'end' | 'start';
 
-export type EditableDOMStrategyRuntime = {
+export type EditableViewportRuntime = {
   mountedTopLevelNodeKeys: ReadonlySet<NodeKey> | null;
   mountedTopLevelRanges?: readonly MountedTopLevelRange[];
-  scrollToPath?: (
-    path: Path,
-    align?: EditableDOMStrategyScrollAlign
-  ) => boolean;
-  type: 'staged' | 'partial-dom' | 'virtualized';
+  scrollToPath?: (path: Path, align?: EditableViewportScrollAlign) => boolean;
+  type: 'virtualized';
 };
-
-export type EditableDOMStrategyCohort =
-  | 'normal'
-  | 'medium'
-  | 'large'
-  | 'stress'
-  | 'pathological';
-
-export type EditableDOMStrategyEffectiveType =
-  | 'full'
-  | 'partial-dom'
-  | 'plain'
-  | 'staged'
-  | 'virtualized';
-
-export type EditableDOMStrategyDegradationMode =
-  | 'none'
-  | 'partial-dom'
-  | 'staged-warmup'
-  | 'virtualized';
-
-export type EditableDOMStrategyMetricsBase = {
-  activeSegmentIndex: number | null;
-  overscan: number | null;
-  cohort: EditableDOMStrategyCohort;
-  degradationMode: EditableDOMStrategyDegradationMode;
-  documentSize: number;
-  effectiveStrategy: EditableDOMStrategyEffectiveType;
-  estimatedBlockSize: number | null;
-  segmentSize: number | null;
-  mountedGroupCount: number;
-  mountedTopLevelCount: number;
-  nativeSurfaceComplete: boolean | null;
-  pendingGroupCount: number;
-  pendingTopLevelCount: number;
-  requestedStrategy: string;
-  threshold: number | null;
-  virtualizerMeasuredCount: number | null;
-};
-
-export type EditableDOMStrategyMetrics = EditableDOMStrategyMetricsBase & {
-  /** Anonymous delegated-view counters; never includes text, keys, or config. */
-  externalText: ReturnType<ExternalTextRuntime['metrics']>;
-  domCoverageBoundaryCount: number;
-  domCoverageBoundaryElementCount: number;
-  domNodeCount: number;
-  editableDescendantCount: number;
-  domStrategyStagedBoundaryCount: number;
-  aggressiveDomCoverageBoundaryCount: number;
-  viewportVirtualizationBoundaryCount: number;
-};
-
-const getEditableDOMStrategyMetrics = ({
-  coverage,
-  externalText,
-  metrics,
-  rootElement,
-}: {
-  coverage: DOMCoverageSession;
-  externalText: EditableDOMStrategyMetrics['externalText'];
-  metrics: EditableDOMStrategyMetricsBase;
-  rootElement: HTMLElement;
-}): EditableDOMStrategyMetrics => {
-  const boundaries = coverage.getBoundaries();
-
-  return {
-    ...metrics,
-    externalText,
-    nativeSurfaceComplete:
-      externalText.viewCount > 0 ? false : metrics.nativeSurfaceComplete,
-    domCoverageBoundaryCount: boundaries.length,
-    domCoverageBoundaryElementCount: rootElement.querySelectorAll(
-      '[data-plite-dom-coverage-boundary]'
-    ).length,
-    domNodeCount: rootElement.querySelectorAll('*').length + 1,
-    editableDescendantCount: rootElement.querySelectorAll(
-      '[data-plite-node="element"], [data-plite-node="text"], [data-plite-leaf]'
-    ).length,
-    domStrategyStagedBoundaryCount: boundaries.filter(
-      (boundary) => boundary.reason === 'rendering-staged'
-    ).length,
-    aggressiveDomCoverageBoundaryCount: boundaries.filter(
-      (boundary) => boundary.reason === 'partial-dom-aggressive'
-    ).length,
-    viewportVirtualizationBoundaryCount: boundaries.filter(
-      (boundary) => boundary.reason === 'viewport-virtualization'
-    ).length,
-  };
-};
-
-const areEditableDOMStrategyMetricsEqual = (
-  left: EditableDOMStrategyMetrics | null,
-  right: EditableDOMStrategyMetrics
-) =>
-  left != null &&
-  Object.keys(right.externalText).every(
-    (key) =>
-      left.externalText[key as keyof typeof right.externalText] ===
-      right.externalText[key as keyof typeof right.externalText]
-  ) &&
-  left.activeSegmentIndex === right.activeSegmentIndex &&
-  left.aggressiveDomCoverageBoundaryCount ===
-    right.aggressiveDomCoverageBoundaryCount &&
-  left.cohort === right.cohort &&
-  left.degradationMode === right.degradationMode &&
-  left.documentSize === right.documentSize &&
-  left.domCoverageBoundaryCount === right.domCoverageBoundaryCount &&
-  left.domCoverageBoundaryElementCount ===
-    right.domCoverageBoundaryElementCount &&
-  left.domNodeCount === right.domNodeCount &&
-  left.domStrategyStagedBoundaryCount ===
-    right.domStrategyStagedBoundaryCount &&
-  left.editableDescendantCount === right.editableDescendantCount &&
-  left.effectiveStrategy === right.effectiveStrategy &&
-  left.estimatedBlockSize === right.estimatedBlockSize &&
-  left.mountedGroupCount === right.mountedGroupCount &&
-  left.mountedTopLevelCount === right.mountedTopLevelCount &&
-  left.nativeSurfaceComplete === right.nativeSurfaceComplete &&
-  left.overscan === right.overscan &&
-  left.pendingGroupCount === right.pendingGroupCount &&
-  left.pendingTopLevelCount === right.pendingTopLevelCount &&
-  left.requestedStrategy === right.requestedStrategy &&
-  left.segmentSize === right.segmentSize &&
-  left.threshold === right.threshold &&
-  left.virtualizerMeasuredCount === right.virtualizerMeasuredCount &&
-  left.viewportVirtualizationBoundaryCount ===
-    right.viewportVirtualizationBoundaryCount;
 
 type DropCursorRect = {
   height: number;
@@ -215,11 +76,9 @@ const getEditableDropCursorRect = ({
   }
 
   const voidElement = targetElement.closest<HTMLElement>(
-    '[data-plite-node][data-plite-void="true"]'
+    '[data-editor-node][data-editor-void="true"]'
   );
-  const pliteNode = editor.api.dom.resolvePliteNode(
-    voidElement ?? targetElement
-  );
+  const pliteNode = editor.api.dom.resolveNode(voidElement ?? targetElement);
   const isVoidTarget =
     !!voidElement ||
     (!!pliteNode &&
@@ -292,7 +151,7 @@ const getEditableDropCursorRect = ({
   const localY = (value: number) => (value - rootRect.top) / scaleY;
 
   const isInlineVoid =
-    voidElement?.getAttribute('data-plite-inline') === 'true' ||
+    voidElement?.getAttribute('data-editor-inline') === 'true' ||
     (!!pliteNode &&
       NodeApi.isElement(pliteNode) &&
       editorIsInline(editor, pliteNode));
@@ -327,7 +186,7 @@ const getEditableDropCursorRect = ({
 };
 
 const clearEditableDropCursor = (rootElement: HTMLElement) => {
-  rootElement.querySelector('[data-plite-drop-cursor]')?.remove();
+  rootElement.querySelector('[data-editor-drop-cursor]')?.remove();
 };
 
 const updateEditableDropCursor = (
@@ -340,15 +199,15 @@ const updateEditableDropCursor = (
   }
 
   let cursor = rootElement.querySelector<HTMLElement>(
-    '[data-plite-drop-cursor]'
+    '[data-editor-drop-cursor]'
   );
 
   if (!cursor) {
     cursor = rootElement.ownerDocument.createElement('span');
     cursor.setAttribute('aria-hidden', 'true');
     cursor.setAttribute('contenteditable', 'false');
-    cursor.setAttribute('data-plite-drop-cursor', 'true');
-    cursor.setAttribute('data-plite-root-chrome-ignore', 'true');
+    cursor.setAttribute('data-editor-drop-cursor', 'true');
+    cursor.setAttribute('data-editor-root-chrome-ignore', 'true');
     rootElement.appendChild(cursor);
   }
 
@@ -401,12 +260,10 @@ export const EditableDOMRoot = (
   props: {
     children?: React.ReactNode;
     deferNativeTextInputRepair?: boolean;
-    domStrategyRuntime?: EditableDOMStrategyRuntime | null;
-    domStrategyMetrics?: EditableDOMStrategyMetricsBase | null;
+    viewportRuntime?: EditableViewportRuntime | null;
     ignoreBlankEditableRootClicks?: boolean;
     onDOMBeforeInput?: EditableDOMBeforeInputHandler;
     onKeyDown?: EditableKeyDownHandler;
-    onDOMStrategyMetrics?: (metrics: EditableDOMStrategyMetrics) => void;
     readOnly?: boolean;
     scrollSelectionIntoView?: (
       editor: ReactRuntimeEditor,
@@ -423,12 +280,10 @@ export const EditableDOMRoot = (
     autoFocus,
     children: customChildren,
     deferNativeTextInputRepair = false,
-    domStrategyRuntime = null,
-    domStrategyMetrics = null,
+    viewportRuntime = null,
     ignoreBlankEditableRootClicks = false,
     onKeyDown: propsOnKeyDown,
     onDOMBeforeInput: propsOnDOMBeforeInput,
-    onDOMStrategyMetrics,
     readOnly: readOnlyProp = false,
     scrollSelectionIntoView = defaultScrollSelectionIntoView,
     style: userStyle = {},
@@ -455,21 +310,19 @@ export const EditableDOMRoot = (
     editor,
     forwardedRef,
     deferNativeTextInputRepair,
-    domStrategyRuntime,
+    viewportRuntime,
     onDOMBeforeInput: propsOnDOMBeforeInput,
     onKeyDown: propsOnKeyDown,
     readOnly: readOnlyProp,
     scrollSelectionIntoView,
   });
   const {
-    domPhaseScheduler,
     editableEventBindings,
     isComposing,
-    rootRef: ref,
     rootInteractionSelectionBridge,
     readOnly,
     runtime,
-    partialDOMBackedSelection,
+    viewportBackedSelection,
   } = rootRuntime;
   const supportsBeforeInput = useSyncExternalStore(
     runtime.subscribeHostFacts,
@@ -488,7 +341,7 @@ export const EditableDOMRoot = (
     getLastSelectionForRoot,
     getMountedViewEditor,
     ignoreBlankEditableRootClicks:
-      ignoreBlankEditableRootClicks || domStrategyRuntime !== null,
+      ignoreBlankEditableRootClicks || viewportRuntime !== null,
     root: editorRoot,
     runtime,
     selection: 'restore',
@@ -540,9 +393,6 @@ export const EditableDOMRoot = (
       clearEditableDropCursor(event.currentTarget);
     },
   };
-  const lastDOMStrategyMetricsRef = useRef<EditableDOMStrategyMetrics | null>(
-    null
-  );
   const rootInteractionEventBindings = {
     onFocusCapture: (event: React.FocusEvent<HTMLDivElement>) => {
       activateRootView();
@@ -555,10 +405,10 @@ export const EditableDOMRoot = (
         activateRootView();
       }
       const voidTarget = getDropCursorTargetElement(event.target)?.closest(
-        '[data-plite-node][data-plite-void="true"]'
+        '[data-editor-node][data-editor-void="true"]'
       );
       const inlineVoidTarget =
-        voidTarget?.getAttribute('data-plite-inline') === 'true';
+        voidTarget?.getAttribute('data-editor-inline') === 'true';
       const draggableInlineVoidTarget =
         inlineVoidTarget && voidTarget?.getAttribute('draggable') === 'true';
 
@@ -604,59 +454,6 @@ export const EditableDOMRoot = (
     activateRootView
   );
 
-  useIsomorphicLayoutEffect(() => {
-    const rootElement = ref.current;
-
-    if (!rootElement || !domStrategyMetrics || !onDOMStrategyMetrics) {
-      return undefined;
-    }
-
-    let cancelWrite = () => {};
-    const cancelRead = domPhaseScheduler.schedule(
-      'dom-read',
-      'read-dom-strategy-metrics',
-      () => {
-        const nextMetrics = getEditableDOMStrategyMetrics({
-          coverage: runtime.domCoverage,
-          externalText: runtime.externalText.metrics(),
-          metrics: domStrategyMetrics,
-          rootElement,
-        });
-
-        if (
-          areEditableDOMStrategyMetricsEqual(
-            lastDOMStrategyMetricsRef.current,
-            nextMetrics
-          )
-        ) {
-          return;
-        }
-
-        cancelWrite = domPhaseScheduler.schedule(
-          'dom-write',
-          'publish-dom-strategy-metrics',
-          () => {
-            lastDOMStrategyMetricsRef.current = nextMetrics;
-            onDOMStrategyMetrics(nextMetrics);
-          },
-          { timing: 'immediate' }
-        );
-      },
-      { timing: 'microtask' }
-    );
-
-    return () => {
-      cancelRead();
-      cancelWrite();
-    };
-  }, [
-    domPhaseScheduler,
-    editor,
-    domStrategyMetrics,
-    onDOMStrategyMetrics,
-    ref,
-  ]);
-
   return (
     <ReadOnlyContext value={readOnly}>
       <ComposingContext value={isComposing}>
@@ -680,12 +477,12 @@ export const EditableDOMRoot = (
               }
               // explicitly set this
               contentEditable
-              data-plite-dom-strategy-selection={
-                partialDOMBackedSelection ? 'partial-dom-backed' : undefined
+              data-editor-viewport-selection={
+                viewportBackedSelection ? 'viewport-backed' : undefined
               }
-              data-plite-editor
-              data-plite-node="value"
-              data-plite-root={editorRoot}
+              data-editor
+              data-editor-node="value"
+              data-editor-root={editorRoot}
               {...ownedEventBindings}
               // Keep server markup and the first client render identical. Once
               // hydration completes, mounted-root facts can disable replacement
@@ -701,10 +498,7 @@ export const EditableDOMRoot = (
                   : {
                       // Keep read-only editors selectable without showing an
                       // insertion caret.
-                      caretColor:
-                        readOnly || hasViewSelection
-                          ? 'transparent'
-                          : undefined,
+                      caretColor: readOnly ? 'transparent' : undefined,
                       // Allow positioning relative to the editable element.
                       position: 'relative',
                       // Preserve adjacent whitespace and new lines.
@@ -716,6 +510,8 @@ export const EditableDOMRoot = (
                     }),
                 // Allow for passed-in styles to override anything.
                 ...userStyle,
+                // Projected selections own caret paint even with custom styles.
+                ...(hasViewSelection ? { caretColor: 'transparent' } : {}),
               }}
               suppressContentEditableWarning
             >
@@ -738,7 +534,7 @@ export const DefaultPlaceholder = ({
 }: {
   children: any;
   attributes: {
-    'data-plite-placeholder': boolean;
+    'data-editor-placeholder': boolean;
     dir?: 'rtl';
     contentEditable: boolean;
     ref: React.RefCallback<any>;
@@ -939,7 +735,7 @@ export const defaultScrollSelectionIntoView = (
   domRange: DOMRange
 ) => {
   // Scroll to the focus point of the selection, in case the selection is expanded
-  const selection = getSelectionDOMRange(editor, readLiveSelection(editor));
+  const selection = getSelectionDOMRange(editor, readRuntimeSelection(editor));
   const isBackward = Boolean(selection && RangeApi.isBackward(selection));
   const domFocusPoint = domRange.cloneRange();
   domFocusPoint.collapse(isBackward);

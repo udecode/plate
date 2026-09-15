@@ -1,8 +1,8 @@
 export {
   defineEditorSchema,
-  defineExtension,
-  defineExtensionPoint,
-} from './core/editor-extension';
+  definePlugin,
+  definePluginPoint,
+} from './core/plugin';
 export {
   defineCommand,
   dispatchCommand,
@@ -38,15 +38,13 @@ export type {
   AnchorDeletionPolicy,
   AnchorOptions,
   AnchorValue,
+  EditorDocumentRange,
   RangeAnchorAssociation,
 } from './core/anchor';
 export { DocumentChange } from './core/document-change';
 export type { JsonEditorValue, JsonNode } from './core/document-change';
-export { defineExtensionSlot } from './core/extension-slot';
-export type {
-  EditorExtensionSlot,
-  EditorExtensionSlotValue,
-} from './core/extension-slot';
+export { definePluginSlot } from './core/plugin-slot';
+export type { PluginSlot, PluginSlotValue } from './core/plugin-slot';
 export { property, schema, target } from './core/schema-definition';
 export type { PropertyBuilderApi } from './core/schema-definition';
 export { EditorSchemaValidationError } from './core/schema-validation';
@@ -63,7 +61,6 @@ export {
   type EditorSchemaContractElement,
   type EditorSchemaContractRoot,
 } from './core/schema-compiler';
-export { defineFacet } from './core/facet';
 export {
   repairEditorValue,
   runTrustedUpdate,
@@ -94,9 +91,9 @@ export type { TxOnlyMethod, TxReadMethod } from './core/tx-only';
 export {
   compileEditorSchemaContract,
   createEditor,
-  type EditorExtensionsFromOptions,
+  type PluginsFromOptions,
   type EditorValueFromOptions,
-  initializeEditorExtensions,
+  initializePlugins,
 } from './create-editor';
 export { createEditorView } from './editor-runtime-view';
 export {
@@ -148,48 +145,43 @@ export type {
   EditorValueCodec,
   EditorElementBehavior,
   DefinitionOf,
-  EditorExtension,
-  EditorExtensionApiFactory,
-  EditorExtensionApiFactoryContext,
-  EditorExtensionDefinition,
-  EditorExtensionDefinitionInput,
-  EditorExtensionDependencyReference,
-  EditorExtensionReference,
+  Plugin,
+  PluginApiFactory,
+  PluginApiFactoryContext,
+  PluginDefinition,
+  PluginDefinitionInput,
+  PluginDependencyReference,
+  PluginReference,
   EditorInstalledApiGroups,
   EditorInstalledReadGroups,
   EditorInstalledUpdateGroups,
   EditorToggleMarkOptions,
-  EditorExtensionInput,
-  EditorExtensionContribution,
-  EditorExtensionContributionInput,
-  EditorExtensionPoint,
-  EditorExtensionPortal,
-  EditorExtensionReadContext,
-  EditorExtensionReadFactory,
-  EditorExtensionReadFactoryContext,
-  EditorExtensionReadMiddlewareFactory,
-  EditorExtensionSlotLike,
-  EditorExtensionUpdateFactory,
-  EditorExtensionUpdateFactoryContext,
+  PluginInput,
+  PluginContribution,
+  PluginContributionInput,
+  PluginPoint,
+  PluginPortal,
+  PluginReadContext,
+  PluginReadFactory,
+  PluginReadFactoryContext,
+  PluginReadMiddlewareFactory,
+  PluginSlotLike,
+  PluginUpdateFactory,
+  PluginUpdateFactoryContext,
   EditorNodeChangeContext,
   EditorNodeChangeHandler,
-  EditorExtensionActivationContext,
-  EditorExtensionCapabilities,
-  EditorExtensionCleanupContext,
-  EditorExtensionCandidateEditor,
-  EditorExtensionCandidateContext,
-  EditorExtensionMigrationContext,
-  EditorExtensionReconfigureOptions,
+  PluginActivationContext,
+  PluginCapabilities,
+  PluginCleanupContext,
+  PluginCandidateEditor,
+  PluginCandidateContext,
+  PluginMigrationContext,
+  PluginReconfigureOptions,
   EditorLifecycleError,
   EditorLifecycleErrorSink,
   EditorNodeChangeKind,
-  EditorExtensionTypeProvider,
-  EditorExtensionTypes,
-  EditorFacet,
-  EditorFacetComputeOptions,
-  EditorFacetDependency,
-  EditorFacetDocumentDependency,
-  EditorFacetProvider,
+  PluginTypeProvider,
+  PluginTypes,
   EditorFragmentReadOptions,
   EditorFragmentDeletionOptions,
   EditorIsEditorOptions,
@@ -238,7 +230,7 @@ export type {
   EditorTransactionChangesApi,
   EditorTransactionAnnotationsApi,
   EditorTransactionEffectsApi,
-  EditorTransactionExtensionsApi,
+  EditorTransactionPluginsApi,
   EditorTransactionFragmentApi,
   EditorTransactionAnchor,
   EditorTransactionAnchorApi,
@@ -270,11 +262,11 @@ export type {
   EditorUpdateTransactionProvider,
   EditorNodeTypeProvider,
   EditorNodeUnsetOptions,
-  EditorValueFromExtensions,
+  EditorValueFromPlugins,
   EditorValueTypeProvider,
   EditorView,
   EditorViewOptions,
-  ExtensionsOf,
+  PluginsOf,
   InitialValue,
   NamedRootKey,
   NodeTarget,
@@ -298,11 +290,8 @@ export type {
   Value,
   ValueOf,
 } from './interfaces/editor';
-export { EditorExtensionPublicationError } from './core/editor-extension';
-export {
-  containsCompleteEditorSchema,
-  isEditorExtension,
-} from './core/editor-extension';
+export { PluginPublicationError } from './core/plugin';
+export { containsCompleteEditorSchema, isPlugin } from './core/plugin';
 export { reportEditorLifecycleError } from './core/lifecycle-error';
 export {
   areEditorSchemaIdentitiesEqual,
@@ -324,14 +313,7 @@ export type {
   EditorSchemaSource,
   EditorSchemaSourceProvider,
 } from './core/schema-source.internal';
-export type {
-  EditorExtensionDependencyReferenceFor,
-  EditorExtensionDependencyContractReference,
-  EditorExtensionInstalledCapabilitiesOf,
-  EditorExtensionTypeProviderOf,
-  EditorExtensionWitnessFor,
-  EditorGenericMethod,
-} from './interfaces/editor';
+export type { EditorGenericMethod } from './interfaces/editor';
 export type * from './interfaces/decoration';
 export * from './interfaces/element';
 export * from './interfaces/location';

@@ -5,7 +5,7 @@ import { schema } from '../core';
 import {
   BaseParagraphPlugin,
   type RenderElementProps,
-  defineBasePlugin,
+  definePlugin,
 } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import { pipeRenderElementStatic } from './pipeRenderElementStatic.internal';
@@ -27,7 +27,7 @@ describe('pipeRenderElementStatic', () => {
       pipeRenderElementStatic(editor, {
         renderElement,
       })({
-        attributes: { 'data-plite-node': 'element' },
+        attributes: { 'data-editor-node': 'element' },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],
@@ -46,7 +46,7 @@ describe('pipeRenderElementStatic', () => {
   });
 
   it('indexes element renderers by persisted type rather than plugin name', () => {
-    const ElementPlugin = defineBasePlugin('elementCapability', {
+    const ElementPlugin = definePlugin('elementCapability', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -58,7 +58,7 @@ describe('pipeRenderElementStatic', () => {
     const editor = createStaticEditor({ plugins: [ElementPlugin] });
     const markup = ReactDOMServer.renderToStaticMarkup(
       pipeRenderElementStatic(editor)({
-        attributes: { 'data-plite-node': 'element' },
+        attributes: { 'data-editor-node': 'element' },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],
@@ -87,7 +87,7 @@ describe('pipeRenderElementStatic', () => {
         return <mark data-kind="fallback">{children}</mark>;
       },
     })({
-      attributes: { 'data-plite-node': 'element' },
+      attributes: { 'data-editor-node': 'element' },
       children: 'Body',
       element: {
         children: [{ text: 'Body' }],
@@ -110,7 +110,7 @@ describe('pipeRenderElementStatic', () => {
   });
 
   it('renders afterNodeChildren around the default PliteElement output', () => {
-    const RootPlugin = defineBasePlugin('rootExtra', {
+    const RootPlugin = definePlugin('rootExtra', {
       slots: {
         afterNodeChildren: () => <aside data-role="root" />,
       },
@@ -120,7 +120,7 @@ describe('pipeRenderElementStatic', () => {
     });
     const markup = ReactDOMServer.renderToStaticMarkup(
       pipeRenderElementStatic(editor)({
-        attributes: { 'data-plite-node': 'element' },
+        attributes: { 'data-editor-node': 'element' },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],

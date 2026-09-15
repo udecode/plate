@@ -1,4 +1,4 @@
-import { Editable, Plite, useEditor } from 'plitejs/react';
+import { Editable, EditorRoot, useEditor } from 'plitejs/react';
 import { useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -50,9 +50,9 @@ const ShadowEditor = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable placeholder="Enter some plain text..." />
-    </Plite>
+    </EditorRoot>
   );
 };
 

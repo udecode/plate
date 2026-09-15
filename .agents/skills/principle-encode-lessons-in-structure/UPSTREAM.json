@@ -9,13 +9,14 @@
       "upstream": "skills/principle-encode-lessons-in-structure/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "4acdb3f466efd0a433899aafce3e0f100566228b63ccff43f363a83e80624d81",
-      "destinationSha256": "103765a363b7dc8dfac5300244637797c9f4fc8fd53e96bf46a78e89609d1879",
+      "destinationSha256": "13fd4d9ef05d6469382188e7e489a3ccc3faa8e8fc01edbc067a7ab9cf0537fb",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-encode-lessons-in-structure/SKILL.md\n+++ skills/principle-encode-lessons-in-structure/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-encode-lessons-in-structure\n description: \"Apply when you catch yourself writing the same instruction a second time, or notice a recurring correction. Encode the rule as a lint, metadata flag, runtime check, or script instead of more text.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Encode Lessons in Structure\n \n"
+      "unifiedDiff": "--- skills/principle-encode-lessons-in-structure/SKILL.md\n+++ skills/principle-encode-lessons-in-structure/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-encode-lessons-in-structure\n-description: \"Apply when you catch yourself writing the same instruction a second time, or notice a recurring correction. Encode the rule as a lint, metadata flag, runtime check, or script instead of more text.\"\n-disable-model-invocation: true\n+description: \"Turn an evidenced recurring correction into the smallest effective structural check or owned rule.\"\n ---\n \n # Encode Lessons in Structure\n"
     }
   ],
   "ownedFiles": [

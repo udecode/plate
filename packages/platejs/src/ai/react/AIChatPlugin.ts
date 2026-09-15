@@ -2,10 +2,17 @@ import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
+  type AuthoredPlugin,
+  type AuthoredResult,
+  type AuthoredView,
+  DefaultAuthoredPlugin,
+} from '../../authored';
+import {
+  BaseParagraphPlugin,
   type DefinitionOf,
   type Descendant,
-  type EditorNodeUnsetOptions,
   type EditorNodesOptions,
+  type EditorUpdateTransaction,
   type Element,
   ElementApi,
   type NamedRootKey,
@@ -16,7 +23,7 @@ import {
   PLUGINS,
   type Path,
   PathApi,
-  type PlatePluginReadState,
+  type PluginReadState,
   type Range,
   SelectionApi,
   TextApi,
@@ -27,15 +34,18 @@ import {
   schema,
 } from '../../core';
 import type { TriggerComboboxPluginState } from '../../features/combobox';
-import { SUGGESTION_TRANSIENT_KEY } from '../../features/suggestion';
-import { BaseTablePlugin } from '../../features/table';
+import {
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '../../features/table';
+import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 import {
   type DeserializeMdOptions,
   MarkdownPlugin,
   type SerializeMdOptions,
 } from '../../markdown';
-import { type Editor, definePlatePlugin } from '../../react/core';
-import { SuggestionPlugin } from '../../react/features/suggestion';
+import { type Editor, definePlugin } from '../../react/core';
 import { failInvariant } from '../internal/failInvariant';
 import type {
   AIChatRequestContext,
@@ -94,6 +104,8 @@ export type AIChatPluginState = {
   _blockChunks: string;
   _blockPath: Path | null;
   _blockRefs: Record<string, Readonly<{ key: NodeKey; root?: NamedRootKey }>>;
+  _changeId: string | null;
+  _previousAuthoredView: AuthoredView | null;
   _mdxName: string | null;
   _replaceNodeKeys: NodeKey[];
   _tableCellRefs: Record<
@@ -125,18 +137,29 @@ type StreamInsertOptions = {
 const STREAM_LINE_BREAK_PLACEHOLDER = '\uE000platejs-stream-line-break\uE000';
 const statMdxTagRegex = /<([A-Za-z][A-Za-z0-9._:-]*)(?:\s[^>]*?)?(?<!\/)>/;
 const aiChatShowEffect = defineEffect({ key: 'ai.chat.show' });
-const dependencies = [BaseAIPlugin, MarkdownPlugin, SuggestionPlugin] as const;
+const aiChatCommandEditors = new WeakMap<object, Editor>();
+export const getAIChatCommandEditor = (editor: Editor) =>
+  aiChatCommandEditors.get(editor) ?? editor;
+const plateDependencies = [BaseAIPlugin, MarkdownPlugin] as const;
+const dependencies = [...plateDependencies, DefaultAuthoredPlugin] as const;
 
-type AIChatPluginReadState = PlatePluginReadState<
-  DefinitionOf<(typeof dependencies)[number]>
+type AIChatPluginReadState = PluginReadState<
+  DefinitionOf<(typeof plateDependencies)[number]>
 >;
 type AIChatInsertState = Pick<AIChatPluginReadState, 'nodes' | 'selection'>;
 type AIChatPromptState = Pick<AIChatPluginReadState, 'selection'>;
+type AuthoredAIEditor = Editor<Value, readonly [AuthoredPlugin]>;
+type AuthoredAITransaction = EditorUpdateTransaction<
+  Value,
+  readonly [AuthoredPlugin]
+>;
 
 const initialState: AIChatPluginState = {
   _blockChunks: '',
   _blockPath: null,
   _blockRefs: {},
+  _changeId: null,
+  _previousAuthoredView: null,
   _mdxName: null,
   _replaceNodeKeys: [],
   _tableCellRefs: {},
@@ -154,7 +177,7 @@ const initialState: AIChatPluginState = {
   triggerPreviousCharPattern: /^\s?$/,
 };
 
-export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
+export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   dependencies,
   initialState,
   schema: {
@@ -165,12 +188,31 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 })
   .extend((context) => {
     const { editor } = context;
-    const codeBlock = editor.plugin(PLUGINS.codeBlock);
-    const columnGroup = editor.plugin(PLUGINS.columnGroup);
-    const equation = editor.plugin(PLUGINS.equation);
-    const paragraph = editor.plugin(PLUGINS.paragraph);
+    const authoredEditor = editor as AuthoredAIEditor;
+    const codeBlockDescriptor = getCompiledPlatePlugin(
+      editor,
+      PLUGINS.codeBlock
+    );
+    const codeBlock = codeBlockDescriptor
+      ? editor.plugin(codeBlockDescriptor)
+      : undefined;
+    const columnGroupDescriptor = getCompiledPlatePlugin(
+      editor,
+      PLUGINS.columnGroup
+    );
+    const columnGroup = columnGroupDescriptor
+      ? editor.plugin(columnGroupDescriptor)
+      : undefined;
+    const equationDescriptor = getCompiledPlatePlugin(editor, PLUGINS.equation);
+    const equation = equationDescriptor
+      ? editor.plugin(equationDescriptor)
+      : undefined;
+    const headingDescriptor = getCompiledPlatePlugin(editor, PLUGINS.heading);
+    const heading = headingDescriptor
+      ? editor.plugin(headingDescriptor)
+      : undefined;
+    const paragraph = editor.plugin(BaseParagraphPlugin);
     const ai = editor.plugin(BaseAIPlugin);
-    const suggestionKey = editor.plugin(SuggestionPlugin).schema.key;
     const tablePlugin = editor.plugin(BaseTablePlugin);
     const getChunkTrimmed = (
       chunk: string,
@@ -267,12 +309,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       });
     }
     const isSameNode = (left: Descendant, right: Descendant) => {
-      const heading = editor.plugin(PLUGINS.heading);
-
       if (left.type !== right.type) return false;
 
       if (
-        heading.installed &&
+        heading &&
         ElementApi.isElement(left) &&
         ElementApi.isElement(right) &&
         left.type === heading.schema.type &&
@@ -330,7 +370,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           return [
             {
               children: [{ text: input }],
-              type: editor.plugin(PLUGINS.paragraph).schema.type,
+              type: editor.plugin(BaseParagraphPlugin).schema.type,
             },
           ];
         }
@@ -362,7 +402,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           ? {
               ...node,
               children: [...node.children],
-              ...(equation.installed &&
+              ...(equation &&
               node.type === equation.schema.type &&
               typeof node.latex === 'string'
                 ? { latex: node.latex.trim() }
@@ -376,7 +416,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       const prependNewLine =
         getChunkTrimmed(data, { direction: 'left' }) === '\n\n';
       const isCodeBlockOrTable =
-        (codeBlock.installed && lastBlock?.type === codeBlock.schema.type) ||
+        (codeBlock && lastBlock?.type === codeBlock.schema.type) ||
         (tablePlugin.installed && lastBlock?.type === tablePlugin.schema.type);
 
       if (
@@ -419,11 +459,8 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       if (
         lastBlock &&
         ElementApi.isElement(lastBlock) &&
-        (() => {
-          const heading = editor.plugin(PLUGINS.heading);
-
-          return heading.installed && lastBlock.type === heading.schema.type;
-        })()
+        heading &&
+        lastBlock.type === heading.schema.type
       ) {
         const lastText = lastBlock.children.at(-1);
 
@@ -532,11 +569,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         state.selection.nodes().at(-1)?.[1] ?? selection?.focus.path;
       const path = anchorPrevious ?? selectionPath?.slice(0, 1) ?? [0];
       const entry = state.nodes.get(path, { match: ElementApi.isElement });
-      const containerTypes = new Set<string>(
-        [columnGroup, tablePlugin]
-          .filter((plugin) => plugin.installed)
-          .map((plugin) => plugin.schema.type)
-      );
+      const containerTypes = new Set<string>([
+        ...(columnGroup ? [columnGroup.schema.type] : []),
+        ...(tablePlugin.installed ? [tablePlugin.schema.type] : []),
+      ]);
 
       return entry && containerTypes.has(entry[0].type)
         ? (state.nodes.above()?.[1] ?? path)
@@ -557,49 +593,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           startBlock.type === paragraph.schema.type,
       };
     };
-    const withoutSuggestionData = (
-      nodes: readonly Descendant[]
-    ): Descendant[] =>
-      nodes.map((node) => {
-        if (TextApi.isText(node)) {
-          return Reflect.get(node, suggestionKey) || node.comment
-            ? { text: node.text }
-            : node;
-        }
-        if (!ElementApi.isElement(node)) return node;
-
-        const result = {
-          ...node,
-          children: withoutSuggestionData(node.children),
-        };
-
-        Object.keys(result).forEach((key) => {
-          if (
-            key === suggestionKey ||
-            key === 'suggestionData' ||
-            key === SUGGESTION_TRANSIENT_KEY ||
-            key.startsWith(`${suggestionKey}_`)
-          ) {
-            Reflect.deleteProperty(result, key);
-          }
-        });
-
-        return result;
-      });
-    const withTransient = (nodes: readonly Descendant[]): Descendant[] =>
-      nodes.map((node) =>
-        TextApi.isText(node)
-          ? { ...node, [SUGGESTION_TRANSIENT_KEY]: true }
-          : {
-              ...node,
-              children: withTransient(node.children),
-              [SUGGESTION_TRANSIENT_KEY]: true,
-            }
-      );
     const diffNodes = (content: string) => {
       const rawChatNodes = context.store.get('chatNodes');
-      let chatNodes = withoutSuggestionData(
-        cloneDeep(rawChatNodes.map(({ node }) => node))
+      let chatNodes: Descendant[] = cloneDeep(
+        rawChatNodes.map(({ node }) => node)
       );
       const first = chatNodes[0];
 
@@ -616,7 +613,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             ? row.children[0]
             : undefined;
 
-        const tableCell = editor.plugin(PLUGINS.tableCell);
+        const tableCell = editor.plugin(BaseTableCellPlugin);
 
         if (
           tableCell.installed &&
@@ -639,11 +636,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             : node
         );
 
-      return withTransient(
-        editor.plugin(SuggestionPlugin).api.diff(chatNodes, parsed, {
-          ignoreProps: ['id'],
-        })
-      );
+      return parsed;
     };
     const createFormattedBlocks = ({
       blocks,
@@ -689,14 +682,40 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       context.store.set({ _mdxName: null });
       void context.store.get().chat?.stop?.();
     };
+    const reviewSucceeded = (result: AuthoredResult | null) =>
+      result?.status === 'applied' || result?.status === 'unchanged';
+    const restoreAuthoredView = () => {
+      const view = context.store.get('_previousAuthoredView');
+
+      if (view) authoredEditor.api.authored.setView(view);
+      context.store.set({ _previousAuthoredView: null });
+    };
+    const decideCurrentChange = (action: 'accept' | 'reject') => {
+      const changeId = context.store.get('_changeId');
+      if (!changeId) return null;
+      const result = authoredEditor.update.authored.decide({
+        action,
+        selection: authoredEditor.read.authored.select({ ids: [changeId] }),
+      });
+
+      if (reviewSucceeded(result)) {
+        context.store.set({ _changeId: null });
+        restoreAuthoredView();
+      }
+
+      return result;
+    };
     const resetOptions = () => {
       stop();
+      aiChatCommandEditors.delete(editor);
 
       const { chat } = context.store.get();
 
       if (chat?.messages.length) chat.clear();
       context.store.set({
         _blockRefs: {},
+        _changeId: null,
+        _previousAuthoredView: null,
         _replaceNodeKeys: [],
         _tableCellRefs: {},
         chatNodes: [],
@@ -705,11 +724,29 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         toolName: null,
       });
     };
-    const reset = ({ undo = true }: { undo?: boolean } = {}) => {
+    const removeChatNodes = (commandEditor: Editor) => {
+      commandEditor.update({ history: 'skip' }, (tx) => {
+        tx.nodes.remove({
+          at: [],
+          type: context.plugin,
+        });
+      });
+    };
+    const resetEditor = (
+      { undo = true }: { undo?: boolean } = {},
+      commandEditor = getAIChatCommandEditor(editor)
+    ) => {
+      const changeId = context.store.get('_changeId');
+      const review = undo && changeId ? decideCurrentChange('reject') : null;
+
+      if (review && !reviewSucceeded(review)) return review;
+
+      if (undo && !changeId) editor.plugin(BaseAIPlugin).update.undo();
+      else editor.plugin(BaseAIPlugin).update.discardPreview();
+      removeChatNodes(commandEditor);
       resetOptions();
 
-      if (undo) editor.plugin(BaseAIPlugin).update.undo();
-      else editor.plugin(BaseAIPlugin).update.discardPreview();
+      return review;
     };
     const hideOptions = () => {
       resetOptions();
@@ -782,7 +819,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
       const rows = table.children.map((row, rowIndex) => {
         if (
           !ElementApi.isElement(row) ||
-          row.type !== editor.plugin(PLUGINS.tableRow).schema.type
+          row.type !== editor.plugin(BaseTableRowPlugin).schema.type
         ) {
           throw new Error('Tables must contain table rows.');
         }
@@ -790,7 +827,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
         const values = row.children.map((cell, cellIndex) => {
           if (
             !ElementApi.isElement(cell) ||
-            cell.type !== editor.plugin(PLUGINS.tableCell).schema.type
+            cell.type !== editor.plugin(BaseTableCellPlugin).schema.type
           ) {
             throw new Error('Table rows must contain table cells.');
           }
@@ -964,15 +1001,13 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           focus?: boolean;
           undo?: boolean;
         } = {}) => {
-          reset({ undo });
+          const result = resetEditor({ undo }, commandEditor);
+
+          if (result && !reviewSucceeded(result)) return result;
           hideOptions();
-          commandEditor.update({ history: 'skip' }, (tx) => {
-            tx.nodes.remove({
-              at: [],
-              type: context.plugin,
-            });
-          });
           if (focus) commandEditor.api.dom.focus();
+
+          return result;
         },
         reload: () => {
           const { chat, chatNodes, chatSelection, toolName } =
@@ -982,6 +1017,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           const hadPreview = ai.read.hasPreview();
 
           if (!ai.update.undo() && hadPreview) return;
+          removeChatNodes(commandEditor);
           if (chatSelection) editor.update.selection.set(chatSelection);
           else {
             const anchor = chatNodes.find(
@@ -1026,12 +1062,18 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             },
           });
         },
-        reset,
+        reset: (options?: { undo?: boolean }) =>
+          resetEditor(options, commandEditor),
         show: () => {
-          reset();
+          const result = resetEditor({}, commandEditor);
+
+          if (result && !reviewSucceeded(result)) return result;
+          aiChatCommandEditors.set(editor, commandEditor);
           context.store.set({ toolName: null });
           context.store.get().chat?.clear();
           context.store.set({ open: true });
+
+          return result;
         },
         stop,
         submit: (
@@ -1053,6 +1095,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
           if (!prompt && input.length === 0) return;
 
+          aiChatCommandEditors.set(editor, commandEditor);
           context.store.set({ previewValue: [] });
 
           const selection = editor.read.selection();
@@ -1063,7 +1106,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
               ? 'chat'
               : 'insert');
 
-          if (nextMode === 'insert') editor.plugin(BaseAIPlugin).update.undo();
+          if (nextMode === 'insert') {
+            editor.plugin(BaseAIPlugin).update.undo();
+            removeChatNodes(commandEditor);
+          }
 
           context.store.set({ mode: nextMode });
           context.store.set({ toolName: nextToolName });
@@ -1368,11 +1414,11 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                     { value: { children: blocks } },
                     combined
                   );
-                  const preserveChunkTypes = new Set<string>(
-                    [codeBlock, tablePlugin, equation]
-                      .filter((plugin) => plugin.installed)
-                      .map((plugin) => plugin.schema.type)
-                  );
+                  const preserveChunkTypes = new Set<string>([
+                    ...(codeBlock ? [codeBlock.schema.type] : []),
+                    ...(tablePlugin.installed ? [tablePlugin.schema.type] : []),
+                    ...(equation ? [equation.schema.type] : []),
+                  ]);
 
                   nextChunks = preserveChunkTypes.has(blocks[0].type)
                     ? combined
@@ -1421,22 +1467,53 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             });
           });
         };
-        const reviewSuggestions = (action: 'accept' | 'reject') => {
-          const suggestion = editor.plugin(SuggestionPlugin);
-
-          const ids = new Set(
-            tx.suggestion.nodes({ transient: true }).flatMap(([node]) => {
-              const data = suggestion.api.suggestionData(node);
-              return data ? [data.id] : [];
-            })
+        const authoredTx = tx as AuthoredAITransaction;
+        const proposeAIChange = () => {
+          const current = context.store.get('_changeId');
+          return authoredTx.authored.propose(
+            current ? { changeId: current } : undefined
           );
-          for (const id of ids) tx.suggestion[action](id);
-          tx.suggestion.clearTransient({
-            at: [],
-            mode: 'all',
-            match: (node) =>
-              Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
-          } satisfies EditorNodeUnsetOptions<Node>);
+        };
+        const publishAIChange = (changeId: string) => {
+          updateContext.afterCommit(() => {
+            context.store.set({ _changeId: changeId });
+          });
+        };
+        const reviewSuggestions = (action: 'accept' | 'reject') => {
+          const changeId = context.store.get('_changeId');
+          if (!changeId) return null;
+          const result = authoredTx.authored.decide({
+            action,
+            selection: authoredEditor.read.authored.select({ ids: [changeId] }),
+          });
+
+          if (reviewSucceeded(result)) {
+            updateContext.afterCommit(() => {
+              context.store.set({ _changeId: null });
+              restoreAuthoredView();
+            });
+          }
+
+          return result;
+        };
+        const reviewAfterCommit = (
+          changeId: string,
+          action: 'accept' | 'reject',
+          onSuccess: () => void
+        ) => {
+          updateContext.afterCommit(() => {
+            const result = authoredEditor.update.authored.decide({
+              action,
+              selection: authoredEditor.read.authored.select({
+                ids: [changeId],
+              }),
+            });
+
+            if (!reviewSucceeded(result)) return;
+            context.store.set({ _changeId: null });
+            restoreAuthoredView();
+            onSuccess();
+          });
         };
         const applySuggestions = (
           content: string,
@@ -1454,52 +1531,66 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           ) {
             return;
           }
-          if (chatNodes.length === 1) {
+          const changeId = proposeAIChange();
+          const nextNodes = diffNodes(content);
+
+          if (chatNodes.length <= 1) {
             const replacementKeys = context.store.get('_replaceNodeKeys');
             const targetKeys =
               replacementKeys.length > 0
                 ? replacementKeys
-                : [chatNodes[0].nodeKey];
+                : chatNodes.flatMap(({ nodeKey }) =>
+                    nodeKey ? [nodeKey] : []
+                  );
+            const targetEntries = targetKeys.flatMap((key) => {
+              const entry = tx.nodes.get(key, {
+                match: ElementApi.isElement,
+              });
+
+              return entry ? [entry] : [];
+            });
 
             if (
-              targetKeys.some(
-                (key) => !tx.nodes.get(key, { match: ElementApi.isElement })
-              )
+              targetEntries.length === 0 ||
+              targetEntries.length !== targetKeys.length
             ) {
               return;
             }
-          }
+            const targetPath = targetEntries[0][1];
+            const targetRange =
+              replacementKeys.length === 0
+                ? (context.store.get('chatSelection') ??
+                  tx.ranges.fromEntries(targetEntries))
+                : tx.ranges.fromEntries(targetEntries);
 
-          const nextNodes = diffNodes(content);
-
-          if (chatNodes.length <= 1) {
+            if (!targetRange) return;
             if (context.store.get('_replaceNodeKeys').length > 0) {
               tx.history.merge();
             } else {
               tx.history.newBatch();
             }
             tx.ai.markBatch();
-            tx.fragment.replace(nextNodes);
+            if (!tx.fragment.replace(nextNodes, { at: targetRange })) return;
+            const parentPath = targetPath.slice(0, -1);
+            const startIndex = targetPath.at(-1) ?? 0;
+            const replacements = nextNodes.flatMap((_node, index) => {
+              const entry = tx.nodes.get([...parentPath, startIndex + index], {
+                match: ElementApi.isElement,
+              });
 
-            const range = tx.ranges.fromEntries(
-              tx.nodes.toArray({
-                at: [],
-                mode: 'lowest',
-                match: (node) =>
-                  TextApi.isText(node) && !!node[SUGGESTION_TRANSIENT_KEY],
-              })
+              return entry ? [entry] : [];
+            });
+            const nextReplacementKeys = replacements.map(([node]) =>
+              tx.key(node)
             );
 
-            if (range) {
-              tx.selection.set(range);
-              const replacementKeys = tx.nodes
-                .blocks({ at: range, mode: 'highest' })
-                .map(([node]) => tx.key(node));
-
-              updateContext.afterCommit(() => {
-                context.store.set({ _replaceNodeKeys: replacementKeys });
-              });
+            if (nextReplacementKeys.length > 0) {
+              tx.selection.setNodes(replacements.map(([node]) => node));
             }
+            updateContext.afterCommit(() => {
+              context.store.set({ _replaceNodeKeys: nextReplacementKeys });
+            });
+            publishAIChange(changeId);
 
             return;
           }
@@ -1619,6 +1710,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             }
             context.store.set({ _replaceNodeKeys: replacementKeys });
           });
+          publishAIChange(changeId);
         };
         const applyTableCellSuggestion = ({
           content,
@@ -1645,7 +1737,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
 
             return;
           }
-          const current = withoutSuggestionData(cell.children);
+          const current = cloneDeep(cell.children);
           const parsed = editor.api.markdown
             .deserialize(content)
             .children.map((node, index) => {
@@ -1656,14 +1748,12 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                 ? { ...node, id }
                 : node;
             });
-          const next = withTransient(
-            editor.plugin(SuggestionPlugin).api.diff(current, parsed, {
-              ignoreProps: ['id'],
-            })
-          );
+          const next = parsed;
 
+          const changeId = proposeAIChange();
           tx.ai.markBatch();
           tx.nodes.replaceChildren(next, { at: target.key });
+          publishAIChange(changeId);
         };
         const getChatBlocks = (restored: boolean) => {
           if (!restored) return [];
@@ -1688,7 +1778,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
           return entries.toSorted(([, a], [, b]) => PathApi.compare(a, b));
         };
         const selectEntries = (entries: ReadonlyArray<NodeEntry<Element>>) => {
-          tx.selection.setNodes(entries.map(([node]) => node));
+          tx.selection.setNodes(entries.map(([, path]) => path));
         };
         const resolveInsertedBlocks = (nodes: Element[]) => {
           const entries = nodes.flatMap((node) => {
@@ -1750,17 +1840,19 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
                     ElementApi.isElement(node) && !!node[AI_PREVIEW_KEY],
                 });
                 tx.ai.removeMarks();
-                tx.nodes.remove({
-                  at: [],
-                  type: context.plugin,
-                });
               }
+              tx.nodes.remove({
+                at: [],
+                type: context.plugin,
+              });
 
               if (!acceptedPreview && focus) {
                 tx.selection.set({ anchor: focus, focus });
               }
             } else {
-              reviewSuggestions('accept');
+              const result = reviewSuggestions('accept');
+
+              if (!reviewSucceeded(result)) return result;
               tx.nodes.remove({
                 at: [],
                 type: context.plugin,
@@ -1769,10 +1861,10 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             updateContext.afterCommit(() => {
               hideOptions();
             });
+
+            return undefined;
           },
-          acceptSuggestions: () => {
-            reviewSuggestions('accept');
-          },
+          acceptSuggestions: () => reviewSuggestions('accept'),
           applySuggestions,
           applyTableCellSuggestion,
           insertBelow: ({
@@ -1781,22 +1873,63 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             format?: 'all' | 'none' | 'single';
           } = {}) => {
             if (context.store.get('toolName') !== 'generate') {
-              const selected = tx.nodes.blocks();
-              const nodes = cloneDeep(selected.map(([node]) => node));
+              const changeId = context.store.get('_changeId');
+              if (!changeId) return;
+              const replacementKeys = context.store.get('_replaceNodeKeys');
+              const selected = replacementKeys.flatMap((key) => {
+                const entry = tx.nodes.get(key, {
+                  match: ElementApi.isElement,
+                });
 
-              const last = getChatBlocks(tx.ai.undo()).at(-1);
+                return entry ? [entry] : [];
+              });
 
-              if (!last) return;
+              if (
+                selected.length === 0 ||
+                selected.length !== replacementKeys.length
+              ) {
+                return;
+              }
+              const range = tx.ranges.fromEntries(selected);
+              if (!range) return;
+              const output = cloneDeep(selected.map(([node]) => node));
+              const original = cloneDeep(
+                context.store.get('chatNodes').map(({ node }) => node)
+              );
+              const firstPath = selected[0][1];
+              const parentPath = firstPath.slice(0, -1);
+              const startIndex = firstPath.at(-1);
 
-              insertBlocksAfterAndSelect(nodes, last);
-              reviewSuggestions('accept');
+              if (startIndex === undefined) return;
+
+              authoredTx.authored.propose({ changeId });
+              tx.history.merge();
+              tx.ai.markBatch();
+              if (
+                !tx.fragment.replace([...original, ...output], { at: range })
+              ) {
+                return;
+              }
+              const outputEntries = output.flatMap((_node, index) => {
+                const entry = tx.nodes.get(
+                  [...parentPath, startIndex + original.length + index],
+                  { match: ElementApi.isElement }
+                );
+
+                return entry ? [entry] : [];
+              });
+
+              if (outputEntries.length !== output.length) return;
+              selectEntries(outputEntries);
+              const outputKeys = outputEntries.map(([node]) => tx.key(node));
               tx.nodes.remove({
                 at: [],
                 type: context.plugin,
               });
               updateContext.afterCommit(() => {
-                hideOptions();
+                context.store.set({ _replaceNodeKeys: outputKeys });
               });
+              reviewAfterCommit(changeId, 'accept', hideOptions);
 
               return;
             }
@@ -1866,9 +1999,7 @@ export const AIChatPlugin = definePlatePlugin(PLUGINS.aiChat, {
             insertBlocksAfterAndSelect(blocks, current);
           },
           insertChunk,
-          rejectSuggestions: () => {
-            reviewSuggestions('reject');
-          },
+          rejectSuggestions: () => reviewSuggestions('reject'),
           replaceSelection: ({
             format = 'single',
           }: {

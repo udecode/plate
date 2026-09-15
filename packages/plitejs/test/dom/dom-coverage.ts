@@ -46,11 +46,10 @@ const testView = (editor: DOMTestEditor) => {
   return view;
 };
 
-const CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE =
-  /Cannot resolve a DOM node from Plite node/;
+const CANNOT_RESOLVE_DOM_NODE = /Cannot resolve a DOM node from Plite node/;
 
 const createNestedEditor = () => {
-  const editor = createEditor({ extensions: [dom()] });
+  const editor = createEditor({ plugins: [dom()] });
 
   editorReplace(editor, {
     children: [
@@ -82,7 +81,7 @@ const createNestedEditor = () => {
 };
 
 const createLargeEditor = (blocks: number) => {
-  const editor = createEditor({ extensions: [dom()] });
+  const editor = createEditor({ plugins: [dom()] });
 
   editorReplace(editor, {
     children: Array.from({ length: blocks }, (_, index) => ({
@@ -170,7 +169,7 @@ const mountEditorRoot = (
   document: Document,
   root = document.createElement('div')
 ) => {
-  root.setAttribute('data-plite-editor', 'true');
+  root.setAttribute('data-editor', 'true');
   root.setAttribute('contenteditable', 'true');
   if (!root.parentNode) {
     document.body.appendChild(root);
@@ -209,9 +208,9 @@ const createTextDOM = (document: Document, text: string) => {
   const leaf = document.createElement('span');
   const string = document.createElement('span');
 
-  owner.setAttribute('data-plite-node', 'text');
-  leaf.setAttribute('data-plite-leaf', 'true');
-  string.setAttribute('data-plite-string', 'true');
+  owner.setAttribute('data-editor-node', 'text');
+  leaf.setAttribute('data-editor-leaf', 'true');
+  string.setAttribute('data-editor-string', 'true');
   string.appendChild(document.createTextNode(text));
   leaf.appendChild(string);
   owner.appendChild(leaf);
@@ -254,7 +253,6 @@ const registerSectionBodyBoundary = (editor: DOMTestEditor) =>
         focus: getNodeKey(editor, [0, 1]),
       },
     ],
-    findPolicy: 'native',
     ownerPath: [0],
     ownerNodeKey: getNodeKey(editor, [0]),
     reason: 'app-collapse',
@@ -270,7 +268,6 @@ const registerNestedParagraphBoundary = (editor: DOMTestEditor) =>
     copyPolicy: 'summary',
     coveredPathRanges: [{ kind: 'text', anchor: [0, 1, 0], focus: [0, 1, 0] }],
     coveredRuntimeRanges: [],
-    findPolicy: 'native',
     ownerPath: [0, 1],
     ownerNodeKey: getNodeKey(editor, [0, 1]),
     reason: 'app-collapse',
@@ -359,7 +356,7 @@ describe('DOM coverage boundaries', () => {
       const hiddenPoint = { path: [0, 1, 0], offset: 3 };
 
       expect(() => editor.api.dom.assertDOMPoint(hiddenPoint)).toThrow(
-        CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE
+        CANNOT_RESOLVE_DOM_NODE
       );
       expect(
         testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
@@ -383,7 +380,6 @@ describe('DOM coverage boundaries', () => {
       copyPolicy: 'exclude',
       coveredPathRanges: [{ kind: 'text', anchor: [0], focus: [0] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [0],
       ownerNodeKey: getNodeKey(editor, [0]),
       reason: 'app-hidden',
@@ -397,7 +393,6 @@ describe('DOM coverage boundaries', () => {
       copyPolicy: 'exclude',
       coveredPathRanges: [{ kind: 'text', anchor: [2], focus: [2] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [2],
       ownerNodeKey: getNodeKey(editor, [2]),
       reason: 'app-hidden',
@@ -503,7 +498,7 @@ describe('DOM coverage boundaries', () => {
 
   test('syncs native selection inside a shadow root when focusing', () => {
     withDom((document) => {
-      const editor = createEditor({ extensions: [dom()] });
+      const editor = createEditor({ plugins: [dom()] });
       const host = document.createElement('div');
       const shadowRoot = host.attachShadow({ mode: 'open' });
       const root = document.createElement('div');
@@ -577,7 +572,7 @@ describe('DOM coverage boundaries', () => {
 
   test('focus publishes a missing selection and joins an active update', () => {
     withDom((document) => {
-      const editor = createEditor({ extensions: [dom()] });
+      const editor = createEditor({ plugins: [dom()] });
       const root = mountEditorRoot(editor, document);
 
       editorReplace(editor, {
@@ -631,7 +626,7 @@ describe('DOM coverage boundaries', () => {
 
   test('focus retries dirty node maps through the root DOM scheduler', () => {
     withDom((document) => {
-      const editor = createEditor({ extensions: [dom()] });
+      const editor = createEditor({ plugins: [dom()] });
 
       const root = mountEditorRoot(editor, document);
       const { scheduler, tasks } = createRecordingScheduler();
@@ -659,7 +654,7 @@ describe('DOM coverage boundaries', () => {
   for (const dirty of [false, true]) {
     test(`explicit blur cancels pending ${dirty ? 'retry' : 'settlement'}`, () => {
       withDom((document) => {
-        const editor = createEditor({ extensions: [dom()] });
+        const editor = createEditor({ plugins: [dom()] });
         const root = mountEditorRoot(editor, document);
 
         editorReplace(editor, {
@@ -713,7 +708,7 @@ describe('DOM coverage boundaries', () => {
 
   test('settles focus and native selection without stealing it or reviving a replaced root', () => {
     withDom((document) => {
-      const editor = createEditor({ extensions: [dom()] });
+      const editor = createEditor({ plugins: [dom()] });
       const root = mountEditorRoot(editor, document);
       const button = document.createElement('button');
 
@@ -796,8 +791,8 @@ describe('DOM coverage boundaries', () => {
 
   test('does not let an earlier editor repair reclaim shared document focus', () => {
     withDom((document) => {
-      const firstEditor = createEditor({ extensions: [dom()] });
-      const secondEditor = createEditor({ extensions: [dom()] });
+      const firstEditor = createEditor({ plugins: [dom()] });
+      const secondEditor = createEditor({ plugins: [dom()] });
       const firstRoot = mountEditorRoot(firstEditor, document);
       const secondRoot = mountEditorRoot(secondEditor, document);
       const mountText = (editor: DOMTestEditor, root: HTMLElement) => {
@@ -885,7 +880,7 @@ describe('DOM coverage boundaries', () => {
 
   test('settles a shadow-root host loss without stealing sibling focus', () => {
     withDom((document) => {
-      const editor = createEditor({ extensions: [dom()] });
+      const editor = createEditor({ plugins: [dom()] });
       const host = document.createElement('div');
       const shadowRoot = host.attachShadow({ mode: 'open' });
       const root = document.createElement('div');
@@ -989,17 +984,14 @@ describe('DOM coverage boundaries', () => {
       root.appendChild(placeholder);
 
       expect(
-        testView(editor).domCoverage.resolvePlitePointFromBoundary([
-          placeholder,
-          0,
-        ])
+        testView(editor).domCoverage.resolvePointFromBoundary([placeholder, 0])
       ).toMatchObject({
         boundary: { boundaryId: 'section-body' },
         edge: 'anchor',
         type: 'boundary-point',
       });
       expect(
-        editor.api.dom.assertPlitePoint([placeholder, 0], {
+        editor.api.dom.assertPoint([placeholder, 0], {
           exactMatch: true,
         })
       ).toEqual({
@@ -1007,14 +999,14 @@ describe('DOM coverage boundaries', () => {
         offset: 0,
       });
       expect(
-        testView(editor).domCoverage.resolvePlitePointFromBoundary([root, 1])
+        testView(editor).domCoverage.resolvePointFromBoundary([root, 1])
       ).toMatchObject({
         boundary: { boundaryId: 'section-body' },
         edge: 'anchor',
         type: 'boundary-point',
       });
       expect(
-        editor.api.dom.assertPlitePoint([root, 1], {
+        editor.api.dom.assertPoint([root, 1], {
           exactMatch: true,
         })
       ).toEqual({
@@ -1146,7 +1138,7 @@ describe('DOM coverage boundaries', () => {
       expect(clipboard.getData('text/plain')).toBe('Hidden alpha');
       expect(clipboard.getData('text/html')).toContain('Hidden alpha');
       expect(clipboard.getData('text/html')).not.toContain('STALE');
-      expect(clipboard.getData('application/x-plite-fragment')).not.toBe('');
+      expect(clipboard.getData('application/x-editor-fragment')).not.toBe('');
     });
   });
 
@@ -1212,7 +1204,7 @@ describe('DOM coverage boundaries', () => {
     });
 
     expect(() => editor.api.dom.assertDOMPoint(hiddenPoint)).toThrow(
-      CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE
+      CANNOT_RESOLVE_DOM_NODE
     );
     expect(
       testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)
@@ -1255,7 +1247,7 @@ describe('DOM coverage boundaries', () => {
   });
 
   test('invalidates a boundary when merge removes its owner runtime', () => {
-    const editor = createEditor({ extensions: [dom()] });
+    const editor = createEditor({ plugins: [dom()] });
 
     editorReplace(editor, {
       children: [
@@ -1291,7 +1283,6 @@ describe('DOM coverage boundaries', () => {
           focus: getNodeKey(editor, [1, 1]),
         },
       ],
-      findPolicy: 'native',
       ownerPath: [1],
       ownerNodeKey: getNodeKey(editor, [1]),
       reason: 'app-collapse',
@@ -1336,7 +1327,6 @@ describe('DOM coverage boundaries', () => {
           copyPolicy: 'model',
           coveredPathRanges: [{ kind: 'text', anchor: path, focus: path }],
           coveredRuntimeRanges: [],
-          findPolicy: 'native',
           ownerPath: path,
           ownerNodeKey: getNodeKey(editor, path),
           reason: 'app-collapse',
@@ -1367,7 +1357,6 @@ describe('DOM coverage boundaries', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ kind: 'text', anchor: [200, 0], focus: [200, 0] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [200],
       ownerNodeKey: getNodeKey(editor, [200]),
       reason: 'viewport-virtualization',
@@ -1406,7 +1395,6 @@ describe('DOM coverage boundaries', () => {
           { kind: 'text', anchor: [200, 0], focus: [200, 0] },
         ],
         coveredRuntimeRanges: [],
-        findPolicy: 'native',
         ownerPath: [200],
         ownerNodeKey: getNodeKey(editor, [200]),
         reason: 'viewport-virtualization',
@@ -1419,7 +1407,7 @@ describe('DOM coverage boundaries', () => {
       expect(editor.api.dom.resolveDOMRange(hiddenRange)).toBeNull();
       expect(editor.api.dom.resolveRangeRect(hiddenRange)).toBeNull();
       expect(() => editor.api.dom.assertDOMPoint(hiddenPoint)).toThrow(
-        CANNOT_RESOLVE_DOM_NODE_FROM_PLITE_NODE
+        CANNOT_RESOLVE_DOM_NODE
       );
       expect(
         testView(editor).domCoverage.resolveDOMPointOrBoundary(hiddenPoint)

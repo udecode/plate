@@ -5,97 +5,47 @@ import type {
   AnyPluginBase,
   PluginReference,
 } from '../../lib';
-import {
-  createPluginContext as createBaseContext,
-  createPluginPortal as createBasePortal,
-} from '../../lib/plugin/createPluginContext.internal';
+import { createPluginContext as createBaseContext } from '../../lib/plugin/createPluginContext.internal';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
-import type { InternalPlateEditorWithInstalledPlugins } from '../editor/Editor';
+import type { InternalReactEditorWithInstalledPlugins } from '../editor/Editor';
 import type {
-  AnyResolvedPlatePlugin,
-  AnyPlatePlugin,
-  AnyPlatePluginContext,
-  AnyPlatePluginPortal,
-  PlatePluginContext,
-  PlatePluginPortal,
+  AnyResolvedPlugin,
+  AnyPlugin,
+  AnyPluginContext,
+  PluginContext,
 } from './PlatePlugin';
 
 export function createPluginContext<
   V extends Value,
   E extends AnyBasePluginDefinition,
-  P extends (
-    | AnyBasePlugin
-    | AnyResolvedPlatePlugin
-    | AnyPlatePlugin
-    | AnyPluginBase
-  ) &
+  P extends (AnyBasePlugin | AnyResolvedPlugin | AnyPlugin | AnyPluginBase) &
     PluginReference,
 >(
-  editor: InternalPlateEditorWithInstalledPlugins<V, E>,
+  editor: InternalReactEditorWithInstalledPlugins<V, E>,
   plugin: P
-): PlatePluginContext<InternalPluginDefinitionOf<P>>;
+): PluginContext<InternalPluginDefinitionOf<P>>;
 export function createPluginContext<
   V extends Value,
   E extends AnyBasePluginDefinition,
 >(
-  editor: InternalPlateEditorWithInstalledPlugins<V, E>,
+  editor: InternalReactEditorWithInstalledPlugins<V, E>,
   plugin:
     | AnyBasePlugin
-    | AnyResolvedPlatePlugin
-    | AnyPlatePlugin
+    | AnyResolvedPlugin
+    | AnyPlugin
     | AnyPluginBase
     | PluginReference
     | string
-): AnyPlatePluginContext;
+): AnyPluginContext;
 export function createPluginContext(
   editor: object,
   plugin:
     | AnyBasePlugin
-    | AnyResolvedPlatePlugin
-    | AnyPlatePlugin
+    | AnyResolvedPlugin
+    | AnyPlugin
     | AnyPluginBase
     | PluginReference
     | string
 ): unknown {
   return Reflect.apply(createBaseContext, undefined, [editor, plugin]);
-}
-
-export function createPluginPortal<
-  V extends Value,
-  E extends AnyBasePluginDefinition,
-  P extends (
-    | AnyBasePlugin
-    | AnyResolvedPlatePlugin
-    | AnyPlatePlugin
-    | AnyPluginBase
-  ) &
-    PluginReference,
->(
-  editor: InternalPlateEditorWithInstalledPlugins<V, E>,
-  plugin: P
-): PlatePluginPortal<InternalPluginDefinitionOf<P>>;
-export function createPluginPortal<
-  V extends Value,
-  E extends AnyBasePluginDefinition,
->(
-  editor: InternalPlateEditorWithInstalledPlugins<V, E>,
-  plugin:
-    | AnyBasePlugin
-    | AnyResolvedPlatePlugin
-    | AnyPlatePlugin
-    | AnyPluginBase
-    | PluginReference
-    | string
-): AnyPlatePluginPortal;
-export function createPluginPortal(
-  editor: object,
-  plugin:
-    | AnyBasePlugin
-    | AnyResolvedPlatePlugin
-    | AnyPlatePlugin
-    | AnyPluginBase
-    | PluginReference
-    | string
-): unknown {
-  return Reflect.apply(createBasePortal, undefined, [editor, plugin]);
 }

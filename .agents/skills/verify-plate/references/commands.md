@@ -1,3 +1,5 @@
+# Plate proof commands
+
 ## Command Pitfalls
 
 Automation should use the repo's known focused commands, not improvised command
@@ -159,3 +161,56 @@ Rules:
 - if a command fails because of command shape, classify it as a workflow
   slowdown, repair the owning skill/script when reusable, and rerun the focused
   proof with the corrected command.
+
+
+## Source-first package checks
+
+Default to source-first typecheck. Do not build packages just to run types.
+Inspect the affected package/app `paths` and source-entry graph if stale
+declarations or unresolved exports suggest built-output resolution. Repair
+source-entry debt when appropriate; build when the actual claim concerns
+release artifacts or a package intentionally has no source-first path.
+
+Install dependencies when required by changed inputs or lockfile state, then
+use `pnpm turbo typecheck --filter=./packages/<modified-package>`. Run affected
+lint and fix actual diagnostics before final verification. Useful forms:
+
+```bash
+pnpm turbo typecheck --filter=./packages/platejs --filter=./packages/test
+pnpm turbo typecheck --filter='[HEAD^1]'
+pnpm turbo typecheck --filter='...[origin/main]'
+pnpm --filter platejs typecheck
+pnpm --filter platejs lint:fix
+```
+
+Use root `pnpm lint:fix` when the affected lint scope needs that command.
+`pnpm typecheck` checks root packages from source; `pnpm build` builds all
+packages only when needed. `bun run test` is the fast aggregate test lane;
+`pnpm test:all` is the complete lane for required handoff/CI proof, not the
+default iteration command.
+
+`pnpm check:plite` covers all Plite-family package typechecks/tests, proof-runner
+contracts and Chromium proof through `apps/plite`. Pair package and browser
+proof for release-quality behavior claims. The closure browser matrix covers
+Chromium, Firefox, mobile viewport and WebKit on Darwin. Run broad app browser
+proof before marking an architecture/browser plan done, for release-quality
+browser claims or when explicitly requested.
+
+`bun test:mobile-device-proof:raw` requires actual Appium Android/iOS artifacts.
+Semantic mobile handles and Playwright mobile viewports never prove a raw device.
+
+## Local install recovery
+
+When a local-only typecheck/build/dev/test failure does not match the change and
+shows missing-module/package-resolution corruption, corrupted `.bun` files,
+mixed `.bun`/`.pnpm` React paths, package-local `node_modules/react*`,
+`Invalid hook call` or null `resolveDispatcher()`, run `pnpm run reinstall` once
+and rerun the exact failing command before changing product code. The same
+recovery applies to these signals after a react-dnd repair; they do not by
+themselves disprove that repair.
+
+Reinstall removes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`
+and `tsconfig.tsbuildinfo`, then runs `pnpm install`. A changed/disappeared failure
+supports install corruption; an unchanged failure returns to ordinary diagnosis.
+Do not use reinstall to avoid fixing source errors or keep retrying unchanged
+failures.

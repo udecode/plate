@@ -1,5 +1,5 @@
 ---
-description: 'Plate Next cleanup supervisor: deeply review and migrate Plate surfaces to be Plite-perfect, hard-cut old Slate/Plate compatibility sludge, route plans vs implementation, and run auto-style timed/full loops.'
+description: Audit or migrate Plate surfaces to current Plite doctrine, including scoped hard cuts and versioned adoption proof.
 argument-hint: '[sync [package]|specific API|path|package|current tree|hours|full-loop|batch-loop]'
 name: plate-next
 metadata:
@@ -10,7 +10,6 @@ metadata:
 # Plate Next
 
 Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
-
 
 Handle $ARGUMENTS.
 
@@ -23,7 +22,7 @@ selection. Reuse valid accepted decisions rather than restarting each audit.
 
 ## Doctrine Version
 
-Current doctrine version: `182`.
+Current doctrine version: `198`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and

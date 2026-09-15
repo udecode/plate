@@ -1,12 +1,12 @@
 import type { Element } from '../../../facade';
 import { NodeApi } from '../../../facade';
-import { defineBasePlugin, type DefinitionOf } from '../../plugin';
+import { definePlugin, type DefinitionOf } from '../../plugin';
 
 export type ElementStateApi = {
   isEmpty: (element: Element) => boolean;
 };
 
-export const ElementStatePlugin = defineBasePlugin('elementState', {
+export const ElementStatePlugin = definePlugin('elementState', {
   api: ({ editor }) => ({
     isEmpty: (element: Element) =>
       !NodeApi.hasProps(element, {

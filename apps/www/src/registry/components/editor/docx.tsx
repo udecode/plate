@@ -1,5 +1,5 @@
 'use client';
 
-import { DocxPlugin } from 'platejs/docx';
+import { WordPastePlugin } from 'platejs/docx/paste';
 
-export const DocxKit = [DocxPlugin] as const;
+export const DocxKit = [WordPastePlugin] as const;

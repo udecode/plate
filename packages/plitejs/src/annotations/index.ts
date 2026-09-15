@@ -1,12 +1,12 @@
 export type {
-  PliteAnnotation,
-  PliteAnnotationAnchor,
-  PliteAnnotationChange,
-  PliteAnnotationRefreshOptions,
-  PliteAnnotationSnapshot,
-  PliteAnnotationStore,
-  PliteAnnotationStoreMetrics,
-  PliteAnnotationStoreOptions,
-  PliteResolvedAnnotation,
+  Annotation,
+  AnnotationAnchor,
+  AnnotationChange,
+  AnnotationRefreshOptions,
+  AnnotationSnapshot,
+  AnnotationStore,
+  AnnotationStoreMetrics,
+  AnnotationStoreOptions,
+  ResolvedAnnotation,
 } from './store';
-export { createPliteAnnotationStore } from './store';
+export { createAnnotationStore } from './store';

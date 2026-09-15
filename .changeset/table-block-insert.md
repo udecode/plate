@@ -52,6 +52,6 @@ Replace `editor.api.table.getCellTypes()` with `editor.plugin(TableCellPlugin).s
 
 Use `getCellIndices(cell)` for row and column coordinates and `getAdjacentCell({ deltaCol, deltaRow })` for neighboring cells. Border batch mutation is private to the table command owner; public callers use `setBorderSize` or `toggleBorders`.
 
-Use exact clipboard slices through `readSlice` and `writeSlice`, and preserve projected row and cell children when exporting directional node selections through the core slice read.
+Use exact clipboard slices through `readSlice` and `writeSlice`, preserve complete row and cell root graphs when copying or moving a selected rectangle, and export directional node selections through the core slice read.
 
 Use semantic table fields and store column widths only on tables.

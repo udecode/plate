@@ -113,17 +113,25 @@ describe('placeholder upload lifetime', () => {
   });
   it('starts committed insertions and completes without any mounted view or image load', async () => {
     const request = deferred();
+    let calls = 0;
     const editor = createEditor({
       plugins: [
         BasePlaceholderPlugin.configure({
-          initialState: { upload: () => request.promise },
+          initialState: {
+            upload: () => {
+              calls += 1;
+              return request.promise;
+            },
+          },
         }),
       ],
     });
+    const initialValue = editor.read.children();
     const file = new File(['image'], 'image.png', { type: 'image/png' });
     const owner = editor.plugin(BasePlaceholderPlugin);
     owner.update.insertMedia([file], { at: [1] });
     const key = editor.key([1])!;
+    const childKey = editor.key([1, 0])!;
     expect(owner.store.get('uploadTask', key)?.file).toBe(file);
     request.resolve({
       url: 'https://example.test/image.png',
@@ -137,7 +145,18 @@ describe('placeholder upload lifetime', () => {
       naturalWidth: 640,
       naturalHeight: 360,
     });
+    expect(editor.key([1])).toBe(key);
+    expect(editor.key([1, 0])).toBe(childKey);
+    expect(editor.read.children()[1]).not.toHaveProperty('mediaType');
     expect(owner.store.get('uploadTask', key)).toBeUndefined();
+    editor.update.history.undo();
+    expect(editor.read.children()).toEqual(initialValue);
+    editor.update.history.redo();
+    expect(editor.read.children()[1]).toMatchObject({
+      type: 'image',
+      url: 'https://example.test/image.png',
+    });
+    expect(calls).toBe(1);
   });
 
   it('replaces an explicit empty source and aborts its upload on undo', () => {

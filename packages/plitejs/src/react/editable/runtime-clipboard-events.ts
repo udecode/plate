@@ -7,6 +7,10 @@ import {
 import { SelectionApi } from '../..';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
+  isPliteViewSelectionCollapsed,
+  readPliteViewSelection,
+} from '../view-selection';
+import {
   applyEditableCopy,
   applyEditableCut,
   applyEditablePaste,
@@ -70,8 +74,8 @@ export const useRuntimeClipboardEvents = ({
   onPaste,
   readOnly,
   repair,
-  setExplicitPartialDOMBackedSelection,
-  partialDOMBackedSelection,
+  setExplicitViewportBackedSelection,
+  viewportBackedSelection,
   rootRef,
   trace,
 }: {
@@ -83,8 +87,8 @@ export const useRuntimeClipboardEvents = ({
   onPaste?: ClipboardHandler;
   readOnly: boolean;
   repair: EditableEventRuntime['repair'];
-  setExplicitPartialDOMBackedSelection: (nextValue: boolean) => void;
-  partialDOMBackedSelection: boolean;
+  setExplicitViewportBackedSelection: (nextValue: boolean) => void;
+  viewportBackedSelection: boolean;
   rootRef: { current: HTMLDivElement | null };
   trace: EditableEventRuntime['trace'];
 }) => {
@@ -107,14 +111,14 @@ export const useRuntimeClipboardEvents = ({
         event,
         onPaste,
         readOnly,
-        partialDOMBackedSelection,
+        viewportBackedSelection,
       });
       if (pasteResult.repair) {
         repair.requestEditableRepair(pasteResult.repair);
       }
-      if (pasteResult.explicitPartialDOMBackedSelection !== undefined) {
-        setExplicitPartialDOMBackedSelection(
-          pasteResult.explicitPartialDOMBackedSelection
+      if (pasteResult.explicitViewportBackedSelection !== undefined) {
+        setExplicitViewportBackedSelection(
+          pasteResult.explicitViewportBackedSelection
         );
       }
       trace.recordKernelEventTrace({
@@ -132,8 +136,8 @@ export const useRuntimeClipboardEvents = ({
       onPaste,
       readOnly,
       repair,
-      setExplicitPartialDOMBackedSelection,
-      partialDOMBackedSelection,
+      setExplicitViewportBackedSelection,
+      viewportBackedSelection,
       trace,
     ]
   );
@@ -218,11 +222,13 @@ export const useRuntimeClipboardEvents = ({
 
     const document = root.ownerDocument;
     const route = (event: globalThis.ClipboardEvent) => {
+      const projected = readPliteViewSelection(editor);
       if (
         event.defaultPrevented ||
         document.activeElement !== root ||
         (event.target !== null && root.contains(event.target as Node)) ||
-        !SelectionApi.isNode(readRuntimeSelection(editor))
+        (!SelectionApi.isNode(readRuntimeSelection(editor)) &&
+          (!projected || isPliteViewSelectionCollapsed(projected)))
       ) {
         return;
       }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 
 import { act, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Plate, createEditor } from 'platejs/react';
+import { EditorRoot, createEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { BasicNodesKit } from '../components/editor/basic-nodes';
@@ -21,13 +21,13 @@ const setup = () => {
     initialValue: value,
   });
   const view = render(
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <Editor aria-label="Editor" />
-      <button data-plite-keep-selection-visible="" type="button">
+      <button data-editor-keep-selection-visible="" type="button">
         Keep selection visible
       </button>
       <button type="button">Outside control</button>
-    </Plate>
+    </EditorRoot>
   );
 
   return { editor, view };
@@ -55,11 +55,11 @@ describe('native inactive selection', () => {
 
     await waitFor(() =>
       expect(
-        view.container.querySelector('[data-plite-inactive-selection]')
+        view.container.querySelector('[data-editor-inactive-selection]')
       ).toBeTruthy()
     );
     expect(
-      view.container.querySelector('[data-plite-inactive-selection-caret]')
+      view.container.querySelector('[data-editor-inactive-selection-caret]')
     ).toBeNull();
     expect(editor.read.children()).toEqual(before);
 
@@ -67,7 +67,7 @@ describe('native inactive selection', () => {
 
     await waitFor(() =>
       expect(
-        view.container.querySelector('[data-plite-inactive-selection]')
+        view.container.querySelector('[data-editor-inactive-selection]')
       ).toBeNull()
     );
   });
@@ -112,11 +112,11 @@ describe('native inactive selection', () => {
 
       await waitFor(() =>
         expect(
-          view.container.querySelector('[data-plite-inactive-selection-caret]')
+          view.container.querySelector('[data-editor-inactive-selection-caret]')
         ).toBeTruthy()
       );
       expect(
-        view.container.querySelector('[data-plite-inactive-selection]')
+        view.container.querySelector('[data-editor-inactive-selection]')
       ).toBeNull();
     } finally {
       if (rangeRectDescriptor) {

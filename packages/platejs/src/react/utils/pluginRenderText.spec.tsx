@@ -4,12 +4,12 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import { property } from '../../core';
-import { defineBasePlugin } from '../../lib/plugin';
+import { definePlugin } from '../../lib/plugin';
 import { createEditor } from '../editor/withPlate';
 import { pluginRenderText } from './pluginRenderText.internal';
 
 it('uses an intrinsic component fast path for simple text plugins', () => {
-  const testPlugin = defineBasePlugin('test', {
+  const testPlugin = definePlugin('test', {
     component: 'strong',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: { mark: { placement: 'text' } },
@@ -22,7 +22,7 @@ it('uses an intrinsic component fast path for simple text plugins', () => {
   const TestComponent = () =>
     renderText({
       attributes: {
-        'data-plite-node': 'text',
+        'data-editor-node': 'text',
         className: 'from-plite',
       } as any,
       children: 'test content',
@@ -34,8 +34,8 @@ it('uses an intrinsic component fast path for simple text plugins', () => {
   const text = container.querySelector('strong');
 
   expect(text).not.toBeNull();
-  expect(text).toHaveClass('plite-test');
+  expect(text).toHaveClass('editor-test');
   expect(text).toHaveClass('from-plite');
-  expect(text).toHaveAttribute('data-plite-node', 'text');
+  expect(text).toHaveAttribute('data-editor-node', 'text');
   expect(text).toHaveTextContent('test content');
 });

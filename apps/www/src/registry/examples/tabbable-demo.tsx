@@ -1,10 +1,10 @@
 'use client';
 
 import {
-  type PlateElementProps,
-  definePlatePlugin,
-  Plate,
-  PlateElement,
+  type EditorElementProps,
+  definePlugin,
+  EditorRoot,
+  EditorElement,
   useCreateEditor,
   useEditorFocused,
   useElementSelected,
@@ -15,7 +15,7 @@ import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { tabbableValue } from '@/registry/examples/values/tabbable-value';
 
-const TabbableElementPlugin = definePlatePlugin('tabbableElement', {
+const TabbableElementPlugin = definePlugin('tabbableElement', {
   schema: { element: { void: 'block' } },
 });
 
@@ -29,23 +29,23 @@ export default function TabbableDemo() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer variant="demo">
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 
 export function TabbableElement({
   children,
   ...props
-}: PlateElementProps<typeof TabbableElementPlugin>) {
+}: EditorElementProps<typeof TabbableElementPlugin>) {
   const selected = useElementSelected();
   const focused = useEditorFocused();
 
   return (
-    <PlateElement {...props}>
+    <EditorElement {...props}>
       <div
         className={cn(
           'mb-2 p-2',
@@ -60,6 +60,6 @@ export function TabbableElement({
         <button type="button">Button 2</button>
       </div>
       {children}
-    </PlateElement>
+    </EditorElement>
   );
 }

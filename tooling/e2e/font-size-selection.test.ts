@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
-import { createPliteBrowserEditorHarness } from '../../packages/test/src/playwright';
-import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+import { createBrowserEditorHarness } from '../../packages/test/src/playwright';
+import { recordBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 const normalizeNativeSelectionText = (value: string) =>
   value.replaceAll('\uFEFF', '').replaceAll('\u00A0', '');
@@ -10,12 +10,12 @@ const readSelectionGeometry = (target: Locator) =>
   target.evaluate((element) => {
     const document = element.ownerDocument;
     const editor = document.querySelector(
-      '[data-plite-editor="true"][contenteditable="true"], [data-slate-editor="true"][contenteditable="true"]'
+      '[data-editor="true"][contenteditable="true"], [data-slate-editor="true"][contenteditable="true"]'
     );
     const selection = document.defaultView?.getSelection();
     const stringHosts = Array.from(
       element.querySelectorAll<HTMLElement>(
-        '[data-plite-string], [data-slate-string]'
+        '[data-editor-string], [data-slate-string]'
       )
     );
 
@@ -125,7 +125,7 @@ const readCursorOverlayGeometry = async (
       new Set(
         Array.from(
           element.querySelectorAll<HTMLElement>(
-            '[data-plite-string], [data-slate-string]'
+            '[data-editor-string], [data-slate-string]'
           ),
           (stringHost) => getComputedStyle(stringHost).fontSize
         )
@@ -137,7 +137,7 @@ const readCursorOverlayGeometry = async (
 };
 
 const readModelSelectionState = async (
-  browserEditor: ReturnType<typeof createPliteBrowserEditorHarness>
+  browserEditor: ReturnType<typeof createBrowserEditorHarness>
 ) => {
   const [selection, value] = await Promise.all([
     browserEditor.get.selection(),
@@ -222,7 +222,7 @@ const readPaintedSelectionWidth = async (
   const textBounds = await selectedBlock.evaluate((element, text) => {
     const stringHosts = Array.from(
       element.querySelectorAll<HTMLElement>(
-        '[data-plite-string], [data-slate-string]'
+        '[data-editor-string], [data-slate-string]'
       )
     );
 
@@ -574,29 +574,29 @@ test('font-size command refreshes expanded selection paint (#5091)', async ({
   for (const selectionCase of cases) {
     await page.goto('/');
     const editor = page.locator(
-      '[data-plite-editor="true"][contenteditable="true"], [data-slate-editor="true"][contenteditable="true"]'
+      '[data-editor="true"][contenteditable="true"], [data-slate-editor="true"][contenteditable="true"]'
     );
     const target = page.getByText(selectionCase.targetText, { exact: true });
     const selectedBlock = target.locator(
-      'xpath=ancestor::*[@data-plite-node="element" or @data-slate-node="element"][1]'
+      'xpath=ancestor::*[@data-editor-node="element" or @data-slate-node="element"][1]'
     );
     const fontSizeInput = page.locator(
-      'input[data-plate-focus="true"][value="16"]'
+      'input[data-editor-focus="true"][value="16"]'
     );
 
     await expect(editor).toHaveCount(1);
     await expect(target).toBeVisible();
     await page.waitForLoadState('networkidle');
     const selectedBlockKey = await selectedBlock.getAttribute(
-      'data-plite-node-key'
+      'data-editor-node-key'
     );
     const stableSelectedBlock = selectedBlockKey
       ? editor.locator(
-          `[data-plite-node="element"][data-plite-node-key="${selectedBlockKey}"]`
+          `[data-editor-node="element"][data-editor-node-key="${selectedBlockKey}"]`
         )
       : selectedBlock;
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       strict: true,
     });
 
@@ -625,7 +625,7 @@ test('font-size command refreshes expanded selection paint (#5091)', async ({
           )
         ).toBe(0);
       }
-      const browserEditor = createPliteBrowserEditorHarness(
+      const browserEditor = createBrowserEditorHarness(
         page,
         'playground',
         editor
@@ -665,7 +665,7 @@ test('font-size command refreshes expanded selection paint (#5091)', async ({
         );
       }
       await expect(
-        editor.locator('[data-plite-view-selection="true"]')
+        editor.locator('[data-editor-view-selection="true"]')
       ).toHaveCount(0);
       await expect
         .poll(async () => {
@@ -755,7 +755,7 @@ test('font-size command refreshes expanded selection paint (#5091)', async ({
           page.evaluate(() => ({
             activeInEditor: Boolean(
               document
-                .querySelector('[data-plite-editor="true"]')
+                .querySelector('[data-editor="true"]')
                 ?.contains(document.activeElement)
             ),
             nativeText: window.getSelection()?.toString() ?? '',
@@ -784,7 +784,7 @@ test('font-size command refreshes expanded selection paint (#5091)', async ({
       expect(cursorOverlay.rectCount).toBeGreaterThan(0);
       expect(cursorOverlay.backgroundColors).not.toEqual([]);
       await expect(
-        editor.locator('[data-plite-view-selection="true"]')
+        editor.locator('[data-editor-view-selection="true"]')
       ).toHaveCount(0);
       // Check the settled paint after the toolbar popover closes.
       await page.waitForTimeout(200);

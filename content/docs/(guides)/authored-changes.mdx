@@ -1,0 +1,349 @@
+---
+title: Authored Changes
+description: Capture attributed edits, review proposals, retain author history, and export explicit projections.
+docs:
+  - route: /docs/suggestion
+    title: Suggestions
+  - route: /docs/comment
+    title: Comments
+  - route: /docs/yjs
+    title: Collaboration
+---
+
+Authored changes keep accepted content, proposals, decisions, and stable change identities in one saved document. Use [Suggestions](/docs/suggestion) for the common editing and suggesting modes. This guide covers the underlying records, advanced views, decisions, retained history, and formats.
+
+## Choose the right surface
+
+| Need                                              | Surface                                                                 |
+| ------------------------------------------------- | ----------------------------------------------------------------------- |
+| Switch between editing and suggesting             | `SuggestionPlugin` from `platejs/suggestion/react`                      |
+| Add copied highlighting and review cards          | [SuggestionKit](/docs/suggestion) and [DiscussionKit](/docs/discussion) |
+| Record changes using Plate's `userId`             | `DefaultAuthoredPlugin` from `platejs/authored`                         |
+| Choose a custom author resolver or retain history | `authored(options)` from `platejs/authored`                             |
+| Read, decide, resolve, or revert changes          | The installed authored plugin portal                                    |
+| Attach a conversation                             | `CommentsPlugin` with a `{ type: 'change', id }` target                 |
+
+Suggestion is a behavior and presentation layer over authored changes. It does not define another change record, decision result, or persistence format.
+
+## Install authored changes
+
+`DefaultAuthoredPlugin` resolves the author from the Plate editor's `userId` once per transaction:
+
+```tsx title="editor.ts" showLineNumbers
+import { BaseParagraphPlugin, createEditor } from "platejs";
+import { DefaultAuthoredPlugin } from "platejs/authored";
+
+const editor = createEditor({
+  plugins: [BaseParagraphPlugin, DefaultAuthoredPlugin],
+  initialValue: [
+    { type: "paragraph", children: [{ text: "Review this sentence." }] },
+  ],
+  userId: "alice",
+});
+
+const authored = editor.plugin(DefaultAuthoredPlugin);
+```
+
+Use an authenticated, stable user ID. A missing identity rejects tracked document writes.
+
+For a custom resolver or retained accepted history, create one descriptor and use that same descriptor for portal access:
+
+```tsx title="history-editor.ts" showLineNumbers
+import { BaseParagraphPlugin, createEditor } from "platejs";
+import { authored } from "platejs/authored";
+
+const RetainedAuthoredPlugin = authored({
+  authorId: () => session.user.id,
+  retainHistory: true,
+});
+
+const historyEditor = createEditor({
+  plugins: [BaseParagraphPlugin, RetainedAuthoredPlugin],
+  initialValue,
+});
+
+const retainedAuthored = historyEditor.plugin(RetainedAuthoredPlugin);
+```
+
+`retainHistory` keeps closed edit bodies needed for selective revert. Omit it when the application only needs pending review and attribution.
+
+## Capture changes
+
+An editing view records ordinary updates as accepted contributions. Begin an explicit proposal inside the transaction before applying its document mutation:
+
+```tsx
+let changeId = "";
+
+editor.update((tx) => {
+  changeId = tx.authored.propose();
+  tx.text.insert(" reviewed", {
+    at: { offset: 8, path: [0, 0] },
+  });
+});
+```
+
+Pass `{ changeId }` to amend a pending contribution owned by the current author. The current author must own its latest head.
+
+## Configure a view
+
+Set the starting intent and projection on `EditorRoot`:
+
+```tsx
+import { DefaultAuthoredPlugin } from "platejs/authored";
+import { EditorContent, EditorRoot, useCreateEditor } from "platejs/react";
+
+export function SuggestionEditor() {
+  const editor = useCreateEditor({
+    plugins: [DefaultAuthoredPlugin],
+    userId: "alice",
+  });
+
+  return (
+    <EditorRoot
+      editor={editor}
+      authored={{ intent: "propose", projection: "markup" }}
+    >
+      <EditorContent />
+    </EditorRoot>
+  );
+}
+```
+
+The editor must install an authored plugin, either directly or through `SuggestionPlugin`. Changing the `intent` or `projection` prop updates this view. Rerendering with equivalent values preserves subsequent mode changes made through the mounted view's portal.
+
+For an interactive mode control, let `SuggestionPlugin` map `'editing'` to accepted editing and `'suggesting'` to markup proposing:
+
+```tsx
+import { SuggestionPlugin } from "platejs/suggestion/react";
+
+editor.plugin(SuggestionPlugin).api.setMode("suggesting");
+```
+
+Use the authored portal for advanced projections:
+
+```tsx
+const authored = editor.plugin(DefaultAuthoredPlugin);
+
+authored.api.setView({
+  intent: "propose",
+  projection: "proposed",
+});
+```
+
+| Projection | Visible content                                             |
+| ---------- | ----------------------------------------------------------- |
+| `accepted` | Accepted content without pending proposals                  |
+| `proposed` | The proposed result without retained review fragments       |
+| `markup`   | Proposed content with retained deletions and move fragments |
+
+Intent and projection belong to the exact view. Selection, clipboard input, commands, and anchors use that view's coordinates. Two mounted views over one document can use different policies.
+
+## Review changes
+
+Read a page of pending changes, then capture a revision-bound selection for the decision:
+
+```tsx
+const authored = editor.plugin(DefaultAuthoredPlugin);
+const pending = authored.read.changes({
+  authorId: "alice",
+  limit: 50,
+  status: "pending",
+});
+const selection = authored.read.select({
+  ids: pending.items.map(({ id }) => id),
+});
+const result = authored.update.decide({
+  action: "accept",
+  selection,
+});
+```
+
+Use `action: 'reject'` to reject changes. The example selects only the returned page. Pass a non-null page `cursor` to `changes(...)` to read more, or call `select({ authorId: 'alice', status: 'pending' })` to select every current match.
+
+`AuthoredSelection` captures the document ID, change revisions, and current heads. A later amendment makes an old selection `stale`. Dependencies and concurrent conflicts return `blocked` without partially applying the batch.
+
+For spatial controls, use `change(id)` to read one record and `changesAt(range)` to find records intersecting a text range. Each `AuthoredChange` includes its author, status, kind, dependencies, revision, and current ranges.
+
+Read semantic detail when the reviewer opens one change:
+
+```tsx
+const details = authored.read.details(changeId);
+
+if (details?.parts.status === "available") {
+  for (const part of details.parts.items) {
+    // Render content, boundary, property, or root facts in review UI.
+  }
+}
+```
+
+`details(id)` returns the compact change summary, decision history, and immutable semantic parts. Content parts include before and after slices. Boundary parts distinguish paragraph splits from joins. Property parts preserve exact before and after values. Root parts describe root creation or deletion.
+
+Closed changes without retained edit bodies return `parts.status: 'unavailable'` with `reason: 'retention'`; their summary and reviews remain readable. Keep list and spatial reads compact, and request details only for the change being reviewed.
+
+### Decision results
+
+Always inspect the result of `decide`, `resolve`, or `revert`:
+
+| Status        | Meaning                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| `applied`     | The operation applied to the returned IDs.                                                       |
+| `unchanged`   | No change was needed.                                                                            |
+| `stale`       | The selected revisions or heads changed. Read the records again before retrying.                 |
+| `blocked`     | The selection has unresolved dependencies, dependants, or conflicts. Inspect the returned lists. |
+| `invalid`     | The selection or document identity is invalid.                                                   |
+| `unavailable` | A revert needs content that is no longer retained.                                               |
+
+`authored.read.preview({ action, selection })` checks an accept or reject decision without applying it. An `applied` preview means the decision can apply at that moment; the later `decide` call still needs result handling.
+
+Accepting a change can require its dependencies. Rejecting one can require its dependants. The editor never expands the selection silently. Call `authored.update.resolve({ action, selection })` only after the reviewer chooses a decision for the complete conflict component.
+
+## Retain author history
+
+Enable `retainHistory` before recording work whose content must remain available for selective revert. Loading a compacted document with retention enabled cannot recover discarded edit bodies.
+
+Select an author's accepted contributions and create a compensating change:
+
+```tsx
+const selection = retainedAuthored.read.select({
+  authorId: "alice",
+  status: "accepted",
+});
+const result = retainedAuthored.update.revert({ selection });
+```
+
+The original records keep their authors. The compensation belongs to the current author. A revert can return `blocked` when later dependent work prevents compensation, or `unavailable` when the required content is absent.
+
+Plate History reverses local interaction batches with `editor.update.history.undo()` and `redo()`. Local undo also restores mapped selection. Selective revert records another authored contribution. The [Version History example](/docs/examples/version-history) lets you edit as two authors and revert one retained contribution.
+
+## Save the document
+
+Save the complete result of `editor.read.value()`. It contains accepted content and the `meta.authored` records needed to reconstruct proposals and decisions. Saving only the node array loses those records.
+
+```tsx
+const savedDocument = editor.read.value();
+
+const restored = createEditor({
+  plugins: [BaseParagraphPlugin, DefaultAuthoredPlugin],
+  initialValue: savedDocument,
+  userId: "alice",
+});
+```
+
+Use the same content plugins and schema when loading. To replace an existing editor's document, call `editor.update.value.replace(savedDocument)`. Loading validates the authored records and document schema before publishing the value. Treat `meta.authored` as codec-owned data.
+
+If you install [Comments](/docs/comment), save `editor.plugin(CommentsPlugin).api.getThreads()` alongside the document. Thread records have a separate persistence lifecycle and can reference authored change IDs.
+
+## Export explicit projections
+
+Choose `accepted` or `proposed` for a document without review records, or `review` to preserve the authored envelope. The first two return an `authored-lossy-projection` diagnostic when pending review records are omitted. The proposed projection still includes proposed content.
+
+JSON defaults to `accepted` when options are omitted. Markdown, HTML, and DOCX require a `projection` option.
+
+### JSON
+
+```tsx
+import {
+  deserializeAuthoredJson,
+  serializeAuthoredJson,
+} from "platejs/authored";
+
+const json = serializeAuthoredJson(editor, { projection: "review" });
+const document = deserializeAuthoredJson(json.data);
+```
+
+`deserializeAuthoredJson` parses the document envelope. Load the result into an editor to validate the installed schema and authored records.
+
+### Markdown
+
+Install `MarkdownPlugin` from `platejs/markdown` with the content plugins used by the document:
+
+```tsx
+import { MarkdownPlugin } from "platejs/markdown";
+
+const markdownEditor = createEditor({
+  plugins: [BaseParagraphPlugin, DefaultAuthoredPlugin, MarkdownPlugin],
+  initialValue: editor.read.value(),
+  userId: "alice",
+});
+
+const markdown = markdownEditor.api.markdown.serializeAuthored({
+  projection: "review",
+});
+const document = markdownEditor.api.markdown.deserialize(markdown.data);
+```
+
+Review output contains proposed Markdown followed by a Plate authored envelope. The envelope preserves review records; the visible Markdown is the proposed result.
+
+### HTML and DOCX
+
+Use an editor configured with [static components](/docs/static) for HTML output and the content plugins required by [DOCX export](/docs/docx). Server code imports from base package paths such as `platejs`; avoid `/react` imports in server-side conversion code.
+
+```tsx
+import { exportToDocx } from "platejs/docx/export";
+import { renderAuthoredHtml } from "platejs/static";
+
+const html = await renderAuthoredHtml(editor, { projection: "review" });
+const docx = await exportToDocx(editor, { projection: "review" });
+```
+
+HTML returns its string in `html.data`. A successful DOCX result returns a `Blob` in `docx.blob`. Both results include `diagnostics`.
+
+| Format   | Accepted or proposed     | Review                                                          |
+| -------- | ------------------------ | --------------------------------------------------------------- |
+| JSON     | Plain projected document | Canonical authored document envelope                            |
+| Markdown | Plain Markdown           | Proposed Markdown plus a Plate authored envelope                |
+| HTML     | Static projected HTML    | Proposed HTML plus an escaped authored JSON script              |
+| DOCX     | Projected Word document  | Word tracked revisions plus the canonical authored package part |
+
+`deserializeAuthoredHtml(editor, data)` from `platejs/static` returns a detached document. A successful `importDocx(...)` call from `platejs/docx/import` returns one complete `document` and lists unsupported Word revision constructs in `diagnostics`.
+
+Review DOCX export reports `lossy-content` or `unsupported-content` when Word markup cannot express a native construct. The native envelope restores exact authored data only while the Word package remains unchanged and corresponding.
+
+## Collaboration
+
+Install the authored plugin and Yjs on every peer, with matching document and schema identities. Plate supplies local History by default.
+
+The Yjs adapter applies authored operations and decisions in one remote transaction. Its checkpoints preserve pending work and each peer's retained content. Retention policy is local: an archival peer can retain closed bodies while another peer compacts them.
+
+See [Collaboration](/docs/yjs) for setup and compaction ownership.
+
+## API Reference
+
+### `DefaultAuthoredPlugin`
+
+Import the standard descriptor from `platejs/authored`. It resolves the author from the Plate editor's `userId` and uses default retention. `SuggestionPlugin` and `AIChatPlugin` depend on this descriptor.
+
+### `authored(options)`
+
+Create a custom authored descriptor. Import it from `platejs/authored`.
+
+| Option          | Type                                                  | Purpose                                                            |
+| --------------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
+| `authorId`      | `string \| ((editor) => string \| null \| undefined)` | Required. Resolve a nonempty author ID once per transaction.       |
+| `retainHistory` | `boolean`                                             | Keep closed edit bodies for selective revert. Defaults to `false`. |
+
+### Transaction, reads, and updates
+
+After `const authored = editor.plugin(DefaultAuthoredPlugin)`, use these methods:
+
+| Surface                                   | Purpose                                                                            |
+| ----------------------------------------- | ---------------------------------------------------------------------------------- |
+| `tx.authored.propose(options?)`           | Start a proposal or pass `{ changeId }` to amend an owned pending change.          |
+| `authored.read.view()`                    | Read this view's intent and projection.                                            |
+| `authored.read.change(id)`                | Read one logical change, or `null`.                                                |
+| `authored.read.details(id)`               | Read one change with semantic parts and decision history, or `null`.               |
+| `authored.read.changes(query?)`           | Read a page filtered by author, status, or time.                                   |
+| `authored.read.changesAt(range)`          | Read changes intersecting a text range.                                            |
+| `authored.read.select(query)`             | Capture a revision-bound selection for a decision.                                 |
+| `authored.read.preview(decision)`         | Check an accept or reject decision without applying it.                            |
+| `authored.update.decide(decision)`        | Accept or reject the selected changes atomically.                                  |
+| `authored.update.resolve(decision)`       | Decide a complete conflict component explicitly.                                   |
+| `authored.update.revert({ selection })`   | Compensate retained accepted contributions.                                        |
+| `authored.api.setView(view)`              | Change the policy on this exact view.                                              |
+| `authored.api.subscribeChanges(listener)` | Subscribe to immutable affected change IDs and decoration node keys for this view. |
+
+`subscribeChanges` is a low-level integration hook for semantic decorators. Suggestion applications use `useSuggestionChanges(path)` instead.
+
+### Types and format helpers
+
+`platejs/authored` exports the authored plugin descriptors, change and decision types, format snapshots and diagnostics, JSON serialization helpers, and `createAuthoredReviewDocument` for trusted cumulative imported revisions.

@@ -1,18 +1,18 @@
 import {
-  defineExtension,
+  definePlugin,
   editorCommands,
   type EditorTransactionSpecBuilder,
   NodeApi,
   PathApi,
   PointApi,
   RangeApi,
-  type Element as PliteElement,
+  type Element as EditorElement,
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
-  Plite,
+  EditorRoot,
   useEditor,
 } from 'plitejs/react';
 
@@ -84,23 +84,23 @@ const MarkdownShortcutsExample = () => {
     },
   ];
   const editor = useEditor({
-    extensions: [history(), markdownShortcuts()],
+    plugins: [history(), markdownShortcuts()],
     initialValue,
   });
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable
         autoFocus
         placeholder="Write some markdown..."
         renderElement={renderElement}
         spellCheck
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
 const markdownShortcuts = () =>
-  defineExtension('markdown-shortcuts', {
+  definePlugin('markdown-shortcuts', {
     commands: ({ around, handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         const selection = state.selection();
@@ -126,7 +126,7 @@ const markdownShortcuts = () =>
               return state.transaction((tx) => {
                 tx.nodes.set({
                   type: 'paragraph',
-                } satisfies Partial<PliteElement>);
+                } satisfies Partial<EditorElement>);
 
                 if (block.type === 'list-item') {
                   tx.nodes.unwrap({

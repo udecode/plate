@@ -279,7 +279,7 @@ test('select-all keydown commands keep model selection ownership', () => {
     classifyKeyboardIntent({
       editor: createEditor() as any,
       event,
-      domStrategyRuntime: null,
+      viewportRuntime: null,
     })
   ).toBe('model-selection-move');
 });
@@ -298,7 +298,7 @@ test('document boundary keyboard intent uses model selection ownership', () => {
         },
         target: null,
       } as any,
-      domStrategyRuntime: null,
+      viewportRuntime: null,
     })
   ).toBe('model-selection-move');
 });
@@ -488,7 +488,7 @@ test('keyboard split-block commands are model-owned structural intent', () => {
         },
         target: null,
       } as any,
-      domStrategyRuntime: null,
+      viewportRuntime: null,
     })
   ).toBe('insert-break');
 });
@@ -516,7 +516,7 @@ test('keyboard structural commands keep model selection after programmatic DOM e
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
   });
 
   expect(decision).toMatchObject({
@@ -553,7 +553,7 @@ test('keyboard movement keeps DOM-less node selections model-owned', () => {
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
   });
 
   expect(decision).toMatchObject({
@@ -587,7 +587,7 @@ test('unknown modified printable shortcuts preserve model selection for app hand
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
   });
 
   expect(decision).toMatchObject({
@@ -622,7 +622,7 @@ test('keyboard structural commands keep model selection after delayed text repai
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
   });
 
   expect(decision).toMatchObject({
@@ -657,9 +657,9 @@ test('keyboard history commands preserve model selection before DOM import', () 
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: {
+    viewportRuntime: {
       mountedTopLevelNodeKeys: new Set(),
-      type: 'staged',
+      type: 'virtualized',
     },
   });
 
@@ -677,14 +677,14 @@ test('keyboard history commands preserve model selection before DOM import', () 
   });
 });
 
-test('keyboard destructive commands keep partial-DOM-backed model selection', () => {
+test('keyboard destructive commands keep viewport-backed model selection', () => {
   const editor = createEditor() as any;
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
   });
   inputController.state.selectionChangeOrigin = null;
-  inputController.state.selectionSource = 'partial-dom-backed';
+  inputController.state.selectionSource = 'viewport-backed';
 
   const decision = prepareEditableKeyDownKernel({
     editor,
@@ -700,9 +700,9 @@ test('keyboard destructive commands keep partial-DOM-backed model selection', ()
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: {
+    viewportRuntime: {
       mountedTopLevelNodeKeys: new Set(),
-      type: 'staged',
+      type: 'virtualized',
     },
   });
 
@@ -714,14 +714,14 @@ test('keyboard destructive commands keep partial-DOM-backed model selection', ()
   });
 });
 
-test('keyboard no-op shortcuts keep partial-DOM-backed model selection', () => {
+test('keyboard no-op shortcuts keep viewport-backed model selection', () => {
   const editor = createEditor() as any;
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: true },
     state: createEditableInputControllerState(),
   });
   inputController.state.selectionChangeOrigin = null;
-  inputController.state.selectionSource = 'partial-dom-backed';
+  inputController.state.selectionSource = 'viewport-backed';
 
   const decision = prepareEditableKeyDownKernel({
     editor,
@@ -737,9 +737,9 @@ test('keyboard no-op shortcuts keep partial-DOM-backed model selection', () => {
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: {
+    viewportRuntime: {
       mountedTopLevelNodeKeys: new Set(),
-      type: 'partial-dom',
+      type: 'virtualized',
     },
   });
 
@@ -779,7 +779,7 @@ test('keyboard text insert keeps model selection after repair-induced text input
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
   });
 
   expect(decision).toMatchObject({
@@ -844,7 +844,7 @@ test('keyboard model selection moves keep model selection after programmatic DOM
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
   });
 
   expect(decision).toMatchObject({
@@ -877,7 +877,7 @@ test('keyboard model selection moves import DOM selection when native selection 
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
   });
 
   expect(decision).toMatchObject({
@@ -917,7 +917,7 @@ test('keyboard input preserves projected view selection before command routing',
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
   });
 
   expect(decision).toMatchObject({
@@ -950,7 +950,7 @@ test('keyboard structural commands import DOM selection when native selection ow
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
   });
 
   expect(decision).toMatchObject({
@@ -985,7 +985,7 @@ test('keyboard events during composition stay browser-owned', () => {
       target: null,
     } as any,
     inputController,
-    domStrategyRuntime: null,
+    viewportRuntime: null,
   });
 
   expect(decision).toMatchObject({

@@ -2,7 +2,7 @@ import { fireEvent, render } from '@testing-library/react';
 import { defineEditorSchema, schema } from 'plitejs';
 import * as React from 'react';
 
-import { createEditor, Editable, Plite } from '../../src/react';
+import { createEditor, Editable, EditorRoot } from '../../src/react';
 
 const drawingSchema = defineEditorSchema('schema:void-interactive-mouse', {
   elements: { drawing: { void: 'block' } },
@@ -18,11 +18,11 @@ it('lets canvas controls receive their first mouse gesture without selecting the
   });
   editor.install(drawingSchema);
   const view = render(
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable
         renderElement={({ attributes, children }) => (
           <div {...attributes}>
-            <div contentEditable={false} data-plite-root-chrome-ignore="true">
+            <div contentEditable={false} data-editor-root-chrome-ignore="true">
               <label>
                 <input type="radio" aria-label="Rectangle" />
                 <span>Rectangle tool</span>
@@ -35,7 +35,7 @@ it('lets canvas controls receive their first mouse gesture without selecting the
           </div>
         )}
       />
-    </Plite>
+    </EditorRoot>
   );
   for (const target of [
     view.getByText('Rectangle tool'),

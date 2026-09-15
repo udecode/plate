@@ -7,7 +7,7 @@ import {
   HeadingPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-  Plate,
+  EditorRoot,
   useCreateEditor,
 } from 'platejs/react';
 import * as React from 'react';
@@ -65,7 +65,7 @@ export default function MyEditorPage() {
   });
 
   return (
-    <Plate
+    <EditorRoot
       onValueChange={({ value: innerValue }) => {
         localStorage.setItem(
           `nextjs-plate-value-demo-${new Date().toISOString().split('T')[0]}`,
@@ -130,6 +130,6 @@ export default function MyEditorPage() {
       <EditorContainer>
         <Editor placeholder="Type your amazing content here..." />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

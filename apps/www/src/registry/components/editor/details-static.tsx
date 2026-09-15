@@ -1,29 +1,29 @@
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 export function DetailsElementStatic(
-  props: PliteElementProps<typeof BaseDetailsPlugin>
+  props: EditorElementProps<typeof BaseDetailsPlugin>
 ) {
   const { element, slots } = props;
 
   return (
-    <PliteElement {...props} as="details" className="my-1">
+    <EditorElement {...props} as="details" className="my-1">
       {slots.children({ from: 0, to: 0 })}
       {element.children.length > 1
         ? slots.children({ from: 1, to: element.children.length - 1 })
         : null}
-    </PliteElement>
+    </EditorElement>
   );
 }
 
 export function DetailsSummaryElementStatic(
-  props: PliteElementProps<typeof BaseDetailsSummaryPlugin>
+  props: EditorElementProps<typeof BaseDetailsSummaryPlugin>
 ) {
   return (
-    <PliteElement {...props} as="summary" className="font-medium">
+    <EditorElement {...props} as="summary" className="font-medium">
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 

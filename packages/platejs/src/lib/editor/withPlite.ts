@@ -1,16 +1,20 @@
 import {
-  compileEditorSchemaContract,
+  compileEditorSchemaContractEntries,
+  initializePluginEntries,
+  type InternalPluginPublicationEntry,
+  withPluginPortalCandidates,
+} from 'plitejs/internal';
+
+import {
   containsCompleteEditorSchema,
   createEditor as createPliteEditor,
-  defineExtension,
+  defineRuntimePlugin,
   defineEditorSchema,
-  type Editor as PliteEditor,
+  type Editor as RuntimeEditor,
   type EditorDocumentValue,
   type EditorSchemaContract,
-  type EditorExtensionReference,
-  type EditorExtensionsFromOptions,
+  type RuntimePluginReference,
   type EditorLifecycleErrorSink,
-  type EditorValueFromOptions,
   type PersistedDocumentInput,
   setEditorReadOnly,
   type SnapshotInput,
@@ -19,7 +23,6 @@ import {
   type Selection,
   type Value,
   getCompiledEditorSchemaFromApi,
-  initializeEditorExtensions,
   MAIN_ROOT_KEY,
   mapSemanticUpdateMethodArguments,
   repairEditorValue,
@@ -50,40 +53,35 @@ import {
   mapDocumentSelection,
   prepareDocument,
 } from '../../internal/plugin/pipePrepareDocument';
-import { createPlateChangeHandlersExtension } from '../../internal/plugin/plateChangeHandlers';
+import { createPlateChangeHandlersPlugin } from '../../internal/plugin/plateChangeHandlers';
 import { clearPlateRuntimeCandidate } from '../../internal/plugin/plateRuntime';
 import { clearPluginStores } from '../../internal/plugin/pluginStore';
 import {
   collectPlatePluginSourceCandidates,
   createPlateModelPublication,
-  createPlateRuntimeExtensions,
-  getPlateRuntimeExtensionBindings,
-  resolvePlateRuntimeExtension,
+  createPlateRuntimePlugins,
   resolvePlugins,
-  restorePlateRuntimeExtensionBindings,
   snapshotPlatePluginSources,
 } from '../../internal/plugin/resolvePlugins';
 import type { NoInfer } from '../../internal/types';
 import {
+  getPluginSourceReferences,
   getPluginSchemaFamily,
   isNominalPluginDescriptor,
   isNominalPluginReference,
 } from '../../internal/utils/mergePlugins';
 import type {
   AnyBasePlugin,
-  BasePluginPortal,
   BasePluginDefinitionInput,
-  DynamicBasePluginPortal,
 } from '../plugin/BasePlugin';
-import { createPluginPortal } from '../plugin/createPluginContext.internal';
+import { createPlatePluginPortal } from '../plugin/createPluginContext.internal';
 import { createBasePlugin } from '../plugin/defineBasePlugin.internal';
 import type { PluginReference } from '../plugin/PluginDefinition';
-import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
 import {
   type CorePluginDefinition,
   type CorePlugins,
   getCorePlugins,
-} from '../plugins/getCorePlugins';
+} from '../plugins/getCorePlugins.internal';
 import { type DocumentMigrations, migrateDocument } from './documentMigrations';
 import type {
   InferPlugins,
@@ -98,9 +96,6 @@ import {
   type EditorSchemaIdentity,
   getEditorSchemaIdentity,
 } from './editorApplicationSchema';
-
-type PluginLookupInput = AnyBasePlugin | PluginReference | string;
-type PluginContextLookupInput = PluginLookupInput;
 
 type PlateSchemaDescriptor = PluginReference;
 
@@ -311,9 +306,9 @@ export type EditorValueInput<V extends Value> =
 
 const normalizeBaseInitialValue = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>,
+  editor: Editor<V, TPlugins>,
   value: unknown,
   implicitDocumentIsCurrent: boolean
 ): EditorDocumentValue<V> | PersistedDocumentInput<V> => {
@@ -367,9 +362,9 @@ const normalizeBaseInitialValue = <
 
 const resolveBaseInitialValue = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>,
+  editor: Editor<V, TPlugins>,
   {
     autoSelect,
     implicitDocumentIsCurrent,
@@ -379,12 +374,12 @@ const resolveBaseInitialValue = <
     autoSelect?: boolean | 'end' | 'start';
     implicitDocumentIsCurrent: boolean;
     initialValue?:
-      | ((context: { editor: Editor<V, TExtensions> }) => EditorValueInput<V>)
+      | ((context: { editor: Editor<V, TPlugins> }) => EditorValueInput<V>)
       | EditorValueInput<V>;
     selection?: Selection;
   }
 ) => {
-  const nextValue = normalizeBaseInitialValue<V, TExtensions>(
+  const nextValue = normalizeBaseInitialValue<V, TPlugins>(
     editor,
     typeof initialValue === 'function'
       ? initialValue({ editor })
@@ -420,16 +415,16 @@ const normalizeBaseEditor = (editor: Editor) => {
   }
 };
 
-const createPlateSchemaExtensions = (
+const createPlateSchemaPlugins = (
   editor: Editor,
   identityOptions: EditorSchemaIdentity | undefined,
   model: ReturnType<typeof compilePlateModel>,
   pluginList: readonly AnyBasePlugin[],
-  extensions: readonly EditorExtensionReference[],
+  runtimePlugins: readonly RuntimePluginReference[],
   applicationSchema?: ReturnType<typeof compileEditorApplicationSchema>,
   applicationName?: string
-) => {
-  const hasCompleteExtensionSchema = containsCompleteEditorSchema(extensions);
+): readonly InternalPluginPublicationEntry[] => {
+  const hasCompletePluginSchema = containsCompleteEditorSchema(runtimePlugins);
   const definition = {
     groups: model.contribution.groups ?? {},
     root:
@@ -439,7 +434,7 @@ const createPlateSchemaExtensions = (
         min: 1,
       }),
   };
-  const schemaFoundation = hasCompleteExtensionSchema
+  const schemaFoundation = hasCompletePluginSchema
     ? undefined
     : identityOptions
       ? defineEditorSchema(`schema:${identityOptions.id}`, {
@@ -448,32 +443,32 @@ const createPlateSchemaExtensions = (
           version: identityOptions.version,
         })
       : defineEditorSchema('schema:derived', definition);
-  const { codecExtension, runtime } = withCompiledPlateModelCandidate(
+  const { codecPlugin, runtime } = withCompiledPlateModelCandidate(
     editor,
     model,
     () => {
-      const innerRuntime = createPlateRuntimeExtensions(
+      const innerRuntime = createPlateRuntimePlugins(
         editor,
         pluginList,
         model,
         (type) => lowerPlateNodeType(editor, type),
-        { includeSchemaContributions: !hasCompleteExtensionSchema }
+        { includeSchemaContributions: !hasCompletePluginSchema }
       );
 
       return {
-        codecExtension: compilePlateCodecs(editor, model, pluginList),
+        codecPlugin: compilePlateCodecs(editor, model, pluginList),
         runtime: innerRuntime,
       };
     }
   );
-  const applicationSchemaExtension = applicationSchema
-    ? defineExtension(`schema:application:${applicationName ?? 'editor'}`, {
+  const applicationSchemaPlugin = applicationSchema
+    ? defineRuntimePlugin(`schema:application:${applicationName ?? 'editor'}`, {
         schema: applicationSchema.contribution,
       })
     : undefined;
   let publication: ReturnType<typeof createPlateModelPublication> | undefined;
 
-  const modelExtension = defineExtension('plate:model', {
+  const modelPlugin = defineRuntimePlugin('plate:model', {
     validate: ({ schema: schemaApi }) => {
       const compiledSchema = getCompiledEditorSchemaFromApi(schemaApi);
 
@@ -500,12 +495,12 @@ const createPlateSchemaExtensions = (
   });
 
   return Object.freeze([
-    ...(schemaFoundation ? [schemaFoundation] : []),
-    ...runtime.extensions,
-    ...extensions,
-    ...(applicationSchemaExtension ? [applicationSchemaExtension] : []),
-    modelExtension,
-    ...(codecExtension ? [codecExtension] : []),
+    ...(schemaFoundation ? [{ plugin: schemaFoundation }] : []),
+    ...runtime.entries,
+    ...runtimePlugins.map((plugin) => ({ plugin })),
+    ...(applicationSchemaPlugin ? [{ plugin: applicationSchemaPlugin }] : []),
+    { plugin: modelPlugin },
+    ...(codecPlugin ? [{ plugin: codecPlugin }] : []),
   ]);
 };
 
@@ -513,7 +508,7 @@ const createPlateConfiguration = (
   editor: Editor,
   identity: EditorSchemaIdentity | undefined,
   pluginList: readonly AnyBasePlugin[],
-  extensions: readonly EditorExtensionReference[],
+  plugins: readonly RuntimePluginReference[],
   schema?: EditorApplicationSchema
 ) =>
   withCompiledPlatePluginCandidate(editor, pluginList, () => {
@@ -526,19 +521,19 @@ const createPlateConfiguration = (
       authoredModel,
       applicationSchema?.contribution
     );
-    const modelExtensions = createPlateSchemaExtensions(
+    const modelPlugins = createPlateSchemaPlugins(
       editor,
       identity,
       model,
       pluginList,
-      extensions,
+      plugins,
       applicationSchema,
       schema?.id
     );
     return Object.freeze({
-      extensions: Object.freeze([
-        ...modelExtensions,
-        createPlateChangeHandlersExtension(editor),
+      entries: Object.freeze([
+        ...modelPlugins,
+        { plugin: createPlateChangeHandlersPlugin(editor) },
       ]),
       model,
     });
@@ -641,46 +636,31 @@ const installPlateModelAccessors = (editor: Editor) => {
   };
 };
 
-const plateExtensionPortals = new WeakMap<
-  object,
-  Readonly<{
-    original: Editor['extension'];
-    portal: Editor['extension'];
-  }>
->();
+const withPlatePluginPortalCandidates = <T>(
+  editor: Editor,
+  sources: Parameters<typeof collectPlatePluginSourceCandidates>[0],
+  run: () => T
+): T =>
+  withPluginPortalCandidates(
+    editor,
+    collectPlatePluginSourceCandidates(sources).map((descriptor) => ({
+      createPortal: createPlatePluginPortal,
+      descriptor,
+      sources: getPluginSourceReferences(descriptor),
+    })),
+    run
+  );
 
-const installPlateExtensionPortal = (editor: Editor) => {
-  const installed = plateExtensionPortals.get(editor);
-
-  if (installed?.portal === editor.extension) return () => {};
-
-  const original = editor.extension;
-  const portal = ((reference: EditorExtensionReference) =>
-    Reflect.apply(original, editor, [
-      resolvePlateRuntimeExtension(editor, reference),
-    ])) as Editor['extension'];
-
-  editor.extension = portal;
-  plateExtensionPortals.set(editor, Object.freeze({ original, portal }));
-
-  return () => {
-    if (editor.extension === portal) editor.extension = original;
-    plateExtensionPortals.delete(editor);
-  };
-};
-
-const installPlateEditorExtensions = (
+const installPlateRuntimePlugins = (
   editor: Editor,
   identity: EditorSchemaIdentity | undefined,
-  extensions: readonly EditorExtensionReference[],
+  plugins: readonly RuntimePluginReference[],
   initialization?: Readonly<{
     initialize?: (tx: EditorTransactionSpecBuilder<Value, any>) => void;
     initialValue?: () => SnapshotInput;
   }>,
   schema?: EditorApplicationSchema
 ) => {
-  const previousBindings = getPlateRuntimeExtensionBindings(editor);
-  const restoreExtensionPortal = installPlateExtensionPortal(editor);
   let restoreModelAccessors: (() => void) | undefined;
 
   try {
@@ -688,14 +668,14 @@ const installPlateEditorExtensions = (
       editor,
       identity,
       getPlateRuntime(editor).pluginList,
-      extensions,
+      plugins,
       schema
     );
 
     withCompiledPlateModelCandidate(editor, configuration.model, () => {
-      initializeEditorExtensions<PliteEditor<any, any>>(
+      initializePluginEntries<RuntimeEditor<any, any>>(
         editor,
-        configuration.extensions,
+        configuration.entries,
         {
           initialize: initialization?.initialize
             ? (tx) => {
@@ -721,8 +701,6 @@ const installPlateEditorExtensions = (
     });
   } catch (error) {
     restoreModelAccessors?.();
-    restorePlateRuntimeExtensionBindings(editor, previousBindings);
-    restoreExtensionPortal();
     throw error;
   }
 
@@ -730,8 +708,7 @@ const installPlateEditorExtensions = (
 };
 
 export type EditorOptions<
-  TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  P extends BasePluginInput = CorePlugins[number],
+  TPlugins extends readonly RuntimePluginReference[] = readonly [],
 > = {
   /**
    * Unique identifier for the editor instance.
@@ -739,10 +716,8 @@ export type EditorOptions<
    * @default nanoid()
    */
   id?: string;
-  /** Low-level Plite extensions installed after Plate's runtime bridge. */
-  extensions?: TExtensions;
-  /** Receives failures from extension lifecycle observers. */
-  lifecycleErrorSink?: EditorLifecycleErrorSink<PliteEditor<any, any>>;
+  /** Receives failures from plugin lifecycle observers. */
+  lifecycleErrorSink?: EditorLifecycleErrorSink<RuntimeEditor<any, any>>;
   /**
    * Current user ID for collaborative features (e.g., Yjs). Used to identify
    * the creator of elements like combobox inputs.
@@ -775,7 +750,7 @@ export type EditorOptions<
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
    */
-  plugins?: readonly P[];
+  plugins?: TPlugins;
   /**
    * Editor read-only initial state. For dynamic read-only control, use the
    * `Plate.readOnly` prop instead.
@@ -790,7 +765,7 @@ export type EditorOptions<
    * positioned when the editor loads.
    */
   selection?: Selection;
-  /** Initial selection using the Plite constructor name. */
+  /** Initial model selection. */
   initialSelection?: Selection;
   /**
    * When `true`, normalizes the `initialValue` passed to the editor. This is
@@ -817,8 +792,8 @@ export type EditorOptions<
 type ApplyEditorOptions<
   V extends Value = Value,
   P extends BasePluginInput = CorePlugins[number],
-  TExtensions extends readonly EditorExtensionReference[] = readonly [],
-> = Omit<EditorOptions<TExtensions, P>, 'id'> &
+  TPlugins extends readonly RuntimePluginReference[] = readonly [],
+> = Omit<EditorOptions<TPlugins>, 'id'> &
   Partial<
     Pick<AnyBasePlugin, 'decorate' | 'initialState' | 'inject' | 'override'>
   > & {
@@ -843,6 +818,29 @@ type ApplyEditorOptions<
       | EditorValueInput<NoInfer<V>>;
   };
 
+const partitionPluginInputs = (
+  plugins: readonly RuntimePluginReference[]
+): Readonly<{
+  plate: readonly BasePluginInput[];
+  runtime: readonly RuntimePluginReference[];
+}> => {
+  const plate: BasePluginInput[] = [];
+  const runtime: RuntimePluginReference[] = [];
+
+  for (const plugin of plugins) {
+    if (isNominalPluginDescriptor(plugin)) {
+      plate.push(plugin as BasePluginInput);
+    } else {
+      runtime.push(plugin);
+    }
+  }
+
+  return Object.freeze({
+    plate: Object.freeze(plate),
+    runtime: Object.freeze(runtime),
+  });
+};
+
 const prepareInitialPlatePlugins = (
   editor: Editor,
   {
@@ -853,16 +851,21 @@ const prepareInitialPlatePlugins = (
     readOnly,
     schema,
     userId,
-  }: Pick<
-    EditorOptions<readonly EditorExtensionReference[], BasePluginInput>,
-    | 'affinity'
-    | 'maxLength'
-    | 'migrations'
-    | 'plugins'
-    | 'readOnly'
-    | 'schema'
-    | 'userId'
-  >,
+  }: Omit<
+    Pick<
+      EditorOptions<readonly BasePluginInput[]>,
+      | 'affinity'
+      | 'maxLength'
+      | 'migrations'
+      | 'plugins'
+      | 'readOnly'
+      | 'schema'
+      | 'userId'
+    >,
+    'plugins'
+  > & {
+    plugins?: readonly BasePluginInput[];
+  },
   pluginConfig: Pick<
     ApplyEditorOptions,
     'api' | 'decorate' | 'initialState' | 'inject' | 'override'
@@ -879,38 +882,6 @@ const prepareInitialPlatePlugins = (
     setEditorMaxLength(editor, maxLength);
   }
 
-  function getInstalledPluginPortal<P extends AnyBasePlugin & PluginReference>(
-    this: Editor,
-    plugin: P
-  ): BasePluginPortal<InternalPluginDefinitionOf<P>>;
-  function getInstalledPluginPortal(
-    this: Editor,
-    plugin: AnyBasePlugin | PluginReference | string
-  ): DynamicBasePluginPortal;
-  function getInstalledPluginPortal(
-    this: Editor,
-    plugin: PluginContextLookupInput
-  ): unknown {
-    return createPluginPortal(this, plugin);
-  }
-  const pluginAccessors = new WeakMap<
-    object,
-    typeof getInstalledPluginPortal
-  >();
-  Object.defineProperty(editor, 'plugin', {
-    configurable: true,
-    enumerable: true,
-    get(this: Editor) {
-      let accessor = pluginAccessors.get(this);
-      if (!accessor) {
-        accessor = getInstalledPluginPortal.bind(
-          this
-        ) as typeof getInstalledPluginPortal;
-        pluginAccessors.set(this, accessor);
-      }
-      return accessor;
-    },
-  });
   const baseCorePlugins = getCorePlugins({ affinity });
 
   const internalRootCandidate = createBasePlugin('root', pluginConfig);
@@ -928,7 +899,7 @@ const prepareInitialPlatePlugins = (
     reactCore: [],
     user: plugins,
   });
-  const publicationBeforeExtension = getPlateModelPublication(editor);
+  const publicationBeforePlugin = getPlateModelPublication(editor);
   const applicationPolicy = schema;
   let restoreSnapshotInputTransform: (() => void) | undefined;
   let restoreStateViewTransform: (() => void) | undefined;
@@ -938,16 +909,18 @@ const prepareInitialPlatePlugins = (
     restoreSnapshotInputTransform?.();
     restoreStateViewTransform?.();
     restoreTransactionViewTransform?.();
-    if (!publicationBeforeExtension) clearPlateModelPublication(editor);
+    if (!publicationBeforePlugin) clearPlateModelPublication(editor);
     clearPluginStores(editor);
   };
 
   try {
-    withEditorApplicationSchemaCandidate(
-      editor,
-      applicationPolicy,
-      collectPlatePluginSourceCandidates(sourcePlugins),
-      () => resolvePlugins(editor, sourcePlugins)
+    withPlatePluginPortalCandidates(editor, sourcePlugins, () =>
+      withEditorApplicationSchemaCandidate(
+        editor,
+        applicationPolicy,
+        collectPlatePluginSourceCandidates(sourcePlugins),
+        () => resolvePlugins(editor, sourcePlugins)
+      )
     );
     restoreStateViewTransform = setEditorStateViewTransform(editor, (state) => {
       for (const [key, optionIndexes] of [
@@ -989,70 +962,6 @@ const prepareInitialPlatePlugins = (
             );
           }
         }
-        const bindings = getPlateRuntimeExtensionBindings(editor);
-        const groups = new Map<string, unknown>();
-
-        bindings?.plugins.forEach((binding, name) => {
-          const group = Reflect.get(transaction, binding.extension.name);
-
-          if (group !== undefined) groups.set(name, group);
-        });
-
-        const portal = (plugin: PluginLookupInput) => {
-          if (
-            typeof plugin !== 'string' &&
-            !isNominalPluginDescriptor(plugin)
-          ) {
-            throw new TypeError(
-              'Plate transaction plugin lookup requires a plugin descriptor or plugin name string.'
-            );
-          }
-
-          const name = typeof plugin === 'string' ? plugin : plugin.name;
-          const binding = bindings?.plugins.get(name);
-
-          if (!binding) {
-            throw new Error(`Plate plugin "${name}" is not installed.`);
-          }
-          if (
-            typeof plugin !== 'string' &&
-            getPluginSchemaFamily(plugin) !== binding.family
-          ) {
-            throw new Error(
-              `Plate plugin "${name}" resolves to a different descriptor family.`
-            );
-          }
-
-          const group = groups.get(name);
-
-          if (group === undefined) {
-            throw new Error(
-              `Plate plugin "${name}" does not expose transaction methods.`
-            );
-          }
-
-          return group;
-        };
-        const directPluginGroup = groups.get('plugin');
-
-        transaction.plugin =
-          (typeof directPluginGroup === 'object' &&
-            directPluginGroup !== null) ||
-          typeof directPluginGroup === 'function'
-            ? new Proxy(portal, {
-                get(target, property, receiver) {
-                  if (Reflect.has(directPluginGroup, property)) {
-                    return Reflect.get(
-                      directPluginGroup,
-                      property,
-                      directPluginGroup
-                    );
-                  }
-
-                  return Reflect.get(target, property, receiver);
-                },
-              })
-            : portal;
       }
     );
     restoreSnapshotInputTransform = setEditorSnapshotInputTransform(
@@ -1138,11 +1047,13 @@ const prepareInitialPlatePlugins = (
       identity,
       restore,
       withSchemaCandidate: <T>(run: () => T): T =>
-        withEditorApplicationSchemaCandidate(
-          editor,
-          applicationPolicy,
-          collectPlatePluginSourceCandidates(sourcePlugins),
-          run
+        withPlatePluginPortalCandidates(editor, sourcePlugins, () =>
+          withEditorApplicationSchemaCandidate(
+            editor,
+            applicationPolicy,
+            collectPlatePluginSourceCandidates(sourcePlugins),
+            run
+          )
         ),
     };
   } catch (error) {
@@ -1152,25 +1063,24 @@ const prepareInitialPlatePlugins = (
   }
 };
 
-/** Applies the Base plugin model to a Plite editor during construction. */
+/** Applies the Base plugin model to an editor during construction. */
 export const applyEditor = <
   V extends Value = Value,
   P extends BasePluginInput = CorePlugins[number],
-  const TExtensions extends readonly EditorExtensionReference[] = readonly [],
+  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
 >(
-  e: PliteEditor<any, any>,
-  options: ApplyEditorOptions<V, P, TExtensions>,
+  e: RuntimeEditor<any, any>,
+  options: ApplyEditorOptions<V, P, TPlugins>,
   implicitDocumentIsCurrent: boolean
 ): InternalBaseEditorWithInstalledPlugins<
   V,
   InferBaseEditorPlugins<P[]>,
   InferBaseEditorSchemaPlugins<P[]>,
-  TExtensions
+  RuntimePluginsFromTuple<TPlugins>
 > => {
   const {
     affinity,
     autoSelect,
-    extensions = [],
     initialValue,
     initialSelection,
     lifecycleErrorSink: _lifecycleErrorSink,
@@ -1186,16 +1096,27 @@ export const applyEditor = <
     ...pluginConfig
   } = options;
   const editor = e as unknown as Editor;
-  const prepared = prepareInitialPlatePlugins(
-    editor,
-    { affinity, maxLength, migrations, plugins, readOnly, schema, userId },
-    pluginConfig
-  );
-  const { identity } = prepared;
+  const pluginInputs = partitionPluginInputs(plugins);
+  let prepared: ReturnType<typeof prepareInitialPlatePlugins> | undefined;
 
   try {
+    prepared = prepareInitialPlatePlugins(
+      editor,
+      {
+        affinity,
+        maxLength,
+        migrations,
+        plugins: pluginInputs.plate,
+        readOnly,
+        schema,
+        userId,
+      },
+      pluginConfig
+    );
+    const { identity } = prepared;
+
     prepared.withSchemaCandidate(() => {
-      installPlateEditorExtensions(
+      installPlateRuntimePlugins(
         editor,
         identity
           ? Object.freeze({
@@ -1203,7 +1124,7 @@ export const applyEditor = <
               version: identity.version,
             })
           : undefined,
-        extensions,
+        pluginInputs.runtime,
         skipInitialization
           ? undefined
           : {
@@ -1237,10 +1158,10 @@ export const applyEditor = <
       V,
       InferBaseEditorPlugins<P[]>,
       InferBaseEditorSchemaPlugins<P[]>,
-      TExtensions
+      RuntimePluginsFromTuple<TPlugins>
     >;
   } catch (error) {
-    prepared.restore();
+    prepared?.restore();
     throw error;
   } finally {
     clearPlateRuntimeCandidate(editor);
@@ -1263,28 +1184,34 @@ export type EditorCompilation = Readonly<{
 /** @internal */
 export const compilePlateEditor = (
   options: Pick<
-    EditorOptions<readonly EditorExtensionReference[], BasePluginInput>,
+    EditorOptions<readonly RuntimePluginReference[]>,
     'plugins' | 'schema'
   >
 ): EditorCompilation => {
   const editor = createPliteEditor() as unknown as Editor;
-  const prepared = prepareInitialPlatePlugins(editor, options);
-  const previousBindings = getPlateRuntimeExtensionBindings(editor);
-  const restoreExtensionPortal = installPlateExtensionPortal(editor);
+  const pluginInputs = partitionPluginInputs(options.plugins ?? []);
+  let prepared: ReturnType<typeof prepareInitialPlatePlugins> | undefined;
 
   try {
-    return prepared.withSchemaCandidate(() => {
+    const current = prepareInitialPlatePlugins(editor, {
+      plugins: pluginInputs.plate,
+      schema: options.schema,
+    });
+
+    prepared = current;
+
+    return current.withSchemaCandidate(() => {
       const configuration = createPlateConfiguration(
         editor,
-        prepared.identity,
+        current.identity,
         getPlateRuntime(editor).pluginList,
-        [],
+        pluginInputs.runtime,
         options.schema
       );
       const schema = withCompiledPlateModelCandidate(
         editor,
         configuration.model,
-        () => compileEditorSchemaContract(editor, configuration.extensions)
+        () => compileEditorSchemaContractEntries(editor, configuration.entries)
       );
       const publication = getPlateModelPublication(editor);
 
@@ -1308,67 +1235,69 @@ export const compilePlateEditor = (
       });
     });
   } finally {
-    restorePlateRuntimeExtensionBindings(editor, previousBindings);
-    restoreExtensionPortal();
-    prepared.restore();
+    prepared?.restore();
     clearPlateRuntimeCandidate(editor);
   }
 };
 
 type CreateEditorOptionsForValue<
   V extends Value,
-  TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  P extends readonly BasePluginInput[] = readonly BasePluginInput[],
+  TPlugins extends readonly RuntimePluginReference[] = readonly [],
   TSchema extends EditorApplicationSchema | undefined =
     | EditorApplicationSchema
     | undefined,
 > = Partial<
-  Omit<
-    ApplyEditorOptions<V, BasePluginInput, TExtensions>,
-    'plugins' | 'schema'
-  >
+  Omit<ApplyEditorOptions<V, BasePluginInput, TPlugins>, 'plugins' | 'schema'>
 > & {
   /** Stable logical identity for the created editor. */
   id?: string;
-  /** Existing Plite editor to enhance instead of allocating a new editor. */
-  editor?: PliteEditor<any, any>;
+  /** Existing editor to enhance instead of allocating a new editor. */
+  editor?: RuntimeEditor<any, any>;
   /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
    */
-  plugins?: P;
+  plugins?: TPlugins;
   schema?: TSchema;
 };
 
 export type CreateEditorOptions<
   V extends Value = Value,
-  TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  P extends readonly BasePluginInput[] = readonly BasePluginInput[],
+  TPlugins extends readonly RuntimePluginReference[] = readonly [],
   TSchema extends EditorApplicationSchema | undefined =
     | EditorApplicationSchema
     | undefined,
-> = CreateEditorOptionsForValue<V, TExtensions, P, TSchema>;
+> = CreateEditorOptionsForValue<V, TPlugins, TSchema>;
 
 export function createEditorWithEditor<
   V extends Value = Value,
-  const TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  const P extends readonly BasePluginInput[] = readonly [],
+  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  editor: PliteEditor<any, any>,
-  options: CreateEditorOptions<V, TExtensions, P, TSchema> = {}
-): Editor<V, TExtensions, P, TSchema> {
+  editor: RuntimeEditor<any, any>,
+  options: CreateEditorOptions<V, TPlugins, TSchema> = {}
+): Editor<
+  V,
+  RuntimePluginsFromTuple<TPlugins>,
+  PlatePluginsFromTuple<TPlugins>,
+  TSchema
+> {
   return applyEditor(
     editor,
     options as unknown as Parameters<typeof applyEditor>[1],
     false
-  ) as unknown as Editor<V, TExtensions, P, TSchema>;
+  ) as unknown as Editor<
+    V,
+    RuntimePluginsFromTuple<TPlugins>,
+    PlatePluginsFromTuple<TPlugins>,
+    TSchema
+  >;
 }
 
 /**
  * Creates a base Plate editor (non-React version).
  *
- * This function creates a fully configured base editor on top of Plite for
+ * This function creates a fully configured Plate editor for
  * non-React environments or server-side contexts. It applies the specified
  * plugins and configuration to create a functional editor.
  *
@@ -1405,46 +1334,54 @@ export function createEditorWithEditor<
  * @see {@link createEditor} for a React-specific version of editor creation.
  * @see {@link useCreateEditor} for a memoized React version.
  */
+export type PlatePluginsFromTuple<TPlugins extends readonly unknown[]> = [
+  TPlugins[number],
+] extends [BasePluginInput]
+  ? Extract<TPlugins, readonly BasePluginInput[]>
+  : [Extract<TPlugins[number], BasePluginInput>] extends [never]
+    ? readonly []
+    : number extends TPlugins['length']
+      ? ReadonlyArray<Extract<TPlugins[number], BasePluginInput>>
+      : TPlugins extends readonly [infer TPlugin, ...infer TRest]
+        ? TPlugin extends BasePluginInput
+          ? readonly [TPlugin, ...PlatePluginsFromTuple<TRest>]
+          : PlatePluginsFromTuple<TRest>
+        : readonly [];
+
+/** Keep only descriptors authored for the substrate runtime. */
+export type RuntimePluginsFromTuple<TPlugins extends readonly unknown[]> = [
+  TPlugins[number],
+] extends [BasePluginInput]
+  ? readonly []
+  : [Extract<TPlugins[number], BasePluginInput>] extends [never]
+    ? TPlugins
+    : number extends TPlugins['length']
+      ? ReadonlyArray<Exclude<TPlugins[number], BasePluginInput>>
+      : TPlugins extends readonly [infer TPlugin, ...infer TRest]
+        ? TPlugin extends BasePluginInput
+          ? RuntimePluginsFromTuple<TRest>
+          : TPlugin extends RuntimePluginReference
+            ? readonly [TPlugin, ...RuntimePluginsFromTuple<TRest>]
+            : RuntimePluginsFromTuple<TRest>
+        : readonly [];
+
 export function createEditor<
-  V extends Value,
-  const TExtensions extends readonly EditorExtensionReference[] = readonly [],
+  V extends Value = Value,
+  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  options: CreateEditorOptionsForValue<
-    V,
-    TExtensions,
-    readonly [],
-    undefined
-  > & { plugins?: never }
-): Editor<V, TExtensions>;
-export function createEditor<
-  const TOptions extends CreateEditorOptionsForValue<
-    any,
-    readonly EditorExtensionReference[],
-    readonly [],
-    undefined
-  > & {
-    extensions: readonly EditorExtensionReference[];
-    plugins?: never;
-  },
->(
-  options: TOptions
+  options: CreateEditorOptions<V, TPlugins, TSchema> & { plugins: TPlugins }
 ): Editor<
-  EditorValueFromOptions<TOptions>,
-  EditorExtensionsFromOptions<TOptions>
+  V,
+  RuntimePluginsFromTuple<TPlugins>,
+  PlatePluginsFromTuple<TPlugins>,
+  TSchema
 >;
 export function createEditor<
   V extends Value = Value,
-  const TExtensions extends readonly EditorExtensionReference[] = readonly [],
-  const P extends readonly BasePluginInput[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  options: CreateEditorOptions<V, TExtensions, P, TSchema> & { plugins: P }
-): Editor<V, TExtensions, P, TSchema>;
-export function createEditor<
-  V extends Value = Value,
-  const TSchema extends EditorApplicationSchema | undefined = undefined,
->(
-  options?: CreateEditorOptions<V, readonly [], readonly [], TSchema>
+  options?: CreateEditorOptions<V, readonly [], TSchema>
 ): Editor<V, readonly [], readonly [], TSchema>;
 export function createEditor({
   editor: inputEditor,
@@ -1452,7 +1389,7 @@ export function createEditor({
   ...options
 }: CreateEditorOptionsForValue<
   Value,
-  readonly EditorExtensionReference[]
+  readonly RuntimePluginReference[]
 > = {}): unknown {
   const editor =
     inputEditor ??
@@ -1463,9 +1400,9 @@ export function createEditor({
       readOnly: options.readOnly,
     });
 
-  return applyEditor<
-    Value,
-    BasePluginInput,
-    readonly EditorExtensionReference[]
-  >(editor, options, inputEditor === undefined);
+  return applyEditor<Value, BasePluginInput, readonly RuntimePluginReference[]>(
+    editor,
+    options,
+    inputEditor === undefined
+  );
 }

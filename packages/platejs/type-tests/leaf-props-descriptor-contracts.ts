@@ -1,35 +1,35 @@
-import { defineBasePlugin } from 'platejs';
+import { definePlugin as defineHeadlessPlugin } from 'platejs';
 import {
-  definePlatePlugin,
-  PlateLeaf,
-  PlateText,
-  toPlatePlugin,
-  type PlateElementProps,
-  type PlateLeafProps,
-  type PlateTextProps,
+  definePlugin,
+  EditorLeaf,
+  EditorText,
+  toReactPlugin,
+  type EditorElementProps,
+  type EditorLeafProps,
+  type EditorTextProps,
 } from 'platejs/react';
 import {
-  PliteLeaf,
-  PliteText,
-  type PliteElementProps,
-  type PliteLeafProps,
-  type PliteTextProps,
+  EditorLeaf as StaticEditorLeaf,
+  EditorText as StaticEditorText,
+  type EditorElementProps as StaticEditorElementProps,
+  type EditorLeafProps as StaticEditorLeafProps,
+  type EditorTextProps as StaticEditorTextProps,
 } from 'platejs/static';
 
 import type { Element, Text } from '../src/core';
 import { property } from '../src/core';
 
-const BaseTonePlugin = defineBasePlugin('tone', {
+const BaseTonePlugin = defineHeadlessPlugin('tone', {
   api: () => ({ value: () => 'tone' as const }),
   schema: { mark: property.string() },
 });
 
-const TonePlugin = definePlatePlugin('tone', {
+const TonePlugin = definePlugin('tone', {
   api: () => ({ value: () => 'tone' as const }),
   schema: { mark: property.string() },
 });
 
-const BaseDecoratedPlugin = defineBasePlugin('decorated', {
+const BaseDecoratedPlugin = defineHeadlessPlugin('decorated', {
   decorate: {
     read: ({ entry }) => [
       {
@@ -45,7 +45,7 @@ const BaseDecoratedPlugin = defineBasePlugin('decorated', {
   schema: { mark: property.boolean() },
 });
 
-const PlateDecoratedPlugin = definePlatePlugin('decorated', {
+const PlateDecoratedPlugin = definePlugin('decorated', {
   decorate: {
     read: ({ entry }) => [
       {
@@ -61,7 +61,7 @@ const PlateDecoratedPlugin = definePlatePlugin('decorated', {
   schema: { mark: property.boolean() },
 });
 
-const StagedDecoratedPlugin = defineBasePlugin('stagedDecorated', {
+const StagedDecoratedPlugin = definePlugin('stagedDecorated', {
   schema: { mark: property.boolean() },
 }).extend({
   decorate: {
@@ -78,24 +78,24 @@ const StagedDecoratedPlugin = defineBasePlugin('stagedDecorated', {
   },
 });
 
-const AdaptedDecoratedPlugin = toPlatePlugin(BaseDecoratedPlugin, {
+const AdaptedDecoratedPlugin = toReactPlugin(BaseDecoratedPlugin, {
   dependencies: [],
 }).extend({ editOnly: true });
 
-declare const plateLeafProps: PlateLeafProps<typeof TonePlugin>;
-declare const plateTextProps: PlateTextProps<typeof TonePlugin>;
-declare const pliteLeafProps: PliteLeafProps<typeof BaseTonePlugin>;
-declare const pliteTextProps: PliteTextProps<typeof BaseTonePlugin>;
-declare const baseDecoratedLeafProps: PliteLeafProps<
+declare const plateLeafProps: EditorLeafProps<typeof TonePlugin>;
+declare const plateTextProps: EditorTextProps<typeof TonePlugin>;
+declare const pliteLeafProps: StaticEditorLeafProps<typeof BaseTonePlugin>;
+declare const pliteTextProps: StaticEditorTextProps<typeof BaseTonePlugin>;
+declare const baseDecoratedLeafProps: StaticEditorLeafProps<
   typeof BaseDecoratedPlugin
 >;
-declare const plateDecoratedLeafProps: PlateLeafProps<
+declare const plateDecoratedLeafProps: EditorLeafProps<
   typeof PlateDecoratedPlugin
 >;
-declare const stagedDecoratedLeafProps: PliteLeafProps<
+declare const stagedDecoratedLeafProps: EditorLeafProps<
   typeof StagedDecoratedPlugin
 >;
-declare const adaptedDecoratedLeafProps: PlateLeafProps<
+declare const adaptedDecoratedLeafProps: EditorLeafProps<
   typeof AdaptedDecoratedPlugin
 >;
 
@@ -115,49 +115,58 @@ const adaptedDecorationMark: boolean | undefined =
 const exactPlateApi: 'tone' = plateLeafProps.api.value();
 const exactBaseApi: 'tone' = pliteLeafProps.api.value();
 
-PlateLeaf(plateLeafProps);
-PlateText(plateTextProps);
-PliteLeaf(pliteLeafProps);
-PliteText(pliteTextProps);
+EditorLeaf(plateLeafProps);
+EditorText(plateTextProps);
+StaticEditorLeaf(pliteLeafProps);
+StaticEditorText(pliteTextProps);
 
 // @ts-expect-error Plugin component props require an owning descriptor.
-type DirectPlateElementProps = PlateElementProps<Element>;
+type DirectPlateElementProps = EditorElementProps<Element>;
 // @ts-expect-error Plugin component props require an owning descriptor.
-type DirectPlateLeafProps = PlateLeafProps<Text>;
+type DirectPlateLeafProps = EditorLeafProps<Text>;
 // @ts-expect-error Plugin component props require an owning descriptor.
-type DirectPlateTextProps = PlateTextProps<Text>;
+type DirectPlateTextProps = EditorTextProps<Text>;
 // @ts-expect-error Static plugin component props require an owning descriptor.
-type DirectPliteElementProps = PliteElementProps<Element>;
+type DirectPliteElementProps = StaticEditorElementProps<Element>;
 // @ts-expect-error Static plugin component props require an owning descriptor.
-type DirectPliteLeafProps = PliteLeafProps<Text>;
+type DirectPliteLeafProps = StaticEditorLeafProps<Text>;
 // @ts-expect-error Static plugin component props require an owning descriptor.
-type DirectPliteTextProps = PliteTextProps<Text>;
+type DirectPliteTextProps = StaticEditorTextProps<Text>;
 
 // @ts-expect-error The owning descriptor generic is required.
-type MissingPlateElementProps = PlateElementProps;
+type MissingPlateElementProps = EditorElementProps;
 // @ts-expect-error The owning descriptor generic is required.
-type MissingPlateLeafProps = PlateLeafProps;
+type MissingPlateLeafProps = EditorLeafProps;
 // @ts-expect-error The owning descriptor generic is required.
-type MissingPlateTextProps = PlateTextProps;
+type MissingPlateTextProps = EditorTextProps;
 // @ts-expect-error The owning descriptor generic is required.
-type MissingPliteElementProps = PliteElementProps;
+type MissingPliteElementProps = StaticEditorElementProps;
 // @ts-expect-error The owning descriptor generic is required.
-type MissingPliteLeafProps = PliteLeafProps;
+type MissingPliteLeafProps = StaticEditorLeafProps;
 // @ts-expect-error The owning descriptor generic is required.
-type MissingPliteTextProps = PliteTextProps;
+type MissingPliteTextProps = StaticEditorTextProps;
 
 // @ts-expect-error Plugin context is derived from the descriptor.
-type ContextPlateElementProps = PlateElementProps<typeof TonePlugin, never>;
+type ContextPlateElementProps = EditorElementProps<typeof TonePlugin, never>;
 // @ts-expect-error Plugin context is derived from the descriptor.
-type ContextPlateLeafProps = PlateLeafProps<typeof TonePlugin, never>;
+type ContextPlateLeafProps = EditorLeafProps<typeof TonePlugin, never>;
 // @ts-expect-error Plugin context is derived from the descriptor.
-type ContextPlateTextProps = PlateTextProps<typeof TonePlugin, never>;
+type ContextPlateTextProps = EditorTextProps<typeof TonePlugin, never>;
 // @ts-expect-error Plugin context is derived from the descriptor.
-type ContextPliteElementProps = PliteElementProps<typeof BaseTonePlugin, never>;
+type ContextPliteElementProps = StaticEditorElementProps<
+  typeof BaseTonePlugin,
+  never
+>;
 // @ts-expect-error Plugin context is derived from the descriptor.
-type ContextPliteLeafProps = PliteLeafProps<typeof BaseTonePlugin, never>;
+type ContextPliteLeafProps = StaticEditorLeafProps<
+  typeof BaseTonePlugin,
+  never
+>;
 // @ts-expect-error Plugin context is derived from the descriptor.
-type ContextPliteTextProps = PliteTextProps<typeof BaseTonePlugin, never>;
+type ContextPliteTextProps = StaticEditorTextProps<
+  typeof BaseTonePlugin,
+  never
+>;
 
 // @ts-expect-error Unknown fields stay unknown instead of widening to any.
 const missingToneField: string = plateLeafProps.leaf.missing;

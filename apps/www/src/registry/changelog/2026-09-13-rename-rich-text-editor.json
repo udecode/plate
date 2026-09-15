@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-13-rename-rich-text-editor",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-13-rename-rich-text-editor.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Use the rich text editor filename for complete editor blocks",
+  "targets": [
+    {
+      "name": "editor-ai",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor-value.ts",
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-basic",
+      "files": [
+        "apps/www/src/registry/blocks/editor-basic/components/editor/rich-text-editor.tsx",
+        "apps/www/src/registry/blocks/editor-basic/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-13-editor-ai-rich-text-filename-complete-baa84b58",
+      "kind": "rename",
+      "summary": "Install complete editor composition as `rich-text-editor.tsx`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-ai", "editor-basic"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-13",
+          "entry": "2026-09-13-rename-rich-text-editor",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,3 +1,4 @@
+import type { RuntimePluginReference } from '../../facade';
 import type {
   AnyBasePluginDefinition,
   DefinitionOf,
@@ -11,7 +12,9 @@ type ExactPluginDefinitionOf<P> =
 export type InternalPluginDefinitionOf<P> = [
   ExactPluginDefinitionOf<P>,
 ] extends [never]
-  ? P extends AnyBasePluginDefinition
-    ? P
-    : Extract<DefinitionOf<P>, AnyBasePluginDefinition>
+  ? P extends RuntimePluginReference
+    ? never
+    : P extends AnyBasePluginDefinition
+      ? P
+      : Extract<DefinitionOf<P>, AnyBasePluginDefinition>
   : Extract<ExactPluginDefinitionOf<P>, AnyBasePluginDefinition>;

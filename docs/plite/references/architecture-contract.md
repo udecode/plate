@@ -175,9 +175,17 @@ One `DocumentChange` can atomically mutate the primary document and named roots.
 Public base-editor reads default to the primary root; root-bound runtime views
 scope local commands without changing canonical ownership.
 
-`plitejs/yjs` translates between Yjs and canonical changes, preserves provider,
-awareness, offline, root, and history behavior. Yjs events translate into
-canonical changes, and local canonical changes translate into Yjs deltas.
+`plitejs/yjs` translates between Yjs and canonical changes and owns document
+admission, root binding, shared effects, and optional awareness projection. The
+application owns the exact `Y.Doc`, loading readiness, exclusive seed decision,
+provider connection state, transport, persistence, and provider cleanup. Yjs
+events translate into canonical changes, and local canonical changes translate
+into Yjs deltas.
+
+Live collaboration state is an installed `editor.api.yjs` service rather than
+a replayable read snapshot or transaction command group. Presence methods exist
+only when awareness for the exact bound document is supplied. Provider state is
+observed directly by the application.
 
 `plitejs/pagination` consumes `commit.changed` range and node-key queries.
 Pagination and virtualization do not own a parallel document model.

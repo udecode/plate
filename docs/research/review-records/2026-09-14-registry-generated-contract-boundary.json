@@ -1,0 +1,84 @@
+{
+  "id": "2026-09-14-registry-generated-contract-boundary",
+  "scope": "compiler",
+  "kind": "review",
+  "date": "2026-09-14",
+  "question": "Should reusable registry items depend on CLI-generated plugin/editor types because they are consumer-side code?",
+  "model": "GPT-6 / Codex; exact model variant unavailable",
+  "method": "best-api-review/history-v2",
+  "trigger": "The user requested harsh honest Best API Review of generated type dependencies in consumer-side registry items.",
+  "requirements": [
+    "A reusable copied registry item works with the host application plugin graph without requiring the demo graph or a CLI generation step.",
+    "Feature operations and descriptor-owned node properties retain inferred public types without app-wide casts or handwritten capability unions.",
+    "Application code may opt into exact complete-document and schema contracts generated from its customized plugin composition.",
+    "Static types do not assert which provider-selected editor or plugin installation exists at runtime; construction and installed capability owners preserve those laws."
+  ],
+  "evidenceReuse": "The compiler scope has no earlier formal review. This review reconsiders and reaffirms the application-owned generator policy and September 14 descriptor-transaction correction in the existing Plate core decision. Rechecked current generator output, compiled owner, two real registry consumers, useEditor context contract, descriptor transaction type fixture and generated application Value fixture. No external research was needed for the local ownership question.",
+  "summary": "Stop making reusable registry items depend on CLI-generated application types; keep descriptor inference and optional app-owned exact contracts.",
+  "verdict": "stop",
+  "previous": null,
+  "relation": "initial",
+  "alternatives": [
+    "Keep/configure: selected. Reusable source imports the owning descriptor and obtains inferred feature APIs; application-owned exact generated contracts remain optional for complete graph/data boundaries.",
+    "Maximum-value cut: remove the mandatory edge from reusable items to the complete generated EditorKit contract. Do not delete the generator, which has a separate exact Value/schema/mutation and stale-artifact checking job.",
+    "Change existing API: if descriptor-local operation or node inference is inadequate, repair its owner. The inspected toolbar already has an adequate tx.plugin(KbdPlugin) path, so this review identifies no new API requirement.",
+    "Generate per registry item or publish a shared mega-editor contract: rejected. Per-item outputs duplicate descriptor facts and add synchronization; a shared graph makes unrelated application composition part of a component dependency.",
+    "Add editor-graph generic parameters or generated assertions to ordinary context consumers: rejected for this job. They add caller work and cannot establish the runtime provider target or installed plugins.",
+    "Replace generation with automatic recursive inference of every complete document grammar: not selected. Exact static data remains a separate useful output, and no exactness/type-cost comparison justifies replacing it to solve a local feature-access job.",
+    "Move all consumer typing into applications: rejected for reusable source. Applications own complete composition and optional specialization; Plate owns inferred reusable feature contracts, while npm-published declaration files remain ordinary dependencies."
+  ],
+  "proofLimits": "Read-only source and existing fixture inspection. No product changes, test execution, generation replay, browser/native proof, typechecker benchmark or compiler-wide certification. A bounded current non-generated registry TS/TSX scan found no plugins.generated imports; the app integration type fixture does import that generated graph, which is a distinct static consumer. Older formal Plate API proofs and unrecorded transaction-correction claims are context, not replayed evidence.",
+  "references": [
+    "docs/research/decisions/generated-contract-boundary.md",
+    "docs/research/decisions/plate-core-ownership.md",
+    "packages/cli/src/generate.ts",
+    "packages/cli/test/generate.test.ts",
+    "packages/platejs/src/compiler/compileEditor.ts",
+    "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts",
+    "packages/platejs/src/react/stores/plate/useEditor.ts",
+    "packages/platejs/type-tests/combobox-input-contracts.ts",
+    "apps/www/src/registry/components/editor/more-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/link-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/plugins.generated.ts",
+    "apps/www/src/__tests__/package-integration/core-runtime/editor-api-inference.contract.ts"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/schema-compiler.ts": "33b919a0ff979147fc0c3d3a3925c361b893ba8f742423c1b8b1e0f936a60ded",
+      "packages/cli/src/bin.ts": "61f072c6ae10ff5c44beb16368cc6243cf296dac9c679704c272eb7550ba6a51",
+      "apps/www/src/app/(app)/examples/plite/_examples/plate-schema-descriptors.tsx": "6ed71c83e8d28138aae843f83f4b2206089049b599581d70a82b2ca20973c08e",
+      "packages/cli/test/generate.test.ts": "7af22262a7ab06bc27cfa2bdd218c918f8b8f3fa5dd2abd5ea1d8c05e307e3ba",
+      "packages/plitejs/test/schema-compiler.test.ts": "ca2ab62bf109f4c0a05790662ce3ae62905fd27b966a62ae46046078def942e4",
+      "packages/plitejs/package.json": "37d73d593cb22e71bd69bf0dcae46b6dbe2853bcaa310883c3968c90011e03e3",
+      "packages/plitejs/tsconfig.json": "fb4f08a1b038f01e369b739b309c0c682638a30fdaabee8f0772621b529f1949",
+      "packages/cli/src/generate.ts": "40328556869fc6776849074df3e27ded4475a74166e82a4f94a1e40616abc502",
+      "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts": "4f5b702a236a99ea7e2b3784789bbe3bdda4a3e582ab973acc996df890214dfb",
+      "packages/platejs/src/react/stores/plate/useEditor.ts": "940ad7a231ea85a0fc6e06a036cb72914c99bfe2ae4eff09edf81d503121bb90",
+      "packages/platejs/type-tests/combobox-input-contracts.ts": "fcf2ad97ebb5b62b52a45dbbb3dcb81ac9408aafb0fb230a90507cc713fcb092",
+      "apps/www/src/registry/components/editor/more-toolbar-button.tsx": "5d8022cf4ca8b967f90a88d942df48a807e5d011a644bc128d3ee3103e95b06f",
+      "apps/www/src/registry/components/editor/link-toolbar-button.tsx": "daa612b15526774b00be64a85105e86b4f502c2d2da3ab8389cd2f29a78221a4",
+      "apps/www/src/registry/components/editor/plugins.ts": "7fda01005bc5a98b582dd438c4d7602ac2f26b0bcc6b70c5d070537809305e3b",
+      "apps/www/src/registry/components/editor/plugins.generated.ts": "4ff19e7c50f6a860743112c6dd926437fe9ac1c242f3cbe439cf79d807cefc06",
+      "apps/www/src/__tests__/package-integration/core-runtime/editor-api-inference.contract.ts": "58e435a20736493d95bdf327bd0d1c30d0adf9940799f9edb5bac7e2c7dbcb3b",
+      "docs/vision/plate.md": "9e5f54b95118f9854cf70e8dd76b6f28affe10ab5c274430d7b71c32eab3c411",
+      "docs/research/decisions/plate-core-ownership.md": "3850bc8f573fe777323eaf0b712c747485d9ad4b2dfc1a018deb92576715b690",
+      "docs/research/decisions/generated-contract-boundary.md": "cee4dcf8b88dfd98c9950a8af0ea3fff104fff9ce9d18ca5cf3783a4629f73bd",
+      "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "1fa76acafbc99819722bfe1454b0ae9cd3c94d82387991d09d4182982a9d2de2",
+      "pnpm-lock.yaml": "c5d7bd6cc28fc66d9df9487315553937af41ec1cbfd4a88362a8d22609c81e5a",
+      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
+    },
+    "directories": {
+      "packages/platejs/src/compiler": "fc7f8cba7d58cf083e9b3d315d9e5dc12c18d6b8430ff87df715e07c6527daf6"
+    },
+    "features": {
+      "example/plite/plate-schema-descriptors": "51a157b10d32d265c9f2a09371bac762afd5dbae6b4f82250a0d9b4b9afea7f7",
+      "export/platejs/./compiler": "66269fdc4d24f16fba0b51fd11362e4ce60ea70a96ed2f97109f9aa5862d2e08",
+      "platejs/compiler": "fc7f8cba7d58cf083e9b3d315d9e5dc12c18d6b8430ff87df715e07c6527daf6",
+      "plitejs/core/schema-compiler": "c665194147c73be27cd9f5058b98d1d5e127d44d0a5125acab509e2387eea3c6"
+    },
+    "upstreams": []
+  }
+}

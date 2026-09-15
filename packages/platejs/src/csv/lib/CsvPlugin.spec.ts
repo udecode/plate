@@ -1,7 +1,7 @@
 import {
   BaseParagraphPlugin,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   ElementApi,
   property,
   schema,
@@ -9,7 +9,7 @@ import {
 } from '../../core';
 import { CsvPlugin } from './CsvPlugin';
 
-const TestTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
+const TestTableCellPlugin = definePlugin(PLUGINS.tableCell, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -23,7 +23,7 @@ const TestTableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
     },
   }),
 });
-const TestTableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
+const TestTableRowPlugin = definePlugin(PLUGINS.tableRow, {
   dependencies: [TestTableCellPlugin],
   schema: {
     element: {
@@ -32,7 +32,7 @@ const TestTableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
     },
   },
 });
-const TestTablePlugin = defineBasePlugin(PLUGINS.table, {
+const TestTablePlugin = definePlugin(PLUGINS.table, {
   dependencies: [TestTableRowPlugin],
   schema: {
     element: {

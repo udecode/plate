@@ -1,9 +1,9 @@
 ---
 title: DOCX
-description: Paste from Word, import DOCX files, and export Plate content as DOCX.
+description: Paste Word content, import bounded DOCX files, and export an explicit document projection.
 ---
 
-Paste Word content with `DocxPlugin`, import files with `importDocx`, and export document snapshots with `exportToDocx`. Each operation has its own entrypoint.
+Use `WordPastePlugin` for clipboard content. Use `importDocx` and `exportToDocx` for files. The three operations have separate entrypoints and dependencies.
 
 <ComponentPreview name="docx-demo" />
 
@@ -12,32 +12,21 @@ Paste Word content with `DocxPlugin`, import files with `importDocx`, and export
 ## Features
 
 - Normalize HTML and RTF pasted from Microsoft Word
-- Import `.docx` files with comments and conversion warnings
-- Export Plate content with an application stylesheet, page settings, tables, lists, and images
+- Import a bounded DOCX package into one complete editor document
+- Preserve supported Word revisions and comment ranges as structured data
+- Export one captured editor snapshot as an accepted, proposed, or review DOCX
 
 </PackageInfo>
 
 <Callout type="info" title="Client boundary">
   Paste, file import, and file download use browser APIs. Keep these operations
-  in client code. DOCX export also uses React static rendering, so pass the same
-  plugin descriptors and static components that define your document output.
+  in client code. Export uses React static rendering, so pass the descriptors
+  and static components that define your document output.
 </Callout>
-
-## Ownership
-
-| Surface | Import path | Use it for |
-| --- | --- | --- |
-| `DocxPlugin` | `platejs/docx` | Inline pasted CSS and normalize Word HTML/RTF |
-| `importDocx` | `platejs/docx/import` | Convert a DOCX buffer into nodes, comments, and warnings |
-| `exportToDocx` | `platejs/docx/export` | Convert Plate nodes into a DOCX blob |
-| Registry `DocxKit` | App-local copied code | Install the paste plugin |
-| Registry `DocxExportKit`, `DOCX_EXPORT_STYLES` | App-local copied code | Provide DOCX static renderers and presentation |
-
-The paste entrypoint requires `juice` and `validator`. File import requires `mammoth` and `validator`; file export requires its HTML-to-DOCX dependencies. Import and export can be loaded dynamically when the user chooses a file action.
 
 ## Kit usage
 
-The app-local `DocxKit` installs `DocxPlugin`, which inlines pasted CSS before Plate decodes it. File import and export are standalone functions.
+The app-local `DocxKit` installs `WordPastePlugin`. File import and export are standalone functions.
 
 <Steps>
 
@@ -64,32 +53,32 @@ const editor = createEditor({
 
 ## Paste from Word
 
-Add `DocxPlugin` for clipboard input. It preserves CSS from both Word and ordinary HTML paste, then normalizes Word-specific structure.
-
-```bash
-npm install platejs @tanstack/react-virtual juice validator
-```
+`WordPastePlugin` inlines pasted CSS and normalizes Word HTML and RTF before the installed Plate codecs decode the content.
 
 ```tsx title="components/editor/editor.tsx"
-import { DocxPlugin } from "platejs/docx";
+import { WordPastePlugin } from "platejs/docx/paste";
 import { createEditor } from "platejs/react";
 
 const editor = createEditor({
-  plugins: [DocxPlugin],
+  plugins: [WordPastePlugin],
 });
 ```
 
-Once installed, `DocxPlugin` detects Word HTML in clipboard data, cleans the HTML and RTF, and lets the installed Plate codecs decode the result.
+Clipboard paste does not upload embedded images or preserve Word table geometry. Configure those destination policies in their owning media and table features.
 
-## Import DOCX
+## Import a DOCX file
 
-`importDocx` converts a DOCX `ArrayBuffer` into nodes, comments, and warnings without modifying the editor. The editor's installed HTML codecs determine the resulting Plate nodes; no DOCX plugin is required.
+`importDocx` reads a `Blob` or `ArrayBuffer` without modifying the editor. On success, replace the complete editor value so document metadata, named roots, and authored review state stay coherent.
+
+Inside a mounted React control, get that complete editor with
+`useModelEditor()`. `useEditor()` returns the provider-selected mounted command
+view, whose root and authored projection belong to that view.
 
 ```bash
 npm install platejs @tanstack/react-virtual mammoth validator
 ```
 
-```tsx title="components/editor/editor.tsx"
+```tsx title="components/editor/import-docx.tsx"
 import { importDocx } from "platejs/docx/import";
 import { createEditor } from "platejs/react";
 import { BaseEditorKit } from "@/components/editor/plugins-static";
@@ -99,22 +88,64 @@ const editor = createEditor({
 });
 
 export async function importFile(file: File) {
-  const result = await importDocx(editor, await file.arrayBuffer());
+  const result = await importDocx(editor, file);
 
-  editor.update.fragment.replace(result.nodes);
+  if (!result.ok) {
+    return { diagnostics: result.diagnostics };
+  }
+
+  editor.update.value.replace(result.document);
 
   return {
     comments: result.comments,
-    warnings: result.warnings,
+    diagnostics: result.diagnostics,
   };
 }
 ```
 
-Each imported comment contains its Word comment `id`, extracted `text`, and `references` into the returned node snapshot.
+An expected file, package, limit, or decode failure returns `{ ok: false, diagnostics }` and no document. An aborted import rejects with the signal reason. Invalid options and internal invariant failures throw.
 
-## Export DOCX
+### Retain the source for later export
 
-Pass a document snapshot and its static rendering options to `exportToDocx`. The application owns the download filename and browser action.
+Set `retainSource: true` when the same editor imports, edits, and exports a Word file. A successful import includes a `DocxSource`. Keep that object in application state, pass it to `exportToDocx`, and dispose it when the document closes or another file replaces it.
+
+```tsx title="components/editor/docx-roundtrip.tsx" showLineNumbers
+import { exportToDocx } from "platejs/docx/export";
+import { importDocx } from "platejs/docx/import";
+
+const imported = await importDocx(editor, file, {
+  retainSource: true,
+});
+
+if (!imported.ok) return imported.diagnostics;
+
+editor.update.value.replace(imported.document);
+
+const exported = await exportToDocx(editor, {
+  editorPlugins,
+  projection: "review",
+  source: imported.source,
+  stylesheet,
+});
+
+imported.source.dispose();
+```
+
+`DocxSource` retains the admitted compressed package plus immutable document, comment, schema, and limit correspondence. It does not retain expanded ZIP entries or an editor reference. `dispose()` is idempotent. An export that already acquired the source can finish after disposal; later exports report `source-unavailable` and generate a fresh DOCX.
+
+### Import comments
+
+The importer returns comment format facts without writing app comment storage. Each `DocxComment` can include a rich Plate `body`, an exact `target.range` in proposed-projection coordinates, Word author and date metadata, a durable ID, a parent ID, and resolved state. Map those records to your app identities explicitly.
+
+### Import tracked revisions
+
+Supported Word insertions, deletions, moves, run property changes, and paragraph property changes become authored changes. Revision IDs follow Word source order and structural dependencies; dates remain metadata. A missing or invalid date uses the authored unknown-time value and produces a diagnostic.
+
+If a revision cannot map to the installed schema, the importer keeps the Word-visible proposed content and reports the loss in `diagnostics`.
+
+## Export a DOCX file
+
+`exportToDocx` captures the editor once before asynchronous rendering. Pass the visible projection explicitly.
 
 ```bash
 npm install platejs @tanstack/react-virtual color-name html-to-vdom jszip juice mime-types virtual-dom xmlbuilder2
@@ -132,13 +163,17 @@ import {
 const editor = createEditor({ plugins: BaseEditorKit });
 
 export async function downloadEditorDocx() {
-  const blob = await exportToDocx(editor.read.value().children, {
+  const result = await exportToDocx(editor, {
     editorPlugins: [...BaseEditorKit, ...DocxExportKit],
     orientation: "portrait",
+    projection: "proposed",
     stylesheet: DOCX_EXPORT_STYLES,
     title: "Document",
   });
-  const url = URL.createObjectURL(blob);
+
+  if (!result.ok) return result.diagnostics;
+
+  const url = URL.createObjectURL(result.blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = "document.docx";
@@ -146,45 +181,135 @@ export async function downloadEditorDocx() {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+
+  return result.diagnostics;
 }
 ```
 
+Choose `accepted` to omit pending changes, `proposed` to apply them, or `review` to write Word tracked-change markup. Accepted and proposed export report omitted authored changes. Review export also writes a correspondence-bound native envelope for exact unchanged Plate round trips.
+
+The importer always converts the Word-visible package before considering that envelope. It restores native metadata and named roots only when the envelope version, installed schema, package-part digests, and accepted/proposed Word projections all match. An edited or corrupt package falls back to the Word-derived document with a `native-data-ignored` diagnostic.
+
+### Source-aware export
+
+With a valid `source`, an unchanged `review` export returns the admitted file byte for byte. Exact reuse requires the same compiled schema, an unchanged review document, unchanged or omitted comments, and no `title`, `margins`, `orientation`, or `pageSize` override. Static renderer options are bypassed on this path because no content is regenerated.
+
+If an exact check fails, `exportToDocx` regenerates the complete document body. It can copy these source units when their internal relationships are closed, reachable, nonconflicting, and free of active or external content:
+
+- headers and footers from a document with one section, including their internal images and resources;
+- package-level subgraphs reached from the root relationships file.
+
+The regenerated package omits source body XML, body-only relationships, orphan parts, multiple-section headers and footers, external relationships, digital signatures, macros, ActiveX, OLE objects, and controls. Diagnostics report why the source was rewritten and identify each omitted source part. Exact byte reuse can return an unchanged admitted file that contains those units because it does not create a new package claim.
+
+When regeneration is required, omitted `comments` means that no comments are generated. Pass the current app-owned comment set explicitly to retain comments after an edit. Imported comment ranges are not relocated automatically.
+
+### Export comments
+
+Pass comments whose ranges address the editor's proposed projection. Export maps those ranges into accepted or review output before rendering:
+
+```tsx
+const result = await exportToDocx(editor, {
+  comments,
+  editorPlugins: [...BaseEditorKit, ...DocxExportKit],
+  projection: "review",
+});
+```
+
+The same configured static renderer handles the main document and rich comment bodies. Comments without a complete range remain omitted with a diagnostic.
+
 ### DOCX export kit
 
-The app-local `DocxExportKit` supplies static renderers for code blocks, columns, equations, callouts, headings, and tables of contents. `DOCX_EXPORT_STYLES` is the copied presentation preset; omit `stylesheet` to use the converter's document defaults without a Plate theme.
+The app-local `DocxExportKit` supplies static renderers for code blocks, columns, equations, callouts, headings, and tables of contents. `DOCX_EXPORT_STYLES` supplies the copied presentation preset.
 
 <ComponentSource name="docx-export" />
 
-## API Reference
+## Format support
 
-### `platejs/docx`
+| Content                                                            | Behavior                                                                                                    |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Paragraphs, headings, supported marks and properties               | Decode through the installed HTML codecs and export through the configured static renderer                  |
+| Lists, links, bookmarks, rows, cells, and spans                    | Preserve supported semantic structure; omit Word layout details with diagnostics                            |
+| Tracked revisions                                                  | Preserve supported insert, delete, move, run-property, and paragraph-property changes                       |
+| Main-body comments                                                 | Preserve rich bodies, ranges, author/date metadata, durable IDs, replies, and resolved state when present   |
+| Embedded images during import                                      | Omit the resource and return a `resource-omitted` diagnostic                                                |
+| Single-section headers and footers                                | Keep safe closed source subgraphs during source-aware export; do not map them into the editor document      |
+| Multiple-section headers and footers, footnotes, and endnotes     | Inspect and bound their package parts; omit them from edited source-aware output with diagnostics           |
+| Fields, text boxes, shapes, charts, SmartArt, and embedded objects | Keep reachable plain text when conversion exposes it; report unsupported or omitted content                 |
+| Plate named roots and metadata                                     | Preserve only through an exact matching review envelope; report that the visible Word projection omits them |
+| Custom Plate, math, emoji, and media nodes                         | Use their configured static serializers; unsupported output produces diagnostics                            |
 
-The entrypoint exports `DocxPlugin`. The conversion functions and their options/result types live in `platejs/docx/import` and `platejs/docx/export`.
+## API reference
+
+### Entrypoints
+
+| Surface                         | Import path           |
+| ------------------------------- | --------------------- |
+| `WordPastePlugin`               | `platejs/docx/paste`  |
+| `importDocx` and import types   | `platejs/docx/import` |
+| `exportToDocx` and export types | `platejs/docx/export` |
 
 ### `importDocx`
 
-`importDocx(editor, arrayBuffer, options?)` returns:
+```ts
+importDocx(
+  editor: Editor,
+  source: ArrayBuffer | Blob,
+  options?: DocxImportOptions
+): Promise<DocxImportResult>
+```
 
-| Field      | Type            | Description                                      |
-| ---------- | --------------- | ------------------------------------------------ |
-| `nodes`    | `Descendant[]`  | Plate nodes decoded by the installed HTML codecs |
-| `comments` | `DocxComment[]` | Comment text and references into `nodes`         |
-| `warnings` | `string[]`      | Conversion and decode warnings                   |
+`DocxImportOptions` accepts a cooperative `signal`, partial `limits` overrides, and `retainSource`. Every limit must be a positive safe integer. Literal `retainSource: true` conditionally adds `source` to a successful result; omitted or literal `false` does not.
 
-`options.rtf` accepts matching RTF clipboard data when the caller has it.
+| Default limit      |   Value |
+| ------------------ | ------: |
+| `maxInputBytes`    |  32 MiB |
+| `maxEntries`       |   1,024 |
+| `maxEntryBytes`    |  32 MiB |
+| `maxExpandedBytes` | 128 MiB |
+| `maxRelationships` |   4,096 |
+| `maxRevisions`     |   2,000 |
+| `maxComments`      |   5,000 |
+| `maxXmlDepth`      |     128 |
+| `maxXmlNodes`      | 500,000 |
+
+A successful result contains `document`, `comments`, and structured `diagnostics`. A retained success also contains `source`. A failed result contains only `diagnostics`.
+
+### `DocxSource`
+
+```ts
+class DocxSource {
+  private constructor();
+  dispose(): void;
+}
+```
+
+Only `importDocx` creates a `DocxSource`. The object is process-local and cannot be serialized or reattached. To restore source-aware export after application reload, keep the original file and import it again.
 
 ### `exportToDocx`
 
-`exportToDocx(value, options?)` returns a DOCX `Blob` for the provided document snapshot.
+```ts
+exportToDocx(
+  editor: Editor,
+  options: DocxExportOptions
+): Promise<DocxExportResult>
+```
 
-| Option                  | Type                                    | Description                                         |
-| ----------------------- | --------------------------------------- | --------------------------------------------------- |
-| `allowRemoteImages`     | `boolean`                               | Fetch remote HTTP images during export; defaults to `false`              |
-| `editorPlugins`         | `readonly BasePluginInput[]`            | Descriptors used for static HTML rendering          |
-| `editorStaticComponent` | `React.ComponentType<PlateStaticProps>` | Static editor wrapper                               |
-| `fontFamily`            | `string`                                | Document body font                                  |
-| `margins`               | `Margins`                     | Page margins in twentieths of a point               |
-| `orientation`           | `'landscape' \| 'portrait'`             | Page orientation                                    |
-| `pageSize`              | `PageSize`                              | Page width and height in twentieths of a point      |
-| `stylesheet`            | `string`                                | Exact CSS stylesheet applied before DOCX conversion |
-| `title`                 | `string`                                | Document metadata title                             |
+| Option                  | Type                                     | Description                                        |
+| ----------------------- | ---------------------------------------- | -------------------------------------------------- |
+| `projection`            | `'accepted' \| 'proposed' \| 'review'`   | Required visible document projection               |
+| `comments`              | `readonly DocxComment[]`                 | Comment records in proposed-projection coordinates |
+| `allowRemoteImages`     | `boolean`                                | Fetch remote HTTP images; defaults to `false`      |
+| `editorPlugins`         | `readonly BasePluginInput[]`             | Descriptors used for static rendering              |
+| `editorStaticComponent` | `React.ComponentType<EditorStaticProps>` | Static editor wrapper                              |
+| `fontFamily`            | `string`                                 | Document body font                                 |
+| `margins`               | `Margins`                                | Page margins in twentieths of a point              |
+| `orientation`           | `'landscape' \| 'portrait'`              | Page orientation                                   |
+| `pageSize`              | `PageSize`                               | Page dimensions in twentieths of a point           |
+| `signal`                | `AbortSignal`                            | Cooperative cancellation signal                    |
+| `source`                | `DocxSource`                             | Retained source correspondence for exact or safe export |
+| `stylesheet`            | `string`                                 | CSS applied before DOCX conversion                 |
+| `title`                 | `string`                                 | Document metadata title                            |
+
+A successful result contains `blob` and structured `diagnostics`. A failed result contains only `diagnostics`.
+
+See [Authored Changes](/docs/authored-changes) for the editor's accepted, proposed, and review projections.

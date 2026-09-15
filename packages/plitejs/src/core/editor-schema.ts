@@ -38,6 +38,11 @@ import type { DocumentPropertyContext, RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import { cloneFrozen } from './clone';
 import {
+  assertEditorDocumentShape,
+  getEditorDocumentShapeIssueMessage,
+  type EditorDocumentShapeIssue,
+} from './document-shape';
+import {
   ensureElementOwnedRootIndex,
   getDirtyElementOwnedRootIssues,
   getElementOwnedRootGrammarBindings,
@@ -51,11 +56,9 @@ import {
   type ElementOwnedRootIndex,
   type ElementOwnedRootIssue,
 } from './element-owned-root-index';
-import {
-  getExtensionRegistry,
-  type ExtensionRegistry,
-} from './extension-registry';
+import { getPluginRegistry, type PluginRegistry } from './plugin-registry';
 import { profileCoreDuration } from './profiling';
+import { getEditorDocumentValue } from './public-state';
 import type {
   CompiledEditorSchema,
   CompiledSchemaContentProgram,
@@ -303,7 +306,7 @@ const contentProgramsEqual = (
     ) &&
     structurallyEqual(left.defaultPlan, right.defaultPlan));
 
-const canonicalizeCompiledExclusiveTextProperties = (
+export const canonicalizeCompiledExclusiveTextProperties = (
   schema: CompiledEditorSchema,
   source: Readonly<Record<string, unknown>>,
   context: CompiledSchemaTargetContext,
@@ -549,8 +552,7 @@ export const getCompiledEditorSchemaFromApi = (
 
 export const createEditorSchema = <V extends Value = Value>(
   getEditor: () => Editor<V>,
-  getRegistry: () => ExtensionRegistry<any> = () =>
-    getExtensionRegistry(getEditor())
+  getRegistry: () => PluginRegistry<any> = () => getPluginRegistry(getEditor())
 ): InternalEditorSchemaApi<V> => {
   const getDeclarativeSchema = () => {
     const registry = getRegistry().schemaContributions;
@@ -1968,7 +1970,7 @@ export const createEditorSchema = <V extends Value = Value>(
     path,
     root = 'main'
   ) => {
-    const children = getDocumentRoot(getEditor().read.value(), root);
+    const children = getDocumentRoot(getEditorDocumentValue(getEditor()), root);
 
     return copyChildren(
       node ? [node] : [],
@@ -2018,14 +2020,14 @@ export const createEditorSchema = <V extends Value = Value>(
     path: Path,
     root: RootKey = 'main'
   ): RuntimeTextTargetOptions =>
-    getTextTargetOptions(getEditor().read.value(), path, root);
+    getTextTargetOptions(getEditorDocumentValue(getEditor()), path, root);
 
   const getElementTargetOptionsAt = (
     path: Path,
     root: RootKey = 'main'
   ): RuntimeTargetOptions => ({
     ancestors: getElementAncestors(
-      getDocumentRoot(getEditor().read.value(), root),
+      getDocumentRoot(getEditorDocumentValue(getEditor()), root),
       path
     ),
     root,
@@ -3073,13 +3075,6 @@ export const createEditorSchema = <V extends Value = Value>(
     value: EditorDocumentValue,
     schema: CompiledEditorSchema
   ) => {
-    if (value.roots && Object.hasOwn(value.roots, 'main')) {
-      throw createEditorSchemaValidationError(
-        'invalid-root',
-        'Editor document roots cannot redefine the primary root; use children.',
-        toSchemaValidationLocation('main', [])
-      );
-    }
     const roots: Record<string, readonly Descendant[]> = {
       main: value.children,
       ...value.roots,
@@ -3207,34 +3202,29 @@ export const createEditorSchema = <V extends Value = Value>(
     input: unknown
   ): asserts input is EditorDocumentValue<V> => {
     profileCoreDuration('schema-validation-full-document-boundary', () => {
+      const rejectShape = (issue: EditorDocumentShapeIssue): never => {
+        const root = issue.kind === 'root' ? issue.root : 'main';
+
+        throw createEditorSchemaValidationError(
+          issue.kind === 'meta' ||
+            issue.kind === 'children' ||
+            issue.kind === 'document'
+            ? 'invalid-json'
+            : 'invalid-root',
+          getEditorDocumentShapeIssueMessage(issue),
+          toSchemaValidationLocation(root, [])
+        );
+      };
       const location = toSchemaValidationLocation('main', []);
 
       assertSchemaJsonValue(input, 'Editor document value', location);
-      if (
-        typeof input !== 'object' ||
-        input === null ||
-        Array.isArray(input) ||
-        !Object.hasOwn(input, 'children') ||
-        !Array.isArray((input as Readonly<{ children?: unknown }>).children)
-      ) {
-        throw createEditorSchemaValidationError(
-          'invalid-json',
-          'Editor document value must be an object with a children array.',
-          location
-        );
-      }
+      assertEditorDocumentShape(input, rejectShape);
       const value = input as EditorDocumentValue<V>;
 
       const declarative = getDeclarativeSchema();
 
       if (declarative) {
         validateDeclarativeDocument(value, declarative);
-      } else if (value.roots && Object.hasOwn(value.roots, 'main')) {
-        throw createEditorSchemaValidationError(
-          'invalid-root',
-          'Editor document roots cannot redefine the primary root; use children.',
-          location
-        );
       }
 
       rememberValidatedDocumentRoots(value, declarative);
@@ -3778,7 +3768,7 @@ export const createEditorSchema = <V extends Value = Value>(
     copy: (node, options) =>
       copyNodeAt(node, options.at, options.root ?? 'main') as typeof node,
     createDefaultRootChild,
-    delta: () => getExtensionRegistry(getEditor()).schemaContributions.delta,
+    delta: () => getPluginRegistry(getEditor()).schemaContributions.delta,
     element: getPublicElement,
     fit,
     fitContent,

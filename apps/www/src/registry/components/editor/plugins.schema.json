@@ -748,13 +748,9 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:aiPreview@65af9e5e9f595296"
           ]
         },
         "groups": [
@@ -765,9 +761,7 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:aiPreview@65af9e5e9f595296"
         ],
         "slice": {
           "preserveContext": false,
@@ -809,13 +803,9 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:textAlign@187ef459f9d44620",
             "element:url@b09f563d04864a0d",
             "element:width@d289fcde94c1475e"
@@ -830,8 +820,6 @@
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620",
           "element:url@b09f563d04864a0d",
           "element:width@d289fcde94c1475e"
@@ -888,9 +876,7 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:checked@27c77ba8343da0d2",
@@ -898,9 +884,7 @@
             "element:listRestart@35fa065cd84f9a60",
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
-            "element:listType@8cf5be6ea266d5d9",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:listType@8cf5be6ea266d5d9"
           ]
         },
         "groups": [
@@ -916,9 +900,7 @@
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
-          "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:listType@8cf5be6ea266d5d9"
         ],
         "slice": {
           "preserveContext": false,
@@ -961,15 +943,12 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [
-            "element:icon@b610536939eb3f13",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:icon@b610536939eb3f13"
           ],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:backgroundColor@abc86032ce5e8381",
             "element:icon@b610536939eb3f13",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:variant@7ed3805aa01a6807"
           ]
         },
@@ -984,8 +963,6 @@
           "element:aiPreview@65af9e5e9f595296",
           "element:backgroundColor@abc86032ce5e8381",
           "element:icon@b610536939eb3f13",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:variant@7ed3805aa01a6807"
         ],
         "slice": {
@@ -1018,9 +995,7 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:checked@27c77ba8343da0d2",
@@ -1029,9 +1004,7 @@
             "element:listRestart@35fa065cd84f9a60",
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
-            "element:listType@8cf5be6ea266d5d9",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:listType@8cf5be6ea266d5d9"
           ]
         },
         "groups": [
@@ -1049,9 +1022,7 @@
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
-          "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:listType@8cf5be6ea266d5d9"
         ],
         "slice": {
           "preserveContext": true,
@@ -1106,13 +1077,10 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:width@7231be0c06083662"
           ],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:width@7231be0c06083662"
           ]
         },
@@ -1123,8 +1091,6 @@
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:width@7231be0c06083662"
         ],
         "slice": {
@@ -1160,13 +1126,9 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:aiPreview@65af9e5e9f595296"
           ]
         },
         "groups": [
@@ -1176,9 +1138,7 @@
           "plate:block-content"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:aiPreview@65af9e5e9f595296"
         ],
         "slice": {
           "preserveContext": false,
@@ -1210,15 +1170,8 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:suggestion_*@0a377698eebb4ae6",
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionData@12adde23f3c7778a",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:value@498b315ffbe887a5"
           ]
         },
@@ -1228,10 +1181,6 @@
           "inline"
         ],
         "propertyIds": [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:value@498b315ffbe887a5"
         ],
         "slice": {
@@ -1286,9 +1235,7 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:checked@27c77ba8343da0d2",
@@ -1296,9 +1243,7 @@
             "element:listRestart@35fa065cd84f9a60",
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
-            "element:listType@8cf5be6ea266d5d9",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:listType@8cf5be6ea266d5d9"
           ]
         },
         "groups": [
@@ -1314,9 +1259,7 @@
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
-          "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:listType@8cf5be6ea266d5d9"
         ],
         "slice": {
           "preserveContext": false,
@@ -1348,15 +1291,8 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:suggestion_*@0a377698eebb4ae6",
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionData@12adde23f3c7778a",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:trigger@8324822ef56219ee",
             "element:userId@465bbc81e0824dbc",
             "element:value@a932f8e9c200496f"
@@ -1368,10 +1304,6 @@
           "inline"
         ],
         "propertyIds": [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:trigger@8324822ef56219ee",
           "element:userId@465bbc81e0824dbc",
           "element:value@a932f8e9c200496f"
@@ -1407,14 +1339,11 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [
-            "element:latex@6c61d1f3c8305dce",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:latex@6c61d1f3c8305dce"
           ],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
-            "element:latex@6c61d1f3c8305dce",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:latex@6c61d1f3c8305dce"
           ]
         },
         "groups": [
@@ -1425,9 +1354,7 @@
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
-          "element:latex@6c61d1f3c8305dce",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:latex@6c61d1f3c8305dce"
         ],
         "slice": {
           "preserveContext": false,
@@ -1469,14 +1396,10 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:name@1069a658ff703b9d",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:url@88fa4e556f36a1b7",
             "element:width@b3737226e8fe3a6e"
           ]
@@ -1491,8 +1414,6 @@
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
           "element:name@1069a658ff703b9d",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:url@88fa4e556f36a1b7",
           "element:width@b3737226e8fe3a6e"
         ],
@@ -1548,14 +1469,10 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
-            "element:ref@3b0dc884d77d0966",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:ref@3b0dc884d77d0966"
           ]
         },
         "groups": [
@@ -1566,9 +1483,7 @@
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
-          "element:ref@3b0dc884d77d0966",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:ref@3b0dc884d77d0966"
         ],
         "slice": {
           "preserveContext": false,
@@ -1600,15 +1515,8 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:suggestion_*@0a377698eebb4ae6",
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionData@12adde23f3c7778a",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:trigger@4da21d09ba877648",
             "element:userId@352473eeeeef634e",
             "element:value@e81ba78ee6d73aab"
@@ -1620,10 +1528,6 @@
           "inline"
         ],
         "propertyIds": [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:trigger@4da21d09ba877648",
           "element:userId@352473eeeeef634e",
           "element:value@e81ba78ee6d73aab"
@@ -1658,16 +1562,9 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:ref@9f1cb3043add19e8",
-            "element:suggestion_*@0a377698eebb4ae6",
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionData@12adde23f3c7778a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:ref@9f1cb3043add19e8"
           ]
         },
         "groups": [
@@ -1676,11 +1573,7 @@
           "inline"
         ],
         "propertyIds": [
-          "element:ref@9f1cb3043add19e8",
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:ref@9f1cb3043add19e8"
         ],
         "slice": {
           "preserveContext": false,
@@ -1722,9 +1615,7 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:checked@27c77ba8343da0d2",
@@ -1735,8 +1626,6 @@
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
             "element:listType@8cf5be6ea266d5d9",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:textAlign@187ef459f9d44620"
           ]
         },
@@ -1757,8 +1646,6 @@
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
           "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620"
         ],
         "slice": {
@@ -1791,13 +1678,9 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:aiPreview@65af9e5e9f595296"
           ]
         },
         "groups": [
@@ -1807,9 +1690,7 @@
           "plate:block-content"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:aiPreview@65af9e5e9f595296"
         ],
         "slice": {
           "preserveContext": false,
@@ -1851,9 +1732,7 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:alt@92916bfcb7519666",
@@ -1865,8 +1744,6 @@
             "element:listType@8cf5be6ea266d5d9",
             "element:naturalHeight@e20ef9fcaa621321",
             "element:naturalWidth@b685fe279997758e",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:textAlign@187ef459f9d44620",
             "element:title@d5a05c180883db8d",
             "element:url@c30b8cbe3fb07184",
@@ -1891,8 +1768,6 @@
           "element:listType@8cf5be6ea266d5d9",
           "element:naturalHeight@e20ef9fcaa621321",
           "element:naturalWidth@b685fe279997758e",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620",
           "element:title@d5a05c180883db8d",
           "element:url@c30b8cbe3fb07184",
@@ -1929,16 +1804,10 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [
-            "element:latex@551cf2c0f2fc3a2d",
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:latex@551cf2c0f2fc3a2d"
           ],
           "propertyIds": [
-            "element:latex@551cf2c0f2fc3a2d",
-            "element:suggestion_*@0a377698eebb4ae6",
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionData@12adde23f3c7778a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:latex@551cf2c0f2fc3a2d"
           ]
         },
         "groups": [
@@ -1947,11 +1816,7 @@
           "inline"
         ],
         "propertyIds": [
-          "element:latex@551cf2c0f2fc3a2d",
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:latex@551cf2c0f2fc3a2d"
         ],
         "slice": {
           "preserveContext": false,
@@ -1983,15 +1848,8 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:suggestion_*@0a377698eebb4ae6",
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionData@12adde23f3c7778a",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:target@5a44aa3afed09fc5",
             "element:url@c71768acf4ac21cd"
           ]
@@ -2002,10 +1860,6 @@
           "inline"
         ],
         "propertyIds": [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:target@5a44aa3afed09fc5",
           "element:url@c71768acf4ac21cd"
         ],
@@ -2049,15 +1903,11 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:provider@84a11c95e1d74472",
             "element:sourceUrl@2bfb15bcfacea42d",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:textAlign@187ef459f9d44620",
             "element:url@d3baa48b6dc124c6",
             "element:width@9adf5c8c51056453"
@@ -2074,8 +1924,6 @@
           "element:aiPreview@65af9e5e9f595296",
           "element:provider@84a11c95e1d74472",
           "element:sourceUrl@2bfb15bcfacea42d",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620",
           "element:url@d3baa48b6dc124c6",
           "element:width@9adf5c8c51056453"
@@ -2110,17 +1958,10 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:label@1a006ba1885943ec",
-            "element:ref@8cc45c192237f919",
-            "element:suggestion_*@0a377698eebb4ae6",
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionData@12adde23f3c7778a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:ref@8cc45c192237f919"
           ]
         },
         "groups": [
@@ -2130,11 +1971,7 @@
         ],
         "propertyIds": [
           "element:label@1a006ba1885943ec",
-          "element:ref@8cc45c192237f919",
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:ref@8cc45c192237f919"
         ],
         "slice": {
           "preserveContext": false,
@@ -2166,15 +2003,8 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:suggestion_*@0a377698eebb4ae6",
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionData@12adde23f3c7778a",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:trigger@a19a0c490e280a3e",
             "element:userId@8a78b6daa51dce60",
             "element:value@cb026ea1b6b8c47f"
@@ -2186,10 +2016,6 @@
           "inline"
         ],
         "propertyIds": [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:trigger@a19a0c490e280a3e",
           "element:userId@8a78b6daa51dce60",
           "element:value@cb026ea1b6b8c47f"
@@ -2234,9 +2060,7 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:checked@27c77ba8343da0d2",
@@ -2246,8 +2070,6 @@
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
             "element:listType@8cf5be6ea266d5d9",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:textAlign@187ef459f9d44620"
           ]
         },
@@ -2267,8 +2089,6 @@
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
           "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620"
         ],
         "slice": {
@@ -2301,14 +2121,10 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
-            "element:mediaType@4b72b6953a6e3307",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:mediaType@4b72b6953a6e3307"
           ]
         },
         "groups": [
@@ -2319,9 +2135,7 @@
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
-          "element:mediaType@4b72b6953a6e3307",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:mediaType@4b72b6953a6e3307"
         ],
         "slice": {
           "preserveContext": false,
@@ -2353,15 +2167,8 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:suggestion_*@0a377698eebb4ae6",
-            "element:suggestion@a548cd70c481770a",
-            "element:suggestionData@12adde23f3c7778a",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:trigger@22e2f15f83b62e9d",
             "element:userId@2d6c7ab842a758c3",
             "element:value@902973597f984fa0"
@@ -2373,10 +2180,6 @@
           "inline"
         ],
         "propertyIds": [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:trigger@22e2f15f83b62e9d",
           "element:userId@2d6c7ab842a758c3",
           "element:value@902973597f984fa0"
@@ -2421,13 +2224,9 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:aiPreview@65af9e5e9f595296"
           ]
         },
         "groups": [
@@ -2438,9 +2237,7 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:aiPreview@65af9e5e9f595296"
         ],
         "slice": {
           "preserveContext": false,
@@ -2475,15 +2272,11 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:columnWidths@ee103944498d7d99",
-            "element:marginLeft@da82a82a76b6f0f1",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:marginLeft@da82a82a76b6f0f1"
           ]
         },
         "groups": [
@@ -2495,9 +2288,7 @@
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
           "element:columnWidths@ee103944498d7d99",
-          "element:marginLeft@da82a82a76b6f0f1",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:marginLeft@da82a82a76b6f0f1"
         ],
         "slice": {
           "preserveContext": false,
@@ -2552,8 +2343,7 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [
-            "element:header@e1fcb0f762cb1e47",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:header@e1fcb0f762cb1e47"
           ],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
@@ -2561,9 +2351,7 @@
             "element:borders@1161f7efe55c616d",
             "element:colSpan@263bf74d05ba194a",
             "element:header@e1fcb0f762cb1e47",
-            "element:rowSpan@2d38017411f2ba58",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:rowSpan@2d38017411f2ba58"
           ]
         },
         "groups": [
@@ -2577,9 +2365,7 @@
           "element:borders@1161f7efe55c616d",
           "element:colSpan@263bf74d05ba194a",
           "element:header@e1fcb0f762cb1e47",
-          "element:rowSpan@2d38017411f2ba58",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:rowSpan@2d38017411f2ba58"
         ],
         "slice": {
           "preserveContext": false,
@@ -2614,14 +2400,10 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
-            "element:height@4222b97bc19b7723",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:height@4222b97bc19b7723"
           ]
         },
         "groups": [
@@ -2631,9 +2413,7 @@
         ],
         "propertyIds": [
           "element:aiPreview@65af9e5e9f595296",
-          "element:height@4222b97bc19b7723",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:height@4222b97bc19b7723"
         ],
         "slice": {
           "preserveContext": false,
@@ -2665,13 +2445,9 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad"
+            "element:aiPreview@65af9e5e9f595296"
           ]
         },
         "groups": [
@@ -2681,9 +2457,7 @@
           "plate:block-content"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:aiPreview@65af9e5e9f595296"
         ],
         "slice": {
           "preserveContext": false,
@@ -2725,15 +2499,11 @@
         },
         "contentRoots": [],
         "construction": {
-          "materializedPropertyIds": [
-            "element:suggestionTransient@2a17b5ef44f7caad"
-          ],
+          "materializedPropertyIds": [],
           "propertyIds": [
             "element:aiPreview@65af9e5e9f595296",
             "element:provider@82a92be778594f8a",
             "element:sourceUrl@edd27c91da0ff1df",
-            "element:suggestion@293b45e36ede53d8",
-            "element:suggestionTransient@2a17b5ef44f7caad",
             "element:textAlign@187ef459f9d44620",
             "element:url@184e5cc6a37c6e0e",
             "element:width@cf5e67ed73c5a82d"
@@ -2750,8 +2520,6 @@
           "element:aiPreview@65af9e5e9f595296",
           "element:provider@82a92be778594f8a",
           "element:sourceUrl@edd27c91da0ff1df",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620",
           "element:url@184e5cc6a37c6e0e",
           "element:width@cf5e67ed73c5a82d"
@@ -4717,10 +4485,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:5a791f5ba35945f9",
+  "fingerprint": "fnv1a64:4c461492d319fe62",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:5a791f5ba35945f9",
+    "fingerprint": "fnv1a64:4c461492d319fe62",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -5667,134 +5435,6 @@
         "target": {
           "kind": "type",
           "type": "video"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "json",
-          "omitDefault": false,
-          "required": false,
-          "validationVersion": 1
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:suggestion_*@0a377698eebb4ae6",
-        "key": {
-          "kind": "prefix",
-          "prefix": "suggestion_"
-        },
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "suggestion",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "group": "inline",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "json",
-          "omitDefault": false,
-          "required": false,
-          "validationVersion": 1
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:suggestion@293b45e36ede53d8",
-        "key": "suggestion",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "suggestion",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "group": "block",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
-          "default": false,
-          "kind": "boolean",
-          "omitDefault": true,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:suggestion@a548cd70c481770a",
-        "key": "suggestion",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "suggestion",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "group": "inline",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "json",
-          "omitDefault": false,
-          "required": false,
-          "validationVersion": 1
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:suggestionData@12adde23f3c7778a",
-        "key": "suggestionData",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "suggestion",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "group": "inline",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
-          "default": false,
-          "kind": "boolean",
-          "omitDefault": true,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:suggestionTransient@2a17b5ef44f7caad",
-        "key": "suggestionTransient",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "suggestion",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "group": "element",
-          "kind": "group"
         }
       },
       {
@@ -6783,109 +6423,6 @@
       },
       {
         "descriptor": {
-          "kind": "json",
-          "omitDefault": false,
-          "required": false,
-          "validationVersion": 1
-        },
-        "exclusiveGroupIds": [],
-        "id": "text:suggestion_*@e58430868d4e66c3",
-        "key": {
-          "kind": "prefix",
-          "prefix": "suggestion_"
-        },
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "suggestion",
-        "placement": "text",
-        "role": "content",
-        "target": {
-          "group": "element",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
-          "default": false,
-          "kind": "boolean",
-          "omitDefault": true,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "text:suggestion@25176baff2678487",
-        "key": "suggestion",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "suggestion",
-        "placement": "text",
-        "role": "content",
-        "target": {
-          "group": "element",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
-          "kind": "json",
-          "omitDefault": false,
-          "required": false,
-          "validationVersion": 1
-        },
-        "exclusiveGroupIds": [],
-        "id": "text:suggestionData@4dd34c29465a5e07",
-        "key": "suggestionData",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "suggestion",
-        "placement": "text",
-        "role": "content",
-        "target": {
-          "group": "element",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
-          "default": false,
-          "kind": "boolean",
-          "omitDefault": true,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "text:suggestionTransient@2a17b5ef44f7caad",
-        "key": "suggestionTransient",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "suggestion",
-        "placement": "text",
-        "role": "content",
-        "target": {
-          "group": "element",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
           "default": false,
           "kind": "boolean",
           "omitDefault": true,
@@ -7046,26 +6583,6 @@
       ],
       [
         "element:sourceUrl@edd27c91da0ff1df",
-        []
-      ],
-      [
-        "element:suggestion_*@0a377698eebb4ae6",
-        []
-      ],
-      [
-        "element:suggestion@293b45e36ede53d8",
-        []
-      ],
-      [
-        "element:suggestion@a548cd70c481770a",
-        []
-      ],
-      [
-        "element:suggestionData@12adde23f3c7778a",
-        []
-      ],
-      [
-        "element:suggestionTransient@2a17b5ef44f7caad",
         []
       ],
       [
@@ -7233,22 +6750,6 @@
         []
       ],
       [
-        "text:suggestion_*@e58430868d4e66c3",
-        []
-      ],
-      [
-        "text:suggestion@25176baff2678487",
-        []
-      ],
-      [
-        "text:suggestionData@4dd34c29465a5e07",
-        []
-      ],
-      [
-        "text:suggestionTransient@2a17b5ef44f7caad",
-        []
-      ],
-      [
         "text:underline@e3a9db819714dd91",
         []
       ]
@@ -7257,17 +6758,13 @@
       [
         "aiChat",
         [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:aiPreview@65af9e5e9f595296"
         ]
       ],
       [
         "audio",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620",
           "element:url@b09f563d04864a0d",
           "element:width@d289fcde94c1475e"
@@ -7282,9 +6779,7 @@
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
-          "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:listType@8cf5be6ea266d5d9"
         ]
       ],
       [
@@ -7293,8 +6788,6 @@
           "element:aiPreview@65af9e5e9f595296",
           "element:backgroundColor@abc86032ce5e8381",
           "element:icon@b610536939eb3f13",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:variant@7ed3805aa01a6807"
         ]
       ],
@@ -7308,35 +6801,25 @@
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
-          "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:listType@8cf5be6ea266d5d9"
         ]
       ],
       [
         "column",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:width@7231be0c06083662"
         ]
       ],
       [
         "columnGroup",
         [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:aiPreview@65af9e5e9f595296"
         ]
       ],
       [
         "date",
         [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:value@498b315ffbe887a5"
         ]
       ],
@@ -7349,18 +6832,12 @@
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
-          "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:listType@8cf5be6ea266d5d9"
         ]
       ],
       [
         "emojiInput",
         [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:trigger@8324822ef56219ee",
           "element:userId@465bbc81e0824dbc",
           "element:value@a932f8e9c200496f"
@@ -7370,9 +6847,7 @@
         "equation",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:latex@6c61d1f3c8305dce",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:latex@6c61d1f3c8305dce"
         ]
       ],
       [
@@ -7380,8 +6855,6 @@
         [
           "element:aiPreview@65af9e5e9f595296",
           "element:name@1069a658ff703b9d",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:url@88fa4e556f36a1b7",
           "element:width@b3737226e8fe3a6e"
         ]
@@ -7390,18 +6863,12 @@
         "footnoteDefinition",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:ref@3b0dc884d77d0966",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:ref@3b0dc884d77d0966"
         ]
       ],
       [
         "footnoteInput",
         [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:trigger@4da21d09ba877648",
           "element:userId@352473eeeeef634e",
           "element:value@e81ba78ee6d73aab"
@@ -7410,11 +6877,7 @@
       [
         "footnoteReference",
         [
-          "element:ref@9f1cb3043add19e8",
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:ref@9f1cb3043add19e8"
         ]
       ],
       [
@@ -7429,17 +6892,13 @@
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
           "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620"
         ]
       ],
       [
         "horizontalRule",
         [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:aiPreview@65af9e5e9f595296"
         ]
       ],
       [
@@ -7455,8 +6914,6 @@
           "element:listType@8cf5be6ea266d5d9",
           "element:naturalHeight@e20ef9fcaa621321",
           "element:naturalWidth@b685fe279997758e",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620",
           "element:title@d5a05c180883db8d",
           "element:url@c30b8cbe3fb07184",
@@ -7466,20 +6923,12 @@
       [
         "inlineEquation",
         [
-          "element:latex@551cf2c0f2fc3a2d",
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:latex@551cf2c0f2fc3a2d"
         ]
       ],
       [
         "link",
         [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:target@5a44aa3afed09fc5",
           "element:url@c71768acf4ac21cd"
         ]
@@ -7490,8 +6939,6 @@
           "element:aiPreview@65af9e5e9f595296",
           "element:provider@84a11c95e1d74472",
           "element:sourceUrl@2bfb15bcfacea42d",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620",
           "element:url@d3baa48b6dc124c6",
           "element:width@9adf5c8c51056453"
@@ -7501,20 +6948,12 @@
         "mention",
         [
           "element:label@1a006ba1885943ec",
-          "element:ref@8cc45c192237f919",
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:ref@8cc45c192237f919"
         ]
       ],
       [
         "mentionInput",
         [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:trigger@a19a0c490e280a3e",
           "element:userId@8a78b6daa51dce60",
           "element:value@cb026ea1b6b8c47f"
@@ -7531,8 +6970,6 @@
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
           "element:listType@8cf5be6ea266d5d9",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620"
         ]
       ],
@@ -7540,18 +6977,12 @@
         "placeholder",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:mediaType@4b72b6953a6e3307",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:mediaType@4b72b6953a6e3307"
         ]
       ],
       [
         "slashInput",
         [
-          "element:suggestion_*@0a377698eebb4ae6",
-          "element:suggestion@a548cd70c481770a",
-          "element:suggestionData@12adde23f3c7778a",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:trigger@22e2f15f83b62e9d",
           "element:userId@2d6c7ab842a758c3",
           "element:value@902973597f984fa0"
@@ -7560,9 +6991,7 @@
       [
         "summary",
         [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:aiPreview@65af9e5e9f595296"
         ]
       ],
       [
@@ -7570,9 +6999,7 @@
         [
           "element:aiPreview@65af9e5e9f595296",
           "element:columnWidths@ee103944498d7d99",
-          "element:marginLeft@da82a82a76b6f0f1",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:marginLeft@da82a82a76b6f0f1"
         ]
       ],
       [
@@ -7583,26 +7010,20 @@
           "element:borders@1161f7efe55c616d",
           "element:colSpan@263bf74d05ba194a",
           "element:header@e1fcb0f762cb1e47",
-          "element:rowSpan@2d38017411f2ba58",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:rowSpan@2d38017411f2ba58"
         ]
       ],
       [
         "tableRow",
         [
           "element:aiPreview@65af9e5e9f595296",
-          "element:height@4222b97bc19b7723",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:height@4222b97bc19b7723"
         ]
       ],
       [
         "toc",
         [
-          "element:aiPreview@65af9e5e9f595296",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad"
+          "element:aiPreview@65af9e5e9f595296"
         ]
       ],
       [
@@ -7611,8 +7032,6 @@
           "element:aiPreview@65af9e5e9f595296",
           "element:provider@82a92be778594f8a",
           "element:sourceUrl@edd27c91da0ff1df",
-          "element:suggestion@293b45e36ede53d8",
-          "element:suggestionTransient@2a17b5ef44f7caad",
           "element:textAlign@187ef459f9d44620",
           "element:url@184e5cc6a37c6e0e",
           "element:width@cf5e67ed73c5a82d"
@@ -7936,51 +7355,6 @@
         }
       ],
       [
-        "element:suggestion_*@0a377698eebb4ae6",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "element:suggestion@293b45e36ede53d8",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "element:suggestion@a548cd70c481770a",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "element:suggestionData@12adde23f3c7778a",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "element:suggestionTransient@2a17b5ef44f7caad",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
         "element:target@5a44aa3afed09fc5",
         {
           "copy": "preserve",
@@ -8342,42 +7716,6 @@
       ],
       [
         "text:strikethrough@9568299587c9032e",
-        {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "text:suggestion_*@e58430868d4e66c3",
-        {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "text:suggestion@25176baff2678487",
-        {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "text:suggestionData@4dd34c29465a5e07",
-        {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
-        "text:suggestionTransient@2a17b5ef44f7caad",
         {
           "copy": "preserve",
           "inclusive": true,
@@ -8579,25 +7917,6 @@
             ]
           ],
           [
-            "suggestion",
-            [
-              "element:suggestion@293b45e36ede53d8",
-              "element:suggestion@a548cd70c481770a"
-            ]
-          ],
-          [
-            "suggestionData",
-            [
-              "element:suggestionData@12adde23f3c7778a"
-            ]
-          ],
-          [
-            "suggestionTransient",
-            [
-              "element:suggestionTransient@2a17b5ef44f7caad"
-            ]
-          ],
-          [
             "target",
             [
               "element:target@5a44aa3afed09fc5"
@@ -8672,14 +7991,7 @@
             ]
           ]
         ],
-        "prefixes": [
-          {
-            "prefix": "suggestion_",
-            "propertyIds": [
-              "element:suggestion_*@0a377698eebb4ae6"
-            ]
-          }
-        ]
+        "prefixes": []
       },
       "text": {
         "exact": [
@@ -8756,38 +8068,13 @@
             ]
           ],
           [
-            "suggestion",
-            [
-              "text:suggestion@25176baff2678487"
-            ]
-          ],
-          [
-            "suggestionData",
-            [
-              "text:suggestionData@4dd34c29465a5e07"
-            ]
-          ],
-          [
-            "suggestionTransient",
-            [
-              "text:suggestionTransient@2a17b5ef44f7caad"
-            ]
-          ],
-          [
             "underline",
             [
               "text:underline@e3a9db819714dd91"
             ]
           ]
         ],
-        "prefixes": [
-          {
-            "prefix": "suggestion_",
-            "propertyIds": [
-              "text:suggestion_*@e58430868d4e66c3"
-            ]
-          }
-        ]
+        "prefixes": []
       }
     },
     "mergeStrategies": [
@@ -8929,26 +8216,6 @@
       ],
       [
         "element:sourceUrl@edd27c91da0ff1df",
-        "replace"
-      ],
-      [
-        "element:suggestion_*@0a377698eebb4ae6",
-        "replace"
-      ],
-      [
-        "element:suggestion@293b45e36ede53d8",
-        "replace"
-      ],
-      [
-        "element:suggestion@a548cd70c481770a",
-        "replace"
-      ],
-      [
-        "element:suggestionData@12adde23f3c7778a",
-        "replace"
-      ],
-      [
-        "element:suggestionTransient@2a17b5ef44f7caad",
         "replace"
       ],
       [
@@ -9116,22 +8383,6 @@
         "replace"
       ],
       [
-        "text:suggestion_*@e58430868d4e66c3",
-        "replace"
-      ],
-      [
-        "text:suggestion@25176baff2678487",
-        "replace"
-      ],
-      [
-        "text:suggestionData@4dd34c29465a5e07",
-        "replace"
-      ],
-      [
-        "text:suggestionTransient@2a17b5ef44f7caad",
-        "replace"
-      ],
-      [
         "text:underline@e3a9db819714dd91",
         "replace"
       ]
@@ -9153,10 +8404,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9175,10 +8422,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9197,10 +8440,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9219,10 +8458,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9241,10 +8476,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9263,10 +8494,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9285,10 +8512,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9307,10 +8530,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9329,10 +8548,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9351,10 +8566,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9373,10 +8584,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9395,10 +8602,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9417,10 +8620,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9439,10 +8638,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9461,10 +8656,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9483,10 +8674,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9505,10 +8692,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9527,10 +8710,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9549,10 +8728,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9571,10 +8746,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9593,10 +8764,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9615,10 +8782,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9637,10 +8800,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9659,10 +8818,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9681,10 +8836,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9703,10 +8854,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9725,10 +8872,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9747,10 +8890,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9769,10 +8908,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9791,10 +8926,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9813,10 +8944,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ],
@@ -9835,10 +8962,6 @@
           "text:kbd@26be899c0d1b681a",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
-          "text:suggestion_*@e58430868d4e66c3",
-          "text:suggestion@25176baff2678487",
-          "text:suggestionData@4dd34c29465a5e07",
-          "text:suggestionTransient@2a17b5ef44f7caad",
           "text:underline@e3a9db819714dd91"
         ]
       ]
@@ -9927,11 +9050,6 @@
       "element:rowSpan@2d38017411f2ba58",
       "element:sourceUrl@2bfb15bcfacea42d",
       "element:sourceUrl@edd27c91da0ff1df",
-      "element:suggestion_*@0a377698eebb4ae6",
-      "element:suggestion@293b45e36ede53d8",
-      "element:suggestion@a548cd70c481770a",
-      "element:suggestionData@12adde23f3c7778a",
-      "element:suggestionTransient@2a17b5ef44f7caad",
       "element:target@5a44aa3afed09fc5",
       "element:textAlign@187ef459f9d44620",
       "element:title@d5a05c180883db8d",
@@ -9973,10 +9091,6 @@
       "text:kbd@26be899c0d1b681a",
       "text:script@508ca8ff29baaad6",
       "text:strikethrough@9568299587c9032e",
-      "text:suggestion_*@e58430868d4e66c3",
-      "text:suggestion@25176baff2678487",
-      "text:suggestionData@4dd34c29465a5e07",
-      "text:suggestionTransient@2a17b5ef44f7caad",
       "text:underline@e3a9db819714dd91"
     ],
     "rootNames": []

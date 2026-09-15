@@ -8,12 +8,10 @@ import {
   SelectionApi,
   type Value,
 } from '..';
-import {
-  type encodeEditorEffect,
-  type encodeEditorSelection,
-  isObject,
-  MAIN_ROOT_KEY,
-} from '../internal';
+import { MAIN_ROOT_KEY } from '../core/public-root';
+import type { encodeEditorSelection } from '../core/selection-protocol';
+import type { encodeEditorEffect } from '../core/value-codec';
+import { isObject } from '../utils/is-object';
 import {
   decodeHistoryValue,
   encodeHistoryValue,

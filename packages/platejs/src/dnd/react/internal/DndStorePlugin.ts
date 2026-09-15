@@ -2,9 +2,9 @@ import type React from 'react';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import type { Element, NodeEntry, NodeKey, Path } from '../../../core';
-import { ElementApi, PLUGINS } from '../../../core';
+import { ElementApi, PathApi, PLUGINS } from '../../../core';
 import { BaseListPlugin } from '../../../features/list/lib/BaseListPlugin';
-import { definePlatePlugin, type Editor } from '../../../react/core';
+import { definePlugin, type Editor } from '../../../react/core';
 import type { DndScrollerOptions } from '../DndScroller';
 import type {
   DragItemNode,
@@ -46,7 +46,7 @@ const initialState: DndPluginState = {
   scrollerProps: {},
 };
 
-export const DndStorePlugin = definePlatePlugin(PLUGINS.dnd, {
+export const DndStorePlugin = definePlugin(PLUGINS.dnd, {
   editOnly: true,
   initialState,
   on: {
@@ -79,11 +79,9 @@ export const DndStorePlugin = definePlatePlugin(PLUGINS.dnd, {
 
         if (!current) return [];
 
-        const key = editor.key(current[0]);
-
         let entries = state.nodes.blocks();
 
-        if (!entries.some(([node]) => editor.key(node) === key)) {
+        if (!entries.some(([, entryPath]) => PathApi.equals(entryPath, path))) {
           entries = [current];
         }
 
@@ -112,7 +110,7 @@ export const DndStorePlugin = definePlatePlugin(PLUGINS.dnd, {
 
           for (const child of [preview, ...preview.querySelectorAll('*')]) {
             for (const attribute of Array.from(child.attributes)) {
-              if (attribute.name.startsWith('data-plite')) {
+              if (attribute.name.startsWith('data-editor')) {
                 child.removeAttribute(attribute.name);
               }
             }

@@ -1,10 +1,18 @@
+import { createEditorView, type Value } from 'plitejs';
+import { authored } from 'plitejs/authored';
+
 import {
   IS_NODE_MAP_DIRTY,
   releaseDOMTextFlowRecordIndex,
   setDOMTextFlowRecordIndex,
 } from '../../src/dom/internal';
 import { replace as editorReplace } from '../../src/internal';
-import { canUseNativeSingleCharacterInput } from '../../src/react/editable/native-input-strategy';
+import { applyModelOwnedTextInput } from '../../src/react/editable/mutation-controller';
+import {
+  canUseNativeSingleCharacterInput,
+  getNativeSingleCharacterInputDecision,
+} from '../../src/react/editable/native-input-strategy';
+import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor } from '../../src/react/plugin/with-react';
 import { readTextSelection } from './read-text-selection';
@@ -22,6 +30,67 @@ const createFrameDocument = () => {
 
   return { frame, frameDocument, frameWindow };
 };
+
+test.each([
+  { intent: 'edit', projection: 'accepted' },
+  { intent: 'propose', projection: 'markup' },
+] as const)(
+  'routes pending marks through model input in an authored $intent view',
+  (policy) => {
+    const initialValue: Value = [
+      { type: 'paragraph', children: [{ text: 'Seed' }] },
+    ];
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue,
+    });
+    const editor = createReactRuntimeViewEditor(
+      createEditorView(source, {
+        authored: policy,
+      })
+    );
+    editor.update.selection.set({ path: [0, 0], offset: 4 });
+    editor.update.marks.toggle('bold');
+
+    expect(source.read.marks()).toBeNull();
+    expect(
+      getNativeSingleCharacterInputDecision({
+        editor,
+        eventData: 'x',
+        hasAppDOMInputPolicy: false,
+        isCommandNativeEquivalent: () => true,
+        selection: readTextSelection(editor),
+      })
+    ).toEqual({ blocker: 'active-marks', native: false });
+
+    applyModelOwnedTextInput({
+      data: 'x',
+      editor,
+      inputType: 'insertText',
+      selection: readTextSelection(editor) ?? undefined,
+    });
+    expect(editor.read.children()).toEqual([
+      {
+        type: 'paragraph',
+        children: [{ text: 'Seed' }, { text: 'x', bold: true }],
+      },
+    ]);
+
+    editor.update.marks.toggle('bold');
+    applyModelOwnedTextInput({
+      data: 'y',
+      editor,
+      inputType: 'insertText',
+      selection: readTextSelection(editor) ?? undefined,
+    });
+    expect(editor.read.children()).toEqual([
+      {
+        type: 'paragraph',
+        children: [{ text: 'Seed' }, { text: 'x', bold: true }, { text: 'y' }],
+      },
+    ]);
+  }
+);
 
 test('native anchor checks use the editor window NodeFilter realm', () => {
   const { frame, frameDocument, frameWindow } = createFrameDocument();
@@ -41,8 +110,8 @@ test('native anchor checks use the editor window NodeFilter realm', () => {
     ),
   } as any;
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-dom-sync', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-dom-sync', 'true');
   anchor.append(text);
   textHost.append(anchor);
   frameDocument.body.append(textHost);
@@ -104,8 +173,8 @@ test('native single-character input allows synced printable ASCII', () => {
     ),
   } as any;
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-dom-sync', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-dom-sync', 'true');
   textHost.append(text);
   document.body.append(textHost);
 
@@ -169,9 +238,9 @@ test('native single-character input keeps deferred dirty DOM bursts native on th
       focus: { path: [0, 0], offset: 1 },
     },
   });
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-dom-sync', 'true');
-  textHost.setAttribute('data-plite-path', '0,0');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-dom-sync', 'true');
+  textHost.setAttribute('data-editor-path', '0,0');
   textHost.append(text);
   document.body.append(textHost);
   IS_NODE_MAP_DIRTY.set(editor, true);
@@ -221,8 +290,8 @@ test('native input resolves a dirty retained-flow host through its private index
       focus: { path: [0, 0], offset: 1 },
     },
   });
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-dom-sync', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-dom-sync', 'true');
   textHost.append(text);
   document.body.append(textHost);
   setDOMTextFlowRecordIndex(textHost, {
@@ -280,8 +349,8 @@ test('native single-character input rejects projected text hosts', () => {
     ),
   } as any;
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-dom-sync-reason', 'decoration');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-dom-sync-reason', 'decoration');
   textHost.append(text);
   document.body.append(textHost);
 

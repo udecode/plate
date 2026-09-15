@@ -9,13 +9,14 @@
       "upstream": "skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "e29b6b6534a23dcaf8c7e16fc25d6484000d7b6e289c48eb0a32a97280633c5d",
-      "destinationSha256": "73ed2d55753226dfb30aa5ac88945f3c7f397631d1a9b1f395fb62202b4f549c",
+      "destinationSha256": "95fccf0565abf5ed2b90f42b24895dae9c36aa9627cb3b7e0d9541f237e27057",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md\n+++ skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-migrate-callers-then-delete-legacy-apis\n description: \"Apply when introducing a new internal API while old callers still exist. Migrate callers and delete the old API in the same wave instead of preserving compatibility layers.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Migrate Callers Then Delete Legacy APIs\n \n"
+      "unifiedDiff": "--- skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md\n+++ skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-migrate-callers-then-delete-legacy-apis\n-description: \"Apply when introducing a new internal API while old callers still exist. Migrate callers and delete the old API in the same wave instead of preserving compatibility layers.\"\n-disable-model-invocation: true\n+description: \"Coordinate an accepted internal API replacement across its callers and remove the obsolete path.\"\n ---\n \n # Migrate Callers Then Delete Legacy APIs\n"
     }
   ],
   "ownedFiles": [

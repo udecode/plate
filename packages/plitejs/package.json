@@ -36,6 +36,11 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./internal": {
+      "types": "./dist/internal/index.d.ts",
+      "import": "./dist/internal/index.js",
+      "default": "./dist/internal/index.js"
+    },
     "./dom": {
       "types": "./dist/dom/index.d.ts",
       "import": "./dist/dom/index.js",
@@ -70,6 +75,11 @@
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js",
       "default": "./dist/react/index.js"
+    },
+    "./react/virtualized": {
+      "types": "./dist/react/virtualized.d.ts",
+      "import": "./dist/react/virtualized.js",
+      "default": "./dist/react/virtualized.js"
     },
     "./annotations": {
       "types": "./dist/annotations/index.d.ts",
@@ -123,6 +133,7 @@
     "lint:partition:history": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs history",
     "lint:partition:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs pagination",
     "lint:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs react",
+    "lint:partition:react-virtualized": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs react-virtualized",
     "lint:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs testing",
     "lint:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs yjs",
     "test": "node ../../tooling/scripts/run-entrypoint-package-task.mjs plitejs test",
@@ -143,6 +154,7 @@
     "test:partition:history": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs history",
     "test:partition:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs pagination",
     "test:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs react",
+    "test:partition:react-virtualized": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs react-virtualized",
     "test:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs testing",
     "test:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs yjs",
     "test:react": "vitest run --config ./vitest.config.mjs",
@@ -164,11 +176,13 @@
     "typecheck:partition:history": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs history",
     "typecheck:partition:pagination": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs pagination",
     "typecheck:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs react",
+    "typecheck:partition:react-virtualized": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs react-virtualized",
     "typecheck:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs testing",
     "typecheck:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck plitejs yjs",
     "typecheck:tests": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-package-tests plitejs core"
   },
   "dependencies": {
+    "@noble/hashes": "^1.8.0",
     "csstype": "3.2.3",
     "lodash": "^4.17.21",
     "scroll-into-view-if-needed": "^3.1.0"

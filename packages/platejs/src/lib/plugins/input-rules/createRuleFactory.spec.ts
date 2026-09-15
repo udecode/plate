@@ -1,6 +1,6 @@
 import type { Range } from '../../../core';
 import { createEditor } from '../../editor';
-import { defineBasePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { createRuleFactory } from './createRuleFactory';
 import type { InsertTextInputRule } from './types';
 
@@ -17,7 +17,7 @@ const resolveInsertTextRule = <TMatch>(
   }
 ) => {
   const editor = createEditor();
-  const plugin = defineBasePlugin(name, {});
+  const plugin = definePlugin(name, {});
   let match: TMatch | undefined;
 
   editor.update((tx) => {
@@ -91,7 +91,7 @@ describe('createRuleFactory', () => {
   });
 
   it('binds a plugin owner without changing rule factory behavior', () => {
-    const plugin = defineBasePlugin('blockquote', {});
+    const plugin = definePlugin('blockquote', {});
     const editor = createEditor({ plugins: [plugin] });
     const rule = createRuleFactory(plugin)<{}, { marker: string }>({
       type: 'blockStart',

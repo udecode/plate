@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "suggestion-view-demo",
+  "title": "Suggestion Projections",
+  "description": "Compare accepted, proposed, and markup content in a read-only document.",
+  "registryDependencies": [
+    "https://platejs.org/r/basic-blocks.json",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/suggestion.json",
+    "toggle-group"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/suggestion-view-demo.tsx",
+      "content": "'use client';\n\nimport { DefaultAuthoredPlugin } from 'platejs/authored';\nimport {\n  EditorRoot,\n  useCreateEditor,\n  useEditor,\n  useEditorViewState,\n} from 'platejs/react';\nimport * as React from 'react';\n\nimport { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';\nimport { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';\nimport { Editor, EditorContainer } from '@/registry/components/editor/editor';\nimport { SuggestionKit } from '@/registry/components/editor/suggestion';\nimport { createSuggestionDocument } from '@/registry/examples/values/suggestion-document';\n\nexport default function SuggestionViewDemo() {\n  const [initialValue] = React.useState(createSuggestionDocument);\n  const editor = useCreateEditor({\n    plugins: [...BasicBlocksKit, ...SuggestionKit],\n    initialValue,\n    userId: 'alice',\n  });\n\n  return (\n    <EditorRoot\n      editor={editor}\n      readOnly\n      authored={{ intent: 'propose', projection: 'markup' }}\n    >\n      <SuggestionViewContent />\n    </EditorRoot>\n  );\n}\n\nfunction SuggestionViewContent() {\n  const editor = useEditor();\n  const projection = useEditorViewState(\n    editor,\n    () => editor.plugin(DefaultAuthoredPlugin).read.view().projection\n  );\n\n  return (\n    <div className=\"flex w-full flex-col gap-4 p-4 sm:p-6\">\n      <ToggleGroup\n        aria-label=\"Document projection\"\n        onValueChange={(value) => {\n          const authored = editor.plugin(DefaultAuthoredPlugin);\n          if (value === 'accepted') {\n            authored.api.setView({ intent: 'edit', projection: value });\n          } else if (value === 'proposed' || value === 'markup') {\n            authored.api.setView({\n              intent: 'propose',\n              projection: value,\n            });\n          }\n        }}\n        size=\"sm\"\n        type=\"single\"\n        value={projection}\n        variant=\"outline\"\n      >\n        <ToggleGroupItem value=\"accepted\">Accepted</ToggleGroupItem>\n        <ToggleGroupItem value=\"proposed\">Proposed</ToggleGroupItem>\n        <ToggleGroupItem value=\"markup\">Markup</ToggleGroupItem>\n      </ToggleGroup>\n      <p aria-live=\"polite\" className=\"text-sm text-muted-foreground\">\n        {projection === 'accepted'\n          ? 'Accepted content excludes pending edits.'\n          : projection === 'proposed'\n            ? 'Proposed content includes additions and omits proposed deletions.'\n            : 'Markup shows additions and keeps proposed deletions visible.'}\n      </p>\n      <EditorContainer className=\"h-[200px] rounded-md border\" variant=\"demo\">\n        <Editor\n          aria-label=\"Suggestion projection document\"\n          className=\"h-auto px-8 pb-8 sm:px-12\"\n          readOnly\n          variant=\"demo\"\n        />\n      </EditorContainer>\n      <p className=\"text-sm text-muted-foreground\">\n        This document is read-only. Switching projections does not decide\n        changes.\n      </p>\n    </div>\n  );\n}\n",
+      "type": "registry:example"
+    },
+    {
+      "path": "src/registry/examples/values/suggestion-document.tsx",
+      "content": "import { createEditor } from 'platejs/react';\n\nimport { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';\nimport { SuggestionKit } from '@/registry/components/editor/suggestion';\n\nexport function createSuggestionDocument() {\n  const editor = createEditor({\n    plugins: [...BasicBlocksKit, ...SuggestionKit],\n    userId: 'alice',\n    initialValue: [\n      {\n        type: 'paragraph',\n        children: [{ text: 'We ship on Friday.' }],\n      },\n      {\n        type: 'paragraph',\n        children: [{ text: 'This extra sentence can go.' }],\n      },\n    ],\n  });\n\n  editor.update((tx) => {\n    tx.authored.propose();\n    tx.text.insert('the update ', { at: { path: [0, 0], offset: 8 } });\n  });\n  editor.update((tx) => {\n    tx.authored.propose();\n    tx.text.delete({\n      at: {\n        anchor: { path: [1, 0], offset: 5 },\n        focus: { path: [1, 0], offset: 11 },\n      },\n    });\n  });\n\n  return editor.read.value();\n}\n",
+      "type": "registry:example"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/suggestion",
+        "title": "Suggestions"
+      }
+    ]
+  },
+  "type": "registry:example"
+}

@@ -22,25 +22,25 @@ instead of rebuilding every component by hand.
 | Plite surface | Plate surface |
 | --- | --- |
 | `useEditor()` from `plitejs/react` | `useCreateEditor({ ... })` in React components, or `createEditor({ ... })` in factories and tests. |
-| `<Plite>` plus `<Editable>` | `<Plate>` plus `<PlateContent>`. |
+| `<EditorRoot>` plus `<Editable>` | `<EditorRoot>` plus `<EditorContent>`. |
 | `renderElement` / `renderLeaf` switch statements | Plugin components through `.configure({ component })`. |
-| Plite extensions | Constructor `api`, `read`, `selectors`, `update`, native Plite fields, and codec declarations built by `defineCodecs`. |
+| Plite plugins | Constructor `api`, `read`, `selectors`, `update`, native Plite fields, and codec declarations built by `defineCodecs`. |
 | Top-level event handlers on `Editable` | Plugin `on` or `shortcuts`. |
 | `editor.update(...)` | Keep the transaction boundary; add plugin-owned commands through `update`. |
 | `editor.read(...)` | Keep the read boundary; add plugin-owned queries through `read`. |
 
 ## Editor Shell
 
-Move the editor value into the editor creation call and render the editable with `PlateContent`.
+Move the editor value into the editor creation call and render the editable with `EditorContent`.
 
 ```tsx title="components/editor.tsx" showLineNumbers
 'use client';
 
-import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
+import { EditorRoot, EditorContent, useCreateEditor } from 'platejs/react';
 
 const initialValue = [
   {
-    children: [{ text: 'Hello Plate.' }],
+    children: [{ text: 'Hello EditorRoot.' }],
     type: 'paragraph',
   },
 ];
@@ -51,9 +51,9 @@ export function Editor() {
   });
 
   return (
-    <Plate editor={editor}>
-      <PlateContent className="p-4" />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent className="p-4" />
+    </EditorRoot>
   );
 }
 ```
@@ -80,18 +80,18 @@ Replace `renderElement` branches with node plugins. Use `.configure({ component 
 ```tsx title="components/editor/paragraph-plugin.tsx" showLineNumbers
 import {
   ParagraphPlugin,
-  PlateElement,
-  type PlateElementProps,
+  EditorElement,
+  type EditorElementProps,
 } from 'platejs/react';
 
 export function ParagraphElement({
   children,
   ...props
-}: PlateElementProps<typeof ParagraphPlugin>) {
+}: EditorElementProps<typeof ParagraphPlugin>) {
   return (
-    <PlateElement className="m-0 px-0 py-1" {...props}>
+    <EditorElement className="m-0 px-0 py-1" {...props}>
       {children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 
@@ -123,12 +123,12 @@ Put a reusable document command under the plugin's `update` contribution. The
 command is available inside `editor.update(...)` under the plugin name.
 
 ```tsx title="components/editor/limit-exclamation-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const SignaturePlugin = definePlatePlugin('signature', {
+export const SignaturePlugin = definePlugin('signature', {
   update: ({ tx }) => ({
     insert() {
-      tx.text.insert(' - Plate');
+      tx.text.insert(' - EditorRoot');
     },
   }),
 });
@@ -147,9 +147,9 @@ updates. Do not wrap those generic operations in a feature method.
 
 ```tsx title="components/editor/callout-plugin.tsx" showLineNumbers
 import { schema } from 'platejs';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const CalloutPlugin = definePlatePlugin('callout', {
+export const CalloutPlugin = definePlugin('callout', {
   schema: {
     element: schema.element.textBlock(),
   },
@@ -176,9 +176,9 @@ or an earlier-stage type dependency.
 Move editor events into the plugin that owns the behavior.
 
 ```tsx title="components/editor/tab-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const TabPlugin = definePlatePlugin('tab', {
+export const TabPlugin = definePlugin('tab', {
   on: {
     keyDown: ({ event }) => {
       if (event.key !== 'Tab') return false;
@@ -194,9 +194,9 @@ export const TabPlugin = definePlatePlugin('tab', {
 Use `shortcuts` when the key combination should call a plugin API, transform, or explicit handler.
 
 ```tsx title="components/editor/save-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const SavePlugin = definePlatePlugin('save', {
+export const SavePlugin = definePlugin('save', {
   shortcuts: {
     draft: {
       keys: 'mod+s',

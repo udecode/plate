@@ -1,7 +1,7 @@
-import type { EditorExtensionReference } from '../../../packages/plitejs/src/index';
+import type { PluginReference } from '../../../packages/plitejs/src/index';
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
 } from '../../../packages/plitejs/src/index';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
@@ -27,11 +27,11 @@ const summarize = (values: readonly number[]) => {
 
 const runCohort = (extensionCount: number) => {
   let factoryCalls = 0;
-  const extensions: EditorExtensionReference[] = [];
+  const plugins: PluginReference[] = [];
 
   for (let index = 0; index < extensionCount; index++) {
-    extensions.push(
-      defineExtension(`read-view-${extensionCount}-${index}`, {
+    plugins.push(
+      definePlugin(`read-view-${extensionCount}-${index}`, {
         read: ({ state }) => {
           factoryCalls += 1;
 
@@ -41,7 +41,7 @@ const runCohort = (extensionCount: number) => {
     );
   }
 
-  const editor = createEditor({ extensions });
+  const editor = createEditor({ plugins });
   const finalGroup = `read-view-${extensionCount}-${extensionCount - 1}`;
   const readFinalGroup = () =>
     editor.read((state) =>
@@ -108,7 +108,7 @@ const result = {
   degradationContract:
     'Warm reads and document commits perform zero read-factory work; 100 installed read groups stay within 2x of one group.',
   generatedAt: new Date().toISOString(),
-  repeatedUnit: 'one extension-owned callable read namespace',
+  repeatedUnit: 'one plugin-owned callable read namespace',
   rows,
   structuralFailures: structuralFailures.length,
   version: 1,

@@ -20,7 +20,7 @@ import {
   type EditableInputController,
 } from './input-state';
 import { getSelection as editorGetSelection } from './runtime-editor-api';
-import { readLiveSelection } from './runtime-selection-state';
+import { readRuntimeSelection } from './runtime-selection-state';
 import {
   applyEditableDOMSelectionChange,
   completeEditableSelectionChangeImport,
@@ -141,7 +141,7 @@ const shouldCancelStaleCompositionSelectionChangeFlush = ({
     return false;
   }
 
-  const range = ReactEditor.resolvePliteRange(editor, domSelection, {
+  const range = ReactEditor.resolveRange(editor, domSelection, {
     exactMatch: false,
   });
 
@@ -202,7 +202,7 @@ export const createRuntimeSelectionChangeHandler = ({
       return;
     }
 
-    const selectionBefore = readLiveSelection(editor);
+    const selectionBefore = readRuntimeSelection(editor);
 
     if (selectionChangeOrigin === 'repair-induced') {
       const preference = inputController.state.modelSelectionPreference;
@@ -280,7 +280,7 @@ export const createRuntimeSelectionChangeHandler = ({
           nativeAllowed: ownership === 'native-allowed',
           ownership,
           repair: null,
-          selectionAfter: readLiveSelection(editor),
+          selectionAfter: readRuntimeSelection(editor),
           selectionBefore,
           selectionChangeOrigin,
           selectionSource: selectionSourceAfter,

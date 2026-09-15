@@ -1,5 +1,5 @@
 import {
-  defineBasePlugin,
+  definePlugin,
   NodeApi,
   TextApi,
   type NodeKey,
@@ -23,7 +23,7 @@ const initialState: FindPluginState = {
 };
 
 /** Current literal text search without document or history changes. */
-export const BaseFindPlugin = defineBasePlugin('find', {
+export const BaseFindPlugin = definePlugin('find', {
   initialState,
 }).extend(({ editor, store }) => {
   let matchesByAnchorPath = new Map<string, readonly FindMatch[]>();

@@ -36,7 +36,7 @@ describe('compiled schema architecture benchmark authority', () => {
     const compiled = compileEditorSchemaContributions([
       {
         contribution: definition.schema,
-        extensionName: definition.name,
+        pluginName: definition.name,
       },
     ]);
     const properties = [...compiled.properties.byId.values()];
@@ -314,7 +314,7 @@ Total time:          1.50s
     assert.doesNotMatch(exact, /readonly BasePluginInput\[\] = \[/u);
     assert.match(widened, /readonly BasePluginInput\[\] = \[/u);
     assert.equal(
-      (widened.match(/const Plugin\d+ = defineBasePlugin/g) ?? []).length,
+      (widened.match(/const Plugin\d+ = definePlugin/g) ?? []).length,
       1000
     );
     assert.deepEqual(diagnostics, {

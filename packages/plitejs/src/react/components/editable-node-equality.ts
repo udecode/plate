@@ -1,8 +1,8 @@
-import type { Descendant, Path, NodeKey, Text as PliteTextNode } from '../..';
+import type { Descendant, Path, NodeKey, Text as TextNode } from '../..';
 import type { EditableDescendantBinding } from './editable-descendant-binding';
 
-const isText = (value: Descendant): value is PliteTextNode =>
-  typeof (value as PliteTextNode).text === 'string';
+const isText = (value: Descendant): value is TextNode =>
+  typeof (value as TextNode).text === 'string';
 
 const samePath = (left: Path | null, right: Path | null) => {
   if (left === right) return true;
@@ -58,8 +58,8 @@ export const sameNodeKeys = (
   left.every((nodeKey, index) => nodeKey === right[index]);
 
 const sameDirectTextChildNodes = (
-  left: ReadonlyArray<PliteTextNode | null>,
-  right: ReadonlyArray<PliteTextNode | null>
+  left: ReadonlyArray<TextNode | null>,
+  right: ReadonlyArray<TextNode | null>
 ) =>
   left.length === right.length &&
   left.every((node, index) => node === right[index]);

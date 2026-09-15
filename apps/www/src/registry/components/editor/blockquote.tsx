@@ -2,15 +2,15 @@
 
 import {
   type BlockquotePlugin,
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
 } from 'platejs/react';
 
 export function BlockquoteElement(
-  props: PlateElementProps<typeof BlockquotePlugin>
+  props: EditorElementProps<typeof BlockquotePlugin>
 ) {
   return (
-    <PlateElement
+    <EditorElement
       as="blockquote"
       className="my-1 border-l-2 pl-6 italic"
       {...props}

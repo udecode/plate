@@ -3,7 +3,7 @@ import {
   createEditor,
   type Descendant,
   type Editor,
-  type Element as PliteElement,
+  type Element as EditorElement,
   type Node,
   type Point,
   ElementApi,
@@ -52,7 +52,7 @@ const createRect = ({
   }) as DOMRect;
 
 const createParagraphEditor = (text = 'alpha beta') => {
-  const editor = createEditor({ extensions: [dom()] });
+  const editor = createEditor({ plugins: [dom()] });
 
   editorReplace(editor, {
     children: [
@@ -76,7 +76,11 @@ const createParagraphEditor = (text = 'alpha beta') => {
 };
 
 const seedNodeMaps = (editor: Editor, children: Descendant[]) => {
-  const visit = (parent: Editor | PliteElement, child: Node, index: number) => {
+  const visit = (
+    parent: Editor | EditorElement,
+    child: Node,
+    index: number
+  ) => {
     NODE_TO_PARENT.set(child, parent);
     NODE_TO_INDEX.set(child, index);
 
@@ -116,7 +120,7 @@ const mountEditorRoot = (
   document: Document,
   root = document.createElement('div')
 ) => {
-  root.setAttribute('data-plite-editor', 'true');
+  root.setAttribute('data-editor', 'true');
   root.setAttribute('contenteditable', 'true');
   document.body.appendChild(root);
 
@@ -133,7 +137,7 @@ const mountEditorRoot = (
 };
 
 const bindTextOwner = (editor: any, path: number[], owner: HTMLElement) => {
-  owner.setAttribute('data-plite-node', 'text');
+  owner.setAttribute('data-editor-node', 'text');
 
   const [node] = editor.read((state) => state.nodes.get(path));
   const key = editor.api.dom.findKey(node);
@@ -171,15 +175,15 @@ describe('plite-dom bridge', () => {
       const [paragraphNode] = editor.read((state) => state.nodes.get([0]));
       const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
 
-      paragraph.setAttribute('data-plite-node', 'element');
-      paragraph.setAttribute('data-plite-path', '0');
-      textOwner.setAttribute('data-plite-node', 'text');
-      textOwner.setAttribute('data-plite-path', '0,0');
+      paragraph.setAttribute('data-editor-node', 'element');
+      paragraph.setAttribute('data-editor-path', '0');
+      textOwner.setAttribute('data-editor-node', 'text');
+      textOwner.setAttribute('data-editor-path', '0,0');
       paragraph.appendChild(textOwner);
       root.appendChild(paragraph);
 
-      expect(editor.api.dom.assertPliteNode(paragraph)).toBe(paragraphNode);
-      expect(editor.api.dom.assertPliteNode(textOwner)).toBe(textNode);
+      expect(editor.api.dom.assertNode(paragraph)).toBe(paragraphNode);
+      expect(editor.api.dom.assertNode(textOwner)).toBe(textNode);
     });
   });
 
@@ -193,14 +197,14 @@ describe('plite-dom bridge', () => {
       const domText = document.createTextNode('alpha beta');
       const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
 
-      owner.setAttribute('data-plite-node', 'text');
-      owner.setAttribute('data-plite-path', '0,0');
+      owner.setAttribute('data-editor-node', 'text');
+      owner.setAttribute('data-editor-path', '0,0');
       owner.setAttribute(
-        'data-plite-node-key',
+        'data-editor-node-key',
         editorGetNodeKey(editor, [0, 0])!
       );
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
 
       string.appendChild(domText);
       leaf.appendChild(string);
@@ -234,7 +238,7 @@ describe('plite-dom bridge', () => {
   });
 
   it('resolves Plite node paths by node key before stale weak-map indexes', () => {
-    const editor = createEditor({ extensions: [dom()] });
+    const editor = createEditor({ plugins: [dom()] });
 
     editorReplace(editor, {
       children: [
@@ -279,14 +283,14 @@ describe('plite-dom bridge', () => {
       const domText = document.createTextNode('alpha beta');
       const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
 
-      owner.setAttribute('data-plite-node', 'text');
-      owner.setAttribute('data-plite-path', '0,0');
+      owner.setAttribute('data-editor-node', 'text');
+      owner.setAttribute('data-editor-path', '0,0');
       owner.setAttribute(
-        'data-plite-node-key',
+        'data-editor-node-key',
         editorGetNodeKey(editor, [0, 0])!
       );
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
 
       string.appendChild(domText);
       leaf.appendChild(string);
@@ -303,7 +307,7 @@ describe('plite-dom bridge', () => {
 
   it('resolves Plite points by node key before stale mounted DOM paths', () => {
     withDom(({ document }) => {
-      const editor = createEditor({ extensions: [dom()] });
+      const editor = createEditor({ plugins: [dom()] });
 
       editorReplace(editor, {
         children: [
@@ -330,11 +334,11 @@ describe('plite-dom bridge', () => {
       const targetNodeKey = editorGetNodeKey(editor, [1, 0]);
 
       expect(targetNodeKey).toBeTruthy();
-      owner.setAttribute('data-plite-node', 'text');
-      owner.setAttribute('data-plite-path', '0,0');
-      owner.setAttribute('data-plite-node-key', targetNodeKey!);
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      owner.setAttribute('data-editor-node', 'text');
+      owner.setAttribute('data-editor-path', '0,0');
+      owner.setAttribute('data-editor-node-key', targetNodeKey!);
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
 
       string.appendChild(domText);
       leaf.appendChild(string);
@@ -350,7 +354,7 @@ describe('plite-dom bridge', () => {
 
       expect(editorGetPathByNodeKey(editor, targetNodeKey!)).toEqual([2, 0]);
       expect(
-        editor.api.dom.assertPlitePoint([domText, 3], {
+        editor.api.dom.assertPoint([domText, 3], {
           exactMatch: false,
         })
       ).toEqual<Point>({
@@ -366,10 +370,10 @@ describe('plite-dom bridge', () => {
       mountEditorRoot(editor, document);
 
       const foreign = document.createElement('p');
-      foreign.setAttribute('data-plite-node', 'element');
-      foreign.setAttribute('data-plite-path', '0');
+      foreign.setAttribute('data-editor-node', 'element');
+      foreign.setAttribute('data-editor-path', '0');
 
-      expect(() => editor.api.dom.assertPliteNode(foreign)).toThrow(
+      expect(() => editor.api.dom.assertNode(foreign)).toThrow(
         'Cannot resolve a Plite node from DOM node'
       );
     });
@@ -388,12 +392,12 @@ describe('plite-dom bridge', () => {
       domSelection.removeAllRanges();
 
       expect(() =>
-        editor.api.dom.assertPliteRange(domSelection, {
+        editor.api.dom.assertRange(domSelection, {
           exactMatch: false,
         })
       ).toThrow('Cannot resolve a Plite range from DOM range');
       expect(
-        editor.api.dom.resolvePliteRange(domSelection, {
+        editor.api.dom.resolveRange(domSelection, {
           exactMatch: false,
         })
       ).toBeNull();
@@ -414,8 +418,8 @@ describe('plite-dom bridge', () => {
         throw new Error('Expected DOM selection');
       }
 
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
       string.appendChild(domText);
       leaf.appendChild(string);
       owner.appendChild(leaf);
@@ -425,7 +429,7 @@ describe('plite-dom bridge', () => {
       domSelection.setBaseAndExtent(domText, 3, domText, 1);
 
       expect(
-        editor.api.dom.resolvePliteRange(domSelection, {
+        editor.api.dom.resolveRange(domSelection, {
           exactMatch: false,
         })
       ).toEqual({
@@ -457,7 +461,7 @@ describe('plite-dom bridge', () => {
     withDom(({ document }) => {
       for (const disconnected of [false, true]) {
         const editor = createEditor({
-          extensions: [dom()],
+          plugins: [dom()],
           initialValue: Array.from({ length: 128 }, (_, index) => ({
             type: 'paragraph',
             children: [{ text: `line ${index}` }],
@@ -472,8 +476,8 @@ describe('plite-dom bridge', () => {
           focus: { path: [0, 0], offset: 4 },
         };
         const counter = createPliteReactRenderCounter();
-        const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
-        globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+        const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
+        globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
         try {
           expect(editor.api.dom.resolveDOMNode(textNode)).toBeNull();
           expect(editor.api.dom.resolveDOMRange(range)).toBeNull();
@@ -481,7 +485,7 @@ describe('plite-dom bridge', () => {
             counter.snapshot().byKey['core-time:runtime-index-full-build'] ?? 0
           ).toBe(0);
         } finally {
-          globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+          globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
         }
 
         const root = mountEditorRoot(editor, document);
@@ -559,8 +563,8 @@ describe('plite-dom bridge', () => {
       const nestedText = document.createTextNode('nested');
 
       parentRoot.appendChild(nestedRoot);
-      nestedLeaf.setAttribute('data-plite-leaf', 'true');
-      nestedString.setAttribute('data-plite-string', 'true');
+      nestedLeaf.setAttribute('data-editor-leaf', 'true');
+      nestedString.setAttribute('data-editor-string', 'true');
       nestedString.appendChild(nestedText);
       nestedLeaf.appendChild(nestedString);
       nestedOwner.appendChild(nestedLeaf);
@@ -569,9 +573,9 @@ describe('plite-dom bridge', () => {
 
       expect(parent.api.dom.hasDOMNode(nestedText)).toBe(false);
       expect(nested.api.dom.hasDOMNode(nestedText)).toBe(true);
-      expect(() => parent.api.dom.assertPliteNode(nestedOwner)).toThrow();
+      expect(() => parent.api.dom.assertNode(nestedOwner)).toThrow();
       expect(
-        nested.api.dom.assertPlitePoint([nestedText, 3], {
+        nested.api.dom.assertPoint([nestedText, 3], {
           exactMatch: false,
         })
       ).toEqual<Point>({
@@ -579,12 +583,12 @@ describe('plite-dom bridge', () => {
         offset: 3,
       });
       expect(() =>
-        parent.api.dom.assertPlitePoint([nestedText, 3], {
+        parent.api.dom.assertPoint([nestedText, 3], {
           exactMatch: false,
         })
       ).toThrow();
       expect(
-        parent.api.dom.resolvePlitePoint([nestedText, 3], {
+        parent.api.dom.resolvePoint([nestedText, 3], {
           exactMatch: false,
         })
       ).toBeNull();
@@ -601,15 +605,15 @@ describe('plite-dom bridge', () => {
       const string = document.createElement('span');
       const domText = document.createTextNode('alpha beta');
 
-      paragraph.setAttribute('data-plite-node', 'element');
-      owner.setAttribute('data-plite-node', 'text');
-      owner.setAttribute('data-plite-path', '0,0');
+      paragraph.setAttribute('data-editor-node', 'element');
+      owner.setAttribute('data-editor-node', 'text');
+      owner.setAttribute('data-editor-path', '0,0');
       owner.setAttribute(
-        'data-plite-node-key',
+        'data-editor-node-key',
         editorGetNodeKey(editor, [0, 0])!
       );
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
 
       string.appendChild(domText);
       leaf.appendChild(string);
@@ -651,8 +655,8 @@ describe('plite-dom bridge', () => {
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
 
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
       string.appendChild(domText);
       leaf.appendChild(string);
       owner.appendChild(leaf);
@@ -714,8 +718,8 @@ describe('plite-dom bridge', () => {
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
 
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
       string.appendChild(domText);
       leaf.appendChild(string);
       owner.appendChild(leaf);
@@ -807,10 +811,10 @@ describe('plite-dom bridge', () => {
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
 
-      firstLeaf.setAttribute('data-plite-leaf', 'true');
-      secondLeaf.setAttribute('data-plite-leaf', 'true');
-      firstString.setAttribute('data-plite-string', 'true');
-      secondString.setAttribute('data-plite-string', 'true');
+      firstLeaf.setAttribute('data-editor-leaf', 'true');
+      secondLeaf.setAttribute('data-editor-leaf', 'true');
+      firstString.setAttribute('data-editor-string', 'true');
+      secondString.setAttribute('data-editor-string', 'true');
       firstString.appendChild(firstText);
       secondString.appendChild(secondText);
       firstLeaf.appendChild(firstString);
@@ -874,7 +878,7 @@ describe('plite-dom bridge', () => {
 
   it('resolves right-edge event ranges before wrapped whitespace split across text hosts', () => {
     withDom(({ document, window }) => {
-      const editor = createEditor({ extensions: [dom()] });
+      const editor = createEditor({ plugins: [dom()] });
 
       editorReplace(editor, {
         children: [
@@ -908,10 +912,10 @@ describe('plite-dom bridge', () => {
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
 
-      firstLeaf.setAttribute('data-plite-leaf', 'true');
-      secondLeaf.setAttribute('data-plite-leaf', 'true');
-      firstString.setAttribute('data-plite-string', 'true');
-      secondString.setAttribute('data-plite-string', 'true');
+      firstLeaf.setAttribute('data-editor-leaf', 'true');
+      secondLeaf.setAttribute('data-editor-leaf', 'true');
+      firstString.setAttribute('data-editor-string', 'true');
+      secondString.setAttribute('data-editor-string', 'true');
       firstString.appendChild(firstText);
       secondString.appendChild(secondText);
       firstLeaf.appendChild(firstString);
@@ -987,8 +991,8 @@ describe('plite-dom bridge', () => {
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
 
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
       string.appendChild(domText);
       leaf.appendChild(string);
       owner.appendChild(leaf);
@@ -1068,8 +1072,8 @@ describe('plite-dom bridge', () => {
           window.Range.prototype.getBoundingClientRect;
         const originalGetClientRects = window.Range.prototype.getClientRects;
 
-        leaf.setAttribute('data-plite-leaf', 'true');
-        string.setAttribute('data-plite-string', 'true');
+        leaf.setAttribute('data-editor-leaf', 'true');
+        string.setAttribute('data-editor-string', 'true');
         string.appendChild(domText);
         leaf.appendChild(string);
         owner.appendChild(leaf);
@@ -1150,8 +1154,8 @@ describe('plite-dom bridge', () => {
         window.Range.prototype.getBoundingClientRect;
       const originalGetClientRects = window.Range.prototype.getClientRects;
 
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
       string.appendChild(domText);
       leaf.appendChild(string);
       owner.appendChild(leaf);
@@ -1226,8 +1230,8 @@ describe('plite-dom bridge', () => {
       const originalGetClientRects = window.Range.prototype.getClientRects;
 
       owner.style.direction = 'rtl';
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
       string.appendChild(domText);
       leaf.appendChild(string);
       owner.appendChild(leaf);
@@ -1302,7 +1306,7 @@ describe('plite-dom bridge', () => {
       const root = mountEditorRoot(editor, document);
       const staleParagraph = document.createElement('p');
 
-      staleParagraph.setAttribute('data-plite-node', 'element');
+      staleParagraph.setAttribute('data-editor-node', 'element');
       root.appendChild(staleParagraph);
 
       expect(() =>
@@ -1324,8 +1328,8 @@ describe('plite-dom bridge', () => {
       const zeroWidth = document.createElement('span');
       const textNode = document.createTextNode('\uFEFF');
 
-      zeroWidth.setAttribute('data-plite-zero-width', 'z');
-      leaf.setAttribute('data-plite-leaf', 'true');
+      zeroWidth.setAttribute('data-editor-zero-width', 'z');
+      leaf.setAttribute('data-editor-leaf', 'true');
       zeroWidth.appendChild(textNode);
       leaf.appendChild(zeroWidth);
       owner.appendChild(leaf);
@@ -1333,7 +1337,7 @@ describe('plite-dom bridge', () => {
       bindTextOwner(editor, [0, 0], owner);
 
       expect(
-        editor.api.dom.assertPlitePoint([textNode, 1], {
+        editor.api.dom.assertPoint([textNode, 1], {
           exactMatch: false,
         })
       ).toEqual<Point>({
@@ -1355,8 +1359,8 @@ describe('plite-dom bridge', () => {
         '9This table is just a basic example of rendering a table'
       );
 
-      leaf.setAttribute('data-plite-leaf', 'true');
-      string.setAttribute('data-plite-string', 'true');
+      leaf.setAttribute('data-editor-leaf', 'true');
+      string.setAttribute('data-editor-string', 'true');
       string.appendChild(domText);
       leaf.appendChild(string);
       owner.appendChild(leaf);
@@ -1364,7 +1368,7 @@ describe('plite-dom bridge', () => {
       bindTextOwner(editor, [0, 0], owner);
 
       expect(
-        editor.api.dom.assertPlitePoint([domText, domText.textContent.length], {
+        editor.api.dom.assertPoint([domText, domText.textContent.length], {
           exactMatch: false,
         })
       ).toEqual<Point>({
@@ -1372,12 +1376,9 @@ describe('plite-dom bridge', () => {
         offset: 1,
       });
       expect(
-        editor.api.dom.resolvePlitePoint(
-          [domText, domText.textContent.length],
-          {
-            exactMatch: true,
-          }
-        )
+        editor.api.dom.resolvePoint([domText, domText.textContent.length], {
+          exactMatch: true,
+        })
       ).toBeNull();
     });
   });
@@ -1395,13 +1396,13 @@ describe('plite-dom bridge', () => {
       const placeholderSegment = document.createElement('span');
       const placeholderText = document.createTextNode('\uFEFF');
 
-      textSegment.setAttribute('data-plite-string', 'true');
+      textSegment.setAttribute('data-editor-string', 'true');
       textSegment.appendChild(textNode);
       textLeaf.appendChild(textSegment);
 
-      placeholderSegment.setAttribute('data-plite-zero-width', 'z');
-      placeholderSegment.setAttribute('data-plite-length', '0');
-      placeholderSegment.setAttribute('data-plite-mark-placeholder', 'true');
+      placeholderSegment.setAttribute('data-editor-zero-width', 'z');
+      placeholderSegment.setAttribute('data-editor-length', '0');
+      placeholderSegment.setAttribute('data-editor-mark-placeholder', 'true');
       placeholderSegment.appendChild(placeholderText);
       placeholderLeaf.appendChild(placeholderSegment);
 
@@ -1431,12 +1432,12 @@ describe('plite-dom bridge', () => {
       const middleText = document.createTextNode('lph');
       const lastText = document.createTextNode('a beta');
 
-      firstLeaf.setAttribute('data-plite-leaf', 'true');
-      middleLeaf.setAttribute('data-plite-leaf', 'true');
-      lastLeaf.setAttribute('data-plite-leaf', 'true');
-      first.setAttribute('data-plite-string', 'true');
-      middle.setAttribute('data-plite-string', 'true');
-      last.setAttribute('data-plite-string', 'true');
+      firstLeaf.setAttribute('data-editor-leaf', 'true');
+      middleLeaf.setAttribute('data-editor-leaf', 'true');
+      lastLeaf.setAttribute('data-editor-leaf', 'true');
+      first.setAttribute('data-editor-string', 'true');
+      middle.setAttribute('data-editor-string', 'true');
+      last.setAttribute('data-editor-string', 'true');
 
       first.appendChild(firstText);
       middle.appendChild(middleText);
@@ -1453,7 +1454,7 @@ describe('plite-dom bridge', () => {
       range.setEnd(lastText, 2);
 
       expect(
-        editor.api.dom.assertPliteRange(range, {
+        editor.api.dom.assertRange(range, {
           exactMatch: false,
         })
       ).toEqual({
@@ -1479,18 +1480,18 @@ describe('plite-dom bridge', () => {
       const middleText = document.createTextNode('lph');
       const lastText = document.createTextNode('a beta');
 
-      firstLeaf.setAttribute('data-plite-leaf', 'true');
-      firstLeaf.setAttribute('data-plite-leaf-start', '0');
-      firstLeaf.setAttribute('data-plite-leaf-end', '1');
-      middleLeaf.setAttribute('data-plite-leaf', 'true');
-      middleLeaf.setAttribute('data-plite-leaf-start', '1');
-      middleLeaf.setAttribute('data-plite-leaf-end', '4');
-      lastLeaf.setAttribute('data-plite-leaf', 'true');
-      lastLeaf.setAttribute('data-plite-leaf-start', '4');
-      lastLeaf.setAttribute('data-plite-leaf-end', '10');
-      first.setAttribute('data-plite-string', 'true');
-      middle.setAttribute('data-plite-string', 'true');
-      last.setAttribute('data-plite-string', 'true');
+      firstLeaf.setAttribute('data-editor-leaf', 'true');
+      firstLeaf.setAttribute('data-editor-leaf-start', '0');
+      firstLeaf.setAttribute('data-editor-leaf-end', '1');
+      middleLeaf.setAttribute('data-editor-leaf', 'true');
+      middleLeaf.setAttribute('data-editor-leaf-start', '1');
+      middleLeaf.setAttribute('data-editor-leaf-end', '4');
+      lastLeaf.setAttribute('data-editor-leaf', 'true');
+      lastLeaf.setAttribute('data-editor-leaf-start', '4');
+      lastLeaf.setAttribute('data-editor-leaf-end', '10');
+      first.setAttribute('data-editor-string', 'true');
+      middle.setAttribute('data-editor-string', 'true');
+      last.setAttribute('data-editor-string', 'true');
 
       first.appendChild(firstText);
       middle.appendChild(middleText);
@@ -1503,12 +1504,12 @@ describe('plite-dom bridge', () => {
       bindTextOwner(editor, [0, 0], owner);
 
       expect(
-        editor.api.dom.assertPlitePoint([middleText, 1], {
+        editor.api.dom.assertPoint([middleText, 1], {
           exactMatch: false,
         })
       ).toEqual({ path: [0, 0], offset: 2 });
       expect(
-        editor.api.dom.assertPlitePoint([lastText, 2], {
+        editor.api.dom.assertPoint([lastText, 2], {
           exactMatch: false,
         })
       ).toEqual({ path: [0, 0], offset: 6 });
@@ -1525,8 +1526,8 @@ describe('plite-dom bridge', () => {
       const zeroWidth = document.createElement('span');
       const textNode = document.createTextNode('\uFEFF');
 
-      zeroWidth.setAttribute('data-plite-zero-width', 'z');
-      leaf.setAttribute('data-plite-leaf', 'true');
+      zeroWidth.setAttribute('data-editor-zero-width', 'z');
+      leaf.setAttribute('data-editor-leaf', 'true');
       zeroWidth.appendChild(textNode);
       leaf.appendChild(zeroWidth);
       owner.appendChild(leaf);

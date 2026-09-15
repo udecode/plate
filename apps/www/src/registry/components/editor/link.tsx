@@ -13,11 +13,10 @@ import { LinkRules } from 'platejs';
 import {
   type EditableSiblingProps,
   LinkPlugin,
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useComposedRef,
   useEditor,
-  useEditorPlugin,
   useEditorReadOnly,
   useEditorSelection,
   useEditorSelector,
@@ -31,14 +30,14 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import {
-  type UseWidgetFloatingOptions,
-  useWidgetFloating,
-} from '@/registry/hooks/use-widget-floating';
+  type UseFloatingRectOptions,
+  useFloatingRect,
+} from '@/registry/hooks/use-floating-rect';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
-export function LinkElement(props: PlateElementProps<typeof LinkPlugin>) {
+export function LinkElement(props: EditorElementProps<typeof LinkPlugin>) {
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       as="a"
       className={cn(
@@ -54,7 +53,7 @@ export function LinkElement(props: PlateElementProps<typeof LinkPlugin>) {
       }}
     >
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 
@@ -89,7 +88,7 @@ const linkFloatingOptions = {
     shift({ padding: 8 }),
   ],
   placement: 'top-start',
-} satisfies UseWidgetFloatingOptions;
+} satisfies UseFloatingRectOptions;
 
 export const linkPlugin = LinkPlugin.extend({ initialState })
   .extend(({ store }) => {
@@ -222,7 +221,7 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
 function FloatingLinkUrlInput({
   ...props
 }: React.ComponentPropsWithRef<'input'>) {
-  const { api, store } = useEditorPlugin(linkPlugin);
+  const { api, store } = useEditor().plugin(linkPlugin);
 
   return (
     <Input
@@ -260,18 +259,18 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   );
   const mode = usePluginStore(linkPlugin, 'mode');
   const open = usePluginStore(linkPlugin, 'isOpen', editor.id);
-  const { api, store, update } = useEditorPlugin(linkPlugin);
+  const { api, store, update } = useEditor().plugin(linkPlugin);
   const geometry = useSelectionGeometry({ editableRef });
   const editOpen =
     !readOnly && open && mode === 'edit' && editor.read.selection.isCollapsed();
-  const editFloating = useWidgetFloating(geometry, {
+  const editFloating = useFloatingRect(geometry?.boundingRect ?? null, {
     onOpenChange: (nextOpen) => {
       if (!nextOpen) api.hide();
     },
     open: editOpen,
     ...linkFloatingOptions,
   });
-  const insertFloating = useWidgetFloating(geometry, {
+  const insertFloating = useFloatingRect(geometry?.boundingRect ?? null, {
     onOpenChange: (nextOpen) => {
       if (nextOpen) return;
       api.hide();
@@ -409,7 +408,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
           ref={urlInputRef}
           className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent"
           placeholder="Paste link"
-          data-plite-keep-selection-visible
+          data-editor-keep-selection-visible
           onKeyDown={onInputKeyDown}
         />
       </div>
@@ -421,7 +420,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
         <Input
           className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent"
           placeholder="Text to display"
-          data-plite-keep-selection-visible
+          data-editor-keep-selection-visible
           {...textInputProps}
         />
       </div>

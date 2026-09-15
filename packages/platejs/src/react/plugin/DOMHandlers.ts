@@ -6,13 +6,13 @@ import type {
   BasePluginDefinition,
 } from '../../lib';
 import type { DOMHandlerProp } from '../utils/dom-attributes.internal';
-import type { PlatePluginContext } from './PlatePlugin';
+import type { PluginContext } from './PlatePlugin';
 
 export type DOMHandler<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   EV = {},
 > = (
-  ctx: PlatePluginContext<C> & {
+  ctx: PluginContext<C> & {
     event: EV;
   }
 ) => HandlerReturnType;

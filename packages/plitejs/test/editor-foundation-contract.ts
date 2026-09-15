@@ -5,7 +5,7 @@ import {
   createEditor,
   DocumentChange,
   type Element,
-  defineExtension,
+  definePlugin,
   property,
   schema,
 } from 'plitejs';
@@ -52,7 +52,7 @@ describe('editor foundation contract', () => {
     assert.notEqual(generatedA.id, generatedB.id);
   });
 
-  it('combines extension namespaces and schema specs without extension namespaces on the editor surface', () => {
+  it('combines plugin namespaces and schema specs without plugin namespaces on the editor surface', () => {
     const editor = createFoundationEditor();
 
     extendTestSchema(editor, {
@@ -60,7 +60,7 @@ describe('editor foundation contract', () => {
       mention: { void: 'markable-inline' },
     });
     editor.install(
-      defineExtension('table-foundation', {
+      definePlugin('table-foundation', {
         schema: {
           elements: {
             'table-cell': {
@@ -179,7 +179,7 @@ describe('editor foundation contract', () => {
     const editorSurface = editor as unknown as Record<string, unknown>;
 
     assert.equal(typeof editorSurface.api, 'object');
-    assert.equal(typeof editorSurface.extension, 'function');
+    assert.equal(typeof editorSurface.plugin, 'function');
     assert.equal('tf' in editorSurface, false);
     assert.equal('plate' in editorSurface, false);
     assert.equal('yjs' in editorSurface, false);

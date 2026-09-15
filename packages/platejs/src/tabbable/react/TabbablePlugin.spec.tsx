@@ -4,7 +4,7 @@
 import { jsxt, type TestEditor } from '#platejs-test-internal';
 
 import type { Node, Path } from '../../core';
-import { createEditor, definePlatePlugin } from '../../react/core';
+import { createEditor, definePlugin } from '../../react/core';
 import type { TabbableEntry } from '../lib/TabbablePluginTypes';
 import {
   createTabIndexRestorationQueue,
@@ -45,7 +45,7 @@ describe('tabindex restoration', () => {
   });
 });
 
-const VoidPlugin = definePlatePlugin('void', {
+const VoidPlugin = definePlugin('void', {
   schema: {
     element: {
       void: 'block',

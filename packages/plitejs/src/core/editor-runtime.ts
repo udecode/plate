@@ -17,9 +17,10 @@ import type {
   EditorCommitListener,
   EditorCommitSource,
   EditorCommandDispatch,
-  EditorExtensionReference,
-  EditorExtensionInput,
-  EditorExtensionReconfigureOptions,
+  PluginReference,
+  PluginDefinitionInput,
+  PluginInput,
+  PluginReconfigureOptions,
   EditorDocumentValue,
   EditorLeafOptions,
   EditorLevelsOptions,
@@ -135,14 +136,14 @@ export type InternalEditorTransactionRuntime<V extends Value = Value> = {
   ) => void;
 };
 
-export type InternalEditorExtensionRuntime<V extends Value = Value> = {
+export type InternalPluginRuntime<V extends Value = Value> = {
   install: (
-    extension: EditorExtensionInput,
-    options?: EditorExtensionReconfigureOptions
+    plugin: PluginInput,
+    options?: PluginReconfigureOptions
   ) => () => void;
-  prepareExtensionPublication: (
-    entries: readonly InternalEditorExtensionPublicationEntry[],
-    options?: EditorExtensionReconfigureOptions
+  preparePluginPublication: (
+    entries: readonly InternalPluginPublicationEntry[],
+    options?: PluginReconfigureOptions
   ) => Readonly<{
     cleanup: () => void;
     commit: () => void;
@@ -157,13 +158,28 @@ export type InternalEditorExtensionRuntime<V extends Value = Value> = {
   schema: InternalEditorSchemaApi<V>;
 };
 
-export type InternalEditorExtensionPublicationEntry = Readonly<{
+export type InternalCompiledPluginPublicationEntry = Readonly<{
+  /** Shared nominal author identity installed by this entry. */
+  descriptor: PluginReference;
+  /** Immutable normalized behavior compiled for this editor. */
+  definition: PluginDefinitionInput & Readonly<{ name: string }>;
   editor?: Editor;
-  extension: EditorExtensionReference;
+  /** Eligible author ancestors that resolve to the installed descriptor. */
+  sources: readonly PluginReference[];
+  /** Optional owner projection for richer package-specific portals. */
+  createPortal?: (editor: Editor, descriptor: PluginReference) => unknown;
 }>;
 
+export type InternalPluginPublicationEntry =
+  | InternalCompiledPluginPublicationEntry
+  | Readonly<{
+      /** Raw author descriptor normalized at the publication boundary. */
+      editor?: Editor;
+      plugin: PluginReference;
+    }>;
+
 export type InternalEditorRuntime<V extends Value = Value> =
-  InternalEditorExtensionRuntime<V> &
+  InternalPluginRuntime<V> &
     InternalEditorReadRuntime &
     InternalEditorSnapshotRuntime<V> &
     InternalEditorTransactionRuntime<V> & {

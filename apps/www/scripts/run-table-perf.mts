@@ -390,7 +390,7 @@ async function main() {
               __tableRenderProfile?: Record<string, number>;
             };
             target.__tableRenderProfile = counts;
-            globalThis.__PLITE_REACT_RENDER_PROFILER__ = {
+            globalThis.__EDITOR_REACT_RENDER_PROFILER__ = {
               record(event) {
                 const key = `${event.kind}:${event.id ?? ''}`;
                 counts[key] = (counts[key] ?? 0) + 1;

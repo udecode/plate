@@ -9,10 +9,10 @@ import {
   target,
 } from '../../core';
 import { type Editor, createEditor } from '../../lib/editor';
-import { defineBasePlugin } from '../../lib/plugin';
+import { definePlugin } from '../../lib/plugin';
 import { jsxt } from '../../testing';
 import {
-  createPlateChangeHandlersExtension,
+  createPlateChangeHandlersPlugin,
   subscribePlateChangeCallbacks,
 } from './plateChangeHandlers';
 
@@ -44,7 +44,7 @@ const dispatchPlateChange = (
   event: 'nodeChange' | 'textChange',
   context: object
 ) => {
-  const on = Reflect.get(createPlateChangeHandlersExtension(editor), 'on');
+  const on = Reflect.get(createPlateChangeHandlersPlugin(editor), 'on');
 
   if (typeof on !== 'object' || on === null) {
     throw new Error('Expected Plate change lifecycle callbacks.');
@@ -55,7 +55,7 @@ const dispatchPlateChange = (
 describe('plate change handlers', () => {
   it('dispatches node change handlers from Plite node change events', () => {
     const onNodeChange = mock();
-    const NodeObserverPlugin = defineBasePlugin('nodeObserver', {
+    const NodeObserverPlugin = definePlugin('nodeObserver', {
       schema: {
         properties: {
           variant: schema.elementProperty(property.string(), {
@@ -90,7 +90,7 @@ describe('plate change handlers', () => {
 
   it('dispatches inserted and removed node payloads', () => {
     const onNodeChange = mock();
-    const NodeObserverPlugin = defineBasePlugin('nodeObserver', {
+    const NodeObserverPlugin = definePlugin('nodeObserver', {
       on: { nodeChange: onNodeChange },
     });
     const editor = createEditor({
@@ -131,7 +131,7 @@ describe('plate change handlers', () => {
 
   it('does not dispatch node handlers for text intents', () => {
     const onNodeChange = mock();
-    const NodeObserverPlugin = defineBasePlugin('nodeObserver', {
+    const NodeObserverPlugin = definePlugin('nodeObserver', {
       on: { nodeChange: onNodeChange },
     });
     const editor = createEditor({
@@ -153,7 +153,7 @@ describe('plate change handlers', () => {
 
   it('dispatches text change handlers from Plite text change events', () => {
     const onTextChange = mock();
-    const TextObserverPlugin = defineBasePlugin('textObserver', {
+    const TextObserverPlugin = definePlugin('textObserver', {
       on: { textChange: onTextChange },
     });
     const editor = createEditor({
@@ -185,7 +185,7 @@ describe('plate change handlers', () => {
     const onTextChange = mock(() => {});
     const editor = createEditor({
       plugins: [
-        defineBasePlugin('textObserver', {
+        definePlugin('textObserver', {
           editOnly: true,
           on: { textChange: onTextChange },
         }),
@@ -206,10 +206,10 @@ describe('plate change handlers', () => {
     const second = mock(() => {});
     const editor = createEditor({
       plugins: [
-        defineBasePlugin('first', {
+        definePlugin('first', {
           on: { textChange: first },
         }),
-        defineBasePlugin('second', {
+        definePlugin('second', {
           on: { textChange: second },
         }),
       ],
@@ -233,7 +233,7 @@ describe('plate change handlers', () => {
     const onNodeChange = mock(() => {});
     const editor = createEditor({
       plugins: [
-        defineBasePlugin('nodeObserver', {
+        definePlugin('nodeObserver', {
           editOnly: true,
           on: { nodeChange: onNodeChange },
         }),
@@ -254,10 +254,10 @@ describe('plate change handlers', () => {
     const second = mock(() => {});
     const editor = createEditor({
       plugins: [
-        defineBasePlugin('firstNodeObserver', {
+        definePlugin('firstNodeObserver', {
           on: { nodeChange: first },
         }),
-        defineBasePlugin('secondNodeObserver', {
+        definePlugin('secondNodeObserver', {
           on: { nodeChange: second },
         }),
       ],
@@ -289,7 +289,7 @@ describe('plate change handlers', () => {
     const providerObserver = mock();
     const editor = createEditor({
       plugins: [
-        defineBasePlugin('textHandler', {
+        definePlugin('textHandler', {
           on: { textChange: pluginHandler },
         }),
       ],

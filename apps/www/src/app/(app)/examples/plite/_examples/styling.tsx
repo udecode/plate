@@ -1,9 +1,9 @@
 import { history } from 'plitejs/history';
-import { Editable, Plite, useEditor } from 'plitejs/react';
+import { Editable, EditorRoot, useEditor } from 'plitejs/react';
 
 const StylingExample = () => {
   const editor1 = useEditor({
-    extensions: [history()],
+    plugins: [history()],
     initialValue: [
       {
         type: 'paragraph',
@@ -12,7 +12,7 @@ const StylingExample = () => {
     ],
   });
   const editor2 = useEditor({
-    extensions: [history()],
+    plugins: [history()],
     initialValue: [
       {
         type: 'paragraph',
@@ -23,7 +23,7 @@ const StylingExample = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-      <Plite editor={editor1}>
+      <EditorRoot editor={editor1}>
         <Editable
           style={{
             backgroundColor: 'rgb(255, 230, 156)',
@@ -31,11 +31,11 @@ const StylingExample = () => {
             outline: 'rgb(0, 128, 0) solid 2px',
           }}
         />
-      </Plite>
+      </EditorRoot>
 
-      <Plite editor={editor2}>
+      <EditorRoot editor={editor2}>
         <Editable className="fancy" disableDefaultStyles />
-      </Plite>
+      </EditorRoot>
     </div>
   );
 };

@@ -407,7 +407,7 @@ const getMappedMetadata = <TMetadata>(
 
 /**
  * Private stable-ID mapping kernel shared by decoration, annotation, and
- * widget stores. It keeps their public models separate while making a
+ * keyed derived stores. It keeps their public models separate while making a
  * same-order source refresh pay one semantic scan plus changed-item mapping.
  */
 export const createStableIdMappedSource = <

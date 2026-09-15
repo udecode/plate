@@ -5,23 +5,23 @@ import type {
 } from '../lib/plugin/BasePlugin';
 import type { BasePluginDefinition } from '../lib/plugin/PluginDefinition';
 import type { AnyObject } from '../lib/types/AnyObject';
-import type { RenderElementProps } from '../lib/types/RenderElementProps';
+import type { RenderElementProps as BaseRenderElementProps } from '../lib/types/RenderElementProps';
 import type { StaticRenderLeafProps } from '../lib/types/RenderLeafProps';
-import type { RenderTextProps } from '../lib/types/RenderTextProps';
+import type { RenderTextProps as BaseRenderTextProps } from '../lib/types/RenderTextProps';
 
-export type PliteRenderElementProps<
+export type RenderElementProps<
   N extends Element = Element,
   C extends BasePluginDefinition = BasePluginDefinition,
-> = PliteRenderNodeProps<C> & RenderElementProps<N>;
+> = RenderNodeProps<C> & BaseRenderElementProps<N>;
 
-export type PliteRenderLeafProps<
+export type RenderLeafProps<
   N extends Text = Text,
   C extends BasePluginDefinition = BasePluginDefinition,
-> = PliteRenderNodeProps<C> & StaticRenderLeafProps<N, N>;
+> = RenderNodeProps<C> & StaticRenderLeafProps<N, N>;
 
 type ErasedBasePluginContext = AnyBasePluginContext;
 
-export type PliteRenderNodeProps<
+export type RenderNodeProps<
   C extends BasePluginDefinition = BasePluginDefinition,
 > = (0 extends 1 & C ? ErasedBasePluginContext : BasePluginContext<C>) & {
   attributes?: AnyObject;
@@ -31,7 +31,7 @@ export type PliteRenderNodeProps<
   style?: React.CSSProperties;
 };
 
-export type PliteRenderTextProps<
+export type RenderTextProps<
   N extends Text = Text,
   C extends BasePluginDefinition = BasePluginDefinition,
-> = PliteRenderNodeProps<C> & RenderTextProps<N>;
+> = RenderNodeProps<C> & BaseRenderTextProps<N>;

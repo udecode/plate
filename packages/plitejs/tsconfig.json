@@ -34,9 +34,9 @@
       ],
       "platejs/diff": ["../platejs/src/diff/index.ts"],
       "platejs/dnd/react": ["../platejs/src/dnd/react/index.ts"],
-      "platejs/docx": ["../platejs/src/docx/index.tsx"],
       "platejs/docx/export": ["../platejs/src/docx/export/index.ts"],
       "platejs/docx/import": ["../platejs/src/docx/import/index.ts"],
+      "platejs/docx/paste": ["../platejs/src/docx/paste/index.ts"],
       "platejs/dom": ["../platejs/src/dom/index.ts"],
       "platejs/emoji": ["../platejs/src/emoji/index.ts"],
       "platejs/emoji/react": ["../platejs/src/emoji/react/index.ts"],
@@ -64,6 +64,7 @@
       "platejs/pagination": ["../platejs/src/pagination/index.ts"],
       "platejs/pagination/react": ["../platejs/src/pagination/react/index.ts"],
       "platejs/react": ["../platejs/src/react/index.tsx"],
+      "platejs/react/virtualized": ["../platejs/src/react/virtualized.tsx"],
       "platejs/resizable/react": [
         "../platejs/src/react/features/resizable/index.ts"
       ],
@@ -96,9 +97,11 @@
       "plitejs/dom": ["./src/dom/index.ts"],
       "plitejs/history": ["./src/history/index.ts"],
       "plitejs/hyperscript": ["./src/hyperscript/index.ts"],
+      "plitejs/internal": ["./src/internal/index.ts"],
       "plitejs/pagination": ["./src/pagination/index.ts"],
       "plitejs/pagination/react": ["./src/pagination/react.tsx"],
       "plitejs/react": ["./src/react/index.ts"],
+      "plitejs/react/virtualized": ["./src/react/virtualized.tsx"],
       "plitejs/testing": ["./src/testing/index.ts"],
       "plitejs/yjs": ["./src/yjs/index.ts"],
       "plitejs/yjs/react": ["./src/yjs/react/index.ts"]

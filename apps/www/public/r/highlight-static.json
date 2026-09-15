@@ -10,7 +10,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/highlight-static.tsx",
-      "content": "import type { BaseHighlightPlugin } from 'platejs';\nimport { type PliteLeafProps, PliteLeaf } from 'platejs/static';\nimport * as React from 'react';\n\nexport function HighlightLeafStatic(\n  props: PliteLeafProps<typeof BaseHighlightPlugin>\n) {\n  return (\n    <PliteLeaf {...props} as=\"mark\" className=\"bg-highlight/30 text-inherit\">\n      {props.children}\n    </PliteLeaf>\n  );\n}\n",
+      "content": "import type { BaseHighlightPlugin } from 'platejs';\nimport { type EditorLeafProps, EditorLeaf } from 'platejs/static';\nimport * as React from 'react';\n\nexport function HighlightLeafStatic(\n  props: EditorLeafProps<typeof BaseHighlightPlugin>\n) {\n  return (\n    <EditorLeaf {...props} as=\"mark\" className=\"bg-highlight/30 text-inherit\">\n      {props.children}\n    </EditorLeaf>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/highlight-static.tsx"
     }

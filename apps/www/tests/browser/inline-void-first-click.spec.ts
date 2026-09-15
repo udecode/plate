@@ -1,7 +1,7 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
-const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
+const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 const EQUATION_TRIGGER = 'button[aria-label="Edit equation"]';
 
 const focusOutsideEditor = async (page: Page) => {
@@ -18,10 +18,10 @@ const focusOutsideEditor = async (page: Page) => {
 
 const focusDateParagraph = async (page: Page, date: Locator) => {
   const dateNode = date.locator(
-    'xpath=ancestor::*[@data-plite-node="element"][1]'
+    'xpath=ancestor::*[@data-editor-node="element"][1]'
   );
   const precedingText = dateNode.locator(
-    'xpath=preceding-sibling::*[@data-plite-node="text"][1]'
+    'xpath=preceding-sibling::*[@data-editor-node="text"][1]'
   );
 
   await expect(precedingText).toBeVisible();
@@ -66,7 +66,7 @@ const traceFirstGesture = async (page: Page, selector: string, index = 0) => {
   await page.evaluate(
     ({ index: targetIndex, selector: targetSelector }) => {
       const target = document.querySelectorAll(targetSelector)[targetIndex];
-      const editor = target?.closest('[data-plite-editor="true"]');
+      const editor = target?.closest('[data-editor="true"]');
       const trace: string[] = [];
 
       (
@@ -140,7 +140,7 @@ test('date opens from the first physical click after a text caret', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/', { waitUntil: 'commit' });
@@ -152,7 +152,7 @@ test('date opens from the first physical click after a text caret', async ({
     await expect(date).toBeVisible();
     await date.scrollIntoViewIfNeeded();
     await focusDateParagraph(page, date);
-    await traceFirstGesture(page, '.plite-date button[type="button"]');
+    await traceFirstGesture(page, '.editor-date button[type="button"]');
     await clickWithPageMouse(page, date);
     const firstClickTrace = await readFirstGesture(page);
 
@@ -172,7 +172,7 @@ test('date opens from the first click outside editor focus', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/', { waitUntil: 'commit' });
@@ -184,7 +184,7 @@ test('date opens from the first click outside editor focus', async ({
     await expect(date).toBeVisible();
     await date.scrollIntoViewIfNeeded();
     await focusOutsideEditor(page);
-    await traceFirstGesture(page, '.plite-date button[type="button"]');
+    await traceFirstGesture(page, '.editor-date button[type="button"]');
     await date.click();
 
     await expectCompleteFirstGesture(page);
@@ -199,7 +199,7 @@ test('inline equation opens from the first focus-owning click', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/', { waitUntil: 'commit' });
@@ -245,7 +245,7 @@ test('block equation remains a one-click control', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/', { waitUntil: 'commit' });

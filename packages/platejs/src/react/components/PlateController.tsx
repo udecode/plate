@@ -9,7 +9,7 @@ import {
 } from '../internal/plate-context';
 
 /** Share the last focused mounted editor with controls outside individual Plate providers. */
-export function PlateController({ children }: { children: React.ReactNode }) {
+export function EditorController({ children }: { children: React.ReactNode }) {
   const [scope] = React.useState(() => createPlateTargetScope<PlateTarget>());
   return (
     <PlateControllerContext value={scope}>

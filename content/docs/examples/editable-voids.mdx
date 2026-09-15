@@ -4,7 +4,7 @@ description: Nest editable controls and a Plate editor inside a void element.
 ---
 
 This example renders form controls and a nested Plate editor inside a void
-element. It is app-local demo code built with `definePlatePlugin`, not a packaged
+element. It is app-local demo code built with `definePlugin`, not a packaged
 feature plugin.
 
 ## Demo
@@ -27,11 +27,11 @@ an empty paragraph after it.
 
 | Piece | Owner | Notes |
 | --- | --- | --- |
-| `EditableVoidPlugin` | Registry example | Uses `definePlatePlugin` with `schema.element.void: 'block'`. |
-| `EditableVoidElement` | Registry example | Renders inputs, radio controls, and a nested `<Plate>` instance. |
+| `EditableVoidPlugin` | Registry example | Uses `definePlugin` with `schema.element.void: 'block'`. |
+| `EditableVoidElement` | Registry example | Renders inputs, radio controls, and a nested `<EditorRoot>` instance. |
 | Outer editor | Registry example | Loads the authored editor plugins plus `EditableVoidPlugin` and the `editableVoidsValue`. |
 | Inner editor | Registry example | Creates a separate `useCreateEditor({ plugins })` inside the void element. |
-| Value shape | Plite | Keeps an empty text child inside the void node so Plite can select it. |
+| Value shape | Plate | Keeps an empty text child inside the void node so Plate can select it. |
 
 ## Void element rules
 
@@ -39,7 +39,7 @@ Set `contentEditable={false}` on the custom void wrapper. Without it, browser
 editing behavior can leak into the nested controls; the demo notes Firefox input
 issues specifically.
 
-Render `{children}` after the non-editable UI. Plite still needs the hidden void
+Render `{children}` after the non-editable UI. Plate still needs the hidden void
 child mounted even when your visible element is fully custom React.
 
 The nested editor is a separate Plate editor. It does not share the outer
@@ -50,4 +50,4 @@ editor's value, selection, plugins, or undo history.
 - [Plate Plugin](/docs/api/core/plate-plugin) covers `schema.element.void`,
   `.configure({ component })`, and plugin rendering.
 - [Plugin Components](/docs/plugin-components) covers custom node components.
-- [Plate Components](/docs/api/core/plate-components) covers `<Plate>`, editor providers, and node primitives.
+- [Plate Components](/docs/api/core/plate-components) covers `<EditorRoot>`, editor providers, and node primitives.

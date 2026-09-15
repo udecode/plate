@@ -6,19 +6,19 @@ import { mergePlateRenderedAttributes } from '../../internal/mergePlateRenderedA
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { RenderElementProps } from '../../lib';
-import { type PlateNodeProps, PlateElement } from '../components';
+import { type EditorNodeProps, EditorElement } from '../components';
 import type { Editor } from '../editor/Editor';
 import { useEditorContext } from '../internal/plite-components';
 import { usePlateRenderedAttributes } from '../internal/rendered-attributes';
 import { useEditorReadOnly, useClaimEditableDOMCommit } from '../plite-react';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
+import type { AnyResolvedPlugin } from '../plugin/PlatePlugin';
 import { useEditor } from '../stores';
 import { ElementProvider } from '../stores/element/useElementStore';
 import { getRenderNodeProps } from './getRenderNodeProps.internal';
 
 export type RenderElement = (
-  props: PlateNodeProps & RenderElementProps & { path: Path }
+  props: EditorNodeProps & RenderElementProps & { path: Path }
 ) => React.ReactElement<any> | undefined;
 
 function ElementContent({
@@ -26,7 +26,7 @@ function ElementContent({
   plugin,
   pluginContext,
   ...initialProps
-}: (PlateNodeProps & RenderElementProps & { path: Path }) & {
+}: (EditorNodeProps & RenderElementProps & { path: Path }) & {
   pluginContext?: Record<string, unknown>;
 }) {
   let props = initialProps;
@@ -44,8 +44,8 @@ function ElementContent({
   const Component = plugin.component;
   const Element =
     typeof Component === 'string'
-      ? (PlateElement as any)
-      : (Component ?? PlateElement);
+      ? (EditorElement as any)
+      : (Component ?? EditorElement);
 
   props = getRenderNodeProps({
     editor,
@@ -158,7 +158,7 @@ export function AfterNodeChildren({ ...props }: any) {
  */
 export const pluginRenderElement = (
   editor: Editor,
-  plugin: AnyResolvedPlatePlugin
+  plugin: AnyResolvedPlugin
 ): RenderElement => {
   const pluginContext = createPluginContext(editor, plugin);
 

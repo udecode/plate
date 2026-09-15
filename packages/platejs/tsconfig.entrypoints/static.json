@@ -22,6 +22,9 @@
   "include": ["../src/static/**/*"],
   "references": [
     {
+      "path": "../../plitejs/tsconfig.entrypoints/core.json"
+    },
+    {
       "path": "../../plitejs/tsconfig.entrypoints/react.json"
     },
     {

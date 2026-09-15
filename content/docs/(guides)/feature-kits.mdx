@@ -25,7 +25,7 @@ your app, not package exports locked inside `node_modules`.
 Install the kit through the Plate registry, then import it from your app.
 
 ```tsx title="components/editor.tsx" showLineNumbers
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { BasicNodesKit } from '@/components/editor/basic-nodes';
 import { TableKit } from '@/components/editor/table';
@@ -37,11 +37,11 @@ export function MyEditor() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```

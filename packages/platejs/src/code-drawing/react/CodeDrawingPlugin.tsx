@@ -1,4 +1,4 @@
-import { toPlatePlugin } from '../../react/core';
+import { toReactPlugin } from '../../react/core';
 import { BaseCodeDrawingPlugin } from '../lib';
 
-export const CodeDrawingPlugin = toPlatePlugin(BaseCodeDrawingPlugin);
+export const CodeDrawingPlugin = toReactPlugin(BaseCodeDrawingPlugin);

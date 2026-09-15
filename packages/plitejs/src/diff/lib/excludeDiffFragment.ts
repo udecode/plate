@@ -3,7 +3,7 @@ import cloneDeep from 'lodash/cloneDeep.js';
 import {
   ContentSlice,
   type Descendant,
-  defineExtension,
+  definePlugin,
   editorReads,
   ElementApi,
 } from '../..';
@@ -31,7 +31,7 @@ export const excludeDiffFromFragment = (
 
 /** Remove diff metadata from fragments copied out of an editor. */
 export const excludeDiffFragment = () =>
-  defineExtension('exclude-diff-fragment', {
+  definePlugin('exclude-diff-fragment', {
     readMiddleware: ({ around }) => [
       around(editorReads.slice.export, ({ next }) => {
         const slice = next();

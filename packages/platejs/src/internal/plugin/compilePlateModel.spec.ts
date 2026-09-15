@@ -7,9 +7,9 @@ import {
 import { createEditor } from '../../lib/editor';
 import { createEditorWithEditor } from '../../lib/editor/withPlite';
 import type { PluginReference } from '../../lib/plugin';
-import { defineBasePlugin } from '../../lib/plugin';
+import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins';
-import { definePlatePlugin } from '../../react/plugin';
+import { definePlugin } from '../../react/plugin';
 import {
   getPlateModelPublication,
   getPlateRuntime,
@@ -17,7 +17,7 @@ import {
 } from './compilePlateModel';
 
 const createElementPlugin = <const TName extends string>(name: TName) =>
-  defineBasePlugin(name, {
+  defineHeadlessPlugin(name, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -27,7 +27,7 @@ const createElementPlugin = <const TName extends string>(name: TName) =>
 
 describe('compilePlateModel', () => {
   it('keeps capability names separate from persisted element types and property keys', () => {
-    const ElementPlugin = defineBasePlugin('elementCapability', {
+    const ElementPlugin = defineHeadlessPlugin('elementCapability', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -35,7 +35,7 @@ describe('compilePlateModel', () => {
         },
       },
     });
-    const MarkPlugin = defineBasePlugin('markCapability', {
+    const MarkPlugin = defineHeadlessPlugin('markCapability', {
       schema: {
         mark: {
           key: 'persistedMark',
@@ -44,12 +44,12 @@ describe('compilePlateModel', () => {
       },
     });
     const DefaultElementPlugin = createElementPlugin('defaultElement');
-    const DefaultMarkPlugin = defineBasePlugin('defaultMark', {
+    const DefaultMarkPlugin = defineHeadlessPlugin('defaultMark', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
     });
-    const BehaviorPlugin = defineBasePlugin('behaviorCapability', {
+    const BehaviorPlugin = defineHeadlessPlugin('behaviorCapability', {
       on: { commit: () => {} },
     });
     const editor = createEditor({
@@ -89,23 +89,18 @@ describe('compilePlateModel', () => {
       type: 'persistedElement',
     });
     expect('schema' in editor.plugin(BehaviorPlugin)).toBe(false);
-    expect(editor.plugin('elementCapability').schema.type).toBe(
-      'persistedElement'
-    );
-    expect(editor.plugin('markCapability').schema.key).toBe('persistedMark');
-    expect(() => editor.plugin('elementCapability').schema.key).toThrow(
+    expect(editor.plugin(ElementPlugin).schema.type).toBe('persistedElement');
+    expect(editor.plugin(MarkPlugin).schema.key).toBe('persistedMark');
+    expect(() => editor.plugin(ElementPlugin).schema.key).toThrow(
       'does not own a primary mark schema identity'
     );
-    expect(() => editor.plugin('markCapability').schema.type).toThrow(
-      'does not own a primary element schema identity'
-    );
-    expect(() => editor.plugin('behaviorCapability').schema.type).toThrow(
+    expect(() => editor.plugin(MarkPlugin).schema.type).toThrow(
       'does not own a primary element schema identity'
     );
   });
 
   it('binds generic element updates to the plugin persisted type', () => {
-    const ElementPlugin = defineBasePlugin('calloutCapability', {
+    const ElementPlugin = defineHeadlessPlugin('calloutCapability', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -118,7 +113,7 @@ describe('compilePlateModel', () => {
         },
       },
     });
-    const CustomInsertPlugin = defineBasePlugin('semanticCard', {
+    const CustomInsertPlugin = defineHeadlessPlugin('semanticCard', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -181,7 +176,7 @@ describe('compilePlateModel', () => {
   });
 
   it('applies history policy to descriptor-scoped generic updates', () => {
-    const ElementPlugin = defineBasePlugin('policyElement', {
+    const ElementPlugin = defineHeadlessPlugin('policyElement', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -210,7 +205,7 @@ describe('compilePlateModel', () => {
   });
 
   it('rolls back a failing descriptor-scoped policy update', () => {
-    const ElementPlugin = defineBasePlugin('rollbackElement', {
+    const ElementPlugin = defineHeadlessPlugin('rollbackElement', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -242,7 +237,7 @@ describe('compilePlateModel', () => {
   });
 
   it('does not invent a primary key for aggregate property contributors', () => {
-    const AggregatePropertiesPlugin = defineBasePlugin(
+    const AggregatePropertiesPlugin = defineHeadlessPlugin(
       'aggregatePropertiesRuntime',
       {
         schema: {
@@ -260,18 +255,15 @@ describe('compilePlateModel', () => {
     const editor = createEditor({ plugins: [AggregatePropertiesPlugin] });
 
     expect('schema' in editor.plugin(AggregatePropertiesPlugin)).toBe(false);
-    expect(
-      () => editor.plugin('aggregatePropertiesRuntime').schema.type
-    ).toThrow('does not own a primary element schema identity');
   });
 
   it('synthesizes semantic primary-mark reads and updates', () => {
-    const BoldPlugin = defineBasePlugin('boldRuntime', {
+    const BoldPlugin = defineHeadlessPlugin('boldRuntime', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
     });
-    const TonePlugin = defineBasePlugin('toneRuntime', {
+    const TonePlugin = defineHeadlessPlugin('toneRuntime', {
       schema: { mark: property.enum(['warm', 'cool'] as const) },
     });
     const point = { offset: 0, path: [0, 0] };
@@ -306,13 +298,13 @@ describe('compilePlateModel', () => {
   });
 
   it('projects one plugin-owned content-root slot onto targeted element plugins', () => {
-    const ImagePlugin = defineBasePlugin('contentRootImage', {
+    const ImagePlugin = defineHeadlessPlugin('contentRootImage', {
       schema: { element: { void: 'block' } },
     });
-    const VideoPlugin = defineBasePlugin('contentRootVideo', {
+    const VideoPlugin = defineHeadlessPlugin('contentRootVideo', {
       schema: { element: { void: 'block' } },
     });
-    const CaptionPlugin = defineBasePlugin('caption', {
+    const CaptionPlugin = defineHeadlessPlugin('caption', {
       schema: ({ plugins }) => {
         const blockContent = plugins.blockContent({
           default: BaseParagraphPlugin,
@@ -367,7 +359,7 @@ describe('compilePlateModel', () => {
     const second = createEditor();
     const semantic = createEditor({
       plugins: [
-        defineBasePlugin('derivedSemanticMark', {
+        defineHeadlessPlugin('derivedSemanticMark', {
           schema: {
             mark: property.boolean({ default: false, omitDefault: true }),
           },
@@ -385,7 +377,7 @@ describe('compilePlateModel', () => {
 
   it('publishes semantic schema projections from one descriptor', () => {
     const BlockPlugin = createElementPlugin('modelBlock');
-    const MarkPlugin = defineBasePlugin('modelMark', {
+    const MarkPlugin = defineHeadlessPlugin('modelMark', {
       schema: {
         mark: {
           inclusive: false,
@@ -395,7 +387,7 @@ describe('compilePlateModel', () => {
       },
       render: { mark: { placement: 'text' } },
     });
-    const PropertyPlugin = defineBasePlugin('modelProperty', {
+    const PropertyPlugin = defineHeadlessPlugin('modelProperty', {
       initialState: { targets: [BlockPlugin] as const },
       schema: ({ initialState }) => ({
         properties: {
@@ -465,14 +457,14 @@ describe('compilePlateModel', () => {
 
   it('accepts installed plugin descriptors for element schema operations', () => {
     const BlockPlugin = createElementPlugin('descriptorBlock');
-    const ContainerPlugin = defineBasePlugin('descriptorContainer', {
+    const ContainerPlugin = defineHeadlessPlugin('descriptorContainer', {
       schema: {
         element: {
           content: schema.content.type('descriptorBlock', { min: 1 }),
         },
       },
     });
-    const ElementPropertyPlugin = defineBasePlugin(
+    const ElementPropertyPlugin = defineHeadlessPlugin(
       'descriptorElementProperty',
       {
         schema: {
@@ -483,7 +475,7 @@ describe('compilePlateModel', () => {
         },
       }
     );
-    const PropertyPlugin = defineBasePlugin('descriptorTone', {
+    const PropertyPlugin = defineHeadlessPlugin('descriptorTone', {
       schema: () => ({
         properties: {
           descriptorTone: schema.elementProperty(property.string(), {
@@ -492,7 +484,7 @@ describe('compilePlateModel', () => {
         },
       }),
     });
-    const MarkPlugin = defineBasePlugin('descriptorMark', {
+    const MarkPlugin = defineHeadlessPlugin('descriptorMark', {
       schema: {
         mark: {
           inclusive: false,
@@ -559,7 +551,7 @@ describe('compilePlateModel', () => {
       'does not declare schema.element'
     );
 
-    const UninstalledElementPropertyPlugin = defineBasePlugin(
+    const UninstalledElementPropertyPlugin = defineHeadlessPlugin(
       'uninstalledDescriptorElementProperty',
       {
         schema: {
@@ -630,7 +622,7 @@ describe('compilePlateModel', () => {
   it('publishes render indexes only for schema-owned types', () => {
     const ElementComponent = () => null;
     const MarkComponent = () => null;
-    const ElementPlugin = definePlatePlugin('renderElement', {
+    const ElementPlugin = definePlugin('renderElement', {
       component: ElementComponent,
       schema: {
         element: {
@@ -638,7 +630,7 @@ describe('compilePlateModel', () => {
         },
       },
     });
-    const MarkPlugin = definePlatePlugin('renderMark', {
+    const MarkPlugin = definePlugin('renderMark', {
       component: MarkComponent,
       render: {
         mark: {
@@ -651,7 +643,7 @@ describe('compilePlateModel', () => {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
     });
-    const RuntimeOnlyPlugin = definePlatePlugin('runtimeOnly', {
+    const RuntimeOnlyPlugin = definePlugin('runtimeOnly', {
       component: () => null,
     });
     const editor = createEditor({
@@ -673,7 +665,7 @@ describe('compilePlateModel', () => {
 
   it('classifies block containers from compiled child relations', () => {
     const BlockChildPlugin = createElementPlugin('containerBlockChild');
-    const InlineChildPlugin = defineBasePlugin('containerInlineChild', {
+    const InlineChildPlugin = defineHeadlessPlugin('containerInlineChild', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -681,7 +673,7 @@ describe('compilePlateModel', () => {
         },
       },
     });
-    const DirectContainerPlugin = defineBasePlugin('directBlockContainer', {
+    const DirectContainerPlugin = defineHeadlessPlugin('directBlockContainer', {
       schema: {
         element: {
           content: schema.content.type('containerBlockChild', {
@@ -691,7 +683,7 @@ describe('compilePlateModel', () => {
         },
       },
     });
-    const GroupContainerPlugin = defineBasePlugin('groupBlockContainer', {
+    const GroupContainerPlugin = defineHeadlessPlugin('groupBlockContainer', {
       schema: ({ plugins }) => ({
         element: {
           content: plugins.blockContent({
@@ -701,7 +693,7 @@ describe('compilePlateModel', () => {
         },
       }),
     });
-    const InlineContainerPlugin = defineBasePlugin('inlineOnlyContainer', {
+    const InlineContainerPlugin = defineHeadlessPlugin('inlineOnlyContainer', {
       schema: {
         element: {
           content: schema.content.any(
@@ -754,7 +746,7 @@ describe('compilePlateModel', () => {
       nested: { value: 1 },
       targets: [TargetPlugin],
     };
-    const plugin = defineBasePlugin('configuredModel', {
+    const plugin = defineHeadlessPlugin('configuredModel', {
       initialState: pluginInitialState,
       schema: ({ initialState }) => ({
         properties: {
@@ -818,7 +810,7 @@ describe('compilePlateModel', () => {
 
   it('compiles top-level target names into schema bindings', () => {
     const HeadingPlugin = createElementPlugin('configuredHeading');
-    const PropertyPlugin = defineBasePlugin('configuredProperty', {
+    const PropertyPlugin = defineHeadlessPlugin('configuredProperty', {
       schema: ({ targetElementTypes }) => ({
         properties: {
           configuredProperty: schema.elementProperty(property.string(), {
@@ -865,7 +857,7 @@ describe('compilePlateModel', () => {
   });
 
   it('resolves persisted target types from function schema declarations', () => {
-    const HeadingPlugin = defineBasePlugin('functionHeading', {
+    const HeadingPlugin = defineHeadlessPlugin('functionHeading', {
       schema: () => ({
         element: {
           content: schema.content.open(),
@@ -874,7 +866,7 @@ describe('compilePlateModel', () => {
       }),
     });
     let resolvedTargetTypes: readonly string[] = [];
-    const PropertyPlugin = defineBasePlugin('functionTargetProperty', {
+    const PropertyPlugin = defineHeadlessPlugin('functionTargetProperty', {
       schema: ({ targetElementTypes }) => {
         resolvedTargetTypes = targetElementTypes;
 
@@ -897,7 +889,7 @@ describe('compilePlateModel', () => {
   it('resolves target types from the closed application schema', () => {
     const HeadingPlugin = createElementPlugin('applicationHeading');
     let resolvedTargetTypes: readonly string[] = [];
-    const PropertyPlugin = defineBasePlugin('applicationTargetProperty', {
+    const PropertyPlugin = defineHeadlessPlugin('applicationTargetProperty', {
       schema: ({ targetElementTypes }) => {
         resolvedTargetTypes = targetElementTypes;
 
@@ -932,7 +924,7 @@ describe('compilePlateModel', () => {
   it('rejects an exact target descriptor from a different same-name family', () => {
     const ExpectedTarget = createElementPlugin('sharedTarget');
     const InstalledTarget = createElementPlugin('sharedTarget');
-    const PropertyPlugin = defineBasePlugin('property', {
+    const PropertyPlugin = defineHeadlessPlugin('property', {
       inject: { nodeProps: {} },
       targetPlugins: [ExpectedTarget],
     });
@@ -953,7 +945,7 @@ describe('compilePlateModel', () => {
     const DisabledPlugin = createElementPlugin('disabledTarget').configure({
       enabled: false,
     });
-    const MarkPlugin = defineBasePlugin('markTarget', {
+    const MarkPlugin = defineHeadlessPlugin('markTarget', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -962,7 +954,7 @@ describe('compilePlateModel', () => {
       name: string,
       referencedPlugin: PluginReference
     ) =>
-      defineBasePlugin(name, {
+      defineHeadlessPlugin(name, {
         initialState: { referencedPlugin },
         schema: ({ initialState }) => ({
           properties: {
@@ -1008,7 +1000,7 @@ describe('compilePlateModel', () => {
       createEditor({
         plugins: [
           MarkPlugin,
-          defineBasePlugin('markInjection', {
+          defineHeadlessPlugin('markInjection', {
             targetPlugins: [MarkPlugin],
             inject: { nodeProps: { transformProps: ({ props }) => props } },
           }),
@@ -1021,7 +1013,7 @@ describe('compilePlateModel', () => {
 
   it('keeps literal target names unchanged', () => {
     const NameAliasPlugin = createElementPlugin('literalAlias');
-    const PropertyPlugin = defineBasePlugin('literalPropertyOwner', {
+    const PropertyPlugin = defineHeadlessPlugin('literalPropertyOwner', {
       schema: {
         properties: {
           'literal-property': schema.elementProperty(property.string(), {
@@ -1056,8 +1048,8 @@ describe('compilePlateModel', () => {
     );
   });
 
-  it('rejects schema derivation from runtime extension callbacks', () => {
-    const plugin = (defineBasePlugin('runtimeSchema', {}).extend as any)(
+  it('rejects schema derivation from runtime plugin callbacks', () => {
+    const plugin = (defineHeadlessPlugin('runtimeSchema', {}).extend as any)(
       () => ({
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),

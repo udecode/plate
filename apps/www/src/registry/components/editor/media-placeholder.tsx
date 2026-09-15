@@ -2,14 +2,19 @@
 
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { PLUGINS } from 'platejs';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseVideoPlugin,
+} from 'platejs/media';
 import { PlaceholderPlugin } from 'platejs/media/react';
 import {
-  PlateElement,
+  EditorElement,
   useEditor,
-  useEditorPlugin,
   useEditorReadOnly,
   usePluginStore,
-  type PlateElementProps,
+  type EditorElementProps,
 } from 'platejs/react';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -49,14 +54,21 @@ const CONTENT: Record<
   },
 };
 
+const MEDIA_PLUGINS = [
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseVideoPlugin,
+] as const;
+
 export function PlaceholderElement(
-  props: PlateElementProps<typeof PlaceholderPlugin>
+  props: EditorElementProps<typeof PlaceholderPlugin>
 ) {
   const { element } = props;
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const nodeKey = editor.key(element);
-  const { api, update } = useEditorPlugin(PlaceholderPlugin);
+  const { api, update } = useEditor().plugin(PlaceholderPlugin);
   const task = usePluginStore(PlaceholderPlugin, 'uploadTask', nodeKey);
   const state = React.useSyncExternalStore(
     React.useCallback(
@@ -81,19 +93,14 @@ export function PlaceholderElement(
     toast.error(message || 'Upload failed. Please try again.');
   }, [state?.error]);
 
-  const mediaPlugin = [
-    PLUGINS.audio,
-    PLUGINS.file,
-    PLUGINS.image,
-    PLUGINS.video,
-  ].find((plugin) => {
+  const mediaPlugin = MEDIA_PLUGINS.find((plugin) => {
     const media = editor.plugin(plugin);
 
     return media.installed && media.name === element.mediaType;
   });
-  const currentContent = mediaPlugin ? CONTENT[mediaPlugin] : undefined;
+  const currentContent = mediaPlugin ? CONTENT[mediaPlugin.name] : undefined;
 
-  const isImage = mediaPlugin === PLUGINS.image;
+  const isImage = mediaPlugin?.name === PLUGINS.image;
 
   const { openFilePicker } = useFilePicker({
     accept: currentContent?.accept ?? [],
@@ -115,7 +122,7 @@ export function PlaceholderElement(
   if (!currentContent) return null;
 
   return (
-    <PlateElement className="my-1" {...props}>
+    <EditorElement className="my-1" {...props}>
       {(!loading || !isImage) && (
         <button
           className={cn(
@@ -151,7 +158,7 @@ export function PlaceholderElement(
       )}
 
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 

@@ -1,4 +1,4 @@
-import { failInvariant } from '../../internal';
+import { failInvariant } from '../../internal/fail-invariant';
 import { resolveDOMTextFlowStringOffset } from './dom-text-flow-index';
 
 const CSS_BREAK_WHITESPACE_PATTERN = /^[\t\n\f\r ]+$/;
@@ -78,9 +78,9 @@ const getPliteStringRectCandidates = ({
   });
 
 export const getPliteStringDirection = (string: HTMLElement) => {
-  const textHost = string.closest<HTMLElement>('[data-plite-node="text"]');
+  const textHost = string.closest<HTMLElement>('[data-editor-node="text"]');
   const element =
-    textHost?.closest<HTMLElement>('[data-plite-node="element"]') ??
+    textHost?.closest<HTMLElement>('[data-editor-node="element"]') ??
     textHost ??
     string;
   const view = string.ownerDocument.defaultView;
@@ -121,7 +121,7 @@ const getPhysicalEdgeFromLogicalEdge = (
 };
 
 export const getPliteStringLength = (string: HTMLElement) => {
-  const lengthAttribute = string.getAttribute('data-plite-length');
+  const lengthAttribute = string.getAttribute('data-editor-length');
   const length =
     lengthAttribute === null ? null : Number.parseInt(lengthAttribute, 10);
 
@@ -129,19 +129,39 @@ export const getPliteStringLength = (string: HTMLElement) => {
     return length;
   }
 
-  if (string.hasAttribute('data-plite-zero-width')) {
+  if (string.hasAttribute('data-editor-zero-width')) {
     return 0;
   }
 
   return string.textContent?.length ?? 0;
 };
 
-const PLITE_STRING_SELECTOR = '[data-plite-string], [data-plite-zero-width]';
+const PLITE_STRING_SELECTOR = '[data-editor-string], [data-editor-zero-width]';
 
-export const getPliteTextHostStrings = (textHost: Element): HTMLElement[] =>
-  textHost instanceof HTMLElement && textHost.matches(PLITE_STRING_SELECTOR)
-    ? [textHost]
-    : Array.from(textHost.querySelectorAll<HTMLElement>(PLITE_STRING_SELECTOR));
+export const getPliteTextHostStrings = (textHost: Element): HTMLElement[] => {
+  if (
+    textHost instanceof HTMLElement &&
+    textHost.matches(PLITE_STRING_SELECTOR)
+  ) {
+    return [textHost];
+  }
+  const owner = textHost.closest('[data-editor-node="text"]');
+  return Array.from(
+    textHost.querySelectorAll<HTMLElement>(PLITE_STRING_SELECTOR)
+  ).filter((string) => string.closest('[data-editor-node="text"]') === owner);
+};
+
+export const getPliteTextHostBounds = (textHost: Element) => {
+  const leaves = [
+    ...textHost.querySelectorAll('[data-editor-leaf-start]'),
+  ].filter((leaf) => leaf.closest('[data-editor-node="text"]') === textHost);
+  return {
+    end: Number(
+      leaves.at(-1)?.getAttribute('data-editor-leaf-end') ?? Infinity
+    ),
+    start: Number(leaves[0]?.getAttribute('data-editor-leaf-start') ?? 0),
+  };
+};
 
 const graphemeSegmenter =
   typeof Intl !== 'undefined' && 'Segmenter' in Intl
@@ -327,7 +347,7 @@ const isNextPliteStringSegmentOutsideLine = ({
   rect: DOMRect;
   string: HTMLElement;
 }) => {
-  const textHost = string.closest<HTMLElement>('[data-plite-node="text"]');
+  const textHost = string.closest<HTMLElement>('[data-editor-node="text"]');
   const scope = textHost?.parentElement ?? textHost;
 
   if (!scope) {
@@ -336,7 +356,7 @@ const isNextPliteStringSegmentOutsideLine = ({
 
   const strings = Array.from(
     scope.querySelectorAll<HTMLElement>(
-      '[data-plite-string], [data-plite-zero-width]'
+      '[data-editor-string], [data-editor-zero-width]'
     )
   );
   const stringIndex = strings.indexOf(string);
@@ -346,7 +366,7 @@ const isNextPliteStringSegmentOutsideLine = ({
   }
 
   for (const nextString of strings.slice(stringIndex + 1)) {
-    if (nextString.hasAttribute('data-plite-zero-width')) {
+    if (nextString.hasAttribute('data-editor-zero-width')) {
       continue;
     }
 
@@ -866,29 +886,27 @@ const getOwnedPliteStrings = ({
   target?: Element | null;
 }) => {
   const targetTextHost = target?.closest<HTMLElement>(
-    '[data-plite-node="text"]'
+    '[data-editor-node="text"]'
   );
   const targetElementHost = target?.closest<HTMLElement>(
-    '[data-plite-node="element"]'
+    '[data-editor-node="element"]'
   );
   const targetHost = targetTextHost ?? targetElementHost;
-  const targetOwner = targetHost?.closest<HTMLElement>(
-    '[data-plite-editor="true"]'
-  );
+  const targetOwner = targetHost?.closest<HTMLElement>('[data-editor="true"]');
   const scope = targetHost && targetOwner === root ? targetHost : root;
   const candidates = [
-    ...(scope.matches('[data-plite-string], [data-plite-zero-width]')
+    ...(scope.matches('[data-editor-string], [data-editor-zero-width]')
       ? [scope]
       : []),
     ...Array.from(
       scope.querySelectorAll<HTMLElement>(
-        '[data-plite-string], [data-plite-zero-width]'
+        '[data-editor-string], [data-editor-zero-width]'
       )
     ),
   ];
 
   return candidates.filter((string) => {
-    const owner = string.closest<HTMLElement>('[data-plite-editor="true"]');
+    const owner = string.closest<HTMLElement>('[data-editor="true"]');
 
     return root.contains(string) && (!owner || owner === root);
   });
@@ -962,9 +980,9 @@ const getRootEdgeCoordinatePlacement = ({
 
 const getTopLevelElement = (root: HTMLElement, string: HTMLElement) => {
   const element = string.closest<HTMLElement>(
-    '[data-plite-node="element"][data-plite-path]:not([data-plite-path*=","])'
+    '[data-editor-node="element"][data-editor-path]:not([data-editor-path*=","])'
   );
-  const owner = element?.closest<HTMLElement>('[data-plite-editor="true"]');
+  const owner = element?.closest<HTMLElement>('[data-editor="true"]');
 
   return element && owner === root ? element : null;
 };
@@ -1058,9 +1076,9 @@ export const getPliteStringDocumentOffset = ({
   );
 
   if (textFlowOffset != null) return textFlowOffset;
-  const leaf = string.closest<HTMLElement>('[data-plite-leaf]');
-  const leafStartAttribute = leaf?.getAttribute('data-plite-leaf-start');
-  const leafEndAttribute = leaf?.getAttribute('data-plite-leaf-end');
+  const leaf = string.closest<HTMLElement>('[data-editor-leaf]');
+  const leafStartAttribute = leaf?.getAttribute('data-editor-leaf-start');
+  const leafEndAttribute = leaf?.getAttribute('data-editor-leaf-end');
 
   if (leafStartAttribute != null && leafEndAttribute != null) {
     const leafStart = Number(leafStartAttribute);
@@ -1236,8 +1254,8 @@ export const createDOMGeometryKernel = ({
     if (!isPointInside(point, root)) return false;
 
     const element = getDOMPointElement(point);
-    const owner = element?.closest<HTMLElement>('[data-plite-editor="true"]');
-    const textHost = scope?.closest<HTMLElement>('[data-plite-node="text"]');
+    const owner = element?.closest<HTMLElement>('[data-editor="true"]');
+    const textHost = scope?.closest<HTMLElement>('[data-editor-node="text"]');
 
     return (
       (!owner || owner === root) &&
@@ -1526,11 +1544,11 @@ export const createDOMGeometryKernel = ({
 
     const element = getDOMPointElement(point);
     const textHost =
-      element?.closest<HTMLElement>('[data-plite-node="text"]') ?? null;
+      element?.closest<HTMLElement>('[data-editor-node="text"]') ?? null;
 
     return (
       textHost?.closest<HTMLElement>(
-        '[data-plite-node="element"][data-plite-path]'
+        '[data-editor-node="element"][data-editor-path]'
       ) ?? textHost
     );
   };

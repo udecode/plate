@@ -77,7 +77,7 @@ const RuntimeRoot = ({
 }) => (
   <EditableDOMRuntimeContext value={runtime}>
     <EditableDOMCommitFence runtime={runtime}>
-      <div data-plite-editor ref={(node) => runtime.setRoot(node)}>
+      <div data-editor ref={(node) => runtime.setRoot(node)}>
         {store ? <ExternalStoreAttribute store={store} /> : null}
       </div>
     </EditableDOMCommitFence>
@@ -90,7 +90,7 @@ test('the root runtime owns one observer across React commits', () => {
   const disconnect = vi.spyOn(MutationObserver.prototype, 'disconnect');
   const renderTree = (text: string) => (
     <EditableDOMCommitFence runtime={runtime}>
-      <div data-plite-editor ref={(node) => runtime.setRoot(node)}>
+      <div data-editor ref={(node) => runtime.setRoot(node)}>
         {text}
       </div>
     </EditableDOMCommitFence>
@@ -122,9 +122,7 @@ test('a nested external-store commit is claimed before later hostile mutations a
   runtime.connect();
 
   const mounted = render(<RuntimeRoot runtime={runtime} store={store} />);
-  const root = mounted.container.querySelector<HTMLElement>(
-    '[data-plite-editor]'
-  )!;
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]')!;
   const child = root.firstElementChild!;
 
   act(() => store.set('updated'));
@@ -134,11 +132,11 @@ test('a nested external-store commit is claimed before later hostile mutations a
   expect(child.getAttribute('data-external-store-value')).toBe('updated');
   expect(onRepair).not.toHaveBeenCalled();
 
-  child.setAttribute('data-plite-path', 'hostile');
+  child.setAttribute('data-editor-path', 'hostile');
   await waitForMutations();
   runtime.domPhaseScheduler.flush();
 
-  expect(child.hasAttribute('data-plite-path')).toBe(false);
+  expect(child.hasAttribute('data-editor-path')).toBe(false);
   expect(onRepair).toHaveBeenCalledTimes(1);
 
   mounted.unmount();
@@ -156,7 +154,7 @@ test('descendant React presentation updates do not need a root-wide claim hook',
   const mounted = render(
     <EditableDOMRuntimeContext value={runtime}>
       <EditableDOMCommitFence runtime={runtime}>
-        <div data-plite-editor ref={(node) => runtime.setRoot(node)}>
+        <div data-editor ref={(node) => runtime.setRoot(node)}>
           <UnclaimedExternalStoreAttribute store={store} />
         </div>
       </EditableDOMCommitFence>
@@ -173,11 +171,11 @@ test('descendant React presentation updates do not need a root-wide claim hook',
   expect(child.getAttribute('data-external-store-value')).toBe('updated');
   expect(onRepair).not.toHaveBeenCalled();
 
-  child.setAttribute('data-plite-path', 'hostile');
+  child.setAttribute('data-editor-path', 'hostile');
   await waitForMutations();
   runtime.domPhaseScheduler.flush();
 
-  expect(child.hasAttribute('data-plite-path')).toBe(false);
+  expect(child.hasAttribute('data-editor-path')).toBe(false);
   expect(onRepair).toHaveBeenCalledTimes(1);
 
   mounted.unmount();
@@ -204,11 +202,10 @@ test('nested React commit claims stay isolated to their mounted root', async () 
       <RuntimeRoot runtime={secondRuntime} />
     </>
   );
-  const roots = mounted.container.querySelectorAll<HTMLElement>(
-    '[data-plite-editor]'
-  );
+  const roots =
+    mounted.container.querySelectorAll<HTMLElement>('[data-editor]');
 
-  roots[1].setAttribute('data-plite-path', 'hostile');
+  roots[1].setAttribute('data-editor-path', 'hostile');
   act(() => {
     firstStore.set('updated');
   });
@@ -219,7 +216,7 @@ test('nested React commit claims stay isolated to their mounted root', async () 
   expect(
     roots[0].firstElementChild?.getAttribute('data-external-store-value')
   ).toBe('updated');
-  expect(roots[1].hasAttribute('data-plite-path')).toBe(false);
+  expect(roots[1].hasAttribute('data-editor-path')).toBe(false);
   expect(secondRepair).toHaveBeenCalledTimes(1);
 
   mounted.unmount();
@@ -240,15 +237,13 @@ test('unmounted external-store claimers cannot mask later hostile mutations', as
   mounted.rerender(<RuntimeRoot runtime={runtime} />);
   act(() => store.set('detached'));
 
-  const root = mounted.container.querySelector<HTMLElement>(
-    '[data-plite-editor]'
-  )!;
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]')!;
 
-  root.setAttribute('data-plite-path', 'hostile');
+  root.setAttribute('data-editor-path', 'hostile');
   await waitForMutations();
   runtime.domPhaseScheduler.flush();
 
-  expect(root.hasAttribute('data-plite-path')).toBe(false);
+  expect(root.hasAttribute('data-editor-path')).toBe(false);
   expect(onRepair).toHaveBeenCalledTimes(1);
 
   mounted.unmount();
@@ -265,16 +260,16 @@ test('read-only root replacement disconnects the old observer and observes only 
   const secondRoot = document.createElement('div');
 
   firstRoot.setAttribute('contenteditable', 'false');
-  firstRoot.setAttribute('data-plite-editor', 'true');
+  firstRoot.setAttribute('data-editor', 'true');
   secondRoot.setAttribute('contenteditable', 'false');
-  secondRoot.setAttribute('data-plite-editor', 'true');
+  secondRoot.setAttribute('data-editor', 'true');
   runtime.updateDOMIntegrityRepairHandler(onRepair);
   expect(runtime.readOnly).toBe(true);
   runtime.connect();
   runtime.setRoot(firstRoot);
   runtime.setRoot(secondRoot);
 
-  firstRoot.setAttribute('data-plite-path', 'ignored');
+  firstRoot.setAttribute('data-editor-path', 'ignored');
   await new Promise((resolve) => {
     setTimeout(resolve, 0);
   });
@@ -282,14 +277,14 @@ test('read-only root replacement disconnects the old observer and observes only 
 
   expect(onRepair).not.toHaveBeenCalled();
 
-  secondRoot.setAttribute('data-plite-path', 'repair');
+  secondRoot.setAttribute('data-editor-path', 'repair');
   await new Promise((resolve) => {
     setTimeout(resolve, 0);
   });
   runtime.domPhaseScheduler.flush();
 
   expect(onRepair).toHaveBeenCalledTimes(1);
-  expect(secondRoot.hasAttribute('data-plite-path')).toBe(false);
+  expect(secondRoot.hasAttribute('data-editor-path')).toBe(false);
 
   runtime.destroy();
 });
@@ -303,8 +298,8 @@ test('interaction routing resolves the deepest mounted root runtime and releases
   const innerRoot = document.createElement('div');
   const target = document.createElement('span');
 
-  outerRoot.setAttribute('data-plite-editor', 'true');
-  innerRoot.setAttribute('data-plite-editor', 'true');
+  outerRoot.setAttribute('data-editor', 'true');
+  innerRoot.setAttribute('data-editor', 'true');
   innerRoot.append(target);
   outerRoot.append(innerRoot);
   document.body.append(outerRoot);

@@ -1,0 +1,86 @@
+{
+  "id": "2026-09-11-commands-remove-default-build",
+  "scope": "commands",
+  "kind": "review",
+  "date": "2026-09-11",
+  "question": "What is the smallest command contract that shares availability and intent between headless calls, shortcuts and UI controls?",
+  "model": "GPT-6 / Codex",
+  "method": "best-api-review/history-v2",
+  "trigger": "User explicitly requested $best-api-review audit plite-core after grouping runtime, state, schema and commands; assessment only.",
+  "requirements": [
+    "Semantic command dispatch composes installed policy, exact descriptor identity, preparation and native-equivalence decisions.",
+    "Handlers can prepare a prefix and continue downstream against staged state before one commit.",
+    "Public command methods require a current independent consumer; product actions can remain plain helpers."
+  ],
+  "evidenceReuse": "Fresh first-principles source and consumer comparison. Adjacent model/read/transaction decisions supply context only; focused contracts and a facet-only prototype supply the stated evidence.",
+  "summary": "Remove public command descriptor build(), which bypasses installed handlers and has no production caller; retain private builders, dispatch and prepared continuations.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "alternatives": [
+    "Keep/configure: keep defineCommand builder input, private evaluation, installed handlers and transaction specs.",
+    "Change API: delete returned descriptor build(); do not rename it to preview or add can without a consumer requiring installed-policy semantics.",
+    "Add primitive: universal availability/preview is speculative for the inspected copied UI.",
+    "Delete/merge: default-only public evaluation has no production caller; removing the entire registry/spec model loses input-rule and link continuations.",
+    "Move ownership: Plite owns semantic dispatch/native equivalence while toolbar and feature policy stay in product code.",
+    "Replace: function-only mutable dispatch must reconstruct ordering, interception and unpublished continuation."
+  ],
+  "proofLimits": "Census and source distinguish public descriptor build from the two private runtime.build calls. Command/runtime contracts and public/generic type contracts pass. The descriptor-only cut does not alter repeated dispatch/evaluation paths; no runtime speed claim. It is not implemented and external consumers, package declarations after removal and browser keyboard behavior remain unproved.",
+  "references": [
+    "docs/research/decisions/plite-core-ownership.md",
+    "docs/plans/artifacts/plite-core-api-review/verification.json",
+    "packages/plitejs/src/core/command-definition.ts",
+    "packages/plitejs/src/core/command-registry.ts",
+    "packages/plitejs/src/core/editor-commands.ts",
+    "apps/www/src/registry/components/editor/transforms.ts",
+    "packages/plitejs/src/react/editable/keyboard-input-strategy.ts"
+  ],
+  "source": {
+    "files": {
+      "packages/plitejs/src/core/command-definition.ts": "82522f05bc7c60a7a3965fa427f6c4691aa934bdf4b35b49e8823933c7710dbd",
+      "packages/plitejs/src/core/command-registry.ts": "e25a44396022420dd43d91423158339d1e84024841c04446b586abaf55691943",
+      "packages/plitejs/src/core/editor-commands.ts": "980bd80b8f863e71c7c12a9318048b0102ad207f55246d8a92a31bc25beced09",
+      "apps/www/src/registry/components/editor/transforms.ts": "df426bec7a57febb6cae6b6bf5a1a2052260312346f694a0ce7e65810b2ce4bc",
+      "packages/plitejs/src/react/editable/keyboard-input-strategy.ts": "cfd464fc3601d3c2c6fffe384287e1456c3dad4c9ed8ed7621308af3f19c4a31",
+      "packages/plitejs/test/command-spec.test.ts": "c141331f4dcc914329b8ccd0d4a5302d622f06b1c7cd8348dbc7653ebb0674bd",
+      "packages/plitejs/test/generic-command-contract.ts": "a4360ebfca2ce50b24dfe5ddd971b5f59dc157e5d1b654473da891cd0d1b2310",
+      "packages/plitejs/package.json": "67e7c0b675a61c5b71e08a141a66836de6c14fd224646a5b2f646dbeb70c17d4",
+      "packages/plitejs/tsconfig.json": "3adf72f27eb7f4b84bf1e2f4258298d13bc3c7ee7ad7099f8b88b5a837d2c0e5",
+      "packages/plitejs/src/interfaces/editor.ts": "a068224bc45df110042373f3c222ed5fa067255d4766ba846aa366521b44d8c4",
+      "packages/plitejs/src/core/public-state.ts": "5583399e1c4256726826c69a9d70b58b31b7f37136964239f202aa5d88dcd9a8",
+      "packages/plitejs/src/core/editor-lifecycle-api.ts": "c1a9f47c48bafe73b6a288d986059999caba22ff354bb77d21801a9d3a51a28e",
+      "docs/vision/plite.md": "d6e8b2dafc18763821c77e477aecfc75dd3921f179d1382bf6951f434f387bc8",
+      "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+      "config/plite-source-test-setup.ts": "ac5d29afcfd6ffc44f80620b912514a813124b36b30b61703340b79c2b346355",
+      "config/workspace-source-entries.mjs": "07fd635afc33e4a04880e27505ae20174546a8b649160c8a88e2156248ae5f64",
+      "config/plite-test-jsx.js": "87dfef2dff5cb4891bfff5dfe5fe2f7e7c4935ef93945cc4674e1afd7dbf10be",
+      "tooling/config/bunTestSetup.ts": "f792ad47c50664174ee921a394fb2f667c69bb2eb6037c4f1e17bba440c93a0e",
+      "docs/plans/artifacts/plite-core-api-review/verification.json": "de31dc419126df577eb452ad4a0c144131488cd23251bdb0345530180ed635ad",
+      "docs/plans/artifacts/plite-core-api-review/consumer-census.json": "00fbe90af4a1f2396c0dbcc4f7c778952452797ce21ae4d0634df8f08a34e006",
+      "packages/plitejs/test/tsconfig.generic-types.json": "bd9153f4136eb793477d443a7dd133dc78dbcca120cb3b7324b655ba762c74a7",
+      "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts": "8214597ebdd792c868b10cd76fa1df66516c26fe902def0809e6975ffd7fe4aa",
+      "packages/platejs/src/features/link/lib/BaseLinkPlugin.ts": "29c422146333d7fb4c24a6833f4bcc21e70b1b83bb15e3a52d81cb86776cced0",
+      "content/docs/plite/concepts/06-commands.mdx": "9ef1566271538adcdb64b80f7f6e255329bb9cc1baaa7499e968edd060d07c88",
+      "docs/research/decisions/transactions-synchronous-boundary.md": "63a12641b5fb7969f9e2715f85186b841f3393a78b2ea1d3bfed47d02fa2711d",
+      "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "428735d5c24257f110e967222ba2f146600261e9c48f5bcb10dd8391cf1d3641",
+      "pnpm-lock.yaml": "f51d0958f39bb24a506899859afa452a9bf986ebdba9e46e35e3a38be050e41a",
+      ".agents/skills/best-api-review/SKILL.md": "84ef21567cef9e4ab38e2560da0ea691e6f43c14c9dbbb4bc4b2d819e784edee",
+      ".agents/rules/task/references/best-api-review.md": "127de795d7a4adcdcd1c5420d11810a09b78ed07f3c798543efd840ea2887aa6"
+    },
+    "directories": {
+      "apps/plite/src": "c8e011c01e297fc0883335a4fcff6cf133170a30bbde487bceafcabe1367d73c",
+      "apps/www/src": "f2380b9e33de6f265e19ddc111295f2e37e48fb824b7a6a41d7ae3fabe054e1b",
+      "packages/cli/src": "98a65df17ee0afd32ee6936cd5841e4b67ebd4287c98a2e3ffa5f2d7730b3d34",
+      "packages/platejs/src": "20171d392f2700f328d6f1c901b0e2612f75e156c60ad6242fa8e77a6a9bc170",
+      "packages/plitejs/src": "703ffacccfc18c6c59efd1f8acda6f753421754c67d6cdd03f6960d387f488c5"
+    },
+    "features": {
+      "plitejs/core/command-definition": "70dd6fbc2b499a7eaae1b3dee8a3a18590303ce1ea26e687e94d0e92fc0af27a",
+      "plitejs/core/command-registry": "645138937964747d5ac806860f90b3eb6e6dda345f7ca167d6ce446be9710ce3",
+      "plitejs/core/editor-commands": "db9e34d464fc01946563acb553bfc5f5a8366f5ce71549d5e52653fe94b81926"
+    },
+    "upstreams": []
+  }
+}

@@ -2,8 +2,8 @@
 
 import { CalloutPlugin } from 'platejs/callout/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditor,
   useEditorReadOnly,
 } from 'platejs/react';
@@ -15,12 +15,14 @@ import { EmojiPicker, EmojiPickerTrigger } from './emoji-picker';
 
 const CALLOUT_STORAGE_KEY = 'plate-storage-callout';
 
-export function CalloutElement(props: PlateElementProps<typeof CalloutPlugin>) {
+export function CalloutElement(
+  props: EditorElementProps<typeof CalloutPlugin>
+) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       className="my-1 flex rounded-sm bg-muted p-4 pl-3"
       style={{
@@ -28,7 +30,7 @@ export function CalloutElement(props: PlateElementProps<typeof CalloutPlugin>) {
       }}
       attributes={{
         ...props.attributes,
-        'data-plate-open-context-menu': true,
+        'data-editor-open-context-menu': true,
       }}
     >
       <div className="flex w-full gap-2 rounded-md">
@@ -61,7 +63,7 @@ export function CalloutElement(props: PlateElementProps<typeof CalloutPlugin>) {
         </EmojiPicker>
         <div className="w-full">{props.children}</div>
       </div>
-    </PlateElement>
+    </EditorElement>
   );
 }
 

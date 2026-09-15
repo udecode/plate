@@ -1,16 +1,17 @@
 import type { Element, NodeKey, Path } from '../../facade';
+import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 import type { DefinitionOf } from '../../lib/plugin/PluginDefinition';
 import { ElementStatePlugin } from '../../lib/plugins/element-state/ElementStatePlugin';
 import { PLUGINS } from '../../utils';
 import type { Editor } from '../editor/Editor';
 import {
-  type PliteRootEditor,
+  type RootEditor,
   useEditorFocused,
   useEditorReadOnly,
   useEditorRuntimeState,
   useEditorViewState,
 } from '../plite-react';
-import { definePlatePlugin } from '../plugin/definePlatePlugin';
+import { definePlugin } from '../plugin/definePlugin';
 import { useEditorPluginStore } from '../stores';
 
 export type BlockPlaceholderQueryContext = {
@@ -45,7 +46,7 @@ const areBlockPlaceholderTargetsEqual = (
 
 const getBlockPlaceholderTarget = (
   editor: Editor,
-  viewEditor: PliteRootEditor,
+  viewEditor: RootEditor,
   state: Readonly<BlockPlaceholderPluginState>,
   view: Readonly<{
     composing: boolean;
@@ -78,9 +79,11 @@ const getBlockPlaceholderTarget = (
     viewEditor.read.nodes.isEmpty(firstNode) &&
     editor.plugin(ElementStatePlugin).api.isEmpty(firstNode);
   const placeholderPlugin = Object.keys(state.placeholders).find((name) => {
-    const target = editor.plugin(name);
+    const descriptor = getCompiledPlatePlugin(editor, name);
 
-    return target.schema.type === node.type;
+    return descriptor
+      ? editor.plugin(descriptor).schema.type === node.type
+      : false;
   });
 
   if (
@@ -103,51 +106,47 @@ const getBlockPlaceholderTarget = (
     : null;
 };
 
-export const BlockPlaceholderPlugin = definePlatePlugin(
-  PLUGINS.blockPlaceholder,
-  {
-    initialState: (): BlockPlaceholderPluginState => ({
-      className: null,
-      placeholders: {},
-      query: ({ path }) => path.length === 1,
-    }),
-    editOnly: true,
-    render: {
-      useViewElementAttributes({ editor, plugin, view: viewEditor }) {
-        const pluginState = useEditorPluginStore(
-          editor,
-          plugin,
-          (state) => state
-        );
-        const view = {
-          composing: useEditorViewState(viewEditor, () =>
-            viewEditor.api.dom.isComposing()
-          ),
-          focused: useEditorFocused(),
-          readOnly: useEditorReadOnly(),
-        };
-        const target = useEditorRuntimeState(
-          viewEditor,
-          () =>
-            getBlockPlaceholderTarget(editor, viewEditor, pluginState, view),
-          { equalityFn: areBlockPlaceholderTargetsEqual }
-        );
+export const BlockPlaceholderPlugin = definePlugin(PLUGINS.blockPlaceholder, {
+  initialState: (): BlockPlaceholderPluginState => ({
+    className: null,
+    placeholders: {},
+    query: ({ path }) => path.length === 1,
+  }),
+  editOnly: true,
+  render: {
+    useViewElementAttributes({ editor, plugin, view: viewEditor }) {
+      const pluginState = useEditorPluginStore(
+        editor,
+        plugin,
+        (state) => state
+      );
+      const view = {
+        composing: useEditorViewState(viewEditor, () =>
+          viewEditor.api.dom.isComposing()
+        ),
+        focused: useEditorFocused(),
+        readOnly: useEditorReadOnly(),
+      };
+      const target = useEditorRuntimeState(
+        viewEditor,
+        () => getBlockPlaceholderTarget(editor, viewEditor, pluginState, view),
+        { equalityFn: areBlockPlaceholderTargetsEqual }
+      );
 
-        return target
-          ? [
-              {
-                attributes: {
-                  className: target.className,
-                  placeholder: target.placeholder,
-                },
-                key: target.nodeKey,
+      return target
+        ? [
+            {
+              attributes: {
+                className: target.className,
+                placeholder: target.placeholder,
               },
-            ]
-          : [];
-      },
+              key: target.nodeKey,
+            },
+          ]
+        : [];
     },
-  }
-);
+  },
+});
 
 export type BlockPlaceholderDefinition = DefinitionOf<
   typeof BlockPlaceholderPlugin

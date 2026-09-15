@@ -6,8 +6,8 @@ import React from 'react';
 import {
   createEditor,
   ParagraphPlugin,
-  Plate,
-  PlateContent,
+  EditorRoot,
+  EditorContent,
 } from '../../react/core';
 import { CopilotPlugin } from './CopilotPlugin';
 
@@ -163,9 +163,9 @@ for (const retirement of ['readonly', 'unmount'] as const) {
   test(`${retirement} retires the mounted Copilot request`, async () => {
     const { editor, plugin, responses, signals } = setup();
     const tree = (readOnly = false) => (
-      <Plate editor={editor} readOnly={readOnly}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor} readOnly={readOnly}>
+        <EditorContent />
+      </EditorRoot>
     );
     const view = render(tree());
     let pending: ReturnType<typeof plugin.api.triggerSuggestion> | undefined;

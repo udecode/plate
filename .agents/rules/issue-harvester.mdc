@@ -1,5 +1,5 @@
 ---
-description: 'Run exhaustive issue coverage harvests for Slate v2 and Plate from Slate, Plate, or external editor repos: auto-create or refresh issue closure ledgers, scan closed-issue PR/test provenance, process only unchecked issues, add fresh local tests, and keep one checkmark per relevant issue without giant prompts.'
+description: Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence.
 argument-hint: <repo-key|owner/repo|ledger-path> [--state all|open|closed] [--refresh-only] [--slate-v2-only] [--plate-only] [--continue] [--batch-loop|timed 1h]
 disable-model-invocation: true
 ---

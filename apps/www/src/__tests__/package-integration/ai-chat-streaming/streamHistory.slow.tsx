@@ -318,12 +318,12 @@ describe('ai chat streaming history', () => {
     });
   });
 
-  it('keeps insert-mode preview out of history and restores the snapshot on ai undo', () => {
+  it('keeps insert-mode preview out of history and restores the snapshot on reset', () => {
     const { editor, initialValue } = streamPreview(['hello', ' world']);
 
     expect(editor.read.history.undos()).toHaveLength(0);
 
-    editor.plugin(BaseAIPlugin).update.undo();
+    editor.plugin(AIChatPlugin).api.reset();
 
     expect(editor.read.children()).toEqual(initialValue);
     expect(editor.read.history.undos()).toHaveLength(0);

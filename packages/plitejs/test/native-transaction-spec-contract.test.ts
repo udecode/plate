@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, SelectionApi, type TransactionSpec } from 'plitejs';
+import {
+  createEditor,
+  definePlugin,
+  SelectionApi,
+  type TransactionSpec,
+} from 'plitejs';
 
 import { applyTransactionSpec } from '../src/core/public-state';
 import { getNodeKeyDOMValue } from '../src/internal';
@@ -34,17 +39,17 @@ describe('native transaction spec contract', () => {
     let commits = 0;
     const profiledIds: string[] = [];
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     let spec: TransactionSpec;
 
     editor.subscribeCommit(() => (commits += 1) - 1);
 
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind === 'core-time') profiledIds.push(event.id);
         },
@@ -56,7 +61,7 @@ describe('native transaction spec contract', () => {
 
       editor.update(() => applyTransactionSpec(editor, spec));
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     assert.equal(editor.read.text.string([]), 'a!b');
@@ -109,6 +114,122 @@ describe('native transaction spec contract', () => {
       getNodeKeyDOMValue(withDiscardedSpec.key([1, 0])!),
       getNodeKeyDOMValue(control.key([1, 0])!)
     );
+  });
+
+  it('keeps prepared fresh-node identity through same-spec movement and acceptance', () => {
+    const editor = createTextEditor();
+    let preparedKey: ReturnType<typeof editor.key>;
+    const spec = editor.read((state) =>
+      state.transaction((tx) => {
+        tx.nodes.insert(
+          { type: 'paragraph', children: [{ text: 'prepared' }] },
+          { at: [1] }
+        );
+        preparedKey = tx.key([1]);
+
+        assert.ok(preparedKey?.startsWith('p'));
+        assert.equal(editor.read.nodes.path(preparedKey), undefined);
+
+        tx.nodes.move({ at: preparedKey, to: [0] });
+
+        assert.equal(tx.key([0]), preparedKey);
+      })
+    );
+
+    editor.update(() => applyTransactionSpec(editor, spec));
+
+    assert.equal(editor.key([0]), preparedKey);
+    assert.deepEqual(editor.read.nodes.get(preparedKey!), [
+      { type: 'paragraph', children: [{ text: 'prepared' }] },
+      [0],
+    ]);
+  });
+
+  it('carries afterCommit handlers through spec extension and runs them once', () => {
+    const events: string[] = [];
+    const callbackPlugin = definePlugin('specCallback', {
+      update: ({ context, editor, tx }) => ({
+        insert(text: string) {
+          tx.text.insert(text);
+          context.afterCommit(() => {
+            events.push(`${text}:${editor.read.text.string([])}`);
+          });
+        },
+      }),
+    });
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      }),
+      initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+      plugins: [callbackPlugin],
+    });
+    const base = editor.read((state) =>
+      state.transaction((tx) => tx.specCallback.insert('!'))
+    );
+    const extended = editor.read((state) =>
+      state.transaction.extend(base, (tx) => tx.specCallback.insert('?'))
+    );
+
+    assert.deepEqual(events, []);
+    editor.update(() => applyTransactionSpec(editor, extended));
+
+    assert.equal(editor.read.text.string([]), 'a!?b');
+    assert.deepEqual(events, ['!:a!?b', '?:a!?b']);
+  });
+
+  it('drops spec afterCommit handlers on discard, staleness, and rollback', () => {
+    const events: string[] = [];
+    const callbackPlugin = definePlugin('discardedSpecCallback', {
+      update: ({ context, tx }) => ({
+        insert(text: string) {
+          tx.text.insert(text);
+          context.afterCommit(() => events.push(text));
+        },
+      }),
+    });
+    const create = () =>
+      createEditor({
+        initialSelection: SelectionApi.text({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        }),
+        initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+        plugins: [callbackPlugin],
+      });
+    const discardedEditor = create();
+
+    discardedEditor.read((state) =>
+      state.transaction((tx) => tx.discardedSpecCallback.insert('discarded'))
+    );
+    assert.deepEqual(events, []);
+
+    const staleEditor = create();
+    const stale = staleEditor.read((state) =>
+      state.transaction((tx) => tx.discardedSpecCallback.insert('stale'))
+    );
+
+    staleEditor.update.text.insert('live');
+    assert.throws(
+      () => staleEditor.update(() => applyTransactionSpec(staleEditor, stale)),
+      /stale transaction spec/
+    );
+
+    const rollbackEditor = create();
+    const rolledBack = rollbackEditor.read((state) =>
+      state.transaction((tx) => tx.discardedSpecCallback.insert('rollback'))
+    );
+
+    assert.throws(
+      () =>
+        rollbackEditor.update(() => {
+          applyTransactionSpec(rollbackEditor, rolledBack);
+          throw new Error('abort');
+        }),
+      /abort/
+    );
+    assert.deepEqual(events, []);
   });
 
   it('keeps a prepared spec reusable after its first application rolls back', () => {

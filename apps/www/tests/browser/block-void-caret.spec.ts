@@ -1,11 +1,11 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
 const CASE_ID = 'block-void:native-caret-not-painted-below-void';
-const EDITOR = '[data-plite-editor="true"][contenteditable="true"]';
+const EDITOR = '[data-editor="true"][contenteditable="true"]';
 
 const afterPaint = (page: Page) =>
   page.evaluate(
@@ -18,8 +18,8 @@ const afterPaint = (page: Page) =>
 const readVoidState = (voidNode: Locator) =>
   voidNode.evaluate((element) => {
     const selection = getSelection();
-    const spacer = element.querySelector('[data-plite-spacer]');
-    const zero = element.querySelector('[data-plite-zero-width]');
+    const spacer = element.querySelector('[data-editor-spacer]');
+    const zero = element.querySelector('[data-editor-zero-width]');
 
     return {
       anchorInVoid: Boolean(
@@ -31,7 +31,7 @@ const readVoidState = (voidNode: Locator) =>
         element.querySelector('[data-selected="true"]') !== null ||
         element.querySelector('.ring-2') !== null ||
         element.getAttribute('data-selected') === 'true',
-      zeroWidthKind: zero?.getAttribute('data-plite-zero-width'),
+      zeroWidthKind: zero?.getAttribute('data-editor-zero-width'),
     };
   });
 
@@ -102,28 +102,24 @@ const clickTextEnd = async (page: Page, text: Locator) => {
 test(CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/playground', { waitUntil: 'commit' });
 
     const editor = page.locator(EDITOR).first();
-    const editorHarness = createPliteBrowserEditorHarness(
-      page,
-      CASE_ID,
-      editor
-    );
+    const editorHarness = createBrowserEditorHarness(page, CASE_ID, editor);
 
     await editorHarness.ready({
       editor: 'visible',
       text: 'Dates and Equations',
     });
 
-    const equation = editor.locator('.plite-equation');
+    const equation = editor.locator('.editor-equation');
 
     expectFullRowCenteredEquation(await readBlockEquationLayout(equation));
 
-    const horizontalRule = editor.locator('.plite-horizontalRule');
+    const horizontalRule = editor.locator('.editor-horizontalRule');
     await horizontalRule.locator('hr').click();
     await afterPaint(page);
 
@@ -167,7 +163,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
       .first();
     await clickTextEnd(
       page,
-      calloutHeading.locator('[data-plite-string="true"]')
+      calloutHeading.locator('[data-editor-string="true"]')
     );
     await expect(editor).toBeFocused();
     await page.keyboard.type('!');

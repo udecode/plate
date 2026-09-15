@@ -1,6 +1,6 @@
 ---
 name: agent-native-reviewer
-description: Audit changed agent workflows for usable routes, source ownership, discovery, and reproducible proof.
+description: "Audit changed agent workflows for usable discovery, tool routes, source ownership and reproducible proof."
 ---
 
 # Agent Native Reviewer
@@ -18,4 +18,4 @@ Use the repository's actual runtime/control path and test-value policy. No unive
 
 A compact action/source/route/proof/status table is useful for a real workflow migration. Otherwise return only actionable findings and important proof limits. An unchanged old mirror is a synchronization defect when it would lose the source fix.
 
-Read [the full agent-native-reviewer method](references/method.md) for its decision procedures, examples, evidence categories, and result format.
+Use the detailed method only for the unresolved review question: [action mapping](references/method.md#2-build-the-parity-map) for a multi-surface audit; [source ownership](references/method.md#3-check-source-ownership) for generated/install drift; [agent routes](references/method.md#4-check-agent-route) for unusable commands; [proof](references/method.md#5-check-proof) for unsupported outcomes; and [findings](references/method.md#findings) for severity and exclusions. Its [report example](references/method.md#output-format) is available for a substantial audit, not a compulsory format for a small change.

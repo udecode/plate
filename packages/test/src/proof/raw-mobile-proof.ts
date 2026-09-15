@@ -4,7 +4,7 @@ import type {
 } from './mobile-transport-proof';
 
 /** Exact scenario matrix required for raw Android and iOS release proof. */
-export const PLITE_RAW_MOBILE_SCENARIOS = [
+export const RAW_MOBILE_SCENARIOS = [
   { id: 'tap', updateCount: 0 },
   { id: 'double-tap', updateCount: 0 },
   { id: 'long-press', updateCount: 0 },
@@ -24,31 +24,30 @@ export const PLITE_RAW_MOBILE_SCENARIOS = [
 ] as const;
 
 /** Identifier for one required raw-mobile device scenario. */
-export type PliteRawMobileScenarioId =
-  (typeof PLITE_RAW_MOBILE_SCENARIOS)[number]['id'];
+export type RawMobileScenarioId = (typeof RAW_MOBILE_SCENARIOS)[number]['id'];
 
 /** Relative artifact path paired with its independent readback digest. */
-export type PliteRawMobileArtifactPointer = {
+export type RawMobileArtifactPointer = {
   path: string;
   sha256: string;
 };
 
 /** Model, DOM, selection, event, and visual evidence captured at one step. */
-export type PliteRawMobileSnapshot = {
+export type RawMobileSnapshot = {
   domText: string;
   eventTrace: readonly string[];
   modelText: string;
   modelValue: unknown;
   nativeSelection: unknown;
-  screenshot: PliteRawMobileArtifactPointer;
+  screenshot: RawMobileArtifactPointer;
   semanticSelection: unknown;
   updateCount: number;
 };
 
 /** Direct-Appium receipt for one scenario on one real mobile device. */
-export type PliteRawMobileReceipt = {
+export type RawMobileReceipt = {
   artifacts: {
-    video: PliteRawMobileArtifactPointer;
+    video: RawMobileArtifactPointer;
   };
   browser: {
     name: 'Chrome' | 'Safari';
@@ -70,26 +69,26 @@ export type PliteRawMobileReceipt = {
   platform: BrowserMobileProofPlatform;
   receiptSha256: string;
   replay: readonly unknown[];
-  scenario: PliteRawMobileScenarioId;
+  scenario: RawMobileScenarioId;
   schemaVersion: 1;
-  snapshots: readonly PliteRawMobileSnapshot[];
+  snapshots: readonly RawMobileSnapshot[];
   transport: Extract<BrowserMobileTransportId, 'appium-android' | 'appium-ios'>;
 };
 
 /** Complete raw-device receipt matrix consumed by the release gate. */
-export type PliteRawMobileReceiptBundle = {
-  receipts: readonly PliteRawMobileReceipt[];
+export type RawMobileReceiptBundle = {
+  receipts: readonly RawMobileReceipt[];
   schemaVersion: 1;
 };
 
 /** Validation result for a raw-mobile receipt bundle. */
-export type PliteRawMobileProofResult = {
+export type RawMobileProofResult = {
   issues: string[];
   ok: boolean;
 };
 
 /** Untrusted raw-mobile bundle and the exact source commit it must prove. */
-export type PliteRawMobileProofOptions = {
+export type RawMobileProofOptions = {
   bundle: unknown;
   expectedCommit: string;
 };
@@ -113,10 +112,10 @@ const validatePointer = (issues: string[], label: string, pointer: unknown) => {
 };
 
 /** Validate a complete direct-Appium Android and iOS raw-device matrix. */
-export const validatePliteRawMobileProof = ({
+export const validateRawMobileProof = ({
   bundle,
   expectedCommit,
-}: PliteRawMobileProofOptions): PliteRawMobileProofResult => {
+}: RawMobileProofOptions): RawMobileProofResult => {
   const issues: string[] = [];
 
   if (!isGitCommit(expectedCommit)) {
@@ -158,7 +157,7 @@ export const validatePliteRawMobileProof = ({
       platform === 'android-chrome' ? 'appium-android' : 'appium-ios';
     const expectedBrowser = platform === 'android-chrome' ? 'Chrome' : 'Safari';
     const expectedOs = platform === 'android-chrome' ? 'Android' : 'iOS';
-    const scenario = PLITE_RAW_MOBILE_SCENARIOS.find(
+    const scenario = RAW_MOBILE_SCENARIOS.find(
       (candidate) => candidate.id === scenarioId
     );
 
@@ -288,7 +287,7 @@ export const validatePliteRawMobileProof = ({
     'android-chrome',
     'ios-safari',
   ] satisfies BrowserMobileProofPlatform[]) {
-    for (const scenario of PLITE_RAW_MOBILE_SCENARIOS) {
+    for (const scenario of RAW_MOBILE_SCENARIOS) {
       const key = `${platform}/${scenario.id}`;
 
       if (!seen.has(key)) issues.push(`Missing raw mobile receipt ${key}`);
@@ -299,14 +298,12 @@ export const validatePliteRawMobileProof = ({
 };
 
 /** Throw when a raw-device receipt bundle is incomplete or non-direct. */
-export const assertPliteRawMobileProof = (
-  options: PliteRawMobileProofOptions
-) => {
-  const result = validatePliteRawMobileProof(options);
+export const assertRawMobileProof = (options: RawMobileProofOptions) => {
+  const result = validateRawMobileProof(options);
 
   if (!result.ok) {
     throw new Error(
-      `Plite raw mobile proof failed:\n${result.issues
+      `EditorRoot raw mobile proof failed:\n${result.issues
         .map((issue) => `- ${issue}`)
         .join('\n')}`
     );

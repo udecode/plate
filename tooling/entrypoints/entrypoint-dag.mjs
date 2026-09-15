@@ -90,7 +90,7 @@ export const publicFeatureDependencies = Object.freeze({
   media: ['dom'],
   mention: ['combobox'],
   'slash-command': ['combobox'],
-  suggestion: ['diff'],
+  suggestion: ['authored'],
   table: ['dom'],
   tag: [],
   toc: [],
@@ -115,6 +115,7 @@ export const publicFeatureReactEntrypoints = Object.freeze([
 export const publicReactOnlyEntrypoints = Object.freeze(['resizable']);
 
 const standardReactDependencies = {
+  suggestion: ['authored'],
   table: ['dom'],
 };
 
@@ -122,6 +123,7 @@ const standardReactPeerDependencies = {
   'basic-nodes': ['react'],
   list: ['react'],
   resizable: ['react'],
+  suggestion: ['react'],
   table: ['react'],
   details: ['react'],
 };
@@ -219,24 +221,20 @@ export const entrypointDags = {
     entrypoints: {
       compiler: headless(directory('compiler', ['core'])),
       ai: headless(
-        directory(
-          'ai',
-          ['core', 'markdown', 'combobox', 'suggestion', 'table'],
-          [],
-          { peerDependencies: ['fastest-levenshtein'] }
-        )
+        directory('ai', ['core', 'markdown', 'combobox', 'table'], [], {
+          peerDependencies: ['fastest-levenshtein'],
+        })
       ),
       'ai/react': client(
         directory(
           'ai/react',
           [
             'ai',
+            'authored',
             'core',
             'markdown',
             'react-core',
             'combobox',
-            'suggestion',
-            'suggestion/react',
             'table',
           ],
           [],
@@ -244,7 +242,9 @@ export const entrypointDags = {
         )
       ),
       authored: headless(directory('authored', [], ['plitejs/authored'])),
-      core: headless(privateRoot(['dom', 'history'], ['plitejs'])),
+      core: headless(
+        privateRoot(['dom', 'history'], ['plitejs', 'plitejs/internal'])
+      ),
       'code-block/codemirror': client(
         directory('code-block/codemirror', ['react-core'], [], {
           peerDependencies: [
@@ -288,28 +288,43 @@ export const entrypointDags = {
           ],
         })
       ),
-      docx: client(
-        directory('docx', ['core', 'docx-html'], [], {
+      'docx/paste': client(
+        directory('docx/paste', ['core', 'docx-html'], [], {
           peerDependencies: ['juice'],
         })
       ),
-      'docx/export': client(
-        directory('docx/export', ['core', 'static'], [], {
-          peerDependencies: [
-            'color-name',
-            'html-to-vdom',
-            'jszip',
-            'juice',
-            'mime-types',
-            'virtual-dom',
-            'xmlbuilder2',
-          ],
+      'docx-internal': client(
+        privateDirectory('docx/internal', ['core'], [], {
+          peerDependencies: ['jszip'],
         })
       ),
+      'docx/export': client(
+        directory(
+          'docx/export',
+          ['authored', 'core', 'docx-internal', 'static'],
+          [],
+          {
+            peerDependencies: [
+              'color-name',
+              'html-to-vdom',
+              'jszip',
+              'juice',
+              'mime-types',
+              'virtual-dom',
+              'xmlbuilder2',
+            ],
+          }
+        )
+      ),
       'docx/import': client(
-        directory('docx/import', ['core', 'docx-html'], [], {
-          peerDependencies: ['mammoth'],
-        })
+        directory(
+          'docx/import',
+          ['authored', 'core', 'docx-html', 'docx-internal'],
+          [],
+          {
+            peerDependencies: ['jszip', 'mammoth'],
+          }
+        )
       ),
       'docx-html': client(
         privateDirectory('docx/html', ['core'], [], {
@@ -344,7 +359,7 @@ export const entrypointDags = {
         directory('hyperscript', [], ['plitejs/hyperscript'])
       ),
       markdown: headless(
-        directory('markdown', ['core', 'standard/list'], [], {
+        directory('markdown', ['authored', 'core', 'standard/list'], [], {
           peerDependencies: [
             'marked',
             'remark-mdx',
@@ -362,7 +377,9 @@ export const entrypointDags = {
       'math/react': client(
         directory('math/react', ['core', 'math', 'react-core'])
       ),
-      migrations: headless(directory('migrations', ['core', 'dom', 'history'])),
+      migrations: headless(
+        directory('migrations', ['authored', 'core', 'dom', 'history'])
+      ),
       pagination: headless(
         directory('pagination', [], ['plitejs/pagination'], {
           peerDependencies: ['@chenglou/pretext'],
@@ -377,6 +394,16 @@ export const entrypointDags = {
           ['core', 'dom', 'history', 'static'],
           ['plitejs/annotations', 'plitejs/react'],
           { peerDependencies: ['react', 'react-dom'] }
+        )
+      ),
+      'react/virtualized': client(
+        file(
+          'react/virtualized',
+          ['react-core'],
+          ['plitejs/react/virtualized'],
+          {
+            peerDependencies: ['@tanstack/react-virtual', 'react', 'react-dom'],
+          }
         )
       ),
       react: client(
@@ -401,10 +428,15 @@ export const entrypointDags = {
         )
       ),
       static: ssr(
-        directory('static', ['core', 'dom'], ['plitejs/react'], {
-          peerDependencies: ['react', 'react-dom'],
-          runtimeProof: 'plate-static-html',
-        })
+        directory(
+          'static',
+          ['authored', 'core', 'dom'],
+          ['plitejs/internal', 'plitejs/react'],
+          {
+            peerDependencies: ['react', 'react-dom'],
+            runtimeProof: 'plate-static-html',
+          }
+        )
       ),
       testing: headless(directory('testing', [], ['plitejs/testing'])),
       ...rootFeatureEntrypoints,
@@ -419,16 +451,11 @@ export const entrypointDags = {
           peerDependencies: ['react', 'tabbable'],
         })
       ),
-      yjs: headless(directory('yjs', ['core'], ['plitejs/yjs'])),
+      yjs: headless(directory('yjs', [], ['plitejs/yjs'])),
       'yjs/react': client(
-        directory(
-          'yjs/react',
-          ['core', 'react-core', 'yjs'],
-          ['plitejs/yjs/react'],
-          {
-            peerDependencies: ['react'],
-          }
-        )
+        directory('yjs/react', ['core', 'react-core'], ['plitejs/yjs/react'], {
+          peerDependencies: ['react'],
+        })
       ),
     },
     fallbackEntrypoint: 'core',
@@ -448,6 +475,7 @@ export const entrypointDags = {
       ],
       react: ['react'],
       'react-core': ['react-core'],
+      'react-virtualized': ['react/virtualized'],
       root: ['root', 'root-shared'],
       static: ['static'],
       ...singletonPartitions([
@@ -466,10 +494,11 @@ export const entrypointDags = {
         'compiler',
         'csv',
         'dnd/react',
-        'docx',
         'docx/export',
         'docx/import',
+        'docx/paste',
         'docx-html',
+        'docx-internal',
         'emoji',
         'emoji/react',
         'excalidraw',
@@ -497,6 +526,7 @@ export const entrypointDags = {
       dom: client(directory('dom', ['root'])),
       history: headless(directory('history', ['root'])),
       hyperscript: headless(directory('hyperscript', ['root'])),
+      internal: headless(file('internal/index', ['root'])),
       pagination: headless(
         directory('pagination', ['root'], [], {
           peerDependencies: ['@chenglou/pretext'],
@@ -509,6 +539,21 @@ export const entrypointDags = {
       ),
       react: client(
         directory('react', ['root', 'dom', 'annotations'], [], {
+          peerDependencies: ['react', 'react-dom'],
+        })
+      ),
+      'react/virtualized': client(
+        file(
+          'react/virtualized',
+          ['root', 'react', 'react-virtualized-core'],
+          [],
+          {
+            peerDependencies: ['@tanstack/react-virtual', 'react', 'react-dom'],
+          }
+        )
+      ),
+      'react-virtualized-core': client(
+        privateDirectory('react/virtualized', ['root', 'react'], [], {
           peerDependencies: ['@tanstack/react-virtual', 'react', 'react-dom'],
         })
       ),
@@ -529,12 +574,13 @@ export const entrypointDags = {
     sourceMarker: '/packages/plitejs/src/',
     taskPartitions: {
       authored: ['authored'],
-      core: ['annotations', 'root'],
+      core: ['annotations', 'internal', 'root'],
       diff: ['diff'],
       dom: ['dom'],
       history: ['history'],
       pagination: ['pagination', 'pagination/react'],
       react: ['react'],
+      'react-virtualized': ['react/virtualized', 'react-virtualized-core'],
       testing: ['hyperscript', 'testing'],
       yjs: ['yjs', 'yjs/react'],
     },
@@ -605,7 +651,9 @@ export const assertEntrypointDags = (dags = entrypointDags) => {
 
       if (!entrypointRuntimeSet.has(entrypoint.runtime)) {
         throw new Error(
-          `${packageName}/${entrypointName} must declare runtime as ${entrypointRuntimes.join(', ')}.`
+          `${packageName}/${entrypointName} must declare runtime as ${entrypointRuntimes.join(
+            ', '
+          )}.`
         );
       }
       if (
@@ -659,7 +707,9 @@ export const assertEntrypointDags = (dags = entrypointDags) => {
           dependency.includes('/') !== dependency.startsWith('@')
         ) {
           throw new Error(
-            `${packageName}/${entrypointName} references invalid peer dependency ${String(dependency)}.`
+            `${packageName}/${entrypointName} references invalid peer dependency ${String(
+              dependency
+            )}.`
           );
         }
       }

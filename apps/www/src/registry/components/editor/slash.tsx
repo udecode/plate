@@ -21,12 +21,12 @@ import {
   Table,
   TableOfContentsIcon,
 } from 'lucide-react';
-import { PLUGINS, type PlatePluginTransaction } from 'platejs';
+import { BaseCodeBlockPlugin, PLUGINS, type PluginTransaction } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import {
   type Editor,
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
 } from 'platejs/react';
 import { SlashInputPlugin, SlashPlugin } from 'platejs/slash-command/react';
 import * as React from 'react';
@@ -51,11 +51,7 @@ type Group = {
   items: Array<{
     icon: React.ReactNode;
     value: string;
-    onSelect?: (
-      editor: Editor,
-      tx: PlatePluginTransaction,
-      value: string
-    ) => void;
+    onSelect?: (editor: Editor, tx: PluginTransaction, value: string) => void;
     onClick?: (editor: Editor) => void;
     className?: string;
     focusEditor?: boolean;
@@ -239,12 +235,12 @@ const groups: Group[] = [
 ];
 
 export function SlashInputElement(
-  props: PlateElementProps<typeof SlashInputPlugin>
+  props: EditorElementProps<typeof SlashInputPlugin>
 ) {
   const { editor, element } = props;
 
   return (
-    <PlateElement {...props} as="span">
+    <EditorElement {...props} as="span">
       <InlineCombobox element={element} trigger="/">
         <InlineComboboxInput />
 
@@ -290,7 +286,7 @@ export function SlashInputElement(
       </InlineCombobox>
 
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 
@@ -298,7 +294,7 @@ export const SlashKit = [
   SlashPlugin.configure({
     initialState: {
       triggerQuery: (editor) => {
-        const codeBlock = editor.plugin(PLUGINS.codeBlock);
+        const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
         return !editor.read.nodes.some({
           type: codeBlock.schema.type,

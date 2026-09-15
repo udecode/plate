@@ -74,7 +74,7 @@ describe('selection protocol', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [selectionMarksSchema],
+          plugins: [selectionMarksSchema],
           initialSelection: SelectionApi.text(
             { anchor: point, focus: point },
             { marks: { mystery: true } }
@@ -91,7 +91,7 @@ describe('selection protocol', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [selectionMarksSchema],
+          plugins: [selectionMarksSchema],
           initialSelection: SelectionApi.text(
             { anchor: point, focus: point },
             { marks: { bold: 'yes' } }
@@ -108,7 +108,7 @@ describe('selection protocol', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [selectionMarksSchema],
+          plugins: [selectionMarksSchema],
           initialSelection: SelectionApi.text(
             {
               anchor: { ...point, root: 'header' },
@@ -358,7 +358,7 @@ describe('selection protocol', () => {
       type: 'paragraph' as const,
     };
     const editor = createEditor({
-      extensions: [selectionMarksSchema],
+      plugins: [selectionMarksSchema],
       initialSelection: selection,
       initialValue: {
         children: [

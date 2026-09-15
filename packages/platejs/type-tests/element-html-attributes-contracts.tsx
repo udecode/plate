@@ -1,10 +1,10 @@
 import type { AnchorHTMLAttributes } from 'react';
 
 import type { BaseParagraphPlugin } from '../src';
-import type { ParagraphPlugin, PlateElementProps } from '../src/react';
-import { PlateElement } from '../src/react';
-import type { PliteElementProps } from '../src/static';
-import { PliteElement } from '../src/static';
+import type { ParagraphPlugin, EditorElementProps } from '../src/react';
+import { EditorElement } from '../src/react';
+import type { EditorElementProps as StaticEditorElementProps } from '../src/static';
+import { EditorElement as StaticEditorElement } from '../src/static';
 
 const anchorAttributes: AnchorHTMLAttributes<HTMLAnchorElement> = {
   dir: 'auto',
@@ -12,9 +12,9 @@ const anchorAttributes: AnchorHTMLAttributes<HTMLAnchorElement> = {
 };
 
 export const renderLiveAnchor = (
-  props: PlateElementProps<typeof ParagraphPlugin>
+  props: EditorElementProps<typeof ParagraphPlugin>
 ) => (
-  <PlateElement
+  <EditorElement
     {...props}
     as="a"
     attributes={{ ...props.attributes, ...anchorAttributes }}
@@ -22,9 +22,9 @@ export const renderLiveAnchor = (
 );
 
 export const renderStaticAnchor = (
-  props: PliteElementProps<typeof BaseParagraphPlugin>
+  props: StaticEditorElementProps<typeof BaseParagraphPlugin>
 ) => (
-  <PliteElement
+  <StaticEditorElement
     {...props}
     as="a"
     attributes={{ ...props.attributes, ...anchorAttributes }}

@@ -10,7 +10,7 @@ import {
   NodeApi,
   type Path,
   PathApi,
-  type Element as PliteElement,
+  type Element as EditorElement,
   type Point,
   PointApi,
   type Range,
@@ -172,7 +172,7 @@ export type DeleteRangePlan = {
   preserveEmptyStartBlockPath: Path | null;
   preserveEndBlock: boolean;
   preserveInlineEdge: boolean;
-  preservedEmptyStartBlock: PliteElement | null;
+  preservedEmptyStartBlock: EditorElement | null;
   removedInteriorElementSiblingStructure: boolean;
   reverse: boolean;
   start: Point;

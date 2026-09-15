@@ -17,7 +17,11 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:page',
       },
       {
-        path: 'blocks/editor-ai/components/editor/plate-editor.tsx',
+        path: 'blocks/editor-ai/components/editor/rich-text-editor.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'blocks/editor-ai/components/editor/rich-text-editor-value.ts',
         type: 'registry:component',
       },
     ],
@@ -27,6 +31,7 @@ export const registryBlocks: Registry['items'] = [
       '@plate/editor',
       '@plate/comment',
       '@plate/discussion',
+      '@plate/suggestion',
       '@plate/use-mobile',
       '@plate/media-uploadthing-api',
       '@plate/settings-dialog',
@@ -65,7 +70,7 @@ export const registryBlocks: Registry['items'] = [
         type: 'registry:page',
       },
       {
-        path: 'blocks/editor-basic/components/editor/plate-editor.tsx',
+        path: 'blocks/editor-basic/components/editor/rich-text-editor.tsx',
         type: 'registry:component',
       },
     ],
@@ -78,20 +83,20 @@ export const registryBlocks: Registry['items'] = [
     dependencies: ['platejs', '@platejs/test', 'next-themes'],
     files: [
       {
-        path: 'blocks/plate-to-html/page.tsx',
+        path: 'blocks/html-export/page.tsx',
         target: 'app/html/page.tsx',
         type: 'registry:page',
       },
       {
-        path: 'components/editor/plate-to-html.tsx',
+        path: 'components/editor/html-export.tsx',
         type: 'registry:component',
       },
       {
-        path: 'components/editor/plate-to-html-client-kit.ts',
+        path: 'components/editor/html-export-schema-kit.ts',
         type: 'registry:component',
       },
       {
-        path: 'components/editor/plate-to-html-kit.ts',
+        path: 'components/editor/html-export-kit.ts',
         type: 'registry:component',
       },
       {
@@ -162,7 +167,7 @@ export const registryBlocks: Registry['items'] = [
     meta: {
       rsc: true,
     },
-    name: 'plate-to-html',
+    name: 'html-export',
     registryDependencies: [
       '@plate/editor-static',
       '@plate/editor',

@@ -2,7 +2,7 @@
 
 import { BaseCommentsPlugin } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { Plate, useCreateEditor, useStaticEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor, useStaticEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BaseBasicBlocksKit } from '@/registry/components/editor/basic-blocks-static';
@@ -12,7 +12,6 @@ import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorStatic } from '@/registry/components/editor/editor-static';
 import { LinkKit } from '@/registry/components/editor/link';
 import { BaseLinkKit } from '@/registry/components/editor/link-static';
-import { SuggestionKit } from '@/registry/components/editor/suggestion';
 import {
   commentThreads,
   commentUsers,
@@ -24,7 +23,6 @@ export default function CommentReviewDemo() {
     plugins: [
       ...BasicBlocksKit,
       ...LinkKit,
-      ...SuggestionKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
@@ -56,7 +54,7 @@ export default function CommentReviewDemo() {
           Open highlights to read and reply. The document itself cannot be
           edited.
         </p>
-        <Plate editor={editor} readOnly>
+        <EditorRoot editor={editor} readOnly>
           <EditorContainer className="h-auto rounded-md border" variant="demo">
             <Editor
               aria-label="Read-only comments document"
@@ -65,7 +63,7 @@ export default function CommentReviewDemo() {
               variant="demo"
             />
           </EditorContainer>
-        </Plate>
+        </EditorRoot>
       </section>
       <section className="flex flex-col gap-2">
         <h3 className="text-sm font-medium">Static snapshot</h3>

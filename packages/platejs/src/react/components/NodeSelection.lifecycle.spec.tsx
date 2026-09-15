@@ -4,8 +4,8 @@ import React from 'react';
 import { NodeApi } from '../../facade';
 import { createEditor } from '../editor/withPlate';
 import { NodeSelectionDrag } from './NodeSelection';
-import { Plate } from './Plate';
-import { PlateContent } from './PlateContent';
+import { EditorRoot } from './Plate';
+import { EditorContent } from './PlateContent';
 
 const fixture = (count = 3, container?: HTMLElement) => {
   const editor = createEditor({
@@ -15,15 +15,13 @@ const fixture = (count = 3, container?: HTMLElement) => {
     })),
   });
   const tree = (readOnly = false) => (
-    <Plate editor={editor} readOnly={readOnly} suppressInstanceWarning>
-      <PlateContent domStrategy="full" />
+    <EditorRoot editor={editor} readOnly={readOnly} suppressInstanceWarning>
+      <EditorContent />
       <NodeSelectionDrag />
-    </Plate>
+    </EditorRoot>
   );
   const view = render(tree(), container ? { container } : undefined);
-  const editable = view.container.querySelector<HTMLElement>(
-    '[data-plite-editor]'
-  )!;
+  const editable = view.container.querySelector<HTMLElement>('[data-editor]')!;
   const { ownerDocument } = editable;
   const ownerWindow = ownerDocument.defaultView!;
   Object.defineProperty(editable, 'getBoundingClientRect', {
@@ -40,7 +38,7 @@ const fixture = (count = 3, container?: HTMLElement) => {
   let layoutReads = 0;
   const measure = () => {
     for (const element of editable.querySelectorAll<HTMLElement>(
-      '[data-plite-node="element"]'
+      '[data-editor-node="element"]'
     )) {
       const index = Number(element.textContent?.replace('block ', ''));
       Object.defineProperty(element, 'getBoundingClientRect', {

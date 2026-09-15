@@ -1,5 +1,5 @@
 ---
-description: Plan or execute Plite architecture and public API changes for the raw editor substrate. Use for model/runtime, operations, React/DOM, history/collaboration, browser proof, and accepted Plite architecture plans.
+description: Plan or execute Plite substrate architecture and API adoption across model, operations, DOM, history and collaboration.
 argument-hint: '[--quick|--standard|--deep] <Plite architecture/API question | accepted plan path>'
 disable-model-invocation: true
 ---
@@ -75,11 +75,11 @@ the same plan and repair the target before continuing.
 - Do not hide a missing Plite primitive behind Plate glue. Name the substrate
   gap and its Plate adoption pressure explicitly.
 - Plan transient inline paint through one provider-owned
-  `<Plite decorations>` list of `PliteDecorationSource` descriptors. Each source
+  `<EditorRoot decorations>` list of `DecorationSource` descriptors. Each source
   returns keyed ranges with render-safe attributes and may observe an external
   owner for targeted node-key refresh. `Editable` only renders the compiled
   result. Keep annotation context independent through
-  `PliteAnnotationProvider`; require a feature-owned adapter for annotation
+  `AnnotationProvider`; require a feature-owned adapter for annotation
   paint.
 - For canonical state whose presentation differs by mounted view, first test
   whether the exact Plite React view can derive that choice from its runtime or
@@ -87,6 +87,11 @@ the same plan and repair the target before continuing.
   Plate inherits the mechanics and product UI owns markers and styling. Add a
   controlled view input only when user intent cannot be derived. Reject an
   editor-global extension/store and any copied Range or parallel state carrier.
+- Plan ordinary `Editable` as a complete DOM surface. Any rendering path that
+  omits canonical content uses an explicit component and owns its mounted-view
+  lifetime, dependency boundary, deterministic initial window and native
+  behavior limits. Pagination owns page omission and canvas coordinates; do not
+  feed its layout arrays or offsets through the generic block virtualizer.
 
 ## Hard Policy
 

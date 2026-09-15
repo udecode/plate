@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 
 import {
   createEditor as createHeadlessEditor,
-  defineBasePlugin,
+  definePlugin,
 } from '../../../packages/platejs/src/index';
 import { resolveCompiledSchemaWrapperPlan } from '../../../packages/plitejs/src/core/schema-compiler';
 import {
@@ -22,12 +22,12 @@ import {
   createEditor,
   createEditorView,
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   property,
   schema,
   target,
   type EditorDocumentValue,
-  type EditorSchemaExtension,
+  type EditorSchemaPlugin,
   type Point,
   type RootKey,
 } from '../../../packages/plitejs/src/index';
@@ -163,7 +163,7 @@ const ROUND_ROBIN_SAMPLING_ORDER = 'rotating-round-robin';
 const definition = createSchemaArchitectureCorpus();
 const contribution = (): EditorSchemaContributionRecord => ({
   contribution: definition.schema,
-  extensionName: definition.name,
+  pluginName: definition.name,
 });
 const compile = () => compileEditorSchemaContributions([contribution()]);
 
@@ -213,7 +213,7 @@ const createContributionRecords = (
               [type]: { content: schema.content.text() },
             },
           },
-    extensionName: `schema-contribution-benchmark-${count}-${index}`,
+    pluginName: `schema-contribution-benchmark-${count}-${index}`,
   }));
 };
 const createContributionRegistry = (
@@ -224,7 +224,7 @@ const createContributionRegistry = (
   for (const record of records) {
     registerSchemaContribution(
       registry,
-      record.extensionName,
+      record.pluginName,
       record.contribution
     );
   }
@@ -249,13 +249,13 @@ const measureContributionCohort = (
   const base = createSchemaContributionRegistry();
   const profilerEvents: string[] = [];
   const profilerOwner = globalThis as typeof globalThis & {
-    __PLITE_REACT_RENDER_PROFILER__?: {
+    __EDITOR_REACT_RENDER_PROFILER__?: {
       record: (event: { id: string }) => void;
     };
   };
-  const previousProfiler = profilerOwner.__PLITE_REACT_RENDER_PROFILER__;
+  const previousProfiler = profilerOwner.__EDITOR_REACT_RENDER_PROFILER__;
 
-  profilerOwner.__PLITE_REACT_RENDER_PROFILER__ = {
+  profilerOwner.__EDITOR_REACT_RENDER_PROFILER__ = {
     record: ({ id }) => profilerEvents.push(id),
   };
 
@@ -320,7 +320,7 @@ const measureContributionCohort = (
       structuralCacheMs,
     };
   } finally {
-    profilerOwner.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    profilerOwner.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
   }
 };
 const contributionRows = CONTRIBUTION_COHORTS.map(measureContributionCohort);
@@ -331,7 +331,7 @@ const createPlateDescriptorPlugins = (
   cohort: string
 ) =>
   Array.from({ length: count }, (_value, index) =>
-    defineBasePlugin(`plateDescriptor${cohort}${count}${index}`, {
+    definePlugin(`plateDescriptor${cohort}${count}${index}`, {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -488,7 +488,7 @@ const measureConstructionPropertyCohort = (
       version: 1,
     }
   );
-  const editor = createEditor({ extensions: [innerDefinition] });
+  const editor = createEditor({ plugins: [innerDefinition] });
   const compiledElement = getCompiledEditorSchema(editor)?.elements.byType.get(
     'construction_target'
   );
@@ -640,9 +640,9 @@ const allowedParentQueryNs = measureQuery((index) => {
   );
 });
 
-const slot = defineExtensionSlot('schema-architecture-benchmark-slot');
+const slot = definePluginSlot('schema-architecture-benchmark-slot');
 const editor = createEditor({
-  extensions: [slot.of(definition)] as const,
+  plugins: [slot.of(definition)] as const,
   initialValue: createSchemaArchitectureValue(),
 });
 const wrapperParent = {
@@ -679,7 +679,7 @@ const compileUnknownWrapperSchema = () =>
   compileEditorSchemaContributions([
     {
       contribution: createUnknownWrapperDefinition().schema,
-      extensionName: 'schema-architecture-unknown-wrapper-benchmark',
+      pluginName: 'schema-architecture-unknown-wrapper-benchmark',
     },
   ]);
 const hostileWrapperTypes = Array.from(
@@ -688,14 +688,14 @@ const hostileWrapperTypes = Array.from(
 );
 const wrapperProfilerEvents: string[] = [];
 const wrapperProfilerOwner = globalThis as typeof globalThis & {
-  __PLITE_REACT_RENDER_PROFILER__?: {
+  __EDITOR_REACT_RENDER_PROFILER__?: {
     record: (event: { id: string }) => void;
   };
 };
 const previousWrapperProfiler =
-  wrapperProfilerOwner.__PLITE_REACT_RENDER_PROFILER__;
+  wrapperProfilerOwner.__EDITOR_REACT_RENDER_PROFILER__;
 
-wrapperProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ = {
+wrapperProfilerOwner.__EDITOR_REACT_RENDER_PROFILER__ = {
   record: ({ id }) => wrapperProfilerEvents.push(id),
 };
 
@@ -745,10 +745,10 @@ const unknownWrapperFirstQueryNs = summarize(
 );
 
 if (previousWrapperProfiler) {
-  wrapperProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ =
+  wrapperProfilerOwner.__EDITOR_REACT_RENDER_PROFILER__ =
     previousWrapperProfiler;
 } else {
-  wrapperProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ = undefined;
+  wrapperProfilerOwner.__EDITOR_REACT_RENDER_PROFILER__ = undefined;
 }
 
 const validationLeaf = (index: number) => ({
@@ -804,7 +804,7 @@ const coldFullValidationSamples = Array.from(
 );
 const coldFullValidationMs = summarize(coldFullValidationSamples);
 const repeatedFrozenValidationEditor = createEditor({
-  extensions: [definition],
+  plugins: [definition],
   initialValue: createFullValidationValue(),
 });
 const repeatedFrozenValidationValue =
@@ -829,7 +829,7 @@ const repeatedFrozenFullValidationMs = summarize(
 );
 
 const MIGRATION_DOCUMENT_COHORTS = [1000, 10_000] as const;
-const migrationSlot = defineExtensionSlot(
+const migrationSlot = definePluginSlot(
   'schema-architecture-large-document-migration-slot'
 );
 const createMigrationSchema = (
@@ -867,7 +867,7 @@ const measureMigrationSample = (
   let migrationCalls = 0;
   let configurationDirtyCommits = 0;
   const measured = createEditor({
-    extensions: [migrationSlot.of(createMigrationSchema(blocks, 1))],
+    plugins: [migrationSlot.of(createMigrationSchema(blocks, 1))],
     initialValue: createMigrationValue(blocks),
   });
 
@@ -880,7 +880,7 @@ const measureMigrationSample = (
 
   const before = performance.now();
 
-  measured.update.extensions.reconfigure(
+  measured.update.plugins.reconfigure(
     migrationSlot,
     createMigrationSchema(blocks, 2),
     {
@@ -989,7 +989,7 @@ const localityParagraph = (root: LocalityTrace['root'], index: number) => ({
   validationElementTrace: { index, kind: 'element' as const, root },
 });
 const localityEditor = createEditor({
-  extensions: [LocalitySchema],
+  plugins: [LocalitySchema],
   initialValue: {
     children: Array.from({ length: localityBlocks }, (_value, index) =>
       localityParagraph('main', index)
@@ -999,19 +999,19 @@ const localityEditor = createEditor({
 });
 const localityProfilerEvents: string[] = [];
 const localityProfilerOwner = globalThis as typeof globalThis & {
-  __PLITE_REACT_RENDER_PROFILER__?: {
+  __EDITOR_REACT_RENDER_PROFILER__?: {
     record: (event: { id: string }) => void;
   };
 };
 const previousLocalityProfiler =
-  localityProfilerOwner.__PLITE_REACT_RENDER_PROFILER__;
+  localityProfilerOwner.__EDITOR_REACT_RENDER_PROFILER__;
 
 for (const key of Object.keys(localityVisits) as Array<
   keyof typeof localityVisits
 >) {
   localityVisits[key] = 0;
 }
-localityProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ = {
+localityProfilerOwner.__EDITOR_REACT_RENDER_PROFILER__ = {
   record: ({ id }) => localityProfilerEvents.push(id),
 };
 
@@ -1022,7 +1022,7 @@ try {
     });
   });
 } finally {
-  localityProfilerOwner.__PLITE_REACT_RENDER_PROFILER__ =
+  localityProfilerOwner.__EDITOR_REACT_RENDER_PROFILER__ =
     previousLocalityProfiler;
 }
 
@@ -1058,7 +1058,7 @@ const INVALIDATION_ALL_CHANGED_TYPES = [
   'schema_delta_affected',
   ...INVALIDATION_DORMANT_TYPES,
 ] as const;
-const invalidationSlot = defineExtensionSlot(
+const invalidationSlot = definePluginSlot(
   'schema-architecture-invalidation-slot'
 );
 const createInvalidationSchema = (
@@ -1142,7 +1142,7 @@ const createInvalidationValue = (blocks: number): EditorDocumentValue => ({
 });
 const createInvalidationEditor = (blocks: number) =>
   createEditor({
-    extensions: [invalidationSlot.of(createInvalidationSchema(1, new Set()))],
+    plugins: [invalidationSlot.of(createInvalidationSchema(1, new Set()))],
     initialValue: createInvalidationValue(blocks),
   });
 const measureColdInvalidationIndex = (blocks: number) =>
@@ -1168,7 +1168,7 @@ const prepareInvalidation = (
 ) => {
   const measured = createInvalidationEditor(blocks);
 
-  measured.update.extensions.reconfigure(
+  measured.update.plugins.reconfigure(
     invalidationSlot,
     createInvalidationSchema(2, new Set(changedTypes))
   );
@@ -1253,7 +1253,7 @@ const propertyInvalidationEditor = createInvalidationEditor(
   INVALIDATION_LARGE_DOCUMENT_BLOCKS
 );
 
-propertyInvalidationEditor.update.extensions.reconfigure(
+propertyInvalidationEditor.update.plugins.reconfigure(
   invalidationSlot,
   createInvalidationSchema(2, new Set(), 'drop')
 );
@@ -1325,7 +1325,7 @@ const projectedOwner = {
 } satisfies PliteViewBoundaryOwner;
 const createProjectedClipboardEditor = (blocks: number) => {
   const owner = createEditor({
-    extensions: [projectedClipboardSchema],
+    plugins: [projectedClipboardSchema],
     initialValue: {
       children: [
         projectedParagraph('Before'),
@@ -1505,13 +1505,13 @@ const projectedClipboardHostWidthRatio =
 
 const profilerEvents: string[] = [];
 const profilerOwner = globalThis as typeof globalThis & {
-  __PLITE_REACT_RENDER_PROFILER__?: {
+  __EDITOR_REACT_RENDER_PROFILER__?: {
     record: (event: { id: string }) => void;
   };
 };
-const previousProfiler = profilerOwner.__PLITE_REACT_RENDER_PROFILER__;
+const previousProfiler = profilerOwner.__EDITOR_REACT_RENDER_PROFILER__;
 
-profilerOwner.__PLITE_REACT_RENDER_PROFILER__ = {
+profilerOwner.__EDITOR_REACT_RENDER_PROFILER__ = {
   record: ({ id }) => profilerEvents.push(id),
 };
 
@@ -1529,7 +1529,7 @@ const reconfigurationSamples = Array.from(
   (_, index) => {
     const before = performance.now();
 
-    editor.update.extensions.reconfigure(
+    editor.update.plugins.reconfigure(
       slot,
       index % 2 === 0 ? equivalentDefinition : definition
     );
@@ -1546,8 +1546,8 @@ const equivalentReconfigurationIdentityReused =
   beforeReconfiguration === afterReconfiguration;
 
 if (previousProfiler) {
-  profilerOwner.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
-} else profilerOwner.__PLITE_REACT_RENDER_PROFILER__ = undefined;
+  profilerOwner.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
+} else profilerOwner.__EDITOR_REACT_RENDER_PROFILER__ = undefined;
 
 const compiledRepresentation = (schemaValue: CompiledEditorSchema) => ({
   elements: [...schemaValue.elements.byType].map(([type, value]) => ({
@@ -1647,7 +1647,7 @@ const forceGc = () => {
   gc();
 };
 const measureRetained = (
-  extension: EditorSchemaExtension,
+  plugin: EditorSchemaPlugin,
   probeType: string,
   value: () => EditorDocumentValue
 ) => {
@@ -1655,7 +1655,7 @@ const measureRetained = (
   const before = process.memoryUsage().heapUsed;
   const editors = Array.from({ length: heapEditors }, () => {
     const measured = createEditor({
-      extensions: [extension],
+      plugins: [plugin],
       initialValue: value(),
     });
 

@@ -13,7 +13,7 @@ import {
   NodeApi,
   type Path,
   PathApi,
-  type Element as PliteElement,
+  type Element as EditorElement,
   type Point,
   PointApi,
   RangeApi,
@@ -488,7 +488,7 @@ const resolveDeleteTarget = (
       ? ({
           ...effectiveStartBlock[0],
           children: [{ text: '' }],
-        } as PliteElement)
+        } as EditorElement)
       : null;
 
   return {

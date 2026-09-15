@@ -116,7 +116,7 @@ export const markDOMTextFlowMutation = (
 
 export const readDOMTextFlowPaint = (host: HTMLElement) => {
   const index = getTextFlowIndex(host);
-  const root = host.closest<HTMLElement>('[data-plite-editor]');
+  const root = host.closest<HTMLElement>('[data-editor]');
   const observation =
     root && host.isConnected
       ? (ROOT_TO_FLOW_OBSERVATION.get(root) ?? null)
@@ -331,7 +331,8 @@ export const releaseDOMTextFlowIndex = (host: HTMLElement) => {
 export const resolveDOMTextFlowPoint = (
   host: HTMLElement,
   offset: number,
-  nodeKey = DEFAULT_RECORD_KEY
+  nodeKey = DEFAULT_RECORD_KEY,
+  affinity: 'backward' | 'forward' = 'backward'
 ): { node: globalThis.Text; offset: number } | null => {
   const index = TEXT_HOST_TO_FLOW_INDEX.get(host);
   const record =
@@ -352,8 +353,12 @@ export const resolveDOMTextFlowPoint = (
         ? (record?.shiftDelta ?? 0)
         : 0;
 
-    if (segments[middle].end + shift < offset) low = middle + 1;
-    else high = middle;
+    if (
+      segments[middle].end + shift < offset ||
+      (affinity === 'forward' && segments[middle].end + shift === offset)
+    ) {
+      low = middle + 1;
+    } else high = middle;
   }
 
   const segment = segments[low];
@@ -395,7 +400,7 @@ const getSegmentBinding = (node: globalThis.Node) => {
   } else if (node.nodeType === Node.ELEMENT_NODE) {
     const element = node as HTMLElement;
     const stringElement = element.closest<HTMLElement>(
-      '[data-plite-string], [data-plite-zero-width]'
+      '[data-editor-string], [data-editor-zero-width]'
     );
 
     if (stringElement) {
@@ -505,7 +510,7 @@ export const resolveDOMTextFlowRecordDOMText = (
   return record.segments
     .map(({ domLength, end, start, textNode }) => {
       const value =
-        textNode.parentElement?.closest('[data-plite-leaf]')?.textContent ??
+        textNode.parentElement?.closest('[data-editor-leaf]')?.textContent ??
         textNode.nodeValue ??
         '';
       const displaySuffixLength = Math.max(0, domLength - (end - start));
@@ -531,7 +536,7 @@ export const resolveDOMTextFlowOffset = (
     return Math.max(bounds.start, Math.min(bounds.start + offset, bounds.end));
   }
   const stringElement = node.parentElement?.closest<HTMLElement>(
-    '[data-plite-string], [data-plite-zero-width]'
+    '[data-editor-string], [data-editor-zero-width]'
   );
   const binding = stringElement ? getSegmentBinding(stringElement) : null;
 
@@ -576,7 +581,7 @@ export const resolveDOMTextFlowInsertTarget = (
   const stringElement = directBinding?.segment.stringElement
     ? directBinding.segment.stringElement
     : textNode.parentElement?.closest<HTMLElement>(
-        '[data-plite-string], [data-plite-zero-width]'
+        '[data-editor-string], [data-editor-zero-width]'
       );
   const stringBinding = stringElement ? getSegmentBinding(stringElement) : null;
   const binding =

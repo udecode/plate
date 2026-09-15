@@ -5,9 +5,9 @@ import { useLayoutEffect } from 'react';
 import {
   createEditor,
   Editable,
-  Plite,
-  usePliteCommand,
-  usePliteRootEffect,
+  EditorRoot,
+  useCommand,
+  useRootEffect,
 } from '../../src/react';
 
 const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
@@ -27,7 +27,7 @@ describe('plite-react root and command hooks', () => {
           .setAttribute('data-child-layout', 'ready');
       }, []);
 
-      usePliteRootEffect((rootEditor) => {
+      useRootEffect((rootEditor) => {
         calls.push({
           childLayoutSeen: screen
             .getByTestId('root-effect-root')
@@ -40,10 +40,10 @@ describe('plite-react root and command hooks', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable data-testid="root-effect-root" />
         <Probe />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(calls).toEqual([{ childLayoutSeen: 'ready', root: undefined }]);
@@ -54,7 +54,7 @@ describe('plite-react root and command hooks', () => {
     const calls: string[] = [];
 
     const Probe = () => {
-      usePliteRootEffect(
+      useRootEffect(
         (rootEditor) => {
           calls.push(
             rootEditor.read((state) => {
@@ -70,10 +70,10 @@ describe('plite-react root and command hooks', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
         <Probe />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -91,7 +91,7 @@ describe('plite-react root and command hooks', () => {
     const cleanups: string[] = [];
 
     const Probe = () => {
-      usePliteRootEffect(
+      useRootEffect(
         () => {
           calls.push('effect');
 
@@ -106,10 +106,10 @@ describe('plite-react root and command hooks', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable aria-label="Editor" />
         <Probe />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -126,7 +126,7 @@ describe('plite-react root and command hooks', () => {
     const calls: string[] = [];
 
     const Probe = ({ label }: { label: string }) => {
-      usePliteRootEffect(
+      useRootEffect(
         () => {
           calls.push(label);
         },
@@ -137,19 +137,19 @@ describe('plite-react root and command hooks', () => {
     };
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
         <Probe label="first" />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(calls).toEqual(['first']);
 
     rendered.rerender(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
         <Probe label="second" />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(calls).toEqual(['first', 'second']);
@@ -160,7 +160,7 @@ describe('plite-react root and command hooks', () => {
     const calls: string[] = [];
 
     const Probe = ({ label }: { label: string }) => {
-      usePliteRootEffect(() => {
+      useRootEffect(() => {
         calls.push(label);
       });
 
@@ -168,19 +168,19 @@ describe('plite-react root and command hooks', () => {
     };
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
         <Probe label="first" />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(calls).toEqual(['first']);
 
     rendered.rerender(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
         <Probe label="second" />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(calls).toEqual(['first', 'second']);
@@ -196,7 +196,7 @@ describe('plite-react root and command hooks', () => {
     const handlers: unknown[] = [];
 
     const CommandButton = ({ label }: { label: string }) => {
-      const command = usePliteCommand(editorCommands.insertText, {
+      const command = useCommand(editorCommands.insertText, {
         root: 'header',
       });
 
@@ -210,21 +210,21 @@ describe('plite-react root and command hooks', () => {
     };
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable aria-label="Header editor" root="header" />
         <Editable aria-label="Body editor" />
         <CommandButton label="first" />
-      </Plite>
+      </EditorRoot>
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Run command' }));
 
     rendered.rerender(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable aria-label="Header editor" root="header" />
         <Editable aria-label="Body editor" />
         <CommandButton label="second" />
-      </Plite>
+      </EditorRoot>
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Run command' }));

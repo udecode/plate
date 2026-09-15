@@ -4,6 +4,7 @@ export default defineDirectPackageConfig(
   {
     entry: {
       index: 'src/index.ts',
+      'internal/index': 'src/internal/index.ts',
       'annotations/index': 'src/annotations/index.ts',
       'authored/index': 'src/authored/index.ts',
       'diff/index': 'src/diff/index.ts',
@@ -13,6 +14,7 @@ export default defineDirectPackageConfig(
       'pagination/index': 'src/pagination/index.ts',
       'pagination/react': 'src/pagination/react.tsx',
       'react/index': 'src/react/index.ts',
+      'react/virtualized': 'src/react/virtualized.tsx',
       'testing/index': 'src/testing/index.ts',
       'yjs/index': 'src/yjs/index.ts',
       'yjs/react/index': 'src/yjs/react/index.ts',

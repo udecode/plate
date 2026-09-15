@@ -1,0 +1,34 @@
+---
+title: 文档变更
+description: Plate 规范文档变更、序列化和重放。
+---
+
+应用代码通过 `editor.update` 修改文档。序列化 `commit.changes`，并通过
+`tx.changes.apply` 导入规范 `DocumentChange`。
+
+## 规范变更
+
+```ts
+import { DocumentChange } from 'platejs';
+
+const change = DocumentChange.fromJSON(message.change);
+editor.update({ tags: 'remote-import' }, (tx) => {
+  tx.changes.apply(change);
+});
+```
+
+| 方法 | 用途 |
+| --- | --- |
+| `apply(value)` | 将变更应用到原始文档。 |
+| `compose(other)` | 组合顺序变更。 |
+| `invert(value)` | 计算精确逆变更。 |
+| `mapPosition(position, options)` | 映射位置及方向关联。 |
+| `iterChangedRanges(visit)` | 遍历所有受影响根中的范围。 |
+| `toJSON()` / `fromJSON(json)` | 序列化与解码。 |
+
+主文档的根标识为 `null`；具名根使用字符串。版本 3 JSON 使用可选的
+`primary` 和 `roots` 字段。提交中的 `changes`、`inverseChanges`、`effects`、
+`tags`、`selectionBefore`、`selectionAfter` 和 `changed` 共同描述原子更新。
+
+适配器在同一更新中导入变更与共享 effect。运行时 `NodeKey` 不作为远程
+身份；并发、传输、持久化与在线状态由[协作适配器](/docs/yjs)负责。

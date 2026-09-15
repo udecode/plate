@@ -1,8 +1,15 @@
 import { act, render } from '@testing-library/react';
 import React from 'react';
 
-import type { NodeKey } from '../../core';
-import { Plate, PlateContent, createEditor } from '../../react/core';
+import type { NodeEntry, Element, NodeKey } from '../../core';
+import {
+  EditorRoot,
+  EditorContent,
+  EditorElement,
+  createEditor,
+  definePlugin,
+} from '../../react/core';
+import { SuggestionPlugin } from '../../react/features/suggestion/SuggestionPlugin';
 import { pipeHandler } from '../../react/utils/pipeHandler.internal';
 import { DndPlugin } from './DndPlugin';
 import { useDndPlugin } from './useDndPlugin';
@@ -10,12 +17,67 @@ import { useDndPlugin } from './useDndPlugin';
 function DndEditable() {
   const [element, setElement] = React.useState<HTMLDivElement | null>(null);
   useDndPlugin(element);
-  return <PlateContent ref={setElement} data-testid="editor" />;
+  return <EditorContent ref={setElement} data-testid="editor" />;
 }
 
 const blockNodeKey = 'runtime-block-1' as NodeKey;
 
 describe('DndPlugin', () => {
+  it('reads a retained block drag payload from its own view through deletion history and rejection', async () => {
+    let readDragEntries = (): ReadonlyArray<NodeEntry<Element>> => [];
+    const ImagePlugin = definePlugin('image', {
+      schema: { element: { void: 'block' } },
+    }).configure({
+      component: (props) => {
+        readDragEntries = () =>
+          props.editor.plugin(DndPlugin).read.dragEntries(props.element);
+
+        return <EditorElement {...props}>{props.children}</EditorElement>;
+      },
+    });
+    const editor = createEditor({
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'Before' }] },
+        { type: 'image', children: [{ text: '' }] },
+        { type: 'paragraph', children: [{ text: 'After' }] },
+      ],
+      plugins: [DndPlugin, SuggestionPlugin, ImagePlugin],
+      userId: 'alice',
+    });
+    const mounted = render(
+      <EditorRoot
+        editor={editor}
+        authored={{ intent: 'propose', projection: 'markup' }}
+      >
+        <EditorContent />
+      </EditorRoot>
+    );
+    try {
+      await act(async () => {
+        editor.update((tx) => {
+          tx.authored.propose();
+          tx.nodes.remove({ at: [1] });
+        });
+      });
+      expect(readDragEntries().map(([node]) => node.type)).toEqual(['image']);
+
+      await act(async () => editor.update.history.undo());
+      expect(readDragEntries().map(([node]) => node.type)).toEqual(['image']);
+      await act(async () => editor.update.history.redo());
+      expect(readDragEntries().map(([node]) => node.type)).toEqual(['image']);
+
+      await act(async () => {
+        editor.update.authored.decide({
+          action: 'reject',
+          selection: editor.read.authored.select({ status: 'pending' }),
+        });
+      });
+      expect(readDragEntries().map(([node]) => node.type)).toEqual(['image']);
+    } finally {
+      mounted.unmount();
+    }
+  });
+
   it('does not claim native drags from arbitrary Plite nodes', () => {
     const editor = createEditor({
       plugins: [DndPlugin],
@@ -28,7 +90,7 @@ describe('DndPlugin', () => {
     } as DataTransfer;
     const event = { dataTransfer, target } as unknown as React.DragEvent;
 
-    target.dataset.pliteNodeKey = blockNodeKey;
+    target.dataset.editorNodeKey = blockNodeKey;
 
     pipeHandler(editor, { handlerKey: 'onDragStart' })?.(event);
     pipeHandler(editor, { handlerKey: 'onDragEnter' })?.(event);
@@ -110,13 +172,13 @@ describe('DndPlugin', () => {
     const outside = document.createElement('div');
 
     const view = render(
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <DndEditable />
-      </Plate>
+      </EditorRoot>
     );
     const editorNode = view.getByTestId('editor');
 
-    block.dataset.pliteNodeKey = blockNodeKey;
+    block.dataset.editorNodeKey = blockNodeKey;
     block.append(blockText);
     editorNode.append(inside, block);
     document.body.append(outside);
@@ -155,7 +217,7 @@ describe('DndPlugin', () => {
     expect(context.store.get('dropTarget')).toBeNull();
 
     const nextBlock = document.createElement('div');
-    nextBlock.dataset.pliteNodeKey = 'runtime-block-2';
+    nextBlock.dataset.editorNodeKey = 'runtime-block-2';
     editorNode.append(nextBlock);
     act(() => {
       context.store.set({ dropTarget: { key: blockNodeKey, line: 'top' } });
@@ -193,9 +255,9 @@ describe('DndPlugin', () => {
     });
     const context = editor.plugin(DndPlugin);
     const view = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
 
     try {

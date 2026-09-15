@@ -1,5 +1,5 @@
 ---
-description: Select valuable Plate/Plite behavior and type tests, use the correct runners, or audit suite health and coverage with testing audit.
+description: Repair or add justified Plate/Plite tests with the owning runners; use testing audit for suite health and coverage.
 name: testing
 metadata:
   skiller:
@@ -11,7 +11,16 @@ It refreshes coverage and timing, ranks valuable remaining work and maintains
 the existing roadmap. An audit does not authorize writing tests. Use the
 ordinary method below for implementation and runner decisions.
 
-## Testing Goal
+## Test value
+
+Tests are optional proof. Add the smallest test only for a named, plausible,
+costly regression not already covered by existing tests, types, lint, source
+checks or direct runtime proof. Test the public boundary and avoid duplicate
+matrices, implementation assertions and fake smoke coverage. Coverage and
+package recipes cannot create test obligations. An explicit test audit retains
+its inventory and evidence without granting test-writing authority.
+
+## Test mechanics
 
 Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
 
@@ -24,44 +33,17 @@ Push the suite toward three layers only:
 
 Hard constraints:
 
-- Bun-first and speed-first. `bun run test` is the default iterative workflow.
-- `pnpm test:all` is the full end-of-task and CI run. Do not use it as the default inner-loop command.
+- Bun owns the fast Node lane. Use the narrowest affected runner during iteration;
+  `bun run test` is its aggregate and `pnpm test:all` is the full handoff/CI lane
+  only when required by the change or claim.
 - Keep the default iterative suite fast.
 - No browser or e2e coverage in this program.
-- Coverage is hotspot telemetry, not a vanity target. Do not chase repo-wide numbers blindly.
-- Use coverage after each phase only to choose the next hotspot.
 - No one-smoke-test-per-package sweep.
 - Do not add broad smoke coverage for thin wrapper packages.
-
-## Coverage Strategy
-
-- Coverage is for regression detection during breaking changes and rearchitecture, not for winning a percentage contest.
-- Rank files from fresh `lcov`. Trust file order more than package totals.
-- Work in passes:
-  1. high-value contract pass: do every honest file with score `>= 6`
-  2. medium-value follow-up: rerun coverage, then do worthwhile `>= 5` files while skipping crumbs, wrappers, and sludge
-  3. architecture-safety pass: stop following coverage blindly and harden the contracts you most refuse to break
-- File-first beats package sweeps once the obvious packages are already covered.
-- Good architecture-safety targets:
-  - plugin resolution and composition
-  - normalization contracts
-  - parser and serializer behavior
-  - structural transforms and merge helpers
-  - history, diff, and change-tracking behavior
-  - public editor invariants
-- `/react` is not permanently excluded. Exclude it only when the current pass explicitly says so.
-- React work should wait until non-React boundaries are exhausted only when that is the active phase goal, not because the skill hardcodes it forever.
-- Stop when the remaining misses are mostly:
-  - thin wrappers
-  - DOM-only or provider-only boundaries
-  - giant low-ROI sludge files
-  - tiny uncovered crumbs
-  - code likely to be deleted or rewritten soon
 
 ## Plate foundation Rules
 
 - Assert public behavior through editor APIs, plugin APIs, hooks, transforms, or rendered output. Do not assert private state, call order, or implementation detail when public behavior already proves the contract.
-- Prefer file-ranked batches over package sweeps. Package sweeps are for early broad passes, not the endgame.
 - Do not use coverage to justify testing files with no meaningful contract.
 - Bun globals come from `tooling/config/global.d.ts`. Do not import `describe`, `it`, `expect`, `mock`, `spyOn`, or other globals from `bun:test`.
 - Use `*.spec.ts[x]` for the fast lane and `*.slow.ts[x]` for the slow lane.
@@ -76,7 +58,7 @@ Hard constraints:
 - No fake smoke tests.
 - No app-registry imports in package tests.
 - Do not add package `devDependencies` just to support cross-package or app-shaped test setups. If a test needs other package kits, app aliases, or multi-package wiring, move it to `apps/www/src/__tests__/package-integration`.
-- When adding tests, inspect fast-suite outliers with `bun run test:profile`. `bun run test:slowest` hard-budgets the complete fast loop and genuinely blocking individual cases. It never fails a file merely because one coherent owner contains many cheap tests.
+- When test additions change the suite’s measured cost or an audit targets it, inspect outliers with `bun run test:profile`. `bun run test:slowest` hard-budgets the complete fast loop and genuinely blocking individual cases. It never fails a file merely because one coherent owner contains many cheap tests.
 - Treat the local warning zone as real debt before CI proves you wrong, but optimize the slow behavior rather than splitting files to game aggregate file time.
 - For borderline individual cases, run `pnpm test:slowest -- --top 25 --rerun-each 3` and move only repeatably blocking behavior into the matching `*.slow.ts[x]` family.
 - Treat known third-party resource logs and serializer fallback warnings as test noise. Suppress them narrowly in the shared Bun setup at `tooling/config/bunTestSetup.ts`, not by changing runtime code or sprinkling per-spec console mocks.
@@ -147,148 +129,23 @@ cross-package dev dependencies to support an overbuilt fake runtime.
 - Avoid `toHaveStyle` here. Use direct style-property assertions instead.
 - After broad title renames on snapshot-backed suites, delete and regenerate the snapshot file. `bun test -u` updates and adds keys, but does not reliably prune dead ones.
 
-## Cleanup Heuristics
+## Package-specific contracts
 
-- Score files before cleanup waves instead of skimming randomly.
-- Use fresh `lcov` after each pass. Do not keep working from a stale hotspot map.
-- Rewrite large hotspot specs before chasing broad title debt. Bigger signal first.
-- Scan title debt across:
-  - plain string titles
-  - `it.each(...)` format strings
-  - `String.raw` titles
-  - snapshot keys derived from those titles
-- Scan for commented-out `it`, `test`, and `describe` blocks during dead-spec cleanup waves.
-- End cleanup waves with repo scans for:
-  - skipped tests
-  - commented-out tests
-  - cross-spec imports
-  - placeholder titles
-  - non-allowlisted Plate React `createEditor` boundaries
-- Use `bun run test:profile` for the fast suite when deciding whether a spec belongs in the slow lane. `pnpm test:slowest` and `pnpm check` enforce those thresholds.
-- For rule-override hotspots, extract one editor helper and table-drive repeated node-type cases instead of cloning the same transform assertions.
-- For plugin-composition hotspots, keep one-owner setup inline. Extract only
-  when reuse or an independent contract earns another owner.
-- Adapt upstream invariants when local runtime semantics differ. Keep the invariant, rewrite the fixture around the real public contract.
-- Treat tiny one-branch crumbs as crumbs. Do not let a coverage number talk you into fake work.
-- Penalize scattered ownership and poor test ROI, not file length. A large
-  coherent owner is valid.
+Read [package recipes](./references/packages.md) only for the affected
+autoformat, markdown/AI, Plate, selection, DOCX or Plite boundary. They retain
+reviewed React/fixture exceptions and upstream behavior guidance. An inventory
+of possible cases does not justify adding each test.
 
-## Package Rules
+## Select the runner
 
-### `autoformat` registry integration
+Use the smallest boundary and exact owning script. Bun globals and adjacent
+specs serve the fast `*.spec.ts[x]` lane (`pnpm test`); unavoidable measured
+slow cases use `*.slow.ts[x]` (`pnpm test:slow`). Focused runs use actual
+repo-relative `./` paths or the package’s runner. `pnpm test:all` is the full
+repo lane when the claim or required gate needs it. Never infer coverage from
+an aggregate command without checking its discovered files.
 
-- Keep rule arrays in the owning copied registry item.
-- Use `PLUGINS` or base plugin descriptors, not copied raw identities.
-- Add only the base plugins a rule actually needs.
-- Collapse tiny mark or block suites into matrices when the contract is the same.
-- Do not import `AutoformatKit` or app registries in package tests.
-- Prove cross-feature behavior such as code-block wiring in
-  `apps/www/src/__tests__/package-integration`.
-
-### `markdown`
-
-- Configure `MarkdownPlugin` locally in the package helper.
-- Do not import `MarkdownKit` or any app registry from `apps/www`.
-- Prefer direct string assertions for tiny whitespace-sensitive serializer outputs.
-
-### `ai / streaming markdown`
-
-- Keep one mixed-document smoke case.
-- Add a few explicit chunk-boundary tests.
-- Do not hide streaming behavior behind snapshots or giant hand-written trees.
-
-### `plate`
-
-- Use `createEditor` for:
-  - pure plugin option stores
-  - selector extension
-  - plugin API composition
-  - transform composition
-  - parser and deserializer contracts
-  - HTML `insertData`
-  - DnD-style contracts
-- Grow the compile-only type lane here first:
-  - plugin creation
-  - editor creation
-  - inference
-  - option merging
-  - API merging
-- Port upstream Slate React invariants by behavior, not by file.
-- When a Plate foundation source test mounts `Plate` while the same run also loads public-package React entrypoints, treat duplicate-instance warnings as test noise. Suppress them in the test wrapper with `suppressInstanceWarning` instead of changing runtime warning logic.
-- For provider-only React specs in the Plate foundation, reuse the shared `packages/platejs/src/react/__tests__/TestPlate.tsx` helper instead of re-declaring local `const Plate = ...` wrappers.
-
-### `selection`
-
-- Test current `moveSelection` and `shiftSelection` behavior at their shipped
-  owner. If ownership or public shape is disputed, route the decision to
-  `best-api` and the relevant layer plan; testing does not decide it.
-
-### DOCX entrypoints and app integration
-
-- Keep app-owned cross-package integration tests under `apps/www/src/__tests__/package-integration`.
-- Keep buckets local under that folder instead of scattering app-owned integration coverage through `src/lib`.
-- Package tests must not pull app aliases, app kits, or registries into package graphs.
-- Fixture-heavy `docx-paste` suites are valid reasons to keep `__tests__/`.
-
-### `plitejs`
-
-- Focus on pure editor, query, and transform behavior first.
-- Keep runtime coverage on navigation, selection math, structural queries, transform edge cases, extension transforms, and `createEditor` legacy sync.
-- Keep a small compile-only type lane for public `plitejs` contracts.
-- Use selective upstream mining. Pull invariants that cheaply improve local public-contract coverage; do not mirror upstream blindly.
-- Add direct helper specs for custom Slate code when indirect coverage is lying.
-- Use `lcov` as package truth. Bun’s text coverage summary is noisy for targeted package runs.
-- Stop once the remaining misses are mostly deferred DOM wrappers plus low-risk non-DOM dust.
-- Later Plate foundation work should mine these upstream `slate-react` invariants:
-  - `use-slate-selector`: selector equality and stale-rerender prevention
-  - `use-slate`: editor version and subscription behavior
-  - `use-selected`: selection rerender and path stability
-  - `editable`: value-change vs selection-change partitioning
-  - `decorations`: decoration propagation and redecorate behavior
-  - `chunking`: chunk or index invalidation only if remaining foundational gaps justify it
-- Skip `react-editor` DOM focus coverage unless a real Plate bug forces it.
-- Playwright example coverage stays out.
-
-## Reviewed Exceptions
-
-### Plate React `createEditor` allowlist
-
-Keep Plate React `createEditor` when the contract is actually about:
-
-- React or provider wiring
-- rendered output or DOM behavior
-- store rerender semantics
-- Plate plugin conversion boundaries
-- the known Plate-only selection APIs: `moveSelection` and `shiftSelection`
-
-Do not treat these files as backlog just because they still use Plate.
-
-### `__tests__/` allowlist
-
-Keep `__tests__/` when it holds:
-
-- package-local helpers or fixture banks
-- intentionally split multi-file suites like `withAutoformat`
-- fixture-heavy integration suites like `docx-paste`
-- app-owned cross-package integration suites under `apps/www/src/__tests__/package-integration`
-
-## Quick Reference
-
-- Start with the smallest boundary that proves the contract: raw `createEditor` -> `createEditor` -> Plate React `createEditor`.
-- Work in passes: `>= 6` first, rerun coverage, then worthwhile `>= 5`, then switch to architecture-safety targets.
-- Use `bun run test` for the fast default loop. Use `pnpm test:all` for the full suite.
-- Use `bun run test:profile` to inspect the fast loop and `bun run test:slowest` to enforce it.
-- `pnpm test:slowest` has warning and hard budgets for total feedback-loop time and individual blocking tests. File totals are navigation data, never a topology gate.
-- Use Bun globals. Do not import them from `bun:test`.
-- Keep specs beside the implementation. Use `__tests__/` only for helpers, fixtures, or intentional split or integration suites.
-- Use plain objects for simple state. Use JSX hyperscript only when tree or selection shape is the contract.
-- Prefer explicit assertions. Use render-returned queries over `screen`, and use direct style-property assertions over `toHaveStyle`.
-- Remove obsolete tests and stale snapshots after broad title renames. Keep
-  meaningful negative type proofs and explicit capability skips.
-- Package tests must stay package-local. No app registries, no app kits, no cross-spec imports.
-- For package-only coverage decisions, trust `lcov`, not Bun’s broad text summary.
-- Keep exactly two lanes:
-  - fast lane: `*.spec.ts[x]`, run by `pnpm test`
-  - slow lane: `*.slow.ts[x]`, run by `pnpm test:slow`
-- Use `pnpm test:all` for the full repo test run instead of relying on bare `bun test`.
-- Stop before 100%. When the remaining misses are wrappers, DOM/provider dust, sludge, or crumbs, you are done.
+For coverage or cleanup waves, the full [suite audit](./references/audit.md)
+owns scoring, phases, `lcov`, timing checks and stopping. Ordinary test repair
+does not start that program. Keep negative type proofs and explicit capability
+skips with their missing prerequisites visible.

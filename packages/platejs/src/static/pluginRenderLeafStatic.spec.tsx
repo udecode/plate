@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { property } from '../core';
-import { type RenderLeafProps, defineBasePlugin } from '../lib';
+import { type RenderLeafProps, definePlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderLeafStatic,
@@ -9,7 +9,7 @@ import {
 } from './pluginRenderLeafStatic.internal';
 
 describe('pluginRenderLeafStatic', () => {
-  const HighlightPlugin = defineBasePlugin('highlight', {
+  const HighlightPlugin = definePlugin('highlight', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       mark: {
@@ -67,7 +67,7 @@ describe('pluginRenderLeafStatic', () => {
   });
 
   it('matches marks by persisted key rather than plugin name', () => {
-    const MarkPlugin = defineBasePlugin('markCapability', {
+    const MarkPlugin = definePlugin('markCapability', {
       schema: {
         mark: {
           key: 'persistedMark',

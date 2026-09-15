@@ -10,7 +10,7 @@ const NEXT_DATA_ACCESS_CONTROL_ERROR =
   /Fetch API cannot load http:\/\/(?:localhost|127\.0\.0\.1):\d+\/_next\/data\//;
 
 /** Recorder returned by runtime-error capture helpers. */
-export type PliteBrowserRuntimeErrorRecorder = {
+export type BrowserRuntimeErrorRecorder = {
   assertNone: () => void;
   errors: string[];
   reset: () => void;
@@ -28,14 +28,14 @@ const isIgnoredRuntimeError = (text: string) =>
     text.includes('https://player.vimeo.com'));
 
 /** Start recording browser runtime errors for a Playwright page. */
-export const recordPliteBrowserRuntimeErrors = (
+export const recordBrowserRuntimeErrors = (
   page: Page,
   options: {
     patterns?: readonly string[];
     /** Capture every console/page error, including otherwise ignored errors. */
     strict?: boolean;
   } = {}
-): PliteBrowserRuntimeErrorRecorder => {
+): BrowserRuntimeErrorRecorder => {
   const patterns = options.patterns ?? DEFAULT_RUNTIME_ERROR_PATTERNS;
   const errors: string[] = [];
   const onPageError = (error: Error) => {

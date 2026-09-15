@@ -7,7 +7,7 @@ import {
 import { useEditorContext } from '../internal/plite-components';
 import { usePublishPlateRenderedAttributes } from '../internal/rendered-attributes';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
+import type { AnyResolvedPlugin } from '../plugin/PlatePlugin';
 import { useEditor } from '../stores';
 
 const viewElementAttributeHookIds = new WeakMap<object, number>();
@@ -32,10 +32,10 @@ function ViewElementAttributesHookProgram({
   sourceOrder,
   useViewElementAttributes,
 }: {
-  plugin: AnyResolvedPlatePlugin;
+  plugin: AnyResolvedPlugin;
   sourceOrder: number;
   useViewElementAttributes: NonNullable<
-    AnyResolvedPlatePlugin['render']['useViewElementAttributes']
+    AnyResolvedPlugin['render']['useViewElementAttributes']
   >;
 }) {
   const editor = useEditor();
@@ -54,7 +54,7 @@ export function ViewElementAttributesEffect({
   plugin,
   sourceOrder,
 }: {
-  plugin: AnyResolvedPlatePlugin;
+  plugin: AnyResolvedPlugin;
   sourceOrder: number;
 }) {
   const { useViewElementAttributes } = plugin.render;
@@ -84,7 +84,7 @@ export function EditorRefEffect() {
               getCompiledPlatePlugin(
                 editor,
                 name
-              ) as unknown as AnyResolvedPlatePlugin
+              ) as unknown as AnyResolvedPlugin
             }
             sourceOrder={sourceOrder}
           />

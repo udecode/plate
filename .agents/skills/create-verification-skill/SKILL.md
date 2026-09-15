@@ -1,9 +1,9 @@
 ---
 name: create-verification-skill
-description: "Generate a project-local verification skill that drives your app the way a user does — any language, framework, or platform. Use for /create-verification-skill, \"make a control skill for this repo\", or when a project has no scripted way to prove UI/CLI/service behavior."
+description: "Create a project verification skill when the user requests one or required UI, CLI or service proof has no owner."
 ---
 
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
+For platform-specific commands or delegation, read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md). Use the complete domain method below under current project scope and proof requirements.
 
 # Create a verification skill
 
@@ -31,6 +31,8 @@ Locate the repository-owned skill source and generator first. Write there and re
 - **Evidence:** what to capture for a proof and where it goes. State the proof standards: exercise the real user path, not internal setters or test-only endpoints; capture the action and the resulting state, not just the final screen; verify side effects (files written, rows inserted, messages sent) alongside what's visible; mocks only where a production boundary already isolates the external system. When the safe path is a dry-run or test mode, verify what it actually skips by observing (files, network, git refs) rather than trusting its name: some dry-runs still touch the network or open a browser.
 - **Cleanup:** how to tear down instances the run created. Never kill by process name; kill what you started. Cleanup removes instances and scratch state, never the evidence: proof artifacts survive the teardown, in a location the skill names.
 - **Helpers:** any script the skill ships is executable and its invocation is shown in the skill body. A helper the reader has to reverse-engineer is not a helper.
+
+Generate one evidence owner per operation. Before driving a settled candidate, map its required action, read-back, consequence, artifact and applicable visual states to a capture bundle. Other profiles and presentations reference that bundle rather than repeating the operation. Define invalidation from source/build, environment, auth/permissions, fixture, URL/state, viewport and artifact changes; preserve earlier provenance when carrying evidence forward. Iteration uses affected checks, with final full-operation proof and required target-native proof still mandatory. A valid file format or a reused image alone cannot establish an unobserved claim.
 
 ## 3. Seed the feature map
 

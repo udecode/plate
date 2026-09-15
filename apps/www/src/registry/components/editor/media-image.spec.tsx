@@ -17,11 +17,11 @@ mock.module('platejs/dnd/react', () => ({
 
 mock.module('platejs/react', () => ({
   ...actualCoreReact,
-  PlateElement: ({ children }: React.PropsWithChildren) => (
+  EditorElement: ({ children }: React.PropsWithChildren) => (
     <div data-testid="plate-element">{children}</div>
   ),
   useEditor: () => ({
-    plugin: () => ({ update: { set: () => {} } }),
+    extension: () => ({ update: { set: () => {} } }),
     read: { selection: selectionMock },
   }),
   useEditorMounted: () => true,

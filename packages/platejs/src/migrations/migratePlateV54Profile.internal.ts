@@ -9,6 +9,7 @@ import {
   TextApi,
   type Value,
 } from '../facade';
+import { getCompiledPlatePlugin } from '../internal/plugin/compilePlateModel';
 import type { DocumentMigration } from '../lib/editor/documentMigrations';
 import {
   V53_ELEMENT_TYPE_OWNERS,
@@ -65,12 +66,14 @@ export const migratePlateV54Profile: DocumentMigration = ({
       ...(type === undefined ? {} : { type }),
     }) !== null;
   const resolveElementType = (name: string) => {
-    const plugin = editor.plugin(name);
+    const descriptor = getCompiledPlatePlugin(editor, name);
 
-    return plugin.installed ? plugin.schema.type : undefined;
+    return descriptor ? editor.plugin(descriptor).schema.type : undefined;
   };
-  const script = editor.plugin('script');
-  const scriptKey = script.installed ? script.schema.key : undefined;
+  const scriptDescriptor = getCompiledPlatePlugin(editor, 'script');
+  const scriptKey = scriptDescriptor
+    ? editor.plugin(scriptDescriptor).schema.key
+    : undefined;
   const mediaTypes = new Set(
     ['audio', 'file', 'image', 'mediaEmbed', 'video']
       .map(resolveElementType)
@@ -92,10 +95,14 @@ export const migratePlateV54Profile: DocumentMigration = ({
   >();
   const typeMigrations = new Map<string, string>();
   const firstPartyElementTypes = new Set<string>();
-  const listPlugin = editor.plugin('list');
-  const configuredListSiblingOptions = listPlugin.installed
+  const listDescriptor = getCompiledPlatePlugin(editor, 'list');
+  const configuredListSiblingOptions = listDescriptor
     ? (
-        (listPlugin.store as unknown as { get: () => unknown }).get() as {
+        (
+          editor.plugin(listDescriptor).store as unknown as {
+            get: () => unknown;
+          }
+        ).get() as {
           getSiblingListOptions?: MigrationListSiblingOptions;
         }
       ).getSiblingListOptions

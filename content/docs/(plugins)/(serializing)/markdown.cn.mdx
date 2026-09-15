@@ -6,7 +6,7 @@ toc: true
 
 `platejs/markdown` 将 Markdown 转换为 Plate 文档，也可将 Plate 文档转换回 Markdown。
 
-<ComponentPreview name="markdown-to-plite-demo" />
+<ComponentPreview name="markdown-to-editor-demo" />
 
 <ComponentPreview name="markdown-demo" />
 
@@ -130,7 +130,7 @@ const editor = createEditor({
 <Callout type="warning" title="仅表示主内容">
   Markdown 只表示 `document.children`，不会保留命名 roots 或 slice
   的开放边缘。需要精确保留 roots、`openStart` 和 `openEnd` 时，剪贴板传输使用
-  `application/x-plite-fragment`。
+  `application/x-editor-fragment`。
 </Callout>
 
 ### Markdown 转 Plate（反序列化）
@@ -145,7 +145,7 @@ import { ItalicPlugin } from 'platejs/react';
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ...还需引入其它用于渲染的 Plate 插件
 
-const markdownString = '# Hello, *Plate*!';
+const markdownString = '# Hello, *EditorRoot*!';
 
 const editor = createEditor({
   plugins: [
@@ -188,7 +188,7 @@ const specificNodes = [
   children: [{ text: '以及这个标题。' }] },
   ];
 
-// 假设 editor 是你的 Plate 实例
+// 假设 editor 是你的 EditorRoot 实例
 const partialMarkdownOutput = editor.api.markdown.serialize({
   value: { children: specificNodes },
   });
@@ -197,6 +197,21 @@ console.info(partialMarkdownOutput);
 
 Markdown 图片的 alt 文本映射到图片的一个段落 child。富 MDX 媒体子内容
 直接映射到媒体元素的块级 children。
+
+### Authored-change 投影
+
+Editor 安装 `authored` 后，需要选择 Markdown 表示的内容：
+
+```tsx
+const output = editor.api.markdown.serializeAuthored({
+  projection: 'review',
+});
+const document = editor.api.markdown.deserialize(output.data);
+```
+
+`accepted` 和 `proposed` 返回普通 Markdown；如果省略了 pending change，还会返回 `authored-lossy-projection` diagnostic。`review` 追加 Plate authored envelope，并在 canonical document 完整保留时返回空 diagnostic。`deserialize` 会自动读取该 envelope。
+
+Review 输出把原生文档保存在 envelope 中。可读的 Markdown 正文显示 proposed 投影；其他 Markdown 工具会忽略末尾的 HTML comment。JSON、HTML 和 DOCX 行为请参阅 [Authored Changes](/docs/authored-changes)。
 
 ### 循环序列化：自定义元素（MDX）
 
@@ -226,10 +241,10 @@ Markdown 运行时即可声明 codec。
 对象中声明两个格式键。每种格式都会保留基于 schema 的类型推断。
 
 ```tsx title="lib/plate-editor.ts"
-import { defineBasePlugin } from 'platejs';
+import { definePlugin } from 'platejs';
 import { property } from 'platejs';
 
-export const BaseDatePlugin = defineBasePlugin('date',
+export const BaseDatePlugin = definePlugin('date',
   {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -317,7 +332,7 @@ product codecs：
 | `text/markdown` | 是 | 是 | 闭合的主内容 slice |
 | `text/plain` | 是 | 否 | 闭合的主内容 slice |
 
-通用剪贴板管线优先使用 `application/x-plite-fragment` 表示精确的 Plate
+通用剪贴板管线优先使用 `application/x-editor-fragment` 表示精确的 Plate
 slice，并在需要时回退到这些外部格式。
 
 ---
@@ -373,7 +388,7 @@ slice，并在需要时回退到这些外部格式。
 
 ### `editor.api.markdown.deserializeInline`
 
-将内联 Markdown 文本转换为 Plite 子节点。
+将内联 Markdown 文本转换为 Plate 子节点。
 
 <API name="deserializeInline">
   <APIParameters>
@@ -384,7 +399,7 @@ slice，并在需要时回退到这些外部格式。
       本次调用的配置选项，将覆盖共享 Markdown 配置。
     </APIItem>
   </APIParameters>
-  <APIReturns type="Descendant[]">内联内容的 Plite 子节点。</APIReturns>
+  <APIReturns type="Descendant[]">内联内容的 Plate 子节点。</APIReturns>
 </API>
 
 ---
@@ -482,9 +497,9 @@ slice，并在需要时回退到这些外部格式。
 import { createEditor } from 'platejs/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 import remarkGfm from 'remark-gfm';
-// 导入 GFM 相关 Plate 插件
+// GFM 元素插件
 import { TablePlugin } from 'platejs/table/react';
-import { TodoListPlugin } from 'platejs/react'; // 对应任务列表的 List 插件
+import { ListPlugin } from 'platejs/react';
 import { StrikethroughPlugin } from 'platejs/react';
 import { LinkPlugin } from 'platejs/react';
 
@@ -492,8 +507,7 @@ const editor = createEditor({
   plugins: [
     // ...其他插件
     TablePlugin,
-  TodoListPlugin,
-  // 或你当前使用的任务列表插件
+  ListPlugin,
     StrikethroughPlugin,
   LinkPlugin,
   MarkdownPlugin.configure({
@@ -521,7 +535,7 @@ A table:
 Visit https://platejs.org
 `;
 
-// 假设 `editor` 是已配置好的 Plate 编辑器实例
+// 假设 `editor` 是已配置好的 EditorRoot 编辑器实例
 const document = editor.api.markdown.deserialize(markdown);
 editor.update((tx) => {
   tx.value.replace(document);
@@ -609,13 +623,14 @@ const output = editor.api.markdown.serialize({
 import { createEditor } from 'platejs/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 import remarkMath from 'remark-math';
-// Plate 数学渲染相关插件
-import { MathPlugin } from 'platejs/math/react'; // 主 Math 插件
+// 数学元素插件
+import { EquationPlugin, InlineEquationPlugin } from 'platejs/math/react';
 
 const editor = createEditor({
   plugins: [
     // ...其他插件
-    MathPlugin, // 渲染块级与行内公式
+    EquationPlugin,
+    InlineEquationPlugin,
     MarkdownPlugin.configure({
       initialState: {
         remarkPlugins: [remarkMath],
@@ -638,7 +653,7 @@ $$
 $$
 `;
 
-// 假设 `editor` 为已配置 Plate 编辑器实例
+// 假设 `editor` 为已配置 EditorRoot 编辑器实例
 const document = editor.api.markdown.deserialize(markdown);
 // document.children 包含 'inlineEquation' 及 'equation' 节点
 
@@ -679,7 +694,7 @@ Mention with spaces: [John Doe](mention:john_doe)
 Full name with ID: [Jane Smith](mention:user_123)
 `;
 
-// 假设 `editor` 是已配置好的 Plate 编辑器
+// 假设 `editor` 是已配置好的 EditorRoot 编辑器
 const slateValue = editor.api.markdown.deserialize(markdown);
 // 自动生成合适值与显示文本的 mention 节点
 
@@ -736,7 +751,7 @@ const markdown = `
 </columnGroup>
 `;
 
-// 假设 `editor` 为已配置好的 Plate 编辑器
+// 假设 `editor` 为已配置好的 EditorRoot 编辑器
 const slateValue = editor.api.markdown.deserialize(markdown);
 // 生成包含嵌套 column 元素的 columnGroup 节点
 
@@ -927,7 +942,7 @@ editor.api.markdown.deserialize(markdown, {
 | `platejs`、`platejs/math` | 代码和数学 |
 | `platejs` | 图片、文件、音频、视频、嵌入 |
 | `platejs`、`platejs` | 表格和分栏 |
-| 各功能包 | 日期、提及、脚注、callout、评论、建议、目录 |
+| 各功能包 | 日期、提及、脚注、callout、评论、目录 |
 
 ---
 
@@ -962,7 +977,7 @@ editor.api.markdown.deserialize(markdown, {
 **示例：**
 
 ```tsx title="components/my-editor.tsx"
-import { createEditor, ParagraphPlugin, PlateLeaf } from 'platejs/react';
+import { createEditor, ParagraphPlugin, EditorLeaf } from 'platejs/react';
 import { BoldPlugin } from 'platejs/react';
 import { CodeBlockPlugin } from 'platejs/react';
 import { ParagraphElement } from '@/components/editor/paragraph'; // UI组件示例
@@ -986,7 +1001,7 @@ const editor = createEditor({
 
 ```tsx title="components/plate-markdown.tsx"
 import React, { useEffect } from 'react';
-import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
+import { EditorRoot, EditorContent, useCreateEditor } from 'platejs/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 // 导入各类常用的 Plate 插件
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
@@ -1017,9 +1032,9 @@ export function PlateMarkdown({
   }, [children, editor]); // Markdown 内容变化时重新反序列化
 
   return (
-    <Plate editor={editor}>
-      <PlateContent readOnly className={className} />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent readOnly className={className} />
+    </EditorRoot>
   );
 }
 

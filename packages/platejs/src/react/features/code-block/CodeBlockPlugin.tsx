@@ -2,12 +2,12 @@ import {
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
 } from '../../../features/code-block/lib/BaseCodeBlockPlugin';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
 /** Enables support for pre-formatted code blocks. */
-export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin);
+export const CodeBlockPlugin = toReactPlugin(BaseCodeBlockPlugin);
 
 /** Adds Lowlight syntax highlighting to code blocks. */
-export const CodeHighlightPlugin = toPlatePlugin(BaseCodeHighlightPlugin, {
+export const CodeHighlightPlugin = toReactPlugin(BaseCodeHighlightPlugin, {
   dependencies: [CodeBlockPlugin],
 });

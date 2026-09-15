@@ -9,7 +9,7 @@ const selectCommentModeIntroWithPointer = async (
   rootSelector = '#comment-mode'
 ) => {
   await page
-    .locator(`${rootSelector} [data-plite-string]`)
+    .locator(`${rootSelector} [data-editor-string]`)
     .first()
     .scrollIntoViewIfNeeded();
 
@@ -34,7 +34,7 @@ const getTextOffsetPoint = async (
   offset: number
 ) =>
   page
-    .locator(`${rootSelector} [data-plite-string]`)
+    .locator(`${rootSelector} [data-editor-string]`)
     .first()
     .evaluate((element, textOffset) => {
       const textNode = element.firstChild;
@@ -59,7 +59,7 @@ const getDOMSelectionOffset = (page: Page) =>
   page.evaluate(() => window.getSelection()?.anchorOffset ?? null);
 
 const writerSelection = (page: Page) =>
-  page.locator('.plite-comment-mode-writer-pane .plite-comment-mode-code');
+  page.locator('.editor-comment-mode-writer-pane .editor-comment-mode-code');
 
 test.describe('comment mode example', () => {
   test('allows real pointer selection to add a comment in the read-only editor', async ({
@@ -262,7 +262,7 @@ test.describe('comment mode example', () => {
     );
   });
 
-  test('keeps comment sidebar, inline review slices, and widget panel in sync', async ({
+  test('keeps comment sidebar and inline review slices in sync', async ({
     page,
   }) => {
     const editor = await openExample(page, 'plite/comment-mode', {
@@ -312,7 +312,7 @@ test.describe('comment mode example', () => {
     await expect(page.locator('[data-comment-tone]')).toHaveCount(2);
     await expect(page.locator('[data-comment-tone="review"]')).toHaveCount(2);
     await expect(page.locator('#comment-card-comment-1')).toHaveCount(1);
-    await expect(page.locator('text=comment-1-widget:Comment 1')).toHaveCount(
+    await expect(page.locator('text=comment-1:Comment 1')).toHaveCount(
       1
     );
 
@@ -327,7 +327,7 @@ test.describe('comment mode example', () => {
       page.locator('text=Inserted review context before the first comment.')
     ).toHaveCount(2);
     await expect(page.locator('#comment-card-comment-1')).toHaveCount(1);
-    await expect(page.locator('text=comment-1-widget:Comment 1')).toHaveCount(
+    await expect(page.locator('text=comment-1:Comment 1')).toHaveCount(
       1
     );
 
@@ -338,7 +338,7 @@ test.describe('comment mode example', () => {
     await expect(page.locator('#comment-mode-document-writes')).toHaveText('2');
     await expect(page.locator('#comment-mode-comment-writes')).toHaveText('1');
     await expect(page.locator('[data-comment-tone="review"]')).toHaveCount(2);
-    await expect(page.locator('text=comment-1-widget:Comment 1')).toHaveCount(
+    await expect(page.locator('text=comment-1:Comment 1')).toHaveCount(
       1
     );
 
@@ -368,7 +368,7 @@ test.describe('comment mode example', () => {
 
     await expect(page.locator('#comment-mode-comment-writes')).toHaveText('4');
     await expect(page.locator('#comment-card-comment-1')).toHaveCount(0);
-    await expect(page.locator('text=comment-1-widget:Comment 1')).toHaveCount(
+    await expect(page.locator('text=comment-1:Comment 1')).toHaveCount(
       0
     );
     await expect(page.locator('[data-comment-tone]')).toHaveCount(0);

@@ -7,14 +7,14 @@ import {
   isActionableLedgerValue,
   isClosedLedgerValue,
   isCurrentSchemaAdoptionDoc,
-  removedExplicitExtensionGenericPattern,
+  removedExplicitPluginGenericPattern,
   removedDefinitionAliasNamePattern,
   removedGenericDependencyReferencePattern,
   removedInternalDependencyTypePattern,
   removedZeroArgumentReactPattern,
-  removedExtensionApiPortalPattern,
-  removedExtensionValidationPattern,
-  removedLooseExtensionPortalSignaturePattern,
+  removedPluginApiPortalPattern,
+  removedPluginValidationPattern,
+  removedLoosePluginPortalSignaturePattern,
   removedCaptionTargetOptionsPattern,
   removedPlateNodeBagPattern,
   removedPlatePluginShapePattern,
@@ -29,20 +29,20 @@ import {
 
 test('detects rejected final extension and Plate plugin shapes', () => {
   assert.match(
-    'editor.getApi(HistoryExtension).undo()',
-    removedExtensionApiPortalPattern
+    'editor.getApi(HistoryPlugin).undo()',
+    removedPluginApiPortalPattern
   );
   assert.match(
     'validateConfiguration(context) {}',
-    removedExtensionValidationPattern
+    removedPluginValidationPattern
   );
   assert.match(
-    'defineExtension<Editor>()({ name: "typed" })',
-    removedExplicitExtensionGenericPattern
+    'definePlugin<Editor>()({ name: "typed" })',
+    removedExplicitPluginGenericPattern
   );
   assert.match(
-    'extension<D extends EditorExtension<EditorExtensionDefinition>>(extension: D)',
-    removedLooseExtensionPortalSignaturePattern
+    'plugin<D extends Plugin<PluginDefinition>>(plugin: D)',
+    removedLoosePluginPortalSignaturePattern
   );
 
   for (const source of [
@@ -71,10 +71,10 @@ test('detects rejected final extension and Plate plugin shapes', () => {
   }
 
   for (const source of [
-    'editor.extension(HistoryExtension).api.undo()',
+    'editor.plugin(HistoryPlugin).api.undo()',
     'validate(context) {}',
-    'defineExtension("typed", { })',
-    'extension<const D extends EditorExtensionReference>(extension: D)',
+    'definePlugin("typed", { })',
+    'extension<const D extends PluginReference>(extension: D)',
     'on: { keyDown() {} }',
     'commands: () => []',
     'api: () => ({ run() {} })',
@@ -87,7 +87,7 @@ test('detects rejected final extension and Plate plugin shapes', () => {
 
 test('accepts Base constructor components and rejects terminal conversion', () => {
   assert.doesNotMatch(
-    'defineBasePlugin("p", { component: ParagraphStatic, })',
+    'definePlugin("p", { component: ParagraphStatic, })',
     terminalComponentConversionPattern
   );
   assert.match(
@@ -95,11 +95,11 @@ test('accepts Base constructor components and rejects terminal conversion', () =
     basePluginExtendComponentPattern
   );
   assert.match(
-    'toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphElement })',
+    'toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphElement })',
     terminalComponentConversionPattern
   );
   assert.doesNotMatch(
-    'toPlatePlugin(BaseParagraphPlugin, { component: ParagraphElement })',
+    'toReactPlugin(BaseParagraphPlugin, { component: ParagraphElement })',
     terminalComponentConversionPattern
   );
   assert.doesNotMatch(
@@ -110,21 +110,21 @@ test('accepts Base constructor components and rejects terminal conversion', () =
 
 test('keeps static/base owners free of Plate React adapters', () => {
   assert.match(
-    '`basic-blocks-base-kit` adds `toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })`.',
+    '`basic-blocks-base-kit` adds `toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })`.',
     staticBaseKitReactAdapterPattern
   );
   assert.match(
     [
       "import { createStaticEditor } from 'platejs/static';",
-      "import { toPlatePlugin } from 'platejs/react';",
+      "import { toReactPlugin } from 'platejs/react';",
       'createStaticEditor({',
-      '  plugins: [toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })],',
+      '  plugins: [toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })],',
       '});',
     ].join('\n'),
     staticEditorBaseReactAdapterPattern
   );
   assert.doesNotMatch(
-    'For live React, use toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphElement }).',
+    'For live React, use toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphElement }).',
     staticBaseKitReactAdapterPattern
   );
 });
@@ -147,29 +147,29 @@ test('names DefinitionOf aliases after the extracted definition', () => {
 
 test('keeps dependency internals private and React composition exact', () => {
   assert.match(
-    'type Ref = EditorExtensionDependencyReference<Capability>',
+    'type Ref = PluginDependencyReference<Capability>',
     removedGenericDependencyReferencePattern
   );
   assert.match(
-    "import type { InternalEditorExtensionTypeProviderOf } from 'plitejs'",
+    "import type { PluginTypeProviderOf } from 'plitejs'",
     removedInternalDependencyTypePattern
   );
   assert.match('react()', removedZeroArgumentReactPattern);
 
   assert.doesNotMatch(
-    'type Ref = EditorExtensionDependencyReference',
+    'type Ref = PluginDependencyReference',
     removedGenericDependencyReferencePattern
   );
   assert.doesNotMatch(
-    "import type { EditorExtensionTypeProviderOf } from 'plitejs'",
+    "import type { PluginReference } from 'plitejs'",
     removedInternalDependencyTypePattern
   );
   assert.match(
-    "import type { EditorExtensionTypeProviderOf } from 'plitejs/internal'",
+    "import type { PluginTypeProviderOf } from 'plitejs/internal'",
     removedInternalDependencyTypePattern
   );
   assert.doesNotMatch(
-    'react({ dom: DOMExtension })',
+    'react({ dom: DOMPlugin })',
     removedZeroArgumentReactPattern
   );
 });

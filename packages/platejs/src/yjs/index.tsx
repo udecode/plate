@@ -1,2 +1,1 @@
-export * from './core';
-export * from './BaseYjsPlugin';
+export * from 'plitejs/yjs';

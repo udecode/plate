@@ -1,0 +1,405 @@
+---
+title: "Plite Yjs"
+description: "Bind a Plite editor to an explicitly owned Y.Doc, readiness source, and optional awareness."
+---
+
+`plitejs/yjs` connects a Plite editor to a Yjs document. The app owns the
+provider, document loading, room initialization, authentication, persistence,
+and transport lifetime. The binding owns admission, canonical change
+translation, and optional awareness projection. Plite History owns undo and
+redo; canonical history replay uses the same Yjs bridge as every editor change.
+
+## Install
+
+Install the adapter with the Plite packages your editor already uses.
+
+```text
+npm install plitejs @tanstack/react-virtual diff-match-patch-ts yjs react react-dom
+```
+
+Install your transport package separately. For Hocuspocus, add the provider at
+the app edge.
+
+```text
+npm install @hocuspocus/provider
+```
+
+## Create the plugin
+
+Create the provider in app code. Pass its exact document, an explicit readiness
+source, and optional awareness to `yjs`. The provider never becomes an editor
+resource.
+
+```tsx
+import { createEditor } from "plitejs";
+import { yjs } from "plitejs/yjs";
+import { history } from "plitejs/history";
+
+const editor = createEditor({
+  plugins: [
+    history(),
+    yjs({
+      doc: provider.document,
+      initialReady: createHocuspocusInitialReadiness(provider),
+      awareness: provider.awareness,
+      rootName: "plitejs",
+    }),
+  ],
+  initialValue,
+});
+```
+
+The plugin adds a live `yjs` service to `editor.api`.
+
+```tsx
+const admission = editor.api.yjs.admissionStatus();
+const unsubscribe = editor.api.yjs.subscribeAdmissionStatus(renderStatus);
+
+editor.api.yjs.setCursorData({ name: "Ada" });
+editor.api.yjs.syncSelection();
+```
+
+Give collaborator metadata one runtime validator when the app needs an exact
+cursor shape. The installed plugin carries that type through its API and React
+hooks; reads never take a caller-selected generic.
+
+```tsx
+type CursorData = {
+  color: string;
+  name: string;
+};
+
+const Collaboration = yjs({
+  cursorData: {
+    validate: (value): value is CursorData =>
+      typeof value === "object" &&
+      value !== null &&
+      "color" in value &&
+      typeof value.color === "string" &&
+      "name" in value &&
+      typeof value.name === "string",
+  },
+  doc,
+  initialReady: true,
+  awareness,
+});
+
+const editor = createEditor({
+  plugins: [Collaboration] as const,
+  initialValue,
+});
+
+const cursors = editor.api.yjs.remoteCursors();
+```
+
+Invalid remote metadata is omitted from the cursor while its selection remains
+available. Invalid local metadata is rejected before it reaches awareness.
+
+## Readiness and room initialization
+
+`doc` and `initialReady` are required. Use `initialReady: true` only after
+local or persistent loading for that document generation is complete. A remote
+provider can expose readiness through a small app-local adapter:
+
+```tsx
+import type { YjsInitialReadiness } from "plitejs/yjs";
+
+const createHocuspocusInitialReadiness = (
+  provider: HocuspocusProvider
+): YjsInitialReadiness => ({
+  doc: provider.document,
+  getSnapshot: () => provider.synced,
+  subscribe(listener) {
+    const onSynced = () => listener();
+    provider.on("synced", onSynced);
+
+    let active = true;
+    return () => {
+      if (!active) return;
+      active = false;
+      provider.off("synced", onSynced);
+    };
+  },
+});
+```
+
+For a normal server-backed room, persist a canonical Yjs update on the server
+and omit `seed`. `seed: true` is an app assertion that this binding is the one
+exclusive initializer for a new empty room. Provider synchronization does not
+elect a seed owner. Two peers that independently insert identical initial JSON
+can converge to duplicate content.
+
+The binding reports `waiting`, `ready`, or `error` through
+`admissionStatus()`. Document and shared-effect commits are rejected before
+publication until admission is ready. After fixing a recoverable import error,
+call `retryImport()`.
+
+## Authored changes
+
+Install `authored` before joining the shared document. Every peer uses the same retained-history policy required by the application and resolves its own authenticated author.
+
+```tsx
+import { authored } from "plitejs/authored";
+import { history } from "plitejs/history";
+import { yjs } from "plitejs/yjs";
+
+const editor = createEditor({
+  plugins: [
+    authored({
+      authorId: () => session.user.id,
+      retainHistory: true,
+    }),
+    history(),
+    yjs({
+      doc: provider.document,
+      initialReady: createHocuspocusInitialReadiness(provider),
+      rootName: "article",
+    }),
+  ],
+  initialValue,
+});
+```
+
+The adapter transports authored operation batches and accepted-position checkpoints through the existing shared-effect log. A remote batch applies its authored metadata, document content, and registered effects in one transaction. Duplicate delivery is idempotent; malformed identities, missing checkpoints, and document mismatches fail without publishing partial content.
+
+Concurrent proposals and decisions retain their causal heads. A blocked decision stays explicit until the application resolves the reported conflict component. Compaction preserves active proposals, decisions, pinned anchors, retained content required by policy, and offline tails; a stale peer cannot resurrect discarded state.
+
+Use [Plite Authored Changes](/docs/plite/libraries/plite-authored) for views, decisions, and retained-history revert.
+
+## Schema identity
+
+Each collaboration document records one non-null compiled schema identity for
+its primary and named roots. An editor joins only when its schema kind,
+fingerprint, and named lineage fields match. A nonempty Yjs document without
+schema metadata fails closed instead of guessing how to decode its content. The
+single app-selected binding that uses `seed: true` records its derived or named
+identity atomically with the initial document.
+
+Install the final compiled schema before joining a collaboration document. A claimed,
+populated room keeps that schema identity for its lifetime; local
+reconfiguration cannot rewrite the room in place. Run an explicit versioned
+document migration before joining a new or offline room, then connect every
+peer with the migrated schema identity. Changing schema semantics without a
+version bump is rejected.
+
+## Multi-root documents
+
+`rootName` names one collaboration document, not only its primary root. The
+adapter stores primary children at `rootName` and named roots in the associated
+`${rootName}:roots` registry. Create the editor with the complete
+`EditorDocumentValue`; named roots synchronize even when no React root view is
+mounted.
+
+```tsx
+const editor = createEditor({
+  plugins: [
+    history(),
+    yjs({
+      doc: provider.document,
+      initialReady: createHocuspocusInitialReadiness(provider),
+      rootName: "article",
+    }),
+  ],
+  initialValue: {
+    children: [{ type: "paragraph", children: [{ text: "Body" }] }],
+    roots: {
+      header: [{ type: "paragraph", children: [{ text: "Draft" }] }],
+    },
+  },
+});
+```
+
+One Plite commit that changes several roots becomes one Yjs transaction and one
+Plite history batch. Remote batches fit the complete document through the
+compiled schema, including shared and exclusive content-root ownership.
+Awareness selections carry their root key; ranges whose anchor and focus
+belong to different roots are rejected.
+
+## Shared effects
+
+State fields declared with `collab: "shared"` synchronize through keyed Yjs
+effects. Their descriptors are registered with the editor plugin.
+
+Install standalone shared effects as keyed editor-plugin resources so every
+peer can decode the same key and codec version. History and Yjs discover the
+installed descriptors. Shared effect values must encode to JSON-compatible
+data.
+
+```tsx
+import { createEditor, definePlugin, defineEffect, valueCodecs } from "plitejs";
+import { yjs } from "plitejs/yjs";
+
+const incrementCounter = defineEffect<number>({
+  codec: valueCodecs.number,
+  collab: "shared",
+  collabReplay: "live",
+  key: "counter.increment",
+});
+
+const counterEffects = definePlugin("counter-effects", {
+  effectTypes: [incrementCounter],
+});
+
+const editor = createEditor({
+  plugins: [counterEffects, yjs({ doc, initialReady: true })],
+});
+```
+
+Every standalone shared effect declares `collabReplay`. Use `"live"` for an
+event delivered once to active peers. Use `"latest"` only for an absolute,
+idempotent restore value. Shared state-field transitions use `"latest"`
+automatically and checkpoint the field's current absolute value. A `"live"`
+effect must not be the sole source of durable shared state. A custom `"latest"`
+effect must define `collabSnapshot(state)` to capture that absolute value;
+compaction never treats the last event as a state snapshot.
+
+Configure one peer as the effect-log compaction authority when the shared
+document retains a long-running session.
+
+```tsx
+yjs({
+  doc,
+  initialReady: true,
+  sharedEffectCompaction: {
+    authorityId: "collaboration-service",
+    threshold: 256,
+  },
+});
+```
+
+Configure exactly one stable authority identity for each collaboration document and
+reuse it when that authority restarts with a new Y.Doc client generation. Each
+`"live"` event records the peers active in its causal Yjs state; durable peer
+acknowledgements preserve an unknown-codec retry across reconnects without
+admitting late joiners. Once every live recipient acknowledges a prefix, the
+authority writes its checkpoint, per-source watermarks, and prefix deletion in
+one Yjs transaction. Late joiners restore `"latest"` values before the remaining
+tail; expired `"live"` events do not replay. Checkpoint restoration is atomic,
+so a missing checkpoint codec keeps the checkpoint and every later event
+pending until the descriptor is installed. Installing the descriptor retries
+the pending checkpoint without waiting for more Yjs traffic.
+
+Compaction preserves delivery rather than guessing that a silent peer is dead.
+Graceful teardown publishes an inactive acknowledgement. When the host knows a
+peer crashed permanently, the authority can retire that Y.Doc client
+generation explicitly:
+
+```tsx
+editor.api.yjs.retireSharedEffectPeer(crashedYDocClientId);
+```
+
+The durable tombstone releases only that generation's delivery obligation. A
+returning collaborator joins with a fresh Y.Doc client generation, restores
+`"latest"` state from the checkpoint, and never receives the retired live
+tail. A different stable authority identity is rejected. Intentional ownership
+transfer belongs to an explicit host-fenced document migration.
+
+Document changes and effects produced by one Yjs transaction enter Plite in
+one trusted remote update. Reapplying the same Yjs update does not replay an
+effect twice.
+
+Remote Yjs event batches compile against the synchronized mirror into
+root-scoped `DocumentChange` ranges and apply with `tx.changes.apply(...)`.
+Routine imports decode only touched top-level nodes. Unsupported projected
+content or root metadata takes an explicit traced full-diff fallback.
+
+Outbound commits lower `commit.changes` directly into affected Yjs regions.
+Compatible nodes and uniquely derived relocated subtrees keep their Yjs node
+identities; structural regions use the canonical change as their only
+execution authority. Canonical split changes lower through bounded affected
+ranges.
+
+## React hooks
+
+Use the React subpath for admission state and remote cursors. Read provider
+connection state from the provider itself.
+
+```tsx
+import {
+  useYjsAdmissionStatus,
+  useYjsRemoteCursor,
+  useYjsRemoteCursorGeometry,
+  useYjsRemoteCursorIds,
+} from "plitejs/yjs/react";
+```
+
+`useYjsAdmissionStatus(editor)` supplies a stable `waiting`, `ready`, or
+`error` snapshot. Keep a mounted `Editable` read-only until it is ready and
+set `aria-busy` while it waits.
+
+Remote cursor UI reads stable membership with
+`useYjsRemoteCursorIds`, one cursor with `useYjsRemoteCursor`, and exact-view
+geometry with `useYjsRemoteCursorGeometry(editor, clientId, { editableRef })`.
+These hooks require a binding configured with awareness.
+
+## Observe remote selections
+
+Use `editor.api.yjs.subscribeRemoteCursors(listener)` to invalidate custom
+remote selection paint only when resolved remote cursors change. Read the
+current snapshot with `editor.api.yjs.remoteCursors()`. The subscription
+returns idempotent cleanup; retire it with the owning view.
+
+## Provider boundary
+
+Provider packages stay out of `plitejs/yjs`. Your app chooses Hocuspocus,
+WebSocket, WebRTC, IndexedDB, or a custom provider. It passes only the exact
+`Y.Doc`, readiness source, and optional awareness capability into the binding.
+
+The Hocuspocus example observes `provider.synced` through an app-local
+readiness adapter and keeps connection, authentication, room naming,
+persistence, cleanup, and server scaling outside the Plite package. Before
+disconnecting a shared provider, call `clearSelection()`; after reconnecting,
+call `syncSelection()`.
+
+## Custom canonical adapters
+
+`YjsUpdatePolicy` remains public for host-owned adapters that import a
+canonical `DocumentChange` without installing the built-in Yjs binding:
+
+```tsx
+import { DocumentChange } from "plitejs";
+import { YjsUpdatePolicy } from "plitejs/yjs";
+
+editor.update(YjsUpdatePolicy.remote, (tx) => {
+  tx.changes.apply(DocumentChange.fromJSON(message.change));
+});
+```
+
+The policy marks the commit as a remote Yjs import so history and outbound
+subscriptions apply the same lifecycle rules as the built-in binding.
+
+## Proof
+
+The package is covered by change, selection, awareness, provider, React, and
+structural soak contracts under `packages/plitejs/test/yjs`. Plate plugin and
+React integration contracts live under `packages/platejs/test/yjs`.
+
+```sh
+pnpm --filter plitejs test:partition:yjs
+pnpm --filter platejs test:partition:yjs
+pnpm --filter platejs test:partition:yjs-react
+```
+
+Run the focused Chromium rows for editor convergence, the Plate collaboration
+example, and the app-owned Hocuspocus boundary:
+
+```sh
+pnpm --filter plite test:plite-browser:chromium \
+  tests/plite-browser/donor/examples/yjs-collaboration.test.ts \
+  tests/plite-browser/donor/examples/collaboration-demo.test.ts \
+  tests/plite-browser/donor/examples/yjs-hocuspocus.test.ts
+```
+
+The collaboration row covers remote edits, offline work, reconnect, and
+Plite History undo/redo. The Plate collaboration example covers independent
+providers, cursor rendering, schema recovery, mobile layout, and teardown. The
+Hocuspocus row creates distinct provider-backed pages in manual-connect mode and
+proves that unsynced documents reject local publication. It does not test a
+production Hocuspocus server, authentication, persistence, or deployment
+availability; those remain host-app infrastructure.
+
+## Related docs
+
+- [Canonical Change Substrate](../walkthroughs/07-canonical-change-substrate)
+- [Plite History](./plite-history)
+- [Plite React](./plite-react)

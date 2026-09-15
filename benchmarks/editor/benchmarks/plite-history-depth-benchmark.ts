@@ -31,7 +31,7 @@ const paragraph = (text: string): Element => ({
 
 const rows = [100, 1000].map((depth) => {
   const editor = createEditor({
-    extensions: [history({ maxDepth: depth })],
+    plugins: [history({ maxDepth: depth })],
     initialValue: [paragraph('body')],
   });
 

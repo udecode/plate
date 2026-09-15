@@ -19,7 +19,7 @@ Editing behavior is the path from a key press or transaction command to the fina
 
 ## Choose the right surface
 
-Most editing behavior belongs in `plugin.rules`. Reach for an explicit transaction command or Plite extension only when the rule table cannot express the behavior.
+Most editing behavior belongs in `plugin.rules`. Reach for an explicit transaction command or Plate plugin only when the rule table cannot express the behavior.
 
 | Need | Use |
 | --- | --- |
@@ -30,20 +30,20 @@ Most editing behavior belongs in `plugin.rules`. Reach for an explicit transacti
 | Control mark or inline boundaries while typing and moving. | `rules.selection` |
 | Apply one plugin's rules to another node type. | `rules.match` |
 | Run a product-specific mutation that rules cannot express. | A constructor `update` contribution or an explicit `editor.update(...)` |
-| Compose reusable Enter, Delete, or text-input behavior. | A Plite command handler declared through the constructor's root `commands` field |
+| Compose reusable Enter, Delete, or text-input behavior. | A Plate command handler declared through the constructor's root `commands` field |
 
 Rules keep common editor policy close to the plugin that owns the node. Transaction commands are the right tool for toolbar actions and behavior that depends on app state.
 
 ## Runtime pipeline
 
-Plate resolves plugins first, then installs the Plite schema and extension fragments contributed by those plugins.
+Plate resolves plugins first, then installs the Plate schema and plugin fragments contributed by those plugins.
 
 | Layer | Owner | Handles |
 | --- | --- | --- |
 | `OverridePlugin` | Core runtime | Node flags, break rules, delete rules, merge rules, normalize rules. |
 | `AffinityPlugin` | Core runtime | `rules.selection` for mark and inline boundaries. |
 | Feature plugins | Feature packages | Default rules for headings, callouts, lists, links, tables, marks, and other nodes. |
-| App plugins | Your app | Local rules, explicit transaction commands, and Plite command or correction extensions. |
+| App plugins | Your app | Local rules, explicit transaction commands, and Plate command or correction plugins. |
 
 The normal flow is:
 
@@ -115,7 +115,7 @@ Plate checks collapsed `deleteBackward` in this order:
 | Cursor at the start of the current block | `delete.start` | Runs `reset`, `lift`, or falls through. |
 | Current block is empty | `delete.empty` | Runs `reset` or falls through. |
 | Cursor is at the start of the document | Core default | Resets the first block. |
-| Nothing handled the case | Plite command | Delegates to the built-in delete command. |
+| Nothing handled the case | Plate command | Delegates to the built-in delete command. |
 
 Use `start: 'reset'` for formatted text blocks that should become paragraphs before they merge into the previous block.
 
@@ -135,9 +135,9 @@ Use `start: 'lift'` for nested blocks that should move out one ancestor level.
 
 ```tsx title="plugins.tsx" showLineNumbers
 import { schema } from 'platejs';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const QuoteItemPlugin = definePlatePlugin('quoteItem', {
+export const QuoteItemPlugin = definePlugin('quoteItem', {
   rules: {
     delete: {
       start: 'lift',
@@ -160,7 +160,7 @@ deletion can still enter the merge pipeline below.
 
 Merge behavior decides whether two nodes can join and whether empty nodes at the boundary disappear.
 
-`tx.nodes.merge(...)` evaluates Plite's internal
+`tx.nodes.merge(...)` evaluates Plate's internal
 `editorReads.nodes.shouldMergeNodesRemovePrevNode` descriptor before it applies
 the merge. Plate's merge-rule middleware adds three important guards:
 
@@ -206,7 +206,7 @@ export const StableCalloutPlugin = CalloutPlugin.configure({
 
 ## Normalize behavior
 
-`rules.normalize` runs during Plite normalization.
+`rules.normalize` runs during Plate normalization.
 
 Use `normalize.removeEmpty` for elements that should not exist without text content. Links use this shape because an empty link has no useful editing surface.
 
@@ -223,7 +223,7 @@ export const AppLinkPlugin = LinkPlugin.configure({
 ```
 
 Keep normalization rules boring. If a node needs a richer structural repair,
-write a convergent Plite correction and contribute it through
+write a convergent Plate correction and contribute it through
 the constructor's root `corrections` field so the behavior is explicit and
 testable.
 
@@ -233,14 +233,14 @@ testable.
 
 | Affinity | Use for |
 | --- | --- |
-| `default` | Normal Plite boundary behavior. |
+| `default` | Normal Plate boundary behavior. |
 | `directional` | Links and highlights where cursor direction decides whether typed text stays inside. |
-| `outward` | Comment and suggestion marks where edge typing should leave the mark. |
+| `outward` | Annotation marks where edge typing should leave the mark. |
 | `hard` | Boundaries that should take an extra arrow-key step to cross. |
 
 Element behavior also affects editing. Plate compiles `schema.element.inline`,
 `schema.element.void`, `schema.element.selectable`, and the markable-inline void
-kind into Plite's schema before selection and transaction logic runs.
+kind into Plate's schema before selection and transaction logic runs.
 
 ## Recipes
 
@@ -268,8 +268,34 @@ For list metadata and code-block children, use `rules.match` so the feature plug
 | `rules.normalize` | Core rule engine plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesnormalize) |
 | `rules.selection` | Affinity core plugin plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesselection) |
 | `rules.match` | Core rule lookup plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesmatch) |
-| `tx.nodes.merge(...)` | Plite transaction command | [Transforms](/docs/plite/api/transforms#txnodesmergeoptions) |
-| `editorReads.nodes.shouldMergeNodesRemovePrevNode` | Internal Plite descriptor extended by Plate merge-rule middleware | [Plugin Rules](/docs/plugin-rules#rulesmerge) |
+| `tx.nodes.merge(...)` | Plate transaction command | [Transforms](/docs/api/editor-transforms#txnodesmergeoptions) |
+| `editorReads.nodes.shouldMergeNodesRemovePrevNode` | Internal Plate descriptor extended by Plate merge-rule middleware | [Plugin Rules](/docs/plugin-rules#rulesmerge) |
 | `tx.table.merge()` | Table feature package | [Table](/docs/table#editing-behavior) |
 
-Done. Rules describe the policy; transaction commands and corrections do the work.
+
+## Correction timing
+
+Commands read their own draft writes. Construct the intended valid shape before
+reading it again; corrections run at transaction closeout. Related writes share
+one `editor.update(...)` and publish one immutable commit.
+
+Each correction declares the node event that can invalidate its rule:
+`children`, `content`, or `properties`. Corrections begin from changed ranges.
+Further relevant writes queue affected entries in a bounded worklist, so a local
+edit does not require a whole-document scan. Each correction must converge and
+repair a concrete violation with transaction methods.
+
+Use `tx.nodes.unset('url', { at })` to delete an optional field. Valid property
+values are determined by the installed schema. Imported `DocumentChange` values
+must validate against that schema; they are not accepted for later repair.
+
+### Whole-document repair
+
+```ts
+editor.update.value.repair();
+```
+
+Call this when loaded data or an installed correction needs an all-root
+maintenance pass. It starts a history-skipped update, scans the primary document
+and named roots, and publishes nothing for an already canonical value. It cannot
+run inside another update. Ordinary feature commands use changed-range closeout.

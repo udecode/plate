@@ -37,12 +37,12 @@ description: 配置 Plate 插件的键盘快捷键。
 快捷键名称与插件 update method 名称相同时，可以直接链接：
 
 ```tsx title="plugins/signature-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const SignaturePlugin = definePlatePlugin('signature', {
+export const SignaturePlugin = definePlugin('signature', {
   update: ({ tx }) => ({
     insertSignature: () => {
-      tx.text.insert(' - Plate');
+      tx.text.insert(' - EditorRoot');
     },
   }),
 })
@@ -62,9 +62,9 @@ export const SignaturePlugin = definePlatePlugin('signature', {
 只有同名 API 方法存在时，Plate 自动使用 API 路径：
 
 ```tsx title="plugins/inspect-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const InspectPlugin = definePlatePlugin('inspect', {
+export const InspectPlugin = definePlugin('inspect', {
   api: ({ editor }) => ({
     logText: () => {
       editor.api.debug.info('Editor text', editor.read.text.string([]));
@@ -94,9 +94,9 @@ export const InspectPlugin = definePlatePlugin('inspect', {
 需要键盘事件、自定义分支或不适合作为插件方法的行为时，使用 `handler`。不要同时设置 `target`。
 
 ```tsx title="plugins/draft-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const DraftPlugin = definePlatePlugin('draft', {
+export const DraftPlugin = definePlugin('draft', {
   shortcuts: {
     saveDraft: {
       keys: 'mod+s',
@@ -160,9 +160,9 @@ export const AppItalicPlugin = ItalicPlugin.configure({
 一个插件可以声明多个命名快捷键。每个名称应与要调用的方法一致。
 
 ```tsx title="plugins/review-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const ReviewPlugin = definePlatePlugin('review', {
+export const ReviewPlugin = definePlugin('review', {
   update: ({ tx }) => ({
     accept: () => tx.text.insert('Accepted'),
     reject: () => tx.text.insert('Rejected'),
@@ -183,9 +183,9 @@ export const ReviewPlugin = definePlatePlugin('review', {
 快捷键优先级默认为 `0`。多个处理函数使用相同按键时，可以为需要优先执行的快捷键设置更高的 `priority`。
 
 ```tsx title="plugins/priority-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const PriorityPlugin = definePlatePlugin('commandMenu', {
+export const PriorityPlugin = definePlugin('commandMenu', {
   shortcuts: {
     openCommandMenu: {
       keys: 'mod+k',

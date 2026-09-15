@@ -33,7 +33,7 @@ const outputArgument = process.argv.find((argument) =>
 const measuredFiles = [
   'packages/plitejs/scripts/yjs/benchmark-event-change-bridge.ts',
   'packages/plitejs/src/yjs/core/editor-adapter.ts',
-  'packages/plitejs/src/yjs/core/extension.ts',
+  'packages/plitejs/src/yjs/core/plugin.ts',
   'packages/plitejs/src/yjs/core/event-change-bridge.ts',
   'packages/plitejs/src/yjs/core/document.ts',
   'packages/plitejs/src/core/change/root-change.ts',
@@ -83,7 +83,7 @@ const corePhaseDurations = new Map<string, number>();
 const corePhaseCounts = new Map<string, number>();
 const corePhaseIds = new Set([
   'build-change',
-  'notify-extension-change-listeners',
+  'notify-plugin-change-listeners',
   'notify-listeners',
   'run-after-commit-handlers',
   'set-version',
@@ -106,7 +106,7 @@ const corePhaseIds = new Set([
   'runtime-index-publish-changed',
 ]);
 const profilerGlobal = globalThis as typeof globalThis & {
-  __PLITE_REACT_RENDER_PROFILER__?: {
+  __EDITOR_REACT_RENDER_PROFILER__?: {
     acceptsCoreDuration?: (id: string) => boolean;
     record?: (event: {
       duration?: number;
@@ -131,9 +131,9 @@ assert.ok(source);
 assert.ok(target);
 
 const seedMs = performance.now() - seedStartedAt;
-const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
 
-profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
   acceptsCoreDuration: (id) => corePhaseIds.has(id),
   record(event) {
     if (
@@ -317,7 +317,7 @@ const batches = [
   batchTarget.doc.destroy();
   return { blocks, edits, detachedTransactions, syncMs: summarize(samples) };
 });
-profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
 const propertyContexts = [
   ...new Set([100, 1000, 10_000].map((count) => Math.min(count, blockCount))),
 ].flatMap((blocks) =>

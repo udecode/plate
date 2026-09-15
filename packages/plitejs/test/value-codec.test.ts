@@ -6,7 +6,7 @@ import fc from 'fast-check';
 import {
   createEditor,
   defineEffect,
-  defineExtension,
+  definePlugin,
   defineStateField,
   defineValueCodec,
 } from 'plitejs';
@@ -72,8 +72,8 @@ describe('editor value codec contract', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [
-            defineExtension('document-payload', { stateFields: [field] }),
+          plugins: [
+            definePlugin('document-payload', { stateFields: [field] }),
           ] as const,
           initialValue: {
             children: [paragraph('body')],
@@ -128,6 +128,39 @@ describe('editor value codec contract', () => {
     );
   });
 
+  it('decodes explicitly supported previous versions and always writes the current version', () => {
+    const field = defineStateField({
+      initial: () => ({ label: '' }),
+      key: 'document.versioned-payload',
+      persist: defineValueCodec<{ label: string }>({
+        decode(value) {
+          assert.ok(value && typeof value === 'object' && 'label' in value);
+          return { label: String(value.label) };
+        },
+        encode: (value) => value,
+        previousVersions: {
+          1(value) {
+            assert.equal(typeof value, 'string');
+            return { label: value as string };
+          },
+        },
+        version: 2,
+      }),
+    });
+
+    assert.deepEqual(field.deserialize({ value: 'legacy', version: 1 }), {
+      label: 'legacy',
+    });
+    assert.deepEqual(field.serialize({ label: 'current' }), {
+      value: { label: 'current' },
+      version: 2,
+    });
+    assert.throws(
+      () => field.deserialize({ value: 'future', version: 3 }),
+      /Unsupported state field "document.versioned-payload" version 3; expected 1 or 2/
+    );
+  });
+
   it('shares validated immutable subtrees and detaches untrusted frozen inputs', () => {
     const replace = defineEffect<unknown>({ key: 'document.pages.replace' });
     const field = defineStateField({
@@ -149,8 +182,8 @@ describe('editor value codec contract', () => {
     const second = field.serialize({ retained: first.value, added: 'next' });
     assert.equal((second.value as { retained: unknown }).retained, first.value);
     const editor = createEditor({
-      extensions: [
-        defineExtension('pages', {
+      plugins: [
+        definePlugin('pages', {
           stateFields: [field],
           effectTypes: [replace],
         }),
@@ -161,12 +194,49 @@ describe('editor value codec contract', () => {
     const saved = editor.read.value();
     assert.equal(editor.read.getField(field), first.value);
     assert.equal(
-      (saved.meta?.[field.key] as { value: unknown }).value,
+      (saved.meta?.[field.key] as { value: unknown } | undefined)?.value,
       first.value
     );
     assert.equal(JSON.stringify(saved).includes('outside mutation'), false);
     assert.throws(
       () => field.serialize(Object.freeze({ invalid: new Date() })),
+      /JSON-compatible data/
+    );
+  });
+
+  it('detaches initial metadata after registered fields decode', () => {
+    const field = defineStateField({
+      key: 'document.initial-payload',
+      initial: () => null as unknown,
+      persist: jsonCodec,
+    });
+    const fieldValue = { label: 'stored' };
+    const unknownValue = { label: 'unknown' };
+    const editor = createEditor({
+      plugins: [definePlugin('initial-payload', { stateFields: [field] })],
+      initialValue: {
+        children: [paragraph('body')],
+        meta: {
+          [field.key]: { value: fieldValue, version: 1 },
+          unknown: unknownValue,
+        },
+      },
+    });
+
+    fieldValue.label = 'mutated';
+    unknownValue.label = 'mutated';
+
+    assert.deepEqual(editor.read.getField(field), { label: 'stored' });
+    assert.deepEqual(editor.read.value().meta?.unknown, { label: 'unknown' });
+    assert.equal(Object.isFrozen(editor.read.value().meta?.unknown), true);
+    assert.throws(
+      () =>
+        createEditor({
+          initialValue: {
+            children: [paragraph('body')],
+            meta: { unknown: new Date(0) },
+          },
+        }),
       /JSON-compatible data/
     );
   });

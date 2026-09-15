@@ -12,11 +12,11 @@ import {
   findDOMRootRuntime,
   IS_COMPOSING,
 } from '../../dom/internal';
-import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { isSelectAllHotkey } from '../viewport-commands';
 import {
-  shouldModelOwnPlainVerticalDOMCoverageExtension,
-  shouldModelOwnPlainVerticalLargeDocumentExtension,
+  shouldModelOwnPlainVerticalDOMCoveragePlugin,
+  shouldModelOwnPlainVerticalLargeDocumentPlugin,
 } from './dom-coverage-vertical-selection';
 import type { EditableInputController, InputIntent } from './input-state';
 import { getExternalTextHostOwner } from './interaction-owner';
@@ -109,7 +109,7 @@ export const isNestedEditableDOMTarget = (
     : isDOMText(target)
       ? target.parentElement
       : null;
-  const targetEditor = targetElement?.closest('[data-plite-editor="true"]');
+  const targetEditor = targetElement?.closest('[data-editor="true"]');
 
   return Boolean(
     targetEditor &&
@@ -133,8 +133,8 @@ export const getNestedEditableDOMSelectionRoot = (
     : isDOMText(selection?.focusNode)
       ? selection.focusNode.parentElement
       : null;
-  const anchorEditor = anchorElement?.closest('[data-plite-editor="true"]');
-  const focusEditor = focusElement?.closest('[data-plite-editor="true"]');
+  const anchorEditor = anchorElement?.closest('[data-editor="true"]');
+  const focusEditor = focusElement?.closest('[data-editor="true"]');
 
   if (
     anchorEditor &&
@@ -142,7 +142,7 @@ export const getNestedEditableDOMSelectionRoot = (
     anchorEditor !== editorElement &&
     editorElement.contains(anchorEditor)
   ) {
-    return anchorEditor.getAttribute('data-plite-root');
+    return anchorEditor.getAttribute('data-editor-root');
   }
 
   return null;
@@ -190,7 +190,7 @@ export const isInteractiveInternalTarget = (
   }
 
   const control = element.closest(
-    'input, textarea, select, button, [role="button"], [data-plite-editor="true"], [data-plite-root-chrome-ignore="true"]'
+    'input, textarea, select, button, [role="button"], [data-editor="true"], [data-editor-root-chrome-ignore="true"]'
   );
 
   return (
@@ -237,7 +237,7 @@ export const isNativeInternalControlTarget = (
   }
 
   const control = element.closest(
-    'input, textarea, select, button, [role="button"], [data-plite-root-chrome-ignore="true"]'
+    'input, textarea, select, button, [role="button"], [data-editor-root-chrome-ignore="true"]'
   );
 
   return (
@@ -280,12 +280,12 @@ export const classifyKeyboardIntent = ({
   editor,
   event,
   isComposing = false,
-  domStrategyRuntime,
+  viewportRuntime,
 }: {
   editor: ReactRuntimeEditor;
   event: ReactKeyboardEvent<HTMLDivElement>;
   isComposing?: boolean;
-  domStrategyRuntime: unknown;
+  viewportRuntime: unknown;
 }): InputIntent | null => {
   const { nativeEvent } = event;
 
@@ -323,12 +323,12 @@ export const classifyKeyboardIntent = ({
     Hotkeys.isExtendLineBackward(nativeEvent) ||
     Hotkeys.isExtendLineForward(nativeEvent) ||
     getDocumentBoundaryKeyboardMove(nativeEvent) ||
-    shouldModelOwnPlainVerticalLargeDocumentExtension({
-      domStrategyRuntime,
+    shouldModelOwnPlainVerticalLargeDocumentPlugin({
+      viewportRuntime,
       editor,
       event: nativeEvent,
     }) ||
-    shouldModelOwnPlainVerticalDOMCoverageExtension({
+    shouldModelOwnPlainVerticalDOMCoveragePlugin({
       coverage: event.currentTarget
         ? findDOMRootRuntime(event.currentTarget)?.domCoverage
         : undefined,

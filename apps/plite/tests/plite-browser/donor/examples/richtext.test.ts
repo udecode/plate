@@ -2,24 +2,24 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 import {
   assertNoIllegalKernelTransitions,
-  assertPliteBrowserSelectionContract,
-  createPliteBrowserDestructiveEditingGauntlet,
-  createPliteBrowserMarkClickTypingGauntlet,
-  createPliteBrowserMarkTypingGauntlet,
-  createPliteBrowserMixedEditingConformanceGauntlet,
-  createPliteBrowserNavigationTypingGauntlet,
-  createPliteBrowserSemanticEditingConformanceGauntlet,
-  createPliteBrowserToolbarMarkClickTypingGauntlet,
-  createPliteBrowserWarmToolbarArrowGauntlet,
+  assertBrowserSelectionContract,
+  createBrowserDestructiveEditingGauntlet,
+  createBrowserMarkClickTypingGauntlet,
+  createBrowserMarkTypingGauntlet,
+  createBrowserMixedEditingConformanceGauntlet,
+  createBrowserNavigationTypingGauntlet,
+  createBrowserSemanticEditingConformanceGauntlet,
+  createBrowserToolbarMarkClickTypingGauntlet,
+  createBrowserWarmToolbarArrowGauntlet,
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3101';
 const macChromeUserAgent =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36';
 const scrollableEditorCSS = `
-  [data-plite-editor][data-plite-root="main"] {
+  [data-editor][data-editor-root="main"] {
     display: block;
     max-height: 120px;
     overflow-y: auto;
@@ -188,7 +188,7 @@ const getFirstParagraphRightMarginClickPoint = async (root: Locator) =>
     .evaluate((paragraph: HTMLElement) => {
       const paragraphRect = paragraph.getBoundingClientRect();
       const textRects = Array.from(
-        paragraph.querySelectorAll<HTMLElement>('[data-plite-string]')
+        paragraph.querySelectorAll<HTMLElement>('[data-editor-string]')
       ).flatMap((element) => Array.from(element.getClientRects()));
 
       if (textRects.length === 0) {
@@ -219,7 +219,7 @@ const expectVisualCaretAtEndOfFirstBlock = async (root: Locator) => {
     .poll(() =>
       root.evaluate((element: HTMLElement) => {
         const selection = element.ownerDocument.getSelection();
-        const firstBlock = element.querySelector('[data-plite-node="element"]');
+        const firstBlock = element.querySelector('[data-editor-node="element"]');
 
         if (!selection || selection.rangeCount === 0 || !firstBlock) {
           return false;
@@ -341,7 +341,7 @@ const expectCaretVisibleInsideScrollContainer = async (
                 : selection.focusNode instanceof Text
                   ? selection.focusNode.parentElement
                   : null;
-            const textHost = focusElement?.closest('[data-plite-node="text"]');
+            const textHost = focusElement?.closest('[data-editor-node="text"]');
             const range = selection.getRangeAt(0);
             const rangeRect =
               Array.from(range.getClientRects())[0] ??
@@ -572,7 +572,7 @@ const getBrowserUndoHotkey = async (root: Locator) =>
 
 const selectEndOfFirstBlockWithDOMSelection = async (root: Locator) => {
   await root.evaluate((element: HTMLElement) => {
-    const firstBlock = element.querySelector('[data-plite-node="element"]');
+    const firstBlock = element.querySelector('[data-editor-node="element"]');
 
     if (!firstBlock) {
       throw new Error('Missing first block');
@@ -920,7 +920,7 @@ test.describe('On richtext example', () => {
       'Desktop soft-break caret geometry proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -973,7 +973,7 @@ test.describe('On richtext example', () => {
       'Desktop consecutive soft-break geometry proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -1149,7 +1149,7 @@ test.describe('On richtext example', () => {
         editor: 'visible',
       },
     });
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       await editor.selectAll();
@@ -1185,7 +1185,7 @@ test.describe('On richtext example', () => {
         editor: 'visible',
       },
     });
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       await editor.selectAll();
@@ -1220,7 +1220,7 @@ test.describe('On richtext example', () => {
         editor: 'visible',
       },
     });
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       await editor.selectAll();
@@ -1490,7 +1490,7 @@ test.describe('On richtext example', () => {
 
     await page.getByTestId('block-button-center').click();
 
-    await expect(page.locator('[data-plite-editor] p').nth(1)).toHaveCSS(
+    await expect(page.locator('[data-editor] p').nth(1)).toHaveCSS(
       'text-align',
       'center'
     );
@@ -1730,7 +1730,7 @@ test.describe('On richtext example', () => {
       text: 'This is editable ',
     });
 
-    await assertPliteBrowserSelectionContract(editor, {
+    await assertBrowserSelectionContract(editor, {
       domSelection: {
         anchorNodeText: 'This is editable ',
         anchorOffset: 'This is '.length,
@@ -1752,7 +1752,7 @@ test.describe('On richtext example', () => {
     await expect
       .poll(async () => (await editor.get.blockTexts())[0])
       .toBe(originalText);
-    await assertPliteBrowserSelectionContract(editor, {
+    await assertBrowserSelectionContract(editor, {
       domSelection: {
         anchorNodeText: 'This is editable ',
         anchorOffset: 'This is '.length,
@@ -1774,7 +1774,7 @@ test.describe('On richtext example', () => {
       'Desktop Chromium synthetic terminal-order proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -1798,7 +1798,7 @@ test.describe('On richtext example', () => {
 
     try {
       await editor.selection.selectDOM(preCompositionSelection);
-      await assertPliteBrowserSelectionContract(editor, {
+      await assertBrowserSelectionContract(editor, {
         domSelection: {
           anchorNodeText: 'This is editable ',
           anchorOffset: 'This is '.length,
@@ -1866,7 +1866,7 @@ test.describe('On richtext example', () => {
       await editor.undo();
 
       await expect.poll(() => editor.get.modelValue()).toEqual(preCompositionValue);
-      await assertPliteBrowserSelectionContract(editor, {
+      await assertBrowserSelectionContract(editor, {
         domSelection: {
           anchorNodeText: 'This is editable ',
           anchorOffset: 'This is '.length,
@@ -1997,7 +1997,7 @@ test.describe('On richtext example', () => {
         }: { committedText: string; offset: number; steps: string[] }
       ) => {
         const root = element.closest(
-          '[data-plite-editor="true"]'
+          '[data-editor="true"]'
         ) as HTMLElement | null;
         const selection = element.ownerDocument.getSelection();
         const walker = element.ownerDocument.createTreeWalker(
@@ -3391,7 +3391,7 @@ test.describe('On richtext example', () => {
     const mobile = testInfo.project.name === 'mobile';
     const result = await editor.scenario.run(
       'richtext-generated-navigation-typing-gauntlet',
-      createPliteBrowserNavigationTypingGauntlet({
+      createBrowserNavigationTypingGauntlet({
         insertedText: 'G',
         movedSelection: {
           anchor: { path: [0, 6], offset: 1 },
@@ -3456,7 +3456,7 @@ test.describe('On richtext example', () => {
     });
     const result = await editor.scenario.run(
       'richtext-generated-mixed-editing-conformance-gauntlet',
-      createPliteBrowserMixedEditingConformanceGauntlet({
+      createBrowserMixedEditingConformanceGauntlet({
         deleteKey: 'Backspace',
         domCaretAfterDelete: {
           offset: 1,
@@ -3578,7 +3578,7 @@ test.describe('On richtext example', () => {
     ];
     const result = await editor.scenario.run(
       'richtext-generated-destructive-paste-word-delete-gauntlet',
-      createPliteBrowserDestructiveEditingGauntlet({
+      createBrowserDestructiveEditingGauntlet({
         domShape: {
           afterDeleteAfterPaste: {
             blockIndex: 0,
@@ -3692,7 +3692,7 @@ test.describe('On richtext example', () => {
     });
     const result = await editor.scenario.run(
       'richtext-generated-mobile-semantic-editing-conformance-gauntlet',
-      createPliteBrowserSemanticEditingConformanceGauntlet({
+      createBrowserSemanticEditingConformanceGauntlet({
         insertedText: 'M',
         selectionAfterDelete: {
           anchor: { path: [1, 0], offset: 0 },
@@ -4398,7 +4398,7 @@ test.describe('On richtext example', () => {
     });
 
     await page.addStyleTag({
-      content: '[data-plite-editor] h2 { text-transform: uppercase; }',
+      content: '[data-editor] h2 { text-transform: uppercase; }',
     });
     await editor.selectAll();
     await editor.deleteFragment();
@@ -4419,7 +4419,7 @@ test.describe('On richtext example', () => {
     });
 
     const finalSourceCharacterRect = await editor.root
-      .locator('h2 [data-plite-node="text"]')
+      .locator('h2 [data-editor-node="text"]')
       .first()
       .evaluate((node) => {
         const walker = node.ownerDocument.createTreeWalker(
@@ -5243,7 +5243,7 @@ test.describe('On richtext example', () => {
 
     const result = await editor.scenario.run(
       'richtext-generated-mark-typing-gauntlet',
-      createPliteBrowserMarkTypingGauntlet({
+      createBrowserMarkTypingGauntlet({
         hotkey: 'ControlOrMeta+b',
         insertedText: 'MARK',
         selection: {
@@ -5285,7 +5285,7 @@ test.describe('On richtext example', () => {
     });
     const result = await editor.scenario.run(
       'richtext-generated-mark-click-typing-gauntlet',
-      createPliteBrowserMarkClickTypingGauntlet({
+      createBrowserMarkClickTypingGauntlet({
         clickPoint: { path: [1, 2], offset: 6 },
         domCaretAfterInsert: {
           offset: 7,
@@ -5339,7 +5339,7 @@ test.describe('On richtext example', () => {
     });
     const result = await editor.scenario.run(
       'richtext-toolbar-mark-click-caret-conformance',
-      createPliteBrowserToolbarMarkClickTypingGauntlet({
+      createBrowserToolbarMarkClickTypingGauntlet({
         clickPoint: { path: [1, 2], offset: 6 },
         domCaretAfterInsert: {
           offset: 7,
@@ -5512,7 +5512,7 @@ test.describe('On richtext example', () => {
 
     test.setTimeout(60_000);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -5543,13 +5543,13 @@ test.describe('On richtext example', () => {
       runtimeErrors.assertNone();
       expect(
         await page
-          .locator('[data-plite-editor] h1')
+          .locator('[data-editor] h1')
           .filter({ hasText: "Since it's rich text" })
           .count()
       ).toBe(1);
       expect(
         await page
-          .locator('[data-plite-editor] h1')
+          .locator('[data-editor] h1')
           .filter({ hasText: 'This is editable rich text' })
           .count()
       ).toBe(0);
@@ -5584,13 +5584,13 @@ test.describe('On richtext example', () => {
   test('runs toolbar block commands on pointerdown', async ({ page }) => {
     test.setTimeout(60_000);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
       },
     });
-    const root = page.locator('[data-plite-editor]');
+    const root = page.locator('[data-editor]');
     const pointerDown = async (testId: string) => {
       await page.getByTestId(testId).dispatchEvent('pointerdown', {
         button: 0,
@@ -5648,7 +5648,7 @@ test.describe('On richtext example', () => {
   test('ignores a native selection that starts outside the editor and ends inside it', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -5670,7 +5670,7 @@ test.describe('On richtext example', () => {
         element.parentElement?.insertBefore(outside, element);
 
         const editorText = element.querySelector(
-          '[data-plite-string]'
+          '[data-editor-string]'
         )?.firstChild;
         const outsideText = outside.firstChild;
 
@@ -5708,7 +5708,7 @@ test.describe('On richtext example', () => {
       'Desktop null native-selection proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -5781,7 +5781,7 @@ test.describe('On richtext example', () => {
     page,
   }) => {
     test.setTimeout(60_000);
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -5796,7 +5796,7 @@ test.describe('On richtext example', () => {
       await page.getByTestId('block-button-heading-one').click();
       await expect(
         page
-          .locator('[data-plite-editor] h1')
+          .locator('[data-editor] h1')
           .filter({ hasText: 'This is editable rich text' })
       ).toHaveCount(1);
 
@@ -5816,10 +5816,10 @@ test.describe('On richtext example', () => {
       await page.getByTestId('block-button-heading-one').click();
 
       runtimeErrors.assertNone();
-      await expect(page.locator('[data-plite-editor] h1')).toHaveCount(2);
+      await expect(page.locator('[data-editor] h1')).toHaveCount(2);
       await expect(
         page
-          .locator('[data-plite-editor] h1')
+          .locator('[data-editor] h1')
           .filter({ hasText: "Since it's rich text" })
       ).toHaveCount(1);
       await expect
@@ -5970,7 +5970,7 @@ test.describe('On richtext example', () => {
       'Desktop structured cut/paste proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -5989,11 +5989,11 @@ test.describe('On richtext example', () => {
 
       runtimeErrors.assertNone();
       expect(payload.text).toBe('Cut heading');
-      expect(payload.pliteFragment).toBeTruthy();
-      expect(payload.html).toContain('data-plite-fragment');
+      expect(payload.fragment).toBeTruthy();
+      expect(payload.html).toContain('data-editor-fragment');
       expect(payload.types).toEqual(
         expect.arrayContaining([
-          'application/x-plite-fragment',
+          'application/x-editor-fragment',
           'text/html',
           'text/plain',
         ])
@@ -6036,7 +6036,7 @@ test.describe('On richtext example', () => {
   }) => {
     test.setTimeout(60_000);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -6091,7 +6091,7 @@ test.describe('On richtext example', () => {
   }) => {
     test.setTimeout(60_000);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -6143,7 +6143,7 @@ test.describe('On richtext example', () => {
     });
     const result = await editor.scenario.run(
       'richtext-warm-toolbar-mark-arrow-conformance',
-      createPliteBrowserWarmToolbarArrowGauntlet({
+      createBrowserWarmToolbarArrowGauntlet({
         domCaretAfterInsert: {
           offset: 17,
           text: 'This is editableW ',
@@ -6298,7 +6298,7 @@ test.describe('On richtext example', () => {
   }) => {
     test.setTimeout(60_000);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -6311,7 +6311,7 @@ test.describe('On richtext example', () => {
         focus: { path: [0, 0], offset: 4 },
       });
       await page.getByTestId('block-button-center').click();
-      await expect(page.locator('[data-plite-editor] p').first()).toHaveCSS(
+      await expect(page.locator('[data-editor] p').first()).toHaveCSS(
         'text-align',
         'center'
       );
@@ -6325,11 +6325,11 @@ test.describe('On richtext example', () => {
       await page.getByTestId('block-button-center').click();
 
       runtimeErrors.assertNone();
-      await expect(page.locator('[data-plite-editor] p').first()).toHaveCSS(
+      await expect(page.locator('[data-editor] p').first()).toHaveCSS(
         'text-align',
         'center'
       );
-      await expect(page.locator('[data-plite-editor] p').nth(1)).toHaveCSS(
+      await expect(page.locator('[data-editor] p').nth(1)).toHaveCSS(
         'text-align',
         'center'
       );
@@ -6349,7 +6349,7 @@ test.describe('On richtext example', () => {
   }) => {
     test.setTimeout(60_000);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -6364,7 +6364,7 @@ test.describe('On richtext example', () => {
       await page.getByTestId('block-button-bulleted-list').click();
       await expect(
         page
-          .locator('[data-plite-editor] ul')
+          .locator('[data-editor] ul')
           .filter({ hasText: 'This is editable rich text' })
       ).toHaveCount(1);
 
@@ -6379,12 +6379,12 @@ test.describe('On richtext example', () => {
       runtimeErrors.assertNone();
       await expect(
         page
-          .locator('[data-plite-editor] ul')
+          .locator('[data-editor] ul')
           .filter({ hasText: 'This is editable rich text' })
       ).toHaveCount(1);
       await expect(
         page
-          .locator('[data-plite-editor] ul')
+          .locator('[data-editor] ul')
           .filter({ hasText: "Since it's rich text" })
       ).toHaveCount(1);
       await expect
@@ -6405,13 +6405,13 @@ test.describe('On richtext example', () => {
 
     test.setTimeout(60_000);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
       },
     });
-    const root = page.locator('[data-plite-editor]');
+    const root = page.locator('[data-editor]');
     const secondPrefixText =
       "Since it's rich text, you can do things like turn a selection of text ";
     const secondTailText =
@@ -6447,13 +6447,13 @@ test.describe('On richtext example', () => {
   }) => {
     test.setTimeout(60_000);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
       },
     });
-    const root = page.locator('[data-plite-editor]');
+    const root = page.locator('[data-editor]');
     const firstText =
       'This is editable rich text, much better than a <textarea>!';
     const secondText = "Since it's rich text";
@@ -6485,13 +6485,13 @@ test.describe('On richtext example', () => {
   }) => {
     test.setTimeout(60_000);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
       },
     });
-    const root = page.locator('[data-plite-editor]');
+    const root = page.locator('[data-editor]');
 
     try {
       await editor.selection.select({
@@ -6541,13 +6541,13 @@ test.describe('On richtext example', () => {
   }) => {
     test.setTimeout(60_000);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
       },
     });
-    const root = page.locator('[data-plite-editor]');
+    const root = page.locator('[data-editor]');
 
     try {
       await editor.selection.selectAll();
@@ -7138,7 +7138,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await page
-      .locator('[data-plite-editor] p')
+      .locator('[data-editor] p')
       .first()
       .click({ clickCount: 3 });
 
@@ -7198,7 +7198,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await page
-      .locator('[data-plite-editor] p')
+      .locator('[data-editor] p')
       .first()
       .click({ clickCount: 3 });
 
@@ -7239,7 +7239,7 @@ test.describe('On richtext example', () => {
 
     await editor.click();
     await page
-      .locator('[data-plite-editor] p')
+      .locator('[data-editor] p')
       .first()
       .click({ clickCount: 3 });
 
@@ -7268,7 +7268,7 @@ test.describe('On richtext example', () => {
         editor: 'visible',
       },
     });
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       await editor.selectAll();

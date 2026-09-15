@@ -1,11 +1,11 @@
 import { expect, type Locator, test } from '@playwright/test';
 import {
   assertNoIllegalKernelTransitions,
-  createPliteBrowserDropDataGauntlet,
-  createPliteBrowserEditorHarness,
-  createPliteBrowserInternalControlGauntlet,
+  createBrowserDropDataGauntlet,
+  createBrowserEditorHarness,
+  createBrowserInternalControlGauntlet,
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
   withExclusiveClipboardAccess,
 } from '@platejs/test/playwright';
 
@@ -110,7 +110,7 @@ test.describe('editable voids', () => {
       'Native input undo proof needs desktop keyboard shortcuts'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       patterns: ['Could not set focus'],
     });
 
@@ -136,9 +136,9 @@ test.describe('editable voids', () => {
   test('redo restores an inserted editable void child root after undo', async ({
     page,
   }) => {
-    const editors = page.locator('[data-plite-editor="true"]');
+    const editors = page.locator('[data-editor="true"]');
     const outerEditor = editors.first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
@@ -159,7 +159,7 @@ test.describe('editable voids', () => {
     const restoredChildEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .last();
-    const restoredChild = createPliteBrowserEditorHarness(
+    const restoredChild = createBrowserEditorHarness(
       page,
       'editable-voids-restored-child-root',
       restoredChildEditor
@@ -206,9 +206,9 @@ test.describe('editable voids', () => {
       'Native input range-selection proof needs desktop keyboard input'
     );
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const inputElement = page.locator(input);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
@@ -261,9 +261,9 @@ test.describe('editable voids', () => {
   test('restores outer editor selection after editing input inside editable void', async ({
     page,
   }, testInfo) => {
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const inputElement = page.locator(input);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
@@ -326,7 +326,7 @@ test.describe('editable voids', () => {
 
     const result = await editor.scenario.run(
       'editable-voids-generated-internal-control-gauntlet',
-      createPliteBrowserInternalControlGauntlet({
+      createBrowserInternalControlGauntlet({
         controlSelector: input,
         controlValue: 'Typing',
         followUpText: 'Outer ',
@@ -359,9 +359,9 @@ test.describe('editable voids', () => {
       'Desktop editable-void keyboard proof'
     );
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const inputElement = page.locator(input);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
@@ -423,9 +423,9 @@ test.describe('editable voids', () => {
   test('ignores selectionchange noise from input inside editable void', async ({
     page,
   }) => {
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const inputElement = page.locator(input);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
@@ -454,7 +454,7 @@ test.describe('editable voids', () => {
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -478,16 +478,16 @@ test.describe('editable voids', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop Backspace proof');
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
     );
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -500,7 +500,7 @@ test.describe('editable voids', () => {
     await childEditor.evaluate((element: HTMLElement) => element.focus());
     await page.keyboard.press('Backspace');
 
-    await expect(page.locator('.plite-editable-voids-card')).toHaveCount(1);
+    await expect(page.locator('.editor-editable-voids-card')).toHaveCount(1);
     await expect
       .poll(() => outer.get.modelText())
       .toContain(
@@ -524,16 +524,16 @@ test.describe('editable voids', () => {
   test('keeps same-runtime child root focused inside editable void', async ({
     page,
   }, testInfo) => {
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
     );
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -595,7 +595,7 @@ test.describe('editable voids', () => {
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -695,7 +695,7 @@ test.describe('editable voids', () => {
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -791,16 +791,16 @@ test.describe('editable voids', () => {
       'Keyboard boundary proof uses desktop arrow behavior'
     );
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
     );
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -869,16 +869,16 @@ test.describe('editable voids', () => {
       'Desktop vertical content-root proof'
     );
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
     );
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -965,16 +965,16 @@ test.describe('editable voids', () => {
       'Desktop projected selection proof'
     );
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
     );
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -1088,16 +1088,16 @@ test.describe('editable voids', () => {
       'Desktop child-root unfocus proof uses real mouse clicks'
     );
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
     );
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -1171,17 +1171,17 @@ test.describe('editable voids', () => {
       'Rich HTML clipboard proof needs desktop keyboard shortcuts'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
     );
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -1230,17 +1230,17 @@ test.describe('editable voids', () => {
       'Desktop child-root copy/cut proof needs clipboard events'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
     );
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -1263,10 +1263,10 @@ test.describe('editable voids', () => {
 
       runtimeErrors.assertNone();
       expect(copyPayload.text).toBe('This is editable rich');
-      expect(copyPayload.pliteFragment).toBeTruthy();
+      expect(copyPayload.fragment).toBeTruthy();
       expect(copyPayload.types).toEqual(
         expect.arrayContaining([
-          'application/x-plite-fragment',
+          'application/x-editor-fragment',
           'text/html',
           'text/plain',
         ])
@@ -1278,7 +1278,7 @@ test.describe('editable voids', () => {
       const cutPayload = await childRoot.clipboard.cutNativeEventPayload();
 
       expect(cutPayload.text).toBe('This is editable rich');
-      expect(cutPayload.pliteFragment).toBeTruthy();
+      expect(cutPayload.fragment).toBeTruthy();
       await expect
         .poll(() => childRoot.get.modelText())
         .toContain(' text, much better than a <textarea>!');
@@ -1310,17 +1310,17 @@ test.describe('editable voids', () => {
       'Desktop child-root drop proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
     );
-    const childRoot = createPliteBrowserEditorHarness(
+    const childRoot = createBrowserEditorHarness(
       page,
       'editable-voids-child-root',
       childEditor
@@ -1342,7 +1342,7 @@ test.describe('editable voids', () => {
 
       const result = await childRoot.scenario.run(
         'editable-voids-child-root-drop-data-gauntlet',
-        createPliteBrowserDropDataGauntlet({
+        createBrowserDropDataGauntlet({
           html: '<p>Dropped <strong>World</strong></p>',
           plainText: 'Dropped World',
           textAfterDrop,
@@ -1386,12 +1386,12 @@ test.describe('editable voids', () => {
       'Desktop cross-editor DOM selection proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const childEditor = page
       .locator('[aria-label="Editable void rich content"]')
       .first();
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'editable-voids-outer',
       outerEditor
@@ -1409,10 +1409,10 @@ test.describe('editable voids', () => {
           '[aria-label="Editable void rich content"]'
         );
         const outerText = outerElement.querySelector(
-          '[data-plite-string]'
+          '[data-editor-string]'
         )?.firstChild;
         const childRootText = childRootElement?.querySelector(
-          '[data-plite-string]'
+          '[data-editor-string]'
         )?.firstChild;
 
         if (!outerText || !childRootText) {

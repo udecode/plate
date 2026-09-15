@@ -6,13 +6,39 @@ This is the entrypoint for the compiled agent research layer.
 
 - [Feature review ledger](reviews.md): current-source membership, preliminary
   payoff, dependency order, AI last, and independent review/adoption/proof states.
+  Only Plite core, Plite view architecture and Plate core share review groups;
+  individual features retain their own reviews.
+- [Core architecture review groups](schema.md#core-architecture-review-groups):
+  group lookup, queue counts and per-question records.
 - [Review-history schema and commands](schema.md#review-history): automatic
   repeat review, immutable records, source reuse and cross-run research lookup.
+- [Reads and demand-driven invalidation](decisions/reads-demand-driven-invalidation.md):
+  canonical commit membership, subscription demand, and isolated scale evidence.
+- [Plite core ownership](decisions/plite-core-ownership.md): four-question audit;
+  retain document/view and extension ownership, pursue removing unused facets
+  and default-only public command evaluation.
+- [Plite view ownership](decisions/plite-view-ownership.md): five-question audit;
+  pursue removing the Widget geometry carrier and public React Runtime handle;
+  keep selection, native input and accessibility responsibilities distinct.
+- [Collaboration ownership](decisions/collaboration-ownership.md): separate
+  transport and presence effects from transaction acceptance; consolidate Yjs
+  configuration while retaining native synchronization and cursor mapping.
+- [External text ownership](decisions/external-text-ownership.md): retain the
+  narrow adapter contract; remove deferred canonical feedback that can replay
+  a correction over a later update. Includes mounted reproduction and a
+  provisional synchronous candidate.
+- [DOCX conversion fidelity](decisions/documents-conversion-fidelity.md):
+  source authority, one-snapshot export and a shared format owner;
+  [seven-corpus source comparison](sources/docx-interoperability-oss.md) and
+  [remaining design/proof questions](open-questions/documents-conversion-proof.md).
 - [Comments data ownership](decisions/comments-data-ownership.md),
   [code text ownership](decisions/code-text-ownership.md),
   [authored changes](decisions/authored-change-ownership.md),
   [structural comparison](decisions/structural-comparison.md), and
   [performance candidate reuse](decisions/performance-candidate-reuse.md).
+- [Suggestion review semantics](decisions/suggestion-review-semantics.md):
+  retain native authored authority and optional presentation; pursue loading
+  prepared documents and threads without mounted-editor fixture replay.
 - [September 9 performance iteration 2](../plite/research/2026-09-09-editor-performance-iteration-2/README.md),
   [September 10 authored-change research](../plite/research/2026-09-10-authored-changes/README.md),
   and [September 10 structural diff research](../plite/research/2026-09-10-structural-diff-oss/README.md)

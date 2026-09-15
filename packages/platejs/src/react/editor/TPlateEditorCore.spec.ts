@@ -1,10 +1,10 @@
 import { schema } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createEditor as createHeadlessEditor } from '../../lib/editor/withPlite';
-import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
+import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin/definePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
-import { plateDOMExtension } from '../../lib/plugins/dom/plateDOMExtension.internal';
-import { definePlatePlugin } from '../plugin/definePlatePlugin';
+import { plateDOMPlugin } from '../../lib/plugins/dom/plateDOMPlugin.internal';
+import { definePlugin } from '../plugin/definePlugin';
 import { ParagraphPlugin } from '../plugins/paragraph/ParagraphPlugin';
 import { getPlateCorePlugins } from './getPlateCorePlugins.internal';
 import { createEditor } from './withPlate';
@@ -12,11 +12,11 @@ import { createEditor } from './withPlate';
 describe('Editor core package', () => {
   const ReactPlugin = getPlateCorePlugins()[1];
 
-  const MyCustomPlugin = defineBasePlugin('myCustom', {
+  const MyCustomPlugin = defineHeadlessPlugin('myCustom', {
     api: () => ({ myCustomMethod: () => {} }),
   });
 
-  const TextFormattingPlugin = defineBasePlugin('textFormatting', {
+  const TextFormattingPlugin = defineHeadlessPlugin('textFormatting', {
     api: () => ({
       bold: () => {},
       italic: () => {},
@@ -24,27 +24,27 @@ describe('Editor core package', () => {
     }),
   });
 
-  const ListPlugin = defineBasePlugin('list', {
+  const ListPlugin = defineHeadlessPlugin('list', {
     api: () => ({
       createBulletedList: () => {},
     }),
   });
 
-  const TablePlugin = defineBasePlugin('table', {
+  const TablePlugin = defineHeadlessPlugin('table', {
     api: () => ({
       addRow: () => {},
       insertTable: () => {},
     }),
   });
 
-  const ImagePlugin = defineBasePlugin('image', {
+  const ImagePlugin = defineHeadlessPlugin('image', {
     api: () => ({
       insertImage: () => {},
       resizeImage: () => {},
     }),
   });
 
-  const LinkPlugin = definePlatePlugin('link', {
+  const LinkPlugin = definePlugin('link', {
     api: () => ({
       getAttributes: () => ({}),
     }),
@@ -66,19 +66,19 @@ describe('Editor core package', () => {
     });
     expect(baseEditor.plugin(DebugPlugin).api.log).toBeInstanceOf(Function);
     expect(editor.plugin(DebugPlugin).api.log).toBeInstanceOf(Function);
-    expect(
-      Reflect.apply(editor.extension, editor, [plateDOMExtension]).api
-    ).toBe(editor.api.dom);
-    expect(Reflect.apply(editor.extension, editor, [ReactPlugin]).api).toBe(
+    expect(Reflect.apply(editor.plugin, editor, [plateDOMPlugin]).api).toBe(
+      editor.api.dom
+    );
+    expect(Reflect.apply(editor.plugin, editor, [ReactPlugin]).api).toBe(
       editor.api.react
     );
   });
 
   it('keeps the paragraph shortcut valid inside a structural application root', () => {
-    const HeadingPlugin = definePlatePlugin('applicationHeading', {
+    const HeadingPlugin = definePlugin('applicationHeading', {
       schema: { element: schema.element.textBlock() },
     });
-    const SectionPlugin = definePlatePlugin('applicationSection', {
+    const SectionPlugin = definePlugin('applicationSection', {
       schema: {
         element: {
           content: schema.content.elements([HeadingPlugin, ParagraphPlugin], {

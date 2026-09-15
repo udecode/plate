@@ -11,9 +11,9 @@ import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 export const useRuntimeFocusState = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>
+  editor: ReactRuntimeEditor<V, TPlugins>
 ) => {
   const [focused, setFocused] = useState(() => ReactEditor.isFocused(editor));
   const [focusVersion, setFocusVersion] = useState(0);

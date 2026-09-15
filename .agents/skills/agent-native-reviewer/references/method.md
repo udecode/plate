@@ -49,8 +49,7 @@ Use the repository's required runtime and test-value policy. Choose the stronges
 
 ## Dotai Integrations
 
-- Use a durable plan for multi-step audits. Apply native Autogoal for a direct or applicable standing user request, reusing the caller's goal and plan. The first checkpoint must copy
-  agent-native requirements into the plan before implementation.
+- Use a durable plan for multi-step audits. Apply native Autogoal for a direct or applicable standing user request, reusing the caller's goal and plan. Retain applicable agent-native requirements once in the existing plan or linked acceptance record.
 - Use `sync-skills` when a skill, rule, template, or generated mirror crosses
   repo boundaries. Shared behavior belongs in dotai; repo policy stays local.
 - Use `sync-vision` when the missing parity is reusable taste or doctrine, not
@@ -60,8 +59,7 @@ Use the repository's required runtime and test-value policy. Choose the stronges
   optional independent second pass could materially help.
 - Use `hard-cut` when stale compatibility, fake aliases, dead commands, or
   duplicate agent routes should be deleted rather than wrapped.
-- Use `tdd` or `diagnosing-bugs` when the parity gap is a real behavior bug,
-  flaky proof, or unclear failure path.
+- Use `diagnosing-bugs` for an unresolved failure mechanism. Use `tdd` only when explicitly requested and subject to the project test-value policy.
 
 ## Review Process
 

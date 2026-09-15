@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { createEditor, Plate, type Editor } from 'platejs/react';
+import { createEditor, EditorRoot, type Editor } from 'platejs/react';
 import React from 'react';
 
 import { useSelectionFragmentProp } from './useSelectionFragment';
@@ -7,9 +7,9 @@ import { useSelectionFragmentProp } from './useSelectionFragment';
 const createWrapper = (editor: Editor) =>
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
-      <Plate editor={editor} suppressInstanceWarning>
+      <EditorRoot editor={editor} suppressInstanceWarning>
         {children}
-      </Plate>
+      </EditorRoot>
     );
   };
 

@@ -8,17 +8,17 @@ import {
 import { deleteBackward, deleteForward, insertBreak } from '../../../testing';
 import { createEditor } from '../../editor';
 import { createEditorWithEditor } from '../../editor/withPlite';
-import { defineBasePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { BaseParagraphPlugin } from '../paragraph';
 
 describe('OverridePlugin', () => {
   it('publishes a closed Plate schema for elements and text properties', () => {
-    const CalloutPlugin = defineBasePlugin('callout', {
+    const CalloutPlugin = definePlugin('callout', {
       schema: {
         element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
     });
-    const TonePlugin = defineBasePlugin('tone', {
+    const TonePlugin = definePlugin('tone', {
       schema: { mark: { property: property.string() } },
     });
     const editor = createEditor({
@@ -54,7 +54,7 @@ describe('OverridePlugin', () => {
   });
 
   it('selects a previous block void before deleting it', () => {
-    const VoidPlugin = defineBasePlugin('void', {
+    const VoidPlugin = definePlugin('void', {
       schema: { element: { void: 'block' } },
     });
     const editor = createEditor({
@@ -83,7 +83,7 @@ describe('OverridePlugin', () => {
   });
 
   it('removes a selected block void without merging the next block into it', () => {
-    const VoidPlugin = defineBasePlugin('void', {
+    const VoidPlugin = definePlugin('void', {
       schema: { element: { void: 'block' } },
     });
     const editor = createEditor({
@@ -111,7 +111,7 @@ describe('OverridePlugin', () => {
   });
 
   it('handles deleteExit through OverridePlugin command policy', () => {
-    const CalloutPlugin = defineBasePlugin('callout', {
+    const CalloutPlugin = definePlugin('callout', {
       schema: {
         element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
@@ -140,11 +140,11 @@ describe('OverridePlugin', () => {
   });
 
   it('exits a structural application root with one undoable root sibling', () => {
-    const CalloutPlugin = defineBasePlugin('structuralExitCallout', {
+    const CalloutPlugin = definePlugin('structuralExitCallout', {
       schema: { element: schema.element.textBlock() },
       rules: { break: { emptyLineEnd: 'deleteExit' } },
     });
-    const SectionPlugin = defineBasePlugin('structuralExitSection', {
+    const SectionPlugin = definePlugin('structuralExitSection', {
       schema: {
         element: {
           content: schema.content.elements(
@@ -200,7 +200,7 @@ describe('OverridePlugin', () => {
   });
 
   it('leaves document-start deletion inside nested blocks to their owner', () => {
-    const WrapperPlugin = defineBasePlugin('wrapper', {
+    const WrapperPlugin = definePlugin('wrapper', {
       schema: {
         element: {
           content: schema.content.open({
@@ -236,7 +236,7 @@ describe('OverridePlugin', () => {
   });
 
   it('resets the empty block inserted at the start of a splitReset block', () => {
-    const CalloutPlugin = defineBasePlugin('callout', {
+    const CalloutPlugin = definePlugin('callout', {
       schema: {
         element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
@@ -261,11 +261,11 @@ describe('OverridePlugin', () => {
   });
 
   it('resets a nested block to its parent content default', () => {
-    const CalloutPlugin = defineBasePlugin('nestedResetCallout', {
+    const CalloutPlugin = definePlugin('nestedResetCallout', {
       schema: { element: schema.element.textBlock() },
       rules: { break: { splitReset: true } },
     });
-    const SectionPlugin = defineBasePlugin('nestedResetSection', {
+    const SectionPlugin = definePlugin('nestedResetSection', {
       schema: {
         element: {
           content: schema.content.elements(
@@ -312,7 +312,7 @@ describe('OverridePlugin', () => {
   });
 
   it('preserves an empty merge target when its plugin disables removal', () => {
-    const CalloutPlugin = defineBasePlugin('callout', {
+    const CalloutPlugin = definePlugin('callout', {
       schema: {
         element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
@@ -339,12 +339,12 @@ describe('OverridePlugin', () => {
   });
 
   it('preserves plugin-owned empty merge targets by default', () => {
-    const CalloutPlugin = defineBasePlugin('callout', {
+    const CalloutPlugin = definePlugin('callout', {
       schema: {
         element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
     });
-    const MergeAwarePlugin = defineBasePlugin('mergeAware', {
+    const MergeAwarePlugin = definePlugin('mergeAware', {
       rules: { merge: { removeEmpty: true } },
     });
     const editor = createEditor({
@@ -386,7 +386,7 @@ describe('OverridePlugin', () => {
       }),
     });
     const editor = createEditor({
-      extensions: [ListSchema],
+      plugins: [ListSchema],
       initialValue: [
         {
           children: [{ children: [{ text: '' }], type: 'list-item' }],

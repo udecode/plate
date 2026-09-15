@@ -8,8 +8,7 @@ import { authored as nativeAuthored } from 'plitejs/authored';
 it('composes the exact native authored capability with Plate plugins', () => {
   assert.equal(authored, nativeAuthored);
   const editor = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
-    plugins: [BaseParagraphPlugin],
+    plugins: [BaseParagraphPlugin, authored({ authorId: 'alice' })],
     initialValue: [{ type: 'paragraph', children: [{ text: 'Base' }] }],
   });
   let identity = '';
@@ -20,6 +19,9 @@ it('composes the exact native authored capability with Plate plugins', () => {
   assert.deepEqual(editor.read.children(), [
     { type: 'paragraph', children: [{ text: 'Base' }] },
   ]);
+  const details = editor.read.authored.details(identity);
+  assert.equal(details?.change.id, identity);
+  assert.equal(details?.parts.status, 'available');
   assert.equal(
     editor.update.authored.decide({
       action: 'accept',

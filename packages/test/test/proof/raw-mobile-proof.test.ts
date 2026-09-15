@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
 
 import {
-  assertPliteRawMobileProof,
-  PLITE_RAW_MOBILE_SCENARIOS,
-  type PliteRawMobileReceipt,
-  validatePliteRawMobileProof,
+  assertRawMobileProof,
+  RAW_MOBILE_SCENARIOS,
+  type RawMobileReceipt,
+  validateRawMobileProof,
 } from '../../src/proof';
 
 const hash = 'a'.repeat(64);
@@ -12,8 +12,8 @@ const commit = 'b'.repeat(40);
 
 const receipt = (
   platform: 'android-chrome' | 'ios-safari',
-  scenario: (typeof PLITE_RAW_MOBILE_SCENARIOS)[number]
-): PliteRawMobileReceipt => ({
+  scenario: (typeof RAW_MOBILE_SCENARIOS)[number]
+): RawMobileReceipt => ({
   artifacts: {
     video: { path: `${platform}-${scenario.id}.mp4`, sha256: hash },
   },
@@ -53,7 +53,7 @@ const receipt = (
 
 const completeBundle = () => ({
   receipts: (['android-chrome', 'ios-safari'] as const).flatMap((platform) =>
-    PLITE_RAW_MOBILE_SCENARIOS.map((scenario) => receipt(platform, scenario))
+    RAW_MOBILE_SCENARIOS.map((scenario) => receipt(platform, scenario))
   ),
   schemaVersion: 1 as const,
 });
@@ -61,7 +61,7 @@ const completeBundle = () => ({
 describe('raw mobile proof receipts', () => {
   test('accepts the complete direct-Appium Android and iOS matrix', () => {
     expect(
-      validatePliteRawMobileProof({
+      validateRawMobileProof({
         bundle: completeBundle(),
         expectedCommit: commit,
       })
@@ -70,7 +70,7 @@ describe('raw mobile proof receipts', () => {
       ok: true,
     });
     expect(() =>
-      assertPliteRawMobileProof({
+      assertRawMobileProof({
         bundle: completeBundle(),
         expectedCommit: commit,
       })
@@ -87,7 +87,7 @@ describe('raw mobile proof receipts', () => {
       },
     };
 
-    const result = validatePliteRawMobileProof({
+    const result = validateRawMobileProof({
       bundle,
       expectedCommit: commit,
     });
@@ -99,15 +99,15 @@ describe('raw mobile proof receipts', () => {
   test('decodes untrusted bundles without throwing', () => {
     for (const bundle of [null, {}, { receipts: [], schemaVersion: 0 }]) {
       expect(() =>
-        validatePliteRawMobileProof({ bundle, expectedCommit: commit })
+        validateRawMobileProof({ bundle, expectedCommit: commit })
       ).not.toThrow();
       expect(
-        validatePliteRawMobileProof({ bundle, expectedCommit: commit }).ok
+        validateRawMobileProof({ bundle, expectedCommit: commit }).ok
       ).toBe(false);
     }
 
     expect(
-      validatePliteRawMobileProof({
+      validateRawMobileProof({
         bundle: completeBundle(),
         expectedCommit: 'not-a-commit',
       }).issues
@@ -117,7 +117,7 @@ describe('raw mobile proof receipts', () => {
   test('fails closed for missing, proxy, divergent, and duplicate receipts', () => {
     const bundle = completeBundle();
     const [first] = bundle.receipts;
-    const result = validatePliteRawMobileProof({
+    const result = validateRawMobileProof({
       bundle: {
         ...bundle,
         receipts: [
@@ -132,7 +132,7 @@ describe('raw mobile proof receipts', () => {
               },
             ],
             transport: 'agent-browser-ios',
-          } as unknown as PliteRawMobileReceipt,
+          } as unknown as RawMobileReceipt,
           first,
         ],
       },

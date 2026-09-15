@@ -5,17 +5,26 @@ import {
   ContentSlice,
   createEditor,
   defineEditorSchema,
-  defineExtension,
+  definePlugin,
   defineStateField,
   type Descendant,
+  property,
   schema,
   SelectionApi,
   valueCodecs,
 } from 'plitejs';
 
+import { fitSliceChildren, fitSlicePlacements } from '../src/internal';
+
 const paragraph = (text: string) => ({
   children: [{ text }],
   type: 'paragraph' as const,
+});
+
+const cell = (children: Descendant[], variant = 'body') => ({
+  children,
+  type: 'cell' as const,
+  variant,
 });
 
 const portal = (type: 'exclusive-portal' | 'shared-portal', root: string) => ({
@@ -26,6 +35,13 @@ const portal = (type: 'exclusive-portal' | 'shared-portal', root: string) => ({
 
 const ContentRootSchema = defineEditorSchema('schema:content-root-lifecycle', {
   elements: {
+    cell: {
+      content: schema.content.types(
+        ['exclusive-portal', 'paragraph', 'shared-portal'],
+        { default: { type: 'paragraph' }, min: 1 }
+      ),
+      properties: { variant: property.string({ default: 'body' }) },
+    },
     'exclusive-portal': {
       content: schema.content.text({ default: 'text', min: 1 }),
       contentRoots: {
@@ -56,7 +72,7 @@ const ContentRootSchema = defineEditorSchema('schema:content-root-lifecycle', {
   },
   id: 'content-root-lifecycle',
   root: schema.content.types(
-    ['exclusive-portal', 'paragraph', 'shared-portal'],
+    ['cell', 'exclusive-portal', 'paragraph', 'shared-portal'],
     { default: { type: 'paragraph' }, min: 1 }
   ),
   unknown: 'reject',
@@ -68,7 +84,7 @@ const createContentRootEditor = (
   roots: Record<string, Descendant[]>
 ) =>
   createEditor({
-    extensions: [ContentRootSchema],
+    plugins: [ContentRootSchema],
     initialValue: { children, roots },
   });
 
@@ -279,6 +295,149 @@ describe('element-owned root lifecycle', () => {
     ]);
   });
 
+  it('retains roots required by content that survives insertion limits', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('')],
+      maxLength: 3,
+      plugins: [ContentRootSchema],
+    });
+    const slice = ContentSlice.fromJSON({
+      content: [
+        portal('exclusive-portal', 'exclusive:limited'),
+        paragraph('abcdef'),
+      ],
+      openEnd: 0,
+      openStart: 0,
+      roots: { 'exclusive:limited': [paragraph('caption')] },
+    });
+
+    assert.equal(editor.update.slice.replace(slice, { at: [1] }), true);
+    assert.deepEqual(editor.read.children(), [
+      paragraph(''),
+      portal('exclusive-portal', 'exclusive:limited:copy'),
+      paragraph('abc'),
+    ]);
+    assert.deepEqual(editor.read.root('exclusive:limited:copy'), [
+      paragraph('caption'),
+    ]);
+  });
+
+  it("fits a complete slice into one element's exact child interval", () => {
+    const editor = createContentRootEditor(
+      [cell([paragraph('target')], 'header')],
+      {}
+    );
+    const cellKey = editor.key([0]);
+    const slice = ContentSlice.fromJSON({
+      content: [portal('exclusive-portal', 'exclusive:children')],
+      openEnd: 0,
+      openStart: 0,
+      roots: { 'exclusive:children': [paragraph('caption')] },
+    });
+    let applied = false;
+
+    assert.ok(cellKey);
+    editor.update(() => {
+      applied = fitSliceChildren(editor, slice, { at: cellKey });
+    });
+
+    assert.equal(applied, true);
+    assert.equal(editor.key([0]), cellKey);
+    assert.deepEqual(editor.read.children(), [
+      cell([portal('exclusive-portal', 'exclusive:children:copy')], 'header'),
+    ]);
+    assert.deepEqual(editor.read.root('exclusive:children:copy'), [
+      paragraph('caption'),
+    ]);
+  });
+
+  it('fits grouped placements against one shared root pool', () => {
+    const editor = createContentRootEditor(
+      [cell([paragraph('first')]), cell([paragraph('second')])],
+      {}
+    );
+    const firstKey = editor.key([0]);
+    const secondKey = editor.key([1]);
+    const source = ContentSlice.fromJSON({
+      content: [],
+      openEnd: 0,
+      openStart: 0,
+      roots: { 'shared:source': [paragraph('shared')] },
+    });
+    let applied = false;
+
+    assert.ok(firstKey);
+    assert.ok(secondKey);
+    editor.update(() => {
+      applied = fitSlicePlacements(editor, source, {
+        placements: [
+          {
+            at: firstKey,
+            content: [portal('shared-portal', 'shared:source')],
+          },
+          {
+            at: secondKey,
+            content: [portal('shared-portal', 'shared:source')],
+          },
+        ],
+      });
+    });
+
+    assert.equal(applied, true);
+    assert.equal(editor.key([0]), firstKey);
+    assert.equal(editor.key([1]), secondKey);
+    assert.deepEqual(editor.read.children(), [
+      cell([portal('shared-portal', 'shared:source:copy')]),
+      cell([portal('shared-portal', 'shared:source:copy')]),
+    ]);
+    assert.deepEqual(editor.read.root('shared:source:copy'), [
+      paragraph('shared'),
+    ]);
+  });
+
+  it('rolls back grouped placement when a later target fails', () => {
+    const editor = createContentRootEditor(
+      [cell([paragraph('first')]), cell([paragraph('second')])],
+      {}
+    );
+    const firstKey = editor.key([0]);
+    const secondKey = editor.key([1]);
+    const before = editor.read((state) => state.value());
+    const source = ContentSlice.fromJSON({
+      content: [],
+      openEnd: 0,
+      openStart: 0,
+      roots: { 'exclusive:invalid': [paragraph('caption')] },
+    });
+    let applied = true;
+    let commits = 0;
+
+    assert.ok(firstKey);
+    assert.ok(secondKey);
+    editor.subscribeCommit(() => (commits += 1) - 1);
+    editor.update(() => {
+      applied = fitSlicePlacements(editor, source, {
+        placements: [
+          { at: firstKey, content: [paragraph('accepted')] },
+          {
+            at: secondKey,
+            content: [
+              portal('exclusive-portal', 'exclusive:invalid'),
+              portal('exclusive-portal', 'exclusive:invalid'),
+            ],
+          },
+        ],
+      });
+    });
+
+    assert.equal(applied, false);
+    assert.equal(commits, 0);
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      before
+    );
+  });
+
   it('fits an owner-bearing root slice at a collapsed text target', () => {
     const editor = createContentRootEditor([paragraph('target')], {});
     const slice = ContentSlice.fromJSON({
@@ -389,9 +548,9 @@ describe('element-owned root lifecycle', () => {
       persist: valueCodecs.string,
     });
     const editor = createEditor({
-      extensions: [
+      plugins: [
         ContentRootSchema,
-        defineExtension('document-title', { stateFields: [title] }),
+        definePlugin('document-title', { stateFields: [title] }),
       ],
       initialValue: {
         children: [portal('exclusive-portal', 'exclusive:old')],

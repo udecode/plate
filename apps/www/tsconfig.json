@@ -66,13 +66,13 @@
       ],
       "platejs/diff": ["../../packages/platejs/src/diff/index.ts"],
       "platejs/dnd/react": ["../../packages/platejs/src/dnd/react/index.ts"],
-      "platejs/docx": ["../../packages/platejs/src/docx/index.tsx"],
       "platejs/docx/export": [
         "../../packages/platejs/src/docx/export/index.ts"
       ],
       "platejs/docx/import": [
         "../../packages/platejs/src/docx/import/index.ts"
       ],
+      "platejs/docx/paste": ["../../packages/platejs/src/docx/paste/index.ts"],
       "platejs/dom": ["../../packages/platejs/src/dom/index.ts"],
       "platejs/emoji": ["../../packages/platejs/src/emoji/index.ts"],
       "platejs/emoji/react": [
@@ -116,6 +116,9 @@
         "../../packages/platejs/src/pagination/react/index.ts"
       ],
       "platejs/react": ["../../packages/platejs/src/react/index.tsx"],
+      "platejs/react/virtualized": [
+        "../../packages/platejs/src/react/virtualized.tsx"
+      ],
       "platejs/resizable/react": [
         "../../packages/platejs/src/react/features/resizable/index.ts"
       ],
@@ -162,11 +165,15 @@
       "plitejs/hyperscript": [
         "../../packages/plitejs/src/hyperscript/index.ts"
       ],
+      "plitejs/internal": ["../../packages/plitejs/src/internal/index.ts"],
       "plitejs/pagination": ["../../packages/plitejs/src/pagination/index.ts"],
       "plitejs/pagination/react": [
         "../../packages/plitejs/src/pagination/react.tsx"
       ],
       "plitejs/react": ["../../packages/plitejs/src/react/index.ts"],
+      "plitejs/react/virtualized": [
+        "../../packages/plitejs/src/react/virtualized.tsx"
+      ],
       "plitejs/testing": ["../../packages/plitejs/src/testing/index.ts"],
       "plitejs/yjs": ["../../packages/plitejs/src/yjs/index.ts"],
       "plitejs/yjs/react": ["../../packages/plitejs/src/yjs/react/index.ts"],

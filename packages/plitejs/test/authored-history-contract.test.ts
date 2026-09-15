@@ -15,7 +15,7 @@ describe('authored local history', () => {
   for (const pending of [false, true]) {
     it(`replays ${pending ? 'pending' : 'accepted'} property undo and redo without losing writer ownership`, () => {
       const source = createEditor({
-        extensions: [history(), authored({ authorId: 'alice' })],
+        plugins: [history(), authored({ authorId: 'alice' })],
         initialValue: [paragraph('Text')],
       });
       const view = pending
@@ -31,7 +31,7 @@ describe('authored local history', () => {
         { type: 'paragraph', children: [{ text: 'Text', bold: true }] },
       ]);
       const reopened = createEditor({
-        extensions: [authored({ authorId: 'alice' })],
+        plugins: [authored({ authorId: 'alice' })],
         initialValue: JSON.parse(JSON.stringify(source.read.value())),
       });
       const restored = pending
@@ -45,7 +45,7 @@ describe('authored local history', () => {
 
   it('restores each prior status when an accept batch includes an accepted member', () => {
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('A'), paragraph('B')],
     });
     let a = '';
@@ -83,7 +83,7 @@ describe('authored local history', () => {
   it('preserves a dependent pending edit when undoing its parents acceptance', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: () => authorId })],
+      plugins: [history(), authored({ authorId: () => authorId })],
       initialValue: [paragraph('Base')],
     });
     let a = '';
@@ -116,7 +116,7 @@ describe('authored local history', () => {
   it('blocks acceptance undo after a dependent contribution is accepted', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: () => authorId })],
+      plugins: [history(), authored({ authorId: () => authorId })],
       initialValue: [paragraph('Base')],
     });
     let a = '';
@@ -155,7 +155,7 @@ describe('authored local history', () => {
   for (const action of ['accept', 'reject'] as const) {
     it(`undoes and redoes ${action} with retained reviewer operations`, () => {
       const editor = createEditor({
-        extensions: [history(), authored({ authorId: 'alice' })],
+        plugins: [history(), authored({ authorId: 'alice' })],
         initialValue: [paragraph('Base')],
       });
       let id = '';
@@ -182,7 +182,7 @@ describe('authored local history', () => {
         assert.deepEqual(tx.children(), [paragraph('Base draft')]);
       });
       const restored = createEditor({
-        extensions: [authored({ authorId: 'alice' })],
+        plugins: [authored({ authorId: 'alice' })],
         initialValue: JSON.parse(JSON.stringify(editor.read.value())),
       });
       assert.equal(restored.read.authored.change(id)?.status, 'pending');
@@ -204,7 +204,7 @@ describe('authored local history', () => {
 
   it('undoes one amendment and redoes it under the same pending identity', () => {
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base')],
     });
     let id = '';
@@ -231,7 +231,7 @@ describe('authored local history', () => {
     });
     assert.deepEqual(editor.read.children(), [paragraph('Base')]);
     const restored = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: JSON.parse(JSON.stringify(editor.read.value())),
     });
     assert.equal(
@@ -247,7 +247,7 @@ describe('authored local history', () => {
   it('undoes accepted text while preserving a later independent author', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [
+      plugins: [
         authored({ authorId: () => authorId, retainHistory: true }),
         history(),
       ],
@@ -278,7 +278,7 @@ describe('authored local history', () => {
 
   it('rolls back a failed undo without consuming its history batch', () => {
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base')],
     });
     editor.update((tx) => {
@@ -301,7 +301,7 @@ describe('authored local history', () => {
 
   it('keeps merged amendments reversible and rejection atomic after undo', () => {
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base')],
     });
     let id = '';
@@ -341,7 +341,7 @@ describe('authored local history', () => {
   it('refuses to erase a dependent foreign proposal during undo', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: () => authorId })],
+      plugins: [history(), authored({ authorId: () => authorId })],
       initialValue: [paragraph('Base')],
     });
     editor.update((tx) => {
@@ -364,7 +364,7 @@ describe('authored local history', () => {
 
   it('replays successive unmerged undo and redo without creating review decisions', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' }), history()],
+      plugins: [authored({ authorId: 'alice' }), history()],
       initialValue: [paragraph('Base')],
     });
     let id = '';

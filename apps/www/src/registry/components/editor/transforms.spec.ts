@@ -16,12 +16,7 @@ import {
   BasePlaceholderPlugin,
   BaseVideoPlugin,
 } from 'platejs/media';
-import {
-  CodeBlockPlugin,
-  createEditor,
-  definePlatePlugin,
-} from 'platejs/react';
-import { SuggestionPlugin } from 'platejs/suggestion/react';
+import { CodeBlockPlugin, createEditor, definePlugin } from 'platejs/react';
 import { BaseTocPlugin } from 'platejs/toc';
 
 import { linkPlugin } from '@/registry/components/editor/link';
@@ -35,7 +30,7 @@ import {
   insertInlineElement,
 } from './transforms';
 
-const CustomBlockPlugin = definePlatePlugin('customOwner', {
+const CustomBlockPlugin = definePlugin('customOwner', {
   schema: {
     element: { ...schema.element.textBlock(), type: 'customBlock' },
   },
@@ -69,7 +64,6 @@ const createTestEditor = ({
       BaseVideoPlugin,
       BaseColumnPlugin,
       BaseTocPlugin,
-      SuggestionPlugin,
       CustomBlockPlugin,
     ],
     selection,

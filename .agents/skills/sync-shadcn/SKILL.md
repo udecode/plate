@@ -1,5 +1,5 @@
 ---
-description: Sync upstream shadcn docs into Plate with full source inventory, fork-aware planning, review, dashboards, accepted apply and exact baseline accounting.
+description: Sync upstream shadcn docs into Plate with source inventory, fork-aware apply and baseline accounting.
 name: sync-shadcn
 metadata:
   skiller:

@@ -1,18 +1,18 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 const CASE_ID = 'media-caption:file-selection-to-toc-navigation';
-const EDITOR = '[data-plite-editor="true"][contenteditable="true"]';
+const EDITOR = '[data-editor="true"][contenteditable="true"]';
 
 test('media resize handles remain visible over the image caption', async ({
   page,
 }) => {
   await page.goto('/blocks/editor-ai', { waitUntil: 'commit' });
   const editor = page.locator(EDITOR).first();
-  const harness = createPliteBrowserEditorHarness(
+  const harness = createBrowserEditorHarness(
     page,
     'media-caption:resize-hover',
     editor
@@ -45,17 +45,13 @@ test('media resize handles remain visible over the image caption', async ({
 test(CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/editor-ai', { waitUntil: 'commit' });
 
     const editor = page.locator(EDITOR).first();
-    const editorHarness = createPliteBrowserEditorHarness(
-      page,
-      CASE_ID,
-      editor
-    );
+    const editorHarness = createBrowserEditorHarness(page, CASE_ID, editor);
 
     await editorHarness.ready({ editor: 'visible', text: 'sample.pdf' });
 
@@ -84,7 +80,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
     await expect(editor).toBeVisible();
     await expect(mediaHeading).toBeVisible();
 
-    const headingText = mediaHeading.locator('[data-plite-string="true"]');
+    const headingText = mediaHeading.locator('[data-editor-string="true"]');
     const headingBox = await headingText.boundingBox();
 
     expect(headingBox).not.toBeNull();

@@ -4,15 +4,9 @@ import {
   type Element,
   screenReaderAnnouncementEffect,
 } from 'plitejs';
-import type { ReactNode } from 'react';
+import { authored } from 'plitejs/authored';
 
-import {
-  createEditor,
-  Plite,
-  PliteRuntime,
-  usePliteRootEditor,
-  usePliteRuntime,
-} from '../../src/react';
+import { createEditor, EditorRoot, useRootEditor } from '../../src/react';
 import { EditorAnnouncementLiveRegion } from '../../src/react/components/editor-announcement-live-region';
 
 const paragraph = (text: string): Element => ({
@@ -24,11 +18,11 @@ describe('screen-reader announcement live region', () => {
   it('replaces repeated messages so assistive technology observes a mutation', () => {
     const editor = createEditor({ initialValue: [paragraph('body')] });
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <div />
-      </Plite>
+      </EditorRoot>
     );
-    const region = rendered.container.querySelector('[data-plite-announcer]')!;
+    const region = rendered.getByRole('status');
 
     expect(region).toHaveAttribute('aria-atomic', 'true');
     expect(region).toHaveAttribute('aria-live', 'polite');
@@ -55,98 +49,120 @@ describe('screen-reader announcement live region', () => {
   });
 
   it('renders one consumer for all roots of one logical editor', () => {
-    let runtime!: ReturnType<typeof usePliteRuntime>;
-
-    const Runtime = ({ children }: { children: ReactNode }) => {
-      runtime = usePliteRuntime<Value>({
-        initialValue: {
-          children: [paragraph('body')],
-          roots: { header: [paragraph('header')] },
-        },
-      });
-
-      return <PliteRuntime runtime={runtime}>{children}</PliteRuntime>;
-    };
+    const editor = createEditor<Value>({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
     const rendered = render(
-      <Runtime>
-        <Plite>
+      <EditorRoot editor={editor}>
+        <div />
+        <EditorRoot editor={editor} root="header">
           <div />
-        </Plite>
-        <Plite root="header">
-          <div />
-        </Plite>
-      </Runtime>
+        </EditorRoot>
+      </EditorRoot>
     );
 
-    expect(
-      rendered.container.querySelectorAll('[data-plite-announcer]')
-    ).toHaveLength(1);
+    expect(rendered.getAllByRole('status')).toHaveLength(1);
 
     act(() => {
-      runtime.update((tx) => {
+      editor.update((tx) => {
         tx.effects.emit(screenReaderAnnouncementEffect, 'Header updated');
       });
     });
 
-    expect(
-      rendered.container.querySelector('[data-plite-announcer]')
-    ).toHaveTextContent('Header updated');
+    expect(rendered.getByRole('status')).toHaveTextContent('Header updated');
   });
 
-  it('does not add a second consumer when Plite receives its enclosing runtime editor', () => {
-    const Runtime = ({ children }: { children: ReactNode }) => {
-      const runtime = usePliteRuntime<Value>({
-        initialValue: {
-          children: [paragraph('body')],
-          roots: { header: [paragraph('header')] },
-        },
-      });
-
-      return <PliteRuntime runtime={runtime}>{children}</PliteRuntime>;
-    };
+  it('does not add a second consumer for nested views of the same document', () => {
+    const editor = createEditor<Value>({
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
     const SameEditorView = () => {
-      const runtime = usePliteRuntime();
+      const mounted = useRootEditor();
 
       return (
-        <Plite editor={runtime.editor}>
+        <EditorRoot editor={mounted}>
           <div />
-        </Plite>
+        </EditorRoot>
       );
     };
     const SameRootEditorView = () => {
-      const editor = usePliteRootEditor('header');
+      const rootEditor = useRootEditor('header');
 
       return (
-        <Plite editor={editor}>
+        <EditorRoot editor={rootEditor}>
           <div />
-        </Plite>
+        </EditorRoot>
       );
     };
-    const SameRuntimeProvider = ({ children }: { children: ReactNode }) => {
-      const runtime = usePliteRuntime();
-
-      return <PliteRuntime runtime={runtime}>{children}</PliteRuntime>;
-    };
     const rendered = render(
-      <Runtime>
-        <SameRuntimeProvider>
-          <SameEditorView />
-          <SameRootEditorView />
-        </SameRuntimeProvider>
-      </Runtime>
+      <EditorRoot editor={editor}>
+        <SameEditorView />
+        <SameRootEditorView />
+      </EditorRoot>
     );
 
-    expect(
-      rendered.container.querySelectorAll('[data-plite-announcer]')
-    ).toHaveLength(1);
+    expect(rendered.getAllByRole('status')).toHaveLength(1);
+  });
+
+  it('keeps independent authored roots and announcement lifetimes separate', () => {
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('body')],
+    });
+    const accepted = render(
+      <EditorRoot
+        authored={{ intent: 'edit', projection: 'accepted' }}
+        editor={editor}
+      >
+        <div />
+      </EditorRoot>
+    );
+    const proposed = render(
+      <EditorRoot
+        authored={{ intent: 'propose', projection: 'proposed' }}
+        editor={editor}
+      >
+        <div />
+      </EditorRoot>
+    );
+
+    expect(accepted.container.querySelectorAll('[role="status"]')).toHaveLength(
+      1
+    );
+    expect(proposed.container.querySelectorAll('[role="status"]')).toHaveLength(
+      1
+    );
+
+    act(() => {
+      editor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Shared update');
+      });
+    });
+
+    expect(accepted.container).toHaveTextContent('Shared update');
+    expect(proposed.container).toHaveTextContent('Shared update');
+
+    accepted.unmount();
+    act(() => {
+      editor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Still mounted');
+      });
+    });
+    expect(proposed.container).toHaveTextContent('Still mounted');
   });
 
   it('consumes root-editor announcements while the mounted view is read-only', () => {
     const editor = createEditor({ initialValue: [paragraph('body')] });
     const rendered = render(
-      <Plite editor={editor} readOnly>
+      <EditorRoot editor={editor} readOnly>
         <div />
-      </Plite>
+      </EditorRoot>
     );
 
     act(() => {
@@ -155,9 +171,7 @@ describe('screen-reader announcement live region', () => {
       });
     });
 
-    expect(
-      rendered.container.querySelector('[data-plite-announcer]')
-    ).toHaveTextContent('Read-only status');
+    expect(rendered.getByRole('status')).toHaveTextContent('Read-only status');
   });
 
   it('starts a replacement editor from its current commit baseline', () => {

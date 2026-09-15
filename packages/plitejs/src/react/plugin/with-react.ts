@@ -1,10 +1,10 @@
 import {
   type CreateEditorOptions as CoreCreateEditorOptions,
   createEditor as createCoreEditor,
-  defineExtension,
-  type EditorExtensionPortal,
-  type EditorExtensionReference,
-  type EditorExtensionsFromOptions,
+  definePlugin,
+  type PluginPortal,
+  type PluginReference,
+  type PluginsFromOptions,
   type EditorLifecycleErrorSink,
   type EditorUpdateContext,
   type EditorUpdatePolicy,
@@ -12,11 +12,7 @@ import {
   type EditorValueFromOptions,
   type Value,
 } from '../..';
-import type {
-  DOMEditorOptions,
-  DOMExtension,
-  DOMExtensionTypes,
-} from '../../dom';
+import type { DOMEditorOptions, DOMPlugin, DOMPluginTypes } from '../../dom';
 import { dom } from '../../dom';
 import {
   DOMEditor,
@@ -25,17 +21,14 @@ import {
 } from '../../dom/internal';
 import type { AnyEditor } from '../editable/runtime-editor-api';
 
-type AnyDOMExtension =
-  | DOMExtension
-  | DOMExtension<false>
-  | DOMExtension<boolean>;
+type AnyDOMPlugin = DOMPlugin | DOMPlugin<false> | DOMPlugin<boolean>;
 
-/** Options for installing React over one exact DOM extension descriptor. */
-export interface ReactExtensionOptions<
-  TDOMExtension extends AnyDOMExtension = AnyDOMExtension,
+/** Options for installing React over one exact DOM plugin descriptor. */
+export interface ReactPluginOptions<
+  TDOMPlugin extends AnyDOMPlugin = AnyDOMPlugin,
 > {
-  /** DOM extension owned by this React bridge. */
-  dom: TDOMExtension;
+  /** DOM plugin owned by this React bridge. */
+  dom: TDOMPlugin;
 }
 
 /** React capability exposed through `editor.api.react`. */
@@ -52,12 +45,12 @@ const createReactApi = (editor: AnyEditor): ReactApi =>
     isReadOnly: () => DOMEditor.isReadOnly(editor),
   });
 
-const createReactExtension = <const TDOMExtension extends AnyDOMExtension>(
-  domExtension: TDOMExtension
+const createReactPlugin = <const TDOMPlugin extends AnyDOMPlugin>(
+  domPlugin: TDOMPlugin
 ) =>
-  defineExtension('react', {
+  definePlugin('react', {
     api: ({ editor }) => createReactApi(editor),
-    dependencies: [domExtension],
+    dependencies: [domPlugin],
     on: {
       commit(context) {
         if (
@@ -70,48 +63,47 @@ const createReactExtension = <const TDOMExtension extends AnyDOMExtension>(
     },
   });
 
-/** React extension backed by one exact DOM dependency. */
-export type ReactExtension<
-  TDOMExtension extends AnyDOMExtension = DOMExtension,
-> = ReturnType<typeof createReactExtension<TDOMExtension>>;
+/** React plugin backed by one exact DOM dependency. */
+export type ReactPlugin<TDOMPlugin extends AnyDOMPlugin = DOMPlugin> =
+  ReturnType<typeof createReactPlugin<TDOMPlugin>>;
 
 /**
  * Installs the DOM bridge and exposes React focus, read-only, and composition
- * APIs through the editor extension system.
+ * APIs through the editor plugin system.
  */
-export const react = <const TDOMExtension extends AnyDOMExtension>({
-  dom: domExtension,
-}: ReactExtensionOptions<TDOMExtension>): ReactExtension<TDOMExtension> =>
-  createReactExtension(domExtension);
+export const react = <const TDOMPlugin extends AnyDOMPlugin>({
+  dom: domPlugin,
+}: ReactPluginOptions<TDOMPlugin>): ReactPlugin<TDOMPlugin> =>
+  createReactPlugin(domPlugin);
 
-type ReactDefaultExtensions<TExtensions extends readonly unknown[]> = readonly [
-  ...TExtensions,
-  DOMExtension,
-  ReactExtension,
+type ReactDefaultPlugins<TPlugins extends readonly unknown[]> = readonly [
+  ...TPlugins,
+  DOMPlugin,
+  ReactPlugin,
 ];
 type EditorBase<
   V extends Value,
-  TExtensions extends readonly unknown[],
-> = AnyEditor<V, ReactDefaultExtensions<TExtensions>>;
-/** AnyEditor type with Plite React and DOM extensions installed. */
+  TPlugins extends readonly unknown[],
+> = AnyEditor<V, ReactDefaultPlugins<TPlugins>>;
+/** AnyEditor type with the React and DOM plugins installed. */
 export type Editor<
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
-> = Omit<EditorBase<V, TExtensions>, 'api' | 'update'> & {
-  readonly api: EditorBase<V, TExtensions>['api'] &
-    DOMExtensionTypes['api'] & { react: ReactApi };
-  update: EditorBase<V, TExtensions>['update'] & DOMExtensionTypes['update'];
+  TPlugins extends readonly unknown[] = readonly [],
+> = Omit<EditorBase<V, TPlugins>, 'api' | 'update'> & {
+  readonly api: EditorBase<V, TPlugins>['api'] &
+    DOMPluginTypes['api'] & { react: ReactApi };
+  update: EditorBase<V, TPlugins>['update'] & DOMPluginTypes['update'];
 };
 
 /** React-only editor context value used by lower-level provider internals. */
 export type EditorContextValue<V extends Value = Value> = Omit<
   Editor<V>,
-  'extension' | 'update'
+  'plugin' | 'update'
 > & {
-  extension: Editor<V>['extension'] &
-    (<const TExtension extends EditorExtensionReference>(
-      extension: TExtension
-    ) => EditorExtensionPortal<TExtension, V>);
+  plugin: Editor<V>['plugin'] &
+    (<const TPlugin extends PluginReference>(
+      plugin: TPlugin
+    ) => PluginPortal<TPlugin, V>);
   update: Editor<V>['update'] &
     ((
       policy: EditorUpdatePolicy,
@@ -125,53 +117,50 @@ export type EditorContextValue<V extends Value = Value> = Omit<
 /** Options for `createEditor`. */
 export type CreateEditorOptions<
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
-> = Omit<CoreCreateEditorOptions<V, TExtensions>, 'lifecycleErrorSink'> &
+  TPlugins extends readonly unknown[] = readonly [],
+> = Omit<CoreCreateEditorOptions<V, TPlugins>, 'lifecycleErrorSink'> &
   Pick<DOMEditorOptions, 'clipboardFormatKey'> & {
-    lifecycleErrorSink?: EditorLifecycleErrorSink<Editor<V, TExtensions>>;
+    lifecycleErrorSink?: EditorLifecycleErrorSink<Editor<V, TPlugins>>;
   };
 
 export function createEditor<
   const TOptions extends CreateEditorOptions<any, readonly unknown[]> & {
-    extensions: readonly unknown[];
+    plugins: readonly unknown[];
   },
 >(
   options: TOptions
-): Editor<
-  EditorValueFromOptions<TOptions>,
-  EditorExtensionsFromOptions<TOptions>
->;
+): Editor<EditorValueFromOptions<TOptions>, PluginsFromOptions<TOptions>>;
 
 export function createEditor<
   V extends Value = Value,
-  const TExtensions extends readonly unknown[] = readonly [],
->(options?: CreateEditorOptions<V, TExtensions>): Editor<V, TExtensions>;
+  const TPlugins extends readonly unknown[] = readonly [],
+>(options?: CreateEditorOptions<V, TPlugins>): Editor<V, TPlugins>;
 
 /**
  * Creates a React editor with the React bridge installed before custom
- * extensions. Install history explicitly when the editor needs undo/redo.
+ * plugins. Install history explicitly when the editor needs undo/redo.
  */
 export function createEditor<
   V extends Value = Value,
-  const TExtensions extends readonly unknown[] = readonly [],
->(options: CreateEditorOptions<V, TExtensions> = {}): Editor<V, TExtensions> {
+  const TPlugins extends readonly unknown[] = readonly [],
+>(options: CreateEditorOptions<V, TPlugins> = {}): Editor<V, TPlugins> {
   const {
     clipboardFormatKey,
-    extensions,
+    plugins: authoredPlugins,
     lifecycleErrorSink,
     ...editorOptions
   } = options;
-  const exactDOMExtension = dom({ clipboardFormatKey });
-  const editorExtensions = [
-    react({ dom: exactDOMExtension }),
-    ...((extensions ?? []) as TExtensions),
+  const exactDOMPlugin = dom({ clipboardFormatKey });
+  const installedPlugins = [
+    react({ dom: exactDOMPlugin }),
+    ...((authoredPlugins ?? []) as TPlugins),
   ] as const;
 
-  return createCoreEditor<V, typeof editorExtensions>({
+  return createCoreEditor<V, typeof installedPlugins>({
     ...editorOptions,
-    extensions: editorExtensions,
+    plugins: installedPlugins,
     lifecycleErrorSink: lifecycleErrorSink as EditorLifecycleErrorSink<
-      AnyEditor<V, typeof editorExtensions>
+      AnyEditor<V, typeof installedPlugins>
     >,
-  }) as unknown as Editor<V, TExtensions>;
+  }) as unknown as Editor<V, TPlugins>;
 }

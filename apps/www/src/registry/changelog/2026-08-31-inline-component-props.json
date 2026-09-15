@@ -56,11 +56,15 @@
     },
     {
       "name": "mdx-plate-components",
-      "files": [
-        "apps/www/src/registry/blocks/fumadocs/mdx-plate-components.tsx"
-      ],
+      "files": [],
       "definitionFiles": [],
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for mdx-plate-components."
+        }
+      ]
     },
     {
       "name": "block-list-static",

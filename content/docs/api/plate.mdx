@@ -4,7 +4,7 @@ description: API reference for the platejs package.
 ---
 
 `platejs` is the Plate distribution. Its root owns the headless Plate runtime
-and re-exports the approved Plite API by identity. React, static rendering, and
+and the document model. React, static rendering, and
 low-level runtime adapters use explicit subpaths.
 
 ## Installation
@@ -19,13 +19,13 @@ React is required only when importing `platejs/react` or `platejs/static`.
 
 | Import | Use | Optional peer |
 | --- | --- | --- |
-| `platejs` | Headless editor creation, Plate plugins, approved Plite APIs, core types, and utilities. | None |
+| `platejs` | Headless editor creation, Plate plugins, editor APIs, core types, and utilities. | None |
 | `platejs/react` | React editor creation, components, hooks, stores, and React plugins. | `@tanstack/react-virtual`, React, and React DOM |
 | `platejs/static` | Static editor creation, HTML rendering, and static node renderers. | React and React DOM |
-| `platejs/dom`, `platejs/history`, `platejs/hyperscript` | Plate-facing access to the matching low-level runtime modules. | None |
+| `platejs/dom`, `platejs/history`, `platejs/hyperscript` | DOM and clipboard integration, history persistence, and JSX fixtures. | None |
 | `@platejs/test` | Node-safe editor fixtures and environment-specific test harnesses. | React and Testing Library for `/react`; Playwright for `/playwright` |
 | `platejs/pagination` | Pagination geometry and measurement. | `@chenglou/pretext` |
-| `platejs/pagination/react` | React pagination rendering. | `@chenglou/pretext`, `@tanstack/react-virtual`, React, and React DOM |
+| `platejs/pagination/react` | React hooks for pagination geometry. | `@chenglou/pretext`, `@tanstack/react-virtual`, React, and React DOM |
 | `platejs/diff` | Document diff helpers. | `diff-match-patch-ts` |
 
 ## Base runtime
@@ -50,7 +50,7 @@ export const editor = createEditor({
 Use `platejs/react` for app editors.
 
 ```tsx title="components/basic-editor.tsx"
-import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
+import { EditorRoot, EditorContent, useCreateEditor } from 'platejs/react';
 
 export function BasicEditor() {
   const editor = useCreateEditor({
@@ -63,9 +63,9 @@ export function BasicEditor() {
   });
 
   return (
-    <Plate editor={editor}>
-      <PlateContent />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent />
+    </EditorRoot>
   );
 }
 ```
@@ -92,8 +92,7 @@ export const staticEditor = createStaticEditor({
 | Page | Covers |
 | --- | --- |
 | [Plate Core](/docs/api/core) | Editor creation, React runtime, plugins, stores, and render primitives. |
-| [Plite](/docs/api/plite) | Plite-compatible editor API, transforms, nodes, locations, operations, and refs. |
 | [Plate Utilities](/docs/api/utils) | Plate-owned identities and utility plugins. |
 | [React Utils](/docs/api/utils#react-hooks) | React utility hooks and helpers re-exported through `platejs/react`. |
-| [Plate Components](/docs/api/core/plate-components) | `Plate`, `PlateContent`, `PlateView`, and component primitives. |
+| [Plate Components](/docs/api/core/plate-components) | `EditorRoot`, `EditorContent`, `EditorPreview`, and component primitives. |
 | [Plate Editor](/docs/api/core/plate-editor) | Runtime editor type, core APIs, transforms, DOM state, and metadata. |

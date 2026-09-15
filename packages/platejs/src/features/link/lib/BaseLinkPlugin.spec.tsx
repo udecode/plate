@@ -5,7 +5,7 @@ import { jsxt, type TestEditor } from '#platejs-test-internal';
 
 import {
   createEditor as createProductEditor,
-  defineBasePlugin,
+  definePlugin,
   NodeApi,
   property,
   type Point,
@@ -370,7 +370,7 @@ describe('BaseLinkPlugin.api.validateUrl', () => {
 });
 
 const mark = (name: string) =>
-  defineBasePlugin(name, {
+  definePlugin(name, {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },

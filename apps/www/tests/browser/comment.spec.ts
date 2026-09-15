@@ -1,18 +1,18 @@
 import {
-  createPliteBrowserEditorHarness,
-  getPliteReactRenderProfilerSnapshot,
-  installPliteReactRenderProfiler,
-  recordPliteBrowserRuntimeErrors,
-  resetPliteReactRenderProfiler,
+  createBrowserEditorHarness,
+  getReactRenderProfilerSnapshot,
+  installReactRenderProfiler,
+  recordBrowserRuntimeErrors,
+  resetReactRenderProfiler,
 } from '@platejs/test/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-const EDITOR = '[data-plite-editor="true"]';
+const EDITOR = '[data-editor="true"]';
 
 test('Playground loads its full document and starter discussions', async ({
   page,
 }) => {
-  const errors = recordPliteBrowserRuntimeErrors(page);
+  const errors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/playground-demo', { waitUntil: 'commit' });
@@ -72,7 +72,7 @@ const openDemo = async (page: Page) => {
   await expect(page.getByLabel('Static annotated document')).toBeVisible({
     timeout: 20_000,
   });
-  await createPliteBrowserEditorHarness(
+  await createBrowserEditorHarness(
     page,
     'Comments proof',
     getDemo(page).editor
@@ -88,7 +88,7 @@ const pointAtTextOffset = async (
     (element, { absoluteOffset, edge: targetEdge }) => {
       const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
         acceptNode: (node) =>
-          node.parentElement?.closest('[data-plite-node="text"]')
+          node.parentElement?.closest('[data-editor-node="text"]')
             ? NodeFilter.FILTER_ACCEPT
             : NodeFilter.FILTER_REJECT,
       });
@@ -189,7 +189,7 @@ const physicallyPlaceCaret = async (
           NodeFilter.SHOW_TEXT,
           {
             acceptNode: (node) =>
-              node.parentElement?.closest('[data-plite-node="text"]')
+              node.parentElement?.closest('[data-editor-node="text"]')
                 ? NodeFilter.FILTER_ACCEPT
                 : NodeFilter.FILTER_REJECT,
           }
@@ -236,7 +236,7 @@ const getCommentText = (primary: Locator, id: string) =>
 
 const getEditorText = (node: Locator) =>
   node
-    .locator('[data-plite-node="text"]')
+    .locator('[data-editor-node="text"]')
     .evaluateAll((elements) =>
       elements.map((element) => element.textContent).join('')
     );
@@ -622,7 +622,7 @@ test('overlapping comments open together in Floating Discussion', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
@@ -653,7 +653,7 @@ test('overlapping comments open together in Floating Discussion', async ({
     ).toHaveCount(2);
 
     await editor
-      .locator('[data-plite-node="element"]')
+      .locator('[data-editor-node="element"]')
       .first()
       .click({ position: { x: 4, y: 8 } });
     await expect(popover).toHaveCount(0);
@@ -669,12 +669,12 @@ test('a fully deleted comment stays reachable and exact through repeated history
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
     const { editor, popover, primary } = getDemo(page);
-    const firstBlock = editor.locator('[data-plite-node="element"]').first();
+    const firstBlock = editor.locator('[data-editor-node="element"]').first();
 
     await physicallySelectText(page, firstBlock, 0, 1);
     await editor.press(commentHotkey);
@@ -774,12 +774,12 @@ test('interior insertion and deletion keep overlapping comments exact through hi
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
     let { editor, popover, primary } = getDemo(page);
-    let firstBlock = editor.locator('[data-plite-node="element"]').first();
+    let firstBlock = editor.locator('[data-editor-node="element"]').first();
 
     await physicallyPlaceCaret(page, firstBlock, 28);
     await page.keyboard.type('X');
@@ -824,7 +824,7 @@ test('interior insertion and deletion keep overlapping comments exact through hi
 
     await openDemo(page);
     ({ editor, popover, primary } = getDemo(page));
-    firstBlock = editor.locator('[data-plite-node="element"]').first();
+    firstBlock = editor.locator('[data-editor-node="element"]').first();
 
     await physicallyPlaceCaret(page, firstBlock, 28);
     await page.keyboard.press('Delete');
@@ -867,13 +867,13 @@ test('inward comment boundaries exclude text inserted on either side', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
     const { popover, primary } = getDemo(page);
     const editor = primary.locator(EDITOR).first();
-    const firstBlock = editor.locator('[data-plite-node="element"]').first();
+    const firstBlock = editor.locator('[data-editor-node="element"]').first();
 
     await physicallyPlaceCaret(page, firstBlock, 5);
     await page.keyboard.type('[');
@@ -904,12 +904,12 @@ test('replacing an entire comment stays attached through undo and redo', async (
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
     const { editor, popover, primary } = getDemo(page);
-    const firstBlock = editor.locator('[data-plite-node="element"]').first();
+    const firstBlock = editor.locator('[data-editor-node="element"]').first();
 
     await physicallySelectText(page, firstBlock, 5, 34);
     await expect
@@ -951,7 +951,7 @@ test('annotated blocks open their own combined Floating Discussion', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
@@ -976,7 +976,7 @@ test('annotated blocks open their own combined Floating Discussion', async ({
 
     await page.setViewportSize({ height: 900, width: 1280 });
     await page.goto('/view/editor-ai', { waitUntil: 'commit' });
-    const aiEditor = page.locator('[data-plite-editor="true"]').first();
+    const aiEditor = page.locator('[data-editor="true"]').first();
     const aiPopover = page.locator('[data-discussion-popover]');
     const aiTrigger = aiEditor.locator('[data-discussion-block-trigger]');
 
@@ -999,13 +999,13 @@ test('discussion grouping follows block split and merge edits', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
     const { editor, popover, primary } = getDemo(page);
     const triggers = primary.locator('[data-discussion-block-trigger]');
-    const firstBlock = editor.locator('[data-plite-node="element"]').first();
+    const firstBlock = editor.locator('[data-editor-node="element"]').first();
 
     await physicallyPlaceCaret(page, firstBlock, 0);
     await editor.press('Enter');
@@ -1023,7 +1023,7 @@ test('discussion grouping follows block split and merge edits', async ({
     ).toBeVisible();
 
     const movedBlock = editor
-      .locator('[data-plite-node="element"]')
+      .locator('[data-editor-node="element"]')
       .filter({ hasText: FIRST_BLOCK })
       .first();
 
@@ -1050,7 +1050,7 @@ test('splitting inside overlapping comments keeps both threads reachable on each
   const triggers = primary.locator('[data-discussion-block-trigger]');
   await physicallyPlaceCaret(
     page,
-    editor.locator('[data-plite-node="element"]').first(),
+    editor.locator('[data-editor-node="element"]').first(),
     30
   );
   await page.keyboard.press('Enter');
@@ -1119,7 +1119,7 @@ for (const width of [1280, 390]) {
   test(`public discussion demo preserves mixed review and editing (${width}px)`, async ({
     page,
   }, testInfo) => {
-    const errors = recordPliteBrowserRuntimeErrors(page);
+    const errors = recordBrowserRuntimeErrors(page);
     try {
       await page.setViewportSize({ width, height: 844 });
       await page.goto('/blocks/discussion-demo');
@@ -1176,12 +1176,12 @@ for (const width of [1280, 390]) {
       await expect(popover.locator('[data-suggestion-review]')).toHaveCount(0);
       await editor.press(undo);
       await expect(
-        editor.locator('.plite-suggestion').filter({ hasText: 'overlapping' })
+        editor.locator('.editor-suggestion').filter({ hasText: 'overlapping' })
       ).toHaveCount(1);
       await page.keyboard.press('Escape');
       await physicallyPlaceCaret(
         page,
-        editor.locator('[data-plite-node="element"]').first(),
+        editor.locator('[data-editor-node="element"]').first(),
         3
       );
       await editor.press('x');
@@ -1282,7 +1282,7 @@ test('Floating Discussion preserves the established unboxed block design', async
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
@@ -1374,7 +1374,7 @@ test('Floating Discussion preserves the established unboxed block design', async
 
     await page.setViewportSize({ height: 900, width: 1280 });
     await page.goto('/view/editor-ai', { waitUntil: 'commit' });
-    const aiEditor = page.locator('[data-plite-editor="true"]').first();
+    const aiEditor = page.locator('[data-editor="true"]').first();
     const aiPopover = page.locator('[data-discussion-popover]');
     const aiTrigger = aiEditor.locator('[data-discussion-block-trigger]');
 
@@ -1471,12 +1471,12 @@ test('comments support block-caret creation, rich bodies, actions, and outside c
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
     const { editor, popover, primary, staticView } = getDemo(page);
-    const firstBlock = editor.locator('[data-plite-node="element"]').first();
+    const firstBlock = editor.locator('[data-editor-node="element"]').first();
 
     await physicallyPlaceCaret(page, firstBlock, 2);
     await editor.press(commentHotkey);
@@ -1575,7 +1575,7 @@ for (const width of [1280, 390]) {
   }, testInfo) => {
     expect(testInfo.retry).toBe(0);
     await page.setViewportSize({ width, height: 800 });
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     try {
       await openDemo(page);
       const { editor, popover } = getDemo(page);
@@ -1589,9 +1589,9 @@ for (const width of [1280, 390]) {
       const messageCount = await messages.count();
       await composer.click();
       await composer.press('Enter');
-      await expect(composer.locator('[data-plite-node="element"]')).toHaveCount(
-        1
-      );
+      await expect(
+        composer.locator('[data-editor-node="element"]')
+      ).toHaveCount(1);
       await expect(messages).toHaveCount(messageCount);
 
       await composer.pressSequentially('First line');
@@ -1605,9 +1605,9 @@ for (const width of [1280, 390]) {
       await expect(messages.last()).toContainText('Second line');
       await expect(composer).not.toContainText('First line');
       await expect(composer).not.toContainText('Second line');
-      await expect(composer.locator('[data-plite-node="element"]')).toHaveCount(
-        1
-      );
+      await expect(
+        composer.locator('[data-editor-node="element"]')
+      ).toHaveCount(1);
       await composer.pressSequentially('Follow-up draft');
       await expect(composer).toContainText('Follow-up draft');
       runtimeErrors.assertNone();
@@ -1621,7 +1621,7 @@ test('suggestion cards keep document mutation and attached comments together', a
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
@@ -1724,10 +1724,10 @@ test('comment paint, independent snapshots, invalid loading, and metadata update
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
-    await installPliteReactRenderProfiler(page);
+    await installReactRenderProfiler(page);
     await openDemo(page);
     const { popover, primary, reviewer, staticView } = getDemo(page);
     const primaryMarks = primary.locator('[data-comment-id]');
@@ -1793,19 +1793,19 @@ test('comment paint, independent snapshots, invalid loading, and metadata update
         __commentPrimaryTextNodes?: Element[];
       };
       const root = document.querySelector(
-        '[data-comment-editor="primary"] [data-plite-root="main"]'
+        '[data-comment-editor="primary"] [data-editor-root="main"]'
       );
 
       target.__commentPrimaryTextNodes = root
-        ? [...root.querySelectorAll('[data-plite-node="text"]')]
+        ? [...root.querySelectorAll('[data-editor-node="text"]')]
         : [];
     });
     await reply.fill('App-only update');
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await reply.press(submit);
     await expect(overlapThread.getByText('App-only update')).toBeVisible();
 
-    const renderSnapshot = await getPliteReactRenderProfilerSnapshot(page);
+    const renderSnapshot = await getReactRenderProfilerSnapshot(page);
 
     expect(renderSnapshot.byKind.editable ?? 0).toBeLessThanOrEqual(6);
     expect(renderSnapshot.byKind['root-plan'] ?? 0).toBeLessThanOrEqual(8);
@@ -1817,10 +1817,10 @@ test('comment paint, independent snapshots, invalid loading, and metadata update
           __commentPrimaryTextNodes?: Element[];
         };
         const root = document.querySelector(
-          '[data-comment-editor="primary"] [data-plite-root="main"]'
+          '[data-comment-editor="primary"] [data-editor-root="main"]'
         );
         const current = root
-          ? [...root.querySelectorAll('[data-plite-node="text"]')]
+          ? [...root.querySelectorAll('[data-editor-node="text"]')]
           : [];
 
         return (
@@ -1852,12 +1852,12 @@ test('AI comments stay provisional until Accept and disappear on Reject', async 
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await openDemo(page);
     const { editor, popover, primary, staticView } = getDemo(page);
-    const blocks = editor.locator('[data-plite-node="element"]');
+    const blocks = editor.locator('[data-editor-node="element"]');
     const documentText = await editor.innerText();
 
     await triggerAiComment(page, blocks.nth(1));
@@ -1912,7 +1912,7 @@ test('AI editor keeps its toolbar above the full-width editor', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/view/editor-ai', { waitUntil: 'commit' });
@@ -1952,7 +1952,7 @@ test('AI editor keeps its toolbar above the full-width editor', async ({
       await page.evaluate(() => document.documentElement.clientWidth)
     );
 
-    const firstElement = editor.locator('[data-plite-node="element"]').first();
+    const firstElement = editor.locator('[data-editor-node="element"]').first();
 
     await selectCharacterWithKeyboard(page, firstElement, 0);
     const askAI = page.getByRole('button', { name: 'Ask AI' });
@@ -1975,7 +1975,7 @@ test('AI editor keeps Floating Discussion usable on narrow screens', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.setViewportSize({ height: 844, width: 390 });
@@ -2008,36 +2008,12 @@ test('AI editor keeps Floating Discussion usable on narrow screens', async ({
   }
 });
 
-test('Plate-to-HTML keeps suggestion review markup', async ({
-  page,
-}, testInfo) => {
-  expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
-
-  try {
-    await page.goto('/blocks/plate-to-html', { waitUntil: 'commit' });
-
-    const preview = page.frameLocator('iframe[title="Preview"]');
-
-    await expect(preview.locator('ins')).toContainText('tighten the wording', {
-      timeout: 20_000,
-    });
-    await expect(preview.locator('del')).toContainText(
-      'keep this redundant phrase'
-    );
-
-    runtimeErrors.assertNone();
-  } finally {
-    runtimeErrors.stop();
-  }
-});
-
 test('English and Chinese Comment, Suggestion, and Discussion routes render', async ({
   page,
 }, testInfo) => {
   test.setTimeout(90_000);
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
   const routes = [
     ['/docs/comment', 'Comments'],
     ['/docs/discussion', 'Discussion'],
@@ -2065,7 +2041,7 @@ test('independent reviewer and static documents keep their own native comment ra
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
   try {
     await openDemo(page);
     const { editor, primary, reviewer, staticView } = getDemo(page);

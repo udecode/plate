@@ -10,7 +10,7 @@ import {
   DocumentChange,
   defineEffect,
   defineEditorSchema,
-  defineExtension,
+  definePlugin,
   defineStateField,
   defineValueCodec,
   type EditorEffect,
@@ -34,7 +34,7 @@ import {
   readPliteValueFromYjs,
 } from '../../src/yjs/core/document';
 import { YjsUpdatePolicy } from '../../src/yjs/core/editor-adapter';
-import { yjs } from '../../src/yjs/core/extension';
+import { yjs } from '../../src/yjs/core/plugin';
 import {
   clearYjsTrace,
   connectYjsPeerAndSync,
@@ -43,6 +43,7 @@ import {
   createYjsTestEditor,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
+  getYjsRoot,
   getYjsTrace,
   paragraph,
   readEditorYjsState,
@@ -73,7 +74,7 @@ const recordRemoteImportCommits = (
   const commits: RecordedRemoteImportCommit[] = [];
 
   editor.install(
-    defineExtension('remote-import-commit-recorder', {
+    definePlugin('remote-import-commit-recorder', {
       on: {
         commit({ commit }): void {
           if (!commit.tags.includes('remote-yjs-import')) {
@@ -101,16 +102,16 @@ describe('plitejs/yjs remote import contract', () => {
       initial: () => 'Q2 Plan',
       persist: valueCodecs.string,
     });
-    const documentState = defineExtension('shared-document-state', {
+    const documentState = definePlugin('shared-document-state', {
       stateFields: [documentTitle],
     });
-    const createPeer = (clientId: string, doc = new Y.Doc()) => {
+    const createPeer = (_clientId: string, doc = new Y.Doc()) => {
       const editor = createEditor({
-        extensions: [documentState] as const,
+        plugins: [documentState] as const,
         initialValue: [paragraph('body')],
       });
       const cleanup = editor.install(
-        yjs({ clientId, doc, rootName: 'shared-state' })
+        yjs({ doc, initialReady: true, rootName: 'shared-state', seed: true })
       );
 
       return { cleanup, doc, editor };
@@ -147,18 +148,19 @@ describe('plitejs/yjs remote import contract', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineExtension('counter-increment-effect', {
+    const incrementPlugin = definePlugin('counter-increment-effect', {
       effectTypes: [increment],
       stateFields: [counter],
     });
-    const createPeer = (clientId: string, doc = new Y.Doc()) => {
+    const createPeer = (_clientId: string, doc = new Y.Doc()) => {
       const editor = createEditor({
-        extensions: [incrementExtension] as const,
+        plugins: [incrementPlugin] as const,
         initialValue: [paragraph('body')],
       });
       const cleanup = editor.install(
         yjs({
-          clientId,
+          initialReady: true,
+          seed: true,
           doc,
           rootName: 'shared-domain-effect',
         })
@@ -195,18 +197,18 @@ describe('plitejs/yjs remote import contract', () => {
       collab: 'shared',
       collabReplay: 'live',
     });
-    const effects = defineExtension('effect-only-announcement', {
+    const effects = definePlugin('effect-only-announcement', {
       effectTypes: [announce],
     });
     const createPeer = (doc: Y.Doc, record = false) => {
       const received: string[] = [];
       const editor = createEditor({
-        extensions: [effects] as const,
+        plugins: [effects] as const,
         initialValue: [paragraph('body')],
       });
       const cleanupRecorder = record
         ? editor.install(
-            defineExtension('effect-only-recorder', {
+            definePlugin('effect-only-recorder', {
               on: {
                 commit({ commit }) {
                   if (!commit.tags.includes('remote-yjs-import')) return;
@@ -219,7 +221,9 @@ describe('plitejs/yjs remote import contract', () => {
             })
           )
         : () => {};
-      const cleanupYjs = editor.install(yjs({ doc, rootName: 'effect-only' }));
+      const cleanupYjs = editor.install(
+        yjs({ initialReady: true, seed: true, doc, rootName: 'effect-only' })
+      );
 
       return {
         cleanup() {
@@ -262,16 +266,21 @@ describe('plitejs/yjs remote import contract', () => {
       collabReplay: 'live',
       key: 'effect-codec-identity.nested',
     });
-    const effects = defineExtension('effect-codec-identity', {
+    const effects = definePlugin('effect-codec-identity', {
       effectTypes: [nested],
     });
     const sourceDoc = new Y.Doc();
     const source = createEditor({
-      extensions: [effects] as const,
+      plugins: [effects] as const,
       initialValue: [paragraph('body')],
     });
     const cleanupSource = source.install(
-      yjs({ doc: sourceDoc, rootName: 'effect-codec-identity' })
+      yjs({
+        initialReady: true,
+        seed: true,
+        doc: sourceDoc,
+        rootName: 'effect-codec-identity',
+      })
     );
     const targetDoc = new Y.Doc();
 
@@ -279,11 +288,11 @@ describe('plitejs/yjs remote import contract', () => {
 
     const received: Array<EditorEffect<Payload>> = [];
     const innerTarget4 = createEditor({
-      extensions: [effects] as const,
+      plugins: [effects] as const,
       initialValue: [paragraph('body')],
     });
     const cleanupRecorder = innerTarget4.install(
-      defineExtension('effect-codec-identity-recorder', {
+      definePlugin('effect-codec-identity-recorder', {
         on: {
           commit({ commit }) {
             if (!commit.tags.includes('remote-yjs-import')) return;
@@ -298,7 +307,12 @@ describe('plitejs/yjs remote import contract', () => {
       })
     );
     const cleanupTarget = innerTarget4.install(
-      yjs({ doc: targetDoc, rootName: 'effect-codec-identity' })
+      yjs({
+        initialReady: true,
+        seed: true,
+        doc: targetDoc,
+        rootName: 'effect-codec-identity',
+      })
     );
     const input = { nested: { count: 1 } };
 
@@ -336,7 +350,7 @@ describe('plitejs/yjs remote import contract', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineExtension(
+    const incrementPlugin = definePlugin(
       'concurrent-counter-increment-effect',
       {
         effectTypes: [increment],
@@ -344,7 +358,7 @@ describe('plitejs/yjs remote import contract', () => {
       }
     );
     const createPeer = (
-      clientId: string,
+      _clientId: string,
       numericClientId: number,
       seedUpdate?: Uint8Array
     ) => {
@@ -356,12 +370,13 @@ describe('plitejs/yjs remote import contract', () => {
       }
 
       const editor = createEditor({
-        extensions: [incrementExtension] as const,
+        plugins: [incrementPlugin] as const,
         initialValue: [paragraph('body')],
       });
       const cleanup = editor.install(
         yjs({
-          clientId,
+          initialReady: true,
+          seed: true,
           doc,
           rootName: 'concurrent-shared-domain-effect',
         })
@@ -398,7 +413,7 @@ describe('plitejs/yjs remote import contract', () => {
     second.cleanup();
   });
 
-  it('blocks unknown effects per source without blocking other sources', () => {
+  it('blocks unknown shared effects until the application retries with the codec', () => {
     const effectA = defineEffect<string>({
       codec: valueCodecs.string,
       key: 'source-a.effect',
@@ -411,27 +426,29 @@ describe('plitejs/yjs remote import contract', () => {
       collab: 'shared',
       collabReplay: 'live',
     });
-    const extensionA = defineExtension('source-a-effects', {
+    const pluginA = definePlugin('source-a-effects', {
       effectTypes: [effectA],
     });
-    const extensionB = defineExtension('source-b-effects', {
+    const pluginB = definePlugin('source-b-effects', {
       effectTypes: [effectB],
     });
     const createSource = (
       doc: Y.Doc,
-      extension: typeof extensionA | typeof extensionB,
+      plugin: typeof pluginA | typeof pluginB,
       rootName: string
     ) => {
       const editor = createEditor({
-        extensions: [extension] as const,
+        plugins: [plugin] as const,
         initialValue: [paragraph('body')],
       });
-      const cleanup = editor.install(yjs({ doc, rootName }));
+      const cleanup = editor.install(
+        yjs({ initialReady: true, seed: true, doc, rootName })
+      );
 
       return { cleanup, doc, editor };
     };
     const rootName = 'per-source-effect-order';
-    const sourceA = createSource(new Y.Doc(), extensionA, rootName);
+    const sourceA = createSource(new Y.Doc(), pluginA, rootName);
     const seed = Y.encodeStateAsUpdate(sourceA.doc);
     const sourceBDoc = new Y.Doc();
     const targetDoc = new Y.Doc();
@@ -439,14 +456,14 @@ describe('plitejs/yjs remote import contract', () => {
     Y.applyUpdate(sourceBDoc, seed);
     Y.applyUpdate(targetDoc, seed);
 
-    const sourceB = createSource(sourceBDoc, extensionB, rootName);
+    const sourceB = createSource(sourceBDoc, pluginB, rootName);
     const received: string[] = [];
     const targetEditor = createEditor({
-      extensions: [extensionB] as const,
+      plugins: [pluginB] as const,
       initialValue: [paragraph('body')],
     });
     const cleanupRecorder = targetEditor.install(
-      defineExtension('per-source-effect-recorder', {
+      definePlugin('per-source-effect-recorder', {
         on: {
           commit({ commit }) {
             if (!commit.tags.includes('remote-yjs-import')) return;
@@ -458,9 +475,13 @@ describe('plitejs/yjs remote import contract', () => {
         },
       })
     );
-    const cleanupTarget = targetEditor.install(
-      yjs({ doc: targetDoc, rootName })
-    );
+    const targetBinding = yjs({
+      doc: targetDoc,
+      initialReady: true,
+      rootName,
+      seed: true,
+    });
+    const cleanupTarget = targetEditor.install(targetBinding);
 
     Y.applyUpdate(sourceA.doc, Y.encodeStateAsUpdate(targetDoc));
     Y.applyUpdate(sourceB.doc, Y.encodeStateAsUpdate(targetDoc));
@@ -474,17 +495,23 @@ describe('plitejs/yjs remote import contract', () => {
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(sourceA.doc));
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(sourceB.doc));
 
-    assert.deepEqual(received, ['b1']);
-
-    const cleanupA = targetEditor.install(extensionA);
-
-    assert.deepEqual(received, ['b1', 'a1', 'a2']);
-
-    const cleanupNoop = targetEditor.install(
-      defineExtension('per-source-retry-noop', {})
+    assert.deepEqual(received, []);
+    assert.equal(
+      targetEditor.plugin(targetBinding).api.admissionStatus().state,
+      'error'
     );
 
-    assert.deepEqual(received, ['b1', 'a1', 'a2']);
+    const cleanupA = targetEditor.install(pluginA);
+
+    targetEditor.plugin(targetBinding).api.retryImport();
+
+    assert.deepEqual(received, ['a1', 'a2', 'b1']);
+
+    const cleanupNoop = targetEditor.install(
+      definePlugin('per-source-retry-noop', {})
+    );
+
+    assert.deepEqual(received, ['a1', 'a2', 'b1']);
 
     cleanupNoop();
     cleanupA();
@@ -507,16 +534,13 @@ describe('plitejs/yjs remote import contract', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineExtension(
-      'atomic-counter-increment-effect',
-      {
-        effectTypes: [increment],
-        stateFields: [counter],
-      }
-    );
+    const incrementPlugin = definePlugin('atomic-counter-increment-effect', {
+      effectTypes: [increment],
+      stateFields: [counter],
+    });
     const createPeer = (doc: Y.Doc) => {
       const editor = createEditor({
-        extensions: [incrementExtension] as const,
+        plugins: [incrementPlugin] as const,
         initialValue: [paragraph('body')],
       });
       const remoteCommits: Array<{
@@ -524,7 +548,7 @@ describe('plitejs/yjs remote import contract', () => {
         effectKeys: string[];
       }> = [];
       const cleanupRecorder = editor.install(
-        defineExtension('atomic-shared-effect-recorder', {
+        definePlugin('atomic-shared-effect-recorder', {
           on: {
             commit({ commit }): void {
               if (!commit.tags.includes('remote-yjs-import')) return;
@@ -539,6 +563,8 @@ describe('plitejs/yjs remote import contract', () => {
       );
       const cleanupYjs = editor.install(
         yjs({
+          initialReady: true,
+          seed: true,
           doc,
           rootName: 'atomic-shared-domain-effect',
         })
@@ -613,16 +639,18 @@ describe('plitejs/yjs remote import contract', () => {
           effect.type === increment ? value + effect.value : value,
       });
     const sourceCounter = createCounter('source-counter', incrementV2);
-    const sourceEffectExtension = defineExtension('source-versioned-effect', {
+    const sourceEffectPlugin = definePlugin('source-versioned-effect', {
       effectTypes: [incrementV2],
     });
     const sourceDoc = new Y.Doc();
     const sourceEditor = createEditor({
-      extensions: [sourceCounter, sourceEffectExtension] as const,
+      plugins: [sourceCounter, sourceEffectPlugin] as const,
       initialValue: [paragraph('body')],
     });
     const sourceCleanup = sourceEditor.install(
       yjs({
+        initialReady: true,
+        seed: true,
         doc: sourceDoc,
         rootName: 'versioned-shared-effects',
       })
@@ -632,15 +660,17 @@ describe('plitejs/yjs remote import contract', () => {
     Y.applyUpdate(targetDoc, Y.encodeStateAsUpdate(sourceDoc));
 
     const oldCounter = createCounter('old-counter', incrementV1);
-    const oldEffectExtension = defineExtension('old-versioned-effect', {
+    const oldEffectPlugin = definePlugin('old-versioned-effect', {
       effectTypes: [incrementV1],
     });
     const oldEditor = createEditor({
-      extensions: [oldCounter, oldEffectExtension] as const,
+      plugins: [oldCounter, oldEffectPlugin] as const,
       initialValue: [paragraph('body')],
     });
     const oldCleanup = oldEditor.install(
       yjs({
+        initialReady: true,
+        seed: true,
         doc: targetDoc,
         rootName: 'versioned-shared-effects',
       })
@@ -657,18 +687,17 @@ describe('plitejs/yjs remote import contract', () => {
     oldCleanup();
 
     const upgradedCounter = createCounter('upgraded-counter', incrementV2);
-    const upgradedEffectExtension = defineExtension(
-      'upgraded-versioned-effect',
-      {
-        effectTypes: [incrementV2],
-      }
-    );
+    const upgradedEffectPlugin = definePlugin('upgraded-versioned-effect', {
+      effectTypes: [incrementV2],
+    });
     const upgradedEditor = createEditor({
-      extensions: [upgradedCounter, upgradedEffectExtension] as const,
+      plugins: [upgradedCounter, upgradedEffectPlugin] as const,
       initialValue: [paragraph('body')],
     });
     const upgradedCleanup = upgradedEditor.install(
       yjs({
+        initialReady: true,
+        seed: true,
         doc: targetDoc,
         rootName: 'versioned-shared-effects',
       })
@@ -724,17 +753,22 @@ describe('plitejs/yjs remote import contract', () => {
       initial: null,
       reduce: (value, effect) => (effect.type === focus ? effect.value : value),
     });
-    const focusExtension = defineExtension('collab-focus-point-effect', {
+    const focusPlugin = definePlugin('collab-focus-point-effect', {
       effectTypes: [focus],
       stateFields: [receivedFocus],
     });
     const createPeer = (doc: Y.Doc) => {
       const editor = createEditor({
-        extensions: [focusExtension] as const,
+        plugins: [focusPlugin] as const,
         initialValue: [paragraph('body')],
       });
       const cleanup = editor.install(
-        yjs({ doc, rootName: 'relative-effect-point' })
+        yjs({
+          initialReady: true,
+          seed: true,
+          doc,
+          rootName: 'relative-effect-point',
+        })
       );
 
       return { cleanup, doc, editor };
@@ -831,7 +865,7 @@ describe('plitejs/yjs remote import contract', () => {
 
     assert.ok(peer);
 
-    const root = peer.editor.read.yjs.root();
+    const root = getYjsRoot(peer);
     const sibling = root.toArray()[1];
     const change = DocumentChange.between(
       { children: [paragraph('one'), paragraph('two')] },
@@ -880,7 +914,7 @@ describe('plitejs/yjs remote import contract', () => {
 
     assert.ok(peer);
 
-    const root = peer.editor.read.yjs.root();
+    const root = getYjsRoot(peer);
     const element = getYjsNode(root, [0]);
     const text = getYjsNode(root, [0, 0]);
     const sibling = getYjsNode(root, [1]);
@@ -931,7 +965,7 @@ describe('plitejs/yjs remote import contract', () => {
       const localChanges: Array<ReturnType<DocumentChange['toJSON']>> = [];
       const remoteChanges: Array<ReturnType<DocumentChange['toJSON']>> = [];
       const editor = createEditor({
-        extensions: [SetValuedSchema],
+        plugins: [SetValuedSchema],
         initialSelection: {
           kind: 'text',
           anchor: { path: [0, 0, 0], offset: 0 },
@@ -951,7 +985,7 @@ describe('plitejs/yjs remote import contract', () => {
         ],
       });
       const cleanupRecorder = editor.install(
-        defineExtension('set-valued-yjs-commit-recorder', {
+        definePlugin('set-valued-yjs-commit-recorder', {
           on: {
             commit({ commit }) {
               if (!commit.changed.has('document')) return;
@@ -964,7 +998,9 @@ describe('plitejs/yjs remote import contract', () => {
           },
         })
       );
-      const cleanupYjs = editor.install(yjs({ doc, rootName }));
+      const cleanupYjs = editor.install(
+        yjs({ initialReady: true, seed: true, doc, rootName })
+      );
 
       localChanges.length = 0;
       remoteChanges.length = 0;
@@ -1121,17 +1157,17 @@ describe('plitejs/yjs remote import contract', () => {
     });
     const targetDoc = new Y.Doc();
     const editor = createEditor({
-      extensions: [ClosedSchema],
+      plugins: [ClosedSchema],
       initialValue: [{ children: [{ text: 'safe' }], type: 'cell' }],
     });
     const commits = recordRemoteImportCommits(editor);
-    const cleanup = editor.install(
-      yjs({
-        clientId: 'closed-schema-target',
-        doc: targetDoc,
-        rootName,
-      })
-    );
+    const binding = yjs({
+      doc: targetDoc,
+      initialReady: true,
+      rootName,
+      seed: true,
+    });
+    const cleanup = editor.install(binding);
     const sourceDoc = new Y.Doc();
 
     Y.applyUpdate(sourceDoc, Y.encodeStateAsUpdate(targetDoc));
@@ -1168,14 +1204,19 @@ describe('plitejs/yjs remote import contract', () => {
       setYjsAttribute(sourceElement, 'mystery', true);
     });
 
-    assert.throws(
-      () =>
-        Y.applyUpdate(
-          targetDoc,
-          Y.encodeStateAsUpdate(sourceDoc, beforeUndeclaredProperty)
-        ),
-      /unknown element property "mystery" in closed editor schema/i
+    Y.applyUpdate(
+      targetDoc,
+      Y.encodeStateAsUpdate(sourceDoc, beforeUndeclaredProperty)
     );
+    const status = editor.plugin(binding).api.admissionStatus();
+
+    assert.equal(status.state, 'error');
+    if (status.state === 'error') {
+      assert.match(
+        String(status.cause),
+        /unknown element property "mystery" in closed editor schema/i
+      );
+    }
     assert.deepEqual(editor.read.children(), [
       {
         children: [{ text: 'safe' }],
@@ -1357,7 +1398,7 @@ describe('plitejs/yjs remote import contract', () => {
     assert.ok(source);
     assert.ok(innerTarget10);
 
-    const root = source.editor.read.yjs.root();
+    const root = getYjsRoot(source);
     const sectionNode = getYjsNode(root, [0]);
     const text = getYjsNode(root, [0, 0, 0]);
 
@@ -1411,7 +1452,7 @@ describe('plitejs/yjs remote import contract', () => {
 
     assert.ok(peer);
 
-    const root = peer.editor.read.yjs.root();
+    const root = getYjsRoot(peer);
     const paragraphNode = getYjsNode(root, [96]);
 
     assert.ok(paragraphNode instanceof Y.XmlElement);
@@ -1442,7 +1483,7 @@ describe('plitejs/yjs remote import contract', () => {
 
     assert.ok(peer);
 
-    const root = peer.editor.read.yjs.root();
+    const root = getYjsRoot(peer);
     const paragraphNode = getYjsNode(root, [0]);
 
     assert.ok(paragraphNode instanceof Y.XmlElement);
@@ -1476,7 +1517,7 @@ describe('plitejs/yjs remote import contract', () => {
     assert.ok(peer);
 
     clearYjsTrace(peer);
-    peer.editor.read.yjs.root().setAttribute('provider:metadata', 'opaque');
+    getYjsRoot(peer).setAttribute('provider:metadata', 'opaque');
 
     assert.equal(peer.editor.read.text.string([]), 'body');
     assert.deepEqual(getYjsTrace(peer), [
@@ -1527,7 +1568,12 @@ describe('plitejs/yjs remote import contract', () => {
     const sourceDoc = new Y.Doc();
     const source = createEditor({ initialValue: [paragraph('claimed')] });
     const cleanupSource = source.install(
-      yjs({ doc: sourceDoc, rootName: 'activation-cycle' })
+      yjs({
+        initialReady: true,
+        seed: true,
+        doc: sourceDoc,
+        rootName: 'activation-cycle',
+      })
     );
     const targetDoc = new Y.Doc();
 
@@ -1535,7 +1581,12 @@ describe('plitejs/yjs remote import contract', () => {
 
     const innerTarget12 = createEditor({ initialValue: [paragraph('local')] });
     const cleanupTarget = innerTarget12.install(
-      yjs({ doc: targetDoc, rootName: 'activation-cycle' })
+      yjs({
+        initialReady: true,
+        seed: true,
+        doc: targetDoc,
+        rootName: 'activation-cycle',
+      })
     );
 
     assert.deepEqual(innerTarget12.read.children(), [paragraph('claimed')]);
@@ -1555,7 +1606,9 @@ describe('plitejs/yjs remote import contract', () => {
       const runtime = createYjsTestEditor(initialValue);
       const main = createEditorView(runtime);
       const header = createEditorView(runtime, { root: 'header' });
-      const cleanup = header.install(yjs({ doc, rootName: 'named-root' }));
+      const cleanup = header.install(
+        yjs({ initialReady: true, seed: true, doc, rootName: 'named-root' })
+      );
 
       return { cleanup, doc, header, main };
     };
@@ -1572,7 +1625,7 @@ describe('plitejs/yjs remote import contract', () => {
 
     assert.equal(innerTarget13.header.read.text.string([]), 'header!');
     assert.equal(innerTarget13.main.read.text.string([]), 'body');
-    assert.deepEqual(innerTarget13.header.read.yjs.trace().at(-1), {
+    assert.deepEqual(readEditorYjsState(innerTarget13.header).trace().at(-1), {
       changedChildren: 1,
       changedRanges: 1,
       importKind: 'event-change',

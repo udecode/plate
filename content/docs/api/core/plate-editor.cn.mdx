@@ -13,7 +13,7 @@ description: Plate 编辑器运行时的 API 参考。
 | ------------------ | --------------------- | ---------------------------------------------------------------------------------------- |
 | `Editor`      | `platejs/react` | React 编辑器类型，包含 Plate 插件 API、事务组、lifecycle/DOM 事件、render 和 hooks。     |
 | `Editor`       | `platejs`       | 非 React 编辑器类型，用于服务端和静态编辑器路径。                                        |
-| Plite primitives   | `platejs`      | `read`、核心 `api` 和事务/update 运行时。 |
+| Plate primitives   | `platejs`      | `read`、核心 `api` 和事务/update 运行时。 |
 | Core plugins       | `platejs`       | debug、HTML 解析、product codecs、length、node id、history、input rules 和基础段落行为。 |
 | React core plugins | `platejs/react` | React 扩展、DOM 集成、event editor、navigation feedback 和 React paragraph plugin。      |
 
@@ -21,7 +21,7 @@ description: Plate 编辑器运行时的 API 参考。
 
 ## 编辑器形状
 
-编辑器仍然是 Plite 编辑器。Plate 在这个形状上增加类型化插件访问、DOM service 和少量 Plate runtime 状态。
+编辑器提供文档读取、transaction、类型化插件访问、DOM service 和生命周期状态。
 
 <API name="Editor">
   <APIAttributes>
@@ -35,7 +35,7 @@ description: Plate 编辑器运行时的 API 参考。
       读取最近发布的 commit。
     </APIItem>
     <APIItem name="api" type="Editor['api']">
-      Core Plite API、显式编辑器级 API，以及按插件 name 推断的已安装插件 API。
+      Core Plate API、显式编辑器级 API，以及按插件 name 推断的已安装插件 API。
     </APIItem>
     <APIItem name="update" type="Editor['update']">
       文档、选择、历史和插件命令的事务入口。
@@ -56,13 +56,13 @@ description: Plate 编辑器运行时的 API 参考。
 
 ## 运行时状态
 
-React 和 DOM 运行时状态通过 Plite runtime API 读取。`editor.runtime` 只公开编辑器 identity 和 lifecycle 字段；已编译插件注册表属于 Plate 私有实现。
+React 和 DOM 运行时状态通过 Plate runtime API 读取。`editor.runtime` 只公开编辑器 identity 和 lifecycle 字段；已编译插件注册表属于 Plate 私有实现。
 
 | 状态        | 读取路径                                                           | 设置者                                               |
 | ----------- | ------------------------------------------------------------------ | ---------------------------------------------------- |
-| composition | `editor.api.react.isComposing()`                                   | Plite React composition runtime。                    |
-| focus       | `editor.api.react.isFocused()`                                     | Plite React focus runtime。                          |
-| read-only   | `editor.read.view.isReadOnly()` 或 `editor.api.react.isReadOnly()` | `createEditor`、`<Plate>` 和 `<PlateContent>`。 |
+| composition | `editor.api.react.isComposing()`                                   | Plate React composition runtime。                    |
+| focus       | `editor.api.react.isFocused()`                                     | Plate React focus runtime。                          |
+| read-only   | `editor.read.view.isReadOnly()` 或 `editor.api.react.isReadOnly()` | `createEditor`、`<EditorRoot>` 和 `<EditorContent>`。 |
 
 | 字段            | 类型                          | 说明                                                 |
 | --------------- | ----------------------------- | ---------------------------------------------------- |
@@ -75,9 +75,9 @@ React 和 DOM 运行时状态通过 Plite runtime API 读取。`editor.runtime` 
 read、update 命令、schema 标识和编辑器内状态。在调用处保留描述符的推断类型。
 
 ```ts title="插件 API 和状态"
-import { createEditor, defineBasePlugin } from 'platejs';
+import { createEditor, definePlugin } from 'platejs';
 
-const PanelPlugin = defineBasePlugin('panel', {
+const PanelPlugin = definePlugin('panel', {
   initialState: { open: false },
   api: ({ store }) => ({
     isOpen: () => store.get('open'),
@@ -108,19 +108,18 @@ const sameApi = editor.api.panel === panel.api;
 
 仅提供行为的描述符不公开 consumer `schema`。描述符查找会同时检查描述符家族和名称。
 
-在 React 中，从 `platejs/react` 导入 `useEditorPlugin` 和 `usePluginStore`。
-`useEditorPlugin(Plugin)` 提供推断的 portal。`usePluginStore(Plugin, key)` 或
+在 React 中，使用 `useEditor().plugin(Plugin)` 获取推断的 portal。
+`usePluginStore(Plugin, key)` 或
 `usePluginStore(Plugin, selector)` 让组件订阅插件状态。
 
-### 运行时名称
+### 动态描述符
 
-名称仅在运行时确定时，使用 `editor.plugin(name)` 或 `useEditorPlugin(name)`。
-这些查找用于安装检查、schema 标识读取和运行时查询分发。让 TypeScript 推断返回值。
+当应用数据在运行时选择能力时，先通过应用维护的允许描述符映射解析该值，再把选中的
+描述符传给 `editor.plugin`。`editor.plugin` 只接受描述符。
 
 允许插件缺失时，先检查 `.installed`。调用方明确需要元素插件时才读取
 `.schema.type`，需要主 mark 时才读取 `.schema.key`。Schema 种类不匹配会抛出错误。
-名称不能证明描述符家族，也不提供其精确的 API、update 和 store 类型契约；
-调用方需要这些能力时，请传入描述符。
+名称不能证明描述符家族，也不提供其精确的 API、update 和 store 类型契约。
 
 ## 初始化
 
@@ -148,8 +147,8 @@ export function useBasicEditor() {
 
 | 步骤                | 行为                                                                                                                           |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Runtime 状态        | 保留 Plite `editor.id`，并初始化 `runtime.userId`。                                                                            |
-| 插件访问            | 将已安装 API 发布到 `editor.api[name]`，并安装 descriptor 或 name 的 `plugin(...)` portal。                                |
+| Runtime 状态        | 保留 Plate `editor.id`，并初始化 `runtime.userId`。                                                                            |
+| 插件访问            | 将已安装 API 发布到 `editor.api[name]`，并通过 `editor.plugin(Plugin)` 解析描述符拥有的 portal。                       |
 | Core plugins        | 解析 core plugins，用相同 name 的自定义插件替换 core plugins，并解析 root plugin。                                             |
 | Components          | 将 `components` 合并到 root-plugin component overrides。                                                                       |
 | Normalization guard | 包装 `normalizeNode`，让 `editor.api.shouldNormalizeNode(entry)` 可以跳过一次 normalization。                                  |
@@ -160,8 +159,7 @@ export function useBasicEditor() {
 ## Core API
 
 核心插件在用户插件之前解析。导航反馈是 React 编辑器的默认插件，可通过
-`navigationFeedback: false` 禁用。其 API 使用 `useEditor()` 或
-`useEditorPlugin()` 返回的已挂载编辑器。
+`navigationFeedback: false` 禁用。其 API 使用 `useEditor()` 返回的已挂载编辑器。
 
 <API name="Core plugin APIs">
   <APIMethods>
@@ -187,7 +185,7 @@ export function useBasicEditor() {
       name="editor.api.debug.error"
       type="(message: unknown, type?: DebugErrorType, details?: any) => void"
     >
-      开发环境默认抛出 `PlateError`。用 `DebugPlugin` 配置 logging 或
+      开发环境默认抛出 `EditorError`。用 `DebugPlugin` 配置 logging 或
       `throwErrors`。
     </APIItem>
     <APIItem
@@ -211,7 +209,7 @@ export function useBasicEditor() {
 
 ## Core 事务
 
-mutation 通过 `editor.update` 执行。Core Plite 命令位于 transaction 对象上；
+mutation 通过 `editor.update` 执行。Core Plate 命令位于 transaction 对象上；
 插件通过 constructor 的 `update` 字段添加 key 对应的命令。
 
 <API name="Core transactions">
@@ -220,32 +218,32 @@ mutation 通过 `editor.update` 执行。Core Plite 命令位于 transaction 对
       name="editor.update(policy).value.replace(input)"
       type="(input: SnapshotInput) => void"
     >
-      通过一次配置后的 Plite update 替换主 children、命名 roots、持久化 meta，
+      通过一次配置后的 Plate update 替换主 children、命名 roots、持久化 meta，
       并可同时设置 selection。
     </APIItem>
     <APIItem
       name="editor.update((tx) => tx.nodes.insert(node, options))"
       type="(node: Node, options?: NodeInsertNodesOptions) => void"
     >
-      通过 Plite node transaction group 插入一个 node 或 fragment。
+      通过 Plate node transaction group 插入一个 node 或 fragment。
     </APIItem>
     <APIItem
       name="editor.update((tx) => tx.nodes.set(props, options))"
       type="(props: Partial<Node>, options?: NodeSetNodesOptions) => void"
     >
-      通过 Plite node transaction group 更新匹配节点。
+      通过 Plate node transaction group 更新匹配节点。
     </APIItem>
     <APIItem
       name="editor.update((tx) => tx.marks.toggle(key, value))"
       type="(key: string, value?: unknown) => void"
     >
-      通过 Plite mark transaction group 切换 inline mark。
+      通过 Plate mark transaction group 切换 inline mark。
     </APIItem>
     <APIItem
       name="editor.update((tx) => tx.selection.select(location))"
       type="(location: Location) => void"
     >
-      通过 Plite selection transaction group 更新当前 selection。
+      通过 Plate selection transaction group 更新当前 selection。
     </APIItem>
   </APITransforms>
 </API>

@@ -1,5 +1,5 @@
 ---
-description: 'Slate issue-ledger provenance and claim-hygiene skill: archive-first discovery, duplicate/stale/invalid proof, exact claim levels, fork dossier accounting, external issue provenance support, and gitcrawl CLI refreshes. Not a public issue/PR queue orchestrator.'
+description: Maintain Slate issue provenance, archive discovery, claim levels, fork dossiers and gitcrawl refreshes.
 argument-hint: '[<update> | issue refs | cluster name | ledger batch | claim-sync | fork-dossier | external <owner/repo> provenance]'
 disable-model-invocation: true
 name: clawsweeper

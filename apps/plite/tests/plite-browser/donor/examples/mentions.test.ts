@@ -2,12 +2,13 @@ import { Buffer } from 'node:buffer';
 
 import { expect, type Locator, test } from '@playwright/test';
 import {
-  attachPliteBrowserJsonArtifact,
-  installPliteReactRenderProfiler,
+  attachBrowserJsonArtifact,
+  installReactRenderProfiler,
   openExample,
-  recordPliteBrowserRuntimeErrors,
-  resetPliteReactRenderProfiler,
-  takePliteBrowserRenderStateSnapshot,
+  recordBrowserRuntimeErrors,
+  resetReactRenderProfiler,
+  takeBrowserRenderStateSnapshot,
+  withExclusiveClipboardAccess,
 } from '@platejs/test/playwright';
 
 const pliteCoverageErrors = new WeakMap<
@@ -16,7 +17,7 @@ const pliteCoverageErrors = new WeakMap<
 >();
 
 const getEditor = (page: import('@playwright/test').Page) =>
-  page.locator('[data-plite-editor="true"]').first();
+  page.locator('[data-editor="true"]').first();
 
 const getBrowserUndoHotkey = async (root: Locator) =>
   root
@@ -36,7 +37,7 @@ const parsePliteFragmentFromHtml = (html: string | null) => {
     throw new Error('Missing text/html clipboard payload');
   }
 
-  const match = html.match(/data-plite-fragment=(["'])(.*?)\1/);
+  const match = html.match(/data-editor-fragment=(["'])(.*?)\1/);
 
   if (!match) {
     throw new Error('Missing Plite fragment in text/html clipboard payload');
@@ -71,10 +72,10 @@ const selectMentionInsertionPoint = async (
     });
 
     const textElement = element.querySelector(
-      `[data-plite-node="text"][data-plite-path="${point.path.join(',')}"]`
+      `[data-editor-node="text"][data-editor-path="${point.path.join(',')}"]`
     );
     const stringElement = textElement?.querySelector(
-      '[data-plite-string], [data-plite-zero-width]'
+      '[data-editor-string], [data-editor-zero-width]'
     );
     const textNode = Array.from(stringElement?.childNodes ?? []).find(
       (node) => node.nodeType === Node.TEXT_NODE
@@ -168,7 +169,7 @@ test.describe('mentions example', () => {
         errors.push(message.text());
       }
     });
-    await installPliteReactRenderProfiler(page);
+    await installReactRenderProfiler(page);
     await page.goto('/examples/plite/mentions');
     await expect(page.getByRole('textbox')).toBeVisible();
   });
@@ -190,7 +191,7 @@ test.describe('mentions example', () => {
       testInfo.project.name === 'mobile',
       'Desktop select-all undo repro'
     );
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/mentions', {
       ready: {
         editor: 'visible',
@@ -239,7 +240,7 @@ test.describe('mentions example', () => {
 
     try {
       if (MENTIONS_FIREFOX_SELECT_ALL_DIAGNOSTIC) {
-        await attachPliteBrowserJsonArtifact(
+        await attachBrowserJsonArtifact(
           testInfo,
           'mentions-firefox-select-all-before',
           await captureDiagnostic('before-select-all')
@@ -249,7 +250,7 @@ test.describe('mentions example', () => {
       await editor.selection.selectAll();
 
       if (MENTIONS_FIREFOX_SELECT_ALL_DIAGNOSTIC) {
-        await attachPliteBrowserJsonArtifact(
+        await attachBrowserJsonArtifact(
           testInfo,
           'mentions-firefox-select-all-after-select-all',
           await captureDiagnostic('after-select-all')
@@ -259,7 +260,7 @@ test.describe('mentions example', () => {
       await editor.root.press('Z');
       if (MENTIONS_FIREFOX_SELECT_ALL_DIAGNOSTIC) {
         await page.waitForTimeout(500);
-        await attachPliteBrowserJsonArtifact(
+        await attachBrowserJsonArtifact(
           testInfo,
           'mentions-firefox-select-all-after-insert',
           await captureDiagnostic('after-insert')
@@ -287,7 +288,7 @@ test.describe('mentions example', () => {
       runtimeErrors.assertNone();
     } catch (error) {
       if (MENTIONS_FIREFOX_SELECT_ALL_DIAGNOSTIC) {
-        await attachPliteBrowserJsonArtifact(
+        await attachBrowserJsonArtifact(
           testInfo,
           'mentions-firefox-select-all-failure',
           {
@@ -307,7 +308,7 @@ test.describe('mentions example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name !== 'chromium', 'Chromium IME atom proof');
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/mentions', {
@@ -344,7 +345,7 @@ test.describe('mentions example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard repro');
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/mentions', {
@@ -363,7 +364,7 @@ test.describe('mentions example', () => {
 
       const payload = await editor.clipboard.copyNativeEventPayload();
 
-      expect(payload.html).toContain('data-plite-fragment=');
+      expect(payload.html).toContain('data-editor-fragment=');
 
       await editor.selection.collapse({ path: [1, 2], offset: 4 });
       await editor.focus();
@@ -384,7 +385,7 @@ test.describe('mentions example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard repro');
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/mentions', {
@@ -399,37 +400,41 @@ test.describe('mentions example', () => {
         focus: { path: [1, 1, 0], offset: 0 },
       });
 
-      const payload = await editor.clipboard.copyNativeEventPayload();
+      await withExclusiveClipboardAccess(async () => {
+        const payload = await editor.clipboard.copyNativeEventPayload();
 
-      expect(payload.html).toContain('data-plite-fragment=');
-      expect(parsePliteFragmentFromHtml(payload.html)).toEqual({
-        version: 1,
-        slice: {
-          content: [
-            {
-              type: 'paragraph',
-              children: [
-                {
-                  type: 'mention',
-                  character: 'R2-D2',
-                  children: [{ text: '', bold: true }],
-                },
-              ],
-            },
-          ],
-          openEnd: 1,
-          openStart: 1,
-        },
+        expect(payload.html).toContain('data-editor-fragment=');
+        expect(parsePliteFragmentFromHtml(payload.html)).toEqual({
+          version: 1,
+          slice: {
+            content: [
+              {
+                type: 'paragraph',
+                children: [
+                  {
+                    type: 'mention',
+                    character: 'R2-D2',
+                    children: [{ text: '', bold: true }],
+                  },
+                ],
+              },
+            ],
+            openEnd: 1,
+            openStart: 1,
+          },
+        });
+
+        await editor.selection.collapse({ path: [1, 2], offset: 4 });
+        await editor.focus();
+
+        for (let i = 0; i < 3; i += 1) {
+          await editor.root.press('ControlOrMeta+V');
+          await expect(
+            page.locator('[data-cy="mention-R2-D2"]')
+          ).toHaveCount(i + 2);
+        }
       });
 
-      await editor.selection.collapse({ path: [1, 2], offset: 4 });
-      await editor.focus();
-
-      for (let i = 0; i < 3; i += 1) {
-        await editor.root.press('ControlOrMeta+V');
-      }
-
-      await expect(page.locator('[data-cy="mention-R2-D2"]')).toHaveCount(4);
       await expect(page.locator('[data-cy="mention-Mace-Windu"]')).toHaveCount(
         1
       );
@@ -452,7 +457,7 @@ test.describe('mentions example', () => {
       'Desktop clipboard payload proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/mentions', {
@@ -472,7 +477,7 @@ test.describe('mentions example', () => {
       expect(payload.types).toEqual(
         expect.arrayContaining(['text/html', 'text/plain'])
       );
-      expect(payload.html).toContain('data-plite-fragment=');
+      expect(payload.html).toContain('data-editor-fragment=');
       expect(payload.html).toContain('@R2-D2');
       expect(payload.html).not.toContain('\uFEFF');
       expect(payload.html).not.toContain('Try mentioning characters');
@@ -535,7 +540,7 @@ test.describe('mentions example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard repro');
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/mentions', {
@@ -835,13 +840,13 @@ test.describe('mentions example', () => {
       anchor: { path: [1, 0], offset: beforeFirstMentionText.length },
       focus: { path: [1, 0], offset: beforeFirstMentionText.length },
     });
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await editor.root.press('ArrowRight');
     await editor.assert.selection({
       anchor: { path: [1, 1, 0], offset: 0 },
       focus: { path: [1, 1, 0], offset: 0 },
     });
-    let proof = await takePliteBrowserRenderStateSnapshot(editor);
+    let proof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
       anchor: { path: [1, 1, 0], offset: 0 },
@@ -863,13 +868,13 @@ test.describe('mentions example', () => {
       anchor: { path: [1, 2], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
     });
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await editor.root.press('ArrowLeft');
     await editor.assert.selection({
       anchor: { path: [1, 1, 0], offset: 0 },
       focus: { path: [1, 1, 0], offset: 0 },
     });
-    proof = await takePliteBrowserRenderStateSnapshot(editor);
+    proof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
       anchor: { path: [1, 1, 0], offset: 0 },
@@ -887,13 +892,13 @@ test.describe('mentions example', () => {
       anchor: { path: [1, 2], offset: betweenMentionsText.length },
       focus: { path: [1, 2], offset: betweenMentionsText.length },
     });
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await editor.root.press('ArrowRight');
     await editor.assert.selection({
       anchor: { path: [1, 3, 0], offset: 0 },
       focus: { path: [1, 3, 0], offset: 0 },
     });
-    proof = await takePliteBrowserRenderStateSnapshot(editor);
+    proof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
       anchor: { path: [1, 3, 0], offset: 0 },
@@ -914,13 +919,13 @@ test.describe('mentions example', () => {
       anchor: { path: [1, 4], offset: 0 },
       focus: { path: [1, 4], offset: 0 },
     });
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await editor.root.press('ArrowLeft');
     await editor.assert.selection({
       anchor: { path: [1, 3, 0], offset: 0 },
       focus: { path: [1, 3, 0], offset: 0 },
     });
-    proof = await takePliteBrowserRenderStateSnapshot(editor);
+    proof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
       anchor: { path: [1, 3, 0], offset: 0 },
@@ -939,7 +944,7 @@ test.describe('mentions example', () => {
       'Desktop mention editing proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/mentions', {
@@ -1011,8 +1016,8 @@ test.describe('mentions example', () => {
 
     expect(blockText).toContain('@R2-D2 or @Mace Windu!');
     const lastText = editor.root
-      .locator('[data-plite-node="text"][data-plite-path="1,4"]')
-      .locator('[data-plite-string]')
+      .locator('[data-editor-node="text"][data-editor-path="1,4"]')
+      .locator('[data-editor-string]')
       .first();
     const lastTextRect = await lastText.boundingBox();
 
@@ -1046,7 +1051,7 @@ test.describe('mentions example', () => {
       testInfo.project.name === 'mobile',
       'Desktop inline void drag-selection proof'
     );
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/mentions', {
@@ -1067,8 +1072,8 @@ test.describe('mentions example', () => {
         .locator('[data-cy="mention-Mace-Windu"]')
         .first();
       const lastText = editor.root
-        .locator('[data-plite-node="text"][data-plite-path="1,4"]')
-        .locator('[data-plite-string]')
+        .locator('[data-editor-node="text"][data-editor-path="1,4"]')
+        .locator('[data-editor-string]')
         .first();
       const firstBox = await firstMention.boundingBox();
       const secondBox = await secondMention.boundingBox();
@@ -1107,7 +1112,7 @@ test.describe('mentions example', () => {
       'Desktop dragover visual proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/mentions', {
@@ -1125,7 +1130,7 @@ test.describe('mentions example', () => {
         .toContain('Try mentioning characters, like  or !');
 
       const mention = page.locator('[data-cy="mention-R2-D2"]').first();
-      const cursor = editor.root.locator('[data-plite-drop-cursor]');
+      const cursor = editor.root.locator('[data-editor-drop-cursor]');
       const dispatchMentionDrag = async (horizontalEdge: 'left' | 'right') =>
         mention.evaluate((element, edge) => {
           const rect = element.getBoundingClientRect();
@@ -1150,7 +1155,7 @@ test.describe('mentions example', () => {
       const leftCursorBox = await cursor.boundingBox();
       const voidBox = await mention.evaluate((element) => {
         const rect = element
-          .closest('[data-plite-node][data-plite-void="true"]')
+          .closest('[data-editor-node][data-editor-void="true"]')
           ?.getBoundingClientRect();
 
         if (!rect) {
@@ -1210,7 +1215,7 @@ test.describe('mentions example', () => {
       'Desktop mention text input proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/mentions', {

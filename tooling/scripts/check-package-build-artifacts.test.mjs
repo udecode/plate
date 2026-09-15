@@ -23,10 +23,37 @@ import {
   getPackageRuntimeImportBoundaries,
   getPackageBuildArtifacts,
 } from './check-package-build-artifacts.mjs';
+import { finalizePlateDeclarations } from './finalize-plate-declarations.mjs';
 
 const directPackageDirectories = ['cli', 'platejs', 'plitejs', 'test'];
 const directBuildScript = 'tsdown --config tsdown.config.mts --log-level warn';
-const plateBuildScript = `${directBuildScript} && tsc --project tsconfig.build.json --pretty false && node ../../tooling/scripts/fix-declaration-specifiers.mjs dist`;
+const plateBuildScript = `${directBuildScript} && tsdown --config tsdown.declarations.config.mts --log-level warn && node ../../tooling/scripts/fix-declaration-specifiers.mjs dist && node ../../tooling/scripts/finalize-plate-declarations.mjs dist`;
+
+test('finalizes Plate declarations without private-layer provenance', (t) => {
+  const declarationRoot = mkdtempSync(
+    path.join(os.tmpdir(), 'plate-declarations-')
+  );
+
+  t.after(() => rmSync(declarationRoot, { force: true, recursive: true }));
+
+  const declarationPath = path.join(declarationRoot, 'index.d.ts');
+
+  writeFileSync(
+    declarationPath,
+    '//#region ../internal/editor.d.ts\nexport type Editor = {};\n//#endregion\n'
+  );
+  finalizePlateDeclarations(declarationRoot);
+  assert.equal(
+    readFileSync(declarationPath, 'utf-8'),
+    'export type Editor = {};\n'
+  );
+
+  writeFileSync(declarationPath, '/** Private Plite implementation. */\n');
+  assert.throws(
+    () => finalizePlateDeclarations(declarationRoot),
+    /Plate declarations expose the private Plite layer/u
+  );
+});
 
 test('derives runtime and declaration artifacts from public exports', () => {
   assert.deepEqual(

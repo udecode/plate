@@ -6,17 +6,20 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [
     {
-      name: 'plite-provider-react-compiler',
+      name: 'plite-render-react-compiler',
       enforce: 'pre',
       async transform(code, id) {
         if (
-          id !==
-          path.resolve(import.meta.dirname, './src/react/components/plite.tsx')
+          !['plite.tsx', 'editable-text-blocks.tsx'].some(
+            (file) =>
+              id ===
+              path.resolve(import.meta.dirname, './src/react/components', file)
+          )
         ) {
           return undefined;
         }
 
-        // Provider contracts must observe the memoization used by shipped React code.
+        // Provider and composed-render contracts must observe shipped memoization.
         return transformAsync(code, {
           babelrc: false,
           configFile: false,

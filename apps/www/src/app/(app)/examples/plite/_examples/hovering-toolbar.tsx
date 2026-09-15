@@ -2,7 +2,7 @@ import { RangeApi } from 'plitejs';
 import {
   Editable,
   type RenderLeafProps,
-  Plite,
+  EditorRoot,
   useEditorContext,
   useEditorFocused,
   useEditorSelection,
@@ -46,7 +46,7 @@ const HoveringMenuExample = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <HoveringToolbar />
       <Editable
         onDOMBeforeInput={(event) => {
@@ -70,7 +70,7 @@ const HoveringMenuExample = () => {
         placeholder="Enter some text..."
         renderLeaf={Leaf}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
@@ -136,7 +136,7 @@ const HoveringToolbar = () => {
   return (
     <Portal>
       <Menu
-        className="plite-hovering-toolbar-menu"
+        className="editor-hovering-toolbar-menu"
         onMouseDown={(e: MouseEvent) => {
           // prevent toolbar from taking focus away from editor
           e.preventDefault();

@@ -9,13 +9,14 @@
       "upstream": "skills/principle-fix-root-causes/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "cfae13b5a3e27bc88d069092cae97b3e95246879d5bf14f0e9a4db719c781952",
-      "destinationSha256": "1f056f7fa5d901fa2099226aed46b64ecfffaf6a4931ad3bad3b18eeb52a5383",
+      "destinationSha256": "f9af701b8ab9e3339fe7cae382be6da5564aab6f7e2fcbc0a006f860a0592167",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-fix-root-causes/SKILL.md\n+++ skills/principle-fix-root-causes/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-fix-root-causes\n description: \"Apply when debugging. Trace each symptom to its root cause and fix it there; reproduce first, ask why until you reach it, resist nil-check guards that silence crashes.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Fix Root Causes\n \n"
+      "unifiedDiff": "--- skills/principle-fix-root-causes/SKILL.md\n+++ skills/principle-fix-root-causes/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-fix-root-causes\n-description: \"Apply when debugging. Trace each symptom to its root cause and fix it there; reproduce first, ask why until you reach it, resist nil-check guards that silence crashes.\"\n-disable-model-invocation: true\n+description: \"Trace an unresolved failure mechanism or recurring workaround to its owning cause.\"\n ---\n \n # Fix Root Causes\n"
     }
   ],
   "ownedFiles": [

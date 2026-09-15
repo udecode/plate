@@ -612,7 +612,7 @@ describe('table presentation slow contracts', () => {
             ],
             { anchor: [0, 0, 0], focus: [0, 0, 1] }
           );
-          tx.plugin(BaseTablePlugin).setCellBackground({ color: 'red' });
+          tx.plugin(BaseTablePlugin.name).setCellBackground({ color: 'red' });
         });
 
         expect(editorInstance.read.children()).toMatchObject(output.children);

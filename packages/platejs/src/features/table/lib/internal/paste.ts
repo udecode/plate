@@ -40,6 +40,7 @@ export type TablePasteSource = 'csv' | 'html' | 'model' | 'tsv';
 export type PreparedTablePaste = Readonly<{
   grid: TableGrid;
   height: number;
+  slice: ContentSlice;
   source: TablePasteSource;
   width: number;
 }>;
@@ -71,7 +72,18 @@ export type TablePasteDiagnostic =
 export type PreparedTablePastePlan = Readonly<{
   kind: 'plan';
   operations: readonly TableOperation[];
+  placementGroups: readonly TablePastePlacementGroup[];
   selection: Range;
+}>;
+
+export type TablePastePlacementGroup = Readonly<{
+  placements: ReadonlyArray<
+    Readonly<{
+      at: Path;
+      content: TableCellElement['children'];
+    }>
+  >;
+  source: ContentSlice;
 }>;
 
 export type TableDragCapture = Readonly<{
@@ -87,8 +99,12 @@ export type TableDragCapture = Readonly<{
 export type TableCellDropPlan = Readonly<{
   change: DocumentChange;
   kind: 'plan';
+  placementGroups: readonly TablePastePathPlacementGroup[];
+  root?: string;
   selection: NodeSelection;
 }>;
+
+export type TablePastePathPlacementGroup = TablePastePlacementGroup;
 
 type DeepMutable<T> = T extends (...args: any[]) => unknown
   ? T
@@ -103,6 +119,7 @@ type MutableCell = DeepMutable<TableCellElement>;
 type PrepareTablePasteOptions = Readonly<{
   createCell: TableCellFactory;
   createRow: (row: number) => TableRowElement;
+  slice?: ContentSlice;
   source: TablePasteSource;
 }>;
 
@@ -111,10 +128,6 @@ export type PlanPreparedTablePasteOptions = Readonly<{
   createRow: (row: number) => TableRowElement;
   disableExpand?: boolean;
   fillBounds?: TableSelectionBounds;
-  fitChildren: (
-    cell: TableCellElement,
-    children: TableCellElement['children']
-  ) => TableCellElement['children'] | null;
   root?: string;
   startCol: number;
   startRow: number;
@@ -300,7 +313,7 @@ export const createOrdinaryTablePasteElement = (
 
 export const prepareTablePaste = (
   table: Element,
-  { createCell, createRow, source }: PrepareTablePasteOptions
+  { createCell, createRow, slice, source }: PrepareTablePasteOptions
 ): PreparedTablePaste | TablePasteDiagnostic => {
   const repaired = repairTable(createDetachedTableContext(table), {
     createCell,
@@ -323,6 +336,7 @@ export const prepareTablePaste = (
   return Object.freeze({
     grid,
     height: grid.height,
+    slice: slice ?? ContentSlice.closed([table]),
     source,
     width: grid.width,
   });
@@ -485,8 +499,11 @@ const planUnitTablePaste = (
     }
   }
 
-  const fitted = new Map<TableGridAnchor, TableCellElement['children']>();
   const operations: TableOperation[] = [];
+  const groups = new Map<
+    string,
+    Array<TablePastePlacementGroup['placements'][number]>
+  >();
   let anchorPoint: ReturnType<typeof firstTextPoint> = null;
   let focusPoint: ReturnType<typeof firstTextPoint> = null;
 
@@ -502,27 +519,15 @@ const planUnitTablePaste = (
         return Object.freeze({ kind: 'invalid-source', reason: 'empty' });
       }
 
-      let children = fitted.get(source);
-
-      if (!children) {
-        const nextChildren = options.fitChildren(
-          target.cell,
-          source.cell.children
-        );
-
-        if (nextChildren === null) {
-          return Object.freeze({
-            kind: 'invalid-source',
-            reason: 'content-rejected',
-            ...(source.key ? { sourceCellKey: source.key } : {}),
-          });
-        }
-
-        children = Object.freeze(cloneDeep(nextChildren));
-        fitted.set(source, children);
-      }
-
+      const children = Object.freeze(cloneDeep(source.cell.children));
+      const tileRow = Math.floor((row - bounds.startRow) / prepared.height);
+      const tileCol = Math.floor((col - bounds.startCol) / prepared.width);
+      const groupKey = `${tileRow},${tileCol}`;
+      const placements = groups.get(groupKey) ?? [];
       const path = absolutePath(context, target.path);
+
+      placements.push(Object.freeze({ at: path, content: children }));
+      groups.set(groupKey, placements);
 
       operations.push(
         Object.freeze({
@@ -551,6 +556,14 @@ const planUnitTablePaste = (
   return Object.freeze({
     kind: 'plan',
     operations: Object.freeze(operations),
+    placementGroups: Object.freeze(
+      [...groups.values()].map((placements) =>
+        Object.freeze({
+          placements: Object.freeze(placements),
+          source: prepared.slice,
+        })
+      )
+    ),
     selection: Object.freeze({
       anchor: Object.freeze({
         ...anchorPoint,
@@ -707,10 +720,18 @@ export const planPreparedTablePaste = (
     }
   }
 
-  const fitted = new Map<
-    TableGridAnchor,
-    TableCellElement['children'] | TablePasteDiagnostic
-  >();
+  const placementGroups: Array<
+    Readonly<{
+      placements: ReadonlyArray<
+        Readonly<{
+          cell: TableCellElement;
+          content: TableCellElement['children'];
+          row: number;
+        }>
+      >;
+      source: ContentSlice;
+    }>
+  > = [];
 
   for (
     let tileRow = 0;
@@ -722,6 +743,14 @@ export const planPreparedTablePaste = (
       tileCol < endCol - startCol;
       tileCol += prepared.width
     ) {
+      const group: Array<
+        Readonly<{
+          cell: TableCellElement;
+          content: TableCellElement['children'];
+          row: number;
+        }>
+      > = [];
+
       for (const sourceAnchor of prepared.grid.anchors) {
         const row = startRow + tileRow + sourceAnchor.row;
         const col = startCol + tileCol + sourceAnchor.col;
@@ -731,35 +760,22 @@ export const planPreparedTablePaste = (
         const rowSpan = Math.min(sourceAnchor.rowSpan, endRow - row);
         const colSpan = Math.min(sourceAnchor.colSpan, endCol - col);
         const cell = cloneUnitCell(context, options.createCell, rows, row, col);
-        let children = fitted.get(sourceAnchor);
+        const content = Object.freeze(cloneDeep(sourceAnchor.cell.children));
 
-        if (!children) {
-          const nextChildren = options.fitChildren(
-            cell,
-            sourceAnchor.cell.children
-          );
-
-          children =
-            nextChildren === null
-              ? Object.freeze({
-                  kind: 'invalid-source' as const,
-                  reason: 'content-rejected' as const,
-                  ...(sourceAnchor.key
-                    ? { sourceCellKey: sourceAnchor.key }
-                    : {}),
-                })
-              : Object.freeze(cloneDeep(nextChildren));
-          fitted.set(sourceAnchor, children);
-        }
-
-        if (!Array.isArray(children)) {
-          return children as TablePasteDiagnostic;
-        }
-
-        cell.children = cloneDeep(children);
+        cell.children = cloneDeep(content) as MutableCell['children'];
         setSpan(cell, 'rowSpan', rowSpan);
         setSpan(cell, 'colSpan', colSpan);
         addPlacement(cell, row, col, rowSpan, colSpan, true);
+        group.push(Object.freeze({ cell, content, row }));
+      }
+
+      if (group.length > 0) {
+        placementGroups.push(
+          Object.freeze({
+            placements: Object.freeze(group),
+            source: prepared.slice,
+          })
+        );
       }
     }
   }
@@ -848,10 +864,38 @@ export const planPreparedTablePaste = (
       reason: 'content-rejected',
     });
   }
+  const resolvedPlacementGroups: TablePastePlacementGroup[] = [];
+
+  for (const group of placementGroups) {
+    const placements: Array<TablePastePlacementGroup['placements'][number]> =
+      [];
+
+    for (const placement of group.placements) {
+      const children = rowChildren.get(placement.row);
+      const cellIndex = children?.indexOf(placement.cell) ?? -1;
+
+      if (cellIndex < 0) {
+        return Object.freeze({ kind: 'invalid-target', reason: 'empty' });
+      }
+      placements.push(
+        Object.freeze({
+          at: absolutePath(context, [placement.row, cellIndex]),
+          content: placement.content,
+        })
+      );
+    }
+    resolvedPlacementGroups.push(
+      Object.freeze({
+        placements: Object.freeze(placements),
+        source: group.source,
+      })
+    );
+  }
 
   return Object.freeze({
     kind: 'plan',
     operations: Object.freeze(operations),
+    placementGroups: Object.freeze(resolvedPlacementGroups),
     selection: Object.freeze({
       anchor,
       focus,
@@ -1301,6 +1345,12 @@ export const planTableCellDrop = (
   if (!ElementApi.isElement(sourceElement)) {
     return sourceElement;
   }
+  const sourceSlice = ContentSlice.fromJSON({
+    content: [stripTableCellOperationIds(sourceElement)],
+    openEnd: 0,
+    openStart: 0,
+    ...(before.roots ? { roots: before.roots } : {}),
+  });
 
   const createCell: TableCellFactory = ({ children, header, sourceRow }) =>
     createTableCell({
@@ -1312,6 +1362,7 @@ export const planTableCellDrop = (
   const prepared = prepareTablePaste(sourceElement, {
     createCell,
     createRow,
+    slice: sourceSlice,
     source: 'model',
   });
 
@@ -1332,27 +1383,6 @@ export const planTableCellDrop = (
     createCell,
     createRow,
     disableExpand,
-    fitChildren: (cell, children) => {
-      const fitted = editor.read.slice.fitContent(
-        ContentSlice.closed(children),
-        {
-          parent: cell,
-          ...(target.root === undefined ? {} : { root: target.root }),
-        }
-      );
-
-      if (!copy || !fitted) return fitted;
-
-      const anchor = tableContext.anchorOf(cell);
-      const at = target.tablePath.concat(anchor?.path ?? []).concat(0);
-
-      return fitted.map((node) =>
-        editor.read.schema.copy(node, {
-          at,
-          ...(target.root === undefined ? {} : { root: target.root }),
-        })
-      );
-    },
     ...(target.root === undefined ? {} : { root: target.root }),
     startCol: target.anchor.col,
     startRow: target.anchor.row,
@@ -1385,7 +1415,9 @@ export const planTableCellDrop = (
     nextTarget,
     target.tablePath
   );
-
+  const copyPlacementGroups: readonly TablePastePathPlacementGroup[] = copy
+    ? plan.placementGroups
+    : Object.freeze([]);
   for (
     let row = destinationBounds.minRow;
     row <= destinationBounds.maxRow;
@@ -1469,6 +1501,8 @@ export const planTableCellDrop = (
   return Object.freeze({
     change: DocumentChange.between(before, after),
     kind: 'plan',
+    placementGroups: Object.freeze(copyPlacementGroups),
+    ...(target.root === undefined ? {} : { root: target.root }),
     selection,
   });
 };

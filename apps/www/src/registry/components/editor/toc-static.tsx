@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority';
 import type { Editor } from 'platejs';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import { BaseTocPlugin, type Heading } from 'platejs/toc';
 import * as React from 'react';
 
@@ -26,13 +26,13 @@ const DOCX_DEPTH_INDENT: Record<number, string> = {
 };
 
 export function TocElementStatic(
-  props: PliteElementProps<typeof BaseTocPlugin>
+  props: EditorElementProps<typeof BaseTocPlugin>
 ) {
   const { editor } = props;
   const headingList = getHeadingList(editor);
 
   return (
-    <PliteElement {...props} className="mb-1 p-0">
+    <EditorElement {...props} className="mb-1 p-0">
       <div>
         {headingList.length > 0 ? (
           headingList.map((item: Heading) => (
@@ -53,7 +53,7 @@ export function TocElementStatic(
         )}
       </div>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 
@@ -67,12 +67,14 @@ const getHeadingList = (editor?: Editor) => {
  * DOCX-compatible TOC component.
  * Renders TOC items as anchor links for proper Word internal navigation.
  */
-export function TocElementDocx(props: PliteElementProps<typeof BaseTocPlugin>) {
+export function TocElementDocx(
+  props: EditorElementProps<typeof BaseTocPlugin>
+) {
   const { editor } = props;
   const headingList = getHeadingList(editor);
 
   return (
-    <PliteElement {...props}>
+    <EditorElement {...props}>
       <div
         style={{
           marginBottom: '12pt',
@@ -106,7 +108,7 @@ export function TocElementDocx(props: PliteElementProps<typeof BaseTocPlugin>) {
         )}
       </div>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 

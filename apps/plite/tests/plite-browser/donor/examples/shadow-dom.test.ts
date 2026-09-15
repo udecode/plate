@@ -1,8 +1,8 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 import {
   assertNoIllegalKernelTransitions,
-  createPliteBrowserEditorHarness,
-  createPliteBrowserTextInsertionGauntlet,
+  createBrowserEditorHarness,
+  createBrowserTextInsertionGauntlet,
 } from '@platejs/test/playwright';
 
 const focusTextboxEnd = async (textbox: Locator) => {
@@ -44,7 +44,7 @@ const getShadowNativeSelection = async (textbox: Locator) =>
   });
 
 const selectEnd = async (
-  editor: ReturnType<typeof createPliteBrowserEditorHarness>
+  editor: ReturnType<typeof createBrowserEditorHarness>
 ) => {
   const selection = {
     anchor: { path: [0, 0], offset: 51 },
@@ -62,7 +62,7 @@ const waitForShadowBreakSync = async ({
   page: Page;
   textbox: Locator;
 }) => {
-  await expect(textbox.locator('[data-plite-node="element"]')).toHaveCount(2);
+  await expect(textbox.locator('[data-editor-node="element"]')).toHaveCount(2);
   await page.waitForTimeout(100);
   await focusTextboxEnd(textbox);
 };
@@ -112,7 +112,7 @@ test.describe('shadow-dom example', () => {
     const outerShadow = page.locator('[data-cy="outer-shadow-root"]');
     const innerShadow = outerShadow.locator('> div');
     const textbox = innerShadow.getByRole('textbox');
-    const editor = createPliteBrowserEditorHarness(page, 'shadow-dom', textbox);
+    const editor = createBrowserEditorHarness(page, 'shadow-dom', textbox);
 
     // Ensure the textbox is present
     await expect(textbox).toHaveCount(1);
@@ -144,12 +144,12 @@ test.describe('shadow-dom example', () => {
     const textbox = innerShadow.getByRole('textbox');
     await expect(textbox).toHaveCount(1);
 
-    const editor = createPliteBrowserEditorHarness(page, 'shadow-dom', textbox);
+    const editor = createBrowserEditorHarness(page, 'shadow-dom', textbox);
     await selectEnd(editor);
 
     const result = await editor.scenario.run(
       'shadow-dom-generated-typing-gauntlet',
-      createPliteBrowserTextInsertionGauntlet({
+      createBrowserTextInsertionGauntlet({
         insertedText: 'ShadowProof',
         textAfterInsert: 'ShadowProof',
       }),
@@ -182,7 +182,7 @@ test.describe('shadow-dom example', () => {
     const outerShadow = page.locator('[data-cy="outer-shadow-root"]');
     const innerShadow = outerShadow.locator('> div');
     const textbox = innerShadow.getByRole('textbox');
-    const editor = createPliteBrowserEditorHarness(page, 'shadow-dom', textbox);
+    const editor = createBrowserEditorHarness(page, 'shadow-dom', textbox);
     const offset = 4;
     const text = ' DOM';
 
@@ -212,7 +212,7 @@ test.describe('shadow-dom example', () => {
     const textbox = innerShadow.getByRole('textbox');
     await expect(textbox).toHaveCount(1);
 
-    const editor = createPliteBrowserEditorHarness(page, 'shadow-dom', textbox);
+    const editor = createBrowserEditorHarness(page, 'shadow-dom', textbox);
     await selectEnd(editor);
     await editor.press('ArrowLeft');
 
@@ -258,7 +258,7 @@ test.describe('shadow-dom example', () => {
     const outerShadow = page.locator('[data-cy="outer-shadow-root"]');
     const innerShadow = outerShadow.locator('> div');
     const textbox = innerShadow.getByRole('textbox');
-    const editor = createPliteBrowserEditorHarness(page, 'shadow-dom', textbox);
+    const editor = createBrowserEditorHarness(page, 'shadow-dom', textbox);
     const rtlText = 'שלום';
 
     await editor.selection.selectAll();
@@ -326,7 +326,7 @@ test.describe('shadow-dom example', () => {
     const outerShadow = page.locator('[data-cy="outer-shadow-root"]');
     const innerShadow = outerShadow.locator('> div');
     const textbox = innerShadow.getByRole('textbox');
-    const editor = createPliteBrowserEditorHarness(page, 'shadow-dom', textbox);
+    const editor = createBrowserEditorHarness(page, 'shadow-dom', textbox);
 
     if (browserName === 'webkit' || testInfo.project.name === 'mobile') {
       await selectEnd(editor);

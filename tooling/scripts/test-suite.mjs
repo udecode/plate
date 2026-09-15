@@ -19,6 +19,7 @@ import {
   TEST_FAST_IGNORE_PATTERNS,
   TEST_FILE_PATTERNS,
   TEST_IGNORE_PATTERNS,
+  TEST_ISOLATED_FILE_PATTERNS,
   TEST_SLOW_FILE_PATTERNS,
   TEST_NODE_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
@@ -328,7 +329,11 @@ const bunFiles = selectedFiles.filter((file) => !nodeFiles.includes(file));
 if (bunFiles.length === 0) process.exit(status);
 
 const isolatedFiles = shouldIsolate
-  ? bunFiles.filter((file) => fileUsesMockModule(resolve(file)))
+  ? bunFiles.filter(
+      (file) =>
+        matches(file, TEST_ISOLATED_FILE_PATTERNS) ||
+        fileUsesMockModule(resolve(file))
+    )
   : [];
 const sharedFiles =
   isolatedFiles.length === 0

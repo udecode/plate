@@ -119,7 +119,7 @@ export const pluginInjectNodeProps = (
   const valueKey = getNodePropClassValue(value);
 
   if (element && nodeKey && nodeValueKey) {
-    newProps.className = `plite-${nodeKey}-${nodeValueKey}`;
+    newProps.className = `editor-${nodeKey}-${nodeValueKey}`;
   }
   if (
     (nodeValueKey && classNames?.[nodeValueKey]) ||

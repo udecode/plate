@@ -15,7 +15,7 @@ import {
 } from '../plite-react';
 import { useEditor, useEditorContainerRef } from '../stores';
 
-export const PlateContainer = ({
+export const EditorContainer = ({
   children,
   ...props
 }: HTMLAttributes<HTMLDivElement>) => {
@@ -87,4 +87,4 @@ export const PlateContainer = ({
   );
 };
 
-PlateContainer.displayName = 'PlateContainer';
+EditorContainer.displayName = 'EditorContainer';

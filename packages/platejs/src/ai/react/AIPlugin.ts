@@ -1,7 +1,7 @@
 import type { DefinitionOf } from '../../core';
-import { toPlatePlugin } from '../../react/core';
+import { toReactPlugin } from '../../react/core';
 import { BaseAIPlugin } from '../lib';
 
-export const AIPlugin = toPlatePlugin(BaseAIPlugin);
+export const AIPlugin = toReactPlugin(BaseAIPlugin);
 
 export type AIDefinition = DefinitionOf<typeof AIPlugin>;

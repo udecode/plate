@@ -1,17 +1,17 @@
 import type { AnyBasePlugin } from '../../lib/plugin';
 import { failInvariant } from '../failInvariant';
 import {
-  type CompiledPlateModelBinding,
+  type CompiledModelBinding,
   getCompiledPlateModelBinding,
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from './compilePlateModel';
 
-export type PlateNodeCodecContribution = Readonly<{
+export type NodeCodecContribution = Readonly<{
   declaration: Readonly<Record<string, unknown>>;
   format: string;
   owner: string;
-  schema: CompiledPlateModelBinding['schema'];
+  schema: CompiledModelBinding['schema'];
   targetKey: string | null;
   targetPlugin: string;
   targetType: string | null;
@@ -19,7 +19,7 @@ export type PlateNodeCodecContribution = Readonly<{
 
 const NODE_CODEC_CACHE = new WeakMap<
   object,
-  ReadonlyMap<string, readonly PlateNodeCodecContribution[]>
+  ReadonlyMap<string, readonly NodeCodecContribution[]>
 >();
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -44,7 +44,7 @@ const getTargetPlugin = (
 };
 
 const collect = (editor: object) => {
-  const byFormat = new Map<string, PlateNodeCodecContribution[]>();
+  const byFormat = new Map<string, NodeCodecContribution[]>();
 
   getPlateRuntime(editor).pluginList.forEach((owner) => {
     if (!isRecord(owner.codecs)) return;
@@ -116,7 +116,7 @@ const collect = (editor: object) => {
 export const getPlateNodeCodecContributions = (
   editor: object,
   format: string
-): readonly PlateNodeCodecContribution[] => {
+): readonly NodeCodecContribution[] => {
   let byFormat = NODE_CODEC_CACHE.get(editor);
 
   if (!byFormat) {

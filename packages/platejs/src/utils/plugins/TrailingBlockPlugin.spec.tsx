@@ -1,8 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsxt */
 
-import { createEditor } from 'platejs';
-import { ParagraphPlugin } from 'platejs/react';
+import { BaseParagraphPlugin, createEditor } from 'platejs';
 
 import { jsxt, type TestEditor } from '../../testing';
 import { fixtureSchemaPlugins, normalizeRoot } from './__tests__/normalizeRoot';
@@ -18,7 +17,7 @@ describe('TrailingBlockPlugin', () => {
     });
 
     expect(editor.plugin(TrailingBlockPlugin).initialState.type).toBe(
-      editor.plugin(ParagraphPlugin.name).name
+      editor.plugin(BaseParagraphPlugin).schema.type
     );
   });
 

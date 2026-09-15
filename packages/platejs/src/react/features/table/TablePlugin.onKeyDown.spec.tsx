@@ -11,14 +11,14 @@ import {
 } from '#platejs-test-internal';
 
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
-import { Plate, PlateContent, definePlatePlugin } from '../../core';
+import { EditorRoot, EditorContent, definePlugin } from '../../core';
 import { pipeHandler } from '../../utils/pipeHandler.internal';
 import { TablePlugin } from './TablePlugin';
 
 jsxt;
 
-const TestPlate = Plate as React.ComponentType<
-  Omit<React.ComponentProps<typeof Plate>, 'children'>
+const TestPlate = EditorRoot as React.ComponentType<
+  Omit<React.ComponentProps<typeof EditorRoot>, 'children'>
 >;
 
 const createTableEditor = (input: TestEditor) =>
@@ -88,7 +88,7 @@ describe('TablePlugin onKeyDown', () => {
       </editor>
     ) as TestEditor;
     const competingHandler = mock();
-    const CompetingTabPlugin = definePlatePlugin('competingTab', {
+    const CompetingTabPlugin = definePlugin('competingTab', {
       shortcuts: {
         tab: { handler: competingHandler, keys: 'tab' },
       },
@@ -107,7 +107,7 @@ describe('TablePlugin onKeyDown', () => {
       React.createElement(
         TestPlate,
         { editor, suppressInstanceWarning: true },
-        React.createElement(PlateContent)
+        React.createElement(EditorContent)
       )
     );
     const editable = container.querySelector('[contenteditable="true"]');
@@ -163,7 +163,7 @@ describe('TablePlugin onKeyDown', () => {
       </editor>
     ) as TestEditor;
     const competingHandler = mock();
-    const CompetingTabPlugin = definePlatePlugin('competingTab', {
+    const CompetingTabPlugin = definePlugin('competingTab', {
       shortcuts: {
         untab: { handler: competingHandler, keys: 'shift+tab' },
       },
@@ -182,7 +182,7 @@ describe('TablePlugin onKeyDown', () => {
       React.createElement(
         TestPlate,
         { editor, suppressInstanceWarning: true },
-        React.createElement(PlateContent)
+        React.createElement(EditorContent)
       )
     );
     const editable = container.querySelector('[contenteditable="true"]');

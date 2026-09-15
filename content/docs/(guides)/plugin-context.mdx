@@ -11,7 +11,7 @@ editor methods or React hooks when code runs outside a plugin callback.
 
 ## Context shape
 
-`PlatePluginContext` extends the shared plugin context with a React
+`PluginContext` extends the shared plugin context with a React
 `Editor`. The same helper names are available in headless Plate base plugins,
 but the editor type is `Editor`.
 
@@ -36,14 +36,14 @@ Event callbacks receive context plus the event or lifecycle payload. Use the
 context helpers instead of closing over editor state.
 
 ```ts title="counter-plugin.ts" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
 export type CounterPluginState = {
   count: number;
   enabled: boolean;
 };
 
-export const CounterPlugin = definePlatePlugin('counter', {
+export const CounterPlugin = definePlugin('counter', {
   initialState: {
     count: 0,
     enabled: true,
@@ -65,19 +65,19 @@ export const CounterPlugin = definePlatePlugin('counter', {
 
 `store` is scoped to `CounterPlugin` in this example.
 
-## Extension callbacks
+## Plugin callbacks
 
 Configuration, native capability, selector, API, transaction, and editor override
 callbacks also receive plugin context.
 
 ```ts title="counter-plugin.ts" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
 export type CounterPluginState = {
   count: number;
 };
 
-export const CounterPlugin = definePlatePlugin('counter', {
+export const CounterPlugin = definePlugin('counter', {
   initialState: {
     count: 0,
   } satisfies CounterPluginState,
@@ -100,7 +100,7 @@ Inside `update`, pass a property patch object. Plate infers each key and value
 from the current plugin and its required dependencies:
 
 ```ts
-const LineHeightPlugin = defineBasePlugin('lineHeight', {
+const LineHeightPlugin = definePlugin('lineHeight', {
   schema: {
     properties: {
       lineHeight: schema.elementProperty(property.number()),
@@ -119,14 +119,14 @@ update method.
 
 ## Native capability inference
 
-Declare native Plite fields directly in the constructor or a staged
+Declare editor fields directly in the constructor or a staged
 `.extend()` callback. Their capability-specific helpers and Plate plugin
 context are inferred together. Extract domain inputs instead of the whole
 Plate plugin context.
 
-Use `defineExtension` from `platejs` only for independently
-reusable standalone Plite descriptors. See
-[Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
+Use `definePlugin` from `platejs` only for independently
+reusable standalone Plate descriptors. See
+[Plugin Methods](/docs/plugin-methods#commands).
 
 ## Codec inference
 
@@ -134,9 +134,9 @@ Use `defineCodecs` in the constructor's `codecs` callback. It is the codec
 map's single inference anchor:
 
 ```ts title="strong-plugin.ts" showLineNumbers
-import { defineBasePlugin, property } from 'platejs';
+import { definePlugin, property } from 'platejs';
 
-export const StrongPlugin = defineBasePlugin('strong', {
+export const StrongPlugin = definePlugin('strong', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -162,9 +162,9 @@ consumer portal.
 
 ```ts title="link-aware-plugin.ts" showLineNumbers
 import { LinkPlugin } from 'platejs/react';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const LinkAwarePlugin = definePlatePlugin('linkAware', {
+export const LinkAwarePlugin = definePlugin('linkAware', {
   dependencies: [LinkPlugin],
   on: {
     keyDown: ({ editor, event }) => {
@@ -184,17 +184,17 @@ the handler. Keep cross-plugin writes rare; they couple two plugins tightly.
 
 ## React components
 
-Use `useEditorPlugin` inside a component rendered under `<Plate>`. It returns
-the plugin's flat consumer portal. Call `useEditor()` separately when the
-component also needs the editor.
+Use `useEditor()` inside a component rendered under `<EditorRoot>`, then call
+`editor.plugin(Plugin)` on the returned editor. The combined expression
+`useEditor().plugin(Plugin)` opens the plugin's flat consumer portal.
 
 ```tsx title="counter-badge.tsx" showLineNumbers
-import { useEditorPlugin, usePluginStore } from 'platejs/react';
+import { useEditor, usePluginStore } from 'platejs/react';
 
 import { CounterPlugin } from './counter-plugin';
 
 export function CounterBadge() {
-  const { name } = useEditorPlugin(CounterPlugin);
+  const { name } = useEditor().plugin(CounterPlugin);
   const count = usePluginStore(CounterPlugin, 'count');
   const label = usePluginStore(CounterPlugin, 'label');
 
@@ -223,7 +223,7 @@ export function CounterStatus() {
 }
 ```
 
-To subscribe to another editor registered under the same `<PlateController>`,
+To subscribe to another editor registered under the same `<EditorController>`,
 pass its ID to the selector overload:
 
 ```tsx title="counter-badge.tsx" showLineNumbers
@@ -287,9 +287,9 @@ to infer.
 | Helper | Scope | Notes |
 | --- | --- | --- |
 | `editor.plugin(plugin)` | Any editor code. | Opens the installed plugin's typed consumer portal. |
-| `useEditorPlugin(plugin)` | React under `<Plate>`. | Returns the installed plugin's flat consumer portal. |
-| `usePluginStore(plugin, key, ...args)` | React under `<Plate>`. | Subscribes to one state field or named selector. |
-| `usePluginStore(plugin, selector, options?)` | React under `<Plate>` or a registered editor under `<PlateController>`. | Subscribes to a value derived from plugin state on the provider’s selected editor. Use `useEditorPluginStore(editor, plugin, selector)` for an explicit editor. |
+| `useEditor().plugin(plugin)` | React under `<EditorRoot>`. | Returns the installed plugin's flat consumer portal. |
+| `usePluginStore(plugin, key, ...args)` | React under `<EditorRoot>`. | Subscribes to one state field or named selector. |
+| `usePluginStore(plugin, selector, options?)` | React under `<EditorRoot>` or a registered editor under `<EditorController>`. | Subscribes to a value derived from plugin state on the provider’s selected editor. Use `useEditorPluginStore(editor, plugin, selector)` for an explicit editor. |
 
-For plugin extension methods, see [Plugin Methods](/docs/plugin-methods). For
+For plugin plugin methods, see [Plugin Methods](/docs/plugin-methods). For
 plugin configuration, see [Plugin](/docs/plugin).

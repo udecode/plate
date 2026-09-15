@@ -1,9 +1,12 @@
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  createEditor,
+  definePlugin,
   defineDocumentMigrations,
+  ElementIdPlugin,
 } from 'platejs';
 
+import { authored, readAuthoredFormatSnapshot } from '../authored';
 import {
   type Value,
   createEditor as createPliteEditor,
@@ -12,26 +15,26 @@ import {
   target,
 } from '../facade';
 import { createEditorWithEditor } from '../lib/editor/withPlite';
-import { migratePlateV54 } from './index';
+import { migrateV54 } from './index';
 
 const MigrationSchema = { id: 'plate', version: 54 } as const;
 const migrationOptions = {
   migrations: defineDocumentMigrations(MigrationSchema, {
-    steps: { 54: migratePlateV54 },
+    steps: { 54: migrateV54 },
     unversioned: 53,
   }),
   schema: MigrationSchema,
 } as const;
 
-const ScriptPlugin = defineBasePlugin('script', {
+const ScriptPlugin = definePlugin('script', {
   schema: { mark: property.enum(['sub', 'sup'] as const) },
 });
-const BoldPlugin = defineBasePlugin('bold', {
+const BoldPlugin = definePlugin('bold', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
-const RootPlugin = defineBasePlugin('testRoot', {
+const RootPlugin = definePlugin('testRoot', {
   schema: ({ name, plugins }) => ({
     contentRoots: [
       {
@@ -54,22 +57,22 @@ const mediaElement = () =>
       url: property.string({ required: true }),
     },
   });
-const AudioPlugin = defineBasePlugin('audio', {
+const AudioPlugin = definePlugin('audio', {
   schema: { element: mediaElement() },
 });
-const FilePlugin = defineBasePlugin('file', {
+const FilePlugin = definePlugin('file', {
   schema: { element: mediaElement() },
 });
-const ImagePlugin = defineBasePlugin('image', {
+const ImagePlugin = definePlugin('image', {
   schema: { element: mediaElement() },
 });
-const MediaEmbedPlugin = defineBasePlugin('mediaEmbed', {
+const MediaEmbedPlugin = definePlugin('mediaEmbed', {
   schema: { element: mediaElement() },
 });
-const VideoPlugin = defineBasePlugin('video', {
+const VideoPlugin = definePlugin('video', {
   schema: { element: mediaElement() },
 });
-const MediaRootPlugin = defineBasePlugin('testMediaRoot', {
+const MediaRootPlugin = definePlugin('testMediaRoot', {
   schema: ({ name, plugins }) => ({
     contentRoots: [
       {
@@ -86,7 +89,7 @@ const MediaRootPlugin = defineBasePlugin('testMediaRoot', {
   }),
 });
 
-const TableCellPlugin = defineBasePlugin('tableCell', {
+const TableCellPlugin = definePlugin('tableCell', {
   dependencies: [BaseParagraphPlugin],
   schema: ({ plugins }) => ({
     element: {
@@ -101,7 +104,7 @@ const TableCellPlugin = defineBasePlugin('tableCell', {
     },
   }),
 });
-const TableRowPlugin = defineBasePlugin('tableRow', {
+const TableRowPlugin = definePlugin('tableRow', {
   dependencies: [TableCellPlugin],
   schema: {
     element: {
@@ -110,7 +113,7 @@ const TableRowPlugin = defineBasePlugin('tableRow', {
     },
   },
 });
-const TablePlugin = defineBasePlugin('table', {
+const TablePlugin = definePlugin('table', {
   dependencies: [TableRowPlugin],
   schema: {
     element: {
@@ -135,6 +138,49 @@ const legacyTable = (text: string) => ({
 });
 
 describe('migratePlateV54 editor loading', () => {
+  describe('legacy suggestions', () => {
+    it('keeps prepared element identities coherent across authored projections', () => {
+      let nextId = 0;
+      const editor = createEditor({
+        ...migrationOptions,
+        plugins: [
+          BaseParagraphPlugin,
+          ElementIdPlugin.configure({
+            initialState: {
+              generateId: () => `element-${(nextId += 1)}`,
+            },
+          }),
+          authored({ authorId: 'reader' }),
+        ],
+        initialValue: [
+          {
+            children: [
+              {
+                suggestion: true,
+                suggestion_insert: {
+                  createdAt: 1,
+                  id: 'insert',
+                  type: 'insert',
+                  userId: 'alice',
+                },
+                text: 'draft',
+              },
+            ],
+            type: 'p',
+          },
+        ],
+      });
+      const snapshot = readAuthoredFormatSnapshot(editor);
+      const acceptedId = snapshot.accepted.children[0]?.id;
+
+      expect(acceptedId).toEqual(expect.any(String));
+      expect(snapshot.proposed.children[0]).toHaveProperty('id', acceptedId);
+      expect(snapshot.changes).toMatchObject([
+        { authorId: 'alice', createdAt: 1, id: 'insert' },
+      ]);
+    });
+  });
+
   describe('script marks', () => {
     it('migrates legacy marks during initialization', () => {
       const editor = createEditorWithEditor(createPliteEditor<Value>(), {
@@ -436,7 +482,7 @@ describe('migratePlateV54 editor loading', () => {
         ...migrationOptions,
         plugins: [
           ImagePlugin,
-          defineBasePlugin('foreign', {
+          definePlugin('foreign', {
             schema: {
               element: {
                 content: schema.content.text({ default: 'text', min: 1 }),
@@ -541,7 +587,7 @@ describe('migratePlateV54 editor loading', () => {
     });
 
     it('does not migrate legacy spellings owned by current non-media elements', () => {
-      const ForeignImagePlugin = defineBasePlugin('foreignImage', {
+      const ForeignImagePlugin = definePlugin('foreignImage', {
         schema: {
           element: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -550,7 +596,7 @@ describe('migratePlateV54 editor loading', () => {
           },
         },
       });
-      const ForeignEmbedPlugin = defineBasePlugin('foreignEmbed', {
+      const ForeignEmbedPlugin = definePlugin('foreignEmbed', {
         schema: {
           element: {
             content: schema.content.text({ default: 'text', min: 1 }),

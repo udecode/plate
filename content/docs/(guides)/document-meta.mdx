@@ -1,0 +1,219 @@
+---
+title: "Document Meta"
+description: "Persist primary children, extra roots, and typed document meta fields in one value."
+---
+
+Plate persists a document as primary children, optional extra roots, and
+optional meta. Use roots for editable content outside the primary document and
+state fields for document metadata, settings, and other small model state that
+should share the editor runtime.
+
+Use external stores for comment bodies, permissions, and audit events; Plate can
+render their anchors through annotations.
+
+## Value shape
+
+The full persisted value is `EditorDocumentValue`.
+
+```ts
+type EditorDocumentValue = {
+  children: Descendant[];
+  roots?: Record<string, Descendant[]>;
+  meta?: Record<string, unknown>;
+};
+```
+
+`children` is the primary editable body. Extra roots store headers, footers,
+content roots, synced blocks, captions, and other editable regions owned by the
+same editor.
+
+`meta` stores fields whose descriptors define a versioned `persist` codec.
+Plate encodes those fields in `editor.read.value()` and validates their codec
+version when loading `initialValue`.
+
+## Save the document
+
+Read the full document value from `editor.read.value()`.
+
+```tsx
+const documentValue = editor.read.value();
+
+await saveDocument(JSON.stringify(documentValue));
+```
+
+`EditorRoot` passes the full `EditorDocumentValue` to `onValueChange`, including changes to named roots and persistent metadata. Use `onCommit` when a consumer also needs commit tags, selection changes, or changed-field information.
+
+```tsx
+<EditorRoot
+  editor={editor}
+  onCommit={({ commit, editor }) => {
+    if (!commit.changed.has("document") && commit.dirtyStateKeys.length === 0) {
+      return;
+    }
+
+    localStorage.setItem(
+      "editor.document",
+      JSON.stringify(editor.read.value())
+    );
+  }}
+>
+  <EditorContent />
+</EditorRoot>
+```
+
+## Load the document
+
+Pass the saved document value back as `initialValue` when the editor is created.
+
+```tsx
+const saved = localStorage.getItem("editor.document");
+const initialValue = saved
+  ? JSON.parse(saved)
+  : {
+      children: [{ type: "paragraph", children: [{ text: "Body" }] }],
+    };
+
+const editor = useCreateEditor({
+  plugins: [definePlugin("documentState", { stateFields: [documentTitle] })],
+  initialValue,
+});
+```
+
+`initialValue` seeds the editor once. Replace document content later with
+`editor.update`, not by changing `initialValue` props.
+
+A declared schema validates and snapshots `initialValue` before publication.
+Unknown element types, roots, properties, invalid property values, and illegal
+content relationships fail closed. See [Schema](/docs/schema#validate-a-document)
+for explicit validation and canonicalization APIs.
+
+## Schema identity
+
+The document value does not embed its schema. Read the compiled identity when
+documents can move between schema deployments.
+
+```ts
+const persisted = {
+  document: editor.read.value(),
+  schema: editor.read.schema.identity(),
+};
+```
+
+Every editor returns an identity. A complete schema without `id` and `version`
+returns `{ kind: "derived", fingerprint }`; a named lineage returns
+`{ kind: "named", id, version, fingerprint }`. Treat a named lineage's
+`version` as the application migration boundary and `fingerprint` as a
+deterministic check that the same ID/version still describes the same compiled
+semantics.
+
+`platejs/history` stores this identity in `History.toJSON(editor)` and
+rejects mismatches in `History.fromJSON(editor, json)` before decoding any
+batch. Application document storage owns its own envelope and migration policy.
+
+## State fields
+
+Use `defineStateField` for document metadata and settings that belong to the
+editor model.
+
+```tsx
+import { defineStateField, valueCodecs } from "platejs";
+
+const documentTitle = defineStateField({
+  key: "document.title",
+  collab: "shared",
+  history: "push",
+  initial: () => "Untitled",
+  persist: valueCodecs.string,
+});
+```
+
+Read and write state fields through the editor.
+
+```tsx
+const title = editor.read((state) => state.getField(documentTitle));
+
+editor.update((tx) => {
+  tx.setField(documentTitle, "Q3 Launch Brief");
+});
+```
+
+In React, use `useStateFieldValue` and `useSetStateField` for UI controls.
+
+```tsx
+import { useSetStateField, useStateFieldValue } from "platejs/react";
+
+const title = useStateFieldValue(documentTitle);
+const setTitle = useSetStateField(documentTitle);
+
+return (
+  <input value={title} onChange={(event) => setTitle(event.target.value)} />
+);
+```
+
+The setter accepts the same typed update policy as its editor. It always adds
+Plate React's selection-preservation tags, so an external input can control
+history without stealing focus from itself.
+
+```tsx
+setTitle("Imported title", {
+  history: "skip",
+  tags: "import",
+});
+```
+
+Use state fields for title, layout settings, spellcheck, page settings, or
+document-level mode flags. Do not store ephemeral UI state there unless it
+should persist with the document.
+
+## Persistent and local fields
+
+Omit `persist` for local runtime fields. Plate keeps the value available
+through `state.getField(field)` and omits it from `editor.read.value()`.
+
+```tsx
+const sidePanel = defineStateField({
+  key: "ui.side-panel",
+  history: "skip",
+  initial: () => "closed",
+});
+```
+
+Use this for view-only UI state, temporary panels, local drafts, or caches.
+
+## Collaboration
+
+State-field writes emit the field's typed effect and list its key in
+`commit.dirtyStateKeys`. Collaboration adapters export effects whose descriptor
+uses `collab: "shared"`; local effects stay local.
+
+```tsx
+editor.update((tx) => {
+  tx.setField(documentTitle, "Remote Q2 Brief");
+});
+
+const commit = editor.read.lastCommit();
+```
+
+Replay decoded shared effects through `tx.effects.emit(...)`. The field's
+`persist` codec also versions the generated transition effect; `platejs/yjs`
+owns the registry and remote policy for Yjs documents.
+
+```tsx
+editor.update((tx) => {
+  tx.effects.emit(documentTitle.effect, decodeTitleEffect(message));
+});
+```
+
+Keep large shared values outside state fields or define a compact custom effect
+and reducer. The default field effect carries the previous and next value so
+history can invert it exactly.
+
+## Comments
+
+Comment bodies, permissions, resolved state, and audit events belong to the app
+or collaboration service. Store a lightweight comment, thread, or annotation id
+only when the product needs the reference to copy, paste, serialize, or travel
+with content.
+
+Use [Annotations](/docs/annotations) to render external
+comment anchors in the editor.

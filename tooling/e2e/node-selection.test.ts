@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 
-import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+import { recordBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 const selectedNodePaths = (page: Page) =>
   page
@@ -8,14 +8,16 @@ const selectedNodePaths = (page: Page) =>
     .evaluateAll((elements) =>
       elements
         .map((element) =>
-          element.closest('[data-plite-path]')?.getAttribute('data-plite-path')
+          element
+            .closest('[data-editor-path]')
+            ?.getAttribute('data-editor-path')
         )
         .filter((path): path is string => Boolean(path))
         .sort()
     );
 
 const modelSelection = (page: Page) =>
-  page.locator('[data-plite-editor="true"][contenteditable="true"]').evaluate(
+  page.locator('[data-editor="true"][contenteditable="true"]').evaluate(
     (element) =>
       (
         element as HTMLElement & {
@@ -71,18 +73,14 @@ const copySelectionAndReadFormats = async (page: Page) => {
 test('marquee selection stays editor-owned through focus, clipboard, input, delete, and undo', async ({
   page,
 }) => {
-  let runtimeErrors:
-    | ReturnType<typeof recordPliteBrowserRuntimeErrors>
-    | undefined;
-  const editor = page.locator(
-    '[data-plite-editor="true"][contenteditable="true"]'
-  );
+  let runtimeErrors: ReturnType<typeof recordBrowserRuntimeErrors> | undefined;
+  const editor = page.locator('[data-editor="true"][contenteditable="true"]');
   const heading = editor.getByRole('heading', {
     exact: true,
     name: 'Node Selection',
   });
   const blocks = editor.locator(
-    '[data-plite-node="element"][data-plite-node-key]'
+    '[data-editor-node="element"][data-editor-node-key]'
   );
   const marquee = page.locator('[data-slot="node-selection-drag"]');
   const floatingToolbar = page.getByRole('toolbar').filter({
@@ -99,7 +97,7 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
           requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
         })
     );
-    runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+    runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
     await heading.scrollIntoViewIfNeeded();
 
     const headingBox = await heading.boundingBox();
@@ -111,7 +109,7 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
 
             return {
               bottom: rect.bottom,
-              path: element.getAttribute('data-plite-path'),
+              path: element.getAttribute('data-editor-path'),
               text: element.textContent ?? '',
               left: rect.left,
               top: rect.top,
@@ -154,7 +152,7 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
         ({ x, y }) =>
           document.elementFromPoint(x, y) ===
           document.querySelector(
-            '[data-plite-editor="true"][contenteditable="true"]'
+            '[data-editor="true"][contenteditable="true"]'
           ),
         start
       )
@@ -207,7 +205,7 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
       .poll(() =>
         page.evaluate(() =>
           document.activeElement?.matches(
-            '[data-plite-editor="true"][contenteditable="true"]'
+            '[data-editor="true"][contenteditable="true"]'
           )
         )
       )
@@ -219,7 +217,7 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
 
     const copied = await copySelectionAndReadFormats(page);
 
-    expect(copied['application/x-plite-fragment']).toBeTruthy();
+    expect(copied['application/x-editor-fragment']).toBeTruthy();
     for (const { text } of draggedBlockBoxes) {
       expect(copied['text/plain']).toContain(text.trim());
     }
@@ -261,7 +259,7 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
       .poll(() =>
         page.evaluate(() =>
           document.activeElement?.matches(
-            '[data-plite-editor="true"][contenteditable="true"]'
+            '[data-editor="true"][contenteditable="true"]'
           )
         )
       )
@@ -270,7 +268,7 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
     await page.evaluate(
       ({ end: touchEnd, start: touchStart }) => {
         const editable = document.querySelector<HTMLElement>(
-          '[data-plite-editor="true"][contenteditable="true"]'
+          '[data-editor="true"][contenteditable="true"]'
         );
 
         if (!editable) throw new Error('Expected node-selection editor');

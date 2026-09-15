@@ -43,10 +43,11 @@
         "lint:partition:details",
         "lint:partition:details-react",
         "lint:partition:dnd-react",
-        "lint:partition:docx",
         "lint:partition:docx-export",
         "lint:partition:docx-html",
         "lint:partition:docx-import",
+        "lint:partition:docx-internal",
+        "lint:partition:docx-paste",
         "lint:partition:emoji",
         "lint:partition:emoji-react",
         "lint:partition:excalidraw",
@@ -67,6 +68,7 @@
         "lint:partition:proxies",
         "lint:partition:react",
         "lint:partition:react-core",
+        "lint:partition:react-virtualized",
         "lint:partition:resizable-react",
         "lint:partition:root",
         "lint:partition:slash-command",
@@ -291,7 +293,8 @@
         "!src/diff/**",
         "!src/dom/**",
         "!src/dnd/react/**",
-        "!src/docx/**",
+        "!src/docx/paste/**",
+        "!src/docx/internal/**",
         "!src/docx/export/**",
         "!src/docx/import/**",
         "!src/docx/html/**",
@@ -308,6 +311,7 @@
         "!src/pagination/**",
         "!src/pagination/react/**",
         "!src/react/**",
+        "!src/react/virtualized.*",
         "!src/react/index.*",
         "!src/index.*",
         "!src/root.*",
@@ -370,7 +374,8 @@
         "!test/diff/**",
         "!test/dom/**",
         "!test/dnd/react/**",
-        "!test/docx/**",
+        "!test/docx/paste/**",
+        "!test/docx/internal/**",
         "!test/docx/export/**",
         "!test/docx/import/**",
         "!test/docx/html/**",
@@ -387,6 +392,7 @@
         "!test/pagination/**",
         "!test/pagination/react/**",
         "!test/react/**",
+        "!test/react/virtualized*",
         "!test/react/index*",
         "!test/index*",
         "!test/root*",
@@ -536,27 +542,6 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
-    "lint:partition:docx": {
-      "cache": true,
-      "dependsOn": [],
-      "inputs": [
-        "src/docx/**",
-        "!src/docx/export/**",
-        "!src/docx/import/**",
-        "!src/docx/html/**",
-        "test/docx/**",
-        "!test/docx/export/**",
-        "!test/docx/import/**",
-        "!test/docx/html/**",
-        "$TURBO_ROOT$/oxlint.config.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
     "lint:partition:docx-export": {
       "cache": true,
       "dependsOn": [],
@@ -593,6 +578,36 @@
       "inputs": [
         "src/docx/import/**",
         "test/docx/import/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:docx-internal": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/docx/internal/**",
+        "test/docx/internal/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:docx-paste": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/docx/paste/**",
+        "test/docx/paste/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -910,6 +925,7 @@
       "dependsOn": [],
       "inputs": [
         "src/react/**",
+        "!src/react/virtualized.*",
         "!src/react/index.*",
         "!src/react/features/basic-nodes/**",
         "!src/react/features/basic-styles/**",
@@ -932,6 +948,7 @@
         "!src/react/features/toc/**",
         "!src/react/features/resizable/**",
         "test/react/**",
+        "!test/react/virtualized*",
         "!test/react/index*",
         "!test/react/features/basic-nodes/**",
         "!test/react/features/basic-styles/**",
@@ -953,6 +970,21 @@
         "!test/react/features/tag/**",
         "!test/react/features/toc/**",
         "!test/react/features/resizable/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:react-virtualized": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/react/virtualized.*",
+        "test/react/virtualized*",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -1436,10 +1468,10 @@
         "test:partition:details",
         "test:partition:details-react",
         "test:partition:dnd-react",
-        "test:partition:docx",
         "test:partition:docx-export",
         "test:partition:docx-html",
         "test:partition:docx-import",
+        "test:partition:docx-paste",
         "test:partition:emoji",
         "test:partition:excalidraw",
         "test:partition:excalidraw-react",
@@ -1489,12 +1521,7 @@
     },
     "test:partition:ai": {
       "cache": true,
-      "dependsOn": [
-        "typecheck:partition:ai",
-        "typecheck:partition:ai-react",
-        "typecheck:partition:core",
-        "typecheck:partition:suggestion"
-      ],
+      "dependsOn": ["typecheck:partition:ai", "typecheck:partition:core"],
       "inputs": [
         "src/ai/**",
         "!src/ai/react/**",
@@ -1520,11 +1547,10 @@
         "typecheck:partition:combobox",
         "typecheck:partition:core",
         "typecheck:partition:markdown",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list",
-        "typecheck:partition:suggestion",
-        "typecheck:partition:suggestion-react",
         "typecheck:partition:table"
       ],
       "inputs": [
@@ -1728,7 +1754,8 @@
         "!src/diff/**",
         "!src/dom/**",
         "!src/dnd/react/**",
-        "!src/docx/**",
+        "!src/docx/paste/**",
+        "!src/docx/internal/**",
         "!src/docx/export/**",
         "!src/docx/import/**",
         "!src/docx/html/**",
@@ -1745,6 +1772,7 @@
         "!src/pagination/**",
         "!src/pagination/react/**",
         "!src/react/**",
+        "!src/react/virtualized.*",
         "!src/react/index.*",
         "!src/index.*",
         "!src/root.*",
@@ -1807,7 +1835,8 @@
         "!test/diff/**",
         "!test/dom/**",
         "!test/dnd/react/**",
-        "!test/docx/**",
+        "!test/docx/paste/**",
+        "!test/docx/internal/**",
         "!test/docx/export/**",
         "!test/docx/import/**",
         "!test/docx/html/**",
@@ -1824,6 +1853,7 @@
         "!test/pagination/**",
         "!test/pagination/react/**",
         "!test/react/**",
+        "!test/react/virtualized*",
         "!test/react/index*",
         "!test/index*",
         "!test/root*",
@@ -1986,39 +2016,15 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
-    "test:partition:docx": {
-      "cache": true,
-      "dependsOn": [
-        "typecheck:partition:core",
-        "typecheck:partition:docx",
-        "typecheck:partition:docx-html"
-      ],
-      "inputs": [
-        "src/docx/**",
-        "!src/docx/export/**",
-        "!src/docx/import/**",
-        "!src/docx/html/**",
-        "test/docx/**",
-        "!test/docx/export/**",
-        "!test/docx/import/**",
-        "!test/docx/html/**",
-        "$TURBO_ROOT$/config/plite-source-aliases.ts",
-        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
-        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "bunfig.toml"
-      ],
-      "env": ["CI"],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
     "test:partition:docx-export": {
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
         "typecheck:partition:docx-export",
+        "typecheck:partition:docx-import",
+        "typecheck:partition:docx-internal",
+        "typecheck:partition:proxies",
+        "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-code-block",
         "typecheck:partition:static"
       ],
@@ -2063,11 +2069,35 @@
       "dependsOn": [
         "typecheck:partition:core",
         "typecheck:partition:docx-html",
-        "typecheck:partition:docx-import"
+        "typecheck:partition:docx-import",
+        "typecheck:partition:docx-internal",
+        "typecheck:partition:proxies"
       ],
       "inputs": [
         "src/docx/import/**",
         "test/docx/import/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:docx-paste": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:docx-html",
+        "typecheck:partition:docx-paste"
+      ],
+      "inputs": [
+        "src/docx/paste/**",
+        "test/docx/paste/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -2382,6 +2412,7 @@
         "typecheck:partition:details",
         "typecheck:partition:media",
         "typecheck:partition:migrations",
+        "typecheck:partition:proxies",
         "typecheck:partition:root",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-code-block",
@@ -2450,6 +2481,7 @@
       ],
       "inputs": [
         "src/react/**",
+        "!src/react/virtualized.*",
         "!src/react/index.*",
         "!src/react/features/basic-nodes/**",
         "!src/react/features/basic-styles/**",
@@ -2472,6 +2504,7 @@
         "!src/react/features/toc/**",
         "!src/react/features/resizable/**",
         "test/react/**",
+        "!test/react/virtualized*",
         "!test/react/index*",
         "!test/react/features/basic-nodes/**",
         "!test/react/features/basic-styles/**",
@@ -2753,6 +2786,7 @@
     "test:partition:static": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:core",
         "plitejs#typecheck:partition:react",
         "typecheck:partition:core",
         "typecheck:partition:proxies",
@@ -2801,6 +2835,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:suggestion",
         "typecheck:partition:suggestion-react"
@@ -2956,7 +2991,6 @@
         "plitejs#typecheck:partition:yjs",
         "typecheck:partition:core",
         "typecheck:partition:react",
-        "typecheck:partition:root",
         "typecheck:partition:yjs",
         "typecheck:partition:yjs-react"
       ],
@@ -2984,7 +3018,6 @@
         "typecheck:partition:core",
         "typecheck:partition:react-core",
         "typecheck:partition:root",
-        "typecheck:partition:yjs",
         "typecheck:partition:yjs-react"
       ],
       "inputs": [
@@ -3023,10 +3056,11 @@
         "typecheck:partition:details",
         "typecheck:partition:details-react",
         "typecheck:partition:dnd-react",
-        "typecheck:partition:docx",
         "typecheck:partition:docx-export",
         "typecheck:partition:docx-html",
         "typecheck:partition:docx-import",
+        "typecheck:partition:docx-internal",
+        "typecheck:partition:docx-paste",
         "typecheck:partition:emoji",
         "typecheck:partition:emoji-react",
         "typecheck:partition:excalidraw",
@@ -3047,6 +3081,7 @@
         "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
+        "typecheck:partition:react-virtualized",
         "typecheck:partition:resizable-react",
         "typecheck:partition:root",
         "typecheck:partition:slash-command",
@@ -3095,7 +3130,10 @@
         "typecheck:partition:comments",
         "typecheck:partition:comments-react",
         "typecheck:partition:core",
+        "typecheck:partition:docx-export",
+        "typecheck:partition:docx-import",
         "typecheck:partition:footnote-react",
+        "typecheck:partition:markdown",
         "typecheck:partition:mention",
         "typecheck:partition:migrations",
         "typecheck:partition:proxies",
@@ -3103,8 +3141,12 @@
         "typecheck:partition:react-core",
         "typecheck:partition:root",
         "typecheck:partition:static",
+        "typecheck:partition:suggestion",
+        "typecheck:partition:suggestion-react",
         "typecheck:partition:table",
-        "typecheck:partition:table-react"
+        "typecheck:partition:table-react",
+        "typecheck:partition:yjs",
+        "typecheck:partition:yjs-react"
       ],
       "inputs": [
         "type-tests/**",
@@ -3126,10 +3168,7 @@
     },
     "typecheck:partition:ai": {
       "cache": true,
-      "dependsOn": [
-        "typecheck:partition:core",
-        "typecheck:partition:suggestion"
-      ],
+      "dependsOn": ["typecheck:partition:core"],
       "inputs": [
         "src/ai/**",
         "!src/ai/react/**",
@@ -3161,9 +3200,8 @@
         "typecheck:partition:combobox",
         "typecheck:partition:core",
         "typecheck:partition:markdown",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
-        "typecheck:partition:suggestion",
-        "typecheck:partition:suggestion-react",
         "typecheck:partition:table"
       ],
       "inputs": [
@@ -3456,7 +3494,8 @@
         "!src/diff/**",
         "!src/dom/**",
         "!src/dnd/react/**",
-        "!src/docx/**",
+        "!src/docx/paste/**",
+        "!src/docx/internal/**",
         "!src/docx/export/**",
         "!src/docx/import/**",
         "!src/docx/html/**",
@@ -3473,6 +3512,7 @@
         "!src/pagination/**",
         "!src/pagination/react/**",
         "!src/react/**",
+        "!src/react/virtualized.*",
         "!src/react/index.*",
         "!src/index.*",
         "!src/root.*",
@@ -3711,41 +3751,14 @@
         ".turbo/entrypoint-types/dnd-react.tsbuildinfo"
       ]
     },
-    "typecheck:partition:docx": {
+    "typecheck:partition:docx-export": {
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
-        "typecheck:partition:docx-html"
+        "typecheck:partition:docx-internal",
+        "typecheck:partition:proxies",
+        "typecheck:partition:static"
       ],
-      "inputs": [
-        "src/docx/**",
-        "!src/docx/export/**",
-        "!src/docx/import/**",
-        "!src/docx/html/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*.slow.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/docx.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/docx/**",
-        ".turbo/entrypoint-types/docx.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:docx-export": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:static"],
       "inputs": [
         "src/docx/export/**",
         "!src/**/*.spec.*",
@@ -3799,7 +3812,9 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
-        "typecheck:partition:docx-html"
+        "typecheck:partition:docx-html",
+        "typecheck:partition:docx-internal",
+        "typecheck:partition:proxies"
       ],
       "inputs": [
         "src/docx/import/**",
@@ -3822,6 +3837,61 @@
       "outputs": [
         ".turbo/entrypoint-types/docx-import/**",
         ".turbo/entrypoint-types/docx-import.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:docx-internal": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/docx/internal/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/docx-internal.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/docx-internal/**",
+        ".turbo/entrypoint-types/docx-internal.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:docx-paste": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:docx-html"
+      ],
+      "inputs": [
+        "src/docx/paste/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/docx-paste.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/docx-paste/**",
+        ".turbo/entrypoint-types/docx-paste.tsbuildinfo"
       ]
     },
     "typecheck:partition:emoji": {
@@ -4076,6 +4146,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:standard-list"
       ],
       "inputs": [
@@ -4270,7 +4341,7 @@
     },
     "typecheck:partition:migrations": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:proxies"],
       "inputs": [
         "src/migrations/**",
         "!src/**/*.spec.*",
@@ -4377,6 +4448,7 @@
       ],
       "inputs": [
         "src/react/**",
+        "!src/react/virtualized.*",
         "!src/react/index.*",
         "!src/react/features/basic-nodes/**",
         "!src/react/features/basic-styles/**",
@@ -4417,6 +4489,35 @@
       "outputs": [
         ".turbo/entrypoint-types/react-core/**",
         ".turbo/entrypoint-types/react-core.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:react-virtualized": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:react-virtualized",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/react/virtualized.*",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/react-virtualized.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/react-virtualized/**",
+        ".turbo/entrypoint-types/react-virtualized.tsbuildinfo"
       ]
     },
     "typecheck:partition:resizable-react": {
@@ -4872,6 +4973,7 @@
     "typecheck:partition:static": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:core",
         "plitejs#typecheck:partition:react",
         "typecheck:partition:core",
         "typecheck:partition:proxies"
@@ -4929,6 +5031,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:suggestion"
       ],
@@ -5207,10 +5310,7 @@
     },
     "typecheck:partition:yjs": {
       "cache": true,
-      "dependsOn": [
-        "plitejs#typecheck:partition:yjs",
-        "typecheck:partition:core"
-      ],
+      "dependsOn": ["plitejs#typecheck:partition:yjs"],
       "inputs": [
         "src/yjs/**",
         "!src/yjs/react/**",
@@ -5240,8 +5340,7 @@
       "dependsOn": [
         "plitejs#typecheck:partition:yjs",
         "typecheck:partition:core",
-        "typecheck:partition:react-core",
-        "typecheck:partition:yjs"
+        "typecheck:partition:react-core"
       ],
       "inputs": [
         "src/yjs/react/**",

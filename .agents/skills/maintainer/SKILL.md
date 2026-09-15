@@ -1,5 +1,5 @@
 ---
-description: Plate/Slate maintainer control plane for public GitHub issues, PRs, security queue, heartbeat scans, VISION fit, routing, authority boundaries, and proof-gated handoff.
+description: Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof.
 argument-hint: '[heartbeat | issues | prs | security | queue | <issue-url|pr-url>] [--repo <owner/repo>]'
 disable-model-invocation: true
 name: maintainer

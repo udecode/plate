@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  indentLess,
-  indentMore,
-  insertNewlineAndIndent,
-} from '@codemirror/commands';
+import { indentLess, indentMore, standardKeymap } from '@codemirror/commands';
 import {
   HighlightStyle,
   indentUnit,
@@ -16,10 +12,10 @@ import { search, searchKeymap } from '@codemirror/search';
 // oxlint-disable-next-line react-doctor/prefer-dynamic-import -- This opt-in component is the loading boundary; extensions must exist when its adapter mounts.
 import { EditorState } from '@codemirror/state';
 // oxlint-disable-next-line react-doctor/prefer-dynamic-import -- This opt-in component is the loading boundary; extensions must exist when its adapter mounts.
-import { EditorView, keymap } from '@codemirror/view';
+import { EditorView, keymap, runScopeHandlers } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
 import { createCodeMirrorAdapter } from 'platejs/code-block/codemirror';
-import type { CodeBlockPlugin, PlateElementProps } from 'platejs/react';
+import type { CodeBlockPlugin, EditorElementProps } from 'platejs/react';
 
 import { CodeBlockContainer } from '@/registry/components/editor/code-block';
 
@@ -49,24 +45,17 @@ const codeMirrorAdapter = createCodeMirrorAdapter({
     EditorState.tabSize.of(2),
     search({ top: true }),
     keymap.of(searchKeymap),
+    keymap.of(
+      [
+        { key: 'Tab', run: indentMore, shift: indentLess },
+        ...standardKeymap,
+      ].map((binding) => ({ ...binding, scope: 'code-block' }))
+    ),
     EditorView.domEventHandlers({
       keydown(event, view) {
-        if (
-          event.isComposing ||
-          view.compositionStarted ||
-          view.state.readOnly
-        ) {
-          return false;
-        }
-        if (event.metaKey || event.ctrlKey || event.altKey) return false;
-        if (event.key === 'Tab') {
-          return (event.shiftKey ? indentLess : indentMore)(view);
-        }
-        if (event.key === 'Enter' && !event.shiftKey) {
-          return insertNewlineAndIndent(view);
-        }
-
-        return false;
+        // Composition starts before CodeMirror observes its first text mutation.
+        if (event.isComposing || view.compositionStarted) return false;
+        return runScopeHandlers(view, event, 'code-block');
       },
     }),
     EditorView.theme({
@@ -126,7 +115,7 @@ const codeMirrorAdapter = createCodeMirrorAdapter({
 });
 
 export function CodeBlockCodeMirrorElement(
-  props: PlateElementProps<typeof CodeBlockPlugin> & {
+  props: EditorElementProps<typeof CodeBlockPlugin> & {
     showLanguageLabel?: boolean;
   }
 ) {

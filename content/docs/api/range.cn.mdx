@@ -1,0 +1,26 @@
+---
+title: Range
+description: Plate 范围类型和编辑器范围读取。
+---
+
+范围包含锚点和焦点。纯函数位于 `RangeApi`，编辑器读取位于
+`editor.read.ranges` 下。
+
+## 类型与方法
+
+```ts
+import { RangeApi, type Range } from 'platejs';
+
+const range: Range = {
+  anchor: { path: [0, 0], offset: 0 },
+  focus: { path: [0, 0], offset: 5 },
+};
+const [start, end] = RangeApi.edges(range);
+```
+
+`anchor` 和 `focus` 保留选择方向；`start`、`end` 和 `edges` 按文档顺序
+读取边界。`isBackward` 判断方向，`isCollapsed` 判断两端是否重合。
+`intersection` 返回交集或 `null`；`includes` 判断是否相交，`surrounds`
+判断是否完整包含另一个范围。
+
+精确节点选择不是单一范围；读取[选区 API](/docs/api/selection)中的节点与范围集合。

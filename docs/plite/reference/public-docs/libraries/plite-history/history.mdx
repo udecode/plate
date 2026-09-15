@@ -1,0 +1,220 @@
+---
+title: "History"
+description: "Understand the undo and redo batch shape stored by the history plugin."
+---
+
+The `history()` plugin tracks undo and redo batches for an editor.
+
+## Usage
+
+```typescript
+import { createEditor } from "plitejs";
+import { history } from "plitejs/history";
+
+const editor = createEditor({
+  plugins: [history()],
+});
+
+editor.read((state) => state.history.undos());
+
+editor.update((tx) => {
+  tx.history.undo();
+});
+
+editor.update({ history: "skip" }).text.insert("draft");
+```
+
+## History object
+
+```typescript
+import type {
+  DocumentChange,
+  EditorEffect,
+  EditorSchemaIdentity,
+  Selection,
+} from "plitejs";
+
+export interface History {
+  readonly redos: readonly Batch[];
+  readonly revision: number;
+  readonly schema: EditorSchemaIdentity;
+  readonly undos: readonly Batch[];
+}
+
+interface Batch {
+  readonly change: DocumentChange;
+  readonly effects: readonly EditorEffect[];
+  readonly selectionAfter: Selection;
+  readonly selectionAfterRoot?: string;
+  readonly selectionBefore: Selection;
+  readonly selectionBeforeRoot?: string;
+}
+```
+
+## Static methods
+
+#### `History.isHistory(value: unknown): value is History`
+
+Returns `true` if the passed in `value` is a `History` object and acts as a
+type guard.
+
+#### `History.toJSON(editor): HistoryJSON`
+
+Encode the installed undo and redo stacks as validated version 4 JSON. The
+envelope records the editor's schema identity, and each batch stores its
+canonical `DocumentChange`, registered effects, and selection envelopes.
+
+Compatible typing and same-node property updates coalesce from canonical
+change classifications and changed ranges. Grouping fingerprints are
+runtime-only; loading persisted history starts a fresh automatic group.
+
+#### `History.fromJSON(editor, json): History`
+
+Decode and validate history without mutating the editor. Effect codecs are
+discovered from installed editor-plugin resources, including state fields
+and standalone effects. Install the returned immutable value through
+`tx.history.restore(...)`.
+
+Decoding fails before reading any batch when the persisted schema identity does
+not match the editor. A matching schema ID and version with a different
+fingerprint means the schema semantics need a version bump.
+
+```typescript
+const json = History.toJSON(editor);
+
+localStorage.setItem("plite.history", JSON.stringify(json));
+
+const decoded = History.fromJSON(
+  editor,
+  JSON.parse(localStorage.getItem("plite.history")!)
+);
+
+editor.update((tx) => {
+  tx.history.restore(decoded);
+});
+```
+
+Schema identity is always derived or named; `null` is invalid in memory and in
+version 4 JSON. Schema identity, codec versions, effect keys, built-in selection
+payloads, and JSON values are validated during decoding. Failed decoding leaves
+editor state untouched.
+
+## Editor API
+
+#### `state.history(): History`
+
+Read the current undo and redo stacks.
+
+#### `state.history.undos(): readonly Batch[]`
+
+Read the undo stack.
+
+#### `state.history.redos(): readonly Batch[]`
+
+Read the redo stack.
+
+#### `tx.history.undo(): void`
+
+Undo the previous history batch.
+
+#### `tx.history.redo(): void`
+
+Redo the next history batch.
+
+#### `tx.history.restore(history): void`
+
+Replace both history branches when the surrounding update commits. Commit and
+snapshot subscribers observe the restored revision through that one update.
+
+#### `tx.history.skip(): void`
+
+Do not save the current transaction to history.
+
+#### `tx.history.merge(): void`
+
+Merge the current transaction into the previous compatible undo batch.
+
+#### `tx.history.newBatch(): void`
+
+Start a fresh undo batch for the current transaction.
+
+#### `editor.update({ history: "skip" }, fn): void`
+
+Run one update without saving it to history.
+
+#### `editor.update({ history: "merge" }, fn): void`
+
+Run one update that merges into the previous compatible undo batch.
+
+#### `editor.update({ history: "new-batch" }, fn): void`
+
+Run one update where the first write starts a fresh history batch, then the
+rest of the callback merges into that batch.
+
+For one direct write, configure the update facade instead:
+
+```typescript
+editor.update({ history: "skip" }).text.insert("draft");
+```
+
+#### `editor.update.history.undo(): void`
+
+Undo the previous history batch outside a larger transaction.
+
+#### `editor.update.history.redo(): void`
+
+Redo the next history batch outside a larger transaction.
+
+#### `editor.update.history.restore(history): void`
+
+Restore decoded history as one direct update.
+
+## Authored changes
+
+Install `authored` with History when the document needs attributed accepted edits or review proposals:
+
+```tsx
+import { authored } from "plitejs/authored";
+import { history } from "plitejs/history";
+
+const editor = createEditor({
+  plugins: [
+    authored({ authorId: () => session.user.id, retainHistory: true }),
+    history(),
+  ],
+});
+```
+
+Undo and redo reverse local interaction batches, including the authored operation and mapped selection recorded with that batch. They do not accept or reject collaborative proposals.
+
+Use `update.authored.decide(...)` for review decisions. Use `update.authored.revert(...)` to create a new compensating contribution from retained accepted history. The original contribution and author remain in the authored record.
+
+Persist History with `History.toJSON` only when the application needs local undo stacks after reload. The authored document envelope in `editor.read.value()` separately persists proposals, decisions, causal operations, and optional retained author history.
+
+See [Plite Authored Changes](/docs/plite/libraries/plite-authored).
+
+## Controlled previews
+
+Render ephemeral previews from local state, decorations, or sidecar UI until the
+user commits them. Do not mutate document content for a preview and then try to
+make that preview history later.
+
+Use a local `defineStateField` without a persistence codec and with
+`history: 'skip'` for preview state. Cancel by clearing that field. Accept by
+clearing the preview and applying the real document edit in one normal update.
+
+```tsx
+const previewReplacement = defineStateField<string | null>({
+  key: "local.preview.replacement",
+  history: "skip",
+  initial: () => null,
+});
+
+editor.update((tx) => {
+  tx.setField(previewReplacement, null);
+  tx.text.delete({ at: selectedRange });
+  tx.text.insert(acceptedText);
+});
+```
+
+Undo then restores the document content without resurrecting preview UI.

@@ -1,9 +1,9 @@
 ---
 name: reflect
-description: Spawn three parallel review subagents over the active transcript, surface learnings, and route each to a concrete edit on an existing skill. Use when the user says reflect.
+description: "Review the active conversation for reusable workflow lessons when the user asks to reflect."
 ---
 
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
+For platform-specific commands or delegation, read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md). Use the complete domain method below under current project scope and proof requirements.
 
 # Reflect
 
@@ -59,7 +59,7 @@ Present the synthesizer's full Accepted/Rejected/Backlog output before applying 
 
 Keep backlog findings in the current report unless the user explicitly authorizes tracker publication. A retrospective does not itself authorize external submissions or memory writes.
 
-For each approved Accepted item, follow the Routing field exactly:
+For each authorized Accepted item, follow the Routing field exactly:
 
 - Trivial existing-skill edit (a one-line bullet, a tightened sentence, a stale fact corrected): parent does directly.
 - Substantive existing-skill edit (a new section, a new pattern table, more than ~10 lines): hand to the installed `skill-creator` skill and run its draft / test / iterate loop.
@@ -74,5 +74,5 @@ Short list, no preamble:
 
 - Edits applied: `<skill path>`. What changed, one line each.
 - New skills created: `<skill path>`. One line each (rare).
-- Backlog filed to the devex tracker: `<issue title>` (`<tags>`). One line each.
+- Backlog retained in the report: one line each. If publication was explicitly authorized and completed, include the verified issue link and status instead.
 - Dropped: one line per rejected finding + reason from the synthesizer.

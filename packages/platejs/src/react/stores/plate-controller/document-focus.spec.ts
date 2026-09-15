@@ -4,8 +4,8 @@ import { bindDocumentFocus, getDocumentFocus } from './document-focus.internal';
 test('nested view focus belongs to the nearest editable', () => {
   const outer = document.createElement('div');
   const inner = document.createElement('div');
-  outer.setAttribute('data-plite-editor', 'true');
-  inner.setAttribute('data-plite-editor', 'true');
+  outer.setAttribute('data-editor', 'true');
+  inner.setAttribute('data-editor', 'true');
   inner.tabIndex = 0;
   outer.append(inner);
   document.body.append(outer);
@@ -30,7 +30,7 @@ test('a shadow-root view can publish focus and remount while focused', () => {
   document.body.append(host);
   const shadow = host.attachShadow({ mode: 'open' });
   const element = document.createElement('div');
-  element.setAttribute('data-plite-editor', 'true');
+  element.setAttribute('data-editor', 'true');
   element.tabIndex = 0;
   shadow.append(element);
   const editor = createEditor();
@@ -88,7 +88,7 @@ test('repeated unsubscribe preserves a later subscription for the same editor', 
 
 test('repeated binding cleanup preserves the replacement binding on the same element', () => {
   const element = document.createElement('div');
-  element.setAttribute('data-plite-editor', 'true');
+  element.setAttribute('data-editor', 'true');
   element.tabIndex = 0;
   document.body.append(element);
   const editor = createEditor();

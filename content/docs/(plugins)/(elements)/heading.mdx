@@ -54,16 +54,16 @@ const plugins = [
 A renderer reads element.level and chooses the matching intrinsic element.
 
 ~~~tsx
-import type { PlateElementProps } from 'platejs/react';
+import type { EditorElementProps } from 'platejs/react';
 import { HeadingPlugin } from 'platejs/react';
-import { PlateElement } from 'platejs/react';
+import { EditorElement } from 'platejs/react';
 
 export function HeadingElement(
-  props: PlateElementProps<typeof HeadingPlugin>
+  props: EditorElementProps<typeof HeadingPlugin>
 ) {
   const tag = `h${props.element.level}` as const;
 
-  return <PlateElement as={tag} {...props} />;
+  return <EditorElement as={tag} {...props} />;
 }
 ~~~
 

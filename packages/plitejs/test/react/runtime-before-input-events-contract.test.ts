@@ -4,7 +4,7 @@ import {
   type TextSelection,
   createEditor,
   createEditorView,
-  defineExtension,
+  definePlugin,
   editorCommands,
   getEditorRuntimeOwner,
 } from 'plitejs';
@@ -49,8 +49,8 @@ const expandedSelection: TextSelection = {
 
 test('beforeinput probes semantic text commands on the mounted owner at the DOM selection', () => {
   const editor = createEditor({
-    extensions: [
-      defineExtension('mounted-trigger-command', {
+    plugins: [
+      definePlugin('mounted-trigger-command', {
         commands: ({ handle }) => [
           handle(editorCommands.insertText, ({ input, state }) => {
             if (input.text !== '@' || !input.options?.at) return false;

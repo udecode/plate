@@ -1,4 +1,4 @@
-import { createEditor, defineBasePlugin, type Range } from '../../core';
+import { createEditor, definePlugin, type Range } from '../../core';
 import { BaseCommentsPlugin, type CommentThread } from './BaseCommentsPlugin';
 
 const range: Range = {
@@ -348,7 +348,7 @@ it('enforces message ownership, preserves rich replies, and publishes or discard
   ];
   const id = await api.createThread({
     body,
-    target: { type: 'suggestion', id: 'suggestion' },
+    target: { type: 'change', id: 'suggestion' },
     status: 'draft',
   });
   expect(id).not.toBeNull();
@@ -452,7 +452,7 @@ it('keeps mapped records current through block move, split and merge without a v
 
 it('exposes staged records to a dependent activation and binds ranges after publication', () => {
   let staged: readonly CommentThread[] | undefined;
-  const Reader = defineBasePlugin('commentReader', {
+  const Reader = definePlugin('commentReader', {
     dependencies: [BaseCommentsPlugin],
   }).extend(({ editor }) => ({
     activate: () => {
@@ -504,7 +504,7 @@ it('retires all comment records and pending ranges without retaining document ob
 
 it('discards staged records when a dependent activation rolls back publication', () => {
   let read: () => readonly CommentThread[] = () => [];
-  const Failure = defineBasePlugin('commentActivationFailure', {
+  const Failure = definePlugin('commentActivationFailure', {
     dependencies: [BaseCommentsPlugin],
   }).extend(({ editor }) => ({
     activate: () => {

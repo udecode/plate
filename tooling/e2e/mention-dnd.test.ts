@@ -1,19 +1,17 @@
 import { expect, test } from '@playwright/test';
 
-import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+import { recordBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 test('drags the seeded Alice mention across inline text', async ({ page }) => {
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
-  const editor = page.locator(
-    '[data-plite-editor="true"][contenteditable="true"]'
-  );
-  const mention = editor.locator('[data-plite-value="Alice"]');
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  const editor = page.locator('[data-editor="true"][contenteditable="true"]');
+  const mention = editor.locator('[data-editor-value="Alice"]');
   const paragraph = editor
-    .locator('[data-plite-node="element"]:not([data-plite-inline="true"])')
-    .filter({ has: page.locator('[data-plite-value="Alice"]') })
+    .locator('[data-editor-node="element"]:not([data-editor-inline="true"])')
+    .filter({ has: page.locator('[data-editor-value="Alice"]') })
     .first();
   const targetText = paragraph
-    .locator('[data-plite-node="text"]')
+    .locator('[data-editor-node="text"]')
     .filter({ hasText: ', or insert ' })
     .first();
 
@@ -67,7 +65,7 @@ test('drags the seeded Alice mention across inline text', async ({ page }) => {
 
     await page.mouse.move(end.x, end.y, { steps: 12 });
 
-    const dropCursor = editor.locator('[data-plite-drop-cursor]');
+    const dropCursor = editor.locator('[data-editor-drop-cursor]');
 
     await expect(dropCursor).toBeVisible();
     await expect

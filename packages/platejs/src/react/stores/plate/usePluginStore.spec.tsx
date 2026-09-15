@@ -3,15 +3,15 @@ import { describe, expect, it, mock } from 'bun:test';
 import { act, renderHook } from '@testing-library/react';
 import React from 'react';
 
-import { TestPlate as Plate } from '../../__tests__/TestPlate';
+import { TestPlate as EditorRoot } from '../../__tests__/TestPlate';
 import { EditorProvider } from '../../components/EditorProvider';
 import { createEditor } from '../../editor';
-import { definePlatePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { useEditorPluginStore, usePluginStore } from './usePluginStore';
 
 describe('usePluginStore', () => {
   it('applies a changed equality function to the current selected value', () => {
-    const Plugin = definePlatePlugin('equality', {
+    const Plugin = definePlugin('equality', {
       initialState: { value: 1 },
     });
     const editor = createEditor({ plugins: [Plugin] });
@@ -24,7 +24,9 @@ describe('usePluginStore', () => {
         }),
       {
         initialProps: { preserve: true },
-        wrapper: ({ children }) => <Plate editor={editor}>{children}</Plate>,
+        wrapper: ({ children }) => (
+          <EditorRoot editor={editor}>{children}</EditorRoot>
+        ),
       }
     );
 
@@ -36,7 +38,7 @@ describe('usePluginStore', () => {
   });
 
   it('preserves unchanged state branches while owning newly supplied data', () => {
-    const Plugin = definePlatePlugin('stableBranches', {
+    const Plugin = definePlugin('stableBranches', {
       initialState: { active: 0, results: [{ label: 'first' }] },
     });
     const editor = createEditor({ plugins: [Plugin] });
@@ -44,7 +46,7 @@ describe('usePluginStore', () => {
     const initialResults = store.get('results');
     const renders = mock(() => {});
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>{children}</Plate>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
     const { result } = renderHook(
       () => {
@@ -87,12 +89,12 @@ describe('usePluginStore', () => {
   });
 
   it('rejects uninstalled plugin descriptors', () => {
-    const Plugin = definePlatePlugin('uninstalled', {
+    const Plugin = definePlugin('uninstalled', {
       initialState: { value: 1 },
     });
     const editor = createEditor();
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>{children}</Plate>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
 
     expect(() =>
@@ -101,7 +103,7 @@ describe('usePluginStore', () => {
   });
 
   it('subscribes to fields, named selectors, and selector callbacks', () => {
-    const CounterPlugin = definePlatePlugin('counter', {
+    const CounterPlugin = definePlugin('counter', {
       initialState: {
         value: 1,
       },
@@ -113,7 +115,7 @@ describe('usePluginStore', () => {
       plugins: [CounterPlugin],
     });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>{children}</Plate>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
     const { result } = renderHook(
       () => {
@@ -164,7 +166,7 @@ describe('usePluginStore', () => {
 
   it('evaluates named selectors against the supplied subscription snapshot', () => {
     const snapshots: number[] = [];
-    const CounterPlugin = definePlatePlugin('counter', {
+    const CounterPlugin = definePlugin('counter', {
       initialState: { value: 1 },
       selectors: {
         trackedValue: (state) => {
@@ -176,7 +178,7 @@ describe('usePluginStore', () => {
     });
     const editor = createEditor({ plugins: [CounterPlugin] });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>{children}</Plate>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
     const { result } = renderHook(
       () => usePluginStore(CounterPlugin, 'trackedValue'),
@@ -193,18 +195,18 @@ describe('usePluginStore', () => {
   });
 
   it('selects the requested editor store inside nested providers', () => {
-    const Plugin = definePlatePlugin('scopedStore', {
+    const Plugin = definePlugin('scopedStore', {
       initialState: { value: 1 },
     });
     const outerEditor = createEditor({ plugins: [Plugin] });
     const innerEditor = createEditor({ plugins: [Plugin] });
     innerEditor.plugin(Plugin).store.set({ value: 2 });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={outerEditor}>
-        <Plate editor={innerEditor}>
+      <EditorRoot editor={outerEditor}>
+        <EditorRoot editor={innerEditor}>
           <EditorProvider editor={outerEditor}>{children}</EditorProvider>
-        </Plate>
-      </Plate>
+        </EditorRoot>
+      </EditorRoot>
     );
     const { result } = renderHook(
       () => usePluginStore(Plugin, (state) => state.value),
@@ -227,7 +229,7 @@ describe('usePluginStore', () => {
     } = {
       isEven: (state) => state.value % 2 === 0,
     };
-    const OptionalSelectorPlugin = definePlatePlugin('optionalSelector', {
+    const OptionalSelectorPlugin = definePlugin('optionalSelector', {
       initialState: { value: 2 },
       selectors,
     });
@@ -235,7 +237,7 @@ describe('usePluginStore', () => {
       plugins: [OptionalSelectorPlugin],
     });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>{children}</Plate>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
     const { result } = renderHook(
       () => usePluginStore(OptionalSelectorPlugin, 'isEven'),
@@ -251,10 +253,10 @@ describe('usePluginStore', () => {
   });
 
   it('supports explicit editors and rejects missing plugins and keys', () => {
-    const CounterPlugin = definePlatePlugin('counter', {
+    const CounterPlugin = definePlugin('counter', {
       initialState: { value: 1 },
     });
-    const ExternalPlugin = definePlatePlugin('external', {
+    const ExternalPlugin = definePlugin('external', {
       initialState: { value: 5 },
     });
     const editor = createEditor({ plugins: [CounterPlugin] });

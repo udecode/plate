@@ -3,7 +3,7 @@ import {
   type BasePluginContext,
   type BasePluginDefinition,
   type BasePluginDefinitionInput,
-  defineBasePlugin,
+  definePlugin,
   type Descendant,
   editorCommands,
   type EditorUpdateContext,
@@ -12,8 +12,8 @@ import {
   type ElementOf,
   type ElementWith,
   PathApi,
-  type PlateBlockInsertOptions,
-  type PlatePluginTransaction,
+  type BlockInsertOptions,
+  type PluginTransaction,
   PLUGINS,
   property,
   schema,
@@ -92,7 +92,7 @@ type MediaElementPluginDefinition = BasePluginDefinition &
 type MediaPluginUpdate<C extends MediaElementPluginDefinition> = {
   insert: (
     input: MediaInsertInputForPlugin<C['name']>,
-    options?: PlateBlockInsertOptions
+    options?: BlockInsertOptions
   ) => boolean;
   setUrl: (input: { element: Element; url: string }) => boolean;
 };
@@ -105,14 +105,14 @@ type MediaPluginApi = {
       | null
       | undefined
       | Promise<string | null | undefined>,
-    options?: PlateBlockInsertOptions & {
+    options?: BlockInsertOptions & {
       caption?: MediaInsertInput['caption'];
     }
   ) => Promise<boolean>;
   normalizeUrl: (url: string) => MediaUrlProperties | undefined;
 };
 
-type MediaPluginExtension = {
+type MediaPluginStage = {
   api: (
     context: BasePluginContext<MediaElementPluginDefinition> & {
       update: MediaPluginUpdate<MediaElementPluginDefinition>;
@@ -124,13 +124,10 @@ type MediaPluginExtension = {
   update: (
     context: BasePluginContext<MediaElementPluginDefinition> & {
       context: EditorUpdateContext;
-      tx: PlatePluginTransaction<MediaElementPluginDefinition>;
+      tx: PluginTransaction<MediaElementPluginDefinition>;
     }
   ) => {
-    insert: (
-      input: MediaInsertInput,
-      options?: PlateBlockInsertOptions
-    ) => boolean;
+    insert: (input: MediaInsertInput, options?: BlockInsertOptions) => boolean;
     setUrl: (input: { element: Element; url: string }) => boolean;
   };
 };
@@ -147,7 +144,7 @@ export function defineMediaPlugin<const C extends MediaElementPluginDefinition>(
   update: (
     context: BasePluginContext<C> & {
       context: EditorUpdateContext;
-      tx: PlatePluginTransaction<C>;
+      tx: PluginTransaction<C>;
     }
   ) => MediaPluginUpdate<C>;
 };
@@ -157,9 +154,9 @@ export function defineMediaPlugin(
     url: string
   ) => MediaUrlProperties
 ): unknown {
-  const extension: (
+  const stage: (
     context: BasePluginContext<MediaElementPluginDefinition>
-  ) => MediaPluginExtension = ({ schema: innerSchema, store }) => {
+  ) => MediaPluginStage = ({ schema: innerSchema, store }) => {
     const { type } = innerSchema;
     const normalizeUrl = (url: string): MediaUrlProperties | undefined => {
       const state = store.get() as Readonly<MediaPluginState>;
@@ -307,14 +304,14 @@ export function defineMediaPlugin(
     };
   };
 
-  return extension;
+  return stage;
 }
 
 export type AudioPluginState = MediaPluginState;
 export type FilePluginState = MediaPluginState;
 export type VideoPluginState = MediaPluginState;
 
-export const BaseAudioPlugin = defineBasePlugin(PLUGINS.audio, {
+export const BaseAudioPlugin = definePlugin(PLUGINS.audio, {
   initialState: (): AudioPluginState => ({ isUrl: null, transformUrl: null }),
   schema: {
     element: schema.element.textBlock({
@@ -367,7 +364,7 @@ export const BaseAudioPlugin = defineBasePlugin(PLUGINS.audio, {
 
 export type AudioElement = ElementOf<typeof BaseAudioPlugin>;
 
-export const BaseFilePlugin = defineBasePlugin(PLUGINS.file, {
+export const BaseFilePlugin = definePlugin(PLUGINS.file, {
   initialState: (): FilePluginState => ({ isUrl: null, transformUrl: null }),
   schema: {
     element: schema.element.textBlock({
@@ -423,7 +420,7 @@ export const BaseFilePlugin = defineBasePlugin(PLUGINS.file, {
 
 export type FileElement = ElementOf<typeof BaseFilePlugin>;
 
-export const BaseVideoPlugin = defineBasePlugin(PLUGINS.video, {
+export const BaseVideoPlugin = definePlugin(PLUGINS.video, {
   initialState: (): VideoPluginState => ({ isUrl: null, transformUrl: null }),
   schema: {
     element: schema.element.textBlock({

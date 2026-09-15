@@ -1,0 +1,122 @@
+{
+  "unknownRoutes": {},
+  "possiblyStaleHashes": [],
+  "routeMapIssues": [],
+  "mappedRoutes": 86,
+  "method": "Physical EN route and heading resolution for public MDX links and every redirect-map destination. Existing generated /docs/examples/* and /docs/components/* families need app pipeline route proof; this source check does not assert HTTP status.",
+  "redirectAnchorLocaleChecks": [
+    {
+      "locale": "en",
+      "destination": "/docs/api/location#span",
+      "source": "content/docs/api/location.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "cn",
+      "destination": "/cn/docs/api/location#span",
+      "source": "content/docs/api/location.cn.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "en",
+      "destination": "/docs/api/node#nodeentry",
+      "source": "content/docs/api/node.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "cn",
+      "destination": "/cn/docs/api/node#nodeentry",
+      "source": "content/docs/api/node.cn.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "en",
+      "destination": "/docs/api/point#pointentry",
+      "source": "content/docs/api/point.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "cn",
+      "destination": "/cn/docs/api/point#pointentry",
+      "source": "content/docs/api/point.cn.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "en",
+      "destination": "/docs/debugging#scrubbing-values",
+      "source": "content/docs/(guides)/debugging.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "cn",
+      "destination": "/cn/docs/debugging#scrubbing-values",
+      "source": "content/docs/(guides)/debugging.cn.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "en",
+      "destination": "/docs/editing-behavior#normalize-behavior",
+      "source": "content/docs/(guides)/editing-behavior.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "cn",
+      "destination": "/cn/docs/editing-behavior#normalize-behavior",
+      "source": "content/docs/(guides)/editing-behavior.mdx",
+      "usesEnglishFallback": true,
+      "headingPresent": true
+    },
+    {
+      "locale": "en",
+      "destination": "/docs/plugin#event-handlers",
+      "source": "content/docs/(guides)/plugin.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "cn",
+      "destination": "/cn/docs/plugin#event-handlers",
+      "source": "content/docs/(guides)/plugin.cn.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "en",
+      "destination": "/docs/plugin-methods#commands",
+      "source": "content/docs/(guides)/plugin-methods.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "cn",
+      "destination": "/cn/docs/plugin-methods#commands",
+      "source": "content/docs/(guides)/plugin-methods.cn.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "en",
+      "destination": "/docs/troubleshooting#report-a-reproduction",
+      "source": "content/docs/(guides)/troubleshooting.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    },
+    {
+      "locale": "cn",
+      "destination": "/cn/docs/troubleshooting#report-a-reproduction",
+      "source": "content/docs/(guides)/troubleshooting.cn.mdx",
+      "usesEnglishFallback": false,
+      "headingPresent": true
+    }
+  ],
+  "missingRedirectLocaleAnchors": []
+}

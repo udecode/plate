@@ -12,12 +12,12 @@ import {
 } from '../../../../../packages/plitejs/src/internal/index.ts';
 import {
   createEditor,
-  Editable,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderTextProps,
-  Plite,
+  EditorRoot,
 } from '../../../../../packages/plitejs/src/react/index.ts';
+import { VirtualizedEditable } from '../../../../../packages/plitejs/src/react/virtualized.tsx';
 import { mountApp, now, summarizeMetrics } from '../../shared/react-benchmark';
 
 (globalThis as typeof globalThis & { React?: typeof React }).React = React;
@@ -29,8 +29,8 @@ const blocks = Number(process.env.REACT_ACTIVE_TYPING_BREAKDOWN_BLOCKS || 5000);
 const typeOps = Number(
   process.env.REACT_ACTIVE_TYPING_BREAKDOWN_TYPE_OPS || 10
 );
-const segmentSize = Number(
-  process.env.REACT_ACTIVE_TYPING_BREAKDOWN_ISLAND_SIZE || 32
+const estimatedBlockSize = Number(
+  process.env.REACT_ACTIVE_TYPING_BREAKDOWN_ESTIMATED_BLOCK_SIZE || 32
 );
 const overscan = Number(
   process.env.REACT_ACTIVE_TYPING_BREAKDOWN_ACTIVE_RADIUS || 1
@@ -99,7 +99,7 @@ const createMountedEditor = async () => {
       ? { renderElement: createRenderers(counts).renderElement }
       : {};
   const app = await mountApp(
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Profiler
         id="editable-blocks"
         onRender={(_id, phase, actualDuration) => {
@@ -109,18 +109,15 @@ const createMountedEditor = async () => {
           }
         }}
       >
-        <Editable
-          domStrategy={{
-            overscan,
-            type: 'partial-dom',
-            segmentSize,
-            threshold: 1,
-          }}
+        <VirtualizedEditable
+          estimatedBlockSize={estimatedBlockSize}
           id="active-typing-breakdown"
+          overscan={overscan}
+          style={{ height: 480, overflowY: 'auto' }}
           {...renderers}
         />
       </Profiler>
-    </Plite>
+    </EditorRoot>
   );
 
   const resetProfiler = () => {
@@ -137,103 +134,45 @@ const createMountedEditor = async () => {
 };
 
 const mountedTextCount = (container: Element) =>
-  container.querySelectorAll('[data-plite-node="text"]').length;
-
-const promoteSegment = async ({
-  blockIndex,
-  container,
-  editor,
-}: {
-  blockIndex: number;
-  container: Element;
-  editor: ReturnType<typeof createEditor>;
-}) => {
-  const segmentIndex = Math.floor(blockIndex / segmentSize);
-  const partialDOMPlaceholder = container.querySelector(
-    `[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="${segmentIndex}"]`
-  );
-
-  if (!partialDOMPlaceholder) {
-    editor.update((tx) => {
-      tx.selection.set({
-        anchor: { path: [blockIndex, 0], offset: 0 },
-        focus: { path: [blockIndex, 0], offset: 0 },
-      });
-    });
-    return;
-  }
-
-  partialDOMPlaceholder.dispatchEvent(
-    new container.ownerDocument.defaultView!.MouseEvent('mousedown', {
-      bubbles: true,
-    })
-  );
-};
+  container.querySelectorAll('[data-editor-node="text"]').length;
 
 const measureScenario = async ({
   blockIndex,
-  promote,
   selectBefore,
 }: {
   blockIndex: number;
-  promote: boolean;
   selectBefore?: boolean;
 }) => {
   const samples: Record<string, number>[] = [];
 
   for (let iteration = 0; iteration < iterations + 1; iteration += 1) {
     const context = await createMountedEditor();
-    const beforePromotionMountedText = mountedTextCount(context.container);
+    const mountedTextBeforeSelection = mountedTextCount(context.container);
+    let selectionMs = 0;
 
-    if (promote) {
+    if (selectBefore) {
       const start = now();
       await React.act(async () => {
-        await promoteSegment({
-          blockIndex,
-          container: context.container,
-          editor: context.editor,
-        });
-      });
-      const promotionMs = now() - start;
-      const promotedMountedText = mountedTextCount(context.container);
-      const typingMetrics = measureTyping(context, blockIndex);
-
-      if (iteration > 0) {
-        samples.push({
-          beforePromotionMountedText,
-          selectionMs: 0,
-          promotionMs,
-          promotedMountedText,
-          ...typingMetrics,
-        });
-      }
-    } else {
-      let selectionMs = 0;
-
-      if (selectBefore) {
-        const start = now();
-        await React.act(async () => {
-          context.editor.update((tx) => {
-            tx.selection.set({
-              anchor: { path: [blockIndex, 0], offset: 0 },
-              focus: { path: [blockIndex, 0], offset: 0 },
-            });
+        context.editor.update((tx) => {
+          tx.selection.set({
+            anchor: { path: [blockIndex, 0], offset: 0 },
+            focus: { path: [blockIndex, 0], offset: 0 },
           });
         });
-        selectionMs = now() - start;
-      }
+      });
+      selectionMs = now() - start;
+    }
 
-      const typingMetrics = measureTyping(context, blockIndex);
+    const mountedTextAfterSelection = mountedTextCount(context.container);
+    const typingMetrics = measureTyping(context, blockIndex);
 
-      if (iteration > 0) {
-        samples.push({
-          beforePromotionMountedText,
-          promotedMountedText: beforePromotionMountedText,
-          promotionMs: 0,
-          selectionMs,
-          ...typingMetrics,
-        });
-      }
+    if (iteration > 0) {
+      samples.push({
+        mountedTextAfterSelection,
+        mountedTextBeforeSelection,
+        selectionMs,
+        ...typingMetrics,
+      });
     }
 
     await context.dispose();
@@ -329,29 +268,22 @@ const result = {
     overscan,
     blocks,
     customRenderers,
-    segmentSize,
+    estimatedBlockSize,
     renderElementOnly,
     iterations,
     typeOps,
   },
   lane: 'plite-react-active-typing-breakdown',
   scenarios: {
-    middleShelledModelOnly: await measureScenario({
+    middleVirtualizedModelOnly: await measureScenario({
       blockIndex: Math.floor(blocks / 2),
-      promote: false,
-    }),
-    middlePromoteThenType: await measureScenario({
-      blockIndex: Math.floor(blocks / 2),
-      promote: true,
     }),
     middleSelectThenType: await measureScenario({
       blockIndex: Math.floor(blocks / 2),
-      promote: false,
       selectBefore: true,
     }),
     startActiveTyping: await measureScenario({
       blockIndex: 0,
-      promote: false,
     }),
     selectAll: await measureSelectAll(),
   },

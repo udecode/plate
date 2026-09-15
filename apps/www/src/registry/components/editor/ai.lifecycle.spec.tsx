@@ -50,6 +50,7 @@ test('AIKit installs its transport prerequisite and streams without another feat
   const editor = createEditor({
     plugins: AIKit,
     initialValue: [{ type: 'paragraph', children: [{ text: 'original' }] }],
+    userId: 'alice',
     selection: {
       kind: 'text',
       anchor: { path: [0, 0], offset: 8 },

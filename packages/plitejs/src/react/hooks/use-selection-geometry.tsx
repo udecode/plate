@@ -1,32 +1,46 @@
-import type { RefObject } from 'react';
+import { useMemo, type RefObject } from 'react';
 
-import type { PliteWidgetGeometry } from '../widget-geometry';
-import type { PliteWidget } from '../widget-store';
+import { getSelectionDOMRange } from '../../core/selection-protocol';
+import type { Editor } from '../../index';
+import { getSnapshot } from '../../interfaces/editor';
+import {
+  createRangeGeometryOwner,
+  type RangeGeometry,
+  type RangeGeometryOwner,
+  useRangeGeometryOwner,
+} from '../range-geometry';
 import { useEditorContext } from './use-editor-context';
-import { usePliteWidgetGeometry } from './use-plite-widget-geometry';
-import { usePliteWidgetStore } from './use-plite-widget-store';
 
 /** Identifies the exact mounted Editable used to resolve selection geometry. */
 export type UseSelectionGeometryOptions = Readonly<{
   editableRef: RefObject<HTMLElement | null>;
 }>;
 
-const SELECTION_WIDGET_ID = 'plite-selection-geometry';
-const SELECTION_WIDGETS = Object.freeze([
-  Object.freeze({
-    id: SELECTION_WIDGET_ID,
-    target: Object.freeze({ type: 'selection' as const }),
-  }),
-]) satisfies readonly PliteWidget[];
+export const createSelectionGeometryOwner = (
+  editor: Editor,
+  editableRef: RefObject<HTMLElement | null>
+): RangeGeometryOwner =>
+  createRangeGeometryOwner(
+    editor,
+    {
+      read: (view) => getSelectionDOMRange(view, getSnapshot(view).selection),
+      subscribe: (view, listener) =>
+        view.subscribeCommit((commit) => {
+          if (commit.selectionChanged) listener();
+        }),
+    },
+    editableRef
+  );
 
 /** Read geometry for the current selection in one exact Editable. */
-export function useSelectionGeometry(
-  options: UseSelectionGeometryOptions
-): PliteWidgetGeometry | null {
+export function useSelectionGeometry({
+  editableRef,
+}: UseSelectionGeometryOptions): RangeGeometry | null {
   const editor = useEditorContext();
-  const store = usePliteWidgetStore(editor, SELECTION_WIDGETS, {
-    id: SELECTION_WIDGET_ID,
-  });
+  const owner = useMemo(
+    () => createSelectionGeometryOwner(editor, editableRef),
+    [editableRef, editor]
+  );
 
-  return usePliteWidgetGeometry(store, SELECTION_WIDGET_ID, options);
+  return useRangeGeometryOwner(owner);
 }

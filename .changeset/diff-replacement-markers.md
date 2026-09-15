@@ -11,7 +11,7 @@ Install `diff-match-patch-ts` when importing `plitejs/diff` or `platejs/diff`.
 Install the behavior through the plugin:
 
 ```tsx
-defineBasePlugin('diff', {
+definePlugin('diff', {
   readMiddleware: ({ around }) => [
     around(editorReads.slice.export, ({ next }) => {
       const slice = next();

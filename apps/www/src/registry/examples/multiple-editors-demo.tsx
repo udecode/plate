@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  Plate,
-  PlateController,
+  EditorRoot,
+  EditorController,
   useCreateEditor,
   useOptionalEditor,
 } from 'platejs/react';
@@ -46,28 +46,28 @@ export default function MultipleEditorsDemo() {
   });
 
   return (
-    <PlateController>
+    <EditorController>
       <SharedToolbar />
 
       <div>
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <EditorContainer>
             <Editor />
           </EditorContainer>
-        </Plate>
+        </EditorRoot>
         <Separator />
-        <Plate editor={editorMarks}>
+        <EditorRoot editor={editorMarks}>
           <EditorContainer>
             <Editor />
           </EditorContainer>
-        </Plate>
+        </EditorRoot>
         <Separator />
-        <Plate editor={editorImage}>
+        <EditorRoot editor={editorImage}>
           <EditorContainer>
             <Editor />
           </EditorContainer>
-        </Plate>
+        </EditorRoot>
       </div>
-    </PlateController>
+    </EditorController>
   );
 }

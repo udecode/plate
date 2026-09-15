@@ -1,9 +1,9 @@
 import { expect, type Locator, test } from '@playwright/test';
 import {
-  createPliteBrowserEditorHarness,
+  createBrowserEditorHarness,
   openExample,
-  recordPliteBrowserRuntimeErrors,
-  type PliteBrowserRawViewSelectionSnapshot,
+  recordBrowserRuntimeErrors,
+  type BrowserRawViewSelectionSnapshot,
 } from '@platejs/test/playwright';
 
 const SHARED_ROOT = 'synced-block:shared:body';
@@ -54,25 +54,25 @@ const getBrowserWordForwardSelectionHotkey = async (root: Locator) =>
 const getSyncedBlock = (
   page: Parameters<typeof openExample>[0],
   index: number
-) => page.locator('[data-plite-synced-block]').nth(index);
+) => page.locator('[data-editor-synced-block]').nth(index);
 
 const getSyncedBlockByRoot = (
   page: Parameters<typeof openExample>[0],
   root: string,
   index = 0
-) => page.locator(`[data-plite-synced-root="${root}"]`).nth(index);
+) => page.locator(`[data-editor-synced-root="${root}"]`).nth(index);
 
 const getSyncedEditor = (
   page: Parameters<typeof openExample>[0],
   index: number
-) => getSyncedBlock(page, index).locator('[data-plite-editor="true"]');
+) => getSyncedBlock(page, index).locator('[data-editor="true"]');
 
 const getSyncedEditorByRoot = (
   page: Parameters<typeof openExample>[0],
   root: string,
   index = 0
 ) =>
-  getSyncedBlockByRoot(page, root, index).locator('[data-plite-editor="true"]');
+  getSyncedBlockByRoot(page, root, index).locator('[data-editor="true"]');
 
 const firstSharedOwner = {
   childRoot: SHARED_ROOT,
@@ -108,7 +108,7 @@ const getRenderedViewSelectionText = (
   page: Parameters<typeof openExample>[0]
 ) =>
   page.evaluate(() =>
-    Array.from(document.querySelectorAll('[data-plite-view-selection="true"]'))
+    Array.from(document.querySelectorAll('[data-editor-view-selection="true"]'))
       .map((element) => element.textContent ?? '')
       .join('')
   );
@@ -119,11 +119,11 @@ const getRenderedViewSelectionTextBySharedCopy = (
   page.evaluate(
     (root) =>
       Array.from(
-        document.querySelectorAll(`[data-plite-synced-root="${root}"]`)
+        document.querySelectorAll(`[data-editor-synced-root="${root}"]`)
       )
         .map((block) =>
           Array.from(
-            block.querySelectorAll('[data-plite-view-selection="true"]')
+            block.querySelectorAll('[data-editor-view-selection="true"]')
           )
             .map((element) => element.textContent ?? '')
             .join('')
@@ -134,12 +134,12 @@ const getRenderedViewSelectionTextBySharedCopy = (
 
 const getMountedOwnerTextChildren = (page: Parameters<typeof openExample>[0]) =>
   page.evaluate(() =>
-    Array.from(document.querySelectorAll('[data-plite-synced-block]')).map(
+    Array.from(document.querySelectorAll('[data-editor-synced-block]')).map(
       (block) =>
         Array.from(block.children)
-          .filter((child) => child.getAttribute('data-plite-node') === 'text')
+          .filter((child) => child.getAttribute('data-editor-node') === 'text')
           .map((child) => ({
-            path: child.getAttribute('data-plite-path'),
+            path: child.getAttribute('data-editor-path'),
             text: child.textContent ?? '',
           }))
     )
@@ -195,12 +195,12 @@ const getViewSelection = (
   root:
     | ReturnType<typeof getSyncedEditor>
     | ReturnType<typeof getSyncedEditorByRoot>
-): Promise<PliteBrowserRawViewSelectionSnapshot | null> =>
+): Promise<BrowserRawViewSelectionSnapshot | null> =>
   root.evaluate((element: HTMLElement) => {
     const handle = (
       element as HTMLElement & {
         __pliteBrowserHandle?: {
-          getViewSelection?: () => PliteBrowserRawViewSelectionSnapshot | null;
+          getViewSelection?: () => BrowserRawViewSelectionSnapshot | null;
         };
       }
     ).__pliteBrowserHandle;
@@ -288,7 +288,7 @@ test.describe('synced blocks example', () => {
     await expect(page.locator('.example-page-title')).toContainText(
       'Synced Blocks'
     );
-    await expect(page.locator('[data-plite-synced-block]')).toHaveCount(3);
+    await expect(page.locator('[data-editor-synced-block]')).toHaveCount(3);
     await expect(getSyncedEditorByRoot(page, SHARED_ROOT, 0)).toContainText(
       'Shared mission statement'
     );
@@ -315,7 +315,7 @@ test.describe('synced blocks example', () => {
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
     const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
     const separateEditor = getSyncedEditorByRoot(page, SEPARATE_ROOT);
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -332,7 +332,7 @@ test.describe('synced blocks example', () => {
   test('undo and redo keep focus in the active synced copy', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       patterns: ['Cannot find a descendant', 'Could not set focus'],
     });
 
@@ -343,7 +343,7 @@ test.describe('synced blocks example', () => {
 
       const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
       const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-      const second = createPliteBrowserEditorHarness(
+      const second = createBrowserEditorHarness(
         page,
         'synced-blocks-second-copy',
         secondEditor
@@ -380,7 +380,7 @@ test.describe('synced blocks example', () => {
   test('undo and redo restore focus while walking history across main and synced roots', async ({
     page,
   }, testInfo) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       patterns: ['Cannot find a descendant', 'Could not set focus'],
     });
 
@@ -389,15 +389,15 @@ test.describe('synced blocks example', () => {
         ready: { editor: 'visible' },
       });
 
-      const outerEditor = page.locator('[data-plite-editor="true"]').first();
+      const outerEditor = page.locator('[data-editor="true"]').first();
       const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
       const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-      const outer = createPliteBrowserEditorHarness(
+      const outer = createBrowserEditorHarness(
         page,
         'synced-blocks-outer',
         outerEditor
       );
-      const second = createPliteBrowserEditorHarness(
+      const second = createBrowserEditorHarness(
         page,
         'synced-blocks-second-copy',
         secondEditor
@@ -491,26 +491,26 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
     const separateEditor = getSyncedEditorByRoot(page, SEPARATE_ROOT);
     const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
     );
-    const separate = createPliteBrowserEditorHarness(
+    const separate = createBrowserEditorHarness(
       page,
       'synced-blocks-separate-copy',
       separateEditor
     );
-    const second = createPliteBrowserEditorHarness(
+    const second = createBrowserEditorHarness(
       page,
       'synced-blocks-second-copy',
       secondEditor
@@ -591,26 +591,26 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
     const separateEditor = getSyncedEditorByRoot(page, SEPARATE_ROOT);
     const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
     );
-    const separate = createPliteBrowserEditorHarness(
+    const separate = createBrowserEditorHarness(
       page,
       'synced-blocks-separate-copy',
       separateEditor
     );
-    const second = createPliteBrowserEditorHarness(
+    const second = createBrowserEditorHarness(
       page,
       'synced-blocks-second-copy',
       secondEditor
@@ -669,15 +669,15 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
     const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -769,8 +769,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -845,14 +845,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -896,14 +896,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -950,14 +950,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -1048,14 +1048,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -1121,14 +1121,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -1198,14 +1198,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -1280,14 +1280,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -1390,8 +1390,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -1425,8 +1425,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -1490,14 +1490,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -1593,14 +1593,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -1674,8 +1674,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -1727,7 +1727,7 @@ test.describe('synced blocks example', () => {
   }, testInfo) => {
     skipMobileDesktopProjectedSelectionProof(testInfo);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       patterns: ['Cannot resolve projected point'],
     });
 
@@ -1736,8 +1736,8 @@ test.describe('synced blocks example', () => {
         ready: { editor: 'visible' },
       });
 
-      const outerEditor = page.locator('[data-plite-editor="true"]').first();
-      const outer = createPliteBrowserEditorHarness(
+      const outerEditor = page.locator('[data-editor="true"]').first();
+      const outer = createBrowserEditorHarness(
         page,
         'synced-blocks-outer',
         outerEditor
@@ -1798,8 +1798,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -1854,8 +1854,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -1887,8 +1887,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -1973,8 +1973,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -2016,9 +2016,9 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -2068,8 +2068,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -2098,8 +2098,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -2161,8 +2161,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -2208,10 +2208,10 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
     const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -2276,10 +2276,10 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
     const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -2322,7 +2322,7 @@ test.describe('synced blocks example', () => {
   test('Enter over a projected Shift+Arrow selection inserts a paragraph break across the outer and synced roots', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       patterns: ['Cannot find a descendant', 'Could not set focus'],
     });
 
@@ -2331,10 +2331,10 @@ test.describe('synced blocks example', () => {
         ready: { editor: 'visible' },
       });
 
-      const outerEditor = page.locator('[data-plite-editor="true"]').first();
+      const outerEditor = page.locator('[data-editor="true"]').first();
       const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
       const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-      const outer = createPliteBrowserEditorHarness(
+      const outer = createBrowserEditorHarness(
         page,
         'synced-blocks-outer',
         outerEditor
@@ -2383,7 +2383,7 @@ test.describe('synced blocks example', () => {
   }, testInfo) => {
     skipMobileDesktopProjectedSelectionProof(testInfo);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       patterns: ['Cannot find a descendant', 'Could not set focus'],
     });
 
@@ -2392,15 +2392,15 @@ test.describe('synced blocks example', () => {
         ready: { editor: 'visible' },
       });
 
-      const outerEditor = page.locator('[data-plite-editor="true"]').first();
+      const outerEditor = page.locator('[data-editor="true"]').first();
       const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
       const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-      const first = createPliteBrowserEditorHarness(
+      const first = createBrowserEditorHarness(
         page,
         'synced-blocks-first-copy',
         firstEditor
       );
-      const outer = createPliteBrowserEditorHarness(
+      const outer = createBrowserEditorHarness(
         page,
         'synced-blocks-outer',
         outerEditor
@@ -2453,7 +2453,7 @@ test.describe('synced blocks example', () => {
         .toBe(`${SHARED_BODY_FIRST}Editing `);
       await expect
         .poll(() =>
-          createPliteBrowserEditorHarness(
+          createBrowserEditorHarness(
             page,
             'synced-blocks-second-copy',
             secondEditor
@@ -2476,7 +2476,7 @@ test.describe('synced blocks example', () => {
   }, testInfo) => {
     skipMobileDesktopProjectedSelectionProof(testInfo);
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       patterns: ['Cannot find a descendant', 'Could not set focus'],
     });
 
@@ -2485,15 +2485,15 @@ test.describe('synced blocks example', () => {
         ready: { editor: 'visible' },
       });
 
-      const outerEditor = page.locator('[data-plite-editor="true"]').first();
+      const outerEditor = page.locator('[data-editor="true"]').first();
       const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
       const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-      const first = createPliteBrowserEditorHarness(
+      const first = createBrowserEditorHarness(
         page,
         'synced-blocks-first-copy',
         firstEditor
       );
-      const outer = createPliteBrowserEditorHarness(
+      const outer = createBrowserEditorHarness(
         page,
         'synced-blocks-outer',
         outerEditor
@@ -2530,7 +2530,7 @@ test.describe('synced blocks example', () => {
         .toBe(`${SHARED_BODY_FIRST}Editing `);
       await expect
         .poll(() =>
-          createPliteBrowserEditorHarness(
+          createBrowserEditorHarness(
             page,
             'synced-blocks-second-copy',
             secondEditor
@@ -2565,7 +2565,7 @@ test.describe('synced blocks example', () => {
   test('Delete after native selection inside a synced body keeps the outer document mounted', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       patterns: ['Cannot find a descendant', 'Could not set focus'],
     });
 
@@ -2574,11 +2574,11 @@ test.describe('synced blocks example', () => {
         ready: { editor: 'visible' },
       });
 
-      const outerEditor = page.locator('[data-plite-editor="true"]').first();
+      const outerEditor = page.locator('[data-editor="true"]').first();
       const firstBlock = getSyncedBlockByRoot(page, SHARED_ROOT, 0);
       const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
       const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-      const first = createPliteBrowserEditorHarness(
+      const first = createBrowserEditorHarness(
         page,
         'synced-blocks-first-copy',
         firstEditor
@@ -2605,14 +2605,14 @@ test.describe('synced blocks example', () => {
       await expect(secondEditor).toContainText('Empty synced block');
       await expect(firstEditor).not.toContainText(SHARED_BODY_FIRST);
       await expect(secondEditor).not.toContainText(SHARED_BODY_SECOND);
-      await expect(page.locator('[data-plite-editor="true"]')).toHaveCount(4);
+      await expect(page.locator('[data-editor="true"]')).toHaveCount(4);
       await expect
         .poll(async () => {
           const bodyBox = await firstBlock
-            .locator('.plite-synced-blocks-synced-block-body')
+            .locator('.editor-synced-blocks-synced-block-body')
             .boundingBox();
           const placeholderBox = await firstEditor
-            .locator('[data-plite-placeholder="true"]')
+            .locator('[data-editor-placeholder="true"]')
             .boundingBox();
 
           if (!bodyBox || !placeholderBox) {
@@ -2652,7 +2652,7 @@ test.describe('synced blocks example', () => {
       await expect(secondEditor).toContainText('w');
       await expect(firstEditor).not.toContainText('Empty synced block');
       expect(
-        await createPliteBrowserEditorHarness(
+        await createBrowserEditorHarness(
           page,
           'synced-blocks-first-copy-after-empty',
           firstEditor
@@ -2663,7 +2663,7 @@ test.describe('synced blocks example', () => {
       await expect(firstEditor).toContainText('Empty synced block');
       await expect(secondEditor).toContainText('Empty synced block');
       expect(
-        await createPliteBrowserEditorHarness(
+        await createBrowserEditorHarness(
           page,
           'synced-blocks-first-copy-after-backspace',
           firstEditor
@@ -2685,8 +2685,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -2709,13 +2709,13 @@ test.describe('synced blocks example', () => {
 
     expect(payload.types).toEqual(
       expect.arrayContaining([
-        'application/x-plite-fragment',
+        'application/x-editor-fragment',
         'text/html',
         'text/plain',
       ])
     );
     expect(payload.text).toBe('1\nSh');
-    expect(payload.html).toContain('data-plite-fragment=');
+    expect(payload.html).toContain('data-editor-fragment=');
   });
 
   test('cuts and pastes a projected selection through native clipboard events', async ({
@@ -2723,27 +2723,27 @@ test.describe('synced blocks example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof');
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       await openExample(page, 'plite/synced-blocks', {
         ready: { editor: 'visible' },
       });
 
-      const outerEditor = page.locator('[data-plite-editor="true"]').first();
+      const outerEditor = page.locator('[data-editor="true"]').first();
       const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
       const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-      const outer = createPliteBrowserEditorHarness(
+      const outer = createBrowserEditorHarness(
         page,
         'synced-blocks-outer',
         outerEditor
       );
-      const first = createPliteBrowserEditorHarness(
+      const first = createBrowserEditorHarness(
         page,
         'synced-blocks-first-copy',
         firstEditor
       );
-      const second = createPliteBrowserEditorHarness(
+      const second = createBrowserEditorHarness(
         page,
         'synced-blocks-second-copy',
         secondEditor
@@ -2766,13 +2766,13 @@ test.describe('synced blocks example', () => {
 
       expect(payload.types).toEqual(
         expect.arrayContaining([
-          'application/x-plite-fragment',
+          'application/x-editor-fragment',
           'text/html',
           'text/plain',
         ])
       );
       expect(payload.text).toBe('1\nSh');
-      expect(payload.html).toContain('data-plite-fragment=');
+      expect(payload.html).toContain('data-editor-fragment=');
       await expect
         .poll(() => outer.get.modelText())
         .toBe('pBetween synced copies.Between synced documents.p2');
@@ -2816,8 +2816,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -2860,14 +2860,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const second = createPliteBrowserEditorHarness(
+    const second = createBrowserEditorHarness(
       page,
       'synced-blocks-second-copy',
       secondEditor
@@ -2967,14 +2967,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -3013,14 +3013,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const second = createPliteBrowserEditorHarness(
+    const second = createBrowserEditorHarness(
       page,
       'synced-blocks-second-copy',
       secondEditor
@@ -3061,14 +3061,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
+    const outerEditor = page.locator('[data-editor="true"]').first();
     const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
-    const outer = createPliteBrowserEditorHarness(
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
-    const second = createPliteBrowserEditorHarness(
+    const second = createBrowserEditorHarness(
       page,
       'synced-blocks-second-copy',
       secondEditor
@@ -3116,8 +3116,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -3169,8 +3169,8 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
@@ -3203,14 +3203,14 @@ test.describe('synced blocks example', () => {
       ready: { editor: 'visible' },
     });
 
-    const outerEditor = page.locator('[data-plite-editor="true"]').first();
-    const outer = createPliteBrowserEditorHarness(
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
       page,
       'synced-blocks-outer',
       outerEditor
     );
     const firstEditor = getSyncedEditor(page, 0);
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -3241,14 +3241,14 @@ test.describe('synced blocks example', () => {
       .getByRole('button', { name: 'Duplicate synced block' })
       .first()
       .click();
-    await expect(page.locator('[data-plite-synced-block]')).toHaveCount(4);
+    await expect(page.locator('[data-editor-synced-block]')).toHaveCount(4);
     await expect(
-      page.locator(`[data-plite-synced-root="${SHARED_ROOT}"]`)
+      page.locator(`[data-editor-synced-root="${SHARED_ROOT}"]`)
     ).toHaveCount(3);
 
     const firstEditor = getSyncedEditor(page, 0);
     const duplicatedEditor = getSyncedEditor(page, 1);
-    const first = createPliteBrowserEditorHarness(
+    const first = createBrowserEditorHarness(
       page,
       'synced-blocks-first-copy',
       firstEditor
@@ -3265,7 +3265,7 @@ test.describe('synced blocks example', () => {
       .nth(1)
       .click();
     await expect(getSyncedBlock(page, 1)).not.toHaveAttribute(
-      'data-plite-synced-root',
+      'data-editor-synced-root',
       SHARED_ROOT
     );
 

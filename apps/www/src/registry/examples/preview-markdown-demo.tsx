@@ -1,7 +1,7 @@
 'use client';
 
 import { TextApi } from 'platejs';
-import { definePlatePlugin, Plate, useCreateEditor } from 'platejs/react';
+import { definePlugin, EditorRoot, useCreateEditor } from 'platejs/react';
 import Prism, { type TokenStream } from 'prismjs';
 import * as React from 'react';
 
@@ -12,7 +12,7 @@ import { previewMdValue } from '@/registry/examples/values/preview-md-value';
 
 import 'prismjs/components/prism-markdown.js';
 
-const PreviewMarkdownPlugin = definePlatePlugin('previewMarkdown', {
+const PreviewMarkdownPlugin = definePlugin('previewMarkdown', {
   decorate: {
     read: ({ entry: [node, path] }) => {
       if (!TextApi.isText(node)) return [];
@@ -77,10 +77,10 @@ export default function PreviewMdDemo() {
   );
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

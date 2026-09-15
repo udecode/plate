@@ -1,0 +1,18 @@
+---
+id: 2026-09-13-suggestion-examples
+date: 2026-09-13
+status: draft
+kind: new
+summary: 'Explore formatting, projections, and saved proposals in the Suggestions examples'
+change: { 'type': 'source', 'date': '2026-09-13', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-13-suggestion-examples","kind":"new","migrationNotes":[]} -->
+
+- **`suggestion-format-demo`**, **`suggestion-view-demo`**, **`suggestion-persistence-demo`**: Review formatting and block proposals, compare document projections, and save proposals with their discussion threads.
+<!-- entry: {"id":"2026-09-13-suggestion-projection-discussions","kind":"fix","migrationNotes":[]} -->
+- **`suggestion`**: Keep discussion buttons available when switching a saved document between accepted content and markup.
+<!-- entry: {"id":"2026-09-13-suggestion-example-initialization","kind":"wiring","migrationNotes":[]} -->
+- **`editor-ai`**: Load the multi-author suggestion example and linked discussions from its included saved document, with suggesting mode configured on `EditorRoot`.

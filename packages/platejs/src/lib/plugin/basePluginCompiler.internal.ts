@@ -1,11 +1,9 @@
 import type {
-  EditorExtensionReference,
-  EditorSchemaExtension,
-  EditorSchemaExtensionProvider,
-  EditorExtensionDependencyReferenceFor,
-  EditorExtensionDependencyContractReference,
-  EditorExtensionInstalledCapabilitiesOf,
-  EditorExtensionTypeProviderOf,
+  RuntimePluginReference,
+  RuntimePluginDependencyReferenceFor,
+  RuntimePluginDependencyContractReference,
+  RuntimePluginInstalledCapabilitiesOf,
+  RuntimePluginTypeProviderOf,
 } from '../../facade';
 import type {
   AnyBasePluginDefinition,
@@ -50,7 +48,7 @@ type ExcludeInstalledCapabilityNames<
 type InstalledDependencyCapability<TDependency> = [
   PluginDependencySource<TDependency>,
 ] extends [never]
-  ? EditorExtensionInstalledCapabilitiesOf<TDependency>
+  ? RuntimePluginInstalledCapabilitiesOf<TDependency>
   : InstalledBasePluginCapabilitiesOf<PluginDependencySource<TDependency>>;
 
 type InstalledDependencyCapabilities<TDependencies extends readonly unknown[]> =
@@ -88,7 +86,7 @@ type InstalledBasePluginCapability<
   InstalledBasePluginSchemaCapability<C> &
   DefinitionField<C, 'targetPlugins', InferTargetPlugins<C>> &
   DefinitionField<C, 'update', InferUpdate<C>> &
-  EditorExtensionTypeProviderOf<TSource>;
+  RuntimePluginTypeProviderOf<TSource>;
 
 type DirectBasePluginDependencyCapability<
   C extends AnyBasePluginDefinition,
@@ -116,7 +114,7 @@ type InstalledBasePluginCapabilitiesOf<TDependency> =
 /** Compact installed closure carried directly by an exact Plate descriptor. */
 export type BasePluginInstalledCapabilityWitness<
   C extends AnyBasePluginDefinition,
-> = EditorExtensionDependencyContractReference<
+> = RuntimePluginDependencyContractReference<
   Readonly<{
     direct: DirectBasePluginDependencyCapability<C, LowerBasePlugin<C>>;
     installed: [InferEnabled<C>] extends [false]
@@ -129,14 +127,6 @@ export type BasePluginInstalledCapabilityWitness<
             >;
   }>
 >;
-
-/** Compact, nameable install contract for one Plate dependency. */
-type BasePluginDependencySchemaReference<TDependency> =
-  TDependency extends EditorSchemaExtensionProvider<
-    infer TSchema extends () => EditorSchemaExtension
-  >
-    ? EditorSchemaExtensionProvider<TSchema>
-    : {};
 
 type BasePluginDependencyDefinitionOf<TDependency> = [
   PluginDependencySource<TDependency>,
@@ -160,7 +150,7 @@ type CompactBasePluginDependencyReferences<TDependencies> =
                   BasePluginDependencyDefinitionOf<TDependencies[TIndex]>
                 >
               >
-          : TDependencies[TIndex] extends EditorExtensionReference
+          : TDependencies[TIndex] extends RuntimePluginReference
             ? Readonly<Pick<TDependencies[TIndex], 'enabled' | 'name'>> &
                 PluginDependency<
                   CompactBasePluginDependencyDefinition<
@@ -197,20 +187,20 @@ type CompactBasePluginDependencyDefinition<C extends AnyBasePluginDefinition> =
 export type BasePluginDependencyReferenceFor<TDependency> = ([
   InternalPluginDefinitionOf<TDependency>,
 ] extends [never]
-  ? EditorExtensionDependencyReferenceFor<TDependency>
+  ? RuntimePluginDependencyReferenceFor<TDependency>
   : PluginDependency<
       CompactBasePluginDependencyDefinition<
         InternalPluginDefinitionOf<TDependency>
       >
     >) &
-  BasePluginDependencySchemaReference<TDependency>;
+  Pick<TDependency, Extract<keyof TDependency, '~schema.plugins'>>;
 
 export type BasePluginDependencyReferences<
   D extends ReadonlyArray<Readonly<{ name: string }>>,
 > = {
   readonly [TIndex in keyof D]: D[TIndex] extends PluginReference<infer TName>
     ? PluginReference<TName> & BasePluginDependencyReferenceFor<D[TIndex]>
-    : D[TIndex] extends EditorExtensionReference
+    : D[TIndex] extends RuntimePluginReference
       ? BasePluginDependencyReferenceFor<D[TIndex]>
       : never;
 };
@@ -218,12 +208,12 @@ export type BasePluginDependencyReferences<
 type BasePluginDependencyDescriptor<TDependency> =
   TDependency extends PluginReference<infer TName>
     ? PluginReference<TName>
-    : TDependency extends EditorExtensionReference
+    : TDependency extends RuntimePluginReference
       ? Readonly<Pick<TDependency, 'enabled' | 'name'>>
       : never;
 
 export type BasePluginDependencyDescriptors<
-  D extends ReadonlyArray<EditorExtensionReference | PluginReference>,
+  D extends ReadonlyArray<RuntimePluginReference | PluginReference>,
 > = {
   readonly [TIndex in keyof D]: BasePluginDependencyDescriptor<D[TIndex]>;
 };
@@ -234,7 +224,6 @@ type BaseNativePresenceKey =
   | 'contributions'
   | 'corrections'
   | 'effectTypes'
-  | 'facetProviders'
   | 'on'
   | 'readMiddleware'
   | 'stateFields'
@@ -307,7 +296,7 @@ type InputSchema<TInput> = TInput extends { schema: infer TSchema }
 
 type InputDependencies<TInput> = TInput extends {
   dependencies: infer TDependencies extends ReadonlyArray<
-    EditorExtensionReference | PluginReference
+    RuntimePluginReference | PluginReference
   >;
 }
   ? {
@@ -316,7 +305,7 @@ type InputDependencies<TInput> = TInput extends {
       ]: TDependencies[TIndex] extends PluginReference<infer TName>
         ? PluginReference<TName> &
             BasePluginDependencyReferenceFor<TDependencies[TIndex]>
-        : TDependencies[TIndex] extends EditorExtensionReference
+        : TDependencies[TIndex] extends RuntimePluginReference
           ? BasePluginDependencyReferenceFor<TDependencies[TIndex]>
           : never;
     }
@@ -324,7 +313,7 @@ type InputDependencies<TInput> = TInput extends {
 
 type InputConflicts<TInput> = TInput extends {
   conflicts: infer TConflicts extends ReadonlyArray<
-    EditorExtensionReference | PluginReference
+    RuntimePluginReference | PluginReference
   >;
 }
   ? {
@@ -332,9 +321,9 @@ type InputConflicts<TInput> = TInput extends {
         TIndex in keyof TConflicts
       ]: TConflicts[TIndex] extends PluginReference<infer TName>
         ? PluginReference<TName> &
-            EditorExtensionDependencyReferenceFor<TConflicts[TIndex]>
-        : TConflicts[TIndex] extends EditorExtensionReference
-          ? EditorExtensionDependencyReferenceFor<TConflicts[TIndex]>
+            RuntimePluginDependencyReferenceFor<TConflicts[TIndex]>
+        : TConflicts[TIndex] extends RuntimePluginReference
+          ? RuntimePluginDependencyReferenceFor<TConflicts[TIndex]>
           : never;
     }
   : readonly [];

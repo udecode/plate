@@ -6,6 +6,7 @@ import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
+import docsRedirects from '../../docs/plite/reference/public-route-map.json';
 
 const APP_ROOT = import.meta.dirname;
 const REPO_ROOT = path.resolve(APP_ROOT, '../..');
@@ -117,8 +118,8 @@ const nextConfig = (_phase: string) => {
         './public/r/*.json',
         './src/__registry__/overlays/**/*.json',
       ],
-      '/cn/docs/examples/plate-to-html': ['./public/tailwind.css'],
-      '/docs/examples/plate-to-html': ['./public/tailwind.css'],
+      '/cn/docs/examples/html-export': ['./public/tailwind.css'],
+      '/docs/examples/html-export': ['./public/tailwind.css'],
     },
     partialPrefetching: true,
     reactCompiler: true,
@@ -141,6 +142,28 @@ const nextConfig = (_phase: string) => {
       ? { serverExternalPackages: ['ts-morph'] }
       : { transpilePackages: ['ts-morph'] }),
     typedRoutes: true,
+
+    redirects() {
+      return Object.entries(docsRedirects).flatMap(([source, destination]) =>
+        ['', '/cn'].flatMap((locale) => [
+          {
+            source: `${locale}${source}`,
+            destination: `${locale}${destination}`,
+            permanent: true,
+          },
+          {
+            source: `${locale}${source}.md`,
+            destination: `${locale}${destination.split('#')[0]}.md`,
+            permanent: true,
+          },
+          {
+            source: `${locale}${source.replace(/^\/docs/, '/llm')}`,
+            destination: `${locale}${destination.split('#')[0].replace(/^\/docs/, '/llm')}`,
+            permanent: true,
+          },
+        ])
+      );
+    },
 
     rewrites() {
       return [

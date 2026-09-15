@@ -42,7 +42,7 @@ test.describe('example query controls', () => {
 
     await expect(selector).toHaveValue('insert');
     await expect(
-      page.locator('.plite-android-tests-instructions')
+      page.locator('.editor-android-tests-instructions')
     ).toContainText('Enter text below each line');
     await selector.selectOption('autocorrect');
 
@@ -98,7 +98,7 @@ test.describe('example query controls', () => {
       query: {
         blocks: 120,
         content_visibility: 'none',
-        strategy: 'staged',
+        rendering: 'complete',
         strict: false,
       },
       ready: {
@@ -111,9 +111,9 @@ test.describe('example query controls', () => {
       page.locator('#huge-document-blocks option:checked')
     ).toHaveText('120');
 
-    await page.getByLabel('DOM strategy').selectOption('virtualized');
+    await page.getByLabel('Rendering').selectOption('virtualized');
     await expect
-      .poll(() => getQueryParam(page, 'strategy'))
+      .poll(() => getQueryParam(page, 'rendering'))
       .toBe('virtualized');
 
     await page.getByLabel('Editor height').fill('360');
@@ -135,11 +135,10 @@ test.describe('example query controls', () => {
         media_height: 320,
         media_split: 'page',
         page_layout: 'single',
-        page_overscan: 3,
         preset: 'letter',
         row_height: 44,
         rows: 96,
-        strategy: 'virtualized',
+        rendering: 'virtualized',
       },
       ready: {
         editor: 'visible',
@@ -149,10 +148,9 @@ test.describe('example query controls', () => {
 
     await expect(page.getByLabel('Preset')).toHaveValue('letter');
     await expect(page.getByLabel('Margins')).toHaveValue('72');
-    await expect(page.getByLabel('DOM strategy')).toHaveValue('virtualized');
+    await expect(page.getByLabel('Rendering')).toHaveValue('virtualized');
     await expect(page.getByLabel('Rows')).toHaveValue('96');
     await expect(page.getByLabel('Row px')).toHaveValue('44');
-    await expect(page.getByLabel('Page overscan')).toHaveValue('3');
     await expect(page.getByLabel('Media px')).toHaveValue('320');
     await expect(page.getByLabel('Media split')).toHaveValue('page');
     await expect(page.getByLabel('Facing')).not.toBeChecked();
@@ -162,8 +160,5 @@ test.describe('example query controls', () => {
 
     await expect.poll(() => getQueryParam(page, 'rows')).toBe('120');
 
-    await page.getByLabel('Page overscan').fill('5');
-
-    await expect.poll(() => getQueryParam(page, 'page_overscan')).toBe('5');
   });
 });

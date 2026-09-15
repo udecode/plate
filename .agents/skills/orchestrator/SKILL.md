@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-description: Turn the current Codex thread into a coordination thread that routes explicitly delegated work to durable reusable child tasks with the project's checkout, proof and delivery policy.
+description: "Coordinate explicitly delegated work through durable tasks with exclusive ownership and consumed proof."
 ---
 
 # Orchestrator

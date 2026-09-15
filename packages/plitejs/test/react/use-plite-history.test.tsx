@@ -13,9 +13,9 @@ import type { ReactNode } from 'react';
 import {
   createEditor,
   Editable,
-  Plite,
-  usePliteHistory,
-  usePliteRootEditor,
+  EditorRoot,
+  useEditorHistory,
+  useRootEditor,
 } from '../../src/react';
 import { applyEditableCommand } from '../../src/react/editable/mutation-controller';
 
@@ -41,17 +41,17 @@ const editorChildren = (editor: {
   ) => T;
 }) => editor.read((state) => state.nodes.children());
 
-describe('usePliteHistory', () => {
+describe('useEditorHistory', () => {
   test('exposes undo and redo availability from the active root history', async () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('body')],
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <Plite editor={editor}>{children}</Plite>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
 
-    const { result } = renderHook(() => usePliteHistory(), { wrapper });
+    const { result } = renderHook(() => useEditorHistory(), { wrapper });
 
     expect(result.current.canUndo).toBe(false);
     expect(result.current.canRedo).toBe(false);
@@ -70,14 +70,14 @@ describe('usePliteHistory', () => {
 
   test('undoes and redoes through the controller', async () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('body')],
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <Plite editor={editor}>{children}</Plite>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
 
-    const { result } = renderHook(() => usePliteHistory(), { wrapper });
+    const { result } = renderHook(() => useEditorHistory(), { wrapper });
 
     await act(async () => {
       editor.update((tx) => {
@@ -109,14 +109,14 @@ describe('usePliteHistory', () => {
       paragraph(`block-${index}`)
     );
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue,
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <Plite editor={editor}>{children}</Plite>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
 
-    const { result } = renderHook(() => usePliteHistory(), { wrapper });
+    const { result } = renderHook(() => useEditorHistory(), { wrapper });
 
     await act(async () => {
       applyEditableCommand({
@@ -136,9 +136,9 @@ describe('usePliteHistory', () => {
     });
 
     const events: Array<{ id?: string | null }> = [];
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
 
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = {
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = {
       record(event: { id?: string | null }) {
         events.push(event);
       },
@@ -149,7 +149,7 @@ describe('usePliteHistory', () => {
         result.current.undo();
       });
     } finally {
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     expect(events.map((event) => event.id)).not.toContain(
@@ -160,21 +160,21 @@ describe('usePliteHistory', () => {
 
   test('fixed-root external shortcut preserves the input focus', async () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
       },
     });
 
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
 
     const TitleInput = () => {
-      const innerHistory = usePliteHistory({
+      const innerHistory = useEditorHistory({
         focusPolicy: 'preserve',
         root: 'header',
       });
-      headerEditor = usePliteRootEditor('header');
+      headerEditor = useRootEditor('header');
 
       return (
         <input aria-label="Document title" onKeyDown={innerHistory.onKeyDown} />
@@ -182,9 +182,9 @@ describe('usePliteHistory', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <TitleInput />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -207,20 +207,20 @@ describe('usePliteHistory', () => {
 
   test('restore-root focuses the active mounted copy of a shared root', async () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { shared: [paragraph('shared')] },
       },
     });
-    let sharedEditor!: ReturnType<typeof usePliteRootEditor>;
+    let sharedEditor!: ReturnType<typeof useRootEditor>;
 
     const Controls = () => {
-      const innerHistory2 = usePliteHistory({
+      const innerHistory2 = useEditorHistory({
         focusPolicy: 'restore-root',
         root: 'shared',
       });
-      sharedEditor = usePliteRootEditor('shared');
+      sharedEditor = useRootEditor('shared');
 
       return (
         <button onClick={innerHistory2.undo} type="button">
@@ -230,11 +230,11 @@ describe('usePliteHistory', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Controls />
         <Editable aria-label="Shared first" root="shared" />
         <Editable aria-label="Shared second" root="shared" />
-      </Plite>
+      </EditorRoot>
     );
 
     const secondCopy = screen.getByLabelText('Shared second');
@@ -263,27 +263,27 @@ describe('usePliteHistory', () => {
 
   test('fixed-root availability follows sibling root history changes', async () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
       },
     });
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
 
     const Probe = () => {
-      headerEditor = usePliteRootEditor('header');
+      headerEditor = useRootEditor('header');
 
       return null;
     };
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Probe />
         {children}
-      </Plite>
+      </EditorRoot>
     );
 
-    const { result } = renderHook(() => usePliteHistory(), {
+    const { result } = renderHook(() => useEditorHistory(), {
       wrapper,
     });
 

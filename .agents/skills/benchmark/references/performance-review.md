@@ -59,7 +59,7 @@ Keep it short. If this pass cannot change the plan, write the no-change defense 
 4. Simplify the normal path before adding special modes.
 5. Move rare state out of the repeated unit: comments, menus, hover chrome, selection tools, debug panels, context actions.
 6. Add O(1) indexes or cached lookups only where the hot path proves repeated scans.
-7. Choose the degradation contract for aggressive modes: native, DOM-present staged, shell island, virtualized, or model-backed.
+7. Choose the native-behavior contract for each rendering component: complete DOM, explicit virtualized DOM, shell island, or model-backed content.
 8. Instrument p50/p75/p95/p99 interaction rows by cohort and mode.
 9. Record browser trace proof and production/RUM tags when the claim matters outside the lab.
 
@@ -111,8 +111,8 @@ Load only the relevant rule files. These are the unique performance-lane questio
 | [css-layout-hotpath](./performance/css-layout-hotpath.md) | Selectors, layout reads/writes, drag/resize, overlays, or geometry may cause interaction latency. |
 | [interaction-inp-matrix](./performance/interaction-inp-matrix.md) | A plan claims responsiveness from averages, startup time, or one smoke benchmark. |
 | [memory-dom-tagging](./performance/memory-dom-tagging.md) | A mode may improve latency by increasing heap, DOM nodes, components, listeners, subscriptions, caches, or mounted groups. |
-| [degradation-contract](./performance/degradation-contract.md) | Performance requires virtualization, shell islands, model-backed selection, staged mounting, or any less-native mode. |
-| [staged-readiness](./performance/staged-readiness.md) | Startup, hydration, full-doc replace, insert-fragment, or staged DOM-present mounting is part of the plan. |
+| [degradation-contract](./performance/degradation-contract.md) | Performance requires virtualization, shell islands, model-backed selection, or any less-native surface. |
+| [initial-render-readiness](./performance/initial-render-readiness.md) | Startup, hydration, hidden or detached roots, full-doc replacement, or explicit DOM omission is part of the plan. |
 | [react-19-runtime-proof](./performance/react-19-runtime-proof.md) | React 19.2 primitives are proposed for editor/app performance. |
 | [browser-trace-cwv-proof](./performance/browser-trace-cwv-proof.md) | Claims involve load, hydration, network chains, layout shifts, long tasks, LCP/FCP/TBT/CLS, or trace evidence. |
 | [production-rum-dashboard](./performance/production-rum-dashboard.md) | The claim matters beyond local benchmarks and needs release/browser/mobile/IME/document-size tags. |
@@ -135,7 +135,7 @@ Use this shape for a large-document Plate review:
 - interaction metrics: startup, first type, middle type, range select, paste, undo, table range select by p50/p75/p95/p99
 - trace/CWV proof: Browser trace for load/hydration if route claim is included; editor interaction trace for typing/select/paste latency
 - memory tags: heap, DOM nodes, mounted block count, listener count, subscription count, node-id/cache size
-- degradation contract: native DOM-present editing for normal/large; any staged or virtualized mode must list browser find/copy/paste/select-all/IME/undo/collab behavior
+- degradation contract: complete DOM for the ordinary component; the explicit virtualized component lists browser find/copy/paste/select-all/IME/undo/collaboration behavior and the cohorts that justify omission
 - dashboard/RUM gap: tag interaction name, cohort, document size, mode, browser, mobile, IME, release, heap/DOM sample when available
 - plan delta: add missing rows before claiming the 10k path is ready
 ```

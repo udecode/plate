@@ -1,5 +1,4 @@
 import { type Element, createEditor as makeEditor } from '..';
-import { isObject } from '../internal';
 import {
   createAnchor,
   createCursor,
@@ -61,7 +60,7 @@ const stripJsxDevelopmentAttributes = (
 };
 
 /**
- * Create a Plite hyperscript factory with optional custom creators and element
+ * Create an editor hyperscript factory with optional custom creators and element
  * shorthands.
  */
 
@@ -93,7 +92,7 @@ const createHyperscript = <
 const createFactory = <T extends HyperscriptCreators>(creators: T) => {
   const jsx = <S extends keyof T & string>(
     tagName: S,
-    attributes?: object,
+    attributes?: unknown,
     ...children: any[]
   ): ReturnType<T[S]> => {
     const creator = creators[tagName];
@@ -106,7 +105,7 @@ const createFactory = <T extends HyperscriptCreators>(creators: T) => {
     let normalizedChildren = children;
 
     if (attributes != null) {
-      if (!isObject(attributes)) {
+      if (typeof attributes !== 'object') {
         normalizedChildren = [attributes].concat(normalizedChildren);
       } else {
         normalizedAttributes = stripJsxDevelopmentAttributes(attributes);
@@ -142,7 +141,9 @@ const normalizeElements = <TElements extends HyperscriptShorthands>(
 
     if (typeof props !== 'object') {
       throw new Error(
-        `Properties specified for a hyperscript shorthand should be an object, but for the custom element <${tagName}> tag you passed: ${String(props)}`
+        `Properties specified for a hyperscript shorthand should be an object, but for the custom element <${tagName}> tag you passed: ${String(
+          props
+        )}`
       );
     }
 

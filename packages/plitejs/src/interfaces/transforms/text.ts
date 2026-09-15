@@ -42,16 +42,16 @@ export interface TextMutationMethods<V extends Value = Value> {
   /**
    * Delete content at a location, or at the transaction target when omitted.
    */
-  delete: <TValue extends V, TExtensions extends readonly unknown[]>(
-    editor: Editor<TValue, TExtensions>,
+  delete: <TValue extends V, TPlugins extends readonly unknown[]>(
+    editor: Editor<TValue, TPlugins>,
     options?: TextDeleteOptions
   ) => void;
 
   /**
    * Insert text at a location, or at the transaction target when omitted.
    */
-  insertText: <TValue extends V, TExtensions extends readonly unknown[]>(
-    editor: Editor<TValue, TExtensions>,
+  insertText: <TValue extends V, TPlugins extends readonly unknown[]>(
+    editor: Editor<TValue, TPlugins>,
     text: string,
     options?: TextInsertTextOptions
   ) => void;
@@ -59,8 +59,8 @@ export interface TextMutationMethods<V extends Value = Value> {
   /**
    * Remove a string of text at a point or the current selection anchor.
    */
-  removeText: <TValue extends V, TExtensions extends readonly unknown[]>(
-    editor: Editor<TValue, TExtensions>,
+  removeText: <TValue extends V, TPlugins extends readonly unknown[]>(
+    editor: Editor<TValue, TPlugins>,
     text: string,
     options?: TextRemoveTextOptions
   ) => void;

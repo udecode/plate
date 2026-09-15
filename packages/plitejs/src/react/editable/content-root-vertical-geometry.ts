@@ -7,17 +7,137 @@ import {
   type RootKey,
   type Node as PliteNode,
 } from '../..';
-import { createDOMGeometryKernel } from '../../dom/internal';
+import { createDOMGeometryKernel, ELEMENT_TO_NODE } from '../../dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { rootPlitePoint } from '../view-boundary-graph';
+import {
+  PliteViewBoundaryGraph,
+  type PliteViewBoundaryGraphModel,
+  type PliteViewBoundaryPoint,
+  rootPlitePoint,
+} from '../view-boundary-graph';
 import {
   getPointAtCoordinates,
   hasUsableRect,
   resolveUsableRangeRect,
 } from './content-root-coordinate-navigation';
 import type { ContentRootNavigationDirection } from './content-root-navigation-actions';
+import type { ContentRootOwner } from './content-root-owners';
+import {
+  resolveProjectedDOMSelectionEndpoint,
+  resolveViewBoundaryDOMPoint,
+} from './selection-projected-dom';
 
 const VISUAL_LINE_TOLERANCE = 2;
+
+export const resolveViewBoundaryVisualMovement = ({
+  axis,
+  direction,
+  editor,
+  graph,
+  owners,
+  point,
+  preferredX,
+}: {
+  axis: 'line' | 'vertical';
+  direction: ContentRootNavigationDirection;
+  editor: ReactRuntimeEditor;
+  graph: PliteViewBoundaryGraphModel;
+  owners: readonly ContentRootOwner[];
+  point: PliteViewBoundaryPoint;
+  preferredX?: number;
+}): PliteViewBoundaryPoint | null => {
+  const root = editor.api.dom.root();
+  const source = resolveViewBoundaryDOMPoint(editor, point);
+  if (!root || !source) return null;
+  const geometry = createDOMGeometryKernel({ root });
+  const blockHost = (domPoint: typeof source) => {
+    let element =
+      domPoint[0].nodeType === 1
+        ? (domPoint[0] as HTMLElement)
+        : domPoint[0].parentElement;
+    while (element && element !== root && root.contains(element)) {
+      const node = ELEMENT_TO_NODE.get(element);
+      if (
+        NodeApi.isElement(node) &&
+        !editor.read((state) => state.schema.isInline(node))
+      ) {
+        return element;
+      }
+      element = element.parentElement;
+    }
+    return null;
+  };
+  let host = blockHost(source);
+  const rect = geometry.pointRect(source, { association: point.affinity });
+  if (!host || !rect) return null;
+  const lines = geometry.visualLines(host);
+  const index = lines.findIndex(
+    (line) =>
+      Math.min(line.bottom, rect.bottom) - Math.max(line.top, rect.top) >
+      VISUAL_LINE_TOLERANCE
+  );
+  if (index === -1) return null;
+  const forward = direction === 'forward';
+  let line = lines[index];
+  let edge = axis === 'line';
+  if (axis === 'vertical') {
+    const adjacentLine = lines[index + (forward ? 1 : -1)];
+    if (adjacentLine) {
+      line = adjacentLine;
+    } else {
+      const node = PliteViewBoundaryGraph.resolvePointNode(graph, point);
+      const run = node && graph.textRunsByNode.get(node.key)?.run;
+      const terminal = forward ? run?.nodes.at(-1) : run?.nodes[0];
+      const adjacent = terminal
+        ? forward
+          ? PliteViewBoundaryGraph.nextNode(graph, terminal)
+          : PliteViewBoundaryGraph.previousNode(graph, terminal)
+        : null;
+      if (!adjacent?.text) {
+        edge = true;
+      } else {
+        const next = resolveViewBoundaryDOMPoint(editor, {
+          ...(adjacent.fragment ? { fragmentId: adjacent.fragment.id } : {}),
+          owner: adjacent.owner,
+          point: rootPlitePoint(
+            {
+              path: adjacent.path,
+              offset: forward ? adjacent.text.start : adjacent.text.end,
+            },
+            adjacent.root
+          ),
+        });
+        host = next && blockHost(next);
+        if (!host) return null;
+        const nextLines = geometry.visualLines(host);
+        const nextLine = forward ? nextLines[0] : nextLines.at(-1);
+        if (!nextLine) return null;
+        line = nextLine;
+      }
+    }
+  }
+  const target = edge
+    ? geometry.pointAtVisualLineEdge({
+        edge: forward ? 'end' : 'start',
+        host,
+        line,
+      })
+    : geometry.pointInVisualLine({
+        host,
+        line,
+        x: preferredX ?? geometry.verticalNavigationX(source) ?? rect.left,
+      });
+  const resolved =
+    target &&
+    resolveProjectedDOMSelectionEndpoint({
+      node: target[0],
+      offset: target[1],
+      owners,
+    });
+  return resolved && PliteViewBoundaryGraph.resolvePointNode(graph, resolved)
+    ? resolved
+    : null;
+};
 
 const rootedRange = (point: Point, root: RootKey): Range => {
   const rooted = rootPlitePoint(point, root);

@@ -14,4 +14,3 @@ export const PliteContentRootOwnerContext = createContext<{
   ownerPath: Path;
   ownerRoot: RootKey;
 } | null>(null);
-export const PliteDOMStrategyVirtualOffsetContext = createContext(0);

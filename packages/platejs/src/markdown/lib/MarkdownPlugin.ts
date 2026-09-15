@@ -2,8 +2,12 @@ import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Pluggable } from 'unified';
 
 import {
+  readAuthoredFormatSnapshot,
+  type AuthoredFormatDiagnostic,
+} from '../../authored';
+import {
   ContentSlice,
-  defineBasePlugin,
+  definePlugin,
   ElementApi,
   NodeApi,
   PLUGINS,
@@ -15,6 +19,10 @@ import {
   isUrl,
 } from '../../core';
 import {
+  appendAuthoredMarkdownEnvelope,
+  readAuthoredMarkdownEnvelope,
+} from './internal/authoredMarkdown';
+import {
   createMarkdownRuntime,
   deserializeInlineMdWithRuntime,
   deserializeMdWithRuntime,
@@ -23,9 +31,11 @@ import {
 } from './internal/markdownConversion';
 import type {
   AllowNodeConfig,
+  AuthoredMarkdownResult,
   DeserializeMdOptions,
   MarkdownNodeName,
   SerializeMdOptions,
+  SerializeAuthoredMarkdownOptions,
 } from './types';
 
 export type MarkdownPluginState = {
@@ -52,8 +62,25 @@ export type MarkdownApi = {
     text: string,
     options?: DeserializeMdOptions
   ) => Descendant[];
+  serializeAuthored: (
+    options: SerializeAuthoredMarkdownOptions
+  ) => AuthoredMarkdownResult;
   serialize: (options?: SerializeMdOptions) => string;
 };
+
+const lossyProjectionDiagnostic = (
+  projection: 'accepted' | 'proposed',
+  count: number
+): readonly AuthoredFormatDiagnostic[] =>
+  count === 0
+    ? []
+    : [
+        Object.freeze({
+          code: 'authored-lossy-projection' as const,
+          message: `${projection} projection omits ${count} pending authored change${count === 1 ? '' : 's'}.`,
+          severity: 'warning' as const,
+        }),
+      ];
 
 const shouldParseMarkdown = (
   data: string,
@@ -65,7 +92,7 @@ const shouldParseMarkdown = (
   return true;
 };
 
-export const MarkdownPlugin = defineBasePlugin(PLUGINS.markdown, {
+export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
   codecs: ({ defineCodecs, editor, store }) => {
     const decode = (data: string, state: EditorCoreStateView) => {
       const document = deserializeMdWithRuntime(
@@ -184,10 +211,16 @@ export const MarkdownPlugin = defineBasePlugin(PLUGINS.markdown, {
   }),
 }).extend(({ editor, store }) => ({
   api: (): MarkdownApi => ({
-    deserialize: (data, options) =>
-      withMarkdownRuntime(editor, store.get(), (runtime) =>
-        deserializeMdWithRuntime(runtime, data, options)
-      ),
+    deserialize: (data, options) => {
+      const authoredDocument = readAuthoredMarkdownEnvelope(data);
+
+      return (
+        authoredDocument ??
+        withMarkdownRuntime(editor, store.get(), (runtime) =>
+          deserializeMdWithRuntime(runtime, data, options)
+        )
+      );
+    },
     deserializeInline: (text, options) =>
       withMarkdownRuntime(editor, store.get(), (runtime) =>
         deserializeInlineMdWithRuntime(runtime, text, options)
@@ -196,6 +229,27 @@ export const MarkdownPlugin = defineBasePlugin(PLUGINS.markdown, {
       withMarkdownRuntime(editor, store.get(), (runtime) =>
         serializeMdWithRuntime(runtime, options)
       ),
+    serializeAuthored: ({ projection, ...options }) => {
+      const snapshot = readAuthoredFormatSnapshot(editor as never);
+      const document =
+        projection === 'accepted' ? snapshot.accepted : snapshot.proposed;
+      const markdown = withMarkdownRuntime(editor, store.get(), (runtime) =>
+        serializeMdWithRuntime(runtime, options, document)
+      );
+
+      return Object.freeze({
+        data:
+          projection === 'review'
+            ? appendAuthoredMarkdownEnvelope(markdown, editor.read.value())
+            : markdown,
+        diagnostics:
+          projection === 'review'
+            ? Object.freeze([])
+            : Object.freeze(
+                lossyProjectionDiagnostic(projection, snapshot.changes.length)
+              ),
+      });
+    },
   }),
 }));
 

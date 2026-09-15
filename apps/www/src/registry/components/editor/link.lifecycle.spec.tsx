@@ -1,7 +1,12 @@
 import { expect, it } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import { createEditor, Plate, PlateContent, useEditor } from 'platejs/react';
+import {
+  createEditor,
+  EditorRoot,
+  EditorContent,
+  useEditor,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { LinkElement, LinkFloatingToolbar, linkPlugin } from './link';
@@ -9,12 +14,12 @@ import { LinkElement, LinkFloatingToolbar, linkPlugin } from './link';
 function MountedContent({
   onEditor,
   ...props
-}: React.ComponentProps<typeof PlateContent> & {
+}: React.ComponentProps<typeof EditorContent> & {
   onEditor: (editor: ReturnType<typeof useEditor>) => void;
 }) {
   const editor = useEditor();
   React.useLayoutEffect(() => onEditor(editor), [editor, onEditor]);
-  return <PlateContent {...props} />;
+  return <EditorContent {...props} />;
 }
 
 const makeEditor = (linked = false) =>
@@ -55,17 +60,17 @@ it('opens only the focused editor with the configured shortcut and dismisses its
   let firstView!: ReturnType<typeof useEditor>;
   const view = render(
     <>
-      <Plate editor={first}>
+      <EditorRoot editor={first}>
         <MountedContent
           data-testid="first-editor"
           onEditor={(editor) => {
             firstView = editor;
           }}
         />
-      </Plate>
-      <Plate editor={second}>
-        <PlateContent data-testid="second-editor" />
-      </Plate>
+      </EditorRoot>
+      <EditorRoot editor={second}>
+        <EditorContent data-testid="second-editor" />
+      </EditorRoot>
       <button type="button">Outside</button>
     </>
   );
@@ -113,9 +118,9 @@ it('opens only the focused editor with the configured shortcut and dismisses its
 it('discards an edit draft on Escape while preserving the link actions and href', async () => {
   const editor = makeEditor(true);
   const view = render(
-    <Plate editor={editor}>
-      <PlateContent />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent />
+    </EditorRoot>
   );
   try {
     act(() => editor.api.dom.focus());
@@ -142,9 +147,9 @@ it('discards an edit draft on Escape while preserving the link actions and href'
 it('leaves the shortcut native in a readonly editor', () => {
   const editor = makeEditor();
   const view = render(
-    <Plate editor={editor}>
-      <PlateContent readOnly data-testid="readonly" />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent readOnly data-testid="readonly" />
+    </EditorRoot>
   );
   try {
     expect(
@@ -166,14 +171,14 @@ it('keeps an IME draft until Enter is pressed after composition', async () => {
   const editor = makeEditor();
   let mounted!: ReturnType<typeof useEditor>;
   const view = render(
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <MountedContent
         data-testid="composing-editor"
         onEditor={(mountedEditor) => {
           mounted = mountedEditor;
         }}
       />
-    </Plate>
+    </EditorRoot>
   );
   try {
     act(() => mounted.api.dom.focus());
@@ -221,14 +226,14 @@ it('dismisses URL input when focus enters an external iframe', async () => {
   let mounted!: ReturnType<typeof useEditor>;
   const view = render(
     <>
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <MountedContent
           data-testid="frame-editor"
           onEditor={(mountedEditor) => {
             mounted = mountedEditor;
           }}
         />
-      </Plate>
+      </EditorRoot>
       <iframe title="External preview" sandbox="" />
     </>
   );

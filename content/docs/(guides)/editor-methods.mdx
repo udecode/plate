@@ -79,22 +79,22 @@ return <pre>{JSON.stringify(selection, null, 2)}</pre>;
 
 ## Outside Plate
 
-Wrap shared UI in `PlateController` when a toolbar, side panel, or inspector
-lives outside a single `<Plate>` tree.
+Wrap shared UI in `EditorController` when a toolbar, side panel, or inspector
+lives outside a single `<EditorRoot>` tree.
 
 ```tsx title="components/editor-shell.tsx" showLineNumbers
 import type React from 'react';
 
-import { PlateController, useOptionalEditor } from 'platejs/react';
+import { EditorController, useOptionalEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 
 export function EditorShell({ children }: { children: React.ReactNode }) {
   return (
-    <PlateController>
+    <EditorController>
       <ActiveEditorToolbar />
       {children}
-    </PlateController>
+    </EditorController>
   );
 }
 
@@ -109,7 +109,7 @@ function ActiveEditorToolbar() {
 }
 ```
 
-`PlateController` resolves an editor by explicit `id`, focused editor, then
+`EditorController` resolves an editor by explicit `id`, focused editor, then
 primary editors. `useOptionalEditor()` returns `null` while none is active.
 Components that require an editor should use `useEditor()` and fail fast.
 
@@ -178,9 +178,9 @@ plugin state. Use `usePluginStore` when React UI needs to re-render from that
 state.
 
 ```tsx title="components/panel-control.tsx" showLineNumbers
-import { definePlatePlugin, useEditor, usePluginStore } from 'platejs/react';
+import { definePlugin, useEditor, usePluginStore } from 'platejs/react';
 
-const PanelPlugin = definePlatePlugin('panel', {
+const PanelPlugin = definePlugin('panel', {
   initialState: { open: false },
 });
 
@@ -227,5 +227,5 @@ editor.plugin(PanelPlugin).store.set((draft) => {
 | Configure editor creation. | [Editor Configuration](/docs/editor) |
 | Add plugin APIs and transaction commands. | [Plugin Methods](/docs/plugin-methods) |
 | Read plugin context inside components. | [Plugin Context](/docs/plugin-context) |
-| Browse editor query contracts. | [Editor API](/docs/api/plite/editor-api) |
-| Browse editor transaction contracts. | [Editor Transactions](/docs/api/plite/editor-transforms) |
+| Browse editor query contracts. | [Editor API](/docs/api/editor-api) |
+| Browse editor transaction contracts. | [Editor Transactions](/docs/api/editor-transforms) |

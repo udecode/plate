@@ -5,19 +5,19 @@ import React from 'react';
 
 import { property, schema, target, type Value } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
-import { defineBasePlugin } from '../../lib';
-import { TestPlate as Plate } from '../__tests__/TestPlate';
+import { definePlugin as defineHeadlessPlugin } from '../../lib';
+import { TestPlate as EditorRoot } from '../__tests__/TestPlate';
 import { useEditorContainerRef } from '../core';
 import { createEditor, useCreateEditor } from '../editor';
 import type { PlatePlugins } from '../plugin';
-import { definePlatePlugin } from '../plugin/definePlatePlugin';
+import { definePlugin } from '../plugin/definePlugin';
 import { ParagraphPlugin } from '../plugins';
 import { useOptionalEditor, useEditor, useEditorValue } from '../stores';
 import { EditorProvider } from './EditorProvider';
-import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
-import { PlateContainer } from './PlateContainer';
-import { PlateContent } from './PlateContent';
-import { PlateController } from './PlateController';
+import type { EditorElementProps, EditorLeafProps } from './plate-nodes';
+import { EditorContainer } from './PlateContainer';
+import { EditorContent } from './PlateContent';
+import { EditorController } from './PlateController';
 
 describe('Plate', () => {
   it('resolves the nearest container and clears its ref on unmount', () => {
@@ -34,15 +34,15 @@ describe('Plate', () => {
       return null;
     };
     const { getByTestId, unmount } = render(
-      <Plate editor={first}>
-        <PlateContainer data-testid="first" />
+      <EditorRoot editor={first}>
+        <EditorContainer data-testid="first" />
         <Probe id="first" />
-        <Plate editor={second}>
-          <PlateContainer data-testid="second" />
+        <EditorRoot editor={second}>
+          <EditorContainer data-testid="second" />
           <Probe id="second" />
           <Probe />
-        </Plate>
-      </Plate>
+        </EditorRoot>
+      </EditorRoot>
     );
 
     expect(refs.get('first')?.current).toBe(getByTestId('first'));
@@ -62,7 +62,7 @@ describe('Plate', () => {
         const editor = createEditor();
 
         const wrapper = ({ children }: any) => (
-          <Plate editor={editor}>{children}</Plate>
+          <EditorRoot editor={editor}>{children}</EditorRoot>
         );
         const { result } = renderHook(() => useEditor(), { wrapper });
 
@@ -80,9 +80,9 @@ describe('Plate', () => {
         });
 
         const wrapper = ({ children }: any) => (
-          <Plate editor={editor1}>
-            <Plate editor={editor2}>{children}</Plate>
-          </Plate>
+          <EditorRoot editor={editor1}>
+            <EditorRoot editor={editor2}>{children}</EditorRoot>
+          </EditorRoot>
         );
 
         const { result } = renderHook(() => useEditor(), { wrapper });
@@ -103,7 +103,7 @@ describe('Plate', () => {
         });
 
         const wrapper = ({ children }: any) => (
-          <Plate editor={editor}>{children}</Plate>
+          <EditorRoot editor={editor}>{children}</EditorRoot>
         );
         const { result } = renderHook(() => useEditorValue(), { wrapper });
 
@@ -120,7 +120,7 @@ describe('Plate', () => {
         });
 
         const wrapper = ({ children }: any) => (
-          <Plate editor={editor}>{children}</Plate>
+          <EditorRoot editor={editor}>{children}</EditorRoot>
         );
         const { result } = renderHook(() => useEditorValue(), { wrapper });
 
@@ -133,7 +133,7 @@ describe('Plate', () => {
         const editor = createEditor();
 
         const wrapper = ({ children }: any) => (
-          <Plate editor={editor}>{children}</Plate>
+          <EditorRoot editor={editor}>{children}</EditorRoot>
         );
         const { result } = renderHook(() => useEditorValue(), { wrapper });
 
@@ -146,13 +146,13 @@ describe('Plate', () => {
 
   describe('useEditor().plugins', () => {
     it('uses the plugins already attached to the editor', () => {
-      const _plugins = [defineBasePlugin('test', {})];
+      const _plugins = [defineHeadlessPlugin('test', {})];
       const editor = createEditor({
         plugins: _plugins,
       });
 
       const wrapper = ({ children }: any) => (
-        <Plate editor={editor}>{children}</Plate>
+        <EditorRoot editor={editor}>{children}</EditorRoot>
       );
 
       const { result } = renderHook(
@@ -174,7 +174,7 @@ describe('Plate', () => {
         });
 
         const wrapper = ({ children }: any) => (
-          <Plate editor={editor}>{children}</Plate>
+          <EditorRoot editor={editor}>{children}</EditorRoot>
         );
         const { result } = renderHook(() => useEditor().id, { wrapper });
 
@@ -185,15 +185,15 @@ describe('Plate', () => {
     describe('when Plate without id > Plate with id', () => {
       it('returns the closest editor with an id', () => {
         const wrapper = ({ children }: any) => (
-          <Plate editor={createEditor()}>
-            <Plate
+          <EditorRoot editor={createEditor()}>
+            <EditorRoot
               editor={createEditor({
                 id: 'test',
               })}
             >
               {children}
-            </Plate>
-          </Plate>
+            </EditorRoot>
+          </EditorRoot>
         );
         const { result } = renderHook(() => useEditor().id, { wrapper });
 
@@ -206,9 +206,9 @@ describe('Plate', () => {
     const outer = createEditor();
     const inner = createEditor();
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={inner}>
+      <EditorRoot editor={inner}>
         <EditorProvider editor={outer}>{children}</EditorProvider>
-      </Plate>
+      </EditorRoot>
     );
     expect(renderHook(() => useEditor(), { wrapper }).result.current).toBe(
       outer
@@ -217,7 +217,7 @@ describe('Plate', () => {
 
   it('returns null from optional controls until a controller has a mounted target', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <PlateController>{children}</PlateController>
+      <EditorController>{children}</EditorController>
     );
     expect(
       renderHook(() => useOptionalEditor(), { wrapper }).result.current
@@ -232,7 +232,7 @@ describe('Plate', () => {
       const fn = mock();
 
       const plugins = [
-        defineBasePlugin('a', {
+        defineHeadlessPlugin('a', {
           corrections: [
             {
               event: 'content',
@@ -255,9 +255,9 @@ describe('Plate', () => {
       });
 
       render(
-        <Plate editor={editor}>
-          <PlateContent />
-        </Plate>
+        <EditorRoot editor={editor}>
+          <EditorContent />
+        </EditorRoot>
       );
 
       expect(fn).not.toHaveBeenCalled();
@@ -270,7 +270,7 @@ describe('Plate', () => {
   describe('when slots.wrapRoot renders null', () => {
     it('renders without normalizing editor children', () => {
       const plugins: PlatePlugins = [
-        definePlatePlugin('a', {
+        definePlugin('a', {
           slots: {
             wrapRoot: () => null,
           },
@@ -284,9 +284,9 @@ describe('Plate', () => {
 
       expect(() =>
         render(
-          <Plate editor={editor}>
-            <PlateContent />
-          </Plate>
+          <EditorRoot editor={editor}>
+            <EditorContent />
+          </EditorRoot>
         )
       ).not.toThrow();
     });
@@ -313,10 +313,10 @@ describe('Plate', () => {
         );
 
         return (
-          <Plate editor={editor}>
-            <PlateContent />
+          <EditorRoot editor={editor}>
+            <EditorContent />
             <MountCounter />
-          </Plate>
+          </EditorRoot>
         );
       };
 
@@ -338,13 +338,13 @@ describe('Plate', () => {
     const ParagraphElement = ({
       attributes,
       children,
-    }: PlateElementProps<typeof ParagraphPlugin>) => (
+    }: EditorElementProps<typeof ParagraphPlugin>) => (
       <p {...attributes} data-testid="paragraph">
         {children}
       </p>
     );
 
-    const BoldPlugin = definePlatePlugin('bold', {
+    const BoldPlugin = definePlugin('bold', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
         properties: {
@@ -356,22 +356,25 @@ describe('Plate', () => {
     const BoldLeaf = ({
       attributes,
       children,
-    }: PlateLeafProps<typeof BoldPlugin>) => (
+    }: EditorLeafProps<typeof BoldPlugin>) => (
       <strong {...attributes} data-testid="bold">
         {children}
       </strong>
     );
 
-    const ParagraphAttributesPlugin = defineBasePlugin('paragraphAttributes', {
-      targetPlugins: [ParagraphPlugin],
-      schema: ({ targetElementTypes }) => ({
-        properties: {
-          attributes: schema.elementProperty(property.json(), {
-            target: target.types(targetElementTypes),
-          }),
-        },
-      }),
-    });
+    const ParagraphAttributesPlugin = defineHeadlessPlugin(
+      'paragraphAttributes',
+      {
+        targetPlugins: [ParagraphPlugin],
+        schema: ({ targetElementTypes }) => ({
+          properties: {
+            attributes: schema.elementProperty(property.json(), {
+              target: target.types(targetElementTypes),
+            }),
+          },
+        }),
+      }
+    );
 
     const getParagraphPlugin = (projectAttributes: boolean) =>
       ParagraphPlugin.configure({
@@ -449,9 +452,9 @@ describe('Plate', () => {
       });
 
       return (
-        <Plate editor={editor}>
-          <PlateContent />
-        </Plate>
+        <EditorRoot editor={editor}>
+          <EditorContent />
+        </EditorRoot>
       );
     };
 
@@ -460,10 +463,10 @@ describe('Plate', () => {
 
       const paragraphEl = getByTestId('paragraph');
       expect(Object.keys(paragraphEl.dataset)).toEqual([
-        'pliteNode',
+        'editorNode',
         'testid',
-        'plitePath',
-        'pliteNodeKey',
+        'editorPath',
+        'editorNodeKey',
       ]);
 
       const boldEl = getByTestId('bold');
@@ -475,11 +478,11 @@ describe('Plate', () => {
 
       const paragraphEl = getByTestId('paragraph');
       expect(Object.keys(paragraphEl.dataset)).toEqual([
-        'pliteNode',
+        'editorNode',
         'myParagraphAttribute',
         'testid',
-        'plitePath',
-        'pliteNodeKey',
+        'editorPath',
+        'editorNodeKey',
       ]);
 
       const boldEl = getByTestId('bold');
@@ -503,7 +506,7 @@ describe('Plate', () => {
         },
       ];
 
-      const UnknownElementSchemaPlugin = defineBasePlugin(
+      const UnknownElementSchemaPlugin = defineHeadlessPlugin(
         'unknownElementSchema',
         {
           schema: {
@@ -521,9 +524,9 @@ describe('Plate', () => {
       });
 
       const { getByText } = render(
-        <Plate editor={editor}>
-          <PlateContent />
-        </Plate>
+        <EditorRoot editor={editor}>
+          <EditorContent />
+        </EditorRoot>
       );
 
       expect(
@@ -543,7 +546,7 @@ describe('Plate', () => {
         },
       ];
 
-      const InitialValuePlugin = definePlatePlugin('initialValue', {
+      const InitialValuePlugin = definePlugin('initialValue', {
         api: () => ({
           decode: () => syncValue,
         }),
@@ -557,9 +560,9 @@ describe('Plate', () => {
         });
 
         return (
-          <Plate editor={editor}>
-            <PlateContent data-testid="plate-content" />
-          </Plate>
+          <EditorRoot editor={editor}>
+            <EditorContent data-testid="plate-content" />
+          </EditorRoot>
         );
       };
 

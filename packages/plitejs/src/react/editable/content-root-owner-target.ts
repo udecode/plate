@@ -22,9 +22,9 @@ export const getEditableRootFromTarget = (
   target: EventTarget | null
 ): RootKey => {
   const element = mouseEventTargetToElement(target);
-  const editableRoot = element?.closest('[data-plite-editor="true"]');
+  const editableRoot = element?.closest('[data-editor="true"]');
 
-  return editableRoot?.getAttribute('data-plite-root') ?? MAIN_ROOT_KEY;
+  return editableRoot?.getAttribute('data-editor-root') ?? MAIN_ROOT_KEY;
 };
 
 const parseContentRootOwnerPath = (value: string | null): Path | null => {
@@ -49,23 +49,21 @@ export const getContentRootOwnerFromTarget = ({
   }
 
   const element = mouseEventTargetToElement(target);
-  const slotElement = element?.closest('[data-plite-content-root-slot]');
+  const slotElement = element?.closest('[data-editor-content-root-slot]');
   const slotOwnerPath =
     slotElement instanceof HTMLElement
       ? parseContentRootOwnerPath(
-          slotElement.getAttribute('data-plite-content-root-owner-path')
+          slotElement.getAttribute('data-editor-content-root-owner-path')
         )
       : null;
   const slotOwnerRoot =
     slotElement instanceof HTMLElement
-      ? slotElement.getAttribute('data-plite-content-root-owner-root')
+      ? slotElement.getAttribute('data-editor-content-root-owner-root')
       : null;
   const ownerElement = slotElement?.parentElement?.closest(
-    '[data-plite-node="element"][data-plite-path]'
+    '[data-editor-node="element"][data-editor-path]'
   );
-  const ownerEditorElement = ownerElement?.closest(
-    '[data-plite-editor="true"]'
-  );
+  const ownerEditorElement = ownerElement?.closest('[data-editor="true"]');
   const ownerPath =
     slotOwnerPath ??
     (ownerElement instanceof HTMLElement
@@ -73,7 +71,7 @@ export const getContentRootOwnerFromTarget = ({
       : null);
   const ownerRoot =
     slotOwnerRoot ??
-    ownerEditorElement?.getAttribute('data-plite-root') ??
+    ownerEditorElement?.getAttribute('data-editor-root') ??
     MAIN_ROOT_KEY;
 
   return ownerPath

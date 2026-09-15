@@ -1,0 +1,110 @@
+{
+  "addedIds": [],
+  "removedIds": [],
+  "observationOnly": true,
+  "changedGroups": [
+    {
+      "id": "browser/suggestion",
+      "scope": "suggestions",
+      "priorCount": 1,
+      "currentCount": 1,
+      "membershipChanged": false
+    },
+    {
+      "id": "capability/suggestion",
+      "scope": "suggestions",
+      "priorCount": 2,
+      "currentCount": 2,
+      "membershipChanged": false
+    },
+    {
+      "id": "platejs/react",
+      "scope": "react",
+      "priorCount": 191,
+      "currentCount": 191,
+      "membershipChanged": false
+    },
+    {
+      "id": "platejs/suggestion",
+      "scope": "suggestions",
+      "priorCount": 4,
+      "currentCount": 4,
+      "membershipChanged": false
+    },
+    {
+      "id": "plitejs/dom",
+      "scope": "native",
+      "priorCount": 29,
+      "currentCount": 29,
+      "membershipChanged": false
+    },
+    {
+      "id": "plitejs/react/hooks",
+      "scope": "react",
+      "priorCount": 33,
+      "currentCount": 33,
+      "membershipChanged": false
+    },
+    {
+      "id": "registry/lib/inline-suggestion",
+      "scope": "suggestions",
+      "priorCount": 1,
+      "currentCount": 1,
+      "membershipChanged": false
+    },
+    {
+      "id": "ui/inline-void-suggestion",
+      "scope": "authored",
+      "priorCount": 1,
+      "currentCount": 1,
+      "membershipChanged": false
+    },
+    {
+      "id": "ui/suggestion",
+      "scope": "suggestions",
+      "priorCount": 2,
+      "currentCount": 2,
+      "membershipChanged": false
+    }
+  ],
+  "limits": "Unrelated source fingerprints refreshed for canonical inventory validation only; their reviews, adoption and proof were not advanced.",
+  "closingObservationDelta": [
+    {
+      "id": "platejs/entrypoints",
+      "oldCount": 5,
+      "currentCount": 5,
+      "source": null,
+      "keys": [
+        "id",
+        "count",
+        "fingerprint",
+        "example"
+      ]
+    },
+    {
+      "id": "platejs/react",
+      "oldCount": 191,
+      "currentCount": 191,
+      "source": null,
+      "keys": [
+        "id",
+        "count",
+        "fingerprint",
+        "example"
+      ]
+    },
+    {
+      "id": "registry/blocks",
+      "oldCount": 10,
+      "currentCount": 11,
+      "source": null,
+      "keys": [
+        "id",
+        "count",
+        "fingerprint",
+        "example"
+      ]
+    }
+  ],
+  "closingNote": "Concurrent source observation changed outside documents; documents source and review freshness still match. No scope membership IDs added or removed."
+}

@@ -3,8 +3,8 @@ import React from 'react';
 
 import { createEditor } from '../editor';
 import { useFocusedLast } from '../stores/plate-controller/useFocusedLast';
-import { Plate } from './Plate';
-import { PlateContent } from './PlateContent';
+import { EditorRoot } from './Plate';
+import { EditorContent } from './PlateContent';
 
 function Fixture({
   editor,
@@ -16,10 +16,10 @@ function Fixture({
   visible?: boolean;
 }) {
   return (
-    <Plate editor={editor} suppressInstanceWarning>
-      {visible && <PlateContent aria-label={name} />}
+    <EditorRoot editor={editor} suppressInstanceWarning>
+      {visible && <EditorContent aria-label={name} />}
       <LastFocus name={name} />
-    </Plate>
+    </EditorRoot>
   );
 }
 function LastFocus({ name }: { name: string }) {

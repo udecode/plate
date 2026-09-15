@@ -15,7 +15,7 @@ describe('retained authored revert', () => {
   it('creates a new contribution while preserving another authors independent work', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [
+      plugins: [
         history(),
         authored({ authorId: () => authorId, retainHistory: true }),
       ],
@@ -57,9 +57,9 @@ describe('retained authored revert', () => {
   });
 
   it('can propose a retained revert and accept it after reload', () => {
-    const extension = authored({ authorId: 'alice', retainHistory: true });
+    const plugin = authored({ authorId: 'alice', retainHistory: true });
     const editor = createEditor({
-      extensions: [extension],
+      plugins: [plugin],
       initialValue: [paragraph('Base')],
     });
     editor.update.text.insert(' accepted', { at: at(4) });
@@ -75,7 +75,7 @@ describe('retained authored revert', () => {
     });
     assert.deepEqual(editor.read.children(), [paragraph('Base accepted')]);
     const restored = createEditor({
-      extensions: [extension],
+      plugins: [plugin],
       initialValue: JSON.parse(JSON.stringify(editor.read.value())),
     });
     assert.equal(
@@ -90,7 +90,7 @@ describe('retained authored revert', () => {
 
   it('reports unavailable history and an explicit empty selection without writing', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base')],
     });
     editor.update.text.insert(' accepted', { at: at(4) });
@@ -113,7 +113,7 @@ describe('retained authored revert', () => {
   it('blocks a revert whose accepted dependant is outside the selected batch', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [authored({ authorId: () => authorId, retainHistory: true })],
+      plugins: [authored({ authorId: () => authorId, retainHistory: true })],
       initialValue: [paragraph('Base')],
     });
     editor.update.text.insert(' alice', { at: at(4) });
@@ -131,7 +131,7 @@ describe('retained authored revert', () => {
   it('reverts the full dependency batch as one new contribution', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [authored({ authorId: () => authorId, retainHistory: true })],
+      plugins: [authored({ authorId: () => authorId, retainHistory: true })],
       initialValue: [paragraph('Base')],
     });
     editor.update.text.insert(' alice', { at: at(4) });
@@ -147,7 +147,7 @@ describe('retained authored revert', () => {
       1
     );
     const restored = createEditor({
-      extensions: [authored({ authorId: 'carol', retainHistory: true })],
+      plugins: [authored({ authorId: 'carol', retainHistory: true })],
       initialValue: JSON.parse(JSON.stringify(editor.read.value())),
     });
     assert.deepEqual(restored.read.children(), [paragraph('Base')]);
@@ -155,7 +155,7 @@ describe('retained authored revert', () => {
 
   it('reports a stale selection after a review without reverting a partial batch', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice', retainHistory: true })],
+      plugins: [authored({ authorId: 'alice', retainHistory: true })],
       initialValue: [paragraph('Base')],
     });
     let id = '';
@@ -176,7 +176,7 @@ describe('retained authored revert', () => {
   it('restores a retained deletion and preserves independent later content', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [authored({ authorId: () => authorId, retainHistory: true })],
+      plugins: [authored({ authorId: () => authorId, retainHistory: true })],
       initialValue: [paragraph('Keep removed'), paragraph('Other')],
     });
     editor.update.text.delete({ at: { anchor: at(4), focus: at(12) } });
@@ -196,7 +196,7 @@ describe('retained authored revert', () => {
 
   it('rolls back a proposed compensation when the transaction aborts', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice', retainHistory: true })],
+      plugins: [authored({ authorId: 'alice', retainHistory: true })],
       initialValue: [paragraph('Base')],
     });
     editor.update.text.insert(' accepted', { at: at(4) });

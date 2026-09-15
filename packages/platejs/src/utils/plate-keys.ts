@@ -23,8 +23,6 @@ export const PLUGINS = {
   debug: 'debug',
   dnd: 'dnd',
   dom: 'dom',
-  docxExport: 'docxExport',
-  docx: 'docx',
   elementState: 'elementState',
   emoji: 'emoji',
   emojiInput: 'emojiInput',
@@ -84,6 +82,7 @@ export const PLUGINS = {
   trailingBlock: 'trailingBlock',
   underline: 'underline',
   video: 'video',
+  wordPaste: 'wordPaste',
   yjs: 'yjs',
 } as const;
 

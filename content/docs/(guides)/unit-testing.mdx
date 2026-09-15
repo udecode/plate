@@ -22,7 +22,7 @@ npm install -D react react-dom @testing-library/react
 | Import | Use for |
 | --- | --- |
 | `@platejs/test` | Node-safe JSX fixtures, editor builders, selection projection, and `DataTransfer` fixtures |
-| `@platejs/test/react` | `PlateTest` and Testing Library interaction helpers |
+| `@platejs/test/react` | `EditorTest` and Testing Library interaction helpers |
 | `@platejs/test/browser` | Browser DOM and selection inspection |
 | `@platejs/test/playwright` | Playwright editor harnesses |
 | `@platejs/test/proof` | Pure proof contracts, classifiers, replay validation, and mobile receipts |
@@ -48,14 +48,14 @@ This allows you to use JSX syntax for creating editor values.
 
 ## Testing React components
 
-Use the React entrypoint when the test mounts `PlateContent` or interacts with
+Use the React entrypoint when the test mounts `EditorContent` or interacts with
 the rendered editor:
 
 ```tsx
-import { createPlateTestEditor } from '@platejs/test/react';
+import { createTestEditor } from '@platejs/test/react';
 import { ParagraphPlugin } from 'platejs/react';
 
-const [editor, actions] = await createPlateTestEditor({
+const [editor, actions] = await createTestEditor({
   initialValue: [
     { children: [{ text: '' }], type: 'paragraph' },
   ],
@@ -175,7 +175,7 @@ it('should collapse selection on backspace', () => {
 When you need to test keyboard handlers directly:
 
 ```typescript
-import { createEditor, definePlatePlugin } from 'platejs/react';
+import { createEditor, definePlugin } from 'platejs/react';
 
 it('should call the keyDown handler', () => {
   const input = (
@@ -189,7 +189,7 @@ it('should call the keyDown handler', () => {
   // Create a mock handler to verify it's called
   const keyDownMock = jest.fn();
 
-  const TestPlugin = definePlatePlugin('test', {
+  const TestPlugin = definePlugin('test', {
     on: {
       keyDown: keyDownMock,
     },
@@ -328,3 +328,24 @@ describe('when keepSelectedTextOnPaste is disabled', () => {
 ## Mocking vs. real transforms
 
 While mocking can be useful for isolating specific behaviors, Plate tests often assess actual editor children and selection after transforms. This approach ensures that plugins work correctly with the entire editor state.
+
+## Custom fixture vocabulary
+
+Use `createHyperscript` from `platejs/hyperscript` for a small domain-specific
+fixture factory. It creates ordinary node values and selection markers; keep it
+in tests and fixtures.
+
+```ts
+import { createHyperscript } from 'platejs/hyperscript';
+
+const h = createHyperscript({
+  elements: { paragraph: { type: 'paragraph' } },
+});
+
+const paragraph = h('paragraph', {}, 'Hello');
+```
+
+The built-in `fragment`, `element`, and `text` tags construct nodes; `cursor`,
+`anchor`, and `focus` place selection endpoints. The `selection` tag constructs
+a range. Use `@platejs/test` when its Plate vocabulary and harnesses cover the
+fixture.

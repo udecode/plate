@@ -3,12 +3,14 @@ import { act, render, waitFor } from '@testing-library/react';
 import {
   createEditor,
   Editable,
-  Plite,
+  EditorRoot,
+  useEditorContext,
   useEditorEditableElement,
   useEditorRootElement,
   useEditorScrollElement,
   useEditorScrollElementRef,
 } from '../../src/react';
+import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 
 describe('plite-react DOM capability contract', () => {
@@ -31,19 +33,21 @@ describe('plite-react DOM capability contract', () => {
       initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
     });
 
+    let mountedEditor!: ReturnType<typeof useEditorContext>;
     const ScopeProbe = () => {
-      const root = useEditorRootElement(editor);
-      const editable = useEditorEditableElement(editor);
-      const scroll = useEditorScrollElement(editor);
-      const scrollRef = useEditorScrollElementRef(editor);
+      mountedEditor = useEditorContext();
+      const root = useEditorRootElement(mountedEditor);
+      const editable = useEditorEditableElement(mountedEditor);
+      const scroll = useEditorScrollElement(mountedEditor);
+      const scrollRef = useEditorScrollElementRef(mountedEditor);
 
       return (
         <>
           <div data-testid="scroll-root" ref={scrollRef} />
           <output
             data-testid="scope-probe"
-            data-editable={editable?.dataset.pliteEditor ?? ''}
-            data-root={root?.dataset.pliteEditor ?? ''}
+            data-editable={editable?.dataset.editor ?? ''}
+            data-root={root?.dataset.editor ?? ''}
             data-scroll={scroll?.dataset.testid ?? ''}
           />
         </>
@@ -51,19 +55,19 @@ describe('plite-react DOM capability contract', () => {
     };
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <ScopeProbe />
         <Editable aria-label="Body editor" />
-      </Plite>
+      </EditorRoot>
     );
 
-    const editable = rendered.container.querySelector('[data-plite-editor]');
+    const editable = rendered.container.querySelector('[data-editor]');
     const scroll = rendered.getByTestId('scroll-root');
 
     await waitFor(() => {
-      expect(editor.api.dom.root()).toBe(editable);
-      expect(editor.api.dom.editable()).toBe(editable);
-      expect(editor.api.dom.scroll()).toBe(scroll);
+      expect(mountedEditor.api.dom.root()).toBe(editable);
+      expect(mountedEditor.api.dom.editable()).toBe(editable);
+      expect(mountedEditor.api.dom.scroll()).toBe(scroll);
       expect(rendered.getByTestId('scope-probe')).toHaveAttribute(
         'data-root',
         'true'
@@ -83,23 +87,28 @@ describe('plite-react DOM capability contract', () => {
     const editor = createEditor({
       initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
     });
-    const ScopeProbe = () => (
-      <output
-        data-testid="scope"
-        data-root={useEditorRootElement(editor)?.id ?? ''}
-        data-editable={useEditorEditableElement(editor)?.id ?? ''}
-        data-scroll={useEditorScrollElement(editor)?.id ?? ''}
-      />
-    );
+    let mountedEditor!: ReturnType<typeof useEditorContext>;
+    const ScopeProbe = () => {
+      mountedEditor = useEditorContext();
+
+      return (
+        <output
+          data-testid="scope"
+          data-root={useEditorRootElement(mountedEditor)?.id ?? ''}
+          data-editable={useEditorEditableElement(mountedEditor)?.id ?? ''}
+          data-scroll={useEditorScrollElement(mountedEditor)?.id ?? ''}
+        />
+      );
+    };
     const probe = <ScopeProbe />;
     const tree = (views: number) => (
       <>
-        {probe}
         <button type="button">Outside</button>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
+          {probe}
           {views > 0 && <Editable id="first-view" />}
           {views > 1 && <Editable id="second-view" />}
-        </Plite>
+        </EditorRoot>
       </>
     );
     const rendered = render(tree(2));
@@ -114,7 +123,7 @@ describe('plite-react DOM capability contract', () => {
       const second =
         rendered.container.querySelector<HTMLElement>('#second-view')!;
       await act(async () => first.focus());
-      expect(editor.api.dom.root()).toBe(first);
+      expect(mountedEditor.api.dom.root()).toBe(first);
       expectScope('first-view');
       await act(async () => second.focus());
       expectScope('second-view');
@@ -139,23 +148,27 @@ describe('plite-react DOM capability contract', () => {
       focus: { path: [0, 0], offset: 0 },
     };
 
+    let rendered!: ReturnType<typeof render>;
     act(() => {
-      render(
-        <Plite editor={editor}>
+      rendered = render(
+        <EditorRoot editor={editor}>
           <Editable />
-        </Plite>
+        </EditorRoot>
       );
     });
+    const mountedEditor = findMountedEditableDOMRuntime(
+      rendered.container.querySelector('[data-editor]')!
+    )!.editor;
 
-    expect(editor.read.selection()).toBe(null);
+    expect(mountedEditor.read.selection()).toBe(null);
 
     await act(async () => {
-      editor.api.dom.focus();
+      mountedEditor.api.dom.focus();
     });
 
-    expect(editor.read.selection()).toEqual(expectedSelection);
+    expect(mountedEditor.read.selection()).toEqual(expectedSelection);
 
-    const windowSelection = editor.api.dom.getWindow().getSelection();
+    const windowSelection = mountedEditor.api.dom.getWindow().getSelection();
 
     expect(windowSelection?.focusNode?.textContent).toBe('test');
     expect(windowSelection?.anchorNode?.textContent).toBe('test');
@@ -177,9 +190,9 @@ describe('plite-react DOM capability contract', () => {
 
     act(() => {
       render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
-        </Plite>
+        </EditorRoot>
       );
     });
 
@@ -207,24 +220,28 @@ describe('plite-react DOM capability contract', () => {
     const onSelectionChange = vi.fn();
     const onValueChange = vi.fn();
 
+    let rendered!: ReturnType<typeof render>;
     act(() => {
-      render(
-        <Plite
+      rendered = render(
+        <EditorRoot
           editor={editor}
           onCommit={onCommit}
           onSelectionChange={onSelectionChange}
           onValueChange={onValueChange}
         >
           <Editable />
-        </Plite>
+        </EditorRoot>
       );
     });
+    const mountedEditor = findMountedEditableDOMRuntime(
+      rendered.container.querySelector('[data-editor]')!
+    )!.editor;
 
     await act(async () => {
-      editor.api.dom.focus();
+      mountedEditor.api.dom.focus();
     });
 
-    expect(editor.read.selection()).toEqual({
+    expect(mountedEditor.read.selection()).toEqual({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -236,13 +253,13 @@ describe('plite-react DOM capability contract', () => {
 
     expect(onCommit).toHaveBeenCalledWith(
       expect.objectContaining({
-        editor,
+        editor: mountedEditor,
         snapshot: expect.objectContaining({ selection: expectedSelection }),
       })
     );
     expect(onSelectionChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        editor,
+        editor: mountedEditor,
         selection: expectedSelection,
         snapshot: expect.objectContaining({ selection: expectedSelection }),
       })
@@ -258,14 +275,14 @@ describe('plite-react DOM capability contract', () => {
     const editor = createEditor({ initialValue });
 
     const mounted = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
-    const editable = mounted.container.querySelector('[data-plite-editor]')!;
+    const editable = mounted.container.querySelector('[data-editor]')!;
     const assertDOMRange = vi.spyOn(ReactEditor, 'assertDOMRange');
     const [alphaText, bravoText] = Array.from(
-      editable.querySelectorAll('[data-plite-string="true"]')
+      editable.querySelectorAll('[data-editor-string="true"]')
     ).map((node) => node.firstChild);
 
     await act(async () => {
@@ -312,11 +329,11 @@ describe('plite-react DOM capability contract', () => {
     const editor = createEditor({ initialValue });
 
     const mounted = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
-    const editable = mounted.container.querySelector('[data-plite-editor]')!;
+    const editable = mounted.container.querySelector('[data-editor]')!;
     const assertDOMRange = vi.spyOn(ReactEditor, 'assertDOMRange');
 
     await act(async () => {
@@ -341,11 +358,11 @@ describe('plite-react DOM capability contract', () => {
     const editor = createEditor({ initialValue });
 
     const mounted = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
-    const editable = mounted.container.querySelector('[data-plite-editor]') as
+    const editable = mounted.container.querySelector('[data-editor]') as
       | (HTMLDivElement & {
           __pliteBrowserHandle?: {
             selectRange: (selection: {
@@ -389,11 +406,11 @@ describe('plite-react DOM capability contract', () => {
     const editor = createEditor({ initialValue });
 
     const mounted = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
-    const editable = mounted.container.querySelector('[data-plite-editor]') as
+    const editable = mounted.container.querySelector('[data-editor]') as
       | (HTMLDivElement & {
           __pliteBrowserHandle?: {
             getElementByPath: (path: number[]) => HTMLElement | null;
@@ -405,7 +422,7 @@ describe('plite-react DOM capability contract', () => {
     ]);
 
     expect(textElement).toBeInstanceOf(HTMLElement);
-    expect(textElement).toHaveAttribute('data-plite-node', 'text');
+    expect(textElement).toHaveAttribute('data-editor-node', 'text');
     expect(textElement?.textContent).toContain('lookup');
   });
 });

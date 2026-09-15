@@ -43,6 +43,10 @@ import {
   encodeContentSliceContent,
   isDetachedContentSlice,
 } from '../content-slice';
+import {
+  assertEditorDocumentShape,
+  getEditorDocumentShapeIssueMessage,
+} from '../document-shape';
 import { profileCoreDuration } from '../profiling';
 import { toPublicRoot } from '../public-root';
 import {
@@ -3166,6 +3170,11 @@ export const compileSliceFitter = <V extends Value>(
     }>
   ) => {
     assertEditorJsonValue(innerInput2, 'Editor schema document');
+    assertEditorDocumentShape(innerInput2, (issue) => {
+      throw new EditorSchemaValidationError(
+        getEditorDocumentShapeIssueMessage(issue)
+      );
+    });
 
     const inputRoots = innerInput2.roots ?? {};
     const initial = cloneFrozen({

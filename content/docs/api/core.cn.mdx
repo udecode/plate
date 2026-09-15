@@ -5,7 +5,7 @@ description: \platejs 的 API 参考文档。
 
 ## API
 
-### `PlateBlockInsertOptions`
+### `BlockInsertOptions`
 
 用于插入完整块的功能命令的位置选项。声明公开命令接口时，可从 `platejs`
 导入此类型。
@@ -63,7 +63,7 @@ description: \platejs 的 API 参考文档。
   <APIItem name="decorate" type="function" optional>
     编辑器的装饰函数。
   </APIItem>
-  <APIItem name="on" type="EditorExtensionChangeHandlers & DOMHandlers" optional>
+  <APIItem name="on" type="PluginChangeHandlers & DOMHandlers" optional>
     Lifecycle 和 DOM 事件。子项名称无前缀，例如 `commit`、`nodeChange`、
     `keyDown` 和 `paste`。
   </APIItem>
@@ -77,7 +77,7 @@ description: \platejs 的 API 参考文档。
     编辑器的覆盖配置。
   </APIItem>
   <APIItem name="readOnly" type="boolean" optional>
-    编辑器的只读初始状态。对于动态值，使用 `Plate.readOnly` 属性。
+    编辑器的只读初始状态。对于动态值，使用 `EditorRoot.readOnly` 属性。
   </APIItem>
   <APIItem name="render" type="object" optional>
     编辑器的渲染函数。
@@ -155,41 +155,41 @@ const result = migrateDocument(persisted, {
 结果包含 `document`、映射后的 `selection`、`source`、`target` 和升序 `applied` 版本
 列表。schema 谱系不同、源版本更新或指纹漂移都会报错。
 
-### `definePlatePlugin`
+### `definePlugin`
 
 从一个推断出的 definition 创建 React Plate 插件。
 
-<API name="definePlatePlugin">
+<API name="definePlugin">
 <APIParameters>
   <APIItem name="name" type="string">
     用于插件查询和 API namespace 的稳定 capability name。
   </APIItem>
-  <APIItem name="definition" type="PlatePluginDefinitionInput">
+  <APIItem name="definition" type="PluginDefinitionInput">
     插件 definition。factory 从 name 和该对象推断 initial state、API、read 和
-    update method、schema、dependencies、原生 Plite 能力和 React 字段。
+    update method、schema、dependencies、编辑器能力和 React 字段。
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlatePlugin">
+<APIReturns type="Plugin">
   一个新的插件实例。
 </APIReturns>
 </API>
 
-### `toPlatePlugin`
+### `toReactPlugin`
 
-扩展 BasePlugin 以创建 React PlatePlugin。
+扩展 BasePlugin 以创建 React Plugin。
 
-<API name="toPlatePlugin">
+<API name="toReactPlugin">
 <APIParameters>
   <APIItem name="basePlugin" type="BasePlugin">
     要扩展的基础 BasePlugin。
   </APIItem>
-  <APIItem name="reactFields" type="PlatePluginReactFields | ((ctx: PlatePluginContext) => PlatePluginReactFields)" optional>
+  <APIItem name="reactFields" type="PlatePluginReactFields | ((ctx: PluginContext) => PlatePluginReactFields)" optional>
     添加到精确 Base plugin definition 的 React 专属字段。
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlatePlugin">
+<APIReturns type="Plugin">
   保留精确 Base definition 并添加所提供 React 字段的新插件 descriptor。
 </APIReturns>
 </API>
@@ -204,34 +204,13 @@ const result = migrateDocument(persisted, {
 
 <API name="useEditorScrollElement">
   <APIReturns type="HTMLElement | null">
-    Plite 用作编辑器滚动容器的元素。
+    Plate 用作编辑器滚动容器的元素。
   </APIReturns>
-</API>
-
-### `useEditorPlugin`
-
-获取已安装插件的扁平 consumer portal。
-
-<API name="useEditorPlugin">
-<APIParameters>
-  <APIItem name="p" type="WithRequiredName<P>">
-    具有必需名称的插件或插件配置。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="PlatePluginPortal">
-  <APIItem name="name" type="string">
-      已安装插件的名称。
-  </APIItem>
-  <APIItem name="store" type="PluginStore">
-      当前插件的可变 editor-local store。
-  </APIItem>
-</APIReturns>
 </API>
 
 ### `useEditor`
 
-`useEditor(): Editor` 返回最近 provider 所选的编辑器，没有目标时抛出错误。它在 provider 切换目标时重新渲染，不订阅文档提交。`PlateContent` 内的返回值绑定该挂载视图的根、DOM 和权限。
+`useEditor(): Editor` 返回最近 provider 所选的编辑器，没有目标时抛出错误。它在 provider 切换目标时重新渲染，不订阅文档提交。`EditorContent` 内的返回值绑定该挂载视图的根、DOM 和权限。
 
 ### `useOptionalEditor`
 
@@ -314,14 +293,14 @@ const result = migrateDocument(persisted, {
 
 ### `usePluginStore`
 
-在 `<Plate>` 内订阅插件 state 字段、命名 selector 或 selector callback。
+在 `<EditorRoot>` 内订阅插件 state 字段、命名 selector 或 selector callback。
 
 请传入插件 descriptor 本身，而不是 `{ name }` 对象。descriptor 携带 state
 字段、selector 参数和返回类型，因此不需要手动传泛型。
 
 <API name="usePluginStore">
 <APIParameters>
-  <APIItem name="plugin" type="PlatePlugin">
+  <APIItem name="plugin" type="Plugin">
     要订阅其 editor-local store 的插件。
   </APIItem>
   <APIItem name="keyOrSelector" type="keyof InferPluginStoreState<C> | keyof InferSelectors<C> | ((state) => T)">
@@ -349,12 +328,12 @@ const state = usePluginStore(plugin, (state) => state);
 
 <API name="useElement">
 <APIParameters>
-  <APIItem name="plugin" type="PlateElementDescriptor" optional>
+  <APIItem name="plugin" type="ElementDescriptor" optional>
     用于推断 element provider 和 schema type 的 plugin descriptor。
   </APIItem>
 </APIParameters>
 
-<APIReturns type="PlateElementForDescriptor<TPlugin> | Element">
+<APIReturns type="ElementForDescriptor<TPlugin> | Element">
   当前 element。
 </APIReturns>
 </API>
@@ -413,7 +392,7 @@ const editor = createEditor({
 
 ### `ElementStatePlugin`
 
-在 Plite 之上扩展 Plate 编辑器行为。
+在 Plate 之上扩展 Plate 编辑器行为。
 
 `ElementStatePlugin` 提供
 `editor.plugin(ElementStatePlugin).api.isEmpty(element)`。它检查元素自身的属性状态，而不是文本内容。默认只忽略
@@ -435,7 +414,7 @@ elementState.api.isEmpty({
   type: "paragraph",
 }); // false
 
-const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
+const CustomMetadataPlugin = definePlugin("customMetadata", {
   schema: {
     properties: {
       customId: schema.elementProperty(property.string(), {
@@ -470,11 +449,11 @@ const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
 
 ## 组件
 
-### `<PlateElement>`
+### `<EditorElement>`
 
 用于渲染元素的通用组件。
 
-<API name="PlateElement">
+<API name="EditorElement">
   <APIProps>
     <APIItem name="className" type="string" optional>
       应用于组件的 CSS 类。
@@ -493,20 +472,20 @@ const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
       <APISubList>
         <APISubListItem
           parent="attributes"
-          name="data-plite-node"
+          name="data-editor-node"
           type="'element'"
         >
           始终设置为 `'element'`。
         </APISubListItem>
         <APISubListItem
           parent="attributes"
-          name="data-plite-inline"
+          name="data-editor-inline"
           type="boolean"
           optional
         />
         <APISubListItem
           parent="attributes"
-          name="data-plite-void"
+          name="data-editor-void"
           type="boolean"
           optional
         />
@@ -525,11 +504,11 @@ const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
   </APIProps>
 </API>
 
-### `<PlateLeaf>`
+### `<EditorLeaf>`
 
 用于渲染叶节点的通用组件。
 
-<API name="PlateLeaf">
+<API name="EditorLeaf">
   <APIProps>
     <APIItem name="className" type="string" optional>
       应用于组件的 CSS 类。
@@ -549,7 +528,7 @@ const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
     <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
       要应用到顶层元素的叶节点属性。
       <APISubList>
-        <APISubListItem parent="attributes" name="data-plite-leaf" type="true">
+        <APISubListItem parent="attributes" name="data-editor-leaf" type="true">
           始终设置为 `true`。
         </APISubListItem>
       </APISubList>
@@ -560,11 +539,11 @@ const CustomMetadataPlugin = defineBasePlugin("customMetadata", {
   </APIProps>
 </API>
 
-### `<PlateText>`
+### `<EditorText>`
 
 用于渲染文本的通用组件。
 
-<API name="PlateText">
+<API name="EditorText">
   <APIProps>
     <APIItem name="className" type="string" optional>
       应用于组件的 CSS 类。

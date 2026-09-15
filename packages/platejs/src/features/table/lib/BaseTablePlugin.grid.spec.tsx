@@ -7,7 +7,7 @@ import type { TestEditor } from '#platejs-test-internal';
 import { jsxt } from '#platejs-test-internal';
 
 import { createEditorView, schema, type Value } from '../../../core';
-import { definePlatePlugin } from '../../../react/core';
+import { definePlugin } from '../../../react/core';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -103,7 +103,7 @@ describe('table grid queries', () => {
     });
 
     it('indexes tables in element-owned content roots', () => {
-      const RootHolderPlugin = definePlatePlugin('tableRootHolder', {
+      const RootHolderPlugin = definePlugin('tableRootHolder', {
         schema: {
           element: {
             contentRoots: {

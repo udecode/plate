@@ -1,7 +1,7 @@
 import type { Root } from 'mdast';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
-import { type Plugin, unified } from 'unified';
+import { type Plugin as UnifiedPlugin, unified } from 'unified';
 
 import {
   type Descendant,
@@ -15,6 +15,7 @@ import {
   PLUGINS,
   TextApi,
 } from '../../../core';
+import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import type { NormalizePluginState } from '../../../lib/plugin/PluginDefinition';
 import { mdastToSlate } from '../deserializer/mdastToSlate';
 import { htmlToJsx } from '../deserializer/utils/htmlToJsx';
@@ -92,10 +93,22 @@ export const createMarkdownRuntime = (
       : null,
     options: Object.freeze(options),
     registry: Object.freeze({
-      has: (plugin) => editor.plugin(plugin).installed,
-      type: (plugin) => {
-        const portal = editor.plugin(plugin);
+      has: (plugin) => {
+        const descriptor =
+          typeof plugin === 'string'
+            ? getCompiledPlatePlugin(editor, plugin)
+            : plugin;
 
+        return descriptor ? editor.plugin(descriptor).installed : false;
+      },
+      type: (plugin) => {
+        const descriptor =
+          typeof plugin === 'string'
+            ? getCompiledPlatePlugin(editor, plugin)
+            : plugin;
+
+        if (!descriptor) return undefined;
+        const portal = editor.plugin(descriptor);
         return portal.installed ? portal.schema.type : undefined;
       },
     } satisfies MarkdownPluginRegistry),
@@ -493,7 +506,7 @@ declare module 'unified' {
   }
 }
 
-const remarkToSlate: Plugin<[DeserializeMdContext], Root, Descendant[]> =
+const remarkToSlate: UnifiedPlugin<[DeserializeMdContext], Root, Descendant[]> =
   function (options) {
     this.compiler = (node) => mdastToSlate(node as Root, options);
   };

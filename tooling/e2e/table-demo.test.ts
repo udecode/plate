@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
-import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+import { recordBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 const TABLE_HTML = `
   <table>
@@ -185,9 +185,9 @@ const pasteClipboardAndReadFormats = async (page: Page) => {
 };
 
 const getEditor = (page: Page) =>
-  page.locator('[data-plite-editor="true"][contenteditable="true"]');
+  page.locator('[data-editor="true"][contenteditable="true"]');
 
-const TABLE_CELL_SELECTOR = ':is(td, th)[data-plite-node-key]';
+const TABLE_CELL_SELECTOR = ':is(td, th)[data-editor-node-key]';
 const INITIAL_TABLE_CELL_IDS = [
   'table-demo-header-plugin',
   'table-demo-header-element',
@@ -236,7 +236,7 @@ const expectEditorFocus = async (editor: Locator) => {
 };
 
 const placeCaretInCell = async (cell: Locator, editor: Locator) => {
-  const content = cell.locator('[data-plite-node="element"]').first();
+  const content = cell.locator('[data-editor-node="element"]').first();
 
   await expect(content).toHaveCount(1);
   await content.click();
@@ -285,7 +285,7 @@ const expectCellTexts = async (
 ) => {
   for (const [id, text] of Object.entries(expected)) {
     await expect(
-      getTableCell(table, id).locator('[data-plite-node="element"]').first()
+      getTableCell(table, id).locator('[data-editor-node="element"]').first()
     ).toHaveText(text);
   }
 };
@@ -293,10 +293,10 @@ const expectCellTexts = async (
 const readTableSnapshot = (table: Locator) =>
   table.evaluate((element) => ({
     cells: Array.from(
-      element.querySelectorAll(':is(td, th)[data-plite-node-key]')
+      element.querySelectorAll(':is(td, th)[data-editor-node-key]')
     ).map((cell) => ({
       colSpan: cell.getAttribute('colspan'),
-      key: cell.getAttribute('data-plite-node-key'),
+      key: cell.getAttribute('data-editor-node-key'),
       rowSpan: cell.getAttribute('rowspan'),
       text: cell.textContent?.replace(/\s+/g, ' ').trim() ?? '',
     })),
@@ -311,8 +311,8 @@ const rewriteEmbeddedFragmentHtml = (
   page.evaluate(
     ({ html: innerHtml, mode: innerMode }) => {
       const document = new DOMParser().parseFromString(innerHtml, 'text/html');
-      const carrier = document.body.querySelector('[data-plite-fragment]');
-      const encoded = carrier?.getAttribute('data-plite-fragment');
+      const carrier = document.body.querySelector('[data-editor-fragment]');
+      const encoded = carrier?.getAttribute('data-editor-fragment');
 
       if (!carrier || !encoded) {
         throw new Error(
@@ -321,7 +321,7 @@ const rewriteEmbeddedFragmentHtml = (
       }
 
       if (innerMode === 'corrupt-model') {
-        carrier.setAttribute('data-plite-fragment', 'not-valid-base64');
+        carrier.setAttribute('data-editor-fragment', 'not-valid-base64');
       } else if (innerMode === 'empty-model') {
         const payload = JSON.parse(decodeURIComponent(atob(encoded))) as {
           slice?: {
@@ -340,7 +340,7 @@ const rewriteEmbeddedFragmentHtml = (
         payload.slice.openEnd = 0;
         payload.slice.openStart = 0;
         carrier.setAttribute(
-          'data-plite-fragment',
+          'data-editor-fragment',
           btoa(encodeURIComponent(JSON.stringify(payload)))
         );
       }
@@ -408,7 +408,7 @@ test.describe('table registry demo', () => {
   test('renders, selects, and resizes cells without runtime errors', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       strict: true,
     });
     const editor = getEditor(page);
@@ -488,7 +488,7 @@ test.describe('table registry demo', () => {
   test('owns repeated plain vertical navigation before browser paint', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       strict: true,
     });
     const editor = getEditor(page);
@@ -523,13 +523,13 @@ test.describe('table registry demo', () => {
               state.__tableVerticalFrames?.push({
                 cellId: (() => {
                   const cell = anchorElement?.closest(
-                    ':is(td, th)[data-plite-node-key]'
+                    ':is(td, th)[data-editor-node-key]'
                   );
                   const ownerTable = cell?.closest('table');
                   const index = cell
                     ? Array.from(
                         ownerTable?.querySelectorAll(
-                          ':is(td, th)[data-plite-node-key]'
+                          ':is(td, th)[data-editor-node-key]'
                         ) ?? []
                       ).indexOf(cell)
                     : -1;
@@ -607,7 +607,7 @@ test.describe('table registry demo', () => {
   test('creates a sized body table from the keyboard picker', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       strict: true,
     });
     const editor = getEditor(page);
@@ -666,12 +666,12 @@ test.describe('table registry demo', () => {
       await expect(createdTable).toHaveCount(1);
       await expect(createdTable.locator('tr')).toHaveCount(2);
       await expect(createdTable.locator(TABLE_CELL_SELECTOR)).toHaveCount(6);
-      await expect(createdTable.locator('th[data-plite-node-key]')).toHaveCount(
-        0
-      );
-      await expect(createdTable.locator('td[data-plite-node-key]')).toHaveCount(
-        6
-      );
+      await expect(
+        createdTable.locator('th[data-editor-node-key]')
+      ).toHaveCount(0);
+      await expect(
+        createdTable.locator('td[data-editor-node-key]')
+      ).toHaveCount(6);
       await expect
         .poll(() =>
           createdTable.evaluate((table) => {
@@ -691,7 +691,7 @@ test.describe('table registry demo', () => {
   test('preserves header, selection, and sizing through table commands', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       strict: true,
     });
     const editor = getEditor(page);
@@ -704,8 +704,8 @@ test.describe('table registry demo', () => {
       await expect(table).toHaveCount(1);
       await expect(table.locator('tr')).toHaveCount(4);
       await expect(table.locator(TABLE_CELL_SELECTOR)).toHaveCount(16);
-      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
-      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(12);
+      await expect(table.locator('th[data-editor-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-editor-node-key]')).toHaveCount(12);
 
       const headerRow = table.locator('tr').first();
 
@@ -715,8 +715,8 @@ test.describe('table registry demo', () => {
       );
       await runTableMenuCommand(page, 'Column', 'Insert column after');
       await expect(headerRow.locator(TABLE_CELL_SELECTOR)).toHaveCount(5);
-      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(5);
-      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(15);
+      await expect(table.locator('th[data-editor-node-key]')).toHaveCount(5);
+      await expect(table.locator('td[data-editor-node-key]')).toHaveCount(15);
       await expectEditorFocus(editor);
 
       const insertedHeaderCell = headerRow.locator(TABLE_CELL_SELECTOR).nth(4);
@@ -724,8 +724,8 @@ test.describe('table registry demo', () => {
       await placeCaretInCell(insertedHeaderCell, editor);
       await runTableMenuCommand(page, 'Column', 'Delete column');
       await expect(headerRow.locator(TABLE_CELL_SELECTOR)).toHaveCount(4);
-      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
-      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(12);
+      await expect(table.locator('th[data-editor-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-editor-node-key]')).toHaveCount(12);
       await expectEditorFocus(editor);
 
       await placeCaretInCell(
@@ -734,16 +734,16 @@ test.describe('table registry demo', () => {
       );
       await runTableMenuCommand(page, 'Row', 'Insert row after');
       await expect(table.locator('tr')).toHaveCount(5);
-      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
-      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(16);
+      await expect(table.locator('th[data-editor-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-editor-node-key]')).toHaveCount(16);
 
       const insertedBodyRow = table.locator('tr').nth(3);
 
       await expect(
-        insertedBodyRow.locator('th[data-plite-node-key]')
+        insertedBodyRow.locator('th[data-editor-node-key]')
       ).toHaveCount(0);
       await expect(
-        insertedBodyRow.locator('td[data-plite-node-key]')
+        insertedBodyRow.locator('td[data-editor-node-key]')
       ).toHaveCount(4);
       await placeCaretInCell(
         insertedBodyRow.locator(TABLE_CELL_SELECTOR).nth(0),
@@ -751,8 +751,8 @@ test.describe('table registry demo', () => {
       );
       await runTableMenuCommand(page, 'Row', 'Delete row');
       await expect(table.locator('tr')).toHaveCount(4);
-      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
-      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(12);
+      await expect(table.locator('th[data-editor-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-editor-node-key]')).toHaveCount(12);
       await expectEditorFocus(editor);
 
       const mergeAnchor = table
@@ -779,8 +779,8 @@ test.describe('table registry demo', () => {
 
       await runTableMenuCommand(page, 'Cell', 'Merge cells');
       await expect(table.locator(TABLE_CELL_SELECTOR)).toHaveCount(15);
-      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
-      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(11);
+      await expect(table.locator('th[data-editor-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-editor-node-key]')).toHaveCount(11);
       await expect(mergeAnchor).toHaveAttribute('colspan', '2');
       await expect(mergeAnchor).toHaveJSProperty('tagName', 'TD');
       await expectEditorFocus(editor);
@@ -788,8 +788,8 @@ test.describe('table registry demo', () => {
       await placeCaretInCell(mergeAnchor, editor);
       await runTableMenuCommand(page, 'Cell', 'Split cell');
       await expect(table.locator(TABLE_CELL_SELECTOR)).toHaveCount(16);
-      await expect(table.locator('th[data-plite-node-key]')).toHaveCount(4);
-      await expect(table.locator('td[data-plite-node-key]')).toHaveCount(12);
+      await expect(table.locator('th[data-editor-node-key]')).toHaveCount(4);
+      await expect(table.locator('td[data-editor-node-key]')).toHaveCount(12);
       await expect(mergeAnchor).toHaveAttribute('colspan', '1');
       await expect(mergeAnchor).toHaveJSProperty('tagName', 'TD');
       await expectEditorFocus(editor);
@@ -801,7 +801,7 @@ test.describe('table registry demo', () => {
       await expect(selectedCells).toHaveCount(2);
 
       const selectedKeysBefore = await selectedCells.evaluateAll((cells) =>
-        cells.map((cell) => cell.getAttribute('data-plite-node-key'))
+        cells.map((cell) => cell.getAttribute('data-editor-node-key'))
       );
       const columns = table.locator('col');
 
@@ -843,7 +843,7 @@ test.describe('table registry demo', () => {
       await expect
         .poll(() =>
           selectedCells.evaluateAll((cells) =>
-            cells.map((cell) => cell.getAttribute('data-plite-node-key'))
+            cells.map((cell) => cell.getAttribute('data-editor-node-key'))
           )
         )
         .toEqual(selectedKeysBefore);
@@ -861,7 +861,7 @@ test.describe('table registry demo', () => {
       await expect
         .poll(() =>
           selectedCells.evaluateAll((cells) =>
-            cells.map((cell) => cell.getAttribute('data-plite-node-key'))
+            cells.map((cell) => cell.getAttribute('data-editor-node-key'))
           )
         )
         .toEqual(selectedKeysBefore);
@@ -887,7 +887,7 @@ test.describe('table registry demo', () => {
         origin: 'http://localhost:3000',
       });
 
-      const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+      const runtimeErrors = recordBrowserRuntimeErrors(page, {
         strict: true,
       });
       const tableDiagnostics = recordTableDiagnostics(page);
@@ -944,7 +944,7 @@ test.describe('table registry demo', () => {
         origin: 'http://localhost:3000',
       });
 
-      const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+      const runtimeErrors = recordBrowserRuntimeErrors(page, {
         strict: true,
       });
       const editor = getEditor(page);
@@ -966,7 +966,7 @@ test.describe('table registry demo', () => {
         expect(copied['text/tsv']).toBe('Heading\t\nImage\tYes\n');
         expect(copied['text/plain']).toBe('Heading\t\nImage\tYes\n');
         expect(copied['text/html']).toContain('<table');
-        expect(copied['application/x-plite-fragment']).toBeTruthy();
+        expect(copied['application/x-editor-fragment']).toBeTruthy();
         runtimeErrors.assertNone();
       } finally {
         runtimeErrors.stop();
@@ -984,7 +984,7 @@ test.describe('table registry demo', () => {
         origin: 'http://localhost:3000',
       });
 
-      const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+      const runtimeErrors = recordBrowserRuntimeErrors(page, {
         strict: true,
       });
       const editor = getEditor(page);
@@ -1003,8 +1003,8 @@ test.describe('table registry demo', () => {
 
         const copied = await readClipboard(page);
 
-        expect(exported['application/x-plite-fragment']).toBeTruthy();
-        expect(copied['text/html']).toContain('data-plite-fragment=');
+        expect(exported['application/x-editor-fragment']).toBeTruthy();
+        expect(copied['text/html']).toContain('data-editor-fragment=');
 
         const conflictingHtml = await rewriteEmbeddedFragmentHtml(
           page,
@@ -1046,7 +1046,7 @@ test.describe('table registry demo', () => {
         origin: 'http://localhost:3000',
       });
 
-      const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+      const runtimeErrors = recordBrowserRuntimeErrors(page, {
         strict: true,
       });
       const editor = getEditor(page);
@@ -1104,7 +1104,7 @@ test.describe('table registry demo', () => {
         origin: 'http://localhost:3000',
       });
 
-      const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+      const runtimeErrors = recordBrowserRuntimeErrors(page, {
         strict: true,
       });
       const editor = getEditor(page);

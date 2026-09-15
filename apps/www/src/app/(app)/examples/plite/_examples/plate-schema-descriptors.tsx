@@ -8,10 +8,10 @@ import {
   CodeBlockPlugin,
   LinkPlugin,
   ListPlugin,
-  definePlatePlugin,
+  definePlugin,
   ParagraphPlugin,
-  Plate,
-  PlateContent,
+  EditorRoot,
+  EditorContent,
   useEditor,
   useEditorSelector,
   useCreateEditor as useProductEditor,
@@ -34,7 +34,7 @@ type CodecProofPluginState = {
 const parseCodecProofPayload = (data: string): CodecProofPayload =>
   JSON.parse(data) as CodecProofPayload;
 
-const CodecProofFallbackPlugin = definePlatePlugin('codecProofFallback', {
+const CodecProofFallbackPlugin = definePlugin('codecProofFallback', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       [CODEC_PROOF_FORMAT]: {
@@ -59,7 +59,7 @@ const codecProofInitialState: CodecProofPluginState = {
   label: 'initial',
 };
 
-const CodecProofPlugin = definePlatePlugin('codecProof', {
+const CodecProofPlugin = definePlugin('codecProof', {
   initialState: codecProofInitialState,
   codecs: ({ defineCodecs, editor, store }) =>
     defineCodecs({
@@ -119,7 +119,7 @@ const CodecProofPlugin = definePlatePlugin('codecProof', {
     }),
 });
 
-const AdvancedMarkPlugin = definePlatePlugin('schemaAdvanced', {
+const AdvancedMarkPlugin = definePlugin('schemaAdvanced', {
   schema: {
     mark: {
       inclusive: false,
@@ -144,7 +144,7 @@ const AdvancedMarkPlugin = definePlatePlugin('schemaAdvanced', {
   component: 'mark',
 });
 
-const ApplicationSectionPlugin = definePlatePlugin('applicationSection', {
+const ApplicationSectionPlugin = definePlugin('applicationSection', {
   schema: {
     element: {
       content: schema.content.element(ParagraphPlugin, { min: 1 }),
@@ -491,16 +491,16 @@ const ApplicationRootEditor = () => {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <div className="mt-4 flex flex-col gap-2">
         <ApplicationRootControls />
-        <PlateContent
+        <EditorContent
           aria-label="Application root schema editor"
           className="min-h-24 rounded border p-3"
           id="plate-application-root-editor"
         />
       </div>
-    </Plate>
+    </EditorRoot>
   );
 };
 
@@ -532,16 +532,16 @@ const PlateSchemaDescriptorsExample = () => {
 
   return (
     <>
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <div className="flex flex-col gap-2">
           <PlateSchemaDescriptorControls />
-          <PlateContent
+          <EditorContent
             aria-label="Plate schema descriptor editor"
             className="min-h-24 rounded border p-3"
             id="plate-schema-descriptor-editor"
           />
         </div>
-      </Plate>
+      </EditorRoot>
       <ApplicationRootEditor />
     </>
   );

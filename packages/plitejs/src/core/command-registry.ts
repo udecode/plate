@@ -21,8 +21,8 @@ import { getEditorRuntimeOwner } from './editor-runtime';
 import {
   type CompiledCommandPipeline,
   type CompiledCommandRegistry,
-  getExtensionRegistry,
-} from './extension-registry';
+  getPluginRegistry,
+} from './plugin-registry';
 import { profileCoreDuration } from './profiling';
 import {
   applyTransactionSpec,
@@ -47,7 +47,7 @@ type RegisteredCommand = Readonly<{
 }>;
 
 export type EditorCommandEvaluation = Readonly<{
-  /** Installed extension names that materially changed the default result. */
+  /** Installed plugin names that materially changed the default result. */
   materialHandlers: readonly string[];
   /** True only when every installed handler delegated the original input unchanged. */
   nativeEquivalent: boolean;
@@ -66,8 +66,19 @@ const NATIVE_EQUIVALENT_PROBE = Object.freeze({
 }) satisfies EditorCommandNativeProbe;
 
 const commandStacks = new WeakMap<Editor, Array<EditorCommand<unknown>>>();
+const activeCommandEditors: Editor[] = [];
+
+/** Read the editor whose synchronous command chain is currently evaluating. */
+export const getActiveCommandEditor = (): Editor => {
+  const editor = activeCommandEditors.at(-1);
+
+  if (!editor) throw new Error('No editor command is currently evaluating.');
+
+  return editor;
+};
+
 const getCommandRegistry = (editor: Editor) =>
-  getExtensionRegistry(editor).commands.byDescriptor as ReadonlyMap<
+  getPluginRegistry(editor).commands.byDescriptor as ReadonlyMap<
     object,
     Readonly<{ entries: readonly RegisteredCommand[] }>
   >;
@@ -77,7 +88,7 @@ export const hasCommandHandler = <Input>(
   command: EditorCommand<Input>
 ) => (getCommandRegistry(editor).get(command)?.entries.length ?? 0) > 0;
 
-/** Compile one pure command registration into a detached extension registry. */
+/** Compile one pure command registration into a detached plugin registry. */
 export const registerCommandInRegistry = <TEditor extends BaseEditor<any, any>>(
   commands: CompiledCommandRegistry,
   registration: EditorCommandRegistration<TEditor>,
@@ -110,7 +121,6 @@ export const registerCommandInRegistry = <TEditor extends BaseEditor<any, any>>(
     owner,
     run: run as (context: unknown) => EditorCommandResult,
   });
-
   if (kind === 'around') {
     const firstHandlerIndex = entries.findIndex(
       (entry) => entry.kind === 'handle'
@@ -336,7 +346,7 @@ const evaluateCommandChainInRead = <
   };
 
   const stack = commandStacks.get(owner) ?? [];
-  if (stack.includes(command as unknown as EditorCommand<unknown>)) {
+  if (stack.includes(command)) {
     throw new Error(
       `Command recursion cycle: ${[
         ...stack.map((item) => item.id),
@@ -348,8 +358,9 @@ const evaluateCommandChainInRead = <
     throw new Error('Command recursion depth exceeded 64.');
   }
 
-  stack.push(command as unknown as EditorCommand<unknown>);
+  stack.push(command);
   commandStacks.set(owner, stack);
+  activeCommandEditors.push(editor);
   try {
     const result = profileCoreDuration(`command-${command.id}-dispatch`, () =>
       dispatch(0, input)
@@ -370,6 +381,7 @@ const evaluateCommandChainInRead = <
       result,
     });
   } finally {
+    activeCommandEditors.pop();
     stack.pop();
     if (stack.length === 0) commandStacks.delete(owner);
   }
@@ -442,6 +454,32 @@ export const evaluateCommand = <TCommand extends EditorCommandDescriptor>(
     input[0]
   );
 
+/** Evaluate one pure command against an explicit detached draft state. */
+export const evaluateCommandWithState = <
+  TCommand extends EditorCommandDescriptor,
+>(
+  editor: Editor,
+  command: TCommand,
+  state: object,
+  ...input: [EditorCommandInput<TCommand>] extends [void]
+    ? [] | [input: EditorCommandInput<TCommand>]
+    : [input: EditorCommandInput<TCommand>]
+): EditorCommandEvaluation => {
+  const owner = getEditorRuntimeOwner(editor);
+  const exitRead = enterEditorRead(owner);
+
+  try {
+    return evaluateCommandChainInRead(
+      editor,
+      command as unknown as EditorCommand<unknown, Editor>,
+      input[0],
+      state as EditorStateView
+    );
+  } finally {
+    exitRead();
+  }
+};
+
 /**
  * Probe whether installed handlers preserve the default command unchanged.
  *
@@ -493,12 +531,13 @@ export const dispatchCommand = <TCommand extends EditorCommandDescriptor>(
  *
  * @internal
  */
-export const createCommandDispatch = <TEditor extends Editor>(
-  getEditor: () => TEditor
-): EditorCommandDispatch<TEditor> =>
-  ((command: EditorCommand<unknown>, input?: unknown) =>
+export const createCommandDispatch =
+  <TEditor extends Editor>(
+    getEditor: () => TEditor
+  ): EditorCommandDispatch<TEditor> =>
+  (command: EditorCommand<unknown>, input?: unknown) =>
     runCommandChain(
       getEditor(),
       command as unknown as EditorCommand<unknown, TEditor>,
       input
-    )) as unknown as EditorCommandDispatch<TEditor>;
+    );

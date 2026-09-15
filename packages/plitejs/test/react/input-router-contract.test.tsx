@@ -7,7 +7,7 @@ import {
   useMemo,
 } from 'react';
 
-import { defineExtension, editorCommands } from '../../src';
+import { definePlugin, editorCommands } from '../../src';
 import {
   createDOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
@@ -101,7 +101,7 @@ const RootRefProbe = ({
 }) => {
   const editor = useMemo(() => createEditor<Value>(), []);
   const { runtime } = useEditableRootRuntimeState({
-    domStrategyRuntime: null,
+    viewportRuntime: null,
     editor,
     readOnly: false,
   });
@@ -158,7 +158,7 @@ test('read-only native input repairs leaked DOM mutations', () => {
   const editor = createEditor<Value>();
   const root = document.createElement('div');
   root.innerHTML =
-    '<span data-plite-node="text" data-plite-path="0,0"><span data-plite-string="true">axbc</span></span>';
+    '<span data-editor-node="text" data-editor-path="0,0"><span data-editor-string="true">axbc</span></span>';
   const repairDOMInput = vi.fn();
   const onReadOnlyDOMInput = vi.fn();
   const event = new Event('input', {
@@ -203,7 +203,7 @@ test('read-only native input repairs split decorated text strings', () => {
   const editor = createEditor<Value>();
   const root = document.createElement('div');
   root.innerHTML =
-    '<span data-plite-node="text" data-plite-path="0,0"><span data-plite-string="true">axb</span><span data-plite-string="true">c</span></span>';
+    '<span data-editor-node="text" data-editor-path="0,0"><span data-editor-string="true">axb</span><span data-editor-string="true">c</span></span>';
   const repairDOMInput = vi.fn();
   const event = new Event('input', {
     bubbles: true,
@@ -234,7 +234,7 @@ test('read-only native input repairs split decorated text strings', () => {
 
   result.current.onDOMInput(event);
 
-  const strings = root.querySelectorAll('[data-plite-string="true"]');
+  const strings = root.querySelectorAll('[data-editor-string="true"]');
   expect(repairDOMInput).not.toHaveBeenCalled();
   expect(strings[0]).toHaveTextContent('ab');
   expect(strings[1]).toHaveTextContent('c');
@@ -260,9 +260,9 @@ const appendTextHost = (root: HTMLElement, path: string) => {
   const string = document.createElement('span');
   const text = document.createTextNode('');
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', path);
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', path);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -512,7 +512,7 @@ const mountEditableRoot = (editor: ReturnType<typeof createEditor>) => {
   const root = document.createElement('div');
 
   root.setAttribute('contenteditable', 'true');
-  root.setAttribute('data-plite-editor', 'true');
+  root.setAttribute('data-editor', 'true');
   Object.defineProperty(root, 'isContentEditable', {
     configurable: true,
     value: true,
@@ -629,8 +629,8 @@ test('material beforeinput commands bypass direct DOM repair at the mounted sele
     { children: [{ text: 'a ' }], type: 'paragraph' },
   ];
   const editor = createEditor({
-    extensions: [
-      defineExtension('mounted-trigger-command', {
+    plugins: [
+      definePlugin('mounted-trigger-command', {
         commands: ({ handle }) => [
           handle(editorCommands.insertText, ({ input, state }) => {
             if (input.text !== '@' || !input.options?.at) return false;
@@ -1932,10 +1932,10 @@ test('deferred native text input repair coalesces projected boundary bursts', ()
   const firstText = document.createTextNode('This ');
   const secondText = document.createTextNode('mixed');
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  firstString.setAttribute('data-plite-string', 'true');
-  secondString.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  firstString.setAttribute('data-editor-string', 'true');
+  secondString.setAttribute('data-editor-string', 'true');
   firstString.append(firstText);
   secondString.append(secondText);
   textHost.append(firstString, secondString);
@@ -2808,14 +2808,14 @@ test('editable paste flushes pending native text before app paste callbacks', ()
         );
         return true;
       },
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       readOnly: false,
       repair: {
         forceRender: vi.fn(),
         requestEditableRepair: vi.fn(),
       } as any,
       rootRef: { current: root },
-      setExplicitPartialDOMBackedSelection: vi.fn(),
+      setExplicitViewportBackedSelection: vi.fn(),
       trace: {
         beginKernelEventFrame: vi.fn(),
         recordKernelEventTrace: vi.fn(),
@@ -2879,10 +2879,10 @@ test('native input repair resolves replacement text when the retained host is th
   const textHost = document.createElement('span');
   const replacementText = document.createTextNode('foo');
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  textHost.setAttribute('data-plite-string', 'true');
-  textHost.setAttribute('data-plite-text-flow-host', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
+  textHost.setAttribute('data-editor-string', 'true');
+  textHost.setAttribute('data-editor-text-flow-host', 'true');
   textHost.append(replacementText);
   setDOMTextFlowRecordIndex(textHost, {
     nodeKey: 'retained-text',

@@ -1,6 +1,7 @@
 /** @platejs-curated-entrypoint */
 
 export * from './components/index';
+export * from './authoredHtml';
 export * from './deserialize/htmlStringToEditorDOM';
 export * from './editor/index';
 export * from './renderStaticHtml';

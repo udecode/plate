@@ -1,0 +1,125 @@
+---
+title: "External Text Views"
+description: "Render one canonical Plate Text through an adapter-owned editing surface."
+---
+
+Use `slots.externalText` when another text engine should own a block's DOM and
+local input. Plate keeps the document, selection, history, and remote changes;
+the adapter is a view, not another editor document.
+
+## Supported model
+
+The block's compiled schema must permit exactly one direct Text:
+
+```ts
+import { definePlugin, schema } from 'platejs/react';
+
+const SourcePlugin = definePlugin('source', {
+  schema: {
+    element: { content: schema.content.text({ min: 1, max: 1 }) },
+  },
+});
+```
+
+The live block must also contain one Text and must not be inline, void, or
+atomic. Newlines stay in that Text. Whole-Text properties survive offset edits;
+rich children and partial marks use native Plate rendering instead. The slot
+rejects unsupported content before mounting an adapter.
+
+## Render slot
+
+Implement the `ExternalTextAdapter` interface from `platejs/react` in your application and pass that `adapter` to the element slot. Keep its identity stable across renders and install the configured plugin in the editor. The following example assumes that adapter implementation.
+
+```tsx
+const ExternalSourcePlugin = SourcePlugin.configure({
+  component: ({ attributes, slots }) => (
+    <pre {...attributes}>
+      {slots.externalText({ adapter, ariaLabel: 'Source text' })}
+    </pre>
+  ),
+});
+```
+
+Choose exactly one projection per element. In the external branch, do not read
+`children` or call `slots.children()`. Plate mounts a labelled, noneditable host
+with no hidden duplicate of the canonical text.
+
+`ariaLabel` is required and nonempty. The adapter labels its actual input from
+the host. An adapter's `TConfig` determines the `config` option's type; config
+updates reach the mounted view without recreating it.
+
+## Adapter lifecycle
+
+`ExternalTextAdapter<TConfig>.mount({ actions, host, state })` creates the local
+DOM and returns an `ExternalTextView<TConfig>`:
+
+| Method | Contract |
+| --- | --- |
+| `update({ changes, state })` | Apply exact patches and the supplied canonical state without dispatching another edit. |
+| `focus({ edge?, x? }?)` | Focus the local input and honor the requested boundary or horizontal position where supported. |
+| `destroy()` | Release every local listener and resource and remove the adapter's DOM. |
+
+`state` contains `text`, `version`, `selection`, `readOnly`, `decorations`, and
+`config`. Retain the canonical text reference; do not diff whole strings to
+discover outbound Plate edits. Decorations are keyed `{ start, end, attributes }`
+slices in this Text's offsets. The adapter owns their visual representation.
+
+`changes` has three meanings:
+
+| Value | Meaning |
+| --- | --- |
+| Patch list | Apply sorted, non-overlapping `{ from, to, insert }` replacements in the previous text's UTF-16 coordinates. Apply right to left if mutating a string in place. |
+| `[]` | Acknowledge a local edit or update selection, configuration, read-only state, or decorations without changing text. |
+| `null` | Reset to `state.text`, cancel local composition, and discard an unaccepted local prediction. |
+
+Structural replacement, stale input, canonical correction, and conflicting
+remote composition can require resets. Ordinary text edits, history replay,
+and non-conflicting remote patches do not require a reset.
+
+Mounting is client-only. SSR emits the empty host. Unmounting, root changes,
+and explicit document virtualization destroy the view; remount from canonical
+state. Adapter failures reach the editor's `lifecycleErrorSink` with
+`source: "external-text"`. A failed view rejects edits until reset or remount.
+
+## Actions
+
+Pass the last delivered `state.version` as `baseVersion`. Plate rejects stale,
+invalid, and read-only edits without changing the document.
+
+| Action | Contract |
+| --- | --- |
+| `dispatch({ baseVersion, changes, intent, selection })` | Submit one edit with `input`, `paste`, `cut`, `drop`, or `composition` intent. Selection uses the resulting text's directed UTF-16 offsets. |
+| `select({ baseVersion, selection })` | Set directed `{ anchor, focus }` offsets without changing text. |
+| `navigateOut({ baseVersion, direction, extend?, x? })` | Ask Plate to move into neighboring document content, optionally extending selection. |
+| `deleteOut({ baseVersion, direction })` | Delete across a block edge when the canonical caret is collapsed at that edge. |
+| `composition("start" \| "end")` | Join and finish Plate's composition epoch. Submit composition edits with `intent: "composition"`. |
+| `history("undo" \| "redo")` | Use the installed Plate history plugin. Returns `false` when no history action applies. |
+
+Versioned actions return `{ status: "applied" | "stale" | "read-only" }`.
+Adapters disable independent undo stacks and never dispatch from `mount`,
+`update`, `focus`, or `destroy` callbacks.
+
+## Selection and native features
+
+Only the focused view receives `selection.mode: "native"` for a selection
+wholly inside its Text. Other views and cross-boundary selections receive
+`"model"`; paint that intersection without changing browser selection or focus.
+Avoid redundant native selection writes during focus transitions.
+
+The adapter owns local input, local clipboard formats, accessibility, search,
+spelling, and printing. Plate copies a cross-boundary selection from the full
+canonical model, including text absent from native Plate DOM. Rich drag moves
+between engines are outside this contract; plain-text transfers must not also
+delete their source.
+
+There is no fixed-height requirement. Adapter-internal virtualization and
+Plate's explicit [document virtualization](/docs/virtualized-rendering)
+are separate choices. The adapter protocol does not guarantee
+browser find, full screen-reader traversal, or print over unmounted text.
+
+## Related
+
+- [EditorContent Component](/docs/api/core/plate-components)
+- [DOM Coverage Boundaries](/docs/dom-coverage)
+- [Selection And DOM](/docs/selection)
+- [History](/docs/history)

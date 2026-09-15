@@ -2,7 +2,7 @@
 
 import type { Route } from 'next';
 import Link, { type LinkProps } from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -11,10 +11,6 @@ import {
   useLazySidebarNav,
 } from '@/hooks/use-lazy-sidebar-nav';
 import { useLocale } from '@/hooks/useLocale';
-import {
-  getDocsRootFromPathname,
-  getSidebarNavForDocsRoot,
-} from '@/lib/docs-root-nav';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 import type { SidebarNavItem } from '@/types/nav';
@@ -39,7 +35,7 @@ function getNavTitle(item: SidebarNavItem, locale: string) {
   return locale === 'cn' ? item.titleCn || item.title : item.title;
 }
 
-function getNavHref(item: SidebarNavItem, locale: string) {
+function getNavHref(item: SidebarNavItem, locale: string): Route | undefined {
   if (!item.href) return undefined;
 
   return hrefWithLocale(item.href, locale);
@@ -84,14 +80,9 @@ export function MobileNav({
 }) {
   const [open, setOpen] = React.useState(false);
   const locale = useLocale();
-  const pathname = usePathname();
   const content = i18n[locale];
   const { sidebarNav } = useLazySidebarNav(locale, open && !tree);
-  const docsRoot = getDocsRootFromPathname(pathname ?? '');
-  const navTree = React.useMemo(
-    () => getSidebarNavForDocsRoot(tree ?? sidebarNav, docsRoot),
-    [docsRoot, sidebarNav, tree]
-  );
+  const navTree = tree ?? sidebarNav;
 
   const renderNavLink = (
     item: SidebarNavItem,

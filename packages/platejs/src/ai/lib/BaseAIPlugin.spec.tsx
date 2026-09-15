@@ -6,17 +6,12 @@ import { jsxt, type TestEditor } from '#platejs-test-internal';
 import {
   BaseParagraphPlugin,
   createEditor as createProductEditor,
-  defineBasePlugin,
+  definePlugin,
   type Descendant,
   type NodeEntry,
   property,
   schema,
 } from '../../core';
-import {
-  BaseSuggestionPlugin,
-  SUGGESTION_TRANSIENT_KEY,
-} from '../../features/suggestion';
-import { AIChatPlugin } from '../react/AIChatPlugin';
 import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
 {
@@ -303,11 +298,8 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
   const createEditor = () =>
     createProductEditor({
-      plugins: [
-        BaseParagraphPlugin,
-        BaseAIPlugin,
-        AIChatPlugin.configure({ initialState: { open: true } }),
-      ],
+      plugins: [BaseParagraphPlugin, BaseAIPlugin],
+      userId: 'alice',
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
@@ -316,7 +308,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
       initialValue: [createParagraph('start'), createParagraph('untouched')],
     });
 
-  const InlineFixturePlugin = defineBasePlugin('inlineFixture', {
+  const InlineFixturePlugin = definePlugin('inlineFixture', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -338,7 +330,6 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
                 element: { [AI_PREVIEW_KEY]: true },
                 text: { ai: true },
               }),
-              { children: [{ text: '' }], type: 'aiChat' },
               createParagraph('untouched'),
             ],
             { at: [], count: tx.children().length, index: 0 }
@@ -369,12 +360,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
     it('targets AI marks to text parents and preview state to blocks', () => {
       const editor = createProductEditor({
-        plugins: [
-          BaseParagraphPlugin,
-          BaseAIPlugin,
-          AIChatPlugin,
-          InlineFixturePlugin,
-        ],
+        plugins: [BaseParagraphPlugin, BaseAIPlugin, InlineFixturePlugin],
       });
       expect(
         editor.read.schema.property({
@@ -532,7 +518,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 }
 
 {
-  const BaseBoldPlugin = defineBasePlugin('bold', {
+  const BaseBoldPlugin = definePlugin('bold', {
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -644,18 +630,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 {
   const createEditor = () =>
     createProductEditor({
-      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
-    });
-
-  const createSuggestionEditor = () =>
-    createProductEditor({
-      plugins: [BaseParagraphPlugin, BaseSuggestionPlugin, BaseAIPlugin],
+      plugins: [BaseParagraphPlugin, BaseAIPlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
@@ -690,14 +665,11 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
     });
 
     it('undoes the latest AI batch and permanently discards its redo', () => {
-      const editor = createSuggestionEditor();
+      const editor = createEditor();
 
       editor.update({ history: 'merge' }, (tx) => {
         tx.ai.markBatch();
-        tx.nodes.insert(
-          { [SUGGESTION_TRANSIENT_KEY]: true, text: 'suggestion' },
-          { at: [0, 1] }
-        );
+        tx.nodes.insert({ ai: true, text: 'suggestion' }, { at: [0, 1] });
       });
       editor.plugin(BaseAIPlugin).update.undo();
 
@@ -709,21 +681,15 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
     });
 
     it('undoes every merged chunk in the latest AI response', () => {
-      const editor = createSuggestionEditor();
+      const editor = createEditor();
 
       editor.update({ history: 'new-batch' }, (tx) => {
         tx.ai.markBatch();
-        tx.nodes.insert(
-          { [SUGGESTION_TRANSIENT_KEY]: true, text: 'first' },
-          { at: [0, 1] }
-        );
+        tx.nodes.insert({ ai: true, text: 'first' }, { at: [0, 1] });
       });
       editor.update({ history: 'merge' }, (tx) => {
         tx.ai.markBatch();
-        tx.nodes.insert(
-          { [SUGGESTION_TRANSIENT_KEY]: true, text: ' second' },
-          { at: [0, 1] }
-        );
+        tx.nodes.insert({ ai: true, text: ' second' }, { at: [0, 1] });
       });
 
       editor.plugin(BaseAIPlugin).update.undo();
@@ -747,7 +713,6 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
               children: [{ ai: true, text: 'preview' }],
               type: 'paragraph',
             },
-            { children: [{ text: '' }], type: 'aiChat' },
           ],
           { at: [], count: tx.children().length, index: 0 }
         );

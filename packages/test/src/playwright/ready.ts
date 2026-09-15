@@ -6,10 +6,10 @@ import {
   waitForSelectionIfPresent,
 } from './selection-handle';
 import type { SurfaceTarget } from './surface';
-import type { ReadyOptions, PliteBrowserEditorHarness } from './types';
+import type { ReadyOptions, BrowserEditorHarness } from './types';
 
 export const waitForReady = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   surface: SurfaceTarget,
   {
     editor: editorState,

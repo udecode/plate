@@ -3,7 +3,7 @@ title: Selection
 description: Read, update, focus, and render text and node selections in Plate.
 ---
 
-Plate stores selection in the editor model and projects text selection to the browser through the mounted editor. Use this guide for normal Plate reads, updates, focus, and rendering; use [Selection And DOM](/docs/plite/concepts/16-selection-and-dom) for low-level DOM coverage and browser repair behavior.
+Plate stores selection in the editor model and projects text selection to the browser through the mounted editor. This guide covers model reads and updates, focus, rendering, and the browser boundary.
 
 ## Ownership
 
@@ -12,8 +12,8 @@ its presentation from that state.
 
 | Job | Owner |
 | --- | --- |
-| Selection state, mapping, validation, reads, and updates | Plite core, reexported by `platejs` |
-| Native DOM selection, focus synchronization, and inactive paint | Plite React, inherited by `PlateContent` |
+| Selection state, mapping, validation, reads, and updates | `platejs` |
+| Native DOM selection, focus synchronization, and inactive paint | `EditorContent` |
 | Exact node-selection highlighting and pointer-drag input | `NodeSelectionHighlight` and `NodeSelectionDrag` from `platejs/react` |
 | Focus markers, colors, borders, and stacking | Copied registry UI |
 
@@ -46,7 +46,7 @@ editor.update.selection.set(null);
 | No selection | `null` | Empty arrays | None |
 
 Use [Editor Methods](/docs/editor-methods) for editor access inside React and
-[Selection API](/docs/plite/api/locations/selection) for the complete query and
+[Selection API](/docs/api/selection) for the complete query and
 validation contracts.
 
 ## Focus and native selection
@@ -69,36 +69,36 @@ model updates back to the DOM. Application code should not patch
 
 <ComponentPreview name="inactive-selection-demo" />
 
-Plite `Editable` renders an inactive selection when focus moves to a marked
+Plate `EditorContent` renders an inactive selection when focus moves to a marked
 control. The behavior is built in; it does not require a prop, plugin, kit, or
 copied selection state.
 
 ### Mark a focus target
 
-Add `data-plite-keep-selection-visible` to a focusable control or any composed
+Add `data-editor-keep-selection-visible` to a focusable control or any composed
 ancestor:
 
 ```tsx
-<div data-plite-keep-selection-visible="">
+<div data-editor-keep-selection-visible="">
   <button type="button">Edit link</button>
 </div>
 ```
 
-The exact `Editable` that loses focus reads its live canonical selection. An
+The exact `EditorContent` that loses focus reads its live canonical selection. An
 expanded range renders a highlight. A collapsed range renders a caret. Focus
 returning to the editor or moving to an unmarked target removes the inactive
 paint.
 
 ### Style the paint
 
-Plite publishes neutral output hooks. Product CSS owns their appearance:
+Plate publishes neutral output hooks. Product CSS owns their appearance:
 
 ```css
-[data-plite-inactive-selection] {
+[data-editor-inactive-selection] {
   background: color-mix(in oklab, var(--primary) 25%, transparent);
 }
 
-[data-plite-inactive-selection-caret] {
+[data-editor-inactive-selection-caret] {
   width: 2px;
   background: var(--primary);
 }
@@ -110,7 +110,7 @@ The copied `Editor` registry component already styles both hooks.
 
 | Focus target | Inactive paint |
 | --- | --- |
-| Marked control or composed ancestor | One highlight or caret from the originating `Editable` |
+| Marked control or composed ancestor | One highlight or caret from the originating `EditorContent` |
 | The editor | None; the browser owns the active selection |
 | Any unmarked control | None |
 | Window blur or missing focus target | None |
@@ -122,7 +122,7 @@ selection, history, clipboard, or collaboration state.
 
 Exact node selection is model state, not a native browser range. The copied
 `Editor` composes `NodeSelectionHighlight` and `NodeSelectionDrag` after
-`PlateContent` to render selected blocks and support blank-space pointer drag.
+`EditorContent` to render selected blocks and support blank-space pointer drag.
 
 Use the [Node Selection components](/docs/api/core/plate-components#node-selection)
 for the DOM contract and the [Node Selection demo](/docs/examples/node-selection)
@@ -144,10 +144,57 @@ Keep feature-specific behavior with the feature that owns it:
 
 ## API Reference
 
-- [Selection API](/docs/plite/api/locations/selection)
-- [Selection methods](/docs/plite/api/transforms#selection-methods)
-- [Selection And DOM](/docs/plite/concepts/16-selection-and-dom)
+- [Selection API](/docs/api/selection)
+- [Selection methods](/docs/api/editor-transforms#selection-methods)
+- [DOM API](/docs/api/dom)
 - [Node Selection components](/docs/api/core/plate-components#node-selection)
 
-Done. Plate code writes model selection; the mounted editor owns browser
-projection and presentation.
+## DOM reconciliation
+
+Each mounted `EditorContent` orders post-model work: model updates, DOM reads,
+DOM or React writes, then selection export and repair. Focus restoration,
+scrolling, composition repair, and selection projection share that view's
+lifetime. Normal application actions update model selection and let this owner
+reconcile the browser.
+
+Horizontal caret movement follows the browser's visual order, including mixed
+direction text. Pure point transforms remain logical and work without DOM.
+Custom integrations can inspect a mounted caret step with
+`editor.api.dom.resolveVisualPoint(point, { direction: 'left', unit: 'word' })`.
+A missing DOM mapping returns `null`.
+
+## Hidden and external content
+
+[DOM coverage](/docs/dom-coverage) declares whether hidden content is skipped,
+selectable in the model, or materialized before selection enters it. Copy has a
+separate policy and can include model content that has no mounted DOM.
+
+An [external text view](/docs/external-text) keeps canonical text in the document.
+Only the focused adapter owns native selection. Other views paint model
+selection without moving focus. A selection crossing native and external text
+remains complete in the model; its partial native range must not overwrite it.
+The adapter owns its own search, accessibility, and print integration.
+
+[Virtualized rendering](/docs/virtualized-rendering) omits offscreen blocks.
+A model selection can span the complete document while browser selection and
+find only see mounted content. Use a complete view when native search,
+accessibility traversal, printing, or DOM integrations require the whole tree.
+
+## Verify selection behavior
+
+Use the [Browser helpers](/docs/browser) to inspect the model selection, native
+caret or range, focus, and displayed highlights. After asserting the target
+state, type again and verify the text and caret. A correct model range alone
+does not establish that browser input and visible selection are correct.
+
+## Keyboard-selectable content
+
+A non-void, isolating element can declare `schema.element.keyboardSelectable: true`
+when it owns both an asset and editable child content. Selecting the owner node
+focuses the asset and keeps native selection empty. ArrowDown enters its text;
+ArrowUp from the leading visual boundary returns to node selection. Backspace
+or Delete removes a selected owner.
+
+Clicking a noneditable descendant selects the owner; clicking editable text
+selects text. Use `useElementSelected({ mode: 'node' })` for the exact asset
+selection. The default intersection mode also matches text selection inside it.

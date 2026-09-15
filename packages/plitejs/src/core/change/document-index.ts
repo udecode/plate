@@ -876,6 +876,22 @@ export class DocumentIndex {
   }
 
   slice(from: number, to = this.length) {
+    if (from < 0 || to < from || to > this.length) {
+      throw new RangeError(`Invalid token slice range ${from}-${to}.`);
+    }
+    if (from === to) return PreparedTokenSlice.empty;
+    const text = this.textAt(from);
+
+    if (text && to <= text.contentTo) {
+      const node = this.node(text.path);
+
+      if (isTextNode(node)) {
+        return PreparedTokenSlice.text(
+          node.text.slice(from - text.contentFrom, to - text.contentFrom)
+        );
+      }
+    }
+
     return this.tokens.slice(from, to);
   }
 

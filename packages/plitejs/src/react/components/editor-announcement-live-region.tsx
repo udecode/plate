@@ -44,9 +44,9 @@ const getCommitAnnouncement = <V extends Value>(
 
 const createEditorAnnouncementStore = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>
+  editor: Editor<V, TPlugins>
 ) => {
   let announcement: Announcement | null = null;
   let lastCommitVersion = editor.read.lastCommit()?.version ?? 0;
@@ -78,11 +78,11 @@ const createEditorAnnouncementStore = <
 /** One polite live region owned by a logical Plite React editor runtime. */
 export const EditorAnnouncementLiveRegion = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >({
   editor,
 }: {
-  editor: Editor<V, TExtensions>;
+  editor: Editor<V, TPlugins>;
 }) => {
   const store = useMemo(() => createEditorAnnouncementStore(editor), [editor]);
   const announcement = useSyncExternalStore(
@@ -95,7 +95,6 @@ export const EditorAnnouncementLiveRegion = <
     <span
       aria-atomic="true"
       aria-live="polite"
-      data-plite-announcer=""
       role="status"
       style={visuallyHiddenStyle}
     >

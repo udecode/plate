@@ -2,8 +2,14 @@
 
 export * from '../root';
 export * from './core';
+export type {
+  Plugin,
+  PluginDefinitionInput,
+  PluginPortal,
+} from './plugin/PlatePlugin';
 export {
   createEditor,
+  definePlugin,
   type CreateEditorOptions,
   type Decorate,
   type Editor,

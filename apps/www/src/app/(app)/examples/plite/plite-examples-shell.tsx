@@ -17,7 +17,7 @@ import {
 } from './plite-example-registry';
 
 const PLITE_DOCS_HREF = {
-  pathname: '/docs/plite',
+  pathname: '/docs',
 } satisfies LinkProps<string>['href'];
 const PLITE_EXAMPLES_HREF = {
   pathname: '/examples/plite',
@@ -39,7 +39,7 @@ export function PliteExamplesShell({
             '--sidebar-width': 'calc(var(--spacing) * 72)',
           } as CSSProperties
         }
-        data-plite-examples-shell
+        data-editor-examples-shell
       >
         <PliteExamplesMobileNav activeExample={activeExample} />
         <PliteExamplesSidebar activeExample={activeExample} />
@@ -70,7 +70,7 @@ export function PliteExamplesSidebarNav({
     <nav
       className="flex min-w-0 flex-col gap-5"
       aria-label="Plite examples"
-      data-plite-example-sidebar
+      data-editor-example-sidebar
     >
       <PliteExamplesNavLinks
         activeExample={activeExample}
@@ -109,7 +109,7 @@ function PliteExamplesMobileNav({ activeExample }: { activeExample?: string }) {
   return (
     <details
       className="group rounded-md border bg-background p-2 lg:hidden"
-      data-plite-example-mobile-nav
+      data-editor-example-mobile-nav
     >
       <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-1.5 text-sm font-medium">
         <span>Examples</span>
@@ -152,7 +152,7 @@ function PliteExamplesNavLinks({
       <div className="flex flex-col gap-1">
         <Link
           className="flex h-8 items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-          data-plite-example-back
+          data-editor-example-back
           href={backHref}
         >
           <ArrowLeftIcon className="size-4" />
@@ -167,7 +167,7 @@ function PliteExamplesNavLinks({
                 : 'text-muted-foreground hover:text-foreground'
             )}
             data-active={isIndexActive}
-            data-plite-example-index
+            data-editor-example-index
             href={indexHref}
           >
             {indexLabel}
@@ -189,7 +189,7 @@ function PliteExamplesNavLinks({
                   : 'text-muted-foreground hover:text-foreground'
               )}
               data-active={isActive}
-              data-plite-example-nav-link={slug}
+              data-editor-example-nav-link={slug}
               href={`/examples/plite/${slug}`}
               key={slug}
             >
@@ -197,7 +197,7 @@ function PliteExamplesNavLinks({
               {isNewExample ? (
                 <span
                   className="flex size-2 shrink-0 rounded-full bg-blue-500"
-                  data-plite-example-new-dot={slug}
+                  data-editor-example-new-dot={slug}
                   title="New"
                 />
               ) : null}

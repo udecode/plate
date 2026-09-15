@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
@@ -150,13 +150,13 @@ const expectSurfacePaint = async (
 test(LINK_CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/', { waitUntil: 'commit' });
 
     const editor = page
-      .locator('[data-plite-editor="true"][contenteditable="true"]')
+      .locator('[data-editor="true"][contenteditable="true"]')
       .first();
     const link = editor.locator('a', { hasText: 'slash command' });
     const editLink = page.getByRole('button', { name: 'Edit link' });
@@ -236,14 +236,14 @@ test(LINK_CASE_ID, async ({ page }, testInfo) => {
 test(LINK_DISCUSSION_CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.setViewportSize({ height: 900, width: 1280 });
     await page.goto('/view/editor-ai', { waitUntil: 'commit' });
 
     const editor = page
-      .locator('[data-plite-editor="true"][contenteditable="true"]')
+      .locator('[data-editor="true"][contenteditable="true"]')
       .first();
     const commentedLink = editor.getByRole('link', { name: 'comments' });
     const discussion = page.locator('[data-discussion-popover]');
@@ -280,21 +280,21 @@ test(LINK_DISCUSSION_CASE_ID, async ({ page }, testInfo) => {
 test(TABLE_CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/table-demo', { waitUntil: 'commit' });
 
     const editor = page
-      .locator('[data-plite-editor="true"][contenteditable="true"]')
+      .locator('[data-editor="true"][contenteditable="true"]')
       .first();
-    const editorHarness = createPliteBrowserEditorHarness(
+    const editorHarness = createBrowserEditorHarness(
       page,
       TABLE_CASE_ID,
       editor
     );
     const cells = editor.locator(
-      'table td[data-plite-node-key], table th[data-plite-node-key]'
+      'table td[data-editor-node-key], table th[data-editor-node-key]'
     );
     const cellBorders = page.getByRole('button', { name: 'Cell borders' });
 
@@ -361,22 +361,18 @@ test(TABLE_CASE_ID, async ({ page }, testInfo) => {
 test(AI_CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/', { waitUntil: 'commit' });
 
     const editor = page
-      .locator('[data-plite-editor="true"][contenteditable="true"]')
+      .locator('[data-editor="true"][contenteditable="true"]')
       .first();
     const paragraph = editor
       .getByText(/Experience a modern rich-text editor/)
       .first();
-    const editorHarness = createPliteBrowserEditorHarness(
-      page,
-      AI_CASE_ID,
-      editor
-    );
+    const editorHarness = createBrowserEditorHarness(page, AI_CASE_ID, editor);
 
     await expect(paragraph).toBeVisible();
     const before = await editorHarness.get.modelValue();

@@ -81,7 +81,7 @@ const editor = createEditor({
 try {
   editor.api.debug.error('An error occurred', 'CUSTOM_ERROR', { details: 'Additional information' });
 } catch (error) {
-  if (error instanceof PlateError) {
+  if (error instanceof EditorError) {
     console.debug(error.type); // 'CUSTOM_ERROR'
     console.debug(error.message); // '[CUSTOM_ERROR] An error occurred'
   }
@@ -107,9 +107,9 @@ try {
 使用插件根级 `on.commit` 观察已发布的规范变更：
 
 ```ts
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-const LoggingPlugin = definePlatePlugin('logging', {
+const LoggingPlugin = definePlugin('logging', {
   on: {
     commit({ commit }) {
       console.debug('Document change:', commit.changes);
@@ -177,17 +177,35 @@ Zustand 以及 zustand-x 可以与 Redux DevTools 浏览器扩展一起使用。
 ## 调试错误类型
 
 `editor.api.debug.error(message, type, details)` 使用传入的类型作为日志前缀。
-开发环境中启用 `throwErrors` 时会抛出 `PlateError`，默认类型为 `DEFAULT`。
+开发环境中启用 `throwErrors` 时会抛出 `EditorError`，默认类型为 `DEFAULT`。
 应用可以传入自己的字符串来标记诊断信息。
 
 插件配置还会校验描述符、依赖关系和 schema 所有权：
 
 | 信息 | 检查项 |
 | --- | --- |
-| `USE_CREATE_PLUGIN` | 使用 `defineBasePlugin` 或 `definePlatePlugin` 创建插件。 |
+| `USE_CREATE_PLUGIN` | 使用 `definePlugin` 或 `definePlugin` 创建插件。 |
 | `Pass a plugin descriptor, not its name.` | 在 `dependencies` 中传入描述符，而不是字符串。 |
 | `requires disabled plugin` | 保持必需的依赖插件启用。 |
 | `Circular plugin dependency` | 移除错误信息中列出的依赖循环。 |
 | `cannot declare both schema.element and schema.mark` | 每个插件只声明一种 schema 角色。 |
 
 依赖会通过描述符自动安装，无需在应用的插件列表中重复添加必需依赖。
+
+## 隐去调试值 [#scrubbing-values]
+
+Plate 默认隐去错误详情中的文本字段。其他文档字段也需要隐藏时，设置
+调试值处理函数：
+
+```ts
+import { setDebugValueScrubber } from 'platejs';
+
+setDebugValueScrubber((key, value) => {
+  if (key === 'text' || key === 'src') return '[redacted]';
+  return value;
+});
+```
+
+回调类型为 `(key: string, value: unknown) => unknown`，在默认文本隐藏逻辑
+之前执行。返回原值时，该值仍会经过默认处理。传入 `null` 或 `undefined`
+恢复默认处理函数。

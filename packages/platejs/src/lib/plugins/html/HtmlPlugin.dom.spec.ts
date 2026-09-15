@@ -314,7 +314,7 @@ describe('compiled HTML DOM decoding', () => {
   it('decodes text nodes and drops exact host empty-leaf markers', () => {
     const host = document.createElement('span');
 
-    host.setAttribute('data-plite-string', 'true');
+    host.setAttribute('data-editor-string', 'true');
     host.textContent = '\uFEFF';
 
     expect(htmlTextNodeToString(document.createElement('div'))).toBeUndefined();

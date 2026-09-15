@@ -5,7 +5,7 @@ import {
   ContentSlice,
   createEditor,
   createEditorView,
-  defineExtension,
+  definePlugin,
   DocumentChange,
   editorCommands,
   type Editor,
@@ -24,7 +24,7 @@ import {
   deleteForward as editorDeleteForward,
   deleteFragment as editorDeleteFragment,
   getChildren as editorGetChildren,
-  getExtensionRegistry as editorGetExtensionRegistry,
+  getPluginRegistry as editorGetPluginRegistry,
   getLastCommit as editorGetLastCommit,
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
@@ -54,15 +54,15 @@ const runEditorTransaction = (
     ...options,
   });
 
-let commandExtensionOrder = 0;
+let commandPluginOrder = 0;
 
-const installCommandExtension = <Input>(
+const installCommandPlugin = <Input>(
   editor: Editor,
   command: EditorCommand<Input>,
   handler: EditorCommandAroundHandler<Input>
 ) =>
   editor.install(
-    defineExtension(`test-command-${(commandExtensionOrder += 1) - 1}`, {
+    definePlugin(`test-command-${(commandPluginOrder += 1) - 1}`, {
       commands: ({ around }) => [around(command, handler)],
     })
   );
@@ -195,7 +195,7 @@ describe('plite transaction contract', () => {
     assert.ok(targetNodeKey);
 
     const unextend = editor.install(
-      defineExtension('atomic-replace-correction-spy', {
+      definePlugin('atomic-replace-correction-spy', {
         corrections: [
           {
             event: 'content',
@@ -439,14 +439,14 @@ describe('plite transaction contract', () => {
     assert.deepEqual(commits[0]?.changed.topLevelRanges(), [[0, 0]]);
   });
 
-  it('notifies extensions about canonical transaction changes', () => {
+  it('notifies plugins about canonical transaction changes', () => {
     const editor = createEditor();
 
     replaceChildren(editor, [paragraph('one')]);
 
     const seenChanges: DocumentChange[] = [];
     const unextend = editor.install(
-      defineExtension('transaction-change-spy', {
+      definePlugin('transaction-change-spy', {
         on: {
           transactionChange({ change }) {
             seenChanges.push(change);
@@ -496,7 +496,7 @@ describe('plite transaction contract', () => {
       text: boolean;
     }> = [];
     const unextend = editor.install(
-      defineExtension('lazy-transaction-change-spy', {
+      definePlugin('lazy-transaction-change-spy', {
         on: {
           transactionChange({ changed }) {
             observations.push({
@@ -554,7 +554,7 @@ describe('plite transaction contract', () => {
       before: readonly [number, number] | null;
     }> = [];
     const unextend = editor.install(
-      defineExtension('bounded-transaction-change-paths', {
+      definePlugin('bounded-transaction-change-paths', {
         on: {
           transactionChange({ changed }) {
             paths.push(...changed.paths());
@@ -707,7 +707,7 @@ describe('plite transaction contract', () => {
       });
     });
 
-    const unsubscribe = installCommandExtension(
+    const unsubscribe = installCommandPlugin(
       editor,
       editorCommands.insertText,
       ({ next, ...context }) => {
@@ -785,7 +785,7 @@ describe('plite transaction contract', () => {
       });
     });
 
-    const unsubscribe = installCommandExtension(
+    const unsubscribe = installCommandPlugin(
       editor,
       editorCommands.insertBreak,
       ({ next, ...context }) => {
@@ -836,7 +836,7 @@ describe('plite transaction contract', () => {
       });
     });
 
-    const unsubscribe = installCommandExtension(
+    const unsubscribe = installCommandPlugin(
       editor,
       editorCommands.insertSoftBreak,
       ({ next, ...context }) => {
@@ -885,7 +885,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeDelete = installCommandExtension(
+    const unsubscribeDelete = installCommandPlugin(
       backwardEditor,
       editorCommands.delete,
       ({ next, ...context }) => {
@@ -918,7 +918,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 4 },
     });
 
-    const unsubscribeFragment = installCommandExtension(
+    const unsubscribeFragment = installCommandPlugin(
       fragmentEditor,
       deleteFragmentCommand,
       ({ next, ...context }) => {
@@ -954,7 +954,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 1 },
     });
 
-    const unsubscribeBackward = installCommandExtension(
+    const unsubscribeBackward = installCommandPlugin(
       backwardEditor,
       deleteCommand,
       ({ next, ...context }) => next({ ...context.input, direction: 'forward' })
@@ -973,7 +973,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 1 },
     });
 
-    const unsubscribeForward = installCommandExtension(
+    const unsubscribeForward = installCommandPlugin(
       forwardEditor,
       deleteCommand,
       ({ next, ...context }) =>
@@ -1049,7 +1049,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 0 },
     });
 
-    const unsubscribe = installCommandExtension(
+    const unsubscribe = installCommandPlugin(
       editor,
       editorCommands.move,
       ({ next, ...context }) => {
@@ -1239,7 +1239,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeAdd = installCommandExtension(
+    const unsubscribeAdd = installCommandPlugin(
       editor,
       editorCommands.addMark,
       ({ next, ...context }) => {
@@ -1275,7 +1275,7 @@ describe('plite transaction contract', () => {
     );
     assert.equal(addCommit.changes.empty, true);
 
-    const unsubscribeRemove = installCommandExtension(
+    const unsubscribeRemove = installCommandPlugin(
       editor,
       editorCommands.removeMark,
       ({ next, ...context }) => {
@@ -1315,9 +1315,9 @@ describe('plite transaction contract', () => {
     assert.equal(removeCommit.changes.empty, true);
   });
 
-  it('stores command handlers in the extension registry command slot', () => {
+  it('stores command handlers in the plugin registry command slot', () => {
     const editor = createEditor();
-    const initialRegistry = editorGetExtensionRegistry(editor);
+    const initialRegistry = editorGetPluginRegistry(editor);
     const seenCommands: unknown[] = [];
 
     replaceChildren(editor, [paragraph('one')]);
@@ -1326,7 +1326,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribe = installCommandExtension(
+    const unsubscribe = installCommandPlugin(
       editor,
       editorCommands.insertText,
       ({ next, ...context }) => {
@@ -1335,7 +1335,7 @@ describe('plite transaction contract', () => {
       }
     );
 
-    const registry = editorGetExtensionRegistry(editor);
+    const registry = editorGetPluginRegistry(editor);
 
     assert.notEqual(registry, initialRegistry);
     assert.equal(
@@ -1356,7 +1356,7 @@ describe('plite transaction contract', () => {
       },
     ]);
     assert.equal(
-      editorGetExtensionRegistry(editor).commands.byDescriptor.has(
+      editorGetPluginRegistry(editor).commands.byDescriptor.has(
         editorCommands.insertText
       ),
       false
@@ -1374,7 +1374,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeEarly = installCommandExtension(
+    const unsubscribeEarly = installCommandPlugin(
       editor,
       insertTextCommand,
       ({ next, ...context }) => {
@@ -1384,7 +1384,7 @@ describe('plite transaction contract', () => {
         return next();
       }
     );
-    const unsubscribeLate = installCommandExtension(
+    const unsubscribeLate = installCommandPlugin(
       editor,
       insertTextCommand,
       ({ next, ...context }) => {
@@ -1392,7 +1392,7 @@ describe('plite transaction contract', () => {
         return next();
       }
     );
-    const unsubscribeHigh = installCommandExtension(
+    const unsubscribeHigh = installCommandPlugin(
       editor,
       insertTextCommand,
       ({ next, ...context }) => {
@@ -1411,7 +1411,7 @@ describe('plite transaction contract', () => {
 
     assert.deepEqual(seenCommands, ['early:!', 'late:!', 'high:!']);
     assert.equal(
-      editorGetExtensionRegistry(editor).commands.byDescriptor.has(
+      editorGetPluginRegistry(editor).commands.byDescriptor.has(
         insertTextCommand
       ),
       false
@@ -1428,7 +1428,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeDecline = installCommandExtension(
+    const unsubscribeDecline = installCommandPlugin(
       editor,
       editorCommands.insertText,
       (context) => {
@@ -1436,7 +1436,7 @@ describe('plite transaction contract', () => {
         return false;
       }
     );
-    const unsubscribeOverride = installCommandExtension(
+    const unsubscribeOverride = installCommandPlugin(
       editor,
       editorCommands.insertText,
       ({ next, ...context }) => {
@@ -1459,7 +1459,7 @@ describe('plite transaction contract', () => {
     assert.equal(editorString(editor, [0]), 'one?');
   });
 
-  it('publishes extension-owned registry slots atomically', () => {
+  it('publishes plugin-owned registry slots atomically', () => {
     const editor = createEditor();
     const capability = { type: 'link' };
     const correction = {
@@ -1469,7 +1469,7 @@ describe('plite transaction contract', () => {
     const commitListener = () => {};
 
     const cleanup = editor.install(
-      defineExtension('registry-slots', {
+      definePlugin('registry-slots', {
         api: () => ({ inline: capability }),
         corrections: [correction],
         on: {
@@ -1477,7 +1477,7 @@ describe('plite transaction contract', () => {
         },
       })
     );
-    const registry = editorGetExtensionRegistry(editor);
+    const registry = editorGetPluginRegistry(editor);
 
     assert.equal(
       (
@@ -1495,7 +1495,7 @@ describe('plite transaction contract', () => {
 
     cleanup();
 
-    const clearedRegistry = editorGetExtensionRegistry(editor);
+    const clearedRegistry = editorGetPluginRegistry(editor);
 
     assert.equal('registry-slots' in editor.api, false);
     assert.equal(
@@ -1505,7 +1505,7 @@ describe('plite transaction contract', () => {
     assert.equal(clearedRegistry.commitListeners.size, 0);
   });
 
-  it('cleans extension registration output and aborts its lifecycle signal', () => {
+  it('cleans plugin registration output and aborts its lifecycle signal', () => {
     const editor = createEditor();
     let cleanupCalls = 0;
     let signal: AbortSignal | null = null;
@@ -1519,7 +1519,7 @@ describe('plite transaction contract', () => {
     });
 
     const unextend = editor.install(
-      defineExtension('lifecycle-extension', {
+      definePlugin('lifecycle-plugin', {
         activate: (context) => {
           ({ signal } = context);
           context.onCleanup(() => {
@@ -1558,13 +1558,13 @@ describe('plite transaction contract', () => {
     assert.equal(commits.length, 1);
   });
 
-  it('exposes extension state and transaction groups with cleanup', () => {
+  it('exposes plugin state and transaction groups with cleanup', () => {
     const editor = createEditor();
 
     replaceChildren(editor, [paragraph('one')]);
 
     const unextend = editor.install(
-      defineExtension('group-extension', {
+      definePlugin('group-plugin', {
         read: ({ state }) =>
           Object.freeze({
             text: () => state.text.string([0]),
@@ -1585,9 +1585,9 @@ describe('plite transaction contract', () => {
     editor.update((tx) => {
       (
         tx as typeof tx & {
-          'group-extension': { append: (text: string) => void };
+          'group-plugin': { append: (text: string) => void };
         }
-      )['group-extension'].append('!');
+      )['group-plugin'].append('!');
     });
 
     assert.equal(
@@ -1595,16 +1595,16 @@ describe('plite transaction contract', () => {
       'one!'
     );
 
-    const registry = editorGetExtensionRegistry(editor);
-    assert.equal(registry.stateGroups.has('group-extension'), true);
-    assert.equal(registry.txGroups.has('group-extension'), true);
+    const registry = editorGetPluginRegistry(editor);
+    assert.equal(registry.stateGroups.has('group-plugin'), true);
+    assert.equal(registry.txGroups.has('group-plugin'), true);
 
     unextend();
 
-    const clearedRegistry = editorGetExtensionRegistry(editor);
+    const clearedRegistry = editorGetPluginRegistry(editor);
     assert.notEqual(clearedRegistry, registry);
-    assert.equal(clearedRegistry.stateGroups.has('group-extension'), false);
-    assert.equal(clearedRegistry.txGroups.has('group-extension'), false);
+    assert.equal(clearedRegistry.stateGroups.has('group-plugin'), false);
+    assert.equal(clearedRegistry.txGroups.has('group-plugin'), false);
   });
 
   it('routes slice replacement through pure command handlers and preserves commit metadata', () => {
@@ -1617,7 +1617,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribe = installCommandExtension(
+    const unsubscribe = installCommandPlugin(
       editor,
       editorCommands.replaceSlice,
       ({ next, ...context }) => {
@@ -1664,7 +1664,7 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribe = installCommandExtension(
+    const unsubscribe = installCommandPlugin(
       editor,
       editorCommands.replaceSlice,
       ({ next, ...context }) => {
@@ -1703,7 +1703,7 @@ describe('plite transaction contract', () => {
     let commands = 0;
     let commits = 0;
 
-    const unsubscribe = installCommandExtension(
+    const unsubscribe = installCommandPlugin(
       editor,
       editorCommands.replaceSlice,
       ({ next }) => {
@@ -1735,9 +1735,9 @@ describe('plite transaction contract', () => {
     unsubscribe();
   });
 
-  it('delivers command-backed commits to extension commit listeners and preserves subscribe behavior', () => {
+  it('delivers command-backed commits to plugin commit listeners and preserves subscribe behavior', () => {
     const editor = createEditor();
-    const extensionCommits: Array<
+    const pluginCommits: Array<
       NonNullable<ReturnType<typeof editorGetLastCommit>>
     > = [];
     const subscribedCommits: Array<
@@ -1751,15 +1751,15 @@ describe('plite transaction contract', () => {
     });
 
     const unextendCommitListener = editor.install(
-      defineExtension('command-commit-listener', {
+      definePlugin('command-commit-listener', {
         on: {
           commit({ commit }) {
-            extensionCommits.push(commit);
+            pluginCommits.push(commit);
           },
         },
       })
     );
-    extensionCommits.length = 0;
+    pluginCommits.length = 0;
     const unsubscribeSubscriber = editorSubscribe(
       editor,
       (_snapshot, commit) => {
@@ -1773,20 +1773,20 @@ describe('plite transaction contract', () => {
       editorInsertText(editor, '!');
     });
 
-    assert.equal(extensionCommits.length, 1);
+    assert.equal(pluginCommits.length, 1);
     assert.equal(subscribedCommits.length, 1);
-    assert.equal(extensionCommits[0], subscribedCommits[0]);
-    assert.equal(extensionCommits[0]?.tags.includes('semantic-command'), true);
+    assert.equal(pluginCommits[0], subscribedCommits[0]);
+    assert.equal(pluginCommits[0]?.tags.includes('semantic-command'), true);
 
     unsubscribeSubscriber();
     unextendCommitListener();
-    const extensionCommitCount = extensionCommits.length;
+    const pluginCommitCount = pluginCommits.length;
 
     editor.update((_tx) => {
       editorInsertText(editor, '?');
     });
 
-    assert.equal(extensionCommits.length, extensionCommitCount);
+    assert.equal(pluginCommits.length, pluginCommitCount);
     assert.equal(subscribedCommits.length, 1);
     assert.equal(editorString(editor, [0]), 'one!?');
   });

@@ -61,10 +61,10 @@ describe('Vercel runtime packaging', () => {
       './src/registry/**/*',
       './public/r/**/*',
     ]);
-    expect(tracingIncludes?.['/docs/examples/plate-to-html']).toContain(
+    expect(tracingIncludes?.['/docs/examples/html-export']).toContain(
       './public/tailwind.css'
     );
-    expect(tracingIncludes?.['/cn/docs/examples/plate-to-html']).toContain(
+    expect(tracingIncludes?.['/cn/docs/examples/html-export']).toContain(
       './public/tailwind.css'
     );
   });

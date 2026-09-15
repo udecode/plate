@@ -5,10 +5,10 @@ import {
   renderHook,
   screen,
 } from '@testing-library/react';
-import type { Element as PliteElement } from 'plitejs';
+import type { Element as EditorElement } from 'plitejs';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import { createEditor, Editable, Plite } from '../../src/react';
+import { createEditor, Editable, EditorRoot } from '../../src/react';
 import {
   applyDragAutoScrollFrame,
   canScrollY,
@@ -16,8 +16,9 @@ import {
   type RootInteractionEditor,
   useRootInteractionController,
 } from '../../src/react/editable/root-interaction-controller';
+import { VirtualizedEditable } from '../../src/react/virtualized';
 
-const paragraph = (text: string): PliteElement => ({
+const paragraph = (text: string): EditorElement => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -259,12 +260,9 @@ describe('root interaction controller', () => {
     });
 
     render(
-      <Plite editor={editor}>
-        <Editable
-          aria-label="Main editor"
-          domStrategy={{ layout: {}, type: 'virtualized' }}
-        />
-      </Plite>
+      <EditorRoot editor={editor}>
+        <VirtualizedEditable aria-label="Main editor" />
+      </EditorRoot>
     );
 
     const editable = screen.getByLabelText('Main editor');
@@ -286,21 +284,21 @@ describe('root interaction controller', () => {
     const onMouseDown = vi.fn();
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           aria-label="Main editor"
           ignoreBlankEditableRootClicks
           onMouseDown={onMouseDown}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     const editable = screen.getByLabelText('Main editor');
     const blocks = editable.querySelectorAll<HTMLElement>(
-      '[data-plite-node="element"]'
+      '[data-editor-node="element"]'
     );
     const strings = editable.querySelectorAll<HTMLElement>(
-      '[data-plite-string]'
+      '[data-editor-string]'
     );
 
     expect(blocks).toHaveLength(2);
@@ -343,22 +341,19 @@ describe('root interaction controller', () => {
     });
   });
 
-  test('owns focused native-editable coordinate placements in DOM strategy layout mode', async () => {
+  test('owns focused virtualized editable coordinate placements', async () => {
     const editor = createEditor({
       initialValue: { children: [paragraph('body')] },
     });
 
     render(
-      <Plite editor={editor}>
-        <Editable
-          aria-label="Main editor"
-          domStrategy={{ layout: {}, type: 'virtualized' }}
-        />
-      </Plite>
+      <EditorRoot editor={editor}>
+        <VirtualizedEditable aria-label="Main editor" />
+      </EditorRoot>
     );
 
     const editable = screen.getByLabelText('Main editor');
-    const string = editable.querySelector<HTMLElement>('[data-plite-string]');
+    const string = editable.querySelector<HTMLElement>('[data-editor-string]');
 
     expect(string).toBeTruthy();
 
@@ -393,12 +388,12 @@ describe('root interaction controller', () => {
       focus: { offset: 2, path: [0, 0] },
     }));
 
-    editable.dataset.pliteEditor = 'true';
-    editable.dataset.pliteRoot = 'main';
-    block.dataset.pliteNode = 'element';
-    textHost.dataset.pliteNode = 'text';
-    textHost.setAttribute('data-plite-path', '0,0');
-    string.dataset.pliteString = 'true';
+    editable.dataset.editor = 'true';
+    editable.dataset.editorRoot = 'main';
+    block.dataset.editorNode = 'element';
+    textHost.dataset.editorNode = 'text';
+    textHost.setAttribute('data-editor-path', '0,0');
+    string.dataset.editorString = 'true';
     string.textContent = 'body';
     textHost.append(string);
     block.append(textHost);
@@ -474,12 +469,12 @@ describe('root interaction controller', () => {
     const string = document.createElement('span');
     const update = vi.fn();
 
-    editable.dataset.pliteEditor = 'true';
-    editable.dataset.pliteRoot = 'main';
-    block.dataset.pliteNode = 'element';
-    textHost.dataset.pliteNode = 'text';
-    textHost.setAttribute('data-plite-path', '0,0');
-    string.dataset.pliteString = 'true';
+    editable.dataset.editor = 'true';
+    editable.dataset.editorRoot = 'main';
+    block.dataset.editorNode = 'element';
+    textHost.dataset.editorNode = 'text';
+    textHost.setAttribute('data-editor-path', '0,0');
+    string.dataset.editorString = 'true';
     string.textContent = 'body';
     textHost.append(string);
     block.append(textHost);
@@ -615,22 +610,19 @@ describe('root interaction controller', () => {
     editable.remove();
   });
 
-  test('leaves native double-click word selection to the browser in DOM strategy layout mode', async () => {
+  test('leaves native double-click word selection to the browser in a virtualized editable', async () => {
     const editor = createEditor({
       initialValue: { children: [paragraph('body')] },
     });
 
     render(
-      <Plite editor={editor}>
-        <Editable
-          aria-label="Main editor"
-          domStrategy={{ layout: {}, type: 'virtualized' }}
-        />
-      </Plite>
+      <EditorRoot editor={editor}>
+        <VirtualizedEditable aria-label="Main editor" />
+      </EditorRoot>
     );
 
     const editable = screen.getByLabelText('Main editor');
-    const string = editable.querySelector<HTMLElement>('[data-plite-string]');
+    const string = editable.querySelector<HTMLElement>('[data-editor-string]');
 
     expect(string).toBeTruthy();
 

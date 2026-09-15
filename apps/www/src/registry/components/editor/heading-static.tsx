@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority';
 import type { BaseHeadingPlugin } from 'platejs';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 const headingVariants = cva('relative mb-1', {
@@ -17,20 +17,20 @@ const headingVariants = cva('relative mb-1', {
 });
 
 export function HeadingElementStatic(
-  props: PliteElementProps<typeof BaseHeadingPlugin>
+  props: EditorElementProps<typeof BaseHeadingPlugin>
 ) {
   const { level } = props.element;
   const tag = `h${level}` as const;
 
   return (
-    <PliteElement as={tag} className={headingVariants({ level })} {...props}>
+    <EditorElement as={tag} className={headingVariants({ level })} {...props}>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 
 export function HeadingElementDocx(
-  props: PliteElementProps<typeof BaseHeadingPlugin>
+  props: EditorElementProps<typeof BaseHeadingPlugin>
 ) {
   const key = props.editor.key(props.path);
 

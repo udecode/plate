@@ -7,18 +7,21 @@ import type {
   NodeKey,
 } from '../../../../../packages/plitejs/src/index.ts';
 import { NodeApi } from '../../../../../packages/plitejs/src/index.ts';
-import { getSnapshot as editorGetSnapshot, replace as editorReplace } from '../../../../../packages/plitejs/src/internal/index.ts';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '../../../../../packages/plitejs/src/internal/index.ts';
 import { usePliteDecorationEntries } from '../../../../../packages/plitejs/src/react/decoration-context.tsx';
 import {
   createEditor,
-  Editable,
   type Editor,
-  Plite,
-  type PliteDecorationSource,
+  EditorRoot,
+  type DecorationSource,
   useEditorSelector,
   useElementPath,
 } from '../../../../../packages/plitejs/src/react/index.ts';
 import { createPliteReactRenderCounter } from '../../../../../packages/plitejs/src/react/render-profiler.ts';
+import { VirtualizedEditable } from '../../../../../packages/plitejs/src/react/virtualized.tsx';
 import {
   cloneCounts,
   deltaCounts,
@@ -30,38 +33,33 @@ import {
 
 const iterations = Number(process.env.REACT_HUGE_DOC_BENCH_ITERATIONS || 5);
 const blockCount = Number(process.env.REACT_HUGE_DOC_BLOCKS || 200);
-const segmentSize = Number(process.env.REACT_HUGE_DOC_ISLAND_SIZE || 32);
+const estimatedBlockSize = Number(
+  process.env.REACT_HUGE_DOC_ESTIMATED_BLOCK_SIZE || 32
+);
 const overscan = Number(process.env.REACT_HUGE_DOC_ACTIVE_RADIUS || 1);
 
-const getSegmentCount = () => Math.ceil(blockCount / segmentSize);
-const getFarSegmentIndex = () =>
-  Math.min(
-    getSegmentCount() - 1,
-    Math.max(2, Math.floor(getSegmentCount() / 2))
-  );
 const getFarBlockIndex = () =>
-  Math.min(blockCount - 1, getFarSegmentIndex() * segmentSize);
+  Math.min(blockCount - 1, Math.max(8, Math.floor(blockCount / 2)));
 
-const getWarmupSegmentIndex = () => {
-  const targetSegmentIndex = getFarSegmentIndex();
-  const segmentCount = getSegmentCount();
-  const initialActiveEnd = Math.min(segmentCount - 1, overscan);
+const getWarmupBlockIndex = () => {
+  const targetBlockIndex = getFarBlockIndex();
+  const initialActiveEnd = Math.min(blockCount - 1, 7 + overscan);
   const candidates = [
-    targetSegmentIndex - 3,
-    targetSegmentIndex + 3,
-    targetSegmentIndex - 2,
-    targetSegmentIndex + 2,
+    targetBlockIndex - 3,
+    targetBlockIndex + 3,
+    targetBlockIndex - 2,
+    targetBlockIndex + 2,
     0,
-    segmentCount - 1,
+    blockCount - 1,
   ];
 
   return (
     candidates.find(
-      (segmentIndex) =>
-        segmentIndex >= 0 &&
-        segmentIndex < segmentCount &&
-        segmentIndex > initialActiveEnd &&
-        Math.abs(segmentIndex - targetSegmentIndex) > overscan
+      (blockIndex) =>
+        blockIndex >= 0 &&
+        blockIndex < blockCount &&
+        blockIndex > initialActiveEnd &&
+        Math.abs(blockIndex - targetBlockIndex) > overscan
     ) ?? null
   );
 };
@@ -93,7 +91,7 @@ const getTopLevelBlockText = (snapshot: EditorSnapshot, index: number) => {
 type DecorationProbe = Readonly<{
   getReadCount: () => number;
   refresh: () => void;
-  source: PliteDecorationSource<Editor>;
+  source: DecorationSource<Editor>;
 }>;
 
 const createDecorationProbe = (
@@ -101,9 +99,10 @@ const createDecorationProbe = (
   activeRef: React.RefObject<boolean>
 ): DecorationProbe => {
   let readCount = 0;
-  let refreshSource: ((input: { nodeKeys: readonly NodeKey[] }) => void) | null =
-    null;
-  const source: PliteDecorationSource<Editor> = {
+  let refreshSource:
+    | ((input: { nodeKeys: readonly NodeKey[] }) => void)
+    | null = null;
+  const source: DecorationSource<Editor> = {
     id: 'huge-document-overlays',
     observe: ({ refresh }) => {
       refreshSource = refresh;
@@ -197,9 +196,9 @@ const TrackedElement = ({
   isInline,
 }: {
   attributes: {
-    'data-plite-inline'?: true;
-    'data-plite-node': 'element';
-    'data-plite-void'?: true;
+    'data-editor-inline'?: true;
+    'data-editor-node': 'element';
+    'data-editor-void'?: true;
     ref: React.RefCallback<HTMLElement>;
   };
   children: React.ReactNode;
@@ -243,7 +242,7 @@ const RenderingStrategyOverlayApp = ({
   }, [decorationProbe, onDecorationProbe]);
 
   return (
-    <Plite decorations={[decorationProbe.source]} editor={editor}>
+    <EditorRoot decorations={[decorationProbe.source]} editor={editor}>
       <RenderingStrategyOverlayInner
         counts={counts}
         onToggle={() => {
@@ -255,7 +254,7 @@ const RenderingStrategyOverlayApp = ({
         }}
         overlayActive={overlayActive}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
@@ -269,12 +268,10 @@ const RenderingStrategyOverlayInner = ({
   overlayActive: boolean;
 }) => {
   const activeLeafId = useEditorSelector(
-    (editorValue) =>
-      editorGetSnapshot(editorValue).index.keyAt([0, 0]) ?? null
+    (editorValue) => editorGetSnapshot(editorValue).index.keyAt([0, 0]) ?? null
   );
-  const farLeafId = useEditorSelector(
-    (editorValue) =>
-      editorGetSnapshot(editorValue).index.keyAt([getFarBlockIndex(), 0])
+  const farLeafId = useEditorSelector((editorValue) =>
+    editorGetSnapshot(editorValue).index.keyAt([getFarBlockIndex(), 0])
   );
 
   return (
@@ -302,14 +299,10 @@ const RenderingStrategyOverlayInner = ({
         index={getFarBlockIndex()}
         slot="farText"
       />
-      <Editable
-        domStrategy={{
-          overscan,
-          type: 'partial-dom',
-          segmentSize,
-          threshold: 1,
-        }}
+      <VirtualizedEditable
+        estimatedBlockSize={estimatedBlockSize}
         id="huge-document-overlays"
+        overscan={overscan}
         renderElement={({ attributes, children, isInline }) => (
           <TrackedElement
             attributes={attributes}
@@ -319,17 +312,17 @@ const RenderingStrategyOverlayInner = ({
             {children}
           </TrackedElement>
         )}
+        style={{ height: 480, overflowY: 'auto' }}
       />
     </>
   );
 };
 
 const countMountedTextNodes = (container: HTMLElement) =>
-  container.querySelectorAll('[data-plite-node="text"]').length;
+  container.querySelectorAll('[data-editor-node="text"]').length;
 
-const countShells = (container: HTMLElement) =>
-  container.querySelectorAll('[data-plite-dom-strategy-placeholder="true"]')
-    .length;
+const countViewportBoundaries = (container: HTMLElement) =>
+  container.querySelectorAll('[data-editor-viewport-boundary="true"]').length;
 
 const setupScenario = async () => {
   const editor = createEditor();
@@ -387,32 +380,31 @@ const measureLane = async (run: () => Promise<Record<string, number>>) => {
   return summarizeMetrics(samples);
 };
 
-const promoteSegment = async ({
+const requestBlockMount = async ({
+  editor,
+  blockIndex,
   mounted,
-  segmentIndex,
-  view,
 }: {
+  editor: Editor;
+  blockIndex: number;
   mounted: Awaited<ReturnType<typeof setupScenario>>['mounted'];
-  segmentIndex: number;
-  view: Window;
 }) => {
-  const targetShell = mounted.container.querySelector<HTMLElement>(
-    `[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="${segmentIndex}"]`
-  );
-
-  if (!targetShell) {
-    throw new Error(`Missing target partial DOM placeholder ${segmentIndex}`);
-  }
-
   const start = now();
 
   await act(async () => {
-    targetShell.dispatchEvent(
-      new view.MouseEvent('mousedown', {
-        bubbles: true,
-      })
-    );
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [blockIndex, 0], offset: 0 },
+        focus: { path: [blockIndex, 0], offset: 0 },
+      });
+    });
   });
+
+  const target = mounted.container.querySelector(
+    `[data-editor-node="text"][data-editor-path="${blockIndex},0"]`
+  );
+
+  if (!target) throw new Error(`Block ${blockIndex} did not mount`);
 
   return now() - start;
 };
@@ -421,17 +413,19 @@ const measureOverlayToggle = async () =>
   measureLane(async () => {
     const { counts, decorationProbe, mounted, toggle, view } =
       await setupScenario();
-    const partialDOMCountBefore = countShells(mounted.container);
+    const viewportBoundaryCountBefore = countViewportBoundaries(
+      mounted.container
+    );
     const mountedTextBefore = countMountedTextNodes(mounted.container);
     const baseline = cloneCounts(counts);
     const readBaseline = decorationProbe.getReadCount();
-    const previousRenderProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+    const previousRenderProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
     const renderCounter =
       process.env.REACT_HUGE_DOC_DEBUG_PROFILE === '1'
         ? createPliteReactRenderCounter()
         : null;
     if (renderCounter) {
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = renderCounter.profiler;
+      globalThis.__EDITOR_REACT_RENDER_PROFILER__ = renderCounter.profiler;
     }
     const start = now();
 
@@ -445,9 +439,11 @@ const measureOverlayToggle = async () =>
 
     const overlayToggleMs = now() - start;
     const renderProfile = renderCounter?.snapshot();
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousRenderProfiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousRenderProfiler;
     const delta = deltaCounts(counts, baseline);
-    const partialDOMCountAfter = countShells(mounted.container);
+    const viewportBoundaryCountAfter = countViewportBoundaries(
+      mounted.container
+    );
     const mountedTextAfter = countMountedTextNodes(mounted.container);
     const activeDecorationValue = Number(
       mounted.container.querySelector('#active-decoration-count')
@@ -472,14 +468,13 @@ const measureOverlayToggle = async () =>
         ? {
             renderElementCount: renderProfile.byKind.element ?? 0,
             renderLeafCount: renderProfile.byKind.leaf ?? 0,
-            renderRootPlanCount: renderProfile.byKind['root-plan'] ?? 0,
             renderSelectorCount: renderProfile.byKind.selector ?? 0,
             renderTextCount: renderProfile.byKind.text ?? 0,
             renderTotalCount: renderProfile.total,
           }
         : {}),
-      partialDOMCountAfter,
-      partialDOMCountBefore,
+      viewportBoundaryCountAfter,
+      viewportBoundaryCountBefore,
     };
   });
 
@@ -496,7 +491,9 @@ const measureActiveEditAfterOverlay = async () =>
       );
     });
 
-    const partialDOMCountBefore = countShells(mounted.container);
+    const viewportBoundaryCountBefore = countViewportBoundaries(
+      mounted.container
+    );
     const mountedTextBefore = countMountedTextNodes(mounted.container);
     const baseline = cloneCounts(counts);
     const readBaseline = decorationProbe.getReadCount();
@@ -512,7 +509,9 @@ const measureActiveEditAfterOverlay = async () =>
 
     const editMs = now() - start;
     const delta = deltaCounts(counts, baseline);
-    const partialDOMCountAfter = countShells(mounted.container);
+    const viewportBoundaryCountAfter = countViewportBoundaries(
+      mounted.container
+    );
     const mountedTextAfter = countMountedTextNodes(mounted.container);
 
     await mounted.dispose();
@@ -528,19 +527,19 @@ const measureActiveEditAfterOverlay = async () =>
       farTextRenders: delta.farText ?? 0,
       mountedTextAfter,
       mountedTextBefore,
-      partialDOMCountAfter,
-      partialDOMCountBefore,
+      viewportBoundaryCountAfter,
+      viewportBoundaryCountBefore,
     };
   });
 
-const measurePartialDOMPromotion = async () =>
+const measureViewportMount = async () =>
   measureLane(async () => {
     const { decorationProbe, editor, mounted, toggle, view } =
       await setupScenario();
-    const previousRenderProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+    const previousRenderProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
     const renderCounter = createPliteReactRenderCounter();
 
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = renderCounter.profiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = renderCounter.profiler;
 
     await act(async () => {
       toggle.dispatchEvent(
@@ -550,25 +549,27 @@ const measurePartialDOMPromotion = async () =>
       );
     });
 
-    const warmupSegmentIndex = getWarmupSegmentIndex();
-    const coldPromotionMs =
-      warmupSegmentIndex == null
+    const warmupBlockIndex = getWarmupBlockIndex();
+    const coldMountMs =
+      warmupBlockIndex == null
         ? 0
-        : await promoteSegment({
+        : await requestBlockMount({
+            blockIndex: warmupBlockIndex,
+            editor,
             mounted,
-            segmentIndex: warmupSegmentIndex,
-            view,
           });
 
-    const partialDOMCountBefore = countShells(mounted.container);
+    const viewportBoundaryCountBefore = countViewportBoundaries(
+      mounted.container
+    );
     const mountedTextBefore = countMountedTextNodes(mounted.container);
 
     const readBaseline = decorationProbe.getReadCount();
     renderCounter.reset();
-    const promotionMs = await promoteSegment({
+    const mountMs = await requestBlockMount({
+      blockIndex: getFarBlockIndex(),
+      editor,
       mounted,
-      segmentIndex: getFarSegmentIndex(),
-      view,
     });
     const renderProfile = renderCounter.snapshot();
     if (process.env.REACT_HUGE_DOC_DEBUG_PROFILE === '1') {
@@ -601,30 +602,30 @@ const measurePartialDOMPromotion = async () =>
         )
       );
     }
-    const partialDOMCountAfter = countShells(mounted.container);
+    const viewportBoundaryCountAfter = countViewportBoundaries(
+      mounted.container
+    );
     const mountedTextAfter = countMountedTextNodes(mounted.container);
     const selection = editorGetSnapshot(editor).selection;
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousRenderProfiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousRenderProfiler;
 
     await mounted.dispose();
 
     return {
-      coldPromotionMs,
+      coldMountMs,
       decorationReadCount: decorationProbe.getReadCount() - readBaseline,
       mountedTextAfter,
       mountedTextBefore,
-      promotionMs,
+      mountMs,
       renderElementCount: renderProfile.byKind.element ?? 0,
       renderLeafCount: renderProfile.byKind.leaf ?? 0,
-      renderRootPlanCount:
-        renderProfile.byKey['root-plan:dom-strategy-root-sources'] ?? 0,
       renderSelectorCount: renderProfile.byKind.selector ?? 0,
       renderTextCount: renderProfile.byKind.text ?? 0,
       renderTotalCount: renderProfile.total,
       selectionAnchorPathLength: selection?.anchor.path.length ?? 0,
       selectionAnchorTopLevel: Number(selection?.anchor.path[0] ?? -1),
-      partialDOMCountAfter,
-      partialDOMCountBefore,
+      viewportBoundaryCountAfter,
+      viewportBoundaryCountBefore,
     };
   });
 
@@ -633,15 +634,14 @@ const main = async () => {
     config: {
       overscan,
       blockCount,
+      estimatedBlockSize,
       farBlockIndex: getFarBlockIndex(),
-      farSegmentIndex: getFarSegmentIndex(),
-      segmentSize,
       iterations,
     },
     lane: 'plite-react-huge-document-overlays',
     activeEditAfterOverlay: await measureActiveEditAfterOverlay(),
     overlayToggle: await measureOverlayToggle(),
-    partialDOMPromotion: await measurePartialDOMPromotion(),
+    viewportMount: await measureViewportMount(),
   };
 
   await mkdir('tmp', { recursive: true });

@@ -1,0 +1,87 @@
+{
+  "id": "2026-09-14-collaboration-lifetime-implementation",
+  "scope": "collaboration",
+  "kind": "review",
+  "date": "2026-09-14",
+  "question": "Which native change and identity contracts should providers reuse for local, remote and reconnect behavior?",
+  "model": "GPT-6 / Codex",
+  "method": "best-api-review/history-v2; Task full execution; Redesign from First Principles; Plite Plan and Plate Plan adoption; Benchmark composite proof; Maintain Workflow doctrine repair; Agent Native Reviewer closure audit",
+  "trigger": "The user authorized execution of the full corrected collaboration lifetime plan after the adversarial defer review, then asked to complete all implementation, proof and ledger reconciliation work.",
+  "requirements": [
+    "Keep Y.Doc, provider connection and provider-specific initial readiness resources app-owned; require explicit doc and initialReady inputs and grant seed authority only through an exclusive external decision.",
+    "Reject waiting/error document and shared-effect work before publication or history, and never expose ready until required selection publication succeeds.",
+    "Surface shared-effect import failure as stable admission error, retain unacknowledged work and recover exactly once through retry without losing accepted offline edits.",
+    "Preserve one private controller and compaction authority per Y.Doc namespace, reject incompatible duplicate ownership and arbitrate one awareness selection across exact mounted views.",
+    "Expose live collaboration behavior through api.yjs, delete provider lifecycle, read.yjs and update/transaction Yjs surfaces, and infer awareness and compaction methods only when configured.",
+    "Preserve canonical Yjs convergence, relative identity, named roots, authored shared effects, history and the independent public YjsUpdatePolicy custom-adapter job.",
+    "Provide exact Plite and Plate headless/React exports and prove source, emitted declaration, packed boundary, real-provider browser and balanced composite performance behavior."
+  ],
+  "evidenceReuse": "Rechecked the current owner and consumer source captured by this record. Reused earlier source investigations and failed or order-confounded benchmark receipts only as historical design evidence. Final acceptance comes from the implemented native/Plate contracts, current emitted declarations and package boundaries, generated registry, real Hocuspocus and mounted browser paths, and the current seven-cohort composite benchmark. Doctrine and generated mirrors were revalidated after their source repair.",
+  "summary": "Pursue and mark adopted. The collaboration lifetime redesign is implemented: apps own providers and readiness, the native binding owns admission and Yjs identity, Plate composes the binding without a second store, and view-bound presence lives under capability-inferred api.yjs. Provider commands, public lifecycle/controller internals, read.yjs and Yjs update/transaction APIs are deleted. Atomic readiness, retained retry, namespace/compaction ownership, exclusive seeding, exact-view arbitration, public declarations, real-provider browser behavior and all seven balanced performance cohorts pass.",
+  "verdict": "pursue",
+  "previous": "2026-09-14-collaboration-plan-readiness",
+  "relation": "supersedes",
+  "alternatives": [
+    "Delete native collaboration and rely on JSON snapshots or path broadcasts: reject because offline convergence, relative cursor identity, named roots, authored shared effects and collaborative history remain independent current jobs.",
+    "Keep the provider facade, duplicate Plate store and read/update Yjs groups while patching local errors: reject because it preserves transport, resource and live-state ownership under editor transaction lifetimes.",
+    "Export a generic Hocuspocus readiness/provider service: cut because provider construction, connection, seed grants and destruction are app resources and the current apps need concrete version-specific ownership.",
+    "Use one native Yjs binding with app-owned resources and a capability-inferred Plate presentation adapter: selected and implemented; it satisfies the required jobs with the fewest public owners."
+  ],
+  "proofLimits": "Manual one-hour and production soaks were not run because repository guidance requires an explicit soak request. No release or publication is claimed. Focused collaboration proof is green; broader checkout commands still stop on concurrent authored/suggestion API-key drift, clipboard internal-export bookkeeping, a Plate media caption split, a table type-instantiation error and an authored/clipboard browser insertion-offset mismatch. The plan records each failure and the independently passing affected stages.",
+  "references": [
+    "docs/plans/2026-09-14-collaboration-lifetimes.md",
+    "docs/research/decisions/collaboration-ownership.md",
+    "docs/vision/plite.md",
+    "docs/vision/plate.md",
+    ".agents/rules/best-api/rules/schema-and-identity.md",
+    ".agents/rules/plate-plugin-creator/references/plugin-authoring-audit.md",
+    ".agents/rules/plate-next/versions.json",
+    "packages/plitejs/src/yjs/core/controller.ts",
+    "packages/plitejs/src/yjs/core/plugin.ts",
+    "packages/plitejs/src/yjs/core/types.ts",
+    "packages/plitejs/test/yjs/admission-lifecycle-contract.spec.ts",
+    "packages/platejs/src/yjs/react/createYjsPlugin.tsx",
+    "packages/platejs/type-tests/yjs-collaboration-contracts.ts",
+    "apps/www/src/app/(app)/examples/plite/_examples/yjs-hocuspocus.tsx",
+    "apps/plite/tests/plite-browser/donor/examples/yjs-collaboration.test.ts",
+    "apps/plite/tests/plite-browser/donor/examples/yjs-hocuspocus.test.ts",
+    "apps/plite/tests/plite-browser/donor/examples/collaboration-demo.test.ts",
+    "benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/app/(app)/examples/plite/_examples/yjs-collaboration.tsx": "f1d4585f268c795ebeeaa5fff6ed38bdd52885dabc12bd84f3944b5535a79b70",
+      "apps/www/src/app/(app)/examples/plite/_examples/yjs-hocuspocus.tsx": "dec32a9cf6d49da880ce3cc5cdbf4456d5671b3648aa8f44025c85ceab2326e4",
+      "packages/plitejs/test/yjs/admission-lifecycle-contract.spec.ts": "f3281556d96f4a280af7e283bf8a2a0506d79d014200fa570e28de39aff246b0",
+      "packages/platejs/src/yjs/createYjsPlugin.api.spec.ts": "ef92cf9d34f5141974cb3c20562e5d699cfb3f40a6e313328d3dc05223238e43",
+      "packages/platejs/type-tests/yjs-collaboration-contracts.ts": "6687f3172e79f4868a1def926c585ff6991eb6168c15b9abe947b2024b117333",
+      "apps/plite/tests/plite-browser/donor/examples/yjs-hocuspocus.test.ts": "1028d559b6d3d197c6f2e98d5004c57f1088b2a787bc21eb5e18c00f6e3eaad3",
+      "benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs": "38f2c71ea3adef4283cf6c4c99e1dca6727e72bee3b67a6230af9a94a5031bc8",
+      "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
+      "pnpm-lock.yaml": "87c2ccedbae4674e84c7a7f3498db6123240b3a271904d3f1b44fbe3153edee7",
+      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
+    },
+    "directories": {
+      "packages/plitejs/src/yjs": "64002b3921340a7031efb645a41097ae39035b0d2fe337730b92076eaa47a138",
+      "packages/platejs/src/yjs": "38f36e2f3a254864150fbd16d10767edf6b0d8f0a6e4228dbba842204298a2f6"
+    },
+    "features": {
+      "capability/yjs": "814ec10f94d7f63f516ec7291d33561f25a2b717d3391accb88c4193382cf3e5",
+      "example/plite/collaboration-demo": "b59232777df24231e992206f2c8cd7123435b30c107245f9dc36d673f09cb95c",
+      "example/plite/yjs-collaboration": "ba063fc8b1eb05edc411a96b36c63214eef639bd0fe1e58b16d97e0e6f36f12c",
+      "example/plite/yjs-hocuspocus": "fb8d0f1b729828216cd7002a25eb6906f5451c64201fc1c4e79c70b25788185d",
+      "example/registry/collaboration-demo": "64b2991858c43909af08f856fa84bc0499e1d5433956b7b92f7cceb26df72805",
+      "export/platejs/./yjs": "66269fdc4d24f16fba0b51fd11362e4ce60ea70a96ed2f97109f9aa5862d2e08",
+      "export/platejs/./yjs/react": "66269fdc4d24f16fba0b51fd11362e4ce60ea70a96ed2f97109f9aa5862d2e08",
+      "export/plitejs/./yjs": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "export/plitejs/./yjs/react": "e09f07e3a940f7e35d4033fc09b9998a86609d303517bcde9b6d46bfd0d27437",
+      "platejs/yjs": "38f36e2f3a254864150fbd16d10767edf6b0d8f0a6e4228dbba842204298a2f6",
+      "plitejs/yjs": "64002b3921340a7031efb645a41097ae39035b0d2fe337730b92076eaa47a138",
+      "ui/remote-cursor-overlay": "cdbce0494ff46278496f5ac141bd3dbb1ca6658fc092d7cccd12a71da2f20620"
+    },
+    "upstreams": []
+  }
+}

@@ -6,7 +6,7 @@ import {
   type Values,
 } from 'nuqs';
 import {
-  defineExtension,
+  definePlugin,
   defineStateField,
   type Node,
   NodeApi,
@@ -16,36 +16,33 @@ import {
 import { isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
-  createPlitePage,
-  getPlitePageLayoutDecorations,
-  getPlitePageLayoutGeometry,
-  getPlitePageLayoutPathKey,
-  getPlitePageLayoutProjection,
-  plitePageSettingsCodec,
+  createPage,
+  getPageLayoutDecorations,
+  getPageLayoutGeometry,
+  getPageLayoutPathKey,
+  getPageLayoutProjection,
+  pageSettingsCodec,
   pretextPageLayoutEngine,
-  type PliteNodeLayoutProvider,
-  type PlitePageLayoutDecorationRects,
-  type PlitePageLayoutTextChangeRefresh,
-  type PlitePageLayoutTypography,
-  type PlitePageRect,
-  type PlitePageSettings,
+  type NodeLayoutProvider,
+  type PageLayoutDecorationRects,
+  type PageLayoutTextChangeRefresh,
+  type PageLayoutTypography,
+  type PageRect,
+  type PageSettings,
 } from 'plitejs/pagination';
 import {
   PagedEditable,
-  type PliteLayoutRenderedFragment,
-  usePliteLayout,
-  usePliteLayoutFragmentsAtPath,
-  usePliteLayoutSnapshot,
+  type LayoutRenderedFragment,
+  useLayout,
+  useLayoutFragmentsAtPath,
+  useLayoutSnapshot,
 } from 'plitejs/pagination/react';
 import {
-  type EditableDOMStrategyEffectiveType,
-  type EditableProps,
-  type PliteDecoration,
-  type PliteDecorationSource,
+  type Decoration,
+  type DecorationSource,
   type RenderElementProps,
   type RenderLeafProps,
-  Plite,
-  useDOMStrategyVirtualOffset,
+  EditorRoot,
   useEditorContext,
   useEditorState,
   useElementPath,
@@ -95,22 +92,22 @@ import {
   replaceQueryOptions,
 } from './query-controls';
 
-const pageSettings = defineStateField<PlitePageSettings>({
+const pageSettings = defineStateField<PageSettings>({
   key: 'layout.page',
   collab: 'shared',
   history: 'push',
   initial: () => ({ margins: 96, preset: 'a4' }),
-  persist: plitePageSettingsCodec,
+  persist: pageSettingsCodec,
 });
 
-const pageSettingsExtension = defineExtension('pageSettings', {
+const pageSettingsPlugin = definePlugin('pageSettings', {
   stateFields: [pageSettings],
 });
 
-type DOMStrategyMode = 'full' | 'staged' | 'virtualized';
+type RenderingMode = 'complete' | 'virtualized';
 
 const pagePresetOptions = ['a4', 'letter'] as const;
-const domStrategyModeOptions = ['full', 'staged', 'virtualized'] as const;
+const renderingModeOptions = ['complete', 'virtualized'] as const;
 const mediaSplitOptions = ['avoid', 'page'] as const;
 const pageLayoutModeOptions = ['spread', 'single'] as const;
 
@@ -122,19 +119,16 @@ const PAGE_CODE_FONT = 'SFMono-Regular, Menlo, monospace';
 const DEFAULT_MEDIA_HEIGHT = 240;
 const DEFAULT_TABLE_ROW_HEIGHT = 36;
 const DEFAULT_TABLE_ROWS = 240;
-const DEFAULT_PAGE_OVERSCAN = 1;
 const DEFAULT_VIRTUALIZED_STRESS_PAGES = 990;
 const MAX_MEDIA_HEIGHT = 1200;
-const MAX_PAGE_OVERSCAN = 20;
 const MAX_TABLE_ROW_HEIGHT = 960;
 const MAX_TABLE_ROWS = 1000;
 const MAX_VIRTUALIZED_STRESS_PAGES = 2000;
 
 const paginationControlParsers = {
   debugFrames: parseAsBoolean.withDefault(false),
-  domStrategyMode: parseAsStringLiteral(domStrategyModeOptions).withDefault(
-    'staged'
-  ),
+  renderingMode:
+    parseAsStringLiteral(renderingModeOptions).withDefault('virtualized'),
   margins: parseAsBoundedInteger(48, 240).withDefault(96),
   mediaHeight: parseAsBoundedInteger(120, MAX_MEDIA_HEIGHT).withDefault(
     DEFAULT_MEDIA_HEIGHT
@@ -142,9 +136,6 @@ const paginationControlParsers = {
   mediaSplit: parseAsStringLiteral(mediaSplitOptions).withDefault('avoid'),
   pageLayoutMode: parseAsStringLiteral(pageLayoutModeOptions).withDefault(
     'spread'
-  ),
-  pageOverscan: parseAsBoundedInteger(0, MAX_PAGE_OVERSCAN).withDefault(
-    DEFAULT_PAGE_OVERSCAN
   ),
   preset: parseAsStringLiteral(pagePresetOptions).withDefault('a4'),
   tableRowHeight: parseAsBoundedInteger(28, MAX_TABLE_ROW_HEIGHT).withDefault(
@@ -161,11 +152,10 @@ const paginationControlParsers = {
 
 const paginationControlUrlKeys = {
   debugFrames: 'debug',
-  domStrategyMode: 'strategy',
+  renderingMode: 'rendering',
   mediaHeight: 'media_height',
   mediaSplit: 'media_split',
   pageLayoutMode: 'page_layout',
-  pageOverscan: 'page_overscan',
   tableRowHeight: 'row_height',
   tableRows: 'rows',
   virtualizedStressPages: 'stress_pages',
@@ -356,12 +346,11 @@ const PaginationControlsToolbar = ({
 }) => {
   const {
     debugFrames,
-    domStrategyMode,
+    renderingMode,
     margins,
     mediaHeight,
     mediaSplit,
     pageLayoutMode,
-    pageOverscan,
     preset,
     tableRowHeight,
     tableRows,
@@ -381,9 +370,9 @@ const PaginationControlsToolbar = ({
     }
   };
 
-  const updateDOMStrategy = (event: ChangeEvent<HTMLSelectElement>) => {
+  const updateRendering = (event: ChangeEvent<HTMLSelectElement>) => {
     void setControls({
-      domStrategyMode: event.currentTarget.value as DOMStrategyMode,
+      renderingMode: event.currentTarget.value as RenderingMode,
     });
   };
 
@@ -423,16 +412,6 @@ const PaginationControlsToolbar = ({
     });
   };
 
-  const updatePageOverscan = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = Number.parseInt(event.currentTarget.value, 10);
-
-    if (Number.isFinite(value)) {
-      void setControls({
-        pageOverscan: clampNumber(value, 0, MAX_PAGE_OVERSCAN),
-      });
-    }
-  };
-
   const updateVirtualizedStressPages = (
     event: ChangeEvent<HTMLInputElement>
   ) => {
@@ -456,9 +435,9 @@ const PaginationControlsToolbar = ({
   };
 
   return (
-    <div className="plite-pagination-toolbar">
-      <div className="plite-pagination-toolbar-group">
-        <span className="plite-pagination-label">
+    <div className="editor-pagination-toolbar">
+      <div className="editor-pagination-toolbar-group">
+        <span className="editor-pagination-label">
           <Label htmlFor="pagination-preset">Preset</Label>
           <NativeSelect
             className="w-24"
@@ -470,7 +449,7 @@ const PaginationControlsToolbar = ({
             <NativeSelectOption value="letter">Letter</NativeSelectOption>
           </NativeSelect>
         </span>
-        <span className="plite-pagination-label">
+        <span className="editor-pagination-label">
           <Label htmlFor="pagination-margins">Margins</Label>
           <Input
             className="w-20"
@@ -482,22 +461,23 @@ const PaginationControlsToolbar = ({
             value={margins}
           />
         </span>
-        <span className="plite-pagination-label">
-          <Label htmlFor="pagination-dom-strategy">DOM strategy</Label>
+        <span className="editor-pagination-label">
+          <Label htmlFor="pagination-rendering">Rendering</Label>
           <NativeSelect
             className="w-32"
-            id="pagination-dom-strategy"
-            onChange={updateDOMStrategy}
-            value={domStrategyMode}
+            id="pagination-rendering"
+            onChange={updateRendering}
+            value={renderingMode}
           >
-            <NativeSelectOption value="staged">Staged</NativeSelectOption>
-            <NativeSelectOption value="full">Full</NativeSelectOption>
+            <NativeSelectOption value="complete">
+              Complete DOM
+            </NativeSelectOption>
             <NativeSelectOption value="virtualized">
               Virtualized
             </NativeSelectOption>
           </NativeSelect>
         </span>
-        <span className="plite-pagination-label">
+        <span className="editor-pagination-label">
           <Label htmlFor="pagination-rows">Rows</Label>
           <Input
             className="w-24"
@@ -509,7 +489,7 @@ const PaginationControlsToolbar = ({
             value={tableRows}
           />
         </span>
-        <span className="plite-pagination-label">
+        <span className="editor-pagination-label">
           <Label htmlFor="pagination-row-height">Row px</Label>
           <Input
             className="w-20"
@@ -522,7 +502,7 @@ const PaginationControlsToolbar = ({
             value={tableRowHeight}
           />
         </span>
-        <span className="plite-pagination-label">
+        <span className="editor-pagination-label">
           <Label htmlFor="pagination-media-height">Media px</Label>
           <Input
             className="w-24"
@@ -535,7 +515,7 @@ const PaginationControlsToolbar = ({
             value={mediaHeight}
           />
         </span>
-        <span className="plite-pagination-label">
+        <span className="editor-pagination-label">
           <Label htmlFor="pagination-media-split">Media split</Label>
           <NativeSelect
             className="w-24"
@@ -547,39 +527,25 @@ const PaginationControlsToolbar = ({
             <NativeSelectOption value="page">Page</NativeSelectOption>
           </NativeSelect>
         </span>
-        {domStrategyMode === 'virtualized' && (
-          <>
-            <span className="plite-pagination-label">
-              <Label htmlFor="pagination-page-overscan">Page overscan</Label>
-              <Input
-                className="w-20"
-                id="pagination-page-overscan"
-                max={MAX_PAGE_OVERSCAN}
-                min={0}
-                onChange={updatePageOverscan}
-                type="number"
-                value={pageOverscan}
-              />
-            </span>
-            <span className="plite-pagination-label">
-              <Label htmlFor="pagination-rich-stress">Stress pages</Label>
-              <Input
-                className="w-24"
-                id="pagination-rich-stress"
-                max={MAX_VIRTUALIZED_STRESS_PAGES}
-                min={0}
-                onChange={updateVirtualizedStressPages}
-                step={10}
-                type="number"
-                value={virtualizedStressPages}
-              />
-            </span>
-          </>
+        {renderingMode === 'virtualized' && (
+          <span className="editor-pagination-label">
+            <Label htmlFor="pagination-rich-stress">Stress pages</Label>
+            <Input
+              className="w-24"
+              id="pagination-rich-stress"
+              max={MAX_VIRTUALIZED_STRESS_PAGES}
+              min={0}
+              onChange={updateVirtualizedStressPages}
+              step={10}
+              type="number"
+              value={virtualizedStressPages}
+            />
+          </span>
         )}
       </div>
-      <div className="plite-pagination-toolbar-group">
+      <div className="editor-pagination-toolbar-group">
         <Separator className="h-6" orientation="vertical" />
-        <span className="plite-pagination-switch-group">
+        <span className="editor-pagination-switch-group">
           Facing
           <Switch
             aria-label="Facing"
@@ -590,7 +556,7 @@ const PaginationControlsToolbar = ({
           />
         </span>
         <Separator className="h-6" orientation="vertical" />
-        <span className="plite-pagination-switch-group">
+        <span className="editor-pagination-switch-group">
           Debug
           <Switch
             aria-label="Debug"
@@ -885,23 +851,21 @@ const createInitialValue = ({
   ...createRichMarkdownValue({ stressPages, tableRows }),
 ];
 
-type PaginationLineDecoration = PlitePageLayoutDecorationRects & {
+type PaginationLineDecoration = PageLayoutDecorationRects & {
   breakAfter?: boolean;
   nativeFlow?: boolean;
 };
 
-type PaginationDecorationReader = PliteDecorationSource<unknown>['read'];
+type PaginationDecorationReader = DecorationSource<unknown>['read'];
 
 const EMPTY_PAGINATION_DECORATION_READER: PaginationDecorationReader = () => [];
 
 const createPaginationDecorationRuntime = () => {
   let reader = EMPTY_PAGINATION_DECORATION_READER;
   const refreshers = new Set<
-    Parameters<
-      NonNullable<PliteDecorationSource<unknown>['observe']>
-    >[0]['refresh']
+    Parameters<NonNullable<DecorationSource<unknown>['observe']>>[0]['refresh']
   >();
-  const source: PliteDecorationSource<unknown> = {
+  const source: DecorationSource<unknown> = {
     id: 'pagination-layout',
     observe: ({ refresh }) => {
       refreshers.add(refresh);
@@ -971,7 +935,7 @@ const getNativeFlowEditablePathKeys = (
       continue;
     }
 
-    const key = getPlitePageLayoutPathKey(fragment.path);
+    const key = getPageLayoutPathKey(fragment.path);
     const entry = fragmentsByPath.get(key) ?? {
       count: 0,
       pageIndexes: new Set<number>(),
@@ -990,8 +954,8 @@ const getNativeFlowEditablePathKeys = (
 };
 
 const getFragmentBounds = (
-  fragments: readonly PliteLayoutRenderedFragment[]
-): PlitePageRect | null => {
+  fragments: readonly LayoutRenderedFragment[]
+): PageRect | null => {
   const rects = fragments.map((fragment) => fragment.rect);
 
   if (rects.length === 0) {
@@ -1013,7 +977,7 @@ const getFragmentBounds = (
 
 const getVisibleTableRowRanges = (
   tablePathLength: number,
-  fragments: readonly PliteLayoutRenderedFragment[]
+  fragments: readonly LayoutRenderedFragment[]
 ) => {
   const rowIndexes = [
     ...new Set(
@@ -1061,7 +1025,6 @@ const renderTableChildrenWindow = ({
               range.start - 1
             }`,
             copyPolicy: 'model',
-            findPolicy: 'native',
             mounted: false,
             reason: 'viewport-virtualization',
             renderPlaceholder: () => null,
@@ -1091,7 +1054,6 @@ const renderTableChildrenWindow = ({
         {slots.contentBoundary({
           boundaryId: `pagination-table-hidden:${nextIndex}-${rowCount - 1}`,
           copyPolicy: 'model',
-          findPolicy: 'native',
           mounted: false,
           reason: 'viewport-virtualization',
           renderPlaceholder: () => null,
@@ -1113,14 +1075,10 @@ const getProjectedStyle = ({
   box,
   debugFrames,
   flowElement,
-  usesVirtualizedLayout,
-  virtualOffsetTop,
 }: {
-  box: PlitePageRect;
+  box: PageRect;
   debugFrames: boolean;
   flowElement: boolean;
-  usesVirtualizedLayout: boolean;
-  virtualOffsetTop: number;
 }): CSSProperties => ({
   boxSizing: 'border-box',
   caretColor: '#111827',
@@ -1132,7 +1090,7 @@ const getProjectedStyle = ({
   overflow: 'visible',
   pointerEvents: flowElement ? 'auto' : 'none',
   position: 'absolute',
-  top: usesVirtualizedLayout ? box.top - virtualOffsetTop : box.top,
+  top: box.top,
   width: Math.max(1, box.width),
 });
 
@@ -1152,8 +1110,7 @@ const PaginationElement = (
     usesVirtualizedLayout,
   } = props;
   const path = useElementPath();
-  const virtualOffsetTop = useDOMStrategyVirtualOffset();
-  const fragments = usePliteLayoutFragmentsAtPath(path);
+  const fragments = useLayoutFragmentsAtPath(path);
   const tableLayout = useContext(PaginationTableLayoutContext);
   const elementType = element.type;
   const box = getFragmentBounds(fragments);
@@ -1238,13 +1195,11 @@ const PaginationElement = (
 
   const flowElement =
     isFlowProjectedType(elementType) ||
-    Boolean(path && flowBlockPaths.has(getPlitePageLayoutPathKey(path)));
+    Boolean(path && flowBlockPaths.has(getPageLayoutPathKey(path)));
   const projectedStyle = getProjectedStyle({
     box,
     debugFrames,
     flowElement,
-    usesVirtualizedLayout,
-    virtualOffsetTop,
   });
 
   if (elementType === 'table') {
@@ -1258,7 +1213,6 @@ const PaginationElement = (
         ? slots.contentBoundary({
             boundaryId: 'pagination-table-hidden:all',
             copyPolicy: 'model',
-            findPolicy: 'native',
             mounted: false,
             reason: 'viewport-virtualization',
             renderPlaceholder: () => null,
@@ -1407,21 +1361,18 @@ type PagedEditableProps = ComponentProps<typeof PagedEditable>;
 
 const PaginationPageView = ({
   debugFrames,
-  domStrategy,
   layout,
-  onDOMStrategyMetrics,
   onKeyDown,
   pageGeometry,
   pageLayoutMode,
   pageScale,
   renderElement,
   renderLeaf,
+  virtualize,
   viewportRef,
 }: {
   debugFrames: boolean;
-  domStrategy: PagedEditableProps['domStrategy'];
   layout: PagedEditableProps['layout'];
-  onDOMStrategyMetrics: PagedEditableProps['onDOMStrategyMetrics'];
   onKeyDown: PagedEditableProps['onKeyDown'];
   pageGeometry: {
     height: number;
@@ -1431,14 +1382,15 @@ const PaginationPageView = ({
   pageScale: number;
   renderElement: PagedEditableProps['renderElement'];
   renderLeaf: PagedEditableProps['renderLeaf'];
+  virtualize: boolean;
   viewportRef: RefObject<HTMLDivElement | null>;
 }) => (
   <div
-    className="plite-pagination-viewport"
+    className="editor-pagination-viewport"
     data-testid="pagination-viewport"
     ref={viewportRef}
   >
-    <div className="plite-pagination-viewport-inner">
+    <div className="editor-pagination-viewport-inner">
       <div
         style={{
           height: pageGeometry.height * pageScale,
@@ -1446,17 +1398,15 @@ const PaginationPageView = ({
         }}
       >
         <div
-          className="plite-pagination-scaled-surface"
+          className="editor-pagination-scaled-surface"
           style={{
             transform: `scale(${pageScale})`,
             width: pageGeometry.width,
           }}
         >
           <PagedEditable
-            className="plite-pagination-editor"
-            domStrategy={domStrategy}
+            className="editor-pagination-editor"
             layout={layout}
-            onDOMStrategyMetrics={onDOMStrategyMetrics}
             onKeyDown={onKeyDown}
             pageView={{ gap: PAGE_GAP, mode: pageLayoutMode }}
             renderElement={renderElement}
@@ -1465,8 +1415,8 @@ const PaginationPageView = ({
               <div
                 {...attributes}
                 className={cn(
-                  'plite-pagination-page',
-                  debugFrames && 'plite-pagination-page-debug'
+                  'editor-pagination-page',
+                  debugFrames && 'editor-pagination-page-debug'
                 )}
                 style={{
                   height: page.height,
@@ -1477,7 +1427,7 @@ const PaginationPageView = ({
                 {debugFrames ? (
                   <>
                     <div
-                      className="plite-pagination-content-frame"
+                      className="editor-pagination-content-frame"
                       data-testid="pagination-content-frame"
                       style={{
                         height: page.content.height,
@@ -1486,7 +1436,7 @@ const PaginationPageView = ({
                         width: page.content.width,
                       }}
                     />
-                    <div className="plite-pagination-page-label">
+                    <div className="editor-pagination-page-label">
                       page {page.index} | {page.width}x{page.height}px
                     </div>
                   </>
@@ -1494,6 +1444,7 @@ const PaginationPageView = ({
               </div>
             )}
             spellCheck
+            virtualize={virtualize}
           />
         </div>
       </div>
@@ -1549,29 +1500,26 @@ const PaginationSurface = ({
 }) => {
   const editor = useEditorContext();
   const setSettings = useSetStateField(pageSettings);
-  const [effectiveDOMStrategy, setEffectiveDOMStrategy] =
-    useState<EditableDOMStrategyEffectiveType | null>(null);
   const [viewportRef, viewportSize] = useElementSize<HTMLDivElement>();
   const tableRowsEffectMountedRef = useRef(false);
   const stressPagesEffectMountedRef = useRef(false);
   const {
     debugFrames,
-    domStrategyMode,
+    renderingMode,
     margins,
     mediaHeight,
     mediaSplit,
     pageLayoutMode,
-    pageOverscan,
     preset,
     tableRowHeight,
     tableRows,
     virtualizedStressPages,
   } = controls;
   const effectiveStressPageCount =
-    domStrategyMode === 'virtualized' ? virtualizedStressPages : 0;
+    renderingMode === 'virtualized' ? virtualizedStressPages : 0;
   const activeFlowBlockKey = useEditorState(
     (state) => {
-      if (domStrategyMode !== 'virtualized') {
+      if (renderingMode !== 'virtualized') {
         return null;
       }
 
@@ -1584,12 +1532,12 @@ const PaginationSurface = ({
       return indexes.length === 0
         ? null
         : [...new Set(indexes)]
-            .map((index) => getPlitePageLayoutPathKey([index]))
+            .map((index) => getPageLayoutPathKey([index]))
             .join('|');
     },
     {
       shouldUpdate: (change) => {
-        if (domStrategyMode !== 'virtualized') {
+        if (renderingMode !== 'virtualized') {
           return false;
         }
         if (!change) {
@@ -1634,26 +1582,26 @@ const PaginationSurface = ({
           font: getPaginationTextFont(element.type as CustomElementType, leaf),
           letterSpacing: 0,
         }),
-      }) satisfies PlitePageLayoutTypography,
+      }) satisfies PageLayoutTypography,
     []
   );
   const layoutEngine = useMemo(
     () =>
       pretextPageLayoutEngine({
         estimateBlock:
-          domStrategyMode === 'virtualized'
+          renderingMode === 'virtualized'
             ? ({ block }) =>
                 block.element.paginationFixture === richMarkdownStressFixture
             : undefined,
       }),
-    [domStrategyMode]
+    [renderingMode]
   );
-  const textChangeRefresh = useMemo<PlitePageLayoutTextChangeRefresh>(
+  const textChangeRefresh = useMemo<PageLayoutTextChangeRefresh>(
     () =>
-      domStrategyMode === 'virtualized'
+      renderingMode === 'virtualized'
         ? { delayMs: 120, maxDelayMs: 360, mode: 'deferred' }
         : 'deferred',
-    [domStrategyMode]
+    [renderingMode]
   );
   const applyTableRows = useCallback(
     (nextTableRows: number) => {
@@ -1769,9 +1717,9 @@ const PaginationSurface = ({
     applyStressPages(effectiveStressPageCount);
   }, [applyStressPages, effectiveStressPageCount]);
 
-  const nodeLayout = useCallback<PliteNodeLayoutProvider>(
+  const nodeLayout = useCallback<NodeLayoutProvider>(
     ({ defaults, element, pageSettings: innerPageSettings, path }) => {
-      const page = createPlitePage(innerPageSettings);
+      const page = createPage(innerPageSettings);
 
       if (element.type === 'table') {
         const rowCount = Math.min(tableRows, element.children.length);
@@ -1827,18 +1775,18 @@ const PaginationSurface = ({
     },
     [mediaHeight, mediaSplit, tableRowHeight, tableRows]
   );
-  const layout = usePliteLayout(editor, {
+  const layout = useLayout(editor, {
     engine: layoutEngine,
     nodeLayout,
     page: pageSettings,
     textChangeRefresh,
     typography,
   });
-  const snapshot = usePliteLayoutSnapshot(layout);
+  const snapshot = useLayoutSnapshot(layout);
   const metrics = layout.getMetrics();
   const pageGeometry = useMemo(
     () =>
-      getPlitePageLayoutGeometry(snapshot.pages, {
+      getPageLayoutGeometry(snapshot.pages, {
         pageGap: PAGE_GAP,
         pageLayoutMode,
       }),
@@ -1873,7 +1821,7 @@ const PaginationSurface = ({
       layout,
       pageGeometry,
       snapshot,
-      values: new Map<string, PliteDecoration[]>(),
+      values: new Map<string, Decoration[]>(),
     }),
     [layout, pageGeometry, snapshot]
   );
@@ -1885,31 +1833,7 @@ const PaginationSurface = ({
     pageGeometry.width > 0 && availableWidth > 0
       ? Math.min(1, availableWidth / pageGeometry.width)
       : 1;
-  const domStrategy = useMemo<EditableProps['domStrategy']>(
-    () =>
-      domStrategyMode === 'virtualized'
-        ? {
-            estimatedBlockSize: 48,
-            overscan: pageOverscan,
-            threshold: 1,
-            type: 'virtualized',
-          }
-        : domStrategyMode,
-    [domStrategyMode, pageOverscan]
-  );
-  const usesVirtualizedLayout = effectiveDOMStrategy === 'virtualized';
-  const handleDOMStrategyMetrics = useCallback(
-    ({
-      effectiveStrategy,
-    }: {
-      effectiveStrategy: EditableDOMStrategyEffectiveType;
-    }) => {
-      setEffectiveDOMStrategy((current) =>
-        current === effectiveStrategy ? current : effectiveStrategy
-      );
-    },
-    []
-  );
+  const usesVirtualizedLayout = renderingMode === 'virtualized';
   const pageStride = (pageGeometry.height + PAGE_GAP) * pageScale;
   const visiblePageRows =
     pageStride > 0
@@ -1925,10 +1849,10 @@ const PaginationSurface = ({
         return [];
       }
 
-      const pathKey = getPlitePageLayoutPathKey(path);
+      const pathKey = getPageLayoutPathKey(path);
       const blockPath = path.slice(0, -1);
       const activeFlow = activeFlowBlockPaths.has(
-        getPlitePageLayoutPathKey(blockPath)
+        getPageLayoutPathKey(blockPath)
       );
       const cacheKey = activeFlow
         ? `${pathKey}:native`
@@ -1946,7 +1870,7 @@ const PaginationSurface = ({
         return [];
       }
 
-      const pathProjection = getPlitePageLayoutProjection(
+      const pathProjection = getPageLayoutProjection(
         { ...snapshot, fragments: blockFragments },
         {
           geometry: pageGeometry,
@@ -1954,37 +1878,34 @@ const PaginationSurface = ({
         }
       );
       const decorations =
-        getPlitePageLayoutDecorations<PaginationLineDecoration>(
-          pathProjection,
-          {
-            data: ({ block, line, rects, run }) => {
-              const nativeFlow =
-                block &&
-                activeFlowBlockPaths.has(getPlitePageLayoutPathKey(block.path));
-              const blockTextLength =
-                snapshot.blocks[line.blockIndex]?.text.length ?? line.end;
+        getPageLayoutDecorations<PaginationLineDecoration>(pathProjection, {
+          data: ({ block, line, rects, run }) => {
+            const nativeFlow =
+              block &&
+              activeFlowBlockPaths.has(getPageLayoutPathKey(block.path));
+            const blockTextLength =
+              snapshot.blocks[line.blockIndex]?.text.length ?? line.end;
 
-              return {
-                ...rects,
-                breakAfter:
-                  nativeFlow &&
-                  run.range.end >= line.end &&
-                  line.end < blockTextLength,
-                nativeFlow,
-              };
-            },
-            filter: ({ line }) =>
-              !isFlowProjectedType(
-                snapshot.blocks[line.blockIndex]?.element.type
-              ),
-            rects: 'block',
-          }
-        )
+            return {
+              ...rects,
+              breakAfter:
+                nativeFlow &&
+                run.range.end >= line.end &&
+                line.end < blockTextLength,
+              nativeFlow,
+            };
+          },
+          filter: ({ line }) =>
+            !isFlowProjectedType(
+              snapshot.blocks[line.blockIndex]?.element.type
+            ),
+          rects: 'block',
+        })
           .get(pathKey)
           ?.flatMap(({ data: line, key, range }) => {
             if (!line) return [];
 
-            const decoration: PliteDecoration = {
+            const decoration: Decoration = {
               attributes: line.nativeFlow
                 ? {
                     'data-pagination-line': true,
@@ -2053,36 +1974,35 @@ const PaginationSurface = ({
   );
 
   return (
-    <div className="plite-pagination-shell">
+    <div className="editor-pagination-shell">
       <PaginationControlsToolbar
         controls={controls}
         setControls={setControls}
       />
-      <div className="plite-pagination-title-row">
-        <div className="plite-pagination-title">Untitled document</div>
+      <div className="editor-pagination-title-row">
+        <div className="editor-pagination-title">Untitled document</div>
         <div
-          className="plite-pagination-meta"
+          className="editor-pagination-meta"
           data-layout-compose-count={metrics.composeCount}
           data-layout-compose-ms={metrics.lastDurationMs.toFixed(1)}
         >
           pages {snapshot.pages.length} | rows {tableRows} x {tableRowHeight}px
           | table pages {tablePageCount} | stress pages{' '}
-          {effectiveStressPageCount} | page overscan {pageOverscan} | visible
-          pages {visiblePageCount} | media {mediaHeight}px | blocks{' '}
-          {metrics.blockCount} | compose {metrics.lastDurationMs.toFixed(1)}ms
+          {effectiveStressPageCount} | visible pages {visiblePageCount} | media{' '}
+          {mediaHeight}px | blocks {metrics.blockCount} | compose{' '}
+          {metrics.lastDurationMs.toFixed(1)}ms
         </div>
       </div>
       <PaginationPageView
         debugFrames={debugFrames}
-        domStrategy={domStrategy}
         layout={layout}
-        onDOMStrategyMetrics={handleDOMStrategyMetrics}
         onKeyDown={onKeyDown}
         pageGeometry={pageGeometry}
         pageLayoutMode={pageLayoutMode}
         pageScale={pageScale}
         renderElement={renderElement}
         renderLeaf={renderLeaf}
+        virtualize={usesVirtualizedLayout}
         viewportRef={viewportRef}
       />
     </div>
@@ -2097,11 +2017,11 @@ const PaginationEditor = ({
   setControls: SetPaginationControls;
 }) => {
   const initialStressPages =
-    controls.domStrategyMode === 'virtualized'
+    controls.renderingMode === 'virtualized'
       ? controls.virtualizedStressPages
       : 0;
   const editor = useEditor({
-    extensions: [history(), pageSettingsExtension],
+    plugins: [history(), pageSettingsPlugin],
     initialValue: {
       children: createInitialValue({
         stressPages: initialStressPages,
@@ -2121,13 +2041,13 @@ const PaginationEditor = ({
   );
 
   return (
-    <Plite decorations={[decorationRuntime.source]} editor={editor}>
+    <EditorRoot decorations={[decorationRuntime.source]} editor={editor}>
       <PaginationSurface
         controls={controls}
         decorationRuntime={decorationRuntime}
         setControls={setControls}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
@@ -2137,7 +2057,7 @@ const PaginationExample = () => {
     urlKeys: paginationControlUrlKeys,
   });
   const editorKey =
-    controls.domStrategyMode === 'virtualized' ? 'virtualized' : 'standard';
+    controls.renderingMode === 'virtualized' ? 'virtualized' : 'standard';
 
   return (
     <PaginationEditor

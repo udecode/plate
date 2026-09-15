@@ -14,7 +14,7 @@ import type {
   Editor,
   StaticRenderLeafProps as RenderLeafProps,
 } from '../lib';
-import { PliteLeaf } from './components';
+import { EditorLeaf } from './components';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps.internal';
 
 export type PliteRenderLeaf = (
@@ -37,7 +37,7 @@ export const pluginRenderLeafStatic = (
           : plugin.component);
       const Component =
         component && typeof component !== 'string' ? component : undefined;
-      const Leaf = Component ?? PliteLeaf;
+      const Leaf = Component ?? EditorLeaf;
 
       const ctxProps = getRenderNodeStaticProps({
         editor,
@@ -135,6 +135,6 @@ export const pipeRenderLeafStatic = (
       props: { attributes, ...props, children } as any,
     });
 
-    return <PliteLeaf {...ctxProps} />;
+    return <EditorLeaf {...ctxProps} />;
   };
 };

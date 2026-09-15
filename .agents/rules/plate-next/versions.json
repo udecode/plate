@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 182,
+  "latestVersion": 198,
   "versions": [
     {
       "version": 0,
@@ -2117,6 +2117,192 @@
         "Choose the strongest materially justified target before planning adoption; existing Plite primitives must earn reuse, while compatibility and implementation effort affect sequencing during beta.",
         "Reuse valid accepted comparisons, reopen material contradictions, preserve scoped authority and actual proof, and carry adopted changes through consumers, types, docs, examples and rationale.",
         "Keep shared method sources in Dotai and beta policy in Plate; verify named installations and generated routes without advancing package attestations."
+      ]
+    },
+    {
+      "version": 183,
+      "date": "2026-09-11",
+      "doctrineFingerprint": "sha256:9473b81a4070252536a7acd3dc320d948451efc4ec864addbc65902604d9c4d5",
+      "summary": "Keep semantic command dispatch and document field ownership without unused default-evaluation or derived-state contracts.",
+      "migrationChecks": [
+        "Expose command descriptor identity and installed dispatch; retain definition-time builders and transaction-spec authoring without a public default-only evaluation path lacking a current consumer.",
+        "Retain fields, effects and typed extension contributions; derive ordinary values through existing read owners and remove unused facet registration, reads, types, cache and revision machinery.",
+        "Preserve field equality/history, atomic candidate publication and rollback, view ownership, inferred command capabilities and unpublished synchronous author guards while migrating tests and public teaching.",
+        "Regenerate affected package barrels, API documentation and skill mirrors; rerun the frozen scale contract on production source plus package, generic, browser and packed-export proof without advancing unrelated package attestations."
+      ]
+    },
+    {
+      "version": 184,
+      "date": "2026-09-11",
+      "doctrineFingerprint": "sha256:53371d2ca7c87905ebaa373f4dea371e6f9df43c18f7df48b26ea6cbfd06e1b2",
+      "summary": "DOM omission is an explicit rendering-component contract with truthful dependency, lifetime and native-behavior boundaries.",
+      "migrationChecks": [
+        "Keep ordinary Editable and PlateContent on complete DOM rendering; remove automatic, threshold, strategy-enum and public diagnostics controls for DOM omission.",
+        "Expose generic top-level virtualization through dedicated Plite and Plate React subpaths whose packed runtime and declarations own their optional engine; keep component choice as the mounted-view lifetime boundary.",
+        "Keep pagination virtualization with the pagination canvas owner, complete by default and without generic virtual rows, public layout arrays or offset compensation.",
+        "Prove deterministic initial rendering, retained selection and requested targets, mixed model/exclude clipboard output, current docs and examples, package reachability, production benchmarks and the claimed browser matrix."
+      ]
+    },
+    {
+      "version": 185,
+      "date": "2026-09-12",
+      "doctrineFingerprint": "sha256:b0b3b6e8552656c7dd1a1d55e77e09b4b062546b8bec337551072c7389b6b41d",
+      "summary": "Native authored state owns proposed edits, review decisions and retained author history across Plite and Plate.",
+      "migrationChecks": [
+        "Keep accepted roots as the canonical document and persist one versioned authored graph for pending or retained operations, identities, dependencies, decisions and stable positions.",
+        "Keep accepted, proposed and markup projections plus proposal input intent scoped to exact editor views; never serialize a projection as another document or restore a global suggesting mode.",
+        "Use one native authored decision authority for human and AI proposals; Plate owns copied product presentation while Comments keeps its independent thread lifecycle.",
+        "Keep local undo separate from retained author history, migrate saved v53 suggestion metadata through the approved v54 codec, and prove package, format, registry, installed-app, collaboration, performance and browser-matrix adoption."
+      ]
+    },
+    {
+      "version": 186,
+      "date": "2026-09-12",
+      "doctrineFingerprint": "sha256:29a71bf12dbaad2a3993cb37a94a7dca3bca3d059227a0b4897764e75112dce8",
+      "summary": "One nominal descriptor portal owns Plate and Plite capability lookup while active transactions keep direct named groups.",
+      "migrationChecks": [
+        "Use editor.extension(Descriptor) as the sole public capability lookup; reject strings, weak name objects, divergent siblings and foreign same-name descriptors.",
+        "Resolve exact configured descriptors and compatible source ancestors, return installed false for absent descriptors, and throw on absent capability access.",
+        "Compose active plugin updates through tx[Plugin.name] or an inferred direct tx.pluginName group; remove tx.plugin and any transaction descriptor portal.",
+        "Replace useEditorPlugin with useEditor().extension(Plugin) while retaining store subscription hooks for reactive selection.",
+        "Keep getCorePlugins and its construction-only types unreachable from public Plate entrypoints, then prove source, declaration, registry, documentation and runtime adoption."
+      ]
+    },
+    {
+      "version": 187,
+      "date": "2026-09-12",
+      "doctrineFingerprint": "sha256:a7f844d02485bee1cad1feb5f2a1810e1ec82a66ce2c84da6b930b1f70d2ef2b",
+      "summary": "Neutral editor exports and DOM vocabulary; one public Plate documentation surface.",
+      "migrationChecks": [
+        "Use neutral public identifiers, EditorRoot for the mounted lifecycle, EditorContent for the package primitive, Editor for copied presentation, and EditorProvider for passive context. Remove branded public aliases and adopt exact source identities across root and React entrypoints.",
+        "Write data-editor DOM attributes and neutral clipboard/authored markers. Preserve supported saved formats through explicit codec readers, and prove clipboard/HTML/DOCX round trips and exact mutation ownership.",
+        "Teach Plate alone in public docs, navigation, search, LLM output and installable documentation, except the Performance comparison and From Plite to Plate guide and its translation. Preserve contributor runtime references outside the public collection.",
+        "Regenerate and verify package barrels, API reference, registry output and affected doctrine mirrors; prove source types, packed exports, and actual editor interactions."
+      ]
+    },
+    {
+      "version": 188,
+      "date": "2026-09-12",
+      "doctrineFingerprint": "sha256:40fb0001c13a0d7622c64d532d11b3a5932efe91faea3c206dba950773cf0793",
+      "summary": "Direct semantic geometry and one explicit React mount grammar replace generic Widget and Runtime handles.",
+      "migrationChecks": [
+        "Remove generic Widget targets, stores and reader hooks; read annotations directly and measure selection or keyed cursor geometry against the exact mounted Editable ref.",
+        "Require editor on public EditorRoot while retaining root, authored and read-only inputs; give each mount an independent command lifetime and keep same-document provider sharing private.",
+        "Preserve exact-view invalidation, DOM layout notifications, scheduler retirement, stale-command rejection, Plate complete-document callbacks and inferred capabilities through focused runtime and browser proof.",
+        "Adopt Plate facades, copied floating UI, examples, current docs and generated outputs without compatibility aliases or a replacement generic target/runtime manager."
+      ]
+    },
+    {
+      "version": 189,
+      "date": "2026-09-13",
+      "doctrineFingerprint": "sha256:20d4b495325fc508aa6fbe4f89840523cb7d1bdc31e823ba310301874afb64c6",
+      "summary": "One Plite-owned nominal plugin descriptor family spans raw, Base, configured and React plugins, with installed state kept private.",
+      "migrationChecks": [
+        "Use definePlugin, plugins and editor.plugin across Plite and Plate; remove extension-named public aliases and teaching.",
+        "Keep Plate product compilation while publishing its compiled definition through plitejs/internal against the same nominal descriptor identity.",
+        "Separate authored descriptors from private installed records; bind terminal descriptors and eligible ancestors directly, and validate dependencies and conflicts by nominal reference.",
+        "Delete synthetic replacement descriptors, name-remapped topology, global alias registries and raw-versus-Plate portal dispatch.",
+        "Prove raw, configured headless and React identity, rollback, retained portals, exact mounted views, SSR, package exports, caller adoption and frozen runtime/type budgets."
+      ]
+    },
+    {
+      "version": 190,
+      "date": "2026-09-13",
+      "doctrineFingerprint": "sha256:3ffc710418f59c2cfab48813ce7f5df008d8acf5eadd42c327cea54cf6fb2803",
+      "summary": "One DOM insert-data command and complete clipboard slices own paste, drop, projected copy, static copy and deferred upload policy.",
+      "migrationChecks": [
+        "Intercept domCommands.insertData through plugin commands, return pure transaction specs through state.transaction and delegate through next to the canonical internal slice, host-codec and plain-text path.",
+        "Preserve every referenced content root through export, projected copy, table copy and static copy; keep source assembly separate from destination fitting and validate each graph before aggregation.",
+        "Keep fitted placements and prepared keys private to transaction specs, preserve retained root provenance through history and rebase, and run upload effects only after the accepted placeholder commit.",
+        "Remove clipboard contribution interception, static ViewPlugin ownership and HTML reconstruction; migrate package callers, docs, examples, barrels and registry output, then prove source, runtime and browser behavior."
+      ]
+    },
+    {
+      "version": 191,
+      "date": "2026-09-14",
+      "doctrineFingerprint": "sha256:22e81b86e7a81e5becdad9ac1c3a27421c4904ccf20ef5690762a6eb9d0c8ece",
+      "summary": "Descriptor-scoped transaction access serves reusable code without a closed editor graph.",
+      "migrationChecks": [
+        "Use direct generated transaction groups when the transaction type owns the complete graph; use tx.plugin(Plugin) for reusable package or registry callbacks whose graph is open.",
+        "Reject runtime name strings and editor.plugin(Plugin).update calls inside an active transaction; preserve exact descriptor identity and one atomic transaction.",
+        "Delete handwritten transaction unions, generated-contract imports from copied registry source and method-level generics that manufacture callback capabilities."
+      ]
+    },
+    {
+      "version": 192,
+      "date": "2026-09-14",
+      "doctrineFingerprint": "sha256:1b7292a758bc6dce7eb3f4fabf621e8e28973df6296a9166c862e26f79b9d413",
+      "summary": "Optional features own content-root presentation through plugin attributes; generic Editor skins remain independent.",
+      "migrationChecks": [
+        "Keep optional feature imports, CSS selectors, classes and data-attribute knowledge out of generic live/static Editor components, including import-free descendant selectors.",
+        "Configure feature-owned content presentation through render.contentAttributes on the existing plugin; core composes safe static attributes without a style-only wrapper, assembly plumbing or additional subscription.",
+        "Prove live/static class and style composition, explicit caller precedence, disabled and null configuration, read-only policy, and protected core attributes; retain feature-owned decoration semantics and integration."
+      ]
+    },
+    {
+      "version": 193,
+      "date": "2026-09-14",
+      "doctrineFingerprint": "sha256:b03fae9c3c013e55c054c1805c05eb205868ad17eee2b658e7b7ce7e2d7c061d",
+      "summary": "Active transaction plugin selection accepts descriptors for nominal exactness and names for package-decoupled capability access.",
+      "migrationChecks": [
+        "Replace computed transaction indexing by plugin name with tx.plugin(pluginName), while preserving generated direct transaction groups.",
+        "Use tx.plugin(Plugin) when the caller owns the descriptor and tx.plugin(pluginName) when importing the descriptor would create the wrong package dependency; keep widened-name results explicitly dynamic and runtime-checked.",
+        "Prove both selector inputs reuse the same active transaction group, reject missing names, preserve an installed group named plugin, and retain exact descriptor and known-literal inference."
+      ]
+    },
+    {
+      "version": 194,
+      "date": "2026-09-14",
+      "doctrineFingerprint": "sha256:7c6f000dd641d6439934bea9a28140d38953eec15f0c0dc325385e2cbd83ff83",
+      "summary": "External collaboration resources remain host-owned while native admission and capability-dependent APIs stay exact.",
+      "migrationChecks": [
+        "Supply the exact document and initial-load readiness at collaboration descriptor construction, keep seed authority explicit, and leave provider connection, replacement, errors and destruction with the host application.",
+        "Latch successful admission per document generation, reject document and shared-effect publication before admission, retain failed imports for explicit retry, and keep admitted offline editors active without transport-driven reseeding.",
+        "Remove provider facades, duplicate Plate configuration, live-state read groups and transaction updates; infer presence and compaction APIs only when configured and preserve exact metadata through copied factories, builder stages, portals, hooks and emitted declarations."
+      ]
+    },
+    {
+      "version": 195,
+      "date": "2026-09-14",
+      "doctrineFingerprint": "sha256:324620ffdae463e8f2e237a43465dec88fabfb5f1b9d531599ff3aeb7a27e5ba",
+      "summary": "Parameterized Plate integrations construct complete descriptors through typed non-installable factory objects.",
+      "migrationChecks": [
+        "Replace handwritten Plate and copied forwarding overloads with one concrete factory whose .create(options) preserves the native input-to-exact-descriptor relation.",
+        "Use .require(key).map(stage) only for non-nullish root-input refinement before copied composition, and reuse the complete existing Plate descriptor .extend(stage) result and runtime semantics.",
+        "Reject factory installation, factory .extend or .configure, missing required keys, forged or configured outputs, leaked type-lambda machinery, and widened optional capabilities; prove every create returns a fresh complete descriptor."
+      ]
+    },
+    {
+      "version": 196,
+      "date": "2026-09-14",
+      "doctrineFingerprint": "sha256:9a708654d39870f138df8266b15689e5aedcea4193ee29f52ad697b6dfbf5f1f",
+      "summary": "Suggestion initialization loads canonical documents and configures authored policy on each mounted EditorRoot.",
+      "migrationChecks": [
+        "Load existing suggestions and their author/change identities through the complete initialValue; initialize independent comment records through initialState.initialThreads instead of replaying edits, switching writers, or attaching fetched records through mount effects.",
+        "Initialize mounted authored intent and projection through EditorRoot authored, preserving the native capability requirement and independent view ownership rather than adding a plugin-global mode store.",
+        "Prove equivalent authored prop values preserve subsequent view-local mode commands across parent rerenders, while changed intent or projection reconfigures that exact view without remounting."
+      ]
+    },
+    {
+      "version": 197,
+      "date": "2026-09-15",
+      "doctrineFingerprint": "sha256:8bc9a66b010323c629b284f5acb8fcab259367a564fbb58e8c68234f19c70643",
+      "summary": "Whole-document React controls use the complete model editor while mounted commands remain view-scoped.",
+      "migrationChecks": [
+        "Use useModelEditor() for canonical document load, replacement, persistence and snapshot conversion from Plate React controls.",
+        "Keep commands, DOM access and selection policy on the provider-selected mounted view returned by useEditor().",
+        "Prove whole-document operations do not inherit authored projection, named-root scope or retirement from a mounted command view."
+      ]
+    },
+    {
+      "version": 198,
+      "date": "2026-09-15",
+      "doctrineFingerprint": "sha256:6df1476c2b2ed9ce8f63fe8c53b6f1ca95d3aba0164ff180e328d01fc0454e9e",
+      "summary": "Source-aware file conversion uses explicit disposable format artifacts with proof-bound exact reuse and safe edited fallbacks.",
+      "migrationChecks": [
+        "Keep retained source bytes and correspondence outside editor documents, plugin state and generic persistence; make retention opt-in and conditionally typed.",
+        "Acquire an immutable source lease before asynchronous conversion, expose idempotent disposal, and pass the artifact explicitly to its consuming operation.",
+        "Require exact schema and semantic equality for byte reuse; regenerate owned output after edits, preserve only safe independently reachable source units, and diagnose every deliberate fallback."
       ]
     }
   ],

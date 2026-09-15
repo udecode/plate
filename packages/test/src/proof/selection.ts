@@ -1,13 +1,13 @@
-/** Serializable Plite path used by browser proof snapshots. */
+/** Serializable editor path used by browser proof snapshots. */
 export type Path = readonly number[];
 
-/** Serializable Plite point used by browser proof snapshots. */
+/** Serializable editor point used by browser proof snapshots. */
 export type Point = {
   path: Path;
   offset: number;
 };
 
-/** Serializable Plite range used by browser proof snapshots. */
+/** Serializable editor range used by browser proof snapshots. */
 export type Range = {
   anchor: Point;
   focus: Point;

@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   createEditorView,
-  defineExtension,
+  definePlugin,
   type EditorCommitHandler,
 } from 'plitejs';
 
@@ -146,8 +146,8 @@ describe('editor.update afterCommit', () => {
   it('captures effect snapshots before onCommit listeners can advance the editor', () => {
     const editor = seedEditor(
       createEditor({
-        extensions: [
-          defineExtension('nested-on-commit', {
+        plugins: [
+          definePlugin('nested-on-commit', {
             on: {
               commit({ commit, editor: innerEditor2 }) {
                 if (
@@ -180,12 +180,12 @@ describe('editor.update afterCommit', () => {
     assert.deepEqual(versions, ['commit:2:snapshot:2:live:3']);
   });
 
-  it('keeps an extension onCommit snapshot tied to its commit during nested updates', () => {
+  it('keeps an plugin onCommit snapshot tied to its commit during nested updates', () => {
     const versions: string[] = [];
     const editor = seedEditor(
       createEditor({
-        extensions: [
-          defineExtension('nested-on-commit-snapshot', {
+        plugins: [
+          definePlugin('nested-on-commit-snapshot', {
             on: {
               commit({ commit, editor: innerEditor3, snapshot }) {
                 if (
@@ -214,7 +214,7 @@ describe('editor.update afterCommit', () => {
     assert.deepEqual(versions, ['commit:2:snapshot:2:live:3']);
   });
 
-  it('keeps a named-root extension snapshot scoped and stable during nested updates', () => {
+  it('keeps a named-root plugin snapshot scoped and stable during nested updates', () => {
     const runtime = createEditor({
       initialValue: {
         children: [paragraph('body')],
@@ -225,7 +225,7 @@ describe('editor.update afterCommit', () => {
     const events: string[] = [];
 
     headerEditor.install(
-      defineExtension('nested-named-root-on-commit-snapshot', {
+      definePlugin('nested-named-root-on-commit-snapshot', {
         on: {
           commit({ commit, editor, snapshot }) {
             const [block] = snapshot.children as ReadonlyArray<{
@@ -260,12 +260,12 @@ describe('editor.update afterCommit', () => {
     assert.deepEqual(events, ['commit:2:snapshot:2:header!:live:3:header!?']);
   });
 
-  it('runs update-local effects after extension onCommit listeners', () => {
+  it('runs update-local effects after plugin onCommit listeners', () => {
     const events: string[] = [];
     const editor = seedEditor(
       createEditor({
-        extensions: [
-          defineExtension('commit-order', {
+        plugins: [
+          definePlugin('commit-order', {
             on: {
               commit() {
                 events.push('onCommit');
@@ -290,8 +290,8 @@ describe('editor.update afterCommit', () => {
 
   it('rolls back callback failures before publication', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('throwing-transaction-change', {
+      plugins: [
+        definePlugin('throwing-transaction-change', {
           on: {
             transactionChange() {
               throw new Error('transaction-change failed');
@@ -332,26 +332,26 @@ describe('editor.update afterCommit', () => {
     };
 
     {
-      const errors: Array<{ extensionName: string; phase: string }> = [];
+      const errors: Array<{ pluginName: string; phase: string }> = [];
       const events: string[] = [];
       const editor = createEditor({
-        extensions: [
-          defineExtension('throwing-extension-commit', {
+        plugins: [
+          definePlugin('throwing-plugin-commit', {
             on: {
               commit() {
                 events.push('throwing');
-                throw new Error('extension commit failed');
+                throw new Error('plugin commit failed');
               },
             },
           }),
-          defineExtension('later-extension-commit', {
+          definePlugin('later-plugin-commit', {
             on: { commit: () => events.push('later') },
           }),
         ] as const,
         initialValue: [paragraph('one')],
         lifecycleErrorSink(error) {
           errors.push({
-            extensionName: error.extensionName,
+            pluginName: error.pluginName,
             phase: error.phase,
           });
         },
@@ -374,7 +374,7 @@ describe('editor.update afterCommit', () => {
       assert.deepEqual(events, ['throwing', 'later']);
       assert.deepEqual(errors, [
         {
-          extensionName: 'throwing-extension-commit',
+          pluginName: 'throwing-plugin-commit',
           phase: 'commit-listener',
         },
       ]);
@@ -395,11 +395,11 @@ describe('editor.update afterCommit', () => {
     }
 
     {
-      const errors: Array<{ extensionName: string; phase: string }> = [];
+      const errors: Array<{ pluginName: string; phase: string }> = [];
       const events: string[] = [];
       const editor = createEditor({
-        extensions: [
-          defineExtension('throwing-node-change', {
+        plugins: [
+          definePlugin('throwing-node-change', {
             on: {
               nodeChange() {
                 events.push('throwing');
@@ -407,14 +407,14 @@ describe('editor.update afterCommit', () => {
               },
             },
           }),
-          defineExtension('later-node-change', {
+          definePlugin('later-node-change', {
             on: { nodeChange: () => events.push('later') },
           }),
         ] as const,
         initialValue: [paragraph('one')],
         lifecycleErrorSink(error) {
           errors.push({
-            extensionName: error.extensionName,
+            pluginName: error.pluginName,
             phase: error.phase,
           });
         },
@@ -437,7 +437,7 @@ describe('editor.update afterCommit', () => {
       assert.deepEqual(events, ['throwing', 'later']);
       assert.deepEqual(errors, [
         {
-          extensionName: 'throwing-node-change',
+          pluginName: 'throwing-node-change',
           phase: 'node-change-listener',
         },
       ]);
@@ -451,11 +451,11 @@ describe('editor.update afterCommit', () => {
     }
 
     {
-      const errors: Array<{ extensionName: string; phase: string }> = [];
+      const errors: Array<{ pluginName: string; phase: string }> = [];
       const events: string[] = [];
       const editor = createEditor({
-        extensions: [
-          defineExtension('throwing-text-change', {
+        plugins: [
+          definePlugin('throwing-text-change', {
             on: {
               textChange() {
                 events.push('throwing');
@@ -463,14 +463,14 @@ describe('editor.update afterCommit', () => {
               },
             },
           }),
-          defineExtension('later-text-change', {
+          definePlugin('later-text-change', {
             on: { textChange: () => events.push('later') },
           }),
         ] as const,
         initialValue: [paragraph('one')],
         lifecycleErrorSink(error) {
           errors.push({
-            extensionName: error.extensionName,
+            pluginName: error.pluginName,
             phase: error.phase,
           });
         },
@@ -493,7 +493,7 @@ describe('editor.update afterCommit', () => {
       assert.deepEqual(events, ['throwing', 'later']);
       assert.deepEqual(errors, [
         {
-          extensionName: 'throwing-text-change',
+          pluginName: 'throwing-text-change',
           phase: 'text-change-listener',
         },
       ]);
@@ -514,13 +514,13 @@ describe('editor.update afterCommit', () => {
     }
 
     {
-      const errors: Array<{ extensionName: string; phase: string }> = [];
+      const errors: Array<{ pluginName: string; phase: string }> = [];
       const events: string[] = [];
       const editor = createEditor({
         initialValue: [paragraph('one')],
         lifecycleErrorSink(error) {
           errors.push({
-            extensionName: error.extensionName,
+            pluginName: error.pluginName,
             phase: error.phase,
           });
         },
@@ -547,7 +547,7 @@ describe('editor.update afterCommit', () => {
       );
       assert.deepEqual(events, ['throwing', 'later']);
       assert.deepEqual(errors, [
-        { extensionName: '$editor', phase: 'snapshot-listener' },
+        { pluginName: '$editor', phase: 'snapshot-listener' },
       ]);
       assert.doesNotThrow(() => {
         editor.update((tx) => {
@@ -566,13 +566,13 @@ describe('editor.update afterCommit', () => {
     }
 
     {
-      const errors: Array<{ extensionName: string; phase: string }> = [];
+      const errors: Array<{ pluginName: string; phase: string }> = [];
       const events: string[] = [];
       const editor = createEditor({
         initialValue: [paragraph('one')],
         lifecycleErrorSink(error) {
           errors.push({
-            extensionName: error.extensionName,
+            pluginName: error.pluginName,
             phase: error.phase,
           });
         },
@@ -599,7 +599,7 @@ describe('editor.update afterCommit', () => {
       );
       assert.deepEqual(events, ['throwing', 'later']);
       assert.deepEqual(errors, [
-        { extensionName: '$editor', phase: 'source-listener' },
+        { pluginName: '$editor', phase: 'source-listener' },
       ]);
       assert.doesNotThrow(() => {
         editor.update((tx) => {
@@ -618,13 +618,13 @@ describe('editor.update afterCommit', () => {
     }
 
     {
-      const errors: Array<{ extensionName: string; phase: string }> = [];
+      const errors: Array<{ pluginName: string; phase: string }> = [];
       const events: string[] = [];
       const editor = createEditor({
         initialValue: [paragraph('one')],
         lifecycleErrorSink(error) {
           errors.push({
-            extensionName: error.extensionName,
+            pluginName: error.pluginName,
             phase: error.phase,
           });
         },
@@ -654,7 +654,7 @@ describe('editor.update afterCommit', () => {
       );
       assert.deepEqual(events, ['throwing', 'later']);
       assert.deepEqual(errors, [
-        { extensionName: '$editor', phase: 'after-commit' },
+        { pluginName: '$editor', phase: 'after-commit' },
       ]);
       insert('?', 4);
       assertCommitted(

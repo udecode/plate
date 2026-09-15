@@ -1,11 +1,11 @@
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   type EditorUpdatePolicyFor,
   txOnly,
 } from 'plitejs';
 
-const history = defineExtension('history', {
+const history = definePlugin('history', {
   update: ({ tx }) => ({
     direct() {
       tx.text.insert('direct');
@@ -19,7 +19,7 @@ const history = defineExtension('history', {
 const initialValue = [{ type: 'paragraph', children: [{ text: '' }] }];
 const rawEditor = createEditor({ initialValue });
 const editor = createEditor({
-  extensions: [history] as const,
+  plugins: [history] as const,
   initialValue,
 });
 const policy = {

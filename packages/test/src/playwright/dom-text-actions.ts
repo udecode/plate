@@ -1,6 +1,6 @@
 import { expect, type Locator } from '@playwright/test';
 
-import { READY_TIMEOUT_MS, PLITE_BROWSER_HANDLE_KEY } from './constants';
+import { READY_TIMEOUT_MS, BROWSER_HANDLE_KEY } from './constants';
 import { getBlockTexts, includesPasteText } from './dom-text';
 import {
   scrollTextPathIntoViewAndCheckMaterialized,
@@ -17,10 +17,10 @@ import { waitForSelectionSync } from './selection-snapshots';
 import type {
   SelectionPoint,
   SelectionSnapshot,
-  PliteBrowserDOMPathOptions,
-  PliteBrowserKernelTraceEntry,
-  PliteBrowserScenarioStep,
-  PliteBrowserTextPathRangeClickOptions,
+  BrowserDOMPathOptions,
+  BrowserKernelTraceEntry,
+  BrowserScenarioStep,
+  BrowserTextPathRangeClickOptions,
 } from './types';
 
 const selectionsEqual = (
@@ -48,7 +48,7 @@ export const didPasteApplyText = async ({
 }: {
   afterText: string;
   afterSelection: SelectionSnapshot | null;
-  afterTrace: readonly PliteBrowserKernelTraceEntry[];
+  afterTrace: readonly BrowserKernelTraceEntry[];
   beforeSelectedText: string;
   beforeSelection: SelectionSnapshot | null;
   beforeTraceLength: number;
@@ -87,7 +87,7 @@ export const didPasteApplyText = async ({
 
 export const mutateTextDOM = async (
   root: Locator,
-  step: Extract<PliteBrowserScenarioStep, { kind: 'mutateTextDOM' }>
+  step: Extract<BrowserScenarioStep, { kind: 'mutateTextDOM' }>
 ) => {
   await root.evaluate(
     (
@@ -101,11 +101,11 @@ export const mutateTextDOM = async (
       }
     ) => {
       const textElement = element.querySelector(
-        `[data-plite-node="text"][data-plite-path="${payload.path.join(',')}"]`
+        `[data-editor-node="text"][data-editor-path="${payload.path.join(',')}"]`
       );
       const textHost =
         textElement?.querySelector(
-          '[data-plite-string], [data-plite-zero-width]'
+          '[data-editor-string], [data-editor-zero-width]'
         ) ?? textElement;
 
       if (!textHost) {
@@ -194,18 +194,18 @@ export const clickTextOffset = async (
         path: target.path,
       }) as readonly [Node, number] | null | undefined;
       const textElements = Array.from(
-        element.querySelectorAll('[data-plite-node="text"]')
+        element.querySelectorAll('[data-editor-node="text"]')
       );
       const textElement =
         element.querySelector(
-          `[data-plite-node="text"][data-plite-path="${target.path.join(',')}"]`
+          `[data-editor-node="text"][data-editor-path="${target.path.join(',')}"]`
         ) ?? textElements[target.path.at(-1) ?? 0];
       const stringElement = textElement?.querySelector(
-        '[data-plite-string], [data-plite-zero-width]'
+        '[data-editor-string], [data-editor-zero-width]'
       );
       const strings = Array.from(
         textElement?.querySelectorAll(
-          '[data-plite-string], [data-plite-zero-width]'
+          '[data-editor-string], [data-editor-zero-width]'
         ) ?? []
       );
       const resolvedElement =
@@ -225,7 +225,7 @@ export const clickTextOffset = async (
         const textNode = Array.from(string.childNodes).find(
           (node) => node.nodeType === Node.TEXT_NODE
         );
-        const lengthAttribute = string.getAttribute('data-plite-length');
+        const lengthAttribute = string.getAttribute('data-editor-length');
         const length =
           lengthAttribute == null
             ? (textNode?.textContent?.length ?? string.textContent?.length ?? 0)
@@ -235,7 +235,7 @@ export const clickTextOffset = async (
 
         if (target.offset <= nextOffset) {
           targetNode = textNode ?? string;
-          targetOffset = string.hasAttribute('data-plite-zero-width')
+          targetOffset = string.hasAttribute('data-editor-zero-width')
             ? 1
             : Math.max(0, Math.min(target.offset - currentOffset, safeLength));
           break;
@@ -310,7 +310,7 @@ export const clickTextOffset = async (
         y: rect.top + rect.height / 2,
       };
     },
-    { key: PLITE_BROWSER_HANDLE_KEY, offset, path }
+    { key: BROWSER_HANDLE_KEY, offset, path }
   );
 
   const { clickCount } = options;
@@ -331,20 +331,20 @@ export const clickTextOffset = async (
 
           return {
             ariaLabel: node.getAttribute('aria-label'),
-            path: node.getAttribute('data-plite-path'),
+            path: node.getAttribute('data-editor-path'),
             role: node.getAttribute('role'),
-            pliteNode: node.getAttribute('data-plite-node'),
+            pliteNode: node.getAttribute('data-editor-node'),
             tagName: node.tagName,
             text: node.textContent?.slice(0, 80) ?? '',
           };
         };
-        const resolvePlitePoint = (node: Node | null, innerOffset: number) => {
+        const resolvePoint = (node: Node | null, innerOffset: number) => {
           const owner =
             node?.nodeType === 1
-              ? (node as Element).closest('[data-plite-node="text"]')
-              : node?.parentElement?.closest('[data-plite-node="text"]');
+              ? (node as Element).closest('[data-editor-node="text"]')
+              : node?.parentElement?.closest('[data-editor-node="text"]');
           const innerPath = owner
-            ?.getAttribute('data-plite-path')
+            ?.getAttribute('data-editor-path')
             ?.split(',')
             .map((part) => Number.parseInt(part, 10));
 
@@ -385,7 +385,7 @@ export const clickTextOffset = async (
         return {
           caret:
             caretNode && caretOffset != null
-              ? resolvePlitePoint(caretNode, caretOffset)
+              ? resolvePoint(caretNode, caretOffset)
               : null,
           hit: describeElement(hit),
           point: innerPoint,
@@ -431,7 +431,7 @@ export const clickTextOffset = async (
 export const collapseDOMAtTextPath = async (
   root: Locator,
   point: SelectionPoint,
-  options: PliteBrowserDOMPathOptions = {}
+  options: BrowserDOMPathOptions = {}
 ) => {
   const selection = { anchor: point, focus: point };
 
@@ -476,7 +476,7 @@ export const collapseDOMAtTextPath = async (
 
       handle?.importDOMSelection?.();
     },
-    { key: PLITE_BROWSER_HANDLE_KEY }
+    { key: BROWSER_HANDLE_KEY }
   );
   await waitForHandleSelection(root, selection);
   await waitForSelectionRange(root);
@@ -491,7 +491,7 @@ export const clickTextPathRange = async (
     startOffset,
     timeoutMs,
     xAffinity = 'start',
-  }: PliteBrowserTextPathRangeClickOptions
+  }: BrowserTextPathRangeClickOptions
 ) => {
   if (startOffset >= endOffset) {
     throw new Error('clickTextPathRange expects startOffset < endOffset');
@@ -511,17 +511,15 @@ export const clickTextPathRange = async (
         endOffset: number;
         path: number[];
         startOffset: number;
-        xAffinity: NonNullable<
-          PliteBrowserTextPathRangeClickOptions['xAffinity']
-        >;
+        xAffinity: NonNullable<BrowserTextPathRangeClickOptions['xAffinity']>;
       }
     ) => {
       const textElement = Array.from(
-        element.querySelectorAll('[data-plite-node="text"]')
+        element.querySelectorAll('[data-editor-node="text"]')
       ).find(
         (node) =>
-          node.closest('[data-plite-editor="true"]') === element &&
-          node.getAttribute('data-plite-path') === innerPath2.join(',')
+          node.closest('[data-editor="true"]') === element &&
+          node.getAttribute('data-editor-path') === innerPath2.join(',')
       );
 
       if (!textElement) {
@@ -531,7 +529,7 @@ export const clickTextPathRange = async (
       const resolveOffset = (offset: number) => {
         const stringElements = Array.from(
           textElement.querySelectorAll(
-            '[data-plite-string], [data-plite-zero-width]'
+            '[data-editor-string], [data-editor-zero-width]'
           )
         );
         let start = 0;
@@ -549,7 +547,7 @@ export const clickTextPathRange = async (
           }
 
           const length = textNode.textContent?.length ?? 0;
-          const attr = stringElement.getAttribute('data-plite-length');
+          const attr = stringElement.getAttribute('data-editor-length');
           const trueLength = attr == null ? length : Number.parseInt(attr, 10);
           const end = start + trueLength;
 
@@ -557,7 +555,7 @@ export const clickTextPathRange = async (
           lastTextLength = length;
 
           if (
-            stringElement.hasAttribute('data-plite-zero-width') &&
+            stringElement.hasAttribute('data-editor-zero-width') &&
             offset === start &&
             length <= 1
           ) {
@@ -691,7 +689,7 @@ export const waitForPendingNativeTextInputRepair = async (
                   .slice(-8),
               };
             },
-            { key: PLITE_BROWSER_HANDLE_KEY }
+            { key: BROWSER_HANDLE_KEY }
           );
 
           return actual.pendingPath;

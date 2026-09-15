@@ -4,7 +4,7 @@ import {
   type PropertyValueOf,
   SelectionApi,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   schema,
 } from '../../../core';
 import {
@@ -22,7 +22,7 @@ import { BaseImagePlugin } from './image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
 import type { BasePlaceholderPlugin } from './placeholder/BasePlaceholderPlugin';
 
-const TestInlinePlugin = defineBasePlugin('testInline', {
+const TestInlinePlugin = definePlugin('testInline', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -465,7 +465,7 @@ describe('Base media plugin contracts', () => {
     expect(
       editor.api.html.deserialize({
         element:
-          '<figure class="plate-image"><img alt="Sized" height="180" src="https://platejs.org/image.png" width="320" /><figcaption>Caption</figcaption></figure>',
+          '<figure class="editor-image"><img alt="Sized" height="180" src="https://platejs.org/image.png" width="320" /><figcaption>Caption</figcaption></figure>',
       })
     ).toEqual([
       {
@@ -479,7 +479,7 @@ describe('Base media plugin contracts', () => {
     expect(
       editor.api.html.deserialize({
         element:
-          '<img data-plate-natural-height="360" data-plate-natural-width="640" height="360" src="https://platejs.org/image.png" width="640" />',
+          '<img data-editor-natural-height="360" data-editor-natural-width="640" height="360" src="https://platejs.org/image.png" width="640" />',
       })
     ).toEqual([
       {
@@ -493,7 +493,7 @@ describe('Base media plugin contracts', () => {
     expect(
       editor.api.html.deserialize({
         element:
-          '<img data-plate-natural-height="180" height="180" src="https://platejs.org/image.png" width="320" />',
+          '<img data-editor-natural-height="180" height="180" src="https://platejs.org/image.png" width="320" />',
       })
     ).toEqual([
       {
@@ -507,7 +507,7 @@ describe('Base media plugin contracts', () => {
     expect(
       editor.api.html.deserialize({
         element:
-          '<img data-plate-natural-height="180.5" data-plate-natural-width="320.5" src="https://platejs.org/image.png" />',
+          '<img data-editor-natural-height="180.5" data-editor-natural-width="320.5" src="https://platejs.org/image.png" />',
       })
     ).toEqual([
       {
@@ -542,15 +542,16 @@ describe('Base media plugin contracts', () => {
       data.getData('text/html'),
       'text/html'
     );
-    const figure = document.body.querySelector('figure.plate-image');
+    const figure = document.body.querySelector('figure.editor-image');
+
     const image = figure?.querySelector<HTMLElement>(':scope > img');
 
     expect(image?.getAttribute('src')).toBe('https://platejs.org/image.png');
     expect(image?.getAttribute('alt')).toBe('Plate');
     expect(image?.getAttribute('height')).toBe('360');
     expect(image?.getAttribute('width')).toBe('640');
-    expect(image?.dataset.plateNaturalHeight).toBe('360');
-    expect(image?.dataset.plateNaturalWidth).toBe('640');
+    expect(image?.dataset.editorNaturalHeight).toBe('360');
+    expect(image?.dataset.editorNaturalWidth).toBe('640');
     expect(image?.style.width).toBe('50%');
     expect(figure?.querySelector(':scope > figcaption')?.textContent).toBe(
       'Image caption'

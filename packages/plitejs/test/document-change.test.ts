@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import type { Descendant, Editor, Element, SnapshotIndex } from 'plitejs';
+import {
+  createEditor,
+  type Descendant,
+  type Editor,
+  type Element,
+  type SnapshotIndex,
+} from 'plitejs';
 
 import {
   classifyDocumentChange,
@@ -31,6 +37,10 @@ import {
   type JsonNode,
   PreparedTokenSlice,
 } from '../src/core/change/tokens';
+import {
+  getEditorProjectionSnapshotIndex,
+  inheritEditorProjectionIndexes,
+} from '../src/core/public-state';
 import {
   advancePathStableSnapshotIndex,
   buildSnapshotIndex,
@@ -1042,16 +1052,16 @@ describe('JSON document change algebra', () => {
     const children = document.value as unknown as readonly Descendant[];
     const profiledIds: string[] = [];
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: { id: string; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
 
     seedNodeKeys(children, owner);
 
     try {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record(event) {
           if (event.kind === 'core-time') profiledIds.push(event.id);
         },
@@ -1078,7 +1088,7 @@ describe('JSON document change algebra', () => {
         1
       );
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
   });
 
@@ -1593,6 +1603,44 @@ describe('JSON document change algebra', () => {
     );
 
     assert.deepEqual(index.pathOf(retainedNodeKey!), [64]);
+  });
+
+  it('reuses one projection index across repeated path-stable text edits', () => {
+    const editor = createEditor();
+    let value: JsonEditorValue = {
+      children: asJsonNodes(
+        Array.from({ length: 128 }, (_, index) => paragraph(String(index)))
+      ),
+    };
+    const sourceIndex = getEditorProjectionSnapshotIndex(
+      editor,
+      value.children as readonly Descendant[]
+    );
+    const retainedNodeKey = sourceIndex.keyAt([64, 0]);
+
+    for (let edit = 0; edit < 1000; edit += 1) {
+      const before = value;
+      const beforeDocument = DocumentIndex.fromValue(before.children);
+      const afterDocument = beforeDocument.withText([edit % 128, 0], 0, 0, '!');
+      const after: JsonEditorValue = { children: afterDocument.value };
+      const change = DocumentChange.between(before, after);
+
+      inheritEditorProjectionIndexes(editor, before, after, change);
+      assert.equal(
+        getEditorProjectionSnapshotIndex(
+          editor,
+          after.children as readonly Descendant[]
+        ),
+        sourceIndex
+      );
+      value = after;
+    }
+
+    assert.deepEqual(sourceIndex.pathOf(retainedNodeKey!), [64, 0]);
+    assert.equal(
+      getNodeKeyForNode(value.children[64].children[0], editor),
+      retainedNodeKey
+    );
   });
 
   it('bounds 1,000 lazy structural mappings and releases documents on materialization', () => {

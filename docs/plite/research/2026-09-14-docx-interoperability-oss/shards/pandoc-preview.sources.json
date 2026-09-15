@@ -1,0 +1,770 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "audit": "documents/DOCX import-export",
+  "scope": ["jgm/pandoc", "VolodymyrBaydalka/docxjs"],
+  "verified_at": "2026-09-14T18:08:39Z",
+  "inspection_mode": "local exact-commit source only",
+  "report_path": "/Users/zbeyens/git/plate-2/docs/plite/research/2026-09-14-docx-interoperability-oss/shards/pandoc-preview.md",
+  "repositories": [
+    {
+      "id": "pandoc",
+      "repository": "jgm/pandoc",
+      "path": "/Users/zbeyens/git/pandoc",
+      "default_branch": "main",
+      "commit": "bde8c297ee68c07a037f06971aa0f1cce8a876cb",
+      "author_date": "2026-09-14T16:19:39Z",
+      "committer_date": "2026-09-14T16:20:05Z",
+      "subject": "Docx writer: honor CSL hanging-indent and spacing hints (#11872)",
+      "tip_verified_at": "2026-09-14T18:08:39Z",
+      "tip_matches": true,
+      "shallow_clone_created": true,
+      "license": "GPL-2.0-or-later",
+      "github_license_detection": "GPL-2.0",
+      "latest_release": {
+        "tag": "3.11",
+        "published_at": "2026-08-29T00:52:49Z",
+        "commit": "b913622e1ff87c69ab8b1a606577122e220925cd",
+        "matches_inspected_commit": false
+      }
+    },
+    {
+      "id": "docx-preview",
+      "repository": "VolodymyrBaydalka/docxjs",
+      "path": "/Users/zbeyens/git/docxjs",
+      "default_branch": "master",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "author_date": "2026-07-07T18:54:12Z",
+      "committer_date": "2026-07-07T18:54:12Z",
+      "subject": "updated README",
+      "tip_verified_at": "2026-09-14T18:08:39Z",
+      "tip_matches": true,
+      "shallow_clone_created": true,
+      "license": "Apache-2.0",
+      "github_license_detection": "Apache-2.0",
+      "latest_release": {
+        "tag": "0.4.0",
+        "published_at": "2026-07-07T19:05:13Z",
+        "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+        "matches_inspected_commit": true
+      }
+    }
+  ],
+  "selected_files": [
+    {
+      "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Readers/Docx.hs",
+      "sha256": "7ddcbe483c0efd1c6e07236cb858d50041dfb7e3908ab25cc1f768688152b731",
+      "bytes": 39827,
+      "lines": 926,
+      "read_spans": [
+        {
+          "start": 107,
+          "end": 122
+        },
+        {
+          "start": 328,
+          "end": 427
+        },
+        {
+          "start": 725,
+          "end": 785
+        },
+        {
+          "start": 893,
+          "end": 922
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "jgm/pandoc",
+      "commit": "bde8c297ee68c07a037f06971aa0f1cce8a876cb",
+      "relative_path": "src/Text/Pandoc/Readers/Docx.hs",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Readers/Docx/Parse.hs",
+      "sha256": "a92dbb764b3afe97eb76f5dd2f9c6a6683847ad8e1393cc111ca16365632c6a6",
+      "bytes": 64020,
+      "lines": 1539,
+      "read_spans": [
+        {
+          "start": 140,
+          "end": 156
+        },
+        {
+          "start": 385,
+          "end": 472
+        },
+        {
+          "start": 491,
+          "end": 515
+        },
+        {
+          "start": 554,
+          "end": 565
+        },
+        {
+          "start": 734,
+          "end": 745
+        },
+        {
+          "start": 1150,
+          "end": 1260
+        },
+        {
+          "start": 1340,
+          "end": 1380
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "jgm/pandoc",
+      "commit": "bde8c297ee68c07a037f06971aa0f1cce8a876cb",
+      "relative_path": "src/Text/Pandoc/Readers/Docx/Parse.hs",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Writers/Docx.hs",
+      "sha256": "5cad23e9a212de54873f9d77ee318982613775cf2bb3ae64e5df31071a3bfca8",
+      "bytes": 40073,
+      "lines": 877,
+      "read_spans": [
+        {
+          "start": 65,
+          "end": 171
+        },
+        {
+          "start": 496,
+          "end": 513
+        },
+        {
+          "start": 842,
+          "end": 877
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "jgm/pandoc",
+      "commit": "bde8c297ee68c07a037f06971aa0f1cce8a876cb",
+      "relative_path": "src/Text/Pandoc/Writers/Docx.hs",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Writers/Docx/OpenXML.hs",
+      "sha256": "b7d97c3dc9736ae936032858eab10bf5c7ef7f64350fcd84ae50d47f53efc1c2",
+      "bytes": 50525,
+      "lines": 1237,
+      "read_spans": [
+        {
+          "start": 309,
+          "end": 327
+        },
+        {
+          "start": 528,
+          "end": 545
+        },
+        {
+          "start": 845,
+          "end": 947
+        },
+        {
+          "start": 947,
+          "end": 954
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "jgm/pandoc",
+      "commit": "bde8c297ee68c07a037f06971aa0f1cce8a876cb",
+      "relative_path": "src/Text/Pandoc/Writers/Docx/OpenXML.hs",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/pandoc/test/Tests/Readers/Docx.hs",
+      "sha256": "50b080044de08dca578b34831c8f26dc76b268ecc2ad852da534aa994d62c2ce",
+      "bytes": 21365,
+      "lines": 528,
+      "read_spans": [
+        {
+          "start": 30,
+          "end": 57
+        },
+        {
+          "start": 397,
+          "end": 487
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "jgm/pandoc",
+      "commit": "bde8c297ee68c07a037f06971aa0f1cce8a876cb",
+      "relative_path": "test/Tests/Readers/Docx.hs",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/pandoc/test/Tests/Writers/Docx.hs",
+      "sha256": "6c34f1fc05f581b491a60cb6940527bbae66289d22f5e9243c6fbe567c6ac09a",
+      "bytes": 14927,
+      "lines": 360,
+      "read_spans": [
+        {
+          "start": 1,
+          "end": 96
+        },
+        {
+          "start": 206,
+          "end": 232
+        },
+        {
+          "start": 270,
+          "end": 325
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "jgm/pandoc",
+      "commit": "bde8c297ee68c07a037f06971aa0f1cce8a876cb",
+      "relative_path": "test/Tests/Writers/Docx.hs",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/pandoc/COPYING.md",
+      "sha256": "3ebfbf9235b049d384cdba5a66a1a3434bb544391e720b76faa8e1b3ee61a4e5",
+      "bytes": 17763,
+      "lines": 360,
+      "read_spans": [
+        {
+          "start": 1,
+          "end": 9
+        },
+        {
+          "start": 64,
+          "end": 78
+        },
+        {
+          "start": 82,
+          "end": 109
+        },
+        {
+          "start": 142,
+          "end": 179
+        },
+        {
+          "start": 249,
+          "end": 260
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "jgm/pandoc",
+      "commit": "bde8c297ee68c07a037f06971aa0f1cce8a876cb",
+      "relative_path": "COPYING.md",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "license"
+    },
+    {
+      "path": "/Users/zbeyens/git/pandoc/pandoc.cabal",
+      "sha256": "3d28dc8ce4ba27f8c29d2c28003d3e4021e913dd958a68a9caa9afb776946dea",
+      "bytes": 42432,
+      "lines": 940,
+      "read_spans": [
+        {
+          "start": 1,
+          "end": 35
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "jgm/pandoc",
+      "commit": "bde8c297ee68c07a037f06971aa0f1cce8a876cb",
+      "relative_path": "pandoc.cabal",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "package_metadata"
+    },
+    {
+      "path": "/Users/zbeyens/git/docxjs/src/docx-preview.ts",
+      "sha256": "9986ce067d896a5fd2ffc51846f98c66f1a06fefce1cea5497a58cedaa11bb40",
+      "bytes": 2279,
+      "lines": 77,
+      "read_spans": [
+        {
+          "start": 1,
+          "end": 77
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "VolodymyrBaydalka/docxjs",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "relative_path": "src/docx-preview.ts",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/docxjs/src/word-document.ts",
+      "sha256": "3aafdf21fbf407324136bc0f822d8d72788b49f7c2c0f878168d26180c42896d",
+      "bytes": 7368,
+      "lines": 225,
+      "read_spans": [
+        {
+          "start": 25,
+          "end": 165
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "VolodymyrBaydalka/docxjs",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "relative_path": "src/word-document.ts",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/docxjs/src/common/open-xml-package.ts",
+      "sha256": "ba17ff0b377d4a87ffd8fff173cfc2efc7758ad7f8aa746d689a93e88d1c5d45",
+      "bytes": 2089,
+      "lines": 65,
+      "read_spans": [
+        {
+          "start": 1,
+          "end": 65
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "VolodymyrBaydalka/docxjs",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "relative_path": "src/common/open-xml-package.ts",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/docxjs/src/common/part.ts",
+      "sha256": "3494f88a68d4484f3df5788a2cf4c90e6132e9a39a6a355f7fda6d78d4719932",
+      "bytes": 846,
+      "lines": 32,
+      "read_spans": [
+        {
+          "start": 1,
+          "end": 32
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "VolodymyrBaydalka/docxjs",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "relative_path": "src/common/part.ts",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/docxjs/src/document-parser.ts",
+      "sha256": "e9233ad1e15c1efe524f7349cf04e76c7b980988481934277796dc060a515c2d",
+      "bytes": 42574,
+      "lines": 1736,
+      "read_spans": [
+        {
+          "start": 87,
+          "end": 155
+        },
+        {
+          "start": 269,
+          "end": 291
+        },
+        {
+          "start": 472,
+          "end": 550
+        },
+        {
+          "start": 631,
+          "end": 704
+        },
+        {
+          "start": 1378,
+          "end": 1393
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "VolodymyrBaydalka/docxjs",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "relative_path": "src/document-parser.ts",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/docxjs/src/html-renderer.ts",
+      "sha256": "a2b7d54609cb2360cf7b2b0f7137bf85014ffb0100e7447346d4f1d184eeea51",
+      "bytes": 45146,
+      "lines": 1476,
+      "read_spans": [
+        {
+          "start": 75,
+          "end": 134
+        },
+        {
+          "start": 325,
+          "end": 373
+        },
+        {
+          "start": 402,
+          "end": 414
+        },
+        {
+          "start": 421,
+          "end": 509
+        },
+        {
+          "start": 870,
+          "end": 896
+        },
+        {
+          "start": 947,
+          "end": 1005
+        },
+        {
+          "start": 1044,
+          "end": 1073
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "VolodymyrBaydalka/docxjs",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "relative_path": "src/html-renderer.ts",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/docxjs/tests/render-test/test.spec.js",
+      "sha256": "b81e5952ae1aca31742279897530dfb7933170ff01386eccafc51a56621831bd",
+      "bytes": 1282,
+      "lines": 54,
+      "read_spans": [
+        {
+          "start": 1,
+          "end": 54
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "VolodymyrBaydalka/docxjs",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "relative_path": "tests/render-test/test.spec.js",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "implementation_or_test"
+    },
+    {
+      "path": "/Users/zbeyens/git/docxjs/LICENSE",
+      "sha256": "0ed0b35bd10cb0d990fbecf7f1e05d113d785dfbbef8332e139fc10b84a4c3d7",
+      "bytes": 11357,
+      "lines": 201,
+      "read_spans": [
+        {
+          "start": 1,
+          "end": 4
+        },
+        {
+          "start": 66,
+          "end": 122
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "VolodymyrBaydalka/docxjs",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "relative_path": "LICENSE",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "license"
+    },
+    {
+      "path": "/Users/zbeyens/git/docxjs/package.json",
+      "sha256": "46cf90c1554b425883095786f5f374ace181f858c7e5c15e13077110df507a65",
+      "bytes": 1244,
+      "lines": 50,
+      "read_spans": [
+        {
+          "start": 1,
+          "end": 24
+        }
+      ],
+      "checkout_equals_commit": true,
+      "repository": "VolodymyrBaydalka/docxjs",
+      "commit": "191d3e0db009da578fbe4da70d55305cd8d50226",
+      "relative_path": "package.json",
+      "hash_basis": "full git show commit:path bytes",
+      "read_kind": "package_metadata"
+    }
+  ],
+  "findings": [
+    {
+      "id": "P1",
+      "repository": "jgm/pandoc",
+      "conclusion": "Semantic AST converter: readDocx returns Pandoc; writeDocx builds a new ZIP from generated parts plus selected reference entries, not the source package.",
+      "disposition": "adopt",
+      "adoption_scope": "Semantic conversion reference and independent oracle candidate only; reject as a package-preserving round-trip engine.",
+      "evidence": [
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Readers/Docx.hs",
+          "start": 107,
+          "end": 122
+        },
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Writers/Docx.hs",
+          "start": 125,
+          "end": 171
+        },
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Writers/Docx.hs",
+          "start": 842,
+          "end": 874
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "repository": "jgm/pandoc",
+      "conclusion": "Accept/reject/all are explicit. Comments survive only AllChanges; moves collapse to insertion/deletion and original revision ids are discarded before being regenerated on export.",
+      "disposition": "adopt",
+      "adoption_scope": "Reference behavior for explicit revision/comment import policy; reject equivalence to original OOXML revision identity.",
+      "evidence": [
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Readers/Docx.hs",
+          "start": 389,
+          "end": 422
+        },
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Readers/Docx/Parse.hs",
+          "start": 1354,
+          "end": 1367
+        },
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Writers/Docx/OpenXML.hs",
+          "start": 890,
+          "end": 915
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "repository": "jgm/pandoc",
+      "conclusion": "Comments are flattened into AST inlines; non-paragraph comment structures warn. Writer reconstructs a single comment paragraph. Warning absence cannot prove fidelity: charts/diagrams use placeholders and parser errors can be silently skipped.",
+      "disposition": "adopt",
+      "adoption_scope": "Loss examples and explicit diagnostics as audit evidence; reject treating warning output as an exhaustive loss inventory.",
+      "evidence": [
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Readers/Docx.hs",
+          "start": 347,
+          "end": 367
+        },
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Readers/Docx/Parse.hs",
+          "start": 148,
+          "end": 154
+        },
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Writers/Docx/OpenXML.hs",
+          "start": 309,
+          "end": 326
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "repository": "jgm/pandoc",
+      "conclusion": "Reader emits paragraph-insertion/paragraph-deletion marker classes. Scoped writer search found no handling of these names; inspected general Span serialization only handles exact insertion/deletion classes. Paragraph revision re-export is an unproven source-inferred gap.",
+      "disposition": "defer",
+      "adoption_scope": "No paragraph-revision round-trip fidelity claim without focused proof; no runtime requested here.",
+      "confidence": "source inference; not executed",
+      "evidence": [
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Readers/Docx.hs",
+          "start": 749,
+          "end": 775
+        },
+        {
+          "path": "/Users/zbeyens/git/pandoc/src/Text/Pandoc/Writers/Docx/OpenXML.hs",
+          "start": 872,
+          "end": 922
+        }
+      ]
+    },
+    {
+      "id": "D1",
+      "repository": "VolodymyrBaydalka/docxjs",
+      "conclusion": "Viewer retains a JSZip package and builds HTML from selected parts. WordDocument.save regenerates the retained ZIP without flushing parsed models or HTML; Part.save serializes a separately retained XML DOM only when keepOrigin was supplied.",
+      "disposition": "reject",
+      "adoption_scope": "Reject as an editable-model-to-DOCX writer or proof of package-preserving editing; retain as evidence for package retention versus projection distinction.",
+      "evidence": [
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/word-document.ts",
+          "start": 53,
+          "end": 72
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/common/open-xml-package.ts",
+          "start": 23,
+          "end": 34
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/common/part.ts",
+          "start": 13,
+          "end": 28
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/docx-preview.ts",
+          "start": 6,
+          "end": 49
+        }
+      ]
+    },
+    {
+      "id": "D2",
+      "repository": "VolodymyrBaydalka/docxjs",
+      "conclusion": "Projection handles ordinary comments and ins/del revisions behind disabled-by-default flags. Default revision rendering shows insertions and hides deletions. No moveFrom/moveTo cases in the complete inspected paragraph dispatcher.",
+      "disposition": "adopt",
+      "adoption_scope": "Preview candidate and reference behavior only; defer comment/revision completeness and fidelity.",
+      "evidence": [
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/document-parser.ts",
+          "start": 87,
+          "end": 100
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/document-parser.ts",
+          "start": 493,
+          "end": 549
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/html-renderer.ts",
+          "start": 947,
+          "end": 994
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/html-renderer.ts",
+          "start": 1048,
+          "end": 1073
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/docx-preview.ts",
+          "start": 29,
+          "end": 48
+        }
+      ]
+    },
+    {
+      "id": "D3",
+      "repository": "VolodymyrBaydalka/docxjs",
+      "conclusion": "Pagination uses OOXML page/section cues and projects to browser DOM; inspected split path mutates parsed paragraph/run children. This does not establish Word-equivalent layout or an immutable editable model.",
+      "disposition": "defer",
+      "adoption_scope": "Use a disposable preview projection; defer visual fidelity and repeat-render safety claims.",
+      "evidence": [
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/html-renderer.ts",
+          "start": 325,
+          "end": 367
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/html-renderer.ts",
+          "start": 402,
+          "end": 409
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/html-renderer.ts",
+          "start": 421,
+          "end": 508
+        }
+      ]
+    },
+    {
+      "id": "D4",
+      "repository": "VolodymyrBaydalka/docxjs",
+      "conclusion": "Unknown body/paragraph elements can be ignored; debug warnings are selective. The inspected test compares normalized HTML with renderChanges=true, not OOXML export, screenshots, or comments.",
+      "disposition": "reject",
+      "adoption_scope": "Reject normalized HTML tests or console warnings as proof of preservation or exhaustive loss reporting.",
+      "evidence": [
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/document-parser.ts",
+          "start": 127,
+          "end": 150
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/src/document-parser.ts",
+          "start": 1378,
+          "end": 1389
+        },
+        {
+          "path": "/Users/zbeyens/git/docxjs/tests/render-test/test.spec.js",
+          "start": 1,
+          "end": 54
+        }
+      ]
+    }
+  ],
+  "read_counts": {
+    "implementation_or_test": 13,
+    "license": 2,
+    "package_metadata": 2,
+    "total_hashed_files": 17
+  },
+  "verification": {
+    "all_selected_checkout_files_match_commit": true,
+    "all_recorded_line_spans_valid": true,
+    "runtime_executed": false,
+    "tests_executed": false,
+    "fixtures_inspected": false,
+    "github_file_browsing": false,
+    "goals_created": false,
+    "product_or_shared_ledger_writes": false
+  },
+  "limits": [
+    "No runtime, fixture execution/unpacking, browser, binary, performance, or security testing.",
+    "No complete OOXML vocabulary or dependency/fixture license review.",
+    "Pandoc tip differs from release 3.11.",
+    "Tests inspected as source only; no passing-test assertion.",
+    "No claims about Mammoth, html-to-docx, docx, CKEditor or SuperDoc."
+  ],
+  "command_log": [
+    {
+      "phase": "intake",
+      "commands": [
+        "directory existence check for both sibling paths",
+        "cat /Users/zbeyens/git/plate-2/.agents/rules/task/references/workflow.md"
+      ],
+      "result": "Both sibling repositories absent; required workflow read."
+    },
+    {
+      "phase": "clones",
+      "commands": [
+        "git clone --depth=1 https://github.com/jgm/pandoc.git /Users/zbeyens/git/pandoc",
+        "git clone --depth=1 https://github.com/VolodymyrBaydalka/docxjs.git /Users/zbeyens/git/docxjs"
+      ],
+      "result": "Both succeeded sequentially."
+    },
+    {
+      "phase": "metadata",
+      "commands": [
+        "gh api repos/jgm/pandoc",
+        "gh api repos/jgm/pandoc/commits/main",
+        "gh api repos/jgm/pandoc/releases/latest",
+        "gh api repos/jgm/pandoc/git/ref/tags/3.11",
+        "gh api repos/VolodymyrBaydalka/docxjs",
+        "gh api repos/VolodymyrBaydalka/docxjs/commits/master",
+        "gh api repos/VolodymyrBaydalka/docxjs/releases/latest",
+        "gh api repos/VolodymyrBaydalka/docxjs/git/ref/tags/0.4.0"
+      ],
+      "result": "Filtered official metadata; default-branch tips rechecked unchanged at closure."
+    },
+    {
+      "phase": "discovery",
+      "commands": [
+        "bounded rg --files / rg -n on named source/tests; detailed search families in Markdown report",
+        "git ls-tree -r --name-only <exact-sha> filtered to license filenames"
+      ],
+      "errors": [
+        "Initial docxjs rg included nonexistent test directory; actual tests directory used thereafter.",
+        "One docxjs search was issued in Pandoc cwd; missing-path result discarded and correct docxjs cwd used."
+      ]
+    },
+    {
+      "phase": "reads",
+      "command_template": "git -C <repository-path> show <exact-commit>:<relative-path> | nl -ba | sed -n '<selected spans>p'",
+      "result": "13 implementation/test selected files; 2 license and 2 short metadata selected files. Exact spans in selected_files."
+    },
+    {
+      "phase": "verification",
+      "command_template": "Python subprocess git show + hashlib.sha256 + byte equality with local path + line-span bounds assertions",
+      "result": "17/17 selected local files equal exact-commit blobs; all spans valid."
+    }
+  ]
+}

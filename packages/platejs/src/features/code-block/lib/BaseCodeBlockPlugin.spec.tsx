@@ -19,7 +19,7 @@ import {
   createEditor,
   type CreateEditorOptions,
   DebugPlugin,
-  defineBasePlugin,
+  definePlugin,
   type Descendant,
   type InitialValue,
   type NodeEntry,
@@ -923,7 +923,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
 {
   jsxt;
 
-  const BaseCommentCodecPlugin = defineBasePlugin('commentParser', {
+  const BaseCommentCodecPlugin = definePlugin('commentParser', {
     codecs: ({ defineCodecs }) =>
       defineCodecs({
         'text/plain': {
@@ -1109,18 +1109,15 @@ describe('BaseCodeBlockPlugin input rules', () => {
         </editor>
       ) as TestEditor;
       const deserialize = mock(() => [{ text: 'mixed parser' }]);
-      const MixedSelectionCodecPlugin = defineBasePlugin(
-        'mixedSelectionParser',
-        {
-          codecs: ({ defineCodecs }) =>
-            defineCodecs({
-              'text/plain': {
-                scope: 'document',
-                decode: () => ContentSlice.closed(deserialize()),
-              },
-            }),
-        }
-      );
+      const MixedSelectionCodecPlugin = definePlugin('mixedSelectionParser', {
+        codecs: ({ defineCodecs }) =>
+          defineCodecs({
+            'text/plain': {
+              scope: 'document',
+              decode: () => ContentSlice.closed(deserialize()),
+            },
+          }),
+      });
       const editor = createFixtureEditor({
         plugins: [
           BaseParagraphPlugin,

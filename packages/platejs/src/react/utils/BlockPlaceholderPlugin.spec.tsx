@@ -2,16 +2,16 @@ import { act, render, waitFor } from '@testing-library/react';
 import React from 'react';
 
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
-import { Plate, PlateContent, PlateElement } from '../components';
-import type { PlateElementProps } from '../components/plate-nodes';
+import { EditorRoot, EditorContent, EditorElement } from '../components';
+import type { EditorElementProps } from '../components/plate-nodes';
 import { createEditor } from '../editor';
 import { useEditor } from '../stores';
 import { BlockPlaceholderPlugin } from './BlockPlaceholderPlugin';
 
 function ParagraphElement(
-  props: PlateElementProps<typeof BaseParagraphPlugin>
+  props: EditorElementProps<typeof BaseParagraphPlugin>
 ) {
-  return <PlateElement {...props} as="section" />;
+  return <EditorElement {...props} as="section" />;
 }
 
 describe('BlockPlaceholderPlugin', () => {
@@ -52,14 +52,14 @@ describe('BlockPlaceholderPlugin', () => {
       }
       const mounted = render(
         <React.StrictMode>
-          <Plate editor={editor}>
-            <PlateContent />
+          <EditorRoot editor={editor}>
+            <EditorContent />
             <CommandProbe />
-          </Plate>
+          </EditorRoot>
         </React.StrictMode>
       );
       const target = mounted.container.querySelectorAll<HTMLElement>(
-        '[data-plite-node="element"]'
+        '[data-editor-node="element"]'
       )[1];
 
       await act(async () => {

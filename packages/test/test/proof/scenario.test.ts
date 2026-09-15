@@ -8,37 +8,37 @@ import {
   createScenarioReductionCandidates,
   createScenarioReplay,
   decodeScenarioReplay,
-  createPliteBrowserCompositionGauntlet,
-  createPliteBrowserDestructiveEditingGauntlet,
-  createPliteBrowserFeatureContractRegistry,
-  createPliteBrowserInlineCutTypingGauntlet,
-  createPliteBrowserInternalControlGauntlet,
-  createPliteBrowserMixedEditingConformanceGauntlet,
-  createPliteBrowserSemanticEditingConformanceGauntlet,
-  createPliteBrowserShellActivationGauntlet,
-  createPliteBrowserToolbarMarkClickTypingGauntlet,
-  createPliteBrowserWarmLoopSteps,
-  createPliteBrowserWarmToolbarArrowGauntlet,
-  definePliteBrowserFeatureContract,
-  matchesPliteBrowserKernelTrace,
+  createBrowserCompositionGauntlet,
+  createBrowserDestructiveEditingGauntlet,
+  createBrowserFeatureContractRegistry,
+  createBrowserInlineCutTypingGauntlet,
+  createBrowserInternalControlGauntlet,
+  createBrowserMixedEditingConformanceGauntlet,
+  createBrowserSemanticEditingConformanceGauntlet,
+  createBrowserShellActivationGauntlet,
+  createBrowserToolbarMarkClickTypingGauntlet,
+  createBrowserWarmLoopSteps,
+  createBrowserWarmToolbarArrowGauntlet,
+  defineBrowserFeatureContract,
+  matchesBrowserKernelTrace,
   normalizeScenarioMetadata,
   type EditorSnapshot,
-  type PliteBrowserEditorHarness,
-  type PliteBrowserKernelTraceEntry,
-  type PliteBrowserScenarioStep,
+  type BrowserEditorHarness,
+  type BrowserKernelTraceEntry,
+  type BrowserScenarioStep,
   serializeScenarioStepForReplay,
   summarizeScenarioReductionCandidate,
 } from '../../src/playwright';
 import { createEditorHarnessScenario } from '../../src/playwright/harness-scenario';
 import {
-  assertPliteBrowserFirstPartyParityContracts,
-  PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
-  PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES,
+  assertBrowserFirstPartyParityContracts,
+  BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
+  BROWSER_FIRST_PARTY_PARITY_FAMILIES,
 } from '../../src/proof';
 
 describe('scenario helpers', () => {
   test('creates prefix, suffix, and single-step reduction candidates', () => {
-    const steps: PliteBrowserScenarioStep[] = [
+    const steps: BrowserScenarioStep[] = [
       { kind: 'focus', label: 'focus' },
       {
         kind: 'select',
@@ -71,7 +71,7 @@ describe('scenario helpers', () => {
   });
 
   test('does not return empty scenario candidates', () => {
-    const steps: PliteBrowserScenarioStep[] = [
+    const steps: BrowserScenarioStep[] = [
       { kind: 'snapshot', label: 'only-step' },
     ];
 
@@ -79,8 +79,8 @@ describe('scenario helpers', () => {
   });
 
   test('registers first-party feature browser contract rows', () => {
-    const registry = createPliteBrowserFeatureContractRegistry([
-      definePliteBrowserFeatureContract({
+    const registry = createBrowserFeatureContractRegistry([
+      defineBrowserFeatureContract({
         feature: 'media',
         rows: [
           {
@@ -93,7 +93,7 @@ describe('scenario helpers', () => {
           },
         ],
       }),
-      definePliteBrowserFeatureContract({
+      defineBrowserFeatureContract({
         feature: 'table',
         rows: [
           {
@@ -117,8 +117,8 @@ describe('scenario helpers', () => {
       routes: ['images', 'embeds'],
     });
     expect(() =>
-      createPliteBrowserFeatureContractRegistry([
-        definePliteBrowserFeatureContract({
+      createBrowserFeatureContractRegistry([
+        defineBrowserFeatureContract({
           feature: 'first',
           rows: [
             {
@@ -128,7 +128,7 @@ describe('scenario helpers', () => {
             },
           ],
         }),
-        definePliteBrowserFeatureContract({
+        defineBrowserFeatureContract({
           feature: 'second',
           rows: [
             {
@@ -143,8 +143,8 @@ describe('scenario helpers', () => {
   });
 
   test('locks the first-party parity slice into a fast contract guard', () => {
-    const result = assertPliteBrowserFirstPartyParityContracts();
-    const parityFamilies = PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES.map(
+    const result = assertBrowserFirstPartyParityContracts();
+    const parityFamilies = BROWSER_FIRST_PARTY_PARITY_FAMILIES.map(
       (family) => family.family
     );
 
@@ -157,7 +157,7 @@ describe('scenario helpers', () => {
       'table-cell-boundary-navigation',
     ]);
     expect(
-      PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY.rows.map((row) => [
+      BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY.rows.map((row) => [
         row.feature,
         row.family,
         row.routes,
@@ -429,7 +429,7 @@ describe('scenario helpers', () => {
   });
 
   test('summarizes canonical reduction candidates as replayable data', () => {
-    const steps: PliteBrowserScenarioStep[] = [
+    const steps: BrowserScenarioStep[] = [
       browserStep.fill({
         label: 'fill-control',
         target: '#control',
@@ -468,7 +468,7 @@ describe('scenario helpers', () => {
   });
 
   test('serializes replayable scenario steps with action payloads', () => {
-    const step: PliteBrowserScenarioStep = {
+    const step: BrowserScenarioStep = {
       iteration: 2,
       kind: 'select',
       label: 'select-word',
@@ -500,7 +500,7 @@ describe('scenario helpers', () => {
   });
 
   test('serializes DOM text mutation steps for replay', () => {
-    const step: PliteBrowserScenarioStep = {
+    const step: BrowserScenarioStep = {
       data: 'imported',
       inputType: 'insertText',
       kind: 'mutateTextDOM',
@@ -528,7 +528,7 @@ describe('scenario helpers', () => {
   });
 
   test('serializes rendered DOM shape assertions for replay', () => {
-    const step: PliteBrowserScenarioStep = {
+    const step: BrowserScenarioStep = {
       kind: 'assertRenderedDOMShape',
       label: 'assert-first-block-dom-shape',
       shape: {
@@ -568,11 +568,11 @@ describe('scenario helpers', () => {
   });
 
   test('serializes replayable browser stress assertion steps', () => {
-    const steps: PliteBrowserScenarioStep[] = [
+    const steps: BrowserScenarioStep[] = [
       {
         kind: 'dragTextSelection',
         label: 'drag-toolbar-target',
-        selector: 'span[data-plite-string="true"]',
+        selector: 'span[data-editor-string="true"]',
         steps: 12,
       },
       {
@@ -602,7 +602,7 @@ describe('scenario helpers', () => {
         label: 'assert-image-offset',
         max: 1,
         min: 0,
-        selector: '[data-plite-path="1"]',
+        selector: '[data-editor-path="1"]',
       },
       {
         kind: 'assertModelSelectionExpanded',
@@ -895,7 +895,7 @@ describe('scenario helpers', () => {
         {
           budget: { total: { exact: 1, min: 0 } },
           kind: 'assertRenderBudget',
-        } as PliteBrowserScenarioStep,
+        } as BrowserScenarioStep,
       ])
     ).toThrow();
   });
@@ -987,7 +987,7 @@ describe('scenario helpers', () => {
 
     for (const step of invalidSteps) {
       expect(() =>
-        createScenarioReplay([step as PliteBrowserScenarioStep])
+        createScenarioReplay([step as BrowserScenarioStep])
       ).toThrow();
     }
   });
@@ -1026,7 +1026,7 @@ describe('scenario helpers', () => {
 
     for (const step of invalidSteps) {
       expect(() =>
-        createScenarioReplay([step as PliteBrowserScenarioStep])
+        createScenarioReplay([step as BrowserScenarioStep])
       ).toThrow();
     }
   });
@@ -1060,7 +1060,7 @@ describe('scenario helpers', () => {
 
       for (const step of invalidSteps) {
         expect(() =>
-          createScenarioReplay([step as PliteBrowserScenarioStep])
+          createScenarioReplay([step as BrowserScenarioStep])
         ).toThrow();
       }
     }
@@ -1102,12 +1102,12 @@ describe('scenario helpers', () => {
 
     for (const step of reversedGeometry) {
       expect(() =>
-        createScenarioReplay([step as PliteBrowserScenarioStep])
+        createScenarioReplay([step as BrowserScenarioStep])
       ).toThrow();
     }
     for (const step of validGeometry) {
       expect(() =>
-        createScenarioReplay([step as PliteBrowserScenarioStep])
+        createScenarioReplay([step as BrowserScenarioStep])
       ).not.toThrow();
     }
   });
@@ -1126,7 +1126,7 @@ describe('scenario helpers', () => {
 
   test('fails closed when an unsupported step reaches scenario execution', async () => {
     const scenario = createEditorHarnessScenario({
-      getHarness: () => ({}) as PliteBrowserEditorHarness,
+      getHarness: () => ({}) as BrowserEditorHarness,
       page: {} as never,
       root: {} as never,
       surface: {} as never,
@@ -1135,7 +1135,7 @@ describe('scenario helpers', () => {
     await expect(
       scenario.run(
         'unsupported-step',
-        [{ kind: 'unknown' } as unknown as PliteBrowserScenarioStep],
+        [{ kind: 'unknown' } as unknown as BrowserScenarioStep],
         { runtimeErrors: false }
       )
     ).rejects.toThrow(/not a supported scenario step/);
@@ -1144,24 +1144,23 @@ describe('scenario helpers', () => {
   test('uses semantic undo for mobile scenarios', async () => {
     const actions: string[] = [];
     const snapshot = { text: 'after undo' } as EditorSnapshot;
-    const harness: Pick<PliteBrowserEditorHarness, 'press' | 'trace' | 'undo'> =
-      {
-        press: async (key) => {
-          actions.push(key);
-        },
-        trace: {
-          snapshot: async (label, stepIndex = null) => ({
-            label,
-            snapshot,
-            stepIndex,
-          }),
-        },
-        undo: async () => {
-          actions.push('undo');
-        },
-      };
+    const harness: Pick<BrowserEditorHarness, 'press' | 'trace' | 'undo'> = {
+      press: async (key) => {
+        actions.push(key);
+      },
+      trace: {
+        snapshot: async (label, stepIndex = null) => ({
+          label,
+          snapshot,
+          stepIndex,
+        }),
+      },
+      undo: async () => {
+        actions.push('undo');
+      },
+    };
     const scenario = createEditorHarnessScenario({
-      getHarness: () => harness as PliteBrowserEditorHarness,
+      getHarness: () => harness as BrowserEditorHarness,
       page: {} as never,
       root: {} as never,
       surface: {} as never,
@@ -1178,7 +1177,7 @@ describe('scenario helpers', () => {
   test('runs imperative experiments in an explicitly non-proof lane', async () => {
     const actions: string[] = [];
     const snapshot = { text: 'after type' } as EditorSnapshot;
-    const harness: Pick<PliteBrowserEditorHarness, 'trace'> = {
+    const harness: Pick<BrowserEditorHarness, 'trace'> = {
       trace: {
         snapshot: async (label, stepIndex = null) => ({
           label,
@@ -1188,7 +1187,7 @@ describe('scenario helpers', () => {
       },
     };
     const scenario = createEditorHarnessScenario({
-      getHarness: () => harness as PliteBrowserEditorHarness,
+      getHarness: () => harness as BrowserEditorHarness,
       page: {} as never,
       root: {} as never,
       surface: {} as never,
@@ -1215,7 +1214,7 @@ describe('scenario helpers', () => {
 
   test('creates replayable warm toolbar arrow gauntlet steps', () => {
     const replay = createScenarioReplay(
-      createPliteBrowserWarmToolbarArrowGauntlet({
+      createBrowserWarmToolbarArrowGauntlet({
         domCaretAfterInsert: {
           offset: 9,
           text: 'editableW',
@@ -1293,14 +1292,14 @@ describe('scenario helpers', () => {
     };
     const point = { path: [0, 0], offset: 2 };
     const helpers = [
-      createPliteBrowserInternalControlGauntlet({
+      createBrowserInternalControlGauntlet({
         controlSelector: '[data-testid="internal-control"]',
         controlValue: 'inner',
         followUpText: 'Z',
         outerSelection: collapsed,
         textAfterFollowUp: 'textZ',
       }),
-      createPliteBrowserCompositionGauntlet({
+      createBrowserCompositionGauntlet({
         committedText: 'é',
         selection: collapsed,
         steps: ['e', 'é'],
@@ -1308,11 +1307,11 @@ describe('scenario helpers', () => {
         textAfterComposition: 'texté',
         transport: 'synthetic',
       }),
-      createPliteBrowserShellActivationGauntlet({
+      createBrowserShellActivationGauntlet({
         buttonName: 'Open editor',
         expectedSelection: collapsed,
       }),
-      createPliteBrowserInlineCutTypingGauntlet({
+      createBrowserInlineCutTypingGauntlet({
         domShape: {
           afterCut: {
             blockIndex: 0,
@@ -1328,7 +1327,7 @@ describe('scenario helpers', () => {
         selection: selected,
         textAfterTyping: 'textZ',
       }),
-      createPliteBrowserToolbarMarkClickTypingGauntlet({
+      createBrowserToolbarMarkClickTypingGauntlet({
         clickPoint: point,
         insertedText: 'Z',
         markButtonTestId: 'mark-button-bold',
@@ -1336,7 +1335,7 @@ describe('scenario helpers', () => {
         selectionAfterInsert: collapsed,
         textAfterInsert: 'textZ',
       }),
-      createPliteBrowserMixedEditingConformanceGauntlet({
+      createBrowserMixedEditingConformanceGauntlet({
         deleteKey: 'Backspace',
         domShape: {
           afterDelete: {
@@ -1369,7 +1368,7 @@ describe('scenario helpers', () => {
         toolbarSelection: selected,
         toolbarSelectionAfterCommand: selected,
       }),
-      createPliteBrowserSemanticEditingConformanceGauntlet({
+      createBrowserSemanticEditingConformanceGauntlet({
         insertedText: 'Z',
         selectionAfterDelete: collapsed,
         selectionAfterFollowUp: collapsed,
@@ -1390,7 +1389,7 @@ describe('scenario helpers', () => {
   });
 
   test('creates replayable generated destructive editing gauntlet steps', () => {
-    const steps = createPliteBrowserDestructiveEditingGauntlet({
+    const steps = createBrowserDestructiveEditingGauntlet({
       domShape: {
         afterDeleteAfterPaste: {
           blockIndex: 0,
@@ -1477,7 +1476,7 @@ describe('scenario helpers', () => {
   });
 
   test('creates generated warm loop steps with iteration labels', () => {
-    const steps = createPliteBrowserWarmLoopSteps({
+    const steps = createBrowserWarmLoopSteps({
       createIteration: (iteration) => [
         { kind: 'focus', label: `focus-${iteration}` },
         { kind: 'type', label: `type-${iteration}`, text: `${iteration}` },
@@ -1514,13 +1513,13 @@ describe('scenario helpers', () => {
 
     for (const iterations of invalidCounts) {
       expect(() =>
-        createPliteBrowserWarmLoopSteps({
+        createBrowserWarmLoopSteps({
           createIteration: () => [{ kind: 'focus' }],
           iterations,
         })
       ).toThrow();
       expect(() =>
-        createPliteBrowserDestructiveEditingGauntlet({
+        createBrowserDestructiveEditingGauntlet({
           followUpText: 'a',
           pasteSelection: selection,
           pastedText: 'a',
@@ -1536,7 +1535,7 @@ describe('scenario helpers', () => {
   });
 
   test('creates iteration-level reduction candidates for warm loops', () => {
-    const steps = createPliteBrowserWarmLoopSteps({
+    const steps = createBrowserWarmLoopSteps({
       createIteration: (iteration) => [
         { kind: 'focus', label: `focus-${iteration}` },
         { kind: 'type', label: `type-${iteration}`, text: `${iteration}` },
@@ -1567,24 +1566,22 @@ describe('scenario helpers', () => {
     );
   });
 
-  test('matches absent commands and partial-DOM kernel ownership exactly', () => {
+  test('matches absent commands and viewport-backed kernel ownership exactly', () => {
     const entry = {
       command: null,
-      selectionSource: 'partial-dom-backed',
-      stateAfter: 'partial-dom-backed',
-      stateBefore: 'partial-dom-backed',
-      targetOwner: 'partial-dom',
-    } as PliteBrowserKernelTraceEntry;
+      selectionSource: 'viewport-backed',
+      stateAfter: 'viewport-backed',
+      stateBefore: 'viewport-backed',
+      targetOwner: 'viewport',
+    } as BrowserKernelTraceEntry;
 
-    expect(matchesPliteBrowserKernelTrace(entry, { commandKind: null })).toBe(
-      true
-    );
+    expect(matchesBrowserKernelTrace(entry, { commandKind: null })).toBe(true);
     expect(
-      matchesPliteBrowserKernelTrace(entry, {
-        selectionSource: 'partial-dom-backed',
-        stateAfter: 'partial-dom-backed',
-        stateBefore: 'partial-dom-backed',
-        targetOwner: 'partial-dom',
+      matchesBrowserKernelTrace(entry, {
+        selectionSource: 'viewport-backed',
+        stateAfter: 'viewport-backed',
+        stateBefore: 'viewport-backed',
+        targetOwner: 'viewport',
       })
     ).toBe(true);
     expect(
@@ -1598,12 +1595,12 @@ describe('scenario helpers', () => {
               reason: 'model-document-boundary',
             },
             selectionPolicy: {
-              kind: 'partial-dom',
-              reason: 'partial-dom-backed',
+              kind: 'viewport',
+              reason: 'viewport-backed',
             },
-            selectionSource: 'partial-dom-backed',
-            stateAfter: 'partial-dom-backed',
-            targetOwner: 'partial-dom',
+            selectionSource: 'viewport-backed',
+            stateAfter: 'viewport-backed',
+            targetOwner: 'viewport',
           },
         },
       ]).replayable

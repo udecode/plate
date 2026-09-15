@@ -1,7 +1,5 @@
 import type { EditorDocumentValue } from 'platejs';
 
-const PLAYGROUND_CREATED_AT = 1_704_067_200_000;
-
 export const playgroundValue: EditorDocumentValue = {
   children: [
     // Intro
@@ -42,13 +40,6 @@ export const playgroundValue: EditorDocumentValue = {
         {
           children: [
             {
-              suggestion: true,
-              suggestion_playground1: {
-                id: 'playground1',
-                createdAt: PLAYGROUND_CREATED_AT,
-                type: 'insert',
-                userId: 'alice',
-              },
               text: 'suggestions',
             },
           ],
@@ -56,71 +47,19 @@ export const playgroundValue: EditorDocumentValue = {
           url: '/docs/suggestion',
         },
         {
-          suggestion: true,
-          suggestion_playground1: {
-            id: 'playground1',
-            createdAt: PLAYGROUND_CREATED_AT,
-            type: 'insert',
-            userId: 'alice',
-          },
-          text: ' ',
+          text: ' like this added text or to mark text for removal. Discuss changes using ',
         },
-        {
-          suggestion: true,
-          suggestion_playground1: {
-            id: 'playground1',
-            createdAt: PLAYGROUND_CREATED_AT,
-            type: 'insert',
-            userId: 'alice',
-          },
-          text: 'like this added text',
-        },
-        { text: ' or to ' },
-        {
-          suggestion: true,
-          suggestion_playground2: {
-            id: 'playground2',
-            createdAt: PLAYGROUND_CREATED_AT,
-            type: 'remove',
-            userId: 'bob',
-          },
-          text: 'mark text for removal',
-        },
-        { text: '. Discuss changes using ' },
         {
           children: [{ text: 'comments' }],
           type: 'link',
           url: '/docs/comment',
         },
-        { text: ' on many text segments' },
-        { text: '. You can even have ' },
         {
-          suggestion: true,
-          suggestion_playground3: {
-            id: 'playground3',
-            createdAt: PLAYGROUND_CREATED_AT,
-            type: 'insert',
-            userId: 'charlie',
-          },
-          text: 'overlapping',
+          text: ' on many text segments. You can even have overlapping annotations!',
         },
-        { text: ' annotations!' },
       ],
       type: 'paragraph',
     },
-    // {
-    //   children: [
-    //     {
-    //       text: 'Block-level suggestions are also supported for broader feedback.',
-    //     },
-    //   ],
-    //   suggestion: {
-    //     suggestionId: 'suggestionBlock1',
-    //     type: 'block',
-    //     userId: 'charlie',
-    //   },
-    //   type: 'paragraph',
-    // },
     // AI Section
     {
       children: [{ text: 'AI-Powered Editing' }],

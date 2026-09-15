@@ -52,6 +52,11 @@ Completion threshold:
   pointer feedback, focus, popup, geometry/paint, runtime errors, and follow-up
   input, with an N/A reason for observations that do not apply.
 - Current source and every proof host are ready before behavior claims.
+- Every browser proof after product-source edits records
+  `browser-source-attestation: <fresh host restart or served-input digest>` in
+  Proof-host readiness before its behavior assertion. Browser-family changes
+  repeat the attestation; an unexplained running server and unproved hot reload
+  are invalid.
 - Every reporter-named route uses one literal `exact-route:` in the selected
   environment and Proof-host readiness row. Final proof names the route and a
   receipt input contains it as the executable navigation target; proxy routes
@@ -179,6 +184,11 @@ Work Checklist:
       route-based reporter contradiction records
       `exact-route-reproduction: red` or `pass` before product work resumes.
 - [ ] Generated/source drift and host readiness are repaired or block the claim.
+- [ ] Every browser proof after product-source edits records
+      `browser-source-attestation: <fresh host restart or served-input digest>`
+      in Proof-host readiness before behavior assertions. Browser-family
+      changes repeat the attestation; unexplained running servers and unproved
+      hot reload do not validate current bytes.
 - [ ] Every selected case has a stable ID, source reference, owner, setup,
       action, expected outcome, expected-outcome authority, executable test
       path/command, tested ref, and required stability. A negative report does

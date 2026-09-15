@@ -9,13 +9,14 @@
       "upstream": "skills/principle-minimize-reader-load/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "480f4ddec29e7e3058a8f17eb97c0cec4a2c8b4b33ba6401e960167c1fc95a81",
-      "destinationSha256": "e77e0794adc62117e7da64301c1639752448d1becb301b14d70af3cfe367c5cc",
+      "destinationSha256": "393662821adb7742720610c49fb59cfaeb638ade6e774d55af02ab1ec35ffe1e",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-minimize-reader-load/SKILL.md\n+++ skills/principle-minimize-reader-load/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-minimize-reader-load\n description: \"Apply when reviewing or shaping code that's hard to trace. Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Minimize Reader Load\n \n"
+      "unifiedDiff": "--- skills/principle-minimize-reader-load/SKILL.md\n+++ skills/principle-minimize-reader-load/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-minimize-reader-load\n-description: \"Apply when reviewing or shaping code that's hard to trace. Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope.\"\n-disable-model-invocation: true\n+description: \"Simplify code whose indirection or hidden state makes ownership and behavior hard to trace.\"\n ---\n \n # Minimize Reader Load\n"
     }
   ],
   "ownedFiles": [

@@ -79,7 +79,7 @@ disablement.
 | `TrailingBlockPlugin` | `platejs`             | Provides trailing-block normalization when enabled.              |
 | `single-block-demo`   | Registry example             | Owns the broad composition and mode toggle.                   |
 
-These plugins are editor constraints, not schema validation. Their Plite
+These plugins are editor constraints, not schema validation. Their Plate
 corrections rewrite invalid root content before publication.
 
 ## Behavior
@@ -93,7 +93,7 @@ Use single-block mode for descriptions, comments, or titles that may wrap across
 
 ## Corrections
 
-Both behavior plugins register Plite corrections.
+Both behavior plugins register Plate corrections.
 
 | Case                                                       | Result                                                                             |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -102,7 +102,7 @@ Both behavior plugins register Plite corrections.
 | Root has multiple blocks with `SingleLinePlugin`           | Merges each next block into the first block without a separator.                   |
 | Text node contains line separators with `SingleLinePlugin` | Replaces the text with the filtered one-line string.                               |
 
-Each correction runs in the active Plite transaction, so the root collapse
+Each correction runs in the active Plate transaction, so the root collapse
 publishes as one update.
 
 ## Demo toggle

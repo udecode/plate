@@ -94,7 +94,7 @@ Required shape:
 1. Explain the two directions up front (A→B and B→A).
 2. Split the page by direction.
 3. State environment constraints (server vs client, static vs React) before the first example.
-4. Show extension points only after the base path is clear.
+4. Show composition points only after the base path is clear.
 5. Put the heavy API reference late.
 
 

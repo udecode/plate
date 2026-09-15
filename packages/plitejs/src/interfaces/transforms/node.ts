@@ -194,11 +194,11 @@ export interface NodeMutationMethods<V extends Value = Value> {
   insertNodes: {
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       T extends ElementOrTextIn<TValue>,
       const TType extends NodeTypeSelector | undefined,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       nodes: T | readonly T[],
       options: NodeInsertNodesOptions<
         NodeMutationTarget<TValue, TType>,
@@ -212,10 +212,10 @@ export interface NodeMutationMethods<V extends Value = Value> {
     ): void;
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       T extends ElementOrTextIn<TValue>,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       nodes: T | readonly T[],
       options?: NodeInsertNodesOptions<NodeIn<TValue>>
     ): void;
@@ -228,21 +228,21 @@ export interface NodeMutationMethods<V extends Value = Value> {
   liftNodes: {
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TType extends NodeTypeSelector,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options: NodeLiftNodesOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
     ): void;
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TOptions extends NodeLiftNodesOptions<NodeIn<TValue>> =
         NodeLiftNodesOptions<NodeIn<TValue>>,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options?: OptionalSelectorOptions<TOptions>
     ): void;
   };
@@ -254,21 +254,21 @@ export interface NodeMutationMethods<V extends Value = Value> {
   mergeNodes: {
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TType extends NodeTypeSelector,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options: NodeMergeNodesOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
     ): void;
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TOptions extends NodeMergeNodesOptions<NodeIn<TValue>> =
         NodeMergeNodesOptions<NodeIn<TValue>>,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options?: OptionalSelectorOptions<TOptions>
     ): void;
   };
@@ -279,21 +279,21 @@ export interface NodeMutationMethods<V extends Value = Value> {
   moveNodes: {
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TType extends NodeTypeSelector,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options: NodeMoveNodesOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
     ): void;
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TOptions extends NodeMoveNodesOptions<NodeIn<TValue>> =
         NodeMoveNodesOptions<NodeIn<TValue>>,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options: OptionalSelectorOptions<TOptions>
     ): void;
   };
@@ -304,28 +304,28 @@ export interface NodeMutationMethods<V extends Value = Value> {
   removeNodes: {
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TType extends NodeTypeSelector,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options: NodeRemoveNodesOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
     ): void;
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TOptions extends NodeRemoveNodesOptions<NodeIn<TValue>> =
         NodeRemoveNodesOptions<NodeIn<TValue>>,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options?: OptionalSelectorOptions<TOptions>
     ): void;
   };
 
   /** Replace a range of children under an ancestor node atomically. */
-  replaceChildren: <TValue extends V, TExtensions extends readonly unknown[]>(
-    editor: Editor<TValue, TExtensions>,
+  replaceChildren: <TValue extends V, TPlugins extends readonly unknown[]>(
+    editor: Editor<TValue, TPlugins>,
     children: ReadonlyArray<ElementOrTextIn<TValue>>,
     options: NodeReplaceChildrenOptions
   ) => void;
@@ -336,10 +336,10 @@ export interface NodeMutationMethods<V extends Value = Value> {
   setNodes: {
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TType extends NodeTypeSelector,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       props: Partial<NodeProps<NodeForTypeSelector<TType>>>,
       options: NodeSetNodesOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
@@ -347,11 +347,11 @@ export interface NodeMutationMethods<V extends Value = Value> {
     ): void;
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TOptions extends NodeSetNodesOptions<NodeIn<TValue>> =
         NodeSetNodesOptions<NodeIn<TValue>>,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       props: Partial<NodeProps<NodeIn<TValue>>>,
       options?: OptionalSelectorOptions<TOptions>
     ): void;
@@ -363,21 +363,21 @@ export interface NodeMutationMethods<V extends Value = Value> {
   splitNodes: {
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TType extends NodeTypeSelector,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options: NodeSplitNodesOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
     ): void;
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TOptions extends NodeSplitNodesOptions<NodeIn<TValue>> =
         NodeSplitNodesOptions<NodeIn<TValue>>,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options?: OptionalSelectorOptions<TOptions>
     ): void;
   };
@@ -388,10 +388,10 @@ export interface NodeMutationMethods<V extends Value = Value> {
   unsetNodes: {
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TType extends NodeTypeSelector,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       props: string | readonly string[],
       options: NodeUnsetNodesOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
@@ -399,11 +399,11 @@ export interface NodeMutationMethods<V extends Value = Value> {
     ): void;
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TOptions extends NodeUnsetNodesOptions<NodeIn<TValue>> =
         NodeUnsetNodesOptions<NodeIn<TValue>>,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       props: string | readonly string[],
       options?: OptionalSelectorOptions<TOptions>
     ): void;
@@ -416,21 +416,21 @@ export interface NodeMutationMethods<V extends Value = Value> {
   unwrapNodes: {
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TType extends NodeTypeSelector,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options: NodeUnwrapNodesOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
       }
     ): void;
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TOptions extends NodeUnwrapNodesOptions<NodeIn<TValue>> =
         NodeUnwrapNodesOptions<NodeIn<TValue>>,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       options?: OptionalSelectorOptions<TOptions>
     ): void;
   };
@@ -442,10 +442,10 @@ export interface NodeMutationMethods<V extends Value = Value> {
   wrapNodes: {
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TType extends NodeTypeSelector,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       element: ElementIn<TValue>,
       options: NodeWrapNodesOptions<NodeForTypeSelector<TType>, TType> & {
         type: TType;
@@ -453,11 +453,11 @@ export interface NodeMutationMethods<V extends Value = Value> {
     ): void;
     <
       TValue extends V,
-      TExtensions extends readonly unknown[],
+      TPlugins extends readonly unknown[],
       const TOptions extends NodeWrapNodesOptions<NodeIn<TValue>> =
         NodeWrapNodesOptions<NodeIn<TValue>>,
     >(
-      editor: Editor<TValue, TExtensions>,
+      editor: Editor<TValue, TPlugins>,
       element: ElementIn<TValue>,
       options?: OptionalSelectorOptions<TOptions>
     ): void;

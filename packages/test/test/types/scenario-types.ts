@@ -6,14 +6,14 @@ import type {
 } from '../../../plitejs/src/react/editable/editing-kernel';
 import type { EditableRepairRequest } from '../../../plitejs/src/react/editable/mutation-controller';
 import type {
-  PliteBrowserKernelCommand,
-  PliteBrowserKernelCommandDefinition,
-  PliteBrowserKernelEventFrame,
-  PliteBrowserKernelRepairRequest,
-  PliteBrowserKernelTraceExpectation,
-  PliteBrowserKernelTraceEntry,
-  PliteBrowserScenarioStep,
-  PliteBrowserSelectionContractExpectation,
+  BrowserKernelCommand,
+  BrowserKernelCommandDefinition,
+  BrowserKernelEventFrame,
+  BrowserKernelRepairRequest,
+  BrowserKernelTraceExpectation,
+  BrowserKernelTraceEntry,
+  BrowserScenarioStep,
+  BrowserSelectionContractExpectation,
   RenderedDOMShapeExpectation,
 } from '../../src/playwright';
 
@@ -31,24 +31,24 @@ type SerializableEditableCommand<TCommand> = TCommand extends {
   : TCommand;
 
 type KernelCommandParity = Expect<
-  Equal<PliteBrowserKernelCommand, SerializableEditableCommand<EditableCommand>>
+  Equal<BrowserKernelCommand, SerializableEditableCommand<EditableCommand>>
 >;
 type KernelCommandDefinitionParity = Expect<
-  Equal<PliteBrowserKernelCommandDefinition, EditableCommandDefinition>
+  Equal<BrowserKernelCommandDefinition, EditableCommandDefinition>
 >;
 type KernelEventFrameParity = Expect<
-  Equal<PliteBrowserKernelEventFrame, EditableEventFrame>
+  Equal<BrowserKernelEventFrame, EditableEventFrame>
 >;
 type KernelRepairParity = Expect<
-  Equal<PliteBrowserKernelRepairRequest, EditableRepairRequest>
+  Equal<BrowserKernelRepairRequest, EditableRepairRequest>
 >;
 type KernelTraceKeysParity = Expect<
-  Equal<keyof PliteBrowserKernelTraceEntry, keyof EditableKernelTraceEntry>
+  Equal<keyof BrowserKernelTraceEntry, keyof EditableKernelTraceEntry>
 >;
 type KernelTraceFieldsParity = Expect<
   Equal<
     Omit<
-      PliteBrowserKernelTraceEntry,
+      BrowserKernelTraceEntry,
       | 'command'
       | 'commandDefinition'
       | 'frame'
@@ -76,12 +76,12 @@ void (null as unknown as KernelTraceKeysParity);
 void (null as unknown as KernelTraceFieldsParity);
 
 // @ts-expect-error count assertions need count, min, or max
-const emptyCount: PliteBrowserScenarioStep = {
+const emptyCount: BrowserScenarioStep = {
   kind: 'assertLocatorCount',
   selector: '[data-editor]',
 };
 
-const contradictoryCount: PliteBrowserScenarioStep = {
+const contradictoryCount: BrowserScenarioStep = {
   count: 1,
   kind: 'assertLocatorCount',
   // @ts-expect-error exact count cannot be combined with a range
@@ -90,18 +90,18 @@ const contradictoryCount: PliteBrowserScenarioStep = {
 };
 
 // @ts-expect-error false does not assert that a selection is non-empty
-const emptyWindowSelection: PliteBrowserScenarioStep = {
+const emptyWindowSelection: BrowserScenarioStep = {
   kind: 'assertWindowSelectionText',
   notEmpty: false,
 };
 
-const emptyRenderBudget: PliteBrowserScenarioStep = {
+const emptyRenderBudget: BrowserScenarioStep = {
   // @ts-expect-error render budgets need total or at least one render kind
   budget: {},
   kind: 'assertRenderBudget',
 };
 
-const contradictoryRenderBudget: PliteBrowserScenarioStep = {
+const contradictoryRenderBudget: BrowserScenarioStep = {
   budget: {
     // @ts-expect-error exact render counts cannot be combined with a range
     total: { exact: 1, min: 0 },
@@ -109,7 +109,7 @@ const contradictoryRenderBudget: PliteBrowserScenarioStep = {
   kind: 'assertRenderBudget',
 };
 
-const emptyRenderCountRange: PliteBrowserScenarioStep = {
+const emptyRenderCountRange: BrowserScenarioStep = {
   budget: {
     // @ts-expect-error a render-count range needs min or max
     total: {},
@@ -126,10 +126,10 @@ const validRenderBudgets = [
     budget: { total: { max: 2, min: 0 } },
     kind: 'assertRenderBudget',
   },
-] satisfies PliteBrowserScenarioStep[];
+] satisfies BrowserScenarioStep[];
 
 // @ts-expect-error selection contracts need at least one expectation
-const emptySelectionContract: PliteBrowserSelectionContractExpectation = {};
+const emptySelectionContract: BrowserSelectionContractExpectation = {};
 
 // @ts-expect-error rendered DOM assertions need at least one expectation
 const emptyDOMShape: RenderedDOMShapeExpectation = {};
@@ -138,9 +138,9 @@ const emptyDOMShape: RenderedDOMShapeExpectation = {};
 const blockIndexOnlyDOMShape: RenderedDOMShapeExpectation = { blockIndex: 1 };
 
 // @ts-expect-error kernel trace assertions need at least one expectation
-const emptyKernelTrace: PliteBrowserKernelTraceExpectation = {};
+const emptyKernelTrace: BrowserKernelTraceExpectation = {};
 
-const emptyIncludedTags: PliteBrowserScenarioStep = {
+const emptyIncludedTags: BrowserScenarioStep = {
   kind: 'assertLastCommitIncludesTags',
   // @ts-expect-error inclusion assertions need at least one tag
   tags: [],

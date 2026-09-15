@@ -1,17 +1,17 @@
 import { type EditorDocumentValue, property, schema, target } from '../../core';
 import { createEditor, defineDocumentMigrations } from '../../lib/editor';
-import { defineBasePlugin } from '../../lib/plugin';
+import { definePlugin } from '../../lib/plugin';
 import { pipePrepareDocument } from './pipePrepareDocument';
 
 describe('pipePrepareDocument', () => {
   const createLoosePlugin = (config: Record<string, unknown>) => {
     const { name, ...definition } = config;
 
-    return defineBasePlugin(name as string, definition as any) as any;
+    return definePlugin(name as string, definition as any) as any;
   };
 
   const createTestPlugin = (name: string) =>
-    defineBasePlugin(name, {
+    definePlugin(name, {
       prepareDocument: ({ document }: any) => ({
         ...document,
         children: document.children.map((node: any) => ({
@@ -30,7 +30,7 @@ describe('pipePrepareDocument', () => {
       }),
     });
 
-  const CountPlugin = defineBasePlugin('count', {
+  const CountPlugin = definePlugin('count', {
     schema: {
       properties: {
         count: schema.elementProperty(property.number(), {
@@ -227,7 +227,7 @@ describe('pipePrepareDocument', () => {
       },
       unversioned: 0,
     });
-    const PreparePlugin = defineBasePlugin('prepareCurrent', {
+    const PreparePlugin = definePlugin('prepareCurrent', {
       prepareDocument: ({ document }) => {
         preparationCalls += 1;
 

@@ -7,7 +7,7 @@ import { renderToString } from 'react-dom/server';
 import { ElementIdPlugin } from '../../lib';
 import { type Editor, type EditorReference, createEditor } from '../editor';
 import { EditorProvider } from './EditorProvider';
-import { PlateElement } from './plate-nodes';
+import { EditorElement } from './plate-nodes';
 
 const createElement = (id?: string) =>
   ({
@@ -30,7 +30,7 @@ const createProps = (editor: TestPlateEditor, id?: string) =>
 const renderWithStore = ({ editor }: { editor: Editor }) =>
   render(
     <EditorProvider editor={editor}>
-      <PlateElement {...createProps(editor, 'block-1')} />
+      <EditorElement {...createProps(editor, 'block-1')} />
     </EditorProvider>
   );
 
@@ -39,8 +39,8 @@ describe('PlateElement', () => {
     const editor = createEditor({
       initialValue: [createElement()],
     });
-    const { container } = render(<PlateElement {...createProps(editor)} />);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const { container } = render(<EditorElement {...createProps(editor)} />);
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element).toBeInTheDocument();
     expect(element).not.toHaveAttribute('data-block-id');
@@ -52,7 +52,7 @@ describe('PlateElement', () => {
       plugins: [ElementIdPlugin],
     });
     const html = renderToString(
-      <PlateElement {...createProps(editor, 'block-1')} />
+      <EditorElement {...createProps(editor, 'block-1')} />
     );
 
     expect(html).not.toContain('data-block-id');
@@ -64,7 +64,7 @@ describe('PlateElement', () => {
       plugins: [ElementIdPlugin],
     });
     const { container } = renderWithStore({ editor });
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element).toBeInTheDocument();
     expect(element).not.toHaveAttribute('data-block-id');
@@ -77,7 +77,7 @@ describe('PlateElement', () => {
     const attributeRef = mock();
 
     render(
-      <PlateElement
+      <EditorElement
         {...createProps(editor)}
         attributes={{ ref: attributeRef } as any}
       />
@@ -94,7 +94,7 @@ describe('PlateElement', () => {
     const forwardedRef = React.createRef<HTMLDivElement>();
 
     render(
-      <PlateElement
+      <EditorElement
         {...createProps(editor)}
         attributes={{ ref: attributeRef } as any}
         className="extra-class"

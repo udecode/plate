@@ -106,7 +106,7 @@ const createFragment = (count) =>
 
 const withHistoryEditor = () =>
   isPlite
-    ? createEditor({ extensions: [History.history()] })
+    ? createEditor({ plugins: [History.history()] })
     : History.withHistory(createEditor());
 
 const readHistory = (editor) =>

@@ -1,0 +1,30 @@
+---
+title: 编辑器转换
+description: 修改 Plate 编辑器状态的事务方法。
+---
+
+Plate 的修改方法位于 `editor.update` 下。单次修改使用直接分组方法，多次
+原子修改使用回调形式。
+
+```ts
+editor.update.text.insert("Hello");
+
+editor.update((tx) => {
+  tx.nodes.set({ type: "heading" });
+  tx.text.insert("Title");
+});
+```
+
+## 方法分组
+
+| 分组 | 用途 |
+| --- | --- |
+| `tx.text` / `tx.marks` | 文本与标记编辑。 |
+| `tx.nodes` | 插入、删除、移动、拆分、合并和设置节点属性。 |
+| `tx.selection` | 设置、折叠和清空模型选区。 |
+| `tx.fragment` / `tx.slice` | 替换闭合内容或适配带开放边界的内容。 |
+| `tx.changes` | 导入适配器或历史使用的规范文档变更。 |
+
+回调必须同步完成。使用 `at` 显式指定其他位置，省略时使用当前选区。
+读取事务内状态时使用 `tx`，以观察同一草稿中的写入。
+参见[事务](/docs/transactions)与[编辑行为](/docs/editing-behavior)。

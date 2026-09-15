@@ -14,13 +14,13 @@ test.describe('markdown preview', () => {
     });
 
     const boldSegments = editor.root.locator(
-      '.plite-markdown-preview-segment.is-bold'
+      '.editor-markdown-preview-segment.is-bold'
     );
     const italicSegments = editor.root.locator(
-      '.plite-markdown-preview-segment.is-italic'
+      '.editor-markdown-preview-segment.is-italic'
     );
     const titleSegments = editor.root.locator(
-      '.plite-markdown-preview-segment.is-title'
+      '.editor-markdown-preview-segment.is-title'
     );
 
     await expect(

@@ -596,7 +596,7 @@ export type EditorCommands = Readonly<{
   toggleMark: EditorCommand<ToggleMarkCommand>;
 }>;
 
-/** Typed semantic command tokens exposed to extension command handlers. */
+/** Typed semantic command tokens exposed to plugin command handlers. */
 export const editorCommands: EditorCommands = Object.freeze({
   addMark: defineCommand<AddMarkCommand>('mark.add', {
     build: ({ input, state }) =>

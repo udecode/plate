@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   assertNoIllegalKernelTransitions,
-  installPliteReactRenderProfiler,
+  installReactRenderProfiler,
   openExample,
 } from '@platejs/test/playwright';
 
@@ -32,7 +32,7 @@ test(
 
     const artifact = readStressArtifact(replayPath);
     const steps = artifactStepsToScenarioSteps(artifact, { reductionLabel });
-    await installPliteReactRenderProfiler(page);
+    await installReactRenderProfiler(page);
     const editor = await openExample(
       page,
       artifact.route.startsWith('plite/')

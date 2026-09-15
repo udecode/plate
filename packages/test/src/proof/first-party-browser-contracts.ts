@@ -1,31 +1,31 @@
 import {
-  createPliteBrowserFeatureContractRegistry,
-  definePliteBrowserFeatureContract,
-  type PliteBrowserFeatureContractRow,
+  createBrowserFeatureContractRegistry,
+  defineBrowserFeatureContract,
+  type BrowserFeatureContractRow,
 } from './feature-contracts';
 
 /** First-party browser behavior row without its owning feature label. */
-export type PliteBrowserIntentFamilyContract = Omit<
-  PliteBrowserFeatureContractRow,
+export type BrowserIntentFamilyContract = Omit<
+  BrowserFeatureContractRow,
   'feature'
 >;
 
 /** Small cross-route parity slice used to keep canonical examples aligned. */
-export type PliteBrowserFirstPartyParityFamily = {
+export type BrowserFirstPartyParityFamily = {
   assertions: readonly string[];
   family: string;
   routes: readonly string[];
 };
 
 /** Summary returned after first-party browser contract validation. */
-export type PliteBrowserFirstPartyParityContractResult = {
+export type BrowserFirstPartyParityContractResult = {
   intentFamilyCount: number;
   parityFamilies: string[];
   registryRowCount: number;
 };
 
-/** Canonical first-party browser behavior families Plite must preserve. */
-export const PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS = [
+/** Canonical first-party browser behavior families editor must preserve. */
+export const BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS = [
   {
     assertions: [
       'model selection lands on the next inline void from both sides',
@@ -128,25 +128,25 @@ export const PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS = [
     assertions: [
       'annotation anchor rebase keeps inline projection attached',
       'annotation sidebar range follows inserted content',
-      'annotation widget remains visible after rebase',
+      'annotation sidebar remains visible after rebase',
     ],
     family: 'overlay-annotation-anchor-rebase',
     routes: ['comment-mode', 'persistent-annotation-anchors'],
   },
   {
     assertions: [
-      'annotation-backed widgets wake by widget id',
-      'selection and metadata changes keep widget visibility coherent',
-      'clearing annotations clears dependent widgets',
+      'annotation readers wake by annotation id',
+      'selection and metadata changes keep annotation visibility coherent',
+      'clearing annotations clears dependent readers',
     ],
-    family: 'overlay-widget-dirty-id',
+    family: 'overlay-annotation-dirty-id',
     routes: ['comment-mode'],
   },
   {
     assertions: [
-      'mixed annotation and widget overlays stay in sync',
+      'inline and sidebar annotation projections stay in sync',
       'text edits before an annotation rebase inline projection',
-      'clear removes inline and widget overlays',
+      'clear removes inline and sidebar projections',
     ],
     family: 'overlay-mixed-update',
     routes: ['comment-mode'],
@@ -156,7 +156,7 @@ export const PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS = [
       'real mouse drag creates native and model selections',
       'hovering toolbar becomes visible',
       'focus remains editor-owned',
-      'selection movement does not rerender Plite nodes',
+      'selection movement does not rerender editor nodes',
     ],
     family: 'mouse-selection-toolbar',
     routes: ['hovering-toolbar'],
@@ -272,10 +272,10 @@ export const PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS = [
     family: 'ime-composition-undo',
     routes: ['richtext'],
   },
-] satisfies readonly PliteBrowserIntentFamilyContract[];
+] satisfies readonly BrowserIntentFamilyContract[];
 
 /** Focused parity families that compare the same invariant across routes. */
-export const PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES = [
+export const BROWSER_FIRST_PARTY_PARITY_FAMILIES = [
   {
     assertions: [
       'model selection lands on the next inline void from both sides',
@@ -316,24 +316,24 @@ export const PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES = [
     family: 'table-cell-boundary-navigation',
     routes: ['tables'],
   },
-] satisfies readonly PliteBrowserFirstPartyParityFamily[];
+] satisfies readonly BrowserFirstPartyParityFamily[];
 
 const rowsByFamily = (families: readonly string[]) =>
-  PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS.filter((contract) =>
+  BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS.filter((contract) =>
     families.includes(contract.family)
   );
 
 /** Feature-indexed registry built from the first-party behavior families. */
-export const PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
-  createPliteBrowserFeatureContractRegistry([
-    definePliteBrowserFeatureContract({
+export const BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
+  createBrowserFeatureContractRegistry([
+    defineBrowserFeatureContract({
       feature: 'mentions',
       rows: rowsByFamily([
         'inline-void-boundary-navigation',
         'markable-inline-void-formatting',
       ]),
     }),
-    definePliteBrowserFeatureContract({
+    defineBrowserFeatureContract({
       feature: 'media',
       rows: rowsByFamily([
         'block-void-navigation',
@@ -341,35 +341,35 @@ export const PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
         'stale-target-remote-rebase',
       ]),
     }),
-    definePliteBrowserFeatureContract({
+    defineBrowserFeatureContract({
       feature: 'editable-voids',
       rows: rowsByFamily(['true-void-native-focus']),
     }),
-    definePliteBrowserFeatureContract({
+    defineBrowserFeatureContract({
       feature: 'table',
       rows: rowsByFamily(['table-cell-boundary-navigation']),
     }),
-    definePliteBrowserFeatureContract({
+    defineBrowserFeatureContract({
       feature: 'external-decorations',
       rows: rowsByFamily([
         'external-decoration-refresh',
         'overlay-many-decoration-sources',
       ]),
     }),
-    definePliteBrowserFeatureContract({
+    defineBrowserFeatureContract({
       feature: 'annotations',
       rows: rowsByFamily([
         'overlay-annotation-metadata-only',
         'overlay-annotation-anchor-rebase',
-        'overlay-widget-dirty-id',
+        'overlay-annotation-dirty-id',
         'overlay-mixed-update',
       ]),
     }),
-    definePliteBrowserFeatureContract({
+    defineBrowserFeatureContract({
       feature: 'selection-ui',
       rows: rowsByFamily(['mouse-selection-toolbar']),
     }),
-    definePliteBrowserFeatureContract({
+    defineBrowserFeatureContract({
       feature: 'core-editing',
       rows: rowsByFamily([
         'huge-document-projected-vertical-selection',
@@ -384,27 +384,27 @@ export const PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
         'ime-composition-undo',
       ]),
     }),
-    definePliteBrowserFeatureContract({
+    defineBrowserFeatureContract({
       feature: 'inline-void-ime',
       rows: rowsByFamily(['ime-composition-inline-void-boundary']),
     }),
   ]);
 
 /** Assert that first-party behavior and parity contract registries agree. */
-export const assertPliteBrowserFirstPartyParityContracts =
-  (): PliteBrowserFirstPartyParityContractResult => {
-    const registry = PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY;
+export const assertBrowserFirstPartyParityContracts =
+  (): BrowserFirstPartyParityContractResult => {
+    const registry = BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY;
 
     if (
       registry.rows.length !==
-      PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS.length
+      BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS.length
     ) {
       throw new Error(
         'Feature browser contract registry is missing stress rows.'
       );
     }
 
-    for (const contract of PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS) {
+    for (const contract of BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS) {
       const row = registry.rowByFamily.get(contract.family);
 
       if (!row) {
@@ -419,7 +419,7 @@ export const assertPliteBrowserFirstPartyParityContracts =
       }
     }
 
-    for (const parityFamily of PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES) {
+    for (const parityFamily of BROWSER_FIRST_PARTY_PARITY_FAMILIES) {
       const row = registry.rowByFamily.get(parityFamily.family);
 
       if (!row) {
@@ -448,9 +448,8 @@ export const assertPliteBrowserFirstPartyParityContracts =
     }
 
     return {
-      intentFamilyCount:
-        PLITE_BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS.length,
-      parityFamilies: PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES.map(
+      intentFamilyCount: BROWSER_FIRST_PARTY_INTENT_FAMILY_CONTRACTS.length,
+      parityFamilies: BROWSER_FIRST_PARTY_PARITY_FAMILIES.map(
         (family) => family.family
       ),
       registryRowCount: registry.rows.length,

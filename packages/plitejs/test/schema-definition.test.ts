@@ -5,11 +5,11 @@ import {
   containsCompleteEditorSchema,
   createEditor,
   defineEditorSchema,
-  defineExtension,
-  defineExtensionSlot,
+  definePlugin,
+  definePluginSlot,
   type EditorSchemaContribution,
-  type EditorExtensionReference,
-  type EditorExtensionInput,
+  type PluginReference,
+  type PluginInput,
   type PropertyJsonValue,
   type PropertyValueDescriptor,
   type PropertyValueOf,
@@ -439,7 +439,7 @@ describe('schema declaration builders', () => {
     assert.equal(Object.isFrozen(TextSchema.schema.elements), true);
   });
 
-  it('packages one deeply frozen schema extension and preserves literal types', () => {
+  it('packages one deeply frozen schema plugin and preserves literal types', () => {
     const Paragraph = {
       content: schema.content.text({ min: 1 }),
       groups: ['articleBlock'],
@@ -462,11 +462,11 @@ describe('schema declaration builders', () => {
       unknown: 'reject',
       version: 1,
     });
-    const extension: EditorExtensionReference = ArticleSchema;
-    const extensionInput: EditorExtensionInput = ArticleSchema;
-    const slotted = defineExtensionSlot('article-schema').of(ArticleSchema);
+    const plugin: PluginReference = ArticleSchema;
+    const pluginInput: PluginInput = ArticleSchema;
+    const slotted = definePluginSlot('article-schema').of(ArticleSchema);
     const editor = createEditor({
-      extensions: [ArticleSchema],
+      plugins: [ArticleSchema],
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const id: 'article' = ArticleSchema.schema.id;
@@ -476,8 +476,8 @@ describe('schema declaration builders', () => {
     assert.equal(id, 'article');
     assert.equal(unknown, 'reject');
     assert.equal(type, 'paragraph');
-    assert.equal(extension.name, 'schema:article');
-    assert.equal(extensionInput.name, 'schema:article');
+    assert.equal(plugin.name, 'schema:article');
+    assert.equal(pluginInput.name, 'schema:article');
     assert.equal(slotted.name, 'slot:article-schema');
     assert.equal(editor.read.children()[0]?.type, 'paragraph');
     assert.equal(Object.isFrozen(ArticleSchema), true);
@@ -489,7 +489,7 @@ describe('schema declaration builders', () => {
     assert.equal(Object.isFrozen(ArticleSchema.schema.roots), true);
   });
 
-  it('finds complete schemas through extension slots and dependencies', () => {
+  it('finds complete schemas through plugin slots and dependencies', () => {
     const ArticleSchema = defineEditorSchema('schema:article-inspection', {
       elements: {
         paragraph: {
@@ -498,17 +498,17 @@ describe('schema declaration builders', () => {
       },
       root: schema.content.type('paragraph', { min: 1 }),
     });
-    const PartialSchema = defineExtension('schema:partial-inspection', {
+    const PartialSchema = definePlugin('schema:partial-inspection', {
       schema: {
         elements: {
           heading: { content: schema.content.text({ min: 1 }) },
         },
       },
     });
-    const Dependent = defineExtension('schema:dependent-inspection', {
+    const Dependent = definePlugin('schema:dependent-inspection', {
       dependencies: [ArticleSchema],
     });
-    const slot = defineExtensionSlot('schema-inspection');
+    const slot = definePluginSlot('schema-inspection');
 
     assert.equal(containsCompleteEditorSchema(PartialSchema), false);
     assert.equal(containsCompleteEditorSchema(ArticleSchema), true);
@@ -534,7 +534,7 @@ describe('schema declaration builders', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [
+          plugins: [
             // @ts-expect-error the primary root belongs in the singular root field
             defineEditorSchema('schema:invalid-main', invalidMain),
           ],
@@ -564,13 +564,10 @@ describe('schema declaration builders', () => {
       },
       properties: [schema.textProperty('bold', property.boolean())],
     } as const;
-    const extension: EditorExtensionReference = defineExtension(
-      'paragraph-feature',
-      {
-        schema: contribution,
-      }
-    );
-    const canonicalContribution = extension.schema;
+    const plugin: PluginReference = definePlugin('paragraph-feature', {
+      schema: contribution,
+    });
+    const canonicalContribution = plugin.schema;
 
     assert.ok(
       canonicalContribution && typeof canonicalContribution !== 'function'
@@ -616,7 +613,7 @@ describe('schema declaration builders', () => {
       version: 1,
     });
     const editor = createEditor({
-      extensions: [OpenSchema],
+      plugins: [OpenSchema],
       initialValue: [
         {
           children: [{ text: 'body' }],
@@ -633,7 +630,7 @@ describe('schema declaration builders', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [
+          plugins: [
             defineEditorSchema('schema:closed-content', {
               elements: {
                 container: { content: schema.content.text() },

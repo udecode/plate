@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { createEditor, defineExtension, editorCommands } from 'plitejs';
+import { createEditor, definePlugin, editorCommands } from 'plitejs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -336,8 +336,8 @@ describe('Android input manager phase scheduling', () => {
 describe('Android input manager command-handler flush policy', () => {
   it('keeps pass-through insertText handlers on the deferred native path', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('insert-text-command', {
+      plugins: [
+        definePlugin('insert-text-command', {
           commands: ({ handle }) => [
             handle(editorCommands.insertText, (_context) => false),
           ],
@@ -362,8 +362,8 @@ describe('Android input manager command-handler flush policy', () => {
 
   it('flushes stored text diffs when insertText policy is material', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('insert-text-command', {
+      plugins: [
+        definePlugin('insert-text-command', {
           commands: ({ handle }) => [
             handle(editorCommands.insertText, ({ state }) =>
               state.transaction((tx) => {
@@ -405,8 +405,8 @@ describe('Android input manager command-handler flush policy', () => {
 
   it('does not fast-flush delete diffs through insertText command handlers', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('insert-text-command', {
+      plugins: [
+        definePlugin('insert-text-command', {
           commands: ({ handle }) => [
             handle(editorCommands.insertText, (_context) => false),
           ],
@@ -431,8 +431,8 @@ describe('Android input manager command-handler flush policy', () => {
 
   it('does not treat unrelated command handlers as insertText policy', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('insert-break-command', {
+      plugins: [
+        definePlugin('insert-break-command', {
           commands: ({ handle }) => [
             handle(editorCommands.insertBreak, (_context) => false),
           ],
@@ -503,13 +503,13 @@ describe('Android input manager stored text diffs', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('abc');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
 
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 0]);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
 
     const manager = createAndroidInputManager({
       editor: editor as never,
@@ -578,8 +578,8 @@ describe('Android input manager stored text diffs', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('A');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
     inputController.state.recentTextInputRepairEcho = {
       expiresAt: performance.now() + 1000,
@@ -621,7 +621,7 @@ describe('Android input manager stored text diffs', () => {
     inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
 
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
 
     const manager = createAndroidInputManager({
       editor: editor as never,
@@ -808,8 +808,8 @@ describe('Android input manager stored text diffs', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('A');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
     inputController.state.recentTextInputRepairEcho = {
       expiresAt: performance.now() + 1000,
@@ -819,7 +819,7 @@ describe('Android input manager stored text diffs', () => {
     };
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 0]);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
 
     const manager = createAndroidInputManager({
       editor: editor as never,
@@ -846,8 +846,8 @@ describe('Android input manager stored text diffs', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('Beta!');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
     inputController.state.recentTextInputRepairEcho = {
       expiresAt: performance.now() + 1000,
@@ -859,7 +859,7 @@ describe('Android input manager stored text diffs', () => {
     inputController.state.selectionChangeOrigin = 'native-user';
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 1]);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(range(1));
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(range(1));
 
     const manager = createAndroidInputManager({
       editor: editor as never,
@@ -886,8 +886,8 @@ describe('Android input manager stored text diffs', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('abc');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
     inputController.state.selectionSource = 'dom-current';
     inputController.state.selectionChangeOrigin = 'native-user';
@@ -901,7 +901,7 @@ describe('Android input manager stored text diffs', () => {
     IS_COMPOSING.set(editor, true);
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 1]);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(range(1));
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(range(1));
 
     const manager = createAndroidInputManager({
       editor: editor as never,
@@ -933,8 +933,8 @@ describe('Android input manager stored text diffs', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('abc');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
     inputController.state.selectionSource = 'dom-current';
     inputController.state.selectionChangeOrigin = 'native-user';
@@ -944,7 +944,7 @@ describe('Android input manager stored text diffs', () => {
     });
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 1]);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(range(1));
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(range(1));
 
     const manager = createAndroidInputManager({
       editor: editor as never,
@@ -1008,14 +1008,14 @@ describe('Android input manager stored text diffs', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('A');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
     inputController.state.selectionChangeOrigin = 'repair-induced';
     inputController.state.selectionSource = 'dom-current';
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 0]);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(range(0));
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(range(0));
 
     const manager = createAndroidInputManager({
       editor: editor as never,
@@ -1044,13 +1044,13 @@ describe('Android input manager stored text diffs', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('ABCDE');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
     inputController.state.selectionSource = 'model-owned';
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 0]);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(range(0));
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(range(0));
 
     const manager = createAndroidInputManager({
       editor: editor as never,
@@ -1081,8 +1081,8 @@ describe('Android input manager stored text diffs', () => {
     const staleTarget = {} as StaticRange;
     const liveSelection = {} as Selection;
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
     inputController.state.modelSelectionPreference = {
       preferModelSelection: false,
@@ -1094,7 +1094,7 @@ describe('Android input manager stored text diffs', () => {
       getSelection: () => liveSelection,
     } as Window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 0]);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(range(2));
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(range(2));
 
     const manager = createAndroidInputManager({
       editor: editor as never,
@@ -1123,13 +1123,13 @@ describe('Android input manager stored text diffs', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 0]);
-    const resolvePliteRange = vi
-      .spyOn(ReactEditor, 'resolvePliteRange')
+    const resolveRange = vi
+      .spyOn(ReactEditor, 'resolveRange')
       .mockReturnValue(null);
 
     const manager = createAndroidInputManager({
@@ -1142,7 +1142,7 @@ describe('Android input manager stored text diffs', () => {
 
     editorSelect(editor, range(0));
     manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'A'));
-    resolvePliteRange.mockReturnValue(range(0));
+    resolveRange.mockReturnValue(range(0));
     manager.handleDOMBeforeInput(
       beforeInputEvent('insertText', 'f', [{} as StaticRange])
     );
@@ -1199,13 +1199,13 @@ describe('Android input manager SwiftKey insert-position hint', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('a');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
 
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 1]);
-    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
 
     const manager = createAndroidInputManager({
       editor: editor as never,
@@ -1247,14 +1247,14 @@ describe('Android input manager SwiftKey insert-position hint', () => {
     const textHost = document.createElement('span');
     const textNode = document.createTextNode('');
 
-    textHost.setAttribute('data-plite-dom-sync', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
+    textHost.setAttribute('data-editor-dom-sync', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
     textHost.append(textNode);
 
     vi.spyOn(ReactEditor, 'getWindow').mockReturnValue(window);
     vi.spyOn(ReactEditor, 'resolveDOMPoint').mockReturnValue([textNode, 0]);
-    const resolvePliteRange = vi
-      .spyOn(ReactEditor, 'resolvePliteRange')
+    const resolveRange = vi
+      .spyOn(ReactEditor, 'resolveRange')
       .mockReturnValue(null);
 
     const manager = createAndroidInputManager({
@@ -1281,7 +1281,7 @@ describe('Android input manager SwiftKey insert-position hint', () => {
     editorSelect(editor, range(5));
     manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'text'));
 
-    resolvePliteRange.mockReturnValueOnce(range(6, 9));
+    resolveRange.mockReturnValueOnce(range(6, 9));
     manager.handleDOMBeforeInput(
       beforeInputEvent('insertCompositionText', 'text', [{} as StaticRange])
     );

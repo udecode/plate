@@ -67,7 +67,7 @@ const summarizeHeapDeltas = (samples) => ({
 });
 
 const createHistoryEditor = (children, selection) => {
-  const editor = createEditor({ extensions: [history()] });
+  const editor = createEditor({ plugins: [history()] });
 
   Editor.replace(editor, {
     children,
@@ -95,7 +95,7 @@ const getHistoryShape = (editor) => {
   const serialized = History.toJSON(editor);
   const serializationMs = performance.now() - serializeStart;
   const restored = createEditor({
-    extensions: [history()],
+    plugins: [history()],
     initialValue: editor.read.value(),
   });
   const reloadStart = performance.now();

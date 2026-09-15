@@ -4,9 +4,9 @@ import type { Element } from 'plitejs';
 import {
   createEditor,
   Editable,
-  Plite,
-  usePliteRootChrome,
-  usePliteRootEditor,
+  EditorRoot,
+  useRootChrome,
+  useRootEditor,
 } from '../../src/react';
 import { createPliteViewBoundaryGraph } from '../../src/react/view-boundary-graph';
 import {
@@ -35,14 +35,14 @@ const flushRootChromeFocus = () =>
     setTimeout(resolve, 0);
   });
 
-describe('usePliteRootChrome', () => {
+describe('useRootChrome', () => {
   test('focuses the root end when no restorable selection exists', async () => {
     const editor = createEditor({ initialValue: initialValue() });
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
 
     const HeaderChrome = () => {
-      const chrome = usePliteRootChrome('header');
-      headerEditor = usePliteRootEditor('header');
+      const chrome = useRootChrome('header');
+      headerEditor = useRootEditor('header');
 
       return (
         <section data-testid="header-chrome" {...chrome.props}>
@@ -53,10 +53,10 @@ describe('usePliteRootChrome', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <HeaderChrome />
         <Editable aria-label="Main editor" />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -84,11 +84,11 @@ describe('usePliteRootChrome', () => {
 
   test('places selection at the root end when explicitly requested', async () => {
     const editor = createEditor({ initialValue: initialValue() });
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
 
     const HeaderChrome = () => {
-      const chrome = usePliteRootChrome('header', { selection: 'end' });
-      headerEditor = usePliteRootEditor('header');
+      const chrome = useRootChrome('header', { selection: 'end' });
+      headerEditor = useRootEditor('header');
 
       return (
         <section data-testid="header-chrome" {...chrome.props}>
@@ -99,10 +99,10 @@ describe('usePliteRootChrome', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <HeaderChrome />
         <Editable aria-label="Main editor" />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -121,18 +121,18 @@ describe('usePliteRootChrome', () => {
     const editor = createEditor({ initialValue: initialValue() });
 
     const HeaderChrome = () => {
-      const chrome = usePliteRootChrome('header');
+      const chrome = useRootChrome('header');
 
       return (
         <section data-testid="header-chrome" {...chrome.props}>
           <button type="button">Header action</button>
           <div
-            data-plite-node="element"
+            data-editor-node="element"
             data-testid="native-element-descendant"
           >
             Header paragraph
           </div>
-          <span data-plite-string="" data-testid="native-text-descendant">
+          <span data-editor-string="" data-testid="native-text-descendant">
             Header text
           </span>
         </section>
@@ -140,9 +140,9 @@ describe('usePliteRootChrome', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <HeaderChrome />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -168,17 +168,17 @@ describe('usePliteRootChrome', () => {
 
   test('handles blank editable root clicks synchronously', async () => {
     const editor = createEditor({ initialValue: initialValue() });
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
 
     const HeaderChrome = () => {
-      const chrome = usePliteRootChrome('header', { selection: 'end' });
-      headerEditor = usePliteRootEditor('header');
+      const chrome = useRootChrome('header', { selection: 'end' });
+      headerEditor = useRootEditor('header');
 
       return (
         <section data-testid="header-chrome" {...chrome.props}>
           <div
-            data-plite-editor="true"
-            data-plite-root="header"
+            data-editor="true"
+            data-editor-root="header"
             data-testid="blank-editor-surface"
           />
         </section>
@@ -186,9 +186,9 @@ describe('usePliteRootChrome', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <HeaderChrome />
-      </Plite>
+      </EditorRoot>
     );
 
     fireEvent.mouseDown(screen.getByTestId('blank-editor-surface'));
@@ -204,17 +204,17 @@ describe('usePliteRootChrome', () => {
 
   test('blank editable root clicks focus at the end without a restorable selection', async () => {
     const editor = createEditor({ initialValue: initialValue() });
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
 
     const HeaderChrome = () => {
-      const chrome = usePliteRootChrome('header');
-      headerEditor = usePliteRootEditor('header');
+      const chrome = useRootChrome('header');
+      headerEditor = useRootEditor('header');
 
       return (
         <section data-testid="header-chrome" {...chrome.props}>
           <div
-            data-plite-editor="true"
-            data-plite-root="header"
+            data-editor="true"
+            data-editor-root="header"
             data-testid="blank-editor-surface"
           />
         </section>
@@ -222,9 +222,9 @@ describe('usePliteRootChrome', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <HeaderChrome />
-      </Plite>
+      </EditorRoot>
     );
 
     fireEvent.mouseDown(screen.getByTestId('blank-editor-surface'));
@@ -240,13 +240,13 @@ describe('usePliteRootChrome', () => {
 
   test("restores a root's previous selection when chrome reactivates it", async () => {
     const editor = createEditor({ initialValue: initialValue() });
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
-    let mainEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
+    let mainEditor!: ReturnType<typeof useRootEditor>;
 
     const HeaderChrome = () => {
-      const chrome = usePliteRootChrome('header');
-      headerEditor = usePliteRootEditor('header');
-      mainEditor = usePliteRootEditor();
+      const chrome = useRootChrome('header');
+      headerEditor = useRootEditor('header');
+      mainEditor = useRootEditor();
 
       return (
         <section data-testid="header-chrome" {...chrome.props}>
@@ -258,9 +258,9 @@ describe('usePliteRootChrome', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <HeaderChrome />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -286,13 +286,13 @@ describe('usePliteRootChrome', () => {
 
   test('clears projected selections when chrome restores a root selection', async () => {
     const editor = createEditor({ initialValue: initialValue() });
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
-    let mainEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
+    let mainEditor!: ReturnType<typeof useRootEditor>;
 
     const HeaderChrome = () => {
-      const chrome = usePliteRootChrome('header');
-      headerEditor = usePliteRootEditor('header');
-      mainEditor = usePliteRootEditor();
+      const chrome = useRootChrome('header');
+      headerEditor = useRootEditor('header');
+      mainEditor = useRootEditor();
 
       return (
         <section data-testid="header-chrome" {...chrome.props}>
@@ -304,9 +304,9 @@ describe('usePliteRootChrome', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <HeaderChrome />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {

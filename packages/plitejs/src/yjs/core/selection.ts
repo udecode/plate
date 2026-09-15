@@ -11,7 +11,7 @@ export type YjsRelativeRange = {
 const clampTextOffset = (offset: number, length: number): number =>
   Math.max(0, Math.min(offset, length));
 
-export const plitePointToYjsRelativePosition = (
+export const pointToYjsRelativePosition = (
   root: Y.XmlElement,
   point: Point
 ): Y.RelativePosition => {
@@ -31,7 +31,7 @@ export const plitePointToYjsRelativePosition = (
   );
 };
 
-export const yjsRelativePositionToPlitePoint = (
+export const yjsRelativePositionToPoint = (
   root: Y.XmlElement,
   position: Y.RelativePosition
 ): Point | null => {
@@ -60,12 +60,12 @@ export const yjsRelativePositionToPlitePoint = (
   };
 };
 
-export const pliteRangeToYjsRelativeRange = (
+export const rangeToYjsRelativeRange = (
   root: Y.XmlElement,
   range: Range
 ): YjsRelativeRange => ({
-  anchor: plitePointToYjsRelativePosition(root, range.anchor),
-  focus: plitePointToYjsRelativePosition(root, range.focus),
+  anchor: pointToYjsRelativePosition(root, range.anchor),
+  focus: pointToYjsRelativePosition(root, range.focus),
 });
 
 export const yjsRelativeRangesEqual = (
@@ -75,17 +75,17 @@ export const yjsRelativeRangesEqual = (
   Y.compareRelativePositions(a.anchor, b.anchor) &&
   Y.compareRelativePositions(a.focus, b.focus);
 
-export const yjsRelativeRangeToPliteRange = (
+export const yjsRelativeRangeToRange = (
   root: Y.XmlElement,
   range: YjsRelativeRange
 ): Range | null => {
-  const anchor = yjsRelativePositionToPlitePoint(root, range.anchor);
+  const anchor = yjsRelativePositionToPoint(root, range.anchor);
 
   if (anchor === null) {
     return null;
   }
 
-  const focus = yjsRelativePositionToPlitePoint(root, range.focus);
+  const focus = yjsRelativePositionToPoint(root, range.focus);
 
   if (focus === null) {
     return null;

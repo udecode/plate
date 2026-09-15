@@ -1,9 +1,9 @@
-import { defineExtension } from 'plitejs';
+import { definePlugin } from 'plitejs';
 import {
   Editable,
   type RenderElementProps,
   type RenderVoidProps,
-  Plite,
+  EditorRoot,
   useEditorContext,
   useEditor,
 } from 'plitejs/react';
@@ -19,7 +19,7 @@ import type {
 
 const EmbedsExample = () => {
   const editor = useEditor({
-    extensions: [embed()],
+    plugins: [embed()],
     initialValue: [
       {
         type: 'paragraph',
@@ -45,18 +45,18 @@ const EmbedsExample = () => {
     ],
   });
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable
         placeholder="Enter some text..."
         renderElement={renderElement}
         renderVoid={renderVoid}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
 const embed = () =>
-  defineExtension('embed', {
+  definePlugin('embed', {
     schema: { elements: { video: { void: 'block' } } },
   });
 
@@ -114,9 +114,9 @@ const VideoElement = ({ element }: RenderVoidProps<VideoElementType>) => {
 
   return (
     <>
-      <div className="plite-embeds-video-frame">
+      <div className="editor-embeds-video-frame">
         <iframe
-          className="plite-embeds-video-iframe"
+          className="editor-embeds-video-iframe"
           referrerPolicy="strict-origin-when-cross-origin"
           sandbox="allow-scripts allow-presentation"
           src={`${safeUrl}?title=0&byline=0&portrait=0`}

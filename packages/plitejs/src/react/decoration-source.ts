@@ -5,45 +5,43 @@ import type {
   EditorSnapshot,
   NodeKey,
   Path,
-  PliteDecoration,
-  PliteDecorationAttributes,
-  PliteDecorationRefresh,
-  PliteDecorationSource,
+  Decoration,
+  DecorationAttributes,
+  DecorationRefresh,
+  DecorationSource,
   Range,
 } from '..';
 import { NodeApi } from '..';
 import { createViewSourceFaultBoundary } from '../internal/view/mapped-view-store';
-import type { PliteViewSourceErrorSink } from '../internal/view/view-source';
+import type { ViewSourceErrorSink } from '../internal/view/view-source';
 import { getPureTextInsertion } from './editable/native-text-input-delta';
 import {
   getSnapshot as editorGetSnapshot,
   projectRangeInSnapshot,
+  subscribeEditorViewState,
   subscribeSource as editorSubscribeSource,
 } from './editable/runtime-editor-api';
 
 export type {
-  PliteDecoration,
-  PliteDecorationAttributes,
-  PliteDecorationRefresh,
-  PliteDecorationSource,
+  Decoration,
+  DecorationAttributes,
+  DecorationRefresh,
+  DecorationSource,
 } from '..';
 
-export type PliteDecorationSlice = Readonly<{
-  attributes: PliteDecorationAttributes;
+export type DecorationSlice = Readonly<{
+  attributes: DecorationAttributes;
   end: number;
   key: string;
   start: number;
 }>;
 
-const DECORATION_SLICE_IDENTITIES = new WeakMap<PliteDecorationSlice, string>();
+const DECORATION_SLICE_IDENTITIES = new WeakMap<DecorationSlice, string>();
 
-export const getDecorationSliceIdentity = (slice: PliteDecorationSlice) =>
+export const getDecorationSliceIdentity = (slice: DecorationSlice) =>
   DECORATION_SLICE_IDENTITIES.get(slice) ?? slice.key;
 
-const createDecorationSlice = (
-  sourceId: string,
-  slice: PliteDecorationSlice
-) => {
+const createDecorationSlice = (sourceId: string, slice: DecorationSlice) => {
   const result = Object.freeze(slice);
 
   DECORATION_SLICE_IDENTITIES.set(
@@ -69,12 +67,12 @@ export type PliteDecorationManagerMetrics = Readonly<{
 export type PliteDecorationManager<E = EditorType> = Readonly<{
   destroy: () => void;
   getMetrics: () => PliteDecorationManagerMetrics;
-  getNodeSnapshot: (nodeKey: NodeKey) => readonly PliteDecorationSlice[];
+  getNodeSnapshot: (nodeKey: NodeKey) => readonly DecorationSlice[];
   getVersion: () => number;
   hasSources: () => boolean;
   mount: () => () => void;
-  registerSource: (source: PliteDecorationSource<E>) => () => void;
-  setSources: (sources: ReadonlyArray<PliteDecorationSource<E>>) => void;
+  registerSource: (source: DecorationSource<E>) => () => void;
+  setSources: (sources: ReadonlyArray<DecorationSource<E>>) => void;
   subscribe: (
     listener: (changedNodeKeys: readonly NodeKey[]) => void
   ) => () => void;
@@ -83,18 +81,18 @@ export type PliteDecorationManager<E = EditorType> = Readonly<{
 
 type DecorationOutputPart = Readonly<{
   inputKey: NodeKey;
-  slices: readonly PliteDecorationSlice[];
+  slices: readonly DecorationSlice[];
 }>;
 
 type CompiledDecorationInputPart = Readonly<{
   nodeKey: NodeKey;
-  slices: readonly PliteDecorationSlice[];
+  slices: readonly DecorationSlice[];
 }>;
 
 type DecorationSourceBucketChange = Readonly<{
-  next: readonly PliteDecorationSlice[];
+  next: readonly DecorationSlice[];
   nodeKey: NodeKey;
-  previous: readonly PliteDecorationSlice[];
+  previous: readonly DecorationSlice[];
 }>;
 
 type DecorationKeyOwners = {
@@ -102,35 +100,36 @@ type DecorationKeyOwners = {
   set: (key: string, owner: NodeKey) => void;
 };
 
-type CompiledDecorationSourceSnapshot = Readonly<{
-  bucketsByOutputKey: Map<NodeKey, readonly PliteDecorationSlice[]>;
+type CompiledDecorationSourceSnapshot = {
+  bucketsByOutputKey: Map<NodeKey, readonly DecorationSlice[]>;
   keysByInputKey: Map<NodeKey, readonly string[]>;
   outputKeysByInputKey: Map<NodeKey, readonly NodeKey[]>;
   partsByOutputKey: Map<NodeKey, DecorationOutputPart[]>;
   keyOwners: Map<string, NodeKey>;
-}>;
+  version: number;
+};
 
 type DecorationSourceState<E> = {
   cleanup: (() => void) | null;
-  definition: PliteDecorationSource<E>;
+  definition: DecorationSource<E>;
   faultBoundary: ReturnType<typeof createViewSourceFaultBoundary>;
   generation: number;
   observationGeneration: number;
   snapshot: CompiledDecorationSourceSnapshot;
 };
 
-const EMPTY_DECORATION_SLICES = Object.freeze(
-  []
-) as readonly PliteDecorationSlice[];
+const EMPTY_DECORATION_SLICES = Object.freeze([]) as readonly DecorationSlice[];
 
-const createEmptyCompiledSourceSnapshot =
-  (): CompiledDecorationSourceSnapshot => ({
-    bucketsByOutputKey: new Map(),
-    keysByInputKey: new Map(),
-    outputKeysByInputKey: new Map(),
-    partsByOutputKey: new Map(),
-    keyOwners: new Map(),
-  });
+const createEmptyCompiledSourceSnapshot = (
+  version = -1
+): CompiledDecorationSourceSnapshot => ({
+  bucketsByOutputKey: new Map(),
+  keysByInputKey: new Map(),
+  outputKeysByInputKey: new Map(),
+  partsByOutputKey: new Map(),
+  keyOwners: new Map(),
+  version,
+});
 
 const getDescendantAtPath = (
   children: readonly Descendant[],
@@ -208,10 +207,10 @@ const isFrozenPath = (path: Path) => {
   return true;
 };
 
-const immutableAttributes = new WeakSet<PliteDecorationAttributes>();
+const immutableAttributes = new WeakSet<DecorationAttributes>();
 const cloneDecorationAttributes = (
-  attributes: PliteDecorationAttributes
-): PliteDecorationAttributes => {
+  attributes: DecorationAttributes
+): DecorationAttributes => {
   if (immutableAttributes.has(attributes)) return attributes;
   const cloned: Record<string, unknown> = {};
 
@@ -248,7 +247,7 @@ const cloneDecorationAttributes = (
         : value;
   }
 
-  return Object.freeze(cloned) as PliteDecorationAttributes;
+  return Object.freeze(cloned) as DecorationAttributes;
 };
 
 const arePathsEqual = (left: Path, right: Path) => {
@@ -290,8 +289,8 @@ const isDecorationRange = (value: unknown): value is Range => {
 };
 
 const areDecorationSlicesEqual = (
-  left: PliteDecorationSlice,
-  right: PliteDecorationSlice
+  left: DecorationSlice,
+  right: DecorationSlice
 ) =>
   left === right ||
   (getDecorationSliceIdentity(left) === getDecorationSliceIdentity(right) &&
@@ -313,8 +312,8 @@ const areDecorationStylesEqual = (
 };
 
 const areDecorationAttributesEqual = (
-  left: PliteDecorationAttributes,
-  right: PliteDecorationAttributes
+  left: DecorationAttributes,
+  right: DecorationAttributes
 ) => {
   if (left === right) return true;
   const leftNames = Object.keys(left);
@@ -335,8 +334,8 @@ const areDecorationAttributesEqual = (
 };
 
 const areDecorationBucketsEqual = (
-  left: readonly PliteDecorationSlice[],
-  right: readonly PliteDecorationSlice[]
+  left: readonly DecorationSlice[],
+  right: readonly DecorationSlice[]
 ) =>
   left === right ||
   (left.length === right.length &&
@@ -350,7 +349,7 @@ type NativeTextInsertion = Readonly<{
 }>;
 
 const decorationBucketChanges = new WeakMap<
-  readonly PliteDecorationSlice[],
+  readonly DecorationSlice[],
   {
     identity: object;
     insertion?: NativeTextInsertion;
@@ -359,9 +358,7 @@ const decorationBucketChanges = new WeakMap<
   }
 >();
 
-const getDecorationBucketIdentity = (
-  bucket: readonly PliteDecorationSlice[]
-) => {
+const getDecorationBucketIdentity = (bucket: readonly DecorationSlice[]) => {
   let change = decorationBucketChanges.get(bucket);
 
   if (!change) {
@@ -372,8 +369,8 @@ const getDecorationBucketIdentity = (
 };
 
 export const getNativeMappedDecorationInsertion = (
-  previous: readonly PliteDecorationSlice[],
-  next: readonly PliteDecorationSlice[]
+  previous: readonly DecorationSlice[],
+  next: readonly DecorationSlice[]
 ) => {
   const mapping = decorationBucketChanges.get(next);
 
@@ -383,8 +380,8 @@ export const getNativeMappedDecorationInsertion = (
 };
 
 const recordDecorationPaintChange = (
-  previous: readonly PliteDecorationSlice[],
-  next: readonly PliteDecorationSlice[]
+  previous: readonly DecorationSlice[],
+  next: readonly DecorationSlice[]
 ) => {
   if (previous === next || next.length === 0) return;
   let prefix = 0;
@@ -429,8 +426,8 @@ const recordDecorationPaintChange = (
 };
 
 export const getDecorationPaintChange = (
-  previous: readonly PliteDecorationSlice[],
-  next: readonly PliteDecorationSlice[]
+  previous: readonly DecorationSlice[],
+  next: readonly DecorationSlice[]
 ) => {
   const change = decorationBucketChanges.get(next);
 
@@ -440,7 +437,7 @@ export const getDecorationPaintChange = (
 };
 
 const mapDecorationSlicesThroughInsertion = (
-  slices: readonly PliteDecorationSlice[],
+  slices: readonly DecorationSlice[],
   insertion: NativeTextInsertion
 ) => {
   let changed = false;
@@ -498,7 +495,7 @@ const getNativeTextInsertions = (
 };
 
 const validateDecorationSources = <E>(
-  sources: ReadonlyArray<PliteDecorationSource<E>>
+  sources: ReadonlyArray<DecorationSource<E>>
 ) => {
   const ids = new Set<string>();
 
@@ -547,21 +544,22 @@ const freezeSourceBucket = (
 
 export const createPliteDecorationManager = <E>(
   editor: E,
-  initialSources: ReadonlyArray<PliteDecorationSource<E>>,
-  options: Readonly<{ onError?: PliteViewSourceErrorSink }> = {}
+  initialSources: ReadonlyArray<DecorationSource<E>>,
+  options: Readonly<{ onError?: ViewSourceErrorSink }> = {}
 ): PliteDecorationManager<E> => {
   validateDecorationSources(initialSources);
 
-  type ExactSource = PliteDecorationSource<E>;
+  type ExactSource = DecorationSource<E>;
 
   const runtimeEditor = editor as unknown as EditorType;
 
   const listenersByNodeKey = new Map<NodeKey, Set<() => void>>();
   const listeners = new Set<(changedNodeKeys: readonly NodeKey[]) => void>();
-  const mergedByNodeKey = new Map<NodeKey, readonly PliteDecorationSlice[]>();
+  const mergedByNodeKey = new Map<NodeKey, readonly DecorationSlice[]>();
   let destroyed = false;
   let mounted = false;
   let unsubscribeEditor: (() => void) | null = null;
+  let unsubscribeView: (() => void) | null = null;
   let version = 0;
   let providerSources = initialSources;
   const registeredSources = new Map<symbol, ExactSource>();
@@ -579,17 +577,17 @@ export const createPliteDecorationManager = <E>(
   };
 
   const compiledInputs = new WeakMap<
-    PliteDecoration,
+    Decoration,
     | {
         anchorRoot: string | undefined;
         focusRoot: string | undefined;
         inputKey: NodeKey;
         path: Path;
-        slice: PliteDecorationSlice;
+        slice: DecorationSlice;
         source: ExactSource;
         sourceId: string;
       }
-    | { slice: PliteDecorationSlice }
+    | { slice: DecorationSlice }
   >();
 
   const compileInput = (
@@ -597,11 +595,11 @@ export const createPliteDecorationManager = <E>(
     snapshot: EditorSnapshot,
     input: Readonly<{ node: Descendant; nodeKey: NodeKey; path: Path }>,
     keyOwners: DecorationKeyOwners,
-    decorations: readonly PliteDecoration[]
+    decorations: readonly Decoration[]
   ) => {
     const keys: string[] = [];
-    const slicesByOutputKey = new Map<NodeKey, PliteDecorationSlice[]>();
-    const addSlice = (nodeKey: NodeKey, slice: PliteDecorationSlice) => {
+    const slicesByOutputKey = new Map<NodeKey, DecorationSlice[]>();
+    const addSlice = (nodeKey: NodeKey, slice: DecorationSlice) => {
       const slices = slicesByOutputKey.get(nodeKey) ?? [];
 
       slices.push(slice);
@@ -758,7 +756,7 @@ export const createPliteDecorationManager = <E>(
 
   const addInput = (
     compiled: {
-      bucketsByOutputKey: Map<NodeKey, readonly PliteDecorationSlice[]>;
+      bucketsByOutputKey: Map<NodeKey, readonly DecorationSlice[]>;
       keysByInputKey: Map<NodeKey, readonly string[]>;
       outputKeysByInputKey: Map<NodeKey, readonly NodeKey[]>;
       partsByOutputKey: Map<NodeKey, DecorationOutputPart[]>;
@@ -813,7 +811,7 @@ export const createPliteDecorationManager = <E>(
     const { generation } = state;
     state.faultBoundary.activate();
     const result = state.faultBoundary.run('read', () => {
-      const compiled = createEmptyCompiledSourceSnapshot();
+      const compiled = createEmptyCompiledSourceSnapshot(snapshot.version);
 
       for (const input of inputs) {
         addInput(compiled, state.definition, snapshot, input);
@@ -1083,6 +1081,7 @@ export const createPliteDecorationManager = <E>(
         changes: [] as readonly DecorationSourceBucketChange[],
       };
     }
+    result.value.snapshot.version = snapshot.version;
     state.snapshot = result.value.snapshot;
 
     return {
@@ -1117,7 +1116,7 @@ export const createPliteDecorationManager = <E>(
 
     for (const nodeKey of uniqueNodeKeys) {
       const previous = mergedByNodeKey.get(nodeKey) ?? EMPTY_DECORATION_SLICES;
-      const slices: PliteDecorationSlice[] = [];
+      const slices: DecorationSlice[] = [];
 
       for (const state of sourceStates) {
         const bucket = state.snapshot.bucketsByOutputKey.get(nodeKey);
@@ -1182,7 +1181,7 @@ export const createPliteDecorationManager = <E>(
             ?.length ?? 0;
       }
       const suffixStart = offset + change.previous.length;
-      let candidate: PliteDecorationSlice[];
+      let candidate: DecorationSlice[];
 
       if (change.previous.length === change.next.length) {
         candidate = previousMerged.slice();
@@ -1190,7 +1189,7 @@ export const createPliteDecorationManager = <E>(
           candidate[offset + index] = change.next[index];
         }
       } else {
-        candidate = new Array<PliteDecorationSlice>(
+        candidate = new Array<DecorationSlice>(
           previousMerged.length - change.previous.length + change.next.length
         );
         let cursor = 0;
@@ -1229,6 +1228,7 @@ export const createPliteDecorationManager = <E>(
     for (const state of sourceStates) {
       if (editorGetSnapshot(runtimeEditor).version !== snapshot.version) return;
       if (!pendingRefresh?.sources.has(state)) continue;
+      if (state.snapshot.version === snapshot.version) continue;
       const changes: DecorationSourceBucketChange[] = [];
 
       for (const [nodeKey, insertion] of insertions) {
@@ -1270,12 +1270,13 @@ export const createPliteDecorationManager = <E>(
       }
 
       publishSourceBucketChanges(state, changes);
+      state.snapshot.version = snapshot.version;
     }
   };
 
   const refreshState = (
     state: DecorationSourceState<E>,
-    input: PliteDecorationRefresh,
+    input: DecorationRefresh,
     snapshot = editorGetSnapshot(runtimeEditor)
   ) => {
     if (input.nodeKeys === 'all') {
@@ -1396,7 +1397,8 @@ export const createPliteDecorationManager = <E>(
     )
   );
   let lastEditorVersion = initialSnapshot.version;
-  const initialMergedBuckets = new Map<NodeKey, PliteDecorationSlice[]>();
+  let lastEditorChildren = initialSnapshot.children;
+  const initialMergedBuckets = new Map<NodeKey, DecorationSlice[]>();
 
   for (const state of sourceStates) {
     for (const [nodeKey, bucket] of state.snapshot.bucketsByOutputKey) {
@@ -1648,6 +1650,8 @@ export const createPliteDecorationManager = <E>(
       clearPendingRefresh();
       unsubscribeEditor?.();
       unsubscribeEditor = null;
+      unsubscribeView?.();
+      unsubscribeView = null;
       sourceStates.forEach(stopObservation);
       sourceStates = [];
       listeners.clear();
@@ -1675,8 +1679,14 @@ export const createPliteDecorationManager = <E>(
           'commit',
           (snapshot, change) => {
             lastEditorVersion = snapshot.version;
+            lastEditorChildren = snapshot.children;
             if (pendingRefresh) pendingRefresh.snapshot = snapshot;
-            if (change && !change.changed.hasAny('document')) return;
+            if (
+              sourceStates.length === 0 ||
+              (change && !change.changed.hasAny('document'))
+            ) {
+              return;
+            }
 
             let inputKeys = change?.changed.nodeKeysAll('decoration');
 
@@ -1732,10 +1742,20 @@ export const createPliteDecorationManager = <E>(
             flushPendingRefresh();
           }
         );
+        unsubscribeView = subscribeEditorViewState(runtimeEditor, (change) => {
+          if (change !== 'authored') return;
+          const snapshot = editorGetSnapshot(runtimeEditor);
+
+          lastEditorChildren = snapshot.children;
+          queueSourceRefresh(snapshot, sourceStates, undefined);
+          flushPendingRefresh();
+        });
         const snapshot = editorGetSnapshot(runtimeEditor);
         const affected = new Set<NodeKey>();
         const editorChangedBeforeObservation =
-          refreshOnMount || snapshot.version !== lastEditorVersion;
+          refreshOnMount ||
+          snapshot.version !== lastEditorVersion ||
+          snapshot.children !== lastEditorChildren;
         refreshOnMount = false;
         let inputs: ReturnType<typeof getInputEntries> | undefined;
         const getInputs = () => (inputs ??= getInputEntries(snapshot));
@@ -1752,6 +1772,7 @@ export const createPliteDecorationManager = <E>(
           });
         });
         lastEditorVersion = snapshot.version;
+        lastEditorChildren = snapshot.children;
         publishMergedBuckets(affected);
       }
 
@@ -1766,6 +1787,8 @@ export const createPliteDecorationManager = <E>(
         clearPendingRefresh();
         unsubscribeEditor?.();
         unsubscribeEditor = null;
+        unsubscribeView?.();
+        unsubscribeView = null;
         sourceStates.forEach(stopObservation);
       };
     },

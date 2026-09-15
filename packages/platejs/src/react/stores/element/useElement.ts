@@ -2,17 +2,19 @@ import type { Element, ElementOf, EditorSchemaSource } from '../../../facade';
 import type { PluginReference } from '../../../lib';
 import { useElementContext } from './useElementStore';
 
-export type PlateElementDescriptor = EditorSchemaSource & PluginReference;
+export type ElementDescriptor = EditorSchemaSource & PluginReference;
 
-export type PlateElementForDescriptor<TPlugin extends PlateElementDescriptor> =
-  Extract<ElementOf<TPlugin>, Element>;
+export type ElementForDescriptor<TPlugin extends ElementDescriptor> = Extract<
+  ElementOf<TPlugin>,
+  Element
+>;
 
 export function useElement(): Element;
-export function useElement<const TPlugin extends PlateElementDescriptor>(
+export function useElement<const TPlugin extends ElementDescriptor>(
   plugin: TPlugin
-): PlateElementForDescriptor<TPlugin>;
+): ElementForDescriptor<TPlugin>;
 /** Get the current element and fail when the requested provider is absent. */
-export function useElement(plugin?: PlateElementDescriptor): Element {
+export function useElement(plugin?: ElementDescriptor): Element {
   const scope = plugin?.name;
   const value = useElementContext(scope)?.element;
 

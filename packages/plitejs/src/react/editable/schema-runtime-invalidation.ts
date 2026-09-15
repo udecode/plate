@@ -8,9 +8,9 @@ import {
 
 export const getSchemaInvalidatedNodeKeys = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>,
+  editor: Editor<V, TPlugins>,
   commit: Pick<EditorCommit, 'dirtyStateKeys'>
 ): readonly NodeKey[] => {
   if (!commit.dirtyStateKeys.includes('$configuration')) return [];

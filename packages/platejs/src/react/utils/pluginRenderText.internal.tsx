@@ -7,12 +7,13 @@ import {
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { AnyBasePlugin, RenderTextProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
-import { type PlateNodeProps, PlateText } from '../components/plate-nodes';
+import { type EditorNodeProps, EditorText } from '../components/plate-nodes';
 import type { Editor } from '../editor/Editor';
+import { useOptionalEditorContext } from '../internal/plite-components';
 import { useEditorReadOnly } from '../plite-react';
 import { getRenderNodeProps } from './getRenderNodeProps.internal';
 
-type PlateTextRenderProps = PlateNodeProps & RenderTextProps;
+type PlateTextRenderProps = EditorNodeProps & RenderTextProps;
 
 export type RenderText = (
   props: PlateTextRenderProps
@@ -35,10 +36,11 @@ const getSimpleTextAttributes = (
  * Get an `Editable.renderText` handler for one plugin-owned property key.
  */
 export const pluginRenderText = (
-  editor: Editor,
+  modelEditor: Editor,
   plugin: AnyBasePlugin
 ): RenderText =>
   function RenderText(nodeProps) {
+    const editor = useOptionalEditorContext() ?? modelEditor;
     const readOnly = useEditorReadOnly();
     const component =
       plugin.render.mark?.placement === 'text' ? plugin.component : undefined;
@@ -68,7 +70,7 @@ export const pluginRenderText = (
         return <Tag {...attributes}>{children}</Tag>;
       }
 
-      const Text = Component ?? PlateText;
+      const Text = Component ?? EditorText;
 
       const ctxProps = getRenderNodeProps({
         editor,

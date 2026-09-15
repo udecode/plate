@@ -242,18 +242,6 @@ export const registryStaticFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
-        path: 'components/editor/suggestion-static.tsx',
-        type: 'registry:component',
-      },
-    ],
-    name: 'suggestion-static',
-    registryDependencies: [],
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['platejs'],
-    files: [
-      {
         path: 'components/editor/table-static.tsx',
         type: 'registry:component',
       },
@@ -313,7 +301,6 @@ export const registryStaticFeatures: Registry['items'] = [
       '@plate/math-static',
       '@plate/media-static',
       '@plate/mention-static',
-      '@plate/suggestion-static',
       '@plate/table-static',
       '@plate/toc-static',
       '@plate/details-static',
@@ -652,7 +639,7 @@ export const registryFeatures: Registry['items'] = [
     ],
     name: 'discussion',
     description:
-      "A Floating Discussion surface that combines each block's comment threads and document suggestions.",
+      "A Floating Discussion surface that combines each block's comment threads and authored-change reviews.",
     meta: {
       docs: [{ route: '/docs/discussion' }],
       examples: ['discussion-demo'],
@@ -766,6 +753,17 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'docx',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'components/editor/docx-source.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'docx-source',
     type: 'registry:component',
   },
   {
@@ -918,7 +916,7 @@ export const registryFeatures: Registry['items'] = [
     registryDependencies: [
       '@plate/link',
       '@plate/toolbar',
-      '@plate/use-widget-floating',
+      '@plate/use-floating-rect',
       '@plate/tailwind-scrollbar-hide',
       '@plate/ai-toolbar-button',
       '@plate/comment-toolbar-button',
@@ -1027,7 +1025,7 @@ export const registryFeatures: Registry['items'] = [
       'separator',
       '@plate/link-toolbar-button',
       '@plate/suggestion-style',
-      '@plate/use-widget-floating',
+      '@plate/use-floating-rect',
     ],
     title: 'Link',
     type: 'registry:component',
@@ -1190,10 +1188,11 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'suggestion',
-    registryDependencies: ['@plate/suggestion-toolbar-button'],
+    registryDependencies: [],
     type: 'registry:component',
-    description: 'A text component for suggestion.',
-    title: 'Suggestion',
+    description:
+      'Suggestion mode, semantic authored-change attributes, and view-local review state.',
+    title: 'Suggestions',
     meta: {
       docs: [{ route: '/docs/suggestion' }],
       examples: ['discussion-demo'],

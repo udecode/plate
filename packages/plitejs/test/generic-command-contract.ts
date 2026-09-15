@@ -1,20 +1,20 @@
 import {
   defineCommand,
-  defineExtension,
+  definePlugin,
   txOnly,
   type Editor,
   type EditorTransactionSpecBuilder,
   type Value,
 } from 'plitejs';
 
-const SpecialExtension = defineExtension('special', {
+const SpecialPlugin = definePlugin('special', {
   read: () => ({ value: () => 1 }),
   update: () => ({
     unsafe: txOnly(() => {}),
     value: () => 1,
   }),
 });
-const ExtraExtension = defineExtension('extra', {
+const ExtraPlugin = definePlugin('extra', {
   read: () => ({ value: () => 2 }),
 });
 
@@ -23,10 +23,10 @@ type HostOnlyValue = Array<{
   type: 'host-only';
   children: Array<{ text: string }>;
 }>;
-type SpecialEditor = Editor<Value, readonly [typeof SpecialExtension]>;
+type SpecialEditor = Editor<Value, readonly [typeof SpecialPlugin]>;
 type SpecialExtraEditor = Editor<
   Value,
-  readonly [typeof SpecialExtension, typeof ExtraExtension]
+  readonly [typeof SpecialPlugin, typeof ExtraPlugin]
 >;
 
 const specialCommand = defineCommand<{ amount: number }, SpecialEditor>(
@@ -69,12 +69,12 @@ special.update.command(specialCommand);
 special.update.command(specialCommand, { amount: '1' });
 
 specialExtra.update.command(specialCommand, { amount: 1 });
-// @ts-expect-error plain lacks SpecialExtension
+// @ts-expect-error plain lacks SpecialPlugin
 plain.update.command(specialCommand, { amount: 1 });
-// @ts-expect-error SpecialEditor lacks ExtraExtension
+// @ts-expect-error SpecialEditor lacks ExtraPlugin
 special.update.command(specialExtraCommand);
 
-defineExtension('host-agnostic-handler', {
+definePlugin('host-agnostic-handler', {
   commands: ({ handle }) => [
     handle(hostAgnosticCommand, ({ state }) =>
       state.transaction((tx) => {
@@ -86,7 +86,7 @@ defineExtension('host-agnostic-handler', {
     ),
   ],
 });
-defineExtension('special-handler', {
+definePlugin('special-handler', {
   commands: ({ handle }) => [
     handle(specialCommand, ({ state }) => {
       state.special.value();
@@ -96,9 +96,9 @@ defineExtension('special-handler', {
       });
     }),
   ],
-  dependencies: [SpecialExtension],
+  dependencies: [SpecialPlugin],
 });
-defineExtension('special-extra-handler', {
+definePlugin('special-extra-handler', {
   commands: ({ handle }) => [
     handle(specialCommand, ({ state }) => {
       state.special.value();
@@ -113,18 +113,18 @@ defineExtension('special-extra-handler', {
       return false;
     }),
   ],
-  dependencies: [SpecialExtension, ExtraExtension],
+  dependencies: [SpecialPlugin, ExtraPlugin],
 });
-defineExtension('bad-special-extra-handler', {
+definePlugin('bad-special-extra-handler', {
   commands: ({ handle }) => [
-    // @ts-expect-error command requires ExtraExtension
+    // @ts-expect-error command requires ExtraPlugin
     handle(specialExtraCommand, () => false),
   ],
-  dependencies: [SpecialExtension],
+  dependencies: [SpecialPlugin],
 });
-defineExtension('bad-special-handler', {
+definePlugin('bad-special-handler', {
   commands: ({ handle }) => [
-    // @ts-expect-error command requires SpecialExtension
+    // @ts-expect-error command requires SpecialPlugin
     handle(specialCommand, () => false),
   ],
 });

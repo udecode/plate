@@ -75,17 +75,17 @@ export const getSelectionRect = async (
           return null;
         }
 
-        const nearestPliteRectOwner = start.closest(
+        const nearestRectOwner = start.closest(
           [
-            '[data-plite-string]',
-            '[data-plite-zero-width]',
-            '[data-plite-leaf]',
-            '[data-plite-node="text"]',
-            '[data-plite-node="element"]',
+            '[data-editor-string]',
+            '[data-editor-zero-width]',
+            '[data-editor-leaf]',
+            '[data-editor-node="text"]',
+            '[data-editor-node="element"]',
           ].join(',')
         );
 
-        let current: Element | null = nearestPliteRectOwner;
+        let current: Element | null = nearestRectOwner;
 
         while (current && element.contains(current)) {
           const fallbackRect = current.getBoundingClientRect();

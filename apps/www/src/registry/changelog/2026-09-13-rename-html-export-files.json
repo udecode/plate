@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-13-rename-html-export-files",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-13-rename-html-export-files.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Use semantic HTML export and API component filenames",
+  "targets": [
+    {
+      "name": "html-export",
+      "files": [
+        "apps/www/src/registry/blocks/html-export/page.tsx",
+        "apps/www/src/registry/components/editor/html-export-kit.ts",
+        "apps/www/src/registry/components/editor/html-export-schema-kit.ts",
+        "apps/www/src/registry/components/editor/html-export.tsx",
+        "apps/www/src/registry/examples/values/align-value.tsx",
+        "apps/www/src/registry/examples/values/basic-blocks-value.tsx",
+        "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+        "apps/www/src/registry/examples/values/column-value.tsx",
+        "apps/www/src/registry/examples/values/date-value.tsx",
+        "apps/www/src/registry/examples/values/equation-value.tsx",
+        "apps/www/src/registry/examples/values/font-value.tsx",
+        "apps/www/src/registry/examples/values/indent-value.tsx",
+        "apps/www/src/registry/examples/values/line-height-value.tsx",
+        "apps/www/src/registry/examples/values/link-value.tsx",
+        "apps/www/src/registry/examples/values/list-value.tsx",
+        "apps/www/src/registry/examples/values/media-value.tsx",
+        "apps/www/src/registry/examples/values/mention-value.tsx",
+        "apps/www/src/registry/examples/values/suggestion-value.tsx",
+        "apps/www/src/registry/examples/values/table-value.tsx",
+        "apps/www/src/registry/examples/values/toc-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fumadocs",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for fumadocs."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-13-html-export-semantic-api-filenames-4ddbab38",
+      "kind": "rename",
+      "summary": "Install HTML export and MDX API components under semantic filenames.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["html-export", "fumadocs"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-13",
+          "entry": "2026-09-13-rename-html-export-files",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

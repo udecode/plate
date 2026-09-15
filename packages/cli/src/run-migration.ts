@@ -123,14 +123,14 @@ export const runEditorMigrations = async (
         contents: `import * as editorModule from ${JSON.stringify(entryPath)};
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createEditor, migrateDocument, readEditorSelection } from 'platejs';
-import { isNominalPluginDescriptor } from 'platejs';
+import { isPlugin } from 'platejs';
 ${JSON_EQUAL_SOURCE}
 
 const plugins = editorModule.EditorKit;
 const schema = editorModule.EditorSchema;
 const migrations = editorModule.EditorMigrations;
 
-if (!Array.isArray(plugins) || !plugins.every(isNominalPluginDescriptor)) {
+if (!Array.isArray(plugins) || !plugins.every(isPlugin)) {
   throw new Error('Plate migration entry must export EditorKit as a plugin tuple.');
 }
 if (

@@ -1,5 +1,5 @@
 ---
-description: Review Plate/Plite performance designs or diagnose, compare, fix and rerun measured performance through the ordered benchmark lanes. Use review for plans; measurement runs every applicable lane unless explicitly narrowed.
+description: Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes.
 ---
 
 # Benchmark
@@ -262,7 +262,7 @@ completion claim.
 - Current Plate versus main Plate is product truth. Use isolated source-built
   hosts, exact refs or dirty fingerprints, and the same route/fixture/action.
 - Plate versus Plite is layer attribution. Use the same current source,
-  document, renderer intent, DOM strategy, and action; report wrapper/plugin
+  document, renderer intent, rendering component and options, and action; report wrapper/plugin
   tax without calling Plite a Slate baseline.
 - Plite versus Slate is substrate evidence. Pin and record the exact local
   Slate commit; a mutable `../slate` path is not a baseline identity.

@@ -78,9 +78,9 @@ describe('DnD preparation', () => {
     const { editor, nodes, dnd } = createFixture();
     editor.update.selection.setNodes(nodes.slice(0, 2));
     const source = document.createElement('div');
-    source.setAttribute('data-plite-node-key', editor.key(nodes[0]));
+    source.setAttribute('data-editor-node-key', editor.key(nodes[0]));
     source.innerHTML =
-      '<button data-plite-selectable="true"><span data-plite-string="true">source</span></button>';
+      '<button data-editor-selectable="true"><span data-editor-string="true">source</span></button>';
     const resolve = spyOn(editor.api.dom, 'resolveDOMNode').mockImplementation(
       (node) =>
         editor.key(node as Element) === editor.key(nodes[0]) ? source : null
@@ -91,11 +91,13 @@ describe('DnD preparation', () => {
       expect(previews.length).toBe(1);
       expect(previews[0]?.domNode).toBe(source);
       expect(previews[0]?.preview).not.toBe(source);
-      expect(previews[0]?.preview.outerHTML.includes('data-plite')).toBe(false);
+      expect(previews[0]?.preview.outerHTML.includes('data-editor')).toBe(
+        false
+      );
       expect(previews[0]?.preview.inert).toBe(true);
       expect(previews[0]?.preview.getAttribute('aria-hidden')).toBe('true');
       expect(previews[0]?.preview.contentEditable).toBe('false');
-      expect(source.outerHTML.includes('data-plite')).toBe(true);
+      expect(source.outerHTML.includes('data-editor')).toBe(true);
       expect(dnd.store.get('draggingKey')).toEqual(
         nodes.slice(0, 2).map((node) => editor.key(node))
       );

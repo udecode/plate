@@ -1,32 +1,54 @@
 import assert from 'node:assert/strict';
 
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render, renderHook } from '@testing-library/react';
 import {
   createEditorView,
   defineEditorSchema,
   DocumentChange,
   NodeApi,
+  SelectionApi,
   schema,
   TextApi,
 } from 'plitejs';
 import { authored } from 'plitejs/authored';
+import { history } from 'plitejs/history';
 import {
   createEditor,
   Editable,
-  Plite,
+  EditorRoot as ProductEditorRoot,
+  useEditor,
+  useEditorContext,
+  useElementSelected,
+  type RenderVoidProps,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderTextProps,
-  type PliteDecorationSource,
+  type DecorationSource,
 } from 'plitejs/react';
 import React from 'react';
 
 import { hasActiveAnchors } from '../../src/core/anchor-state';
-import { readAuthoredViewFragments } from '../../src/core/authored-runtime';
-import { readDOMFragmentEditor } from '../../src/dom/plugin/dom-fragment-view';
+import {
+  readAuthoredViewFragments,
+  readAuthoredViewRenderSegments,
+  type NativeAuthoredRenderSegment,
+} from '../../src/core/authored-runtime';
+import { getEditorRuntime } from '../../src/core/editor-runtime';
+import {
+  resolveDOMPointInRoot,
+  resolveDOMRangeInRoot,
+} from '../../src/dom/plugin/dom-editor';
+import {
+  readDOMFragmentEditor,
+  readDOMFragmentParent,
+} from '../../src/dom/plugin/dom-fragment-view';
+import { PliteRuntimeView } from '../../src/react/components/plite';
 import { applyContentRootSelectionMoveCommand } from '../../src/react/editable/content-root-navigation';
-import { createContentRootViewBoundaryGraph } from '../../src/react/editable/content-root-owners';
-import { createFastDOMSelectionRange } from '../../src/react/editable/fast-dom-selection-range';
+import {
+  createContentRootViewBoundaryGraph,
+  readContentRootRenderSegments,
+} from '../../src/react/editable/content-root-owners';
+import { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   applyEditableCommand,
   applyModelOwnedTextInput,
@@ -35,12 +57,20 @@ import {
   getProjectedViewSelectionSlice,
   writeProjectedViewSelectionClipboardData,
 } from '../../src/react/editable/projected-clipboard';
-import { resolveProjectedDOMSelection } from '../../src/react/editable/selection-projected-dom';
-import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
+import { resolvePliteRangeFromDOMTextRange } from '../../src/react/editable/selection-dom-range';
+import {
+  resolveProjectedDOMSelection,
+  resolveViewBoundaryDOMPoint,
+} from '../../src/react/editable/selection-projected-dom';
+import {
+  createReactRuntimeViewEditor,
+  PliteRuntimeProvider,
+} from '../../src/react/hooks/use-plite-runtime';
 import {
   createPliteViewSelection,
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
+  setPliteViewSelectionStoreKey,
   writePliteViewSelection,
   type PliteViewSelection,
 } from '../../src/react/view-selection';
@@ -52,9 +82,1094 @@ const paragraph = (text: string) => ({
 const markup = { intent: 'propose', projection: 'markup' } as const;
 const point = (offset: number) => ({ path: [0, 0], offset });
 
+const EditorRoot = ({ editor, ...props }: any) => (
+  <PliteRuntimeProvider editor={editor}>
+    <PliteRuntimeView {...props} directEditor={editor} />
+  </PliteRuntimeProvider>
+);
+
+it('shares retained projection state while keeping mounted DOM views independent', async () => {
+  const authoring = authored({ authorId: 'alice' });
+  const parents: Array<ReturnType<typeof useEditorContext>> = [];
+  const Surface = ({ label }: { label: string }) => {
+    const editor = useEditorContext();
+
+    if (!parents.includes(editor)) parents.push(editor);
+
+    return <Editable aria-label={label} />;
+  };
+  const Fixture = () => {
+    const editor = useEditor({
+      plugins: [authoring],
+      initialValue: [paragraph('Seed.')],
+    });
+
+    return (
+      <ProductEditorRoot editor={editor}>
+        <ProductEditorRoot authored={markup} editor={editor}>
+          <Surface label="First markup" />
+        </ProductEditorRoot>
+        <ProductEditorRoot authored={markup} editor={editor}>
+          <Surface label="Second markup" />
+        </ProductEditorRoot>
+      </ProductEditorRoot>
+    );
+  };
+  const mounted = render(<Fixture />);
+
+  assert.equal(parents.length, 2);
+  await act(async () =>
+    parents[0].update.text.delete({
+      at: { anchor: point(1), focus: point(2) },
+    })
+  );
+  await act(async () => parents[0].update.selection.set(point(0)));
+  const retained = ['First markup', 'Second markup'].map((label) => {
+    const root = mounted.getByRole('textbox', { name: label });
+    const element = root.querySelector('[data-editor-retained]');
+
+    assert.ok(element);
+    assert.equal(element.getAttribute('data-editor-node-key'), null);
+    const editor = readDOMFragmentEditor(element);
+
+    assert.ok(editor);
+    assert.ok(element.getAttribute('data-editor-node-key'));
+    return editor;
+  });
+
+  assert.notEqual(retained[0], retained[1]);
+  assert.equal(getEditorRuntime(retained[0]), getEditorRuntime(retained[1]));
+  assert.equal(readDOMFragmentParent(retained[0]), parents[0]);
+  assert.equal(readDOMFragmentParent(retained[1]), parents[1]);
+  mounted.unmount();
+});
+
+it.each([
+  { offset: 0, domOffset: 1, domText: 'qS' },
+  { offset: 2, domOffset: 2, domText: 'eqd.' },
+])(
+  'repairs the native markup caret after an insertion at $offset',
+  async ({ offset, domOffset, domText }) => {
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('Seed.')],
+    });
+    const parent = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: markup })
+    );
+    parent.update.text.delete({ at: { anchor: point(1), focus: point(2) } });
+    const mounted = render(
+      <EditorRoot editor={parent}>
+        <Editable />
+      </EditorRoot>
+    );
+    const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
+    assert.ok(root);
+    const runtime = getMountedEditableDOMRuntime(parent, root);
+    assert.ok(runtime?.domRepairQueueRef.current);
+    const native = window.getSelection();
+    assert.ok(native);
+    await act(async () => {
+      parent.update.selection.set(point(offset));
+      parent.update.text.insert('q');
+    });
+    const target = resolveDOMPointInRoot(parent, point(offset + 1), root);
+    assert.ok(target);
+    assert.equal(target[0].textContent, domText);
+    assert.equal(target[1], domOffset);
+    native.collapse(target[0], 0);
+    runtime.inputController.state.textInputOwnership = 'model';
+    target[0].nodeValue = 'stale';
+    runtime.domRepairQueueRef.current.repairCaretAfterModelTextInsert();
+    assert.equal(native.anchorOffset, 0);
+    target[0].nodeValue = domText;
+    runtime.domRepairQueueRef.current.repairCaretAfterModelTextInsert();
+    assert.equal(native.anchorNode, target[0]);
+    assert.equal(native.anchorOffset, domOffset);
+    assert.equal(native.focusOffset, domOffset);
+    assert.equal(
+      root.querySelector('[data-editor-retained]')?.textContent,
+      'e'
+    );
+    assert.equal(source.read.text.string([]), 'Seed.');
+    mounted.unmount();
+  }
+);
+
+it('shares native scope composition across readers and refreshes hidden accepted text', () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [paragraph('AB'), paragraph('CD'), paragraph('Unrelated')],
+  });
+  const views = Array.from({ length: 2 }, () =>
+    createEditorView(source, { authored: markup })
+  );
+  views[0].update((tx) => {
+    tx.authored.propose();
+    tx.text.delete({
+      at: {
+        anchor: point(1),
+        focus: { path: [1, 0], offset: 1 },
+      },
+    });
+  });
+  const read = (view: (typeof views)[number]) =>
+    readAuthoredViewRenderSegments(view, view.read.children(), 'main', [0]);
+  const text = (segments: readonly NativeAuthoredRenderSegment[]): string =>
+    segments
+      .map((segment) => {
+        if (segment.kind === 'element') return text(segment.children);
+        assert.ok(NodeApi.isText(segment.node));
+        return segment.node.text.slice(segment.start, segment.end);
+      })
+      .join('');
+  const initial = read(views[0]);
+  assert.equal(text(initial), 'ABCD');
+  assert.equal(read(views[1]), initial);
+  assert.equal(
+    readContentRootRenderSegments(views[0], views[0].key([0])!),
+    initial
+  );
+  views[0].update.selection.set(point(0));
+  assert.equal(read(views[1]), initial);
+
+  source.update.text.insert('!', { at: { path: [1, 0], offset: 1 } });
+  const updated = read(views[1]);
+  assert.notEqual(updated, initial);
+  assert.equal(text(updated), 'ABC!D');
+  assert.equal(text(initial), 'ABCD');
+  assert.equal(read(views[0]), updated);
+  views[0].api.authored.setView({ intent: 'propose', projection: 'proposed' });
+  assert.equal(
+    readContentRootRenderSegments(views[0], views[0].key([0])!),
+    null
+  );
+  views[0].api.authored.setView(markup);
+  assert.equal(read(views[0]), updated);
+  const independent = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: source.read.value(),
+  });
+  const independentView = createEditorView(independent, { authored: markup });
+  assert.notEqual(read(independentView), updated);
+  assert.equal(text(read(independentView)), 'ABC!D');
+});
+
+const AtomicSelection = ({ element }: RenderVoidProps) => {
+  const selected = useElementSelected();
+  return <span data-atomic-selected={selected}>@{String(element.label)}</span>;
+};
+
+it('keeps retained inline atoms on their surrounding text line and in rich copy', () => {
+  const atoms = defineEditorSchema('schema:authored-retained-atom', {
+    id: 'authored-retained-atom',
+    version: 1,
+    unknown: 'preserve',
+    elements: { mention: { void: 'markable-inline' } },
+    root: schema.content.not(schema.content.text()),
+  });
+  const initial = [
+    {
+      type: 'paragraph',
+      children: [
+        { text: 'A' },
+        { type: 'mention', label: 'Alice', children: [{ text: '' }] },
+        { text: 'B' },
+      ],
+    },
+  ];
+  const source = createEditor({
+    plugins: [atoms, history(), authored({ authorId: 'alice' })],
+    initialValue: initial,
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.selection.set({ path: [0, 2], offset: 0 });
+  applyEditableCommand({
+    command: { kind: 'delete', direction: 'backward' },
+    editor: parent,
+  });
+  parent.update.history.undo();
+  parent.update.history.redo();
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable renderVoid={(props) => <AtomicSelection {...props} />} />
+    </EditorRoot>
+  );
+  assert.equal(
+    mounted.container.querySelectorAll('[data-editor-retained] br').length,
+    0
+  );
+  assert.equal(
+    mounted.container.textContent?.replaceAll('\uFEFF', ''),
+    'A@AliceB'
+  );
+  const graph = createContentRootViewBoundaryGraph(parent, []);
+  const selection = createPliteViewSelection(graph, {
+    anchor: { point: point(0) },
+    focus: { point: point(2) },
+  });
+  assert.ok(selection);
+  act(() => writePliteViewSelection(parent, selection));
+  const copied = getProjectedViewSelectionSlice(parent);
+  assert.equal(copied?.content.length, 1);
+  const block = copied?.content[0];
+  assert.ok(block && NodeApi.isElement(block));
+  assert.deepEqual(
+    block.children.filter(
+      (child) => !TextApi.isText(child) || child.text !== ''
+    ),
+    initial[0].children
+  );
+  act(() => {
+    writePliteViewSelection(parent, null);
+    parent.update.selection.set(point(1));
+    applyEditableCommand({
+      command: { kind: 'move-selection', axis: 'horizontal', extend: true },
+      editor: parent,
+    });
+  });
+  const atom = getProjectedViewSelectionSlice(parent);
+  assert.equal(atom?.content.map(NodeApi.string).join(''), '');
+  const selected = atom?.content[0];
+  assert.ok(selected && NodeApi.isElement(selected));
+  assert.deepEqual(selected.children.filter(NodeApi.isElement), [
+    initial[0].children[1],
+  ]);
+  assert.equal(
+    mounted.container
+      .querySelector('[data-atomic-selected]')
+      ?.getAttribute('data-atomic-selected'),
+    'true'
+  );
+  mounted.unmount();
+});
+
+it('copies retained block atoms even when their text range is empty', () => {
+  const atoms = defineEditorSchema('schema:authored-retained-media', {
+    id: 'authored-retained-media',
+    version: 1,
+    unknown: 'preserve',
+    elements: { media: { void: 'block' } },
+    root: schema.content.not(schema.content.text()),
+  });
+  const media = { type: 'media', label: 'Preview', children: [{ text: '' }] };
+  const source = createEditor({
+    plugins: [atoms, authored({ authorId: 'alice' })],
+    initialValue: [paragraph('AB'), media, paragraph('CD')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.nodes.remove({ at: [1] });
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable renderVoid={(props) => <AtomicSelection {...props} />} />
+    </EditorRoot>
+  );
+  act(() => {
+    applyEditableCommand({ command: { kind: 'select-all' }, editor: parent });
+  });
+  assert.deepEqual(getProjectedViewSelectionSlice(parent)?.content, [
+    paragraph('AB'),
+    media,
+    paragraph('CD'),
+  ]);
+  assert.equal(
+    mounted.container
+      .querySelector('[data-atomic-selected]')
+      ?.getAttribute('data-atomic-selected'),
+    'true'
+  );
+  mounted.unmount();
+});
+
+for (const position of ['first', 'last', 'only'] as const) {
+  it(`selects and copies a retained block atom at the ${position} document boundary`, () => {
+    const atoms = defineEditorSchema('schema:authored-boundary-media', {
+      id: 'authored-boundary-media',
+      version: 1,
+      unknown: 'preserve',
+      elements: { media: { void: 'block' } },
+      root: schema.content.not(schema.content.text()),
+    });
+    const media = { type: 'media', label: 'Preview', children: [{ text: '' }] };
+    const initial =
+      position === 'only'
+        ? [media]
+        : position === 'first'
+          ? [media, paragraph('AB')]
+          : [paragraph('AB'), media];
+    const source = createEditor({
+      plugins: [atoms, authored({ authorId: 'alice' })],
+      initialValue: initial,
+    });
+    const parent = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: markup })
+    );
+    parent.update.nodes.remove({ at: [position === 'last' ? 1 : 0] });
+    const mounted = render(
+      <EditorRoot editor={parent}>
+        <Editable renderVoid={(props) => <AtomicSelection {...props} />} />
+      </EditorRoot>
+    );
+    act(() => {
+      applyEditableCommand({ command: { kind: 'select-all' }, editor: parent });
+    });
+    assert.deepEqual(getProjectedViewSelectionSlice(parent)?.content, initial);
+    assert.equal(
+      isPliteViewSelectionCollapsed(readPliteViewSelection(parent)!),
+      false
+    );
+    if (position !== 'only') {
+      act(() => {
+        writePliteViewSelection(parent, null);
+        parent.update.selection.set(point(position === 'first' ? 0 : 2));
+        applyEditableCommand({
+          command: {
+            kind: 'move-selection',
+            axis: 'horizontal',
+            extend: true,
+            reverse: position === 'first',
+          },
+          editor: parent,
+        });
+      });
+      assert.deepEqual(getProjectedViewSelectionSlice(parent)?.content, [
+        media,
+      ]);
+    }
+    act(() => {
+      applyEditableCommand({
+        command: { kind: 'insert-text', text: 'X' },
+        editor: parent,
+      });
+    });
+    assert.deepEqual(
+      parent.read.children(),
+      position === 'only' ? [] : [paragraph('AB')]
+    );
+    assert.equal(
+      mounted.container
+        .querySelector('[data-atomic-selected]')
+        ?.getAttribute('data-atomic-selected'),
+      'true'
+    );
+    mounted.unmount();
+  });
+}
+
+it('round-trips ordinary ranges inside composed text without including retained neighbors', () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [paragraph('AB'), paragraph('CD')],
+  });
+  const view = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  view.update.text.delete({
+    at: { anchor: point(1), focus: { path: [1, 0], offset: 1 } },
+  });
+  const mounted = render(
+    <EditorRoot editor={view}>
+      <Editable />
+    </EditorRoot>
+  );
+  for (const backward of [false, true]) {
+    const range = backward
+      ? { anchor: point(2), focus: point(1) }
+      : { anchor: point(1), focus: point(2) };
+    const domRange = view.api.dom.resolveDOMRange(range);
+    assert.ok(domRange);
+    assert.equal(domRange.toString(), 'D');
+    assert.equal(domRange.startContainer, domRange.endContainer);
+    assert.equal(domRange.startOffset, 0);
+    assert.equal(domRange.endOffset, 1);
+    assert.deepEqual(
+      resolvePliteRangeFromDOMTextRange(view, domRange, {
+        requireCurrentRuntimeBinding: true,
+      }),
+      { anchor: point(1), focus: point(2) }
+    );
+    for (const offset of [0, 1]) {
+      const collapsed = domRange.cloneRange();
+      collapsed.setStart(domRange.startContainer, offset);
+      collapsed.collapse(true);
+      assert.deepEqual(resolvePliteRangeFromDOMTextRange(view, collapsed), {
+        anchor: point(offset + 1),
+        focus: point(offset + 1),
+      });
+    }
+  }
+  mounted.unmount();
+});
+
+for (const input of [
+  'native',
+  'keyboard',
+  'projected',
+  'target-range',
+] as const) {
+  it(`keeps an ordinary replacement beside its retained original paragraph through ${input} selection`, async () => {
+    const value = [paragraph('AB'), paragraph('CD')];
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: value,
+    });
+    const view = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: markup })
+    );
+    if (input === 'target-range') {
+      applyEditableCommand({
+        editor: view,
+        command: {
+          kind: 'delete-fragment',
+          direction: 'backward',
+          selection: { anchor: point(1), focus: { path: [1, 0], offset: 1 } },
+        },
+      });
+    } else {
+      view.update.text.delete({
+        at: { anchor: point(1), focus: { path: [1, 0], offset: 1 } },
+      });
+    }
+    const mounted = render(
+      <EditorRoot editor={view}>
+        <Editable
+          renderElement={({ attributes, children }) => (
+            <p {...attributes}>{children}</p>
+          )}
+        />
+      </EditorRoot>
+    );
+    const texts = () =>
+      [...mounted.container.querySelectorAll('p')].map(
+        (node) => node.textContent
+      );
+    assert.deepEqual(texts(), ['AB', 'CD']);
+    await act(async () => {
+      if (input === 'keyboard') {
+        view.update.selection.set(point(2));
+        applyEditableCommand({
+          editor: view,
+          command: {
+            kind: 'move-selection',
+            axis: 'horizontal',
+            reverse: true,
+            extend: true,
+          },
+        });
+        assert.equal(readPliteViewSelection(view), null);
+        assert.deepEqual(view.read.selection(), {
+          anchor: point(2),
+          focus: point(1),
+        });
+        applyEditableCommand({
+          editor: view,
+          command: {
+            kind: 'move-selection',
+            axis: 'horizontal',
+            reverse: true,
+            extend: true,
+          },
+        });
+        assert.deepEqual(
+          getProjectedViewSelectionSlice(view)?.content.map(NodeApi.string),
+          ['CD']
+        );
+        applyEditableCommand({
+          editor: view,
+          command: { kind: 'move-selection', axis: 'horizontal', extend: true },
+        });
+        assert.equal(readPliteViewSelection(view), null);
+        assert.deepEqual(view.read.selection(), {
+          anchor: point(2),
+          focus: point(1),
+        });
+      } else if (input === 'projected') {
+        view.update.selection.set(point(2));
+        const graph = createContentRootViewBoundaryGraph(view, []);
+        writePliteViewSelection(
+          view,
+          createPliteViewSelection(graph, {
+            anchor: { point: point(2), affinity: 'backward' },
+            focus: { point: point(1), affinity: 'forward' },
+          })
+        );
+        assert.deepEqual(
+          getProjectedViewSelectionSlice(view)?.content.map(NodeApi.string),
+          ['D']
+        );
+      } else {
+        view.update.selection.set({ anchor: point(1), focus: point(2) });
+      }
+      applyModelOwnedTextInput({
+        editor: view,
+        inputType: 'insertText',
+        data: 'X',
+        ...(input === 'target-range' && {
+          selection: { anchor: point(1), focus: point(2) },
+        }),
+      });
+    });
+    assert.equal(view.read.text.string([]), 'AX');
+    assert.deepEqual(source.read.children(), value);
+    assert.deepEqual(
+      texts(),
+      ['AB', 'CDX'],
+      JSON.stringify(source.read.value())
+    );
+    mounted.unmount();
+  });
+}
+
+for (const nested of [false, true]) {
+  it(`types after a restored paragraph end with default affinity${nested ? ' inside a table cell' : ''}`, async () => {
+    const paragraphs = [paragraph('AB'), paragraph('CD')];
+    const value = nested
+      ? [
+          {
+            type: 'table',
+            children: [
+              {
+                type: 'row',
+                children: [{ type: 'cell', children: paragraphs }],
+              },
+            ],
+          },
+        ]
+      : paragraphs;
+    const prefix = nested ? [0, 0, 0] : [];
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: value,
+    });
+    const view = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: markup })
+    );
+    view.update.text.delete({
+      at: {
+        anchor: { path: [...prefix, 0, 0], offset: 1 },
+        focus: { path: [...prefix, 1, 0], offset: 1 },
+      },
+    });
+    const mounted = render(
+      <EditorRoot editor={view}>
+        <Editable
+          renderElement={({ attributes, children, element }) =>
+            element.type === 'paragraph' ? (
+              <p {...attributes}>{children}</p>
+            ) : (
+              <div {...attributes}>{children}</div>
+            )
+          }
+        />
+      </EditorRoot>
+    );
+    assert.deepEqual(
+      [...mounted.container.querySelectorAll('p')].map(
+        (node) => node.textContent
+      ),
+      ['AB', 'CD']
+    );
+    await act(async () => {
+      view.update.selection.set({ path: [...prefix, 0, 0], offset: 2 });
+      applyModelOwnedTextInput({
+        editor: view,
+        inputType: 'insertText',
+        data: '!',
+      });
+    });
+    assert.deepEqual(
+      [...mounted.container.querySelectorAll('p')].map(
+        (node) => node.textContent
+      ),
+      ['AB', 'CD!']
+    );
+    mounted.unmount();
+  });
+}
+
+it('moves to a proposed document edge using public selection coordinates', async () => {
+  const source = renderHook(() =>
+    useEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [
+        paragraph('AB'),
+        { type: 'quote', children: [paragraph('CD')] },
+      ],
+    })
+  );
+  let view: ReturnType<typeof useEditorContext> | undefined;
+  const Surface = () => {
+    view = useEditorContext();
+    return <Editable aria-label="Proposed" />;
+  };
+  const mounted = render(
+    <ProductEditorRoot
+      authored={{ intent: 'propose', projection: 'proposed' }}
+      editor={source.result.current}
+    >
+      <Surface />
+    </ProductEditorRoot>
+  );
+  assert.ok(view);
+  const editor = view;
+  await act(async () =>
+    editor.update.selection.set({ path: [1, 0, 0], offset: 2 })
+  );
+  fireEvent.keyDown(mounted.getByRole('textbox', { name: 'Proposed' }), {
+    key: 'Home',
+    ctrlKey: true,
+  });
+  assert.deepEqual(editor.read.selection(), {
+    anchor: point(0),
+    focus: point(0),
+  });
+  mounted.unmount();
+  source.unmount();
+});
+
+it('keeps composed children in their native partial-render slots', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [
+      {
+        type: 'quote',
+        children: ['AB', 'CD', 'Gap', 'EF', 'GH'].map(paragraph),
+      },
+    ],
+  });
+  const view = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  view.update((tx) => {
+    tx.authored.propose();
+    tx.text.delete({
+      at: {
+        anchor: { path: [0, 0, 0], offset: 1 },
+        focus: { path: [0, 1, 0], offset: 1 },
+      },
+    });
+    tx.text.delete({
+      at: {
+        anchor: { path: [0, 2, 0], offset: 1 },
+        focus: { path: [0, 3, 0], offset: 1 },
+      },
+    });
+  });
+  const mounted = render(
+    <EditorRoot editor={view}>
+      <Editable
+        renderElement={({ attributes, children, element, slots }) =>
+          element.type === 'quote' ? (
+            <blockquote {...attributes}>
+              {element.children.map((_, index) => (
+                <div data-slot={index} key={view.key([0, index])}>
+                  {slots.children({ from: index, to: index })}
+                </div>
+              ))}
+            </blockquote>
+          ) : (
+            <p {...attributes}>{children}</p>
+          )
+        }
+      />
+    </EditorRoot>
+  );
+  const texts = () =>
+    [...mounted.container.querySelectorAll('[data-slot]')].map(
+      (node) => node.textContent
+    );
+  assert.deepEqual(texts(), ['ABCD', 'Gap', 'EFGH']);
+  assert.equal(mounted.container.querySelectorAll('p').length, 5);
+  await act(async () =>
+    source.update.text.insert('!', { at: { path: [0, 1, 0], offset: 1 } })
+  );
+  assert.deepEqual(texts(), ['ABC!D', 'Gap', 'EFGH']);
+  await act(async () =>
+    view.update.text.insert('?', { at: { path: [0, 1, 0], offset: 1 } })
+  );
+  assert.deepEqual(texts(), ['ABC!D', 'G?ap', 'EFGH']);
+  await act(async () =>
+    source.update.authored.decide({
+      action: 'reject',
+      selection: source.read.authored.select({ status: 'pending' }),
+    })
+  );
+  assert.deepEqual(texts(), ['AB', 'C!D', 'Gap', 'EF', 'GH']);
+  mounted.unmount();
+});
+
+it('refreshes native text after switching a shared runtime to composed markup', async () => {
+  const authoring = authored({ authorId: 'alice' });
+  let parent: ReturnType<typeof useEditorContext> | undefined;
+  const Capture = () => {
+    parent = useEditorContext();
+    return (
+      <Editable
+        renderElement={({ attributes, children, element }) =>
+          element.type === 'quote' ? (
+            <blockquote {...attributes}>{children}</blockquote>
+          ) : (
+            <p {...attributes}>{children}</p>
+          )
+        }
+      />
+    );
+  };
+  const Fixture = () => {
+    const editor = useEditor({
+      plugins: [authoring],
+      initialValue: [
+        paragraph('AB'),
+        { type: 'quote', children: [paragraph('CD')] },
+      ],
+    });
+    return (
+      <ProductEditorRoot editor={editor}>
+        <ProductEditorRoot editor={editor}>
+          <Editable />
+        </ProductEditorRoot>
+        <ProductEditorRoot
+          authored={{ intent: 'propose', projection: 'proposed' }}
+          editor={editor}
+        >
+          <Capture />
+        </ProductEditorRoot>
+      </ProductEditorRoot>
+    );
+  };
+  const mounted = render(<Fixture />);
+  assert.ok(parent);
+  const view = parent;
+  await act(async () => {
+    applyEditableCommand({
+      editor: view,
+      command: {
+        kind: 'delete-fragment',
+        direction: 'backward',
+        selection: { anchor: point(1), focus: { path: [1, 0, 0], offset: 1 } },
+      },
+    });
+  });
+  await act(async () => view.plugin(authoring).api.setView(markup));
+  assert.deepEqual(
+    [...mounted.container.querySelectorAll('p')].map(
+      (node) => node.textContent
+    ),
+    ['ABD', 'CD']
+  );
+  await act(async () => view.update.selection.set(point(2)));
+  await act(async () => {
+    applyModelOwnedTextInput({
+      data: '!',
+      editor: view,
+      inputType: 'insertText',
+      selection: { anchor: point(2), focus: point(2) },
+    });
+  });
+  assert.equal(view.read.text.string([]), 'AD!');
+  assert.deepEqual(
+    [...mounted.container.querySelectorAll('p')].map(
+      (node) => node.textContent
+    ),
+    ['ABD!', 'CD']
+  );
+  mounted.unmount();
+});
+
+it('refreshes a composed branch when native input changes only ordinary text', async () => {
+  const value = [
+    paragraph('AB'),
+    { type: 'quote', children: [paragraph('CD')] },
+  ];
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: value,
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.changes.apply(
+    DocumentChange.between({ children: value }, { children: [paragraph('AD')] })
+  );
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable
+        renderElement={({ attributes, children, element }) =>
+          element.type === 'quote' ? (
+            <blockquote {...attributes}>{children}</blockquote>
+          ) : (
+            <p {...attributes}>{children}</p>
+          )
+        }
+      />
+    </EditorRoot>
+  );
+  assert.deepEqual(
+    [...mounted.container.querySelectorAll('p')].map(
+      (node) => node.textContent
+    ),
+    ['ABD', 'CD']
+  );
+  await act(async () => {
+    applyModelOwnedTextInput({
+      data: '!',
+      editor: parent,
+      inputType: 'insertText',
+      selection: { anchor: point(2), focus: point(2) },
+    });
+  });
+  assert.equal(parent.read.text.string([]), 'AD!');
+  assert.deepEqual(
+    [...mounted.container.querySelectorAll('p')].map(
+      (node) => node.textContent
+    ),
+    ['ABD!', 'CD']
+  );
+  mounted.unmount();
+});
+
+it('composes separate retained ranges through the root and follows later edits', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: ['AB', 'CD', 'Gap', 'EF', 'GH'].map(paragraph),
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update((tx) => {
+    tx.authored.propose();
+    tx.text.delete({
+      at: { anchor: point(1), focus: { path: [1, 0], offset: 1 } },
+    });
+    tx.text.delete({
+      at: {
+        anchor: { path: [2, 0], offset: 1 },
+        focus: { path: [3, 0], offset: 1 },
+      },
+    });
+  });
+  assert.deepEqual(parent.read.children().map(NodeApi.string), [
+    'AD',
+    'Gap',
+    'EH',
+  ]);
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable
+        renderElement={({ attributes, children }) => (
+          <p {...attributes}>{children}</p>
+        )}
+      />
+    </EditorRoot>
+  );
+  const texts = () =>
+    [...mounted.container.querySelectorAll('p')].map(
+      (node) => node.textContent
+    );
+  assert.deepEqual(texts(), ['AB', 'CD', 'Gap', 'EF', 'GH']);
+  await act(async () =>
+    source.update.text.insert('!', { at: { path: [1, 0], offset: 1 } })
+  );
+  assert.deepEqual(texts(), ['AB', 'C!D', 'Gap', 'EF', 'GH']);
+  await act(async () =>
+    parent.update.text.insert('?', { at: { path: [1, 0], offset: 1 } })
+  );
+  assert.deepEqual(texts(), ['AB', 'C!D', 'G?ap', 'EF', 'GH']);
+  await act(async () => {
+    assert.equal(
+      source.update.authored.decide({
+        action: 'reject',
+        selection: source.read.authored.select({ status: 'pending' }),
+      }).status,
+      'applied'
+    );
+  });
+  assert.deepEqual(texts(), ['AB', 'C!D', 'Gap', 'EF', 'GH']);
+  assert.equal(
+    mounted.container.querySelector('[data-editor-retained]')?.outerHTML ??
+      null,
+    null
+  );
+  mounted.unmount();
+});
+
+for (const fixture of [
+  {
+    name: 'into a quote',
+    value: [paragraph('AB'), { type: 'quote', children: [paragraph('CD')] }],
+    anchor: point(1),
+    focus: { path: [1, 0, 0], offset: 1 },
+    proposedPoint: point(2),
+    tags: ['P', 'BLOCKQUOTE'],
+  },
+  {
+    name: 'out of a quote',
+    value: [{ type: 'quote', children: [paragraph('AB')] }, paragraph('CD')],
+    anchor: { path: [0, 0, 0], offset: 1 },
+    focus: { path: [1, 0], offset: 1 },
+    proposedPoint: { path: [0, 0, 0], offset: 2 },
+    tags: ['BLOCKQUOTE', 'P'],
+  },
+  {
+    name: 'between quotes',
+    value: [
+      { type: 'quote', children: [paragraph('AB')] },
+      { type: 'quote', children: [paragraph('CD')] },
+    ],
+    anchor: { path: [0, 0, 0], offset: 1 },
+    focus: { path: [1, 0, 0], offset: 1 },
+    proposedPoint: { path: [0, 0, 0], offset: 2 },
+    tags: ['BLOCKQUOTE', 'BLOCKQUOTE'],
+  },
+]) {
+  it(`renders native retained ancestry and both move placements ${fixture.name}`, async () => {
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: fixture.value,
+    });
+    const parent = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: markup })
+    );
+    parent.update.text.delete({
+      at: { anchor: fixture.anchor, focus: fixture.focus },
+    });
+    const mounted = render(
+      <EditorRoot editor={parent}>
+        <Editable
+          renderElement={({ attributes, children, element }) =>
+            element.type === 'quote' ? (
+              <blockquote {...attributes}>{children}</blockquote>
+            ) : (
+              <p {...attributes}>{children}</p>
+            )
+          }
+        />
+      </EditorRoot>
+    );
+    const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
+    assert.ok(root);
+    assert.deepEqual(
+      [...root.children].map((node) => node.tagName),
+      fixture.tags
+    );
+    assert.deepEqual(
+      [...root.querySelectorAll('p')].map((node) => node.textContent),
+      ['ABD', 'CD']
+    );
+    assert.equal(root.querySelectorAll('p p, p blockquote').length, 0);
+    const ordinary = [...root.querySelectorAll('[data-editor-string]')].find(
+      (node) =>
+        node.textContent === 'D' && !node.closest('[data-editor-retained]')
+    )?.firstChild;
+    assert.ok(ordinary);
+    assert.deepEqual(
+      parent.api.dom.resolvePoint([ordinary, 1], { exactMatch: true }),
+      fixture.proposedPoint
+    );
+    assert.deepEqual(parent.api.dom.resolveDOMPoint(fixture.proposedPoint), [
+      ordinary,
+      1,
+    ]);
+    const retained = [...root.querySelectorAll('[data-editor-string]')].filter(
+      (node) => node.closest('[data-editor-retained]')
+    );
+    assert.equal(retained.map((node) => node.textContent).join(''), 'BCD');
+    for (const node of retained) {
+      const view = readDOMFragmentEditor(node);
+      assert.ok(view && node.firstChild);
+      const nativePoint = view.api.dom.resolvePoint([node.firstChild, 1], {
+        exactMatch: true,
+      });
+      assert.ok(nativePoint);
+      assert.deepEqual(view.api.dom.resolveDOMPoint(nativePoint), [
+        node.firstChild,
+        1,
+      ]);
+    }
+    await act(async () =>
+      source.update.text.insert('!', { at: fixture.focus })
+    );
+    assert.deepEqual(
+      [...root.querySelectorAll('p')].map((node) => node.textContent),
+      ['ABD', 'C!D']
+    );
+    await act(async () => {
+      assert.equal(
+        source.update.authored.decide({
+          action: 'reject',
+          selection: source.read.authored.select({
+            authorId: 'alice',
+            status: 'pending',
+          }),
+        }).status,
+        'applied'
+      );
+    });
+    assert.equal(
+      root.querySelector('[data-editor-retained]')?.outerHTML ?? null,
+      null
+    );
+    assert.deepEqual(
+      [...root.querySelectorAll('p')].map((node) => node.textContent),
+      ['AB', 'C!D']
+    );
+    mounted.unmount();
+  });
+}
+
+for (const affinity of ['backward', 'forward'] as const) {
+  it(`keeps ${affinity} input in the correct rendered paragraph after a range deletion`, async () => {
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('AB'), paragraph('CD')],
+    });
+    const parent = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: markup })
+    );
+    parent.update.text.delete({
+      at: { anchor: point(1), focus: { path: [1, 0], offset: 1 } },
+    });
+    const mounted = render(
+      <EditorRoot editor={parent}>
+        <Editable
+          renderElement={({ attributes, children }) => (
+            <p {...attributes}>{children}</p>
+          )}
+        />
+      </EditorRoot>
+    );
+    await act(async () => {
+      parent.update.selection.set(
+        SelectionApi.text({ anchor: point(1), focus: point(1) }, { affinity })
+      );
+      parent.update.text.insert('X');
+    });
+    assert.deepEqual(
+      [...mounted.container.querySelectorAll('p')].map(
+        (node) => node.textContent
+      ),
+      affinity === 'backward' ? ['AXB', 'CD'] : ['AB', 'CXD']
+    );
+    const text = [
+      ...mounted.container.querySelectorAll('[data-editor-string]'),
+    ].find((node) => node.textContent === 'X')?.firstChild;
+    assert.ok(text);
+    assert.deepEqual(
+      parent.api.dom.resolvePoint([text, 1], { exactMatch: true }),
+      point(2)
+    );
+    assert.deepEqual(parent.api.dom.resolveDOMPoint(point(2)), [text, 1]);
+    mounted.unmount();
+  });
+}
+
 it('keeps the caret on the chosen side when collapsing across retained text', () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('AXYZB')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -102,7 +1217,7 @@ it('keeps the caret on the chosen side when collapsing across retained text', ()
 
 it('maps a retained selection through accepted edits and releases it on a decision', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('Before middle after')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -110,9 +1225,9 @@ it('maps a retained selection through accepted edits and releases it on a decisi
   );
   parent.update.text.delete({ at: { anchor: point(7), focus: point(13) } });
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
   const { id } = source.read.authored.changes().items[0];
   const fragment = readAuthoredViewFragments(parent, id)[0];
@@ -136,7 +1251,7 @@ it('maps a retained selection through accepted edits and releases it on a decisi
     'idXdl'
   );
   assert.equal(
-    [...mounted.container.querySelectorAll('[data-plite-view-selection]')]
+    [...mounted.container.querySelectorAll('[data-editor-view-selection]')]
       .map((node) => node.textContent)
       .join(''),
     'idXdl'
@@ -149,7 +1264,7 @@ it('maps a retained selection through accepted edits and releases it on a decisi
   );
   assert.equal(readPliteViewSelection(parent), null);
   assert.equal(
-    mounted.container.querySelector('[data-plite-view-selection]'),
+    mounted.container.querySelector('[data-editor-view-selection]'),
     null
   );
   assert.equal(hasActiveAnchors(source), false);
@@ -158,7 +1273,7 @@ it('maps a retained selection through accepted edits and releases it on a decisi
 
 it('keeps both sides of a retained gap mapped through accepted path and text changes', () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('Before middle after')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -191,7 +1306,7 @@ it('keeps both sides of a retained gap mapped through accepted path and text cha
 
 it('releases retained selection anchors when its mounted view unmounts', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('AXYZB')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -199,9 +1314,9 @@ it('releases retained selection anchors when its mounted view unmounts', async (
   );
   parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } });
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
   await act(async () =>
     writePliteViewSelection(
@@ -254,7 +1369,7 @@ for (const fixture of [
 ] as const) {
   it(`moves one ${fixture.axis} unit through retained ${fixture.expected}`, () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph(fixture.text)],
     });
     const parent = createReactRuntimeViewEditor(
@@ -287,17 +1402,18 @@ for (const fixture of [
       editor: parent,
     });
     const selection = readPliteViewSelection(parent);
-    assert.ok(selection);
     if (fixture.start === 1) {
+      assert.equal(selection, null);
+      assert.deepEqual(parent.read.selection(), {
+        anchor: point(1),
+        focus: point(2),
+      });
       assert.equal(
-        getProjectedViewSelectionSlice(parent)
-          ?.content.map(NodeApi.string)
-          .join(''),
+        parent.read.text.string({ anchor: point(1), focus: point(2) }),
         ' '
       );
-      assert.ok(selection.focus.fragmentId);
-      assert.deepEqual(selection.focus.point, point(0));
     } else {
+      assert.ok(selection);
       assert.equal(isPliteViewSelectionCollapsed(selection), true);
       assert.deepEqual(selection.focus.point, point(fixture.start));
     }
@@ -307,7 +1423,7 @@ for (const fixture of [
 
 it('counts retained block boundaries as character steps', () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('A'), paragraph('D'), paragraph('B')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -350,7 +1466,7 @@ it('counts retained block boundaries as character steps', () => {
 
 it('advances each arrow through fragment coordinates before and after native selection import', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('A shared draft.')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -359,13 +1475,26 @@ it('advances each arrow through fragment coordinates before and after native sel
   parent.update.text.delete({ at: { anchor: point(2), focus: point(8) } });
   parent.update.selection.set({ anchor: point(1), focus: point(1) });
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
   const lengths: string[] = [];
+  const selectedText = () => {
+    const projected = getProjectedViewSelectionSlice(parent);
+    if (projected) return projected.content.map(NodeApi.string).join('');
+    const selected = parent.read.selection();
+    return selected && !SelectionApi.isNode(selected)
+      ? parent.read.slice
+          .get({ at: selected })
+          .content.map(NodeApi.string)
+          .join('')
+      : '';
+  };
   for (let index = 0; index < 8; index++) {
     await act(async () => {
+      const selection = parent.read.selection();
+      assert.ok(!SelectionApi.isNode(selection));
       const result = applyContentRootSelectionMoveCommand({
         command: {
           kind: 'move-selection',
@@ -374,18 +1503,13 @@ it('advances each arrow through fragment coordinates before and after native sel
           reverse: false,
         },
         editor: parent,
-        selection: { anchor: point(1), focus: point(1) },
+        selection,
       });
       assert.equal(result.handled, true);
     });
     const view = readPliteViewSelection(parent);
-    assert.ok(view);
-    if (index > 0 && index < 7) assert.ok(view.focus.fragmentId);
-    lengths.push(
-      getProjectedViewSelectionSlice(parent)
-        ?.content.map(NodeApi.string)
-        .join('') ?? ''
-    );
+    if (index > 0 && index < 6) assert.ok(view?.focus.fragmentId);
+    lengths.push(selectedText());
   }
   assert.deepEqual(lengths, [
     ' ',
@@ -418,12 +1542,7 @@ it('advances each arrow through fragment coordinates before and after native sel
         editor: parent,
       })
     );
-    assert.equal(
-      getProjectedViewSelectionSlice(parent)
-        ?.content.map(NodeApi.string)
-        .join('') ?? '',
-      expected
-    );
+    assert.equal(selectedText(), expected);
   }
   assert.equal(
     isPliteViewSelectionCollapsed(readPliteViewSelection(parent)!),
@@ -443,12 +1562,10 @@ it('advances each arrow through fragment coordinates before and after native sel
     anchor: point(2),
     focus: point(2),
   });
-  const root = mounted.container.querySelector<HTMLElement>(
-    '[data-plite-editor]'
-  );
-  const before = root?.querySelector('[data-plite-string]')?.firstChild;
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
+  const before = root?.querySelector('[data-editor-string]')?.firstChild;
   const retained = root?.querySelector(
-    '[data-plite-retained] [data-plite-string]'
+    '[data-editor-retained] [data-editor-string]'
   )?.firstChild;
   const native = window.getSelection();
   assert.ok(root && before && retained && native);
@@ -477,7 +1594,7 @@ it('advances each arrow through fragment coordinates before and after native sel
 
 it('keeps both editable zero-width boundaries around a completely deleted text node', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('XYZ')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -485,16 +1602,14 @@ it('keeps both editable zero-width boundaries around a completely deleted text n
   );
   parent.update.text.delete({ at: { anchor: point(0), focus: point(3) } });
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
-  const root = mounted.container.querySelector<HTMLElement>(
-    '[data-plite-editor]'
-  );
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
   const nodes = [
     ...mounted.container.querySelectorAll(
-      '[data-plite-string], [data-plite-zero-width]'
+      '[data-editor-string], [data-editor-zero-width]'
     ),
   ].map((node) => node.firstChild);
   const before = nodes[0];
@@ -523,9 +1638,56 @@ it('keeps both editable zero-width boundaries around a completely deleted text n
   mounted.unmount();
 });
 
+it('keeps a retained selection bound to the markup view when storage is shared', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [paragraph('AXYZB')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+
+  parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } });
+  setPliteViewSelectionStoreKey(parent, source);
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable />
+    </EditorRoot>
+  );
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
+  const strings = [
+    ...mounted.container.querySelectorAll('[data-editor-string]'),
+  ].map((node) => node.firstChild);
+  const anchorNode = strings[0];
+  const focusNode = strings[1];
+  const domSelection = window.getSelection();
+
+  assert.ok(root && anchorNode && focusNode && domSelection);
+  domSelection.setBaseAndExtent(anchorNode, 1, focusNode, 2);
+  const selection = resolveProjectedDOMSelection({
+    domSelection,
+    editor: parent,
+    editorElement: root,
+  });
+
+  assert.ok(selection);
+  await act(async () => {
+    writePliteViewSelection(parent, selection);
+    parent.update.selection.set(point(1));
+  });
+  assert.ok(readPliteViewSelection(parent));
+  assert.equal(
+    getProjectedViewSelectionSlice(parent)
+      ?.content.map(NodeApi.string)
+      .join(''),
+    'XY'
+  );
+  mounted.unmount();
+});
+
 it('copies retained blocks in visible order without merging their paragraph boundaries', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [
       paragraph('Before'),
       paragraph('Deleted'),
@@ -537,9 +1699,9 @@ it('copies retained blocks in visible order without merging their paragraph boun
   );
   parent.update.nodes.remove({ at: [1] });
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
   const selection = createPliteViewSelection(
     createContentRootViewBoundaryGraph(parent, []),
@@ -554,7 +1716,7 @@ it('copies retained blocks in visible order without merging their paragraph boun
     ['ore', 'Deleted', 'Af']
   );
   assert.deepEqual(
-    [...mounted.container.querySelectorAll('[data-plite-view-selection]')].map(
+    [...mounted.container.querySelectorAll('[data-editor-view-selection]')].map(
       (node) => node.textContent
     ),
     ['ore', 'Deleted', 'Af']
@@ -562,9 +1724,206 @@ it('copies retained blocks in visible order without merging their paragraph boun
   mounted.unmount();
 });
 
+it('edits text inside a retained deletion without changing the accepted original', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' }), history()],
+    initialValue: [paragraph('Alpha bravo omega')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.text.delete({ at: { anchor: point(6), focus: point(11) } });
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable />
+    </EditorRoot>
+  );
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
+  const retained = root?.querySelector('[data-editor-retained="delete"]');
+  const text = retained?.querySelector('[data-editor-string]')?.firstChild;
+  const nativeSelection = window.getSelection();
+  assert.ok(root && retained && text && nativeSelection);
+  nativeSelection.setBaseAndExtent(text, 2, text, 2);
+  const selection = resolveProjectedDOMSelection({
+    domSelection: nativeSelection,
+    editor: parent,
+    editorElement: root,
+  });
+  assert.ok(selection?.anchor.fragmentId);
+  await act(async () => {
+    writePliteViewSelection(parent, selection);
+    applyModelOwnedTextInput({
+      data: 'X',
+      editor: parent,
+      inputType: 'insertText',
+    });
+  });
+  const retainedText = () =>
+    [...root.querySelectorAll('[data-editor-retained="delete"]')]
+      .map((node) => node.textContent)
+      .join('');
+  assert.equal(retainedText(), 'brXavo');
+  assert.equal(
+    source.read.children().map(NodeApi.string).join(''),
+    'Alpha bravo omega'
+  );
+  assert.equal(
+    parent.read.children().map(NodeApi.string).join(''),
+    'Alpha  omega'
+  );
+  await act(async () => {
+    applyModelOwnedTextInput({
+      data: 'Y',
+      editor: parent,
+      inputType: 'insertText',
+    });
+  });
+  assert.equal(retainedText(), 'brXYavo');
+  await act(async () => {
+    applyEditableCommand({
+      command: { kind: 'delete', direction: 'backward' },
+      editor: parent,
+    });
+  });
+  assert.equal(retainedText(), 'brXavo');
+  await act(async () => {
+    applyEditableCommand({
+      command: { kind: 'history', direction: 'undo' },
+      editor: parent,
+    });
+  });
+  assert.equal(retainedText(), 'brXYavo');
+  await act(async () => {
+    applyEditableCommand({
+      command: { kind: 'history', direction: 'redo' },
+      editor: parent,
+    });
+    assert.ok(
+      readPliteViewSelection(parent)?.anchor.fragmentId,
+      'redo retains fragment selection'
+    );
+    applyModelOwnedTextInput({
+      data: 'Z',
+      editor: parent,
+      inputType: 'insertText',
+    });
+  });
+  assert.equal(retainedText(), 'brXZavo');
+  assert.equal(
+    source.read.children().map(NodeApi.string).join(''),
+    'Alpha bravo omega'
+  );
+  mounted.unmount();
+});
+
+it('pastes and splits retained text while protecting the original deletion', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' }), history()],
+    initialValue: [paragraph('Alpha bravo omega')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.text.delete({ at: { anchor: point(6), focus: point(11) } });
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable />
+    </EditorRoot>
+  );
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
+  const nativeSelection = window.getSelection();
+  assert.ok(root && nativeSelection);
+  const select = (anchor: number, focus = anchor) => {
+    const text = root.querySelector(
+      '[data-editor-retained="delete"] [data-editor-string]'
+    )?.firstChild;
+    assert.ok(text);
+    nativeSelection.setBaseAndExtent(text, anchor, text, focus);
+    const selection = resolveProjectedDOMSelection({
+      domSelection: nativeSelection,
+      editor: parent,
+      editorElement: root,
+    });
+    assert.ok(selection?.anchor.fragmentId);
+    writePliteViewSelection(parent, selection);
+  };
+  const retainedText = () =>
+    [...root.querySelectorAll('[data-editor-retained="delete"]')]
+      .map((node) => node.textContent)
+      .join('');
+  await act(async () => {
+    select(2);
+    applyEditableCommand({
+      command: { kind: 'delete', direction: 'backward' },
+      editor: parent,
+    });
+  });
+  assert.equal(retainedText(), 'bravo');
+  await act(async () => {
+    select(1, 3);
+    applyModelOwnedTextInput({
+      data: 'Q',
+      editor: parent,
+      inputType: 'insertText',
+    });
+  });
+  assert.equal(retainedText(), 'bQravo');
+  await act(async () => {
+    applyEditableCommand({
+      command: { kind: 'delete', direction: 'backward' },
+      editor: parent,
+    });
+  });
+  assert.equal(retainedText(), 'bravo');
+  await act(async () => {
+    select(2);
+    applyEditableCommand({
+      command: {
+        kind: 'insert-data',
+        data: {
+          files: [],
+          types: ['text/plain'],
+          getData: (type: string) => (type === 'text/plain' ? 'YZ' : ''),
+        } as unknown as DataTransfer,
+      },
+      editor: parent,
+    });
+  });
+  assert.equal(retainedText(), 'brYZavo');
+  await act(async () => {
+    applyEditableCommand({
+      command: { kind: 'insert-break', variant: 'paragraph' },
+      editor: parent,
+    });
+  });
+  assert.deepEqual(
+    [...root.querySelectorAll('[data-editor-node="element"]')].map(
+      (node) => node.textContent
+    ),
+    ['Alpha brYZ', 'avo omega']
+  );
+  await act(async () => {
+    applyModelOwnedTextInput({
+      data: 'X',
+      editor: parent,
+      inputType: 'insertText',
+    });
+  });
+  assert.equal(retainedText(), 'brYZXavo');
+  assert.equal(
+    source.read.children().map(NodeApi.string).join(''),
+    'Alpha bravo omega'
+  );
+  assert.equal(
+    parent.read.children().map(NodeApi.string).join(''),
+    'Alpha  omega'
+  );
+  mounted.unmount();
+});
+
 it('selects, copies and protects native retained content across both document affinities', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('AXYZB')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -572,13 +1931,11 @@ it('selects, copies and protects native retained content across both document af
   );
   parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } });
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
-  const root = mounted.container.querySelector<HTMLElement>(
-    '[data-plite-editor]'
-  );
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]');
   const domSelection = window.getSelection();
   assert.ok(root && domSelection);
   const select = (
@@ -588,7 +1945,7 @@ it('selects, copies and protects native retained content across both document af
     focusOffset: number
   ): PliteViewSelection => {
     const strings = [
-      ...mounted.container.querySelectorAll('[data-plite-string]'),
+      ...mounted.container.querySelectorAll('[data-editor-string]'),
     ].map((node) => node.firstChild);
     const anchorNode = strings[anchor];
     const focusNode = strings[focus];
@@ -635,7 +1992,7 @@ it('selects, copies and protects native retained content across both document af
     assert.equal(data.get('text/plain'), 'XYZ');
     assert.equal(
       mounted.container.querySelector(
-        '[data-plite-retained] [data-plite-view-selection]'
+        '[data-editor-retained] [data-editor-view-selection]'
       )?.textContent,
       'XYZ'
     );
@@ -708,13 +2065,17 @@ it('selects, copies and protects native retained content across both document af
       editor: parent,
     });
   });
-  assert.deepEqual(source.read.value(), snapshot);
+  assert.deepEqual(source.read.children(), snapshot.children);
+  assert.equal(
+    root.querySelector('[data-editor-retained="delete"]')?.textContent,
+    'X!YZ'
+  );
   mounted.unmount();
 });
 
 it('automatically interleaves retained text with distinct native offsets', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('AXYZB')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -722,23 +2083,23 @@ it('automatically interleaves retained text with distinct native offsets', async
   );
   parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } });
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
   assert.equal(mounted.container.textContent, 'AXYZB');
   const retained = mounted.container.querySelector<HTMLElement>(
-    '[data-plite-retained]'
+    '[data-editor-retained]'
   );
   assert.ok(retained);
   assert.equal(retained.tagName, 'SPAN');
   assert.equal(retained.textContent, 'XYZ');
   const editor = readDOMFragmentEditor(retained);
   assert.ok(editor);
-  const text = retained.querySelector('[data-plite-string]')?.firstChild;
+  const text = retained.querySelector('[data-editor-string]')?.firstChild;
   assert.ok(text);
   assert.deepEqual(
-    editor.api.dom.resolvePlitePoint([text, 2], { exactMatch: true }),
+    editor.api.dom.resolvePoint([text, 2], { exactMatch: true }),
     point(2)
   );
   const after = retained.nextElementSibling?.firstElementChild?.firstChild;
@@ -746,11 +2107,11 @@ it('automatically interleaves retained text with distinct native offsets', async
   assert.deepEqual(parent.api.dom.resolveDOMPoint(point(2)), [after, 1]);
   const editorElement = parent.api.dom.root();
   assert.ok(editorElement);
-  const selection = createFastDOMSelectionRange({
-    editor: parent,
-    editorElement,
-    selection: { anchor: point(2), focus: point(2) },
-  });
+  const selection = resolveDOMRangeInRoot(
+    parent,
+    { anchor: point(2), focus: point(2) },
+    editorElement
+  );
   assert.ok(selection);
   assert.equal(selection.startContainer, after);
   assert.equal(selection.startOffset, 1);
@@ -764,33 +2125,33 @@ it('automatically interleaves retained text with distinct native offsets', async
 it('replaces imperative text flow when inline fragments arrive and keeps their order while editing', async () => {
   let authorId = 'alice';
   const source = createEditor({
-    extensions: [authored({ authorId: () => authorId })],
+    plugins: [authored({ authorId: () => authorId })],
     initialValue: [paragraph('AABBCCDD')],
   });
   const parent = createReactRuntimeViewEditor(
     createEditorView(source, { authored: markup })
   );
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
-  assert.ok(mounted.container.querySelector('[data-plite-text-flow-host]'));
+  assert.ok(mounted.container.querySelector('[data-editor-text-flow-host]'));
   await act(async () =>
     parent.update.text.delete({ at: { anchor: point(2), focus: point(4) } })
   );
   const proposedText = mounted.container.querySelector(
-    '[data-plite-dom-sync-reason="retained-content"]'
+    '[data-editor-dom-sync-reason="retained-content"]'
   );
   assert.ok(proposedText);
-  assert.equal(proposedText.getAttribute('data-plite-dom-sync'), null);
+  assert.equal(proposedText.getAttribute('data-editor-dom-sync'), null);
   authorId = 'bob';
   await act(async () =>
     parent.update.text.delete({ at: { anchor: point(4), focus: point(6) } })
   );
   const visible = () => mounted.container.textContent?.replaceAll('\uFEFF', '');
   const deleted = () =>
-    [...mounted.container.querySelectorAll('[data-plite-retained]')].map(
+    [...mounted.container.querySelectorAll('[data-editor-retained]')].map(
       (node) => node.textContent
     );
   assert.deepEqual(deleted(), ['BB', 'DD']);
@@ -823,16 +2184,16 @@ for (const [text, from, to] of [
 ] as const) {
   it(`keeps native editable points around retained boundary text in ${text}`, async () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph(text)],
     });
     const parent = createReactRuntimeViewEditor(
       createEditorView(source, { authored: markup })
     );
     const mounted = render(
-      <Plite editor={parent}>
+      <EditorRoot editor={parent}>
         <Editable placeholder="Type here" />
-      </Plite>
+      </EditorRoot>
     );
     await act(async () =>
       parent.update.text.delete({
@@ -841,11 +2202,11 @@ for (const [text, from, to] of [
     );
     assert.equal(mounted.container.textContent?.replaceAll('\uFEFF', ''), text);
     assert.equal(
-      mounted.container.querySelector('[data-plite-retained]')?.textContent,
+      mounted.container.querySelector('[data-editor-retained]')?.textContent,
       'XYZ'
     );
     assert.equal(
-      mounted.container.querySelector('[data-plite-placeholder]'),
+      mounted.container.querySelector('[data-editor-placeholder]'),
       null
     );
     const length = text.length - (to - from);
@@ -854,7 +2215,7 @@ for (const [text, from, to] of [
       assert.ok(dom);
       assert.equal(readDOMFragmentEditor(dom[0]), null);
       assert.deepEqual(
-        parent.api.dom.resolvePlitePoint(dom, { exactMatch: true }),
+        parent.api.dom.resolvePoint(dom, { exactMatch: true }),
         point(offset)
       );
     }
@@ -864,6 +2225,88 @@ for (const [text, from, to] of [
       `!${text}`
     );
     assert.deepEqual(source.read.children(), [paragraph(text)]);
+    mounted.unmount();
+  });
+}
+
+for (const side of ['prefix', 'suffix'] as const) {
+  it(`preserves one native link across a deleted inline ${side}`, async () => {
+    const links = defineEditorSchema(`schema:authored-inline-${side}`, {
+      id: `authored-inline-${side}`,
+      version: 1,
+      unknown: 'preserve',
+      elements: {
+        link: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+        },
+      },
+      root: schema.content.not(schema.content.text()),
+    });
+    const value = [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'A' },
+          { type: 'link', url: '/retained', children: [{ text: 'BC' }] },
+          { text: 'D' },
+        ],
+      },
+    ];
+    const source = createEditor({
+      plugins: [links, authored({ authorId: 'alice' })],
+      initialValue: value,
+    });
+    const view = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: markup })
+    );
+    const middle = { path: [0, 1, 0], offset: 1 };
+    view.update.text.delete({
+      at:
+        side === 'prefix'
+          ? { anchor: point(1), focus: middle }
+          : { anchor: middle, focus: { path: [0, 2], offset: 1 } },
+    });
+    const mounted = render(
+      <EditorRoot editor={view}>
+        <Editable
+          renderElement={({ attributes, children, element }) =>
+            element.type === 'link' ? (
+              <a {...attributes} href={String(element.url)}>
+                {children}
+              </a>
+            ) : (
+              <p {...attributes}>{children}</p>
+            )
+          }
+        />
+      </EditorRoot>
+    );
+    const visible = () =>
+      mounted.container.textContent?.replaceAll('\uFEFF', '');
+    const linked = () =>
+      mounted.container
+        .querySelector('a')
+        ?.textContent?.replaceAll('\uFEFF', '');
+    assert.equal(view.read.text.string([]), side === 'prefix' ? 'ACD' : 'AB');
+    assert.equal(visible(), 'ABCD');
+    assert.equal(mounted.container.querySelectorAll('a').length, 1);
+    assert.equal(linked(), 'BC');
+    assert.equal(
+      mounted.container.querySelector('a')?.getAttribute('href'),
+      '/retained'
+    );
+    await act(async () => view.update.text.insert('!', { at: middle }));
+    assert.equal(visible(), side === 'prefix' ? 'ABC!D' : 'AB!CD');
+    assert.equal(linked(), side === 'prefix' ? 'BC!' : 'B!C');
+    await act(async () =>
+      source.update.authored.decide({
+        action: 'reject',
+        selection: source.read.authored.select({ status: 'pending' }),
+      })
+    );
+    assert.deepEqual(source.read.children(), value);
+    assert.equal(visible(), 'ABCD');
     mounted.unmount();
   });
 }
@@ -882,7 +2325,7 @@ it('uses the root element and leaf renderers for retained inline elements', asyn
     root: schema.content.not(schema.content.text()),
   });
   const source = createEditor({
-    extensions: [links, authored({ authorId: 'alice' })],
+    plugins: [links, authored({ authorId: 'alice' })],
     initialValue: [
       {
         type: 'paragraph',
@@ -924,17 +2367,17 @@ it('uses the root element and leaf renderers for retained inline elements', asyn
     </span>
   );
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable
         renderElement={renderElement}
         renderLeaf={renderLeaf}
         renderText={renderText}
       />
-    </Plite>
+    </EditorRoot>
   );
   await act(async () => parent.update.nodes.remove({ at: [0, 1] }));
   assert.deepEqual(parent.read.children(), [paragraph('AB')]);
-  const retained = mounted.container.querySelector('[data-plite-retained]');
+  const retained = mounted.container.querySelector('[data-editor-retained]');
   assert.equal(retained?.tagName, 'A');
   assert.equal(retained?.getAttribute('href'), '/retained');
   assert.equal(retained?.querySelector('strong')?.textContent, 'XYZ');
@@ -962,13 +2405,13 @@ it('uses the root element and leaf renderers for retained inline elements', asyn
 
 it('splits proposed decorations at retained fragments without decorating their content', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('AXYZB')],
   });
   const parent = createReactRuntimeViewEditor(
     createEditorView(source, { authored: markup })
   );
-  const highlight: PliteDecorationSource<typeof source> = {
+  const highlight: DecorationSource<typeof source> = {
     id: 'proposed-highlight',
     read: ({ entry: [node, path] }) =>
       TextApi.isText(node)
@@ -985,9 +2428,9 @@ it('splits proposed decorations at retained fragments without decorating their c
         : [],
   };
   const mounted = render(
-    <Plite editor={parent} decorations={[highlight]}>
+    <EditorRoot editor={parent} decorations={[highlight]}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
   await act(async () =>
     parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } })
@@ -1000,14 +2443,14 @@ it('splits proposed decorations at retained fragments without decorating their c
     ['A', 'B']
   );
   assert.equal(
-    mounted.container.querySelector('[data-plite-retained] [data-highlight]'),
+    mounted.container.querySelector('[data-editor-retained] [data-highlight]'),
     null
   );
   for (let offset = 0; offset <= 2; offset++) {
     const dom = parent.api.dom.resolveDOMPoint(point(offset));
     assert.ok(dom);
     assert.deepEqual(
-      parent.api.dom.resolvePlitePoint(dom, { exactMatch: true }),
+      parent.api.dom.resolvePoint(dom, { exactMatch: true }),
       point(offset)
     );
   }
@@ -1016,7 +2459,7 @@ it('splits proposed decorations at retained fragments without decorating their c
 
 it('automatically mounts retained blocks and follows hidden accepted edits', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('Deleted'), paragraph('Visible')],
   });
   const parent = createReactRuntimeViewEditor(
@@ -1028,31 +2471,28 @@ it('automatically mounts retained blocks and follows hidden accepted edits', asy
     <p {...attributes}>{children}</p>
   );
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable renderElement={renderElement} />
-    </Plite>
+    </EditorRoot>
   );
   const retained = mounted.container.querySelector<HTMLElement>(
-    '[data-plite-retained]'
+    '[data-editor-retained]'
   );
   assert.ok(retained);
   assert.equal(retained.tagName, 'P');
-  assert.equal(retained.getAttribute('contenteditable'), 'false');
+  assert.equal(retained.getAttribute('contenteditable'), null);
   assert.equal(retained.textContent, 'Deleted');
-  assert.equal(
-    mounted.container.querySelectorAll('[data-plite-editor]').length,
-    1
-  );
+  assert.equal(mounted.container.querySelectorAll('[data-editor]').length, 1);
   const editor = readDOMFragmentEditor(retained);
   assert.ok(editor);
-  const text = retained.querySelector('[data-plite-string]')?.firstChild;
+  const text = retained.querySelector('[data-editor-string]')?.firstChild;
   assert.ok(text);
   assert.deepEqual(
-    editor.api.dom.resolvePlitePoint([text, 3], { exactMatch: true }),
+    editor.api.dom.resolvePoint([text, 3], { exactMatch: true }),
     point(3)
   );
   assert.equal(
-    parent.api.dom.resolvePlitePoint([text, 3], { exactMatch: true }),
+    parent.api.dom.resolvePoint([text, 3], { exactMatch: true }),
     null
   );
   await act(async () =>
@@ -1087,11 +2527,130 @@ it('automatically mounts retained blocks and follows hidden accepted edits', asy
   });
   assert.deepEqual(editor.read.children(), []);
   assert.equal(
-    mounted.container.querySelectorAll('[data-plite-retained]').length,
+    mounted.container.querySelectorAll('[data-editor-retained]').length,
     0,
     mounted.container.innerHTML
   );
   assert.equal(mounted.container.textContent, 'DelXetedVis!ible');
+  mounted.unmount();
+});
+
+it('resolves each native point when one retained slice occupies separate paragraph mounts', () => {
+  const value = [paragraph('AB'), paragraph('CD')];
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: value,
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.changes.apply(
+    DocumentChange.between({ children: value }, { children: [paragraph('AD')] })
+  );
+  const { id } = source.read.authored.changes().items[0];
+  const [fragment] = readAuthoredViewFragments(parent, id);
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable
+        renderElement={({ attributes, children }) => (
+          <p {...attributes}>{children}</p>
+        )}
+      />
+    </EditorRoot>
+  );
+  assert.deepEqual(
+    [...mounted.container.querySelectorAll('p')].map(
+      (node) => node.textContent
+    ),
+    ['AB', 'CD']
+  );
+  for (const [index, text] of ['B', 'C'].entries()) {
+    const result = resolveViewBoundaryDOMPoint(parent, {
+      fragmentId: fragment.id,
+      point: { path: [index, 0], offset: 1 },
+    });
+    assert.ok(result, `Missing retained point for ${text}`);
+    assert.equal(result[0].textContent, text);
+    assert.equal(result[1], 1);
+  }
+  mounted.unmount();
+  assert.equal(
+    resolveViewBoundaryDOMPoint(parent, {
+      fragmentId: fragment.id,
+      point: { path: [1, 0], offset: 1 },
+    }),
+    null
+  );
+});
+
+it('preserves paragraph boundaries and native coordinates in an open multi-block deletion', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [paragraph('AB'), paragraph('CD')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.text.delete({
+    at: { anchor: point(1), focus: { path: [1, 0], offset: 1 } },
+  });
+  assert.deepEqual(parent.read.children(), [paragraph('AD')]);
+  const { id } = source.read.authored.changes().items[0];
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable
+        renderElement={({ attributes, children }) => (
+          <p {...attributes}>{children}</p>
+        )}
+      />
+    </EditorRoot>
+  );
+  const blocks = [...mounted.container.querySelectorAll('p')];
+  assert.deepEqual(
+    blocks.map((node) => node.textContent),
+    ['AB', 'CD']
+  );
+  assert.equal(mounted.container.querySelector('p p'), null);
+  const nativeText = (text: string) => {
+    const element = [
+      ...mounted.container.querySelectorAll('[data-editor-string]'),
+    ].find((node) => node.textContent === text);
+    assert.ok(element?.firstChild, `Missing rendered ${text}`);
+    return element.firstChild;
+  };
+  assert.deepEqual(
+    parent.api.dom.resolvePoint([nativeText('D'), 1], {
+      exactMatch: true,
+    }),
+    point(2),
+    mounted.container.innerHTML
+  );
+  for (const text of ['B', 'C']) {
+    const node = nativeText(text);
+    const retained = readDOMFragmentEditor(node);
+    assert.ok(retained);
+    assert.deepEqual(
+      retained.api.dom.resolvePoint([node, 1], { exactMatch: true }),
+      point(1)
+    );
+  }
+  await act(async () =>
+    source.update.authored.decide({
+      action: 'reject',
+      selection: source.read.authored.select({ ids: [id] }),
+    })
+  );
+  assert.deepEqual(
+    [...mounted.container.querySelectorAll('p')].map(
+      (node) => node.textContent
+    ),
+    ['AB', 'CD']
+  );
+  assert.equal(
+    mounted.container.querySelector('[data-editor-retained]')?.outerHTML ??
+      null,
+    null
+  );
   mounted.unmount();
 });
 
@@ -1101,7 +2660,7 @@ it('automatically mounts retained table rows directly inside tbody', async () =>
     children: [{ type: 'cell', children: [paragraph(text)] }],
   });
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [
       { type: 'table', children: [row('Deleted'), row('Visible')] },
     ],
@@ -1126,12 +2685,12 @@ it('automatically mounts retained table rows directly inside tbody', async () =>
   };
   const renderElement = (props: RenderElementProps) => <Element {...props} />;
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable renderElement={renderElement} />
-    </Plite>
+    </EditorRoot>
   );
   const retained = mounted.container.querySelector<HTMLElement>(
-    '[data-plite-retained]'
+    '[data-editor-retained]'
   );
   assert.ok(retained);
   assert.equal(retained.tagName, 'TR');
@@ -1141,10 +2700,10 @@ it('automatically mounts retained table rows directly inside tbody', async () =>
   assert.equal(retained.textContent, 'Deleted');
   const editor = readDOMFragmentEditor(retained);
   assert.ok(editor);
-  const text = retained.querySelector('[data-plite-string]')?.firstChild;
+  const text = retained.querySelector('[data-editor-string]')?.firstChild;
   assert.ok(text);
   assert.deepEqual(
-    editor.api.dom.resolvePlitePoint([text, 2], { exactMatch: true }),
+    editor.api.dom.resolvePoint([text, 2], { exactMatch: true }),
     { path: [0, 0, 0, 0, 0], offset: 2 }
   );
   await act(async () =>
@@ -1160,7 +2719,7 @@ it('automatically mounts retained table rows directly inside tbody', async () =>
 
 it('preserves custom renderers for retained blocks docked to a direct text child', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [{ type: 'section', children: [paragraph('Deleted')] }],
   });
   const parent = createReactRuntimeViewEditor(
@@ -1177,12 +2736,12 @@ it('preserves custom renderers for retained blocks docked to a direct text child
       <p {...attributes}>{children}</p>
     );
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable renderElement={renderElement} />
-    </Plite>
+    </EditorRoot>
   );
   await act(async () => parent.update.nodes.remove({ at: [0, 0] }));
-  const retained = mounted.container.querySelector('[data-plite-retained]');
+  const retained = mounted.container.querySelector('[data-editor-retained]');
   assert.equal(retained?.tagName, 'P');
   assert.equal(retained?.parentElement?.tagName, 'SECTION');
   assert.equal(retained?.textContent, 'Deleted');
@@ -1195,7 +2754,7 @@ it('preserves custom renderers for retained blocks docked to a direct text child
 it('keeps mounted retained blocks in document order through mode changes and decisions', async () => {
   let authorId = 'alice';
   const source = createEditor({
-    extensions: [authored({ authorId: () => authorId })],
+    plugins: [authored({ authorId: () => authorId })],
     initialValue: ['A', 'BB', 'C', 'D'].map(paragraph),
   });
   const parent = createReactRuntimeViewEditor(
@@ -1205,15 +2764,15 @@ it('keeps mounted retained blocks in document order through mode changes and dec
     <p {...attributes}>{children}</p>
   );
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable renderElement={renderElement} />
-    </Plite>
+    </EditorRoot>
   );
   await act(async () => parent.update.nodes.remove({ at: [1] }));
   authorId = 'bob';
   await act(async () => parent.update.nodes.remove({ at: [1] }));
   const deleted = () =>
-    [...mounted.container.querySelectorAll('[data-plite-retained]')].map(
+    [...mounted.container.querySelectorAll('[data-editor-retained]')].map(
       (node) => node.textContent
     );
   assert.deepEqual(deleted(), ['BB', 'C']);
@@ -1268,29 +2827,26 @@ it('keeps mounted retained blocks in document order through mode changes and dec
   });
   assert.deepEqual(deleted(), []);
   assert.equal(mounted.container.textContent, 'AB!BD');
-  assert.equal(
-    mounted.container.querySelectorAll('[data-plite-editor]').length,
-    1
-  );
+  assert.equal(mounted.container.querySelectorAll('[data-editor]').length, 1);
   mounted.unmount();
 });
 
 it('mounts retained blocks in an empty editable root and redocks them when content arrives', async () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('Deleted')],
   });
   const parent = createReactRuntimeViewEditor(
     createEditorView(source, { authored: markup })
   );
   const mounted = render(
-    <Plite editor={parent}>
+    <EditorRoot editor={parent}>
       <Editable />
-    </Plite>
+    </EditorRoot>
   );
   await act(async () => parent.update.nodes.remove({ at: [0] }));
   assert.equal(
-    mounted.container.querySelector('[data-plite-retained]')?.textContent,
+    mounted.container.querySelector('[data-editor-retained]')?.textContent,
     'Deleted'
   );
   assert.equal(mounted.container.textContent, 'Deleted');
@@ -1299,7 +2855,7 @@ it('mounts retained blocks in an empty editable root and redocks them when conte
   );
   assert.equal(mounted.container.textContent, 'DeletedInserted');
   assert.equal(
-    mounted.container.querySelectorAll('[data-plite-retained]').length,
+    mounted.container.querySelectorAll('[data-editor-retained]').length,
     1
   );
   mounted.unmount();
@@ -1311,7 +2867,7 @@ it('renders matching fragment identities in their own document roots', () => {
     roots: { notes: [paragraph('Note removed'), paragraph('Note kept')] },
   };
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: before,
   });
   source.update((tx) => {
@@ -1331,12 +2887,12 @@ it('renders matching fragment identities in their own document roots', () => {
   );
   const mounted = render(
     <>
-      <Plite editor={main}>
+      <EditorRoot editor={main}>
         <Editable aria-label="Main" />
-      </Plite>
-      <Plite editor={notes}>
+      </EditorRoot>
+      <EditorRoot editor={notes}>
         <Editable aria-label="Notes" />
-      </Plite>
+      </EditorRoot>
     </>
   );
   assert.equal(

@@ -8,10 +8,11 @@ import {
   createEditor,
   Editable,
   type Editor,
-  Plite,
+  EditorRoot,
   useEditorFocused,
   useElementSelected,
 } from '../../src/react';
+import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   createExplicitPathRenderElement,
   createSelectionRenderElement,
@@ -56,7 +57,7 @@ describe('useElementSelected', () => {
       unknown: 'reject',
     });
     const localEditor = createEditor({
-      extensions: [definition],
+      plugins: [definition],
       initialValue: [
         {
           type: 'paragraph',
@@ -79,29 +80,32 @@ describe('useElementSelected', () => {
       );
     };
     const view = render(
-      <Plite editor={localEditor}>
+      <EditorRoot editor={localEditor}>
         <Editable renderVoid={() => <Mention />} />
-      </Plite>
+      </EditorRoot>
     );
     const root = view.container.querySelector<HTMLDivElement>(
-      '[data-plite-editor="true"]'
+      '[data-editor="true"]'
     )!;
+    const mountedEditor = findMountedEditableDOMRuntime(root)!.editor;
 
     await act(async () => {
-      localEditor.update((tx) => tx.selection.set({ path: [0, 0], offset: 7 }));
+      mountedEditor.update((tx) =>
+        tx.selection.set({ path: [0, 0], offset: 7 })
+      );
       root.focus();
-      localEditor.api.dom.focus({ retries: 1 });
+      mountedEditor.api.dom.focus({ retries: 1 });
     });
     expect(document.activeElement).toBe(root);
-    expect(localEditor.api.dom.isFocused()).toBe(true);
+    expect(mountedEditor.api.dom.isFocused()).toBe(true);
     expect(view.getByText('mention').dataset.focused).toBe('true');
 
     await act(async () => {
-      localEditor.update((tx) =>
+      mountedEditor.update((tx) =>
         tx.selection.set({ path: [0, 1, 0], offset: 0 })
       );
     });
-    expect(localEditor.read.selection.intersects([0, 1])).toBe(true);
+    expect(mountedEditor.read.selection.intersects([0, 1])).toBe(true);
     expect(view.getByText('mention').dataset.focused).toBe('true');
     expect(view.getByText('mention').dataset.selected).toBe('true');
   });
@@ -121,9 +125,9 @@ describe('useElementSelected', () => {
       });
 
       render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable renderElement={RenderElement} />
-        </Plite>
+        </EditorRoot>
       );
     });
 
@@ -223,7 +227,7 @@ describe('useElementSelected', () => {
       const localEditor = createEditor<Value>({ initialValue: initialValue() });
 
       render(
-        <Plite editor={localEditor}>
+        <EditorRoot editor={localEditor}>
           <Editable
             renderElement={({ attributes, children, element }) => {
               const id = String((element as { id?: unknown }).id);
@@ -234,7 +238,7 @@ describe('useElementSelected', () => {
               return <div {...attributes}>{children}</div>;
             }}
           />
-        </Plite>
+        </EditorRoot>
       );
 
       await act(async () => {
@@ -327,11 +331,11 @@ describe('useElementSelected', () => {
     });
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderElement={(props) => <SelfRemovingElement {...props} />}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -359,14 +363,14 @@ describe('useElementSelected', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <ExplicitPathProbe />
         <Editable
           renderElement={({ attributes, children }) => (
             <div {...attributes}>{children}</div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     selectedValues.splice(0);
@@ -402,9 +406,9 @@ describe('useElementSelected', () => {
     });
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={RenderElement} />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(selectedByHostId['0']).toBe(false);
@@ -430,14 +434,14 @@ describe('useElementSelected', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <ExplicitNodeKeyProbe />
         <Editable
           renderElement={({ attributes, children }) => (
             <div {...attributes}>{children}</div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(selectedValues.at(-1)).toBe(false);
@@ -469,14 +473,14 @@ describe('useElementSelected', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <ExplicitPathProbe />
         <Editable
           renderElement={({ attributes, children }) => (
             <div {...attributes}>{children}</div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(selectedValues.at(-1)).toBe(false);

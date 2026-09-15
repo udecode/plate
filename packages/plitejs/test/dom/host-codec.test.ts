@@ -3,9 +3,9 @@ import { expect, mock, test } from 'bun:test';
 import {
   ContentSlice,
   createEditor,
-  defineExtension,
+  definePlugin,
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   editorCommands,
   NodeApi,
   property,
@@ -105,11 +105,11 @@ const createInlineCodecEditor = (
   lifecycleErrorSink?: EditorLifecycleErrorSink
 ) =>
   createEditor({
-    extensions: [
+    plugins: [
       inlineHostSchema,
       dom(),
       hostCodecs('inline-host-codecs', []),
-      defineExtension('capture-inline-host-slice', {
+      definePlugin('capture-inline-host-slice', {
         commands: ({ around }) => [
           around(editorCommands.replaceSlice, ({ input, next }) => {
             capture(input.slice);
@@ -147,7 +147,7 @@ const createCodecEditor = (
   lifecycleErrorSink?: EditorLifecycleErrorSink
 ) =>
   createEditor({
-    extensions: [
+    plugins: [
       hostSchema,
       dom(),
       hostCodecs('test-host-codecs', codecs),
@@ -340,7 +340,7 @@ test('plain-text inline wrappers reject undeclared closed-schema properties', ()
   expect(captures).toBe(0);
   expect(diagnostics).toHaveLength(1);
   expect(diagnostics[0]).toMatchObject({
-    extensionName: 'plite-dom',
+    pluginName: 'editor-dom',
     format: 'text/plain',
     key: 'plite-plain-text',
     phase: 'parse',
@@ -520,7 +520,7 @@ test('host codec ownership resolves declaration semantics against the candidate 
   const Italic = schema.textProperty('italic', property.boolean(), {
     target: target.type('paragraph'),
   });
-  const equivalentItalicSchema = defineExtension('equivalent-italic-schema', {
+  const equivalentItalicSchema = definePlugin('equivalent-italic-schema', {
     schema: {
       properties: [
         schema.textProperty('italic', property.boolean(), {
@@ -556,7 +556,7 @@ test('host codec ownership resolves declaration semantics against the candidate 
 });
 
 test('schema reconfiguration recompiles codec claims and rolls back atomically', () => {
-  const slot = defineExtensionSlot('host-codec-schema-revision');
+  const slot = definePluginSlot('host-codec-schema-revision');
   const articleSchema = (version: number, type: 'heading' | 'paragraph') =>
     defineEditorSchema('schema:host-codec-schema-revision', {
       elements: {
@@ -573,7 +573,7 @@ test('schema reconfiguration recompiles codec claims and rolls back atomically',
       version,
     });
   const editor = createEditor({
-    extensions: [
+    plugins: [
       dom(),
       slot.of(articleSchema(1, 'paragraph')),
       hostCodecs('schema-revision-codec', [
@@ -592,7 +592,7 @@ test('schema reconfiguration recompiles codec claims and rolls back atomically',
   editor.subscribeCommit(() => (commits += 1) - 1);
 
   expect(() =>
-    editor.update.extensions.reconfigure(slot, articleSchema(2, 'heading'), {
+    editor.update.plugins.reconfigure(slot, articleSchema(2, 'heading'), {
       migrate({ document }) {
         return {
           ...document,
@@ -651,7 +651,7 @@ test('query and parse faults report lifecycle errors then fall through', () => {
     diagnostics.map((error) =>
       'format' in error
         ? {
-            extension: error.extensionName,
+            plugin: error.pluginName,
             format: error.format,
             key: error.key,
             phase: error.phase,
@@ -661,14 +661,14 @@ test('query and parse faults report lifecycle errors then fall through', () => {
     )
   ).toEqual([
     {
-      extension: 'test-host-codecs',
+      plugin: 'test-host-codecs',
       format: 'text/html',
       key: 'throwing-query',
       phase: 'query',
       source: 'host-codec',
     },
     {
-      extension: 'test-host-codecs',
+      plugin: 'test-host-codecs',
       format: 'text/html',
       key: 'malformed',
       phase: 'parse',
@@ -862,12 +862,12 @@ test('host codec ownership snapshots declarations before installation', () => {
     owns,
     parse: () => null,
   };
-  const extension = hostCodecs('snapshot-codec', [codec]);
+  const plugin = hostCodecs('snapshot-codec', [codec]);
   const editor = createCodecEditor([]);
 
   owns[0] = { kind: 'element', type: 'not-installed' };
 
-  expect(() => editor.install(extension)).not.toThrow();
+  expect(() => editor.install(plugin)).not.toThrow();
   expect(() => createCodecEditor([codec])).toThrow(
     /owns unknown schema element "not-installed"/
   );

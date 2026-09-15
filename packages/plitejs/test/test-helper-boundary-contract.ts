@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 
-import * as Plite from 'plitejs';
+import * as EditorRoot from 'plitejs';
 import { createEditor, type Element } from 'plitejs';
 
 import { getTestEditorSnapshot, replaceEditorValue } from './support/snapshot';
@@ -36,7 +36,7 @@ describe('test helper snapshot boundary', () => {
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 8 },
     });
-    assert.equal('getTestEditorSnapshot' in Plite, false);
+    assert.equal('getTestEditorSnapshot' in EditorRoot, false);
   });
 
   it('implements the helper through the runtime snapshot state group', () => {

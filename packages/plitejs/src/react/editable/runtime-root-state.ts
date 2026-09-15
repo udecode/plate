@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { Range } from '../..';
-import type { EditableDOMStrategyRuntime } from '../components/editable';
+import type { EditableViewportRuntime } from '../components/editable';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -11,69 +11,67 @@ import {
 import { readRuntimeSelectionRange } from './runtime-selection-state';
 
 export const useEditableRootRuntimeState = ({
-  domStrategyRuntime,
+  viewportRuntime,
   editor,
   readOnly,
 }: {
-  domStrategyRuntime: EditableDOMStrategyRuntime | null;
+  viewportRuntime: EditableViewportRuntime | null;
   editor: ReactRuntimeEditor;
   readOnly: boolean;
 }) => {
   const [isComposing, setIsComposing] = useState(false);
-  const [
-    explicitPartialDOMBackedSelection,
-    setExplicitPartialDOMBackedSelection,
-  ] = useState(false);
+  const [explicitViewportBackedSelection, setExplicitViewportBackedSelection] =
+    useState(false);
   const runtime = useMemo(
     () =>
       new EditableDOMRuntime({
-        domStrategyRuntime,
+        viewportRuntime,
         editor,
         onComposingChange: setIsComposing,
-        onPartialDOMBackedSelectionChange: setExplicitPartialDOMBackedSelection,
+        onViewportBackedSelectionChange: setExplicitViewportBackedSelection,
         readOnly,
       }),
-    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Editor identity owns the runtime; the adjacent committed effect updates read-only and DOM-strategy inputs without replacing it.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Editor identity owns the runtime; the adjacent committed effect updates read-only and viewport inputs without replacing it.
     [editor]
   );
 
   useIsomorphicLayoutEffect(() => {
     runtime.update({
-      domStrategyRuntime,
+      viewportRuntime,
       onComposingChange: setIsComposing,
-      onPartialDOMBackedSelectionChange: setExplicitPartialDOMBackedSelection,
+      onViewportBackedSelectionChange: setExplicitViewportBackedSelection,
       readOnly,
     });
-  }, [domStrategyRuntime, readOnly, runtime]);
+  }, [viewportRuntime, readOnly, runtime]);
 
   useIsomorphicLayoutEffect(() => runtime.connect(), [runtime]);
 
-  const isPartialDOMBackedSelection = useCallback(
+  const isViewportBackedSelection = useCallback(
     (selection: Range | null) =>
       isEditableDOMSelectionPartial({
-        domStrategyRuntime,
+        viewportRuntime,
         editor,
         selection,
       }),
-    [domStrategyRuntime, editor]
+    [viewportRuntime, editor]
   );
   const modelSelection = readRuntimeSelectionRange(editor);
-  const modelPartialDOMBackedSelection =
-    isPartialDOMBackedSelection(modelSelection);
-  const partialDOMBackedSelection =
-    explicitPartialDOMBackedSelection || modelPartialDOMBackedSelection;
+  const modelViewportBackedSelection =
+    isViewportBackedSelection(modelSelection);
+  const viewportBackedSelection =
+    explicitViewportBackedSelection || modelViewportBackedSelection;
 
   useEffect(() => {
-    if (explicitPartialDOMBackedSelection && !modelPartialDOMBackedSelection) {
+    if (explicitViewportBackedSelection && !modelViewportBackedSelection) {
       // oxlint-disable-next-line react-doctor/no-adjust-state-on-prop-change -- [P0 behavior-boundary] The explicit partial-selection flag is external runtime state; clear it only after the editor model catches up.
-      setExplicitPartialDOMBackedSelection(false);
+      setExplicitViewportBackedSelection(false);
     }
-  }, [explicitPartialDOMBackedSelection, modelPartialDOMBackedSelection]);
+  }, [explicitViewportBackedSelection, modelViewportBackedSelection]);
 
   return {
     isComposing,
-    isPartialDOMBackedSelection,
-    partialDOMBackedSelection,
+    isViewportBackedSelection,
+    viewportBackedSelection,
     runtime,
   };
 };

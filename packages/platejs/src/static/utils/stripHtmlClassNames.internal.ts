@@ -3,11 +3,11 @@ const whitespaceRegExp = /\s+/;
 
 /**
  * Remove all class names that do not start with one of preserveClassNames
- * (`plite-` by default)
+ * (`editor-` by default)
  */
 export const stripHtmlClassNames = (
   html: string,
-  { preserveClassNames = ['plite-'] }: { preserveClassNames?: string[] }
+  { preserveClassNames = ['editor-'] }: { preserveClassNames?: string[] }
 ) => {
   if (preserveClassNames.length === 0) {
     return html.replaceAll(classAttrRegExp, '');

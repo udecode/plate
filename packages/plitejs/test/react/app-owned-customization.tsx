@@ -1,7 +1,7 @@
 import { act, render } from '@testing-library/react';
 import {
   TextApi,
-  defineExtension,
+  definePlugin,
   type Descendant,
   type EditorUpdateTransaction,
 } from 'plitejs';
@@ -11,9 +11,9 @@ import { replace as editorReplace } from '../../src/internal';
 import {
   createEditor,
   Editable,
-  PliteElement,
-  Plite,
-  PliteReactUpdatePolicy,
+  EditorElement,
+  EditorRoot,
+  ReactUpdatePolicy,
 } from '../../src/react';
 
 const createChildren = (left = 'alpha', right = 'beta'): Descendant[] => [
@@ -25,11 +25,11 @@ const TestEditorSurface = ({
   editor,
   ...props
 }: React.ComponentProps<typeof Editable> & {
-  editor: React.ComponentProps<typeof Plite>['editor'];
+  editor: React.ComponentProps<typeof EditorRoot>['editor'];
 }) => (
-  <Plite editor={editor}>
+  <EditorRoot editor={editor}>
     <Editable {...props} />
-  </Plite>
+  </EditorRoot>
 );
 
 describe('plite-react app-owned customization', () => {
@@ -78,9 +78,9 @@ describe('plite-react app-owned customization', () => {
             }
             default: {
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {children}
-                </PliteElement>
+                </EditorElement>
               );
             }
           }
@@ -141,7 +141,7 @@ describe('plite-react app-owned customization', () => {
       selection: null,
     });
     editor.install(
-      defineExtension('forced-layout', {
+      definePlugin('forced-layout', {
         corrections: [
           {
             correct({ tx }) {
@@ -175,9 +175,9 @@ describe('plite-react app-owned customization', () => {
           element.type === 'title' ? (
             <h2>{children}</h2>
           ) : (
-            <PliteElement style={{ position: 'relative' }}>
+            <EditorElement style={{ position: 'relative' }}>
               {children}
-            </PliteElement>
+            </EditorElement>
           )
         }
       />
@@ -185,7 +185,7 @@ describe('plite-react app-owned customization', () => {
 
     expect(rendered.container.querySelectorAll('h2')).toHaveLength(1);
     expect(
-      rendered.container.querySelectorAll('div[data-plite-node="element"]')
+      rendered.container.querySelectorAll('div[data-editor-node="element"]')
         .length
     ).toBeGreaterThan(0);
 
@@ -246,7 +246,7 @@ describe('plite-react app-owned customization', () => {
     );
 
     await act(async () => {
-      editor.update(PliteReactUpdatePolicy.preserveSelection, (tx) => {
+      editor.update(ReactUpdatePolicy.preserveSelection, (tx) => {
         tx.selection.set({
           kind: 'text',
           anchor: { path: [1, 0], offset: 1 },

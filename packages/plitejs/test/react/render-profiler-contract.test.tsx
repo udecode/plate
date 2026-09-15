@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { PliteElement, PliteLeaf, PliteText } from '../../src/react';
+import { EditorElement, EditorLeaf, EditorText } from '../../src/react';
 import { PliteSpacer } from '../../src/react/components/plite-spacer';
 import { TextString } from '../../src/react/components/text-string';
 import { ZeroWidthString } from '../../src/react/components/zero-width-string';
@@ -13,18 +13,18 @@ import {
 } from '../../src/react/render-profiler';
 
 declare global {
-  var __PLITE_REACT_RENDER_PROFILER__: PliteReactRenderProfiler | undefined;
+  var __EDITOR_REACT_RENDER_PROFILER__: PliteReactRenderProfiler | undefined;
 }
 
 describe('plite-react render profiler contract', () => {
   afterEach(() => {
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = undefined;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = undefined;
   });
 
   test('duration profiling preserves return values and failures with and without a recorder', () => {
     for (const installed of [false, true]) {
       const counter = createPliteReactRenderCounter();
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = installed
+      globalThis.__EDITOR_REACT_RENDER_PROFILER__ = installed
         ? counter.profiler
         : undefined;
       const value = { ok: true };
@@ -51,32 +51,32 @@ describe('plite-react render profiler contract', () => {
     expect(() => {
       recordPliteReactRender({ kind: 'element' });
       render(
-        <PliteElement>
-          <PliteText>
-            <PliteLeaf>
+        <EditorElement>
+          <EditorText>
+            <EditorLeaf>
               <TextString text="alpha" />
-            </PliteLeaf>
-          </PliteText>
-        </PliteElement>
+            </EditorLeaf>
+          </EditorText>
+        </EditorElement>
       );
     }).not.toThrow();
   });
 
   test('records primitive render counts while installed', () => {
     const counter = createPliteReactRenderCounter();
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
 
     const rendered = render(
-      <PliteElement id="outer">
-        <PliteText>
-          <PliteLeaf>
+      <EditorElement id="outer">
+        <EditorText>
+          <EditorLeaf>
             <TextString text="alpha" />
-          </PliteLeaf>
-        </PliteText>
+          </EditorLeaf>
+        </EditorText>
         <PliteSpacer>
           <ZeroWidthString length={2} />
         </PliteSpacer>
-      </PliteElement>
+      </EditorElement>
     );
 
     const initialSnapshot = counter.snapshot();
@@ -90,13 +90,13 @@ describe('plite-react render profiler contract', () => {
     expect(initialSnapshot.byKey['element:outer']).toBeGreaterThanOrEqual(1);
 
     rendered.rerender(
-      <PliteElement id="outer">
-        <PliteText>
-          <PliteLeaf>
+      <EditorElement id="outer">
+        <EditorText>
+          <EditorLeaf>
             <TextString text="beta" />
-          </PliteLeaf>
-        </PliteText>
-      </PliteElement>
+          </EditorLeaf>
+        </EditorText>
+      </EditorElement>
     );
 
     const rerenderSnapshot = counter.snapshot();

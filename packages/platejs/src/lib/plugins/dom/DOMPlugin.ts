@@ -2,7 +2,7 @@ import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';
 
 import type {
-  DOMApi as PliteDomApi,
+  DOMApi as RuntimeDomApi,
   DOMClipboardApi,
   ScrollIntoViewOptions,
 } from '../../../dom/plite-dom.internal';
@@ -14,8 +14,8 @@ import {
   getSelectionDOMRange,
   readEditorSelection,
 } from '../../../facade';
-import { defineBasePlugin } from '../../plugin';
-import { plateDOMExtension } from './plateDOMExtension.internal';
+import { definePlugin } from '../../plugin';
+import { plateDOMPlugin } from './plateDOMPlugin.internal';
 
 const AUTO_SCROLL = new WeakMap<object, boolean>();
 
@@ -35,7 +35,7 @@ export type AutoScrollOptions = {
   scrollOptions?: ScrollIntoViewOptions;
 };
 
-export type PlateDomApi = {
+export type AutoScrollApi = {
   isAutoScrolling: () => boolean;
 };
 
@@ -52,15 +52,15 @@ export type AutoScrollUpdate<TTx extends object = {}> = (
   tx: EditorUpdateTransaction & TTx
 ) => void;
 
-type PlateDomPluginUpdate = {
+type AutoScrollPluginUpdate = {
   autoScroll: (fn: AutoScrollUpdate, options?: AutoScrollOptions) => void;
 };
 
-export type DomPluginUpdate = PlateDomPluginUpdate &
+export type DomPluginUpdate = AutoScrollPluginUpdate &
   Pick<DOMClipboardApi, 'insertData'>;
 
-export type DomApi = PlateDomApi &
-  PliteDomApi & {
+export type DomApi = AutoScrollApi &
+  RuntimeDomApi & {
     clipboard: DOMClipboardApi;
   };
 
@@ -78,8 +78,12 @@ const initialState: DomPluginState = {
   },
 };
 
-const DOMPluginBase = defineBasePlugin('dom', {
-  api: ({ editor }): PlateDomApi => ({
+/**
+ * Plate DOM installs the editor DOM bridge for base editors, then adds
+ * Plate-owned auto-scroll state and transaction ergonomics.
+ */
+export const DOMPlugin = definePlugin('dom', {
+  api: ({ editor }): AutoScrollApi => ({
     isAutoScrolling: () => AUTO_SCROLL.get(editor) ?? false,
   }),
   initialState,
@@ -161,7 +165,7 @@ const DOMPluginBase = defineBasePlugin('dom', {
       editor.api.dom.scrollIntoView(target, scrollOptions);
     },
   },
-  update: ({ editor, store, tx }): PlateDomPluginUpdate => ({
+  update: ({ editor, store, tx }): AutoScrollPluginUpdate => ({
     autoScroll: (fn, options) => {
       const previousState = store.get();
       const prevAutoScroll = AUTO_SCROLL.get(editor) ?? false;
@@ -209,10 +213,4 @@ const DOMPluginBase = defineBasePlugin('dom', {
       }
     },
   }),
-});
-
-/**
- * Plate DOM installs the Plite DOM bridge for base editors, then adds
- * Plate-owned auto-scroll state and transaction ergonomics.
- */
-export const DOMPlugin = DOMPluginBase.extend(plateDOMExtension);
+}).extend(plateDOMPlugin);

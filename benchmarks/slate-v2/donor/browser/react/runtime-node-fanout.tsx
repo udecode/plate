@@ -6,7 +6,7 @@ import type { Descendant, NodeKey } from '../../../../../packages/plitejs/src/in
 import {
   createEditor,
   Editable,
-  Plite,
+  EditorRoot,
 } from '../../../../../packages/plitejs/src/react/index.ts';
 import { createPliteReactRenderCounter } from '../../../../../packages/plitejs/src/react/render-profiler.ts';
 import {
@@ -37,16 +37,16 @@ const getCount = (byKey: Record<string, number>, key: string) =>
 const runScenario = async (scenario: ScenarioId, iteration: number) => {
   const editor = createEditor({ initialValue: createValue(blockCount) });
   const counter = createPliteReactRenderCounter();
-  const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+  const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
   let mounted: Awaited<ReturnType<typeof mountApp>> | null = null;
 
-  globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+  globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
 
   try {
     mounted = await mountApp(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable data-testid={`runtime-node-fanout-${scenario}`} />
-      </Plite>
+      </EditorRoot>
     );
 
     counter.reset();
@@ -137,7 +137,7 @@ const runScenario = async (scenario: ScenarioId, iteration: number) => {
     };
   } finally {
     await mounted?.dispose();
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
   }
 };
 

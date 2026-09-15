@@ -102,10 +102,15 @@ export const createMarkInputRule = (
       const markKeys: string[] = [];
 
       for (const mark of marks) {
-        const portal = editor.plugin(mark);
+        const descriptor =
+          typeof mark === 'string'
+            ? getCompiledPlatePlugin(editor, mark)
+            : mark;
 
+        if (!descriptor) return undefined;
+        const portal = editor.plugin(descriptor);
         if (!portal.installed) return undefined;
-        const resolved = getCompiledPlatePlugin(editor, portal.name);
+        const resolved = getCompiledPlatePlugin(editor, descriptor.name);
         const binding = resolved
           ? getCompiledPlateModelBinding(editor, resolved)
           : undefined;
@@ -232,8 +237,13 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
       const { editor, plugin, tx } = context;
       const defaultMatch = match as BlockStartInputRuleMatch;
       const target = config.node ?? plugin;
-      const portal = editor.plugin(target);
+      const descriptor =
+        typeof target === 'string'
+          ? getCompiledPlatePlugin(editor, target)
+          : target;
 
+      if (!descriptor) return;
+      const portal = editor.plugin(descriptor);
       if (!portal.installed) return;
       const { type } = portal.schema;
 
@@ -279,8 +289,13 @@ const matchBlockFence = <TMatch = BlockFenceInputRuleMatch>(
   const endPoint = editor.read.points.end(path);
 
   if (config.block) {
-    const plugin = editor.plugin(config.block);
+    const descriptor =
+      typeof config.block === 'string'
+        ? getCompiledPlatePlugin(editor, config.block)
+        : config.block;
 
+    if (!descriptor) return undefined;
+    const plugin = editor.plugin(descriptor);
     if (!plugin.installed) return undefined;
 
     const blockType = plugin.schema.type;

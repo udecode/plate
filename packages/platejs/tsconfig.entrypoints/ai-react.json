@@ -34,13 +34,10 @@
       "path": "./markdown.json"
     },
     {
+      "path": "./proxies.json"
+    },
+    {
       "path": "./react-core.json"
-    },
-    {
-      "path": "./suggestion.json"
-    },
-    {
-      "path": "./suggestion-react.json"
     },
     {
       "path": "./table.json"

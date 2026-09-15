@@ -40,7 +40,7 @@ describe('fitContent locality benchmark authority', () => {
       }
     );
     const editor = createEditor({
-      extensions: [definition],
+      plugins: [definition],
       initialValue: [{ children: [{ text: 'document' }], type: 'paragraph' }],
     });
     const children = editor.read.children();

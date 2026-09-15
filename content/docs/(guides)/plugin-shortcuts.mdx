@@ -43,12 +43,12 @@ Use a linked update method when the shortcut and plugin update method share a
 name.
 
 ```tsx title="plugins/signature-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const SignaturePlugin = definePlatePlugin('signature', {
+export const SignaturePlugin = definePlugin('signature', {
   update: ({ tx }) => ({
     insertSignature: () => {
-      tx.text.insert(' - Plate');
+      tx.text.insert(' - EditorRoot');
     },
   }),
 })
@@ -69,9 +69,9 @@ When only the matching API method exists, Plate infers the API route.
 
 ```tsx title="plugins/inspect-plugin.tsx" showLineNumbers
 import { DebugPlugin } from 'platejs';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const InspectPlugin = definePlatePlugin('inspect', {
+export const InspectPlugin = definePlugin('inspect', {
   api: ({ editor }) => ({
     logText: () => {
       editor
@@ -106,9 +106,9 @@ or work that should not live as a plugin API or update method. Do not set
 
 ```tsx title="plugins/draft-plugin.tsx" showLineNumbers
 import { DebugPlugin } from 'platejs';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const DraftPlugin = definePlatePlugin('draft', {
+export const DraftPlugin = definePlugin('draft', {
   shortcuts: {
     saveDraft: {
       keys: 'mod+s',
@@ -174,9 +174,9 @@ The `null` value removes `italic.toggle` from the compiled shortcut set.
 A plugin can declare multiple shortcut names. Keep each name aligned with the method it should call.
 
 ```tsx title="plugins/review-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const ReviewPlugin = definePlatePlugin('review', {
+export const ReviewPlugin = definePlugin('review', {
   update: ({ tx }) => ({
     accept: () => tx.text.insert('Accepted'),
     reject: () => tx.text.insert('Rejected'),
@@ -202,9 +202,9 @@ Shortcut priority defaults to `0`. Set it on a shortcut when two handlers use
 the same key combination and one should win.
 
 ```tsx title="plugins/priority-plugin.tsx" showLineNumbers
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const PriorityPlugin = definePlatePlugin('commandMenu', {
+export const PriorityPlugin = definePlugin('commandMenu', {
   shortcuts: {
     openCommandMenu: {
       keys: 'mod+k',

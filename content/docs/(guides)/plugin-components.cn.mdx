@@ -13,7 +13,7 @@ description: 学习如何为Plate插件创建和样式化自定义组件。
 
 ## 定义组件
 
-使用`PlateElement`处理元素节点（如段落、标题），使用`PlateLeaf`处理文本叶子节点（如粗体、斜体）。这些组件负责将必要的Plate属性应用到您的自定义HTML元素上。
+使用`EditorElement`处理元素节点（如段落、标题），使用`EditorLeaf`处理文本叶子节点（如粗体、斜体）。这些组件负责将必要的Plate属性应用到您的自定义HTML元素上。
 
 确保无条件渲染`children`属性，即使对于void节点，这也是编辑器正常工作的必要条件。
 
@@ -21,15 +21,15 @@ description: 学习如何为Plate插件创建和样式化自定义组件。
 
 ```tsx
 import type { BlockquotePlugin } from 'platejs/react';
-import { type PlateElementProps, PlateElement } from 'platejs/react';
+import { type EditorElementProps, EditorElement } from 'platejs/react';
 
 export function BlockquoteElement(
-  props: PlateElementProps<typeof BlockquotePlugin>
+  props: EditorElementProps<typeof BlockquotePlugin>
 ) {
   // props包含attributes, children, element, editor等属性
   // 以及您的插件可能传递的任何自定义属性
   return (
-    <PlateElement
+    <EditorElement
       as="blockquote"
       className="my-1 border-l-2 pl-6 italic" // 直接应用自定义样式
       {...props} // 传递所有原始属性(attributes, children, element等)
@@ -38,19 +38,19 @@ export function BlockquoteElement(
 }
 ```
 
-此示例定义了一个`BlockquoteElement`。`PlateElement`上的`as`属性指定它应渲染为HTML `<blockquote>`。`PlateElement`负责处理通过`{...props}`传递的`children`渲染。
+此示例定义了一个`BlockquoteElement`。`EditorElement`上的`as`属性指定它应渲染为HTML `<blockquote>`。`EditorElement`负责处理通过`{...props}`传递的`children`渲染。
 
 ### 叶子组件
 
 ```tsx
 import type { CodePlugin } from 'platejs/react';
-import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
+import { type EditorLeafProps, EditorLeaf } from 'platejs/react';
 
-export function CodeLeaf(props: PlateLeafProps<typeof CodePlugin>) {
+export function CodeLeaf(props: EditorLeafProps<typeof CodePlugin>) {
   // props包含attributes, children, leaf, text, editor等属性
   // 以及您的插件可能传递的任何自定义属性
   return (
-    <PlateLeaf
+    <EditorLeaf
       as="code"
       className="rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm" // 应用自定义样式
       {...props} // 传递所有原始属性(attributes, children, leaf, text等)
@@ -63,13 +63,13 @@ export function CodeLeaf(props: PlateLeafProps<typeof CodePlugin>) {
 
 我们推荐使用Tailwind CSS来样式化组件，如Plate UI中所示。
 
-或者，Plate会生成类似`plite-<节点类型>`的类名（例如段落为`plite-p`，H1标题为`plite-h1`），您可以通过全局CSS定位这些类名：
+或者，Plate会生成类似`editor-<节点类型>`的类名（例如段落为`editor-p`，H1标题为`editor-h1`），您可以通过全局CSS定位这些类名：
 
 ```css
-.plite-p {
+.editor-p {
   margin-bottom: 1rem;
 }
-.plite-bold {
+.editor-bold {
   font-weight: bold;
 }
 ```
@@ -111,9 +111,9 @@ const plugins = [
 
 ```ts title="quote-plugin.ts" showLineNumbers
 import { schema } from 'platejs';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const QuotePlugin = definePlatePlugin('quote', {
+export const QuotePlugin = definePlugin('quote', {
   component: 'blockquote',
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
@@ -127,7 +127,7 @@ export const QuotePlugin = definePlatePlugin('quote', {
 
 | API | 用途 | 说明 |
 | --- | --- | --- |
-| `PlateElement` | Element 节点。 | 默认渲染 `div`；接受 `as`、`className`、`style` 和 Plate render props。 |
-| `PlateLeaf` | Mark 和 decoration 文本。 | 默认渲染 `span`；用于声明 `schema.mark` 的插件。 |
+| `EditorElement` | Element 节点。 | 默认渲染 `div`；接受 `as`、`className`、`style` 和 Plate render props。 |
+| `EditorLeaf` | Mark 和 decoration 文本。 | 默认渲染 `span`；用于声明 `schema.mark` 的插件。 |
 | `plugin.configure({ component: Component })` | 绑定普通节点组件。 | 在同一次终结配置中加入组件和所有用户覆盖。 |
 | `plugin.configure({ component: 'tag' })` | 使用原生 HTML 标签。 | 接受 `'blockquote'`、`'strong'` 或 `'code'` 等标签。 |

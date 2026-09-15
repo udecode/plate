@@ -3,9 +3,9 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   defineEffect,
-  defineExtensionSlot,
+  definePluginSlot,
   type EditorEffectType,
   valueCodecs,
 } from 'plitejs';
@@ -13,7 +13,7 @@ import {
 import { screenReaderAnnouncementEffect } from '../src/core/screen-reader-announcement';
 
 const owner = (name: string, type: EditorEffectType) =>
-  defineExtension(name, { effectTypes: [type] });
+  definePlugin(name, { effectTypes: [type] });
 
 describe('installed editor effect registry', () => {
   it('keeps the intrinsic screen-reader effect zero-config', () => {
@@ -51,7 +51,7 @@ describe('installed editor effect registry', () => {
   it('rejects duplicate keys without disturbing the installed owner', () => {
     const first = defineEffect({ key: 'duplicate.effect' });
     const duplicate = defineEffect({ key: first.key });
-    const editor = createEditor({ extensions: [owner('first', first)] });
+    const editor = createEditor({ plugins: [owner('first', first)] });
 
     assert.throws(
       () => editor.install(owner('duplicate', duplicate)),
@@ -62,18 +62,18 @@ describe('installed editor effect registry', () => {
     });
   });
 
-  it('atomically replaces descriptor identity through extension slots', () => {
+  it('atomically replaces descriptor identity through plugin slots', () => {
     const first = defineEffect<number>({ key: 'versioned.effect' });
     const second = defineEffect<number>({ key: first.key });
-    const slot = defineExtensionSlot('versioned-effect');
-    const extension = (type: EditorEffectType<number>) =>
+    const slot = definePluginSlot('versioned-effect');
+    const plugin = (type: EditorEffectType<number>) =>
       owner('versioned-effect-owner', type);
     const editor = createEditor({
-      extensions: [slot.of(extension(first))] as const,
+      plugins: [slot.of(plugin(first))] as const,
     });
 
     editor.update((tx) => {
-      tx.extensions.reconfigure(slot, extension(second));
+      tx.plugins.reconfigure(slot, plugin(second));
     });
 
     assert.throws(
@@ -119,28 +119,28 @@ describe('installed editor effect registry', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [owner('invalid-collab', invalidCollab)],
+          plugins: [owner('invalid-collab', invalidCollab)],
         }),
       /invalid collaboration policy/
     );
     assert.throws(
       () =>
         createEditor({
-          extensions: [owner('invalid-codec', invalidCodec)],
+          plugins: [owner('invalid-codec', invalidCodec)],
         }),
       /invalid codec/
     );
     assert.throws(
       () =>
         createEditor({
-          extensions: [owner('invalid-history', invalidHistory)],
+          plugins: [owner('invalid-history', invalidHistory)],
         }),
       /invalid history policy/
     );
     assert.throws(
       () =>
         createEditor({
-          extensions: [owner('invalid-transport', invalidTransport)],
+          plugins: [owner('invalid-transport', invalidTransport)],
         }),
       /invalid collaboration transport/
     );

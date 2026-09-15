@@ -1,10 +1,10 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { type ConsoleMessage, expect, test } from '@playwright/test';
 
 test('docs-sidebar:collapsed-sections-use-compact-row-spacing', async ({
   page,
 }) => {
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
   const consoleErrors: string[] = [];
   const onConsole = (message: ConsoleMessage) => {
     if (message.type() === 'error') consoleErrors.push(message.text());

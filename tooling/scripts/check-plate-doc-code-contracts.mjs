@@ -35,31 +35,34 @@ const skippedDocsDirectoryNames = new Set([
 ]);
 const markdownFilePattern = /\.mdx?$/;
 const whitespacePattern = /\s+/;
-const pluginFactoryNamePattern = /^define(?:BasePlugin|Extension|PlatePlugin)$/;
-const pliteExtensionNamePattern = /^define.*Extension$/;
+const pluginFactoryNamePattern = /^define(?:BasePlugin|Plugin)$/;
+const plitePluginNamePattern = /^define.*Plugin$/;
 const pliteDomModulePattern = /^(?:platejs|plitejs)\/dom(?:\/|$)/;
 const pluginDescriptorOwnerPathPattern =
   /(?:^|\.)(?:editor|plugin|[A-Za-z_$][\w$]*Plugin)$/;
 const prefixedOnListenerPattern = /^on[A-Z]/;
-const pliteModulePattern = /^(?:platejs|plitejs)(?:\/|$)/;
+const pliteModulePattern = /^plitejs(?:\/|$)/;
 const pliteReactModulePattern = /^(?:platejs|plitejs)\/react$/;
 const pliteRootModulePattern = /^(?:platejs|plitejs)$/;
 const privatePliteModulePattern = /^(?:platejs|plitejs)\/internal(?:\/|$)/;
 const publicCoreModulePattern =
   /^(?:@platejs\/core(?:\/react|\/static)?|platejs(?:\/react|\/static)?)$/;
+const headlessPluginModulePattern = /^(?:@platejs\/core|platejs)$/;
+const reactPluginModulePattern = /^(?:@platejs\/core\/react|platejs\/react)$/;
 const plateModulePattern = /^(?:platejs|@platejs\/)/;
 const internalCoreContractTypeSymbols = new Set([
   'InternalDefinitionOf',
   'InternalPluginDefinitionOf',
   'PluginDefinitionCarrier',
-  'StaticEditorExtensionTypeLambda',
+  'StaticPluginTypeLambda',
 ]);
 const internalPliteContractTypeSymbols = new Set([
-  'EditorExtensionTypeLambda',
-  'InternalEditorExtensionDependencyReference',
-  'InternalEditorExtensionInstalledCapabilitiesOf',
-  'InternalEditorExtensionTypeProviderOf',
-  'InternalEditorExtensionWitnessFor',
+  'PluginTypeLambda',
+  'PluginDependencyContractReference',
+  'PluginDependencyReferenceFor',
+  'PluginInstalledCapabilitiesOf',
+  'PluginTypeProviderOf',
+  'PluginWitnessFor',
 ]);
 const contextualConfigureKeys = new Set([
   'initialState',
@@ -67,6 +70,7 @@ const contextualConfigureKeys = new Set([
   'override',
   'render',
   'shortcuts',
+  'slots',
 ]);
 const deletedPluginBuilderMethods = new Set([
   'clone',
@@ -97,7 +101,7 @@ const deletedPlatePluginDefinitionKeys = new Set([
   'tx',
   'validateConfiguration',
 ]);
-const deletedPliteExtensionDefinitionKeys = new Set([
+const deletedPlitePluginDefinitionKeys = new Set([
   'config',
   'state',
   'tx',
@@ -323,7 +327,7 @@ const readCallChainRootName = (node) => {
   return undefined;
 };
 
-const isForeignStoreSelectorExtension = (node) =>
+const isForeignStoreSelectorPlugin = (node) =>
   readMemberCallName(node) === 'extendSelectors' &&
   readCallChainRootName(node) === 'createZustandStore';
 
@@ -467,9 +471,9 @@ const isFullyResolvedStaticDocObject = (node, bindings, seen = new Set()) => {
   return isFullyResolvedStaticDocObject(resolved, bindings, nextSeen);
 };
 
-const collectLocalPliteExtensionCreatorNames = (ast) => {
-  const creators = new Set(['defineExtension']);
-  const namespaces = new Set(['Plite']);
+const collectLocalPlitePluginCreatorNames = (ast) => {
+  const creators = new Set();
+  const namespaces = new Set();
   const creatorCandidates = [];
   const namespaceCandidates = [];
   const destructuredCandidates = [];
@@ -485,7 +489,7 @@ const collectLocalPliteExtensionCreatorNames = (ast) => {
       (current?.type === 'Identifier' && creators.has(current.name)) ||
       ((current?.type === 'MemberExpression' ||
         current?.type === 'OptionalMemberExpression') &&
-        getPropertyName(current.property) === 'defineExtension' &&
+        getPropertyName(current.property) === 'definePlugin' &&
         isNamespace(current.object))
     );
   };
@@ -501,7 +505,7 @@ const collectLocalPliteExtensionCreatorNames = (ast) => {
     for (const property of pattern.properties) {
       if (
         property.type !== 'ObjectProperty' ||
-        getPropertyName(property.key) !== 'defineExtension'
+        getPropertyName(property.key) !== 'definePlugin'
       ) {
         continue;
       }
@@ -532,7 +536,7 @@ const collectLocalPliteExtensionCreatorNames = (ast) => {
         }
         if (
           specifier.type === 'ImportSpecifier' &&
-          getPropertyName(specifier.imported) === 'defineExtension'
+          getPropertyName(specifier.imported) === 'definePlugin'
         ) {
           creators.add(specifier.local.name);
         }
@@ -802,7 +806,7 @@ const inspectContextualConfigure = (callback) => {
   return { invalidReturns, properties };
 };
 
-const getStaticExtensionProperties = (contribution, bindings) => {
+const getStaticPluginProperties = (contribution, bindings) => {
   if (bindings) {
     return resolveStaticDocObjectProperties(contribution, bindings);
   }
@@ -851,7 +855,7 @@ const getStaticPliteElementMap = (node) => {
     node?.type !== 'CallExpression' ||
     node.callee.type !== 'Identifier' ||
     (node.callee.name !== 'defineEditorSchema' &&
-      !pliteExtensionNamePattern.test(node.callee.name))
+      !plitePluginNamePattern.test(node.callee.name))
   ) {
     return undefined;
   }
@@ -898,8 +902,19 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
     }
 
     const staticValueBindings = collectStaticDocValueBindings(ast);
-    const localPliteExtensionCreatorNames =
-      collectLocalPliteExtensionCreatorNames(ast);
+    const localPlitePluginCreatorNames =
+      collectLocalPlitePluginCreatorNames(ast);
+    const localHeadlessPluginCreatorNames = collectLocalModuleCallableNames(
+      ast,
+      {
+        exportedName: 'definePlugin',
+        modulePattern: headlessPluginModulePattern,
+      }
+    );
+    const localReactPluginCreatorNames = collectLocalModuleCallableNames(ast, {
+      exportedName: 'definePlugin',
+      modulePattern: reactPluginModulePattern,
+    });
     const localReactFactoryNames = collectLocalModuleCallableNames(ast, {
       exportedName: 'react',
       modulePattern: pliteReactModulePattern,
@@ -909,7 +924,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
       modulePattern: pliteDomModulePattern,
     });
     const getAuthorProperties = (value) =>
-      getStaticExtensionProperties(value, staticValueBindings);
+      getStaticPluginProperties(value, staticValueBindings);
     const reportPrefixedOnHandlers = (property) => {
       if (
         property.type !== 'ObjectProperty' ||
@@ -1049,7 +1064,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
       if (
         node.type === 'TSTypeReference' &&
         node.typeName?.type === 'Identifier' &&
-        node.typeName.name === 'EditorExtension' &&
+        node.typeName.name === 'Plugin' &&
         (node.typeParameters?.params.length ??
           node.typeArguments?.params.length ??
           0) > 1
@@ -1059,14 +1074,14 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
             file,
             fence,
             node,
-            'EditorExtension exposes one public Definition generic; transitive dependency requirements stay private'
+            'Plugin exposes one public Definition generic; transitive dependency requirements stay private'
           )
         );
       }
       if (
         node.type === 'TSTypeReference' &&
         node.typeName?.type === 'Identifier' &&
-        node.typeName.name === 'EditorExtensionDependencyReference' &&
+        node.typeName.name === 'PluginDependencyReference' &&
         (node.typeParameters?.params.length ??
           node.typeArguments?.params.length ??
           0) > 0
@@ -1076,7 +1091,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
             file,
             fence,
             node,
-            'EditorExtensionDependencyReference is a shallow non-generic root identity; capability/provider contracts stay internal'
+            'PluginDependencyReference is a shallow non-generic root identity; capability/provider contracts stay internal'
           )
         );
       }
@@ -1205,7 +1220,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
             file,
             fence,
             node,
-            'extension APIs project through editor.api.<name>, not Object.assign(editor.api, extensionApi)'
+            'plugin APIs project through editor.api.<name>, not Object.assign(editor.api, extensionApi)'
           )
         );
       }
@@ -1214,7 +1229,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
         memberCallName &&
         deletedPluginBuilderMethods.has(memberCallName) &&
         callsLikelyPluginBuilder &&
-        !isForeignStoreSelectorExtension(node)
+        !isForeignStoreSelectorPlugin(node)
       ) {
         issues.push(
           createIssue(
@@ -1234,7 +1249,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
             file,
             fence,
             node,
-            'extension APIs use editor.api.<name> or editor.extension(Extension).api'
+            'plugin APIs use editor.api.<name> or editor.plugin(Plugin).api'
           )
         );
       }
@@ -1330,10 +1345,20 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
         }
       }
 
+      const isPlitePluginCreator = localPlitePluginCreatorNames.hasCall(node);
+      const isHeadlessPluginCreator =
+        localHeadlessPluginCreatorNames.hasCall(node);
+      const isReactPluginCreator =
+        localReactPluginCreatorNames.hasCall(node) ||
+        (node.type === 'CallExpression' &&
+          node.callee.type === 'Identifier' &&
+          node.callee.name === 'definePlugin' &&
+          !isPlitePluginCreator &&
+          !isHeadlessPluginCreator);
+
       if (
-        node.type === 'CallExpression' &&
-        node.callee.type === 'Identifier' &&
-        ['defineBasePlugin', 'definePlatePlugin'].includes(node.callee.name)
+        !isPlitePluginCreator &&
+        (isHeadlessPluginCreator || isReactPluginCreator)
       ) {
         if (node.arguments.length !== 2) {
           issues.push(
@@ -1420,13 +1445,13 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
             );
           }
 
-          if (node.callee.name === 'defineBasePlugin' && key === 'component') {
+          if (isHeadlessPluginCreator && key === 'component') {
             issues.push(
               createIssue(
                 file,
                 fence,
                 property,
-                'root-level component is available only in definePlatePlugin'
+                'root-level component is available only in definePlugin'
               )
             );
           }
@@ -1444,14 +1469,14 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
         }
       }
 
-      if (localPliteExtensionCreatorNames.hasCall(node)) {
+      if (localPlitePluginCreatorNames.hasCall(node)) {
         if (node.arguments.length !== 2) {
           issues.push(
             createIssue(
               file,
               fence,
               node,
-              'defineExtension requires (name, definition)'
+              'definePlugin requires (name, definition)'
             )
           );
         }
@@ -1464,7 +1489,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
               file,
               fence,
               node,
-              'defineExtension infers one definition from its author object'
+              'definePlugin infers one definition from its author object'
             )
           );
         }
@@ -1481,13 +1506,13 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
             reportPliteConfigContext(property);
             reportStaleCapabilityFactoryContext(property);
 
-            if (key && deletedPliteExtensionDefinitionKeys.has(key)) {
+            if (key && deletedPlitePluginDefinitionKeys.has(key)) {
               issues.push(
                 createIssue(
                   file,
                   fence,
                   property,
-                  `deleted Plite extension definition field ${key}`
+                  `deleted Plite plugin definition field ${key}`
                 )
               );
             }
@@ -1502,7 +1527,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
                   file,
                   fence,
                   property,
-                  `extension ${key} must be declared as a factory`
+                  `plugin ${key} must be declared as a factory`
                 )
               );
             }
@@ -1516,7 +1541,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
                   file,
                   fence,
                   property,
-                  'extension api factory receives one context object'
+                  'plugin api factory receives one context object'
                 )
               );
             }
@@ -1646,7 +1671,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
                 file,
                 fence,
                 property,
-                'contextual plugin configure only accepts explicit initialState, on, override, render, and shortcuts overrides'
+                'contextual plugin configure only accepts explicit initialState, on, override, render, shortcuts, and slots overrides'
               )
             );
           }

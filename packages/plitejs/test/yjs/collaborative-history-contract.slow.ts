@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import { history } from '../../src/history';
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   defineEffect,
   defineStateField,
   type Descendant,
@@ -612,7 +612,7 @@ describe('plitejs/yjs collaborative history contract', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const effects = defineExtension('c14-counter-effects', {
+    const effects = definePlugin('c14-counter-effects', {
       effectTypes: [increment],
       stateFields: [counter],
     });
@@ -642,22 +642,22 @@ describe('plitejs/yjs collaborative history contract', () => {
       clientIds,
       createEditor: () =>
         createEditor({
-          extensions: [effects, history()] as const,
+          plugins: [effects, history()] as const,
         }),
       numericClientIds,
-      observeExtension: (editor) =>
+      observePlugin: (editor) =>
         editor.read((state) => state.getField(counter)),
       trace,
     } satisfies CollaborativeHistoryRunOptions;
     const run = runCollaborativeHistoryTrace(options);
 
     assertRunProjectionExact(run);
-    assert.equal(run.observations[3]?.peers.a?.extension, 0);
-    assert.equal(run.observations[3]?.peers.b?.extension, 0);
+    assert.equal(run.observations[3]?.peers.a?.plugin, 0);
+    assert.equal(run.observations[3]?.peers.b?.plugin, 0);
     assert.deepEqual(run.observations[3]?.peers.b?.history, {
       redos: 1,
       undos: 0,
     });
-    assert.equal(run.observations.at(-1)?.peers.a?.extension, 2);
+    assert.equal(run.observations.at(-1)?.peers.a?.plugin, 2);
   });
 });

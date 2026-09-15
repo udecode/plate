@@ -5,18 +5,28 @@ import React, {
   useCallback,
 } from 'react';
 
-import type { Path, NodeKey, Text as PliteTextNode } from '../..';
+import { NodeApi, type Path, type NodeKey, type Text as TextNode } from '../..';
+import { readAuthoredFragmentRoots } from '../../core/authored-fragment-view';
+import {
+  readAuthoredViewFragments,
+  type NativeAuthoredFragment,
+} from '../../core/authored-runtime';
+import { AuthoredFragmentRendererContext } from '../authored-fragment-context';
 import { usePliteDecorationEntries } from '../decoration-context';
 import {
   getDecorationSliceIdentity,
-  type PliteDecorationSlice,
+  type DecorationSlice,
 } from '../decoration-source';
 import {
   type DOMTextSyncOptOutReason,
   getDOMTextSyncCapability,
 } from '../dom-text-sync';
-import { getNodeKey as editorGetNodeKey } from '../editable/runtime-editor-api';
+import {
+  getNodeKey as editorGetNodeKey,
+  isInline as editorIsInline,
+} from '../editable/runtime-editor-api';
 import { readTextByKey } from '../editable/runtime-live-state';
+import { useAuthoredFragmentSlots } from '../hooks/use-authored-fragment-slots';
 import { useClaimEditableDOMCommit } from '../hooks/use-claim-editable-dom-commit';
 import { useEditorContext } from '../hooks/use-editor-context';
 import {
@@ -29,17 +39,17 @@ import {
   usePliteNodeRef,
 } from '../hooks/use-plite-node-ref';
 import { compileTextFlowSegments } from './editable-text-flow';
-import { PliteLeaf } from './plite-leaf';
+import { EditorLeaf } from './plite-leaf';
 import {
   getPlitePlaceholderStyle,
   type PlaceholderIntrinsicTag,
-  PlitePlaceholder,
+  EditorPlaceholder,
 } from './plite-placeholder';
-import { PliteText } from './plite-text';
+import { EditorText } from './plite-text';
 import { DecoratedTextString, TextString } from './text-string';
 import { ZeroWidthString } from './zero-width-string';
 
-const EMPTY_MARKS: Omit<PliteTextNode, 'text'> = {};
+const EMPTY_MARKS: Omit<TextNode, 'text'> = {};
 const PLACEHOLDER_ANCHOR_STYLE: CSSProperties = {
   display: 'inline-block',
   maxWidth: '100%',
@@ -55,17 +65,17 @@ const EMPTY_BOUND_TEXT = Object.freeze({
   renderRevision: 0,
   text: '',
 }) as {
-  marks: Omit<PliteTextNode, 'text'>;
+  marks: Omit<TextNode, 'text'>;
   path: Path | null;
   nodeKey: NodeKey | null;
-  pliteNode: PliteTextNode | null;
+  pliteNode: TextNode | null;
   renderRevision: number;
   text: string;
 };
 
 const sameMarks = (
-  left: Omit<PliteTextNode, 'text'>,
-  right: Omit<PliteTextNode, 'text'>
+  left: Omit<TextNode, 'text'>,
+  right: Omit<TextNode, 'text'>
 ) => {
   const leftKeys = Object.keys(left);
   const rightKeys = Object.keys(right);
@@ -98,10 +108,10 @@ const samePathOrRuntimeStable = ({
 }: {
   leftPath: Path | null;
   leftNodeKey: NodeKey | null | undefined;
-  leftPliteNode: PliteTextNode | null | undefined;
+  leftPliteNode: TextNode | null | undefined;
   rightPath: Path | null;
   rightNodeKey: NodeKey | null | undefined;
-  rightPliteNode: PliteTextNode | null | undefined;
+  rightPliteNode: TextNode | null | undefined;
 }) =>
   samePath(leftPath, rightPath) ||
   (leftNodeKey != null &&
@@ -130,18 +140,18 @@ const sameZeroWidth = (
 
 const sameBoundText = (
   left: {
-    marks: Omit<PliteTextNode, 'text'>;
+    marks: Omit<TextNode, 'text'>;
     path: Path | null;
     nodeKey: NodeKey | null;
-    pliteNode: PliteTextNode | null;
+    pliteNode: TextNode | null;
     renderRevision: number;
     text: string;
   } | null,
   right: {
-    marks: Omit<PliteTextNode, 'text'>;
+    marks: Omit<TextNode, 'text'>;
     path: Path | null;
     nodeKey: NodeKey | null;
-    pliteNode: PliteTextNode | null;
+    pliteNode: TextNode | null;
     renderRevision: number;
     text: string;
   }
@@ -162,22 +172,22 @@ const sameBoundText = (
   sameMarks(left.marks, right.marks);
 
 type EditableTextPart = {
-  decorations: readonly PliteDecorationSlice[];
+  decorations: readonly DecorationSlice[];
   end: number;
   identity: string;
-  marks: Omit<PliteTextNode, 'text'>;
+  marks: Omit<TextNode, 'text'>;
   start: number;
   text: string;
 };
 
 export type RenderLeafProps = {
   attributes: {
-    'data-plite-leaf': true;
-    'data-plite-leaf-end'?: number;
-    'data-plite-leaf-start'?: number;
+    'data-editor-leaf': true;
+    'data-editor-leaf-end'?: number;
+    'data-editor-leaf-start'?: number;
   };
   children: ReactNode;
-  leaf: Omit<PliteTextNode, 'text'>;
+  leaf: Omit<TextNode, 'text'>;
   leafPosition?: {
     end: number;
     isFirst?: true;
@@ -185,26 +195,26 @@ export type RenderLeafProps = {
     start: number;
   };
   path?: Path;
-  text: Omit<PliteTextNode, 'text'>;
+  text: Omit<TextNode, 'text'>;
 };
 
 export type RenderTextProps = {
   attributes: {
-    'data-plite-dom-sync'?: true;
-    'data-plite-node': 'text';
-    'data-plite-dom-sync-reason'?: DOMTextSyncOptOutReason;
-    'data-plite-path'?: string;
-    'data-plite-node-key'?: string;
+    'data-editor-dom-sync'?: true;
+    'data-editor-node': 'text';
+    'data-editor-dom-sync-reason'?: DOMTextSyncOptOutReason;
+    'data-editor-path'?: string;
+    'data-editor-node-key'?: string;
     ref?: Ref<HTMLSpanElement>;
   };
   children: ReactNode;
-  text: PliteTextNode;
+  text: TextNode;
 };
 
 export type RenderPlaceholderProps = {
   attributes: {
     'aria-hidden': true;
-    'data-plite-placeholder': true;
+    'data-editor-placeholder': true;
     contentEditable: false;
     dir?: 'rtl';
     ref: React.RefCallback<HTMLElement>;
@@ -223,17 +233,91 @@ const RenderCallback = <TProps,>({
 
 const splitTextByDecorations = (
   text: string,
-  decorations: readonly PliteDecorationSlice[],
-  marks: Omit<PliteTextNode, 'text'>
+  decorations: readonly DecorationSlice[],
+  marks: Omit<TextNode, 'text'>
 ): EditableTextPart[] =>
   compileTextFlowSegments(text, decorations).segments.map((segment) => ({
     ...segment,
     marks,
   }));
 
-const getTextMarks = (
-  node: PliteTextNode | null
-): Omit<PliteTextNode, 'text'> => {
+const interleaveAuthoredText = (
+  segments: readonly EditableTextPart[],
+  fragments: ReadonlyArray<
+    Readonly<{
+      fragment: NativeAuthoredFragment;
+      offset: number;
+    }>
+  >,
+  text: string,
+  marks: Omit<TextNode, 'text'>
+) => {
+  const parts: Array<
+    | { kind: 'text'; segment: EditableTextPart }
+    | { kind: 'retained'; fragment: NativeAuthoredFragment }
+  > = [];
+  if (!fragments.length) {
+    return segments.map((segment) => ({ kind: 'text' as const, segment }));
+  }
+  let segmentIndex = 0;
+  let from = 0;
+  let before = 'start';
+  const appendText = (to: number, after: string) => {
+    if (from === to) {
+      parts.push({
+        kind: 'text',
+        segment: {
+          decorations: [],
+          end: to,
+          identity: JSON.stringify(['authored-gap', before, after]),
+          marks,
+          start: from,
+          text: '',
+        },
+      });
+      return;
+    }
+    while (segmentIndex < segments.length) {
+      const segment = segments[segmentIndex];
+      if (segment.start >= to) break;
+      const start = Math.max(from, segment.start);
+      const end = Math.min(to, segment.end);
+      if (start < end) {
+        parts.push({
+          kind: 'text',
+          segment: {
+            ...segment,
+            start,
+            end,
+            text: text.slice(start, end),
+            identity:
+              start === segment.start && end === segment.end
+                ? segment.identity
+                : JSON.stringify([segment.identity, before, after]),
+          },
+        });
+      }
+      if (segment.end > to) break;
+      segmentIndex += 1;
+    }
+  };
+  let index = 0;
+  while (index < fragments.length) {
+    const { offset } = fragments[index];
+    appendText(offset, fragments[index].fragment.id);
+    while (index < fragments.length && fragments[index].offset === offset) {
+      const { fragment } = fragments[index];
+      parts.push({ kind: 'retained', fragment });
+      before = fragment.id;
+      index += 1;
+    }
+    from = offset;
+  }
+  appendText(text.length, 'end');
+  return parts;
+};
+
+const getTextMarks = (node: TextNode | null): Omit<TextNode, 'text'> => {
   if (!node) {
     return EMPTY_MARKS;
   }
@@ -257,9 +341,9 @@ const assignRef = (
 };
 
 const getLeafAttributes = (leafPosition?: RenderLeafProps['leafPosition']) => ({
-  'data-plite-leaf': true as const,
-  'data-plite-leaf-end': leafPosition?.end,
-  'data-plite-leaf-start': leafPosition?.start,
+  'data-editor-leaf': true as const,
+  'data-editor-leaf-end': leafPosition?.end,
+  'data-editor-leaf-start': leafPosition?.start,
 });
 
 const RenderEditableText = ({
@@ -278,10 +362,11 @@ const RenderEditableText = ({
   renderText,
   resolvedMarks,
   resolvedText,
+  textRange,
   nodeKey,
   zeroWidth,
 }: {
-  decorations: readonly PliteDecorationSlice[];
+  decorations: readonly DecorationSlice[];
   isLast?: boolean;
   nodeKey?: NodeKey | null;
   path?: Path;
@@ -295,184 +380,241 @@ const RenderEditableText = ({
   renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
   renderRevision?: number | string;
   renderText?: (props: RenderTextProps) => ReactNode;
-  resolvedMarks: Omit<PliteTextNode, 'text'>;
+  resolvedMarks: Omit<TextNode, 'text'>;
   resolvedText: string;
+  textRange?: Readonly<{ end: number; start: number }>;
   zeroWidth?: ZeroWidthOptions;
 }) => {
   useClaimEditableDOMCommit();
+  const editor = useEditorContext();
+  const renderFragment = React.useContext(AuthoredFragmentRendererContext);
+  const slots = useAuthoredFragmentSlots(nodeKey ?? null);
+  const fragments = slots.flatMap((slot) => {
+    if (textRange || !renderFragment || slot.side !== 'text') return [];
+    const fragment = readAuthoredViewFragments(editor, slot.changeId).find(
+      (current) => current.id === slot.id
+    );
+    if (
+      !fragment ||
+      fragment.kind === 'properties' ||
+      fragment.placement?.kind !== 'text'
+    ) {
+      return [];
+    }
+    const roots = readAuthoredFragmentRoots(fragment);
+    if (
+      !roots.length ||
+      roots.some(
+        ([node]) => NodeApi.isElement(node) && !editorIsInline(editor, node)
+      )
+    ) {
+      return [];
+    }
+    return [{ fragment, offset: fragment.placement.point.offset }];
+  });
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey ?? null);
   const hasText = resolvedText.length > 0;
-  const domTextSync = getDOMTextSyncCapability({
-    hasText,
-    marks: resolvedMarks,
-    decorations,
-    renderLeaf,
-    renderText,
-  });
-  const segments = hasText
+  const domTextSync =
+    fragments.length || textRange
+      ? { enabled: false, reason: 'retained-content' as const }
+      : getDOMTextSyncCapability({
+          hasText,
+          marks: resolvedMarks,
+          decorations,
+          renderLeaf,
+          renderText,
+        });
+  const fullSegments = hasText
     ? splitTextByDecorations(resolvedText, decorations, resolvedMarks)
     : [];
+  const segments = textRange
+    ? textRange.start === textRange.end
+      ? [
+          {
+            decorations: [],
+            end: textRange.end,
+            identity: 'retained-boundary',
+            marks: resolvedMarks,
+            start: textRange.start,
+            text: '',
+          },
+        ]
+      : fullSegments.flatMap((segment) => {
+          const start = Math.max(segment.start, textRange.start);
+          const end = Math.min(segment.end, textRange.end);
+          return start < end
+            ? [{ ...segment, end, start, text: resolvedText.slice(start, end) }]
+            : [];
+        })
+    : fullSegments;
+  const parts = interleaveAuthoredText(
+    segments,
+    fragments,
+    resolvedText,
+    resolvedMarks
+  );
 
   const textNode = {
     text: resolvedText,
     ...resolvedMarks,
   };
   const textAttributes = {
-    'data-plite-dom-sync': domTextSync.enabled ? (true as const) : undefined,
-    'data-plite-dom-sync-reason': domTextSync.reason ?? undefined,
-    'data-plite-node': 'text' as const,
-    'data-plite-path': path ? path.join(',') : undefined,
-    'data-plite-node-key': nodeKeyDOMValue,
+    'data-editor-dom-sync': domTextSync.enabled ? (true as const) : undefined,
+    'data-editor-dom-sync-reason': domTextSync.reason ?? undefined,
+    'data-editor-node': 'text' as const,
+    'data-editor-path': path ? path.join(',') : undefined,
+    'data-editor-node-key': nodeKeyDOMValue,
     ref: textRef,
   };
   const placeholderAttributes = {
     'aria-hidden': true as const,
-    'data-plite-placeholder': true as const,
+    'data-editor-placeholder': true as const,
     contentEditable: false as const,
     dir: placeholderDir,
     ref: placeholderRef ?? (() => {}),
     style: getPlitePlaceholderStyle(placeholderStyle),
   };
 
-  const content =
-    hasText || segments.some((segment) => segment.text.length === 0)
-      ? segments.map((segment, index) => {
-          const innermostDecoration = segment.decorations.at(-1);
-          const isTrailing =
-            isLast &&
-            index === segments.length - 1 &&
-            segment.text.endsWith('\n');
-          const baseContent =
-            segment.text.length === 0 ? (
-              <ZeroWidthString isMarkPlaceholder />
-            ) : innermostDecoration ? (
-              <DecoratedTextString
-                attributes={innermostDecoration.attributes}
-                isTrailing={isTrailing}
-                text={segment.text}
-              />
-            ) : (
-              <TextString isTrailing={isTrailing} text={segment.text} />
-            );
-          let decoratedSegmentContent: ReactNode = baseContent;
-          const wrapperCount =
-            segment.decorations.length - (innermostDecoration ? 1 : 0);
-
-          for (
-            let decorationIndex = wrapperCount - 1;
-            decorationIndex >= 0;
-            decorationIndex--
-          ) {
-            const decoration = segment.decorations[decorationIndex];
-
-            decoratedSegmentContent = (
-              <span
-                key={getDecorationSliceIdentity(decoration)}
-                {...decoration.attributes}
-              >
-                {decoratedSegmentContent}
-              </span>
-            );
-          }
-          const leafNode = segment.marks;
-          const leafPosition =
-            segments.length > 1
-              ? {
-                  end: segment.end,
-                  isFirst: index === 0 ? (true as const) : undefined,
-                  isLast:
-                    index === segments.length - 1 ? (true as const) : undefined,
-                  start: segment.start,
-                }
-              : undefined;
-          const leafAttributes = getLeafAttributes(leafPosition);
-
-          const segmentKey = JSON.stringify([
-            nodeKey,
-            renderRevision,
-            segment.identity,
-          ]);
-
-          return (
-            <React.Fragment key={segmentKey}>
-              {renderLeaf ? (
-                <RenderCallback
-                  props={{
-                    attributes: leafAttributes,
-                    children: decoratedSegmentContent,
-                    leaf: leafNode,
-                    leafPosition,
-                    path,
-                    text: resolvedMarks,
-                  }}
-                  render={renderLeaf}
-                />
-              ) : (
-                <PliteLeaf attributes={leafAttributes}>
-                  {decoratedSegmentContent}
-                </PliteLeaf>
-              )}
-            </React.Fragment>
+  const content = parts.length
+    ? parts.map((part, index) => {
+        if (part.kind === 'retained') return renderFragment?.(part.fragment);
+        const { segment } = part;
+        const innermostDecoration = segment.decorations.at(-1);
+        const isTrailing =
+          isLast && index === parts.length - 1 && segment.text.endsWith('\n');
+        const baseContent =
+          segment.text.length === 0 ? (
+            <ZeroWidthString
+              isMarkPlaceholder={fragments.length === 0 && !textRange}
+            />
+          ) : innermostDecoration ? (
+            <DecoratedTextString
+              attributes={innermostDecoration.attributes}
+              isTrailing={isTrailing}
+              text={segment.text}
+            />
+          ) : (
+            <TextString isTrailing={isTrailing} text={segment.text} />
           );
-        })
-      : (() => {
-          const placeholderNode = placeholder ? (
-            renderPlaceholder ? (
+        let decoratedSegmentContent: ReactNode = baseContent;
+        const wrapperCount =
+          segment.decorations.length - (innermostDecoration ? 1 : 0);
+
+        for (
+          let decorationIndex = wrapperCount - 1;
+          decorationIndex >= 0;
+          decorationIndex--
+        ) {
+          const decoration = segment.decorations[decorationIndex];
+
+          decoratedSegmentContent = (
+            <span
+              key={getDecorationSliceIdentity(decoration)}
+              {...decoration.attributes}
+            >
+              {decoratedSegmentContent}
+            </span>
+          );
+        }
+        const leafNode = segment.marks;
+        const leafPosition =
+          parts.length > 1 || textRange
+            ? {
+                end: segment.end,
+                isFirst: index === 0 ? (true as const) : undefined,
+                isLast:
+                  index === parts.length - 1 ? (true as const) : undefined,
+                start: segment.start,
+              }
+            : undefined;
+        const leafAttributes = getLeafAttributes(leafPosition);
+
+        const segmentKey = JSON.stringify([
+          nodeKey,
+          renderRevision,
+          segment.identity,
+        ]);
+
+        return (
+          <React.Fragment key={segmentKey}>
+            {renderLeaf ? (
               <RenderCallback
                 props={{
-                  attributes: placeholderAttributes,
-                  children: placeholder,
+                  attributes: leafAttributes,
+                  children: decoratedSegmentContent,
+                  leaf: leafNode,
+                  leafPosition,
+                  path,
+                  text: resolvedMarks,
                 }}
-                render={renderPlaceholder}
+                render={renderLeaf}
               />
             ) : (
-              <PlitePlaceholder
-                as={placeholderAs}
-                dir={placeholderDir}
-                ref={placeholderRef}
-                style={placeholderStyle}
-              >
-                {placeholder}
-              </PlitePlaceholder>
-            )
-          ) : null;
-          const zeroWidthString = (
-            <ZeroWidthString
-              includeSentinel={zeroWidth?.includeSentinel}
-              isLineBreak={zeroWidth?.isLineBreak}
-              isMarkPlaceholder={zeroWidth?.isMarkPlaceholder}
-              length={zeroWidth?.length}
-            />
-          );
-          const innerContent = placeholderNode ? (
-            <span
-              data-plite-placeholder-anchor="true"
-              style={PLACEHOLDER_ANCHOR_STYLE}
-            >
-              {zeroWidthString}
-              {placeholderNode}
-            </span>
-          ) : (
-            zeroWidthString
-          );
-          const leafNode = resolvedMarks;
-          const leafAttributes = getLeafAttributes();
-
-          return renderLeaf ? (
+              <EditorLeaf attributes={leafAttributes}>
+                {decoratedSegmentContent}
+              </EditorLeaf>
+            )}
+          </React.Fragment>
+        );
+      })
+    : (() => {
+        const placeholderNode = placeholder ? (
+          renderPlaceholder ? (
             <RenderCallback
               props={{
-                attributes: leafAttributes,
-                children: innerContent,
-                leaf: leafNode,
-                path,
-                text: resolvedMarks,
+                attributes: placeholderAttributes,
+                children: placeholder,
               }}
-              render={renderLeaf}
+              render={renderPlaceholder}
             />
           ) : (
-            <PliteLeaf>{innerContent}</PliteLeaf>
-          );
-        })();
+            <EditorPlaceholder
+              as={placeholderAs}
+              dir={placeholderDir}
+              ref={placeholderRef}
+              style={placeholderStyle}
+            >
+              {placeholder}
+            </EditorPlaceholder>
+          )
+        ) : null;
+        const zeroWidthString = (
+          <ZeroWidthString
+            includeSentinel={zeroWidth?.includeSentinel}
+            isLineBreak={zeroWidth?.isLineBreak}
+            isMarkPlaceholder={zeroWidth?.isMarkPlaceholder}
+            length={zeroWidth?.length}
+          />
+        );
+        const innerContent = placeholderNode ? (
+          <span
+            data-editor-placeholder-anchor="true"
+            style={PLACEHOLDER_ANCHOR_STYLE}
+          >
+            {zeroWidthString}
+            {placeholderNode}
+          </span>
+        ) : (
+          zeroWidthString
+        );
+        const leafNode = resolvedMarks;
+        const leafAttributes = getLeafAttributes();
+
+        return renderLeaf ? (
+          <RenderCallback
+            props={{
+              attributes: leafAttributes,
+              children: innerContent,
+              leaf: leafNode,
+              path,
+              text: resolvedMarks,
+            }}
+            render={renderLeaf}
+          />
+        ) : (
+          <EditorLeaf>{innerContent}</EditorLeaf>
+        );
+      })();
 
   if (renderText) {
     return (
@@ -488,7 +630,7 @@ const RenderEditableText = ({
   }
 
   return (
-    <PliteText
+    <EditorText
       domSync={domTextSync.enabled}
       domSyncReason={domTextSync.reason}
       path={path}
@@ -496,7 +638,7 @@ const RenderEditableText = ({
       nodeKey={nodeKey}
     >
       {content}
-    </PliteText>
+    </EditorText>
   );
 };
 
@@ -555,7 +697,7 @@ const BoundEditableText = ({
   ...props
 }: {
   isLast?: boolean;
-  marks?: Omit<PliteTextNode, 'text'>;
+  marks?: Omit<TextNode, 'text'>;
   nodeKey?: NodeKey | null;
   path?: Path;
   placeholder?: ReactNode;
@@ -563,12 +705,13 @@ const BoundEditableText = ({
   placeholderDir?: 'rtl';
   placeholderRef?: React.RefCallback<HTMLElement>;
   placeholderStyle?: CSSProperties;
-  pliteNode?: PliteTextNode | null;
+  pliteNode?: TextNode | null;
   ref?: Ref<HTMLSpanElement>;
   renderLeaf?: (props: RenderLeafProps) => ReactNode;
   renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
   renderText?: (props: RenderTextProps) => ReactNode;
   text?: string;
+  textRange?: Readonly<{ end: number; start: number }>;
   zeroWidth?: ZeroWidthOptions;
 }) => {
   const editor = useEditorContext();
@@ -644,7 +787,7 @@ const DecoratedEditableText = ({
   ...props
 }: {
   isLast?: boolean;
-  marks?: Omit<PliteTextNode, 'text'>;
+  marks?: Omit<TextNode, 'text'>;
   nodeKey?: NodeKey | null;
   path?: Path;
   placeholder?: ReactNode;
@@ -652,12 +795,13 @@ const DecoratedEditableText = ({
   placeholderDir?: 'rtl';
   placeholderRef?: React.RefCallback<HTMLElement>;
   placeholderStyle?: CSSProperties;
-  pliteNode?: PliteTextNode | null;
+  pliteNode?: TextNode | null;
   ref?: Ref<HTMLSpanElement>;
   renderLeaf?: (props: RenderLeafProps) => ReactNode;
   renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
   renderText?: (props: RenderTextProps) => ReactNode;
   text?: string;
+  textRange?: Readonly<{ end: number; start: number }>;
   zeroWidth?: ZeroWidthOptions;
 }) => {
   const editor = useEditorContext();
@@ -694,7 +838,7 @@ const EditableTextInner = ({
   ...props
 }: {
   isLast?: boolean;
-  marks?: Omit<PliteTextNode, 'text'>;
+  marks?: Omit<TextNode, 'text'>;
   nodeKey?: NodeKey | null;
   path?: Path;
   placeholder?: ReactNode;
@@ -702,12 +846,13 @@ const EditableTextInner = ({
   placeholderDir?: 'rtl';
   placeholderRef?: React.RefCallback<HTMLElement>;
   placeholderStyle?: CSSProperties;
-  pliteNode?: PliteTextNode | null;
+  pliteNode?: TextNode | null;
   ref?: Ref<HTMLSpanElement>;
   renderLeaf?: (props: RenderLeafProps) => ReactNode;
   renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
   renderText?: (props: RenderTextProps) => ReactNode;
   text?: string;
+  textRange?: Readonly<{ end: number; start: number }>;
   zeroWidth?: ZeroWidthOptions;
 }) => {
   if (nodeKey && props.text !== undefined && props.marks !== undefined) {
@@ -762,6 +907,8 @@ const sameEditableTextProps = (
   left.nodeKey === right.nodeKey &&
   left.pliteNode === right.pliteNode &&
   left.text === right.text &&
+  left.textRange?.start === right.textRange?.start &&
+  left.textRange?.end === right.textRange?.end &&
   sameMarks(left.marks ?? EMPTY_MARKS, right.marks ?? EMPTY_MARKS) &&
   samePathOrRuntimeStable({
     leftPath: left.path ?? null,

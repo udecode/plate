@@ -5,9 +5,9 @@ import {
   createEditor,
   createEditorView,
   defineEffect,
-  defineExtension,
+  definePlugin,
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   defineStateField,
   defineValueCodec,
   DocumentChange,
@@ -20,10 +20,7 @@ import {
 
 import { History, history } from '../../src/history';
 import { encodeHistoryValue } from '../../src/history/history-codec';
-import {
-  getEditorLiveSelection,
-  initializeEditorExtensions,
-} from '../../src/internal';
+import { getEditorLiveSelection, initializePlugins } from '../../src/internal';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -59,7 +56,7 @@ const title = defineStateField({
   initial: () => 'Untitled',
   persist: valueCodecs.string,
 });
-const titleExtension = defineExtension('document-title', {
+const titlePlugin = definePlugin('document-title', {
   stateFields: [title],
 });
 
@@ -72,7 +69,7 @@ const createStateEditor = (
   initialValue: Parameters<typeof createEditor>[0]['initialValue']
 ) =>
   createEditor({
-    extensions: [history(), titleExtension] as const,
+    plugins: [history(), titlePlugin] as const,
     initialValue,
   });
 
@@ -88,7 +85,7 @@ describe('versioned history persistence', () => {
   it('embeds the exact schema identity in version 4 JSON', () => {
     const raw = createStateEditor([paragraph('body')]);
     const declared = createEditor({
-      extensions: [history(), editorSchema()] as const,
+      plugins: [history(), editorSchema()] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -106,12 +103,12 @@ describe('versioned history persistence', () => {
 
   it('adopts a final bootstrap schema before the first user commit', () => {
     const editor = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialValue: [paragraph('body')],
     });
     const provisionalSchema = editor.read.history().schema;
 
-    initializeEditorExtensions(editor, [history(), editorSchema()]);
+    initializePlugins(editor, [history(), editorSchema()]);
 
     assert.notDeepEqual(editor.read.schema.identity(), provisionalSchema);
     assert.deepEqual(
@@ -126,7 +123,7 @@ describe('versioned history persistence', () => {
 
   it('keeps persisted schema identity exact and free of live fields', () => {
     const editor = createEditor({
-      extensions: [history(), editorSchema()] as const,
+      plugins: [history(), editorSchema()] as const,
       initialValue: [paragraph('body')],
     });
     const encoded = History.toJSON(editor);
@@ -192,7 +189,7 @@ describe('versioned history persistence', () => {
 
   it('rejects schema mismatches before decoding any history batch', () => {
     const source = createEditor({
-      extensions: [history(), editorSchema()] as const,
+      plugins: [history(), editorSchema()] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -205,7 +202,7 @@ describe('versioned history persistence', () => {
     (batch.effects as unknown[]).push({ key: 'must-not-decode' });
 
     const changedWithoutVersion = createEditor({
-      extensions: [history(), editorSchema({ isolating: true })] as const,
+      plugins: [history(), editorSchema({ isolating: true })] as const,
       initialValue: source.read.value(),
     });
 
@@ -215,7 +212,7 @@ describe('versioned history persistence', () => {
     );
 
     const changedVersion = createEditor({
-      extensions: [history(), editorSchema({ version: 2 })] as const,
+      plugins: [history(), editorSchema({ version: 2 })] as const,
       initialValue: source.read.value(),
     });
 
@@ -263,7 +260,7 @@ describe('versioned history persistence', () => {
   });
 
   it('publishes migration once and atomically resets incompatible history', () => {
-    const slot = defineExtensionSlot('history-schema');
+    const slot = definePluginSlot('history-schema');
     const schemaWithBlock = (version: number, type: string) =>
       defineEditorSchema('schema:history-schema', {
         elements: {
@@ -275,10 +272,7 @@ describe('versioned history persistence', () => {
         version,
       });
     const editor = createEditor({
-      extensions: [
-        history(),
-        slot.of(schemaWithBlock(1, 'paragraph')),
-      ] as const,
+      plugins: [history(), slot.of(schemaWithBlock(1, 'paragraph'))] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -300,7 +294,7 @@ describe('versioned history persistence', () => {
 
     editor.subscribeCommit((commit) => migrationCommits.push(commit.version));
     editor.update((tx) => {
-      tx.extensions.reconfigure(slot, schemaWithBlock(2, 'heading'), {
+      tx.plugins.reconfigure(slot, schemaWithBlock(2, 'heading'), {
         migrate: ({ document }) => ({
           ...document,
           children: document.children.map((node) => ({
@@ -332,9 +326,9 @@ describe('versioned history persistence', () => {
   });
 
   it('does not save a schema commit that reactivates history', () => {
-    const slot = defineExtensionSlot('reactivated-history-schema');
+    const slot = definePluginSlot('reactivated-history-schema');
     const editor = createEditor({
-      extensions: [slot.of([history(), editorSchema()])] as const,
+      plugins: [slot.of([history(), editorSchema()])] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -342,7 +336,7 @@ describe('versioned history persistence', () => {
     assert.equal(editor.read.history().undos.length, 1);
 
     editor.update((tx) => {
-      tx.extensions.reconfigure(slot, [
+      tx.plugins.reconfigure(slot, [
         history({ maxDepth: 101 }),
         editorSchema({ version: 2 }),
       ]);
@@ -361,9 +355,9 @@ describe('versioned history persistence', () => {
   });
 
   it('does not restore a decoded history after its live schema changes', () => {
-    const slot = defineExtensionSlot('delayed-history-schema');
+    const slot = definePluginSlot('delayed-history-schema');
     const editor = createEditor({
-      extensions: [history(), slot.of(editorSchema())] as const,
+      plugins: [history(), slot.of(editorSchema())] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -371,7 +365,7 @@ describe('versioned history persistence', () => {
     const decoded = History.fromJSON(editor, History.toJSON(editor));
 
     editor.update((tx) => {
-      tx.extensions.reconfigure(slot, editorSchema({ isolating: true }));
+      tx.plugins.reconfigure(slot, editorSchema({ isolating: true }));
     });
 
     assert.throws(
@@ -381,15 +375,15 @@ describe('versioned history persistence', () => {
   });
 
   it('preserves undoable edits across equivalent schema reconfiguration', () => {
-    const slot = defineExtensionSlot('equivalent-history-schema');
+    const slot = definePluginSlot('equivalent-history-schema');
     const editor = createEditor({
-      extensions: [history(), slot.of(editorSchema())] as const,
+      plugins: [history(), slot.of(editorSchema())] as const,
       initialValue: [paragraph('body')],
     });
 
     editor.update((tx) => tx.text.insert('!', { at: range(4).anchor }));
     editor.update((tx) => {
-      tx.extensions.reconfigure(slot, editorSchema());
+      tx.plugins.reconfigure(slot, editorSchema());
       tx.text.insert('remote-', { at: range(0).anchor });
     });
 
@@ -404,7 +398,7 @@ describe('versioned history persistence', () => {
   it('round-trips canonical changes, state effects, and node selections', () => {
     const selection = SelectionApi.nodes([[0]]);
     const source = createEditor({
-      extensions: [history(), titleExtension] as const,
+      plugins: [history(), titlePlugin] as const,
       initialSelection: selection,
       initialValue: {
         children: [paragraph('body')],
@@ -457,7 +451,7 @@ describe('versioned history persistence', () => {
 
   it('round-trips pending insertion marks through selection history', () => {
     const source = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialSelection: SelectionApi.text(range(2)),
       initialValue: [paragraph('body')],
     });
@@ -467,7 +461,7 @@ describe('versioned history persistence', () => {
 
     const json = JSON.parse(JSON.stringify(History.toJSON(source)));
     const restored = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialSelection: getEditorLiveSelection(source),
       initialValue: source.read.value(),
     });
@@ -486,7 +480,7 @@ describe('versioned history persistence', () => {
 
   it('round-trips rootless selections owned by a named root', () => {
     const source = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialValue: {
         children: [paragraph('x')],
         roots: { header: [paragraph('header')] },
@@ -506,7 +500,7 @@ describe('versioned history persistence', () => {
     });
 
     const restored = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialValue: source.read.value(),
     });
     const restoredHeader = createEditorView(restored, { root: 'header' });
@@ -524,7 +518,7 @@ describe('versioned history persistence', () => {
 
   it('omits the primary root from history JSON and rejects explicit sentinels', () => {
     const source = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialSelection: SelectionApi.text(range(2)),
       initialValue: [paragraph('body')],
     });
@@ -582,7 +576,7 @@ describe('versioned history persistence', () => {
 
   it('rejects an invalid intermediate document under a closed schema', () => {
     const source = createEditor({
-      extensions: [history()] as const,
+      plugins: [history()] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -607,7 +601,7 @@ describe('versioned history persistence', () => {
       }
     );
     const restored = createEditor({
-      extensions: [history(), closedParagraph] as const,
+      plugins: [history(), closedParagraph] as const,
       initialValue: source.read.value(),
     });
 
@@ -636,7 +630,7 @@ describe('versioned history persistence', () => {
       reduce: (value, effect) =>
         effect.type === increment ? value + effect.value : value,
     });
-    const incrementExtension = defineExtension('counter-increment-effect', {
+    const incrementPlugin = definePlugin('counter-increment-effect', {
       effectTypes: [increment],
       stateFields: [counter],
     });
@@ -644,7 +638,7 @@ describe('versioned history persistence', () => {
       initialValue: Parameters<typeof createEditor>[0]['initialValue']
     ) =>
       createEditor({
-        extensions: [history(), incrementExtension] as const,
+        plugins: [history(), incrementPlugin] as const,
         initialValue,
       });
     const source = createCounterEditor([paragraph('body')]);
@@ -746,9 +740,9 @@ describe('versioned history persistence', () => {
       key: incrementV1.key,
     });
     const source = createEditor({
-      extensions: [
+      plugins: [
         history(),
-        defineExtension('counter-effect-v1', {
+        definePlugin('counter-effect-v1', {
           effectTypes: [incrementV1],
         }),
       ],
@@ -757,9 +751,9 @@ describe('versioned history persistence', () => {
     source.update((tx) => tx.effects.emit(incrementV1, 1));
 
     const restored = createEditor({
-      extensions: [
+      plugins: [
         history(),
-        defineExtension('counter-effect-v2', {
+        definePlugin('counter-effect-v2', {
           effectTypes: [incrementV2],
         }),
       ],

@@ -5,18 +5,19 @@ import { render } from '@testing-library/react';
 import {
   createEditor,
   type RenderElementProps,
-  Plite,
+  EditorRoot,
   useElementPath,
 } from 'plitejs/react';
+import React from 'react';
 
 import {
   createEstimatedPageLayoutEngine,
-  createPlitePage,
-  createPliteLayout,
+  createPage,
+  createLayout,
 } from '../../src/pagination';
 import {
   PagedEditable,
-  usePliteLayoutFragmentsAtPath,
+  useLayoutFragmentsAtPath,
 } from '../../src/pagination/react';
 
 const registeredDom = typeof document === 'undefined';
@@ -31,7 +32,7 @@ afterAll(() => {
   }
 });
 
-describe('usePliteLayoutFragmentsAtPath', () => {
+describe('useLayoutFragmentsAtPath', () => {
   it('reads current element fragments without a render-prop path', () => {
     const rows = Array.from({ length: 4 }, (_, rowIndex) => ({
       type: 'table-row',
@@ -51,14 +52,14 @@ describe('usePliteLayoutFragmentsAtPath', () => {
       ],
     });
     const page = { margins: 96, preset: 'a4' } as const;
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({ defaults, element, path, pageSettings }) {
         if (element.type !== 'table') {
           return { boxes: defaults.boxes, type: 'text' };
         }
 
-        const pageRect = createPlitePage(pageSettings);
+        const pageRect = createPage(pageSettings);
 
         return {
           boxes: defaults.boxes,
@@ -88,9 +89,9 @@ describe('usePliteLayoutFragmentsAtPath', () => {
     };
 
     const { getByTestId } = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <PagedEditable layout={layout} renderElement={renderElement} />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(
@@ -109,10 +110,42 @@ describe('usePliteLayoutFragmentsAtPath', () => {
 
     layout.destroy();
   });
+
+  it('retains the editable host when page virtualization changes', () => {
+    const editor = createEditor({
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'Persistent host' }] },
+      ],
+    });
+    const layout = createLayout(editor, {
+      engine: createEstimatedPageLayoutEngine(),
+      page: { margins: 96, preset: 'a4' },
+    });
+    const tree = (virtualize: boolean) => (
+      <EditorRoot editor={editor}>
+        <PagedEditable
+          aria-label="Document"
+          layout={layout}
+          virtualize={virtualize}
+        />
+      </EditorRoot>
+    );
+    const mounted = render(tree(false));
+    const host = mounted.getByRole('textbox', { name: 'Document' });
+
+    mounted.rerender(tree(true));
+    expect(mounted.getByRole('textbox', { name: 'Document' })).toBe(host);
+
+    mounted.rerender(tree(false));
+    expect(mounted.getByRole('textbox', { name: 'Document' })).toBe(host);
+
+    mounted.unmount();
+    layout.destroy();
+  });
 });
 
 const TableProbe = ({ attributes, children }: RenderElementProps) => {
-  const fragments = usePliteLayoutFragmentsAtPath(useElementPath());
+  const fragments = useLayoutFragmentsAtPath(useElementPath());
 
   return (
     <div

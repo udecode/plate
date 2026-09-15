@@ -18,7 +18,7 @@ import {
 const LABELS = [
   { url: '/docs/components/editor', value: 'Editor' },
   { url: '/docs/components/select-editor', value: 'Select Editor' },
-  { url: '/docs/plite/api/locations/selection', value: 'Node Selection' },
+  { url: '/docs/api/selection', value: 'Node Selection' },
   { url: '/docs/components/button', value: 'Button' },
   { url: '/docs/components/command', value: 'Command' },
   { url: '/docs/components/dialog', value: 'Dialog' },

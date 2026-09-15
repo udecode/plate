@@ -1,6 +1,7 @@
-import {
+import React, {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -19,24 +20,25 @@ import {
   SelectionApi,
   type Value,
 } from '..';
-import { Editable, type EditableProps, useEditorState } from '../react';
+import { type EditableProps, useEditorState } from '../react';
 import { defaultScrollSelectionIntoView } from '../react/components/editable';
+import { WindowedEditable } from '../react/components/windowed-editable.internal';
 import {
-  createPliteLayout,
-  getPlitePageLayoutGeometry,
-  getPlitePageLayoutProjection,
-  type PliteLayoutOptions,
-  type PlitePageLayout,
-  type PlitePageLayoutFragment,
-  type PlitePageLayoutMode,
-  type PlitePageLayoutPage,
-  type PlitePageLayoutProjectedLine,
-  type PlitePageLayoutProjectedUnit,
-  type PlitePageLayoutProjection,
-  type PlitePageLayoutSnapshot,
-  type PlitePageRect,
-  type PlitePageSettings,
-  type PlitePageSettingsSource,
+  createLayout,
+  getPageLayoutGeometry,
+  getPageLayoutProjection,
+  type LayoutOptions,
+  type PageLayout,
+  type PageLayoutFragment,
+  type PageLayoutMode,
+  type PageLayoutPage,
+  type PageLayoutProjectedLine,
+  type PageLayoutProjectedUnit,
+  type PageLayoutProjection,
+  type PageLayoutSnapshot,
+  type PageRect,
+  type PageSettings,
+  type PageSettingsSource,
 } from './index';
 import {
   connectLayoutRuntime,
@@ -50,18 +52,18 @@ import {
 export * from './index';
 
 type PliteLayoutFragmentContextValue = {
-  layout: PlitePageLayout;
+  layout: PageLayout;
   projectedLinesByFragment: ReadonlyMap<
     string,
-    readonly PlitePageLayoutProjectedLine[]
+    readonly PageLayoutProjectedLine[]
   >;
   projectedUnitsByFragment: ReadonlyMap<
     string,
-    ReadonlyMap<string, PlitePageLayoutProjectedUnit>
+    ReadonlyMap<string, PageLayoutProjectedUnit>
   >;
-  projection: PlitePageLayoutProjection;
+  projection: PageLayoutProjection;
   selectedPaths: readonly Path[];
-  snapshot: PlitePageLayoutSnapshot;
+  snapshot: PageLayoutSnapshot;
   tracksContentViewport: boolean;
   visibleContentRange: PagedEditableViewport | null;
   visiblePageIndexes: ReadonlySet<number> | null;
@@ -70,15 +72,15 @@ type PliteLayoutFragmentContextValue = {
 const PliteLayoutFragmentContext =
   createContext<PliteLayoutFragmentContextValue | null>(null);
 
-export type PliteLayoutRenderedFragment = Pick<
-  PlitePageLayoutFragment,
+export type LayoutRenderedFragment = Pick<
+  PageLayoutFragment,
   'blockIndex' | 'height' | 'id' | 'lineCount' | 'pageIndex' | 'path' | 'text'
 > & {
-  rect: PlitePageRect;
-  units?: readonly PlitePageLayoutProjectedUnit[];
+  rect: PageRect;
+  units?: readonly PageLayoutProjectedUnit[];
 };
 
-const getRectBounds = (rects: readonly PlitePageRect[]): PlitePageRect => {
+const getRectBounds = (rects: readonly PageRect[]): PageRect => {
   if (rects.length === 0) {
     return { height: 0, left: 0, top: 0, width: 0 };
   }
@@ -96,10 +98,8 @@ const getRectBounds = (rects: readonly PlitePageRect[]): PlitePageRect => {
   };
 };
 
-const getPageSourceDependency = <
-  TSettings extends PlitePageSettings = PlitePageSettings,
->(
-  page: PlitePageSettingsSource<TSettings> | null | undefined
+const getPageSourceDependency = <TSettings extends PageSettings = PageSettings>(
+  page: PageSettingsSource<TSettings> | null | undefined
 ) => {
   if (!page) {
     return null;
@@ -112,22 +112,21 @@ const getPageSourceDependency = <
   return page;
 };
 
-export type UsePliteLayoutOptions<
-  TSettings extends PlitePageSettings = PlitePageSettings,
-> = PliteLayoutOptions<TSettings>;
+export type UseLayoutOptions<TSettings extends PageSettings = PageSettings> =
+  LayoutOptions<TSettings>;
 
 /** Create and subscribe a derived layout reader with built-in or caller-owned measurement. */
-export const usePliteLayout = <
-  TSettings extends PlitePageSettings = PlitePageSettings,
+export const useLayout = <
+  TSettings extends PageSettings = PageSettings,
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TPlugins extends readonly unknown[] = readonly [],
 >(
-  editor: Editor<V, TExtensions>,
-  options: UsePliteLayoutOptions<TSettings>
-): PlitePageLayout<PliteLayoutOptions<TSettings>> => {
+  editor: Editor<V, TPlugins>,
+  options: UseLayoutOptions<TSettings>
+): PageLayout<LayoutOptions<TSettings>> => {
   const layout = useMemo(
     () =>
-      createPliteLayout<TSettings, V, TExtensions>(
+      createLayout<TSettings, V, TPlugins>(
         editor,
         deferLayoutRuntimeConnection(options)
       ),
@@ -184,10 +183,8 @@ export const usePliteLayout = <
   return layout;
 };
 
-/** Read a `PlitePageLayout` snapshot with React external-store semantics. */
-export const usePliteLayoutSnapshot = (
-  layout: PlitePageLayout
-): PlitePageLayoutSnapshot =>
+/** Read a `PageLayout` snapshot with React external-store semantics. */
+export const useLayoutSnapshot = (layout: PageLayout): PageLayoutSnapshot =>
   useSyncExternalStore(
     layout.subscribe,
     layout.getSnapshot,
@@ -195,11 +192,11 @@ export const usePliteLayoutSnapshot = (
   );
 
 /**
- * Reads rendered layout fragments for a known Plite path.
+ * Reads rendered layout fragments for a known editor path.
  */
-export const usePliteLayoutFragmentsAtPath = (
+export const useLayoutFragmentsAtPath = (
   targetPath: Path | null | undefined
-): readonly PliteLayoutRenderedFragment[] => {
+): readonly LayoutRenderedFragment[] => {
   const context = useContext(PliteLayoutFragmentContext);
 
   return useMemo(() => {
@@ -225,7 +222,7 @@ export const usePliteLayoutFragmentsAtPath = (
       const projectedUnits = context.projectedUnitsByFragment.get(fragment.id);
       const units = fragment.units
         ?.map((unit) => projectedUnits?.get(unit.key))
-        .filter((unit): unit is PlitePageLayoutProjectedUnit => Boolean(unit))
+        .filter((unit): unit is PageLayoutProjectedUnit => Boolean(unit))
         .filter((unit) => {
           const selected = context.selectedPaths.some((path) =>
             pathsOverlap(unit.path, path)
@@ -297,7 +294,7 @@ const getPagedEditableScrollRoot = (
   element: HTMLElement | null
 ): HTMLElement | null => {
   const editableRoot =
-    element?.querySelector<HTMLElement>('[data-plite-editor="true"]') ?? null;
+    element?.querySelector<HTMLElement>('[data-editor="true"]') ?? null;
 
   if (canUseElementAsPagedEditableScrollRoot(editableRoot)) {
     return editableRoot;
@@ -316,26 +313,6 @@ const getPagedEditableScrollRoot = (
   return null;
 };
 
-type VirtualizedDOMStrategy = Extract<
-  NonNullable<EditableProps['domStrategy']>,
-  { type: 'virtualized' }
->;
-
-const isVirtualizedDOMStrategy = (
-  domStrategy: EditableProps['domStrategy']
-): domStrategy is VirtualizedDOMStrategy =>
-  typeof domStrategy === 'object' &&
-  domStrategy != null &&
-  'type' in domStrategy &&
-  domStrategy.type === 'virtualized';
-
-const getVirtualizedDOMStrategyOverscan = (
-  domStrategy: EditableProps['domStrategy']
-) =>
-  isVirtualizedDOMStrategy(domStrategy)
-    ? Math.max(0, domStrategy.overscan ?? 0)
-    : 0;
-
 type PagedEditableViewport = {
   bottom: number;
   top: number;
@@ -344,7 +321,7 @@ type PagedEditableViewport = {
 const CONTENT_VIEWPORT_OVERSCAN_RATIO = 0;
 
 const isRectWithinVerticalRange = (
-  rect: Pick<PlitePageRect, 'height' | 'top'>,
+  rect: Pick<PageRect, 'height' | 'top'>,
   range: PagedEditableViewport
 ) => rect.top + rect.height >= range.top && rect.top <= range.bottom;
 
@@ -572,22 +549,24 @@ const createPagedEditableViewportStore = () => {
 
 export type PagedEditableRenderPageProps = {
   attributes: {
-    'data-plite-page': true;
-    'data-plite-page-index': number;
+    'data-editor-page': true;
+    'data-editor-page-index': number;
   };
   children: ReactNode | null;
-  page: PlitePageLayoutPage;
+  page: PageLayoutPage;
 };
 
 export type PagedEditablePageView = {
   gap?: number;
-  mode?: PlitePageLayoutMode;
+  mode?: PageLayoutMode;
 };
 
 export type PagedEditableProps = EditableProps & {
-  layout: PlitePageLayout;
+  layout: PageLayout;
   pageView?: PagedEditablePageView;
   renderPage?: (props: PagedEditableRenderPageProps) => ReactNode;
+  /** Permit pagination to omit offscreen page surfaces and document roots. */
+  virtualize?: boolean;
 };
 
 const defaultRenderPage = ({
@@ -610,57 +589,6 @@ const defaultRenderPage = ({
   </div>
 );
 
-const createPagedEditableTopLevelLayoutItems = ({
-  fragments,
-  geometry,
-  pages,
-}: {
-  fragments: readonly PlitePageLayoutFragment[];
-  geometry: ReturnType<typeof getPlitePageLayoutGeometry>;
-  pages: readonly PlitePageLayoutPage[];
-}) => {
-  const items = new Map<
-    number,
-    { end: number; left: number; right: number; start: number }
-  >();
-
-  for (const fragment of fragments) {
-    const page = pages[fragment.pageIndex] ?? pages[0];
-    const placement = geometry.pagePlacements[fragment.pageIndex] ?? {
-      left: 0,
-      top: page ? page.index * page.height : 0,
-    };
-    const left = placement.left + (page?.content.left ?? 0);
-    const right = left + (page?.content.width ?? 0);
-
-    const start = placement.top + fragment.top;
-    const end = start + fragment.height;
-    const current = items.get(fragment.blockIndex);
-
-    items.set(
-      fragment.blockIndex,
-      current
-        ? {
-            end: Math.max(current.end, end),
-            left: Math.min(current.left, left),
-            right: Math.max(current.right, right),
-            start: Math.min(current.start, start),
-          }
-        : { end, left, right, start }
-    );
-  }
-
-  return [...items.entries()]
-    .sort(([left], [right]) => left - right)
-    .map(([index, item]) => ({
-      index,
-      left: item.left,
-      size: Math.max(1, item.end - item.start),
-      start: item.start,
-      width: Math.max(1, item.right - item.left),
-    }));
-};
-
 /** Render an `Editable` through page surfaces derived by pagination. */
 export const PagedEditable = ({
   ignoreBlankEditableRootClicks = true,
@@ -668,9 +596,13 @@ export const PagedEditable = ({
   pageView,
   renderPage = defaultRenderPage,
   style,
+  virtualize = false,
   ...editableProps
 }: PagedEditableProps) => {
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const [promotedTopLevelIndex, setPromotedTopLevelIndex] = useState<
+    number | null
+  >(null);
   const [viewportStore] = useState(() => createPagedEditableViewportStore());
   const selectedPaths = useEditorState(
     (state) => {
@@ -691,7 +623,7 @@ export const PagedEditable = ({
       shouldUpdate: shouldUpdatePagedEditableSelectedPaths,
     }
   );
-  const snapshot = usePliteLayoutSnapshot(layout);
+  const snapshot = useLayoutSnapshot(layout);
   // Preserve page-list identity because it feeds DOM subscription boundaries.
   const pages = useMemo(
     () => (snapshot.pages.length === 0 ? [snapshot.page] : snapshot.pages),
@@ -701,7 +633,7 @@ export const PagedEditable = ({
   const mode = pageView?.mode ?? 'single';
   const geometry = useMemo(
     () =>
-      getPlitePageLayoutGeometry(pages, {
+      getPageLayoutGeometry(pages, {
         pageGap: gap,
         pageLayoutMode: mode,
       }),
@@ -730,42 +662,15 @@ export const PagedEditable = ({
       ),
     [geometry.pagePlacements, pages]
   );
-  const virtualizesPageSurfaces = isVirtualizedDOMStrategy(
-    editableProps.domStrategy
-  );
-  const topLevelLayoutItems = useMemo(
-    () =>
-      createPagedEditableTopLevelLayoutItems({
-        fragments: snapshot.fragments,
-        geometry,
-        pages,
-      }),
-    [geometry, pages, snapshot.fragments]
-  );
-  const hasViewportWindowedUnits = useMemo(
-    () =>
-      snapshot.fragments.some((fragment) =>
-        fragment.units?.some(
-          (unit, _index, units) => units.length > 1 || unit.kind === 'table-row'
-        )
-      ),
-    [snapshot.fragments]
-  );
-  const tracksContentViewport =
-    virtualizesPageSurfaces || hasViewportWindowedUnits;
+  const tracksContentViewport = virtualize;
   useLayoutEffect(() => {
     viewportStore.configure({
       geometryHeight: geometry.height,
       root: rootRef.current,
       tracksContentViewport,
-      virtualizesPageSurfaces,
+      virtualizesPageSurfaces: virtualize,
     });
-  }, [
-    geometry.height,
-    tracksContentViewport,
-    viewportStore,
-    virtualizesPageSurfaces,
-  ]);
+  }, [geometry.height, tracksContentViewport, viewportStore, virtualize]);
   const { canTrackContentViewport, viewport } = useSyncExternalStore(
     viewportStore.subscribe,
     viewportStore.getSnapshot,
@@ -773,49 +678,45 @@ export const PagedEditable = ({
   );
   const filtersContentViewport =
     tracksContentViewport && canTrackContentViewport;
-  const pageSurfaceOverscan = getVirtualizedDOMStrategyOverscan(
-    editableProps.domStrategy
-  );
-  const pageSurfaceItems = useMemo(
-    () =>
-      getPagedEditableVisiblePageMountItems(pageMountPlan, {
-        gap,
-        overscan: pageSurfaceOverscan,
-        pages,
-        virtualizes: virtualizesPageSurfaces && canTrackContentViewport,
-        viewport,
-      }),
-    [
-      canTrackContentViewport,
-      gap,
-      pageMountPlan,
-      pageSurfaceOverscan,
-      pages,
-      virtualizesPageSurfaces,
-      viewport,
-    ]
-  );
   const pageContentItems = useMemo(() => {
-    if (!virtualizesPageSurfaces || !canTrackContentViewport) {
+    if (!virtualize) {
       return null;
     }
 
     return getPagedEditableVisiblePageMountItems(pageMountPlan, {
       gap,
-      overscan: pageSurfaceOverscan,
+      overscan: 0,
       pages,
       virtualizes: true,
-      viewport,
+      viewport: canTrackContentViewport ? viewport : null,
     });
   }, [
     canTrackContentViewport,
     gap,
     pageMountPlan,
-    pageSurfaceOverscan,
     pages,
-    virtualizesPageSurfaces,
+    virtualize,
     viewport,
   ]);
+  const windowedPageItems = useMemo(() => {
+    if (!pageContentItems) return pageMountPlan.items;
+
+    const itemIndexes = new Set(pageContentItems.map((item) => item.index));
+    const requiredTopLevelIndexes = [
+      ...selectedPaths.map((path) => path[0]),
+      promotedTopLevelIndex,
+    ];
+
+    requiredTopLevelIndexes.forEach((topLevelIndex) => {
+      if (typeof topLevelIndex !== 'number') return;
+      pageMountPlan.itemIndexesByTopLevelIndex
+        .get(topLevelIndex)
+        ?.forEach((itemIndex) => itemIndexes.add(itemIndex));
+    });
+
+    return pageMountPlan.items.filter((item) => itemIndexes.has(item.index));
+  }, [pageContentItems, pageMountPlan, promotedTopLevelIndex, selectedPaths]);
+  const pageSurfaceItems = virtualize ? windowedPageItems : pageMountPlan.items;
   const visibleContentRange = useMemo(() => {
     if (!filtersContentViewport || !viewport) {
       return null;
@@ -831,10 +732,10 @@ export const PagedEditable = ({
   }, [filtersContentViewport, viewport]);
   const visiblePageIndexes = useMemo(
     () =>
-      pageContentItems
-        ? new Set(pageContentItems.flatMap((item) => item.pageIndexes))
+      virtualize
+        ? new Set(windowedPageItems.flatMap((item) => item.pageIndexes))
         : null,
-    [pageContentItems]
+    [virtualize, windowedPageItems]
   );
   const projectedFragments = useMemo(() => {
     if (!visiblePageIndexes) {
@@ -849,7 +750,7 @@ export const PagedEditable = ({
   }, [selectedPaths, snapshot.fragments, visiblePageIndexes]);
   const projection = useMemo(
     () =>
-      getPlitePageLayoutProjection(
+      getPageLayoutProjection(
         { ...snapshot, fragments: projectedFragments },
         {
           geometry,
@@ -859,10 +760,7 @@ export const PagedEditable = ({
     [geometry, projectedFragments, snapshot]
   );
   const projectedUnitsByFragment = useMemo(() => {
-    const byFragment = new Map<
-      string,
-      Map<string, PlitePageLayoutProjectedUnit>
-    >();
+    const byFragment = new Map<string, Map<string, PageLayoutProjectedUnit>>();
 
     projection.units.forEach((unit) => {
       const units = byFragment.get(unit.fragmentId) ?? new Map();
@@ -874,7 +772,7 @@ export const PagedEditable = ({
     return byFragment;
   }, [projection.units]);
   const projectedLinesByFragment = useMemo(() => {
-    const byFragment = new Map<string, PlitePageLayoutProjectedLine[]>();
+    const byFragment = new Map<string, PageLayoutProjectedLine[]>();
 
     projection.lines.forEach((line) => {
       const lines = byFragment.get(line.fragmentId) ?? [];
@@ -885,31 +783,6 @@ export const PagedEditable = ({
 
     return byFragment;
   }, [projection.lines]);
-  const domStrategy = useMemo<EditableProps['domStrategy']>(() => {
-    const strategy = editableProps.domStrategy;
-
-    if (
-      typeof strategy !== 'object' ||
-      strategy == null ||
-      strategy.type !== 'virtualized'
-    ) {
-      return strategy;
-    }
-
-    return {
-      ...strategy,
-      layout: {
-        pageItems: pageMountPlan.items,
-        topLevelItems: topLevelLayoutItems,
-        visiblePageItems: pageContentItems ?? undefined,
-      },
-    };
-  }, [
-    editableProps.domStrategy,
-    pageContentItems,
-    pageMountPlan.items,
-    topLevelLayoutItems,
-  ]);
   const scrollSelectionIntoView = useMemo(() => {
     const scroll = editableProps.scrollSelectionIntoView;
 
@@ -940,19 +813,65 @@ export const PagedEditable = ({
     tracksContentViewport,
     viewportStore,
   ]);
+  const mountedTopLevelIndexes = useMemo(
+    () =>
+      [
+        ...new Set(windowedPageItems.flatMap((item) => item.topLevelIndexes)),
+      ].sort((left, right) => left - right),
+    [windowedPageItems]
+  );
+  const requestMount = useCallback((index: number) => {
+    setPromotedTopLevelIndex(index);
+  }, []);
+  const scrollToPath = useCallback(
+    (path: Path, align: 'auto' | 'center' | 'end' | 'start' = 'auto') => {
+      const topLevelIndex = path[0];
+
+      if (typeof topLevelIndex !== 'number') return false;
+      const itemIndex =
+        pageMountPlan.itemIndexesByTopLevelIndex.get(topLevelIndex)?.[0];
+      const item =
+        typeof itemIndex === 'number' ? pageMountPlan.items[itemIndex] : null;
+      const scrollRoot = getPagedEditableScrollRoot(rootRef.current);
+
+      if (!item || !scrollRoot) return false;
+
+      const viewportHeight = Math.max(
+        1,
+        scrollRoot.clientHeight || scrollRoot.getBoundingClientRect().height
+      );
+      const top =
+        align === 'center'
+          ? item.start - (viewportHeight - item.size) / 2
+          : align === 'end'
+            ? item.start - viewportHeight + item.size
+            : item.start;
+
+      scrollRoot.scrollTo({ top: Math.max(0, top) });
+      return true;
+    },
+    [pageMountPlan]
+  );
+  const commonEditableProps = {
+    ...editableProps,
+    ignoreBlankEditableRootClicks,
+    scrollSelectionIntoView,
+    style: {
+      minHeight: geometry.height,
+      position: 'relative' as const,
+      width: geometry.width,
+      zIndex: 0,
+      ...style,
+    },
+  };
   const editable = (
-    <Editable
-      {...editableProps}
-      domStrategy={domStrategy}
-      ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
-      scrollSelectionIntoView={scrollSelectionIntoView}
-      style={{
-        minHeight: geometry.height,
-        position: 'relative',
-        width: geometry.width,
-        zIndex: 0,
-        ...style,
-      }}
+    <WindowedEditable
+      {...commonEditableProps}
+      enabled={virtualize}
+      mountedTopLevelIndexes={mountedTopLevelIndexes}
+      onRequestMount={requestMount}
+      scrollToPath={scrollToPath}
+      totalSize={geometry.height}
     />
   );
   const fragmentContextValue = useMemo(
@@ -983,9 +902,9 @@ export const PagedEditable = ({
   return (
     <PliteLayoutFragmentContext value={fragmentContextValue}>
       <div
-        data-plite-paged-editable
-        data-plite-paged-editable-page-virtualization={
-          virtualizesPageSurfaces ? 'true' : undefined
+        data-editor-paged-editable
+        data-editor-paged-editable-page-virtualization={
+          virtualize ? 'true' : undefined
         }
         ref={rootRef}
         style={{
@@ -1006,8 +925,8 @@ export const PagedEditable = ({
 
             return (
               <div
-                data-plite-page-mount-item-index={item.index}
-                data-plite-page-surface
+                data-editor-page-mount-item-index={item.index}
+                data-editor-page-surface
                 key={page.index}
                 style={{
                   height: page.height,
@@ -1021,8 +940,8 @@ export const PagedEditable = ({
               >
                 {renderPage({
                   attributes: {
-                    'data-plite-page': true,
-                    'data-plite-page-index': page.index,
+                    'data-editor-page': true,
+                    'data-editor-page-index': page.index,
                   },
                   children: null,
                   page,
@@ -1032,7 +951,7 @@ export const PagedEditable = ({
           })
         )}
         <div
-          data-plite-paged-editable-editor-overlay
+          data-editor-paged-editable-editor-overlay
           style={{
             height: geometry.height,
             left: 0,
@@ -1044,7 +963,7 @@ export const PagedEditable = ({
           }}
         >
           <div
-            data-plite-paged-editable-editor
+            data-editor-paged-editable-editor
             style={{
               inset: 0,
               pointerEvents: 'auto',

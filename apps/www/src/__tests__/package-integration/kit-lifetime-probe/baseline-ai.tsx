@@ -1,17 +1,16 @@
 'use client';
 
 import cloneDeep from 'lodash/cloneDeep.js';
-import { ElementApi, PathApi, PLUGINS, nanoid } from 'platejs';
+import { ElementApi, PathApi, nanoid } from 'platejs';
 import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
 import {
-  PlateElement,
-  PlateText,
+  EditorElement,
+  EditorText,
   useEditor,
-  useEditorPlugin,
   useEditorViewState,
   usePluginStore,
-  type PlateElementProps,
-  type PlateTextProps,
+  type EditorElementProps,
+  type EditorTextProps,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -21,7 +20,7 @@ import { AILoadingBar, AIMenu } from '@/registry/components/editor/ai-menu';
 import { useChatChunk } from './baseline-chat-chunk';
 import { AIChatTransportPlugin, useEditorChat } from './baseline-use-chat';
 
-export function AILeaf(props: PlateTextProps<typeof AIPlugin>) {
+export function AILeaf(props: EditorTextProps<typeof AIPlugin>) {
   const streaming = usePluginStore(AIChatPlugin, 'streaming');
   const streamingLeaf = props.editor
     .plugin(AIChatPlugin)
@@ -30,7 +29,7 @@ export function AILeaf(props: PlateTextProps<typeof AIPlugin>) {
   const isLast = streamingLeaf?.[0] === props.text;
 
   return (
-    <PlateText
+    <EditorText
       className={cn(
         'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',
         'transition-all duration-200 ease-in-out',
@@ -43,11 +42,13 @@ export function AILeaf(props: PlateTextProps<typeof AIPlugin>) {
   );
 }
 
-export function AIAnchorElement(props: PlateElementProps<typeof AIChatPlugin>) {
+export function AIAnchorElement(
+  props: EditorElementProps<typeof AIChatPlugin>
+) {
   return (
-    <PlateElement {...props}>
+    <EditorElement {...props}>
       <div className="h-[0.1px]" />
-    </PlateElement>
+    </EditorElement>
   );
 }
 
@@ -82,8 +83,8 @@ function AIChatSessionContent({
   elements: readonly HTMLElement[];
 }) {
   const editor = useEditor();
-  const { read, store } = useEditorPlugin(AIChatPlugin);
-  const { store: sessionStore } = useEditorPlugin(AIChatTransportPlugin);
+  const { read, store } = useEditor().plugin(AIChatPlugin);
+  const { store: sessionStore } = useEditor().plugin(AIChatTransportPlugin);
   const [sessionOwner] = React.useState(() => Symbol('AIChatSession'));
   const mounted = React.useRef(false);
   const viewElements = React.useRef(elements);
@@ -154,7 +155,7 @@ function AIChatSessionContent({
         editor.update({ history: 'skip' }).nodes.insert(
           {
             children: [{ text: '' }],
-            type: editor.plugin(PLUGINS.aiChat).schema.type,
+            type: editor.plugin(AIChatPlugin).schema.type,
           },
           {
             at: PathApi.next(path),
@@ -169,7 +170,7 @@ function AIChatSessionContent({
         editor.plugin(AIChatPlugin).update.insertChunk(chunk, {
           autoScroll: true,
           textProps: {
-            [editor.plugin(PLUGINS.ai).schema.key]: true,
+            [editor.plugin(AIPlugin).schema.key]: true,
           },
         });
       }

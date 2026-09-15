@@ -35,7 +35,10 @@ export const getPlainText = (domNode: DOMNode) => {
       text += getPlainText(childNode);
     }
 
-    const display = getComputedStyle(domNode).getPropertyValue('display');
+    const display = (
+      domNode.ownerDocument.defaultView?.getComputedStyle(domNode) ??
+      getComputedStyle(domNode)
+    ).getPropertyValue('display');
 
     if (display === 'block' || display === 'list' || domNode.tagName === 'BR') {
       text += '\n';

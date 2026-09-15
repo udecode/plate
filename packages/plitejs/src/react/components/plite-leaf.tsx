@@ -9,14 +9,14 @@ import { getPliteLeafShellAttributes } from '../shell-runtime';
  * The shell carries Plite leaf attributes and render profiling metadata while
  * leaving actual text children to the caller.
  */
-export const PliteLeaf = ({
+export const EditorLeaf = ({
   attributes,
   children,
 }: {
   attributes?: {
-    'data-plite-leaf': true;
-    'data-plite-leaf-end'?: number;
-    'data-plite-leaf-start'?: number;
+    'data-editor-leaf': true;
+    'data-editor-leaf-end'?: number;
+    'data-editor-leaf-start'?: number;
   };
   children: ReactNode;
 }) => {

@@ -115,7 +115,9 @@ export const assertYjsSchemaIdentity = (
 
   if (local.kind !== remote.kind) {
     throw new Error(
-      `Yjs schema mismatch: local ${describeIdentity(local)} cannot join room ${describeIdentity(remote)}.`
+      `Yjs schema mismatch: local ${describeIdentity(
+        local
+      )} cannot join room ${describeIdentity(remote)}.`
     );
   }
   if (local.kind === 'derived') {
@@ -125,7 +127,9 @@ export const assertYjsSchemaIdentity = (
   }
   if (remote.kind !== 'named') {
     throw new Error(
-      `Yjs schema mismatch: local ${describeIdentity(local)} cannot join room ${describeIdentity(remote)}.`
+      `Yjs schema mismatch: local ${describeIdentity(
+        local
+      )} cannot join room ${describeIdentity(remote)}.`
     );
   }
   if (local.id !== remote.id) {

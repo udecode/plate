@@ -1,10 +1,10 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
-const rootSelector = '[data-plite-editor="true"][contenteditable="true"]';
+const rootSelector = '[data-editor="true"][contenteditable="true"]';
 const widths = (table: Locator) =>
   table
     .locator('col')
@@ -28,11 +28,11 @@ const drag = async (page: Page, handle: Locator, dx: number, dy = 0) => {
 test('scoped cell coordinates follow spanning cells, column insertion and undo/redo', async ({
   page,
 }, testInfo) => {
-  const errors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
   try {
     await page.goto('/blocks/table-demo');
     const root = page.locator(rootSelector).first();
-    const editor = createPliteBrowserEditorHarness(page, testInfo.title, root);
+    const editor = createBrowserEditorHarness(page, testInfo.title, root);
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await editor.focus();
     await editor.selectAll();
@@ -77,11 +77,11 @@ test('scoped cell coordinates follow spanning cells, column insertion and undo/r
 test('row index projection stays current after row insertion and movement of the table', async ({
   page,
 }, testInfo) => {
-  const errors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
   try {
     await page.goto('/blocks/table-demo');
     const root = page.locator(rootSelector).first();
-    const editor = createPliteBrowserEditorHarness(page, testInfo.title, root);
+    const editor = createBrowserEditorHarness(page, testInfo.title, root);
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await editor.focus();
     await editor.selectAll();
@@ -91,13 +91,13 @@ test('row index projection stays current after row insertion and movement of the
     const table = root.locator('table');
     await expect(table.locator('tr')).toHaveCount(2);
     const tableNode = table.locator(
-      'xpath=ancestor::*[@data-plite-node-key][1]'
+      'xpath=ancestor::*[@data-editor-node-key][1]'
     );
-    const originalPath = await tableNode.getAttribute('data-plite-path');
+    const originalPath = await tableNode.getAttribute('data-editor-path');
     await root.getByText('before', { exact: true }).click();
     await page.keyboard.press('Enter');
     await expect(tableNode).not.toHaveAttribute(
-      'data-plite-path',
+      'data-editor-path',
       originalPath!
     );
     const last = table.locator('tr').filter({ hasText: 'last' });

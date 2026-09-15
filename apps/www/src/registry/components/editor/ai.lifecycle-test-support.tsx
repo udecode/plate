@@ -3,7 +3,7 @@ import { spyOn } from 'bun:test';
 import { act } from '@testing-library/react';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { MarkdownPlugin } from 'platejs/markdown';
-import { Plate, ParagraphPlugin, createEditor } from 'platejs/react';
+import { EditorRoot, ParagraphPlugin, createEditor } from 'platejs/react';
 import React from 'react';
 
 import { AIAnchorElement, AIKit } from '@/registry/components/editor/ai';
@@ -25,6 +25,7 @@ export const makeEditor = () =>
       }),
     ],
     initialValue: [{ type: 'paragraph', children: [{ text: 'original' }] }],
+    userId: 'alice',
     selection: {
       kind: 'text',
       anchor: { path: [0, 0], offset: 8 },
@@ -53,7 +54,11 @@ export function Body({
         <Editor key={sessionKey} readOnly={readOnly[0]} data-testid="view-0" />
       )}
       {views === 2 && (
-        <Plate editor={editor} readOnly={readOnly[1]} suppressInstanceWarning>
+        <EditorRoot
+          editor={editor}
+          readOnly={readOnly[1]}
+          suppressInstanceWarning
+        >
           {(visible.at(1) ?? true) && (
             <Editor
               key={sessionKey}
@@ -61,7 +66,7 @@ export function Body({
               data-testid="view-1"
             />
           )}
-        </Plate>
+        </EditorRoot>
       )}
     </>
   );
@@ -69,7 +74,7 @@ export function Body({
 
 export function Assembly(props: React.ComponentProps<typeof Body>) {
   return (
-    <Plate
+    <EditorRoot
       editor={props.editor}
       readOnly={props.readOnly?.[0] ?? false}
       suppressInstanceWarning
@@ -77,7 +82,7 @@ export function Assembly(props: React.ComponentProps<typeof Body>) {
       <section data-testid="custom-ai-root">
         <Body {...props} />
       </section>
-    </Plate>
+    </EditorRoot>
   );
 }
 export function deferred<T>() {
@@ -106,6 +111,9 @@ export function controlledFetch(waitForHTTP = false) {
       let closed = false;
       const response = deferred<Response>();
       const body = new ReadableStream<Uint8Array>({
+        cancel() {
+          closed = true;
+        },
         start(value) {
           control = value;
         },
@@ -119,7 +127,7 @@ export function controlledFetch(waitForHTTP = false) {
         } as Response);
       const close = () => {
         open();
-        if (!closed) {
+        if (!closed && control.desiredSize !== null) {
           closed = true;
           control.close();
         }
@@ -160,7 +168,7 @@ export function adapter(editor: ReturnType<typeof makeEditor>) {
   return chat;
 }
 export const value = (editor: ReturnType<typeof makeEditor>) =>
-  JSON.stringify(editor.read.value());
+  JSON.stringify(editor.read.children());
 export function streamState(editor: ReturnType<typeof makeEditor>) {
   const state = editor.plugin(AIChatPlugin).store.get();
   return {

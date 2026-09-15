@@ -3,15 +3,15 @@ import {
   BaseFootnoteInputPlugin,
   BaseFootnotePlugin,
 } from '../../../features/footnote/lib';
-import { NavigationFeedbackPlugin, toPlatePlugin } from '../../core';
+import { NavigationFeedbackPlugin, toReactPlugin } from '../../core';
 
-export const FootnoteDefinitionPlugin = toPlatePlugin(
+export const FootnoteDefinitionPlugin = toReactPlugin(
   BaseFootnoteDefinitionPlugin
 );
 
-export const FootnoteInputPlugin = toPlatePlugin(BaseFootnoteInputPlugin);
+export const FootnoteInputPlugin = toReactPlugin(BaseFootnoteInputPlugin);
 
-export const FootnotePlugin = toPlatePlugin(BaseFootnotePlugin, {
+export const FootnotePlugin = toReactPlugin(BaseFootnotePlugin, {
   dependencies: [FootnoteInputPlugin],
 }).extend({
   api: ({ editor, update }) => ({

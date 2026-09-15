@@ -57,9 +57,9 @@ const createTextHost = ({
   const textHost = document.createElement('span');
   const string = document.createElement('span');
 
-  textHost.dataset.pliteNode = 'text';
+  textHost.dataset.editorNode = 'text';
   textHost.style.direction = direction;
-  string.dataset.pliteString = 'true';
+  string.dataset.editorString = 'true';
   string.textContent = text;
   textHost.append(string);
 
@@ -102,9 +102,9 @@ describe('plite string coordinate placement', () => {
     const code = document.createElement('pre');
     const paragraphText = createTextHost({ text: 'paragraph' });
     const codeText = createTextHost({ text: 'large code block' });
-    editableRoot.dataset.pliteEditor = 'true';
-    paragraph.dataset.pliteNode = 'element';
-    code.dataset.pliteNode = 'element';
+    editableRoot.dataset.editor = 'true';
+    paragraph.dataset.editorNode = 'element';
+    code.dataset.editorNode = 'element';
     setClientRects(paragraphText.string, [
       rect({ left: 10, right: 90, top: 10 }),
     ]);
@@ -136,8 +136,8 @@ describe('plite string coordinate placement', () => {
     const outerText = createTextHost({ text: 'outer' });
     const nestedText = createTextHost({ text: 'nested' });
 
-    editableRoot.dataset.pliteEditor = 'true';
-    nestedEditableRoot.dataset.pliteEditor = 'true';
+    editableRoot.dataset.editor = 'true';
+    nestedEditableRoot.dataset.editor = 'true';
     setClientRects(outerText.string, [rect({ left: 0, right: 40, top: 120 })]);
     setClientRects(nestedText.string, [rect({ left: 0, right: 60, top: 0 })]);
 
@@ -165,7 +165,7 @@ describe('plite string coordinate placement', () => {
     const leftText = createTextHost({ text: 'left' });
     const rightText = createTextHost({ text: 'right' });
 
-    editableRoot.dataset.pliteEditor = 'true';
+    editableRoot.dataset.editor = 'true';
     setClientRects(leftText.string, [rect({ left: 10, right: 50, top: 10 })]);
     setClientRects(rightText.string, [
       rect({ left: 200, right: 250, top: 10 }),
@@ -188,7 +188,7 @@ describe('plite string coordinate placement', () => {
     const firstText = createTextHost({ text: 'first line' });
     const lastText = createTextHost({ text: 'last line' });
 
-    editableRoot.dataset.pliteEditor = 'true';
+    editableRoot.dataset.editor = 'true';
     setBoundingRect(editableRoot, rect({ bottom: 140, left: 0, right: 320 }));
     setClientRects(firstText.string, [rect({ left: 10, right: 80, top: 20 })]);
     setClientRects(lastText.string, [rect({ left: 10, right: 80, top: 60 })]);
@@ -211,7 +211,7 @@ describe('plite string coordinate placement', () => {
     const leftText = createTextHost({ text: 'left page' });
     const rightText = createTextHost({ text: 'right page' });
 
-    editableRoot.dataset.pliteEditor = 'true';
+    editableRoot.dataset.editor = 'true';
     setBoundingRect(editableRoot, rect({ bottom: 140, left: 0, right: 400 }));
     setClientRects(leftText.string, [rect({ left: 20, right: 120, top: 40 })]);
     setClientRects(rightText.string, [
@@ -240,7 +240,7 @@ describe('plite string coordinate placement', () => {
     const secondPageText = createTextHost({ text: 'second page' });
     const thirdPageText = createTextHost({ text: 'third page' });
 
-    editableRoot.dataset.pliteEditor = 'true';
+    editableRoot.dataset.editor = 'true';
     setBoundingRect(editableRoot, rect({ bottom: 420, left: 0, right: 400 }));
     setClientRects(firstPageText.string, [
       rect({ left: 20, right: 140, top: 40 }),
@@ -276,11 +276,11 @@ describe('plite string coordinate placement', () => {
     const beforeText = createTextHost({ text: 'short tail' });
     const afterText = createTextHost({ text: 'long next line' });
 
-    editableRoot.dataset.pliteEditor = 'true';
-    beforeBlock.dataset.pliteNode = 'element';
-    beforeBlock.dataset.plitePath = '0';
-    afterBlock.dataset.pliteNode = 'element';
-    afterBlock.dataset.plitePath = '1';
+    editableRoot.dataset.editor = 'true';
+    beforeBlock.dataset.editorNode = 'element';
+    beforeBlock.dataset.editorPath = '0';
+    afterBlock.dataset.editorNode = 'element';
+    afterBlock.dataset.editorPath = '1';
     setBoundingRect(editableRoot, rect({ bottom: 220, left: 0, right: 320 }));
     setBoundingRect(
       beforeBlock,
@@ -600,9 +600,9 @@ describe('plite string coordinate placement', () => {
     ];
     const secondRect = rect({ left: 10, right: 30, top: 24 });
 
-    textHost.dataset.pliteNode = 'text';
-    firstString.dataset.pliteString = 'true';
-    secondString.dataset.pliteString = 'true';
+    textHost.dataset.editorNode = 'text';
+    firstString.dataset.editorString = 'true';
+    secondString.dataset.editorString = 'true';
     firstString.append(firstText);
     secondString.append(secondText);
     textHost.append(firstString, secondString);
@@ -848,16 +848,16 @@ describe('plite string coordinate placement', () => {
     const firstString = document.createElement('span');
     const secondString = document.createElement('span');
 
-    textHost.dataset.pliteNode = 'text';
-    firstLeaf.dataset.pliteLeaf = 'true';
-    firstLeaf.setAttribute('data-plite-leaf-start', '0');
-    firstLeaf.setAttribute('data-plite-leaf-end', '6');
-    firstString.dataset.pliteString = 'true';
+    textHost.dataset.editorNode = 'text';
+    firstLeaf.dataset.editorLeaf = 'true';
+    firstLeaf.setAttribute('data-editor-leaf-start', '0');
+    firstLeaf.setAttribute('data-editor-leaf-end', '6');
+    firstString.dataset.editorString = 'true';
     firstString.textContent = 'hello ';
-    secondLeaf.dataset.pliteLeaf = 'true';
-    secondLeaf.setAttribute('data-plite-leaf-start', '6');
-    secondLeaf.setAttribute('data-plite-leaf-end', '11');
-    secondString.dataset.pliteString = 'true';
+    secondLeaf.dataset.editorLeaf = 'true';
+    secondLeaf.setAttribute('data-editor-leaf-start', '6');
+    secondLeaf.setAttribute('data-editor-leaf-end', '11');
+    secondString.dataset.editorString = 'true';
     secondString.textContent = 'world';
     firstLeaf.append(firstString);
     secondLeaf.append(secondString);

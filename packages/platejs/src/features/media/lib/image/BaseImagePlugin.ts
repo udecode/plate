@@ -1,18 +1,13 @@
 import {
   isUrl,
-  defineBasePlugin,
+  definePlugin,
   type DefinitionOf,
   type ElementOf,
-  PathApi,
   PLUGINS,
   property,
   schema,
 } from '../../../../core';
-import { clipboardHandler } from '../../../../dom/plite-dom.internal';
-import {
-  pipePreparedInsertDataQuery,
-  prepareHtmlRegistry,
-} from '../../../../lib/plugins/html/HtmlPlugin';
+import { domCommands } from '../../../../dom/plite-dom.internal';
 import {
   defineMediaPlugin,
   mediaElementProperties,
@@ -22,22 +17,12 @@ import {
 export type ImagePluginState = {
   /** Disable url embed on insert data. */
   disableEmbedInsert: boolean;
-  /** Disable file upload on insert data. */
-  disableUploadInsert: boolean;
-  /**
-   * An optional method that will upload the image to a server. The method
-   * receives the base64 dataUrl of the uploaded image, and should return the
-   * URL of the uploaded image.
-   */
-  uploadImage: ((dataUrl: string) => Promise<string> | string) | null;
 } & MediaPluginState;
 
 const initialState: ImagePluginState = {
   disableEmbedInsert: false,
-  disableUploadInsert: false,
   isUrl: null,
   transformUrl: null,
-  uploadImage: null,
 };
 
 const isPositiveSafeInteger = (value: unknown): value is number =>
@@ -59,10 +44,10 @@ const readPositiveSafeInteger = (value: null | string) => {
 
 const readImageSize = (image: HTMLElement) => {
   const naturalHeight = readPositiveSafeInteger(
-    image.dataset.plateNaturalHeight ?? null
+    image.dataset.editorNaturalHeight ?? null
   );
   const naturalWidth = readPositiveSafeInteger(
-    image.dataset.plateNaturalWidth ?? null
+    image.dataset.editorNaturalWidth ?? null
   );
   const width =
     image.style.width ||
@@ -78,7 +63,7 @@ const readImageSize = (image: HTMLElement) => {
 };
 
 /** Enables support for images. */
-export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
+export const BaseImagePlugin = definePlugin(PLUGINS.image, {
   initialState,
   schema: {
     element: schema.element.textBlock({
@@ -125,13 +110,13 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
             }
 
             return {
-              attributes: { class: 'plate-image' },
+              attributes: { class: 'editor-image' },
               children: [
                 {
                   attributes: {
                     alt: node.alt,
-                    'data-plate-natural-height': node.naturalHeight,
-                    'data-plate-natural-width': node.naturalWidth,
+                    'data-editor-natural-height': node.naturalHeight,
+                    'data-editor-natural-width': node.naturalWidth,
                     height: node.naturalHeight,
                     src: node.url,
                     width: node.naturalWidth,
@@ -149,12 +134,12 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
               tag: 'figure',
             };
           },
-          match: [{ className: 'plate-image', tag: 'figure' }],
+          match: [{ className: 'editor-image', tag: 'figure' }],
           priority: 20,
         },
         {
           decode: ({ element }) => {
-            if (element.parentElement?.matches('figure.plate-image')) {
+            if (element.parentElement?.matches('figure.editor-image')) {
               return undefined;
             }
 
@@ -322,97 +307,31 @@ export const BaseImagePlugin = defineBasePlugin(PLUGINS.image, {
       url: options.transformUrl?.(url) ?? url,
     }))
   )
-  .extend(({ editor, store, plugin, update }) => {
-    const preparedHtmlPlugin = prepareHtmlRegistry(editor).plugins.find(
-      (candidate) => candidate.name === plugin.name
-    );
+  .extend(({ store }) => ({
+    commands: ({ around }) => [
+      around(domCommands.insertData, ({ input, next, state }) => {
+        const text = input.getData('text/plain');
+        const imageExtension = isUrl(text)
+          ? new URL(text).pathname.split('.').pop()?.toLowerCase()
+          : undefined;
 
-    if (!preparedHtmlPlugin) {
-      throw new Error(`Parser plugin "${plugin.name}" is not installed.`);
-    }
+        if (
+          !store.get().disableEmbedInsert &&
+          imageExtension &&
+          imageExtensions.has(imageExtension)
+        ) {
+          let inserted = false;
+          const transaction = state.transaction((tx) => {
+            inserted = tx.image.insert({ url: text });
+          });
 
-    return {
-      contributions: [
-        clipboardHandler({
-          insertData(dataTransfer, { next, tx }) {
-            const format = 'text/plain';
-            const text = dataTransfer.getData(format);
-            const imageExtension = isUrl(text)
-              ? new URL(text).pathname.split('.').pop()?.toLowerCase()
-              : undefined;
+          return inserted ? transaction : next();
+        }
 
-            if (
-              !store.get().disableEmbedInsert &&
-              imageExtension &&
-              imageExtensions.has(imageExtension)
-            ) {
-              if (!tx.image.insert({ url: text })) {
-                return next(dataTransfer);
-              }
-
-              return true;
-            }
-
-            if (!store.get().disableUploadInsert && !text) {
-              const { files } = dataTransfer;
-              const imageFiles = Array.from(files).filter((file) =>
-                file.type.startsWith('image/')
-              );
-
-              if (imageFiles.length === 0) return next(dataTransfer);
-              if (
-                !editor.read((state) =>
-                  pipePreparedInsertDataQuery(state, [preparedHtmlPlugin], {
-                    data: text,
-                    format,
-                    source: dataTransfer,
-                  })
-                )
-              ) {
-                return next(dataTransfer);
-              }
-
-              const block = tx.nodes.block()?.[0];
-
-              for (const file of imageFiles) {
-                const reader = new FileReader();
-
-                const insertImage = async () => {
-                  if (typeof reader.result !== 'string') return;
-
-                  const { uploadImage } = store.get();
-                  const url = uploadImage
-                    ? await uploadImage(reader.result)
-                    : reader.result;
-                  const blockPath = block
-                    ? editor.read.nodes.path(block)
-                    : undefined;
-
-                  if (block && !blockPath) return;
-
-                  update.insert(
-                    { url },
-                    {
-                      at: blockPath ? PathApi.next(blockPath) : undefined,
-                    }
-                  );
-                };
-
-                reader.addEventListener('load', () => {
-                  void insertImage();
-                });
-                reader.readAsDataURL(file);
-              }
-
-              return true;
-            }
-
-            return next(dataTransfer);
-          },
-        }),
-      ],
-    };
-  });
+        return next();
+      }),
+    ],
+  }));
 
 export type ImageDefinition = DefinitionOf<typeof BaseImagePlugin>;
 export type ImageElement = ElementOf<typeof BaseImagePlugin>;

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import {
   createEditor as createPliteEditor,
-  defineExtension,
+  definePlugin,
   defineEditorSchema,
   type Descendant,
   ElementApi,
@@ -233,7 +233,7 @@ const SnapshotContractSchema = defineEditorSchema('schema:snapshot-contract', {
 const createEditor = ((options = {}) =>
   createPliteEditor({
     ...options,
-    extensions: [SnapshotContractSchema],
+    plugins: [SnapshotContractSchema],
   })) as typeof createPliteEditor;
 
 const getMarks = (editor: ReturnType<typeof createEditor>) =>
@@ -593,7 +593,7 @@ it('defers custom normalization until the outer update commits', () => {
   let runsInsideCallback = 0;
 
   editor.install(
-    defineExtension('deferred-correction-observer', {
+    definePlugin('deferred-correction-observer', {
       corrections: [
         {
           correct() {
@@ -627,7 +627,7 @@ it('normalizes split dirty paths instead of the full document', () => {
   const normalizedTopLevelPaths: number[] = [];
 
   editor.install(
-    defineExtension('dirty-path-observer', {
+    definePlugin('dirty-path-observer', {
       corrections: [
         {
           correct({ entry: [, path] }) {
@@ -771,7 +771,7 @@ it('fails intentionally when custom normalization revisits an earlier draft stat
   });
 
   editor.install(
-    defineExtension('cycling-root-correction', {
+    definePlugin('cycling-root-correction', {
       corrections: [
         {
           correct({ tx }) {
@@ -812,7 +812,7 @@ it('treats semantic id prop changes as normalization progress', () => {
   const editor = createEditor();
 
   editor.install(
-    defineExtension('semantic-id-correction', {
+    definePlugin('semantic-id-correction', {
       corrections: [
         {
           correct({ entry: [node, path], tx }) {
@@ -852,7 +852,7 @@ it('a registered correction can enforce a descendant-level node rewrite', () => 
   const editor = createEditor();
 
   editor.install(
-    defineExtension('heading-correction', {
+    definePlugin('heading-correction', {
       corrections: [
         {
           correct({ entry: [node, path], tx }) {
@@ -899,7 +899,7 @@ it('a root correction can wrap a semantically matched top-level block', () => {
   const editor = createEditor();
 
   editor.install(
-    defineExtension('root-block-content', {
+    definePlugin('root-block-content', {
       corrections: [
         {
           correct: ({ entry, tx }) => {
@@ -2117,6 +2117,26 @@ it('reuses snapshot indexes for selection-only listener snapshots', () => {
   assert.equal(after.version, before.version + 1);
 });
 
+it('reads a deferred snapshot index after a long selection-only session', () => {
+  const editor = createPliteEditor({
+    initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+  });
+  const before = editorGetSnapshot(editor);
+  const unsubscribe = editor.subscribeCommit(() => {});
+  for (let index = 0; index < 25_000; index++) {
+    editor.update((tx) => {
+      const point = { path: [0, 0], offset: index % 2 };
+      tx.selection.set({ kind: 'text', anchor: point, focus: point });
+    });
+  }
+  const after = editorGetSnapshot(editor);
+  assert.equal(after.children, before.children);
+  assert.equal(after.index, before.index);
+  assert.deepEqual(after.index.pathOf(after.index.keyAt([0, 0])!), [0, 0]);
+  assert.equal(after.version, before.version + 25_000);
+  unsubscribe();
+});
+
 it('publishes touched node keys for collapsed text changes', () => {
   const editor = createEditor();
   const changes: EditorCommit[] = [];
@@ -2311,9 +2331,9 @@ it('does not rebuild root snapshots for selection-only subscriber commits', () =
   const profiledIds: string[] = [];
   const previousProfiler = (
     globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: unknown;
+      __EDITOR_REACT_RENDER_PROFILER__?: unknown;
     }
-  ).__PLITE_REACT_RENDER_PROFILER__;
+  ).__EDITOR_REACT_RENDER_PROFILER__;
 
   editorReplace(editor, {
     children: createChildren(),
@@ -2329,11 +2349,11 @@ it('does not rebuild root snapshots for selection-only subscriber commits', () =
   try {
     (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: {
+        __EDITOR_REACT_RENDER_PROFILER__?: {
           record?: (event: { id: string; kind: string }) => void;
         };
       }
-    ).__PLITE_REACT_RENDER_PROFILER__ = {
+    ).__EDITOR_REACT_RENDER_PROFILER__ = {
       record(event) {
         if (event.kind === 'core-time') {
           profiledIds.push(event.id);
@@ -2351,9 +2371,9 @@ it('does not rebuild root snapshots for selection-only subscriber commits', () =
   } finally {
     (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: unknown;
+        __EDITOR_REACT_RENDER_PROFILER__?: unknown;
       }
-    ).__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    ).__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
   }
 
   assert.ok(profiledIds.includes('build-change'));
@@ -2366,9 +2386,9 @@ it('does not materialize listener snapshots for irrelevant source subscribers', 
   const sourceCalls: string[] = [];
   const previousProfiler = (
     globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: unknown;
+      __EDITOR_REACT_RENDER_PROFILER__?: unknown;
     }
-  ).__PLITE_REACT_RENDER_PROFILER__;
+  ).__EDITOR_REACT_RENDER_PROFILER__;
 
   editorReplace(editor, {
     children: createChildren(),
@@ -2386,11 +2406,11 @@ it('does not materialize listener snapshots for irrelevant source subscribers', 
   try {
     (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: {
+        __EDITOR_REACT_RENDER_PROFILER__?: {
           record?: (event: { id: string; kind: string }) => void;
         };
       }
-    ).__PLITE_REACT_RENDER_PROFILER__ = {
+    ).__EDITOR_REACT_RENDER_PROFILER__ = {
       record(event) {
         if (event.kind === 'core-time') {
           profiledIds.push(event.id);
@@ -2409,9 +2429,9 @@ it('does not materialize listener snapshots for irrelevant source subscribers', 
     unsubscribe();
     (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: unknown;
+        __EDITOR_REACT_RENDER_PROFILER__?: unknown;
       }
-    ).__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    ).__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
   }
 
   assert.deepEqual(sourceCalls, []);
@@ -2617,7 +2637,7 @@ it('runs custom corrections after text changes', () => {
   const editor = createEditor();
 
   editor.install(
-    defineExtension('direct-text-correction', {
+    definePlugin('direct-text-correction', {
       corrections: [
         {
           correct({ entry: [node, path], tx }) {
@@ -3194,21 +3214,21 @@ it('skips canonical rebuilding for exact same-parent block moves', () => {
   }));
   const editor = createEditor({ initialValue: children });
   const profilerGlobal = globalThis as typeof globalThis & {
-    __PLITE_REACT_RENDER_PROFILER__?: {
+    __EDITOR_REACT_RENDER_PROFILER__?: {
       record: (event: { id: string }) => void;
     };
   };
-  const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+  const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
   const events: string[] = [];
 
-  profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+  profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
     record: ({ id }) => events.push(id),
   };
 
   try {
     editorMoveNodes(editor, { at: [0], to: [999] });
   } finally {
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
   }
 
   assert.equal(
@@ -3234,14 +3254,14 @@ it('keeps text-only representation repair inside the changed text parent', () =>
   });
   const before = editorGetSnapshot(editor);
   const profilerGlobal = globalThis as typeof globalThis & {
-    __PLITE_REACT_RENDER_PROFILER__?: {
+    __EDITOR_REACT_RENDER_PROFILER__?: {
       record: (event: { id: string }) => void;
     };
   };
-  const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+  const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
   const events: string[] = [];
 
-  profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+  profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
     record: ({ id }) => events.push(id),
   };
 
@@ -3250,7 +3270,7 @@ it('keeps text-only representation repair inside the changed text parent', () =>
       at: { offset: 4, path: [0, target] },
     });
   } finally {
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
   }
 
   const after = editorGetSnapshot(editor);

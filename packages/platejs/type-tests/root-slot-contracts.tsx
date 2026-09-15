@@ -1,7 +1,7 @@
-import { createEditor, definePlatePlugin } from 'platejs/react';
+import { createEditor, definePlugin } from 'platejs/react';
 import * as React from 'react';
 
-const RootPlugin = definePlatePlugin('typedRoot', {
+const RootPlugin = definePlugin('typedRoot', {
   slots: {
     wrapRoot: ({ children, editableRef }) => {
       const viewRef: React.RefObject<HTMLDivElement | null> = editableRef;

@@ -217,7 +217,7 @@ const allLanes = [
       await page.waitForFunction(
         ({ beforeLength: expectedBeforeLength, path }) => {
           const block = document.querySelector(
-            `[data-plite-node="element"][data-plite-path="${path}"]`
+            `[data-editor-node="element"][data-editor-path="${path}"]`
           );
 
           return (
@@ -532,9 +532,9 @@ const installTraceObserver = async (page) => {
         },
       };
 
-      target.__PLITE_PAGINATION_REAL_OPS_TRACE__ = trace;
+      target.__EDITOR_PAGINATION_REAL_OPS_TRACE__ = trace;
       if (shouldTraceProfiler) {
-        target.__PLITE_REACT_RENDER_PROFILER__ = {
+        target.__EDITOR_REACT_RENDER_PROFILER__ = {
           record(event) {
             trace.profilerEvents.push({ ...event });
           },
@@ -587,18 +587,18 @@ const installTraceObserver = async (page) => {
 
 const resetTrace = (page) =>
   page.evaluate(() => {
-    globalThis.__PLITE_PAGINATION_REAL_OPS_TRACE__?.reset?.();
+    globalThis.__EDITOR_PAGINATION_REAL_OPS_TRACE__?.reset?.();
   });
 
 const readTrace = (page) =>
   page.evaluate(
-    () => globalThis.__PLITE_PAGINATION_REAL_OPS_TRACE__?.snapshot?.() ?? null
+    () => globalThis.__EDITOR_PAGINATION_REAL_OPS_TRACE__?.snapshot?.() ?? null
   );
 
 const readProof = (page) =>
   page.evaluate(() => {
     const editor = document.querySelector('[contenteditable="true"]');
-    const meta = document.querySelector('.plite-pagination-meta');
+    const meta = document.querySelector('.editor-pagination-meta');
 
     return {
       layoutComposeCount: Number(
@@ -607,11 +607,11 @@ const readProof = (page) =>
       layoutComposeMs: Number(
         meta?.getAttribute('data-layout-compose-ms') ?? 0
       ),
-      pageSurfaceCount: document.querySelectorAll('[data-plite-page-surface]')
+      pageSurfaceCount: document.querySelectorAll('[data-editor-page-surface]')
         .length,
       pageVirtualizationEnabled: Boolean(
         document.querySelector(
-          '[data-plite-paged-editable-page-virtualization="true"]'
+          '[data-editor-paged-editable-page-virtualization="true"]'
         )
       ),
       totalElementCount:
@@ -661,7 +661,7 @@ const openCohortPage = async (page, baseURL, cohort) => {
     timeout: 20_000,
   });
   await page.waitForSelector(
-    '[data-plite-node="element"][data-plite-path="1"] [data-plite-string]',
+    '[data-editor-node="element"][data-editor-path="1"] [data-editor-string]',
     { timeout: 20_000 }
   );
   await nextPaint(page);
@@ -675,7 +675,7 @@ const getBrowserModKey = (page) =>
 const getBlockTextLength = (page, path) =>
   page.evaluate((blockPath) => {
     const block = document.querySelector(
-      `[data-plite-node="element"][data-plite-path="${blockPath}"]`
+      `[data-editor-node="element"][data-editor-path="${blockPath}"]`
     );
 
     return block?.textContent?.length ?? 0;
@@ -686,10 +686,10 @@ const getTopLevelElementCount = (page) =>
     () =>
       Array.from(
         document.querySelectorAll(
-          '[data-plite-node="element"][data-plite-path]'
+          '[data-editor-node="element"][data-editor-path]'
         )
       ).filter((element) => {
-        const path = element.getAttribute('data-plite-path');
+        const path = element.getAttribute('data-editor-path');
 
         return path != null && !path.includes(',');
       }).length
@@ -700,10 +700,10 @@ const waitForTopLevelElementCount = (page, count) =>
     (expectedCount) =>
       Array.from(
         document.querySelectorAll(
-          '[data-plite-node="element"][data-plite-path]'
+          '[data-editor-node="element"][data-editor-path]'
         )
       ).filter((element) => {
-        const path = element.getAttribute('data-plite-path');
+        const path = element.getAttribute('data-editor-path');
 
         return path != null && !path.includes(',');
       }).length >= expectedCount,
@@ -713,7 +713,7 @@ const waitForTopLevelElementCount = (page, count) =>
 
 const getTextTarget = async (page, path, placement = 'start') => {
   const target = await page.evaluate(readBrowserTextTarget, {
-    selector: `[data-plite-node="element"][data-plite-path="${path}"]`,
+    selector: `[data-editor-node="element"][data-editor-path="${path}"]`,
     viewportSelector: '[data-testid="pagination-viewport"]',
     inset: 8,
     placement,
@@ -728,7 +728,7 @@ const getTextTarget = async (page, path, placement = 'start') => {
 
 const getVisibleTextTarget = async (page) => {
   const target = await page.evaluate(readBrowserTextTarget, {
-    selector: '[data-plite-node="element"][data-plite-path]',
+    selector: '[data-editor-node="element"][data-editor-path]',
     viewportSelector: '[data-testid="pagination-viewport"]',
     inset: 40,
   });
@@ -756,7 +756,7 @@ const waitForCollapsedSelection = (page) =>
           ? selection.anchorNode
           : selection.anchorNode?.parentElement;
 
-      return Boolean(anchor?.closest('[data-plite-node="text"]'));
+      return Boolean(anchor?.closest('[data-editor-node="text"]'));
     },
     undefined,
     { timeout: 5000 }

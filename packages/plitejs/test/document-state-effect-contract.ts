@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   decodeEditorEffect,
-  defineExtension,
+  definePlugin,
   defineEffect,
   defineStateField,
   defineValueCodec,
@@ -39,8 +39,8 @@ describe('document state effect contract', () => {
     });
     const children: Element[] = [paragraph('body')];
     const editor = createEditor({
-      extensions: [
-        defineExtension('document-title', { stateFields: [documentTitle] }),
+      plugins: [
+        definePlugin('document-title', { stateFields: [documentTitle] }),
       ] as const,
       initialValue: {
         children,
@@ -132,7 +132,7 @@ describe('document state effect contract', () => {
           ? { ...value, count: value.count + effect.value }
           : value,
     });
-    const incrementExtension = defineExtension(
+    const incrementPlugin = definePlugin(
       'document-large-counter-increment-effect',
       {
         effectTypes: [increment],
@@ -141,7 +141,7 @@ describe('document state effect contract', () => {
     );
     const createCounterEditor = () =>
       createEditor({
-        extensions: [incrementExtension] as const,
+        plugins: [incrementPlugin] as const,
         initialValue: [paragraph('body')],
       });
     const source = createCounterEditor();
@@ -177,8 +177,8 @@ describe('document state effect contract', () => {
       persist: valueCodecs.string,
     });
     const editor = createEditor({
-      extensions: [
-        defineExtension('document-title', { stateFields: [documentTitle] }),
+      plugins: [
+        definePlugin('document-title', { stateFields: [documentTitle] }),
       ] as const,
       initialValue: {
         children: [paragraph('body')],
@@ -214,8 +214,8 @@ describe('document state effect contract', () => {
       map: (value) => ({ nested: { count: value.nested.count + 1 } }),
     });
     const editor = createEditor({
-      extensions: [
-        defineExtension('nested-effect-values', {
+      plugins: [
+        definePlugin('nested-effect-values', {
           effectTypes: [effect],
         }),
       ] as const,

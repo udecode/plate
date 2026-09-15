@@ -348,9 +348,11 @@ test('Plate type contracts resolve Plite from the same source graph', () => {
     )
   );
 
-  for (const entrypointName of Object.keys(
+  for (const [entrypointName, entrypoint] of Object.entries(
     entrypointDags.plitejs.entrypoints
   )) {
+    if (!entrypoint.public) continue;
+
     const specifier =
       entrypointName === 'root' ? 'plitejs' : `plitejs/${entrypointName}`;
     const targets = config.compilerOptions.paths[specifier];

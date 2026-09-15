@@ -1,10 +1,6 @@
 import { type DependencyList, useMemo } from 'react';
 
-import type {
-  EditorExtensionsFromOptions,
-  EditorValueFromOptions,
-  Value,
-} from '../..';
+import type { PluginsFromOptions, EditorValueFromOptions, Value } from '../..';
 import {
   type CreateEditorOptions,
   createEditor,
@@ -14,8 +10,8 @@ import {
 /** Options used to create a component-owned React editor. */
 export type UseEditorOptions<
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
-> = CreateEditorOptions<V, TExtensions>;
+  TPlugins extends readonly unknown[] = readonly [],
+> = CreateEditorOptions<V, TPlugins>;
 
 /**
  * Creates one React editor instance for the component lifetime.
@@ -27,31 +23,28 @@ export type UseEditorOptions<
  */
 export function useEditor<
   const TOptions extends UseEditorOptions<any, readonly unknown[]> & {
-    extensions: readonly unknown[];
+    plugins: readonly unknown[];
   },
 >(
   options: TOptions,
   deps?: DependencyList
-): Editor<
-  EditorValueFromOptions<TOptions>,
-  EditorExtensionsFromOptions<TOptions>
->;
+): Editor<EditorValueFromOptions<TOptions>, PluginsFromOptions<TOptions>>;
 
 export function useEditor<
   V extends Value = Value,
-  const TExtensions extends readonly unknown[] = readonly [],
+  const TPlugins extends readonly unknown[] = readonly [],
 >(
-  options?: UseEditorOptions<V, TExtensions>,
+  options?: UseEditorOptions<V, TPlugins>,
   deps?: DependencyList
-): Editor<V, TExtensions>;
+): Editor<V, TPlugins>;
 
 export function useEditor<
   V extends Value = Value,
-  const TExtensions extends readonly unknown[] = readonly [],
+  const TPlugins extends readonly unknown[] = readonly [],
 >(
-  options: UseEditorOptions<V, TExtensions> = {},
+  options: UseEditorOptions<V, TPlugins> = {},
   deps: DependencyList = []
-): Editor<V, TExtensions> {
+): Editor<V, TPlugins> {
   // The caller-supplied list intentionally owns the component editor lifetime.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const editor = useMemo(() => createEditor(options), deps);

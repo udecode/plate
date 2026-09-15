@@ -7,26 +7,65 @@ import {
   type RootKey,
   TextApi,
 } from '../..';
+import {
+  readAuthoredFragmentView,
+  readAuthoredView,
+} from '../../core/authored-runtime';
 import { isDOMElement, isDOMText } from '../../dom';
 import { ELEMENT_TO_NODE } from '../../dom/internal';
+import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
+import {
+  getMountedDOMFragmentEditors,
+  readDOMFragmentEditor,
+} from '../../dom/plugin/dom-fragment-view';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
-import { createPliteViewSelection } from '../view-selection';
 import {
-  type ContentRootOwner,
-  createContentRootViewBoundaryGraph,
-  findContentRootOwners,
-} from './content-root-navigation';
+  PliteViewBoundaryGraph,
+  type PliteViewBoundaryPoint,
+} from '../view-boundary-graph';
+import { createPliteViewSelection } from '../view-selection';
 import {
   getContentRootOwnerFromTarget,
   isSameOwner as isSameContentRootOwner,
 } from './content-root-owner-target';
-import { toInternalRoot } from './runtime-editor-api';
+import {
+  type ContentRootOwner,
+  createContentRootViewBoundaryGraph,
+  findContentRootOwners,
+} from './content-root-owners';
+import { getEditorRuntime, toInternalRoot } from './runtime-editor-api';
 
 type ProjectedDOMSelectionEndpoint = {
+  affinity?: 'backward' | 'forward';
+  fragmentId?: string;
   owner?: ContentRootOwner;
   point: Point;
   root: RootKey;
+};
+
+export const resolveViewBoundaryDOMPoint = (
+  editor: ReactRuntimeEditor<any>,
+  boundary: PliteViewBoundaryPoint
+) => {
+  if (
+    (boundary.point.root ?? MAIN_ROOT_KEY) !==
+    (editor.read.view.root() ?? MAIN_ROOT_KEY)
+  ) {
+    return null;
+  }
+  for (const view of boundary.fragmentId
+    ? getMountedDOMFragmentEditors(editor, boundary.fragmentId)
+    : [editor]) {
+    const point = resolveDOMPointInRoot(
+      view,
+      boundary.point,
+      undefined,
+      boundary.affinity
+    );
+    if (point) return point;
+  }
+  return null;
 };
 
 const getDOMElementForNode = (node: globalThis.Node | null) =>
@@ -36,7 +75,7 @@ const getDOMEditorElementForNode = (
   node: globalThis.Node | null
 ): HTMLElement | null => {
   const element = getDOMElementForNode(node);
-  const editorElement = element?.closest('[data-plite-editor="true"]');
+  const editorElement = element?.closest('[data-editor="true"]');
 
   return editorElement instanceof HTMLElement ? editorElement : null;
 };
@@ -113,7 +152,7 @@ const getRootEdgePoint = (
     return point ? { ...point, root } : null;
   });
 
-const resolveProjectedDOMSelectionEndpoint = ({
+export const resolveProjectedDOMSelectionEndpoint = ({
   node,
   offset,
   owners,
@@ -123,11 +162,20 @@ const resolveProjectedDOMSelectionEndpoint = ({
   owners: readonly ContentRootOwner[];
 }): ProjectedDOMSelectionEndpoint | null => {
   const editorElement = getDOMEditorElementForNode(node);
-  const editor = editorElement
+  const parent = editorElement
     ? getEditorFromDOMEditorElement(editorElement)
     : null;
+  const retained = node && readDOMFragmentEditor(node);
+  const fragment = retained && readAuthoredFragmentView(retained);
+  const editor = retained ?? parent;
 
-  if (!editorElement || !editor || !node) {
+  if (
+    !editorElement ||
+    !editor ||
+    !node ||
+    !parent ||
+    (fragment && getEditorRuntime(fragment.parent) !== getEditorRuntime(parent))
+  ) {
     return null;
   }
 
@@ -140,7 +188,7 @@ const resolveProjectedDOMSelectionEndpoint = ({
     return null;
   }
 
-  const pliteRange = editor.api.dom.resolvePliteRange(range, {
+  const pliteRange = editor.api.dom.resolveRange(range, {
     exactMatch: false,
   });
 
@@ -155,7 +203,7 @@ const resolveProjectedDOMSelectionEndpoint = ({
     target: node,
   });
   const shellOwner =
-    root === MAIN_ROOT_KEY
+    !fragment && root === MAIN_ROOT_KEY
       ? owners.find(
           (candidate) =>
             candidate.ownerRoot === root &&
@@ -165,7 +213,7 @@ const resolveProjectedDOMSelectionEndpoint = ({
       : null;
 
   if (shellOwner) {
-    const point = getRootEdgePoint(editor, shellOwner.childRoot, {
+    const point = getRootEdgePoint(parent, shellOwner.childRoot, {
       edge: pliteRange.anchor.offset === 0 ? 'start' : 'end',
     });
 
@@ -178,7 +226,20 @@ const resolveProjectedDOMSelectionEndpoint = ({
     }
   }
 
+  const leaf = getDOMElementForNode(node)?.closest('[data-editor-leaf]');
+  const start = leaf?.getAttribute('data-editor-leaf-start');
+  const end = leaf?.getAttribute('data-editor-leaf-end');
+  const affinity =
+    end !== null &&
+    end !== undefined &&
+    Number(end) === pliteRange.anchor.offset &&
+    (start !== end ||
+      leaf?.nextElementSibling?.hasAttribute('data-editor-retained'))
+      ? ('backward' as const)
+      : ('forward' as const);
   return {
+    affinity,
+    ...(fragment ? { fragmentId: fragment.fragment.id } : {}),
     ...(owner ? { owner } : {}),
     point: {
       ...pliteRange.anchor,
@@ -194,10 +255,25 @@ export const resolveProjectedDOMSelection = ({
   editorElement,
 }: {
   domSelection: globalThis.Selection;
-  editor: ReactRuntimeEditor;
+  editor: ReactRuntimeEditor<any>;
   editorElement: HTMLElement;
 }) => {
-  if (domSelection.isCollapsed) {
+  const leaf = getDOMElementForNode(domSelection.anchorNode)?.closest(
+    '[data-editor-leaf]'
+  );
+  const possibleDock =
+    !!leaf &&
+    (leaf.previousElementSibling?.hasAttribute('data-editor-retained') ||
+      leaf.nextElementSibling?.hasAttribute('data-editor-retained')) &&
+    (domSelection.anchorOffset === 0 ||
+      domSelection.anchorOffset ===
+        domSelection.anchorNode?.textContent?.length);
+  if (
+    domSelection.isCollapsed &&
+    !possibleDock &&
+    (!domSelection.anchorNode ||
+      !readDOMFragmentEditor(domSelection.anchorNode))
+  ) {
     return null;
   }
 
@@ -230,10 +306,14 @@ export const resolveProjectedDOMSelection = ({
   if (!anchor || !focus) {
     return null;
   }
-
-  if (
+  const sameOwner =
     anchor.root === focus.root &&
-    isSameContentRootOwner(anchor.owner, focus.owner)
+    isSameContentRootOwner(anchor.owner, focus.owner);
+  if (
+    sameOwner &&
+    !anchor.fragmentId &&
+    !focus.fragmentId &&
+    readAuthoredView(editor)?.projection !== 'markup'
   ) {
     return null;
   }
@@ -246,25 +326,40 @@ export const resolveProjectedDOMSelection = ({
     : null;
 
   if (
-    (anchor.root !== MAIN_ROOT_KEY &&
+    (anchor.root !== (editor.read.view.root() ?? MAIN_ROOT_KEY) &&
       !isKnownContentRootOwner(anchorOwner, owners)) ||
-    (focus.root !== MAIN_ROOT_KEY &&
+    (focus.root !== (editor.read.view.root() ?? MAIN_ROOT_KEY) &&
       !isKnownContentRootOwner(focusOwner, owners))
   ) {
     return null;
   }
 
-  return createPliteViewSelection(
-    createContentRootViewBoundaryGraph(editor, owners),
-    {
-      anchor: {
-        ...(anchorOwner ? { owner: anchorOwner } : {}),
-        point: anchor.point,
-      },
-      focus: {
-        ...(focusOwner ? { owner: focusOwner } : {}),
-        point: focus.point,
-      },
-    }
-  );
+  const graph = createContentRootViewBoundaryGraph(editor, owners);
+  const selection = createPliteViewSelection(graph, {
+    anchor: {
+      affinity: anchor.affinity,
+      ...(anchor.fragmentId ? { fragmentId: anchor.fragmentId } : {}),
+      ...(anchorOwner ? { owner: anchorOwner } : {}),
+      point: anchor.point,
+    },
+    focus: {
+      affinity: focus.affinity,
+      ...(focus.fragmentId ? { fragmentId: focus.fragmentId } : {}),
+      ...(focusOwner ? { owner: focusOwner } : {}),
+      point: focus.point,
+    },
+  });
+  const docked =
+    domSelection.isCollapsed &&
+    PliteViewBoundaryGraph.resolvePointNode(graph, selection.focus)?.key !==
+      PliteViewBoundaryGraph.resolvePointNode(graph, {
+        ...selection.focus,
+        affinity:
+          selection.focus.affinity === 'forward' ? 'backward' : 'forward',
+      })?.key;
+  return !docked &&
+    sameOwner &&
+    !selection.segments.parts.some((segment) => segment.fragment)
+    ? null
+    : selection;
 };

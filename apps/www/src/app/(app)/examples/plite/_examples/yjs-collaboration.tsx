@@ -2,12 +2,12 @@ import {
   type Editor as CoreEditor,
   createEditor,
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   type Descendant,
-  type EditorExtensionSlotValue,
+  type PluginSlotValue,
   type EditorSchemaIdentity,
   type EditorUpdateTransaction,
-  type EditorValueFromExtensions,
+  type EditorValueFromPlugins,
   type ElementIn,
   NodeApi,
   type Path,
@@ -20,16 +20,25 @@ import {
 import { history } from 'plitejs/history';
 import {
   Editable,
-  Plite,
+  EditorRoot,
   type Editor as ReactViewEditor,
   type RenderElementProps,
   type RenderLeafProps,
   useEditor,
+  useEditorContext,
 } from 'plitejs/react';
-import { yjs, type YjsAwarenessChange } from 'plitejs/yjs';
-import { useYjsRemoteCursor, useYjsRemoteCursorIds } from 'plitejs/yjs/react';
+import {
+  yjs,
+  type YjsAwarenessChange,
+  type YjsAwarenessLike,
+} from 'plitejs/yjs';
+import {
+  useYjsAdmissionStatus,
+  useYjsRemoteCursor,
+  useYjsRemoteCursorIds,
+} from 'plitejs/yjs/react';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as Y from 'yjs';
 
 import { Button } from '@/components/ui/button';
@@ -48,8 +57,8 @@ type PeerDefinition = {
 };
 
 type PeerCommandTx =
-  YjsEditor extends CoreEditor<infer V, infer TExtensions>
-    ? EditorUpdateTransaction<V, TExtensions>
+  YjsEditor extends CoreEditor<infer V, infer TPlugins>
+    ? EditorUpdateTransaction<V, TPlugins>
     : never;
 type PeerCommand = (tx: PeerCommandTx) => void;
 
@@ -64,6 +73,7 @@ type ExamplePeer = PeerDefinition & {
 };
 
 type ExampleNetwork = {
+  destroy: () => void;
   notify: () => void;
   peers: ExamplePeer[];
   registerPeerEditor: (peer: ExamplePeer, editor: YjsEditor) => () => void;
@@ -106,7 +116,7 @@ const PEERS: PeerDefinition[] = [
 ] as const;
 
 const ROOT_NAME = 'plitejs';
-const schemaSlot = defineExtensionSlot('yjs-collaboration-schema');
+const schemaSlot = definePluginSlot('yjs-collaboration-schema');
 
 const createCollaborationSchema = (version: number) =>
   defineEditorSchema('schema:yjs-collaboration-example', {
@@ -136,20 +146,29 @@ const createCollaborationSchema = (version: number) =>
     version,
   });
 
-type CollaborationValue = EditorValueFromExtensions<
+type CollaborationValue = EditorValueFromPlugins<
   readonly [ReturnType<typeof createCollaborationSchema>]
 >;
 type CollaborationElement = ElementIn<CollaborationValue>;
-const HistoryExtension = history();
+const HistoryPlugin = history();
+const createPresenceYjs = (options: {
+  awareness: YjsAwarenessLike;
+  doc: Y.Doc;
+}) =>
+  yjs({
+    ...options,
+    initialReady: true,
+    rootName: ROOT_NAME,
+  });
 type YjsEditor = ReactViewEditor<
   CollaborationValue,
   readonly [
-    typeof HistoryExtension,
-    EditorExtensionSlotValue<
+    typeof HistoryPlugin,
+    PluginSlotValue<
       'yjs-collaboration-schema',
       ReturnType<typeof createCollaborationSchema>
     >,
-    ReturnType<typeof yjs>,
+    ReturnType<typeof createPresenceYjs>,
   ]
 >;
 
@@ -167,7 +186,7 @@ const INITIAL_VALUE: CollaborationValue = [
 
 class ExampleAwareness {
   readonly clientID: number;
-  readonly doc: { clientID: number };
+  readonly doc: Y.Doc;
 
   onLocalStateChange?: () => void;
 
@@ -175,9 +194,16 @@ class ExampleAwareness {
   private localState: Record<string, unknown> | null = null;
   private readonly states = new Map<number, Record<string, unknown>>();
 
-  constructor(clientID: number) {
-    this.clientID = clientID;
-    this.doc = { clientID };
+  constructor(doc: Y.Doc) {
+    this.clientID = doc.clientID;
+    this.doc = doc;
+  }
+
+  destroy() {
+    this.onLocalStateChange = undefined;
+    this.localState = null;
+    this.states.clear();
+    this.listeners.clear();
   }
 
   getLocalState() {
@@ -241,30 +267,36 @@ const cloneValue = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 const createSeedSnapshot = () => {
   const seedDoc = new Y.Doc();
-
   const seedEditor = createEditor({
-    extensions: [
-      schemaSlot.of(createCollaborationSchema(1)),
-      yjs({
-        clientId: 'seed',
-        doc: seedDoc,
-        rootName: ROOT_NAME,
-      }),
-    ],
+    plugins: [schemaSlot.of(createCollaborationSchema(1))],
     initialValue: cloneValue(INITIAL_VALUE),
   });
-  const identity = seedEditor.read.schema.identity();
+  const uninstall = seedEditor.install(
+    yjs({
+      doc: seedDoc,
+      initialReady: true,
+      rootName: ROOT_NAME,
+      seed: true,
+    })
+  );
 
-  if (identity?.kind !== 'named') {
-    throw new Error(
-      'The Yjs collaboration example requires a named schema identity.'
-    );
+  try {
+    const identity = seedEditor.read.schema.identity();
+
+    if (identity?.kind !== 'named') {
+      throw new Error(
+        'The Yjs collaboration example requires a named schema identity.'
+      );
+    }
+
+    return {
+      identity,
+      update: Y.encodeStateAsUpdate(seedDoc),
+    };
+  } finally {
+    uninstall();
+    seedDoc.destroy();
   }
-
-  return {
-    identity,
-    update: Y.encodeStateAsUpdate(seedDoc),
-  };
 };
 
 const createExampleNetwork = (): ExampleNetwork => {
@@ -277,7 +309,7 @@ const createExampleNetwork = (): ExampleNetwork => {
 
     return {
       ...definition,
-      awareness: new ExampleAwareness(definition.clientId),
+      awareness: new ExampleAwareness(doc),
       connected: true,
       doc,
       redoDepth: 0,
@@ -287,6 +319,15 @@ const createExampleNetwork = (): ExampleNetwork => {
   });
 
   const network: ExampleNetwork = {
+    destroy() {
+      network.notify = () => {};
+
+      for (const peer of peers) {
+        peer.editor = undefined;
+        peer.awareness.destroy();
+        peer.doc.destroy();
+      }
+    },
     notify: () => {},
     peers,
     registerPeerEditor(peer, editor) {
@@ -333,14 +374,6 @@ const createExampleNetwork = (): ExampleNetwork => {
 
             Y.applyUpdate(target.doc, update, source.doc);
           }
-        }
-
-        for (const peer of peers) {
-          if (!peer.connected || !peer.editor) {
-            continue;
-          }
-
-          peer.editor.update.yjs.reconcile();
         }
 
         network.syncAwareness();
@@ -662,10 +695,8 @@ const syncPeerSelectionAfterHistory = (
 
   editor.update((tx) => {
     tx.selection.set(selection);
-    tx.yjs.sendSelection(selection, {
-      name: peer.name,
-    });
   });
+  editor.api.yjs.syncSelection();
   editor.api.dom.focus({ retries: 1 });
   network.syncAwareness();
 };
@@ -689,7 +720,7 @@ const syncSelectionFromDom = (editor: YjsEditor) => {
     return;
   }
 
-  const range = editor.api.dom.resolvePliteRange(selection, {
+  const range = editor.api.dom.resolveRange(selection, {
     exactMatch: false,
   });
 
@@ -721,18 +752,13 @@ const setConnected = (
   editor: YjsEditor,
   connected: boolean
 ) => {
-  peer.connected = connected;
-  editor.update((tx) => {
-    if (connected) {
-      tx.yjs.connect();
-    } else {
-      tx.yjs.disconnect();
-    }
-  });
-
   if (connected) {
+    peer.connected = true;
     network.syncAll();
+    editor.api.yjs.syncSelection();
   } else {
+    editor.api.yjs.clearSelection();
+    peer.connected = false;
     network.syncAwareness();
   }
 
@@ -758,10 +784,8 @@ const selectHello = (
 
   editor.update((tx) => {
     tx.selection.set(range);
-    tx.yjs.sendSelection(range, {
-      name: peer.name,
-    });
   });
+  editor.api.yjs.syncSelection();
 
   network.syncAwareness();
 };
@@ -1368,11 +1392,11 @@ const attemptIncompatibleJoin = (roomDoc: Y.Doc): IncompatibleJoinResult => {
 
   try {
     const candidate = createEditor({
-      extensions: [
+      plugins: [
         schemaSlot.of(createCollaborationSchema(2)),
         yjs({
-          clientId: 'incompatible-candidate',
           doc: candidateDoc,
+          initialReady: true,
           rootName: ROOT_NAME,
         }),
       ],
@@ -1392,7 +1416,7 @@ const attemptIncompatibleJoin = (roomDoc: Y.Doc): IncompatibleJoinResult => {
   }
 };
 
-const PeerPanel = ({
+const PeerPanelContent = ({
   network,
   peer,
   version: _version,
@@ -1401,58 +1425,43 @@ const PeerPanel = ({
   peer: ExamplePeer;
   version: number;
 }) => {
-  const editor = useEditor({
-    extensions: [
-      HistoryExtension,
-      schemaSlot.of(createCollaborationSchema(1)),
-      yjs({
-        awareness: peer.awareness,
-        clientId: peer.id,
-        doc: peer.doc,
-        rootName: ROOT_NAME,
-      }),
-    ],
-    initialValue: cloneValue(INITIAL_VALUE),
-  });
+  const editor = useEditorContext() as YjsEditor;
   const [incompatibleJoin, setIncompatibleJoin] =
     useState<IncompatibleJoinResult | null>(null);
   const [reconfigureError, setReconfigureError] = useState<string | null>(null);
+  const admission = useYjsAdmissionStatus(editor);
 
   const canUndo = peer.undoDepth > 0;
   const canRedo = peer.redoDepth > 0;
   const { connected } = peer;
   const label = `Peer ${peer.id.toUpperCase()}`;
+  const ready = admission.state === 'ready';
 
   useEffect(
     () => network.registerPeerEditor(peer, editor),
     [editor, network, peer]
   );
 
+  useEffect(() => {
+    editor.api.yjs.setCursorData({ name: peer.name });
+  }, [editor, peer.name]);
+
   return (
-    <Plite
-      editor={editor}
-      onCommit={() => {
-        syncPeerHistoryDepths(peer, editor);
-        network.syncAll();
-      }}
-    >
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-3 py-2">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900">{label}</h2>
-            <div
-              className="mt-0.5"
-              data-test-id={`yjs-peer-${peer.id}-cursors`}
-            >
-              <CursorStatus editor={editor} />
-            </div>
-            <div
-              className="mt-0.5 text-xs text-slate-500"
-              data-test-id={`yjs-peer-${peer.id}-history`}
-            >
-              undo:{peer.undoDepth};redo:{peer.redoDepth}
-            </div>
+    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-3 py-2">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-900">{label}</h2>
+          <div className="mt-0.5" data-test-id={`yjs-peer-${peer.id}-cursors`}>
+            <CursorStatus editor={editor} />
           </div>
+          <div
+            className="mt-0.5 text-xs text-slate-500"
+            data-test-id={`yjs-peer-${peer.id}-history`}
+          >
+            undo:{peer.undoDepth};redo:{peer.redoDepth}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
           <span
             className={cn(
               'rounded-full px-2 py-1 text-xs font-medium',
@@ -1463,306 +1472,372 @@ const PeerPanel = ({
           >
             {connected ? 'connected' : 'offline'}
           </span>
+          <span
+            className={cn(
+              'rounded-full px-2 py-1 text-xs font-medium',
+              ready ? 'bg-sky-50 text-sky-700' : 'bg-slate-100 text-slate-600'
+            )}
+            data-admission-status={admission.state}
+          >
+            {ready ? 'ready' : admission.state}
+          </span>
         </div>
+      </div>
 
-        {peer.id === 'a' && (
-          <div className="grid gap-2 border-b border-slate-200 px-3 py-2 text-xs">
-            <div className="flex flex-wrap gap-1.5">
-              <CommandButton
-                onRun={() => {
-                  setIncompatibleJoin(attemptIncompatibleJoin(peer.doc));
-                }}
-                testId="yjs-schema-incompatible-join"
-              >
-                Join with schema v2
-              </CommandButton>
-              <CommandButton
-                onRun={() => {
-                  try {
-                    editor.update.extensions.reconfigure(
-                      schemaSlot,
-                      createCollaborationSchema(2)
-                    );
-                    setReconfigureError('accepted');
-                  } catch (error) {
-                    setReconfigureError(errorMessage(error));
-                  }
-                }}
-                testId="yjs-schema-incompatible-reconfigure"
-              >
-                Reconfigure to v2
-              </CommandButton>
-            </div>
-            <output data-test-id="yjs-schema-incompatible-join-status">
-              {incompatibleJoin
-                ? `error:${incompatibleJoin.error};local:${incompatibleJoin.localText}`
-                : 'not-run'}
-            </output>
-            <output data-test-id="yjs-schema-incompatible-reconfigure-status">
-              {reconfigureError ? `error:${reconfigureError}` : 'not-run'}
-            </output>
+      {admission.state === 'error' && (
+        <div className="flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+          <span>{errorMessage(admission.cause)}</span>
+          <Button
+            onClick={() => editor.api.yjs.retryImport()}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            Retry import
+          </Button>
+        </div>
+      )}
+
+      {peer.id === 'a' && (
+        <div className="grid gap-2 border-b border-slate-200 px-3 py-2 text-xs">
+          <div className="flex flex-wrap gap-1.5">
+            <CommandButton
+              onRun={() => {
+                setIncompatibleJoin(attemptIncompatibleJoin(peer.doc));
+              }}
+              testId="yjs-schema-incompatible-join"
+            >
+              Join with schema v2
+            </CommandButton>
+            <CommandButton
+              onRun={() => {
+                try {
+                  editor.update.plugins.reconfigure(
+                    schemaSlot,
+                    createCollaborationSchema(2)
+                  );
+                  setReconfigureError('accepted');
+                } catch (error) {
+                  setReconfigureError(errorMessage(error));
+                }
+              }}
+              testId="yjs-schema-incompatible-reconfigure"
+            >
+              Reconfigure to v2
+            </CommandButton>
           </div>
-        )}
-
-        <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
-          <CommandButton
-            onRun={() => {
-              selectHello(network, peer, editor);
-            }}
-            testId={`yjs-peer-${peer.id}-select`}
-          >
-            Select
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) => toggleBold(tx));
-            }}
-            testId={`yjs-peer-${peer.id}-mark-bold`}
-          >
-            Bold
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              setConnected(network, peer, editor, false);
-            }}
-            testId={`yjs-peer-${peer.id}-disconnect`}
-          >
-            Offline
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              setConnected(network, peer, editor, true);
-            }}
-            testId={`yjs-peer-${peer.id}-connect`}
-          >
-            Online
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              editor.update.yjs.reconcile();
-              network.notify();
-            }}
-            testId={`yjs-peer-${peer.id}-reconcile`}
-          >
-            Reconcile
-          </CommandButton>
-          <CommandButton
-            disabled={!canUndo}
-            onRun={() => {
-              undoPeer(network, peer, editor);
-            }}
-            testId={`yjs-peer-${peer.id}-undo`}
-          >
-            Undo
-          </CommandButton>
-          <CommandButton
-            disabled={!canRedo}
-            onRun={() => {
-              redoPeer(network, peer, editor);
-            }}
-            testId={`yjs-peer-${peer.id}-redo`}
-          >
-            Redo
-          </CommandButton>
+          <output data-test-id="yjs-schema-incompatible-join-status">
+            {incompatibleJoin
+              ? `error:${incompatibleJoin.error};local:${incompatibleJoin.localText}`
+              : 'not-run'}
+          </output>
+          <output data-test-id="yjs-schema-incompatible-reconfigure-status">
+            {reconfigureError ? `error:${reconfigureError}` : 'not-run'}
+          </output>
         </div>
+      )}
 
-        <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                appendText(peer, tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-append`}
-          >
-            Append
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                replaceDocument(peer, tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-replace`}
-          >
-            Replace
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                removeSecondBlock(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-remove-node`}
-          >
-            Remove
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                splitFirstText(peer, tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-split-node`}
-          >
-            Split
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                mergeSecondBlock(peer, tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-merge-node`}
-          >
-            Merge
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                moveFirstBlockDown(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-move-down`}
-          >
-            Down
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                setFirstBlockRole(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-set-node`}
-          >
-            Set Role
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                unsetFirstBlockRole(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-unset-node`}
-          >
-            Unset Role
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) => wrapFirstBlock(tx));
-            }}
-            testId={`yjs-peer-${peer.id}-wrap-node`}
-          >
-            Wrap
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                unwrapFirstBlock(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-unwrap`}
-          >
-            Unwrap
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                liftFirstWrappedBlock(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-lift`}
-          >
-            Lift
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                insertFragmentText(peer, tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-insert-fragment`}
-          >
-            Fragment
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                deleteFirstFragment(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-delete-fragment`}
-          >
-            Delete
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                deleteBackwardFromFirstBlockEnd(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-delete-backward`}
-          >
-            Back
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                insertExclamation(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-insert-text`}
-          >
-            Insert !
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(network, peer, editor, (tx) =>
-                moveFirstBlockAfterSecond(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-move`}
-          >
-            Move
-          </CommandButton>
-        </div>
-
-        <div
-          className="min-h-40 px-3 py-3"
-          id={`yjs-peer-${peer.id}-editor-surface`}
-          onKeyDownCapture={(event) =>
-            handleHistoryKeyDown(event, network, peer, editor)
-          }
+      <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
+        <CommandButton
+          onRun={() => {
+            selectHello(network, peer, editor);
+          }}
+          testId={`yjs-peer-${peer.id}-select`}
         >
-          <Editable
-            autoFocus={peer.id === 'a'}
-            className="min-h-28 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 outline-none focus:border-slate-400 focus:bg-white"
-            key={peer.renderEpoch}
-            onKeyDown={(event) => {
-              handleEditableKeyDown(event, network, peer, editor);
-            }}
-            placeholder="Start typing"
-            renderElement={Element}
-            renderLeaf={Leaf}
-            spellCheck={false}
-          />
-        </div>
-      </section>
-    </Plite>
+          Select
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) => toggleBold(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-mark-bold`}
+        >
+          Bold
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            setConnected(network, peer, editor, false);
+          }}
+          testId={`yjs-peer-${peer.id}-disconnect`}
+        >
+          Offline
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            setConnected(network, peer, editor, true);
+          }}
+          testId={`yjs-peer-${peer.id}-connect`}
+        >
+          Online
+        </CommandButton>
+        <CommandButton
+          disabled={!canUndo}
+          onRun={() => {
+            undoPeer(network, peer, editor);
+          }}
+          testId={`yjs-peer-${peer.id}-undo`}
+        >
+          Undo
+        </CommandButton>
+        <CommandButton
+          disabled={!canRedo}
+          onRun={() => {
+            redoPeer(network, peer, editor);
+          }}
+          testId={`yjs-peer-${peer.id}-redo`}
+        >
+          Redo
+        </CommandButton>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) => appendText(peer, tx));
+          }}
+          testId={`yjs-peer-${peer.id}-append`}
+        >
+          Append
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              replaceDocument(peer, tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-replace`}
+        >
+          Replace
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              removeSecondBlock(tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-remove-node`}
+        >
+          Remove
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              splitFirstText(peer, tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-split-node`}
+        >
+          Split
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              mergeSecondBlock(peer, tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-merge-node`}
+        >
+          Merge
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              moveFirstBlockDown(tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-move-down`}
+        >
+          Down
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              setFirstBlockRole(tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-set-node`}
+        >
+          Set Role
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              unsetFirstBlockRole(tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-unset-node`}
+        >
+          Unset Role
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) => wrapFirstBlock(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-wrap-node`}
+        >
+          Wrap
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) => unwrapFirstBlock(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-unwrap`}
+        >
+          Unwrap
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              liftFirstWrappedBlock(tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-lift`}
+        >
+          Lift
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              insertFragmentText(peer, tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-insert-fragment`}
+        >
+          Fragment
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              deleteFirstFragment(tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-delete-fragment`}
+        >
+          Delete
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              deleteBackwardFromFirstBlockEnd(tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-delete-backward`}
+        >
+          Back
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              insertExclamation(tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-insert-text`}
+        >
+          Insert !
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(network, peer, editor, (tx) =>
+              moveFirstBlockAfterSecond(tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-move`}
+        >
+          Move
+        </CommandButton>
+      </div>
+
+      <div
+        className="min-h-40 px-3 py-3"
+        id={`yjs-peer-${peer.id}-editor-surface`}
+        onKeyDownCapture={(event) =>
+          handleHistoryKeyDown(event, network, peer, editor)
+        }
+      >
+        <Editable
+          aria-busy={admission.state === 'waiting'}
+          autoFocus={peer.id === 'a'}
+          className="min-h-28 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 outline-none focus:border-slate-400 focus:bg-white"
+          key={peer.renderEpoch}
+          onKeyDown={(event) => {
+            handleEditableKeyDown(event, network, peer, editor);
+          }}
+          placeholder="Start typing"
+          readOnly={!ready}
+          renderElement={Element}
+          renderLeaf={Leaf}
+          spellCheck={false}
+        />
+      </div>
+    </section>
+  );
+};
+
+const PeerPanel = ({
+  network,
+  peer,
+  version,
+}: {
+  network: ExampleNetwork;
+  peer: ExamplePeer;
+  version: number;
+}) => {
+  const editor = useEditor({
+    plugins: [
+      HistoryPlugin,
+      schemaSlot.of(createCollaborationSchema(1)),
+      createPresenceYjs({
+        awareness: peer.awareness,
+        doc: peer.doc,
+      }),
+    ],
+    initialValue: cloneValue(INITIAL_VALUE),
+  });
+
+  return (
+    <EditorRoot
+      editor={editor}
+      onCommit={({ editor: mountedEditor }) => {
+        syncPeerHistoryDepths(peer, mountedEditor);
+        network.syncAll();
+      }}
+    >
+      <PeerPanelContent network={network} peer={peer} version={version} />
+    </EditorRoot>
   );
 };
 
 const YjsCollaborationExample = () => {
-  const network = useMemo(() => createExampleNetwork(), []);
+  const [network, setNetwork] = useState<ExampleNetwork | null>(null);
   const [version, setVersion] = useState(0);
 
-  useEffect(
-    () =>
-      network.subscribeNotify(() => {
-        setVersion((current) => current + 1);
-      }),
-    [network]
-  );
+  useEffect(() => {
+    const nextNetwork = createExampleNetwork();
+    let active = true;
+    const unsubscribe = nextNetwork.subscribeNotify(() => {
+      setVersion((current) => current + 1);
+    });
+
+    queueMicrotask(() => {
+      if (active) {
+        setNetwork(nextNetwork);
+      }
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+      nextNetwork.destroy();
+    };
+  }, []);
+
+  if (!network) {
+    return (
+      <output className="flex min-h-screen items-center justify-center bg-slate-100 text-sm text-slate-500">
+        Starting a local collaboration room…
+      </output>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-5 text-slate-950">

@@ -118,6 +118,14 @@ Before a behavior claim:
 7. If the real route cannot render without a stub, alias, bypass, or generated
    edit, keep the case blocked or quarantined and repair the proof host.
 
+After product-source edits, every browser proof records
+`browser-source-attestation: <fresh host restart or served-input digest>` in
+Proof-host readiness before the behavior assertion. Navigating an unexplained
+running server, changing browser family against that server, or relying on hot
+reload without attesting the served inputs cannot validate current bytes. A
+browser family change invalidates the earlier host assumption and repeats this
+attestation even when the URL is unchanged.
+
 For a reporter-named route, bind one literal `exact-route:` across the selected
 case environment and Proof-host readiness row. The final proof command must
 name that route, and at least one receipt input must contain it as an executable
@@ -407,6 +415,16 @@ browser, assert visible/native caret paint independently from model selection,
 wrapper height, DOM markers, and block highlighting, then prove the next valid
 edit still works. A zero-height spacer, a hidden selection anchor, a static
 unselected screenshot, or geometry-only pixel classification is support-only.
+
+For caret paint caused by clicking, the required evidence also anchors an
+applicable `geometry-paint` row at the same phase. Its positive assertion names
+`paint-trigger: click`. Capture and classify pixels after the delivered click
+and before another key, pointer gesture, focus call, or selection write; record
+`paint-input-trace: click > pixel-capture` in the completed result. Run the
+existing pixel controls through that capture path. A click DOM assertion cannot
+borrow paint sampled after arrow navigation. Keep later keyboard paint as
+separate evidence. A caret mentioned only in `initial-focus:` setup does not
+claim click paint and does not acquire this gate.
 
 Required positive authority/reference evidence that names layout, width,
 size, centering/alignment, position, spacing, compression, or a full row must

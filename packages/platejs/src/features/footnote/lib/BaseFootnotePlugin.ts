@@ -4,7 +4,7 @@ import {
   PLUGINS,
   PathApi,
   TextApi,
-  defineBasePlugin,
+  definePlugin,
   property,
   type DefinitionOf,
   type Descendant,
@@ -12,7 +12,7 @@ import {
   type ElementOf,
   type NodeEntry,
   type Path,
-  type PlateNodeInsertOptions,
+  type NodeInsertOptions,
   type Point,
 } from '../../../core';
 import {
@@ -27,7 +27,7 @@ const isNonBlankRef = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 
 /** Enables support for block footnote definitions. */
-export const BaseFootnoteDefinitionPlugin = defineBasePlugin(
+export const BaseFootnoteDefinitionPlugin = definePlugin(
   PLUGINS.footnoteDefinition,
   {
     schema: ({ plugins }) => ({
@@ -89,7 +89,7 @@ export type FootnoteDefinitionElement = ElementOf<
 >;
 
 /** Enables support for inline footnote combobox inputs. */
-export const BaseFootnoteInputPlugin = defineBasePlugin(PLUGINS.footnoteInput, {
+export const BaseFootnoteInputPlugin = definePlugin(PLUGINS.footnoteInput, {
   dependencies: [BaseComboboxPlugin],
   schema: {
     element: {
@@ -121,7 +121,7 @@ export type FootnotePluginState = TriggerComboboxPluginState & {
 };
 
 /** Enables footnote references and their document-level operations. */
-export const BaseFootnotePlugin = defineBasePlugin('footnote', {
+export const BaseFootnotePlugin = definePlugin('footnote', {
   dependencies: [BaseFootnoteInputPlugin],
   initialState: ({ editor }): FootnotePluginState => ({
     createComboboxInput: () => ({
@@ -369,19 +369,21 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
 
         if (!entry || entry[0].type !== definitionType) return false;
         if (!entry[0].ref) return false;
-        if (!tx.plugin(plugin).isDuplicateDefinition({ path })) return false;
+        if (!tx.plugin(plugin.name).isDuplicateDefinition({ path })) {
+          return false;
+        }
 
         if (ref !== undefined && !isNonBlankRef(ref)) {
           throw new TypeError('Footnote ref must be a non-empty string.');
         }
 
-        const nextRef = ref ?? tx.plugin(plugin).nextRef();
+        const nextRef = ref ?? tx.plugin(plugin.name).nextRef();
 
         if (nextRef === entry[0].ref) return false;
 
         if (
-          tx.plugin(plugin).definition({ ref: nextRef }) ||
-          tx.plugin(plugin).references({ ref: nextRef }).length > 0
+          tx.plugin(plugin.name).definition({ ref: nextRef }) ||
+          tx.plugin(plugin.name).references({ ref: nextRef }).length > 0
         ) {
           return false;
         }
@@ -391,7 +393,9 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
         return nextRef;
       };
       const selectDefinition = ({ ref }: { ref: string }) => {
-        const innerDefinition4 = tx.plugin(plugin).definition({ ref });
+        const innerDefinition4 = tx
+          .plugin(BaseFootnotePlugin)
+          .definition({ ref });
 
         if (!innerDefinition4) return false;
 
@@ -410,7 +414,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
         ref: string;
         index?: number;
       }) => {
-        const reference = tx.plugin(plugin).references({ ref })[index];
+        const reference = tx.plugin(plugin.name).references({ ref })[index];
 
         if (!reference) return false;
 
@@ -437,7 +441,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
           );
         }
 
-        const existingDefinition = tx.plugin(plugin).definition({
+        const existingDefinition = tx.plugin(plugin.name).definition({
           ref,
         });
 
@@ -447,7 +451,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
           return existingDefinition[1];
         }
 
-        const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
+        const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
         const clonedFragment = fragment ? structuredClone(fragment) : [];
         const children: Element[] = [];
         let inlineChildren: Descendant[] = [];
@@ -498,7 +502,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
           ref?: string;
           trigger?: string;
         } = {},
-        options: PlateNodeInsertOptions = {}
+        options: NodeInsertOptions = {}
       ) => {
         let selection = tx.selection();
 
@@ -518,7 +522,7 @@ export const BaseFootnotePlugin = defineBasePlugin('footnote', {
           throw new TypeError('Footnote ref must be a non-empty string.');
         }
 
-        const nextRef = ref ?? tx.plugin(plugin).nextRef();
+        const nextRef = ref ?? tx.plugin(plugin.name).nextRef();
         const fragment =
           selection && tx.selection.isExpanded()
             ? tx.fragment({ at: selection })

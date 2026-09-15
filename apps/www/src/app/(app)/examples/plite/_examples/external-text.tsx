@@ -2,7 +2,7 @@
 
 import {
   defineEditorSchema,
-  type PliteDecorationSource,
+  type DecorationSource,
   schema,
   TextApi,
 } from 'plitejs';
@@ -11,11 +11,11 @@ import {
   Editable,
   type ExternalTextAdapter,
   type ExternalTextSelection,
-  Plite,
+  EditorRoot,
   type RenderElementProps,
   useEditor,
   useEditorState,
-  usePliteHistory,
+  useEditorHistory,
 } from 'plitejs/react';
 import { StrictMode, useMemo, useState } from 'react';
 
@@ -44,7 +44,7 @@ const readSelection = (input: HTMLTextAreaElement): ExternalTextSelection =>
     : { anchor: input.selectionStart, focus: input.selectionEnd };
 
 // A textarea is a small protocol example, not a large-document editor.
-const textareaAdapter: ExternalTextAdapter = {
+export const textareaAdapter: ExternalTextAdapter = {
   mount({ actions, host, state }) {
     const input = host.ownerDocument.createElement('textarea');
     const controller = new AbortController();
@@ -358,7 +358,7 @@ const Status = () => {
       2
     )
   );
-  const commands = usePliteHistory({ focusPolicy: 'preserve' });
+  const commands = useEditorHistory({ focusPolicy: 'preserve' });
   return (
     <>
       <div className="flex gap-2">
@@ -394,7 +394,7 @@ const Status = () => {
 
 const ExternalTextExample = () => {
   const editor = useEditor({
-    extensions: [textSchema, history()],
+    plugins: [textSchema, history()],
     initialValue: {
       children: [
         {
@@ -427,7 +427,7 @@ const ExternalTextExample = () => {
   const outerEvent = () => {
     setOuterEvents((count) => count + 1);
   };
-  const decorations = useMemo<Array<PliteDecorationSource<typeof editor>>>(
+  const decorations = useMemo<Array<DecorationSource<typeof editor>>>(
     () =>
       showDecorations
         ? [
@@ -456,7 +456,7 @@ const ExternalTextExample = () => {
   );
   return (
     <StrictMode>
-      <Plite decorations={decorations} editor={editor}>
+      <EditorRoot decorations={decorations} editor={editor}>
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             One Plite document, two rendering engines. The textarea demonstrates
@@ -560,7 +560,7 @@ const ExternalTextExample = () => {
           </div>
           <Status />
         </div>
-      </Plite>
+      </EditorRoot>
     </StrictMode>
   );
 };

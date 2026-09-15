@@ -89,7 +89,7 @@ export const getTextHostSelectionOffset = ({
 
   for (const string of strings) {
     const textNode = Array.from(string.childNodes).find(isDOMText);
-    const lengthAttribute = string.getAttribute('data-plite-length');
+    const lengthAttribute = string.getAttribute('data-editor-length');
     const length =
       lengthAttribute == null
         ? (textNode?.textContent?.length ?? string.textContent?.length ?? 0)
@@ -109,8 +109,8 @@ export const getTextHostSelectionOffset = ({
 export const isInsideVirtualizedDOM = (element: Element) =>
   !!element.closest(
     [
-      '[data-plite-dom-strategy-virtual-row="true"]',
-      '[data-plite-dom-strategy-virtualizer="true"]',
-      '[data-plite-paged-editable-page-virtualization="true"]',
+      '[data-editor-virtualized-row="true"]',
+      '[data-editor-virtualized-viewport="true"]',
+      '[data-editor-paged-editable-page-virtualization="true"]',
     ].join(',')
   );

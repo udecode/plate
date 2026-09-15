@@ -50,7 +50,7 @@ npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/
 import type { EditorValueInput } from "platejs";
 import type { CommentThread, CommentUser } from "platejs/comments";
 import { CommentsPlugin } from "platejs/comments/react";
-import { Plate, useCreateEditor } from "platejs/react";
+import { EditorRoot, useCreateEditor } from "platejs/react";
 
 import { DiscussionKit } from "@/components/editor/discussion";
 import { Editor, EditorContainer } from "@/components/editor/editor";
@@ -78,11 +78,11 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -121,7 +121,7 @@ const threads: CommentThread[] = [{
 }];
 ```
 
-`{ type: "suggestion", id }` 将线程关联到建议。`range: null` 表示已脱离文档位置的范围线程。
+`{ type: "change", id }` 将线程关联到原生 authored change。`range: null` 表示已脱离文档位置的范围线程。
 
 保存时读取当前映射后的范围，并与同一版本的文档一起保存：
 
@@ -180,7 +180,7 @@ Comments 在内部使用向内关联的 `nearest` 锚点。范围内插入文本
 
 文档相同时，可将同一份序列化记录传给独立编辑器。各编辑器创建自己的原生句柄和激活状态。文档版本不同时，请加载对应版本的范围；普通坐标无法识别其他位置发生的编辑。
 
-只读视图应同时在 `Plate` 和 `Editor` 上设置 `readOnly`。静态渲染使用 `BaseCommentsPlugin`，并配置复制的 `comment-static` 项提供的 `commentDecorationAttributes`。线程卡片仍属于复制的应用 UI。
+只读视图应同时在 `EditorRoot` 和 `Editor` 上设置 `readOnly`。静态渲染使用 `BaseCommentsPlugin`，并配置复制的 `comment-static` 项提供的 `commentDecorationAttributes`。线程卡片仍属于复制的应用 UI。
 
 ## 旧文档迁移
 

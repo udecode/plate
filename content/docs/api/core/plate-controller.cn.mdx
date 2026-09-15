@@ -3,18 +3,18 @@ title: Plate 控制器
 description: 将共享 React UI 连接到活动的 Plate 编辑器。
 ---
 
-`PlateController` 让共享工具栏、面板和检查器在单个 `Plate` 子树之外获取编辑器。
+`EditorController` 让共享工具栏、面板和检查器在单个 `EditorRoot` 子树之外获取编辑器。
 
 ## 用法
 
-用 `PlateController` 包裹共享 UI 和参与的编辑器。`PlateContent` 会自动注册每个
+用 `EditorController` 包裹共享 UI 和参与的编辑器。`EditorContent` 会自动注册每个
 已挂载的编辑器，并在卸载时清理。
 
 ```tsx title="components/editor-shell.tsx"
 import {
-  Plate,
-  PlateContent,
-  PlateController,
+  EditorRoot,
+  EditorContent,
+  EditorController,
   useCreateEditor,
   useOptionalEditor,
 } from 'platejs/react';
@@ -24,15 +24,15 @@ export function EditorShell() {
   const secondary = useCreateEditor({ id: 'secondary' });
 
   return (
-    <PlateController>
+    <EditorController>
       <ActiveEditorLabel />
-      <Plate editor={main}>
-        <PlateContent />
-      </Plate>
-      <Plate editor={secondary} primary={false}>
-        <PlateContent />
-      </Plate>
-    </PlateController>
+      <EditorRoot editor={main}>
+        <EditorContent />
+      </EditorRoot>
+      <EditorRoot editor={secondary} primary={false}>
+        <EditorContent />
+      </EditorRoot>
+    </EditorController>
   );
 }
 
@@ -43,18 +43,18 @@ function ActiveEditorLabel() {
 }
 ```
 
-`primary` 在 `Plate` 上设置，默认为 `true`。`primary={false}` 的视图仍可在聚焦后成为活动视图。ID 是应用标签；同一模型和 ID 可以拥有多个挂载视图。
+`primary` 在 `EditorRoot` 上设置，默认为 `true`。`primary={false}` 的视图仍可在聚焦后成为活动视图。ID 是应用标签；同一模型和 ID 可以拥有多个挂载视图。
 
 ## 编辑器查找
 
 `useEditor()` 返回最近 provider 所选的编辑器，没有目标时抛出错误。`useOptionalEditor()` 使用相同规则，没有 provider 或没有目标时返回 `null`。
 
-- `PlateContent` 内的 hook 使用该可编辑视图，包括其根、DOM 和当前只读状态。
-- `Plate` 内、content 外的 UI 跟随该 Plate 中最近聚焦的视图，首次聚焦前使用第一个已挂载视图。没有 content 时使用模型。
+- `EditorContent` 内的 hook 使用该可编辑视图，包括其根、DOM 和当前只读状态。
+- `EditorRoot` 内、content 外的 UI 跟随该 Plate 中最近聚焦的视图，首次聚焦前使用第一个已挂载视图。没有 content 时使用模型。
 - 控制器下的共享 UI 使用最近聚焦且仍挂载的视图；首次聚焦前或目标卸载后，使用第一个已挂载的主视图。
-- 嵌套的 `Plate` 和 `PlateController` 为后代提供自己的作用域。
+- 嵌套的 `EditorRoot` 和 `EditorController` 为后代提供自己的作用域。
 
-失焦保留活动视图，供工具栏使用。`PlateContent` 管理注册和清理；只有带可编辑 DOM 的视图才参与控制器选择。
+失焦保留活动视图，供工具栏使用。`EditorContent` 管理注册和清理；只有带可编辑 DOM 的视图才参与控制器选择。
 
 ## 固定交互目标
 
@@ -72,6 +72,6 @@ import { EditorProvider } from 'platejs/react';
 
 ## API 参考
 
-`PlateController` 只接收 `children: React.ReactNode`。`Plate` 的 `primary` prop 决定首次选择和回退资格。
+`EditorController` 只接收 `children: React.ReactNode`。`EditorRoot` 的 `primary` prop 决定首次选择和回退资格。
 
 状态与焦点订阅参见[编辑器上下文](/cn/docs/api/core/plate-store)。

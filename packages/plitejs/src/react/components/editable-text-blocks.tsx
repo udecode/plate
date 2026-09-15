@@ -14,65 +14,71 @@ import {
   RangeApi,
   type RootKey,
   type NodeKey,
-  type Element as PliteElementNode,
-  type Range as PliteRange,
-  type Text as PliteTextNode,
+  type Element as ElementNode,
+  type Range as ModelRange,
+  type Text as TextNode,
 } from '../..';
+import {
+  readAuthoredViewFragments,
+  readAuthoredViewFragmentSlots,
+  subscribeAuthoredViewFragmentSlots,
+  type NativeAuthoredFragmentSlot,
+  type NativeAuthoredRenderSegment,
+} from '../../core/authored-runtime';
 import {
   type DOMCoverageBoundary,
   type DOMCoverageCopyPolicy,
-  type DOMCoverageFindPolicy,
   type DOMCoverageReason,
   type DOMCoverageSelectionPolicy,
   type DOMCoverageSession,
+  createDOMGeometryKernel,
   EDITOR_TO_PLACEHOLDER_ELEMENT,
   IS_NODE_MAP_DIRTY,
   NODE_TO_INDEX,
   NODE_TO_PARENT,
 } from '../../dom/internal';
 import {
+  AuthoredFragmentRendererContext,
+  AuthoredFragmentRootsContext,
+} from '../authored-fragment-context';
+import {
   ElementContext,
   PliteContentRootOwnerContext,
-  PliteDOMStrategyVirtualOffsetContext,
   PliteEditableRootContext,
 } from '../context';
 import { useRegisterPliteDecorationSource } from '../decoration-context';
-import type { DOMStrategyOptions } from '../dom-strategy/create-segment-plan';
-import { DOMStrategySegmentPlaceholder } from '../dom-strategy/segment-placeholder';
-import {
-  getVirtualizerScrollElement,
-  useVirtualizedRootPlan,
-} from '../dom-strategy/use-virtualized-root-plan';
-import { DOMStrategyVirtualizedRangeBoundary } from '../dom-strategy/virtualized-range-boundary';
 import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
+import { readContentRootRenderSegments } from '../editable/content-root-owners';
 import { assertExternalTextElement } from '../editable/external-text-binding';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import {
-  useInternalSegmentDOMStrategyRootSources,
   usePlaceholderValue,
-  useRootDocumentEpoch,
+  useRootNodeKeys,
   useSelectionPaths,
-  useTopLevelSelectionIndex,
 } from '../editable/root-selector-sources';
 import {
   type Editor,
-  failInvariant,
   isEditor as editorIsEditor,
   isInline as editorIsInline,
-  point as editorPoint,
   toInternalRoot,
 } from '../editable/runtime-editor-api';
 import { readRuntimeNode } from '../editable/runtime-live-state';
-import { writeRuntimeSelection } from '../editable/runtime-mutation-state';
+import { resolveViewBoundaryDOMPoint } from '../editable/selection-projected-dom';
 import type { ExternalTextOptions } from '../external-text';
-import { useEditableDOMRuntime } from '../hooks/use-claim-editable-dom-commit';
+import { useAuthoredFragmentSlots } from '../hooks/use-authored-fragment-slots';
+import {
+  useEditableDOMRuntime,
+  useClaimEditableDOMCommit,
+} from '../hooks/use-claim-editable-dom-commit';
 import { useEditorComposing } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
+import { useEditorFocused } from '../hooks/use-editor-focused';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
 import { useEditorSelection } from '../hooks/use-editor-selection';
+import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { useMountedNodeRenderSelector } from '../hooks/use-node-selector';
-import { usePliteContentRoot } from '../hooks/use-plite-content-root';
+import { useContentRoot } from '../hooks/use-plite-content-root';
 import {
   getDOMTextRenderRevision,
   usePliteNodeKeyDOMValue,
@@ -87,7 +93,18 @@ import {
   resolvePliteInactiveSelectionBlur,
   setPliteInactiveSelectionVisible,
 } from '../inactive-selection';
-import { recordPliteReactRender } from '../render-profiler';
+import {
+  createRangeGeometryOwner,
+  useRangeGeometryOwner,
+} from '../range-geometry';
+import {
+  isPliteViewSelectionCollapsed,
+  readPliteViewSelection,
+  subscribePliteViewSelection,
+} from '../view-selection';
+import { usePliteViewSelectionFragmentKeys } from '../view-selection-decoration';
+import { EditableViewportBoundary } from '../viewport-boundary';
+import type { EditableViewportPlan } from '../viewport-plan';
 import {
   type DOMCoverageBoundaryMaterializePayload,
   DOMCoverageBoundaryRange,
@@ -96,38 +113,15 @@ import {
 import {
   type EditableDOMBeforeInputHandler,
   EditableDOMRoot,
-  type EditableDOMStrategyMetrics,
-  type EditableDOMStrategyMetricsBase,
   type EditableKeyDownHandler,
 } from './editable';
 import {
   isEditableTextNode,
   readEditableDescendantBinding,
 } from './editable-descendant-binding';
-import {
-  getDOMStrategyCohort,
-  getDOMStrategyType,
-  getInternalPartialDOMStrategyOptions,
-  getInternalSegmentDOMStrategyConfig,
-  getSnapshotPathKey,
-  getVirtualizedDOMStrategyConfig,
-  getVirtualizedDOMStrategyOptions,
-  INTERNAL_PARTIAL_DOM_SEGMENT_SIZE,
-  ROOT_GROUP_THRESHOLD,
-} from './editable-dom-strategy-helpers';
 import { EditableExternalText } from './editable-external-text';
-import { sameDescendantBinding, sameNodeKeys } from './editable-node-equality';
+import { sameDescendantBinding } from './editable-node-equality';
 import { getEditableElementRenderer } from './editable-rendered-element';
-import {
-  createRootGroupRenderItems,
-  createRootGroups,
-  createVirtualizedTopLevelItemGroups,
-  EditableRootGroupPlaceholder,
-  getActiveRootGroupIds,
-  getRootGroupIdsForBoundary,
-  getRootGroupPlanKey,
-  useMountedRootGroupIds,
-} from './editable-root-groups';
 import {
   EditableText,
   type RenderLeafProps,
@@ -139,8 +133,13 @@ import {
   type EditableTextFlowEntry,
   ImperativeTextFlowContext,
 } from './editable-text-flow';
-import { Plite } from './plite';
-import { PliteElement } from './plite-element';
+import {
+  EditorRoot,
+  PliteFragment,
+  PlitePlainTextFragment,
+  usePliteRenderContext,
+} from './plite';
+import { EditorElement } from './plite-element';
 import { PliteSpacer } from './plite-spacer';
 import { PliteInlineVoidShell, PliteVoidShell } from './plite-void-shell';
 
@@ -171,7 +170,6 @@ export type EditableDOMCoverageBoundaryProps = {
   boundaryId?: string;
   children?: ReactNode;
   copyPolicy?: DOMCoverageCopyPolicy;
-  findPolicy?: DOMCoverageFindPolicy;
   mounted?: boolean;
   onMaterialize?: (payload: DOMCoverageBoundaryMaterializePayload) => void;
   reason?: DOMCoverageReason;
@@ -186,7 +184,6 @@ export type EditableContentRootSlotOptions = {
   ariaLabel?: string;
   className?: string;
   disableDefaultStyles?: boolean;
-  domStrategy?: DOMStrategyOptions | null;
   id?: string;
   placeholder?: ReactNode;
   readOnly?: boolean;
@@ -196,7 +193,7 @@ export type EditableContentRootSlotOptions = {
 };
 
 type EditableContentRootSlotRenderers<
-  TElement extends PliteElementNode = PliteElementNode,
+  TElement extends ElementNode = ElementNode,
 > = {
   renderElement?: RenderElementRenderer<TElement>;
   renderLeaf?: (props: RenderLeafProps) => ReactNode;
@@ -207,7 +204,7 @@ type EditableContentRootSlotRenderers<
 
 export type EditableElementSlots = {
   children: (range?: { from?: number; to?: number }) => ReactNode;
-  /** Delegate one exact-one-Text block to an adapter while Plite owns its value. */
+  /** Delegate one exact-one-Text block to an adapter while the editor owns its value. */
   externalText: <TConfig = undefined>(
     options: ExternalTextOptions<TConfig>
   ) => ReactNode;
@@ -235,9 +232,7 @@ const createContentBoundaryId = (
   }`;
 };
 
-const createEditableElementSlots = <
-  TElement extends PliteElementNode = PliteElementNode,
->(
+const createEditableElementSlots = <TElement extends ElementNode = ElementNode>(
   editor: ReturnType<typeof useEditorContext>,
   props: {
     coverage: DOMCoverageSession | undefined;
@@ -257,7 +252,6 @@ const createEditableElementSlots = <
     boundaryId,
     children,
     copyPolicy,
-    findPolicy,
     mounted = true,
     onMaterialize,
     reason,
@@ -283,7 +277,6 @@ const createEditableElementSlots = <
           boundaryId={resolvedBoundaryId}
           content={content}
           copyPolicy={copyPolicy}
-          findPolicy={findPolicy}
           hidden={hidden}
           onMaterialize={onMaterialize}
           reason={reason}
@@ -304,7 +297,6 @@ const createEditableElementSlots = <
         boundaryId={resolvedBoundaryId}
         content={content}
         copyPolicy={copyPolicy}
-        findPolicy={findPolicy}
         from={scope.from}
         hidden={hidden}
         onMaterialize={onMaterialize}
@@ -349,7 +341,6 @@ const createEditableElementSlots = <
             ? renderContentBoundary({
                 boundaryId: `content-root:${props.nodeKey}:${slot}`,
                 copyPolicy: 'exclude',
-                findPolicy: 'native',
                 mounted: false,
                 reason: 'app-hidden',
                 scope: {
@@ -388,7 +379,7 @@ function EditableContentRootSlot({
   renderers,
   slot,
 }: {
-  element: PliteElementNode;
+  element: ElementNode;
   options: EditableContentRootSlotOptions;
   ownerPath: Path;
   renderers: EditableContentRootSlotRenderers;
@@ -398,7 +389,7 @@ function EditableContentRootSlot({
   const ownerRoot = toInternalRoot(
     ownerEditor.read((state) => state.view.root())
   );
-  const { root } = usePliteContentRoot(element, { slot });
+  const { root } = useContentRoot(element, { slot });
   const inheritedReadOnly = useEditorReadOnly();
   const readOnly = Boolean(options.readOnly || inheritedReadOnly);
   const contentRootOwner = React.useMemo(
@@ -412,7 +403,7 @@ function EditableContentRootSlot({
 
   return (
     <PliteContentRootOwnerContext value={contentRootOwner}>
-      <Plite readOnly={readOnly} root={root}>
+      <EditorRoot editor={ownerEditor} readOnly={readOnly} root={root}>
         <EditableContentRootView
           options={options}
           ownerPath={ownerPath}
@@ -421,7 +412,7 @@ function EditableContentRootSlot({
           root={root}
           slot={slot}
         />
-      </Plite>
+      </EditorRoot>
     </PliteContentRootOwnerContext>
   );
 }
@@ -445,7 +436,6 @@ function EditableContentRootView({
     ariaLabel,
     className,
     disableDefaultStyles,
-    domStrategy,
     id,
     placeholder,
     spellCheck,
@@ -533,9 +523,9 @@ function EditableContentRootView({
   return (
     <div
       contentEditable={false}
-      data-plite-content-root-owner-path={ownerPath.join(',')}
-      data-plite-content-root-owner-root={ownerRoot}
-      data-plite-content-root-slot={slot}
+      data-editor-content-root-owner-path={ownerPath.join(',')}
+      data-editor-content-root-owner-root={ownerRoot}
+      data-editor-content-root-slot={slot}
       onFocusCapture={onFocusCapture}
       onMouseDownCapture={onMouseDownCapture}
       onMouseMoveCapture={onMouseMoveCapture}
@@ -546,7 +536,6 @@ function EditableContentRootView({
         aria-label={ariaLabel}
         className={className}
         disableDefaultStyles={disableDefaultStyles}
-        domStrategy={domStrategy}
         id={id}
         placeholder={placeholder}
         readOnly={readOnly}
@@ -563,42 +552,36 @@ function EditableContentRootView({
   );
 }
 
-export type RenderElementProps<
-  TElement extends PliteElementNode = PliteElementNode,
-> = TElement extends PliteElementNode
-  ? {
-      attributes: {
-        'data-plite-inline'?: true;
-        'data-plite-node': 'element';
-        'data-plite-path': string;
-        'data-plite-node-key': string;
-        'data-plite-void'?: true;
-        ref: React.RefCallback<HTMLElement>;
-      };
-      children: ReactNode;
-      element: TElement;
-      isInline: boolean;
-      slots: EditableElementSlots;
-    }
-  : never;
+export type RenderElementProps<TElement extends ElementNode = ElementNode> =
+  TElement extends ElementNode
+    ? {
+        attributes: {
+          'data-editor-inline'?: true;
+          'data-editor-node': 'element';
+          'data-editor-path': string;
+          'data-editor-node-key': string;
+          'data-editor-void'?: true;
+          ref: React.RefCallback<HTMLElement>;
+        };
+        children: ReactNode;
+        element: TElement;
+        isInline: boolean;
+        slots: EditableElementSlots;
+      }
+    : never;
 
-export type RenderElementRenderer<
-  TElement extends PliteElementNode = PliteElementNode,
-> = (props: RenderElementProps<TElement>) => ReactNode;
+export type RenderElementRenderer<TElement extends ElementNode = ElementNode> =
+  (props: RenderElementProps<TElement>) => ReactNode;
 
-export type RenderVoidProps<
-  TElement extends PliteElementNode = PliteElementNode,
-> = {
+export type RenderVoidProps<TElement extends ElementNode = ElementNode> = {
   element: TElement;
 };
 
-export type RenderVoidRenderer<
-  TElement extends PliteElementNode = PliteElementNode,
-> = (props: RenderVoidProps<TElement>) => ReactNode;
+export type RenderVoidRenderer<TElement extends ElementNode = ElementNode> = (
+  props: RenderVoidProps<TElement>
+) => ReactNode;
 
-const EditableRenderedVoid = <
-  TElement extends PliteElementNode = PliteElementNode,
->({
+const EditableRenderedVoid = <TElement extends ElementNode = ElementNode>({
   children,
   element,
   isInline,
@@ -620,11 +603,13 @@ const EditableRenderedVoid = <
 
 const resolveTextZeroWidth = ({
   editor,
+  isRetainedFragmentRoot,
   node,
   path,
 }: {
   editor: Editor;
-  node: PliteTextNode;
+  isRetainedFragmentRoot?: boolean;
+  node: TextNode;
   path: Path | null;
 }) => {
   if (!path) {
@@ -644,6 +629,10 @@ const resolveTextZeroWidth = ({
     return { isLineBreak: true };
   }
 
+  if (isRetainedFragmentRoot) {
+    return { isLineBreak: false };
+  }
+
   if (
     parent &&
     !editorIsEditor(parent) &&
@@ -659,7 +648,7 @@ const resolveTextZeroWidth = ({
 };
 
 export type EditableProps<
-  TElement extends PliteElementNode = PliteElementNode,
+  TElement extends ElementNode = ElementNode,
   TRoot extends RootKey = RootKey,
 > = {
   autoFocus?: boolean;
@@ -667,15 +656,9 @@ export type EditableProps<
   disableDefaultStyles?: boolean;
   id?: string;
   ignoreBlankEditableRootClicks?: boolean;
-  /**
-   * DOM strategy for large documents. `virtualized` is experimental and
-   * must use the object form: `{ type: 'virtualized', ... }`.
-   */
-  domStrategy?: DOMStrategyOptions | null;
   onBeforeInput?: React.FormEventHandler<HTMLDivElement>;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onKeyDown?: EditableKeyDownHandler;
-  onDOMStrategyMetrics?: (metrics: EditableDOMStrategyMetrics) => void;
   onPaste?: React.ClipboardEventHandler<HTMLDivElement>;
   placeholder?: ReactNode;
   readOnly?: boolean;
@@ -706,7 +689,7 @@ export type EditableProps<
   | 'style'
 >;
 
-const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
+const EditableDescendantNodeInner = <TElement extends ElementNode>({
   placeholder,
   placeholderRef,
   renderElement,
@@ -715,6 +698,8 @@ const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
   renderText,
   renderVoid,
   nodeKey,
+  renderChildrenOverride,
+  textRange,
 }: {
   placeholder?: ReactNode;
   placeholderRef?: React.RefCallback<HTMLElement>;
@@ -724,8 +709,11 @@ const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
   renderText?: (props: RenderTextProps) => ReactNode;
   renderVoid?: RenderVoidRenderer<TElement>;
   nodeKey: NodeKey;
+  renderChildrenOverride?: (from?: number, to?: number) => ReactNode;
+  textRange?: Readonly<{ end: number; start: number }>;
 }) => {
   const editor = useEditorContext();
+  const fragment = React.useContext(AuthoredFragmentRootsContext);
   const editableRuntime = useEditableDOMRuntime();
   const coverage = editableRuntime?.domCoverage;
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey);
@@ -752,6 +740,31 @@ const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
     path,
     renderRevision,
   } = binding;
+  const hasTextChildFragments = React.useSyncExternalStore(
+    React.useCallback(
+      (notify) => {
+        const stops = childNodeKeys.flatMap((key, index) =>
+          directTextChildNodes[index]
+            ? [subscribeAuthoredViewFragmentSlots(editor, key, notify)]
+            : []
+        );
+        return () => stops.forEach((stop) => stop());
+      },
+      [editor, childNodeKeys, directTextChildNodes]
+    ),
+    () =>
+      childNodeKeys.some(
+        (key, index) =>
+          directTextChildNodes[index] &&
+          readAuthoredViewFragmentSlots(editor, key).length > 0
+      ),
+    () =>
+      childNodeKeys.some(
+        (key, index) =>
+          directTextChildNodes[index] &&
+          readAuthoredViewFragmentSlots(editor, key).length > 0
+      )
+  );
   const hasClientDOM = React.useSyncExternalStore(
     subscribeClientDOM,
     getClientDOMSnapshot,
@@ -768,6 +781,8 @@ const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
   const canRenderImperativeTextFlow =
     React.useContext(ImperativeTextFlowContext) &&
     hasClientDOM &&
+    !renderChildrenOverride &&
+    !hasTextChildFragments &&
     !ownsComposition;
   const bindNodeRef = usePliteNodeRef(nodeKey, { path, pliteNode: node });
 
@@ -797,7 +812,7 @@ const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
     const isLast =
       parentChildren != null && path.at(-1) === parentChildren.length - 1;
 
-    return (
+    const content = (
       <EditableText
         isLast={isLast}
         key={`${nodeKey}:${renderRevision}`}
@@ -811,17 +826,38 @@ const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
         nodeKey={nodeKey}
         pliteNode={node}
         text={node.text}
-        zeroWidth={resolveTextZeroWidth({ editor, node, path })}
+        textRange={textRange}
+        zeroWidth={resolveTextZeroWidth({
+          editor,
+          isRetainedFragmentRoot: fragment?.roots.has(nodeKey),
+          node,
+          path,
+        })}
       />
+    );
+    return (
+      <ElementContext
+        value={
+          parent && NodeApi.isElement(parent)
+            ? {
+                element: parent,
+                nodeKey: editor.key(parent),
+                path: path.slice(0, -1),
+              }
+            : null
+        }
+      >
+        {content}
+      </ElementContext>
     );
   }
 
   const attributes = {
-    'data-plite-inline': inline ? (true as const) : undefined,
-    'data-plite-node': 'element' as const,
-    'data-plite-path': path.join(','),
-    'data-plite-node-key': nodeKeyDOMValue,
-    'data-plite-void': voidNode ? (true as const) : undefined,
+    'data-editor-inline': inline ? (true as const) : undefined,
+    'data-editor-node': 'element' as const,
+    'data-editor-path': path.join(','),
+    'data-editor-node-key': nodeKeyDOMValue,
+    'data-editor-void': voidNode ? (true as const) : undefined,
     ref: bindNodeRef as React.RefCallback<HTMLElement>,
   };
   const renderDirectTextChild = (
@@ -864,8 +900,20 @@ const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
       />
     );
   };
-  const renderChild = (childNodeKey: NodeKey, index: number) =>
-    renderDirectTextChild(childNodeKey, node.children[index], index) ?? (
+  const renderChild = (childNodeKey: NodeKey, index: number) => {
+    const directText = renderDirectTextChild(
+      childNodeKey,
+      node.children[index],
+      index
+    );
+    return directText ? (
+      <EditableDescendantNodeWithFragments
+        nodeKey={childNodeKey}
+        key={childNodeKey}
+      >
+        {directText}
+      </EditableDescendantNodeWithFragments>
+    ) : (
       <EditableDescendantNode
         key={`${childNodeKey}:${getDOMTextRenderRevision(editor, [
           childNodeKey,
@@ -880,6 +928,7 @@ const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
         nodeKey={childNodeKey}
       />
     );
+  };
   const canRenderDirectTextFlow = directTextChildNodes.every((textNode) => {
     if (!textNode) return false;
 
@@ -952,8 +1001,10 @@ const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
 
     return children;
   };
-  const renderChildren = (from = 0, to = childNodeKeys.length - 1) =>
-    renderChildrenContent(from, to);
+  const renderChildren = (from?: number, to?: number) =>
+    renderChildrenOverride
+      ? renderChildrenOverride(from, to)
+      : renderChildrenContent(from ?? 0, to ?? childNodeKeys.length - 1);
   if (voidNode && renderVoid) {
     if (!path) {
       return null;
@@ -1043,89 +1094,214 @@ const EditableDescendantNodeInner = <TElement extends PliteElementNode>({
 
   return (
     <ElementContext key={nodeKey} value={{ element: node, nodeKey, path }}>
-      <PliteElement
+      <EditorElement
         style={{ position: 'relative' }}
         as={inline ? 'span' : 'div'}
         isInline={inline}
       >
         {renderChildren()}
-      </PliteElement>
+      </EditorElement>
     </ElementContext>
   );
 };
 
-const EditableDescendantNode = React.memo(
+const EditableRetainedFragments = ({
+  side,
+  slots,
+}: {
+  side: NativeAuthoredFragmentSlot['side'];
+  slots: readonly NativeAuthoredFragmentSlot[];
+}) => {
+  const editor = useEditorContext();
+  const render = React.useContext(AuthoredFragmentRendererContext);
+  useClaimEditableDOMCommit();
+  return slots
+    .filter((slot) => slot.side === side)
+    .map((slot) => {
+      const fragment = readAuthoredViewFragments(editor, slot.changeId).find(
+        (current) => current.id === slot.id
+      );
+      if (
+        !render ||
+        !fragment ||
+        fragment.kind === 'properties' ||
+        fragment.placement?.kind !== 'children'
+      ) {
+        return null;
+      }
+      return render(fragment);
+    });
+};
+
+const EditableDescendantContent = React.memo(
   EditableDescendantNodeInner
 ) as typeof EditableDescendantNodeInner;
 
-const EditableRootGroupInner = <TElement extends PliteElementNode>({
-  endIndex,
-  placeholder,
-  placeholderRef,
-  renderElement,
-  renderLeaf,
-  renderPlaceholder,
-  renderText,
-  renderVoid,
-  nodeKeys,
-  startIndex,
-}: {
-  endIndex: number;
-  groupId: string;
-  placeholder?: ReactNode;
-  placeholderRef?: React.RefCallback<HTMLElement>;
-  renderElement?: RenderElementRenderer<TElement>;
-  renderLeaf?: (props: RenderLeafProps) => ReactNode;
-  renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
-  renderText?: (props: RenderTextProps) => ReactNode;
-  renderVoid?: RenderVoidRenderer<TElement>;
-  nodeKeys: readonly NodeKey[];
-  startIndex: number;
+const EditableAuthoredSegmentContent = <TElement extends ElementNode>({
+  segment,
+  ...props
+}: Omit<
+  Parameters<typeof EditableDescendantNodeInner<TElement>>[0],
+  'nodeKey'
+> & {
+  segment: NativeAuthoredRenderSegment;
 }) => {
-  recordPliteReactRender({
-    id: `${startIndex}-${endIndex}`,
-    kind: 'group',
-  });
+  const editor = useEditorContext();
+  const nodeKey = editor.key(segment.path);
+  return nodeKey ? (
+    <EditableDescendantContent {...props} nodeKey={nodeKey} />
+  ) : null;
+};
 
+const EditableAuthoredSegments = <TElement extends ElementNode>({
+  nodeKey,
+  ...props
+}: Omit<
+  Parameters<typeof EditableDescendantNodeInner<TElement>>[0],
+  'nodeKey'
+> & {
+  nodeKey?: NodeKey;
+}) => {
+  const editor = useEditorContext();
+  const { addEventListener } = useRequiredEditorSelectorContext();
+  const renderParent = usePliteRenderContext();
+  const readSegments = React.useCallback(
+    () => readContentRootRenderSegments(editor, nodeKey),
+    [editor, nodeKey]
+  );
+  const segments = React.useSyncExternalStore(
+    React.useCallback(
+      (notify) => {
+        const stopNode = addEventListener(notify, { nodeKey });
+        const stopFragments = subscribeAuthoredViewFragmentSlots(
+          editor,
+          nodeKey,
+          notify
+        );
+        return () => {
+          stopNode();
+          stopFragments();
+        };
+      },
+      [addEventListener, editor, nodeKey]
+    ),
+    readSegments,
+    readSegments
+  );
+  const readOnly = new Map<NativeAuthoredRenderSegment, boolean>();
+  const isReadOnly = (segment: NativeAuthoredRenderSegment): boolean => {
+    const cached = readOnly.get(segment);
+    if (cached !== undefined) return cached;
+    const value =
+      Boolean(segment.fragment) &&
+      (segment.kind === 'text' || segment.children.every(isReadOnly));
+    readOnly.set(segment, value);
+    return value;
+  };
+  const renderSegment = (
+    segment: NativeAuthoredRenderSegment,
+    currentFragmentId: string | null = null
+  ): ReactNode => {
+    const content = (fragmentId: string | null) => (
+      <EditableAuthoredSegmentContent
+        {...props}
+        segment={segment}
+        renderChildrenOverride={
+          segment.kind === 'element'
+            ? (from = 0, to = Number.POSITIVE_INFINITY) =>
+                segment.children
+                  .filter(
+                    (child) =>
+                      child.childIndex >= from && child.childIndex <= to
+                  )
+                  .map((child) => renderSegment(child, fragmentId))
+            : undefined
+        }
+        textRange={
+          segment.kind === 'text'
+            ? { end: segment.end, start: segment.start }
+            : undefined
+        }
+      />
+    );
+    if (segment.fragment && segment.fragment.id !== currentFragmentId) {
+      const { fragment } = segment;
+      return (
+        <React.Fragment key={segment.key}>
+          {renderParent(
+            <PliteFragment
+              fragment={fragment}
+              paths={[segment.path]}
+              readOnlyRoots={isReadOnly(segment)}
+            >
+              {() => content(isReadOnly(segment) ? fragment.id : null)}
+            </PliteFragment>
+          )}
+        </React.Fragment>
+      );
+    }
+    return (
+      <React.Fragment key={segment.key}>
+        {segment.fragment
+          ? content(currentFragmentId)
+          : renderParent(content(null))}
+      </React.Fragment>
+    );
+  };
+  return segments?.map((segment) => renderSegment(segment)) ?? null;
+};
+
+const EditableDescendantNodeWithFragments = <TElement extends ElementNode>({
+  children,
+  nodeKey,
+  ...props
+}: Parameters<typeof EditableDescendantNodeInner<TElement>>[0] & {
+  children?: ReactNode;
+}) => {
+  const slots = useAuthoredFragmentSlots(nodeKey);
+  useClaimEditableDOMCommit();
+  if (slots.some((slot) => slot.side === 'structure')) {
+    return <EditableAuthoredSegments {...props} nodeKey={nodeKey} />;
+  }
   return (
     <>
-      {nodeKeys.map((nodeKey) => (
-        <EditableDescendantNode
-          key={nodeKey}
-          placeholder={placeholder}
-          placeholderRef={placeholderRef}
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          renderPlaceholder={renderPlaceholder}
-          renderText={renderText}
-          renderVoid={renderVoid}
-          nodeKey={nodeKey}
-        />
-      ))}
+      {slots.some((slot) => slot.side === 'before') && (
+        <EditableRetainedFragments side="before" slots={slots} />
+      )}
+      {children ?? <EditableDescendantContent {...props} nodeKey={nodeKey} />}
+      {slots.some((slot) => slot.side === 'after') && (
+        <EditableRetainedFragments side="after" slots={slots} />
+      )}
     </>
   );
 };
 
-const EditableRootGroup = React.memo(
-  EditableRootGroupInner,
-  (previous, next) =>
-    previous.endIndex === next.endIndex &&
-    previous.groupId === next.groupId &&
-    previous.placeholder === next.placeholder &&
-    previous.placeholderRef === next.placeholderRef &&
-    previous.renderElement === next.renderElement &&
-    previous.renderLeaf === next.renderLeaf &&
-    previous.renderPlaceholder === next.renderPlaceholder &&
-    previous.renderText === next.renderText &&
-    previous.renderVoid === next.renderVoid &&
-    previous.startIndex === next.startIndex &&
-    sameNodeKeys(previous.nodeKeys, next.nodeKeys)
-) as typeof EditableRootGroupInner;
+export const EditableDescendantNode = React.memo(
+  EditableDescendantNodeWithFragments
+) as typeof EditableDescendantNodeWithFragments;
+
+const EditableAuthoredRoot = <TElement extends ElementNode>({
+  children,
+  ...props
+}: Omit<
+  Parameters<typeof EditableDescendantNodeInner<TElement>>[0],
+  'nodeKey'
+> & { children: ReactNode }) => {
+  const slots = useAuthoredFragmentSlots();
+  return slots.some((slot) => slot.side === 'structure') ? (
+    <EditableAuthoredSegments {...props} />
+  ) : (
+    <>
+      <EditableRetainedFragments side="children" slots={slots} />
+      {children}
+    </>
+  );
+};
 
 const EditableCoverageMaterializer = ({
   materialize,
 }: {
-  materialize: (boundary: DOMCoverageBoundary, range?: PliteRange) => boolean;
+  materialize: (boundary: DOMCoverageBoundary, range?: ModelRange) => boolean;
 }) => {
   const coverage = useEditableDOMRuntime()?.domCoverage;
   useIsomorphicLayoutEffect(
@@ -1138,20 +1314,17 @@ const EditableCoverageMaterializer = ({
   return null;
 };
 
-const EditableInner = <TElement extends PliteElementNode>({
+const EditableInner = <TElement extends ElementNode>({
   autoFocus,
   className,
   disableDefaultStyles = false,
-  enableVirtualizedRendering = false,
   id,
   ignoreBlankEditableRootClicks = false,
-  domStrategy,
   onBeforeInput,
   onBlurCapture,
   onDOMBeforeInput,
   onFocusCapture,
   onKeyDown,
-  onDOMStrategyMetrics,
   onPaste,
   readOnly = false,
   placeholder,
@@ -1164,12 +1337,57 @@ const EditableInner = <TElement extends PliteElementNode>({
   scrollSelectionIntoView,
   spellCheck,
   style,
+  viewportPlan = null,
   ...attributes
 }: EditableProps<TElement> & {
-  enableVirtualizedRendering?: boolean;
+  viewportPlan?: EditableViewportPlan | null;
 }) => {
-  const domStrategyOptions = domStrategy;
   const editor = useEditorContext();
+  const viewSelectionFragmentKeys = usePliteViewSelectionFragmentKeys(editor);
+  const renderAuthoredFragment = React.useCallback<
+    NonNullable<React.ContextType<typeof AuthoredFragmentRendererContext>>
+  >(
+    (fragment) => {
+      const children = (keys: readonly NodeKey[]) =>
+        keys.map((key) => (
+          <EditableDescendantNode
+            key={key}
+            nodeKey={key}
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            renderPlaceholder={renderPlaceholder}
+            renderText={renderText}
+            renderVoid={renderVoid}
+          />
+        ));
+
+      return fragment.placement?.kind === 'text' &&
+        !renderLeaf &&
+        !renderText ? (
+        <PlitePlainTextFragment
+          key={fragment.id}
+          fragment={fragment}
+          hasViewSelection={viewSelectionFragmentKeys.includes(
+            JSON.stringify([fragment.changeId, fragment.id])
+          )}
+        >
+          {children}
+        </PlitePlainTextFragment>
+      ) : (
+        <PliteFragment key={fragment.id} fragment={fragment}>
+          {children}
+        </PliteFragment>
+      );
+    },
+    [
+      renderElement,
+      renderLeaf,
+      renderPlaceholder,
+      renderText,
+      renderVoid,
+      viewSelectionFragmentKeys,
+    ]
+  );
   const editableRoot = toInternalRoot(
     editor.read((state) => state.view.root())
   );
@@ -1190,91 +1408,20 @@ const EditableInner = <TElement extends PliteElementNode>({
     [editor, inactiveSelectionSourceId, inactiveSelectionStore]
   );
   useRegisterPliteDecorationSource(inactiveSelectionDecorationSource);
-  const [promotedSegmentIndex, setPromotedSegmentIndex] = React.useState<
-    number | null
-  >(null);
-  const [promotedSegmentOverscan, setPromotedSegmentOverscan] = React.useState<
-    number | null
-  >(null);
-  const [promotedSegmentWindowStartIndex, setPromotedSegmentWindowStartIndex] =
-    React.useState<number | null>(null);
-  const [placeholderHeight, setPlaceholderHeight] = React.useState<
-    number | null
-  >(null);
-  const [domStrategyRootElement, setDOMStrategyRootElement] =
-    React.useState<HTMLDivElement | null>(null);
   const inactiveSelectionEditableRef = React.useRef<HTMLDivElement | null>(
     null
   );
-  const [
-    promotedVirtualizedTopLevelIndex,
-    setPromotedVirtualizedTopLevelIndex,
-  ] = React.useState<number | null>(null);
-  const cancelPromotedSegmentOverscanRestoreRef = React.useRef<
-    (() => void) | null
+  const [placeholderHeight, setPlaceholderHeight] = React.useState<
+    number | null
   >(null);
   const placeholderResizeObserverRef = React.useRef<ResizeObserver | null>(
     null
   );
-  const domStrategyType = getDOMStrategyType(domStrategyOptions);
-  const internalPartialDOMStrategyOptions =
-    getInternalPartialDOMStrategyOptions(domStrategyOptions);
-  const virtualizedDOMStrategyOptions =
-    getVirtualizedDOMStrategyOptions(domStrategyOptions);
-  const internalPartialDOMStrategyOverscan =
-    internalPartialDOMStrategyOptions?.overscan ?? 0;
-  const internalPartialDOMStrategySegmentSize =
-    internalPartialDOMStrategyOptions?.segmentSize ??
-    INTERNAL_PARTIAL_DOM_SEGMENT_SIZE;
-  const internalPartialDOMStrategyPreviewChars =
-    internalPartialDOMStrategyOptions?.previewChars ?? 96;
-  const internalPartialDOMStrategyThreshold =
-    internalPartialDOMStrategyOptions?.threshold ?? 2000;
-  const domStrategyVirtualizedEstimatedBlockSize =
-    virtualizedDOMStrategyOptions?.estimatedBlockSize ?? 32;
-  const domStrategyVirtualizedOverscan =
-    virtualizedDOMStrategyOptions?.overscan ?? 2;
-  const domStrategyVirtualizedThreshold =
-    virtualizedDOMStrategyOptions?.threshold ?? 25_000;
-  const internalSegmentDOMStrategyConfig = React.useMemo(
-    () =>
-      getInternalSegmentDOMStrategyConfig({
-        domStrategyType,
-        overscan: internalPartialDOMStrategyOverscan,
-        previewChars: internalPartialDOMStrategyPreviewChars,
-        segmentSize: internalPartialDOMStrategySegmentSize,
-        threshold: internalPartialDOMStrategyThreshold,
-      }),
-    [
-      domStrategyType,
-      internalPartialDOMStrategyOverscan,
-      internalPartialDOMStrategyPreviewChars,
-      internalPartialDOMStrategySegmentSize,
-      internalPartialDOMStrategyThreshold,
-    ]
-  );
-  const virtualizedDOMStrategyConfig = React.useMemo(
-    () =>
-      getVirtualizedDOMStrategyConfig({
-        domStrategyType,
-        estimatedBlockSize: domStrategyVirtualizedEstimatedBlockSize,
-        overscan: domStrategyVirtualizedOverscan,
-        threshold: domStrategyVirtualizedThreshold,
-      }),
-    [
-      domStrategyType,
-      domStrategyVirtualizedEstimatedBlockSize,
-      domStrategyVirtualizedOverscan,
-      domStrategyVirtualizedThreshold,
-    ]
-  );
+  const selectedViewportPaths = useSelectionPaths(viewportPlan != null);
+  const topLevelNodeKeys = useRootNodeKeys();
   const editableRootRef = React.useCallback(
     (node: HTMLDivElement | null) => {
       inactiveSelectionEditableRef.current = node;
-
-      if (virtualizedDOMStrategyConfig) {
-        setDOMStrategyRootElement(node);
-      }
 
       if (typeof forwardedRef === 'function') {
         forwardedRef(node);
@@ -1282,288 +1429,63 @@ const EditableInner = <TElement extends PliteElementNode>({
         forwardedRef.current = node;
       }
     },
-    [forwardedRef, virtualizedDOMStrategyConfig]
+    [forwardedRef]
   );
-  const {
-    segmentPlan,
-    mountedTopLevelRanges,
-    mountedTopLevelNodeKeys,
-    topLevelNodeKeys,
-  } = useInternalSegmentDOMStrategyRootSources({
-    internalSegmentDOMStrategyConfig,
-    promotedSegmentIndex,
-    promotedSegmentOverscan,
-    promotedWindowStartIndex: promotedSegmentWindowStartIndex,
-  });
-  const selectedVirtualizedTopLevelIndex = useTopLevelSelectionIndex(
-    virtualizedDOMStrategyConfig != null
-  );
-  const selectedDOMStrategyPaths = useSelectionPaths(
-    virtualizedDOMStrategyConfig != null || domStrategyType === 'staged'
-  );
-  const virtualizedScrollElement = React.useMemo(
-    () => getVirtualizerScrollElement(domStrategyRootElement),
-    [domStrategyRootElement]
-  );
-  const virtualizedScrollRootReady =
-    virtualizedDOMStrategyConfig != null && virtualizedScrollElement != null;
-  const virtualizedPageItems = virtualizedDOMStrategyOptions?.layout?.pageItems;
-  const visibleVirtualizedPageItems =
-    virtualizedDOMStrategyOptions?.layout?.visiblePageItems;
-  const virtualizedLayoutItems =
-    virtualizedDOMStrategyOptions?.layout?.topLevelItems;
-  const virtualizedPlan = useVirtualizedRootPlan({
-    config: enableVirtualizedRendering ? virtualizedDOMStrategyConfig : null,
-    enabled: enableVirtualizedRendering && virtualizedScrollRootReady,
-    pageLayoutItems: virtualizedPageItems,
-    promotedTopLevelIndex: promotedVirtualizedTopLevelIndex,
-    rootElement: domStrategyRootElement,
-    scrollElement: virtualizedScrollElement,
-    selectionPaths: selectedDOMStrategyPaths,
-    selectedTopLevelIndex: selectedVirtualizedTopLevelIndex,
-    topLevelLayoutItems: virtualizedLayoutItems,
-    topLevelNodeKeys,
-    visiblePageLayoutItems: visibleVirtualizedPageItems,
-  });
-  const internalSegmentDOMStrategySize =
-    internalSegmentDOMStrategyConfig?.segmentSize ?? null;
-  const internalSegmentDOMStrategyOverscan =
-    internalSegmentDOMStrategyConfig?.overscan ?? 0;
-  const rootDocumentEpoch = useRootDocumentEpoch();
-  const shouldUseStagedFallback =
-    domStrategyType === 'virtualized' && virtualizedPlan == null;
-  const rootGroups = React.useMemo(() => {
-    if (
-      (domStrategyType !== 'staged' && !shouldUseStagedFallback) ||
-      segmentPlan ||
-      topLevelNodeKeys.length < ROOT_GROUP_THRESHOLD
-    ) {
-      return null;
-    }
-
-    recordPliteReactRender({
-      id: 'staged-root-groups',
-      kind: 'root-plan',
-    });
-
-    return createRootGroups(topLevelNodeKeys);
-  }, [domStrategyType, segmentPlan, shouldUseStagedFallback, topLevelNodeKeys]);
-  const rootGroupPlanKey = React.useMemo(
-    () =>
-      rootGroups
-        ? getRootGroupPlanKey(topLevelNodeKeys, rootDocumentEpoch)
-        : null,
-    [rootDocumentEpoch, rootGroups, topLevelNodeKeys]
-  );
-  const selectedRootGroupIndex = useTopLevelSelectionIndex(rootGroups != null);
-  const selectedRootGroupFocusIndex = React.useMemo(() => {
-    const focusIndex = selectedDOMStrategyPaths?.[1]?.[0];
-
-    return typeof focusIndex === 'number' ? focusIndex : selectedRootGroupIndex;
-  }, [selectedDOMStrategyPaths, selectedRootGroupIndex]);
-  const activeRootGroupIds = React.useMemo(
-    () => getActiveRootGroupIds(rootGroups, selectedRootGroupFocusIndex),
-    [rootGroups, selectedRootGroupFocusIndex]
-  );
-  const { activeGroupIds, mountedGroupIds, mountGroupIds } =
-    useMountedRootGroupIds({
-      activeGroupIds: activeRootGroupIds,
-      documentEpoch: rootDocumentEpoch,
-      groups: rootGroups,
-      planKey: rootGroupPlanKey,
-    });
-  const materializeRootGroupBoundary = React.useCallback(
-    (boundary: DOMCoverageBoundary, targetRange?: PliteRange) => {
-      const groupIds = getRootGroupIdsForBoundary(
-        rootGroups,
-        boundary,
-        targetRange
-      );
-
-      if (groupIds.length === 0) {
-        return false;
-      }
-
-      mountGroupIds(groupIds);
-      return true;
-    },
-    [mountGroupIds, rootGroups]
-  );
-
-  const scrollVirtualizedPathIntoView = React.useCallback(
+  const scrollViewportPathIntoView = React.useCallback(
     (path: Path, align: 'auto' | 'center' | 'end' | 'start' = 'center') => {
       const targetIndex = path[0];
 
       if (typeof targetIndex === 'number') {
-        setPromotedVirtualizedTopLevelIndex(targetIndex);
+        viewportPlan?.requestMount?.(targetIndex, path);
       }
 
-      return virtualizedPlan?.scrollToPath(path, align) ?? false;
+      return viewportPlan?.scrollToPath(path, align) ?? false;
     },
-    [virtualizedPlan]
+    [viewportPlan]
   );
-  const materializeVirtualizedBoundary = React.useCallback(
-    (boundary: DOMCoverageBoundary, targetRange?: PliteRange) => {
-      const targetIndex =
-        targetRange?.anchor.path[0] ?? boundary.coveredPathRanges[0]?.anchor[0];
+  const materializeViewportBoundary = React.useCallback(
+    (boundary: DOMCoverageBoundary, targetRange?: ModelRange) => {
+      const path = targetRange?.anchor.path;
+      const targetIndex = path?.[0] ?? boundary.coveredPathRanges[0]?.anchor[0];
 
-      if (typeof targetIndex !== 'number') {
-        return false;
-      }
+      if (typeof targetIndex !== 'number' || !viewportPlan) return false;
 
-      setPromotedVirtualizedTopLevelIndex(targetIndex);
-      if (
-        targetRange &&
-        scrollVirtualizedPathIntoView(targetRange.anchor.path)
-      ) {
-        return true;
-      }
-
-      virtualizedPlan?.scrollToTopLevelIndex(targetIndex, 'center');
+      viewportPlan.requestMount?.(targetIndex, path);
+      if (path) viewportPlan.scrollToPath(path, 'center');
 
       return true;
     },
-    [scrollVirtualizedPathIntoView, virtualizedPlan]
+    [viewportPlan]
   );
-
-  const lastVirtualizedScrollPathKeyRef = React.useRef<string | null>(null);
+  const lastViewportScrollPathKeyRef = React.useRef<string | null>(null);
 
   useIsomorphicLayoutEffect(() => {
-    const anchorPath = selectedDOMStrategyPaths?.[0];
+    const anchorPath = selectedViewportPaths?.[0];
 
-    if (!virtualizedPlan || !anchorPath) {
-      lastVirtualizedScrollPathKeyRef.current = null;
+    if (!viewportPlan || !anchorPath) {
+      lastViewportScrollPathKeyRef.current = null;
       return;
     }
 
-    const anchorPathKey = getSnapshotPathKey(anchorPath);
+    const anchorPathKey = anchorPath.join('.');
     const lastCommit = editor.read((state) => state.lastCommit());
 
-    if (lastCommit?.changed.hasAny('text')) {
-      return;
-    }
+    if (lastCommit?.changed.hasAny('text')) return;
 
     const node = editor.read((state) => state.nodes.get(anchorPath)?.[0]);
 
     if (node && editor.api.dom.resolveDOMNode(node)) {
-      lastVirtualizedScrollPathKeyRef.current = anchorPathKey;
+      lastViewportScrollPathKeyRef.current = anchorPathKey;
       return;
     }
+    if (lastViewportScrollPathKeyRef.current === anchorPathKey) return;
 
-    if (lastVirtualizedScrollPathKeyRef.current === anchorPathKey) {
-      return;
+    viewportPlan.requestMount?.(anchorPath[0] ?? 0, anchorPath);
+    if (viewportPlan.scrollToPath(anchorPath, 'center')) {
+      lastViewportScrollPathKeyRef.current = anchorPathKey;
     }
+  }, [editor, selectedViewportPaths, viewportPlan]);
 
-    if (virtualizedPlan.scrollToPath(anchorPath, 'center')) {
-      lastVirtualizedScrollPathKeyRef.current = anchorPathKey;
-    }
-  }, [selectedDOMStrategyPaths, virtualizedPlan]);
-  const renderedRootGroups = React.useMemo(() => {
-    if (!rootGroups) {
-      return null;
-    }
-
-    return rootGroups.map((group) => ({
-      ...group,
-      isMounted:
-        activeGroupIds.has(group.groupId) || mountedGroupIds.has(group.groupId),
-    }));
-  }, [activeGroupIds, mountedGroupIds, rootGroups]);
-  const domPresentMountedGroups = React.useMemo(
-    () => renderedRootGroups?.filter((group) => group.isMounted) ?? null,
-    [renderedRootGroups]
-  );
-  const domPresentMountedTopLevelNodeKeys = React.useMemo(
-    () =>
-      domPresentMountedGroups
-        ? new Set(
-            domPresentMountedGroups.flatMap((group) => [...group.nodeKeys])
-          )
-        : null,
-    [domPresentMountedGroups]
-  );
-  const domPresentMountedTopLevelRanges = React.useMemo(
-    () =>
-      domPresentMountedGroups?.map((group) => ({
-        endIndex: group.endIndex,
-        startIndex: group.startIndex,
-      })) ?? null,
-    [domPresentMountedGroups]
-  );
-  const renderedRootGroupItems = React.useMemo(
-    () =>
-      renderedRootGroups
-        ? createRootGroupRenderItems(renderedRootGroups)
-        : null,
-    [renderedRootGroups]
-  );
-  const handlePromoteSegment = React.useCallback(
-    (
-      segmentIndex: number,
-      options: { select?: boolean; startIndex?: number } = {}
-    ) => {
-      cancelPromotedSegmentOverscanRestoreRef.current?.();
-      cancelPromotedSegmentOverscanRestoreRef.current = null;
-
-      const startIndex =
-        options.startIndex ??
-        (internalSegmentDOMStrategySize == null
-          ? null
-          : segmentIndex * internalSegmentDOMStrategySize);
-
-      if (options.select && internalSegmentDOMStrategySize != null) {
-        try {
-          const start = editorPoint(
-            editor,
-            [startIndex ?? failInvariant('Expected value to be defined')],
-            {
-              edge: 'start',
-            }
-          );
-          writeRuntimeSelection(editor, { anchor: start, focus: start });
-        } catch {
-          // Leave selection unchanged for non-text-startable segments.
-        }
-      }
-
-      const restoreOverscan = () => {
-        cancelPromotedSegmentOverscanRestoreRef.current = null;
-        setPromotedSegmentOverscan(null);
-      };
-
-      setPromotedSegmentIndex(segmentIndex);
-      setPromotedSegmentWindowStartIndex(startIndex);
-
-      if (internalSegmentDOMStrategyOverscan > 0) {
-        setPromotedSegmentOverscan(0);
-
-        if (typeof window.requestIdleCallback === 'function') {
-          const idleHandle = window.requestIdleCallback(restoreOverscan, {
-            timeout: 120,
-          });
-          cancelPromotedSegmentOverscanRestoreRef.current = () => {
-            window.cancelIdleCallback(idleHandle);
-          };
-        } else {
-          const timeoutHandle = window.setTimeout(restoreOverscan, 120);
-          cancelPromotedSegmentOverscanRestoreRef.current = () => {
-            window.clearTimeout(timeoutHandle);
-          };
-        }
-      } else {
-        setPromotedSegmentOverscan(null);
-      }
-    },
-    [editor, internalSegmentDOMStrategyOverscan, internalSegmentDOMStrategySize]
-  );
-
-  React.useEffect(
-    () => () => {
-      cancelPromotedSegmentOverscanRestoreRef.current?.();
-      cancelPromotedSegmentOverscanRestoreRef.current = null;
-    },
-    []
-  );
   const placeholderValue = usePlaceholderValue(placeholder);
   const placeholderRef = React.useCallback(
     (placeholderElement: HTMLElement | null) => {
@@ -1577,14 +1499,12 @@ const EditableInner = <TElement extends PliteElementNode>({
       }
 
       EDITOR_TO_PLACEHOLDER_ELEMENT.set(editor, placeholderElement);
-
       const measure = () => {
         const nextHeight = placeholderElement.getBoundingClientRect().height;
         setPlaceholderHeight(nextHeight > 0 ? nextHeight : null);
       };
 
       measure();
-
       if (typeof ResizeObserver !== 'undefined') {
         placeholderResizeObserverRef.current = new ResizeObserver(measure);
         placeholderResizeObserverRef.current.observe(placeholderElement);
@@ -1643,392 +1563,142 @@ const EditableInner = <TElement extends PliteElementNode>({
     },
     [inactiveSelectionStore, onFocusCapture]
   );
-  const domStrategyMetrics = React.useMemo(() => {
-    const documentSize = topLevelNodeKeys.length;
-    const mountedTopLevelCount = virtualizedPlan
-      ? virtualizedPlan.mountedTopLevelNodeKeys.size
-      : segmentPlan
-        ? segmentPlan.segments.reduce(
-            (total, segment) => total + segment.mountedNodeKeys.length,
-            0
-          )
-        : domPresentMountedTopLevelNodeKeys
-          ? domPresentMountedTopLevelNodeKeys.size
-          : documentSize;
-    const partialDOMCount =
-      segmentPlan?.segments.filter((segment) => !segment.isActive).length ?? 0;
-    const virtualizedBoundaryCount = virtualizedPlan?.missingRanges.length ?? 0;
-    const rootGroupCount = rootGroups?.length ?? 0;
-    const mountedGroupCount = renderedRootGroups
-      ? renderedRootGroups.filter((group) => group.isMounted).length
-      : virtualizedPlan
-        ? virtualizedPlan.mountedTopLevelRanges.length
-        : segmentPlan
-          ? segmentPlan.segments.filter((segment) => segment.isActive).length
-          : rootGroupCount;
-    const pendingGroupCount = renderedRootGroups
-      ? renderedRootGroups.length - mountedGroupCount
-      : virtualizedPlan
-        ? virtualizedBoundaryCount
-        : partialDOMCount;
-    const effectiveStrategy = virtualizedPlan
-      ? 'virtualized'
-      : segmentPlan
-        ? 'partial-dom'
-        : rootGroups
-          ? 'staged'
-          : domStrategyType === 'full'
-            ? 'full'
-            : 'plain';
-    const nativeSurfaceComplete =
-      effectiveStrategy === 'staged'
-        ? pendingGroupCount === 0
-        : effectiveStrategy !== 'partial-dom' &&
-          effectiveStrategy !== 'virtualized';
-    const degradationMode =
-      effectiveStrategy === 'partial-dom'
-        ? 'partial-dom'
-        : effectiveStrategy === 'virtualized'
-          ? 'virtualized'
-          : effectiveStrategy === 'staged' && !nativeSurfaceComplete
-            ? 'staged-warmup'
-            : 'none';
-    const requestedStrategy =
-      domStrategyType === 'partial-dom'
-        ? 'internal-partial-dom'
-        : domStrategyType;
-
-    return {
-      activeSegmentIndex:
-        segmentPlan?.activeSegmentIndex ??
-        selectedVirtualizedTopLevelIndex ??
-        null,
-      overscan:
-        internalSegmentDOMStrategyConfig?.overscan ??
-        virtualizedDOMStrategyConfig?.overscan ??
-        null,
-      cohort: getDOMStrategyCohort(documentSize),
-      degradationMode,
-      documentSize,
-      effectiveStrategy,
-      estimatedBlockSize:
-        virtualizedDOMStrategyConfig?.estimatedBlockSize ?? null,
-      segmentSize: internalSegmentDOMStrategyConfig?.segmentSize ?? null,
-      mountedGroupCount,
-      mountedTopLevelCount,
-      nativeSurfaceComplete,
-      pendingGroupCount,
-      pendingTopLevelCount: Math.max(0, documentSize - mountedTopLevelCount),
-      requestedStrategy,
-      threshold:
-        internalSegmentDOMStrategyConfig?.threshold ??
-        virtualizedDOMStrategyConfig?.threshold ??
-        ROOT_GROUP_THRESHOLD,
-      virtualizerMeasuredCount:
-        virtualizedPlan?.virtualizerMeasuredCount ?? null,
-    } satisfies EditableDOMStrategyMetricsBase;
-  }, [
-    domPresentMountedTopLevelNodeKeys,
-    virtualizedPlan,
-    segmentPlan,
-    internalSegmentDOMStrategyConfig,
-    virtualizedDOMStrategyConfig,
-    domStrategyType,
-    renderedRootGroups,
-    rootGroups,
-    selectedVirtualizedTopLevelIndex,
-    topLevelNodeKeys.length,
-  ]);
-  const virtualizedItemGroups = virtualizedPlan
-    ? createVirtualizedTopLevelItemGroups(virtualizedPlan.virtualItems)
-    : null;
-
-  return (
-    <PliteEditableRootContext value={editableRoot}>
-      <EditableDOMRoot
-        autoFocus={autoFocus}
-        {...attributes}
-        className={className}
-        deferNativeTextInputRepair={domStrategyType === 'virtualized'}
-        disableDefaultStyles={disableDefaultStyles}
-        domStrategyMetrics={domStrategyMetrics}
-        domStrategyRuntime={
-          virtualizedPlan
-            ? {
-                mountedTopLevelNodeKeys:
-                  virtualizedPlan.mountedTopLevelNodeKeys,
-                mountedTopLevelRanges:
-                  virtualizedPlan.mountedTopLevelRanges ?? undefined,
-                scrollToPath: scrollVirtualizedPathIntoView,
-                type: 'virtualized',
-              }
-            : segmentPlan
-              ? {
-                  mountedTopLevelNodeKeys,
-                  mountedTopLevelRanges: mountedTopLevelRanges ?? undefined,
-                  type: 'partial-dom',
-                }
-              : rootGroups
-                ? {
-                    mountedTopLevelNodeKeys: domPresentMountedTopLevelNodeKeys,
-                    mountedTopLevelRanges:
-                      domPresentMountedTopLevelRanges ?? undefined,
-                    type: 'staged',
-                  }
-                : null
-        }
-        id={id}
-        ignoreBlankEditableRootClicks={
-          ignoreBlankEditableRootClicks ||
-          virtualizedDOMStrategyOptions?.layout != null
-        }
-        onBeforeInput={onBeforeInput}
-        onBlurCapture={handleBlurCapture}
-        onDOMBeforeInput={onDOMBeforeInput}
-        onDOMStrategyMetrics={onDOMStrategyMetrics}
-        onFocusCapture={handleFocusCapture}
-        onKeyDown={onKeyDown}
-        onPaste={onPaste}
-        readOnly={effectiveReadOnly}
-        ref={editableRootRef}
-        scrollSelectionIntoView={scrollSelectionIntoView}
-        spellCheck={spellCheck}
-        style={rootStyle}
+  const descendant = (nodeKey: NodeKey) => (
+    <EditableDescendantNode
+      key={nodeKey}
+      nodeKey={nodeKey}
+      placeholder={placeholderValue}
+      placeholderRef={placeholderRef}
+      renderElement={renderElement}
+      renderLeaf={renderLeaf}
+      renderPlaceholder={renderPlaceholder}
+      renderText={renderText}
+      renderVoid={renderVoid}
+    />
+  );
+  const missingBoundaries = viewportPlan?.missingRanges.map((range) => (
+    <EditableViewportBoundary
+      anchorNodeKey={range.anchorNodeKey}
+      boundaryId={range.boundaryId}
+      endIndex={range.endIndex}
+      focusNodeKey={range.focusNodeKey}
+      key={range.boundaryId}
+      startIndex={range.startIndex}
+    />
+  ));
+  const renderedNodes = viewportPlan ? (
+    viewportPlan.coordinateSpace === 'flow' ? (
+      <div
+        data-editor-virtualized-viewport="true"
+        style={{
+          height: viewportPlan.totalSize,
+          position: 'relative',
+          width: '100%',
+        }}
       >
-        {rootGroups && (
-          <EditableCoverageMaterializer
-            materialize={materializeRootGroupBoundary}
-          />
-        )}
-        {virtualizedPlan && (
-          <EditableCoverageMaterializer
-            materialize={materializeVirtualizedBoundary}
-          />
-        )}
-        {virtualizedPlan ? (
+        {missingBoundaries}
+        {viewportPlan.items.map((item) => (
           <div
-            data-plite-dom-strategy-virtualizer="true"
+            data-index={item.index}
+            data-editor-virtualized-row="true"
+            key={item.nodeKey}
+            ref={viewportPlan.measureElement}
             style={{
-              height: virtualizedPlan.totalSize,
-              position: 'relative',
+              left: 0,
+              minHeight: item.size,
+              pointerEvents: 'auto',
+              position: 'absolute',
+              top: 0,
+              transform: `translateY(${item.start}px)`,
               width: '100%',
             }}
           >
-            {virtualizedPlan.missingRanges.map((range) => (
-              <DOMStrategyVirtualizedRangeBoundary
-                anchorNodeKey={range.anchorNodeKey}
-                boundaryId={range.boundaryId}
-                endIndex={range.endIndex}
-                focusNodeKey={range.focusNodeKey}
-                key={range.boundaryId}
-                startIndex={range.startIndex}
-              />
-            ))}
-            {(
-              virtualizedItemGroups ??
-              failInvariant('Expected value to be defined')
-            ).map((group) => (
-              <div
-                data-plite-dom-strategy-virtual-row-group="true"
-                key={group.groupId}
-                style={{
-                  left: 0,
-                  pointerEvents: 'none',
-                  position: 'absolute',
-                  top: 0,
-                  transform: `translateY(${group.start}px)`,
-                  width: '100%',
-                }}
-              >
-                {group.items.map((item) => {
-                  const hasInlineBounds =
-                    typeof item.left === 'number' &&
-                    typeof item.width === 'number';
-
-                  return (
-                    <div
-                      data-index={item.index}
-                      data-plite-dom-strategy-virtual-row="true"
-                      key={String(item.key)}
-                      ref={virtualizedPlan.measureElement}
-                      style={{
-                        minHeight: item.size,
-                        pointerEvents: 'none',
-                        position: 'relative',
-                        width: '100%',
-                      }}
-                    >
-                      <PliteDOMStrategyVirtualOffsetContext value={item.start}>
-                        <div
-                          style={{
-                            marginLeft: hasInlineBounds ? item.left : undefined,
-                            minHeight: item.size,
-                            pointerEvents: hasInlineBounds ? 'none' : 'auto',
-                            position: hasInlineBounds ? 'static' : 'relative',
-                            width: hasInlineBounds ? item.width : '100%',
-                          }}
-                        >
-                          <EditableDescendantNode
-                            placeholder={placeholderValue}
-                            placeholderRef={placeholderRef}
-                            renderElement={renderElement}
-                            renderLeaf={renderLeaf}
-                            renderPlaceholder={renderPlaceholder}
-                            renderText={renderText}
-                            renderVoid={renderVoid}
-                            nodeKey={item.nodeKey}
-                          />
-                        </div>
-                      </PliteDOMStrategyVirtualOffsetContext>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+            {descendant(item.nodeKey)}
           </div>
-        ) : segmentPlan ? (
-          segmentPlan.segments.map((segment) =>
-            segment.isActive ? (
-              <React.Fragment key={`partial-dom-${segment.segmentIndex}`}>
-                {segment.mountedStartIndex != null &&
-                segment.mountedStartIndex > segment.startIndex ? (
-                  <DOMStrategySegmentPlaceholder
-                    boundaryId={`partial-dom-aggressive:${segment.segmentIndex}:before`}
-                    coverageReason={
-                      domStrategyType === 'virtualized'
-                        ? 'viewport-virtualization'
-                        : 'partial-dom-aggressive'
-                    }
-                    dataSegment={`${segment.segmentIndex}:before`}
-                    endIndex={segment.mountedStartIndex - 1}
-                    onPromote={handlePromoteSegment}
-                    previewChars={
-                      (
-                        internalSegmentDOMStrategyConfig ??
-                        failInvariant('Expected value to be defined')
-                      ).previewChars
-                    }
-                    nodeKeys={segment.nodeKeys.slice(
-                      0,
-                      segment.mountedStartIndex - segment.startIndex
-                    )}
-                    segmentIndex={segment.segmentIndex}
-                    startIndex={segment.startIndex}
-                  />
-                ) : null}
-                {segment.mountedNodeKeys.map((nodeKey) => (
-                  <EditableDescendantNode
-                    key={nodeKey}
-                    placeholder={placeholderValue}
-                    placeholderRef={placeholderRef}
-                    renderElement={renderElement}
-                    renderLeaf={renderLeaf}
-                    renderPlaceholder={renderPlaceholder}
-                    renderText={renderText}
-                    renderVoid={renderVoid}
-                    nodeKey={nodeKey}
-                  />
-                ))}
-                {segment.mountedEndIndex != null &&
-                segment.mountedEndIndex < segment.endIndex ? (
-                  <DOMStrategySegmentPlaceholder
-                    boundaryId={`partial-dom-aggressive:${segment.segmentIndex}:after`}
-                    coverageReason={
-                      domStrategyType === 'virtualized'
-                        ? 'viewport-virtualization'
-                        : 'partial-dom-aggressive'
-                    }
-                    dataSegment={`${segment.segmentIndex}:after`}
-                    endIndex={segment.endIndex}
-                    onPromote={handlePromoteSegment}
-                    previewChars={
-                      (
-                        internalSegmentDOMStrategyConfig ??
-                        failInvariant('Expected value to be defined')
-                      ).previewChars
-                    }
-                    nodeKeys={segment.nodeKeys.slice(
-                      segment.mountedEndIndex - segment.startIndex + 1
-                    )}
-                    segmentIndex={segment.segmentIndex}
-                    startIndex={segment.mountedEndIndex + 1}
-                  />
-                ) : null}
-              </React.Fragment>
-            ) : (
-              <DOMStrategySegmentPlaceholder
-                coverageReason={
-                  domStrategyType === 'virtualized'
-                    ? 'viewport-virtualization'
-                    : 'partial-dom-aggressive'
+        ))}
+      </div>
+    ) : (
+      <>
+        {missingBoundaries}
+        {viewportPlan.items.map((item) => descendant(item.nodeKey))}
+      </>
+    )
+  ) : (
+    topLevelNodeKeys.map(descendant)
+  );
+
+  return (
+    <AuthoredFragmentRendererContext value={renderAuthoredFragment}>
+      <PliteEditableRootContext value={editableRoot}>
+        <EditableDOMRoot
+          autoFocus={autoFocus}
+          {...attributes}
+          className={className}
+          deferNativeTextInputRepair={viewportPlan != null}
+          disableDefaultStyles={disableDefaultStyles}
+          viewportRuntime={
+            viewportPlan
+              ? {
+                  mountedTopLevelNodeKeys: viewportPlan.mountedTopLevelNodeKeys,
+                  mountedTopLevelRanges: viewportPlan.mountedTopLevelRanges,
+                  scrollToPath: scrollViewportPathIntoView,
+                  type: 'virtualized',
                 }
-                endIndex={segment.endIndex}
-                key={`partial-dom-${segment.segmentIndex}`}
-                onPromote={handlePromoteSegment}
-                previewChars={
-                  (
-                    internalSegmentDOMStrategyConfig ??
-                    failInvariant('Expected value to be defined')
-                  ).previewChars
-                }
-                nodeKeys={segment.nodeKeys}
-                segmentIndex={segment.segmentIndex}
-                startIndex={segment.startIndex}
-              />
-            )
-          )
-        ) : renderedRootGroupItems ? (
-          renderedRootGroupItems.map((item) =>
-            item.kind === 'mounted' ? (
-              <EditableRootGroup
-                endIndex={item.group.endIndex}
-                groupId={item.group.groupId}
-                key={item.group.groupId}
-                placeholder={placeholderValue}
-                placeholderRef={placeholderRef}
-                renderElement={renderElement}
-                renderLeaf={renderLeaf}
-                renderPlaceholder={renderPlaceholder}
-                renderText={renderText}
-                renderVoid={renderVoid}
-                nodeKeys={item.group.nodeKeys}
-                startIndex={item.group.startIndex}
-              />
-            ) : (
-              <EditableRootGroupPlaceholder
-                anchorNodeKey={item.anchorNodeKey}
-                endIndex={item.endIndex}
-                focusNodeKey={item.focusNodeKey}
-                groupId={item.groupId}
-                key={item.groupId}
-                startIndex={item.startIndex}
-              />
-            )
-          )
-        ) : (
-          topLevelNodeKeys.map((nodeKey) => (
-            <EditableDescendantNode
-              key={nodeKey}
-              placeholder={placeholderValue}
-              placeholderRef={placeholderRef}
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-              renderPlaceholder={renderPlaceholder}
-              renderText={renderText}
-              renderVoid={renderVoid}
-              nodeKey={nodeKey}
+              : null
+          }
+          id={id}
+          ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+          onBeforeInput={onBeforeInput}
+          onBlurCapture={handleBlurCapture}
+          onDOMBeforeInput={onDOMBeforeInput}
+          onFocusCapture={handleFocusCapture}
+          onKeyDown={onKeyDown}
+          onPaste={onPaste}
+          readOnly={effectiveReadOnly}
+          ref={editableRootRef}
+          scrollSelectionIntoView={scrollSelectionIntoView}
+          spellCheck={spellCheck}
+          style={rootStyle}
+        >
+          {viewportPlan && (
+            <EditableCoverageMaterializer
+              materialize={materializeViewportBoundary}
             />
-          ))
-        )}
-        <PliteInactiveSelectionCaret
-          editableRef={inactiveSelectionEditableRef}
-          store={inactiveSelectionStore}
-        />
-      </EditableDOMRoot>
-    </PliteEditableRootContext>
+          )}
+          <EditableAuthoredRoot
+            placeholder={placeholderValue}
+            placeholderRef={placeholderRef}
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            renderPlaceholder={renderPlaceholder}
+            renderText={renderText}
+            renderVoid={renderVoid}
+          >
+            {renderedNodes}
+          </EditableAuthoredRoot>
+          <PliteInactiveSelectionCaret
+            editableRef={inactiveSelectionEditableRef}
+            store={inactiveSelectionStore}
+          />
+          {!effectiveReadOnly && (
+            <PliteViewSelectionCaret
+              editableRef={inactiveSelectionEditableRef}
+            />
+          )}
+        </EditableDOMRoot>
+      </PliteEditableRootContext>
+    </AuthoredFragmentRendererContext>
   );
 };
 
+export const EditableViewportSurface = <
+  TElement extends ElementNode = ElementNode,
+>({
+  viewportPlan,
+  ...props
+}: EditableProps<TElement> & {
+  viewportPlan: EditableViewportPlan | null;
+}) => <EditableInner {...props} viewportPlan={viewportPlan} />;
 const PliteInactiveSelectionCaret = ({
   editableRef,
   store,
@@ -2045,6 +1715,83 @@ const PliteInactiveSelectionCaret = ({
   if (!visible) return null;
 
   return <PliteInactiveSelectionCaretSelection editableRef={editableRef} />;
+};
+
+const PliteViewSelectionCaret = ({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) => {
+  const editor = useEditorContext();
+  const focused = useEditorFocused();
+  const selection = React.useSyncExternalStore(
+    React.useCallback(
+      (notify) => subscribePliteViewSelection(editor, notify),
+      [editor]
+    ),
+    React.useCallback(() => readPliteViewSelection(editor), [editor]),
+    () => null
+  );
+  if (!focused || !selection || !isPliteViewSelectionCollapsed(selection)) {
+    return null;
+  }
+  return <PliteViewSelectionCaretGeometry editableRef={editableRef} />;
+};
+
+const PliteViewSelectionCaretGeometry = ({
+  editableRef,
+}: {
+  editableRef: React.RefObject<HTMLDivElement | null>;
+}) => {
+  const editor = useEditorContext();
+  const owner = React.useMemo(
+    () =>
+      createRangeGeometryOwner(
+        editor,
+        {
+          measure: (_view, editable) => {
+            const selection = readPliteViewSelection(editor);
+            if (!selection || !isPliteViewSelectionCollapsed(selection)) {
+              return null;
+            }
+            const point = resolveViewBoundaryDOMPoint(editor, selection.focus);
+            if (!point || !editable.contains(point[0])) return null;
+            const rect = createDOMGeometryKernel({ root: editable }).pointRect(
+              point,
+              {
+                association: selection.focus.affinity,
+              }
+            );
+            if (!rect || rect.height <= 0) return null;
+            return { boundingRect: rect, focusRect: rect, rects: [] };
+          },
+          subscribe: (_view, notify) =>
+            subscribePliteViewSelection(editor, notify),
+        },
+        editableRef
+      ),
+    [editableRef, editor]
+  );
+  const geometry = useRangeGeometryOwner(owner);
+  const rect = geometry?.focusRect;
+  if (!rect) return null;
+  return (
+    <span
+      aria-hidden="true"
+      contentEditable={false}
+      data-editor-view-selection-caret=""
+      data-editor-root-chrome-ignore="true"
+      style={{
+        backgroundColor: 'currentColor',
+        height: rect.height,
+        left: rect.left,
+        pointerEvents: 'none',
+        position: 'fixed',
+        top: rect.top,
+        width: 1,
+      }}
+    />
+  );
 };
 
 const PliteInactiveSelectionCaretSelection = ({
@@ -2074,8 +1821,8 @@ const PliteInactiveSelectionCaretGeometry = ({
     <span
       aria-hidden="true"
       contentEditable={false}
-      data-plite-inactive-selection-caret=""
-      data-plite-root-chrome-ignore="true"
+      data-editor-inactive-selection-caret=""
+      data-editor-root-chrome-ignore="true"
       style={{
         height: Math.max(rect.height, 1),
         left: rect.left,
@@ -2087,26 +1834,19 @@ const PliteInactiveSelectionCaretGeometry = ({
   );
 };
 
-const EditableVirtualized = <TElement extends PliteElementNode>(
-  props: EditableProps<TElement>
-) => <EditableInner {...props} enableVirtualizedRendering />;
-
-const EditableNonVirtualized = <TElement extends PliteElementNode>(
-  props: EditableProps<TElement>
-) => <EditableInner {...props} />;
-
 /**
  * Render the editable content area for one Plite root.
  *
- * `Editable` owns DOM strategy, renderers, events, selection sync, and optional
- * root scoping. Pass `root` to mount the editor surface for a specific root.
+ * `Editable` renders the complete root DOM and owns renderers, events,
+ * selection sync, and optional root scoping. Pass `root` to mount the editor
+ * surface for a specific root.
  * When focus moves to an element or composed ancestor with
- * `data-plite-keep-selection-visible`, that exact Editable paints its live
- * canonical selection through `data-plite-inactive-selection` or
- * `data-plite-inactive-selection-caret` until focus returns or moves elsewhere.
+ * `data-editor-keep-selection-visible`, that exact Editable paints its live
+ * canonical selection through `data-editor-inactive-selection` or
+ * `data-editor-inactive-selection-caret` until focus returns or moves elsewhere.
  */
 export const Editable = <
-  TElement extends PliteElementNode,
+  TElement extends ElementNode,
   const TRoot extends RootKey = RootKey,
 >(
   props: EditableProps<TElement, TRoot>
@@ -2117,19 +1857,15 @@ export const Editable = <
     throw new Error('[Plite] Omit root to render the primary editable.');
   }
   const inheritedReadOnly = useEditorReadOnly();
+  const editor = useEditorContext();
   const rootReadOnly = props.readOnly || inheritedReadOnly;
-  const editable =
-    getDOMStrategyType(props.domStrategy) === 'virtualized' ? (
-      <EditableVirtualized {...editableProps} />
-    ) : (
-      <EditableNonVirtualized {...editableProps} />
-    );
+  const editable = <EditableInner {...editableProps} />;
 
   return root === undefined ? (
     editable
   ) : (
-    <Plite readOnly={rootReadOnly} root={root}>
+    <EditorRoot editor={editor} readOnly={rootReadOnly} root={root}>
       {editable}
-    </Plite>
+    </EditorRoot>
   );
 };

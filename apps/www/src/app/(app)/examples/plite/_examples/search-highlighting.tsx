@@ -5,8 +5,8 @@ import {
   Editable,
   type EditableProps,
   type Editor,
-  Plite,
-  type PliteDecorationSource,
+  EditorRoot,
+  type DecorationSource,
   useEditor,
 } from 'plitejs/react';
 import { memo, useMemo } from 'react';
@@ -49,7 +49,7 @@ const SearchHighlightingExample = () => {
       },
     ],
   });
-  const searchSource = useMemo<PliteDecorationSource<Editor<CustomValue>>>(
+  const searchSource = useMemo<DecorationSource<Editor<CustomValue>>>(
     () => ({
       id: 'search-highlighting',
       read: ({ entry: [node, path] }) => {
@@ -65,7 +65,7 @@ const SearchHighlightingExample = () => {
 
           ranges.push({
             attributes: {
-              className: 'plite-search-highlighting-highlight',
+              className: 'editor-search-highlighting-highlight',
               'data-cy': 'search-highlighted',
             },
             key: `search:${path.join('.')}:${start}:${end}`,
@@ -111,11 +111,11 @@ const SearchHighlightingEditor = memo(
     searchSource,
   }: {
     editor: Editor<CustomValue>;
-    searchSource: PliteDecorationSource<Editor<CustomValue>>;
+    searchSource: DecorationSource<Editor<CustomValue>>;
   }) => (
-    <Plite decorations={[searchSource]} editor={editor}>
+    <EditorRoot decorations={[searchSource]} editor={editor}>
       <Editable id="search-highlighting" renderLeaf={Leaf} />
-    </Plite>
+    </EditorRoot>
   )
 );
 
@@ -132,7 +132,7 @@ const Leaf = ({
   return (
     <span
       {...attributes}
-      className={cn(highlightLeaf.bold && 'plite-search-highlighting-bold')}
+      className={cn(highlightLeaf.bold && 'editor-search-highlighting-bold')}
     >
       {children}
     </span>

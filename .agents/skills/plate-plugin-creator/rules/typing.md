@@ -16,7 +16,7 @@
 Default to inferred plugin chains:
 
 ```ts
-export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
+export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
   api: ({ editor, store }) => ({
     // inferred
   }),
@@ -39,7 +39,7 @@ Do not create:
 type FooConfig = PluginConfig<"foo">;
 
 export const BaseFooPlugin: BasePlugin<FooConfig> =
-  defineBasePlugin<FooConfig>(PLUGINS.foo, {});
+  definePlugin<FooConfig>(PLUGINS.foo, {});
 ```
 
 An empty config alias and an annotated plugin export both hide whether the
@@ -48,7 +48,7 @@ builder inferred correctly.
 Keep every inference stage in the direct exported chain:
 
 ```ts
-export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
+export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
   api: () => ({ createText: () => 'Foo' }),
 }).extend(({ api }) => ({
   update: ({ tx }) => ({
@@ -65,7 +65,7 @@ and use an honest stage:
 ```ts
 type InsertFooOptionsFor<T extends Element> = NodeInsertNodesOptions<T>;
 
-export const BaseFooPlugin = defineBasePlugin('foo', {
+export const BaseFooPlugin = definePlugin('foo', {
   schema: { element: schema.element.textBlock() },
 }).extend(({ plugin, schema: { type } }) => {
   type Foo = ElementOf<typeof plugin>;
@@ -182,12 +182,12 @@ Apply this only where the callback contract supplies owner context. Shortcut,
 input-rule, state-value, render-prop, and similar specialized callbacks may
 only expose `editor`; an exact typed portal is correct there. Do not split or
 wrap a coherent declaration solely to capture a shortcut, and do not mistake
-an editor-wide extension such as `editor.api.dom` for the plugin-scoped `api`.
+an editor-wide plugin such as `editor.api.dom` for the plugin-scoped `api`.
 
 `defineCodecs` is the one inline inference anchor for codec maps:
 
 ```ts
-export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
+export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -246,7 +246,7 @@ Plate constructors and justified `.extend()` stages contextually type flat
 Plite-native fields:
 
 ```ts
-defineBasePlugin('foo', {
+definePlugin('foo', {
   commands: ({ handle, store }) => [
     // store and nested callbacks remain inferred
   ],});
@@ -256,7 +256,7 @@ Keep Plate-context capture inside the authoring callback and extract domain
 inputs. A public identity helper that only recovers this nested type is leaked
 compiler machinery: fix the owning generic instead of adding an annotation,
 cast, `any`, alias, or replacement helper. Independently reusable standalone
-descriptors use Plite's `defineExtension`; their factories receive domain
+descriptors use Plite's `definePlugin`; their factories receive domain
 inputs, not Plate plugin context.
 
 ## Stage Capabilities, Not Plumbing
@@ -268,7 +268,7 @@ accumulated inferred surface from later stages:
 ```ts
 type FooPluginState = { labels: { id: string; value: string }[] };
 
-export const BaseFooPlugin = defineBasePlugin('foo', {
+export const BaseFooPlugin = definePlugin('foo', {
   schema: { element: schema.element.textBlock() },
   initialState: (): FooPluginState => ({
     labels: [{ id: 'alpha', value: 'Alpha' }],
@@ -295,13 +295,13 @@ export const BaseFooPlugin = defineBasePlugin('foo', {
   .extend(() => ({
     update: ({ tx }) => ({
       insertFooPair: (firstId: string, secondId: string) => {
-        tx.plugin(BaseFooPlugin).insertFoo(firstId);
-        tx.plugin(BaseFooPlugin).insertFoo(secondId);
+        tx.plugin(BaseFooPlugin.name).insertFoo(firstId);
+        tx.plugin(BaseFooPlugin.name).insertFoo(secondId);
       },
     }),
   }));
 
-export const FooConsumerPlugin = defineBasePlugin('fooConsumer', {
+export const FooConsumerPlugin = definePlugin('fooConsumer', {
   api: ({ editor }) => ({
     hasLabel: (id: string) =>
       editor.plugin(BaseFooPlugin).store.get('getLabel', id) !== undefined,
@@ -327,12 +327,15 @@ that consumers or later stages should discover; do not publish private
 implementation fragments merely to move them between callbacks.
 
 Inside a later tx stage, call an earlier tx method through
-`tx.plugin(Plugin)`. Generated closed editors may use the direct
-`tx.pluginName` group. Do not use computed `tx[plugin.name]`,
-`tx.extension(...)`, `editor.plugin(...).update`, `context.update`, or another
-one-shot update there; those either erase descriptor typing or open a nested
-transaction. Raw Plite keeps direct named transaction groups and has no
-descriptor portal.
+`tx.plugin(Plugin)` when the caller owns the descriptor or
+`tx.plugin(pluginName)` when importing that descriptor would create the wrong
+package dependency. Descriptor input keeps exact inference and nominal
+validation; name input is intentionally erased and fails at runtime when the
+plugin or group is absent. Generated closed editors may use the direct
+`tx.pluginName` group. Do not index the transaction object with a runtime plugin
+name or use `editor.plugin(...).update`, `context.update`, or another one-shot
+update there; those open a nested transaction. Raw Plite and Plate share the
+selector semantics.
 
 New methods should accept domain inputs such as `value`, `entry`, `at`, or
 operation options. Do not invent function parameters for `editor`, `api`,
@@ -351,8 +354,8 @@ Do not add:
   update: ({ tx }) => ({ ... }),
 }))
 targetParserToInject: ({ editor }: { editor: Editor }) => ...
-const plugin: BasePlugin<FooDefinition> = defineBasePlugin(...)
-const plugin = defineBasePlugin(...) as BasePlugin<FooDefinition>
+const plugin: BasePlugin<FooDefinition> = definePlugin(...)
+const plugin = definePlugin(...) as BasePlugin<FooDefinition>
 ```
 
 ## Repair The Type Owner
@@ -398,7 +401,7 @@ type FooTx = {
   insertFoo: (options: InsertFooOptions) => void;
 };
 
-export const BaseFooPlugin = defineBasePlugin(PLUGINS.foo, {
+export const BaseFooPlugin = definePlugin(PLUGINS.foo, {
   read: ({ state }): FooRead => ({
     getChildCount: () => state.children().length,
   }),  update: ({ tx }): FooTx => ({
@@ -417,9 +420,9 @@ be inferred.
 
 The exported plugin value must infer from:
 
-- `defineBasePlugin(...)`;
-- `definePlatePlugin(...)`;
-- `toPlatePlugin(...)`;
+- `definePlugin(...)`;
+- `definePlugin(...)`;
+- `toReactPlugin(...)`;
 - chained `.extend()` calls.
 
 Never annotate or cast that result merely to preserve a desired type. If the
@@ -455,7 +458,7 @@ Use the shared flat `PLUGINS` catalog only for first-party capability identity.
 Resolve persisted identity from the schema-owning context or portal:
 
 ```ts
-defineBasePlugin(PLUGINS.paragraph, {
+definePlugin(PLUGINS.paragraph, {
   schema: { element: schema.element.textBlock() },
 });
 targetPlugins: [PLUGINS.paragraph];
@@ -466,9 +469,9 @@ editor.plugin(BoldPlugin).update.set(true);
 ```
 
 There are no rank-shaped heading capabilities or grouped aliases. Use
-`PLUGINS.heading`; persisted `level` carries rank. Function and property names must
-keep roles honest: use `plugin` for an exact descriptor-or-string lookup input
-and `name` after runtime normalization for capability work. Exact element and
+`PLUGINS.heading`; persisted `level` carries rank. Function and property names
+must keep roles honest: use `plugin` for a nominal descriptor lookup input and
+`name` for its capability namespace after resolution. Exact element and
 primary-mark portals expose `schema.type` and `schema.key`; behavior and
 aggregate-property portals omit `schema`. Additional property handles exist
 only in author callbacks and compiler internals. Never expose or index
@@ -479,12 +482,13 @@ storage catalog.
 Raw literals are for genuinely local/internal plugins and deliberate test
 fixtures.
 
-Use `editor.plugin(plugin)` whenever a descriptor is available so the portal
-keeps exact capabilities. A genuine runtime string uses the same `plugin`
-parameter and returns an erased portal whose `installed` field is the sole
-non-throwing capability-availability check. An uninstalled plugin has no final
-application schema handle; do not invent one from its name. Other missing
-portal fields throw. Never pass `{ name }` as a public lookup input.
+Use `editor.plugin(plugin)` with a nominal descriptor so the portal keeps
+exact capabilities. Dynamic application input must first resolve through an
+application-owned map of accepted descriptors. Public lookup rejects strings,
+weak `{ name }` objects, divergent siblings, and foreign same-name descriptors.
+An uninstalled descriptor has no final application schema handle;
+`installed: false` is the sole non-throwing availability check and other
+capability access throws.
 
 Preserve meaningful literal state types at the state owner:
 

@@ -251,8 +251,8 @@ editor.plugin(ImagePlugin).update.insert({
 
 | Selection | 行为 |
 | --- | --- |
-| 媒体路径上的 Plite `NodeSelection` | 聚焦资源，显示选中边框和空标题占位符；`ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
-| 媒体 children 内的 Plite `TextSelection` | 编辑标题；光标位于标题开头时，`ArrowUp` 返回资源焦点。 |
+| 媒体路径上的 Plate `NodeSelection` | 聚焦资源，显示选中边框和空标题占位符；`ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
+| 媒体 children 内的 Plate `TextSelection` | 编辑标题；光标位于标题开头时，`ArrowUp` 返回资源焦点。 |
 
 ### 自定义上传实现
 
@@ -536,7 +536,7 @@ enum UploadErrorCode {
     上传完成后创建的媒体节点类型，例如 `PLUGINS.image`、`PLUGINS.video`、
     `PLUGINS.audio` 或 `PLUGINS.file`。
   </APIItem>
-  <APIItem name="options" type="PlateNodeInsertOptions" optional>
+  <APIItem name="options" type="NodeInsertOptions" optional>
     精确路径和选区选项。
   </APIItem>
 </APIParameters>
@@ -551,12 +551,12 @@ enum UploadErrorCode {
   <APIItem name="url" type="string">
     图片 URL。
   </APIItem>
-  <APIItem name="options" type="PlateNodeInsertOptions" optional>
+  <APIItem name="options" type="NodeInsertOptions" optional>
     精确路径和选区选项。
   </APIItem>
 </APIParameters>
 
-<APIOptions type="PlateNodeInsertOptions">
+<APIOptions type="NodeInsertOptions">
   <APIItem name="at" type="Location" optional>
     精确插入目标。省略时插入到选中的块之后。
   </APIItem>
@@ -575,12 +575,12 @@ enum UploadErrorCode {
   <APIItem name="url" type="string">
     媒体 URL 或嵌入代码。
   </APIItem>
-  <APIItem name="options" type="PlateNodeInsertOptions" optional>
+  <APIItem name="options" type="NodeInsertOptions" optional>
     精确路径和选区选项。
   </APIItem>
 </APIParameters>
 
-<APIOptions type="PlateNodeInsertOptions">
+<APIOptions type="NodeInsertOptions">
   <APIItem name="at" type="Location" optional>
     精确插入目标。省略时必须存在当前选区。
   </APIItem>

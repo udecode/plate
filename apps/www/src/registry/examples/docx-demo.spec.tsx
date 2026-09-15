@@ -1,4 +1,5 @@
 import { compileEditor } from 'platejs/compiler';
+import { WordPastePlugin } from 'platejs/docx/paste';
 import { createEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
@@ -15,7 +16,7 @@ describe('DOCX example composition', () => {
       plugins: [...BasicBlocksKit, ...DocxKit],
     }).bindings.map((binding) => binding.name);
 
-    expect(editor.plugin('docx').installed).toBe(true);
-    expect(names.filter((name) => name === 'docx')).toHaveLength(1);
+    expect(editor.plugin(WordPastePlugin).installed).toBe(true);
+    expect(names.filter((name) => name === 'wordPaste')).toHaveLength(1);
   });
 });

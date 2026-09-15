@@ -1,6 +1,6 @@
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  definePlugin,
   editorCommands,
   ElementApi,
   type ElementOf,
@@ -9,7 +9,7 @@ import {
   NodeApi,
   type NodeSelection,
   PathApi,
-  type PlateBlockInsertOptions,
+  type BlockInsertOptions,
   PLUGINS,
   RangeApi,
   schema,
@@ -20,65 +20,61 @@ export type BaseDetailsPluginState = {
   openKeys: Set<NodeKey>;
 };
 
-export const BaseDetailsSummaryPlugin = defineBasePlugin(
-  PLUGINS.detailsSummary,
-  {
-    schema: {
-      element: {
-        ...schema.element.textBlock(),
-        type: 'summary',
-      },
+export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
+  schema: {
+    element: {
+      ...schema.element.textBlock(),
+      type: 'summary',
     },
-    codecs: ({ defineCodecs, schema: { type } }) =>
-      defineCodecs({
-        'text/html': {
-          decode: () => ({}),
-          encode: ({ content }) => ({ children: content, tag: 'summary' }),
-          match: [{ tag: 'summary' }],
-        },
-        'text/markdown': {
-          from: type,
-          kind: 'node',
-          decode: ({ decode, decoration, isInline, node }) => {
-            const paragraph =
-              node.children.length === 1 &&
-              node.children[0]?.type === 'paragraph'
-                ? node.children[0]
-                : undefined;
-            const children = decode(
-              paragraph ? paragraph.children : node.children,
-              decoration
+  },
+  codecs: ({ defineCodecs, schema: { type } }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => ({}),
+        encode: ({ content }) => ({ children: content, tag: 'summary' }),
+        match: [{ tag: 'summary' }],
+      },
+      'text/markdown': {
+        from: type,
+        kind: 'node',
+        decode: ({ decode, decoration, isInline, node }) => {
+          const paragraph =
+            node.children.length === 1 && node.children[0]?.type === 'paragraph'
+              ? node.children[0]
+              : undefined;
+          const children = decode(
+            paragraph ? paragraph.children : node.children,
+            decoration
+          );
+
+          if (
+            children.some(
+              (child) => ElementApi.isElement(child) && !isInline(child)
+            )
+          ) {
+            throw new Error(
+              'Summary children must be inline Markdown content.'
             );
+          }
 
-            if (
-              children.some(
-                (child) => ElementApi.isElement(child) && !isInline(child)
-              )
-            ) {
-              throw new Error(
-                'Summary children must be inline Markdown content.'
-              );
-            }
-
-            return { children, type };
-          },
-          encode: ({ encodePhrasing, node }) => ({
-            attributes: [],
-            children: [
-              {
-                children: encodePhrasing(node.children),
-                type: 'paragraph',
-              },
-            ],
-            name: type,
-            type: 'mdxJsxFlowElement',
-          }),
+          return { children, type };
         },
-      }),
-  }
-);
+        encode: ({ encodePhrasing, node }) => ({
+          attributes: [],
+          children: [
+            {
+              children: encodePhrasing(node.children),
+              type: 'paragraph',
+            },
+          ],
+          name: type,
+          type: 'mdxJsxFlowElement',
+        }),
+      },
+    }),
+});
 
-export const BaseDetailsPlugin = defineBasePlugin(PLUGINS.details, {
+export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
   dependencies: [BaseDetailsSummaryPlugin, BaseParagraphPlugin],
   initialState: (): BaseDetailsPluginState => ({
     openKeys: new Set(),
@@ -253,7 +249,7 @@ export const BaseDetailsPlugin = defineBasePlugin(PLUGINS.details, {
     update: ({ tx }) => ({
       insert: (
         data: Record<string, never> = {},
-        { select, ...options }: PlateBlockInsertOptions = {}
+        { select, ...options }: BlockInsertOptions = {}
       ) => {
         const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
         const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema.type;
@@ -470,7 +466,7 @@ export const BaseDetailsPlugin = defineBasePlugin(PLUGINS.details, {
           state.points.isStart(selection.anchor, summary[1])
         ) {
           return state.transaction((tx) => {
-            tx.plugin(plugin).unwrap({ at: details[1] });
+            tx.plugin(plugin.name).unwrap({ at: details[1] });
           });
         }
 

@@ -84,7 +84,7 @@ const value = editor.api.markdown.deserialize(
   [
     '# Migration Note',
     '',
-    'Move legacy content into **Plate** format.',
+    'Move legacy content into **EditorRoot** format.',
   ].join('\n')
 );
 
@@ -173,8 +173,8 @@ export function normalizeHeadings(value: Value) {
 | Serialize to Markdown | [Markdown](/docs/markdown) |
 | Serialize to HTML | [HTML](/docs/html) |
 | Render read-only content | [Static Rendering](/docs/static) |
-| Query editor state | [Editor API](/docs/api/plite/editor-api) |
-| Apply transforms | [Editor Transforms](/docs/api/plite/editor-transforms) |
+| Query editor state | [Editor API](/docs/api/editor-api) |
+| Apply transforms | [Editor Transforms](/docs/api/editor-transforms) |
 
 Done. You now have a server-safe Plate runtime that can power migration scripts,
 validation jobs, and content serialization.

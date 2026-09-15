@@ -9,7 +9,7 @@ test.describe('styling example', () => {
   test('applies styles to editor from style prop', async ({ page }) => {
     await page.waitForLoadState('domcontentloaded');
 
-    const editor = page.locator('[data-plite-editor=true]').nth(0);
+    const editor = page.locator('[data-editor=true]').nth(0);
     const styles = await editor.evaluate((el) => {
       const {
         backgroundColor,
@@ -49,7 +49,7 @@ test.describe('styling example', () => {
   test('applies styles to editor from className prop', async ({ page }) => {
     await page.waitForLoadState('domcontentloaded');
 
-    const editor = page.locator('[data-plite-editor=true]').nth(1);
+    const editor = page.locator('[data-editor=true]').nth(1);
     const styles = await editor.evaluate((el) => {
       const {
         backgroundColor,

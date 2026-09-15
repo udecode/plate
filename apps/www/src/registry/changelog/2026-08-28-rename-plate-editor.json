@@ -20,7 +20,8 @@
     {
       "name": "editor-ai",
       "files": [
-        "apps/www/src/registry/blocks/editor-ai/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor-value.ts",
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor.tsx",
         "apps/www/src/registry/blocks/editor-ai/page.tsx"
       ],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
@@ -29,7 +30,7 @@
     {
       "name": "editor-basic",
       "files": [
-        "apps/www/src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-basic/components/editor/rich-text-editor.tsx",
         "apps/www/src/registry/blocks/editor-basic/page.tsx"
       ],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],

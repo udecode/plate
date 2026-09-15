@@ -10,6 +10,7 @@ describe('AIChatPlugin', () => {
   it('installs its AI and Markdown dependencies once', () => {
     const editor = createEditor({
       plugins: [AIChatPlugin],
+      userId: 'alice',
     });
     const names = getPlateRuntime(editor).pluginList.map(
       (plugin) => plugin.name
@@ -24,6 +25,7 @@ describe('AIChatPlugin', () => {
   it('clears internal streaming state when stop is called', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'alice',
       initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }],
     });
 
@@ -47,6 +49,7 @@ describe('AIChatPlugin', () => {
     ];
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'alice',
       initialValue,
     });
 
@@ -60,6 +63,7 @@ describe('AIChatPlugin', () => {
   it('hides and removes its anchor without adding history', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'alice',
       initialValue: [
         { children: [{ text: '' }], type: 'paragraph' },
         { children: [{ text: '' }], type: 'aiChat' },
@@ -76,6 +80,7 @@ describe('AIChatPlugin', () => {
   it('matches the selection updated earlier in the active transaction', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'alice',
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [1, 0] },

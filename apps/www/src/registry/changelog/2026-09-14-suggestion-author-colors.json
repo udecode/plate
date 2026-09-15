@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-14-suggestion-author-colors",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-14-suggestion-author-colors.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-14",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Distinguish suggestion authors by color",
+  "targets": [
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-style",
+      "files": ["apps/www/src/registry/lib/inline-suggestion.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-14-suggestion-distinguish-authors-by-color-b9a2a2e7",
+      "kind": "behavior",
+      "summary": "Use green for the current user's suggestions and stable distinct colors for collaborators, with underlines for insertions and strikethroughs for deletions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["suggestion", "suggestion-style"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-14",
+          "entry": "2026-09-14-suggestion-author-colors",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -6,7 +6,7 @@ import * as React from 'react';
 let clickOutside: () => void;
 const floatingUpdate = mock();
 const setFloating = mock();
-const useWidgetFloatingMock = mock();
+const useFloatingRectMock = mock();
 let floatingOptions: { onOpenChange: (open: boolean) => void };
 let editorFocused = true;
 let selectedNodeCount = 0;
@@ -36,7 +36,7 @@ mock.module('platejs/ai/react', () => ({
 mock.module('platejs/react', () => ({
   BoldPlugin: { name: 'bold' },
   CodePlugin: { name: 'code' },
-  definePlatePlugin: (name: string, definition: object) => ({
+  definePlugin: (name: string, definition: object) => ({
     ...definition,
     name,
   }),
@@ -76,10 +76,10 @@ mock.module('@floating-ui/react', () => ({
   useInteractions: () => ({ getFloatingProps: (props = {}) => props }),
 }));
 
-mock.module('@/registry/hooks/use-widget-floating', () => ({
-  useWidgetFloating: (_geometry: unknown, options: typeof floatingOptions) => {
+mock.module('@/registry/hooks/use-floating-rect', () => ({
+  useFloatingRect: (_rect: unknown, options: typeof floatingOptions) => {
     floatingOptions = options;
-    useWidgetFloatingMock(options);
+    useFloatingRectMock(options);
 
     return {
       refs: { setFloating },
@@ -152,7 +152,7 @@ describe('FloatingToolbar', () => {
     };
     floatingUpdate.mockClear();
     setFloating.mockClear();
-    useWidgetFloatingMock.mockClear();
+    useFloatingRectMock.mockClear();
   });
 
   afterAll(() => {
@@ -182,7 +182,7 @@ describe('FloatingToolbar', () => {
     );
 
     expect(view.queryByText('toolbar')).toBeNull();
-    expect(useWidgetFloatingMock).not.toHaveBeenCalled();
+    expect(useFloatingRectMock).not.toHaveBeenCalled();
   });
 
   it('mounts positioning only while visible and resumes after collapse', async () => {
@@ -195,29 +195,29 @@ describe('FloatingToolbar', () => {
     );
 
     expect(view.queryByText('toolbar')).toBeNull();
-    expect(useWidgetFloatingMock).not.toHaveBeenCalled();
+    expect(useFloatingRectMock).not.toHaveBeenCalled();
 
     selectionExpanded = true;
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
     expect(view.getByText('toolbar')).toBeTruthy();
-    expect(useWidgetFloatingMock).toHaveBeenCalled();
+    expect(useFloatingRectMock).toHaveBeenCalled();
 
     selectionExpanded = false;
-    useWidgetFloatingMock.mockClear();
+    useFloatingRectMock.mockClear();
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
     expect(view.queryByText('toolbar')).toBeNull();
-    expect(useWidgetFloatingMock).not.toHaveBeenCalled();
+    expect(useFloatingRectMock).not.toHaveBeenCalled();
 
     selectionExpanded = true;
     view.rerender(
       <FloatingToolbar editableRef={editableRef}>toolbar</FloatingToolbar>
     );
     expect(view.getByText('toolbar')).toBeTruthy();
-    expect(useWidgetFloatingMock).toHaveBeenCalled();
+    expect(useFloatingRectMock).toHaveBeenCalled();
   });
 
   it('allows the same range to reopen after a collapsed selection lifecycle', async () => {

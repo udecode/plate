@@ -8,11 +8,10 @@ import {
 } from 'platejs/footnote/react';
 import {
   type Editor,
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditor,
   useEditorFocused,
-  useEditorPlugin,
   useEditorSelector,
   useElementSelected,
   usePath,
@@ -79,7 +78,7 @@ const getReferenceContextLabel = (
 };
 
 export function FootnoteReferenceElement(
-  props: PlateElementProps<typeof FootnotePlugin>
+  props: EditorElementProps<typeof FootnotePlugin>
 ) {
   const { element } = props;
   const path = usePath();
@@ -87,7 +86,7 @@ export function FootnoteReferenceElement(
     api: footnoteNavigation,
     read: footnoteApi,
     update: footnoteUpdate,
-  } = useEditorPlugin(FootnotePlugin);
+  } = useEditor().plugin(FootnotePlugin);
   const ref = element.ref ?? '';
   const [hoverOpen, setHoverOpen] = React.useState(false);
   const focused = useEditorFocused();
@@ -119,7 +118,7 @@ export function FootnoteReferenceElement(
   });
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       as="sup"
       className="group/footnote-ref mx-0.5 align-super"
@@ -196,12 +195,12 @@ export function FootnoteReferenceElement(
           </HoverCardContent>
         ) : null}
       </HoverCard>
-    </PlateElement>
+    </EditorElement>
   );
 }
 
 export function FootnoteDefinitionElement(
-  props: PlateElementProps<typeof FootnoteDefinitionPlugin>
+  props: EditorElementProps<typeof FootnoteDefinitionPlugin>
 ) {
   const { element } = props;
   const path = usePath();
@@ -210,7 +209,7 @@ export function FootnoteDefinitionElement(
     api: footnoteNavigation,
     read: footnoteApi,
     update: footnoteUpdate,
-  } = useEditorPlugin(FootnotePlugin);
+  } = useEditor().plugin(FootnotePlugin);
   const ref = element.ref ?? '';
   const definitionState = useEditorSelector(() => {
     const isDuplicateDefinition =
@@ -239,7 +238,7 @@ export function FootnoteDefinitionElement(
   const hasMultipleReferences = referenceItems.length > 1;
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       className={cn(
         'mt-1.5 flex items-start gap-1.5 data-[nav-target=true]:rounded-md data-[nav-target=true]:bg-(--color-highlight)',
@@ -367,15 +366,15 @@ export function FootnoteDefinitionElement(
         ) : null}
         {props.children}
       </div>
-    </PlateElement>
+    </EditorElement>
   );
 }
 
 export function FootnoteInputElement(
-  props: PlateElementProps<typeof FootnoteInputPlugin>
+  props: EditorElementProps<typeof FootnoteInputPlugin>
 ) {
   const { element } = props;
-  const { read: footnoteApi } = useEditorPlugin(FootnotePlugin);
+  const { read: footnoteApi } = useEditor().plugin(FootnotePlugin);
   const [search, setSearch] = React.useState('');
 
   const refs = footnoteApi.refs?.() ?? [];
@@ -396,7 +395,7 @@ export function FootnoteInputElement(
   });
 
   return (
-    <PlateElement {...props} as="span">
+    <EditorElement {...props} as="span">
       <InlineCombobox
         value={search}
         element={element}
@@ -462,7 +461,7 @@ export function FootnoteInputElement(
       </InlineCombobox>
 
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 

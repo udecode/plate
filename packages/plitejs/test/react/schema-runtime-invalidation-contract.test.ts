@@ -1,7 +1,7 @@
 import {
   createEditor,
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   property,
   schema,
   target,
@@ -42,15 +42,15 @@ const articleSchema = (version: number, paragraphReadOnly: boolean) =>
   });
 
 test('schema invalidation targets node keys of changed element types', () => {
-  const slot = defineExtensionSlot('react-schema-runtime-invalidation');
+  const slot = definePluginSlot('react-schema-runtime-invalidation');
   const editor = createEditor({
-    extensions: [slot.of(articleSchema(1, false))],
+    plugins: [slot.of(articleSchema(1, false))],
     initialValue: [paragraph('body'), heading('title')],
   });
   const paragraphNodeKey = getNodeKey(editor, [0]);
   const headingNodeKey = getNodeKey(editor, [1]);
 
-  editor.update.extensions.reconfigure(slot, articleSchema(2, true));
+  editor.update.plugins.reconfigure(slot, articleSchema(2, true));
 
   const commit = editor.read.lastCommit();
 
@@ -85,11 +85,9 @@ const projectedSchema = (version: number, paragraphReadOnly: boolean) =>
   });
 
 test('schema invalidation includes node keys in projected roots', () => {
-  const slot = defineExtensionSlot(
-    'react-projected-schema-runtime-invalidation'
-  );
+  const slot = definePluginSlot('react-projected-schema-runtime-invalidation');
   const editor = createEditor({
-    extensions: [slot.of(projectedSchema(1, false))],
+    plugins: [slot.of(projectedSchema(1, false))],
     initialValue: {
       children: [
         {
@@ -107,7 +105,7 @@ test('schema invalidation includes node keys in projected roots', () => {
     'card:body'
   );
 
-  editor.update.extensions.reconfigure(slot, projectedSchema(2, true));
+  editor.update.plugins.reconfigure(slot, projectedSchema(2, true));
 
   const commit = editor.read.lastCommit();
 
@@ -147,15 +145,15 @@ const propertySchema = (
   });
 
 test('schema invalidation targets element-property applicability without widening', () => {
-  const slot = defineExtensionSlot('react-schema-element-property');
+  const slot = definePluginSlot('react-schema-element-property');
   const editor = createEditor({
-    extensions: [slot.of(propertySchema(1, 'preserve', true))],
+    plugins: [slot.of(propertySchema(1, 'preserve', true))],
     initialValue: [paragraph('body'), heading('title')],
   });
   const paragraphNodeKey = getNodeKey(editor, [0]);
   const headingNodeKey = getNodeKey(editor, [1]);
 
-  editor.update.extensions.reconfigure(slot, propertySchema(2, 'drop', true));
+  editor.update.plugins.reconfigure(slot, propertySchema(2, 'drop', true));
   const commit = editor.read.lastCommit();
 
   if (!commit || !paragraphNodeKey || !headingNodeKey) {
@@ -173,18 +171,15 @@ test('schema invalidation targets element-property applicability without widenin
 });
 
 test('schema invalidation targets text-property parent elements', () => {
-  const slot = defineExtensionSlot('react-schema-text-property');
+  const slot = definePluginSlot('react-schema-text-property');
   const editor = createEditor({
-    extensions: [slot.of(propertySchema(1, 'preserve', true))],
+    plugins: [slot.of(propertySchema(1, 'preserve', true))],
     initialValue: [paragraph('body'), heading('title')],
   });
   const paragraphNodeKey = getNodeKey(editor, [0]);
   const headingNodeKey = getNodeKey(editor, [1]);
 
-  editor.update.extensions.reconfigure(
-    slot,
-    propertySchema(2, 'preserve', false)
-  );
+  editor.update.plugins.reconfigure(slot, propertySchema(2, 'preserve', false));
   const commit = editor.read.lastCommit();
 
   if (!commit || !paragraphNodeKey || !headingNodeKey) {
@@ -220,13 +215,13 @@ const constructionPropertySchema = (version: number, defaultAlign: string) =>
   });
 
 test('property defaults invalidate affected construction types', () => {
-  const slot = defineExtensionSlot('react-schema-construction-property');
+  const slot = definePluginSlot('react-schema-construction-property');
   const editor = createEditor({
-    extensions: [slot.of(constructionPropertySchema(1, 'left'))],
+    plugins: [slot.of(constructionPropertySchema(1, 'left'))],
     initialValue: [{ ...paragraph('body'), align: 'left' }],
   });
 
-  editor.update.extensions.reconfigure(
+  editor.update.plugins.reconfigure(
     slot,
     constructionPropertySchema(2, 'right'),
     {
@@ -257,9 +252,9 @@ const rootedSchema = (version: number, mainMax: number, notesMax: number) =>
   });
 
 test('schema invalidation targets only top-level elements in a changed main root', () => {
-  const slot = defineExtensionSlot('react-schema-main-root');
+  const slot = definePluginSlot('react-schema-main-root');
   const editor = createEditor({
-    extensions: [slot.of(rootedSchema(1, 3, 3))],
+    plugins: [slot.of(rootedSchema(1, 3, 3))],
     initialValue: {
       children: [paragraph('body'), heading('title')],
       roots: { notes: [heading('note'), paragraph('detail')] },
@@ -272,7 +267,7 @@ test('schema invalidation targets only top-level elements in a changed main root
     'notes'
   ).map((entry) => entry.nodeKey);
 
-  editor.update.extensions.reconfigure(slot, rootedSchema(2, 2, 3));
+  editor.update.plugins.reconfigure(slot, rootedSchema(2, 2, 3));
   const commit = editor.read.lastCommit();
 
   if (!commit || mainNodeKeys.some((nodeKey) => !nodeKey)) {
@@ -287,9 +282,9 @@ test('schema invalidation targets only top-level elements in a changed main root
 });
 
 test('schema invalidation isolates a changed named root', () => {
-  const slot = defineExtensionSlot('react-schema-named-root');
+  const slot = definePluginSlot('react-schema-named-root');
   const editor = createEditor({
-    extensions: [slot.of(rootedSchema(1, 3, 3))],
+    plugins: [slot.of(rootedSchema(1, 3, 3))],
     initialValue: {
       children: [paragraph('body'), heading('title')],
       roots: { notes: [heading('note'), paragraph('detail')] },
@@ -302,7 +297,7 @@ test('schema invalidation isolates a changed named root', () => {
     'notes'
   ).map((entry) => entry.nodeKey);
 
-  editor.update.extensions.reconfigure(slot, rootedSchema(2, 3, 2));
+  editor.update.plugins.reconfigure(slot, rootedSchema(2, 3, 2));
   const commit = editor.read.lastCommit();
 
   if (!commit || mainNodeKeys.some((nodeKey) => !nodeKey)) {

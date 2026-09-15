@@ -51,7 +51,7 @@ if (!selectAllDeleteInputModes.has(selectAllDeleteInputMode)) {
 const selectedSurfaces = new Set(
   (
     process.env.PLITE_BROWSER_TRACE_SURFACES ||
-    'defaultAuto,stagedActiveDOMGroup'
+    'pliteComplete,virtualized'
   )
     .split(',')
     .map((surface) => surface.trim())
@@ -104,42 +104,23 @@ const typeText = 'X'.repeat(typeOps);
 const surfaces = [
   {
     expectedScenario: 'plate-basic',
-    expectedStrategy: 'full',
-    key: 'plateFull',
-    label: 'Plate basic full DOM',
+    expectedRenderingMode: 'complete',
+    key: 'plateComplete',
+    label: 'Plate basic complete DOM',
     measureTopLevelDOM: true,
     path: `/dev/editor-perf?blocks=${blocks}&chunking=false&chunk_size=1000&content_visibility=none&scenario_workload=huge-mixed-block&scenario=plate-basic`,
   },
   {
-    expectedStrategy: 'full',
-    key: 'pliteFull',
-    label: 'Plite full DOM',
-    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=full`,
+    expectedRenderingMode: 'complete',
+    key: 'pliteComplete',
+    label: 'Plite complete DOM',
+    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&rendering=complete`,
   },
   {
-    key: 'defaultAuto',
-    label: 'v2 auto',
-    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=auto`,
-  },
-  {
-    key: 'stagedActiveDOMGroup',
-    label: 'v2 staged active DOM group',
-    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=staged`,
-  },
-  {
-    key: 'stagedDefault',
-    label: 'v2 staged default',
-    path: `/examples/plite/huge-document?blocks=${blocks}&strict=false&strategy=staged`,
-  },
-  {
-    key: 'stagedContentVisibility',
-    label: 'v2 staged content-visibility',
-    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=element&strict=false&strategy=staged`,
-  },
-  {
+    expectedRenderingMode: 'virtualized',
     key: 'virtualized',
-    label: 'v2 virtualized',
-    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&strategy=virtualized&threshold=1&overscan=2&editor_height=600`,
+    label: 'Plite virtualized',
+    path: `/examples/plite/huge-document?blocks=${blocks}&content_visibility=none&strict=false&rendering=virtualized&overscan=2&editor_height=600`,
   },
 ].filter((surface) => selectedSurfaces.has(surface.key));
 
@@ -152,6 +133,11 @@ const lanes = [
   {
     blockIndex: Math.floor(blocks / 2),
     key: 'middleBlock',
+    offset: 1,
+  },
+  {
+    blockIndex: Math.max(0, blocks - 1),
+    key: 'endBlock',
     offset: 1,
   },
 ];
@@ -235,8 +221,8 @@ const installTraceObserver = async (page) => {
   await page.evaluate(() => {
     const target = globalThis;
 
-    if (target.__PLITE_BROWSER_TRACE_OBSERVER__) {
-      target.__PLITE_BROWSER_TRACE__?.reset?.();
+    if (target.__EDITOR_BROWSER_TRACE_OBSERVER__) {
+      target.__EDITOR_BROWSER_TRACE__?.reset?.();
       return;
     }
 
@@ -270,9 +256,9 @@ const installTraceObserver = async (page) => {
       },
     };
 
-    target.__PLITE_BROWSER_TRACE__ = trace;
-    target.__PLITE_BROWSER_TRACE_OBSERVER__ = true;
-    target.__PLITE_REACT_RENDER_PROFILER__ = {
+    target.__EDITOR_BROWSER_TRACE__ = trace;
+    target.__EDITOR_BROWSER_TRACE_OBSERVER__ = true;
+    target.__EDITOR_REACT_RENDER_PROFILER__ = {
       record(event) {
         trace.profilerEvents.push(event);
       },
@@ -329,7 +315,7 @@ const installTraceObserver = async (page) => {
             ? event.target.parentElement
             : null;
       const targetTextHost =
-        targetElement?.closest?.('[data-plite-node="text"]') ?? null;
+        targetElement?.closest?.('[data-editor-node="text"]') ?? null;
       const selection = document.getSelection();
       const anchorElement =
         selection?.anchorNode instanceof Element
@@ -338,20 +324,20 @@ const installTraceObserver = async (page) => {
             ? selection.anchorNode.parentElement
             : null;
       const anchorTextHost =
-        anchorElement?.closest?.('[data-plite-node="text"]') ?? null;
-      const root = targetElement?.closest?.('[data-plite-editor="true"]');
+        anchorElement?.closest?.('[data-editor-node="text"]') ?? null;
+      const root = targetElement?.closest?.('[data-editor="true"]');
       const handle = root?.__pliteBrowserHandle ?? null;
 
       return {
         anchorOffset: selection?.anchorOffset ?? null,
-        anchorPath: anchorTextHost?.getAttribute('data-plite-path') ?? null,
+        anchorPath: anchorTextHost?.getAttribute('data-editor-path') ?? null,
         anchorText: anchorTextHost?.textContent?.replace(/\uFEFF/g, '') ?? null,
         handleSelection: handle?.getSelection?.() ?? null,
         inputState: handle?.getInputState?.() ?? null,
-        targetPath: targetTextHost?.getAttribute('data-plite-path') ?? null,
-        targetSync: targetTextHost?.getAttribute('data-plite-dom-sync') ?? null,
+        targetPath: targetTextHost?.getAttribute('data-editor-path') ?? null,
+        targetSync: targetTextHost?.getAttribute('data-editor-dom-sync') ?? null,
         targetSyncReason:
-          targetTextHost?.getAttribute('data-plite-dom-sync-reason') ?? null,
+          targetTextHost?.getAttribute('data-editor-dom-sync-reason') ?? null,
         targetText: targetTextHost?.textContent?.replace(/\uFEFF/g, '') ?? null,
       };
     };
@@ -504,7 +490,7 @@ const installTraceObserver = async (page) => {
 const waitForEditorReady = async (page) => {
   await page.waitForFunction(
     () => {
-      const root = document.querySelector('[data-plite-editor="true"]');
+      const root = document.querySelector('[data-editor="true"]');
       return !!root?.__pliteBrowserHandle?.selectRange;
     },
     undefined,
@@ -519,11 +505,11 @@ const waitForNativeSurface = async (page, surface) => {
     .waitForFunction(
       ({
         expectedBlocks,
+        expectedRenderingMode,
         expectedScenario,
-        expectedStrategy,
         measureTopLevelDOM,
       }) => {
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
 
         if (!root) {
           return false;
@@ -537,41 +523,38 @@ const waitForNativeSurface = async (page, surface) => {
 
           return Number.isFinite(value) ? value : 0;
         };
-        const effectiveStrategy = document.querySelector(
-          '[data-test-id="huge-document-effective-strategy"]',
+        const renderingMode = document.querySelector(
+          '[data-test-id="huge-document-rendering-mode"]',
         )?.textContent;
         const activeScenario = document.querySelector(
           '[data-test-id="editor-perf-active-scenario"]',
         )?.textContent;
         const mountedTopLevelCount = measureTopLevelDOM
-          ? root.querySelectorAll(':scope > [data-plite-node="element"]').length
+          ? root.querySelectorAll(':scope > [data-editor-node="element"]').length
           : readNumber('huge-document-mounted-top-level-count');
 
         if (expectedScenario && activeScenario !== expectedScenario) {
           return false;
         }
-        if (expectedStrategy && effectiveStrategy !== expectedStrategy) {
+        if (expectedRenderingMode && renderingMode !== expectedRenderingMode) {
           return false;
         }
 
-        const bounded =
-          effectiveStrategy === 'partial-dom' ||
-          effectiveStrategy === 'virtualized' ||
-          effectiveStrategy === 'staged';
+        const bounded = renderingMode === 'virtualized';
 
         if (bounded) {
           return mountedTopLevelCount > 0;
         }
 
         return (
-          root.querySelectorAll('[data-plite-node="text"]').length >=
+          root.querySelectorAll('[data-editor-node="text"]').length >=
           expectedBlocks
         );
       },
       {
         expectedBlocks: blocks,
+        expectedRenderingMode: surface.expectedRenderingMode,
         expectedScenario: surface.expectedScenario,
-        expectedStrategy: surface.expectedStrategy,
         measureTopLevelDOM: surface.measureTopLevelDOM,
       },
       { timeout: nativeSurfaceTimeoutMs },
@@ -583,7 +566,7 @@ const waitForNativeSurface = async (page, surface) => {
   const domTags = await getMemoryAndDomTags(page);
   const state = await page.evaluate(
     ({ expectedBlocks, measureTopLevelDOM }) => {
-      const root = document.querySelector('[data-plite-editor="true"]');
+      const root = document.querySelector('[data-editor="true"]');
       const readText = (testId) =>
         document.querySelector(`[data-test-id="${testId}"]`)?.textContent ??
         null;
@@ -592,29 +575,25 @@ const waitForNativeSurface = async (page, surface) => {
 
         return Number.isFinite(value) ? value : 0;
       };
-      const effectiveStrategy = readText('huge-document-effective-strategy');
+      const renderingMode = readText('huge-document-rendering-mode');
       const editorTextNodeCount =
-        root?.querySelectorAll('[data-plite-node="text"]').length ?? 0;
+        root?.querySelectorAll('[data-editor-node="text"]').length ?? 0;
       const mountedTopLevelCount = measureTopLevelDOM
-        ? (root?.querySelectorAll(':scope > [data-plite-node="element"]')
+        ? (root?.querySelectorAll(':scope > [data-editor-node="element"]')
             .length ?? 0)
         : readNumber('huge-document-mounted-top-level-count');
-      const bounded =
-        effectiveStrategy === 'partial-dom' ||
-        effectiveStrategy === 'virtualized' ||
-        effectiveStrategy === 'staged';
+      const bounded = renderingMode === 'virtualized';
 
       return {
         activeScenario: readText('editor-perf-active-scenario'),
         bounded,
         complete: !bounded && editorTextNodeCount >= expectedBlocks,
         editorTextNodeCount,
-        effectiveStrategy,
         mountedTopLevelCount,
         pendingTopLevelCount: measureTopLevelDOM
           ? Math.max(0, expectedBlocks - mountedTopLevelCount)
           : readNumber('huge-document-pending-top-level-count'),
-        requestedStrategy: readText('huge-document-requested-strategy'),
+        renderingMode,
       };
     },
     {
@@ -629,31 +608,30 @@ const waitForNativeSurface = async (page, surface) => {
     complete: state.complete,
     durationMs: end - start,
     editorTextNodeCount: state.editorTextNodeCount,
-    effectiveStrategy: state.effectiveStrategy,
     mountedTopLevelCount: state.mountedTopLevelCount,
     observedBlocks: domTags.editorElementCount,
     pendingTopLevelCount: state.pendingTopLevelCount,
-    requestedStrategy: state.requestedStrategy,
+    renderingMode: state.renderingMode,
   };
 };
 
 const resetTrace = async (page) => {
   await page.evaluate(() => {
-    globalThis.__PLITE_BROWSER_TRACE__?.reset?.();
+    globalThis.__EDITOR_BROWSER_TRACE__?.reset?.();
   });
 };
 
 const getTraceSnapshot = async (page) =>
-  page.evaluate(() => globalThis.__PLITE_BROWSER_TRACE__?.snapshot?.() ?? null);
+  page.evaluate(() => globalThis.__EDITOR_BROWSER_TRACE__?.snapshot?.() ?? null);
 
 const getLaneDiagnostics = async (page, lane, beforeTypeState) =>
   page.evaluate(
     ({ beforeTypeState, index }) => {
-      const root = document.querySelector('[data-plite-editor="true"]');
+      const root = document.querySelector('[data-editor="true"]');
       const activeElement = document.activeElement;
       const domSelection = document.getSelection();
       const traceSnapshot =
-        globalThis.__PLITE_BROWSER_TRACE__?.snapshot?.() ?? null;
+        globalThis.__EDITOR_BROWSER_TRACE__?.snapshot?.() ?? null;
       const truncateText = (value) =>
         typeof value === 'string' && value.length > 160
           ? `${value.slice(0, 157)}...`
@@ -695,12 +673,12 @@ const getLaneDiagnostics = async (page, lane, beforeTypeState) =>
       });
       const block = root
         ?.querySelector(
-          `[data-plite-node="text"][data-plite-path="${index},0"]`,
+          `[data-editor-node="text"][data-editor-path="${index},0"]`,
         )
-        ?.closest('[data-plite-node="element"]');
+        ?.closest('[data-editor-node="element"]');
       const selectedText =
         domSelection?.anchorNode?.parentElement?.closest(
-          '[data-plite-node="element"]',
+          '[data-editor-node="element"]',
         )?.textContent ?? null;
 
       return {
@@ -1017,18 +995,18 @@ const summarizeLongTaskAttributionTotals = (entries) => {
 
 const readBlockText = async (page, blockIndex) =>
   page.evaluate((index) => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const textElement = root?.querySelector(
-      `[data-plite-node="text"][data-plite-path="${index},0"]`,
+      `[data-editor-node="text"][data-editor-path="${index},0"]`,
     );
-    const block = textElement?.closest('[data-plite-node="element"]');
+    const block = textElement?.closest('[data-editor-node="element"]');
 
     return (block ?? textElement)?.textContent?.replace(/\uFEFF/g, '') ?? null;
   }, blockIndex);
 
 const readModelBlockText = async (page, blockIndex) =>
   page.evaluate((index) => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const getBlockText = root?.__pliteBrowserHandle?.getBlockText;
 
     return typeof getBlockText === 'function' ? getBlockText(index) : null;
@@ -1043,7 +1021,7 @@ const waitForModelBlockText = async (
   await page
     .waitForFunction(
       ({ expectedText, index }) => {
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
         const getBlockText = root?.__pliteBrowserHandle?.getBlockText;
 
         return (
@@ -1090,7 +1068,7 @@ const waitForSelection = async (page, expected, context, timeout = 10_000) => {
           left.offset === right.offset &&
           left.path.length === right.path.length &&
           left.path.every((part, index) => part === right.path[index]);
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
         const selection = root?.__pliteBrowserHandle?.getSelection?.() ?? null;
 
         return (
@@ -1104,7 +1082,7 @@ const waitForSelection = async (page, expected, context, timeout = 10_000) => {
     )
     .catch(async (error) => {
       const selection = await page.evaluate(() => {
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
 
         return root?.__pliteBrowserHandle?.getSelection?.() ?? null;
       });
@@ -1123,7 +1101,7 @@ const waitForCollapsedEmptyDocument = async (
   await page
     .waitForFunction(
       () => {
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
         const handle = root?.__pliteBrowserHandle;
         const selection = handle?.getSelection?.() ?? null;
 
@@ -1143,7 +1121,7 @@ const waitForCollapsedEmptyDocument = async (
     )
     .catch(async (error) => {
       const diagnostics = await page.evaluate(() => {
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
         const handle = root?.__pliteBrowserHandle;
 
         return {
@@ -1168,7 +1146,7 @@ const waitForDocumentBoundaryRestore = async (
   await page
     .waitForFunction(
       ({ expected }) => {
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
         const handle = root?.__pliteBrowserHandle;
         const selection = handle?.getSelection?.() ?? null;
 
@@ -1188,7 +1166,7 @@ const waitForDocumentBoundaryRestore = async (
     )
     .catch(async (error) => {
       const diagnostics = await page.evaluate((lastIndex) => {
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
         const handle = root?.__pliteBrowserHandle;
 
         return {
@@ -1206,7 +1184,7 @@ const waitForDocumentBoundaryRestore = async (
 
 const readDocumentBoundaryDiagnostics = async (page, lastIndex) =>
   page.evaluate((lastIndex) => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const handle = root?.__pliteBrowserHandle;
     const truncateText = (value) =>
       typeof value === 'string' && value.length > 160
@@ -1298,7 +1276,7 @@ const measureHandleUndoRestore = async (page, expected, context) => {
   const startedAt = await page.evaluate(() => performance.now());
 
   await page.evaluate(() => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const handle = root?.__pliteBrowserHandle;
 
     if (!handle?.undo) {
@@ -1401,7 +1379,7 @@ const summarizeTracePhase = async (page) => {
 const measureSelectAllDeleteFlow = async (page, surfaceKey) => {
   await resetTrace(page);
   const focused = await page.evaluate(() => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
 
     root?.focus();
 
@@ -1559,16 +1537,16 @@ const measureSelectAllDeleteFlow = async (page, surfaceKey) => {
 
 const getMemoryAndDomTags = async (page) =>
   page.evaluate(() => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const performanceMemory =
       'memory' in performance ? performance.memory : null;
 
     return {
       domNodeCount: document.querySelectorAll('*').length,
       editorElementCount:
-        root?.querySelectorAll('[data-plite-node="element"]').length ?? 0,
+        root?.querySelectorAll('[data-editor-node="element"]').length ?? 0,
       editorTextNodeCount:
-        root?.querySelectorAll('[data-plite-node="text"]').length ?? 0,
+        root?.querySelectorAll('[data-editor-node="text"]').length ?? 0,
       jsHeapUsedMB:
         performanceMemory &&
         typeof performanceMemory.usedJSHeapSize === 'number'
@@ -1579,7 +1557,7 @@ const getMemoryAndDomTags = async (page) =>
 
 const getScrollParentSnapshot = async (page) =>
   page.evaluate(() => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const scrollParent = root
       ? Array.from(document.querySelectorAll('*')).find(
           (element) =>
@@ -1602,7 +1580,7 @@ const getScrollParentSnapshot = async (page) =>
 const requestCollapsedSelection = async (page, blockIndex, offset) =>
   page.evaluate(
     ({ index, offset }) => {
-      const root = document.querySelector('[data-plite-editor="true"]');
+      const root = document.querySelector('[data-editor="true"]');
 
       if (!(root instanceof HTMLElement)) {
         throw new Error('Missing Plite editor root');
@@ -1626,9 +1604,9 @@ const requestCollapsedSelection = async (page, blockIndex, offset) =>
 
 const getMaterializationDiagnostics = async (page, blockIndex) =>
   page.evaluate((index) => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const virtualizer = root?.querySelector(
-      '[data-plite-dom-strategy-virtualizer="true"]',
+      '[data-editor-virtualized-viewport="true"]',
     );
     const scrollParent = root
       ? Array.from(document.querySelectorAll('*')).find(
@@ -1639,12 +1617,12 @@ const getMaterializationDiagnostics = async (page, blockIndex) =>
         )
       : null;
     const textElements = Array.from(
-      root?.querySelectorAll('[data-plite-node="text"]') ?? [],
+      root?.querySelectorAll('[data-editor-node="text"]') ?? [],
     );
 
     return {
       exactPathExists: !!root?.querySelector(
-        `[data-plite-node="text"][data-plite-path="${index},0"]`,
+        `[data-editor-node="text"][data-editor-path="${index},0"]`,
       ),
       handleInputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
       handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
@@ -1653,7 +1631,7 @@ const getMaterializationDiagnostics = async (page, blockIndex) =>
         typeof root?.__pliteBrowserHandle?.scrollPathIntoView === 'function',
       mountedTextPaths: textElements
         .slice(0, 20)
-        .map((element) => element.getAttribute('data-plite-path')),
+        .map((element) => element.getAttribute('data-editor-path')),
       requestedIndex: index,
       rootTextCount: textElements.length,
       scrollParent:
@@ -1678,9 +1656,9 @@ const waitForMaterializedText = async (page, blockIndex, context) => {
 
   while (Date.now() - start <= materializationTimeoutMs) {
     const materialized = await page.evaluate((index) => {
-      const root = document.querySelector('[data-plite-editor="true"]');
+      const root = document.querySelector('[data-editor="true"]');
       const isMaterialized = !!root?.querySelector(
-        `[data-plite-node="text"][data-plite-path="${index},0"]`,
+        `[data-editor-node="text"][data-editor-path="${index},0"]`,
       );
 
       if (!isMaterialized) {
@@ -1721,14 +1699,14 @@ const waitForMaterializedText = async (page, blockIndex, context) => {
 const syncDOMSelection = async (page, blockIndex, offset) =>
   page.evaluate(
     ({ index, offset }) => {
-      const root = document.querySelector('[data-plite-editor="true"]');
+      const root = document.querySelector('[data-editor="true"]');
 
       if (!(root instanceof HTMLElement)) {
         throw new Error('Missing Plite editor root');
       }
 
       const textElement = root.querySelector(
-        `[data-plite-node="text"][data-plite-path="${index},0"]`,
+        `[data-editor-node="text"][data-editor-path="${index},0"]`,
       );
 
       if (!textElement) {
@@ -1762,15 +1740,15 @@ const syncDOMSelection = async (page, blockIndex, offset) =>
 const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
   page.evaluate(
     ({ index, offset }) => {
-      const root = document.querySelector('[data-plite-editor="true"]');
+      const root = document.querySelector('[data-editor="true"]');
       const selection = document.getSelection();
       const textElements = Array.from(
-        root?.querySelectorAll('[data-plite-node="text"]') ?? [],
+        root?.querySelectorAll('[data-editor-node="text"]') ?? [],
       );
       const getClosestTextElement = (node) =>
         node instanceof Element
-          ? node.closest('[data-plite-node="text"]')
-          : node?.parentElement?.closest('[data-plite-node="text"]');
+          ? node.closest('[data-editor-node="text"]')
+          : node?.parentElement?.closest('[data-editor-node="text"]');
       const anchorTextElement = getClosestTextElement(selection?.anchorNode);
       const focusTextElement = getClosestTextElement(selection?.focusNode);
       const activeElement = document.activeElement;
@@ -1783,7 +1761,7 @@ const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
           )
         : null;
       const targetElement = root?.querySelector(
-        `[data-plite-node="text"][data-plite-path="${index},0"]`,
+        `[data-editor-node="text"][data-editor-path="${index},0"]`,
       );
 
       return {
@@ -1793,22 +1771,22 @@ const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
                 ariaLabel: activeElement.getAttribute('aria-label'),
                 contentEditable: activeElement.contentEditable,
                 dataPliteEditor:
-                  activeElement.getAttribute('data-plite-editor'),
+                  activeElement.getAttribute('data-editor'),
                 tagName: activeElement.tagName,
               }
             : null,
         anchorOffset: selection?.anchorOffset ?? null,
         anchorTextPath:
-          anchorTextElement?.getAttribute('data-plite-path') ?? null,
+          anchorTextElement?.getAttribute('data-editor-path') ?? null,
         exactPathExists: !!targetElement,
         focusOffset: selection?.focusOffset ?? null,
         focusTextPath:
-          focusTextElement?.getAttribute('data-plite-path') ?? null,
+          focusTextElement?.getAttribute('data-editor-path') ?? null,
         handleInputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
         handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
         mountedTextPaths: textElements
           .slice(0, 30)
-          .map((element) => element.getAttribute('data-plite-path')),
+          .map((element) => element.getAttribute('data-editor-path')),
         nativeText: selection?.toString() ?? null,
         requestedOffset: offset,
         requestedPath: `${index},0`,
@@ -1845,10 +1823,10 @@ const waitForDOMSelectionPath = async (
   await page
     .waitForFunction(
       ({ index, offset }) => {
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
         const selection = document.getSelection();
         const textElement = selection?.anchorNode?.parentElement?.closest(
-          '[data-plite-node="text"]',
+          '[data-editor-node="text"]',
         );
         const handleSelection =
           root?.__pliteBrowserHandle?.getSelection?.() ?? null;
@@ -1870,7 +1848,7 @@ const waitForDOMSelectionPath = async (
           inputState?.modelSelectionPreference?.reason === 'repair-induced';
 
         return (
-          textElement?.getAttribute('data-plite-path') === `${index},0` &&
+          textElement?.getAttribute('data-editor-path') === `${index},0` &&
           selection?.anchorOffset === offset &&
           selection?.focusOffset === offset &&
           pathMatches(anchorPath) &&
@@ -1947,9 +1925,9 @@ const selectCollapsed = async (page, blockIndex, offset, context) => {
 const clickMaterializedBlock = async (page, blockIndex, context) => {
   await waitForMaterializedText(page, blockIndex, context);
   const point = await page.evaluate((index) => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const textElement = root?.querySelector(
-      `[data-plite-node="text"][data-plite-path="${index},0"]`,
+      `[data-editor-node="text"][data-editor-path="${index},0"]`,
     );
 
     if (!(textElement instanceof HTMLElement)) {
@@ -1964,7 +1942,7 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
     };
   }, blockIndex);
   const beforeSelection = await page.evaluate(() => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
 
     return root?.__pliteBrowserHandle?.getSelection?.() ?? null;
   });
@@ -1976,7 +1954,7 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
   await page.mouse.down();
   const clickDownTime = await page.evaluate(() => performance.now());
   const mouseDownEvent = await page.evaluate(() => {
-    const events = globalThis.__PLITE_BROWSER_TRACE__?.mouseDownEvents ?? [];
+    const events = globalThis.__EDITOR_BROWSER_TRACE__?.mouseDownEvents ?? [];
     const event = events.at(-1) ?? null;
 
     return event
@@ -2006,7 +1984,7 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
           !!right &&
           pointsEqual(left.anchor, right.anchor) &&
           pointsEqual(left.focus, right.focus);
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
         const selection = root?.__pliteBrowserHandle?.getSelection?.() ?? null;
 
         return (
@@ -2093,9 +2071,9 @@ const measureInteraction = async (page, lane, context) => {
   });
   const beforeText = await readBlockText(page, lane.blockIndex);
   const beforeTypeState = await page.evaluate((index) => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const textHost = root?.querySelector(
-      `[data-plite-node="text"][data-plite-path="${index},0"]`,
+      `[data-editor-node="text"][data-editor-path="${index},0"]`,
     );
     const selection = document.getSelection();
     const anchorElement =
@@ -2104,17 +2082,17 @@ const measureInteraction = async (page, lane, context) => {
         : selection?.anchorNode instanceof Text
           ? selection.anchorNode.parentElement
           : null;
-    const anchorTextHost = anchorElement?.closest?.('[data-plite-node="text"]');
+    const anchorTextHost = anchorElement?.closest?.('[data-editor-node="text"]');
 
     return {
       anchorOffset: selection?.anchorOffset ?? null,
-      anchorPath: anchorTextHost?.getAttribute('data-plite-path') ?? null,
+      anchorPath: anchorTextHost?.getAttribute('data-editor-path') ?? null,
       handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
       inputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
-      textHostPath: textHost?.getAttribute('data-plite-path') ?? null,
-      textHostSync: textHost?.getAttribute('data-plite-dom-sync') ?? null,
+      textHostPath: textHost?.getAttribute('data-editor-path') ?? null,
+      textHostSync: textHost?.getAttribute('data-editor-dom-sync') ?? null,
       textHostSyncReason:
-        textHost?.getAttribute('data-plite-dom-sync-reason') ?? null,
+        textHost?.getAttribute('data-editor-dom-sync-reason') ?? null,
       textHostText: textHost?.textContent?.replace(/\uFEFF/g, '') ?? null,
     };
   }, lane.blockIndex);
@@ -2139,11 +2117,11 @@ const measureInteraction = async (page, lane, context) => {
   await page
     .waitForFunction(
       ({ expectedText, index }) => {
-        const root = document.querySelector('[data-plite-editor="true"]');
+        const root = document.querySelector('[data-editor="true"]');
         const textElement = root?.querySelector(
-          `[data-plite-node="text"][data-plite-path="${index},0"]`,
+          `[data-editor-node="text"][data-editor-path="${index},0"]`,
         );
-        const block = textElement?.closest('[data-plite-node="element"]');
+        const block = textElement?.closest('[data-editor-node="element"]');
         const text =
           (block ?? textElement)?.textContent?.replace(/\uFEFF/g, '') ?? '';
 
@@ -2245,7 +2223,7 @@ const measureInteraction = async (page, lane, context) => {
 
 const measureNativeStructural = async (page, lane, context) => {
   const setup = await page.evaluate((startIndex) => {
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const handle = root?.__pliteBrowserHandle;
     const value = handle?.getValue().children;
     const index = value?.findIndex(
@@ -2256,9 +2234,9 @@ const measureNativeStructural = async (page, lane, context) => {
     }
     const before = handle.getBlockTexts();
     const untouched = new Map(
-      [...root.querySelectorAll('[data-plite-node="element"]')]
-        .filter((element) => element.getAttribute('data-plite-path') !== String(index))
-        .map((element) => [element.getAttribute('data-plite-node-key'), element]),
+      [...root.querySelectorAll('[data-editor-node="element"]')]
+        .filter((element) => element.getAttribute('data-editor-path') !== String(index))
+        .map((element) => [element.getAttribute('data-editor-node-key'), element]),
     );
     window.__pliteStructuralProof = { root, untouched };
     return { before, index };
@@ -2273,7 +2251,7 @@ const measureNativeStructural = async (page, lane, context) => {
   });
   const check = async (expected, point) => page.evaluate(({ expected, point }) => {
     const proof = window.__pliteStructuralProof;
-    const root = document.querySelector('[data-plite-editor="true"]');
+    const root = document.querySelector('[data-editor="true"]');
     const handle = root?.__pliteBrowserHandle;
     const texts = handle?.getBlockTexts();
     if (root !== proof.root || JSON.stringify(texts) !== JSON.stringify(expected)) {
@@ -2286,7 +2264,7 @@ const measureNativeStructural = async (page, lane, context) => {
       }
     });
     for (const [key, element] of proof.untouched) {
-      if (root.querySelector(`[data-plite-node-key="${key}"]`) !== element) {
+      if (root.querySelector(`[data-editor-node-key="${key}"]`) !== element) {
         throw new Error(`Native structural remounted untouched block ${key}`);
       }
     }
@@ -2574,12 +2552,11 @@ const measureSurface = async ({ browser, baseUrl, surface }) => {
         bounded: sample.bounded,
         complete: sample.complete,
         editorTextNodeCount: sample.editorTextNodeCount,
-        effectiveStrategy: sample.effectiveStrategy,
         mountedTopLevelCount: sample.mountedTopLevelCount,
         navigationToReadyMs: sample.navigationToReadyMs,
         observedBlocks: sample.observedBlocks,
         pendingTopLevelCount: sample.pendingTopLevelCount,
-        requestedStrategy: sample.requestedStrategy,
+        renderingMode: sample.renderingMode,
       })),
       timeoutCount: nativeSurfaceSamples
         .slice(1)
@@ -3666,14 +3643,8 @@ const run = async () => {
         ),
       )}`,
     );
-    printSurfaceMetrics('defaultAuto', 'react_huge_doc_auto');
-    printSurfaceMetrics('plateFull', 'react_huge_doc_plate_full');
-    printSurfaceMetrics('stagedActiveDOMGroup', 'react_huge_doc_staged');
-    printSurfaceMetrics('stagedDefault', 'react_huge_doc_staged_default');
-    printSurfaceMetrics(
-      'stagedContentVisibility',
-      'react_huge_doc_staged_content_visibility',
-    );
+    printSurfaceMetrics('plateComplete', 'react_huge_doc_plate_complete');
+    printSurfaceMetrics('pliteComplete', 'react_huge_doc_plite_complete');
     printSurfaceMetrics('virtualized', 'react_huge_doc_virtualized');
 
     console.log(`\nWrote ${runArtifactPath}`);

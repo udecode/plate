@@ -4,7 +4,7 @@ import {
   property,
   schema,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
 } from 'platejs';
 import { BaseCalloutPlugin } from 'platejs/callout';
 import { BaseImagePlugin } from 'platejs/media';
@@ -18,7 +18,7 @@ const inlineContent = schema.content.any(
   { default: 'text', min: 1 }
 );
 
-const CustomHeadingPlugin = defineBasePlugin('customH1', {
+const CustomHeadingPlugin = definePlugin('customH1', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
@@ -45,7 +45,7 @@ const CustomHeadingPlugin = defineBasePlugin('customH1', {
   },
 });
 
-const CustomParagraphPlugin = defineBasePlugin('customParagraph', {
+const CustomParagraphPlugin = definePlugin('customParagraph', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {
@@ -68,7 +68,7 @@ const CustomParagraphPlugin = defineBasePlugin('customParagraph', {
   },
 });
 
-const CustomBoldPlugin = defineBasePlugin('customBold', {
+const CustomBoldPlugin = definePlugin('customBold', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/markdown': {

@@ -21,7 +21,7 @@ import {
   getCompiledPlatePluginByKey,
   getCompiledPlatePluginByType,
 } from '../../../internal/plugin/compilePlateModel';
-import { defineBasePlugin, type DefinitionOf } from '../../plugin';
+import { definePlugin, type DefinitionOf } from '../../plugin';
 
 export type AffinityEdgeNodes =
   | [NodeEntry<Element | Text>, NodeEntry<Element | Text>]
@@ -40,7 +40,7 @@ export type AffinityPluginUpdate = {
   ) => void;
 };
 
-export const AffinityPlugin = defineBasePlugin('affinity', {
+export const AffinityPlugin = definePlugin('affinity', {
   update: ({ tx }): AffinityPluginUpdate => ({
     setSelection: (edgeNodes, affinity) => {
       const select = (point: Point) => {
@@ -278,7 +278,7 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
             const affinity =
               startText && startText.length > 1 ? 'backward' : 'forward';
 
-            tx.plugin(plugin).setSelection(edgeNodes, affinity);
+            tx.plugin(plugin.name).setSelection(edgeNodes, affinity);
           }
         });
       }),
@@ -353,7 +353,7 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
                 (reverse ? 'forward' : 'backward')
             ) {
               return state.transaction((tx) => {
-                tx.plugin(plugin).setSelection(
+                tx.plugin(plugin.name).setSelection(
                   preEdgeNodes,
                   reverse ? 'backward' : 'forward'
                 );
@@ -378,7 +378,7 @@ export const AffinityPlugin = defineBasePlugin('affinity', {
               isNodesAffinity(postEdgeNodes, 'directional') &&
               !hasElement(postEdgeNodes)
             ) {
-              tx.plugin(plugin).setSelection(
+              tx.plugin(plugin.name).setSelection(
                 postEdgeNodes,
                 reverse ? 'forward' : 'backward'
               );

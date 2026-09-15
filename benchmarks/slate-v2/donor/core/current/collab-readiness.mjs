@@ -5,12 +5,12 @@ import { performance } from 'node:perf_hooks';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
 } from '../../../../../packages/plitejs/src/index.ts';
 import { ChangeDraft } from '../../../../../packages/plitejs/src/core/change/builder.ts';
 import { DocumentIndex } from '../../../../../packages/plitejs/src/core/change/document-index.ts';
 import * as Editor from '../../../../../packages/plitejs/src/internal/index.ts';
-import { history as historyExtension } from '../../../../../packages/plitejs/src/history/index.ts';
+import { history as historyPlugin } from '../../../../../packages/plitejs/src/history/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
 
 const iterations = Number.parseInt(
@@ -97,7 +97,7 @@ const forceGc = () => {
 
 const createEditorWithDocument = (blockCount, history = false) => {
   const editor = history
-    ? createEditor({ extensions: [historyExtension()] })
+    ? createEditor({ plugins: [historyPlugin()] })
     : createEditor();
 
   Editor.replace(editor, {
@@ -169,7 +169,7 @@ const createFakeCollabAdapter = () => {
   let state = { connected: true, exports: [], paused: false };
 
   return {
-    extension: defineExtension('benchmark-fake-collab-adapter', {
+    plugin: definePlugin('benchmark-fake-collab-adapter', {
       activate(context) {
         state = { connected: true, exports: [], paused: false };
         context.onCleanup(() => {
@@ -226,7 +226,7 @@ const measureLocalExportCommit = (cohort) =>
     const editor = createEditorWithDocument(cohort.blocks);
     const adapter = createFakeCollabAdapter();
 
-    editor.install(adapter.extension);
+    editor.install(adapter.plugin);
     const callsBefore = adapter.listenerCalls();
     editor.update((tx) => {
       tx.text.insert('L', { at: { path: [0, 0], offset: 0 } });
@@ -397,7 +397,7 @@ const measureConnectDisconnectHeap = (cohort) => {
     const heapBefore = heapUsed();
     const editor = createEditorWithDocument(cohort.blocks);
     const adapter = createFakeCollabAdapter();
-    const uninstall = editor.install(adapter.extension);
+    const uninstall = editor.install(adapter.plugin);
 
     uninstall();
 

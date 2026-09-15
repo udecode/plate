@@ -13,9 +13,9 @@ import {
 } from '../../lib';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import type { AnyObject } from '../../lib/types/AnyObject';
-import type { PliteRenderNodeProps } from '../types';
+import type { RenderNodeProps } from '../types';
 
-type StaticNodePropsInput = Partial<PliteRenderNodeProps> &
+type StaticNodePropsInput = Partial<RenderNodeProps> &
   GetInjectNodePropsOptions &
   Record<string, unknown> & {
     attributes?: AnyObject;
@@ -36,7 +36,7 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   path?: Path;
   plugin?: AnyBasePluginPortal | AnyPluginBase;
 }): TProps & { attributes: AnyObject } & (
-    | PliteRenderNodeProps<any>
+    | RenderNodeProps<any>
     | { api: Editor['api']; editor: Editor }
   ) => {
   const contextProps = {

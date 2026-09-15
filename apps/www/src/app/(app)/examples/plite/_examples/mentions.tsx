@@ -14,7 +14,7 @@ import {
   type RenderElementProps,
   type RenderLeafProps,
   type RenderVoidProps,
-  Plite,
+  EditorRoot,
   useEditorFocused,
   useElementSelected,
   useEditor,
@@ -72,7 +72,7 @@ const MentionSchema = defineEditorSchema('schema:derived', {
 type MentionElement = SchemaElementFor<typeof MentionSchema, 'mention'>;
 type MentionValueElement = SchemaElementFor<typeof MentionSchema>;
 type ParagraphElement = SchemaElementFor<typeof MentionSchema, 'paragraph'>;
-const mentionMenuItemVariants = cva('plite-mentions-menu-item', {
+const mentionMenuItemVariants = cva('editor-mentions-menu-item', {
   variants: {
     active: {
       false: null,
@@ -84,7 +84,7 @@ const mentionMenuItemVariants = cva('plite-mentions-menu-item', {
 const MENTION_AFTER_PATTERN = /^(\s|$)/;
 const MENTION_BEFORE_PATTERN = /(?:^|\s)@(\w+)$/;
 
-const mentionVariants = cva('plite-mentions-mention', {
+const mentionVariants = cva('editor-mentions-mention', {
   variants: {
     bold: {
       false: null,
@@ -107,7 +107,7 @@ const MentionExample = () => {
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
   const editor = useEditor({
-    extensions: [history(), MentionSchema],
+    plugins: [history(), MentionSchema],
     initialValue: [
       {
         type: 'paragraph',
@@ -226,7 +226,7 @@ const MentionExample = () => {
   }, [chars.length, editor, index, search, target]);
 
   return (
-    <Plite
+    <EditorRoot
       editor={editor}
       onCommit={() => {
         const match = editor.read((state) => {
@@ -284,7 +284,7 @@ const MentionExample = () => {
       {target && chars.length > 0 && (
         <Portal>
           <div
-            className="plite-mentions-menu"
+            className="editor-mentions-menu"
             data-cy="mentions-portal"
             ref={ref}
           >
@@ -304,7 +304,7 @@ const MentionExample = () => {
           </div>
         </Portal>
       )}
-    </Plite>
+    </EditorRoot>
   );
 };
 

@@ -58,7 +58,7 @@ const toTrustedHTML = (html: string) => {
   let policy = policies.get(factory);
 
   if (!policy) {
-    policy = factory.createPolicy('plite-dom', {
+    policy = factory.createPolicy('editor-dom', {
       createHTML: (value) => value,
     });
     policies.set(factory, policy);
@@ -77,7 +77,7 @@ const restoreAppleConvertedSpaces = (document: Document) => {
 
 /**
  * Parse clipboard HTML through the application default Trusted Types policy,
- * or the `plite-dom` policy when no default exists.
+ * or the `editor-dom` policy when no default exists.
  */
 export const parseDOMClipboardHtml = (html: string) => {
   const trustedHTML = toTrustedHTML(html);

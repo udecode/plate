@@ -52,7 +52,7 @@ Load comment records with their matching document:
 import type { EditorValueInput, Value } from "platejs";
 import type { CommentThread, CommentUser } from "platejs/comments";
 import { CommentsPlugin } from "platejs/comments/react";
-import { Plate, useCreateEditor } from "platejs/react";
+import { EditorRoot, useCreateEditor } from "platejs/react";
 
 import { BasicBlocksKit } from "@/components/editor/basic-blocks";
 import { CommentToolbarButton } from "@/components/editor/comment-toolbar-button";
@@ -82,14 +82,14 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Toolbar>
           <CommentToolbarButton />
         </Toolbar>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -122,7 +122,7 @@ Open comments in the read-only document to read and reply. The static snapshot p
 
 <ComponentPreview name="comment-review-demo" height="720px" />
 
-Set `readOnly` on both `Plate` and `Editor` to prevent document edits. Comment permissions remain an application decision; this example permits replies.
+Set `readOnly` on both `EditorRoot` and `Editor` to prevent document edits. Comment permissions remain an application decision; this example permits replies.
 
 For static rendering, configure `BaseCommentsPlugin` with `commentDecorationAttributes` from the copied `comment-static` item, then pass the editor to `EditorStatic`. Install those items when adding a static view:
 
@@ -164,7 +164,7 @@ const threads: CommentThread[] = [{
 }];
 ```
 
-`{ type: "suggestion", id }` attaches a thread to a suggestion. A range target with `range: null` represents a detached thread.
+`{ type: "change", id }` attaches a thread to a native authored change. A range target with `range: null` represents a detached thread.
 
 Read current mapped ranges when saving, together with the same document revision:
 
@@ -243,7 +243,7 @@ For stored documents with inline comment properties, see [Import comment annotat
 | `api.pendingRange()` | Read the pending input's mapped range |
 | `api.cancel()` | Cancel pending input and release its range |
 | `api.create(body)` | Complete the pending thread |
-| `api.createThread({ body, target, ... })` | Create a range or suggestion thread; accepts `id`, `excerpt`, `status`, and `userId` |
+| `api.createThread({ body, target, ... })` | Create a range or authored-change thread; accepts `id`, `excerpt`, `status`, and `userId` |
 | `api.reply(id, body)` | Append a message to an unresolved thread |
 | `api.edit(id, messageId, body)` | Edit the current user's message |
 | `api.removeMessage(id, messageId)` | Remove the current user's message; remove its thread when no messages remain |

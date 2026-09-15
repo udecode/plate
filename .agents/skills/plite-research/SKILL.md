@@ -1,5 +1,5 @@
 ---
-description: Plite research intelligence. Use for web/GitHub/OSS discovery, scalable repo scans, external prior art, source synthesis, research ledgers, dedupe, evidence grading, and promotion into Plite owners. Does not run architecture audits or Codex Autoresearch packets.
+description: Research external editor sources and prior art, maintain evidence ledgers and promote findings into Plite owners.
 argument-hint: <research question/topic> [setup | doctor | next | log | state | promote-preview | shard | audit]
 disable-model-invocation: true
 name: plite-research

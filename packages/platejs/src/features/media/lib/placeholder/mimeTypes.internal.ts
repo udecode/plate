@@ -1657,7 +1657,7 @@ const mimes = {
     extensions: ['obgx'],
     source: 'iana',
   },
-  'application/vnd.openofficeorg.extension': {
+  'application/vnd.openofficeorg.plugin': {
     extensions: ['oxt'],
     source: 'apache',
   },

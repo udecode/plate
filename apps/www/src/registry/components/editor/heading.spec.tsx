@@ -5,8 +5,8 @@ import {
   createEditor,
   HeadingPlugin,
   NavigationFeedbackPlugin,
-  Plate,
-  PlateContent,
+  EditorRoot,
+  EditorContent,
   useEditor,
 } from 'platejs/react';
 import * as React from 'react';
@@ -27,12 +27,12 @@ it('preserves caller-supplied navigation attributes on the mounted heading', () 
     React.useLayoutEffect(() => {
       mounted = view;
     }, [view]);
-    return <PlateContent />;
+    return <EditorContent />;
   }
   const view = render(
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <Capture />
-    </Plate>
+    </EditorRoot>
   );
 
   try {

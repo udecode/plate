@@ -1,8 +1,9 @@
-import { defineEditorSchema, defineExtensionSlot, schema } from '../../core';
+import { defineEditorSchema, schema } from '../../core';
+import { defineRuntimePluginSlot } from '../../facade';
 import { createEditor } from './withPlite';
 
 describe('createEditor', () => {
-  it('uses one complete schema supplied through low-level extensions', () => {
+  it('uses one complete schema supplied through a runtime plugin', () => {
     const CustomSchema = defineEditorSchema('schema:custom', {
       elements: {
         paragraph: {
@@ -16,7 +17,7 @@ describe('createEditor', () => {
       unknown: 'reject',
     });
     const editor = createEditor({
-      extensions: [CustomSchema],
+      plugins: [CustomSchema],
       initialValue: [
         { children: [{ text: 'custom document' }], type: 'paragraph' },
       ],
@@ -29,7 +30,7 @@ describe('createEditor', () => {
     expect(editor.read.text.string([])).toBe('custom document');
   });
 
-  it('uses one complete schema supplied through an extension slot', () => {
+  it('uses one complete schema supplied through a runtime plugin slot', () => {
     const CustomSchema = defineEditorSchema('schema:slotted-custom', {
       elements: {
         paragraph: {
@@ -44,9 +45,9 @@ describe('createEditor', () => {
       unknown: 'reject',
       version: 1,
     });
-    const schemaSlot = defineExtensionSlot('plate-schema-test');
+    const schemaSlot = defineRuntimePluginSlot('plate-schema-test');
     const editor = createEditor({
-      extensions: [schemaSlot.of(CustomSchema)],
+      plugins: [schemaSlot.of(CustomSchema)],
       initialValue: [
         { children: [{ text: 'slotted document' }], type: 'paragraph' },
       ],

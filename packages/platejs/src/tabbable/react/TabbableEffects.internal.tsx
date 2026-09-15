@@ -168,7 +168,7 @@ export function TabbableEffects() {
        * the `isTabbable` option (defaulting to only void nodes).
        */
       const defaultTabbableEntries = tabbableDOMNodes.flatMap((domNode) => {
-        const slateNode = editor.api.dom.resolvePliteNode(domNode);
+        const slateNode = editor.api.dom.resolveNode(domNode);
 
         if (!slateNode) return [];
 

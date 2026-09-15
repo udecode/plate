@@ -3,15 +3,15 @@ import { dirname } from 'node:path';
 
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { PLITE_BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY } from './constants';
 import { dropHtml } from './dom-text';
 import { clickTextOffset, mutateTextDOM } from './dom-text-actions';
 import {
-  getPliteReactRenderProfilerSnapshot,
-  resetPliteReactRenderProfiler,
-  type PliteReactRenderKind,
+  getReactRenderProfilerSnapshot,
+  resetReactRenderProfiler,
+  type ReactRenderKind,
 } from './render-profiler';
-import { recordPliteBrowserRuntimeErrors } from './runtime-errors';
+import { recordBrowserRuntimeErrors } from './runtime-errors';
 import {
   createScenarioReductionCandidates,
   createScenarioReplay,
@@ -21,12 +21,12 @@ import {
 import { dragTextSelection } from './selection-actions';
 import { hasExpandedSelection } from './selection-handle';
 import { assertDOMCaretExpectation } from './selection-snapshots';
-import { assertPliteBrowserSelectionContract } from './selectionContract';
+import { assertBrowserSelectionContract } from './selectionContract';
 import type { SurfaceTarget } from './surface';
 import type {
-  PliteBrowserEditorHarness,
-  PliteBrowserNumberBudget,
-  PliteBrowserTraceEntry,
+  BrowserEditorHarness,
+  BrowserNumberBudget,
+  BrowserTraceEntry,
 } from './types';
 
 const formatThrownValue = (value: unknown): string => {
@@ -42,7 +42,7 @@ const formatThrownValue = (value: unknown): string => {
 
 const assertNumberBudget = (
   actual: number,
-  expected: PliteBrowserNumberBudget,
+  expected: BrowserNumberBudget,
   label: string
 ) => {
   if (typeof expected === 'number') {
@@ -75,17 +75,17 @@ export const createEditorHarnessScenario = ({
   root,
   surface,
 }: {
-  getHarness: () => PliteBrowserEditorHarness;
+  getHarness: () => BrowserEditorHarness;
   page: Page;
   root: Locator;
   surface: SurfaceTarget;
-}): PliteBrowserEditorHarness['scenario'] => ({
+}): BrowserEditorHarness['scenario'] => ({
   runImperative: async (scenarioName, run) => {
     if (scenarioName.length === 0) {
       throw new Error('Imperative browser scenario name cannot be empty.');
     }
 
-    const steps: PliteBrowserTraceEntry[] = [];
+    const steps: BrowserTraceEntry[] = [];
 
     await run(
       Object.freeze({
@@ -116,12 +116,12 @@ export const createEditorHarnessScenario = ({
     const reductionCandidates = createScenarioReductionCandidates(steps).map(
       summarizeScenarioReductionCandidate
     );
-    const trace: PliteBrowserTraceEntry[] = [];
+    const trace: BrowserTraceEntry[] = [];
     const capturedNodeKeys = new Map<string, string>();
     const runtimeErrors =
       options.runtimeErrors === false
         ? null
-        : recordPliteBrowserRuntimeErrors(page, options.runtimeErrors);
+        : recordBrowserRuntimeErrors(page, options.runtimeErrors);
     const undoWithScenarioTransport = async () => {
       if (options.metadata?.platform === 'mobile') {
         await getHarness().undo();
@@ -170,7 +170,7 @@ export const createEditorHarnessScenario = ({
               },
               {
                 change: step.change,
-                key: PLITE_BROWSER_HANDLE_KEY,
+                key: BROWSER_HANDLE_KEY,
                 tag: step.tag,
               }
             );
@@ -204,7 +204,7 @@ export const createEditorHarnessScenario = ({
                 );
               },
               {
-                key: PLITE_BROWSER_HANDLE_KEY,
+                key: BROWSER_HANDLE_KEY,
                 tag: step.tag,
                 value: step.value,
               }
@@ -228,7 +228,7 @@ export const createEditorHarnessScenario = ({
 
                     return handle?.getSelection ? handle.getSelection() : null;
                   },
-                  { key: PLITE_BROWSER_HANDLE_KEY }
+                  { key: BROWSER_HANDLE_KEY }
                 )
               )
               .toEqual(step.expectedSelection);
@@ -398,14 +398,14 @@ export const createEditorHarnessScenario = ({
 
                     return handle.getPathByNodeKey(innerNodeKey);
                   },
-                  { key: PLITE_BROWSER_HANDLE_KEY, nodeKey }
+                  { key: BROWSER_HANDLE_KEY, nodeKey }
                 )
               )
               .toEqual(step.path);
             break;
           }
           case 'assertRenderBudget': {
-            const snapshot = await getPliteReactRenderProfilerSnapshot(page);
+            const snapshot = await getReactRenderProfilerSnapshot(page);
             const budgetLabel = (label: string) =>
               `${label} ${JSON.stringify({
                 byKey: snapshot.byKey,
@@ -423,7 +423,7 @@ export const createEditorHarnessScenario = ({
 
             for (const [kind, expected] of Object.entries(
               step.budget.byKind ?? {}
-            ) as Array<[PliteReactRenderKind, PliteBrowserNumberBudget]>) {
+            ) as Array<[ReactRenderKind, BrowserNumberBudget]>) {
               assertNumberBudget(
                 snapshot.byKind[kind] ?? 0,
                 expected,
@@ -468,7 +468,7 @@ export const createEditorHarnessScenario = ({
 
                     return handle?.getInputState?.() ?? null;
                   },
-                  { key: PLITE_BROWSER_HANDLE_KEY }
+                  { key: BROWSER_HANDLE_KEY }
                 ),
                 kernelTrace: await getHarness().get.kernelTrace(),
                 selection: await getHarness().selection.get(),
@@ -546,7 +546,7 @@ export const createEditorHarnessScenario = ({
             break;
           }
           case 'assertSelectionContract': {
-            await assertPliteBrowserSelectionContract(
+            await assertBrowserSelectionContract(
               getHarness(),
               step.expectation
             );
@@ -592,7 +592,7 @@ export const createEditorHarnessScenario = ({
 
                 return handle.getNodeKey(path);
               },
-              { key: PLITE_BROWSER_HANDLE_KEY, path: step.path }
+              { key: BROWSER_HANDLE_KEY, path: step.path }
             );
 
             if (!nodeKey) {
@@ -736,7 +736,7 @@ export const createEditorHarnessScenario = ({
             break;
           }
           case 'resetRenderProfiler': {
-            await resetPliteReactRenderProfiler(page);
+            await resetReactRenderProfiler(page);
             break;
           }
           case 'select': {

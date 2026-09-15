@@ -44,7 +44,7 @@ exported result/helper type. Keep semantic calculations and neutral interaction
 lifecycle with their durable owner regardless of current consumer count.
 
 When a registry-local hook depends on a package store, provider, hotkey
-controller, or UI-only plugin extension, move that complete state owner in the
+controller, or UI-only plugin definition, move that complete state owner in the
 same row. Package wrappers, exports, tests, docs, and multiple subcomponents in
 one family do not increase the terminal-consumer count.
 
@@ -77,7 +77,7 @@ behind a factory.
 
 Copied registry UI remains host-agnostic:
 
-- use `useEditorPlugin(plugin)` when a component is plugin-centric;
+- use `useEditor().plugin(plugin)` when a component is plugin-centric;
 - use `editor.plugin(plugin).api/update` for required descriptor capabilities;
 - check `editor.plugin(plugin).installed` before optional capability access;
 - never import a host editor type, authored application definition, or generated

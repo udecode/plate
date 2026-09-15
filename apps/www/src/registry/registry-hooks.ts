@@ -5,11 +5,11 @@ export const registryHooks: Registry['items'] = [
     dependencies: ['@floating-ui/react', 'platejs'],
     files: [
       {
-        path: 'hooks/use-widget-floating.ts',
+        path: 'hooks/use-floating-rect.ts',
         type: 'registry:hook',
       },
     ],
-    name: 'use-widget-floating',
+    name: 'use-floating-rect',
     type: 'registry:hook',
   },
   {

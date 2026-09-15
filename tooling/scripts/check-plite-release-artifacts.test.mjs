@@ -327,15 +327,15 @@ test('proves Plite and Plate cross-subpath runtime identity', () => {
 
   assert.match(
     source,
-    /releaseIdentityEqual\(releaseRoot\.defineExtension, releaseReact\.defineExtension\)/
+    /releaseIdentityEqual\(releaseRoot\.definePlugin, releaseReact\.definePlugin\)/
   );
   assert.match(
     source,
-    /releaseLayout\.createPliteLayout,[\s\S]*releaseLayoutReact\.createPliteLayout/
+    /releaseLayout\.createLayout,[\s\S]*releaseLayoutReact\.createLayout/
   );
   assert.match(
     source,
-    /releaseReactExtension\.dependencies\[0\],[\s\S]*releaseDOMExtension/
+    /releaseReactPlugin\.dependencies\[0\],[\s\S]*releaseDOMPlugin/
   );
 });
 
@@ -740,7 +740,7 @@ test('packs Plate and builds an executable final Plate schema consumer', () => {
   });
   for (const source of [sources.types, sources.runtime]) {
     assert.match(source, /createEditor/);
-    assert.match(source, /defineBasePlugin/);
+    assert.match(source, /definePlugin/);
     assert.match(source, /api: \(\{ store \}\) => \(\{/);
     assert.match(source, /schema: \{/);
     assert.match(source, /key: 'release-artifact-strong'/);

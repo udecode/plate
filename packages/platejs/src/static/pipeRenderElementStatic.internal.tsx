@@ -8,7 +8,7 @@ import {
   getPlateRuntime,
 } from '../internal/plugin/compilePlateModel';
 import type { AnyPluginBase, Editor } from '../lib';
-import { PliteElement } from './components/plite-nodes';
+import { EditorElement } from './components/plite-nodes';
 import {
   type PliteRenderElement,
   pluginRenderElementStatic,
@@ -47,7 +47,7 @@ export const pipeRenderElementStatic = (
     });
 
     return (
-      <PliteElement {...ctxProps}>
+      <EditorElement {...ctxProps}>
         {props.children}
 
         {getPlateRuntime(editor).pluginCache.slots.afterNodeChildren.map(
@@ -59,6 +59,6 @@ export const pipeRenderElementStatic = (
             return <Component key={name} {...ctxProps} />;
           }
         )}
-      </PliteElement>
+      </EditorElement>
     );
   };

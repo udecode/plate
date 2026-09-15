@@ -47,7 +47,9 @@ mock.module('platejs/media/react', () => ({
 
 mock.module('platejs/react', () => ({
   useComposedRef: (...refs: unknown[]) => refs.find(Boolean),
-  useEditorPlugin: () => ({ api: { preview: previewApi }, store }),
+  useEditor: () => ({
+    plugin: () => ({ api: { preview: previewApi }, store }),
+  }),
   usePluginStore: (_plugin: unknown, key: string) =>
     key === 'preview' ? preview : isOpen,
 }));

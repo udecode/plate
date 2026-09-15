@@ -8,15 +8,11 @@ import {
   attachPlateModelPublication,
   getPlateModelPublication,
 } from '../../internal/plugin/compilePlateModel';
+import { BaseParagraphPlugin, definePlugin, ElementIdPlugin } from '../../lib';
+import { TestPlate as EditorRoot } from '../__tests__/TestPlate';
 import {
-  BaseParagraphPlugin,
-  defineBasePlugin,
-  ElementIdPlugin,
-} from '../../lib';
-import { TestPlate as Plate } from '../__tests__/TestPlate';
-import {
-  PlateElement,
-  type PlateElementProps,
+  EditorElement,
+  type EditorElementProps,
 } from '../components/plate-nodes';
 import { PlateRoot } from '../components/PlateRoot.internal';
 import type { Editor } from '../editor/Editor';
@@ -35,7 +31,7 @@ const createValue = (id?: string) =>
     },
   ] as any;
 
-const ListStylePropertyPlugin = defineBasePlugin('listStyleProperty', {
+const ListStylePropertyPlugin = definePlugin('listStyleProperty', {
   schema: () => ({
     properties: {
       markerStyle: schema.elementProperty(property.string(), {
@@ -62,11 +58,11 @@ const renderPipe = (editor: Editor) => {
     });
 
   return render(
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <PlateRoot>
         <RenderProbe />
       </PlateRoot>
-    </Plate>
+    </EditorRoot>
   );
 };
 
@@ -87,11 +83,11 @@ const renderPipeBare = (editor: Editor) => {
     });
 
   return render(
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <PlateRoot>
         <RenderProbe />
       </PlateRoot>
-    </Plate>
+    </EditorRoot>
   );
 };
 
@@ -140,15 +136,15 @@ describe('pipeRenderElement', () => {
       });
 
     const { container } = render(
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <PlateRoot>
           <RenderProbe />
         </PlateRoot>
-      </Plate>
+      </EditorRoot>
     );
 
     expect(container.querySelector('p')).toHaveTextContent('Body');
-    expect(container.querySelector('.plite-paragraph')).toBeNull();
+    expect(container.querySelector('.editor-paragraph')).toBeNull();
   });
 
   it('delegates nullish renderElement results to installed plugins', () => {
@@ -172,14 +168,14 @@ describe('pipeRenderElement', () => {
       });
 
     const { container } = render(
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <PlateRoot>
           <RenderProbe />
         </PlateRoot>
-      </Plate>
+      </EditorRoot>
     );
 
-    expect(container.querySelector('.plite-paragraph')).toHaveTextContent(
+    expect(container.querySelector('.editor-paragraph')).toHaveTextContent(
       'Body'
     );
   });
@@ -192,10 +188,10 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element).toBeInTheDocument();
-    expect(element).toHaveClass('plite-paragraph');
+    expect(element).toHaveClass('editor-paragraph');
     expect(element?.tagName).toBe('DIV');
   });
 
@@ -209,11 +205,11 @@ describe('pipeRenderElement', () => {
     const element = {
       ...editor.read.children()[0],
       children: [{ text: 'Child root body' }],
-    } as any;
+    };
 
     const RenderProbe = () =>
       renderElement({
-        attributes: { 'data-plite-path': '0' } as any,
+        attributes: { 'data-editor-path': '0' } as any,
         children: 'Child root body',
         element,
         slots: {
@@ -224,11 +220,11 @@ describe('pipeRenderElement', () => {
       });
 
     const { getByText } = render(
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <PlateRoot>
           <RenderProbe />
         </PlateRoot>
-      </Plate>
+      </EditorRoot>
     );
 
     expect(getByText('Child root body')).toBeInTheDocument();
@@ -248,7 +244,7 @@ describe('pipeRenderElement', () => {
     const { container } = renderPipe(editor);
 
     attachPlateModelPublication(editor, publication);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element).toBeInTheDocument();
     expect(element).toHaveTextContent('Body');
@@ -256,7 +252,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('applies pure element injection through the default renderer', () => {
-    const DefaultInjectionPlugin = defineBasePlugin('defaultInjection', {
+    const DefaultInjectionPlugin = definePlugin('defaultInjection', {
       isBlock: true,
       inject: {
         nodeProps: {
@@ -281,7 +277,7 @@ describe('pipeRenderElement', () => {
 
     attachPlateModelPublication(editor, publication);
     expect(
-      container.querySelector('[data-plite-node="element"]')
+      container.querySelector('[data-editor-node="element"]')
     ).toHaveAttribute('data-default-injection', 'true');
   });
 
@@ -319,7 +315,7 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element).not.toHaveAttribute('data-block-id');
   });
@@ -331,19 +327,19 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element?.tagName).toBe('ARTICLE');
   });
 
   it('keeps element context for custom node components', () => {
     const CustomElement = (
-      props: PlateElementProps<typeof ParagraphPlugin>
+      props: EditorElementProps<typeof ParagraphPlugin>
     ) => {
       const path = usePath();
 
       return (
-        <PlateElement
+        <EditorElement
           {...props}
           as="section"
           attributes={{
@@ -363,7 +359,7 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element?.tagName).toBe('SECTION');
     expect(element?.getAttribute('data-context-path')).toBe('0');
@@ -372,7 +368,7 @@ describe('pipeRenderElement', () => {
   it('preserves Plite children for void intrinsic components on the fast path', () => {
     const editor = createEditor({
       plugins: [
-        defineBasePlugin('horizontalRule', {
+        definePlugin('horizontalRule', {
           component: 'hr',
           schema: { element: { void: 'block' } },
         }),
@@ -386,7 +382,7 @@ describe('pipeRenderElement', () => {
     });
 
     const renderElement = pipeRenderElement(editor)!;
-    const element = editor.read.children()[0] as any;
+    const element = editor.read.children()[0];
 
     const RenderProbe = () =>
       renderElement({
@@ -401,13 +397,13 @@ describe('pipeRenderElement', () => {
       });
 
     const { container } = render(
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <PlateRoot>
           <RenderProbe />
         </PlateRoot>
-      </Plate>
+      </EditorRoot>
     );
-    const rendered = container.querySelector('[data-plite-node="element"]');
+    const rendered = container.querySelector('[data-editor-node="element"]');
 
     expect(rendered).toBeInTheDocument();
     expect(rendered?.tagName).toBe('DIV');
@@ -420,7 +416,7 @@ describe('pipeRenderElement', () => {
   it('keeps global wrapNode slots', () => {
     const editor = createEditor({
       plugins: [
-        defineBasePlugin('above', {
+        definePlugin('above', {
           slots: {
             wrapNode:
               () =>
@@ -453,7 +449,7 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element).toHaveAttribute('data-probe', 'yes');
   });
@@ -469,7 +465,7 @@ describe('pipeRenderElement', () => {
     const editor = createEditor({
       navigationFeedback: false,
       plugins: [
-        defineBasePlugin('inactiveBelow', {
+        definePlugin('inactiveBelow', {
           slots: {
             wrapNodeChildren: useInactiveBelowNodes,
           },
@@ -480,7 +476,9 @@ describe('pipeRenderElement', () => {
 
     const { container } = renderPipe(editor);
 
-    expect(container.querySelector('[data-plite-node="element"]')).toBeTruthy();
+    expect(
+      container.querySelector('[data-editor-node="element"]')
+    ).toBeTruthy();
   });
 
   it('keeps plain fast-path markup for inject.nodeProps', () => {
@@ -488,7 +486,7 @@ describe('pipeRenderElement', () => {
       navigationFeedback: false,
       plugins: [
         ListStylePropertyPlugin,
-        defineBasePlugin('list', {
+        definePlugin('list', {
           targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
@@ -509,7 +507,7 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipeBare(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect((element as HTMLElement).style.listStyleType).toBe('disc');
   });
@@ -523,7 +521,7 @@ describe('pipeRenderElement', () => {
     const editor = createEditor({
       plugins: [
         ListStylePropertyPlugin,
-        defineBasePlugin('hookInject', {
+        definePlugin('hookInject', {
           targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
@@ -544,7 +542,7 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element).toHaveAttribute('data-context-editor', editor.id);
     expect(element).toHaveAttribute('data-context-type', 'paragraph');
@@ -555,7 +553,7 @@ describe('pipeRenderElement', () => {
     const editor = createEditor({
       plugins: [
         ListStylePropertyPlugin,
-        defineBasePlugin('list', {
+        definePlugin('list', {
           targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
@@ -591,7 +589,7 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(element).toHaveAttribute('role', 'listitem');
     expect((element as HTMLElement).style.display).toBe('list-item');
@@ -613,7 +611,7 @@ describe('pipeRenderElement', () => {
     const editor = createEditor({
       plugins: [
         ListStylePropertyPlugin,
-        defineBasePlugin('list', {
+        definePlugin('list', {
           targetPlugins: [BaseParagraphPlugin],
           inject: {
             nodeProps: {
@@ -631,7 +629,7 @@ describe('pipeRenderElement', () => {
             },
           },
         }),
-        defineBasePlugin('activeBelow', {
+        definePlugin('activeBelow', {
           slots: {
             wrapNodeChildren: useActiveBelowNodes,
           },
@@ -647,7 +645,7 @@ describe('pipeRenderElement', () => {
     });
 
     const { container, getByTestId } = renderPipe(editor);
-    const element = container.querySelector('[data-plite-node="element"]');
+    const element = container.querySelector('[data-editor-node="element"]');
 
     expect(getByTestId('active-below')).toBeInTheDocument();
     expect(getByTestId('active-below')).toHaveAttribute('data-path', '0');
@@ -696,7 +694,7 @@ describe('pipeRenderElement', () => {
 
     const { container } = renderPipe(editor);
 
-    expect(container.querySelector('[data-plite-node="element"]')).toBeNull();
+    expect(container.querySelector('[data-editor-node="element"]')).toBeNull();
     expect(transformProps).not.toHaveBeenCalled();
   });
 });

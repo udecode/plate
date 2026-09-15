@@ -1,12 +1,11 @@
+import { jsxt, type TestEditor } from '#platejs-test-internal';
 /** @jsxRuntime classic */
 /** @jsx jsxt */
-
-import { jsxt, type TestEditor } from '#platejs-test-internal';
 
 import {
   BaseParagraphPlugin,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   editorCommands,
   schema,
   PLUGINS,
@@ -21,7 +20,7 @@ import {
 
 jsxt;
 
-const CodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
+const CodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1, max: 1 }),
@@ -180,9 +179,6 @@ describe('BaseInlineEquationPlugin', () => {
         placement: 'element',
       })?.value.kind
     ).toBe('string');
-    expect(editor.plugin(PLUGINS.inlineEquation).name).toBe(
-      PLUGINS.inlineEquation
-    );
     expect(typeof editor.plugin(BaseInlineEquationPlugin).update.insert).toBe(
       'function'
     );

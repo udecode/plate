@@ -8,7 +8,7 @@ import { getEditorLiveSelection, jsxt } from '#platejs-test-internal';
 
 import {
   createEditorView,
-  defineBasePlugin,
+  definePlugin,
   property,
   schema,
   SelectionApi,
@@ -47,7 +47,7 @@ describe('table selection slow contracts', () => {
     const getTestTablePlugins = (
       options?: Partial<TableDefinition['initialState']>
     ) => [
-      defineBasePlugin('tableSelectionTestSchema', {
+      definePlugin('tableSelectionTestSchema', {
         schema: {
           properties: {
             align: schema.elementProperty(property.string(), {
@@ -879,7 +879,7 @@ describe('table selection slow contracts', () => {
       id: `${prefix}-table`,
       type: 'table',
     });
-    const RootHolderPlugin = defineBasePlugin('tableSelectionRootHolder', {
+    const RootHolderPlugin = definePlugin('tableSelectionRootHolder', {
       schema: {
         element: {
           type: 'rootHolder',

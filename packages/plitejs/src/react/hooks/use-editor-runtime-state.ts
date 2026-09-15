@@ -4,7 +4,7 @@ import type {
   Editor,
   EditorCommit,
   EditorStateView,
-  ExtensionsOf,
+  PluginsOf,
   ValueOf,
 } from '../..';
 import { useGenericSelector } from './use-generic-selector';
@@ -25,7 +25,7 @@ const refEquality = <T>(a: T | null, b: T) => a === b;
  * Subscribe to a derived state value from an explicit editor instance.
  *
  * Use this for chrome that owns or receives an editor but is outside a
- * `<Plite>` provider. Commit-driven selectors invalidate synchronously. Inside
+ * `<EditorRoot>` provider. Commit-driven selectors invalidate synchronously. Inside
  * provider descendants, prefer `useEditorState`.
  */
 export function useEditorRuntimeState<
@@ -33,9 +33,7 @@ export function useEditorRuntimeState<
   TEditor extends Editor<any, any> = Editor<any, any>,
 >(
   editor: TEditor,
-  selector: (
-    state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>
-  ) => T,
+  selector: (state: EditorStateView<ValueOf<TEditor>, PluginsOf<TEditor>>) => T,
   {
     equalityFn = refEquality,
     shouldUpdate,
@@ -47,7 +45,7 @@ export function useEditorRuntimeState<
         selector(
           state as unknown as EditorStateView<
             ValueOf<TEditor>,
-            ExtensionsOf<TEditor>
+            PluginsOf<TEditor>
           >
         )
       ),

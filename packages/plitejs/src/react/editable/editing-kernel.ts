@@ -16,9 +16,9 @@ import {
 } from '../..';
 import { Hotkeys } from '../../dom';
 import { DOMRootRuntime } from '../../dom/internal';
-import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
+import { isSelectAllHotkey } from '../viewport-commands';
 import { getInputEventData, isDataTransferInput } from './dom-input-event';
 import type { EditableCommand } from './editable-command-types';
 import {
@@ -43,10 +43,7 @@ import type {
 } from './input-state';
 import type { EditableRepairRequest } from './mutation-controller';
 import { type AnyEditor, toInternalRoot } from './runtime-editor-api';
-import {
-  readLiveSelection,
-  readRuntimeSelection,
-} from './runtime-selection-state';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 export type EditableBrowserEventFamily =
   | 'beforeinput'
@@ -79,14 +76,14 @@ export type EditableKernelState =
   | 'internal-control'
   | 'model-owned'
   | 'repairing'
-  | 'partial-dom-backed';
+  | 'viewport-backed';
 
 export type EditableEventTargetOwner =
   | 'app-owned'
   | 'editor'
   | 'internal-control'
   | 'outside-editor'
-  | 'partial-dom'
+  | 'viewport'
   | 'unknown';
 
 export type EditableOwnership =
@@ -282,14 +279,14 @@ export type EditableSelectionPolicy = {
     | 'import-dom'
     | 'none'
     | 'preserve-model'
-    | 'partial-dom';
+    | 'viewport';
   reason:
     | 'internal-control'
     | 'model-owned'
     | 'native-selection'
     | 'not-requested'
     | 'selection-clear'
-    | 'partial-dom-backed'
+    | 'viewport-backed'
     | 'unknown-selection';
 };
 
@@ -477,7 +474,7 @@ export const beginEditableEventFrame = (
     inputIntent: input.inputIntent ?? null,
     lifecyclePhase: input.lifecyclePhase ?? 'event',
     modelSelectionBefore:
-      input.modelSelectionBefore ?? readLiveSelection(editor),
+      input.modelSelectionBefore ?? readRuntimeSelection(editor),
     root:
       input.root ?? toInternalRoot(editor.read((state) => state.view.root())),
     selectionSource: input.selectionSource ?? 'unknown',
@@ -563,7 +560,9 @@ const assertEditableKernelTransition = (entry: EditableKernelTraceEntry) => {
   }
 
   throw new Error(
-    `Illegal Editable kernel transition: ${entry.transition.reason ?? 'unknown'}`
+    `Illegal Editable kernel transition: ${
+      entry.transition.reason ?? 'unknown'
+    }`
   );
 };
 
@@ -580,7 +579,7 @@ const hasAuthoritativeModelSelection = ({
   inputController: EditableInputController;
 }) =>
   (inputController.state.selectionSource === 'model-owned' ||
-    inputController.state.selectionSource === 'partial-dom-backed') &&
+    inputController.state.selectionSource === 'viewport-backed') &&
   (inputController.preferModelSelectionForInputRef.current ||
     hasProgrammaticSelectionOrigin(
       inputController.state.selectionChangeOrigin
@@ -998,18 +997,18 @@ export const prepareEditableKeyDownKernel = ({
   editor,
   event,
   inputController,
-  domStrategyRuntime,
+  viewportRuntime,
 }: {
   editor: ReactRuntimeEditor;
   event: ReactKeyboardEvent<HTMLDivElement>;
   inputController: EditableInputController;
-  domStrategyRuntime: unknown;
+  viewportRuntime: unknown;
 }): EditableKeyDownKernelDecision => {
   const intent = classifyKeyboardIntent({
     editor,
     event,
     isComposing: inputController.state.isComposing,
-    domStrategyRuntime,
+    viewportRuntime,
   });
   const selectionBefore = readRuntimeSelection(editor);
   const internalTarget = isInteractiveInternalTarget(editor, event.target);
@@ -1105,7 +1104,7 @@ export const prepareEditableClipboardKernel = ({
   return DOMRootRuntime.resolveInputRuntime(editor).prepareClipboardDecision({
     intent,
     internalTarget,
-    selectionBefore: readLiveSelection(editor),
+    selectionBefore: readRuntimeSelection(editor),
     selectionSource: inputController.state.selectionSource,
     targetOwner,
   });
@@ -1134,7 +1133,7 @@ export const prepareEditableCompositionKernel = ({
   return DOMRootRuntime.resolveInputRuntime(editor).prepareCompositionDecision({
     intent,
     internalTarget,
-    selectionBefore: readLiveSelection(editor),
+    selectionBefore: readRuntimeSelection(editor),
     selectionSource: inputController.state.selectionSource,
     targetOwner,
   });
@@ -1160,7 +1159,7 @@ export const prepareEditableFocusMouseKernel = ({
 
   return DOMRootRuntime.resolveInputRuntime(editor).prepareFocusMouseDecision({
     internalTarget,
-    selectionBefore: readLiveSelection(editor),
+    selectionBefore: readRuntimeSelection(editor),
     selectionSource: inputController.state.selectionSource,
     targetOwner,
   });
@@ -1188,7 +1187,7 @@ export const prepareEditableInputKernel = ({
   return DOMRootRuntime.resolveInputRuntime(editor).prepareInputDecision({
     intent,
     internalTarget,
-    selectionBefore: readLiveSelection(editor),
+    selectionBefore: readRuntimeSelection(editor),
     selectionSource: inputController.state.selectionSource,
     targetOwner,
   });

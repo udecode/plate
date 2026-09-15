@@ -1,14 +1,14 @@
 import type { BaseHorizontalRulePlugin } from 'platejs';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
 export function HrElementStatic(
-  props: PliteElementProps<typeof BaseHorizontalRulePlugin>
+  props: EditorElementProps<typeof BaseHorizontalRulePlugin>
 ) {
   return (
-    <PliteElement {...props}>
+    <EditorElement {...props}>
       <div className="cursor-text py-6" contentEditable={false}>
         <hr
           className={cn(
@@ -17,6 +17,6 @@ export function HrElementStatic(
         />
       </div>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }

@@ -3,7 +3,7 @@ import type {
   CodeBlockPlugin,
   ExternalTextAdapter,
   ExternalTextState,
-  PlateElementProps,
+  EditorElementProps,
 } from 'platejs/react';
 
 const adapter: ExternalTextAdapter<{ language: string }> = {
@@ -20,7 +20,7 @@ const adapter: ExternalTextAdapter<{ language: string }> = {
   },
 };
 
-declare const props: PlateElementProps<typeof CodeBlockPlugin>;
+declare const props: EditorElementProps<typeof CodeBlockPlugin>;
 declare const state: ExternalTextState<{ language: string }>;
 
 state.config.language.toUpperCase();

@@ -9,27 +9,27 @@ const toKebabCase = (key: string) =>
 
 /** Return true when the element is a Plite void element boundary. */
 export const isVoid = (element: HTMLElement) =>
-  element.dataset.pliteVoid === 'true';
+  element.dataset.editorVoid === 'true';
 
 /** Return true when the element is a Plite element node boundary. */
 export const isElement = (element: HTMLElement) =>
-  element.dataset.pliteNode === 'element';
+  element.dataset.editorNode === 'element';
 
 /** Return true when the element is a Plite text node boundary. */
 export const isText = (element: HTMLElement) =>
-  element.dataset.pliteNode === 'text';
+  element.dataset.editorNode === 'text';
 
 /** Return true when the element is a Plite rendered string boundary. */
 export const isString = (element: HTMLElement) =>
-  element.dataset.pliteString === 'true';
+  element.dataset.editorString === 'true';
 
 /** Return true when the element is a Plite leaf boundary. */
 export const isLeaf = (element: HTMLElement) =>
-  element.dataset.pliteLeaf === 'true';
+  element.dataset.editorLeaf === 'true';
 
 /** Return true when the element is a Plite editable root. */
 export const isEditor = (element: HTMLElement) =>
-  element.dataset.pliteEditor === 'true';
+  element.dataset.editor === 'true';
 
 /** Return true when the element is any Plite-owned DOM node boundary. */
 export const isNode = (element: HTMLElement) =>
@@ -41,11 +41,11 @@ export const isNode = (element: HTMLElement) =>
 
 /** Return Plite element boundaries below the provided element. */
 export const getElements = (element: HTMLElement): HTMLElement[] =>
-  Array.from(element.querySelectorAll('[data-plite-node="element"]'));
+  Array.from(element.querySelectorAll('[data-editor-node="element"]'));
 
 /** Convert a model property key to its Plite DOM data attribute name. */
 export const keyToDataAttribute = (key: string) =>
-  `data-plite-${toKebabCase(key)}`;
+  `data-editor-${toKebabCase(key)}`;
 
 /** Return DOM data attribute names that mirror primitive node properties. */
 export const getNodeDataAttributeKeys = (node: Element | Text) =>

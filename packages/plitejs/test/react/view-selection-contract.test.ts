@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   createPliteDecorationManager,
-  type PliteDecorationSource,
+  type DecorationSource,
 } from '../../src/react/decoration-source';
 import { getSnapshot as editorGetSnapshot } from '../../src/react/editable/runtime-editor-api';
 import type { ReactRuntimeEditor } from '../../src/react/plugin/react-editor';
@@ -172,7 +172,7 @@ describe('plite view selection', () => {
     expect(source.read({ editor, entry: [text, [0, 0]] })).toEqual([
       expect.objectContaining({
         attributes: expect.objectContaining({
-          'data-plite-view-selection': 'true',
+          'data-editor-view-selection': 'true',
         }),
         range: {
           anchor: { path: [0, 0], offset: 0 },
@@ -198,7 +198,7 @@ describe('plite view selection', () => {
       })
     );
     const manager = createPliteDecorationManager(editor, [
-      createPliteViewSelectionDecorationSource(editor) as PliteDecorationSource<
+      createPliteViewSelectionDecorationSource(editor) as DecorationSource<
         typeof editor
       >,
     ]);

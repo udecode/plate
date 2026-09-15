@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 
 test.describe('On markdown-shortcuts example', () => {
@@ -128,7 +128,7 @@ test.describe('On markdown-shortcuts example', () => {
       'Desktop markdown shortcut keyboard proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openMarkdownShortcuts(page);
@@ -178,7 +178,7 @@ test.describe('On markdown-shortcuts example', () => {
       'Desktop markdown shortcut keyboard proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openMarkdownShortcuts(page);
@@ -451,7 +451,7 @@ test.describe('On markdown-shortcuts example', () => {
       'Desktop markdown shortcut keyboard proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openMarkdownShortcuts(page);
@@ -484,7 +484,7 @@ test.describe('On markdown-shortcuts example', () => {
       'Desktop markdown shortcut keyboard proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openMarkdownShortcuts(page);

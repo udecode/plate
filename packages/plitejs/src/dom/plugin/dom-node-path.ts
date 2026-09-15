@@ -1,17 +1,21 @@
 import type { Node, Path, NodeKey, Value } from '../..';
+import { getEditorRuntime } from '../../core/editor-runtime';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
   hasPath as editorHasPath,
-} from '../../internal';
+} from '../../interfaces/editor';
 import { isDOMElement } from '../utils/dom';
 import {
   EDITOR_TO_ELEMENT,
+  EDITOR_TO_RUNTIME_ID_TO_ELEMENTS,
   NODE_TO_INDEX,
   NODE_TO_PARENT,
   NODE_TO_RUNTIME_ID,
 } from '../utils/weak-maps';
 import type { DOMEditor } from './dom-editor';
+import { isDOMFragmentNode, readDOMFragmentParent } from './dom-fragment-view';
+import { getPliteTextHostBounds } from './dom-geometry';
 import { resolveMountedEditorDOMRoot } from './dom-root-runtime';
 
 export const parsePliteDOMPath = (value: string | null): Path | null => {
@@ -28,7 +32,9 @@ export const getPliteDOMRuntimePath = <V extends Value>(
   editor: DOMEditor<V>,
   element: HTMLElement
 ): Path | null => {
-  const nodeKey = element.getAttribute('data-plite-node-key') as NodeKey | null;
+  const nodeKey = element.getAttribute(
+    'data-editor-node-key'
+  ) as NodeKey | null;
 
   return nodeKey ? editorGetPathByNodeKey(editor, nodeKey) : null;
 };
@@ -48,7 +54,7 @@ export const resolveMountedDOMPath = <V extends Value>(
   }
 
   const attributePath = parsePliteDOMPath(
-    element.getAttribute('data-plite-path')
+    element.getAttribute('data-editor-path')
   );
 
   if (attributePath && editorHasPath(editor, attributePath)) {
@@ -61,12 +67,16 @@ export const resolveMountedDOMPath = <V extends Value>(
 export const findMountedDOMNodeByPath = <V extends Value>(
   editor: DOMEditor<V>,
   path: Path,
-  root?: HTMLElement | null
+  root?: HTMLElement | null,
+  point?: Readonly<{ affinity?: 'backward' | 'forward'; offset: number }>
 ): HTMLElement | null => {
   const mountedRoot =
     root === undefined ? resolveMountedEditorDOMRoot(editor) : root;
   const editorEl =
-    mountedRoot === undefined ? EDITOR_TO_ELEMENT.get(editor) : mountedRoot;
+    mountedRoot === undefined
+      ? (EDITOR_TO_ELEMENT.get(editor) ??
+        readDOMFragmentParent(editor)?.api.dom.editable())
+      : mountedRoot;
 
   if (!editorEl) {
     return null;
@@ -74,17 +84,37 @@ export const findMountedDOMNodeByPath = <V extends Value>(
 
   const pathAttr = path.join(',');
   const nodeKey = editorGetNodeKey(editor, path);
-  const elements = Array.from(
-    editorEl.querySelectorAll(`[data-plite-path="${pathAttr}"]`)
-  );
+  const bound = nodeKey
+    ? EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(getEditorRuntime(editor))?.get(
+        nodeKey
+      )
+    : undefined;
+  const elements = bound?.size
+    ? [...bound]
+    : Array.from(editorEl.querySelectorAll(`[data-editor-path="${pathAttr}"]`));
 
-  const domEl = elements.find(
-    (element) =>
-      isDOMElement(element) &&
-      element.closest('[data-plite-editor="true"]') === editorEl &&
-      element.getAttribute('data-plite-node') &&
-      (!nodeKey || element.getAttribute('data-plite-node-key') === nodeKey)
-  );
+  const matches = elements
+    .filter(isDOMElement)
+    .filter(
+      (element) =>
+        element.closest('[data-editor="true"]') === editorEl &&
+        element.getAttribute('data-editor-node') &&
+        isDOMFragmentNode(editor, element) !== false &&
+        (!nodeKey || element.getAttribute('data-editor-node-key') === nodeKey)
+    );
+  const candidates = point
+    ? matches.filter((element) => {
+        const { start, end } = getPliteTextHostBounds(element);
+        return start <= point.offset && point.offset <= end;
+      })
+    : matches;
+  const domEl = point
+    ? (candidates.find((element) =>
+        point.affinity === 'forward'
+          ? getPliteTextHostBounds(element).end > point.offset
+          : getPliteTextHostBounds(element).start < point.offset
+      ) ?? candidates[0])
+    : candidates[0];
 
   return domEl ? (domEl as HTMLElement) : null;
 };

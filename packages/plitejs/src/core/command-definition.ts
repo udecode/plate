@@ -86,16 +86,6 @@ export const defineCommand = <
     prepare: spec.prepare ?? ((input: Input) => input),
   });
   const command = {
-    build(
-      state: EditorCommandContext<Input, TEditor>['state'],
-      ...input: [Input] extends [void] ? [] | [input: Input] : [input: Input]
-    ) {
-      return runtime.build({
-        input: runtime.prepare(input[0] as Input),
-        state,
-        tags: Object.freeze([]),
-      });
-    },
     id,
   } as unknown as EditorCommand<Input, TEditor>;
 
@@ -126,7 +116,7 @@ export const getCommandRuntime = <Input, TEditor extends BaseEditor<any, any>>(
 };
 
 /**
- * Resolve one opaque registration created by an extension factory.
+ * Resolve one opaque registration created by an plugin factory.
  *
  * @internal
  */
@@ -139,7 +129,7 @@ export const getCommandRegistrationRuntime = <
 
   if (!runtime) {
     throw new Error(
-      'Editor command registrations must be created by the extension command factory.'
+      'Editor command registrations must be created by the plugin command factory.'
     );
   }
 

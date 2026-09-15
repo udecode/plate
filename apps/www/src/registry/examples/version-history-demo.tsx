@@ -1,421 +1,157 @@
 'use client';
 
-import { cloneDeep } from 'lodash';
-import { type PropertyJsonValue, type Value, property, schema } from 'platejs';
+import type { Value } from 'platejs';
 import {
-  type DiffIntent,
-  type DiffUpdate,
-  computeDiff,
-  excludeDiffFragment,
-} from 'platejs/diff';
+  type AuthoredChange,
+  type AuthoredPlugin,
+  authored,
+} from 'platejs/authored';
 import {
   type Editor,
-  Plate,
-  PlateContent,
-  PlateElement,
-  type PlateElementProps,
-  PlateLeaf,
-  type PlateLeafProps,
-  type PlateProps,
-  createEditor,
-  definePlatePlugin,
+  EditorRoot,
+  EditorContent,
   useCreateEditor,
-  useElementSelected,
+  useEditor,
+  useEditorSelector,
 } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
 
-const InlinePlugin = definePlatePlugin('inline', {
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      inline: true,
-    },
-  },
-});
+type VersionHistoryEditor = Editor<Value, readonly [AuthoredPlugin]>;
 
-const InlineVoidPlugin = definePlatePlugin('inlineVoid', {
-  schema: { element: { inline: true, void: 'inline' } },
-});
+const readPlateUserId = (editor: object) => {
+  const runtime = Reflect.get(editor, 'runtime');
+  if (!runtime || typeof runtime !== 'object') return null;
+  const userId = Reflect.get(runtime, 'userId');
 
-const diffIntentColors: Record<DiffIntent['type'], string> = {
-  delete: 'bg-red-200',
-  insert: 'bg-green-200',
-  update: 'bg-blue-200',
+  return typeof userId === 'string' && userId.length > 0 ? userId : null;
 };
-
-type JsonDiffIntent =
-  | Exclude<DiffIntent, DiffUpdate>
-  | (Omit<DiffUpdate, 'newProperties' | 'properties'> & {
-      newProperties: Readonly<Record<string, PropertyJsonValue>>;
-      properties: Readonly<Record<string, PropertyJsonValue>>;
-    });
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
-
-const isPropertyJsonValue = (value: unknown): value is PropertyJsonValue => {
-  if (
-    value === null ||
-    typeof value === 'boolean' ||
-    typeof value === 'string'
-  ) {
-    return true;
-  }
-  if (typeof value === 'number') return Number.isFinite(value);
-  if (Array.isArray(value)) return value.every(isPropertyJsonValue);
-
-  return isRecord(value) && Object.values(value).every(isPropertyJsonValue);
-};
-
-const isJsonRecord = (
-  value: unknown
-): value is Readonly<Record<string, PropertyJsonValue>> =>
-  isRecord(value) && Object.values(value).every(isPropertyJsonValue);
-
-const isDiffIntent = (value: unknown): value is JsonDiffIntent => {
-  if (!isRecord(value)) return false;
-
-  const { type } = value;
-
-  if (type === 'delete' || type === 'insert') return true;
-  if (type !== 'update') return false;
-
-  const { newProperties, properties } = value;
-
-  return isJsonRecord(newProperties) && isJsonRecord(properties);
-};
-
-export const formatPropertyValue = (
-  value: PropertyJsonValue | undefined
-): string => {
-  if (typeof value === 'string') return value;
-
-  return value === undefined
-    ? 'undefined'
-    : (JSON.stringify(value) ?? 'undefined');
-};
-
-const describeUpdate = ({
-  newProperties,
-  properties,
-}: Extract<JsonDiffIntent, { type: 'update' }>) => {
-  const addedProps: string[] = [];
-  const removedProps: string[] = [];
-  const updatedProps: string[] = [];
-
-  Object.keys(newProperties).forEach((key) => {
-    const oldValue = properties[key];
-    const newValue = newProperties[key];
-
-    if (oldValue === undefined) {
-      addedProps.push(key);
-
-      return;
-    }
-    if (newValue === undefined) {
-      removedProps.push(key);
-
-      return;
-    }
-
-    updatedProps.push(key);
-  });
-
-  const descriptionParts: string[] = [];
-
-  if (addedProps.length > 0) {
-    descriptionParts.push(`Added ${addedProps.join(', ')}`);
-  }
-  if (removedProps.length > 0) {
-    descriptionParts.push(`Removed ${removedProps.join(', ')}`);
-  }
-  if (updatedProps.length > 0) {
-    updatedProps.forEach((key) => {
-      descriptionParts.push(
-        `Updated ${key} from ${formatPropertyValue(properties[key])} to ${formatPropertyValue(newProperties[key])}`
-      );
-    });
-  }
-
-  return descriptionParts.join('\n');
-};
-
-const InlineElement = ({
-  children,
-  ...props
-}: PlateElementProps<typeof InlinePlugin>) => (
-  <PlateElement {...props} as="span" className="rounded-sm bg-slate-200/50 p-1">
-    {children}
-  </PlateElement>
-);
-
-const InlineVoidElement = ({
-  children,
-  ...props
-}: PlateElementProps<typeof InlineVoidPlugin>) => {
-  const selected = useElementSelected();
-
-  return (
-    <PlateElement {...props} as="span">
-      <span
-        className={cn(
-          'rounded-sm bg-slate-200/50 p-1',
-          selected && 'bg-blue-500 text-white'
-        )}
-        contentEditable={false}
-      >
-        Inline void
-      </span>
-      {children}
-    </PlateElement>
-  );
-};
-
-const DiffPlugin = definePlatePlugin('diff', {
-  schema: {
-    mark: property.boolean({ default: false, omitDefault: true }),
-    properties: {
-      diffIntent: schema.textProperty(
-        property.json({
-          validate: isDiffIntent,
-          validationVersion: 1,
-        })
-      ),
-    },
-  },
-})
-  .extend(excludeDiffFragment())
-  .extend({
-    slots: {
-      wrapNode:
-        () =>
-        ({ children, editor, element }) => {
-          if (!element.diff) return children;
-
-          const { diffIntent } = element;
-
-          if (!isDiffIntent(diffIntent)) return children;
-
-          const label = (
-            {
-              delete: 'deletion',
-              insert: 'insertion',
-              update: 'update',
-            } as const
-          )[diffIntent.type];
-
-          const Component = editor.read.schema.isInline(element)
-            ? 'span'
-            : 'div';
-
-          return (
-            <Component
-              className={diffIntentColors[diffIntent.type]}
-              title={
-                diffIntent.type === 'update'
-                  ? describeUpdate(diffIntent)
-                  : undefined
-              }
-              aria-label={label}
-            >
-              {children}
-            </Component>
-          );
-        },
-    },
-  });
-
-function DiffLeaf({ children, ...props }: PlateLeafProps<typeof DiffPlugin>) {
-  const { diffIntent } = props.leaf;
-
-  if (!diffIntent) return <PlateLeaf {...props}>{children}</PlateLeaf>;
-
-  return (
-    <PlateLeaf
-      {...props}
-      // as={Component}
-      className={diffIntentColors[diffIntent.type]}
-      attributes={{
-        ...props.attributes,
-        title:
-          diffIntent.type === 'update' ? describeUpdate(diffIntent) : undefined,
-      }}
-    >
-      {children}
-    </PlateLeaf>
-  );
-}
 
 const initialValue: Value = [
   {
-    children: [{ text: 'This is a version history demo.' }],
+    children: [{ text: 'This document keeps each accepted edit by author.' }],
     type: 'paragraph',
   },
   {
     children: [
-      { text: 'Try editing the ' },
-      { bold: true, text: 'text and see what' },
-      { text: ' happens.' },
-    ],
-    type: 'paragraph',
-  },
-  {
-    children: [
-      { text: 'This is an ' },
-      { children: [{ text: '' }], type: 'inlineVoid' },
-      { text: '. Try removing it.' },
-    ],
-    type: 'paragraph',
-  },
-  {
-    children: [
-      { text: 'This is an ' },
-      { children: [{ text: 'editable inline' }], type: 'inline' },
-      { text: '. Try editing it.' },
+      { text: 'Edit this text as Alice or Bob, then revert one contribution.' },
     ],
     type: 'paragraph',
   },
 ];
 
-export const createVersionSnapshot = (value: Value): Value => cloneDeep(value);
-
-const basePlugins = [
-  ...BasicMarksKit,
-  InlinePlugin.configure({ component: InlineElement }),
-  InlineVoidPlugin.configure({ component: InlineVoidElement }),
-];
-
-const diffPlugins = [
-  ...basePlugins,
-  DiffPlugin.configure({ component: DiffLeaf }),
-];
-
-function VersionHistoryPlate<E extends Editor>(
-  props: Omit<PlateProps<E>, 'children'>
-) {
-  return (
-    <Plate<E> {...props}>
-      <PlateContent className="rounded-md border p-3" />
-    </Plate>
-  );
-}
-
-function Diff({ current, previous }: { current: Value; previous: Value }) {
-  const diffValue = React.useMemo(() => {
-    const editor = createEditor({
-      plugins: diffPlugins,
-    });
-
-    return computeDiff(
-      createVersionSnapshot(previous),
-      createVersionSnapshot(current),
-      {
-        isInline: (node) => editor.read.schema.isInline(node),
-        lineBreakChar: '¶',
-      }
-    ) as Value;
-  }, [previous, current]);
-
-  const editor = useCreateEditor(
-    {
-      plugins: diffPlugins,
-      initialValue: diffValue,
-    },
-    [diffValue]
+const sameChanges = (
+  left: readonly AuthoredChange[] | null,
+  right: readonly AuthoredChange[]
+) =>
+  left !== null &&
+  left.length === right.length &&
+  left.every(
+    (change, index) =>
+      change.id === right[index]?.id &&
+      change.revision === right[index]?.revision &&
+      change.status === right[index]?.status
   );
 
-  return (
-    <>
-      <VersionHistoryPlate
-        key={JSON.stringify(diffValue)}
-        readOnly
-        editor={editor}
-      />
+function AuthorHistory({ onResult }: { onResult: (value: string) => void }) {
+  const editor = useEditor() as VersionHistoryEditor;
+  const changes = useEditorSelector(
+    (current) =>
+      (current as VersionHistoryEditor).read.authored.changes({
+        limit: 50,
+        status: 'accepted',
+      }).items,
+    { equalityFn: sameChanges }
+  );
 
-      {/* <pre>{JSON.stringify(diffValue, null, 2)}</pre> */}
-    </>
+  if (changes.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Accepted edits appear here after you change the document.
+      </p>
+    );
+  }
+
+  return (
+    <ol className="space-y-2">
+      {changes.toReversed().map((change) => (
+        <li
+          className="flex items-center justify-between gap-3 rounded-md border p-2"
+          key={`${change.id}:${change.revision}`}
+        >
+          <span className="text-sm">
+            <strong>{change.authorId}</strong> · {change.kind} · revision{' '}
+            {change.revision}
+          </span>
+          <Button
+            onClick={() => {
+              const result = editor.update.authored.revert({
+                selection: editor.read.authored.select({ ids: [change.id] }),
+              });
+
+              onResult(
+                result.status === 'applied'
+                  ? `Reverted ${change.authorId}'s ${change.kind} change.`
+                  : `Revert ${result.status}.`
+              );
+            }}
+            size="sm"
+            variant="outline"
+          >
+            Revert
+          </Button>
+        </li>
+      ))}
+    </ol>
   );
 }
 
 export default function VersionHistoryDemo() {
-  const [revisions, setRevisions] = React.useState<Value[]>(() => [
-    createVersionSnapshot(initialValue),
-  ]);
-  const [selectedRevisionIndex, setSelectedRevisionIndex] =
-    React.useState<number>(0);
-  const [value, setValue] = React.useState<Value>(() =>
-    createVersionSnapshot(initialValue)
-  );
-
-  const selectedRevisionValue = React.useMemo(
-    () => revisions[selectedRevisionIndex],
-    [revisions, selectedRevisionIndex]
-  );
-
-  const saveRevision = () => {
-    setRevisions([...revisions, createVersionSnapshot(value)]);
-  };
-
+  const [authorId, setAuthorId] = React.useState('alice');
+  const [result, setResult] = React.useState('');
   const editor = useCreateEditor({
-    plugins: basePlugins,
-    initialValue: createVersionSnapshot(initialValue),
+    plugins: [
+      ...BasicMarksKit,
+      authored({
+        authorId: readPlateUserId,
+        retainHistory: true,
+      }),
+    ],
+    initialValue,
+    userId: 'alice',
   });
 
-  const editorRevision = useCreateEditor(
-    {
-      plugins: basePlugins,
-      initialValue: selectedRevisionValue,
-    },
-    [selectedRevisionValue]
-  );
-
   return (
-    <div className="flex flex-col gap-3 p-3">
-      <Button onClick={saveRevision}>Save revision</Button>
-
-      <VersionHistoryPlate
-        onValueChange={({ value: innerValue }) => {
-          setValue(createVersionSnapshot(innerValue.children));
-        }}
-        editor={editor}
-      />
-
-      <label>
-        Revision to compare:
+    <div className="flex flex-col gap-4 p-3">
+      <label className="flex items-center gap-2 text-sm font-medium">
+        Edit as
         <select
-          className="rounded-md border p-1"
-          onChange={(e) => {
-            setSelectedRevisionIndex(Number(e.target.value));
+          className="rounded-md border bg-background px-2 py-1"
+          onChange={(event) => {
+            Reflect.set(editor.runtime, 'userId', event.target.value);
+            setAuthorId(event.target.value);
           }}
+          value={authorId}
         >
-          {revisions.map((_, i) => (
-            // oxlint-disable-next-line react-doctor/no-array-index-as-key -- [P1 local-invariant] Revisions are append-only snapshots, so creation order is their stable identity in this selector.
-            <option key={i} value={i}>
-              Revision {i + 1}
-            </option>
-          ))}
+          <option value="alice">Alice</option>
+          <option value="bob">Bob</option>
         </select>
       </label>
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <div>
-          <h2>Revision {selectedRevisionIndex + 1}</h2>
-          <VersionHistoryPlate
-            key={selectedRevisionIndex}
-            readOnly
-            editor={editorRevision}
-          />
-        </div>
-
-        <div>
-          <h2>Diff</h2>
-          <Diff current={value} previous={selectedRevisionValue} />
-        </div>
-      </div>
+      <EditorRoot editor={editor}>
+        <EditorContent className="rounded-md border p-3" />
+        <section className="space-y-2">
+          <h2 className="font-medium">Retained author history</h2>
+          <AuthorHistory onResult={setResult} />
+          {result && (
+            <p aria-live="polite" className="text-sm text-muted-foreground">
+              {result}
+            </p>
+          )}
+        </section>
+      </EditorRoot>
     </div>
   );
 }

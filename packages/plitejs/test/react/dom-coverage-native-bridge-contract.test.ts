@@ -115,7 +115,7 @@ const mountEditorRoot = (editor: ReactRuntimeEditor) => {
   const root = document.createElement('div');
 
   root.setAttribute('contenteditable', 'true');
-  root.setAttribute('data-plite-editor', 'true');
+  root.setAttribute('data-editor', 'true');
   Object.defineProperty(root, 'isContentEditable', {
     configurable: true,
     value: true,
@@ -136,8 +136,8 @@ const mountEditorRoot = (editor: ReactRuntimeEditor) => {
 const mountVisibleDragTarget = (root: HTMLElement) => {
   const target = document.createElement('p');
 
-  target.setAttribute('data-plite-node', 'element');
-  target.setAttribute('data-plite-path', '1');
+  target.setAttribute('data-editor-node', 'element');
+  target.setAttribute('data-editor-path', '1');
   root.append(target);
 
   return target;
@@ -147,8 +147,8 @@ const mountInternalControlDragTarget = (root: HTMLElement) => {
   const host = document.createElement('p');
   const button = document.createElement('button');
 
-  host.setAttribute('data-plite-node', 'element');
-  host.setAttribute('data-plite-path', '0');
+  host.setAttribute('data-editor-node', 'element');
+  host.setAttribute('data-editor-path', '0');
   button.type = 'button';
   button.textContent = 'Internal control';
   host.append(button);
@@ -183,7 +183,6 @@ const createHiddenSelectionEditor = () => {
         focus: getNodeKey(editor, [0, 1]),
       },
     ],
-    findPolicy: 'native',
     ownerPath: [0],
     ownerNodeKey: getNodeKey(editor, [0]),
     reason: 'app-collapse',
@@ -195,7 +194,7 @@ const createHiddenSelectionEditor = () => {
   return editor;
 };
 
-const createStagedSelectionEditor = () => {
+const createViewportSelectionEditor = () => {
   const editor = createEditor<Value>();
 
   editorReplace(editor, {
@@ -218,8 +217,8 @@ const createStagedSelectionEditor = () => {
 
   getTestRuntime(editor).domCoverage.registerBoundary({
     anchor: { nodeKey: getNodeKey(editor, [1]), type: 'placeholder' },
-    boundaryId: 'rendering-staged:pending',
-    copyPolicy: 'materialize',
+    boundaryId: 'viewport:pending',
+    copyPolicy: 'model',
     coveredPathRanges: [{ anchor: [1], focus: [1] }],
     coveredRuntimeRanges: [
       {
@@ -227,10 +226,9 @@ const createStagedSelectionEditor = () => {
         focus: getNodeKey(editor, [1]),
       },
     ],
-    findPolicy: 'native',
     ownerPath: [],
     ownerNodeKey: null,
-    reason: 'rendering-staged',
+    reason: 'viewport-virtualization',
     selectionPolicy: 'materialize',
     state: 'pending-mount',
     version: 1,
@@ -337,7 +335,7 @@ const runCrossEditorTextDrop = ({
     .spyOn(ReactEditor, 'resolveEventRange')
     .mockImplementation(() => resolvedDropRange);
 
-  sourceNode.setAttribute('data-plite-path', '0');
+  sourceNode.setAttribute('data-editor-path', '0');
 
   if (dropPayload === 'external') {
     dropData.setData('text/plain', 'Delta');
@@ -409,7 +407,7 @@ describe('DOM coverage native bridge', () => {
       expect(clipboard.getData('text/plain')).toBe('Hidden alpha');
       expect(clipboard.getData('text/html')).toContain('Hidden alpha');
       expect(clipboard.getData('text/html')).not.toContain('STALE');
-      expect(clipboard.getData('application/x-plite-fragment')).not.toBe('');
+      expect(clipboard.getData('application/x-editor-fragment')).not.toBe('');
     } finally {
       staleDom.remove();
       cleanupEditorRoot(editor, root);
@@ -431,7 +429,7 @@ describe('DOM coverage native bridge', () => {
         editor,
         event: createClipboardEvent(root, clipboard),
         readOnly: false,
-        partialDOMBackedSelection: false,
+        viewportBackedSelection: false,
       });
 
       expect(result.command).toMatchObject({ kind: 'insert-data' });
@@ -579,7 +577,7 @@ describe('DOM coverage native bridge', () => {
 
   test('internal block void drop moves the source in one commit', () => {
     const editor = createEditor({
-      extensions: [blockVideoSchema],
+      plugins: [blockVideoSchema],
     });
 
     editorReplace(editor, {
@@ -745,7 +743,7 @@ describe('DOM coverage native bridge', () => {
 
     const root = mountEditorRoot(editor);
     const source = mountVisibleDragTarget(root);
-    source.setAttribute('data-plite-path', '0');
+    source.setAttribute('data-editor-path', '0');
     const dataTransfer = new FakeDataTransfer();
     const state = {
       draggedBlock: false,
@@ -767,7 +765,9 @@ describe('DOM coverage native bridge', () => {
         state,
       });
 
-      expect(dataTransfer.getData('application/x-plite-fragment')).not.toBe('');
+      expect(dataTransfer.getData('application/x-editor-fragment')).not.toBe(
+        ''
+      );
       applyEditableDrop({
         editor,
         event: createDragEvent(root, dataTransfer),
@@ -1049,7 +1049,7 @@ describe('DOM coverage native bridge', () => {
         editor,
         event,
         readOnly: true,
-        partialDOMBackedSelection: false,
+        viewportBackedSelection: false,
       });
 
       expect(event.preventDefault).toHaveBeenCalled();
@@ -1095,7 +1095,7 @@ describe('DOM coverage native bridge', () => {
         event,
         onPaste,
         readOnly: true,
-        partialDOMBackedSelection: false,
+        viewportBackedSelection: false,
       });
 
       expect(onPaste).toHaveBeenCalledWith(event);
@@ -1136,7 +1136,7 @@ describe('DOM coverage native bridge', () => {
         event,
         onPaste: () => true,
         readOnly: false,
-        partialDOMBackedSelection: false,
+        viewportBackedSelection: false,
       });
 
       expect(event.preventDefault).not.toHaveBeenCalled();
@@ -1184,7 +1184,7 @@ describe('DOM coverage native bridge', () => {
           return false;
         },
         readOnly: false,
-        partialDOMBackedSelection: false,
+        viewportBackedSelection: false,
       });
 
       expect(event.preventDefault).toHaveBeenCalled();
@@ -1195,8 +1195,8 @@ describe('DOM coverage native bridge', () => {
     }
   });
 
-  test('copy over a pending staged root group materializes the coverage boundary and writes model data', () => {
-    const editor = createStagedSelectionEditor();
+  test('copy over an omitted viewport range writes model data without mounting it', () => {
+    const editor = createViewportSelectionEditor();
     const root = mountEditorRoot(editor);
     const clipboard = new FakeDataTransfer();
     const materialized: string[] = [];
@@ -1219,21 +1219,19 @@ describe('DOM coverage native bridge', () => {
         event: createClipboardEvent(root, clipboard),
       });
 
-      expect(materialized).toEqual([
-        'rendering-staged:pending:copy:Pending omega',
-      ]);
+      expect(materialized).toEqual([]);
       expect(clipboard.getData('text/plain')).toBe('Pending omega');
       expect(clipboard.getData('text/html')).toContain('Pending omega');
       expect(clipboard.getData('text/html')).not.toContain('STALE');
-      expect(clipboard.getData('application/x-plite-fragment')).not.toBe('');
+      expect(clipboard.getData('application/x-editor-fragment')).not.toBe('');
     } finally {
       staleDom.remove();
       cleanupEditorRoot(editor, root);
     }
   });
 
-  test('paste over a pending staged root group materializes before mutating the model', () => {
-    const editor = createStagedSelectionEditor();
+  test('paste over an omitted viewport range mounts it before mutating the model', () => {
+    const editor = createViewportSelectionEditor();
     const root = mountEditorRoot(editor);
     const clipboard = new FakeDataTransfer();
     const materialized: string[] = [];
@@ -1256,12 +1254,10 @@ describe('DOM coverage native bridge', () => {
         editor,
         event: createClipboardEvent(root, clipboard),
         readOnly: false,
-        partialDOMBackedSelection: false,
+        viewportBackedSelection: false,
       });
 
-      expect(materialized).toEqual([
-        'rendering-staged:pending:paste:Pending omega',
-      ]);
+      expect(materialized).toEqual(['viewport:pending:paste:Pending omega']);
       expect(result.command).toMatchObject({ kind: 'insert-data' });
       expect(editorString(editor, [1])).toBe('Pasted omega');
       expect(staleDom.textContent).toBe('STALE PENDING DOM');
@@ -1309,7 +1305,7 @@ describe('DOM coverage native bridge', () => {
         readOnly: false,
       });
 
-      const encoded = clipboard.getData('application/x-plite-fragment');
+      const encoded = clipboard.getData('application/x-editor-fragment');
 
       expect(event.preventDefault).toHaveBeenCalled();
       expect(encoded).not.toBe('');
@@ -1375,7 +1371,7 @@ describe('DOM coverage native bridge', () => {
       unknown: 'preserve',
     });
     const editor = createEditor({
-      extensions: [inlineVoidSchema],
+      plugins: [inlineVoidSchema],
       initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
     });
     editorReplace(editor, {
@@ -1425,8 +1421,9 @@ describe('DOM coverage native bridge', () => {
         focus: { path: [0, 0], offset: 7 },
       });
       expect(
-        decodeFragmentPayload(clipboard.getData('application/x-plite-fragment'))
-          .slice.content
+        decodeFragmentPayload(
+          clipboard.getData('application/x-editor-fragment')
+        ).slice.content
       ).toEqual([
         {
           type: 'paragraph',

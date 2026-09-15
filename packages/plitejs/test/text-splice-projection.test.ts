@@ -86,7 +86,7 @@ describe('canonical text splice projection', () => {
 
   it('projects undo and redo incrementally through the one history owner', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('abcd')],
     });
     const key = getNodeKey(editor, [0, 0]);

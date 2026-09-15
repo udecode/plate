@@ -22,7 +22,7 @@ Export complete `NormalizeTypesPluginState`, `TrailingBlockPluginState`, and `Bl
 - Export `SingleBlockPlugin` and `SingleLinePlugin` as independent editor constraints that weakly disable an installed trailing-block peer
 - Expose exit-break commands through the scoped plugin update API
 - Narrow `TrailingBlockPlugin`'s custom `insert` option to a wrapper around the default insertion; it no longer receives an editor or transaction context
-- Use one flat `PLUGINS` catalog for camel-case capability names; resolve persisted element types and property keys separately, and remove `KEYS`, `NODES`, `STYLE_KEYS`, and the redundant `tableCellHeader` capability. Use `docx` for the DOCX paste capability; file import and export are standalone operations
+- Use one flat `PLUGINS` catalog for camel-case capability names; resolve persisted element types and property keys separately, and remove `KEYS`, `NODES`, `STYLE_KEYS`, and the redundant `tableCellHeader` capability. Use `wordPaste` for the Word clipboard capability; file import and export are standalone operations
 - Replace the separate subscript and superscript identities with `PLUGINS.script`; represent script text with `TScriptValue` (`'sub' | 'sup'`)
 - Type resizable widths as numeric or relative CSS lengths
 - Persist `TTextAlignProps` under the canonical `textAlign` property

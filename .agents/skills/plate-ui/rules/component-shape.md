@@ -33,16 +33,16 @@ For node renderers already inside Plate element context:
 
 ## Preserve props passthrough
 
-If a renderer forwards to `PlateElement` or `PliteElement`, keep the full
+If a renderer forwards to `EditorElement` or `EditorElement`, keep the full
 incoming `props` object intact and destructure from it locally:
 
 **Correct:**
 
 ```tsx
-export function MyElement(props: PlateElementProps<typeof MyPlugin>) {
+export function MyElement(props: EditorElementProps<typeof MyPlugin>) {
   const { editor, element } = props;
 
-  return <PlateElement {...props} />;
+  return <EditorElement {...props} />;
 }
 ```
 
@@ -53,8 +53,8 @@ export function MyElement({
   editor,
   element,
   ...props
-}: PlateElementProps<typeof MyPlugin>) {
-  return <PlateElement {...props} />;
+}: EditorElementProps<typeof MyPlugin>) {
+  return <EditorElement {...props} />;
 }
 ```
 
@@ -84,7 +84,7 @@ avoid inlining it.
 An inline prop shape may select from an honest domain owner such as
 `Pick<EmojiPickerState, 'isOpen'>`. The state remains a state contract; do not
 flatten it or rename it to a prop bag. Descriptor-owned public renderer types
-such as `PlateElementProps<typeof FooPlugin>` remain their existing exported
+such as `EditorElementProps<typeof FooPlugin>` remain their existing exported
 contracts.
 
 Apply this convention during implementation and review. It does not need a
@@ -105,7 +105,8 @@ Copied registry UI and other generic code that owns or requires an exact
 descriptor use its portal:
 
 ```tsx
-const { api, editor } = useEditorPlugin(SuggestionPlugin);
+const editor = useEditor();
+const { api } = editor.plugin(SuggestionPlugin);
 ```
 
 If the generic component accepts a legitimately optional descriptor, keep the
@@ -164,7 +165,7 @@ export const MathKit = [
 
 Base/static files must not import `platejs/react` or any `platejs/*/react`
 entrypoint. `BasePlugin.configure({ component })` is the
-static binding path; `toPlatePlugin(BasePlugin)` belongs only in live React
+static binding path; `toReactPlugin(BasePlugin)` belongs only in live React
 adapters.
 Bind Base/static descriptors to static renderer modules, never live/client
 node components. Registry Base kits use the owning `*-static` component.

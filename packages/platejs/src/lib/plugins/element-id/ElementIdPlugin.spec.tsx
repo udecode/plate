@@ -3,12 +3,12 @@
 import { ElementApi, schema, target } from '../../../core';
 import { jsxt } from '../../../testing';
 import { createEditor } from '../../editor';
-import { defineBasePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { ElementIdPlugin, migrateElementIds } from './ElementIdPlugin';
 
 jsxt;
 
-const LinkPlugin = defineBasePlugin('elementIdLink', {
+const LinkPlugin = definePlugin('elementIdLink', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -17,7 +17,7 @@ const LinkPlugin = defineBasePlugin('elementIdLink', {
   },
 });
 
-const RootPlugin = defineBasePlugin('elementIdRoot', {
+const RootPlugin = definePlugin('elementIdRoot', {
   schema: {
     element: {
       blockContent: true,
@@ -179,17 +179,14 @@ describe('ElementIdPlugin', () => {
 
   it('does not publish its persisted index for a rejected transaction', () => {
     let reject = true;
-    const RejectTransactionPlugin = defineBasePlugin(
-      'rejectElementIdTransaction',
-      {
-        dependencies: [ElementIdPlugin],
-        on: {
-          transactionChange: () => {
-            if (reject) throw new Error('reject transaction');
-          },
+    const RejectTransactionPlugin = definePlugin('rejectElementIdTransaction', {
+      dependencies: [ElementIdPlugin],
+      on: {
+        transactionChange: () => {
+          if (reject) throw new Error('reject transaction');
         },
-      }
-    );
+      },
+    });
     const editor = createEditor({
       initialValue: [
         { children: [{ text: 'source' }], id: 'source', type: 'paragraph' },
@@ -224,7 +221,7 @@ describe('ElementIdPlugin', () => {
   });
 
   it('seeds duplicate checks from the final transformed initial value', () => {
-    const RewriteElementIdPlugin = defineBasePlugin('rewriteElementId', {
+    const RewriteElementIdPlugin = definePlugin('rewriteElementId', {
       dependencies: [ElementIdPlugin],
       prepareDocument: ({ document }) => ({
         ...document,

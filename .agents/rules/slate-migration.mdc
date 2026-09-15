@@ -1,5 +1,5 @@
 ---
-description: 'Slate v2 migration supervisor. Use for autonomous Slate/Plate migration work: Plate to Slate v2 migrations, API maps, stale Slate API removal, docs migration-guide repair, changeset repair, migration tests, examples, package DX proof, and self-repair of the migration workflow when gaps are found.'
+description: Supervise authorized Slate/Plate migration, caller adoption, compatibility removal and exact package/docs proof.
 argument-hint: <migration surface/objective> [full-loop | timed 1h|2h|overnight | batch-loop | repair <gap>]
 disable-model-invocation: true
 ---

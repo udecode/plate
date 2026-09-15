@@ -74,6 +74,8 @@ export const clonePliteViewBoundaryPointWithOwner = (
   point: PliteViewBoundaryPoint
 ): PliteViewBoundaryPoint =>
   Object.freeze({
+    ...(point.affinity ? { affinity: point.affinity } : {}),
+    ...(point.fragmentId ? { fragmentId: point.fragmentId } : {}),
     ...(point.owner ? { owner: clonePliteViewBoundaryOwner(point.owner) } : {}),
     point: clonePliteViewBoundaryPoint(point.point),
   });
@@ -205,6 +207,16 @@ export const resolvePliteViewBoundarySegmentEndpoint = (
     return rootPlitePoint(endpoint.point, segment.root);
   }
 
+  if (endpoint.node.text) {
+    return rootPlitePoint(
+      {
+        path: endpoint.node.path,
+        offset: endpoint.node.text[endpoint.edge],
+      },
+      endpoint.node.root
+    );
+  }
+
   const children = roots[endpoint.node.root];
   const node = children
     ? getPliteDescendantAtPath(children, endpoint.node.path)
@@ -219,7 +231,10 @@ export const createPliteViewBoundarySelectionTarget = (
   roots: Readonly<Record<string, readonly Descendant[]>>,
   selection: PliteViewBoundarySelectionTargetInput
 ): { ranges: Range[]; start: Point } | null => {
-  if (hasAmbiguousPliteViewBoundarySegments(selection.segments)) {
+  if (
+    selection.segments.parts.some((segment) => segment.fragment) ||
+    hasAmbiguousPliteViewBoundarySegments(selection.segments)
+  ) {
     return null;
   }
 

@@ -98,7 +98,7 @@ const explicitAdjacentTextNormalizeMs = measureLane(
 
 const explicitInlineFlattenNormalizeMs = measureLane(
   () => {
-    return createEditor({ extensions: [InlineNormalizationSchema] });
+    return createEditor({ plugins: [InlineNormalizationSchema] });
   },
   (editor) => {
     editor.update(() => {

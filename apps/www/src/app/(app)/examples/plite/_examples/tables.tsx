@@ -1,5 +1,5 @@
 import {
-  defineExtension,
+  definePlugin,
   editorCommands,
   NodeApi,
   PointApi,
@@ -9,8 +9,9 @@ import {
   Editable,
   type RenderElementProps,
   type RenderLeafProps,
-  Plite,
+  EditorRoot,
   useEditor,
+  useEditorContext,
 } from 'plitejs/react';
 
 import { failInvariant } from '../../../../../lib/failInvariant';
@@ -97,17 +98,14 @@ const initialValue: CustomValue = [
     type: 'paragraph',
     children: [
       {
-        text: 'This table is a basic rendering example with conservative cell-boundary editing. Backspace, Delete, Enter, and arrow movement stay inside valid table or text positions; richer table features such as headers, row and column controls, formulas, and multi-cell selection belong in table extensions.',
+        text: 'This table is a basic rendering example with conservative cell-boundary editing. Backspace, Delete, Enter, and arrow movement stay inside valid table or text positions; richer table features such as headers, row and column controls, formulas, and multi-cell selection belong in table plugins.',
       },
     ],
   },
 ];
 
-const TablesExample = () => {
-  const editor = useEditor({
-    extensions: [table()],
-    initialValue,
-  });
+const TablesEditor = () => {
+  const editor = useEditorContext();
   const moveSelectionToAdjacentCell = (reverse: boolean) => {
     let moved = false;
 
@@ -175,26 +173,37 @@ const TablesExample = () => {
   };
 
   return (
-    <Plite editor={editor}>
-      <Editable
-        onKeyDown={(event) => {
-          if (event.key !== 'Tab') {
-            return;
-          }
+    <Editable
+      onKeyDown={(event) => {
+        if (event.key !== 'Tab') {
+          return;
+        }
 
-          if (moveSelectionToAdjacentCell(event.shiftKey)) {
-            event.preventDefault();
-          }
-        }}
-        renderElement={Element}
-        renderLeaf={Leaf}
-      />
-    </Plite>
+        if (moveSelectionToAdjacentCell(event.shiftKey)) {
+          event.preventDefault();
+        }
+      }}
+      renderElement={Element}
+      renderLeaf={Leaf}
+    />
+  );
+};
+
+const TablesExample = () => {
+  const editor = useEditor({
+    plugins: [table()],
+    initialValue,
+  });
+
+  return (
+    <EditorRoot editor={editor}>
+      <TablesEditor />
+    </EditorRoot>
   );
 };
 
 const table = () =>
-  defineExtension('table', {
+  definePlugin('table', {
     commands: ({ handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         const selection = state.selection();
@@ -241,7 +250,7 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
   switch (element.type) {
     case 'table': {
       return (
-        <table className="plite-tables-table">
+        <table className="editor-tables-table">
           <tbody {...attributes}>{children}</tbody>
         </table>
       );

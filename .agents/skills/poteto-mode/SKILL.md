@@ -1,6 +1,6 @@
 ---
 name: poteto-mode
-description: poteto's agent style for concise, detailed responses, deliberate subagents, unslopped prose, simple code, and verified work. Use for poteto, /poteto-mode, or requests to work in this style.
+description: "Apply Poteto’s engineering style when requested; select deeper methods for unresolved decisions."
 ---
 
 Read the [Codex runtime adapter](references/codex-runtime.md) once when applying this skill. It governs method selection, tools and authority; selected methods retain their full procedures.
@@ -39,14 +39,14 @@ Use this index to identify guidance needed for an unresolved decision. Read a se
 **Core**
 
 - **Laziness Protocol** (**principle-laziness-protocol**). Refactoring, sizing a diff, or tempted to add abstractions, layers, or signal threading. Bias to deletion and the smallest change that solves the problem.
-- **Foundational Thinking** (**principle-foundational-thinking**). Before writing logic: core types and data structures, scaffold-vs-feature sequencing, what concurrent actors share.
-- **[Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md)**. Before choosing or reviewing an API, owner, lifetime or data model, ask what you would build if the current requirements had been foundational from day one. Apply it at the initial design decision as well as when an implementation exposes a wrong design.
+- **Foundational Thinking** (**principle-foundational-thinking**). Core structures or prerequisite work remain unsettled and downstream behavior depends on them.
+- **[Redesign from First Principles](../principle-redesign-from-first-principles/SKILL.md)**. An unsettled design conflicts with inherited structure. Compare what current requirements justify from the start.
 - **Subtract Before You Add** (**principle-subtract-before-you-add**). Sequencing an addition, refactor, or rewrite. Remove dead weight first, then build on the simpler base.
 - **Minimize Reader Load** (**principle-minimize-reader-load**). Reviewing or shaping code that's hard to trace. Count layers and hidden state, collapse one-caller wrappers, shrink mutable scope.
 - **Outcome-Oriented Execution** (**principle-outcome-oriented-execution**). Planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture, don't preserve throwaway compatibility states.
 - **Experience First** (**principle-experience-first**). Product, UX, or feature-scope tradeoffs. Choose user delight over implementation convenience.
 - **Exhaust the Design Space** (**principle-exhaust-the-design-space**). A novel interaction or architectural decision with no precedent. Build 2-3 competing prototypes and compare before committing.
-- **Build the Lever** (**principle-build-the-lever**). Any non-trivial work. Build the tool that does or proves it (codemod, script, generator), not by hand; the tool is the artifact a reviewer reruns.
+- **Build the Lever** (**principle-build-the-lever**). Repeated edits or a verification problem need consistent execution. Build a small rerunnable tool.
 
 **Architecture**
 
@@ -59,7 +59,7 @@ Use this index to identify guidance needed for an unresolved decision. Read a se
 
 **Verification**
 
-- **Prove It Works** (**principle-prove-it-works**). After a task, before declaring done. Verify against the real artifact, not a proxy or "it compiles".
+- **Prove It Works** (**principle-prove-it-works**). A completion claim depends on a proxy or uncertain verifier. Resolve the evidence method; routine checks use the owning verifier directly.
 - **Fix Root Causes** (**principle-fix-root-causes**). Debugging. Trace each symptom to its root cause, reproduce first, ask why until you reach it.
 - **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work (sweeps, migrations, runs of similar edits) and how you stack commits and PRs. Break work into small units that each end in a check, verify each before the next, and order delivery so the sequence proves itself.
 

@@ -1,16 +1,16 @@
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import {
-  defineExtension,
+  definePlugin,
   editorCommands,
   NodeApi,
   PointApi,
   RangeApi,
-  type Element as PliteElement,
+  type Element as EditorElement,
 } from 'plitejs';
 import {
   Editable,
   type RenderElementProps,
-  Plite,
+  EditorRoot,
   useEditorContext,
   useEditorReadOnly,
   useEditor,
@@ -114,24 +114,24 @@ const CheckListsEditor = ({
   exampleCase: ChecklistExampleCase;
 }) => {
   const editor = useEditor({
-    extensions: [checklist()],
+    plugins: [checklist()],
     initialValue: createInitialValue(exampleCase),
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable
         autoFocus
         placeholder="Get to work…"
         renderElement={renderElement}
         spellCheck
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
 const checklist = () =>
-  defineExtension('checklists', {
+  definePlugin('checklists', {
     commands: ({ handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         if (input.direction !== 'backward') return false;
@@ -150,7 +150,7 @@ const checklist = () =>
             if (start && PointApi.equals(selection.anchor, start)) {
               return state.transaction((tx) => {
                 tx.nodes.set(
-                  { type: 'paragraph' } satisfies Partial<PliteElement>,
+                  { type: 'paragraph' } satisfies Partial<EditorElement>,
                   {
                     match: (n) =>
                       NodeApi.isElement(n) && n.type === 'check-list-item',
@@ -206,8 +206,8 @@ const CheckListItemElement = ({
   const editor = useEditorContext();
   const readOnly = useEditorReadOnly();
   return (
-    <div {...attributes} className="plite-check-lists-item">
-      <span className="plite-check-lists-checkbox" contentEditable={false}>
+    <div {...attributes} className="editor-check-lists-item">
+      <span className="editor-check-lists-checkbox" contentEditable={false}>
         <input
           checked={checked}
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
@@ -220,7 +220,7 @@ const CheckListItemElement = ({
         />
       </span>
       <span
-        className={cn('plite-check-lists-content', checked && 'is-checked')}
+        className={cn('editor-check-lists-content', checked && 'is-checked')}
         contentEditable={!readOnly}
         suppressContentEditableWarning
       >

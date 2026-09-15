@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
@@ -14,10 +14,10 @@ export default function Demo({ id }: { id: string }) {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer variant="demo">
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

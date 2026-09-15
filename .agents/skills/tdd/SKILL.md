@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green-refactor", wants integration tests, or asks for test-first development.
+description: "Use test-driven development when explicitly requested, with a focused red-green-refactor loop."
 ---
 
 # Test-Driven Development

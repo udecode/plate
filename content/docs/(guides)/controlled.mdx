@@ -11,15 +11,15 @@ reset, and externally owned loading.
 ## Value ownership
 
 <Callout type="warning" title="Do not control every keystroke">
-  Do not mirror `editor.children` into React state and pass it back on every
-  change. That fights Plite selection/history and turns normal typing into a
+  Do not mirror `editor.read.children()` into React state and pass it back on every
+  change. That fights Plate selection/history and turns normal typing into a
   full-document replacement loop.
 </Callout>
 
 | Goal | API |
 | --- | --- |
 | Set initial content. | `initialValue` in `useCreateEditor` or `createEditor`. |
-| Persist edits. | `<Plate onValueChange>` or `<Plate onCommit>`. |
+| Persist edits. | `<EditorRoot onValueChange>` or `<EditorRoot onCommit>`. |
 | Replace content from outside the editor. | `editor.update((tx) => tx.value.replace({ children: value }))`. |
 | Restore initial content. | `editor.update((tx) => tx.value.replace({ children: initialValue }))`. |
 | Delay initialization. | `skipInitialization: true` plus an explicit `editor.update(...)`. |
@@ -34,7 +34,7 @@ model-aware format.
 
 ```tsx title="components/editor.tsx" showLineNumbers
 import type { Value } from 'platejs';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -51,11 +51,11 @@ export function MyEditor() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -66,7 +66,7 @@ Use `onValueChange` when you only need the document value.
 
 ```tsx title="components/editor.tsx" showLineNumbers {15-19,25}
 import type { EditorDocumentValue, EditorSchemaIdentity, Value } from 'platejs';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -96,7 +96,7 @@ export function MyEditor() {
   });
 
   return (
-    <Plate
+    <EditorRoot
       editor={editor}
       onValueChange={({ editor, value }) =>
         saveValue(value, editor.read.schema.identity())
@@ -105,7 +105,7 @@ export function MyEditor() {
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -116,7 +116,7 @@ so primary `children`, named `roots`, persisted `meta`, and source schema
 identity stay together.
 
 ```tsx title="components/editor.tsx"
-<Plate
+<EditorRoot
   editor={editor}
   onValueChange={({ editor, value }) => {
     console.info(editor.id, value);
@@ -194,7 +194,7 @@ initial document.
 ```tsx title="components/async-editor.tsx" showLineNumbers
 import * as React from 'react';
 import type { Value } from 'platejs';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -204,11 +204,11 @@ function LoadedEditor({ initialValue }: { initialValue: Value }) {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 
@@ -244,7 +244,7 @@ migrations.
 
 ```tsx title="components/manual-init-editor.tsx" showLineNumbers {8,13-18}
 import * as React from 'react';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -267,11 +267,11 @@ export function ManualInitEditor() {
   }, [editor]);
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```

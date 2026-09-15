@@ -1,5 +1,5 @@
 export {
-  createPliteAnnotationStore,
-  type PliteAnnotationAnchor,
-  type PliteAnnotationChange,
+  createAnnotationStore,
+  type AnnotationAnchor,
+  type AnnotationChange,
 } from 'plitejs/annotations';

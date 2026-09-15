@@ -12,7 +12,7 @@ Export named `*PluginState` contracts for state-owning Core descriptors, includi
 
 Infer plugin-local node-property patches from the current plugin plus its required dependencies through a shallow capability graph. Use `nodes.set(props, options)` for typed atomic writes, the exact property handle key for aliases, `unset(key, options)` for removals, and semantic owner updates for prefix or cross-node behavior.
 
-Rename Plate plugin identity from `key` to `name` across descriptor definitions, inferred contracts, installed descriptors, lookup parameters, transaction groups, targets, and overrides. Declare `definePlatePlugin('foo', definition)`, read `plugin.name`, and pass the plugin descriptor or a dynamic name string to descriptor-aware lookups. Use `name` solely for capability identity. Element plugins expose persisted identity through `schema.type`; primary-mark plugins expose persisted identity through `schema.key`. Behavior and aggregate-property plugins expose no consumer `schema`. Additional property handles stay in author callbacks and compiler APIs. Remove public reverse identity lookup and name/type translation. Publish every installed non-empty plugin API under its inferred plugin name on `editor.api`, while retaining `editor.plugin(FooPlugin).api` as the exact generic portal. Both paths reference the same immutable API object. Reject plugin-name collisions with explicit editor API namespaces. Infer Plate node queries and transforms from plugin descriptors passed through the independent `type` option. Resolve descriptors through final application schema overrides, keep `match` function-only for additional conditions, and remove caller-selected node result generics. Replace `nodes.find<LinkElement>({ match: { type: linkType } })` with `nodes.find({ type: LinkPlugin, match: (link, path) => ... })`. Expose `editor.plugin(Plugin).installed` for optional package integrations. Call the scoped update portal with a transaction policy when an operation needs tagged history or another root update policy: `editor.plugin(Plugin).update(policy).method()`. The scoped call opens one root transaction and preserves its rollback and history behavior. Compose plugin commands inside an active transaction through `tx.plugin(Plugin).method()`. Generated editors retain direct `tx.pluginName.method()` groups. Raw Plite keeps direct extension groups and does not expose a descriptor transaction portal.
+Rename Plate plugin identity from `key` to `name` across descriptor definitions, inferred contracts, installed descriptors, lookup parameters, transaction groups, targets, and overrides. Declare `definePlugin('foo', definition)`, read `plugin.name`, and pass the plugin descriptor or a dynamic name string to descriptor-aware lookups. Use `name` solely for capability identity. Element plugins expose persisted identity through `schema.type`; primary-mark plugins expose persisted identity through `schema.key`. Behavior and aggregate-property plugins expose no consumer `schema`. Additional property handles stay in author callbacks and compiler APIs. Remove public reverse identity lookup and name/type translation. Publish every installed non-empty plugin API under its inferred plugin name on `editor.api`, while retaining `editor.plugin(FooPlugin).api` as the exact generic portal. Both paths reference the same immutable API object. Reject plugin-name collisions with explicit editor API namespaces. Infer Plate node queries and transforms from plugin descriptors passed through the independent `type` option. Resolve descriptors through final application schema overrides, keep `match` function-only for additional conditions, and remove caller-selected node result generics. Replace `nodes.find<LinkElement>({ match: { type: linkType } })` with `nodes.find({ type: LinkPlugin, match: (link, path) => ... })`. Expose `editor.plugin(Plugin).installed` for optional package integrations. Call the scoped update portal with a transaction policy when an operation needs tagged history or another root update policy: `editor.plugin(Plugin).update(policy).method()`. The scoped call opens one root transaction and preserves its rollback and history behavior. Compose plugin commands inside an active transaction through `tx.plugin(Plugin).method()` for exact descriptor ownership or `tx.plugin(pluginName).method()` when a descriptor import would create the wrong package dependency. Both select the current active group without opening another update. Generated editors retain direct `tx.pluginName.method()` groups.
 
 Give default-constructible, schema-compatible text-block descriptors a standard `toggle` update. Text blocks with required construction properties author their own domain-aware command when needed. Configure same-name keyboard shortcuts with keys only; Plate dispatches the plugin update automatically. Structural plugins keep authored toggle commands for wrapping, conversion, or child mutations. Rename the paragraph shortcut from `toggleParagraph` to `toggle`.
 
@@ -27,7 +27,7 @@ Keep selection closed to core text and directional exact node values across vali
 Infer one exact definition for each Base and React plugin. Remove the `PluginConfig` family, including `AnyPluginConfig`, `SlatePluginConfig`, and `PlatePluginConfig`. Use `DefinitionOf<typeof Plugin>` as the sole public descriptor-definition extractor; remove the `InferConfig` alias. Name exported descriptor contracts `FooDefinition`; reserve `FooConfig` for real domain configuration. Keep fields omitted from an author definition absent from its inferred descriptor type. Keep Core's contextually typed author-source to canonical-lowered aliases internal. Public authoring is one object call that returns one exact descriptor without a caller-supplied generic list. Declare `api` through a factory at every Plite, Base, and React layer, including context-free APIs. Pass one context object rather than positional `editor` and `context` arguments; Base and React add their plugin fields to that same object. Declare Plite capabilities directly on the plugin root, and use one prefixless `on` family for lifecycle and every DOM event. Remove the separate `handlers` surface and names such as `onKeyDown`; use `keyDown`, `paste`, `nodeChange`, and the matching prefixless event names:
 
 ```tsx
-const AnalyticsPlugin = definePlatePlugin('analytics', {
+const AnalyticsPlugin = definePlugin('analytics', {
   on: {
     commit: ({ commit }) => reportCommit(commit),
     keyDown: ({ event }) => reportKey(event.key),
@@ -66,12 +66,12 @@ Declare document identity and element behavior through `schema.element`, marks t
 
 Derive schema identity from compiled plugin semantics when editor creation omits `schema`. Pass `{ id, version }` only for application-named History, Yjs, or migration lineage. Editor factories derive identity when called without a `schema` option.
 
-Seed one mutable editor-local plugin store through `initialState`. Put every independent author contribution in `defineBasePlugin()` or `definePlatePlugin()`: plugin-owned `api`, `read`, `update`, `selectors`, native Plite capabilities, format `codecs`, and ordinary static fields. Constructor callbacks receive the typed authoring context. Use `.extend()` only for an imported/prebuilt declaration, a shared factory the constructor cannot access, or an earlier-stage type dependency.
+Seed one mutable editor-local plugin store through `initialState`. Put every independent author contribution in `definePlugin()` or `definePlugin()`: plugin-owned `api`, `read`, `update`, `selectors`, native Plite capabilities, format `codecs`, and ordinary static fields. Constructor callbacks receive the typed authoring context. Use `.extend()` only for an imported/prebuilt declaration, a shared factory the constructor cannot access, or an earlier-stage type dependency.
 
 When `initialState` is an object, declare store-dependent fields in the same constructor. When `initialState` is a factory, stage fields that consume its inferred store type in a following `.extend()`:
 
 ```tsx
-const FeaturePlugin = definePlatePlugin('feature', {
+const FeaturePlugin = definePlugin('feature', {
   initialState: ({ editor }) => ({ enabled: editor.read.isEmpty() }),
 }).extend({
   api: ({ store }) => ({
@@ -93,11 +93,11 @@ Move specialized builder contributions into the constructor:
 | `.extendCodecs()` | `codecs: ({ defineCodecs }) => defineCodecs(...)` |
 | `.extendHtmlCodec()` | `codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': ... })` |
 
-When upgrading from v53, move `.extendTransforms()` and `.extendEditorTransforms()` contributions to `update`. Replace ordinary `render.node` component registration with `.configure({ component: Component })`. Include `component` in that same terminal `.configure()` when other consumer overrides are needed. New Plate descriptors declare `component` directly. Base and Plate descriptors declare root-level `component` directly for static/RSC and live rendering. Base `.extend()` rejects `component`; terminal `.configure({ component: Component })` replaces it. Use `toPlatePlugin()` at the owning React adapter to publish a reusable Plate-layer descriptor or add genuine Plate-only authoring. A terminal consumer does not convert merely to set `component`. Independently reusable raw Plite descriptors use `defineExtension(...)`; Plate-owned capabilities stay on the plugin root. Apply at most one terminal consumer `.configure(...)` call per descriptor: object configuration can set descriptor fields, while contextual configuration can derive initial state, `on` events, foreign-plugin overrides, renderers, and shortcuts. Earlier authoring stages read the configured values, and consumer configuration remains the final override. Read and update live values through `editor.plugin(Plugin).store.get()` and `.store.set(...)`; subscribe in React through `usePluginStore`; its selector `{ id }` option selects another registered editor. Pass the real plugin descriptor to store hooks. A name-only object cannot carry the state or selector contract and is rejected instead of requiring manual generic arguments. Named selectors are pure state-first functions. Remove `getOption`, `getOptions`, `setOption`, `setOptions`, and the option-named React hooks.
+When upgrading from v53, move `.extendTransforms()` and `.extendEditorTransforms()` contributions to `update`. Replace ordinary `render.node` component registration with `.configure({ component: Component })`. Include `component` in that same terminal `.configure()` when other consumer overrides are needed. New Plate descriptors declare `component` directly. Base and Plate descriptors declare root-level `component` directly for static/RSC and live rendering. Base `.extend()` rejects `component`; terminal `.configure({ component: Component })` replaces it. Use `toReactPlugin()` at the owning React adapter to publish a reusable Plate-layer descriptor or add genuine Plate-only authoring. A terminal consumer does not convert merely to set `component`. Independently reusable raw Plite descriptors use `definePlugin(...)`; Plate-owned capabilities stay on the plugin root. Apply at most one terminal consumer `.configure(...)` call per descriptor: object configuration can set descriptor fields, while contextual configuration can derive initial state, `on` events, foreign-plugin overrides, renderers, and shortcuts. Earlier authoring stages read the configured values, and consumer configuration remains the final override. Read and update live values through `editor.plugin(Plugin).store.get()` and `.store.set(...)`; subscribe in React through `usePluginStore`; its selector `{ id }` option selects another registered editor. Pass the real plugin descriptor to store hooks. A name-only object cannot carry the state or selector contract and is rejected instead of requiring manual generic arguments. Named selectors are pure state-first functions. Remove `getOption`, `getOptions`, `setOption`, `setOptions`, and the option-named React hooks.
 
 ```tsx
 // Before
-const Plugin = definePlatePlugin('counter', {
+const Plugin = definePlugin('counter', {
   options: { count: 0 },
   selectors: ({ getOptions }) => ({
     doubled: () => getOptions().count * 2,
@@ -108,7 +108,7 @@ editor.plugin(Plugin).setOption('count', 1);
 const count = usePluginOption(Plugin, 'count');
 
 // After
-const Plugin = definePlatePlugin('counter', {
+const Plugin = definePlugin('counter', {
   initialState: { count: 0 },
   selectors: {
     doubled: (state) => state.count * 2,
@@ -183,7 +183,7 @@ Replace dependency names such as `dependencies: ['feature']` with the plugin obj
 Replace the overloaded `node` declaration with explicit model and render fields:
 
 ```tsx
-definePlatePlugin('link', {
+definePlugin('link', {
   schema: { element: { inline: true } },
 }).configure({ component: LinkElement });
 ```
@@ -248,7 +248,7 @@ import { renderStaticHtml } from 'platejs/static';
 Replace `inject.targetPlugins` with top-level `targetPlugins`:
 
 ```tsx
-definePlatePlugin('align', {
+definePlugin('align', {
   targetPlugins: [PLUGINS.paragraph],
   inject: { nodeProps: { styleKey: 'textAlign' } },
 });
@@ -280,14 +280,14 @@ Remove `configurePlugin`, `extendPlugin`, `rootPlugin`, and `override.enabled`. 
 Replace `parsers.html.deserializer`, serializer declarations, and injected HTML node-rule projections with schema-inferred `codecs['text/html']` contributions in the constructor callback. Keep whole-input HTML hooks on the same codec:
 
 ```tsx
-definePlatePlugin('docx', {
+definePlugin('docx', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': { query, transformData, transformFragment },
     }),
 });
 
-const BoldPlugin = definePlatePlugin('bold', {
+const BoldPlugin = definePlugin('bold', {
   schema: { mark: property.boolean() },
   codecs: ({ defineCodecs }) =>
     defineCodecs({

@@ -6,9 +6,17 @@ import {
   authoredPositionAt,
   authoredPositionSpans,
   createAuthoredPositions,
+  insertAuthoredPositionBatch,
   replaceAuthoredPositions,
   resolveAuthoredPosition,
+  type AuthoredPosition,
+  type AuthoredPositions,
+  type AuthoredSpan,
 } from '../src/authored/positions';
+import {
+  decodeAuthoredPositionRoots,
+  encodeAuthoredPositionRoots,
+} from '../src/authored/positions-codec';
 import {
   decodeRecordTree,
   readRecord,
@@ -18,7 +26,178 @@ import {
   type RecordTree,
 } from '../src/authored/record-tree';
 
+const assertEquivalentPositions = (
+  actual: AuthoredPositions,
+  expected: AuthoredPositions,
+  anchors: readonly AuthoredPosition[] = []
+) => {
+  const spans = [...authoredPositionSpans(expected)];
+  assert.deepEqual([...authoredPositionSpans(actual)], spans);
+  assert.equal(actual.nodes?.count ?? 0, spans.length);
+  for (let at = 0; at <= (expected.root?.length ?? 0); at++) {
+    const anchor = authoredPositionAt(expected, at);
+    assert.deepEqual(authoredPositionAt(actual, at), anchor);
+    assert.equal(resolveAuthoredPosition(actual, anchor), at);
+  }
+  for (const origin of new Set(spans.map(({ span }) => span.origin))) {
+    assert.deepEqual(
+      authoredOriginSpans(actual, origin),
+      authoredOriginSpans(expected, origin)
+    );
+  }
+  for (const anchor of anchors) {
+    for (const association of ['left', 'right'] as const) {
+      for (const deletion of ['collapse', 'detach'] as const) {
+        assert.equal(
+          resolveAuthoredPosition(actual, anchor, association, deletion),
+          resolveAuthoredPosition(expected, anchor, association, deletion)
+        );
+      }
+    }
+  }
+};
+
 describe('authored durable positions', () => {
+  it('batches insertions while preserving origin fragments, properties and deleted anchors', () => {
+    const spans: AuthoredSpan[] = [
+      {
+        birth: 'shared-change',
+        length: 4,
+        offset: 10,
+        origin: 'shared',
+        placement: 'move',
+        properties: { bold: 'format' },
+      },
+      {
+        birth: null,
+        length: 8,
+        offset: 0,
+        origin: 'other',
+        placement: null,
+        properties: {},
+      },
+      {
+        birth: 'shared-change',
+        length: 6,
+        offset: 0,
+        origin: 'shared',
+        placement: null,
+        properties: { italic: 'format' },
+      },
+      {
+        birth: null,
+        length: 10,
+        offset: 0,
+        origin: 'last',
+        placement: null,
+        properties: {},
+      },
+    ];
+    const original = replaceAuthoredPositions(
+      createAuthoredPositions(0, ''),
+      0,
+      0,
+      spans
+    );
+    const anchors = Array.from({ length: 29 }, (_, at) =>
+      authoredPositionAt(original, at)
+    );
+    const before = replaceAuthoredPositions(original, 5, 9, []);
+    const saved = JSON.stringify(before);
+    const insertions = [0, 2, 4, 5, 7, 9, 12, 15, 18, 22, 24].map(
+      (at, index) => ({
+        at,
+        spans: [
+          {
+            birth: `change-${index}`,
+            length: 2,
+            offset: 5,
+            origin: `insertion-${index}`,
+            placement: `placement-${index}`,
+            properties: { bold: `format-${index}` },
+          },
+          {
+            birth: `change-${index}`,
+            length: 1,
+            offset: 0,
+            origin: `insertion-${index}`,
+            placement: null,
+            properties: {},
+          },
+        ],
+      })
+    );
+    let expected = before;
+    for (const { at, spans: inserted } of insertions.toReversed()) {
+      expected = replaceAuthoredPositions(expected, at, at, inserted);
+    }
+    const actual = insertAuthoredPositionBatch(before, insertions);
+    assert.equal(actual.deleted, before.deleted);
+    assertEquivalentPositions(actual, expected, anchors);
+    const checkpoint = encodeAuthoredPositionRoots(
+      writeRecord(null, 'main', {
+        birth: null,
+        present: true,
+        positions: actual,
+      })
+    );
+    const loaded = readRecord(
+      decodeAuthoredPositionRoots(JSON.parse(JSON.stringify(checkpoint))),
+      'main'
+    );
+    assert.ok(loaded);
+    assertEquivalentPositions(loaded.positions, expected, anchors);
+    const replacement = [{ ...spans[1], origin: 'continued', length: 3 }];
+    assertEquivalentPositions(
+      replaceAuthoredPositions(loaded.positions, 3, 11, replacement),
+      replaceAuthoredPositions(expected, 3, 11, replacement),
+      anchors
+    );
+    assert.equal(JSON.stringify(before), saved);
+  });
+
+  it('handles empty input, document boundaries and sparse insertion batches', () => {
+    const empty = createAuthoredPositions(0, 'empty');
+    const span = (origin: string): AuthoredSpan => ({
+      birth: origin,
+      length: 2,
+      offset: 0,
+      origin,
+      placement: null,
+      properties: {},
+    });
+    assert.equal(insertAuthoredPositionBatch(empty, []), empty);
+    const first = insertAuthoredPositionBatch(empty, [
+      { at: 0, spans: [span('first')] },
+    ]);
+    assertEquivalentPositions(
+      first,
+      replaceAuthoredPositions(empty, 0, 0, [span('first')])
+    );
+    const fragments = Array.from({ length: 24 }, (_, index) =>
+      span(`base-${index}`)
+    );
+    const before = replaceAuthoredPositions(empty, 0, 0, fragments);
+    const insertions = [
+      { at: 0, spans: [span('start')] },
+      { at: 48, spans: [span('end')] },
+    ];
+    const anchors = Array.from({ length: 49 }, (_, at) =>
+      authoredPositionAt(before, at)
+    );
+    assert.equal(insertAuthoredPositionBatch(before, []), before);
+    assertEquivalentPositions(
+      insertAuthoredPositionBatch(before, insertions),
+      replaceAuthoredPositions(
+        replaceAuthoredPositions(before, 48, 48, insertions[1].spans),
+        0,
+        0,
+        insertions[0].spans
+      ),
+      anchors
+    );
+  });
+
   it('preserves identities across interior edits and independent surrounding content', () => {
     const base = createAuthoredPositions(20, 'base');
     const point = authoredPositionAt(base, 8);

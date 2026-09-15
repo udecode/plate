@@ -3,29 +3,32 @@ import katex, { type KatexOptions } from 'katex';
 import {
   BaseParagraphPlugin,
   createRuleFactory,
-  defineBasePlugin,
+  definePlugin,
   type Editor,
   type ElementOf,
   matchDelimitedInline,
-  type PlateNodeInsertOptions,
+  type NodeInsertOptions,
   PLUGINS,
   property,
 } from '../../core';
+import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 
 const INLINE_EQUATION_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_EQUATION_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
 
 const getMathExcludedSelectors = (editor: Editor) => {
-  const codeBlock = editor.plugin(PLUGINS.codeBlock);
+  const codeBlockDescriptor = getCompiledPlatePlugin(editor, PLUGINS.codeBlock);
 
   return [
-    ...(codeBlock.installed ? [codeBlock.schema.type] : []),
+    ...(codeBlockDescriptor
+      ? [editor.plugin(codeBlockDescriptor).schema.type]
+      : []),
     BaseEquationPlugin,
     BaseInlineEquationPlugin,
   ];
 };
 
-export const BaseEquationPlugin = defineBasePlugin(PLUGINS.equation, {
+export const BaseEquationPlugin = definePlugin(PLUGINS.equation, {
   codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/markdown': {
@@ -52,39 +55,36 @@ export const BaseEquationPlugin = defineBasePlugin(PLUGINS.equation, {
   },
 });
 
-export const BaseInlineEquationPlugin = defineBasePlugin(
-  PLUGINS.inlineEquation,
-  {
-    codecs: ({ defineCodecs, schema: { type } }) =>
-      defineCodecs({
-        'text/markdown': {
-          from: 'inlineMath',
-          kind: 'node',
-          decode: ({ node }) => ({
-            children: [{ text: '' }],
-            latex: node.value,
-            type,
-          }),
-          encode: ({ node }) => ({
-            type: 'inlineMath',
-            value: node.latex,
-          }),
-        },
-      }),
-    schema: {
-      element: {
-        properties: {
-          latex: property.string({ default: '', omitDefault: false }),
-        },
-        void: 'inline',
+export const BaseInlineEquationPlugin = definePlugin(PLUGINS.inlineEquation, {
+  codecs: ({ defineCodecs, schema: { type } }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'inlineMath',
+        kind: 'node',
+        decode: ({ node }) => ({
+          children: [{ text: '' }],
+          latex: node.value,
+          type,
+        }),
+        encode: ({ node }) => ({
+          type: 'inlineMath',
+          value: node.latex,
+        }),
       },
+    }),
+  schema: {
+    element: {
+      properties: {
+        latex: property.string({ default: '', omitDefault: false }),
+      },
+      void: 'inline',
     },
-  }
-).extend(({ schema: { type } }) => ({
+  },
+}).extend(({ schema: { type } }) => ({
   update: ({ tx }) => ({
     insert: (
       { latex }: { latex?: string } = {},
-      options: PlateNodeInsertOptions = {}
+      options: NodeInsertOptions = {}
     ) => {
       tx.nodes.insert(
         {

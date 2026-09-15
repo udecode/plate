@@ -54,7 +54,7 @@ npm install platejs @tanstack/react-virtual
 
 ```css title="app/globals.css"
 :root {
-  /* Base brand color for Plate UI components */
+  /* Base brand color for EditorRoot UI components */
   --brand: oklch(0.623 0.214 259.815);
 }
 
@@ -74,7 +74,7 @@ npx shadcn@latest add @plate/fixed-toolbar @plate/mark-toolbar-button
 在编辑器中导入并使用它们：
 
 ```tsx showLineNumbers title="components/editor.tsx"
-import { BoldPlugin, Plate } from "platejs/react";
+import { BoldPlugin, EditorRoot } from "platejs/react";
 import { FixedToolbar } from "@/components/editor/fixed-toolbar";
 import { MarkToolbarButton } from "@/components/editor/mark-toolbar-button";
 // ... other imports
@@ -82,13 +82,13 @@ import { MarkToolbarButton } from "@/components/editor/mark-toolbar-button";
 export function MyEditor() {
   // ... editor setup
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <FixedToolbar>
         <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">B</MarkToolbarButton>
         {/* ... other toolbar buttons ... */}
       </FixedToolbar>
       {/* ... Editor component ... */}
-    </Plate>
+    </EditorRoot>
   );
 }
 ```

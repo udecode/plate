@@ -4,7 +4,7 @@ import {
   type NodeKey,
   NodeApi,
   type Path,
-  type Text as PliteTextNode,
+  type Text as TextNode,
 } from '../..';
 import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
 import type { AnyEditor as EditorType } from '../editable/runtime-editor-api';
@@ -21,11 +21,11 @@ import { getDOMTextRenderRevision } from '../hooks/use-plite-node-ref';
 const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly NodeKey[];
 const EMPTY_DIRECT_TEXT_CHILD_NODES = Object.freeze(
   []
-) as ReadonlyArray<PliteTextNode | null>;
+) as ReadonlyArray<TextNode | null>;
 
 export type EditableDescendantBinding = {
   childNodeKeys: readonly NodeKey[];
-  directTextChildNodes: ReadonlyArray<PliteTextNode | null>;
+  directTextChildNodes: ReadonlyArray<TextNode | null>;
   emptyTextParentRenderKey: string | null;
   isInline: boolean;
   isVoid: boolean;
@@ -35,8 +35,8 @@ export type EditableDescendantBinding = {
   schemaElement: EditorSchemaElement | null;
 };
 
-export const isEditableTextNode = (value: Descendant): value is PliteTextNode =>
-  typeof (value as PliteTextNode).text === 'string';
+export const isEditableTextNode = (value: Descendant): value is TextNode =>
+  typeof (value as TextNode).text === 'string';
 
 const readEmptyTextParentRenderKey = (
   editor: EditorType,

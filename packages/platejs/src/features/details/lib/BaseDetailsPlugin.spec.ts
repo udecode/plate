@@ -1,7 +1,7 @@
 import {
   BaseParagraphPlugin,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   schema,
   SelectionApi,
 } from '../../../core';
@@ -11,7 +11,7 @@ import {
 } from './BaseDetailsPlugin';
 
 const plugins = [BaseParagraphPlugin, BaseDetailsPlugin] as const;
-const BaseInlinePlugin = defineBasePlugin('testInline', {
+const BaseInlinePlugin = definePlugin('testInline', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),

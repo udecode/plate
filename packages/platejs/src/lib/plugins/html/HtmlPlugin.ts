@@ -18,7 +18,7 @@ import {
   type DescendantIn,
   type EditorCoreStateView,
   type EditorStateSchemaApi,
-  type Element as PliteElement,
+  type Element as EditorElement,
   type PropertyValueDescriptor,
   type SchemaProperty,
   type SchemaTarget,
@@ -32,7 +32,7 @@ import {
   getCompiledPlatePluginList,
   hasCompiledPlatePluginCandidate,
   type CompiledPlateModel,
-  type CompiledPlateModelBinding,
+  type CompiledModelBinding,
 } from '../../../internal/plugin/compilePlateModel';
 import { getPluginStore } from '../../../internal/plugin/pluginStore';
 import {
@@ -54,7 +54,7 @@ import type {
   HtmlPluginRegistry,
   PluginReference,
 } from '../../plugin';
-import { defineBasePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { createPluginContext } from '../../plugin/createPluginContext.internal';
 import { isHtmlBlockElement, isHtmlElement, isHtmlText } from './htmlDom';
 
@@ -197,10 +197,10 @@ export const htmlStringToDOMNode = (html: string) =>
 
 export const htmlTextNodeToString = (node: ChildNode | HTMLElement) => {
   if (!isHtmlText(node)) return undefined;
-  if (node.parentElement?.dataset.platePreventDeserialization) return '';
+  if (node.parentElement?.dataset.editorPreventDeserialization) return '';
   if (
     node.textContent === '\uFEFF' &&
-    node.parentElement?.hasAttribute('data-plite-string')
+    node.parentElement?.hasAttribute('data-editor-string')
   ) {
     return '';
   }
@@ -855,7 +855,7 @@ const compileMatcher = (
 
 const compileProperties = (
   owner: string,
-  binding: CompiledPlateModelBinding
+  binding: CompiledModelBinding
 ): readonly CompiledHtmlProperty[] => {
   const byId = new Map<string, CompiledHtmlProperty>();
 
@@ -936,7 +936,7 @@ const compileRule = (
   pluginsByName: ReadonlyMap<string, AnyBasePlugin>,
   ownerPlugin: AnyBasePlugin,
   target: string | null,
-  extension: ErasedPluginCallable
+  factory: ErasedPluginCallable
 ): CompiledHtmlRule => {
   function assertDeclaration(
     value: unknown
@@ -1006,7 +1006,7 @@ const compileRule = (
       `Plate HTML codec "${ownerPlugin.name}" targets missing or disabled plugin "${target}".`
     );
   }
-  const authoredFamilies = getHtmlCodecSchemaFamilies(extension);
+  const authoredFamilies = getHtmlCodecSchemaFamilies(factory);
 
   if (
     !authoredFamilies ||
@@ -1024,7 +1024,7 @@ const compileRule = (
       `Plate HTML codec "${ownerPlugin.name}" target "${targetPlugin.name}" has no compiled model binding.`
     );
   }
-  const declaration = Reflect.apply(extension, undefined, [
+  const declaration = Reflect.apply(factory, undefined, [
     createPluginContext(editor, ownerPlugin),
   ]);
 
@@ -1454,7 +1454,7 @@ const reportDecodeError = (
         { cause }
       ),
       editor,
-      extensionName: 'plate:html',
+      pluginName: 'plate:html',
       format: HTML_FORMAT,
       key: `plate:${rule.owner}:html:decode`,
       phase: 'parse' as const,
@@ -1495,7 +1495,7 @@ class ReportedHtmlEncodeError extends Error {
 const encodeWithRule = <T>(
   editor: Editor,
   rule: CompiledHtmlRule,
-  node: PliteElement | Text,
+  node: EditorElement | Text,
   parentType: string | null,
   run: () => T
 ): T => {
@@ -1509,7 +1509,7 @@ const encodeWithRule = <T>(
           { cause: error }
         ),
         editor,
-        extensionName: 'plate:html',
+        pluginName: 'plate:html',
         format: HTML_FORMAT,
         key: `plate:${rule.owner}:html:encode`,
         phase: 'serialize' as const,
@@ -1796,7 +1796,7 @@ const isInlineDescendant = (node: Descendant, state: EditorCoreStateView) => {
 
 const tryFitDecodedChildren = (
   children: readonly Descendant[],
-  parent: PliteElement,
+  parent: EditorElement,
   state: EditorCoreStateView
 ): Descendant[] | null => {
   const fitted = state.slice.fitContent(ContentSlice.closed(children), {
@@ -1876,7 +1876,7 @@ const coalesceAdjacentText = (
 
 const fitDecodedChildren = (
   children: readonly Descendant[],
-  parent: PliteElement,
+  parent: EditorElement,
   state: EditorCoreStateView
 ): Descendant[] =>
   tryFitDecodedChildren(children, parent, state) ?? [...children];
@@ -1997,7 +1997,7 @@ const decodeCompiledHtml = (
     if (!isHtmlElement(node)) return [];
     const element = node as HTMLElement;
 
-    if (element.hasAttribute('data-plite-spacer')) return [];
+    if (element.hasAttribute('data-editor-spacer')) return [];
     if (shouldBrBecomeEmptyParagraph(element)) {
       const fallback = state.schema.createDefaultRootChild();
 
@@ -2488,7 +2488,7 @@ const renderNodeSpec = (
 };
 
 const propertyValue = (
-  node: PliteElement | Text,
+  node: EditorElement | Text,
   property: CompiledHtmlProperty,
   state: EditorCoreStateView,
   parentType: string | null
@@ -2521,7 +2521,7 @@ const propertyValue = (
 };
 
 const hasContentValue = (
-  node: PliteElement | Text,
+  node: EditorElement | Text,
   key: string,
   property: Pick<
     NonNullable<ReturnType<EditorCoreStateView['schema']['property']>>,
@@ -2546,7 +2546,7 @@ const hasContentValue = (
 };
 
 const assertSupportedProperties = (
-  node: PliteElement | Text,
+  node: EditorElement | Text,
   parentType: string | null,
   supportedPropertyIds: ReadonlySet<string>,
   state: EditorCoreStateView
@@ -2618,7 +2618,7 @@ const assertSupportedProperties = (
 
 const encodeContext = (
   rule: CompiledHtmlRule,
-  node: PliteElement | Text,
+  node: EditorElement | Text,
   state: EditorCoreStateView,
   parentType: string | null
 ) => {
@@ -2840,14 +2840,14 @@ export const compilePlateHtmlCodec = (
     plugins
       .flatMap((plugin) =>
         getPluginDescriptorMetadata(plugin).htmlCodecContributions.map(
-          ({ extension, targetPlugin }) =>
+          ({ factory, targetPlugin }) =>
             compileRule(
               editor,
               model,
               pluginsByName,
               plugin,
               targetPlugin,
-              extension
+              factory
             )
         )
       )
@@ -2954,7 +2954,7 @@ export type HtmlApi<V extends Value = Value> = {
   }) => Array<DescendantIn<V>> | null;
 };
 
-export const HtmlPlugin = defineBasePlugin(HTML_PLUGIN_NAME, {
+export const HtmlPlugin = definePlugin(HTML_PLUGIN_NAME, {
   api: ({ editor }): HtmlApi => ({
     deserialize: ({
       collapseWhiteSpace: shouldCollapseWhiteSpace = true,
@@ -2993,7 +2993,7 @@ export const HtmlPlugin = defineBasePlugin(HTML_PLUGIN_NAME, {
               { cause: error }
             ),
             editor,
-            extensionName: 'plate:html',
+            pluginName: 'plate:html',
             format: HTML_FORMAT,
             key: 'plate:html:decode',
             phase: 'parse' as const,

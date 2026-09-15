@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { renderHook } from '@testing-library/react';
 
-import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import * as extendStaticEditorModule from '../../static/editor/withStatic';
 import { jsx } from '../../testing';
 import { useStaticEditor } from './useStaticEditor';
@@ -44,7 +44,7 @@ describe('useStaticEditor', () => {
       const options = {
         enabled: true as const,
         id: 'custom-id',
-        plugins: [defineBasePlugin('test', {})],
+        plugins: [definePlugin('test', {})],
         initialValue: [{ children: [{ text: 'Hello' }], type: 'paragraph' }],
       } as const;
 
@@ -280,10 +280,7 @@ describe('useStaticEditor', () => {
       const complexOptions = {
         id: 'complex-editor',
         enabled: true,
-        plugins: [
-          defineBasePlugin('plugin1', {}),
-          defineBasePlugin('plugin2', {}),
-        ],
+        plugins: [definePlugin('plugin1', {}), definePlugin('plugin2', {})],
         selection: {
           kind: 'text' as const,
           anchor: { offset: 0, path: [0, 0] },

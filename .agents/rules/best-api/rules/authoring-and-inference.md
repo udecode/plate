@@ -16,7 +16,7 @@ deletion:
    dimension, state whether the surviving return type widens that accumulator
    or merely carries the old type through. Check initial state, the single
    descriptor API, read/update groups, selectors, dependencies, schema, native
-   extension fields, events, and codecs when they apply.
+   plugin fields, events, and codecs when they apply.
 2. Require compile-only parity for callback contextual inference, literals,
    overloads, repeated-stage accumulation, dependency composition, arbitrary
    named-group keys, root and typed-portal projection, plugin conversion,
@@ -74,9 +74,9 @@ semantics.
 An API is not scalable because it exposes every possible mechanism. It scales
 when future capability can be added without making every caller learn it.
 
-### Extension Shape Gate
+### Plugin Shape Gate
 
-Keep editor-extension descriptors flat by default. Add a namespace only when
+Keep editor-plugin descriptors flat by default. Add a namespace only when
 several fields form one obvious, same-prefix family. Lifecycle and host/DOM
 events share the root `on.*` family with prefixless child names such as
 `commit`, `keyDown`, `paste`, `nodeChange`, and `textChange`; capture variants
@@ -88,20 +88,23 @@ stay in that family. Do not retain a second `handlers` bucket. `schema`,
   uses `update`. Pure core-read customization uses typed, descriptor-owned
   `readMiddleware`. Do not promote one consumer policy into a special root
   hook.
-- Ordered cross-extension values are `contributions` to a typed extension
+- Ordered cross-plugin values are `contributions` to a typed plugin
   point. Do not call them outputs when the registry collects declarations.
-- Clipboard ingress is one such contribution, not a root `clipboard` field.
-  `clipboardHandler(handler)` is the sole authoring form. The owning extension
-  or Plate stage contextually infers the handler transaction from its installed
-  capabilities; never pass an editor to the helper.
-- Plite extensions have no `config` channel. Immutable construction inputs,
-  opaque controllers, functions, and host resources stay in the extension
+- Clipboard ingress is the canonical `domCommands.insertData` command, not a
+  root plugin field or contribution registry. Intercept it in `commands` with
+  `handle` or `around`; read the `DataTransfer` from `input`, compose a pure
+  spec with `state.transaction(...)`, and call `next()` to preserve exact-slice,
+  host-codec, and plain-text fallback. The owning plugin or Plate stage must
+  infer the transaction capabilities without callback annotations or editor
+  type arguments.
+- Plite plugins have no `config` channel. Immutable construction inputs,
+  opaque controllers, functions, and host resources stay in the plugin
   factory closure or an honest host owner. Plate runtime values alone use
   `initialState` and the scoped store.
 - Low-level registration slots name the descriptors they contain:
-  `stateFields`, `effectTypes`, and `facetProviders`.
+  `stateFields` and `effectTypes`.
 - Editor selection is a closed core capability: text selection plus one
-  directional exact `NodeSelection`. Delete extension-defined selection kinds,
+  directional exact `NodeSelection`. Delete plugin-defined selection kinds,
   feature selection payloads, parallel selected-node stores, and plugin-owned
   selection protocols. Feature owners derive their view from core exact nodes
   and keep only feature geometry or presentation.
@@ -119,9 +122,9 @@ stay in that family. Do not retain a second `handlers` bucket. `schema`,
   surface must never expose arbitrary uninstalled groups through `any`; use the
   explicit internal `AnyEditor` boundary when runtime code genuinely erases
   the installed tuple.
-- Project each installed extension graph exactly once. A layered editor such
+- Project each installed plugin graph exactly once. A layered editor such
   as Plate must not re-intersect whole private React or DOM editor carriers
-  `read`/`update` surfaces after those extensions are already installed; that
+  `read`/`update` surfaces after those plugins are already installed; that
   duplicates capability truth and forces TypeScript through recursive callback
   comparisons. Add only a genuinely missing shallow capability at its owner.
 - Generic editor helpers must preserve the caller's layered editor type or
@@ -131,7 +134,7 @@ stay in that family. Do not retain a second `handlers` bucket. `schema`,
   whole-editor comparisons. Erase only inside a named runtime implementation,
   after the public call signature has preserved exact inference.
 - Prove store and binding inputs with inferred document data, an installed
-  extension, and their own inferred payload in the same call. A bare default
+  plugin, and their own inferred payload in the same call. A bare default
   `Editor` parameter names one concrete capability tuple; it is not an
   existential runtime boundary. Reject arbitrary runtime objects and unknown
   payload fields in the same compile-only fixture.
@@ -144,12 +147,12 @@ Plugin capability identity is `name`. Persisted identity belongs to compiled
 schema. Exact element portals expose only `schema.type`; exact primary-mark
 portals expose only `schema.key`; behavior and aggregate-property portals omit
 `schema`. A plugin may still declare several properties, but those handles are
-author/compiler data, not consumer reflection. Name-only portals expose
-non-optional `schema.type` and `schema.key` getters for package-decoupled
-callers; the correct installed kind resolves and a missing or wrong-kind lookup
-throws. `installed` is the availability guard. Plite, Base, and Plate
+author/compiler data, not consumer reflection. Nominal descriptor portals
+expose their applicable `schema.type` or `schema.key` getter as non-optional;
+absent or wrong-kind access throws. `installed` is the availability guard.
+Plite, Base, and Plate
 descriptors each carry one exact normalized definition through
-a private invariant witness. Their sole public factory grammar is
+a private invariant witness. Their sole public descriptor-definition grammar is
 `define*(name, definition)`, with no caller-supplied generics. Internally,
 TypeScript may require a small inferred
 environment parameter—Plite dependencies, or Plate dependencies plus initial
@@ -159,6 +162,17 @@ ceremony and not evidence for the false claim that one self-referential generic
 can infer the whole definition. Reject excess fields and normalize one exact
 definition at the witness boundary. Never expose a parallel `PluginConfig`,
 public `__config`, raw callback graph, or accumulator matrix in declarations.
+When app-owned resources determine a plugin's exact capabilities, the concrete
+Plate integration may expose a non-installable factory object with `.create()`.
+Add `.require(key)` only to refine a non-nullish root input before copied
+composition, and add `.map(stage)` only to lift the existing exact Plate
+`.extend(stage)` relation over future outputs. The factory has no `name`,
+`.extend()`, or `.configure()`; each `.create()` returns a fresh complete
+nominal descriptor that retains ordinary author extension and terminal
+configuration. Validate required keys and nominal unconfigured output at
+runtime. Keep the input-to-output relation, mapped accumulators, and factory
+witness package-private, and never add a public `definePluginFactory` grammar
+from one concrete integration.
 The positional name is required, lower camel case, and human-readable. Plate's
 flat `PLUGINS` map contains capability names only. A semantic capability with
 parameters keeps one identity: Heading uses `PLUGINS.heading` plus required
@@ -169,8 +183,9 @@ persisted literals; they never borrow `PLUGINS` as a storage catalog. Additional
 document properties remain feature-owned handles or constants. Never restore
 `KEYS`, `NODES`, `STYLE_KEYS`, grouped heading aliases, public reverse
 name/type lookup, or a configurable storage alias. Name every
-descriptor-aware input `plugin` and type it as the exact descriptor or
-`string`; use `name` only after runtime normalization for capability work.
+descriptor-aware input `plugin` and type it as a nominal descriptor; use `name`
+only after runtime normalization for capability work. Dynamic application input
+resolves through an application-owned descriptor map before lookup.
 Descriptor-aware schema builders publish that normalized name in structural
 output, retain the nominal descriptor only in private metadata, and validate
 its family against the installed owner before applying policy. A cloned or
@@ -193,8 +208,7 @@ mounted retrieval uses `useEditor()` or `useOptionalEditor()` without caller
 generics, and selector hooks infer only their selected result. A caller-supplied
 editor type with no typed input is an assertion, not inference. Resolve exact
 feature capabilities through descriptor portals such as
-`editor.plugin(FooPlugin)`, `useEditorPlugin(FooPlugin)`, and
-`editor.extension(FooExtension)`. Keep an editor generic only when typed
+`editor.plugin(FooPlugin)` and `useEditor().plugin(FooPlugin)`. Keep an editor generic only when typed
 constructor/options input or an explicit editor argument correlates that
 generic with the returned value. Do not pass an authored plugin tuple, feature
 kit, or generated contract to a context hook as a typing assertion. Optional
@@ -204,24 +218,33 @@ document contracts, and compile-time assertions; runtime editor construction
 still owns capability inference and verification. Every editor entrypoint calls
 its public runtime type `Editor`; package and entrypoint establish the layer.
 
-Raw `PluginReference` is nominal: it carries only the identity needed to locate
-a plugin. It does not carry a definition generic or the private witness.
-Concrete Base and Plate descriptors carry that single invariant definition
-witness. Plite's root `EditorExtensionDependencyReference` is a shallow,
-non-generic `{ name; enabled? }` reference. It does not expose capabilities,
-providers, a definition witness, or exact transitive ancestry.
+Plite owns one nominal `Plugin` descriptor family across raw, Base, configured,
+and React plugins. Authored descriptors carry one invariant definition witness;
+Plate adds product authoring and a lazy capability provider to that same
+identity. `PluginReference` is the erased nominal input contract. Root
+`PluginDependencyReference` is a shallow, non-generic `{ name; enabled? }`
+reference with no capabilities, providers, witness, or exact transitive
+ancestry.
 
-`EditorExtensionTypeProvider` is the sole public value-sensitive capability
+`PluginTypeProvider` is the sole public descriptor-to-installed-capability
 bridge. Its higher-kinded encoding, normalized installed-capability carrier,
-and transitive dependency expansion are private compiler machinery inside
-`plitejs`; they must not appear at any public entrypoint or recurse through the
+and transitive dependency expansion stay in `plitejs/internal`; they must not
+appear at any public entrypoint or recurse through the
 complete dependency graph. A static portal is valid only
 when the requested literal name resolves to one installed capability that is
 mutually assignable with the descriptor capability. Runtime portal access still
-proves the exact installed descriptor identity, not merely an equal name. Plite
-keeps `EditorExtension<Definition>` as one public definition parameter, and
+proves the installed descriptor or a compatible source ancestor, not merely an
+equal name. Plite
+keeps `Plugin<Definition>` as one public definition parameter, and
 official factory return types are derived rather than reconstructed with a
 public dependencies generic.
+
+Descriptor identity and installed state are separate. Plite snapshots raw
+author fields or Plate's compiled definition into one private installed record,
+binds terminal descriptors and eligible ancestors to it, and validates
+dependencies and conflicts through direct nominal references. Reject synthetic
+replacement descriptors, name-remapped topology, global aliases, and portal
+kind dispatch.
 
 Plate may distinguish a contextually typed author source from its canonical
 lowered Plite definition internally. Those normalization aliases are not
@@ -282,9 +305,9 @@ weakening those laws or renaming private debris to look conventional.
 
 Descriptor-bound React and static component APIs infer the owner's exact local
 schema node from the descriptor. Use `useElement(FooPlugin)`,
-`PlateElementProps<typeof FooPlugin>`, and
-`PliteElementProps<typeof BaseFooPlugin>` for elements; use
-`PlateLeafProps<typeof FooPlugin>`, `PlateTextProps<typeof FooPlugin>`, and
+`EditorElementProps<typeof FooPlugin>`, and
+`EditorElementProps<typeof BaseFooPlugin>` for elements; use
+`EditorLeafProps<typeof FooPlugin>`, `EditorTextProps<typeof FooPlugin>`, and
 their static `Plite*` equivalents for text renderers. Never import a derived
 `FooElement` or `FooText` alias only to feed it back into one of those APIs.
 Descriptor-local inference must exclude dependency nodes. These component prop
@@ -304,7 +327,8 @@ An owning leaf descriptor infers schema marks only. A plugin's
 render-safe attributes. Decoration output never adds fields to `props.leaf` or
 `props.text`, and it never activates a leaf renderer. Never recover Decoration
 state with `Reflect.get`, a cast, or a restated structural leaf type; use the
-source's attributes or a separate Widget owner. Copied presentation configures
+source's attributes or read the relevant semantic owner outside the renderer.
+Copied presentation configures
 `decorate.attributes` with an inferred object/callback/null input while retaining
 the required semantic reader and its observer.
 Whole-element view paint uses the owning Plate plugin's
@@ -331,7 +355,7 @@ inside the event handler.
 The low-level React bridge is `react({ dom })`: one required object containing
 the exact DOM descriptor it depends on. Keep one explicit erased
 implementation boundary only where TypeScript 7 cannot reduce the invariant
-DOM-extension union; do not spread casts, overloads, optional zero-argument
+DOM-plugin union; do not spread casts, overloads, optional zero-argument
 construction, or caller generics across the public shape.
 
 `DefinitionOf<typeof FooPlugin>` is the sole public descriptor-definition
@@ -341,10 +365,10 @@ configuration types may still use `Config`. Do not restore `InferConfig` or
 another extraction alias.
 
 `.extend()` is the widening authoring verb, `.configure()` is terminal and
-non-widening, and `toPlatePlugin()` is the exact Base-to-React adapter. Factories
+non-widening, and `toReactPlugin()` is the exact Base-to-React adapter. Factories
 replace cloning; do not expose `clone()` or another copy verb.
 
-Reject compatibility aliases that leave two extension grammars after a hard
+Reject compatibility aliases that leave two plugin grammars after a hard
 cut. Type inference, ordering, rollback, transaction-local reads, generator
 safety, and one-shot delegation are required proof for the surviving shape.
 

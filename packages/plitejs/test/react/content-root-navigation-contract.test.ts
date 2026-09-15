@@ -21,7 +21,7 @@ import {
   writePliteViewSelection,
 } from '../../src/react/view-selection';
 
-const contentRootExtension = defineEditorSchema(
+const contentRootPlugin = defineEditorSchema(
   'schema:content-root-navigation-test',
   {
     elements: {
@@ -60,7 +60,7 @@ const section = (children: any[]) => ({
 
 const createFixture = () => {
   const runtime = createEditor({
-    extensions: [contentRootExtension],
+    plugins: [contentRootPlugin],
     initialValue: {
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { 'card:body': [paragraph('Inside')] },
@@ -76,7 +76,7 @@ const createFixture = () => {
 
 const createRepeatedProjectionFixture = () => {
   const runtime = createEditor({
-    extensions: [contentRootExtension],
+    plugins: [contentRootPlugin],
     initialValue: {
       children: [
         paragraph('Before'),
@@ -260,7 +260,7 @@ describe('content root navigation', () => {
   });
 
   it('finds every mapped slot through the runtime element index', () => {
-    const multiSlotExtension = defineEditorSchema(
+    const multiSlotPlugin = defineEditorSchema(
       'schema:content-root-navigation-multi-slot-test',
       {
         elements: {
@@ -282,7 +282,7 @@ describe('content root navigation', () => {
       }
     );
     const runtime = createEditor({
-      extensions: [multiSlotExtension],
+      plugins: [multiSlotPlugin],
       initialValue: {
         children: [
           paragraph('Before'),
@@ -351,7 +351,7 @@ describe('content root navigation', () => {
 
   it('does not exit a content root from the start of its last block on ArrowDown', () => {
     const runtime = createEditor({
-      extensions: [contentRootExtension],
+      plugins: [contentRootPlugin],
       initialValue: {
         children: [paragraph('Before'), contentCard(), paragraph('After')],
         roots: { 'card:body': [paragraph('First'), paragraph('Second')] },
@@ -822,7 +822,7 @@ describe('content root navigation', () => {
 
   it('builds projected selection graph nodes for nested content roots', () => {
     const runtime = createEditor({
-      extensions: [contentRootExtension],
+      plugins: [contentRootPlugin],
       initialValue: {
         children: [
           section([paragraph('Before'), contentCard(), paragraph('After')]),
@@ -860,7 +860,7 @@ describe('content root navigation', () => {
 
   it('orders nested content roots inside content roots as visible sibling blocks', () => {
     const runtime = createEditor({
-      extensions: [contentRootExtension],
+      plugins: [contentRootPlugin],
       initialValue: {
         children: [paragraph('Before'), contentCard(), paragraph('After')],
         roots: {

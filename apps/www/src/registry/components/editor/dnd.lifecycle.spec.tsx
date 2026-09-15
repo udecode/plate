@@ -3,7 +3,7 @@ import { expect, spyOn, test } from 'bun:test';
 import { act, render } from '@testing-library/react';
 import { defineEditorSchema, schema } from 'platejs';
 import { DndPlugin } from 'platejs/dnd/react';
-import { createEditor, ParagraphPlugin, Plate } from 'platejs/react';
+import { createEditor, ParagraphPlugin, EditorRoot } from 'platejs/react';
 import { BaseTablePlugin } from 'platejs/table';
 import React from 'react';
 import { DndProvider, useDragDropManager } from 'react-dnd';
@@ -75,9 +75,9 @@ test('automatic DndKit reuses an application-supplied manager', () => {
   const view = render(
     <DndProvider backend={HTML5Backend} context={{}}>
       <Capture />
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <Editor />
-      </Plate>
+      </EditorRoot>
     </DndProvider>
   );
   try {
@@ -113,9 +113,9 @@ test('DndKit tracks its exact view across StrictMode, custom slots, readonly and
   });
   const assembly = (visible: boolean, readOnly = false) => (
     <React.StrictMode>
-      <Plate editor={editor} readOnly={readOnly}>
+      <EditorRoot editor={editor} readOnly={readOnly}>
         <DndView visible={visible} />
-      </Plate>
+      </EditorRoot>
     </React.StrictMode>
   );
   const view = render(assembly(false));
@@ -157,15 +157,14 @@ test('empty root readiness attaches and detaches all five DnD listeners with act
     unknown: 'reject',
   });
   const editor = createEditor({
-    extensions: [EmptyAllowed],
-    plugins: [ParagraphPlugin, ...DndKit],
+    plugins: [EmptyAllowed, ParagraphPlugin, ...DndKit],
     initialValue: [{ type: 'paragraph', children: [{ text: 'initial' }] }],
   });
   editor.update.nodes.remove({ at: [0] });
   const assembly = () => (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <DndView />
-    </Plate>
+    </EditorRoot>
   );
   const view = render(assembly());
   try {
@@ -216,15 +215,15 @@ test('table selection hides only its own editor handles across detach and remoun
     <>
       {showFirst && (
         <section data-testid="first-editor">
-          <Plate editor={first}>
+          <EditorRoot editor={first}>
             <Editor />
-          </Plate>
+          </EditorRoot>
         </section>
       )}
       <section data-testid="second-editor">
-        <Plate editor={second}>
+        <EditorRoot editor={second}>
           <Editor />
-        </Plate>
+        </EditorRoot>
       </section>
     </>
   );

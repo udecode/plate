@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
 import {
-  installPliteReactRenderProfiler,
+  installReactRenderProfiler,
   openExample,
-  recordPliteBrowserRuntimeErrors,
-  resetPliteReactRenderProfiler,
-  takePliteBrowserRenderStateSnapshot,
+  recordBrowserRuntimeErrors,
+  resetReactRenderProfiler,
+  takeBrowserRenderStateSnapshot,
 } from '@platejs/test/playwright';
 
 const encodePliteFragment = (fragment: unknown) =>
@@ -19,7 +19,7 @@ const encodePliteFragment = (fragment: unknown) =>
 
 test.describe('table example', () => {
   test.beforeEach(async ({ page }) => {
-    await installPliteReactRenderProfiler(page);
+    await installReactRenderProfiler(page);
     await page.goto('/examples/plite/tables');
   });
 
@@ -131,7 +131,7 @@ test.describe('table example', () => {
       focus: { path: [1, 2, 3, 0], offset: 1 },
     });
 
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await editor.root.press('ArrowDown');
     await page.waitForTimeout(150);
 
@@ -140,7 +140,7 @@ test.describe('table example', () => {
       focus: { path: [1, 2, 3, 0], offset: 1 },
     });
 
-    const proof = await takePliteBrowserRenderStateSnapshot(editor);
+    const proof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(proof.focusOwner.kind).toBe('editor');
     expect(proof.selection).toEqual({
@@ -216,12 +216,12 @@ test.describe('table example', () => {
     const lastCellText = editor.root
       .locator('td')
       .last()
-      .locator('[data-plite-node="text"]')
+      .locator('[data-editor-node="text"]')
       .first();
     const trailingText = editor.root
       .locator('p')
       .last()
-      .locator('[data-plite-node="text"]')
+      .locator('[data-editor-node="text"]')
       .first();
     const cellTextBox = await lastCellText.boundingBox();
     const paragraphTextBox = await trailingText.boundingBox();
@@ -291,7 +291,7 @@ test.describe('table example', () => {
   test('pastes plain text into an empty table cell without throwing', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/tables', {
       ready: { editor: 'visible' },
     });
@@ -315,11 +315,11 @@ test.describe('table example', () => {
   test('pastes a Plite table fragment structurally without positional grid merge', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/tables', {
       ready: { editor: 'visible' },
     });
-    const pliteFragment = encodePliteFragment([
+    const fragment = encodePliteFragment([
       {
         children: [
           {
@@ -343,7 +343,7 @@ test.describe('table example', () => {
     try {
       await editor.selection.collapse({ path: [1, 0, 1, 0], offset: 5 });
       await editor.clipboard.pasteEventPayload({
-        pliteFragment,
+        fragment,
         text: 'New 1\tNew 2',
       });
 
@@ -378,7 +378,7 @@ test.describe('table example', () => {
       anchor: { path: [1, 0, 0, 0], offset: 0 },
       focus: { path: [1, 0, 0, 0], offset: 0 },
     });
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await editor.root.press('ArrowRight');
 
     await editor.assert.selection({
@@ -386,7 +386,7 @@ test.describe('table example', () => {
       focus: { path: [1, 0, 1, 0], offset: 0 },
     });
 
-    const proof = await takePliteBrowserRenderStateSnapshot(editor);
+    const proof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
       anchor: { path: [1, 0, 1, 0], offset: 0 },
@@ -410,7 +410,7 @@ test.describe('table example', () => {
     });
 
     await editor.selection.collapse({ path: [1, 0, 1, 0], offset: 0 });
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await editor.root.press('ArrowLeft');
 
     await editor.assert.selection({
@@ -418,7 +418,7 @@ test.describe('table example', () => {
       focus: { path: [1, 0, 0, 0], offset: 0 },
     });
 
-    const proof = await takePliteBrowserRenderStateSnapshot(editor);
+    const proof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).toEqual({
       anchor: { path: [1, 0, 0, 0], offset: 0 },

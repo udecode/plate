@@ -30,26 +30,24 @@ import {
   getYjsNode,
   readPliteValueFromYjs,
 } from '../../../src/yjs/core/document';
-import {
-  getEditorYjsState,
-  getEditorYjsTx,
-} from '../../../src/yjs/core/editor-yjs';
-import { yjs } from '../../../src/yjs/core/extension';
+import { yjs } from '../../../src/yjs/core/plugin';
 import type {
   YjsAwarenessLike,
   YjsCursorDataSchema,
-  YjsProviderLike,
-  YjsProviderStatus,
   YjsRemoteCursor,
   YjsRemoteCursorData,
-  YjsState,
   YjsTraceEntry,
-  YjsTx,
 } from '../../../src/yjs/core/types';
+import {
+  FakeAwareness,
+  type FakeProvider,
+  type YjsProviderStatus,
+} from './provider';
 
 export { FakeAwareness, FakeProvider } from './provider';
 
 type TestEditor = AnyEditor;
+const disconnectedPeers = new WeakSet<TestEditor>();
 
 export type Peer<TEditor extends TestEditor = TestEditor> = {
   readonly cleanup: () => void;
@@ -63,7 +61,7 @@ export type CreateYjsPeerOptions = {
   clientId: string;
   cursorData?: YjsCursorDataSchema;
   numericClientId?: number;
-  provider?: YjsProviderLike;
+  provider?: FakeProvider;
   roots?: Readonly<Record<string, readonly Descendant[]>>;
   seedUpdate?: Uint8Array;
 };
@@ -97,7 +95,7 @@ export const createYjsTestEditor = (
   }
 
   return createEditor({
-    extensions: [YjsTestOpenSchema, history()],
+    plugins: [YjsTestOpenSchema, history()],
     initialValue: initialValue as EditorDocumentValue,
   });
 };
@@ -113,10 +111,8 @@ export const createYjsPeerWithEditor = <TEditor extends TestEditor>(
   {
     children,
     awareness,
-    clientId,
     cursorData,
     numericClientId,
-    provider,
     roots,
     seedUpdate,
   }: CreateYjsPeerOptions
@@ -138,14 +134,18 @@ export const createYjsPeerWithEditor = <TEditor extends TestEditor>(
     Y.applyUpdate(doc, seedUpdate);
   }
 
+  if (awareness instanceof FakeAwareness) {
+    awareness.attachDocument(doc);
+  }
+
   const cleanup = editor.install(
     yjs({
       awareness,
-      clientId,
       ...(cursorData === undefined ? {} : { cursorData }),
       doc,
-      provider,
+      initialReady: true,
       rootName: 'plitejs',
+      ...(seedUpdate === undefined ? { seed: true as const } : {}),
     })
   );
 
@@ -281,11 +281,36 @@ export const getVisibleYjsNodeAt = (
   path: readonly number[]
 ): YjsNode => getYjsNode(getYjsRoot(peer), path);
 
-export const readEditorYjsState = (editor: TestEditor): YjsState =>
-  editor.read(getEditorYjsState);
+const requireYjsController = (editor: TestEditor) => {
+  const controller = getActiveYjsController(editor);
 
-export const getYjsState = (peer: Peer): YjsState =>
-  readEditorYjsState(peer.editor);
+  assert.ok(controller, 'expected an active Yjs controller');
+
+  return controller;
+};
+
+export const readEditorYjsState = (editor: TestEditor) => {
+  const controller = requireYjsController(editor);
+
+  return {
+    awarenessRevision: () => controller.debugAwarenessRevision(),
+    connected: () => true,
+    providerStatus: (): YjsProviderStatus | null => null,
+    providerSynced: (): boolean | null => null,
+    remoteCursor: (clientId: number) =>
+      controller.cursorCache(editor).remoteCursor(clientId),
+    remoteCursors: () => controller.cursorCache(editor).remoteCursors(),
+    root: () => controller.debugRoot(),
+    subscribeAwareness: (listener: () => void) =>
+      controller.cursorCache(editor).subscribeCursors(listener),
+    subscribeProvider: (_listener: () => void) => () => {},
+    subscribeRemoteCursors: (listener: () => void) =>
+      controller.cursorCache(editor).subscribeCursors(listener),
+    trace: () => controller.debugTrace(),
+  };
+};
+
+export const getYjsState = (peer: Peer) => readEditorYjsState(peer.editor);
 
 export const getYjsRoot = (peer: Peer): Y.XmlElement =>
   getYjsState(peer).root();
@@ -323,13 +348,8 @@ export const getYjsRemoteCursors = (
 ): ReadonlyArray<YjsRemoteCursor<YjsRemoteCursorData>> =>
   getYjsState(peer).remoteCursors();
 
-const getYjsCursorCache = (peer: Peer) => {
-  const controller = getActiveYjsController(peer.editor);
-
-  assert.ok(controller, 'expected an active Yjs controller');
-
-  return controller.cursorCache();
-};
+const getYjsCursorCache = (peer: Peer) =>
+  requireYjsController(peer.editor).cursorCache();
 
 export const getYjsRemoteCursorIds = (peer: Peer): readonly number[] =>
   getYjsCursorCache(peer).remoteCursorIds();
@@ -354,7 +374,7 @@ export const getYjsProviderSynced = (peer: Peer): boolean | null =>
   getYjsState(peer).providerSynced();
 
 export const isYjsPeerConnected = (peer: Peer): boolean =>
-  getYjsState(peer).connected();
+  !disconnectedPeers.has(peer.editor);
 
 export const subscribeYjsAwareness = (
   peer: Peer,
@@ -364,25 +384,52 @@ export const subscribeYjsAwareness = (
 export const readPeerPliteValue = (peer: Peer): Descendant[] =>
   readPliteValueFromYjs(getYjsRoot(peer));
 
+type TestYjsActions = Readonly<{
+  clearSelection: () => void;
+  clearTrace: () => void;
+  reconcile: () => void;
+  retireSharedEffectPeer: (peerId: number | string) => void;
+  sendCursorData: (data: YjsRemoteCursorData | null) => void;
+  sendSelection: (range?: Selection, data?: YjsRemoteCursorData | null) => void;
+}>;
+
 export const runEditorYjsUpdate = (
   editor: TestEditor,
-  fn: (tx: YjsTx) => void
+  fn: (actions: TestYjsActions) => void
 ): void => {
-  editor.update((tx) => {
-    fn(getEditorYjsTx(tx));
+  const controller = requireYjsController(editor);
+  const presence = () => controller.presenceApi(editor);
+
+  fn({
+    clearSelection: () => presence().clearSelection(),
+    clearTrace: () => controller.clearDebugTrace(),
+    reconcile: () => controller.debugProcessAvailableInput(),
+    retireSharedEffectPeer: (peerId) =>
+      controller.compactionApi().retireSharedEffectPeer(Number(peerId)),
+    sendCursorData: (data) => presence().setCursorData(data),
+    sendSelection: (range, data) => {
+      if (data !== undefined) presence().setCursorData(data);
+      if (range !== undefined) {
+        editor.update((tx) => tx.selection.set(range));
+      }
+      presence().syncSelection();
+    },
   });
 };
 
-export const runYjsUpdate = (peer: Peer, fn: (tx: YjsTx) => void): void => {
+export const runYjsUpdate = (
+  peer: Peer,
+  fn: (actions: TestYjsActions) => void
+): void => {
   runEditorYjsUpdate(peer.editor, fn);
 };
 
 export const disconnectYjsPeer = (peer: Peer): void => {
-  runYjsUpdate(peer, (innerYjs) => innerYjs.disconnect());
+  disconnectedPeers.add(peer.editor);
 };
 
 export const connectYjsPeer = (peer: Peer): void => {
-  runYjsUpdate(peer, (innerYjs2) => innerYjs2.connect());
+  disconnectedPeers.delete(peer.editor);
 };
 
 export const clearYjsTrace = (peer: Peer): void => {

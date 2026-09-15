@@ -1,5 +1,5 @@
 import {
-  defineBasePlugin,
+  definePlugin,
   type DefinitionOf,
   type ElementOf,
   PLUGINS,
@@ -23,7 +23,7 @@ export type SlashPluginState = TriggerComboboxPluginState & {
   >;
 };
 
-export const BaseSlashInputPlugin = defineBasePlugin(PLUGINS.slashInput, {
+export const BaseSlashInputPlugin = definePlugin(PLUGINS.slashInput, {
   dependencies: [BaseComboboxPlugin],
   schema: {
     element: {
@@ -40,7 +40,7 @@ export const BaseSlashInputPlugin = defineBasePlugin(PLUGINS.slashInput, {
 
 export type SlashInputElement = ElementOf<typeof BaseSlashInputPlugin>;
 
-export const BaseSlashPlugin = defineBasePlugin(PLUGINS.slashCommand, {
+export const BaseSlashPlugin = definePlugin(PLUGINS.slashCommand, {
   dependencies: [BaseSlashInputPlugin],
   initialState: ({ editor }): SlashPluginState => ({
     createComboboxInput: () => ({

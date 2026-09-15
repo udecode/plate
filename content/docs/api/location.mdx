@@ -1,0 +1,59 @@
+---
+title: "Location API"
+description: "Location union helpers for validating paths, points, and ranges."
+---
+
+The `Location` interface is a union of the ways to refer to a specific location
+in a Plate document: paths, points, or ranges. Methods often accept `Location`
+instead of requiring only `Path`, `Point`, or `Range`.
+
+## Type
+
+```typescript
+type Location = Path | Point | Range;
+```
+
+Public read and update methods with an `at` option accept `NodeTarget`, which
+adds live text and element nodes without changing the `Location` type.
+
+```typescript
+type NodeTarget<N extends Descendant = Descendant> = Location | N;
+```
+
+Use `editor.read.nodes.path(node)` when you need to resolve a node target to its
+current path. Pure location utilities continue to accept structural locations.
+
+## On this page
+
+- [Static methods](/docs/api/location#static-methods)
+  - [Check methods](/docs/api/location#check-methods)
+
+## Static methods
+
+### Check methods
+
+#### `LocationApi.isLocation(value: unknown) => value is Location`
+
+Check if a value implements the `Location` interface.
+
+## Span
+
+A `Span` identifies its endpoints with two node paths. Unlike a `Range`, it
+does not store text offsets.
+
+
+```typescript
+type Span = readonly [Path, Path];
+```
+
+
+- [Static methods](/docs/api/location#span)
+  - [Check methods](/docs/api/location#span)
+
+### Static methods
+
+### Check methods
+
+#### `SpanApi.isSpan(value: unknown) => value is Span`
+
+Check if a `value` implements the `Span` interface.

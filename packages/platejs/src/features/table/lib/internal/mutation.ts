@@ -5,7 +5,7 @@ import type {
   EditorCoreUpdateTransaction,
   Element,
   Path,
-  PlateNodeInsertOptions,
+  NodeInsertOptions,
   Range,
   Text,
 } from '../../../../core';
@@ -29,7 +29,7 @@ type TableMutationTransaction = Omit<
   nodes: Omit<EditorCoreUpdateTransaction['nodes'], 'insert'> & {
     insert: <TNode extends Descendant>(
       nodes: TNode | readonly TNode[],
-      options?: PlateNodeInsertOptions
+      options?: NodeInsertOptions
     ) => void;
   };
 };
@@ -80,7 +80,7 @@ export type TableOperation =
   | Readonly<{
       kind: 'insert-node';
       node: Element;
-      options?: Omit<PlateNodeInsertOptions, 'at' | 'select'>;
+      options?: Omit<NodeInsertOptions, 'at' | 'select'>;
       path: Path;
     }>
   | Readonly<{
@@ -212,7 +212,7 @@ type MutableOperation =
   | {
       kind: 'insert-node';
       node: Element;
-      options?: Omit<PlateNodeInsertOptions, 'at' | 'select'>;
+      options?: Omit<NodeInsertOptions, 'at' | 'select'>;
       path: Path;
     }
   | {

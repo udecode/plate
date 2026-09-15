@@ -22,7 +22,11 @@ export const editorReads = Object.freeze({
   }),
   slice: Object.freeze({
     export: defineRead<
-      Readonly<{ options: EditorSliceReadOptions; slice: ContentSlice }>,
+      Readonly<{
+        options: EditorSliceReadOptions;
+        slice: ContentSlice;
+        source: 'assembled' | 'selection';
+      }>,
       ContentSlice
     >('plite:slice.export'),
     get: defineRead<

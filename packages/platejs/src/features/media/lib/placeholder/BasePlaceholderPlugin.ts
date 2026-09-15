@@ -1,15 +1,18 @@
 import {
-  defineBasePlugin,
+  definePlugin,
+  defineEffect,
   NodeApi,
   PLUGINS,
   type ElementOf,
   type NodeKey,
   type Path,
-  type PlateBlockInsertOptions,
-  type PlateNodeInsertOptions,
+  PathApi,
+  type BlockInsertOptions,
+  type NodeInsertOptions,
   type PluginReference,
   property,
 } from '../../../../core';
+import { domCommands } from '../../../../dom/plite-dom.internal';
 import { createZustandStore } from '../../../../lib/libs/zustand';
 import {
   BaseAudioPlugin,
@@ -53,6 +56,22 @@ export type FileSize = `${PowOf2}${SizeUnit}`;
 
 export type MediaKeys = 'audio' | 'file' | 'image' | 'video';
 type PlaceholderMediaPlugin = MediaKeys | PluginReference<MediaKeys>;
+
+const PLACEHOLDER_MEDIA_PLUGINS = {
+  audio: BaseAudioPlugin,
+  file: BaseFilePlugin,
+  image: BaseImagePlugin,
+  video: BaseVideoPlugin,
+} as const;
+
+const resolvePlaceholderMediaPlugin = (
+  plugin: PluginReference<MediaKeys> | string
+) => {
+  if (typeof plugin !== 'string') return plugin;
+  if (!Object.hasOwn(PLACEHOLDER_MEDIA_PLUGINS, plugin)) return undefined;
+
+  return PLACEHOLDER_MEDIA_PLUGINS[plugin as MediaKeys];
+};
 
 export type MediaItemConfig = {
   /** Media node type inserted after upload. */
@@ -103,7 +122,7 @@ export type UploadError =
 
 export type UploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
 
-export type InsertMediaOptions = Omit<PlateBlockInsertOptions, 'at'> & {
+export type InsertMediaOptions = Omit<BlockInsertOptions, 'at'> & {
   at?: Path;
 };
 
@@ -157,6 +176,12 @@ const initialState: PlaceholderPluginState = {
   uploads: {},
 };
 
+const placeholderValidationEffect = defineEffect({
+  collab: 'local',
+  history: 'skip',
+  key: 'plate.placeholder.validation',
+});
+
 export type MediaUploadState = Readonly<{
   error: unknown;
   progress: number;
@@ -182,7 +207,7 @@ export type MediaUploadTransport = (
   options: { onProgress: (progress: number) => void; signal: AbortSignal }
 ) => Promise<MediaUploadResult>;
 
-export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
+export const BasePlaceholderPlugin = definePlugin(PLUGINS.placeholder, {
   dependencies: [
     BaseAudioPlugin,
     BaseFilePlugin,
@@ -190,6 +215,7 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
     BaseVideoPlugin,
   ],
   initialState,
+  effectTypes: [placeholderValidationEffect],
   schema: {
     element: {
       properties: { mediaType: property.string({ required: true }) },
@@ -211,13 +237,11 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
           | (FileInsertInput & { plugin: PlaceholderMediaPlugin })
           | (ImageInsertInput & { plugin: PlaceholderMediaPlugin })
           | (ProviderMediaInsertInput & { plugin: PlaceholderMediaPlugin }),
-        {
-          at,
-          ...options
-        }: Omit<PlateNodeInsertOptions, 'at'> & {
+        options: Omit<NodeInsertOptions, 'at'> & {
           at: Path;
         }
       ) => {
+        const { at } = options;
         const placeholder = tx.nodes.get(at);
 
         if (
@@ -228,7 +252,16 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
           return;
         }
 
-        const media = editor.plugin(mediaPlugin);
+        const mediaDescriptor = resolvePlaceholderMediaPlugin(mediaPlugin);
+
+        if (!mediaDescriptor) {
+          const mediaPluginName =
+            typeof mediaPlugin === 'string' ? mediaPlugin : mediaPlugin.name;
+          throw new Error(
+            `Unsupported placeholder media plugin "${mediaPluginName}".`
+          );
+        }
+        const media = editor.plugin(mediaDescriptor);
         const mediaName = media.name;
 
         if (
@@ -242,16 +275,33 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
             `Unsupported placeholder media plugin "${mediaName}".`
           );
         }
+        const normalized =
+          mediaName === PLUGINS.audio
+            ? editor.plugin(BaseAudioPlugin).api.normalizeUrl(input.url)
+            : mediaName === PLUGINS.file
+              ? editor.plugin(BaseFilePlugin).api.normalizeUrl(input.url)
+              : mediaName === PLUGINS.image
+                ? editor.plugin(BaseImagePlugin).api.normalizeUrl(input.url)
+                : editor.plugin(BaseVideoPlugin).api.normalizeUrl(input.url);
 
-        tx.nodes.remove({ at });
-        if (mediaName === PLUGINS.audio) {
-          tx.audio.insert(input, { ...options, at });
-        } else if (mediaName === PLUGINS.file) {
-          tx.file.insert(input, { ...options, at });
-        } else if (mediaName === PLUGINS.image) {
-          tx.image.insert(input, { ...options, at });
-        } else {
-          tx.video.insert(input, { ...options, at });
+        if (!normalized) return;
+
+        const { caption, ...properties } = {
+          ...input,
+          ...normalized,
+        };
+
+        tx.nodes.set({ ...properties, type: mediaName }, { at, voids: true });
+
+        if (caption !== undefined) {
+          tx.nodes.replaceChildren(
+            typeof caption === 'string'
+              ? [{ text: caption }]
+              : caption.length > 0
+                ? caption
+                : [{ text: '' }],
+            { at, preserveKeys: true }
+          );
         }
       },
     }),
@@ -407,13 +457,10 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
       } catch (error) {
         if (!isUploadError(error)) throw error;
 
-        store.set({ error });
-
-        return undefined;
+        return { error, fileTypes: null } as const;
       }
 
-      store.set({ error: null });
-      return fileTypes;
+      return { error: null, fileTypes } as const;
     };
     const upload = (key: NodeKey, file: File) => {
       const entry = editor.read.nodes.get(key);
@@ -426,7 +473,10 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
         return;
       }
       const { mediaType } = entry[0];
-      const media = editor.plugin(mediaType);
+      const mediaDescriptor = resolvePlaceholderMediaPlugin(mediaType);
+
+      if (!mediaDescriptor) return;
+      const media = editor.plugin(mediaDescriptor);
       const mediaName = media.name;
       if (
         !media.installed ||
@@ -437,7 +487,10 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
       ) {
         return;
       }
-      const fileType = validateFiles([file], false)?.get(file);
+      const validation = validateFiles([file], false);
+
+      store.set({ error: validation.error });
+      const fileType = validation.fileTypes?.get(file);
       if (!fileType) return;
       if (store.get('uploadConfig')[fileType]?.mediaType !== mediaName) {
         store.set({
@@ -534,33 +587,37 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
           options?: InsertMediaOptions
         ) => {
           const uploadConfig = store.get('uploadConfig');
-          const fileTypes = validateFiles(files, true);
-          if (!fileTypes) return;
+          const validation = validateFiles(files, true);
+          const acceptError = (error: UploadError) => {
+            tx.effects.emit(placeholderValidationEffect, null);
+            afterCommit(() => store.set({ error }));
+
+            return true;
+          };
+
+          if (validation.error) return acceptError(validation.error);
+          const { fileTypes } = validation;
 
           if (!store.get('multiple') && files.length > 1) {
-            store.set({
-              error: createUploadError(UploadErrorCode.TOO_MANY_FILES, {
+            return acceptError(
+              createUploadError(UploadErrorCode.TOO_MANY_FILES, {
                 fileType: null,
                 files: Array.from(files),
                 maxFileCount: 1,
-              }),
-            });
-
-            return;
+              })
+            );
           }
 
           const maxFileCount = store.get('maxFileCount') ?? 3;
 
           if (files.length > maxFileCount) {
-            store.set({
-              error: createUploadError(UploadErrorCode.TOO_MANY_FILES, {
+            return acceptError(
+              createUploadError(UploadErrorCode.TOO_MANY_FILES, {
                 fileType: null,
                 files: Array.from(files),
                 maxFileCount,
-              }),
-            });
-
-            return;
+              })
+            );
           }
 
           const { at: _at, ...restOptions } = options ?? {};
@@ -582,7 +639,7 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
             return [{ element, file }];
           });
 
-          if (uploads.length === 0) return;
+          if (uploads.length === 0) return false;
 
           const elements = uploads.map(({ element }) => element);
 
@@ -600,8 +657,11 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
           );
 
           afterCommit(() => {
+            store.set({ error: null });
             for (const [key, file] of insertedUploads) upload(key, file);
           });
+
+          return true;
         },
       }),
       activate({ onCleanup }) {
@@ -622,6 +682,35 @@ export const BasePlaceholderPlugin = defineBasePlugin(PLUGINS.placeholder, {
         },
       },
     };
-  });
+  })
+  .extend(() => ({
+    commands: ({ around }) => [
+      around(domCommands.insertData, ({ input, next, state }) => {
+        const files = Array.from(input.files ?? []);
+
+        if (
+          files.length === 0 ||
+          Array.from(input.types ?? []).includes('text/html')
+        ) {
+          return next();
+        }
+
+        const block = state.nodes.block();
+        let handled = false;
+        const transaction = state.transaction((tx) => {
+          if (block && NodeApi.string(block[0]).length === 0) {
+            tx.nodes.remove({ at: block[1] });
+            handled = tx.placeholder.insertMedia(files, { at: block[1] });
+          } else {
+            handled = tx.placeholder.insertMedia(files, {
+              at: block ? PathApi.next(block[1]) : undefined,
+            });
+          }
+        });
+
+        return handled ? transaction : next();
+      }),
+    ],
+  }));
 
 export type PlaceholderElement = ElementOf<typeof BasePlaceholderPlugin>;

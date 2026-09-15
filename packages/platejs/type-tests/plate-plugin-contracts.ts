@@ -1,9 +1,9 @@
 import type { DefinitionOf } from 'platejs';
 import {
   createEditor,
-  definePlatePlugin,
-  type PlateViewElementAttributes,
-  useEditorPlugin,
+  definePlugin,
+  type ViewElementAttributes,
+  useEditor,
   usePluginStore,
 } from 'platejs/react';
 
@@ -14,7 +14,7 @@ type IsAny<T> = 0 extends 1 & T ? true : false;
 type AssertFalse<T extends false> = T;
 type AssertTrue<T extends true> = T;
 
-const ConfiguredPlateCodecContractPlugin = definePlatePlugin(
+const ConfiguredPlateCodecContractPlugin = definePlugin(
   'configuredPlateCodecContract',
   {
     codecs: ({ defineCodecs }) =>
@@ -32,7 +32,7 @@ ConfiguredPlateCodecContractPlugin.extend(({ defineCodecs }) => ({
   codecs: defineCodecs({}),
 }));
 
-export const MinimalPlateDefinitionPlugin = definePlatePlugin(
+export const MinimalPlateDefinitionPlugin = definePlugin(
   'minimalPlateDefinition',
   {
     editOnly: true,
@@ -72,7 +72,7 @@ export type {
   MinimalPlateRuntimeHasRender,
 };
 
-const ObjectStateInferencePlugin = definePlatePlugin('objectStateInference', {
+const ObjectStateInferencePlugin = definePlugin('objectStateInference', {
   api: ({ editor, store }) => {
     const editorIsAny: IsAny<typeof editor> = false;
     const pluginState = store.get();
@@ -108,7 +108,7 @@ const ObjectStateInferencePlugin = definePlatePlugin('objectStateInference', {
   },
 });
 
-const ObjectStateFirstInferencePlugin = definePlatePlugin(
+const ObjectStateFirstInferencePlugin = definePlugin(
   'objectStateFirstInference',
   {
     initialState: {
@@ -143,7 +143,7 @@ const ObjectStateFirstInferencePlugin = definePlatePlugin(
   }
 );
 
-const ExplicitFactoryStateInferencePlugin = definePlatePlugin(
+const ExplicitFactoryStateInferencePlugin = definePlugin(
   'explicitFactoryStateInference',
   {
     initialState: ({ editor }): { mode: 'explicitFactory' } => {
@@ -177,7 +177,7 @@ const ExplicitFactoryStateInferencePlugin = definePlatePlugin(
   };
 });
 
-const InferredFactoryStateInferencePlugin = definePlatePlugin(
+const InferredFactoryStateInferencePlugin = definePlugin(
   'inferredFactoryStateInference',
   {
     initialState: ({ editor }) => {
@@ -211,7 +211,7 @@ const InferredFactoryStateInferencePlugin = definePlatePlugin(
   };
 });
 
-export const SequentialPlatePlugin = definePlatePlugin('sequentialPlate', {
+export const SequentialPlatePlugin = definePlugin('sequentialPlate', {
   api: () => ({ first: () => 1 as const }),
   initialState: { count: 1 },
   read: () => ({ first: () => 1 as const }),
@@ -271,7 +271,7 @@ void (sequentialPlateEditor
 // @ts-expect-error Sequential stages keep exact API members.
 sequentialPlateEditor.api.sequentialPlate.missing();
 
-definePlatePlugin('apiBeforeFactoryState', {
+definePlugin('apiBeforeFactoryState', {
   // @ts-expect-error Factory state consumers belong in a following .extend().
   api: () => ({}),
   initialState: ({ editor }) => ({
@@ -279,7 +279,7 @@ definePlatePlugin('apiBeforeFactoryState', {
   }),
 });
 
-definePlatePlugin('apiAfterFactoryState', {
+definePlugin('apiAfterFactoryState', {
   initialState: ({ editor }) => ({
     mode: editor.id.length > 0,
   }),
@@ -321,10 +321,10 @@ void objectStateFirstDefinitionModeIsAny;
 void explicitFactoryDefinitionModeIsAny;
 void inferredFactoryDefinitionModeIsAny;
 
-const PlateTargetPlugin = definePlatePlugin('plateTarget', {});
+const PlateTargetPlugin = definePlugin('plateTarget', {});
 const authoredPlateTargets = [PlateTargetPlugin, 'heading'] as const;
 const configuredPlateTargets = ['quote', PlateTargetPlugin] as const;
-const AuthoredPlateTargetsPlugin = definePlatePlugin('authoredPlateTargets', {
+const AuthoredPlateTargetsPlugin = definePlugin('authoredPlateTargets', {
   targetPlugins: authoredPlateTargets,
 });
 const ConfiguredPlateTargetsPlugin = AuthoredPlateTargetsPlugin.configure({
@@ -358,7 +358,7 @@ const toolbarInitialState: { floating: boolean } = {
   floating: true,
 };
 
-const ToolbarPlugin = definePlatePlugin('toolbar', {
+const ToolbarPlugin = definePlugin('toolbar', {
   api: ({ store }) => ({
     isFloating: () => store.get().floating,
     toggleFloating: () => store.get().floating,
@@ -366,7 +366,7 @@ const ToolbarPlugin = definePlatePlugin('toolbar', {
   initialState: toolbarInitialState,
 });
 
-const MentionPlugin = definePlatePlugin('mention', {
+const MentionPlugin = definePlugin('mention', {
   api: ({ store }) => ({
     getTrigger: () => store.get().trigger,
   }),
@@ -375,7 +375,7 @@ const MentionPlugin = definePlatePlugin('mention', {
   },
 });
 
-const ExplicitPlugin = definePlatePlugin('explicitPlugin', {
+const ExplicitPlugin = definePlugin('explicitPlugin', {
   api: ({ store }) => ({
     isEnabled: () => store.get().enabled,
   }),
@@ -384,7 +384,7 @@ const ExplicitPlugin = definePlatePlugin('explicitPlugin', {
   },
 });
 
-const DeclaredPlateTxPlugin = definePlatePlugin('declaredPlateTx', {
+const DeclaredPlateTxPlugin = definePlugin('declaredPlateTx', {
   update: () => ({
     run: (value: 'typed', initialState: { count?: number } = {}) => {
       const exactValue: 'typed' = value;
@@ -397,7 +397,7 @@ const DeclaredPlateTxPlugin = definePlatePlugin('declaredPlateTx', {
 
 void DeclaredPlateTxPlugin;
 
-const ReactOnPlugin = definePlatePlugin('reactOn', {
+const ReactOnPlugin = definePlugin('reactOn', {
   initialState: {
     mode: 'inline' as 'inline' | 'block',
   },
@@ -410,26 +410,26 @@ const ReactOnPlugin = definePlatePlugin('reactOn', {
   },
 });
 
-const DependencyApiPlugin = definePlatePlugin('dependencyApi', {
+const DependencyApiPlugin = definePlugin('dependencyApi', {
   api: () => ({
     read: () => true as const,
   }),
 });
 
-const DependencyEditorApiPlugin = definePlatePlugin('dependencyEditorApi', {
+const DependencyEditorApiPlugin = definePlugin('dependencyEditorApi', {
   api: () => ({
     read: () => true as const,
   }),
 });
 
-const DependentComponentPlugin = definePlatePlugin('dependentComponent', {
+const DependentComponentPlugin = definePlugin('dependentComponent', {
   dependencies: [DependencyApiPlugin, DependencyEditorApiPlugin],
   slots: { afterEditable: DependencyStatus },
 });
 
 function DependencyStatus() {
-  const dependency = useEditorPlugin(DependencyApiPlugin);
-  const dependencyEditor = useEditorPlugin(DependencyEditorApiPlugin);
+  const dependency = useEditor().plugin(DependencyApiPlugin);
+  const dependencyEditor = useEditor().plugin(DependencyEditorApiPlugin);
   const dependencyIsAny: IsAny<typeof dependency> = false;
   const dependencyValue: true = dependency.api.read();
   const dependencyEditorValue: true = dependencyEditor.api.read();
@@ -441,7 +441,7 @@ function DependencyStatus() {
   return null;
 }
 
-const ViewElementAttributesPlugin = definePlatePlugin('viewElementAttributes', {
+const ViewElementAttributesPlugin = definePlugin('viewElementAttributes', {
   initialState: { active: true },
   render: {
     useViewElementAttributes: ({ editor, plugin, view }) => {
@@ -473,11 +473,11 @@ const ViewElementAttributesPlugin = definePlatePlugin('viewElementAttributes', {
 const invalidViewElementAttributes = {
   // @ts-expect-error Event handlers are not safe view attributes.
   onClick: () => {},
-} satisfies PlateViewElementAttributes;
+} satisfies ViewElementAttributes;
 
 void invalidViewElementAttributes;
 
-const PlateReadContextPlugin = definePlatePlugin('plateReadContext', {
+const PlateReadContextPlugin = definePlugin('plateReadContext', {
   read: ({ state }) => ({
     childCount: () => state.children().length,
   }),
@@ -534,7 +534,7 @@ const stateInferenceEditor = createEditor({
   ],
 });
 const emptyApiEditor = createEditor({
-  plugins: [definePlatePlugin('emptyApi', {})],
+  plugins: [definePlugin('emptyApi', {})],
 });
 
 const floating: boolean = plateEditor.api.toolbar.toggleFloating();

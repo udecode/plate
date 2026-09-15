@@ -26,9 +26,9 @@ import {
   isPointOnVisualBoundaryLine,
 } from './content-root-vertical-geometry';
 import {
-  getPlainVerticalDOMCoverageExtension,
-  getPlainVerticalLargeDocumentExtension,
-  shouldModelOwnPlainVerticalLargeDocumentExtension,
+  getPlainVerticalDOMCoveragePlugin,
+  getPlainVerticalLargeDocumentPlugin,
+  shouldModelOwnPlainVerticalLargeDocumentPlugin,
 } from './dom-coverage-vertical-selection';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { getDocumentBoundaryKeyboardMove } from './input-controller';
@@ -505,10 +505,10 @@ export const applyEditableCaretMovement = ({
   event,
   preferredX,
   selection,
-  domStrategyRuntime,
+  viewportRuntime,
 }: {
   domPhaseScheduler: DOMPhaseScheduler;
-  domStrategyRuntime: unknown;
+  viewportRuntime: unknown;
   editor: ReactRuntimeEditor;
   event: KeyboardEvent<HTMLDivElement>;
   preferredX?: number;
@@ -548,18 +548,18 @@ export const applyEditableCaretMovement = ({
   const plainVerticalLargeDocumentSelection = profilePliteReactDuration(
     'caret.should-model-own-plain-vertical-large-document',
     () =>
-      shouldModelOwnPlainVerticalLargeDocumentExtension({
-        domStrategyRuntime,
+      shouldModelOwnPlainVerticalLargeDocumentPlugin({
+        viewportRuntime,
         editor,
         event: nativeEvent,
         selection: largeDocumentVerticalSelection,
       })
   );
-  const plainVerticalLargeDocumentExtension = profilePliteReactDuration(
-    'caret.get-plain-vertical-large-document-extension',
+  const plainVerticalLargeDocumentPlugin = profilePliteReactDuration(
+    'caret.get-plain-vertical-large-document-plugin',
     () =>
-      getPlainVerticalLargeDocumentExtension({
-        domStrategyRuntime,
+      getPlainVerticalLargeDocumentPlugin({
+        viewportRuntime,
         editor,
         event: nativeEvent,
         forceModelMovement: ownerlessViewSelectionRange !== null,
@@ -568,13 +568,13 @@ export const applyEditableCaretMovement = ({
       })
   );
 
-  if (plainVerticalLargeDocumentExtension) {
+  if (plainVerticalLargeDocumentPlugin) {
     event.preventDefault();
     const nextSelection = {
       anchor:
         largeDocumentVerticalSelection?.anchor ??
-        plainVerticalLargeDocumentExtension.target,
-      focus: plainVerticalLargeDocumentExtension.target,
+        plainVerticalLargeDocumentPlugin.target,
+      focus: plainVerticalLargeDocumentPlugin.target,
     };
     profilePliteReactDuration('caret.large-document-select', () => {
       editor
@@ -596,10 +596,10 @@ export const applyEditableCaretMovement = ({
     });
   }
 
-  const plainVerticalDOMCoverageExtension = profilePliteReactDuration(
-    'caret.get-plain-vertical-dom-coverage-extension',
+  const plainVerticalDOMCoveragePlugin = profilePliteReactDuration(
+    'caret.get-plain-vertical-dom-coverage-plugin',
     () =>
-      getPlainVerticalDOMCoverageExtension({
+      getPlainVerticalDOMCoveragePlugin({
         coverage,
         editor,
         event: nativeEvent,
@@ -607,7 +607,7 @@ export const applyEditableCaretMovement = ({
       })
   );
 
-  if (plainVerticalDOMCoverageExtension) {
+  if (plainVerticalDOMCoveragePlugin) {
     event.preventDefault();
     moveSelectionAndRespectBoundaries({
       coverage,
@@ -616,13 +616,12 @@ export const applyEditableCaretMovement = ({
       move: () => {
         dispatchCommand(editor, editorCommands.select, {
           target: {
-            anchor:
-              selection?.anchor ?? plainVerticalDOMCoverageExtension.target,
-            focus: plainVerticalDOMCoverageExtension.target,
+            anchor: selection?.anchor ?? plainVerticalDOMCoveragePlugin.target,
+            focus: plainVerticalDOMCoveragePlugin.target,
           },
         });
       },
-      reverse: plainVerticalDOMCoverageExtension.reverse,
+      reverse: plainVerticalDOMCoveragePlugin.reverse,
       selection,
     });
     return caretMovementHandled();

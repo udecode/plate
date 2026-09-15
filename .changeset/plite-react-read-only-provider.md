@@ -17,8 +17,8 @@ Add Plite React integration with strict editor and element hooks, typed `usePlit
 - Isolate optional decoration, annotation, widget, and render-callback failures
 - Preserve inline decorated-range data in projection slices
 - Infer React editor values from complete installed schemas and expose typed interactive content-root slots
-- Keep `useEditor()` non-generic and let selector hooks infer only their result; resolve exact extension capabilities through `editor.extension(Extension)`
-- Preserve element-owned named roots through projected clipboard serialization and insertion
+- Keep `useEditor()` non-generic and let selector hooks infer only their result; resolve exact plugin capabilities through `editor.plugin(Plugin)`
+- Preserve complete element-owned root graphs through projected clipboard serialization and insertion, including shared aliases, cycles, and deterministic cross-source collisions
 - Resolve projected clipboard ranges against the canonical runtime so root-scoped editor views copy and cut their own model content
 - Cancel superseded delayed focus restoration when undo or redo crosses roots
 - Install the exact DOM descriptor through `react({ dom })` and consume its clipboard and input-runtime services without name-based runtime lookup

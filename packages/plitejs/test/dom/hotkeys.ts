@@ -82,7 +82,7 @@ describe('plite-dom hotkeys', () => {
     expect(isHotkey('return', numpadEnter)).toBe(true);
   });
 
-  test('matches Plite-owned word selection extension hotkeys', () => {
+  test('matches Plite-owned word selection plugin hotkeys', () => {
     expect(
       Hotkeys.isExtendWordForward(
         event({ ctrlKey: true, key: 'ArrowRight', shiftKey: true })

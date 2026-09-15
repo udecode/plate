@@ -1,7 +1,7 @@
 'use client';
 
 import { IndentIcon, OutdentIcon } from 'lucide-react';
-import { IndentPlugin, useEditorPlugin } from 'platejs/react';
+import { IndentPlugin, useEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
@@ -9,7 +9,7 @@ import { ToolbarButton } from '@/registry/components/editor/toolbar';
 export function IndentToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
-  const { update } = useEditorPlugin(IndentPlugin);
+  const { update } = useEditor().plugin(IndentPlugin);
 
   return (
     <ToolbarButton
@@ -27,7 +27,7 @@ export function IndentToolbarButton(
 export function OutdentToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
-  const { update } = useEditorPlugin(IndentPlugin);
+  const { update } = useEditor().plugin(IndentPlugin);
 
   return (
     <ToolbarButton

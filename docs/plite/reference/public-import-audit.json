@@ -1,0 +1,5 @@
+{
+  "namedImportsChecked": 1682,
+  "unknownImports": [],
+  "method": "Compared named imports in every public MDX file with the source export inventory plus the authoritative identifier rename map. This checks import availability, not complete code-fence type correctness."
+}

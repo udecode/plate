@@ -1,10 +1,10 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 import {
   assertNoIllegalKernelTransitions,
-  createPliteBrowserClipboardPasteGauntlet,
-  createPliteBrowserDropDataGauntlet,
+  createBrowserClipboardPasteGauntlet,
+  createBrowserDropDataGauntlet,
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 
 const GOOGLE_DOCS_FONT_SIZE_HTML = `<meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid"><p dir="ltr" style="line-height:1.56;margin-top:10pt;margin-bottom:0pt;"><span style="font-size:24pt;font-family:Lato,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;text-decoration:none;white-space:pre-wrap;">Random text at </span><span style="font-size:36pt;font-family:Lato,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;text-decoration:none;white-space:pre-wrap;">36 pt</span></p></b>`;
@@ -294,7 +294,7 @@ test.describe('paste html example', () => {
   test('imports nested blockquote list and code HTML without runtime errors', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const textbox = page.getByRole('textbox');
 
     try {
@@ -659,7 +659,7 @@ test.describe('paste html example', () => {
       'WebKit blocks privileged clipboard reads in Playwright'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/paste-html', {
       ready: {
         editor: 'visible',
@@ -678,7 +678,7 @@ test.describe('paste html example', () => {
 
       const payload = await editor.clipboard.copyPayload();
 
-      expect(payload.html).toContain('data-plite-fragment=');
+      expect(payload.html).toContain('data-editor-fragment=');
 
       await editor.selection.collapse({ path: [0, 0], offset: 2 });
       await editor.focus();
@@ -1664,7 +1664,7 @@ test.describe('paste html example', () => {
   test('pastes ProseMirror slice list items without runtime errors', async ({
     page,
   }, testInfo) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/paste-html', {
       ready: {
         editor: 'visible',
@@ -2229,7 +2229,7 @@ test.describe('paste html example', () => {
 
     const result = await editor.scenario.run(
       'paste-html-generated-clipboard-gauntlet',
-      createPliteBrowserClipboardPasteGauntlet({
+      createBrowserClipboardPasteGauntlet({
         html: '<strong>Hello Bold</strong>',
         plainText: 'Hello Bold',
         textAfterPaste: 'Hello Bold',
@@ -2262,7 +2262,7 @@ test.describe('paste html example', () => {
 
     const result = await editor.scenario.run(
       'paste-html-generated-drop-data-gauntlet',
-      createPliteBrowserDropDataGauntlet({
+      createBrowserDropDataGauntlet({
         html: '<strong>Dropped Bold</strong>',
         plainText: 'Dropped Bold',
         textAfterDrop: 'Dropped Bold',

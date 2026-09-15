@@ -1,7 +1,7 @@
 import type React from 'react';
 
 import { createEditor } from '../editor';
-import { definePlatePlugin } from '../plugin';
+import { definePlugin } from '../plugin';
 import { pipeHandler } from './pipeHandler.internal';
 
 describe('pipeHandler', () => {
@@ -29,7 +29,7 @@ describe('pipeHandler', () => {
     const propHandler = mock();
     const editor = createEditor({
       plugins: [
-        definePlatePlugin('events', {
+        definePlugin('events', {
           on: { keyDown: pluginHandler },
         }),
       ],
@@ -53,7 +53,7 @@ describe('pipeHandler', () => {
     const keyDownCapture = mock();
     const editor = createEditor({
       plugins: [
-        definePlatePlugin('captureEvents', {
+        definePlugin('captureEvents', {
           on: { keyDown, keyDownCapture },
         }),
       ],
@@ -74,7 +74,7 @@ describe('pipeHandler', () => {
     const propHandler = mock();
     const editor = createEditor({
       plugins: [
-        definePlatePlugin('events', {
+        definePlugin('events', {
           on: { domBeforeInput },
         }),
       ],
@@ -133,11 +133,11 @@ describe('pipeHandler', () => {
     const enabled = mock();
     const editor = createEditor({
       plugins: [
-        definePlatePlugin('disabled', {
+        definePlugin('disabled', {
           editOnly: true,
           on: { keyDown: disabled },
         }),
-        definePlatePlugin('enabled', {
+        definePlugin('enabled', {
           editOnly: { on: false },
           on: { keyDown: enabled },
         }),

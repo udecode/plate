@@ -152,7 +152,7 @@ const QueryContractSchema = defineEditorSchema('schema:query-contract', {
 
 const createEditor = () =>
   createPliteEditor({
-    extensions: [QueryContractSchema],
+    plugins: [QueryContractSchema],
   }) as ReturnType<typeof createPliteEditor>;
 
 const getStart = (

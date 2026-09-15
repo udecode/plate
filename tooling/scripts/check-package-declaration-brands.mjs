@@ -11,45 +11,49 @@ const privateBrandPatterns = [
   /\[\s*(PLATE_[A-Z0-9_]+)\s*\]/g,
   /\b(?:import|export)\s+(?:type\s+)?\{[\s\S]*?\b(PLATE_[A-Z0-9_]*(?:BRAND|MARKER|MODEL|TOKEN|WITNESS)[A-Z0-9_]*)\b[\s\S]*?\}\s+from\b/g,
 ];
-const plitePrivateWitness = 'editorExtensionDefinition';
-const plitePrivateWitnessOwnerPattern =
-  /\bdeclare\s+const\s+editorExtensionDefinition\s*:\s*unique\s+symbol\b/;
-const publicEditorExtensionDependenciesGenericPattern =
-  /\bEditorExtension\s*<\s*[^,<>\n]+,\s*[^>\n]+>/g;
-const publicEditorExtensionDependencyReferenceGenericPattern =
-  /\bEditorExtensionDependencyReference\s*</g;
-const publicEditorExtensionDependencyReferenceInterfacePattern =
-  /\binterface\s+EditorExtensionDependencyReference\s*\{([\s\S]*?)\}/g;
-const publicEditorExtensionDependencyReferenceTypeAliasPattern =
-  /\btype\s+EditorExtensionDependencyReference\s*=/g;
+const pluginPrivateWitness = 'pluginDefinition';
+const pluginPrivateWitnessOwnerPattern =
+  /\bdeclare\s+const\s+pluginDefinition\s*:\s*unique\s+symbol\b/;
+const publicPluginDependenciesGenericPattern =
+  /(?<![.\w$])Plugin\s*<\s*[^,<>\n]+,\s*[^>\n]+>/g;
+const publicPluginDependencyReferenceGenericPattern =
+  /\bPluginDependencyReference\s*</g;
+const publicPluginDependencyReferenceInterfacePattern =
+  /\binterface\s+PluginDependencyReference\s*\{([\s\S]*?)\}/g;
+const publicPluginDependencyReferenceTypeAliasPattern =
+  /\btype\s+PluginDependencyReference\s*=/g;
 const exportedTypeLambdaDeclarationPattern =
   /\bexport\s+(?:default\s+)?(?:declare\s+)?(?:abstract\s+)?(?:class|interface|type)\s+([A-Za-z_$][\w$]*TypeLambda)\b/g;
 const exportClausePattern = /\bexport\s+(?:type\s+)?\{([\s\S]*?)\}/g;
 const typeLambdaNamePattern = /^[A-Za-z_$][\w$]*TypeLambda$/;
 const typeOnlyExportSpecifierPrefixPattern = /^type\s+/;
 const exportSpecifierAliasPattern = /\s+as\s+/;
-const canonicalEditorExtensionTypeLambda = 'EditorExtensionTypeLambda';
+const canonicalPluginTypeLambda = 'PluginTypeLambda';
 const internalPliteContractTypeSymbols = [
-  'EditorExtensionTypeLambda',
-  'InternalEditorExtensionDependencyReference',
-  'InternalEditorExtensionInstalledCapabilitiesOf',
-  'InternalEditorExtensionTypeProviderOf',
-  'InternalEditorExtensionWitnessFor',
+  'PluginTypeLambda',
+  'PluginFactoryTypeLambda',
+  'PluginFactoryTypeProvider',
+  'PluginFactoryTypeProviderOf',
+  'PluginDependencyContractReference',
+  'PluginDependencyReferenceFor',
+  'PluginInstalledCapabilitiesOf',
+  'PluginTypeProviderOf',
+  'PluginWitnessFor',
 ];
 const internalCoreContractTypeSymbols = [
   'InternalDefinitionOf',
   'PluginDefinitionCarrier',
-  'StaticEditorExtensionTypeLambda',
+  'StaticPluginTypeLambda',
 ];
 const internalPlatePluginCompilerTypeSymbols = [
   'InternalDefinitionOf',
   'PluginDefinitionCarrier',
-  'StaticEditorExtensionTypeLambda',
+  'StaticPluginTypeLambda',
   'PluginDefinitionProvider',
   'PluginDefinitionRoot',
   'PluginDefinitionFromRoot',
   'NormalizeBasePluginInput',
-  'NormalizePlatePluginInput',
+  'NormalizePluginInput',
   'MergePluginDefinitions',
   'MergePluginState',
   'BasePluginContextualDescriptor',
@@ -64,12 +68,12 @@ const internalPlatePluginCompilerTypeSymbols = [
   'BasePluginStageDefinition',
   'BasePluginStage',
   'ExtendedBasePlugin',
-  'PlatePluginMethods',
+  'PluginMethods',
   'MergePlatePluginDefinitions',
   'PlatePluginConstructorDefinition',
   'PlatePluginConstructorProvider',
   'PlatePluginConstructorResult',
-  'PlatePluginStageDefinition',
+  'PluginStageDefinition',
   'PlatePluginStage',
   'ExtendedPlatePlugin',
   'PlatePluginAdapterProvider',
@@ -85,7 +89,7 @@ const collectExportedPackageTypeLambdas = (source) => {
   const symbols = new Set();
 
   for (const match of source.matchAll(exportedTypeLambdaDeclarationPattern)) {
-    if (match[1] !== canonicalEditorExtensionTypeLambda) {
+    if (match[1] !== canonicalPluginTypeLambda) {
       symbols.add(match[1]);
     }
   }
@@ -102,7 +106,7 @@ const collectExportedPackageTypeLambdas = (source) => {
 
       for (const name of names) {
         if (
-          name !== canonicalEditorExtensionTypeLambda &&
+          name !== canonicalPluginTypeLambda &&
           typeLambdaNamePattern.test(name)
         ) {
           symbols.add(name);
@@ -192,49 +196,45 @@ export function auditPrivatePlateDeclarationBrands(
     }
 
     if (
-      file.source.includes(plitePrivateWitness) &&
-      !plitePrivateWitnessOwnerPattern.test(file.source)
+      file.source.includes(pluginPrivateWitness) &&
+      !pluginPrivateWitnessOwnerPattern.test(file.source)
     ) {
       errors.push(
-        `${file.path}: public declaration exposes private Plite witness ${plitePrivateWitness}`
+        `${file.path}: public declaration exposes private plugin witness ${pluginPrivateWitness}`
       );
     }
 
-    if (publicEditorExtensionDependenciesGenericPattern.test(file.source)) {
+    if (publicPluginDependenciesGenericPattern.test(file.source)) {
       errors.push(
-        `${file.path}: EditorExtension exposes a public dependencies generic; keep EditorExtension<Definition> and private transitive requirements`
+        `${file.path}: Plugin exposes a public dependencies generic; keep Plugin<Definition> and private transitive requirements`
       );
     }
-    publicEditorExtensionDependenciesGenericPattern.lastIndex = 0;
+    publicPluginDependenciesGenericPattern.lastIndex = 0;
 
-    if (
-      publicEditorExtensionDependencyReferenceGenericPattern.test(file.source)
-    ) {
+    if (publicPluginDependencyReferenceGenericPattern.test(file.source)) {
       errors.push(
-        `${file.path}: EditorExtensionDependencyReference must remain shallow and non-generic`
+        `${file.path}: PluginDependencyReference must remain shallow and non-generic`
       );
     }
-    publicEditorExtensionDependencyReferenceGenericPattern.lastIndex = 0;
+    publicPluginDependencyReferenceGenericPattern.lastIndex = 0;
 
     for (const match of file.source.matchAll(
-      publicEditorExtensionDependencyReferenceInterfacePattern
+      publicPluginDependencyReferenceInterfacePattern
     )) {
       if (!hasExactShallowDependencyReference(match[1])) {
         errors.push(
-          `${file.path}: EditorExtensionDependencyReference must contain exactly readonly name: string and readonly enabled?: boolean`
+          `${file.path}: PluginDependencyReference must contain exactly readonly name: string and readonly enabled?: boolean`
         );
       }
     }
-    publicEditorExtensionDependencyReferenceInterfacePattern.lastIndex = 0;
+    publicPluginDependencyReferenceInterfacePattern.lastIndex = 0;
 
-    if (
-      publicEditorExtensionDependencyReferenceTypeAliasPattern.test(file.source)
-    ) {
+    if (publicPluginDependencyReferenceTypeAliasPattern.test(file.source)) {
       errors.push(
-        `${file.path}: EditorExtensionDependencyReference must remain the exact shallow interface`
+        `${file.path}: PluginDependencyReference must remain the exact shallow interface`
       );
     }
-    publicEditorExtensionDependencyReferenceTypeAliasPattern.lastIndex = 0;
+    publicPluginDependencyReferenceTypeAliasPattern.lastIndex = 0;
 
     if (pliteRootDeclarationEntrypointPattern.test(file.path)) {
       for (const symbol of internalPliteContractTypeSymbols) {
@@ -248,7 +248,7 @@ export function auditPrivatePlateDeclarationBrands(
     if (publicPackageDeclarationEntrypointPattern.test(file.path)) {
       for (const symbol of collectExportedPackageTypeLambdas(file.source)) {
         errors.push(
-          `${file.path}: public declaration exports package-specific type lambda ${symbol}; expose a *TypeProvider and keep EditorExtensionTypeLambda internal`
+          `${file.path}: public declaration exports package-specific type lambda ${symbol}; expose a *TypeProvider and keep PluginTypeLambda internal`
         );
       }
       for (const symbol of internalCoreContractTypeSymbols) {

@@ -2,7 +2,7 @@ import { act, render, renderHook } from '@testing-library/react';
 import React from 'react';
 
 import type { Element, NodeEntry } from '../../../core';
-import { TestPlate as Plate } from '../../__tests__/TestPlate';
+import { TestPlate as EditorRoot } from '../../__tests__/TestPlate';
 import { createEditor } from '../../editor';
 import { useElementSelector } from './useElementSelector';
 import { ElementProvider } from './useElementStore';
@@ -25,11 +25,11 @@ describe('element payload and position have independent subscriptions', () => {
       ]);
       setEntry = update;
       return (
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <ElementProvider element={entry[0]} entry={entry} path={entry[1]}>
             {children}
           </ElementProvider>
-        </Plate>
+        </EditorRoot>
       );
     };
     const { result } = renderHook(
@@ -58,11 +58,11 @@ describe('element payload and position have independent subscriptions', () => {
       ]);
       setEntry = update;
       return (
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <ElementProvider element={entry[0]} entry={entry} path={entry[1]}>
             {children}
           </ElementProvider>
-        </Plate>
+        </EditorRoot>
       );
     };
     const { result } = renderHook(() => useElementSelector(selector), {
@@ -99,11 +99,11 @@ describe('element payload and position have independent subscriptions', () => {
         [element, path]
       );
       return (
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <ElementProvider element={element} entry={entry} path={path}>
             {visible && <Child />}
           </ElementProvider>
-        </Plate>
+        </EditorRoot>
       );
     };
     const view = render(
@@ -147,7 +147,7 @@ describe('element payload and position have independent subscriptions', () => {
         [element, path]
       );
       return (
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <ElementProvider
             element={element}
             entry={entry}
@@ -156,7 +156,7 @@ describe('element payload and position have independent subscriptions', () => {
           >
             <Child />
           </ElementProvider>
-        </Plate>
+        </EditorRoot>
       );
     };
     const view = render(

@@ -64,7 +64,7 @@ const createPeer = (
   createYjsPeerWithEditor(
     createEditor({
       initialValue: children,
-      extensions: [SplitMergeSchema],
+      plugins: [SplitMergeSchema],
     }),
     {
       children,

@@ -84,10 +84,10 @@ export type EditableEventRuntime = EditableEventRuntimeCore & {
 export const useEditableEventRuntime = ({
   callbacks,
   deferNativeTextInputRepair = false,
-  domStrategyRuntime,
+  viewportRuntime,
   onDOMBeforeInput,
   onKeyDown,
-  partialDOMBackedSelection,
+  viewportBackedSelection,
   readOnly,
   repair,
   runtime,
@@ -97,10 +97,10 @@ export const useEditableEventRuntime = ({
 }: {
   callbacks: EditableRootCallbackProps;
   deferNativeTextInputRepair?: boolean;
-  domStrategyRuntime: EditableDOMRuntime['domStrategyRuntime'];
+  viewportRuntime: EditableDOMRuntime['viewportRuntime'];
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onKeyDown?: EditableKeyDownHandler;
-  partialDOMBackedSelection: boolean;
+  viewportBackedSelection: boolean;
   readOnly: boolean;
   repair: EditableRepairRuntime;
   runtime: EditableDOMRuntime;
@@ -166,11 +166,11 @@ export const useEditableEventRuntime = ({
     flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
     forceRender: eventCore.repair.forceRender,
     inputController,
-    isPartialDOMBackedSelection: runtime.isPartialDOMBackedSelection,
+    isViewportBackedSelection: runtime.isViewportBackedSelection,
     rootRef,
-    scrollPathIntoView: domStrategyRuntime?.scrollToPath,
-    setExplicitPartialDOMBackedSelection:
-      runtime.setExplicitPartialDOMBackedSelection,
+    scrollPathIntoView: viewportRuntime?.scrollToPath,
+    setExplicitViewportBackedSelection:
+      runtime.setExplicitViewportBackedSelection,
   });
   const beforeInputHandlers = useRuntimeBeforeInputEvents({
     androidInputManagerRef: eventCore.android.managerRef,
@@ -204,9 +204,9 @@ export const useEditableEventRuntime = ({
     readOnly,
     repair: eventCore.repair,
     rootRef,
-    setExplicitPartialDOMBackedSelection:
-      runtime.setExplicitPartialDOMBackedSelection,
-    partialDOMBackedSelection,
+    setExplicitViewportBackedSelection:
+      runtime.setExplicitViewportBackedSelection,
+    viewportBackedSelection,
     trace: eventCore.trace,
   });
   const dragHandlers = useRuntimeDragEvents({
@@ -257,15 +257,15 @@ export const useEditableEventRuntime = ({
     domPhaseScheduler,
     editor,
     inputController,
-    domStrategyRuntime,
+    viewportRuntime,
     flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
     onKeyDown,
     readOnly,
     runtime: eventCore,
-    setExplicitPartialDOMBackedSelection:
-      runtime.setExplicitPartialDOMBackedSelection,
+    setExplicitViewportBackedSelection:
+      runtime.setExplicitViewportBackedSelection,
     verticalNavigation: runtime,
-    partialDOMBackedSelection,
+    viewportBackedSelection,
   });
   const handlers = useMemo(
     () => ({

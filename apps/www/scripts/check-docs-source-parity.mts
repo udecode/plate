@@ -48,7 +48,7 @@ const appOnlyDocsRoutes = new Set([
   '/docs/components',
   '/docs/examples',
   '/docs/examples/server-side',
-  '/docs/examples/plate-to-html',
+  '/docs/examples/html-export',
   '/docs/plugins',
 ]);
 

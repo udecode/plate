@@ -2,8 +2,8 @@ import { defineCommand, dispatchCommand } from '../../core';
 import {
   createEditorView,
   createEditor as createPliteEditor,
-  defineExtension,
-  type Editor as PliteEditor,
+  defineRuntimePlugin,
+  type Editor as RuntimeEditor,
   type TransactionSpec,
 } from '../../facade';
 import type {
@@ -12,13 +12,14 @@ import type {
 } from '../../lib/editor';
 import { createEditor } from '../../lib/editor';
 import { createEditorWithEditor } from '../../lib/editor/withPlite';
-import { defineBasePlugin } from '../../lib/plugin';
+import { definePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import {
   getCompiledPlateModel,
   getCompiledPlatePlugin,
   getPlateModelPublication,
   getPlateRuntime,
+  hasCompiledPlatePluginCandidate,
   setCompiledPlatePluginCandidate,
   withCompiledPlatePluginApiCandidate,
   withCompiledPlatePluginCandidate,
@@ -27,10 +28,78 @@ import { getPlateRuntimeCandidate } from './plateRuntime';
 import { getPluginStore } from './pluginStore';
 
 describe('Plate model publication', () => {
+  it.each([0, false, 'paint', ['paint'], () => ({ className: 'paint' })])(
+    'rejects non-object content presentation from JavaScript',
+    (attributes) => {
+      const config = Object.fromEntries([['contentAttributes', attributes]]);
+      const Paint = definePlugin('invalidContentPaint', { render: config });
+      expect(() => createEditor({ plugins: [Paint] })).toThrow(/attribute/i);
+    }
+  );
+  it('publishes immutable content attributes after ordinary plugin configuration', () => {
+    const Paint = definePlugin('publishedContentPaint', {
+      render: {
+        contentAttributes: {
+          className: 'base',
+          'data-base': true,
+          style: { color: 'red', backgroundColor: 'white' },
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [
+        Paint.configure({
+          render: {
+            contentAttributes: {
+              className: 'configured',
+              style: { color: 'blue' },
+            },
+          },
+        }),
+      ],
+    });
+    const { contentAttributes } = getPlateRuntime(editor).pluginCache;
+
+    expect(contentAttributes.editable).toEqual({
+      className: 'configured',
+      'data-base': true,
+      style: { color: 'blue', backgroundColor: 'white' },
+    });
+    expect(contentAttributes.readOnly).toEqual(contentAttributes.editable);
+    expect(Object.isFrozen(contentAttributes)).toBe(true);
+    expect(Object.isFrozen(contentAttributes.editable)).toBe(true);
+    expect(Object.isFrozen(contentAttributes.editable.style)).toBe(true);
+  });
+
+  it.each([
+    'data-editor',
+    'data-editor-node',
+    'data-editor-root',
+    'data-editor-viewport-selection',
+    'data-readonly',
+    'aria-disabled',
+    'aria-multiline',
+    'aria-readonly',
+    'placeholder',
+    'onClick',
+    'children',
+    'ref',
+    'contentEditable',
+  ])(
+    'rejects unsafe or core-owned content attributes from JavaScript: %s',
+    (name) => {
+      const attributes = JSON.parse(JSON.stringify({ [name]: 'override' }));
+      const Paint = definePlugin('unsafeContentPaint', {
+        render: { contentAttributes: attributes },
+      });
+      expect(() => createEditor({ plugins: [Paint] })).toThrow(/attribute/i);
+    }
+  );
+
   it('exposes the compiling plugin set to native API factories', () => {
     let observedRuntime: ReturnType<typeof getPlateRuntime> | undefined;
     let observedPlugin: unknown;
-    const ObserverExtension = defineExtension('publishedBeforeExtensions', {
+    const ObserverPlugin = defineRuntimePlugin('publishedBeforePlugins', {
       api: ({ editor: runtimeEditor }) => {
         observedRuntime = getPlateRuntime(runtimeEditor);
         observedPlugin = getCompiledPlatePlugin(
@@ -38,34 +107,34 @@ describe('Plate model publication', () => {
             any,
             any
           >,
-          'publishedBeforeExtensions'
+          'publishedBeforePlugins'
         );
 
         return {};
       },
     });
-    const Plugin = defineBasePlugin('publishedBeforeExtensions', {
+    const Plugin = definePlugin('publishedBeforePlugins', {
       shortcuts: {
         run: { handler: () => {}, keys: 'mod+k' },
       },
-    }).extend(ObserverExtension);
+    }).extend(ObserverPlugin);
     const editor = createEditor({ plugins: [Plugin] });
 
     expect(observedRuntime?.pluginList.length).toBeGreaterThan(0);
     expect(observedPlugin).toMatchObject({
-      name: 'publishedBeforeExtensions',
+      name: 'publishedBeforePlugins',
     });
     expect(
       getPlateRuntime(editor).pluginList.find(
-        (plugin) => plugin.name === 'publishedBeforeExtensions'
+        (plugin) => plugin.name === 'publishedBeforePlugins'
       )
     ).toBe(getCompiledPlatePlugin(editor, Plugin));
   });
 
-  it('clears private construction state when an extension throws', () => {
+  it('clears private construction state when a plugin stage throws', () => {
     const editor = createPliteEditor();
-    const BrokenPlugin = defineBasePlugin('brokenExtension', {}).extend(() => {
-      throw new Error('broken extension');
+    const BrokenPlugin = definePlugin('brokenStage', {}).extend(() => {
+      throw new Error('broken plugin stage');
     });
 
     expect(() =>
@@ -73,7 +142,7 @@ describe('Plate model publication', () => {
         plugins: [BrokenPlugin],
         skipInitialization: true,
       })
-    ).toThrow('broken extension');
+    ).toThrow('broken plugin stage');
     expect(getPlateModelPublication(editor)).toBeUndefined();
     expect(getPlateRuntimeCandidate(editor)).toBeUndefined();
     expect(getPluginStore(editor, BrokenPlugin.name)).toBeUndefined();
@@ -83,7 +152,7 @@ describe('Plate model publication', () => {
     let correctionRuns = 0;
     const correctionPaths: number[][] = [];
     let shouldThrow = true;
-    const Correction = defineExtension('retryableBootstrap', {
+    const Correction = defineRuntimePlugin('retryableBootstrap', {
       corrections: [
         {
           correct({ entry }) {
@@ -95,9 +164,7 @@ describe('Plate model publication', () => {
         },
       ],
     });
-    const Plugin = defineBasePlugin('retryableBootstrap', {}).extend(
-      Correction
-    );
+    const Plugin = definePlugin('retryableBootstrap', {}).extend(Correction);
     const initialSelection = {
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
@@ -132,9 +199,6 @@ describe('Plate model publication', () => {
     expect(getPlateModelPublication(raw)).toBeUndefined();
     expect(getPlateRuntimeCandidate(raw)).toBeUndefined();
     expect(getPluginStore(raw, Plugin.name)).toBeUndefined();
-    expect(() => Reflect.apply(raw.extension, raw, [Plugin])).toThrow(
-      'not installed'
-    );
 
     shouldThrow = false;
     correctionPaths.length = 0;
@@ -151,7 +215,7 @@ describe('Plate model publication', () => {
     expect(correctionPaths).toEqual([[0], [0, 0]]);
     expect(editor.read.lastCommit()).toBeNull();
     expect(getPlateModelPublication(editor)).toBeDefined();
-    expect(() => editor.extension(Plugin)).not.toThrow();
+    expect(() => editor.plugin(Plugin)).not.toThrow();
   });
 
   it('invalidates specs minted before a supplied raw editor is bootstrapped', () => {
@@ -184,13 +248,13 @@ describe('Plate model publication', () => {
   });
 
   it('publishes canonical dependency identities per editor', () => {
-    const Dependency = defineBasePlugin('canonicalDependency', {
+    const Dependency = definePlugin('canonicalDependency', {
       initialState: { n: 1 },
     });
-    const Child = defineBasePlugin('canonicalChild', {
+    const Child = definePlugin('canonicalChild', {
       initialState: { n: 1 },
     });
-    const Parent = defineBasePlugin('canonicalParent', {
+    const Parent = definePlugin('canonicalParent', {
       dependencies: [Dependency, Child],
     });
     const createConfiguredEditor = (dependencyN: number, childN: number) =>
@@ -223,12 +287,12 @@ describe('Plate model publication', () => {
   });
 
   it('shares one Plate publication and plugin store across root views', () => {
-    const Plugin = defineBasePlugin('rootViewOwner', {
+    const Plugin = definePlugin('rootViewOwner', {
       initialState: { enabled: true },
     });
     const editor = createEditor({ plugins: [Plugin] });
     const view = createEditorView(
-      editor as unknown as PliteEditor
+      editor as unknown as RuntimeEditor
     ) as unknown as Editor;
     const other = createEditor({ plugins: [Plugin] });
 
@@ -244,6 +308,7 @@ describe('Plate model publication', () => {
       getPluginStore(editor, Plugin.name)
     );
     expect(view.plugin(Plugin).store.get('enabled')).toBe(true);
+    expect(view.plugin(BaseParagraphPlugin).schema.type).toBe('paragraph');
     expect(view.plugin).toBe(view.plugin);
     expect(view.plugin).not.toBe(editor.plugin);
     expect(view.read.schema.element(BaseParagraphPlugin)).toBe(
@@ -263,7 +328,7 @@ describe('Plate model publication', () => {
   });
 
   it('keeps private compiled registries safe for reserved property names', () => {
-    const Plugin = defineBasePlugin('toString', {
+    const Plugin = definePlugin('toString', {
       inputRules: ({ rule }) => [
         rule.insertText({
           apply: () => true,
@@ -300,6 +365,30 @@ describe('Plate model publication', () => {
     });
   });
 
+  it('restores an outer plugin candidate after a nested candidate scope', () => {
+    const Outer = definePlugin('outerCandidate', {});
+    const OuterReplacement = definePlugin('outerCandidate', {});
+    const Inner = definePlugin('innerCandidate', {});
+    const editor = createPliteEditor();
+
+    withCompiledPlatePluginCandidate(editor, [Outer], () => {
+      setCompiledPlatePluginCandidate(editor, OuterReplacement);
+
+      withCompiledPlatePluginCandidate(editor, [Inner], () => {
+        expect(getCompiledPlatePlugin(editor, Inner.name)).toBe(Inner);
+        expect(getCompiledPlatePlugin(editor, Outer.name)).toBeUndefined();
+      });
+
+      expect(getCompiledPlatePlugin(editor, Outer.name)).toBe(OuterReplacement);
+      expect(getCompiledPlatePlugin(editor, Inner.name)).toBeUndefined();
+    });
+
+    expect(hasCompiledPlatePluginCandidate(editor)).toBe(false);
+    expect(() => getCompiledPlatePlugin(editor, Outer.name)).toThrow(
+      'Plate runtime is not installed'
+    );
+  });
+
   it('snapshots schema identity instead of retaining mutable caller input', () => {
     const identity = {
       id: 'plate-test:core:internal-plugin-identity-snapshot',
@@ -324,14 +413,14 @@ describe('Plate model publication', () => {
   });
 
   it('keeps root and keyed API projection scoped to its owning plugin', () => {
-    const FirstPlugin = defineBasePlugin('firstApi', {
+    const FirstPlugin = definePlugin('firstApi', {
       api: () => ({
         firstNested: { read: () => 'first-nested' },
         firstOwn: () => 'first-own',
         firstRoot: () => 'first-root',
       }),
     });
-    const SecondPlugin = defineBasePlugin('secondApi', {
+    const SecondPlugin = definePlugin('secondApi', {
       api: () => ({
         secondOwn: () => 'second-own',
         secondRoot: () => 'second-root',
@@ -367,9 +456,9 @@ describe('Plate model publication', () => {
     expect(Reflect.get(second.api, 'firstOwn')).toBeUndefined();
   });
 
-  it('projects compiled plugin API into transaction extension factories', () => {
+  it('projects compiled plugin API into transaction plugin factories', () => {
     const writes: string[] = [];
-    const Plugin = defineBasePlugin('txCandidateApi', {
+    const Plugin = definePlugin('txCandidateApi', {
       api: () => ({ current: () => 'compiled' }),
     }).extend(({ api }) => ({
       update: () => ({
@@ -386,7 +475,7 @@ describe('Plate model publication', () => {
   });
 
   it('keeps runtime closures on the live plugin store', () => {
-    const Plugin = defineBasePlugin('liveRuntimeClosure', {
+    const Plugin = definePlugin('liveRuntimeClosure', {
       initialState: { enabled: false },
     }).extend(({ store }) => ({
       shortcuts: {
@@ -409,8 +498,8 @@ describe('Plate model publication', () => {
     expect(run()).toBe(true);
   });
 
-  it('publishes configured initialState before contextual extensions', () => {
-    const Plugin = defineBasePlugin('contextualState', {
+  it('publishes configured initialState before contextual stages', () => {
+    const Plugin = definePlugin('contextualState', {
       initialState: { label: 'one', projection: '' },
       targetPlugins: ['descriptorTarget'],
     })
@@ -430,7 +519,7 @@ describe('Plate model publication', () => {
   });
 
   it('rejects mutation of the published plugin projection', () => {
-    const plugin = defineBasePlugin('publishedProjection', {});
+    const plugin = definePlugin('publishedProjection', {});
     const editor = createEditor({ plugins: [plugin] });
     const publishedPlugin = getCompiledPlatePlugin(editor, plugin)!;
 
@@ -440,11 +529,11 @@ describe('Plate model publication', () => {
         value: 'mutated',
       })
     ).toThrow();
-    expect(editor.plugin(plugin.name).name).toBe('publishedProjection');
+    expect(editor.plugin(plugin).name).toBe('publishedProjection');
   });
 
   it('deep-freezes published shortcut and input-rule indexes', () => {
-    const Plugin = defineBasePlugin('frozenRuntimeIndexes', {}).configure({
+    const Plugin = definePlugin('frozenRuntimeIndexes', {}).configure({
       inputRules: [
         {
           apply: () => true,
@@ -482,7 +571,7 @@ describe('Plate model publication', () => {
 
   it('deep-freezes published plugin-cache indexes', () => {
     const editor = createEditor({
-      plugins: [defineBasePlugin('frozenModelIndexes', {})],
+      plugins: [definePlugin('frozenModelIndexes', {})],
     });
     const { pluginCache } = getPlateModelPublication(editor)!;
 
@@ -506,7 +595,7 @@ describe('Plate model publication', () => {
   });
 
   it('never falls through an active candidate to stale publication state', () => {
-    const plugin = defineBasePlugin('candidateLookup', {
+    const plugin = definePlugin('candidateLookup', {
       initialState: { label: 'one' },
     }).extend(({ store }) => ({
       api: () => ({ current: () => store.get().label }),
@@ -517,8 +606,9 @@ describe('Plate model publication', () => {
     const secondPublished = getCompiledPlatePlugin(secondEditor, plugin)!;
 
     withCompiledPlatePluginCandidate(secondEditor, [secondPublished], () => {
-      expect(secondEditor.plugin(firstPublished).initialState).toBe(
-        secondPublished.initialState
+      expect(secondEditor.plugin(firstPublished).installed).toBe(false);
+      expect(() => secondEditor.plugin(firstPublished).initialState).toThrow(
+        'descriptor is not installed'
       );
     });
     withCompiledPlatePluginCandidate(secondEditor, [], () => {

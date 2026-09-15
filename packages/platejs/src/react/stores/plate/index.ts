@@ -3,6 +3,5 @@
  */
 
 export * from './useEditor';
-export * from './useEditorPlugin';
 export * from './useEditorSelector';
 export * from './usePluginStore';

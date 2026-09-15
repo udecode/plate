@@ -5,15 +5,16 @@ import type { ChatTransport, DataUIPart, UIMessage } from 'ai';
 import cloneDeep from 'lodash/cloneDeep.js';
 import * as React from 'react';
 
+import type { AuthoredPlugin } from '../../authored';
 import {
   ElementApi,
   getEditorRuntimeOwner,
   PathApi,
-  PLUGINS,
+  type Value,
 } from '../../core';
 import { MarkdownPlugin } from '../../markdown';
 import { type Editor, useEditor, useEditorViewState } from '../../react/core';
-import { AIChatPlugin } from './AIChatPlugin';
+import { AIChatPlugin, getAIChatCommandEditor } from './AIChatPlugin';
 import { AIPlugin } from './AIPlugin';
 
 type ToolName = 'comment' | 'edit' | 'generate';
@@ -44,6 +45,7 @@ type ChatView = {
     | ((part: DataUIPart<Record<string, unknown>>, signal: AbortSignal) => void)
     | undefined;
 };
+type AuthoredAIEditor = Editor<Value, readonly [AuthoredPlugin]>;
 
 type EditorChatSession = {
   transport: ChatTransport<UIMessage>;
@@ -58,13 +60,27 @@ function createEditorChat(
   editor: Editor,
   transport: ChatTransport<UIMessage>
 ): EditorChatSession {
-  const { store, read } = editor.plugin(AIChatPlugin);
+  const { store } = editor.plugin(AIChatPlugin);
 
   const views = new Map<symbol, ChatView>();
   let disposed = false;
   let insertedText = '';
   let previousContent = '';
   let previousLoading = false;
+  const getCommandEditor = () => getAIChatCommandEditor(editor);
+  const enterProposalView = (commandEditor: Editor) => {
+    const authoredEditor = commandEditor as AuthoredAIEditor;
+
+    if (!store.get('_previousAuthoredView')) {
+      store.set({
+        _previousAuthoredView: authoredEditor.read.authored.view(),
+      });
+    }
+    authoredEditor.api.authored.setView({
+      intent: 'propose',
+      projection: 'markup',
+    });
+  };
   const isOwner = () => !disposed && sessions.get(editor) === session;
   const isLive = () =>
     isOwner() &&
@@ -89,15 +105,16 @@ function createEditorChat(
 
       if (data.type === 'data-table' && isTableCellUpdate(data.data)) {
         const tableData = data.data;
+        const commandEditor = getCommandEditor();
 
         if (tableData.status === 'finished') {
-          const chatSelection = editor
+          const chatSelection = commandEditor
             .plugin(AIChatPlugin)
             .store.get('chatSelection');
 
           if (!chatSelection) return;
 
-          editor.update.selection.set(chatSelection);
+          commandEditor.update.selection.set(chatSelection);
 
           return;
         }
@@ -108,7 +125,10 @@ function createEditorChat(
           throw new Error('Streaming table data requires a cell update');
         }
 
-        editor.plugin(AIChatPlugin).update.applyTableCellSuggestion(cellUpdate);
+        enterProposalView(commandEditor);
+        commandEditor
+          .plugin(AIChatPlugin)
+          .update.applyTableCellSuggestion(cellUpdate);
       }
 
       const view = Array.from(views.values()).find(
@@ -145,6 +165,7 @@ function createEditorChat(
   };
   const sync = () => {
     if (!isOwner()) return;
+    const commandEditor = getCommandEditor();
     const toolName = store.get('toolName');
     const mode = store.get('mode');
     const loading = chat.status === 'streaming' || chat.status === 'submitted';
@@ -198,19 +219,22 @@ function createEditorChat(
     ) {
       store.set({
         previewValue: content
-          ? editor.plugin(MarkdownPlugin).api.deserialize(content).children
+          ? commandEditor.plugin(MarkdownPlugin).api.deserialize(content)
+              .children
           : [],
       });
     }
     if (chunk && isLive() && !request?.signal.aborted) {
       if (isFirst && mode === 'insert') {
-        const selection = editor.read.selection();
+        const selection = commandEditor.read.selection();
 
         if (!selection) return;
 
-        const { path, startBlock, startInEmptyParagraph } = read.insertStart();
+        const { path, startBlock, startInEmptyParagraph } = commandEditor
+          .plugin(AIChatPlugin)
+          .read.insertStart();
 
-        editor.plugin(AIPlugin).update.beginPreview({
+        commandEditor.plugin(AIPlugin).update.beginPreview({
           originalBlocks:
             startInEmptyParagraph &&
             startBlock &&
@@ -219,10 +243,10 @@ function createEditorChat(
               : [],
         });
 
-        editor.update({ history: 'skip' }).nodes.insert(
+        commandEditor.update({ history: 'skip' }).nodes.insert(
           {
             children: [{ text: '' }],
-            type: editor.plugin(PLUGINS.aiChat).schema.type,
+            type: commandEditor.plugin(AIChatPlugin).schema.type,
           },
           {
             at: PathApi.next(path),
@@ -234,16 +258,17 @@ function createEditorChat(
       if (mode === 'insert' && chunk.length > 0) {
         if (!store.get('streaming')) return;
 
-        editor.plugin(AIChatPlugin).update.insertChunk(chunk, {
+        commandEditor.plugin(AIChatPlugin).update.insertChunk(chunk, {
           autoScroll: true,
           textProps: {
-            [editor.plugin(PLUGINS.ai).schema.key]: true,
+            [commandEditor.plugin(AIPlugin).schema.key]: true,
           },
         });
       }
 
       if (toolName === 'edit' && mode === 'chat') {
-        editor
+        enterProposalView(commandEditor);
+        commandEditor
           .plugin(AIChatPlugin)
           .update.applySuggestions(content, { split: isFirst });
       }

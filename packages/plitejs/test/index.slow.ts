@@ -4,12 +4,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import {
-  createEditor,
-  type Element,
-  type EditorExtension,
-  TextApi,
-} from 'plitejs';
+import { createEditor, type Element, type Plugin, TextApi } from 'plitejs';
 
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 import {
@@ -118,7 +113,7 @@ describe('plitejs', () => {
     const editor = withTest(input);
 
     if (withFallbackElement) {
-      const fallbackExtension = {
+      const fallbackPlugin = {
         corrections: [
           {
             correct: ({ entry, tx }) => {
@@ -156,16 +151,16 @@ describe('plitejs', () => {
           },
           {
             correct(context) {
-              fallbackExtension.corrections[0].correct(context);
+              fallbackPlugin.corrections[0].correct(context);
             },
             event: 'content',
             query: 'root',
           },
         ],
         name: `fixture-root-content-${fixturePath}`,
-      } satisfies EditorExtension;
+      } satisfies Plugin;
 
-      editor.install(fallbackExtension);
+      editor.install(fallbackPlugin);
     }
 
     editor.update.value.repair();

@@ -2,7 +2,7 @@ import type { Emoji } from '@emoji-mart/data';
 
 import {
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   property,
   schema,
   PLUGINS,
@@ -131,7 +131,7 @@ describe('BaseEmojiPlugin', () => {
   });
 
   it('uses the configured createEmojiNode override', () => {
-    const EmojiChipPlugin = defineBasePlugin('emojiChip', {
+    const EmojiChipPlugin = definePlugin('emojiChip', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -170,7 +170,7 @@ describe('BaseEmojiPlugin', () => {
   });
 
   it('preserves custom properties on text emoji nodes', () => {
-    const EmojiIdPlugin = defineBasePlugin('emojiId', {
+    const EmojiIdPlugin = definePlugin('emojiId', {
       schema: { mark: property.string() },
     });
     const editor = createEditor({

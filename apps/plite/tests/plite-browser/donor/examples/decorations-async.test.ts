@@ -18,7 +18,7 @@ const getDOMCaretOffsetInFirstText = async (root: Locator) =>
         ? rootNode.getSelection()
         : element.ownerDocument.getSelection();
     const textElement = element.querySelector(
-      '[data-plite-node="text"][data-plite-path="0,0"]'
+      '[data-editor-node="text"][data-editor-path="0,0"]'
     );
 
     if (
@@ -196,10 +196,10 @@ test.describe('async decorations', () => {
 
     const firstFlow = editor
       .locator.block([0])
-      .locator('[data-plite-text-flow]');
+      .locator('[data-editor-text-flow]');
     const secondFlow = editor
       .locator.block([1])
-      .locator('[data-plite-text-flow]');
+      .locator('[data-editor-text-flow]');
 
     await expect(firstFlow).toHaveCount(1);
     await expect(secondFlow).toHaveCount(1);

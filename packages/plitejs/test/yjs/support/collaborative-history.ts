@@ -139,7 +139,7 @@ export type CollaborativeHistoryTrace = {
 export type CollaborativeHistoryPeerObservation = {
   readonly connected: boolean;
   readonly document: unknown;
-  readonly extension: unknown;
+  readonly plugin: unknown;
   readonly fallbacks: readonly YjsTraceFallback[];
   readonly history: Readonly<{
     redos: number;
@@ -178,7 +178,7 @@ export type CollaborativeHistoryRunOptions = {
   readonly clientIds: readonly string[];
   readonly createEditor?: () => Editor;
   readonly numericClientIds?: Readonly<Record<string, number>>;
-  readonly observeExtension?: (editor: Editor) => unknown;
+  readonly observePlugin?: (editor: Editor) => unknown;
   readonly roots?: Readonly<Record<string, readonly Descendant[]>>;
   readonly trace: CollaborativeHistoryTrace;
 };
@@ -404,7 +404,7 @@ const createYjsIdentityReader = (peer: Peer) => {
 
 const observePeer = (
   peer: Peer,
-  observeExtension: CollaborativeHistoryRunOptions['observeExtension'],
+  observePlugin: CollaborativeHistoryRunOptions['observePlugin'],
   readYjsIdentities: ReturnType<typeof createYjsIdentityReader>
 ): CollaborativeHistoryPeerObservation => {
   const rawYjsProjection = readRawYjsProjection(peer);
@@ -412,7 +412,7 @@ const observePeer = (
   return {
     connected: isYjsPeerConnected(peer),
     document: clone(peer.editor.read.value()),
-    extension: clone(observeExtension?.(peer.editor) ?? null),
+    plugin: clone(observePlugin?.(peer.editor) ?? null),
     fallbacks: getYjsTrace(peer)
       .flatMap((entry) => (entry.fallback ? [entry.fallback] : []))
       .sort(),
@@ -533,7 +533,7 @@ export const runCollaborativeHistoryTrace = (
               clientId,
               observePeer(
                 peerFor(peers, clientId),
-                options.observeExtension,
+                options.observePlugin,
                 identityReaders[clientId]
               ),
             ])

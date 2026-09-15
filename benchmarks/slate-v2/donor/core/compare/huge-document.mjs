@@ -39,7 +39,7 @@ const History = await import(isPlite ? 'plitejs/history' : 'slate-history');
 
 const { createEditor } = Core;
 const legacyTransforms = Core.Transforms;
-const historyExtension = History.history;
+const historyPlugin = History.history;
 const legacyWithHistory = History.withHistory;
 
 const iterations = Number(process.env.CORE_HUGE_BENCH_ITERATIONS || 3);
@@ -58,7 +58,7 @@ if (profile) {
       }
     },
   };
-  globalThis.__PLITE_REACT_RENDER_PROFILER__ = profiler;
+  globalThis.__EDITOR_REACT_RENDER_PROFILER__ = profiler;
   globalThis.__SLATE_REACT_RENDER_PROFILER__ = profiler;
 }
 
@@ -154,7 +154,7 @@ const replaceEditor = (editor, input) => {
 
 const createHistoryEditor = () => {
   if (isPlite) {
-    return createEditor({ extensions: [historyExtension()] });
+    return createEditor({ plugins: [historyPlugin()] });
   }
 
   const editor = createEditor();

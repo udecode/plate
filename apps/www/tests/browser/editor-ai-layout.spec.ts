@@ -1,11 +1,11 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 test('full editor content stays inside its grid column after resizing', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto(
@@ -14,7 +14,7 @@ test('full editor content stays inside its grid column after resizing', async ({
         : '/blocks/editor-ai'
     );
     const editor = page.locator(
-      '[data-plite-editor="true"][contenteditable="true"]:not([aria-label])'
+      '[data-editor="true"][contenteditable="true"]:not([aria-label])'
     );
     const heading = editor.getByRole('heading', {
       name: 'Welcome to the Plate Playground!',

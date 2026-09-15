@@ -2,22 +2,22 @@ import {
   type DefinitionOf,
   type Editor as HeadlessEditor,
   createEditor as createHeadlessEditor,
-  defineBasePlugin,
+  definePlugin,
 } from 'platejs';
 import {
   type Editor,
-  type PlateProps,
+  type EditorRootProps,
   type useEditor,
   createEditor,
-  toPlatePlugin,
+  toReactPlugin,
 } from 'platejs/react';
 
 import { property, schema, type Value } from '../src/core';
 import type { DOMEditor } from '../src/dom/plite-dom.internal';
-import type { InternalPlateEditorWithInstalledPlugins } from '../src/react/editor/Editor';
+import type { InternalReactEditorWithInstalledPlugins } from '../src/react/editor/Editor';
 import type { PliteReactEditor } from '../src/react/internal/plite-types';
 
-const DefaultBoundaryPlugin = defineBasePlugin('defaultBoundary', {
+const DefaultBoundaryPlugin = definePlugin('defaultBoundary', {
   api: () => ({
     value: () => 'exact' as const,
   }),
@@ -50,9 +50,9 @@ exactBaseEditor.api.defaultBoundary.missing();
 // @ts-expect-error Exact editors reject absent capability groups.
 exactBaseEditor.api.missingPlugin.run();
 
-const DefaultBoundaryPlatePlugin = toPlatePlugin(DefaultBoundaryPlugin);
-const DefaultBoundarySiblingPlugin = toPlatePlugin(
-  defineBasePlugin('defaultBoundarySibling', {
+const DefaultBoundaryPlatePlugin = toReactPlugin(DefaultBoundaryPlugin);
+const DefaultBoundarySiblingPlugin = toReactPlugin(
+  definePlugin('defaultBoundarySibling', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -70,7 +70,7 @@ const broadPlateEditor: Editor = exactPlateEditor;
 const exactPlateValue: 'exact' = exactPlateEditor.api.defaultBoundary.value();
 declare const defaultPlateBoundary: Editor;
 type ExactPlateDefinition = DefinitionOf<typeof DefaultBoundaryPlatePlugin>;
-type ExactInternalPlateEditor = InternalPlateEditorWithInstalledPlugins<
+type ExactInternalPlateEditor = InternalReactEditorWithInstalledPlugins<
   Value,
   ExactPlateDefinition
 >;
@@ -78,7 +78,7 @@ declare const exactInternalPlateEditor: ExactInternalPlateEditor;
 const broadInternalPlateEditor: Editor = exactInternalPlateEditor;
 const exactDOMEditor: DOMEditor = exactInternalPlateEditor;
 const exactReactEditor: PliteReactEditor = exactInternalPlateEditor;
-type ExactPlateProps = PlateProps<ExactInternalPlateEditor>;
+type ExactPlateProps = EditorRootProps<ExactInternalPlateEditor>;
 declare const exactPlateProps: ExactPlateProps;
 declare const defaultUseEditorReturn: ReturnType<typeof useEditor>;
 const broadDOMEditor: DOMEditor<any, any> = defaultUseEditorReturn;

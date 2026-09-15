@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import type { Descendant, Range } from '../../src/index';
+import { releaseEditorViewLifetime } from '../../src/core/editor-view-lifetime';
+import { createEditorView, type Descendant, type Range } from '../../src/index';
 import type { YjsCursorDataSchema } from '../../src/yjs/core';
+import { getActiveYjsController } from '../../src/yjs/core/controller-registry';
 import {
   clearYjsTrace,
-  connectYjsPeer,
   createYjsPeer,
   disconnectYjsPeer,
   FakeAwareness,
@@ -184,7 +185,7 @@ describe('plitejs/yjs awareness contract', () => {
     ]);
   });
 
-  it('validates cursor data at the extension boundary', () => {
+  it('validates cursor data at the plugin boundary', () => {
     const cursorData: YjsCursorDataSchema<{ readonly name: string }> = {
       validate: (value): value is { readonly name: string } =>
         typeof value === 'object' &&
@@ -228,6 +229,32 @@ describe('plitejs/yjs awareness contract', () => {
     assert.deepEqual(getYjsRemoteCursors(peer)[0]?.selection, range);
   });
 
+  it('gives the last selection-changing view ownership and ignores stale cleanup', () => {
+    const { awareness, peer } = createAwarePeer();
+    const first = createEditorView(peer.editor);
+    const second = createEditorView(peer.editor);
+    const firstRange = selection([0, 0], 1);
+    const secondRange = selection([1, 0], 2);
+    const controller = getActiveYjsController(peer.editor);
+
+    assert.ok(controller);
+
+    first.update.selection.set(firstRange);
+    controller.presenceApi(first).syncSelection();
+    second.update.selection.set(secondRange);
+    controller.presenceApi(second).syncSelection();
+
+    const ownedSelection = awareness.getLocalState()?.selection;
+
+    releaseEditorViewLifetime(first);
+    assert.equal(awareness.getLocalState()?.selection, ownedSelection);
+
+    releaseEditorViewLifetime(second);
+    assert.equal(awareness.getLocalState()?.selection, null);
+
+    peer.cleanup();
+  });
+
   it('publishes root-qualified awareness for a named root', () => {
     const { awareness, peer } = createAwarePeer();
     const headerRange: Range = {
@@ -250,34 +277,20 @@ describe('plitejs/yjs awareness contract', () => {
     assert.deepEqual(getYjsRemoteCursors(peer)[0]?.selection, headerRange);
   });
 
-  it('rejects selections that span different roots', () => {
-    const { awareness, peer } = createAwarePeer();
-
-    peer.editor.update.roots.create('header', [paragraph('header')]);
-    runYjsUpdate(peer, (yjs) => {
-      yjs.sendSelection({
-        anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 0], offset: 1, root: 'header' },
-      });
-    });
-
-    assert.equal(awareness.getLocalState()?.selection, null);
-  });
-
-  it('does not expose remote cursors while disconnected', () => {
+  it('keeps awareness visible until its owner expires the remote state', () => {
     const { awareness, peer } = createAwarePeer();
 
     sendRemoteSelection(peer, awareness, selection());
     disconnectYjsPeer(peer);
 
-    assert.deepEqual(getYjsRemoteCursors(peer), []);
-
-    connectYjsPeer(peer);
-
     assert.equal(getYjsRemoteCursors(peer).length, 1);
+
+    awareness.removeRemoteState(101);
+
+    assert.deepEqual(getYjsRemoteCursors(peer), []);
   });
 
-  it('gates single remote cursor reads by connection and local client id', () => {
+  it('excludes the local awareness client and removes expired remote cursors', () => {
     const { awareness, peer } = createAwarePeer();
     const range = selection([1, 0], 3);
     const yjs = readEditorYjsState(peer.editor);
@@ -291,7 +304,7 @@ describe('plitejs/yjs awareness contract', () => {
     });
     assert.equal(yjs.remoteCursor(2), null);
 
-    disconnectYjsPeer(peer);
+    awareness.removeRemoteState(101);
 
     assert.equal(yjs.remoteCursor(101), null);
   });
@@ -305,7 +318,7 @@ describe('plitejs/yjs awareness contract', () => {
     assert.equal(getYjsAwarenessRevision(peer) > before, true);
   });
 
-  it('notifies awareness subscribers on remote changes', () => {
+  it('notifies remote-cursor subscribers only for remote changes', () => {
     const { awareness, peer } = createAwarePeer();
     let notifications = 0;
     const unsubscribe = subscribeYjsAwareness(peer, () => {
@@ -316,7 +329,7 @@ describe('plitejs/yjs awareness contract', () => {
     unsubscribe();
     sendRemoteSelection(peer, awareness, selection([1, 0], 1));
 
-    assert.equal(notifications, 2);
+    assert.equal(notifications, 1);
   });
 
   it('does not notify awareness subscribers for unchanged local cursor payloads', () => {

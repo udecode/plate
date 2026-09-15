@@ -147,10 +147,10 @@ describe('BaseMentionPlugin', () => {
     const html = data.getData('text/html');
     const element = new DOMParser()
       .parseFromString(html, 'text/html')
-      .body.querySelector('[data-plate-mention]');
+      .body.querySelector('[data-editor-mention]');
 
-    expect(element?.getAttribute('data-plate-mention-ref')).toBe('user-1');
-    expect(element?.getAttribute('data-plate-mention-label')).toBe('Ada');
+    expect(element?.getAttribute('data-editor-mention-ref')).toBe('user-1');
+    expect(element?.getAttribute('data-editor-mention-label')).toBe('Ada');
     expect(element?.textContent).toBe('@Ada');
 
     expect(editor.api.html.deserialize({ element: html })).toEqual([
@@ -176,7 +176,7 @@ describe('BaseMentionPlugin', () => {
     expect(
       editor.api.html.deserialize({
         element:
-          '<span data-plate-mention data-plate-mention-ref=" ">@blank</span>',
+          '<span data-editor-mention data-editor-mention-ref=" ">@blank</span>',
       })
     ).toEqual([
       {

@@ -19,7 +19,7 @@ Import the matching `Editor` type from the same entrypoint as the constructor.
 
 ## Editor shape
 
-The editor is still a Plite editor. Plate adds typed plugin access, DOM services, and a small set of Plate runtime flags on top of that shape.
+The editor owns document reads, transactions, typed plugin access, DOM services, and lifecycle state.
 
 <API name="Editor">
   <APIAttributes>
@@ -33,7 +33,7 @@ The editor is still a Plite editor. Plate adds typed plugin access, DOM services
       `editor.read.lastCommit()`.
     </APIItem>
     <APIItem name="api" type="Editor['api']">
-      Core Plite APIs, explicit editor-wide APIs, and installed plugin APIs
+      Core Plate APIs, explicit editor-wide APIs, and installed plugin APIs
       inferred under their plugin names.
     </APIItem>
     <APIItem name="update" type="Editor['update']">
@@ -56,13 +56,13 @@ The editor is still a Plite editor. Plate adds typed plugin access, DOM services
 
 ## Runtime state
 
-React and DOM runtime state is read through Plite runtime APIs. Plate exposes only editor identity and lifecycle fields on `editor.runtime`; compiled plugin registries are private implementation data.
+React and DOM runtime state is read through Plate runtime APIs. Plate exposes only editor identity and lifecycle fields on `editor.runtime`; compiled plugin registries are private implementation data.
 
 | State       | Read path                                                          | Set by                                                |
 | ----------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
-| composition | `editor.api.react.isComposing()`                                   | Plite React composition runtime.                      |
-| focus       | `editor.api.react.isFocused()`                                     | Plite React focus runtime.                            |
-| read-only   | `editor.read.view.isReadOnly()` or `editor.api.react.isReadOnly()` | `createEditor`, `<Plate>`, and `<PlateContent>`. |
+| composition | `editor.api.react.isComposing()`                                   | Plate React composition runtime.                      |
+| focus       | `editor.api.react.isFocused()`                                     | Plate React focus runtime.                            |
+| read-only   | `editor.read.view.isReadOnly()` or `editor.api.react.isReadOnly()` | `createEditor`, `<EditorRoot>`, and `<EditorContent>`. |
 
 | Field           | Type                          | Notes                                                   |
 | --------------- | ----------------------------- | ------------------------------------------------------- |
@@ -76,9 +76,9 @@ that plugin's API, reads, update commands, schema identity, and editor-local
 state. Keep the descriptor's inferred type at call sites.
 
 ```ts title="Plugin API and state"
-import { createEditor, defineBasePlugin } from 'platejs';
+import { createEditor, definePlugin } from 'platejs';
 
-const PanelPlugin = defineBasePlugin('panel', {
+const PanelPlugin = definePlugin('panel', {
   initialState: { open: false },
   api: ({ store }) => ({
     isOpen: () => store.get('open'),
@@ -110,22 +110,20 @@ Use `editor.read.<name>` for plugin reads on a concrete editor, or
 Behavior-only descriptors do not expose a consumer `schema`. A descriptor
 lookup checks the descriptor family as well as the name.
 
-In React, import `useEditorPlugin` and `usePluginStore` from `platejs/react`.
-`useEditorPlugin(Plugin)` provides the inferred portal.
+In React, use `useEditor().plugin(Plugin)` for the inferred portal.
 `usePluginStore(Plugin, key)` or `usePluginStore(Plugin, selector)` subscribes
 the component to plugin state.
 
-### Runtime names
+### Dynamic descriptors
 
-Use `editor.plugin(name)` or `useEditorPlugin(name)` when the name is only
-known at runtime. These lookups support installation checks, schema identity
-reads, and runtime read dispatch. Let TypeScript infer the result.
+`editor.plugin` requires a descriptor. When application data selects a
+capability at runtime, resolve that value through an application-owned map of
+allowed descriptors, then pass the selected descriptor to `editor.plugin`.
 
 Check `.installed` first when absence is valid. Read `.schema.type` only when
 the caller expects an element plugin, or `.schema.key` when it expects a primary
 mark. A mismatched schema kind throws. A name does not prove a descriptor family
-or provide its typed API, update, and store contract; pass the descriptor when
-the caller needs those capabilities.
+or provide its typed API, update, and store contract.
 
 ## Initialization
 
@@ -154,8 +152,8 @@ The headless `createEditor` performs the shared setup:
 
 | Step                | Behavior                                                                                                                                             |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Runtime state       | Preserves Plite `editor.id` and initializes `runtime.userId`.                                                                                        |
-| Plugin access       | Publishes installed APIs under `editor.api[name]` and installs descriptor-or-name `plugin(...)` portals.                                              |
+| Runtime state       | Preserves Plate `editor.id` and initializes `runtime.userId`.                                                                                        |
+| Plugin access       | Publishes installed APIs under `editor.api[name]` and resolves descriptor-owned portals through `editor.plugin(Plugin)`.                            |
 | Core plugins        | Resolves core plugins, replaces core plugins with custom plugins that share the same name, and resolves the root plugin.                             |
 | Components          | Merges `components` into root-plugin component overrides.                                                                                            |
 | Normalization guard | Wraps `normalizeNode` so `editor.api.shouldNormalizeNode(entry)` can skip a normalization pass.                                                      |
@@ -169,7 +167,7 @@ decoder needs the compiled plugin model.
 
 Core plugins are resolved before user plugins. Navigation Feedback is a React
 editor default and can be disabled with `navigationFeedback: false`. Its API
-uses the mounted editor returned by `useEditor()` or `useEditorPlugin()`.
+uses the mounted editor returned by `useEditor()`.
 
 <API name="Core plugin APIs">
   <APIMethods>
@@ -195,7 +193,7 @@ uses the mounted editor returned by `useEditor()` or `useEditorPlugin()`.
       name="editor.api.debug.error"
       type="(message: unknown, type?: DebugErrorType, details?: any) => void"
     >
-      Throw a `PlateError` by default in development. Configure `DebugPlugin` to
+      Throw an `EditorError` by default in development. Configure `DebugPlugin` to
       change logging or `throwErrors`.
     </APIItem>
     <APIItem
@@ -219,7 +217,7 @@ uses the mounted editor returned by `useEditor()` or `useEditorPlugin()`.
 
 ## Core transactions
 
-Mutations run through `editor.update`. Core Plite commands live on the
+Mutations run through `editor.update`. Core Plate commands live on the
 transaction object, and plugins contribute their keyed commands through
 the constructor's `update` field.
 
@@ -230,31 +228,31 @@ the constructor's `update` field.
       type="(input: SnapshotInput) => void"
     >
       Replace primary children, named roots, persisted meta, and optionally the
-      selection through one configured Plite update.
+      selection through one configured Plate update.
     </APIItem>
     <APIItem
       name="editor.update((tx) => tx.nodes.insert(node, options))"
       type="(node: Node, options?: NodeInsertNodesOptions) => void"
     >
-      Insert a node or fragment through the Plite node transaction group.
+      Insert a node or fragment through the Plate node transaction group.
     </APIItem>
     <APIItem
       name="editor.update((tx) => tx.nodes.set(props, options))"
       type="(props: Partial<Node>, options?: NodeSetNodesOptions) => void"
     >
-      Update matching nodes through the Plite node transaction group.
+      Update matching nodes through the Plate node transaction group.
     </APIItem>
     <APIItem
       name="editor.update((tx) => tx.marks.toggle(key, value))"
       type="(key: string, value?: unknown) => void"
     >
-      Toggle an inline mark through the Plite mark transaction group.
+      Toggle an inline mark through the Plate mark transaction group.
     </APIItem>
     <APIItem
       name="editor.update((tx) => tx.selection.select(location))"
       type="(location: Location) => void"
     >
-      Update the current selection through the Plite selection transaction
+      Update the current selection through the Plate selection transaction
       group.
     </APIItem>
   </APITransforms>
@@ -262,13 +260,13 @@ the constructor's `update` field.
 
 ## Plugin pipeline effects
 
-Some core behavior is exposed by routing browser/editor events into the Plite transaction runtime rather than by adding public editor methods.
+Some core behavior is exposed by routing browser/editor events into the Plate transaction runtime rather than by adding public editor methods.
 
 | Surface                | Effect                                                                                                                                                                                                                 |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Product codec registry | Compiles constructor codec declarations created by context-bound `defineCodecs(map)` or `defineCodecs(TargetPlugin, map)`, then delegates exact `ContentSlice` decoding and encoding to the generic clipboard runtime. |
-| Plite change events    | Emits committed node and text change contexts through Plate `on.nodeChange` and `on.textChange`.                                                                                                                       |
-| Plite React runtime    | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior.                                                                                                       |
+| Plate change events    | Emits committed node and text change contexts through Plate `on.nodeChange` and `on.textChange`.                                                                                                                       |
+| Plate React runtime    | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior.                                                                                                       |
 | `HtmlPlugin`           | Registers the `text/html` parser path and owns HTML element conversion through `editor.api.html.deserialize`.                                                                                                          |
 | `BaseParagraphPlugin`  | Registers the default paragraph element under name `paragraph` and maps HTML `<p>` elements, excluding code-font paragraphs.                                                                                           |
 
@@ -298,7 +296,7 @@ type BasicValue = ValueOf<BasicEditor>;
 
 ## Related APIs
 
-- [Plate components](/docs/api/core/plate-components) covers `Plate`, `PlateContent`, `PlateView`, and component-layer runtime effects.
-- [PlateController](/docs/api/core/plate-controller) covers active, primary, and fallback editor lookup.
+- [Plate components](/docs/api/core/plate-components) covers `EditorRoot`, `EditorContent`, `EditorPreview`, and component-layer runtime effects.
+- [EditorController](/docs/api/core/plate-controller) covers active, primary, and fallback editor lookup.
 - [Plate plugin](/docs/api/core/plate-plugin) covers plugin definitions, methods, state, events, and render hooks.
 - [Controlled Value](/docs/controlled) covers React-owned value patterns around `editor.update`.

@@ -1,4 +1,4 @@
-import type { EditorExtensionReference } from '../../facade';
+import type { RuntimePluginReference } from '../../facade';
 import type { NormalizeBasePluginInput } from './basePluginCompiler.internal';
 import type {
   AnyBasePluginDefinition,
@@ -12,6 +12,58 @@ import type {
   NormalizePluginState,
   PluginReference,
 } from './PluginDefinition';
+
+type IsAny<TValue> = 0 extends 1 & TValue ? true : false;
+
+type PreservesCallable<TCurrent, TNext> = TCurrent extends (
+  ...args: infer TCurrentArgs
+) => infer TCurrentResult
+  ? TNext extends (...args: infer TNextArgs) => infer TNextResult
+    ? TCurrentArgs extends TNextArgs
+      ? TNextResult extends TCurrentResult
+        ? true
+        : false
+      : false
+    : false
+  : false;
+
+type PreservesPluginValue<TCurrent, TNext> =
+  IsAny<TNext> extends true
+    ? false
+    : [TCurrent] extends [(...args: infer _TArgs) => infer _TResult]
+      ? PreservesCallable<TCurrent, TNext>
+      : [TCurrent] extends [object]
+        ? [TNext] extends [object]
+          ? false extends {
+              [TKey in keyof TCurrent & keyof TNext]-?: PreservesPluginValue<
+                TCurrent[TKey],
+                TNext[TKey]
+              >;
+            }[keyof TCurrent & keyof TNext]
+            ? false
+            : true
+          : false
+        : [TNext] extends [TCurrent]
+          ? true
+          : false;
+
+/** Reject contribution members that cannot preserve an inherited capability. */
+export type CompatiblePluginContribution<TCurrent, TNext> = {
+  [TKey in keyof TNext]: TKey extends keyof TCurrent
+    ? PreservesPluginValue<TCurrent[TKey], TNext[TKey]> extends true
+      ? TNext[TKey]
+      : never
+    : TNext[TKey];
+};
+
+export type PluginContributionCompatibility<TCurrent, TNext> =
+  TNext extends CompatiblePluginContribution<TCurrent, TNext> ? unknown : never;
+
+export type PluginCompatibilityArguments<TCompatibility> = [
+  TCompatibility,
+] extends [never]
+  ? [compatibility: never]
+  : [];
 
 type Materialize<TObject extends object> = Readonly<{
   [TKey in keyof TObject]: TObject[TKey];
@@ -34,7 +86,7 @@ type ObjectField<TContribution, TKey extends PropertyKey> =
 type Conflicts<TContribution> =
   TContribution extends Readonly<{
     conflicts: infer TConflicts extends ReadonlyArray<
-      EditorExtensionReference | PluginReference
+      RuntimePluginReference | PluginReference
     >;
   }>
     ? TConflicts

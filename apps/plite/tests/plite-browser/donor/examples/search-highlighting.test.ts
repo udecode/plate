@@ -1,16 +1,16 @@
 import { expect, test } from '@playwright/test';
 import {
-  installPliteReactRenderProfiler,
+  installReactRenderProfiler,
   openExample,
-  resetPliteReactRenderProfiler,
-  takePliteBrowserRenderStateSnapshot,
+  resetReactRenderProfiler,
+  takeBrowserRenderStateSnapshot,
 } from '@platejs/test/playwright';
 
 test.describe('search highlighting', () => {
   const openSearchHighlighting = async (
     page: Parameters<typeof openExample>[0]
   ) => {
-    await installPliteReactRenderProfiler(page);
+    await installReactRenderProfiler(page);
 
     const editor = await openExample(page, 'plite/search-highlighting', {
       ready: {
@@ -40,11 +40,11 @@ test.describe('search highlighting', () => {
     const searchField = page.locator('input[type="search"]');
     const highlightedText = 'search-highlighted';
 
-    await resetPliteReactRenderProfiler(page);
-    await page.locator('[data-plite-editor="true"]').click();
+    await resetReactRenderProfiler(page);
+    await page.locator('[data-editor="true"]').click();
     await searchField.click();
     await expect(searchField).toBeFocused();
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await page.keyboard.type('t');
 
     await expect(searchField).toBeFocused();
@@ -53,7 +53,7 @@ test.describe('search highlighting', () => {
       page.locator(`[data-cy="${highlightedText}"]`)
     ).not.toHaveCount(0);
 
-    const proof = await takePliteBrowserRenderStateSnapshot(editor);
+    const proof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(proof.focusOwner.kind).toBe('outside');
     expect(proof.focusOwner.tagName).toBe('input');

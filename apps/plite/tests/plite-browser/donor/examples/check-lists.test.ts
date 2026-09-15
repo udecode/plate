@@ -7,7 +7,7 @@ test.describe('Check-lists example', () => {
   });
 
   test('checks the bullet when clicked', async ({ page }) => {
-    const pliteNodeElement = 'div[data-plite-node="element"]';
+    const pliteNodeElement = 'div[data-editor-node="element"]';
 
     await expect(page.locator(pliteNodeElement).nth(3)).toHaveText(
       'Criss-cross!'
@@ -32,7 +32,7 @@ test.describe('Check-lists example', () => {
       page.locator(pliteNodeElement).nth(3).locator('span').nth(1)
     ).toHaveCSS('text-decoration-line', 'none');
 
-    await expect(page.locator('p[data-plite-node="element"]')).toHaveCount(2);
+    await expect(page.locator('p[data-editor-node="element"]')).toHaveCount(2);
   });
 
   test('keeps selection through focus on checkbox inside checklist item', async ({
@@ -74,13 +74,13 @@ test.describe('Check-lists example', () => {
       ready: { editor: 'visible' },
     });
 
-    await expect(page.locator('p[data-plite-node="element"]')).toHaveCount(2);
+    await expect(page.locator('p[data-editor-node="element"]')).toHaveCount(2);
 
     await editor.selection.collapse({ path: [3, 0], offset: 0 });
     await editor.focus();
     await editor.root.press('Backspace');
 
-    await expect(page.locator('p[data-plite-node="element"]')).toHaveCount(3);
+    await expect(page.locator('p[data-editor-node="element"]')).toHaveCount(3);
     await expect(editor.locator.block([3])).toContainText('Criss-cross.');
     if (browserName === 'chromium' || testInfo.project.name === 'mobile') {
       await editor.assert.selection({

@@ -1,4 +1,8 @@
-import { HocuspocusProvider } from '@hocuspocus/provider';
+import {
+  HocuspocusProvider,
+  HocuspocusProviderWebsocket,
+  WebSocketStatus,
+} from '@hocuspocus/provider';
 import {
   type Descendant,
   type Editor,
@@ -11,27 +15,30 @@ import {
 import { history } from 'plitejs/history';
 import {
   Editable,
-  Plite,
+  EditorRoot,
   type RenderElementProps,
   type RenderLeafProps,
   useEditor,
+  useEditorContext,
 } from 'plitejs/react';
 import {
   yjs,
   type YjsAwarenessLike,
-  type YjsProviderEvent,
-  type YjsProviderEventHandler,
-  type YjsProviderLike,
-  type YjsProviderStatus,
+  type YjsInitialReadiness,
 } from 'plitejs/yjs';
 import {
-  useYjsProviderStatus,
-  useYjsProviderSynced,
+  useYjsAdmissionStatus,
   useYjsRemoteCursor,
   useYjsRemoteCursorIds,
 } from 'plitejs/yjs/react';
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react';
-import { useEffect, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import * as Y from 'yjs';
 
 import { Button } from '@/components/ui/button';
@@ -44,9 +51,15 @@ import type {
   CustomValue,
 } from './custom-types.d';
 
-const HistoryExtension = history();
+const createPresenceYjs = (options: {
+  awareness: YjsAwarenessLike;
+  doc: Y.Doc;
+  initialReady: YjsInitialReadiness;
+  seed?: true;
+}) => yjs({ ...options, rootName: 'plitejs' });
+const HistoryPlugin = history();
 type YjsEditor = CustomEditor<
-  readonly [typeof HistoryExtension, ReturnType<typeof yjs>]
+  readonly [typeof HistoryPlugin, ReturnType<typeof createPresenceYjs>]
 >;
 
 type PeerId = 'a' | 'b' | 'c' | 'd';
@@ -67,15 +80,6 @@ type PeerCommandTx =
 type PeerCommand = (tx: PeerCommandTx) => void;
 
 type KeyboardInputType = 'delete' | 'enter' | 'text';
-
-type PliteHocuspocusProvider = YjsProviderLike & {
-  hocuspocus: HocuspocusProvider;
-};
-
-type HocuspocusEventBinder = (
-  event: YjsProviderEvent,
-  handler: YjsProviderEventHandler
-) => void;
 
 type TextEntry = {
   path: Path;
@@ -136,83 +140,99 @@ const paragraph = (text: string): CustomElement => ({
 });
 
 const cloneValue = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
-
-class HocuspocusProviderAdapter implements PliteHocuspocusProvider {
-  readonly awareness?: YjsAwarenessLike;
-  readonly doc: Y.Doc;
-  readonly hocuspocus: HocuspocusProvider;
-
-  status: YjsProviderStatus = 'connecting';
-
-  constructor(options: {
-    autoConnect: boolean;
-    clientId: number;
-    name: string;
-    token?: string;
-    url: string;
-  }) {
-    const doc = new Y.Doc();
-
-    doc.clientID = options.clientId;
-
-    this.hocuspocus = new HocuspocusProvider({
-      connect: options.autoConnect,
-      document: doc,
-      name: options.name,
-      token: options.token,
-      url: options.url,
-    });
-    this.doc = doc;
-    this.awareness = this.hocuspocus.awareness as YjsAwarenessLike | undefined;
-    this.status = this.hocuspocus.status;
-
-    this.hocuspocus.on(
-      'status',
-      ({ status }: { status: YjsProviderStatus }) => {
-        this.status = status;
-      }
-    );
-  }
-
-  get synced() {
-    return this.hocuspocus.synced;
-  }
-
-  connect() {
-    return this.hocuspocus.connect();
-  }
-
-  destroy() {
-    this.hocuspocus.destroy();
-  }
-
-  disconnect() {
-    this.hocuspocus.disconnect();
-
-    this.status = 'disconnected';
-  }
-
-  off(event: YjsProviderEvent, handler: YjsProviderEventHandler) {
-    (this.hocuspocus.off as HocuspocusEventBinder)(event, handler);
-  }
-
-  on(event: YjsProviderEvent, handler: YjsProviderEventHandler) {
-    (this.hocuspocus.on as HocuspocusEventBinder)(event, handler);
-  }
-}
+const errorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
 
 const createProvider = (
   peer: PeerDefinition,
   roomName: string,
   autoConnect: boolean
-): PliteHocuspocusProvider =>
-  new HocuspocusProviderAdapter({
+): HocuspocusProvider => {
+  const doc = new Y.Doc();
+
+  doc.clientID = peer.clientId;
+
+  const websocketProvider = new HocuspocusProviderWebsocket({
     autoConnect,
-    clientId: peer.clientId,
-    name: roomName,
-    token: DEFAULT_TOKEN,
     url: DEFAULT_YJS_URL,
   });
+  const provider = new HocuspocusProvider({
+    document: doc,
+    name: roomName,
+    token: DEFAULT_TOKEN,
+    websocketProvider,
+  });
+
+  provider.attach();
+
+  return provider;
+};
+
+const requireAwareness = (provider: HocuspocusProvider): YjsAwarenessLike => {
+  const awareness = provider.awareness as YjsAwarenessLike | undefined;
+
+  if (!awareness || awareness.doc !== provider.document) {
+    throw new Error('Hocuspocus must expose awareness for its exact Y.Doc.');
+  }
+
+  return awareness;
+};
+
+const createHocuspocusInitialReadiness = (
+  provider: HocuspocusProvider
+): YjsInitialReadiness => ({
+  doc: provider.document,
+  getSnapshot: () => provider.synced,
+  subscribe(listener) {
+    const onSynced = () => listener();
+
+    provider.on('synced', onSynced);
+    let active = true;
+
+    return () => {
+      if (!active) return;
+
+      active = false;
+      provider.off('synced', onSynced);
+    };
+  },
+});
+
+const useHocuspocusProviderState = (provider: HocuspocusProvider) => {
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      const notify = () => listener();
+
+      provider.on('status', notify);
+      provider.on('synced', notify);
+      let active = true;
+
+      return () => {
+        if (!active) return;
+
+        active = false;
+        provider.off('status', notify);
+        provider.off('synced', notify);
+      };
+    },
+    [provider]
+  );
+  const getSnapshot = useCallback(
+    () =>
+      `${provider.configuration.websocketProvider.status}:${provider.synced}`,
+    [provider]
+  );
+
+  useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+  return {
+    status: provider.configuration.websocketProvider.status,
+    synced: provider.synced,
+  };
+};
+
+const createEphemeralRoomName = () =>
+  `${DEFAULT_ROOM}-${globalThis.crypto.randomUUID()}`;
 
 const readInitialRoomName = () => {
   if (typeof window === 'undefined') {
@@ -220,7 +240,8 @@ const readInitialRoomName = () => {
   }
 
   return (
-    new URLSearchParams(window.location.search).get('room') ?? DEFAULT_ROOM
+    new URLSearchParams(window.location.search).get('room') ??
+    createEphemeralRoomName()
   );
 };
 
@@ -519,11 +540,8 @@ const syncSelectionAfterHistory = (
 
   editor.update((tx) => {
     tx.selection.set(selection);
-    tx.yjs.sendSelection(selection, {
-      color: peer.color,
-      name: peer.name,
-    });
   });
+  editor.api.yjs.syncSelection();
   editor.api.dom.focus({ retries: 1 });
 };
 
@@ -546,7 +564,7 @@ const syncSelectionFromDom = (editor: YjsEditor) => {
     return;
   }
 
-  const range = editor.api.dom.resolvePliteRange(selection, {
+  const range = editor.api.dom.resolveRange(selection, {
     exactMatch: false,
   });
 
@@ -565,19 +583,9 @@ const runPeerCommand = (
   syncSelectionFromDom(editor);
   editor.update({ history: 'new-batch' }, command);
   editor.api.dom.focus({ retries: 1 });
-  editor.update.yjs.sendCursorData({
+  editor.api.yjs.setCursorData({
     color: peer.color,
     name: peer.name,
-  });
-};
-
-const setConnected = (editor: YjsEditor, connected: boolean) => {
-  editor.update((tx) => {
-    if (connected) {
-      tx.yjs.connect();
-    } else {
-      tx.yjs.disconnect();
-    }
   });
 };
 
@@ -596,11 +604,8 @@ const selectHello = (peer: PeerDefinition, editor: YjsEditor) => {
 
   editor.update((tx) => {
     tx.selection.set(range);
-    tx.yjs.sendSelection(range, {
-      color: peer.color,
-      name: peer.name,
-    });
   });
+  editor.api.yjs.syncSelection();
 };
 
 const appendText = (peer: PeerDefinition, tx: PeerCommandTx) => {
@@ -1179,309 +1184,373 @@ const CommandButton = ({
   </Button>
 );
 
-const ProviderBackedPeer = ({
+const ProviderBackedPeerContent = ({
+  initiallyConnected,
   peer,
   provider,
 }: {
+  initiallyConnected: boolean;
   peer: PeerDefinition;
-  provider: PliteHocuspocusProvider;
+  provider: HocuspocusProvider;
 }) => {
-  const editor = useEditor<
-    CustomValue,
-    readonly [typeof HistoryExtension, ReturnType<typeof yjs>]
-  >({
-    extensions: [
-      HistoryExtension,
-      yjs({
-        clientId: peer.id,
-        provider,
-        rootName: 'plitejs',
-        seedProviderOnSync: peer.id === 'a',
-      }),
-    ],
-    initialValue: cloneValue(INITIAL_VALUE),
-  });
+  const editor = useEditorContext() as YjsEditor;
   const [renderEpoch, setRenderEpoch] = useState(0);
-  const status = useYjsProviderStatus(editor) ?? provider.status;
-  const synced = useYjsProviderSynced(editor) ?? provider.synced;
-  const connected = status === 'connected';
+  const [connectionEnabled, setConnectionEnabled] =
+    useState(initiallyConnected);
+  const connectionEnabledRef = useRef(initiallyConnected);
+  const admission = useYjsAdmissionStatus(editor);
+  const providerState = useHocuspocusProviderState(provider);
+  const status = connectionEnabled ? providerState.status : 'disconnected';
+  const synced = connectionEnabled && providerState.synced;
+  const connected = status === WebSocketStatus.Connected;
   const label = `Peer ${peer.id.toUpperCase()}`;
+  const ready = admission.state === 'ready';
   const bumpRender = () => {
     setRenderEpoch((current) => current + 1);
   };
+  const disconnect = () => {
+    connectionEnabledRef.current = false;
+    setConnectionEnabled(false);
+    editor.api.yjs.clearSelection();
+    provider.configuration.websocketProvider.disconnect();
+  };
+  const connect = async () => {
+    connectionEnabledRef.current = true;
+    setConnectionEnabled(true);
+    await provider.configuration.websocketProvider.connect();
+
+    if (
+      connectionEnabledRef.current &&
+      editor.api.yjs.admissionStatus().state === 'ready'
+    ) {
+      editor.api.yjs.syncSelection();
+    }
+  };
 
   useEffect(() => {
-    editor.update.yjs.sendCursorData({
+    editor.api.yjs.setCursorData({
       color: peer.color,
       name: peer.name,
     });
   }, [editor, peer.color, peer.name]);
 
   return (
-    <Plite editor={editor}>
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-3 py-2">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900">{label}</h2>
-            <div
-              className="mt-0.5"
-              data-test-id={`yjs-peer-${peer.id}-cursors`}
-            >
-              <CursorStatus editor={editor} />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                'rounded-full px-2 py-1 text-xs font-medium',
-                connected
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-amber-50 text-amber-700'
-              )}
-            >
-              {connected ? 'connected' : status}
-            </span>
-            <span
-              className={cn(
-                'rounded-full px-2 py-1 text-xs font-medium',
-                synced
-                  ? 'bg-sky-50 text-sky-700'
-                  : 'bg-slate-100 text-slate-600'
-              )}
-            >
-              {synced ? 'synced' : 'syncing'}
-            </span>
+    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-3 py-2">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-900">{label}</h2>
+          <div className="mt-0.5" data-test-id={`yjs-peer-${peer.id}-cursors`}>
+            <CursorStatus editor={editor} />
           </div>
         </div>
-
-        <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
-          <CommandButton
-            onRun={() => {
-              selectHello(peer, editor);
-            }}
-            testId={`yjs-peer-${peer.id}-select`}
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              'rounded-full px-2 py-1 text-xs font-medium',
+              connected
+                ? 'bg-emerald-50 text-emerald-700'
+                : 'bg-amber-50 text-amber-700'
+            )}
           >
-            Select
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, toggleBold);
-            }}
-            testId={`yjs-peer-${peer.id}-mark-bold`}
+            {connected ? 'connected' : status}
+          </span>
+          <span
+            className={cn(
+              'rounded-full px-2 py-1 text-xs font-medium',
+              synced ? 'bg-sky-50 text-sky-700' : 'bg-slate-100 text-slate-600'
+            )}
           >
-            Bold
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              setConnected(editor, false);
-            }}
-            testId={`yjs-peer-${peer.id}-disconnect`}
+            {synced ? 'synced' : 'syncing'}
+          </span>
+          <span
+            className={cn(
+              'rounded-full px-2 py-1 text-xs font-medium',
+              ready
+                ? 'bg-violet-50 text-violet-700'
+                : 'bg-slate-100 text-slate-600'
+            )}
+            data-admission-status={admission.state}
           >
-            Offline
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              setConnected(editor, true);
-            }}
-            testId={`yjs-peer-${peer.id}-connect`}
-          >
-            Online
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              editor.update.yjs.reconcile();
-            }}
-            testId={`yjs-peer-${peer.id}-reconcile`}
-          >
-            Reconcile
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              undoPeer(peer, editor);
-            }}
-            testId={`yjs-peer-${peer.id}-undo`}
-          >
-            Undo
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              redoPeer(peer, editor);
-            }}
-            testId={`yjs-peer-${peer.id}-redo`}
-          >
-            Redo
-          </CommandButton>
+            {ready ? 'ready' : admission.state}
+          </span>
         </div>
+      </div>
 
-        <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) => appendText(peer, tx));
-            }}
-            testId={`yjs-peer-${peer.id}-append`}
+      {admission.state === 'error' && (
+        <div className="flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+          <span>{errorMessage(admission.cause)}</span>
+          <Button
+            onClick={() => editor.api.yjs.retryImport()}
+            size="sm"
+            type="button"
+            variant="outline"
           >
-            Append
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) => replaceDocument(peer, tx));
-            }}
-            testId={`yjs-peer-${peer.id}-replace`}
-          >
-            Replace
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) => removeSecondBlock(tx));
-            }}
-            testId={`yjs-peer-${peer.id}-remove-node`}
-          >
-            Remove
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) =>
-                splitFirstText(bumpRender, tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-split-node`}
-          >
-            Split
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) =>
-                mergeSecondBlock(bumpRender, tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-merge-node`}
-          >
-            Merge
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) => moveFirstBlockDown(tx));
-            }}
-            testId={`yjs-peer-${peer.id}-move-down`}
-          >
-            Down
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) => setFirstBlockRole(tx));
-            }}
-            testId={`yjs-peer-${peer.id}-set-node`}
-          >
-            Set Role
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) => unsetFirstBlockRole(tx));
-            }}
-            testId={`yjs-peer-${peer.id}-unset-node`}
-          >
-            Unset Role
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) => wrapFirstBlock(tx));
-            }}
-            testId={`yjs-peer-${peer.id}-wrap-node`}
-          >
-            Wrap
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, unwrapFirstBlock);
-            }}
-            testId={`yjs-peer-${peer.id}-unwrap`}
-          >
-            Unwrap
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) => liftFirstWrappedBlock(tx));
-            }}
-            testId={`yjs-peer-${peer.id}-lift`}
-          >
-            Lift
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) =>
-                insertFragmentText(peer, tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-insert-fragment`}
-          >
-            Fragment
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) => deleteFirstFragment(tx));
-            }}
-            testId={`yjs-peer-${peer.id}-delete-fragment`}
-          >
-            Delete
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) =>
-                deleteBackwardFromFirstBlockEnd(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-delete-backward`}
-          >
-            Back
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) => insertExclamation(tx));
-            }}
-            testId={`yjs-peer-${peer.id}-insert-text`}
-          >
-            Insert !
-          </CommandButton>
-          <CommandButton
-            onRun={() => {
-              runPeerCommand(peer, editor, (tx) =>
-                moveFirstBlockAfterSecond(tx)
-              );
-            }}
-            testId={`yjs-peer-${peer.id}-move`}
-          >
-            Move
-          </CommandButton>
+            Retry import
+          </Button>
         </div>
+      )}
 
-        <div
-          className="min-h-40 px-3 py-3"
-          id={`yjs-peer-${peer.id}-editor-surface`}
-          onKeyDownCapture={(event) =>
-            handleHistoryKeyDown(event, peer, editor)
-          }
+      <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
+        <CommandButton
+          disabled={!ready}
+          onRun={() => {
+            selectHello(peer, editor);
+          }}
+          testId={`yjs-peer-${peer.id}-select`}
         >
-          <Editable
-            autoFocus={peer.id === 'a'}
-            className="min-h-28 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 outline-none focus:border-slate-400 focus:bg-white"
-            key={renderEpoch}
-            onKeyDown={(event) => {
+          Select
+        </CommandButton>
+        <CommandButton
+          disabled={!ready}
+          onRun={() => {
+            runPeerCommand(peer, editor, toggleBold);
+          }}
+          testId={`yjs-peer-${peer.id}-mark-bold`}
+        >
+          Bold
+        </CommandButton>
+        <CommandButton
+          onRun={disconnect}
+          testId={`yjs-peer-${peer.id}-disconnect`}
+        >
+          Offline
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            void connect();
+          }}
+          testId={`yjs-peer-${peer.id}-connect`}
+        >
+          Online
+        </CommandButton>
+        <CommandButton
+          disabled={!ready}
+          onRun={() => {
+            undoPeer(peer, editor);
+          }}
+          testId={`yjs-peer-${peer.id}-undo`}
+        >
+          Undo
+        </CommandButton>
+        <CommandButton
+          disabled={!ready}
+          onRun={() => {
+            redoPeer(peer, editor);
+          }}
+          testId={`yjs-peer-${peer.id}-redo`}
+        >
+          Redo
+        </CommandButton>
+      </div>
+
+      <fieldset
+        className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2"
+        disabled={!ready}
+      >
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => appendText(peer, tx));
+          }}
+          testId={`yjs-peer-${peer.id}-append`}
+        >
+          Append
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => replaceDocument(peer, tx));
+          }}
+          testId={`yjs-peer-${peer.id}-replace`}
+        >
+          Replace
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => removeSecondBlock(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-remove-node`}
+        >
+          Remove
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) =>
+              splitFirstText(bumpRender, tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-split-node`}
+        >
+          Split
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) =>
+              mergeSecondBlock(bumpRender, tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-merge-node`}
+        >
+          Merge
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => moveFirstBlockDown(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-move-down`}
+        >
+          Down
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => setFirstBlockRole(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-set-node`}
+        >
+          Set Role
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => unsetFirstBlockRole(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-unset-node`}
+        >
+          Unset Role
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => wrapFirstBlock(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-wrap-node`}
+        >
+          Wrap
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, unwrapFirstBlock);
+          }}
+          testId={`yjs-peer-${peer.id}-unwrap`}
+        >
+          Unwrap
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => liftFirstWrappedBlock(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-lift`}
+        >
+          Lift
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => insertFragmentText(peer, tx));
+          }}
+          testId={`yjs-peer-${peer.id}-insert-fragment`}
+        >
+          Fragment
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => deleteFirstFragment(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-delete-fragment`}
+        >
+          Delete
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) =>
+              deleteBackwardFromFirstBlockEnd(tx)
+            );
+          }}
+          testId={`yjs-peer-${peer.id}-delete-backward`}
+        >
+          Back
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => insertExclamation(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-insert-text`}
+        >
+          Insert !
+        </CommandButton>
+        <CommandButton
+          onRun={() => {
+            runPeerCommand(peer, editor, (tx) => moveFirstBlockAfterSecond(tx));
+          }}
+          testId={`yjs-peer-${peer.id}-move`}
+        >
+          Move
+        </CommandButton>
+      </fieldset>
+
+      <div
+        className="min-h-40 px-3 py-3"
+        id={`yjs-peer-${peer.id}-editor-surface`}
+        onKeyDownCapture={(event) => {
+          if (ready) {
+            handleHistoryKeyDown(event, peer, editor);
+          }
+        }}
+      >
+        <Editable
+          aria-busy={admission.state === 'waiting'}
+          autoFocus={peer.id === 'a'}
+          className="min-h-28 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 outline-none focus:border-slate-400 focus:bg-white"
+          key={renderEpoch}
+          onKeyDown={(event) => {
+            if (ready) {
               handleEditableKeyDown(event, peer, editor);
-            }}
-            onSelect={() => {
-              editor.update.yjs.sendSelection(undefined, {
-                color: peer.color,
-                name: peer.name,
-              });
-            }}
-            placeholder="Start typing"
-            renderElement={Element}
-            renderLeaf={Leaf}
-            spellCheck={false}
-          />
-        </div>
-      </section>
-    </Plite>
+            }
+          }}
+          onSelect={() => {
+            if (ready) {
+              editor.api.yjs.syncSelection();
+            }
+          }}
+          placeholder="Start typing"
+          readOnly={!ready}
+          renderElement={Element}
+          renderLeaf={Leaf}
+          spellCheck={false}
+        />
+      </div>
+    </section>
+  );
+};
+
+const ProviderBackedPeer = ({
+  initiallyConnected,
+  peer,
+  provider,
+}: {
+  initiallyConnected: boolean;
+  peer: PeerDefinition;
+  provider: HocuspocusProvider;
+}) => {
+  const editor = useEditor<
+    CustomValue,
+    readonly [typeof HistoryPlugin, ReturnType<typeof createPresenceYjs>]
+  >({
+    plugins: [
+      HistoryPlugin,
+      createPresenceYjs({
+        awareness: requireAwareness(provider),
+        doc: provider.document,
+        initialReady: createHocuspocusInitialReadiness(provider),
+        ...(peer.id === 'a' ? { seed: true as const } : {}),
+      }),
+    ],
+    initialValue: cloneValue(INITIAL_VALUE),
+  });
+
+  return (
+    <EditorRoot editor={editor}>
+      <ProviderBackedPeerContent
+        initiallyConnected={initiallyConnected}
+        peer={peer}
+        provider={provider}
+      />
+    </EditorRoot>
   );
 };
 
@@ -1494,24 +1563,78 @@ const ProviderPeer = ({
   peer: PeerDefinition;
   roomName: string;
 }) => {
-  const [provider] = useState(() =>
-    createProvider(peer, roomName, autoConnect)
-  );
+  const [provider, setProvider] = useState<HocuspocusProvider | null>(null);
 
-  useEffect(
-    () => () => {
-      provider.destroy?.();
-    },
-    [provider]
-  );
+  useEffect(() => {
+    const nextProvider = createProvider(peer, roomName, autoConnect);
+    let active = true;
 
-  return <ProviderBackedPeer peer={peer} provider={provider} />;
+    queueMicrotask(() => {
+      if (active) {
+        setProvider(nextProvider);
+      }
+    });
+
+    return () => {
+      active = false;
+      nextProvider.destroy();
+      nextProvider.configuration.websocketProvider.destroy();
+    };
+  }, [autoConnect, peer, roomName]);
+
+  if (!provider) {
+    return (
+      <output className="flex min-h-96 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm text-slate-500 shadow-sm">
+        Starting {peer.name}…
+      </output>
+    );
+  }
+
+  return (
+    <ProviderBackedPeer
+      initiallyConnected={autoConnect}
+      peer={peer}
+      provider={provider}
+    />
+  );
 };
 
 const YjsHocuspocusExample = () => {
-  const [autoConnect] = useState(readInitialAutoConnect);
-  const [roomName] = useState(readInitialRoomName);
-  const [peers] = useState(readInitialPeers);
+  const [launch, setLaunch] = useState<{
+    autoConnect: boolean;
+    peers: readonly PeerDefinition[];
+    roomName: string;
+  } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    queueMicrotask(() => {
+      if (!active) return;
+
+      setLaunch({
+        autoConnect: readInitialAutoConnect(),
+        peers: readInitialPeers(),
+        roomName: readInitialRoomName(),
+      });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!launch) {
+    return (
+      <main className="min-h-screen bg-slate-100 px-4 py-5 text-slate-950">
+        <output className="mx-auto flex min-h-96 max-w-3xl items-center justify-center rounded-lg border border-slate-200 bg-white text-sm text-slate-500 shadow-sm">
+          Starting collaboration…
+        </output>
+      </main>
+    );
+  }
+
+  const { autoConnect, peers, roomName } = launch;
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-5 text-slate-950">

@@ -1,12 +1,12 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
-import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+import { recordBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 const expectedSelection = 'Experience a modern';
 const introText = 'Experience a modern rich-text editor built with';
 
 const getEditor = (page: Page) =>
-  page.locator('[data-plite-editor="true"][contenteditable="true"]');
+  page.locator('[data-editor="true"][contenteditable="true"]');
 
 const getFloatingToolbar = (page: Page) =>
   page.getByRole('toolbar').filter({
@@ -28,7 +28,7 @@ const readDOMSelection = (page: Page) =>
     const anchorElement =
       anchorNode instanceof Element ? anchorNode : anchorNode?.parentElement;
     const editor = document.querySelector(
-      '[data-plite-editor="true"][contenteditable="true"]'
+      '[data-editor="true"][contenteditable="true"]'
     );
 
     return {
@@ -102,7 +102,7 @@ test('floating Bold applies the mark without losing the selection', async ({
 
   await expect(boldButton).toHaveCount(1);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
 
   try {
     await clickCenter(page, boldButton);
@@ -134,15 +134,15 @@ test('floating Comment marks the target and opens the reply editor', async ({
 
   await expect(commentButton).toHaveCount(1);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
 
   try {
     await clickCenter(page, commentButton);
 
-    const draftLeaf = page.locator('.plite-comment').filter({
+    const draftLeaf = page.locator('.editor-comment').filter({
       hasText: expectedSelection,
     });
-    const replyPlaceholder = page.locator('[data-plite-placeholder]').filter({
+    const replyPlaceholder = page.locator('[data-editor-placeholder]').filter({
       hasText: 'Reply...',
     });
     const replyEditor = getEditor(page).last();
@@ -182,7 +182,7 @@ test('floating Turn Into opens without losing the selection', async ({
 
   await expect(turnIntoButton).toHaveCount(1);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
 
   try {
     await clickCenter(page, turnIntoButton);

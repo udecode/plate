@@ -22,7 +22,6 @@ import { createEditorView, ElementApi, isHotkey, NodeApi } from 'platejs';
 import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
-  useEditorPlugin,
   useEditorRuntimeState,
   useCreateEditor,
   useEditorSelector,
@@ -31,7 +30,6 @@ import {
   type Editor,
   useEditor,
 } from 'platejs/react';
-import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -75,7 +73,7 @@ export function AIChatEditor() {
 
 export function AIMenu() {
   const editor = useEditor();
-  const { api, read } = useEditorPlugin(AIChatPlugin);
+  const { api, read } = useEditor().plugin(AIChatPlugin);
   const mode = usePluginStore(AIChatPlugin, 'mode');
   const toolName = usePluginStore(AIChatPlugin, 'toolName');
 
@@ -85,6 +83,13 @@ export function AIMenu() {
       innerEditor.read.selection.nodes().length > 0 ||
       innerEditor.read.selection.isExpanded()
   );
+  const editAnchorKey = useEditorSelector((innerEditor) => {
+    const entry = innerEditor.read.selection.nodes().at(-1);
+
+    return entry && ElementApi.isElement(entry[0])
+      ? innerEditor.key(entry[0])
+      : null;
+  });
   const isFocusedLast = useFocusedLast();
   const chatOpen = usePluginStore(AIChatPlugin, 'open');
   const open = chatOpen && isFocusedLast;
@@ -181,10 +186,11 @@ export function AIMenu() {
   React.useEffect(() => {
     if (toolName !== 'edit' || mode !== 'chat' || isLoading) return undefined;
 
-    let anchorNode = editor
-      .plugin(SuggestionPlugin)
-      .read.nodes({ transient: true })
-      .at(-1);
+    let anchorNode = editAnchorKey
+      ? editor.read.nodes.get(editAnchorKey, {
+          match: ElementApi.isElement,
+        })
+      : undefined;
 
     if (!anchorNode) {
       anchorNode =
@@ -205,7 +211,7 @@ export function AIMenu() {
     return () => {
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [editor, isLoading, mode, toolName]);
+  }, [editAnchorKey, editor, isLoading, mode, toolName]);
 
   if (isLoading && mode === 'insert') return null;
 
@@ -266,7 +272,7 @@ export function AIMenu() {
               }}
               onValueChange={setInput}
               placeholder="Ask AI anything..."
-              data-plite-keep-selection-visible
+              data-editor-keep-selection-visible
               autoFocus
             />
           )}
@@ -671,7 +677,7 @@ export function AILoadingBar() {
 
   const status = chat?.status ?? 'ready';
 
-  const { api } = useEditorPlugin(AIChatPlugin);
+  const { api } = useEditor().plugin(AIChatPlugin);
 
   const isLoading = status === 'streaming' || status === 'submitted';
 
@@ -723,7 +729,7 @@ export function AILoadingBar() {
       <div
         className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-lg border bg-popover p-2 text-sm shadow-lg"
         data-ai-comment-review=""
-        data-plite-keep-selection-visible
+        data-editor-keep-selection-visible
       >
         <span className="px-1 text-muted-foreground">
           Keep {draftThreadIds.length === 1 ? 'this comment' : 'these comments'}

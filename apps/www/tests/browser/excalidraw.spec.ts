@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 import type { Value } from 'platejs';
@@ -21,15 +21,11 @@ type BrowserHandleElement = HTMLElement & {
 test('excalidraw: filters viewport state and projects document undo into the canvas', async ({
   page,
 }, info) => {
-  const errors = recordPliteBrowserRuntimeErrors(page);
+  const errors = recordBrowserRuntimeErrors(page);
   try {
     await page.goto('/blocks/excalidraw-demo', { waitUntil: 'commit' });
-    const root = page.locator('.plite-editor').first();
-    const editor = createPliteBrowserEditorHarness(
-      page,
-      'excalidraw:sync',
-      root
-    );
+    const root = page.locator('.editor-editor').first();
+    const editor = createBrowserEditorHarness(page, 'excalidraw:sync', root);
     await editor.ready({ editor: 'visible', text: 'Excalidraw' });
     const canvas = page.locator('canvas.excalidraw__canvas.static');
     await expect(canvas).toBeVisible();

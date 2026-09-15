@@ -5,19 +5,19 @@ import { useRootInteractionController } from '../editable/root-interaction-contr
 import { MAIN_ROOT_KEY } from '../root-key';
 import {
   useRequiredPliteRuntimeContext,
-  usePliteRootEditor,
+  useRootEditor,
 } from './use-plite-runtime';
 
 /** Options for mouse interaction on root-level chrome outside editable text. */
-export type UsePliteRootChromeOptions = {
+export type UseRootChromeOptions = {
   disabled?: boolean;
   selection?: 'end' | 'restore';
 };
 
 /** Props and root metadata for root-level mouse interaction chrome. */
-export type PliteRootChromeController = {
+export type RootChromeController = {
   props: {
-    'data-plite-root-chrome'?: NamedRootKey;
+    'data-editor-root-chrome'?: NamedRootKey;
     onMouseDownCapture: MouseEventHandler<HTMLElement>;
     onMouseMoveCapture: MouseEventHandler<HTMLElement>;
     onMouseUpCapture: MouseEventHandler<HTMLElement>;
@@ -28,10 +28,10 @@ export type PliteRootChromeController = {
 /**
  * Create props for root-level mouse interaction outside editable content.
  */
-export function usePliteRootChrome<const TRoot extends RootKey = RootKey>(
+export function useRootChrome<const TRoot extends RootKey = RootKey>(
   root?: NamedRootKey<TRoot>,
-  { disabled = false, selection = 'restore' }: UsePliteRootChromeOptions = {}
-): PliteRootChromeController {
+  { disabled = false, selection = 'restore' }: UseRootChromeOptions = {}
+): RootChromeController {
   if (root === MAIN_ROOT_KEY) {
     throw new Error(
       '[Plite] Omit root to create chrome for the primary document.'
@@ -39,7 +39,7 @@ export function usePliteRootChrome<const TRoot extends RootKey = RootKey>(
   }
 
   const internalRoot = root ?? MAIN_ROOT_KEY;
-  const editor = usePliteRootEditor(root);
+  const editor = useRootEditor(root);
   const { getLastSelectionForRoot, getMountedViewEditor } =
     useRequiredPliteRuntimeContext();
   const { onMouseDownCapture, onMouseMoveCapture, onMouseUpCapture } =
@@ -55,7 +55,7 @@ export function usePliteRootChrome<const TRoot extends RootKey = RootKey>(
   return useMemo(
     () => ({
       props: {
-        ...(root ? { 'data-plite-root-chrome': root } : {}),
+        ...(root ? { 'data-editor-root-chrome': root } : {}),
         onMouseDownCapture,
         onMouseMoveCapture,
         onMouseUpCapture,

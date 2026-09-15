@@ -3,9 +3,9 @@ import { afterEach, describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   property,
   schema,
   target,
@@ -37,9 +37,9 @@ const legacyHashSchemaIdentityString = (value: string) => {
 };
 
 const record = (
-  extensionName: string,
+  pluginName: string,
   contribution: EditorSchemaContributionRecord['contribution']
-): EditorSchemaContributionRecord => ({ contribution, extensionName });
+): EditorSchemaContributionRecord => ({ contribution, pluginName });
 
 const createBasicSchema = () =>
   defineEditorSchema('schema:article', {
@@ -55,9 +55,9 @@ const createBasicSchema = () =>
 afterEach(() => {
   delete (
     globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: unknown;
+      __EDITOR_REACT_RENDER_PROFILER__?: unknown;
     }
-  ).__PLITE_REACT_RENDER_PROFILER__;
+  ).__EDITOR_REACT_RENDER_PROFILER__;
 });
 
 describe('schema compiler', () => {
@@ -272,7 +272,7 @@ describe('schema compiler', () => {
       root: schema.content.types(['image', 'video']),
       unknown: 'reject',
     });
-    const editor = createEditor({ extensions: [Article] });
+    const editor = createEditor({ plugins: [Article] });
 
     assert.deepEqual(editor.read.schema.element('image')?.contentRoots, {
       caption: {
@@ -357,7 +357,7 @@ describe('schema compiler', () => {
         assert.ok(error instanceof EditorSchemaCompileError);
         assert.deepEqual(error.diagnostics[0], {
           code: 'content-root-slot-conflict',
-          extensions: ['schema', 'second-owner'],
+          plugins: ['schema', 'second-owner'],
           message:
             'Schema content root slot "body" for element type "portal" is declared by both "schema" and "second-owner".',
           path: 'contentRoots.0',
@@ -370,8 +370,8 @@ describe('schema compiler', () => {
 
   it('admits contributed inline elements into the derived paragraph', () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('inline-elements', {
+      plugins: [
+        definePlugin('inline-elements', {
           schema: {
             elements: {
               image: { void: 'block' },
@@ -425,25 +425,25 @@ describe('schema compiler', () => {
       (error: unknown) => {
         assert.ok(error instanceof EditorSchemaCompileError);
         assert.deepEqual(
-          error.diagnostics.map(({ code, extensions, path }) => ({
+          error.diagnostics.map(({ code, plugins, path }) => ({
             code,
-            extensions,
+            plugins,
             path,
           })),
           [
             {
               code: 'invalid-schema-shape',
-              extensions: ['malformed-element'],
+              plugins: ['malformed-element'],
               path: 'elements.broken',
             },
             {
               code: 'invalid-schema-shape',
-              extensions: ['malformed-group'],
+              plugins: ['malformed-group'],
               path: 'groups.broken',
             },
             {
               code: 'invalid-schema-shape',
-              extensions: ['malformed-property'],
+              plugins: ['malformed-property'],
               path: 'properties.0',
             },
           ]
@@ -472,26 +472,26 @@ describe('schema compiler', () => {
       version: 1,
     });
 
-    createEditor({ extensions: [Clean] });
+    createEditor({ plugins: [Clean] });
     assert.throws(
-      () => createEditor({ extensions: [Closed] }),
+      () => createEditor({ plugins: [Closed] }),
       (error: unknown) => {
         assert.ok(error instanceof EditorSchemaCompileError);
         assert.deepEqual(
-          error.diagnostics.map(({ code, extensions, path }) => ({
+          error.diagnostics.map(({ code, plugins, path }) => ({
             code,
-            extensions,
+            plugins,
             path,
           })),
           [
             {
               code: 'unknown-schema-key',
-              extensions: [Closed.name],
+              plugins: [Closed.name],
               path: 'elements.paragraph.[Symbol(secret)]',
             },
             {
               code: 'unknown-schema-key',
-              extensions: [Closed.name],
+              plugins: [Closed.name],
               path: 'elements.paragraph.hidden',
             },
           ]
@@ -531,15 +531,15 @@ describe('schema compiler', () => {
       (error: unknown) => {
         assert.ok(error instanceof EditorSchemaCompileError);
         assert.deepEqual(
-          error.diagnostics.map(({ code, extensions, path }) => ({
+          error.diagnostics.map(({ code, plugins, path }) => ({
             code,
-            extensions,
+            plugins,
             path,
           })),
           [
             {
               code: 'invalid-property-validation',
-              extensions: ['malformed-validation'],
+              plugins: ['malformed-validation'],
               path: 'properties.0',
             },
           ]
@@ -567,7 +567,7 @@ describe('schema compiler', () => {
         assert.deepEqual(error.diagnostics, [
           {
             code: 'duplicate-complete-schema',
-            extensions: ['complete-without-unknown', 'schema:article'],
+            plugins: ['complete-without-unknown', 'schema:article'],
             message:
               'Schema contributions contain multiple complete schemas: complete-without-unknown, schema:article.',
             path: 'schema',
@@ -598,14 +598,14 @@ describe('schema compiler', () => {
             field === 'root'
               ? (['id', 'version'] as const).map((completeField) => ({
                   code: 'partial-schema-complete-field',
-                  extensions: [`complete-without-${field}`],
+                  plugins: [`complete-without-${field}`],
                   message: `Partial schema contribution "complete-without-${field}" cannot declare complete schema field "${completeField}".`,
                   path: `schema.${completeField}`,
                 }))
               : [
                   {
                     code: 'missing-complete-schema-field',
-                    extensions: [`complete-without-${field}`],
+                    plugins: [`complete-without-${field}`],
                     message: `Named schema definition "complete-without-${field}" must own schema field "${field}".`,
                     path: `schema.${field}`,
                   },
@@ -1052,7 +1052,7 @@ describe('schema compiler', () => {
         assert.deepEqual(error.diagnostics, [
           {
             code: 'inline-content-requires-text',
-            extensions: [MissingText.name],
+            plugins: [MissingText.name],
             message:
               'Schema element "outer" allows inline child type "inner", but canonical inline content requires text spacers.',
             path: 'elements.outer.content',
@@ -1081,7 +1081,7 @@ describe('schema compiler', () => {
         assert.deepEqual(error.diagnostics, [
           {
             code: 'inline-content-requires-spacers',
-            extensions: [InsufficientMaximum.name],
+            plugins: [InsufficientMaximum.name],
             message:
               'Schema element "outer" allows inline child type "inner", but maximum content cardinality 2 cannot fit one inline child and its two canonical text spacers.',
             path: 'elements.outer.content',
@@ -1103,9 +1103,9 @@ describe('schema compiler', () => {
     const ExactMinimum = createValid('nested-inline-exact-minimum', 3);
     const Unbounded = createValid('nested-inline-unbounded');
 
-    for (const extension of [ExactMinimum, Unbounded]) {
+    for (const plugin of [ExactMinimum, Unbounded]) {
       const compiled = compileEditorSchemaContributions([
-        record(extension.name, extension.schema),
+        record(plugin.name, plugin.schema),
       ]);
       const outer = compiled.elements.byType.get('outer')!;
 
@@ -1114,7 +1114,7 @@ describe('schema compiler', () => {
     }
 
     const editor = createEditor({
-      extensions: [ExactMinimum],
+      plugins: [ExactMinimum],
       initialSelection: {
         anchor: { offset: 1, path: [0, 1, 1, 0] },
         focus: { offset: 1, path: [0, 1, 1, 0] },
@@ -1177,7 +1177,7 @@ describe('schema compiler', () => {
         assert.deepEqual(error.diagnostics, [
           {
             code: 'inline-content-rejects-blocks',
-            extensions: [Invalid.name],
+            plugins: [Invalid.name],
             message:
               'Schema inline element "inline" allows block child type "block", but inline element content can contain only text and inline elements.',
             path: 'elements.inline.content',
@@ -1213,7 +1213,7 @@ describe('schema compiler', () => {
         assert.deepEqual(error.diagnostics, [
           {
             code: 'inline-content-rejects-unknown-elements',
-            extensions: [Invalid.name],
+            plugins: [Invalid.name],
             message:
               'Schema inline element "inline" allows unknown element children, but undeclared elements cannot be proven inline.',
             path: 'elements.inline.content',
@@ -1247,7 +1247,7 @@ describe('schema compiler', () => {
       version: 1,
     });
     const declaredEditor = createEditor({
-      extensions: [Declared],
+      plugins: [Declared],
       initialValue: [
         {
           children: [{ children: [{ text: 'x' }], type: 'child' }],
@@ -1276,7 +1276,7 @@ describe('schema compiler', () => {
       version: 1,
     });
     const openEditor = createEditor({
-      extensions: [Open],
+      plugins: [Open],
       initialValue: [
         {
           children: [{ children: [{ text: 'x' }], type: 'unknown' }],
@@ -1552,8 +1552,8 @@ describe('schema compiler', () => {
     );
 
     const Overlap = create([
-      schema.textProperty(schema.key.prefix('suggestion_'), property.string()),
-      schema.textProperty('suggestion_state', property.string()),
+      schema.textProperty(schema.key.prefix('annotation_'), property.string()),
+      schema.textProperty('annotation_state', property.string()),
       schema.textProperty(schema.key.prefix('comment_'), property.string()),
       schema.textProperty('comment_state', property.string()),
     ]);
@@ -1566,18 +1566,18 @@ describe('schema compiler', () => {
       (error) => {
         assert.ok(error instanceof EditorSchemaCompileError);
         assert.deepEqual(
-          error.diagnostics.map(({ code, extensions }) => ({
+          error.diagnostics.map(({ code, plugins }) => ({
             code,
-            extensions,
+            plugins,
           })),
           [
             {
               code: 'property-selector-conflict',
-              extensions: [Overlap.name],
+              plugins: [Overlap.name],
             },
             {
               code: 'property-selector-conflict',
-              extensions: [Overlap.name],
+              plugins: [Overlap.name],
             },
           ]
         );
@@ -1602,7 +1602,7 @@ describe('schema compiler', () => {
       (error) => {
         assert.ok(error instanceof EditorSchemaCompileError);
         assert.equal(error.diagnostics[0]?.code, 'duplicate-element-type');
-        assert.deepEqual(error.diagnostics[0]?.extensions, [
+        assert.deepEqual(error.diagnostics[0]?.plugins, [
           'duplicate',
           Article.name,
         ]);
@@ -1709,25 +1709,25 @@ describe('schema compiler', () => {
       (error: unknown) => {
         assert.ok(error instanceof EditorSchemaCompileError);
         assert.deepEqual(
-          error.diagnostics.map(({ code, extensions, path }) => ({
+          error.diagnostics.map(({ code, plugins, path }) => ({
             code,
-            extensions,
+            plugins,
             path,
           })),
           [
             {
               code: 'duplicate-element-type',
-              extensions: ['conflict-a', 'conflict-b'],
+              plugins: ['conflict-a', 'conflict-b'],
               path: 'elements.quote',
             },
             {
               code: 'duplicate-group',
-              extensions: ['conflict-a', 'conflict-b'],
+              plugins: ['conflict-a', 'conflict-b'],
               path: 'groups.quoted',
             },
             {
               code: 'duplicate-root',
-              extensions: ['conflict-a', 'conflict-b'],
+              plugins: ['conflict-a', 'conflict-b'],
               path: 'roots.comments.content',
             },
           ]
@@ -1760,11 +1760,11 @@ describe('schema compiler', () => {
 
     (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: {
+        __EDITOR_REACT_RENDER_PROFILER__?: {
           record: (event: { id: string }) => void;
         };
       }
-    ).__PLITE_REACT_RENDER_PROFILER__ = {
+    ).__EDITOR_REACT_RENDER_PROFILER__ = {
       record: (event) => events.push(event),
     };
     const compiled = compileEditorSchemaContributions([
@@ -1824,7 +1824,7 @@ describe('schema compiler', () => {
   });
 
   it('reuses compiled schema while publishing a new descriptor identity', () => {
-    const slot = defineExtensionSlot('article-schema');
+    const slot = definePluginSlot('article-schema');
     const create = () =>
       defineEditorSchema('schema:article', {
         elements: {
@@ -1836,7 +1836,7 @@ describe('schema compiler', () => {
         version: 1,
       });
     const editor = createEditor({
-      extensions: [slot.of(create())] as const,
+      plugins: [slot.of(create())] as const,
     });
     const before = getCompiledEditorSchema(editor);
     const configurationRevision =
@@ -1846,7 +1846,7 @@ describe('schema compiler', () => {
     editor.subscribeCommit(() => {
       commits += 1;
     });
-    editor.update.extensions.reconfigure(slot, create());
+    editor.update.plugins.reconfigure(slot, create());
 
     assert.equal(getCompiledEditorSchema(editor), before);
     assert.equal(
@@ -1857,7 +1857,7 @@ describe('schema compiler', () => {
   });
 
   it('reuses structural compilation while rebinding changed live schema state', () => {
-    const slot = defineExtensionSlot('article-schema');
+    const slot = definePluginSlot('article-schema');
     const create = (validate: (value: unknown) => value is string) =>
       defineEditorSchema('schema:article', {
         elements: {
@@ -1886,16 +1886,16 @@ describe('schema compiler', () => {
     assert.equal(rawEditor.read.schema.identity().kind, 'derived');
     (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: {
+        __EDITOR_REACT_RENDER_PROFILER__?: {
           record: (event: { id: string }) => void;
         };
       }
-    ).__PLITE_REACT_RENDER_PROFILER__ = {
+    ).__EDITOR_REACT_RENDER_PROFILER__ = {
       record: ({ id }) => events.push(id),
     };
 
     const editor = createEditor({
-      extensions: [slot.of(create(nonEmpty))] as const,
+      plugins: [slot.of(create(nonEmpty))] as const,
     });
     const before = getCompiledEditorSchema(editor);
     let commits = 0;
@@ -1911,7 +1911,7 @@ describe('schema compiler', () => {
     assert.equal(editor.read.schema.identity(), before.identity);
     events.length = 0;
 
-    editor.update.extensions.reconfigure(slot, create(anyString));
+    editor.update.plugins.reconfigure(slot, create(anyString));
 
     const after = getCompiledEditorSchema(editor);
     const [propertyId] = after.properties.byId.keys();
@@ -1936,7 +1936,7 @@ describe('schema compiler', () => {
   });
 
   it('rebinds a changed live validator nested in a set descriptor', () => {
-    const slot = defineExtensionSlot('article-schema');
+    const slot = definePluginSlot('article-schema');
     const create = (validate: (value: unknown) => value is string) =>
       defineEditorSchema('schema:article', {
         elements: {
@@ -1958,7 +1958,7 @@ describe('schema compiler', () => {
         version: 1,
       });
     const editor = createEditor({
-      extensions: [
+      plugins: [
         slot.of(
           create(
             (value): value is string =>
@@ -1973,7 +1973,7 @@ describe('schema compiler', () => {
     editor.subscribeCommit(() => {
       commits += 1;
     });
-    editor.update.extensions.reconfigure(
+    editor.update.plugins.reconfigure(
       slot,
       create((value): value is string => typeof value === 'string')
     );

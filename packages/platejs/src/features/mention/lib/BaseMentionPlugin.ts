@@ -1,8 +1,8 @@
 import {
-  defineBasePlugin,
+  definePlugin,
   type DefinitionOf,
   type ElementOf,
-  type PlateNodeInsertOptions,
+  type NodeInsertOptions,
   PLUGINS,
   property,
 } from '../../../core';
@@ -32,7 +32,7 @@ export type MentionPluginState = {
   >;
 } & TriggerComboboxPluginState;
 
-export const BaseMentionInputPlugin = defineBasePlugin(PLUGINS.mentionInput, {
+export const BaseMentionInputPlugin = definePlugin(PLUGINS.mentionInput, {
   dependencies: [BaseComboboxPlugin],
   schema: {
     element: {
@@ -49,7 +49,7 @@ export const BaseMentionInputPlugin = defineBasePlugin(PLUGINS.mentionInput, {
 export type MentionInputElement = ElementOf<typeof BaseMentionInputPlugin>;
 
 /** Enables support for autocompleting @mentions. */
-export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
+export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
   dependencies: [BaseMentionInputPlugin],
   schema: {
     element: {
@@ -79,11 +79,11 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
     defineCodecs({
       'text/html': {
         decode: ({ element }) => {
-          const ref = element.getAttribute('data-plate-mention-ref');
+          const ref = element.getAttribute('data-editor-mention-ref');
 
           if (!isNonBlankRef(ref)) return undefined;
 
-          const label = element.getAttribute('data-plate-mention-label');
+          const label = element.getAttribute('data-editor-mention-label');
 
           return {
             children: [{ text: '' }],
@@ -93,14 +93,14 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
         },
         encode: ({ content, node }) => ({
           attributes: {
-            'data-plate-mention': true,
-            'data-plate-mention-label': node.label,
-            'data-plate-mention-ref': node.ref,
+            'data-editor-mention': true,
+            'data-editor-mention-label': node.label,
+            'data-editor-mention-ref': node.ref,
           },
           children: [content, { text: `@${node.label ?? node.ref}` }],
           tag: 'span',
         }),
-        match: [{ attributes: { 'data-plate-mention': true }, tag: 'span' }],
+        match: [{ attributes: { 'data-editor-mention': true }, tag: 'span' }],
         priority: 10,
       },
 
@@ -135,7 +135,7 @@ export const BaseMentionPlugin = defineBasePlugin(PLUGINS.mention, {
   update: ({ store, tx, schema: { type } }) => ({
     insert: (
       { label, ref }: { ref: string; label?: string },
-      options: PlateNodeInsertOptions = {}
+      options: NodeInsertOptions = {}
     ) => {
       if (!isNonBlankRef(ref)) {
         throw new TypeError('Mention ref must be a non-empty string.');

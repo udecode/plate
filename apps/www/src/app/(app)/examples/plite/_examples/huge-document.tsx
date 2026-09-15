@@ -10,17 +10,17 @@ import { history } from 'plitejs/history';
 import {
   createEditor as createReactEditor,
   Editable,
-  type EditableDOMStrategyMetrics,
-  type EditableProps,
   type RenderElementProps,
-  Plite,
+  EditorRoot,
   useElementSelected,
 } from 'plitejs/react';
+import { VirtualizedEditable } from 'plitejs/react/virtualized';
 import React, {
   type CSSProperties,
   StrictMode,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -54,9 +54,8 @@ interface Config {
   contentVisibilityMode: 'none' | 'element';
   documentSeed: string;
   editorHeight: number;
-  domStrategyMode: 'auto' | 'full' | 'staged' | 'virtualized';
-  domStrategyOverscan: number;
-  domStrategyThreshold: number;
+  renderingMode: 'complete' | 'virtualized';
+  virtualizedOverscan: number;
   showSelectedHeadings: boolean;
   strictMode: boolean;
   virtualizedEstimatedBlockSize: number;
@@ -93,12 +92,7 @@ const formatBlocksOption = (blocks: number) =>
   new Intl.NumberFormat('en-US').format(blocks);
 
 const contentVisibilityModeOptions = ['none', 'element'] as const;
-const domStrategyModeOptions = [
-  'auto',
-  'full',
-  'staged',
-  'virtualized',
-] as const;
+const renderingModeOptions = ['complete', 'virtualized'] as const;
 
 const toContentVisibilityMode = (
   value: string
@@ -111,11 +105,10 @@ const hugeDocumentQueryParsers = {
     contentVisibilityModeOptions
   ).withDefault('none'),
   documentSeed: parseAsString.withDefault('default'),
-  domStrategyMode: parseAsStringLiteral(domStrategyModeOptions)
+  renderingMode: parseAsStringLiteral(renderingModeOptions)
     .withDefault('virtualized')
     .withOptions({ clearOnDefault: false }),
-  domStrategyOverscan: parseAsBoundedInteger(0, 1000).withDefault(0),
-  domStrategyThreshold: parseAsBoundedInteger(1, 200_000).withDefault(2000),
+  virtualizedOverscan: parseAsBoundedInteger(0, 1000).withDefault(0),
   editorHeight: parseAsBoundedInteger(120, 2000).withDefault(420),
   showSelectedHeadings: parseAsBoolean.withDefault(false),
   strictMode: parseAsBoolean.withDefault(false),
@@ -125,9 +118,8 @@ const hugeDocumentQueryParsers = {
 const hugeDocumentUrlKeys = {
   contentVisibilityMode: 'content_visibility',
   documentSeed: 'seed',
-  domStrategyMode: 'strategy',
-  domStrategyOverscan: 'overscan',
-  domStrategyThreshold: 'threshold',
+  renderingMode: 'rendering',
+  virtualizedOverscan: 'overscan',
   editorHeight: 'editor_height',
   showSelectedHeadings: 'selected_headings',
   strictMode: 'strict',
@@ -195,44 +187,50 @@ const fallbackInitialValue: Value = [
 // The huge-document bench remounts editors from URL/config controls. Normal
 // React-owned examples should use `useEditor`.
 const createEditor = (_config: Config, initialValue: Value) =>
-  createReactEditor({ extensions: [history()], initialValue });
+  createReactEditor({ plugins: [history()], initialValue });
 
-const toDOMStrategy = (config: Config): EditableProps['domStrategy'] => {
-  switch (config.domStrategyMode) {
-    case 'full':
-    case 'staged':
-    case 'auto': {
-      return config.domStrategyMode;
-    }
-    case 'virtualized': {
-      return {
-        estimatedBlockSize: config.virtualizedEstimatedBlockSize,
-        overscan: config.domStrategyOverscan,
-        threshold: config.domStrategyThreshold,
-        type: 'virtualized',
-      };
-    }
-  }
-
-  return undefined;
+type SurfaceStatistics = {
+  boundaryCount: number;
+  domNodeCount: number;
+  mountedBlockCount: number;
 };
 
-const hasBoundedEditableScroller = (config: Config) =>
-  config.domStrategyMode === 'staged' ||
-  config.domStrategyMode === 'virtualized';
+const useSurfaceStatistics = (
+  rootRef: React.RefObject<HTMLDivElement | null>,
+  renderingMode: Config['renderingMode'],
+  version: number
+) => {
+  const [statistics, setStatistics] = useState<SurfaceStatistics | null>(null);
 
-const toBoundedEditableStyle = (config: Config): CSSProperties | undefined =>
-  hasBoundedEditableScroller(config)
-    ? {
-        height: config.editorHeight,
-        outline: '1px solid #ddd',
-        scrollbarGutter: 'stable',
-        overflowY: 'auto',
-      }
-    : undefined;
+  useLayoutEffect(() => {
+    const root = rootRef.current;
 
-const formatMetric = (value: boolean | number | string | null | undefined) =>
-  value ?? '-';
+    if (!root) return undefined;
+
+    const measure = () => {
+      const mountedBlockCount =
+        renderingMode === 'virtualized'
+          ? root.querySelectorAll('[data-editor-virtualized-row]').length
+          : root.querySelectorAll(':scope > [data-editor-node="element"]')
+              .length;
+
+      setStatistics({
+        boundaryCount: root.querySelectorAll('[data-editor-viewport-boundary]')
+          .length,
+        domNodeCount: root.querySelectorAll('*').length + 1,
+        mountedBlockCount,
+      });
+    };
+    const observer = new MutationObserver(measure);
+
+    measure();
+    observer.observe(root, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, [renderingMode, rootRef, version]);
+
+  return statistics;
+};
 
 const HugeDocumentExample = () => {
   const [config, setQueryConfig] = useQueryStates(hugeDocumentQueryParsers, {
@@ -252,15 +250,18 @@ const HugeDocumentExample = () => {
     `${config.documentSeed}:${config.blocks}`
   );
   const [editorVersion, setEditorVersion] = useState(0);
-  const [domStrategyMetrics, setDOMStrategyMetrics] =
-    useState<EditableDOMStrategyMetrics | null>(null);
+  const editableRef = useRef<HTMLDivElement>(null);
+  const surfaceStatistics = useSurfaceStatistics(
+    editableRef,
+    config.renderingMode,
+    editorVersion
+  );
 
   const setConfig = useCallback(
     (partialConfig: Partial<Config>) => {
       const newConfig = { ...config, ...partialConfig };
 
       setIsRendering(true);
-      setDOMStrategyMetrics(null);
       editorInitialValueKeyRef.current = `${newConfig.documentSeed}:${newConfig.blocks}`;
       void setQueryConfig(newConfig);
 
@@ -289,7 +290,6 @@ const HugeDocumentExample = () => {
 
     const renderTimeout = setTimeout(() => {
       setIsRendering(true);
-      setDOMStrategyMetrics(null);
 
       replaceTimeout = setTimeout(() => {
         const nextInitialValue = getInitialValue(
@@ -313,9 +313,15 @@ const HugeDocumentExample = () => {
     };
   }, [config]);
 
-  const domStrategy = useMemo(() => toDOMStrategy(config), [config]);
-
-  const editableStyle = useMemo(() => toBoundedEditableStyle(config), [config]);
+  const editableStyle = useMemo<CSSProperties>(
+    () => ({
+      height: config.editorHeight,
+      outline: '1px solid #ddd',
+      overflowY: 'auto',
+      scrollbarGutter: 'stable',
+    }),
+    [config.editorHeight]
+  );
 
   const renderConfig = useMemo(
     () => ({
@@ -329,18 +335,31 @@ const HugeDocumentExample = () => {
     <div>Rendering&hellip;</div>
   ) : (
     <RenderConfigContext.Provider value={renderConfig}>
-      <Plite editor={editor} key={editorVersion}>
-        <Editable
-          autoFocus
-          domStrategy={domStrategy}
-          id="huge-document-editor"
-          onDOMStrategyMetrics={setDOMStrategyMetrics}
-          placeholder="Enter some text…"
-          renderElement={Element}
-          spellCheck
-          style={editableStyle}
-        />
-      </Plite>
+      <EditorRoot editor={editor} key={editorVersion}>
+        {config.renderingMode === 'virtualized' ? (
+          <VirtualizedEditable
+            autoFocus
+            estimatedBlockSize={config.virtualizedEstimatedBlockSize}
+            id="huge-document-editor"
+            overscan={config.virtualizedOverscan}
+            placeholder="Enter some text…"
+            ref={editableRef}
+            renderElement={Element}
+            spellCheck
+            style={editableStyle}
+          />
+        ) : (
+          <Editable
+            autoFocus
+            id="huge-document-editor"
+            placeholder="Enter some text…"
+            ref={editableRef}
+            renderElement={Element}
+            spellCheck
+            style={editableStyle}
+          />
+        )}
+      </EditorRoot>
     </RenderConfigContext.Provider>
   );
 
@@ -354,9 +373,9 @@ const HugeDocumentExample = () => {
     <>
       <PerformanceControls
         config={config}
-        domStrategyMetrics={domStrategyMetrics}
         editor={editor}
         setConfig={setConfig}
+        surfaceStatistics={surfaceStatistics}
       />
 
       {editableWithStrictMode}
@@ -437,13 +456,13 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
 const PerformanceControls = ({
   editor,
   config,
-  domStrategyMetrics,
   setConfig,
+  surfaceStatistics,
 }: {
   editor: Editor;
   config: Config;
-  domStrategyMetrics: EditableDOMStrategyMetrics | null;
   setConfig: SetConfig;
+  surfaceStatistics: SurfaceStatistics | null;
 }) => {
   const [configurationOpen, setConfigurationOpen] = useState(true);
   const [keyPressDurations, setKeyPressDurations] = useState<number[]>([]);
@@ -570,108 +589,81 @@ const PerformanceControls = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Label htmlFor="huge-document-dom-strategy">DOM strategy:</Label>
+            <Label htmlFor="huge-document-rendering">Rendering:</Label>
             <NativeSelect
-              id="huge-document-dom-strategy"
+              id="huge-document-rendering"
               onChange={(event) => {
                 setConfig({
-                  domStrategyMode: event.target
-                    .value as Config['domStrategyMode'],
+                  renderingMode: event.target.value as Config['renderingMode'],
                 });
               }}
-              value={config.domStrategyMode}
+              value={config.renderingMode}
             >
-              <NativeSelectOption value="auto">Auto</NativeSelectOption>
-              <NativeSelectOption value="full">Full</NativeSelectOption>
-              <NativeSelectOption value="staged">Staged</NativeSelectOption>
+              <NativeSelectOption value="complete">
+                Complete DOM
+              </NativeSelectOption>
               <NativeSelectOption value="virtualized">
                 Virtualized
               </NativeSelectOption>
             </NativeSelect>
           </div>
 
-          {config.domStrategyMode === 'virtualized' && (
-            <>
-              <div className="flex flex-wrap items-center gap-2">
-                <Label htmlFor="huge-document-overscan">Overscan:</Label>
-                <Input
-                  id="huge-document-overscan"
-                  min={0}
-                  onChange={(event) => {
-                    setConfig({
-                      domStrategyOverscan: Number.parseInt(
-                        event.target.value,
-                        10
-                      ),
-                    });
-                  }}
-                  type="number"
-                  value={config.domStrategyOverscan}
-                />
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <Label htmlFor="huge-document-threshold">Threshold:</Label>
-                <Input
-                  id="huge-document-threshold"
-                  min={1}
-                  onChange={(event) => {
-                    setConfig({
-                      domStrategyThreshold: Number.parseInt(
-                        event.target.value,
-                        10
-                      ),
-                    });
-                  }}
-                  type="number"
-                  value={config.domStrategyThreshold}
-                />
-              </div>
-            </>
+          {config.renderingMode === 'virtualized' && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Label htmlFor="huge-document-overscan">Overscan:</Label>
+              <Input
+                id="huge-document-overscan"
+                min={0}
+                onChange={(event) => {
+                  setConfig({
+                    virtualizedOverscan: Number.parseInt(
+                      event.target.value,
+                      10
+                    ),
+                  });
+                }}
+                type="number"
+                value={config.virtualizedOverscan}
+              />
+            </div>
           )}
 
-          {hasBoundedEditableScroller(config) && (
-            <>
-              {config.domStrategyMode === 'virtualized' && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Label htmlFor="huge-document-estimated-block-size">
-                    Estimated block size:
-                  </Label>
-                  <Input
-                    id="huge-document-estimated-block-size"
-                    min={1}
-                    onChange={(event) => {
-                      setConfig({
-                        virtualizedEstimatedBlockSize: Number.parseInt(
-                          event.target.value,
-                          10
-                        ),
-                      });
-                    }}
-                    type="number"
-                    value={config.virtualizedEstimatedBlockSize}
-                  />
-                </div>
-              )}
-
-              <div className="flex flex-wrap items-center gap-2">
-                <Label htmlFor="huge-document-editor-height">
-                  Editor height:
-                </Label>
-                <Input
-                  id="huge-document-editor-height"
-                  min={120}
-                  onChange={(event) => {
-                    setConfig({
-                      editorHeight: Number.parseInt(event.target.value, 10),
-                    });
-                  }}
-                  type="number"
-                  value={config.editorHeight}
-                />
-              </div>
-            </>
+          {config.renderingMode === 'virtualized' && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Label htmlFor="huge-document-estimated-block-size">
+                Estimated block size:
+              </Label>
+              <Input
+                id="huge-document-estimated-block-size"
+                min={1}
+                onChange={(event) => {
+                  setConfig({
+                    virtualizedEstimatedBlockSize: Number.parseInt(
+                      event.target.value,
+                      10
+                    ),
+                  });
+                }}
+                type="number"
+                value={config.virtualizedEstimatedBlockSize}
+              />
+            </div>
           )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Label htmlFor="huge-document-editor-height">Editor height:</Label>
+            <Input
+              id="huge-document-editor-height"
+              min={120}
+              onChange={(event) => {
+                setConfig({
+                  editorHeight: Number.parseInt(event.target.value, 10),
+                });
+              }}
+              type="number"
+              value={config.editorHeight}
+            />
+          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Switch
@@ -735,53 +727,49 @@ const PerformanceControls = ({
           </p>
 
           <p>
-            Requested DOM strategy:{' '}
-            <output data-test-id="huge-document-requested-strategy">
-              {formatMetric(domStrategyMetrics?.requestedStrategy)}
-            </output>
-          </p>
-
-          <p>
-            Effective DOM strategy:{' '}
-            <output data-test-id="huge-document-effective-strategy">
-              {formatMetric(domStrategyMetrics?.effectiveStrategy)}
+            Rendering mode:{' '}
+            <output data-test-id="huge-document-rendering-mode">
+              {config.renderingMode}
             </output>
           </p>
 
           <p>
             Mounted top-level blocks:{' '}
             <output data-test-id="huge-document-mounted-top-level-count">
-              {formatMetric(domStrategyMetrics?.mountedTopLevelCount)}
+              {surfaceStatistics?.mountedBlockCount ?? '-'}
             </output>
           </p>
 
           <p>
             Pending top-level blocks:{' '}
             <output data-test-id="huge-document-pending-top-level-count">
-              {formatMetric(domStrategyMetrics?.pendingTopLevelCount)}
+              {surfaceStatistics
+                ? Math.max(
+                    0,
+                    config.blocks - surfaceStatistics.mountedBlockCount
+                  )
+                : '-'}
             </output>
           </p>
 
           <p>
             DOM coverage boundaries:{' '}
             <output data-test-id="huge-document-dom-coverage-boundary-count">
-              {formatMetric(domStrategyMetrics?.domCoverageBoundaryCount)}
+              {surfaceStatistics?.boundaryCount ?? '-'}
             </output>
           </p>
 
           <p>
             DOM nodes:{' '}
             <output data-test-id="huge-document-dom-node-count">
-              {formatMetric(domStrategyMetrics?.domNodeCount)}
+              {surfaceStatistics?.domNodeCount ?? '-'}
             </output>
           </p>
 
           <p>
             Virtualized viewport boundaries:{' '}
             <output data-test-id="huge-document-viewport-boundary-count">
-              {formatMetric(
-                domStrategyMetrics?.viewportVirtualizationBoundaryCount
-              )}
+              {surfaceStatistics?.boundaryCount ?? '-'}
             </output>
           </p>
 

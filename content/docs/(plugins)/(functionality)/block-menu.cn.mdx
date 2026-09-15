@@ -2,7 +2,7 @@
 title: 块菜单
 description: 对编辑器选择中的节点执行上下文菜单操作。
 docs:
-  - route: /docs/plite/api/locations/selection
+  - route: /docs/api/selection
     title: Selection API
   - route: /docs/components/block-menu
     title: Block Context Menu
@@ -42,12 +42,12 @@ export const editor = createEditor({
 菜单关闭后会恢复 editable 焦点。触摸设备只渲染子元素；只读编辑器不会
 打开菜单。
 
-使用 `data-plate-open-context-menu={false}` 禁用特定区域的菜单：
+使用 `data-editor-open-context-menu={false}` 禁用特定区域的菜单：
 
 ```tsx
-<PlateElement data-plate-open-context-menu={false} {...props}>
+<EditorElement data-editor-open-context-menu={false} {...props}>
   {children}
-</PlateElement>
+</EditorElement>
 ```
 
 ## 操作

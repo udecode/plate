@@ -1,0 +1,73 @@
+---
+title: "React Editor Setup"
+description: "Create React-backed editors with useEditor, createEditor, or the react plugin."
+---
+
+Create React-backed editors with `useEditor` when a React component owns
+the editor lifetime.
+
+## useEditor
+
+```tsx
+import { Plite, useEditor } from "plitejs/react";
+
+const MyEditor = () => {
+  const editor = useEditor({
+    initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+  });
+
+  return <Plite editor={editor}>...</Plite>;
+};
+```
+
+`useEditor` creates one editor for the component lifetime and installs
+React, DOM, clipboard, and default history capabilities. The editor exposes host
+APIs through `editor.api`.
+
+```typescript
+editor.api.dom.focus();
+editor.api.dom.clipboard.insertTextData(dataTransfer);
+editor.api.react.isComposing();
+```
+
+Use `createEditor` when the editor is created outside a component or
+inside a custom hook that owns the same one-shot lifetime.
+
+## createEditor
+
+```typescript
+const editor = createEditor({
+  initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+});
+```
+
+Use the lower-level `react({ dom })` plugin only when composing plugins
+through `createEditor`. Pass the exact DOM descriptor that React installs as a
+dependency.
+
+## react
+
+```typescript
+import { createEditor } from "plitejs";
+import { dom } from "plitejs/dom";
+import { react } from "plitejs/react";
+
+const DOMPlugin = dom();
+
+const editor = createEditor({
+  plugins: [react({ dom: DOMPlugin })],
+  initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+});
+```
+
+Configure the internal Plite clipboard payload with `clipboardFormatKey`.
+
+```typescript
+const editor = createEditor({
+  clipboardFormatKey: "x-acme-editor-fragment",
+  initialValue,
+});
+```
+
+See [React Editor](./react-editor) for DOM, focus, selection, and clipboard
+APIs.

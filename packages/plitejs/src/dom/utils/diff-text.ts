@@ -10,16 +10,17 @@ import {
   RangeApi,
 } from '../..';
 import {
+  hasInternalDocumentChangeRoot,
+  mapInternalDocumentChangePoint,
+} from '../../core/change/document-change';
+import { MAIN_ROOT_KEY, toInternalRoot } from '../../core/public-root';
+import {
   type AnyEditor as EditorType,
   above as editorAbove,
-  hasInternalDocumentChangeRoot,
   hasPath as editorHasPath,
   isBlock as editorIsBlock,
-  MAIN_ROOT_KEY,
-  mapInternalDocumentChangePoint,
   next as editorNext,
-  toInternalRoot,
-} from '../../internal';
+} from '../../interfaces/editor';
 import { EDITOR_TO_PENDING_DIFFS } from './weak-maps';
 
 export type StringDiff = {

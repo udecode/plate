@@ -1,10 +1,10 @@
-import { type Node, NodeApi, PathApi, type Range } from '../..';
+import { type Node, NodeApi, PathApi, type Range, SelectionApi } from '../..';
 import { profilePliteReactDuration } from '../render-profiler';
 import {
   failInvariant,
-  getEditorCurrentMarks,
   type Editor as RuntimeEditor,
 } from './runtime-editor-api';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 const hasActiveMarks = (marks: Record<string, unknown> | null) =>
   !!marks && Object.keys(marks).length > 0;
@@ -78,7 +78,9 @@ const canUseExplicitCollapsedTextInsert = ({
     const [node] =
       state.nodes.get(selection.anchor.path) ??
       failInvariant(
-        `Expected replacement anchor at ${JSON.stringify(selection.anchor.path)}`
+        `Expected replacement anchor at ${JSON.stringify(
+          selection.anchor.path
+        )}`
       );
 
     return isUnmarkedTextNode(node);
@@ -92,7 +94,10 @@ export const canUseCachedCollapsedTextInsert = ({
   editor: RuntimeEditor;
   selection: Range;
 }) => {
-  const marks = getEditorCurrentMarks(editor);
+  const currentSelection = readRuntimeSelection(editor);
+  const marks = SelectionApi.isText(currentSelection)
+    ? (currentSelection.marks ?? null)
+    : null;
 
   if (hasActiveMarks(marks)) {
     return false;
@@ -102,7 +107,9 @@ export const canUseCachedCollapsedTextInsert = ({
     const [node] =
       state.nodes.get(selection.anchor.path) ??
       failInvariant(
-        `Expected cached insertion anchor at ${JSON.stringify(selection.anchor.path)}`
+        `Expected cached insertion anchor at ${JSON.stringify(
+          selection.anchor.path
+        )}`
       );
 
     return isUnmarkedTextNode(node);

@@ -1,3 +1,4 @@
+import { createAnchor } from '../core/anchor';
 import { getEditorSchema } from '../core/editor-runtime';
 import { applyBuiltDocumentChange } from '../core/public-state';
 import { nodes as getNodes } from '../editor/nodes';
@@ -72,10 +73,15 @@ export const deletePathTarget = (
   select: boolean
 ) => {
   const fallbackAnchor = target.fallbackPoint
-    ? editor.anchor(target.fallbackPoint, {
-        association: 'backward',
-        deletion: 'nearest',
-      })
+    ? createAnchor(
+        editor,
+        target.fallbackPoint,
+        {
+          association: 'backward',
+          deletion: 'nearest',
+        },
+        'transaction'
+      )
     : null;
 
   applyBuiltDocumentChange(editor, (builder, root) =>
@@ -201,19 +207,34 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
     PathApi.isCommon(path, plan.end.path)
   );
   const pathAnchors = deleteMatchPaths.map((path) =>
-    editor.anchor(path, {
-      association: 'forward',
-      deletion: 'drop',
-    })
+    createAnchor(
+      editor,
+      path,
+      {
+        association: 'forward',
+        deletion: 'drop',
+      },
+      'transaction'
+    )
   );
-  const startAnchor = editor.anchor(plan.start, {
-    association: 'backward',
-    deletion: 'nearest',
-  });
-  const endAnchor = editor.anchor(plan.end, {
-    association: 'forward',
-    deletion: 'nearest',
-  });
+  const startAnchor = createAnchor(
+    editor,
+    plan.start,
+    {
+      association: 'backward',
+      deletion: 'nearest',
+    },
+    'transaction'
+  );
+  const endAnchor = createAnchor(
+    editor,
+    plan.end,
+    {
+      association: 'forward',
+      deletion: 'nearest',
+    },
+    'transaction'
+  );
   let removedText = '';
 
   if (!plan.isSingleText && !plan.startNonEditable && !skipStartText) {

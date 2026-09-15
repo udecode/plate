@@ -64,7 +64,7 @@ const Schema = defineEditorSchema('schema:validation-diagnostics', {
 
 const createDiagnosticEditor = () =>
   createEditor({
-    extensions: [Schema],
+    plugins: [Schema],
     initialValue: [{ type: 'paragraph', children: [{ text: 'valid' }] }],
   });
 
@@ -139,7 +139,7 @@ describe('runtime schema validation diagnostics', () => {
       parentType: 'paragraph',
       path: [0, 0],
       property: {
-        extensions: ['schema:validation-diagnostics'],
+        plugins: ['schema:validation-diagnostics'],
         ids: [bold.id],
         key: 'bold',
         placement: 'text',
@@ -179,7 +179,7 @@ describe('runtime schema validation diagnostics', () => {
       nodeType: 'paragraph',
       path: [0],
       property: {
-        extensions: ['schema:validation-diagnostics'],
+        plugins: ['schema:validation-diagnostics'],
         ids: [count.id],
         key: 'count',
         placement: 'element',
@@ -217,7 +217,7 @@ describe('runtime schema validation diagnostics', () => {
       parentType: 'heading',
       path: [0, 0],
       property: {
-        extensions: ['schema:validation-diagnostics'],
+        plugins: ['schema:validation-diagnostics'],
         ids: candidates.map(({ id }) => id),
         key: 'tone',
         placement: 'text',

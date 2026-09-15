@@ -49,9 +49,9 @@ First, create an input plugin that will be inserted when the trigger is activate
 ```tsx showLineNumbers
 import { property } from 'platejs';
 import { BaseComboboxPlugin } from 'platejs/combobox';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const TagInputPlugin = definePlatePlugin('tagInput', {
+export const TagInputPlugin = definePlugin('tagInput', {
   dependencies: [BaseComboboxPlugin],
   editOnly: true,
   schema: {
@@ -74,7 +74,7 @@ Create your main plugin with trigger metadata:
 ```tsx showLineNumbers
 import { property } from 'platejs';
 import { triggerCombobox, type TriggerComboboxPluginState } from 'platejs/combobox';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 import { TagInputPlugin } from './tag-input-plugin';
 
 const initialState: TriggerComboboxPluginState = {
@@ -86,7 +86,7 @@ const initialState: TriggerComboboxPluginState = {
   }),
 };
 
-export const TagPlugin = definePlatePlugin('customTag', {
+export const TagPlugin = definePlugin('customTag', {
   dependencies: [TagInputPlugin],
   initialState,
   schema: {
@@ -123,8 +123,8 @@ Create the input element component using `InlineCombobox`:
 
 ```tsx showLineNumbers
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditorFocused,
   useEditorReadOnly,
   useElementSelected,
@@ -142,9 +142,9 @@ import { TagPlugin } from './tag-plugin';
 
 const tags = ['Frontend', 'Backend', 'Design', 'Urgent'];
 
-export function TagInputElement(props: PlateElementProps<typeof TagInputPlugin>) {
+export function TagInputElement(props: EditorElementProps<typeof TagInputPlugin>) {
   return (
-    <PlateElement {...props} as="span">
+    <EditorElement {...props} as="span">
       <InlineCombobox element={props.element} trigger="#">
         <InlineComboboxInput />
         <InlineComboboxContent>
@@ -153,7 +153,7 @@ export function TagInputElement(props: PlateElementProps<typeof TagInputPlugin>)
             <InlineComboboxItem
               key={tag}
               value={tag}
-              onSelect={(tx) => tx.plugin(TagPlugin).insert(tag)}
+              onSelect={(tx) => tx.plugin(TagPlugin.name).insert(tag)}
             >
               #{tag}
             </InlineComboboxItem>
@@ -161,17 +161,17 @@ export function TagInputElement(props: PlateElementProps<typeof TagInputPlugin>)
         </InlineComboboxContent>
       </InlineCombobox>
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 
-export function TagElement(props: PlateElementProps<typeof TagPlugin>) {
+export function TagElement(props: EditorElementProps<typeof TagPlugin>) {
   const selected = useElementSelected();
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
 
   return (
-    <PlateElement
+    <EditorElement
       {...props}
       as="span"
       className={cn(
@@ -182,7 +182,7 @@ export function TagElement(props: PlateElementProps<typeof TagPlugin>) {
     >
       #{props.element.value}
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 ```

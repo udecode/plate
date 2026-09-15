@@ -1,12 +1,12 @@
 import type { BaseBlockquotePlugin } from 'platejs';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 export function BlockquoteElementStatic(
-  props: PliteElementProps<typeof BaseBlockquotePlugin>
+  props: EditorElementProps<typeof BaseBlockquotePlugin>
 ) {
   return (
-    <PliteElement
+    <EditorElement
       as="blockquote"
       className="my-1 border-l-2 pl-6 italic"
       {...props}

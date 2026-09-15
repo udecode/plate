@@ -113,7 +113,13 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs', 'use-file-picker@2.1.2', 'mammoth', 'validator'],
+    dependencies: [
+      'platejs',
+      'use-file-picker@2.1.2',
+      'mammoth',
+      'sonner',
+      'validator',
+    ],
     description: 'A toolbar button to import editor content from a file.',
     files: [
       {
@@ -127,7 +133,11 @@ export const editorComponents: Registry['items'] = [
       label: 'New',
     },
     name: 'import-toolbar-button',
-    registryDependencies: ['dropdown-menu', '@plate/toolbar'],
+    registryDependencies: [
+      'dropdown-menu',
+      '@plate/docx-source',
+      '@plate/toolbar',
+    ],
     title: 'Import Toolbar Button',
     type: 'registry:component',
   },
@@ -142,11 +152,12 @@ export const editorComponents: Registry['items'] = [
       'jszip',
       'juice',
       'mime-types',
+      'sonner',
       'virtual-dom',
       'xmlbuilder2',
     ],
     description:
-      'A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).',
+      'A toolbar button for exporting editor content as HTML, PDF, an image, Markdown, or Word.',
     files: [
       {
         path: 'components/editor/export-toolbar-button.tsx',
@@ -161,6 +172,7 @@ export const editorComponents: Registry['items'] = [
     name: 'export-toolbar-button',
     registryDependencies: [
       '@plate/docx-export',
+      '@plate/docx-source',
       'dropdown-menu',
       '@plate/toolbar',
       '@plate/editor-static',
@@ -347,8 +359,8 @@ export const editorComponents: Registry['items'] = [
     meta: {
       docs: [
         {
-          route: '/docs/plite/libraries/plite-history',
-          title: 'Plite History',
+          route: '/docs/history',
+          title: 'History',
         },
       ],
       examples: ['basic-nodes-demo'],
@@ -555,7 +567,11 @@ export const editorComponents: Registry['items'] = [
       examples: ['basic-nodes-demo'],
     },
     name: 'mode-toolbar-button',
-    registryDependencies: ['dropdown-menu', '@plate/toolbar'],
+    registryDependencies: [
+      'dropdown-menu',
+      '@plate/suggestion',
+      '@plate/toolbar',
+    ],
     title: 'Mode Toolbar Button',
     type: 'registry:component',
   },
@@ -761,7 +777,7 @@ export const editorComponents: Registry['items'] = [
       docs: [{ route: '/docs/suggestion' }],
     },
     name: 'suggestion-toolbar-button',
-    registryDependencies: ['@plate/toolbar'],
+    registryDependencies: ['@plate/suggestion', '@plate/toolbar'],
     title: 'Suggestion Toolbar Button',
     type: 'registry:component',
   },

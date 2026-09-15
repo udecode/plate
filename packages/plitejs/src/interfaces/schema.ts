@@ -116,12 +116,16 @@ export interface PropertySetDescriptor<
 }
 
 export type PropertyValueOf<TDescriptor> =
-  TDescriptor extends Readonly<{ '~schema.value'?: infer TValue }>
+  TDescriptor extends Readonly<{
+    '~schema.value'?: infer TValue;
+  }>
     ? TValue
     : never;
 
 export type PropertyOptionsOf<TDescriptor> =
-  TDescriptor extends Readonly<{ '~schema.options'?: infer TOptions }>
+  TDescriptor extends Readonly<{
+    '~schema.options'?: infer TOptions;
+  }>
     ? TOptions
     : never;
 
@@ -462,7 +466,7 @@ export type EditorSchemaElementOverride = Readonly<{
   /** Element type owned by `source` before application overrides. */
   element: string;
   kind: 'element';
-  /** Extension that owns the element declaration. */
+  /** Plugin that owns the element declaration. */
   source: string;
   /** Replace the element's child grammar. */
   content?: SchemaContent;
@@ -477,7 +481,7 @@ export type EditorSchemaPropertyOverride = Readonly<{
   /** Compiled id of the property before application overrides. */
   id: string;
   kind: 'property';
-  /** Extension that owns the property declaration. */
+  /** Plugin that owns the property declaration. */
   source: string;
   /** Replace the property's target relationship. */
   target?: SchemaTarget | null;
@@ -660,8 +664,8 @@ export type EditorSchemaDeclaration =
   | EditorSchemaContribution
   | EditorSchemaDefinition;
 
-/** A complete schema packaged as one raw Plite extension contribution. */
-export type EditorSchemaExtension<
+/** A complete schema packaged as one editor plugin contribution. */
+export type EditorSchemaPlugin<
   TDefinition extends EditorSchemaDefinition = EditorSchemaDefinition,
   TName extends string = string,
 > = Readonly<{
@@ -1605,7 +1609,7 @@ export type SchemaTextInNode<TNode> = '~schema.node' extends keyof TNode
 
 declare const EDITOR_SCHEMA_VALUE: unique symbol;
 
-type SchemaValueBrand<TSchema extends EditorSchemaExtension> = Readonly<{
+type SchemaValueBrand<TSchema extends EditorSchemaPlugin> = Readonly<{
   [EDITOR_SCHEMA_VALUE]?: SchemaNodeTypeProviderFor<TSchema>;
 }>;
 
@@ -1613,7 +1617,7 @@ type SchemaValueBrand<TSchema extends EditorSchemaExtension> = Readonly<{
  * Finite installed element vocabulary inferred from one complete schema.
  * Runtime schema validates primary and named-root grammar.
  */
-export type SchemaValue<TSchema extends EditorSchemaExtension> = ReadonlyArray<
+export type SchemaValue<TSchema extends EditorSchemaPlugin> = ReadonlyArray<
   string extends SchemaElementTypes<TSchema>
     ? BaseElement
     :
@@ -1650,20 +1654,19 @@ export type SchemaDescendantInValue<V extends readonly unknown[]> =
       : never;
 
 /**
- * Deferred type-only schema forwarding for extension slots.
+ * Deferred type-only schema forwarding for plugin slots.
  *
  * @internal
  */
-export interface EditorSchemaExtensionProvider<
-  TSchemaFactory extends () => EditorSchemaExtension =
-    () => EditorSchemaExtension,
+export interface EditorSchemaPluginProvider<
+  TSchemaFactory extends () => EditorSchemaPlugin = () => EditorSchemaPlugin,
 > {
-  readonly '~schema.extensions': TSchemaFactory;
+  readonly '~schema.plugins': TSchemaFactory;
 }
 
 type SchemaDeclarationOf<TInput> = TInput extends readonly unknown[]
   ? SchemaDeclarationOf<TInput[number]>
-  : TInput extends EditorSchemaExtensionProvider<infer TSchemaFactory>
+  : TInput extends EditorSchemaPluginProvider<infer TSchemaFactory>
     ? ReturnType<TSchemaFactory>['schema']
     : TInput extends { schema: infer TSchema }
       ? TSchema extends (...args: any[]) => infer TResult
@@ -1762,7 +1765,7 @@ type SchemaComposedDefinition<
   } & SchemaComposedLineage<TComplete>
 >;
 
-type SchemaComposedExtension<TInput> = [SchemaDeclarationOf<TInput>] extends [
+type SchemaComposedPlugin<TInput> = [SchemaDeclarationOf<TInput>] extends [
   never,
 ]
   ? never
@@ -1770,19 +1773,19 @@ type SchemaComposedExtension<TInput> = [SchemaDeclarationOf<TInput>] extends [
     ? TComplete extends EditorSchemaDefinition
       ? SchemaComposedDefinition<TInput, TComplete> extends infer TDefinition
         ? TDefinition extends EditorSchemaDefinition
-          ? EditorSchemaExtension<TDefinition>
+          ? EditorSchemaPlugin<TDefinition>
           : never
         : never
       : never
     : never;
 
 /** Complete schema vocabulary composed from every installed contribution. */
-export type SchemaExtensionsOf<TInput> = SchemaComposedExtension<TInput>;
+export type SchemaPluginsOf<TInput> = SchemaComposedPlugin<TInput>;
 
 /** Default document value derived from the composed installed schema. */
-export type SchemaValueFromExtensions<TInput> =
-  SchemaComposedExtension<TInput> extends infer TSchema
-    ? TSchema extends EditorSchemaExtension
+export type SchemaValueFromPlugins<TInput> =
+  SchemaComposedPlugin<TInput> extends infer TSchema
+    ? TSchema extends EditorSchemaPlugin
       ? SchemaValue<TSchema>
       : never
     : never;

@@ -6,8 +6,8 @@ import React from 'react';
 import {
   createEditor,
   ParagraphPlugin,
-  Plate,
-  PlateContent,
+  EditorRoot,
+  EditorContent,
   useEditor,
 } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
@@ -15,6 +15,7 @@ import { AIChatPlugin } from './AIChatPlugin';
 function setup() {
   const editor = createEditor({
     plugins: [ParagraphPlugin, AIChatPlugin],
+    userId: 'alice',
     initialValue: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'aiChat', children: [{ text: '' }] },
@@ -37,10 +38,10 @@ function setup() {
   }
   function View({ index }: { index: number }) {
     return (
-      <Plate editor={editor}>
-        <PlateContent data-testid={`editor-${index}`} />
+      <EditorRoot editor={editor}>
+        <EditorContent data-testid={`editor-${index}`} />
         <Probe index={index} />
-      </Plate>
+      </EditorRoot>
     );
   }
   function App({ first = true }: { first?: boolean }) {

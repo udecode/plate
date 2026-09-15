@@ -2,13 +2,13 @@
 
 import {
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   ElementApi,
   schema,
 } from 'plitejs';
 import {
   Editable,
-  Plite,
+  EditorRoot,
   type RenderElementProps,
   useEditorContext,
   useEditorState,
@@ -30,7 +30,7 @@ const profileVersions: Record<SchemaProfile, number> = {
   void: 3,
 };
 
-const schemaSlot = defineExtensionSlot('schema-reconfiguration');
+const schemaSlot = definePluginSlot('schema-reconfiguration');
 
 const createSchema = (profile: SchemaProfile) =>
   defineEditorSchema('schema:schema-reconfiguration-browser-proof', {
@@ -155,7 +155,7 @@ const SchemaControls = () => {
   });
   const document = useEditorState((state) => JSON.stringify(state.value()));
   const applyProfile = (profile: SchemaProfile) => {
-    editor.update.extensions.reconfigure(schemaSlot, createSchema(profile));
+    editor.update.plugins.reconfigure(schemaSlot, createSchema(profile));
   };
 
   return (
@@ -195,7 +195,7 @@ const SchemaControls = () => {
 
 const SchemaReconfigurationExample = () => {
   const editor = useEditor({
-    extensions: [schemaSlot.of(createSchema('block'))] as const,
+    plugins: [schemaSlot.of(createSchema('block'))] as const,
     initialValue: {
       children: [
         emptyProbe(),
@@ -214,7 +214,7 @@ const SchemaReconfigurationExample = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <div className="flex flex-col gap-4">
         <SchemaControls />
         <Editable
@@ -231,7 +231,7 @@ const SchemaReconfigurationExample = () => {
           root="notes"
         />
       </div>
-    </Plite>
+    </EditorRoot>
   );
 };
 

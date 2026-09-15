@@ -74,6 +74,7 @@ export type PreparedDocumentChange = Readonly<{
   before: JsonEditorValue;
   canonical: boolean;
   change: DocumentChange;
+  steps: readonly DocumentChange[];
   indexedAfter: ReadonlyMap<string, DocumentIndex>;
   indexedBefore: ReadonlyMap<string, DocumentIndex>;
   indexes: ReadonlyMap<string, DocumentIndex>;
@@ -92,6 +93,7 @@ export const PREPARED_DOCUMENT_CHANGES = new WeakMap<
 /** Builds and applies canonical document steps against one immutable draft. */
 export class ChangeDraft {
   private accumulated: DocumentChange;
+  private readonly appliedSteps: DocumentChange[] = [];
   private readonly assertCanonical?: (
     value: JsonEditorValue,
     change: DocumentChange
@@ -115,6 +117,7 @@ export class ChangeDraft {
   private readonly source: JsonEditorValue;
   private readonly sourceIndexes = new Map<string, DocumentIndex>();
   private readonly preparationAuthority: object;
+  private readonly trackChanges: boolean;
   private readonly runtimeCandidatesByChange = new WeakMap<
     DocumentChange,
     ReadonlyMap<string, readonly DocumentChangeRuntimeCandidate[]>
@@ -153,6 +156,7 @@ export class ChangeDraft {
       isSetValued?: DocumentSetPropertyResolver;
       preparationAuthority?: object;
       preparationRevision?: () => object;
+      trackChanges?: boolean;
       validate?: (value: JsonEditorValue, change: DocumentChange) => void;
       validateConstructed?: (
         input: Readonly<{
@@ -175,6 +179,7 @@ export class ChangeDraft {
     this.preparationAuthority =
       options.preparationAuthority ?? Object.freeze({});
     this.preparationRevision = options.preparationRevision;
+    this.trackChanges = options.trackChanges ?? true;
     this.validate = options.validate;
     this.validateConstructed = options.validateConstructed;
     this.accumulated = DocumentChange.empty;
@@ -182,6 +187,11 @@ export class ChangeDraft {
 
   get change() {
     return this.accumulated;
+  }
+
+  /** Canonical steps retain movement identity lost by composition. @internal */
+  get steps(): readonly DocumentChange[] {
+    return this.appliedSteps;
   }
 
   get value() {
@@ -220,6 +230,7 @@ export class ChangeDraft {
       isSetValued: this.isSetValued,
       preparationAuthority: this.preparationAuthority,
       preparationRevision: this.preparationRevision,
+      trackChanges: this.trackChanges,
       ...(options.validation === 'defer-to-parent'
         ? {}
         : {
@@ -283,6 +294,7 @@ export class ChangeDraft {
         before: this.source,
         canonical: this.canonical,
         change: classifiedChange,
+        steps: Object.freeze([...this.appliedSteps]),
         indexedAfter,
         indexedBefore,
         indexes: new Map(this.indexes),
@@ -326,6 +338,7 @@ export class ChangeDraft {
     }
 
     this.accumulated = accumulated;
+    this.appliedSteps.push(...payload.steps);
     if (accumulated === payload.change) {
       this.runtimeCandidatesByChange.set(
         accumulated,
@@ -480,9 +493,12 @@ export class ChangeDraft {
       this.indexes.delete(root);
     }
 
-    this.accumulated = this.accumulated.empty
-      ? classifiedChange
-      : this.accumulated.compose(classifiedChange, this.source);
+    if (this.trackChanges) {
+      this.accumulated = this.accumulated.empty
+        ? classifiedChange
+        : this.accumulated.compose(classifiedChange, this.source);
+      if (!classifiedChange.empty) this.appliedSteps.push(classifiedChange);
+    }
     this.canonical = false;
     this.current = current;
 
@@ -734,6 +750,7 @@ export class ChangeDraft {
     this.accumulated = this.accumulated.empty
       ? canonicalChange
       : this.accumulated.compose(canonicalChange, this.source);
+    if (!canonicalChange.empty) this.appliedSteps.push(canonicalChange);
     this.runtimeCandidatesByChange.set(
       canonicalChange,
       frozenRuntimeCandidates

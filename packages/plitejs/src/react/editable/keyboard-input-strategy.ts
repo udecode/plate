@@ -21,18 +21,19 @@ import {
   usesAppleDOMHotkeys,
 } from '../../dom/internal';
 import type { EditableKeyDownHandler } from '../components/editable';
-import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { focusPliteEditable } from '../hooks/focus-plite-editable';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY } from '../root-key';
 import { readPliteViewSelection } from '../view-selection';
+import { isSelectAllHotkey } from '../viewport-commands';
 import { applyEditableCaretMovement, getTextDirection } from './caret-engine';
 import {
   applyContentRootNavigation,
   applyContentRootViewSelection,
+  readContentRootAwareSelection,
 } from './content-root-navigation';
-import { shouldModelOwnPlainVerticalLargeDocumentExtension } from './dom-coverage-vertical-selection';
+import { shouldModelOwnPlainVerticalLargeDocumentPlugin } from './dom-coverage-vertical-selection';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import {
   isDestructiveEditableCommand,
@@ -55,6 +56,7 @@ import {
 import { applyModelOwnedHistoryIntent } from './model-input-strategy';
 import { applyEditableCommand } from './mutation-controller';
 import {
+  getEditorRuntimeOwner,
   hasPath as editorHasPath,
   isBlock as editorIsBlock,
   isElementReadOnly as editorIsElementReadOnly,
@@ -80,6 +82,29 @@ const keyDownHandled = (
 });
 const keyDownUnhandled = (): EditableKeyDownResult => ({ handled: false });
 
+const getSelectionFocusEditor = ({
+  editor,
+  getActiveContentRootOwner,
+  getContentRootOwnerViewEditor,
+  getMountedViewEditor,
+}: {
+  editor: ReactRuntimeEditor;
+} & HistoryFocusOwnerApi) => {
+  const selection = readRuntimeSelection(getEditorRuntimeOwner(editor));
+  const root = selection
+    ? (SelectionApi.root(selection) ?? MAIN_ROOT_KEY)
+    : toInternalRoot(editor.read((state) => state.view.root()));
+  const owner = getActiveContentRootOwner?.(root);
+
+  return (
+    (owner?.childRoot === root
+      ? getContentRootOwnerViewEditor?.(owner)
+      : null) ??
+    getMountedViewEditor?.(root) ??
+    editor
+  );
+};
+
 const DEFAULT_MODEL_COMMAND_REPAIR: EditableRepairRequest = {
   focus: true,
   kind: 'repair-caret',
@@ -97,6 +122,7 @@ const getOwnerlessViewSelectionRange = (
 
   if (
     !viewSelection ||
+    viewSelection.segments.parts.some((segment) => segment.fragment) ||
     viewSelection.anchor.owner ||
     viewSelection.focus.owner
   ) {
@@ -148,7 +174,7 @@ const getNestedEditableRootKey = (
   target: EventTarget | null
 ): RootKey | null => {
   const targetElement = getTargetElement(target);
-  const targetEditor = targetElement?.closest('[data-plite-editor="true"]');
+  const targetEditor = targetElement?.closest('[data-editor="true"]');
 
   if (!(targetEditor instanceof HTMLElement)) {
     return null;
@@ -166,7 +192,7 @@ const getNestedEditableRootKey = (
     return null;
   }
 
-  return targetEditor.getAttribute('data-plite-root') ?? null;
+  return targetEditor.getAttribute('data-editor-root') ?? null;
 };
 
 const qualifySelectionRoot = (
@@ -217,7 +243,7 @@ const readNestedEditableDOMSelection = (
     return null;
   }
 
-  return ReactEditor.resolvePliteRange(nestedEditor, domSelection, {
+  return ReactEditor.resolveRange(nestedEditor, domSelection, {
     exactMatch: false,
   });
 };
@@ -282,12 +308,10 @@ const getModelOwnedHistoryKeyDownResult = (
   return keyDownHandled(repair, focusEditor);
 };
 
-const isPartialDOMStrategyRuntime = (domStrategyRuntime: unknown) =>
-  typeof domStrategyRuntime === 'object' &&
-  domStrategyRuntime !== null &&
-  ((domStrategyRuntime as { type?: unknown }).type === 'partial-dom' ||
-    (domStrategyRuntime as { type?: unknown }).type === 'staged' ||
-    (domStrategyRuntime as { type?: unknown }).type === 'virtualized');
+const isViewportRuntime = (viewportRuntime: unknown) =>
+  typeof viewportRuntime === 'object' &&
+  viewportRuntime !== null &&
+  (viewportRuntime as { type?: unknown }).type === 'virtualized';
 
 const getRangeSelection = (selection: Range | Selection): Range | null =>
   selection && RangeApi.isRange(selection) ? selection : null;
@@ -330,8 +354,8 @@ const isCollapsedSelectionBackedByEditableTextDOM = ({
     : isDOMElement(anchorNode)
       ? anchorNode
       : null;
-  const textHost = anchorElement?.closest('[data-plite-node="text"]');
-  const textHostPath = textHost?.getAttribute('data-plite-path');
+  const textHost = anchorElement?.closest('[data-editor-node="text"]');
+  const textHostPath = textHost?.getAttribute('data-editor-path');
   const domOffset = isDOMText(anchorNode) ? domSelection.anchorOffset : null;
   const pendingNativeTextInputRepairPathKey =
     inputController.state?.pendingNativeTextInputRepairPathKey ?? null;
@@ -419,16 +443,16 @@ export const applyEditableKeyDown = ({
   event,
   forceRender,
   inputController,
-  domStrategyRuntime,
+  viewportRuntime,
   onKeyDown,
   preferredVerticalX,
   readOnly,
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
-  setExplicitPartialDOMBackedSelection,
+  setExplicitViewportBackedSelection,
   setComposing,
-  partialDOMBackedSelection,
+  viewportBackedSelection,
 }: {
   androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
   domPhaseScheduler: DOMPhaseScheduler;
@@ -436,7 +460,7 @@ export const applyEditableKeyDown = ({
   event: ReactKeyboardEvent<HTMLDivElement>;
   forceRender: () => void;
   inputController: EditableInputController;
-  domStrategyRuntime: unknown;
+  viewportRuntime: unknown;
   onKeyDown?: EditableKeyDownHandler;
   preferredVerticalX?: number;
   readOnly: boolean;
@@ -451,9 +475,9 @@ export const applyEditableKeyDown = ({
     ownerRoot: RootKey;
   }) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
-  setExplicitPartialDOMBackedSelection: (nextValue: boolean) => void;
+  setExplicitViewportBackedSelection: (nextValue: boolean) => void;
   setComposing: EditableCompositionStateSetter;
-  partialDOMBackedSelection: boolean;
+  viewportBackedSelection: boolean;
 }): EditableKeyDownResult => {
   if (isInteractiveInternalTarget(editor, event.target)) {
     const { nativeEvent } = event;
@@ -531,7 +555,15 @@ export const applyEditableKeyDown = ({
       applyEditableCommand({ command: projectedCommand, editor });
       markEditableEditingEpochCommandHandled(editor, projectedCommand);
 
-      return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+      return keyDownHandled(
+        DEFAULT_MODEL_COMMAND_REPAIR,
+        getSelectionFocusEditor({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        })
+      );
     }
 
     if (!readOnly && Hotkeys.isRedo(nativeEvent)) {
@@ -600,6 +632,35 @@ export const applyEditableKeyDown = ({
       return keyDownHandled({ forceRender: true, kind: 'force-render' });
     }
 
+    const selection = getRangeSelection(readRuntimeSelection(editor));
+    const element =
+      selection && editorHasPath(editor, selection.focus.path)
+        ? NodeApi.parent(editor, selection.focus.path)
+        : null;
+    const result = applyContentRootViewSelection({
+      editor,
+      event,
+      getActiveContentRootOwner,
+      getContentRootOwnerViewEditor,
+      getMountedViewEditor,
+      isRTL: element
+        ? getTextDirection(NodeApi.string(element)) === 'rtl'
+        : false,
+      preferredX: preferredVerticalX,
+      selection,
+    });
+    if (result.handled) {
+      return keyDownHandled({
+        focus: true,
+        kind: 'sync-selection',
+        selectionSourceTransition: {
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
+        },
+      });
+    }
+
     return keyDownUnhandled();
   }
 
@@ -628,7 +689,10 @@ export const applyEditableKeyDown = ({
       return userKeyDownResult;
     }
 
-    const selection = readRuntimeSelection(editor);
+    const selection = readContentRootAwareSelection({
+      editor,
+      getActiveContentRootOwner,
+    });
     const selectionRange = getRangeSelection(selection);
     const selectionRoot = SelectionApi.root(selection);
     const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
@@ -721,16 +785,15 @@ export const applyEditableKeyDown = ({
       inputController.state.isUpdatingSelection = true;
       inputController.state.selectionChangeOrigin = 'programmatic-export';
       applyEditableCommand({ command: { kind: 'select-all' }, editor });
-      const partialDOMStrategyRuntime =
-        isPartialDOMStrategyRuntime(domStrategyRuntime);
-      if (partialDOMStrategyRuntime) {
+      const isVirtualizedViewport = isViewportRuntime(viewportRuntime);
+      if (isVirtualizedViewport) {
         setEditableModelSelectionPreference({
           inputController,
           preferModelSelection: true,
-          selectionSource: 'partial-dom-backed',
+          selectionSource: 'viewport-backed',
         });
       }
-      setExplicitPartialDOMBackedSelection(partialDOMStrategyRuntime);
+      setExplicitViewportBackedSelection(isVirtualizedViewport);
       forceRender();
       const clearSelectionUpdate = () => {
         if (
@@ -774,7 +837,9 @@ export const applyEditableKeyDown = ({
       ? selection.paths[0]?.[0]
       : selectionRange?.focus.path[0];
     const element = children[selectedTopLevelIndex ?? 0];
-    const isRTL = getTextDirection(NodeApi.string(element)) === 'rtl';
+    const isRTL = element
+      ? getTextDirection(NodeApi.string(element)) === 'rtl'
+      : false;
 
     // COMPAT: Since we prevent the default behavior on
     // `beforeinput` events, the browser doesn't think there's ever
@@ -821,8 +886,8 @@ export const applyEditableKeyDown = ({
     }
 
     if (
-      isPartialDOMStrategyRuntime(domStrategyRuntime) &&
-      partialDOMBackedSelection &&
+      isViewportRuntime(viewportRuntime) &&
+      viewportBackedSelection &&
       !isCollapsedSelectionBackedByEditableTextDOM({
         editor,
         inputController,
@@ -858,8 +923,8 @@ export const applyEditableKeyDown = ({
       getOwnerlessViewSelectionRange(editor) ?? selectionRange;
 
     if (
-      shouldModelOwnPlainVerticalLargeDocumentExtension({
-        domStrategyRuntime,
+      shouldModelOwnPlainVerticalLargeDocumentPlugin({
+        viewportRuntime,
         editor,
         event: nativeEvent,
         selection: largeDocumentVerticalSelection,
@@ -867,7 +932,7 @@ export const applyEditableKeyDown = ({
     ) {
       const caretMovementResult = applyEditableCaretMovement({
         domPhaseScheduler,
-        domStrategyRuntime,
+        viewportRuntime,
         editor,
         event,
         preferredX: preferredVerticalX,
@@ -920,7 +985,7 @@ export const applyEditableKeyDown = ({
 
     const caretMovementResult = applyEditableCaretMovement({
       domPhaseScheduler,
-      domStrategyRuntime,
+      viewportRuntime,
       editor,
       event,
       preferredX: preferredVerticalX,
@@ -993,15 +1058,23 @@ export const applyEditableKeyDown = ({
       applyEditableCommand({ command: keyDownCommand, editor });
       markEditableEditingEpochCommandHandled(editor, keyDownCommand);
 
-      return keyDownHandled({
-        focus: true,
-        kind: 'repair-caret',
-        selectionSourceTransition: {
-          preferModelSelection: true,
-          reason: 'model-command',
-          selectionSource: 'model-owned',
+      return keyDownHandled(
+        {
+          focus: true,
+          kind: 'repair-caret',
+          selectionSourceTransition: {
+            preferModelSelection: true,
+            reason: 'model-command',
+            selectionSource: 'model-owned',
+          },
         },
-      });
+        getSelectionFocusEditor({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        })
+      );
     }
 
     if (keyDownCommand?.kind === 'insert-break') {
@@ -1009,16 +1082,24 @@ export const applyEditableKeyDown = ({
       applyEditableCommand({ command: keyDownCommand, editor });
       markEditableEditingEpochCommandHandled(editor, keyDownCommand);
 
-      return keyDownHandled({
-        focus: true,
-        forceRender: true,
-        kind: 'repair-caret',
-        selectionSourceTransition: {
-          preferModelSelection: true,
-          reason: 'model-command',
-          selectionSource: 'model-owned',
+      return keyDownHandled(
+        {
+          focus: true,
+          forceRender: true,
+          kind: 'repair-caret',
+          selectionSourceTransition: {
+            preferModelSelection: true,
+            reason: 'model-command',
+            selectionSource: 'model-owned',
+          },
         },
-      });
+        getSelectionFocusEditor({
+          editor,
+          getActiveContentRootOwner,
+          getContentRootOwnerViewEditor,
+          getMountedViewEditor,
+        })
+      );
     }
 
     // COMPAT: Certain browsers don't support the `beforeinput` event, so we

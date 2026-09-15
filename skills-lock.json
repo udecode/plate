@@ -4,42 +4,42 @@
     "agent-native-reviewer": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "cbed33d72ed3b4106a5ac00d904d159a6228b6229b94316ed1fc72468cf95d12"
+      "computedHash": "f5caa312dc966fa7600b1b6340ba289f5595de933ea66439915d046a5447102c"
     },
     "architect": {
-      "source": "/Users/zbeyens/git/dotai",
+      "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "cc9ab9ea7557dd7b7b96a2ee4eb34bb30a48eecf609915a68096ef1740aee346"
+      "computedHash": "932e1454e96ea58b11472118eb0e6ee98ff50b82c6a0f010076a23a2bb7e0311"
     },
     "arena": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "1101c788c5b0b2cc83abe32393b13f0113bd32fd589edcc73b8c12385d1942a7"
+      "computedHash": "4c55d3dad42144961fb1fec8308473437c94c06435f2625b432936fb703285fc"
     },
     "autogoal": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "f929b1f1da80adff5db41f7d2d29c9d131e117f731ce0593da8b51a44ed800e2"
+      "computedHash": "8e88a934500fd4fe84ba15918e9d120b9dc62d1b3b6f9b1601b9553a0cf9b9c3"
     },
     "autoreview": {
-      "source": "openclaw/agent-skills",
-      "sourceType": "github",
-      "computedHash": "71038de9ed60dcfdad51e0e28188e033ed4b968b01045bf639fb322f3c2ddb9c"
+      "source": "../dotai",
+      "sourceType": "local",
+      "computedHash": "826a935c6926818589a46b35d519fb4a2667e5ad50e2dbb665a4e080e910bf34"
     },
     "best-api-review": {
       "source": "/Users/zbeyens/git/dotai",
       "sourceType": "local",
-      "computedHash": "c6907fe172017b94717a98b45f7a9d3f73424263261aaad1ed1c6b74a3cfd9ac"
+      "computedHash": "9646238aa9b45eb0d4b8185517b265b0d54b9f1f3b6fb59331b97df4de09a4a7"
     },
     "blast-radius": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "59e26813b8bafbea523b3fd5dc65d429db209e008394c766e374739798b3202e"
+      "computedHash": "b37cc5a3a97ce5a01cf8ef625c3ad1d6d037ae8b7a46d39f3bd41e16dca08826"
     },
     "create-verification-skill": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "b2257dc1ef1ab924e64b8dcbf64327760f09634437216f95c95d74633e1d64a3"
+      "computedHash": "fe50539d6f79beffeafd69e3c43b27ae4d53d1570b79abff9485fc5256552949"
     },
     "diagnosing-bugs": {
       "source": "mattpocock/skills",
@@ -50,7 +50,7 @@
     "figure-it-out": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "84e8e6f715413d8df659df6191ef6861b6dd146da5fbd5f98baa86463e7cf181"
+      "computedHash": "ccfdc8ef7b0cae4b02d37e7cd94e125d77a8b3835f98d0a69b6fb3a3e4e4fbc3"
     },
     "grill-with-docs": {
       "source": "mattpocock/skills",
@@ -60,142 +60,142 @@
     "how": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "3a0cbe23c4337045a3c1fac866f97c2a6ab34901ca7ed43a384fb235b4c5ab0c"
+      "computedHash": "4168964faac1d7d317d4bdef31e69b7a784692dba50f7422fff45b9be55696e4"
     },
     "interrogate": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "6af510d793980e9d3f3478c2364e49a220b5000cb22465244b96779afd5f005f"
+      "computedHash": "c07d5fef9ed3ccb77ae938853bf9714144a5bb53b76d694a71bab23903a861d4"
     },
     "maintain-verification-skill": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "7de3af3b74a1434810c4ddf0f75f2ebe5c560dcbaeabe190ff1f0feeed824c9f"
+      "computedHash": "a491f1a3e056531cf3ad02e3f3d86ff77c0828c1f496d162a36c65a7762ee20d"
     },
     "maintain-workflow": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "fee8438b28f0edebdb13a884eca60cca4c4d92d86e506d6cfcd4b70dd0549a20"
+      "computedHash": "bbc8f71005f835d60dc366327d65062446e2e009b76f8a754450d894dbfff44b"
     },
     "no-comments": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "7eb6087b9625d567c5ae5e2088eb8c34199d51a5f89f69663c697ba78abbbc5e"
+      "computedHash": "b7eb8b8437a42eb51d97e22c99886d12bd81ad8ec0061dd7dd12c736a74c2cbc"
     },
     "orchestrator": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "6893836641826910d89ad29db097942e9c79eb46c6be6bce189117bf47977b0e"
+      "computedHash": "e547deeae0a93ab520405bc72fb9bdd06181729bc14f883b78874437d61d9e96"
     },
     "poteto-mode": {
-      "source": "/Users/zbeyens/git/dotai",
+      "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "6363a731564274b9e666fd24b93a387ea6265d2eb18a9f157243a7ab4b0a4fc2"
+      "computedHash": "fbcca49c8d5ea3f84e0e75f273a9a3a8224a0ed0d5f9eefa6be8c5ed5b051868"
     },
     "principle-boundary-discipline": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "40310031cccd81243d04605e699171cd37277280065e0475761601f61f57723c"
+      "computedHash": "41526f0665f0caf3a413813a18bad425e4cfd2218bbb9cfdff1615f1330b0e24"
     },
     "principle-build-the-lever": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "3b684da01f243978911a2c5fdd7c54bfa5a331ca436a038d02d8eacce5c0284a"
+      "computedHash": "70ec79856b1c1c99a664e477d4ad05959a17a9f32993282891251060d013eb0e"
     },
     "principle-encode-lessons-in-structure": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "f5b42b7a1dfd3e069b0cd49947cd0534b825d1fbaeca9df991edeb395d747bf4"
+      "computedHash": "9d58b60e87108b51ed59277b61e761cff57d9f305bd9d4c821c96fcbf27d2cd3"
     },
     "principle-exhaust-the-design-space": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "37a6d7036a3d7f2a0f3f3978c97615908fa6fe51035abe96ff4952e5c623253f"
+      "computedHash": "df8d4e3bb36d1e06d8590d4957cc298e4b33283a9067246c5b0c0617448c9d11"
     },
     "principle-experience-first": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "8427888c235bd15b36aaef0e7172c7b5138abca99976f936a7d5a671ecdc8ea6"
+      "computedHash": "398db8229ecb4b404368900faae81fb0d6a52e1edf4629eebaea1a861e090082"
     },
     "principle-fix-root-causes": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "c69d46f225e52485c231f2bbcaacdc730b5584272a2acb92a923c972be5f6265"
+      "computedHash": "1be37c9d945bd5df0027c78d6d3bba7e8799f48809ef384ffdcabd05e9091840"
     },
     "principle-foundational-thinking": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "22752ddd998b46d84ea88337f6a0f3436d851175cdbedeb58bebb4f736901d82"
+      "computedHash": "30edc7246de5bdc8b338688b5857b6c0b33dd5462feadc64af53a5262020fea3"
     },
     "principle-guard-the-context-window": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "7c4bbe12d059d1f18bf8ddc537e4398de8d2804e1af49961c38ba3ca2735041f"
+      "computedHash": "b5662d9b991c98db436b09389c566e80d417ebefa920ab41b28c1cf1a002114e"
     },
     "principle-laziness-protocol": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "3f93e087ab18122917a89e3fc4fef2bd9f389945ab432c4d82f061dfc8ec402a"
+      "computedHash": "11ed35afeaefaf812e0196b647fec8561f0a861e2e0e4d333d766a0122041315"
     },
     "principle-make-operations-idempotent": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "68b8c70bb23068974fd052ccb0b2ac52d83ef43ff349b98a715e3189248a8839"
+      "computedHash": "451325ad5d1b3e58a5c47c0908fea2a1893c6dd13d40600e2ada05f017e41400"
     },
     "principle-migrate-callers-then-delete-legacy-apis": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "f62ffddf27ab1547b17dd6c21a9eaf0193c220241b62de9a0369f17fc3a6373c"
+      "computedHash": "292c302ff2ce29a5b7a07620d1219dbf2eb995bba7e540a2ac99a17746cb20ea"
     },
     "principle-minimize-reader-load": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "f10004ff5e6ee6b599491e01083ce503ddad7e05b122a363191466c25b73cae5"
+      "computedHash": "7a36920331023c0a6e752fe89a7313d71b5fee39083a3935576abf0344ceab50"
     },
     "principle-model-the-domain": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "e032573bb19a0df0f331f9d5edc42dd05537d2a91b1a19ab60c0262631260f86"
+      "computedHash": "b9e628aa158e36701ced82fc6d3f49572b1f85f494d99948f8e0142e85ce8db5"
     },
     "principle-never-block-on-the-human": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "4dad90d291ccea3d71998ee748603a2963e53604054201a0d4598787490c2726"
+      "computedHash": "8eadf6771f4f0febb5884f6db4c743b5e163b4673851cb5f8fd2be8bcb46a380"
     },
     "principle-outcome-oriented-execution": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "469855ec2338980ba2901bc314320c07c7bf26574c4bd154a5326e2559e614aa"
+      "computedHash": "7ddb074fb0f8265874302eb0f534e607390e76a115748bbb2f87d5fbfbbda8bf"
     },
     "principle-prove-it-works": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "a834fd1df3942e28a9bbbd0f4f9790685288304dc2d2adba99dae49c36d917c8"
+      "computedHash": "f5b39b1d7fea7846798796c7e24dec4560a071170373ca979127ff37eace746f"
     },
     "principle-redesign-from-first-principles": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "e59aaeef6f224126d9bf8f22c306ccb6c428875889113ba0b34c39454034520f"
+      "computedHash": "f6f65777ce17a1e44cd0e90a84a8726c6f3f1c95fed495cc28627bc82be1056b"
     },
     "principle-separate-before-serializing-shared-state": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "ce574c0c34b95a5a1679e8dad12dcec922c26a290c9eaa17f967649a84b710c6"
+      "computedHash": "082dbfca4f71860642ceec0a5b3558eebbb4a56aa697f5f789692c701efb32a1"
     },
     "principle-sequence-verifiable-units": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "167b9e216f2c308e6ae593ba0fb7e3e2378279e670910c55666a6123b26158bc"
+      "computedHash": "fe3f652368ae8f9896500561dae8364ce3c3147d6a4527937e4b35b8ece1bb93"
     },
     "principle-subtract-before-you-add": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "e6e6b89fd9c49db54a94d57f9eef53f9ff223839dcc4e5056296b693897edb8b"
+      "computedHash": "68942b33495e713da82a2b0e7eddf05706d9f99e978d4127c041942c754e7038"
     },
     "principle-type-system-discipline": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "d52b2aa9d187afaf33745166af58e39421b18a8b437a5a464d31ae73de658ce9"
+      "computedHash": "43749c5ec7e8cd1dc520b1873b3f6490b52172490fc301da81cd9c2ee705b305"
     },
     "prototype": {
       "source": "mattpocock/skills",
@@ -205,22 +205,22 @@
     "recall": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "e26a9589d1bb7f0f5ef63fc6e24e83799225673500b7f820009d84bfaeeb3fab"
+      "computedHash": "037abbc53e4cf38dd43597daff676c790713862af7abefda2d97f418e7e37fcb"
     },
     "reflect": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "d7732e1c3b35b5c76a635c390760b8d15f3ac12f73dfd55a0cf353b67b7a4984"
+      "computedHash": "4df3dbc81cefbf4f8ed2347df0f212e78fabd3a137fcbb3ad65fe2aab4b4b657"
     },
     "resolve-pr-feedback": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "68f6b8e170ceea5bee1ae810e6367b44cf66889cbcf8821b4568d6370e82a846"
+      "computedHash": "b5c2a6ea2f79c7e63390dfd01b3a2f32bedcdc6b27838155658c812e195f6002"
     },
     "setup-pstack": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "b5b1f76b2bf3cea5a72b517735561a490989f5cc1da805af87df1b4f6c8344ff"
+      "computedHash": "a613c65a9ca1d8d62580b6ca501a79447d0d6a42ab7818151e3d2ae659b492f2"
     },
     "shadcn": {
       "source": "shadcn/ui",
@@ -230,12 +230,12 @@
     "show-me-your-work": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "eab21d8ac9b1d3c07c4712c1445631c0cb7498ffd1c7b619b6406bbffb2fce39"
+      "computedHash": "fccb60ba372c4528927bf969040e0ef60ff166d77c16ea89b62ba68b7949ad4c"
     },
     "swarm": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "2ec4f44ee86bfbaf0e1e81e9a2be3ee314dd808eee802f13d7aa223bf9ccaf0a"
+      "computedHash": "a65ab4f0509c3c998fc0c14ec9f2506bfc0bcee3947e0e95b3c454e0d6ec5f45"
     },
     "tanstack-virtual": {
       "source": "tanstack-skills/tanstack-skills",
@@ -245,17 +245,17 @@
     "tdd": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "8fa95a72dbd516ddf3c775fb98326525bee5d10f85f6e75eb8bbe0ced1b15490"
+      "computedHash": "ce845e91ba284bbbc90384c3fbe75c54e44c2af9474bd2e08b8bb241c51b2181"
     },
     "teach": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "91d42540f315495b3b931e9e0ca458ce379a2c562479a0941359a0c701556a99"
+      "computedHash": "ac4d51fc8dc024bade4a04b08bf12c952dd946a73dff48fc8dbf44e2f44c8edf"
     },
     "technical-writing": {
-      "source": "/Users/zbeyens/git/dotai",
+      "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "8c4891014c94050c2512527a07965330d821814abf142e03bc1f4b71b2e631e8"
+      "computedHash": "c3339f15a363795168332201a048634476c9f23fe8a18efe32b6b6612f8855dd"
     },
     "typescript-advanced-types": {
       "source": "wshobson/agents",
@@ -265,7 +265,7 @@
     "typescript-best-practices": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "893ed305a1b8c2febcf59dd531ffb8e60064518c8abc081a2e159440b6d20685"
+      "computedHash": "ada3339906cd6bb680e3e710f40cf9d5297f2203cefbb1d0a3044d3ca53cff5c"
     },
     "vercel-composition-patterns": {
       "source": "vercel-labs/agent-skills",
@@ -280,17 +280,17 @@
     "video-transcripts": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "32e9d8f169242a5abe40e7e0a10d56426a88e657b264b5259142bd80029977f3"
+      "computedHash": "0081070a3658151f4421cf5ef3bfa459f755df36b0c374b03371c1627dca58b4"
     },
     "walkthrough": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "e303a7166afbc0ae663b08b0e93608d3f407b6d2f7b36a472c67ce4cc3b2f6a5"
+      "computedHash": "47b909b4f0cc9c79d3c6e0ec41d554944ae332d4e3a9ef59242b5df34c0937ea"
     },
     "why": {
       "source": "../dotai",
       "sourceType": "local",
-      "computedHash": "f2cb732c46f2718daaf135f2377d15ff24b7f241f9fac09dfaf74236e24b474e"
+      "computedHash": "61f47e8f610ed1a964913df1fb73729cbab8f3e2fe14629d880b6947c8640945"
     }
   }
 }

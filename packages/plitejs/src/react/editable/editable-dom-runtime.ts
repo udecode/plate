@@ -23,14 +23,14 @@ import {
   resolveDOMTextFlowEntry,
   resolveDOMTextFlowRecordDOMText,
 } from '../../dom/internal';
-import type { EditableDOMStrategyRuntime } from '../components/editable';
-import { isSelectionPartialDOMBacked } from '../dom-strategy/dom-strategy-commands';
+import type { EditableViewportRuntime } from '../components/editable';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import {
   getPliteNodePathFromDOMElement,
   isPliteNodeFlowRootBound,
 } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
+import { isSelectionViewportBacked } from '../viewport-commands';
 import { isRangeAcrossContentRootOwners } from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import { ExternalTextRuntime } from './external-text-runtime';
@@ -106,29 +106,24 @@ type ModelSelectionDOMPreference = {
 const getTimestamp = () => globalThis.performance?.now?.() ?? Date.now();
 
 export const isEditableDOMSelectionPartial = ({
-  domStrategyRuntime,
+  viewportRuntime,
   editor,
   selection,
 }: {
-  domStrategyRuntime: EditableDOMStrategyRuntime | null;
+  viewportRuntime: EditableViewportRuntime | null;
   editor: ReactRuntimeEditor;
   selection: Range | null;
 }) => {
-  const partialDOMStrategySelection =
-    domStrategyRuntime?.type === 'partial-dom' ||
-    domStrategyRuntime?.type === 'staged' ||
-    domStrategyRuntime?.type === 'virtualized'
-      ? isSelectionPartialDOMBacked(
+  const viewportSelection =
+    viewportRuntime?.type === 'virtualized'
+      ? isSelectionViewportBacked(
           selection,
-          domStrategyRuntime.mountedTopLevelNodeKeys,
-          domStrategyRuntime.mountedTopLevelRanges ?? null
+          viewportRuntime.mountedTopLevelNodeKeys,
+          viewportRuntime.mountedTopLevelRanges ?? null
         )
       : false;
 
-  return (
-    partialDOMStrategySelection ||
-    isRangeAcrossContentRootOwners(editor, selection)
-  );
+  return viewportSelection || isRangeAcrossContentRootOwners(editor, selection);
 };
 
 /** Resolve the mounted root runtime that owns a DOM interaction target. */
@@ -158,9 +153,9 @@ export const isDOMTargetInAnotherSelectionView = (
 /** Resolve the connected runtime for a mounted React editor view. */
 export const getMountedEditableDOMRuntimes = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>
+  editor: ReactRuntimeEditor<V, TPlugins>
 ): readonly EditableDOMRuntime[] =>
   [...(EDITABLE_RUNTIMES_BY_EDITOR_API.get(editor.api) ?? [])].filter(
     (runtime) => runtime.connected && runtime.rootRef.current !== null
@@ -169,15 +164,16 @@ export const getMountedEditableDOMRuntimes = <
 /** Resolve one connected runtime for a mounted React editor view. */
 export const getMountedEditableDOMRuntime = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>,
+  editor: ReactRuntimeEditor<V, TPlugins>,
   root?: Node
 ): EditableDOMRuntime | null => {
   const owner = root
     ? findDOMRootRuntime(root)
     : findEditorDOMRootRuntime(editor);
-  return owner?.adapter instanceof EditableDOMRuntime && owner.editor === editor
+  return owner?.adapter instanceof EditableDOMRuntime &&
+    Object.is(owner.editor, editor)
     ? owner.adapter
     : null;
 };
@@ -196,9 +192,9 @@ export const hasMountedEditableCompositionOwner = (
 /** Subscribe to focus changes published by any mounted root of one runtime. */
 export const subscribeEditableRuntimeFocus = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>,
+  editor: ReactRuntimeEditor<V, TPlugins>,
   listener: () => void
 ) => {
   const owner = getEditorRuntimeOwner(editor);
@@ -217,9 +213,9 @@ export const subscribeEditableRuntimeFocus = <
 };
 
 type EditableDOMRuntimeUpdate = {
-  domStrategyRuntime: EditableDOMStrategyRuntime | null;
+  viewportRuntime: EditableViewportRuntime | null;
   onComposingChange: (nextValue: boolean) => void;
-  onPartialDOMBackedSelectionChange: (nextValue: boolean) => void;
+  onViewportBackedSelectionChange: (nextValue: boolean) => void;
   readOnly: boolean;
 };
 
@@ -255,7 +251,7 @@ export class EditableDOMRuntime {
 
   readonly rootRef: MutableCell<HTMLDivElement | null>;
 
-  private domStrategyRuntimeValue: EditableDOMStrategyRuntime | null;
+  private viewportRuntimeValue: EditableViewportRuntime | null;
 
   private readonly editorValue: ReactRuntimeEditor;
 
@@ -289,7 +285,7 @@ export class EditableDOMRuntime {
 
   private onDOMSelectionChange: CancelableCallback | null = null;
 
-  private onPartialDOMBackedSelectionChange: (nextValue: boolean) => void;
+  private onViewportBackedSelectionChange: (nextValue: boolean) => void;
 
   private readOnlyValue: boolean;
 
@@ -312,20 +308,20 @@ export class EditableDOMRuntime {
   private verticalGoalX: number | null = null;
 
   constructor({
-    domStrategyRuntime = null,
+    viewportRuntime = null,
     editor,
     onComposingChange = () => {},
-    onPartialDOMBackedSelectionChange = () => {},
+    onViewportBackedSelectionChange = () => {},
     readOnly = false,
     testRootFacts,
   }: Partial<EditableDOMRuntimeUpdate> & {
     editor: ReactRuntimeEditor;
     testRootFacts?: DOMRootRuntimeOptions<HTMLDivElement>['testRootFacts'];
   }) {
-    this.domStrategyRuntimeValue = domStrategyRuntime;
+    this.viewportRuntimeValue = viewportRuntime;
     this.editorValue = editor;
     this.onComposingChange = onComposingChange;
-    this.onPartialDOMBackedSelectionChange = onPartialDOMBackedSelectionChange;
+    this.onViewportBackedSelectionChange = onViewportBackedSelectionChange;
     this.readOnlyValue = readOnly;
     this.rootRuntime = new DOMRootRuntime({
       adapter: this,
@@ -357,10 +353,10 @@ export class EditableDOMRuntime {
             ? (mutation.target as Element)
             : mutation.target.parentElement;
         const textHost = targetElement?.closest<HTMLElement>(
-          '[data-plite-node="text"]'
+          '[data-editor-node="text"]'
         );
         const zeroWidth = targetElement?.closest<HTMLElement>(
-          '[data-plite-zero-width]'
+          '[data-editor-zero-width]'
         );
         const flowEntry = resolveDOMTextFlowEntry(mutation.target, 0);
         const path = flowEntry
@@ -370,7 +366,7 @@ export class EditableDOMRuntime {
             : null;
 
         if (
-          textHost?.hasAttribute('data-plite-text-flow-host') &&
+          textHost?.hasAttribute('data-editor-text-flow-host') &&
           this.receivedUserInput.current &&
           this.inputController.state.activeIntent === 'text-insert'
         ) {
@@ -430,7 +426,7 @@ export class EditableDOMRuntime {
             ? (mutation.target as Element)
             : mutation.target.parentElement;
         const pliteElement = targetElement?.closest<HTMLElement>(
-          '[data-plite-node], [data-plite-path]'
+          '[data-editor-node], [data-editor-path]'
         );
         const flowEntry = resolveDOMTextFlowEntry(mutation.target, 0);
         const path = flowEntry
@@ -443,12 +439,12 @@ export class EditableDOMRuntime {
 
         if (
           mutation.type === 'attributes' &&
-          mutation.attributeName === 'data-plite-path'
+          mutation.attributeName === 'data-editor-path'
         ) {
           return mutation.oldValue;
         }
 
-        return pliteElement?.getAttribute('data-plite-path') ?? null;
+        return pliteElement?.getAttribute('data-editor-path') ?? null;
       },
       testRootFacts,
     });
@@ -463,8 +459,8 @@ export class EditableDOMRuntime {
     });
   }
 
-  get domStrategyRuntime() {
-    return this.domStrategyRuntimeValue;
+  get viewportRuntime() {
+    return this.viewportRuntimeValue;
   }
 
   get domCoverage() {
@@ -538,9 +534,9 @@ export class EditableDOMRuntime {
     return this.rootRuntime.diagnostics();
   }
 
-  readonly isPartialDOMBackedSelection = (selection: Range | null) =>
+  readonly isViewportBackedSelection = (selection: Range | null) =>
     isEditableDOMSelectionPartial({
-      domStrategyRuntime: this.domStrategyRuntimeValue,
+      viewportRuntime: this.viewportRuntimeValue,
       editor: this.editorValue,
       selection,
     });
@@ -672,8 +668,8 @@ export class EditableDOMRuntime {
     return this.compositionPathValue;
   }
 
-  readonly setExplicitPartialDOMBackedSelection = (nextValue: boolean) => {
-    this.onPartialDOMBackedSelectionChange(nextValue);
+  readonly setExplicitViewportBackedSelection = (nextValue: boolean) => {
+    this.onViewportBackedSelectionChange(nextValue);
   };
 
   readonly clearVerticalGoal = () => {
@@ -852,10 +848,10 @@ export class EditableDOMRuntime {
 
   update(update: EditableDOMRuntimeUpdate) {
     const readOnlyChanged = this.readOnlyValue !== update.readOnly;
-    this.domStrategyRuntimeValue = update.domStrategyRuntime;
+    this.viewportRuntimeValue = update.viewportRuntime;
     this.onComposingChange = update.onComposingChange;
-    this.onPartialDOMBackedSelectionChange =
-      update.onPartialDOMBackedSelectionChange;
+    this.onViewportBackedSelectionChange =
+      update.onViewportBackedSelectionChange;
     this.readOnlyValue = update.readOnly;
     if (readOnlyChanged) this.externalText.refreshAll();
   }

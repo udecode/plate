@@ -54,18 +54,18 @@ Start by creating a basic editor component. This example sets up a simple editor
 ```tsx title="src/App.tsx"
 import React from 'react';
 import type { Value } from 'platejs';
-import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
+import { EditorRoot, EditorContent, useCreateEditor } from 'platejs/react';
 
 export default function App() {
   const editor = useCreateEditor();
 
   return (
-    <Plate editor={editor}>
-      <PlateContent 
+    <EditorRoot editor={editor}>
+      <EditorContent
         style={{ padding: '16px 64px', minHeight: '100px' }}
         placeholder="Type your amazing content here..."
       />
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -98,8 +98,8 @@ import {
   UnderlinePlugin,
 } from 'platejs/react';
 import {
-  Plate,
-  PlateContent,
+  EditorRoot,
+  EditorContent,
   useCreateEditor,
 } from 'platejs/react';
 
@@ -125,10 +125,10 @@ export default function App() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       {/* You would typically add a toolbar here to toggle marks */}
-      <PlateContent style={{ padding: '16px 64px', minHeight: '100px' }} />
-    </Plate>
+      <EditorContent style={{ padding: '16px 64px', minHeight: '100px' }} />
+    </EditorRoot>
   );
 }
 ```
@@ -159,11 +159,11 @@ import {
   UnderlinePlugin,
 } from 'platejs/react';
 import {
-  Plate,
-  PlateContent,
-  PlateElement,
+  EditorRoot,
+  EditorContent,
+  EditorElement,
   useCreateEditor,
-  type PlateElementProps,
+  type EditorElementProps,
 } from 'platejs/react';
 
 const initialValue: Value = [
@@ -191,15 +191,15 @@ const initialValue: Value = [
 ];
 
 // Define element components
-function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
+function HeadingElement(props: EditorElementProps<typeof HeadingPlugin>) {
   const tag = `h${props.element.level}` as const;
 
-  return <PlateElement as={tag} {...props} />;
+  return <EditorElement as={tag} {...props} />;
 }
 
-function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
+function BlockquoteElement(props: EditorElementProps<typeof BlockquotePlugin>) {
   return (
-    <PlateElement
+    <EditorElement
       as="blockquote"
       style={{
         borderLeft: '2px solid #eee',
@@ -227,10 +227,10 @@ export default function App() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       {/* You would typically add a toolbar here to toggle elements and marks */}
-      <PlateContent style={{ padding: '16px 64px', minHeight: '100px' }} />
-    </Plate>
+      <EditorContent style={{ padding: '16px 64px', minHeight: '100px' }} />
+    </EditorRoot>
   );
 }
 ```
@@ -259,11 +259,11 @@ import {
   UnderlinePlugin,
 } from 'platejs/react';
 import {
-  Plate,
-  PlateContent,
-  PlateElement,
+  EditorRoot,
+  EditorContent,
+  EditorElement,
   useCreateEditor,
-  type PlateElementProps,
+  type EditorElementProps,
 } from 'platejs/react';
 
 const initialValue: Value = [
@@ -291,15 +291,15 @@ const initialValue: Value = [
 ];
 
 // Define element components
-function HeadingElement(props: PlateElementProps<typeof HeadingPlugin>) {
+function HeadingElement(props: EditorElementProps<typeof HeadingPlugin>) {
   const tag = `h${props.element.level}` as const;
 
-  return <PlateElement as={tag} {...props} />;
+  return <EditorElement as={tag} {...props} />;
 }
 
-function BlockquoteElement(props: PlateElementProps<typeof BlockquotePlugin>) {
+function BlockquoteElement(props: EditorElementProps<typeof BlockquotePlugin>) {
   return (
-    <PlateElement
+    <EditorElement
       as="blockquote"
       style={{
         borderLeft: '2px solid #eee',
@@ -330,7 +330,7 @@ export default function App() {
   });
 
   return (
-    <Plate
+    <EditorRoot
       editor={editor}
       onValueChange={({ value }) => {
         localStorage.setItem('plate-manual-demo', JSON.stringify(value));
@@ -355,7 +355,7 @@ export default function App() {
           Reset
         </button>
       </div>
-      <PlateContent
+      <EditorContent
         style={{
           padding: '16px 64px',
           minHeight: '100px',
@@ -364,7 +364,7 @@ export default function App() {
         }}
         placeholder="Type your amazing content here..."
       />
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -372,7 +372,7 @@ export default function App() {
 <Callout type="info" title="Value Management">
   The example above demonstrates a basic pattern for managing editor value:
   - Initial value is set through the `initialValue` option in `useCreateEditor`
-  - Value changes can be handled via the `onValueChange` prop on `<Plate>`
+  - Value changes can be handled via the `onValueChange` prop on `<EditorRoot>`
   - The reset button uses `editor.update(...)` with `tx.value.replace(...)` to
     restore the initial value
   - To control the value, see [Controlled Value](/docs/controlled)
@@ -388,7 +388,7 @@ You've now set up a basic Plate editor manually! From here, you can:
     *   For a quick start with pre-built components, consider using [Plate UI](/docs/installation/plate-ui)
     *   Or continue styling manually using CSS, CSS-in-JS libraries, or your preferred styling solution
 *   **[Add Plugins](/docs/plugins):** Plate has a rich ecosystem of plugins for features like tables, mentions, images, lists, and more. Install their packages (e.g., `platejs`) and add them to your `plugins` array.
-*   **[Build a Toolbar](/docs/toolbar):** Create React components for toolbar buttons that use the [Editor Transforms](/docs/plite/api/transforms) to apply formatting (e.g., `editor.update.bold.toggle()`, `editor.plugin(HeadingPlugin).update.toggle({ level: 1 })`). You can also use the editor state with the [Editor API](/docs/api).
+*   **[Build a Toolbar](/docs/toolbar):** Create React components for toolbar buttons that use the [Editor Transforms](/docs/api/editor-transforms) to apply formatting (e.g., `editor.update.bold.toggle()`, `editor.plugin(HeadingPlugin).update.toggle({ level: 1 })`). You can also use the editor state with the [Editor API](/docs/api).
 *   **Learn More:**
     *   [Editor Configuration](/docs/editor)
     *   [Plugin Configuration](/docs/plugin)

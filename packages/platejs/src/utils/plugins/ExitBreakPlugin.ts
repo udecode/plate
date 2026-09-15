@@ -1,5 +1,5 @@
 import { ElementApi, PathApi, type Node, type Path } from '../../facade';
-import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { PLUGINS } from '../plate-keys';
 
@@ -13,7 +13,7 @@ type ExitBreakOptions = {
 /**
  * Inserts an exit block before or after the current block structure.
  */
-export const ExitBreakPlugin = defineBasePlugin(PLUGINS.exitBreak, {
+export const ExitBreakPlugin = definePlugin(PLUGINS.exitBreak, {
   editOnly: true,
   update: ({ editor, tx }) => {
     const insertExitBreak = ({ match, reverse }: ExitBreakOptions = {}) => {

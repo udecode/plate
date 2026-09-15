@@ -1,0 +1,488 @@
+---
+title: "Plugins"
+description: "Package reusable Plite schema, reads, updates, APIs, and lifecycle behavior."
+---
+
+Plugins package reusable Plite behavior that should be installed, ordered,
+and removed as one unit. Plate builds its product-level plugin conventions on
+this smaller runtime primitive.
+
+## On this page
+
+- [Smallest Plugin](08-plugins#smallest-plugin)
+- [Read And Update Helpers](08-plugins#read-and-update-helpers)
+- [Plugin APIs](08-plugins#plugin-apis)
+- [Plugin Order](08-plugins#plugin-order)
+- [Typed Plugin Points](08-plugins#typed-plugin-points)
+- [Activation And Reconfiguration](08-plugins#activation-and-reconfiguration)
+- [Schema Contributions](08-plugins#schema-contributions)
+- [Read Middleware](08-plugins#read-middleware)
+- [Commands And Corrections](08-plugins#commands-and-corrections)
+- [Clipboard And Fragment Policy](08-plugins#clipboard-and-fragment-policy)
+- [Slot Reference](08-plugins#slot-reference)
+- [Type Inference](08-plugins#type-inference)
+
+## Smallest plugin
+
+`definePlugin(...)` preserves the literal plugin name and lets
+`createEditor(...)` infer every installed capability. A complete schema is also
+an plugin, created with `defineEditorSchema(...)`.
+
+```ts
+import {
+  createEditor,
+  definePlugin,
+  defineEditorSchema,
+  schema,
+} from "plitejs";
+
+const ArticleSchema = defineEditorSchema("schema:article", {
+  elements: {
+    paragraph: {
+      content: schema.content.text({ default: "text", min: 1 }),
+    },
+  },
+  id: "article",
+  root: schema.content.type("paragraph", {
+    default: { type: "paragraph" },
+    min: 1,
+  }),
+  unknown: "reject",
+  version: 1,
+});
+
+const ArticlePlugin = definePlugin("article", {});
+
+const editor = createEditor({
+  plugins: [ArticleSchema, ArticlePlugin] as const,
+  initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+});
+```
+
+Use feature plugins for reusable behavior and partial schema contributions.
+Use one complete schema to close the document vocabulary. See
+[Schema](19-schema) for the declaration and compiler model.
+
+## Read and update helpers
+
+Use `read` for owner-local queries and `update` for owner-local model writes.
+The plugin name becomes the namespace on `editor.read` and `editor.update`.
+
+```ts
+import { createEditor, definePlugin } from "plitejs";
+
+const LinksPlugin = definePlugin("links", {
+  read: ({ state }) => ({
+    hasSelection() {
+      return state.selection() !== null;
+    },
+  }),
+  update: ({ tx }) => ({
+    setHref(href: string) {
+      tx.nodes.set({ url: href });
+    },
+  }),
+});
+
+const editor = createEditor({
+  plugins: [LinksPlugin],
+});
+
+const canEditLink = editor.read((state) => state.links.hasSelection());
+
+editor.update.links.setHref("https://example.com");
+
+editor.update((tx) => {
+  tx.links.setHref("https://example.com");
+});
+```
+
+Plite constructs each `read` namespace once for an installed plugin
+configuration. Return methods or nested method records. Read live document
+state inside those methods; do not return document-derived data properties or
+perform reads while constructing the namespace. Put stable constants and host
+services in `api`.
+
+Direct calls such as `editor.read.links.hasSelection()` execute inside the same
+coherent read boundary as `editor.read((state) => ...)`.
+
+Plugin write methods must finish synchronously. Returning a Promise or
+other thenable throws, including when a caller ignores the result inside
+`editor.update(...)`. An uncaught failure discards the update draft.
+
+Reads cannot write by accident. Updates can still read transaction-local state
+after earlier writes in the same transaction. Wrap a method with `txOnly(...)`
+when it requires an active transaction; Plite then omits it from the direct
+`editor.update` group.
+
+An `update` helper should perform Plite model writes. Keep UI, layout, network,
+and other host services in `api`.
+
+## Plugin APIs
+
+`api` is the single host-service channel. Declare it as a factory even when it
+needs no context. Its single context object exposes `editor`, `root`, and
+`getContributions`. Plite publishes the returned object through the plugin
+name and through the exact descriptor portal.
+
+```ts
+const LinksPlugin = definePlugin("links", {
+  api: () => ({
+    normalizeHref(href: string) {
+      return new URL(href).toString();
+    },
+  }),
+});
+
+const editor = createEditor({
+  plugins: [LinksPlugin],
+});
+
+editor.api.links.normalizeHref("https://example.com");
+editor.plugin(LinksPlugin).api.normalizeHref("https://example.com");
+```
+
+Use `editor.api.links` when application code knows the installed editor shape.
+Use `editor.plugin(LinksPlugin).api` when generic package code owns the
+descriptor. Both paths reference the same immutable API object.
+
+Do not use `api` as a document command bus. Document mutations belong in
+`update`; host services such as DOM focus, measurements, history batching, or
+framework bridges belong in `api`.
+
+## Plugin order
+
+Use descriptor-valued `dependencies` when one plugin requires another.
+Use `conflicts` when two descriptors cannot be installed together.
+
+```ts
+const LinksPlugin = definePlugin("links", {
+  api: () => ({
+    normalizeHref(href: string) {
+      return new URL(href).toString();
+    },
+  }),
+});
+
+const MentionsPlugin = definePlugin("mentions", {
+  dependencies: [LinksPlugin],
+  update: ({ tx }) => ({
+    insert(character: string) {
+      tx.nodes.insert({
+        type: "mention",
+        character,
+        children: [{ text: "" }],
+      });
+    },
+  }),
+});
+```
+
+Plite installs `LinksPlugin` transitively before `MentionsPlugin`.
+Shared dependencies activate once and remain installed until their last direct
+or transitive owner is removed. Configuration fails for dependency cycles,
+duplicate active names, or installed conflicting descriptors.
+
+The public dependency reference is deliberately shallow: literal `name` and
+optional `enabled`, with no recursive capability graph. Finite name-keyed
+capability/provider contracts use clean public types from `plitejs`. Static
+portal types prove that one installed name has the same capability as the
+descriptor; runtime access separately requires the exact installed descriptor
+identity.
+
+## Typed plugin points
+
+Use `definePluginPoint(...)` when another package owns an ordered typed
+contribution channel outside the headless model.
+
+```ts
+import {
+  definePlugin,
+  definePluginPoint,
+} from "plitejs";
+
+type MeasurementSource = {
+  measure(): number;
+};
+
+const measurements =
+  definePluginPoint<MeasurementSource>("app:measurement-source");
+
+const MeasuredPlugin = definePlugin("measured", {
+  contributions: [
+    measurements.of({
+      measure: () => performance.now(),
+    }),
+  ],
+});
+```
+
+The plugin point owns identity and type. Validators collect its ordered
+values with `context.getContributions(measurements)`, so arbitrary strings do
+not become a hidden dependency API.
+
+## Activation and reconfiguration
+
+Keep schema, read, update, command, and API declarations on the plugin.
+Use `activate(editor, context)` only for synchronous resource ownership.
+Register cleanup before activation returns, and defer external work that must
+observe the published candidate to `context.afterPublish(...)`.
+
+```ts
+const TableNavigationPlugin = definePlugin("tableNavigation", {
+  update: ({ tx }) => ({
+    insertRow() {
+      tx.nodes.insert({
+        type: "table-row",
+        children: [{ type: "table-cell", children: [{ text: "" }] }],
+      });
+    },
+  }),
+  activate(_editor, context) {
+    const controller = createTableNavigationController();
+
+    context.onCleanup(({ reason }) => controller.dispose(reason));
+    context.afterPublish(() => controller.start({ signal: context.signal }));
+  },
+  validate(context) {
+    validateTableContributions(context.getContributions(tableContributions));
+  },
+});
+```
+
+Plite compiles and validates a detached candidate before publication. API
+factories see the same declarative schema and descriptor-resolved dependency
+APIs. Factory results become visible together in the final candidate passed to
+`validate(context)`. Activation runs only after every validator succeeds.
+
+Lifecycle callbacks are synchronous and cannot publish editor writes. Cleanup
+receives `remove`, `replace`, or `rollback` as its reason; lifecycle failures
+report through the editor error sink.
+
+Use a named plugin slot when installed behavior must change after editor
+creation. The replacement is staged in the surrounding transaction and becomes
+visible with the same commit as document and state changes.
+
+```ts
+import { createEditor, definePluginSlot } from "plitejs";
+
+const navigation = definePluginSlot("navigation");
+const editor = createEditor({
+  plugins: [navigation.of(TableNavigationPlugin)] as const,
+});
+
+editor.update((tx) => {
+  tx.plugins.reconfigure(navigation, AlternativeNavigationPlugin);
+});
+```
+
+When a replacement schema rejects the current document, pass a `migrate`
+callback. Compilation, migration, and validation finish before one
+document-plus-plugin commit; failure publishes nothing. See
+[Atomic Reconfiguration](19-schema#atomic-reconfiguration).
+
+`editor.install(...)` is the host-level dynamic form. Prefer a named slot when
+the replacement must commit atomically with other model writes.
+
+## Schema contributions
+
+Feature plugins add document vocabulary through `schema`. Element-owned
+properties live with the element; cross-cut properties use a top-level
+property declaration with an explicit target.
+
+```ts
+import { definePlugin, property, schema } from "plitejs";
+
+const tableModel = {
+  schema: {
+    elements: {
+      tableCell: {
+        content: schema.content.group("block", {
+          default: { type: "paragraph" },
+          min: 1,
+        }),
+        isolating: true,
+        keyboardSelectable: true,
+        properties: {
+          colSpan: property.number({ default: 1, omitDefault: true }),
+          rowSpan: property.number({ default: 1, omitDefault: true }),
+        },
+      },
+    },
+  },
+} as const;
+
+const tableCell = schema.handle.element(tableModel, "tableCell");
+const colSpan = schema.handle.property(tableCell, "colSpan");
+
+const TablesPlugin = definePlugin("tables", {
+  ...tableModel,
+  read: ({ state }) => ({
+    selectedCellColSpan(element) {
+      return state.schema.getElementProperty(element, colSpan);
+    },
+  }),
+});
+```
+
+A schema factory receives only the plugin `name`. Capture immutable domain
+inputs in the factory that creates the descriptor.
+
+```ts
+const createCommentsPlugin = (prefix: string) =>
+  definePlugin("comments", {
+    schema: ({ name }) => ({
+      properties: [
+        schema.textProperty(
+          schema.key.prefix(`${prefix}${name}_`),
+          property.boolean({ default: false, omitDefault: true }),
+          {
+            split: "preserve",
+            target: target.group("element"),
+            typeChange: "preserve-if-allowed",
+          }
+        ),
+      ],
+    }),
+  });
+```
+
+Element declarations can describe `inline`, `void`, `atom`, `isolating`,
+`keyboardSelectable`, `readOnly`, `selectable`, and `markableVoid` behavior.
+See [Selection And DOM](16-selection-and-dom#keyboard-selectable-content) and
+[Roots](13-roots#content-roots) for the associated selection and root laws.
+
+## Read middleware
+
+Use `readMiddleware` to wrap a declared core read. Register middleware against
+an `editorReads` descriptor; the descriptor infers the input, result, editor,
+and state types.
+
+```ts
+import {
+  definePlugin,
+  editorReads,
+} from "plitejs";
+
+const ClosedSectionsPlugin = definePlugin("closedSections", {
+  readMiddleware: ({ around }) => [
+    around(
+      editorReads.nodes.isSelectable,
+      ({ input: { element }, next }) =>
+        element.closed === true ? false : next()
+    ),
+  ],
+});
+```
+
+Middleware runs in plugin order. `next()` delegates once and accepts a
+replacement input when needed. The provided state is read-only and observes an
+active transaction draft.
+
+Use `editorReads.slice.export` for ordered export projection:
+
+```ts
+const CleanExportPlugin = definePlugin("cleanExport", {
+  readMiddleware: ({ around }) => [
+    around(editorReads.slice.export, ({ next }) => {
+      const slice = next();
+
+      return {
+        ...slice,
+        content: removeTransientProperties(slice.content),
+      };
+    }),
+  ],
+});
+```
+
+## Commands and corrections
+
+Use `defineCommand(...)` when an action needs headless evaluation or plugin
+policy. Its pure builder and plugin handlers return `false` or a frozen
+`TransactionSpec`; `commands` registers typed interceptors without patching
+editor methods. See [Commands](06-commands) for the complete flow.
+
+Use `corrections` for deterministic schema repairs triggered by canonical
+changed ranges. A correction writes through its provided transaction and must
+converge. Keyboard events and host UI remain React or DOM adapter concerns.
+
+## Clipboard and fragment policy
+
+DOM clipboard ingress is a typed plugin point owned by
+`plitejs/dom`. Intercept `domCommands.insertData` through `commands`. The
+interceptor receives the `DataTransfer` as `input`; return a transaction spec
+from `state.transaction(...)` when it owns the payload, or `next()` to continue
+Plite's slice, host-codec, and plain-text import path. See
+[Clipboard And Paste](17-clipboard-and-paste).
+
+Wrap `editorReads.slice.export` with `readMiddleware` to sanitize copied or
+dragged content. Call `editor.read.slice.export()` when content leaves the
+editor; `editor.read.slice.get()` returns the structural selection slice
+unchanged.
+
+## Slot reference
+
+Start with `schema`, `read`, and `update`. Reach for the other slots only when
+the behavior needs that runtime phase.
+
+| Slot             | Use it for                                                   |
+| ---------------- | ------------------------------------------------------------ |
+| `name`           | stable plugin identity                                    |
+| `enabled`        | declarative inclusion                                        |
+| `dependencies`   | descriptors installed before this plugin                  |
+| `conflicts`      | descriptors that cannot be installed with this plugin     |
+| `schema`         | element, property, group, and root contributions              |
+| `read`           | owner-local read helpers                                      |
+| `update`         | owner-local atomic and direct update helpers                  |
+| `readMiddleware` | typed middleware over `editorReads` descriptors               |
+| `commands`       | pure typed command interceptors                               |
+| `corrections`    | deterministic changed-range structural repairs                |
+| `stateFields`    | typed persisted or runtime state descriptors                  |
+| `effectTypes`    | typed commit-effect descriptors and codecs                    |
+| `api`            | host services exposed through the plugin namespace         |
+| `contributions`  | typed ordered values consumed through an plugin point      |
+| `on.*`           | `commit`, `transactionChange`, `nodeChange`, and `textChange` |
+| `activate`       | synchronous resource ownership and cleanup registration       |
+| `validate`       | detached candidate validation                                 |
+
+Keep product conventions above these raw slots. Frameworks can build richer
+feature APIs on Plite's smaller plugin substrate.
+
+## Type inference
+
+Let `definePlugin(...)` infer its one definition type from the author
+object. `DefinitionOf<typeof Plugin>` recovers the compact public contract
+when generic library code needs it.
+
+```ts
+import {
+  type DefinitionOf,
+  definePlugin,
+} from "plitejs";
+
+const ImagesPlugin = definePlugin("images", {
+  schema: {
+    elements: {
+      image: {
+        void: "block",
+      },
+    },
+  },
+  update: ({ tx }) => ({
+    insert(url: string) {
+      tx.nodes.insert({
+        type: "image",
+        url,
+        children: [{ text: "" }],
+      });
+    },
+  }),
+});
+
+type ImagesDefinition = DefinitionOf<typeof ImagesPlugin>;
+```
+
+Do not annotate callback contexts or pass a separate editor generic. The
+definition factory, installed descriptor tuple, and descriptor portal preserve
+the inferred capabilities.

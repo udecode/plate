@@ -1,10 +1,10 @@
-import { defineExtension, schema } from 'plitejs';
+import { definePlugin, schema } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
   type RenderLeafProps,
-  Plite,
+  EditorRoot,
   useEditorContext,
   useElementPath,
   useEditor,
@@ -66,7 +66,7 @@ const SyncedBlocksExample = () => {
   const sharedBodyRoot = 'synced-block:shared:body';
   const separateBodyRoot = 'synced-block:separate:body';
   const editor = useEditor({
-    extensions: [history(), syncedBlocks()],
+    plugins: [history(), syncedBlocks()],
     initialValue: {
       children: [
         paragraph('p1'),
@@ -88,24 +88,23 @@ const SyncedBlocksExample = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Toolbar>
         <InsertSyncedBlockButton />
       </Toolbar>
 
       <Editable
         aria-label="Synced blocks editor"
-        domStrategy="full"
         placeholder="Write around synced blocks..."
         renderElement={renderElement}
         renderLeaf={renderLeaf}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
 const syncedBlocks = () =>
-  defineExtension('synced-blocks', {
+  definePlugin('synced-blocks', {
     schema: {
       elements: {
         'synced-block': {
@@ -226,19 +225,19 @@ const SyncedBlock = ({
   return (
     <section
       {...attributes}
-      className="plite-synced-blocks-synced-block"
-      data-plite-synced-block
-      data-plite-synced-root={bodyRoot}
+      className="editor-synced-blocks-synced-block"
+      data-editor-synced-block
+      data-editor-synced-root={bodyRoot}
     >
       <div
-        className="plite-synced-blocks-synced-block-toolbar"
+        className="editor-synced-blocks-synced-block-toolbar"
         contentEditable={false}
       >
         <span>{isOriginal ? 'Editing original' : 'Editing synced copy'}</span>
-        <span className="plite-synced-blocks-synced-block-actions">
+        <span className="editor-synced-blocks-synced-block-actions">
           <Button
             aria-label="Duplicate synced block"
-            className="plite-synced-blocks-synced-block-button"
+            className="editor-synced-blocks-synced-block-button"
             onClick={duplicate}
             onPointerDown={keepEditorFocus}
           >
@@ -246,7 +245,7 @@ const SyncedBlock = ({
           </Button>
           <Button
             aria-label="Unsync synced block"
-            className="plite-synced-blocks-synced-block-button"
+            className="editor-synced-blocks-synced-block-button"
             onClick={unsync}
             onPointerDown={keepEditorFocus}
           >
@@ -256,8 +255,7 @@ const SyncedBlock = ({
       </div>
       {slots.contentRoot('body', {
         ariaLabel: `Synced block ${element.copyId} content`,
-        className: 'plite-synced-blocks-synced-block-body',
-        domStrategy: 'full',
+        className: 'editor-synced-blocks-synced-block-body',
         placeholder: 'Empty synced block',
       })}
     </section>
@@ -270,7 +268,7 @@ const InsertSyncedBlockButton = () => {
   return (
     <Button
       aria-label="Insert synced block"
-      className="plite-synced-blocks-synced-block-button"
+      className="editor-synced-blocks-synced-block-button"
       onClick={() => {
         const bodyRoot = nextSyncedBlockRoot();
 

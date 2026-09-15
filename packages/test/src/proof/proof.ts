@@ -18,7 +18,7 @@ export type DebugSnapshot = {
   domSelection: string;
   events: string[];
   placeholderShape: DebugPlaceholderShape | null;
-  pliteSelection: string;
+  editorSelection: string;
 };
 
 /** Result of checking placeholder input behavior from a debug snapshot. */
@@ -93,7 +93,7 @@ const isDebugSnapshot = (value: unknown): value is DebugSnapshot => {
     typeof record.domSelection === 'string' &&
     Array.isArray(record.events) &&
     record.events.every((event) => typeof event === 'string') &&
-    typeof record.pliteSelection === 'string'
+    typeof record.editorSelection === 'string'
   );
 };
 
@@ -156,9 +156,9 @@ export const evaluateImeInput = (
     );
   }
 
-  if (snapshot.pliteSelection !== expectedSelection) {
+  if (snapshot.editorSelection !== expectedSelection) {
     issues.push(
-      `Expected pliteSelection to equal "${expectedSelection}", got "${snapshot.pliteSelection}"`
+      `Expected editorSelection to equal "${expectedSelection}", got "${snapshot.editorSelection}"`
     );
   }
 
@@ -228,7 +228,9 @@ export const evaluateEmptyRebuild = (snapshot: {
 
   if (snapshot.blockTexts.length !== 1 || snapshot.blockTexts[0] !== '') {
     issues.push(
-      `Expected blockTexts to equal [""], got ${JSON.stringify(snapshot.blockTexts)}`
+      `Expected blockTexts to equal [""], got ${JSON.stringify(
+        snapshot.blockTexts
+      )}`
     );
   }
 

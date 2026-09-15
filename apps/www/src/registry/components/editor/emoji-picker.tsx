@@ -731,7 +731,7 @@ function EmojiButton({
 }) {
   return (
     <button
-      className="relative flex size-9 cursor-pointer items-center justify-center border-none bg-transparent text-2xl leading-none hover:[&>.plite-emoji-highlight]:opacity-100"
+      className="relative flex size-9 cursor-pointer items-center justify-center border-none bg-transparent text-2xl leading-none hover:[&>.editor-emoji-highlight]:opacity-100"
       onClick={() => {
         onSelect(emoji);
       }}
@@ -747,7 +747,7 @@ function EmojiButton({
       type="button"
     >
       <div
-        className="plite-emoji-highlight absolute inset-0 rounded-full opacity-0"
+        className="editor-emoji-highlight absolute inset-0 rounded-full opacity-0"
         aria-hidden="true"
       />
       <span

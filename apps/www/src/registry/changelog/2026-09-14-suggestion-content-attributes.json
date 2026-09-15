@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-14-suggestion-content-attributes",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-14-suggestion-content-attributes.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-14",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Keep suggestion styling with its optional kit",
+  "targets": [
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-14-suggestion-keep-styling-its-optional-231ab0e5",
+      "kind": "wiring",
+      "summary": "Keep suggestion styling with its optional kit",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["suggestion"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-14",
+          "entry": "2026-09-14-suggestion-content-attributes",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

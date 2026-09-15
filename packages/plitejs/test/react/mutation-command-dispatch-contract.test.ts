@@ -1,4 +1,4 @@
-import { defineExtension, editorCommands } from 'plitejs';
+import { definePlugin, editorCommands } from 'plitejs';
 
 import { replace as editorReplace } from '../../src/internal';
 import {
@@ -12,8 +12,8 @@ import { createEditor } from '../../src/react/plugin/with-react';
 const createCommandProbeEditor = () => {
   const seen: string[] = [];
   const editor = createEditor({
-    extensions: [
-      defineExtension('react-host-command-probe', {
+    plugins: [
+      definePlugin('react-host-command-probe', {
         commands: ({ handle }) => [
           handle(editorCommands.delete, ({ input, state }) => {
             seen.push(

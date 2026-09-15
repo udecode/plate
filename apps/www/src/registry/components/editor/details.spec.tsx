@@ -13,11 +13,10 @@ const plateReact = await import('platejs/react');
 
 mock.module('platejs/react', () => ({
   ...plateReact,
-  PlateElement: ({ children }: React.PropsWithChildren) => (
+  EditorElement: ({ children }: React.PropsWithChildren) => (
     <div>{children}</div>
   ),
   useEditor: () => useEditorMock(),
-  useEditorPlugin: () => ({ api: { setOpen } }),
   usePluginStore: () => usePluginStoreMock(),
 }));
 
@@ -45,7 +44,10 @@ describe('Details registry components', () => {
   beforeEach(() => {
     setOpen.mockReset();
     useEditorMock.mockReset();
-    useEditorMock.mockReturnValue({ key: () => 'details-key' });
+    useEditorMock.mockReturnValue({
+      plugin: () => ({ api: { setOpen } }),
+      key: () => 'details-key',
+    });
     usePluginStoreMock.mockReset();
     usePluginStoreMock.mockReturnValue(new Set());
   });

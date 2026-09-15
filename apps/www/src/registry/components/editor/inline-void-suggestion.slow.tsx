@@ -2,7 +2,7 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { fireEvent, render } from '@testing-library/react';
 import type { LinkElement } from 'platejs';
-import * as Plate from 'platejs';
+import * as EditorRoot from 'platejs';
 import type { DateElement } from 'platejs/date';
 import type { EquationElement } from 'platejs/math';
 import type { MentionElement } from 'platejs/mention';
@@ -36,7 +36,7 @@ Object.assign(globalThis, { React });
 
 mock.module('platejs/react', () => ({
   ...PlateReact,
-  PlateElement: ({
+  EditorElement: ({
     attributes,
     children,
     className,
@@ -53,7 +53,7 @@ mock.module('platejs/react', () => ({
       {children}
     </div>
   ),
-  PlateLeaf: ({
+  EditorLeaf: ({
     attributes,
     children,
     className,
@@ -71,7 +71,6 @@ mock.module('platejs/react', () => ({
     </span>
   ),
   useEditor: useEditorMock,
-  useEditorPlugin: () => ({ api: {}, read: {}, store: {} }),
   useEditorRuntimeState: () => {},
   useEditorSelection: () => null,
   useEditorSelector: useEditorSelectorMock,
@@ -80,7 +79,6 @@ mock.module('platejs/react', () => ({
   usePluginStore: usePluginStoreMock,
   useEditorReadOnly: useReadOnlyMock,
   useElementSelected: useSelectedMock,
-  SuggestionPlugin: { name: 'suggestion' },
 }));
 
 mock.module('platejs/math/react', () => ({
@@ -89,7 +87,7 @@ mock.module('platejs/math/react', () => ({
 }));
 
 mock.module('platejs', () => ({
-  ...Plate,
+  ...EditorRoot,
   formatDateValue: (date: Date) =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
       2,
@@ -148,10 +146,6 @@ mock.module('@/registry/hooks/use-mounted', () => ({
   useMounted: useMountedMock,
 }));
 
-mock.module('@/registry/components/editor/suggestion', () => ({
-  suggestionPlugin: {},
-}));
-
 mock.module('./inline-combobox', () => ({
   InlineCombobox: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>
@@ -171,8 +165,15 @@ mock.module('./inline-combobox', () => ({
   ),
 }));
 
-describe('inline void suggestion styling', () => {
+describe('inline authored-change styling', () => {
   const editor = {
+    extension: () => ({
+      api: {
+        getAttributes: () => ({ href: 'https://example.com' }),
+      },
+      read: {},
+      store: {},
+    }),
     key: () => 'inline-suggestion-test',
     plugin: () => ({
       api: {
@@ -204,14 +205,14 @@ describe('inline void suggestion styling', () => {
     mock.restore();
   });
 
-  it('styles mention remove suggestions', async () => {
+  it('styles retained mention deletions', async () => {
     const { MentionElement } = await import(
       `./mention?test=${Math.random().toString(36).slice(2)}`
     );
 
     const view = render(
       <MentionElement
-        attributes={{ 'data-inline-suggestion': 'remove' }}
+        attributes={{}}
         editor={editor}
         element={
           {
@@ -230,17 +231,19 @@ describe('inline void suggestion styling', () => {
       view.container
         .querySelector('[data-testid="plate-element"]')
         ?.className.split(' ')
-    ).toContain('data-[inline-suggestion=remove]:bg-red-100!');
+    ).toContain(
+      'in-data-[editor-retained=delete]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
+    );
   });
 
-  it('styles link suggestions through injected inline suggestion data', async () => {
+  it('styles proposed link insertions through native decorations', async () => {
     const { LinkElement } = await import(
       `./link?test=${Math.random().toString(36).slice(2)}`
     );
 
     const view = render(
       <LinkElement
-        attributes={{ 'data-inline-suggestion': 'insert' }}
+        attributes={{}}
         editor={editor}
         element={
           {
@@ -258,17 +261,19 @@ describe('inline void suggestion styling', () => {
       view.container
         .querySelector('[data-testid="plate-element"]')
         ?.className.split(' ')
-    ).toContain('data-[inline-suggestion=insert]:bg-emerald-100!');
+    ).toContain(
+      '[&:has([data-editor-authored-kind=insert])]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
+    );
   });
 
-  it('opens the Date calendar on the first click with suggestion styling', async () => {
+  it('opens the Date calendar on the first click with authored styling', async () => {
     const { DateElement } = await import(
       `./date?test=${Math.random().toString(36).slice(2)}`
     );
 
     const view = render(
       <DateElement
-        attributes={{ 'data-inline-suggestion': 'insert' }}
+        attributes={{}}
         editor={editor}
         element={
           {
@@ -287,17 +292,17 @@ describe('inline void suggestion styling', () => {
     fireEvent.click(trigger!);
     expect(view.getByTestId('calendar')).toBeTruthy();
     expect(trigger?.className).toContain(
-      'in-data-[inline-suggestion=insert]:bg-emerald-100!'
+      '[&:has([data-editor-authored-kind=insert])]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
     );
     expect(trigger?.className).toContain(
-      'in-data-[inline-suggestion=remove]:bg-red-100!'
+      'in-data-[editor-retained=delete]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
     );
     expect(trigger?.getAttribute('draggable')).toBe('true');
     expect(wrapper.getAttribute('draggable')).toBeNull();
     expect(trigger?.getAttribute('type')).toBe('button');
   });
 
-  it('styles inline equation remove suggestions', async () => {
+  it('styles retained inline equation deletions', async () => {
     const element = {
       children: [{ text: '' }],
       latex: 'E = mc^2',
@@ -311,11 +316,7 @@ describe('inline void suggestion styling', () => {
     );
 
     const view = render(
-      <InlineEquationElement
-        attributes={{ 'data-inline-suggestion': 'remove' }}
-        editor={editor}
-        element={element}
-      >
+      <InlineEquationElement attributes={{}} editor={editor} element={element}>
         {null}
       </InlineEquationElement>
     );
@@ -325,7 +326,7 @@ describe('inline void suggestion styling', () => {
     );
 
     expect(trigger?.className).toContain(
-      'in-data-[inline-suggestion=remove]:bg-red-100!'
+      'in-data-[editor-retained=delete]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
     );
     expect(trigger?.getAttribute('type')).toBe('button');
   });

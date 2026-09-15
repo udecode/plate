@@ -3,16 +3,16 @@ type PublicLowerBasePlugin = import('platejs').LowerBasePlugin;
 // @ts-expect-error compiler-only normalization aliases are not root-public.
 type PublicBaseNormalizer = import('platejs').NormalizeBasePluginInput;
 // @ts-expect-error compiler-only React normalization aliases are not root-public.
-type PublicPlate = import('platejs/react').NormalizePlatePluginInput;
+type PublicPlate = import('platejs/react').NormalizePluginInput;
 // oxfmt-ignore
 // @ts-expect-error exact dependency carriers stay behind descriptor portals.
 type PublicPluginDefinitionLookup = import('platejs').InternalPluginDefinitionOf;
 
 type PublicDefinition = Readonly<{ name: 'publicDefinition' }>;
 type PublicBasePlugin = import('platejs').BasePlugin<PublicDefinition>;
-type PublicPlatePlugin = import('platejs/react').PlatePlugin<PublicDefinition>;
+type PublicPlatePlugin = import('platejs/react').Plugin<PublicDefinition>;
 type PublicPlatePluginContext =
-  import('platejs/react').PlatePluginContext<PublicDefinition>;
+  import('platejs/react').PluginContext<PublicDefinition>;
 
 // @ts-expect-error BasePlugin exposes one exact definition generic.
 type BasePluginRejectsCompilerRoot = import('platejs').BasePlugin<
@@ -21,10 +21,10 @@ type BasePluginRejectsCompilerRoot = import('platejs').BasePlugin<
 >;
 type PlatePluginRejectsCompilerRoot =
   // @ts-expect-error PlatePlugin exposes one exact definition generic.
-  import('platejs/react').PlatePlugin<PublicDefinition, PublicDefinition>;
+  import('platejs/react').Plugin<PublicDefinition, PublicDefinition>;
 type PlatePluginContextRejectsEditorOverride =
   // @ts-expect-error PlatePluginContext exposes one exact definition generic.
-  import('platejs/react').PlatePluginContext<
+  import('platejs/react').PluginContext<
     PublicDefinition,
     PublicPlatePluginContext['editor']
   >;
@@ -66,11 +66,11 @@ type PublicBaseStageDefinition =
   import('platejs').BasePluginStageDefinition;
 // @ts-expect-error compiler-only stage results are not root-public.
 type PublicBaseStage = import('platejs').BasePluginStage;
-// @ts-expect-error compiler-only raw-extension results are not root-public.
+// @ts-expect-error compiler-only runtime-plugin results are not root-public.
 type PublicExtendedBase = import('platejs').ExtendedBasePlugin;
 
 // @ts-expect-error compiler-only React method graphs are not root-public.
-type PublicPlateMethods = import('platejs/react').PlatePluginMethods;
+type PublicPlateMethods = import('platejs/react').PluginMethods;
 type PublicPlateMerge =
   // @ts-expect-error compiler-only React merge graphs are not root-public.
   import('platejs/react').MergePlatePluginDefinitions;
@@ -85,11 +85,11 @@ type PublicPlateConstructorResult =
   import('platejs/react').PlatePluginConstructorResult;
 type PublicPlateStageDefinition =
   // @ts-expect-error compiler-only React stage definitions are not root-public.
-  import('platejs/react').PlatePluginStageDefinition;
+  import('platejs/react').PluginStageDefinition;
 // @ts-expect-error compiler-only React stage results are not root-public.
 type PublicPlateStage = import('platejs/react').PlatePluginStage;
 type PublicExtendedPlate =
-  // @ts-expect-error compiler-only React raw-extension results are not root-public.
+  // @ts-expect-error compiler-only React runtime-plugin results are not root-public.
   import('platejs/react').ExtendedPlatePlugin;
 type PublicPlateAdapterProvider =
   // @ts-expect-error compiler-only adapter providers are not root-public.

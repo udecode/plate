@@ -1,3 +1,8 @@
+import { createEditor as createPublicPlateEditor } from 'platejs/react';
+import { YjsPlugin as PublicPlateYjsPlugin } from 'platejs/yjs/react';
+import { createEditor as createPublicEditor } from 'plitejs';
+import { yjs as createPublicYjsBinding } from 'plitejs/yjs';
+
 type PublicPackageModules = [
   typeof import('plitejs'),
   typeof import('../src/internal'),
@@ -8,6 +13,10 @@ type PublicPackageModules = [
   typeof import('plitejs/hyperscript'),
   typeof import('plitejs/pagination'),
   typeof import('plitejs/pagination/react'),
+  typeof import('plitejs/yjs'),
+  typeof import('plitejs/yjs/react'),
+  typeof import('platejs/yjs'),
+  typeof import('platejs/yjs/react'),
 ];
 
 type PublicPackageNamedExports = [
@@ -15,7 +24,7 @@ type PublicPackageNamedExports = [
   typeof import('plitejs').createEditorView,
   typeof import('plitejs').ContentSlice,
   typeof import('plitejs').defineEditorSchema,
-  typeof import('plitejs').defineExtension,
+  typeof import('plitejs').definePlugin,
   typeof import('plitejs').ElementApi,
   typeof import('plitejs').LocationApi,
   typeof import('plitejs').NodeApi,
@@ -49,13 +58,20 @@ type PublicPackageNamedExports = [
   typeof import('plitejs/history').history,
   typeof import('plitejs/hyperscript').createHyperscript,
   typeof import('plitejs/hyperscript').jsx,
-  typeof import('plitejs/pagination').createPliteLayout,
-  typeof import('plitejs/pagination').createPliteLayout,
+  typeof import('plitejs/pagination').createLayout,
+  typeof import('plitejs/pagination').createLayout,
   typeof import('plitejs/pagination/react').PagedEditable,
-  typeof import('plitejs/pagination/react').usePliteLayout,
+  typeof import('plitejs/pagination/react').useLayout,
   typeof import('plitejs/react').Editable,
-  typeof import('plitejs/react').Plite,
+  typeof import('plitejs/react').EditorRoot,
   typeof import('plitejs/react').useEditor,
+  typeof import('plitejs/yjs').YjsUpdatePolicy,
+  typeof import('plitejs/yjs').yjs,
+  typeof import('plitejs/yjs/react').useYjsAdmissionStatus,
+  typeof import('plitejs/yjs/react').useYjsRemoteCursor,
+  typeof import('plitejs/yjs/react').useYjsRemoteCursorGeometry,
+  typeof import('plitejs/yjs/react').useYjsRemoteCursorIds,
+  typeof import('platejs/yjs/react').YjsPlugin,
 ];
 
 type PublicPackageNamedTypeExports = [
@@ -89,16 +105,15 @@ type PublicPackageNamedTypeExports = [
   import('plitejs/dom').HotkeySpec,
   import('plitejs/dom').StringDiff,
   import('plitejs/dom').TextDiff,
-  import('plitejs/pagination').PliteLayoutOptions,
-  import('plitejs/pagination').PliteNodeLayoutProvider,
-  import('plitejs/pagination').PlitePageLayout,
-  import('plitejs/pagination').PliteLayoutOptions,
-  import('plitejs/pagination').PlitePageSettings,
+  import('plitejs/pagination').LayoutOptions,
+  import('plitejs/pagination').NodeLayoutProvider,
+  import('plitejs/pagination').PageLayout,
+  import('plitejs/pagination').LayoutOptions,
+  import('plitejs/pagination').PageSettings,
   import('plitejs/react').EditableDOMBeforeInputHandler,
-  import('plitejs/react').DOMStrategyVirtualizedLayout,
-  import('plitejs/react').EditableDOMStrategyMetrics,
   import('plitejs/react').EditableKeyDownHandler,
   import('plitejs/react').EditableProps,
+  import('plitejs/react/virtualized').VirtualizedEditableProps,
   import('plitejs/react').ExternalTextActions,
   import('plitejs/react').ExternalTextAdapter,
   import('plitejs/react').ExternalTextChange,
@@ -110,24 +125,31 @@ type PublicPackageNamedTypeExports = [
   import('plitejs/react').ExternalTextState,
   import('plitejs/react').ExternalTextView,
   import('plitejs/react').RenderElementProps,
-  import('plitejs/react').VirtualizedPageLayoutItem,
-  import('plitejs/react').VirtualizedTopLevelLayoutItem,
-  import('plitejs/react').PliteAnnotationStore,
-  import('plitejs/react').PliteCommitContext,
-  import('plitejs/react').PliteDecoration,
-  import('plitejs/react').PliteDecorationAttributes,
-  import('plitejs/react').PliteDecorationRefresh,
-  import('plitejs/react').PliteDecorationSource,
-  import('plitejs/react').PliteProps,
-  import('plitejs/react').PliteSelectionChangeContext,
-  import('plitejs/react').PliteValueChangeContext,
-  import('plitejs/react').PliteWidgetStore,
-  import('plitejs/react').PliteCommandDispatcher<
+  import('plitejs/react').AnnotationStore,
+  import('plitejs/react').CommitContext,
+  import('plitejs/react').Decoration,
+  import('plitejs/react').DecorationAttributes,
+  import('plitejs/react').DecorationRefresh,
+  import('plitejs/react').DecorationSource,
+  import('plitejs/react').EditorRootProps,
+  import('plitejs/react').SelectionChangeContext,
+  import('plitejs/react').ValueChangeContext,
+  import('plitejs/react').RangeGeometry,
+  import('plitejs/react').CommandDispatcher<
     import('plitejs').EditorCommand<any, any>
   >,
-  import('plitejs/react').UsePliteCommandOptions,
+  import('plitejs/react').UseCommandOptions,
   import('plitejs/react').UseEditorOptions,
-  import('plitejs/react').UsePliteRootEditorOptions,
+  import('plitejs/react').UseRootEditorOptions,
+  import('plitejs/yjs').YjsAdmissionStatus,
+  import('plitejs/yjs').YjsAwarenessChange,
+  import('plitejs/yjs').YjsAwarenessLike,
+  import('plitejs/yjs').YjsAwarenessState,
+  import('plitejs/yjs').YjsCursorDataSchema,
+  import('plitejs/yjs').YjsInitialReadiness,
+  import('plitejs/yjs').YjsPluginOptions,
+  import('plitejs/yjs').YjsRemoteCursor,
+  import('plitejs/yjs').YjsRemoteCursorData,
 ];
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
@@ -294,11 +316,64 @@ type PublicUnknownPredicateInputs = [
 declare const documentChange: import('plitejs').DocumentChange;
 declare const createEditorView: typeof import('plitejs').createEditorView;
 declare const commit: import('plitejs').EditorCommit;
-declare const facet: import('plitejs').EditorFacet<number>;
 declare const runtime: import('plitejs').Editor;
 declare const slice: import('plitejs').ContentSlice;
 declare const publicParent: import('plitejs').Element;
 declare const transaction: import('plitejs').EditorUpdateTransaction;
+declare const yjsAwareness: import('plitejs/yjs').YjsAwarenessLike;
+declare const yjsDocument: import('yjs').Doc;
+
+const publicYjsBinding = createPublicYjsBinding({
+  awareness: yjsAwareness,
+  cursorData: {
+    validate: (
+      value
+    ): value is { readonly color: string; readonly name: string } =>
+      typeof value === 'object' && value !== null,
+  },
+  doc: yjsDocument,
+  initialReady: true,
+});
+const publicYjsEditor = createPublicEditor({
+  plugins: [publicYjsBinding] as const,
+});
+
+publicYjsEditor.api.yjs.setCursorData({ color: '#7c3aed', name: 'Ada' });
+// @ts-expect-error packed declarations preserve inferred cursor metadata
+publicYjsEditor.api.yjs.setCursorData({ color: '#7c3aed', name: 42 });
+
+const publicDocumentOnlyYjs = createPublicYjsBinding({
+  doc: yjsDocument,
+  initialReady: true,
+});
+const publicDocumentOnlyEditor = createPublicEditor({
+  plugins: [publicDocumentOnlyYjs] as const,
+});
+
+publicDocumentOnlyEditor.api.yjs.admissionStatus();
+// @ts-expect-error presence methods require awareness
+publicDocumentOnlyEditor.api.yjs.setCursorData({ name: 'Ada' });
+
+const publicPlateYjs = PublicPlateYjsPlugin.create({
+  awareness: yjsAwareness,
+  cursorData: {
+    validate: (
+      value
+    ): value is { readonly color: string; readonly name: string } =>
+      typeof value === 'object' && value !== null,
+  },
+  doc: yjsDocument,
+  initialReady: true,
+});
+const publicPlateYjsEditor = createPublicPlateEditor({
+  plugins: [publicPlateYjs] as const,
+});
+
+publicPlateYjsEditor
+  .plugin(publicPlateYjs)
+  .api.setCursorData({ color: '#7c3aed', name: 'Ada' });
+// @ts-expect-error Plate copied composition preserves inferred cursor metadata
+publicPlateYjsEditor.plugin(publicPlateYjs).api.setCursorData({ name: 'Ada' });
 
 editor.update.selection.setNodes([[0]]);
 transaction.selection.setNodes([[0], [2]]);
@@ -358,19 +433,6 @@ commit.changed.paths('main');
 commit.changed.nodeKeys('node', 'main');
 // @ts-expect-error the primary commit root is selected by omitting root
 commit.changed.topLevelRanges('main');
-
-facet.compute(() => 1, {
-  dependencies: [{ kind: 'document', root: 'header' }],
-});
-facet.compute(() => 1, {
-  dependencies: [
-    {
-      kind: 'document',
-      // @ts-expect-error the primary document dependency is selected by omitting root
-      root: 'main',
-    },
-  ],
-});
 
 const acceptsPublicPackageModules = <_T extends PublicPackageModules>() => true;
 const acceptsPublicPackageNamedExports = <

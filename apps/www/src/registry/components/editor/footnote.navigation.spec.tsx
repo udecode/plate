@@ -4,8 +4,8 @@ import { act, render, waitFor } from '@testing-library/react';
 import {
   createEditor,
   NavigationFeedbackPlugin,
-  Plate,
-  PlateContent,
+  EditorRoot,
+  EditorContent,
   useEditor,
 } from 'platejs/react';
 import * as React from 'react';
@@ -36,12 +36,12 @@ it('projects navigation feedback onto copied footnote references and definitions
   let mounted: ReturnType<typeof useEditor> | undefined;
   function Capture() {
     mounted = useEditor();
-    return <PlateContent />;
+    return <EditorContent />;
   }
   const view = render(
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <Capture />
-    </Plate>
+    </EditorRoot>
   );
   for (const path of [[0, 1], [1]]) {
     const key = editor.key(path);

@@ -2,7 +2,7 @@ import { act, render, renderHook } from '@testing-library/react';
 import React from 'react';
 
 import type { Element, NodeEntry } from '../../../core';
-import { TestPlate as Plate } from '../../__tests__/TestPlate';
+import { TestPlate as EditorRoot } from '../../__tests__/TestPlate';
 import { createEditor } from '../../editor';
 import { ElementProvider } from './useElementStore';
 import { usePath } from './usePath';
@@ -26,11 +26,11 @@ describe('path projection preserves independent position jobs', () => {
       update = setEntry;
       const child = React.useMemo(() => <Child />, []);
       return (
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <ElementProvider element={element} entry={entry} path={entry[1]}>
             {child}
           </ElementProvider>
-        </Plate>
+        </EditorRoot>
       );
     };
     const view = render(<Wrapper />);
@@ -54,11 +54,11 @@ describe('path projection preserves independent position jobs', () => {
       ]);
       update = setEntry;
       return (
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <ElementProvider element={element} entry={entry} path={entry[1]}>
             {children}
           </ElementProvider>
-        </Plate>
+        </EditorRoot>
       );
     };
     const view = renderHook(
@@ -80,11 +80,11 @@ describe('path projection preserves independent position jobs', () => {
     const element: Element = { type: 'row', children: [{ text: '' }] };
     const entry: NodeEntry<Element> = [element, [0, 2]];
     const Wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <ElementProvider element={element} entry={entry} path={entry[1]}>
           {children}
         </ElementProvider>
-      </Plate>
+      </EditorRoot>
     );
     const whole = renderHook(() => usePath(), { wrapper: Wrapper });
     Reflect.set(whole.result.current, '0', 99);

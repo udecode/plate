@@ -2,12 +2,14 @@
 
 Task owns intake, scope, the current plan, implementation and delivery. Its
 [autonomous mode](./autonomous.md) reconciles quality checkpoints through the
-same plan and domain owners. Poteto Mode supplies its full engineering method. A specialist owns
-its technical decisions and proof; it does not start another task lifecycle.
+same plan and domain owners. A selected specialist supplies its technical
+method and proof; it does not start another task lifecycle.
 
 This is the common execution contract for every local rule, reference and plan
 template. Current user instructions and runtime tool contracts take precedence.
-Read this once per task, then load only the methods the work calls for.
+For substantive work, read this once and then load only the methods the work
+calls for. Questions and tiny local edits use the affected owner and direct
+verification without loading this common contract.
 
 ## Plans and native goals
 
@@ -47,13 +49,25 @@ Reuse the current goal and plan across workers; a goal preserves audit-only,
 plan-only, human-assignment and publication boundaries. Templates and mode names
 do not supply authority beyond the user's direct or standing request.
 
-Assume long execution will lose strict checklist items unless they are persisted.
-Apply Autogoal's checklist-retention method: materialize every applicable user,
-method, reference and template obligation in the existing plan with source and
-evidence; update at checkpoints and resume; reconcile the original checklists
-before closure. Keep domain ledgers and semantic validators authoritative. Short
-work checks the same applicable requirements directly. An explicit no-goal
-request disables native continuation, not required proof or durable accounting.
+Retain each applicable source-linked obligation once in the existing plan or
+its canonical domain ledger. Update material state at settled checkpoints,
+corrections, blockers and handoffs; reconcile original acceptance before
+closure. Keep domain ledgers and semantic validators authoritative. Short work
+checks its requirements directly. Opting out of a goal preserves required proof.
+
+Handle direct pause before any repair detour: save `Status: Paused` and the
+next step in the existing plan, then follow Autogoal pause handling. Report
+unavailable native pause control once and end promptly. Automatic continuations
+and compaction never resume paused work; explicit user resumption reuses the
+saved plan and latest corrections.
+
+Use native subagents for a bounded independent question or operation alongside
+useful lead work. Pass source and acceptance scope, current state, allowed
+mutation, expected output and stop condition. Give each mutable resource one
+writer, preserve existing model defaults, disclose actual independence limits
+and consume each result before closing its acceptance. Human assignments
+reserve their exact scope; read-only mapping/review does not authorize absorbing
+the assigned implementation. New tasks and checkouts require their own authority.
 
 Honor the user's duration as stated. A deadline or budget is an upper bound;
 an explicitly requested minimum run remains a minimum. An unspecified duration
@@ -132,15 +146,17 @@ A local pass proves local behavior; it does not prove integration or release.
 
 ## Full methods and evidence
 
-Read full pstack playbooks and the principle leaves that govern the decision.
-Use the installed Codex adapter to map tools and actual model availability.
-Do not replace their examples, prompts or methods with summaries. Separate
-independent design questions from repeated reviews of the same final diff.
+Known patterns and accepted plans continue directly through their owners.
+Select pstack playbooks or principles for an unresolved question or explicit
+invocation, then read that selected method fully. Preserve its useful examples,
+prompts and recovery. Use the Codex adapter for tool/model-dependent work;
+ordinary implementation and recovery do not trigger an automatic method chain.
 
-Show Me Your Work keeps one append-only decision trail for long or unattended
-work. Link existing plan, Regression or Benchmark receipts rather than copying
-their contents. Preserve original evidence through cleanup and corrections.
-Technical Writing owns prose and preservation. [Plate Docs](../../plate-docs/SKILL.md)
+Keep material decisions in the existing plan. Use Show Me Your Work when
+explicitly requested or when competing experiments need a separate history;
+long duration alone does not require it. Link existing Regression or Benchmark
+receipts rather than copying their contents. Preserve original evidence.
+Technical Writing owns prose and preservation. [Plate Docs](../../../skills/plate-docs/SKILL.md)
 owns the public documentation method and selects its applicable proof.
 Walkthrough presents existing final visual evidence.
 
@@ -153,3 +169,6 @@ For an authorized PR, follow its actual repository template. Describe the final
 problem, behavior, owning fix, relevant proof and material tradeoffs. Use
 `--body-file` and read back the final body with `gh pr view --json body`. Changeset
 owns the managed auto-release block. Do not copy another project's PR format.
+
+For Git, PR, public issue or release work, read [publication and public claims](delivery.md).
+The root authority and whole-checkout rules remain in force.

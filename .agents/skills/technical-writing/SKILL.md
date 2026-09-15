@@ -1,6 +1,6 @@
 ---
 name: technical-writing
-description: "Write, edit, and audit clear prose while preserving facts and house style. Use for docs, RFCs, READMEs, PR descriptions, commit messages, prose cleanup, and writing reviews. Includes document structure, anti-slop editing, and preservation checks."
+description: "Draft, edit or audit substantive prose while preserving facts and house style. Small wording fixes stay local."
 ---
 
 # Technical writing

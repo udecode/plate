@@ -1,5 +1,5 @@
 ---
-description: Audit and improve the current Plate/Plite project through Autogoal and one evolving audit plan across architecture, simplification, performance, test value, docs, registry, and applicable agent rules. Use for a recurring whole-project improvement run, with one optional iteration count or hour budget.
+description: Audit and repair Plate/Plite through one improvement plan, with an optional iteration count or hour budget.
 name: improve
 metadata:
   skiller:

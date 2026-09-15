@@ -3,11 +3,11 @@ import { describe, it } from 'node:test';
 
 import type { Descendant, Range } from '../../src/index';
 import {
-  plitePointToYjsRelativePosition,
-  pliteRangeToYjsRelativeRange,
-  yjsRelativePositionToPlitePoint,
-  yjsRelativeRangeToPliteRange,
-} from '../../src/yjs';
+  pointToYjsRelativePosition,
+  rangeToYjsRelativeRange,
+  yjsRelativePositionToPoint,
+  yjsRelativeRangeToRange,
+} from '../../src/yjs/core/selection';
 import {
   clearYjsTrace,
   createSeededYjsPeers,
@@ -63,39 +63,36 @@ describe('plitejs/yjs selection relative-position contract', () => {
   it('round trips a Plite point through a Yjs relative position', () => {
     const peer = createPeer('b');
     const point = { path: [0, 0], offset: 3 };
-    const relative = plitePointToYjsRelativePosition(getYjsRoot(peer), point);
+    const relative = pointToYjsRelativePosition(getYjsRoot(peer), point);
 
     assert.deepEqual(
-      yjsRelativePositionToPlitePoint(getYjsRoot(peer), relative),
+      yjsRelativePositionToPoint(getYjsRoot(peer), relative),
       point
     );
   });
 
   it('clamps Plite point offsets to text bounds before storing relative positions', () => {
     const peer = createPeer('b');
-    const beforeStart = plitePointToYjsRelativePosition(getYjsRoot(peer), {
+    const beforeStart = pointToYjsRelativePosition(getYjsRoot(peer), {
       path: [0, 0],
       offset: -10,
     });
-    const afterEnd = plitePointToYjsRelativePosition(getYjsRoot(peer), {
+    const afterEnd = pointToYjsRelativePosition(getYjsRoot(peer), {
       path: [0, 0],
       offset: 99,
     });
 
     assert.deepEqual(
-      yjsRelativePositionToPlitePoint(getYjsRoot(peer), beforeStart),
+      yjsRelativePositionToPoint(getYjsRoot(peer), beforeStart),
       {
         path: [0, 0],
         offset: 0,
       }
     );
-    assert.deepEqual(
-      yjsRelativePositionToPlitePoint(getYjsRoot(peer), afterEnd),
-      {
-        path: [0, 0],
-        offset: 'alpha'.length,
-      }
-    );
+    assert.deepEqual(yjsRelativePositionToPoint(getYjsRoot(peer), afterEnd), {
+      path: [0, 0],
+      offset: 'alpha'.length,
+    });
   });
 
   it('round trips a Plite range without changing anchor/focus direction', () => {
@@ -104,10 +101,10 @@ describe('plitejs/yjs selection relative-position contract', () => {
       anchor: { path: [1, 0], offset: 4 },
       focus: { path: [0, 0], offset: 1 },
     };
-    const relative = pliteRangeToYjsRelativeRange(getYjsRoot(peer), range);
+    const relative = rangeToYjsRelativeRange(getYjsRoot(peer), range);
 
     assert.deepEqual(
-      yjsRelativeRangeToPliteRange(getYjsRoot(peer), relative),
+      yjsRelativeRangeToRange(getYjsRoot(peer), relative),
       range
     );
   });
@@ -127,16 +124,16 @@ describe('plitejs/yjs selection relative-position contract', () => {
     const startOfRight = { path: [0, 1], offset: 0 };
 
     assert.deepEqual(
-      yjsRelativePositionToPlitePoint(
+      yjsRelativePositionToPoint(
         getYjsRoot(peer),
-        plitePointToYjsRelativePosition(getYjsRoot(peer), endOfLeft)
+        pointToYjsRelativePosition(getYjsRoot(peer), endOfLeft)
       ),
       endOfLeft
     );
     assert.deepEqual(
-      yjsRelativePositionToPlitePoint(
+      yjsRelativePositionToPoint(
         getYjsRoot(peer),
-        plitePointToYjsRelativePosition(getYjsRoot(peer), startOfRight)
+        pointToYjsRelativePosition(getYjsRoot(peer), startOfRight)
       ),
       startOfRight
     );
@@ -145,7 +142,7 @@ describe('plitejs/yjs selection relative-position contract', () => {
   it('rebases a stored point across a concurrent text insert', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
-    const relative = plitePointToYjsRelativePosition(getYjsRoot(b), {
+    const relative = pointToYjsRelativePosition(getYjsRoot(b), {
       path: [0, 0],
       offset: 3,
     });
@@ -153,7 +150,7 @@ describe('plitejs/yjs selection relative-position contract', () => {
     insertInsideAlpha(a);
     syncConnectedPeers(peers);
 
-    assert.deepEqual(yjsRelativePositionToPlitePoint(getYjsRoot(b), relative), {
+    assert.deepEqual(yjsRelativePositionToPoint(getYjsRoot(b), relative), {
       path: [0, 0],
       offset: 4,
     });
@@ -161,42 +158,36 @@ describe('plitejs/yjs selection relative-position contract', () => {
 
   it('resolves a stored point through virtual moved-node identity', () => {
     const peer = createPeer('b');
-    const relative = plitePointToYjsRelativePosition(getYjsRoot(peer), {
+    const relative = pointToYjsRelativePosition(getYjsRoot(peer), {
       path: [0, 0],
       offset: 2,
     });
 
     moveFirstBlockToEnd(peer);
 
-    assert.deepEqual(
-      yjsRelativePositionToPlitePoint(getYjsRoot(peer), relative),
-      {
-        path: [2, 0],
-        offset: 2,
-      }
-    );
+    assert.deepEqual(yjsRelativePositionToPoint(getYjsRoot(peer), relative), {
+      path: [2, 0],
+      offset: 2,
+    });
   });
 
   it('returns null when the relative position target is no longer visible', () => {
     const peer = createPeer('b');
-    const relative = plitePointToYjsRelativePosition(getYjsRoot(peer), {
+    const relative = pointToYjsRelativePosition(getYjsRoot(peer), {
       path: [0, 0],
       offset: 2,
     });
 
     removeFirstBlock(peer);
 
-    assert.equal(
-      yjsRelativePositionToPlitePoint(getYjsRoot(peer), relative),
-      null
-    );
+    assert.equal(yjsRelativePositionToPoint(getYjsRoot(peer), relative), null);
   });
 
   it('does not record selection-only conversions in the Yjs change trace', () => {
     const peer = createPeer('b');
 
     clearYjsTrace(peer);
-    pliteRangeToYjsRelativeRange(getYjsRoot(peer), {
+    rangeToYjsRelativeRange(getYjsRoot(peer), {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 2 },
     });

@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useMemo, useRef } from 'react';
 
-import type { NodeKey, Path, Text as PliteTextNode } from '../..';
+import type { NodeKey, Path, Text as TextNode } from '../..';
 import {
   markDOMSyncMutationTarget,
   releaseDOMTextFlowRecordIndex,
@@ -13,8 +13,8 @@ import {
   getDecorationSliceIdentity,
   getDecorationPaintChange,
   getNativeMappedDecorationInsertion,
-  type PliteDecorationAttributes,
-  type PliteDecorationSlice,
+  type DecorationAttributes,
+  type DecorationSlice,
 } from '../decoration-source';
 import { getPureTextInsertion } from '../editable/native-text-input-delta';
 import { readNodeByKey } from '../editable/runtime-live-state';
@@ -30,7 +30,7 @@ import { recordPliteReactRender } from '../render-profiler';
 
 export type EditableTextFlowEntry = Readonly<{
   isLast: boolean;
-  node: PliteTextNode;
+  node: TextNode;
   nodeKey: NodeKey;
   path: Path;
 }>;
@@ -38,7 +38,7 @@ export type EditableTextFlowEntry = Readonly<{
 export const ImperativeTextFlowContext = React.createContext(true);
 
 type TextFlowSegment = Readonly<{
-  decorations: readonly PliteDecorationSlice[];
+  decorations: readonly DecorationSlice[];
   end: number;
   identity: string;
   start: number;
@@ -76,7 +76,7 @@ type SegmentDOMRecord = {
   bindingHost: HTMLElement | null;
   bindingRecord: TextDOMRecord | null;
   decorationRecords: DecorationDOMRecord[];
-  decorations: readonly PliteDecorationSlice[];
+  decorations: readonly DecorationSlice[];
   domLength: number;
   end: number;
   identity: string;
@@ -92,9 +92,9 @@ type TextDOMRecord = {
   bindingDirtyFrom?: number;
   bound: boolean;
   decorationIndexByIdentity: Map<string, number> | null;
-  decorations: readonly PliteDecorationSlice[];
+  decorations: readonly DecorationSlice[];
   isLast: boolean;
-  node: PliteTextNode;
+  node: TextNode;
   nodeKey: NodeKey;
   path: Path;
   paintChange?: {
@@ -167,12 +167,12 @@ const clampOffset = (text: string, offset: number) =>
 
 const compileOrderedNonOverlappingSegments = (
   text: string,
-  decorations: readonly PliteDecorationSlice[],
+  decorations: readonly DecorationSlice[],
   windowStart: number,
   windowEnd: number
 ): TextFlowSegmentPlan | null => {
   const ranges: Array<{
-    decoration: PliteDecorationSlice;
+    decoration: DecorationSlice;
     end: number;
     start: number;
   }> = [];
@@ -198,7 +198,9 @@ const compileOrderedNonOverlappingSegments = (
       segments.push({
         decorations: [],
         end: Math.min(start, windowEnd),
-        identity: `gap:${previousBoundary}:start:${getDecorationSliceIdentity(decoration)}:0`,
+        identity: `gap:${previousBoundary}:start:${getDecorationSliceIdentity(
+          decoration
+        )}:0`,
         start: Math.max(cursor, windowStart),
         text: text.slice(
           Math.max(cursor, windowStart),
@@ -237,7 +239,7 @@ const compileOrderedNonOverlappingSegments = (
 
 const compileTextFlowWindow = (
   text: string,
-  decorations: readonly PliteDecorationSlice[],
+  decorations: readonly DecorationSlice[],
   windowStart: number,
   windowEnd: number
 ): TextFlowSegmentPlan => {
@@ -387,7 +389,7 @@ const compileTextFlowWindow = (
 
 export const compileTextFlowSegments = (
   text: string,
-  decorations: readonly PliteDecorationSlice[]
+  decorations: readonly DecorationSlice[]
 ) => compileTextFlowWindow(text, decorations, 0, text.length);
 
 const toCSSPropertyName = (name: string) =>
@@ -433,7 +435,7 @@ const toDOMStyleValue = (property: string, value: unknown) => {
 
 const applyDecorationAttributes = (
   element: HTMLElement,
-  attributes: PliteDecorationAttributes,
+  attributes: DecorationAttributes,
   previousNames: Set<string>,
   trackMutation = true
 ) => {
@@ -510,25 +512,25 @@ const updateStringMetadata = (
   trackMutation = true
 ) => {
   if (trackMutation) {
-    setExpectedAttribute(stringElement, 'data-plite-string', 'true');
+    setExpectedAttribute(stringElement, 'data-editor-string', 'true');
   } else {
-    stringElement.setAttribute('data-plite-string', 'true');
+    stringElement.setAttribute('data-editor-string', 'true');
   }
   if (isLast && index === count - 1 && segment.text.endsWith('\n')) {
     if (trackMutation) {
       setExpectedAttribute(
         stringElement,
-        'data-plite-length',
+        'data-editor-length',
         String(segment.text.length)
       );
     } else {
       stringElement.setAttribute(
-        'data-plite-length',
+        'data-editor-length',
         String(segment.text.length)
       );
     }
   } else if (trackMutation) {
-    removeExpectedAttribute(stringElement, 'data-plite-length');
+    removeExpectedAttribute(stringElement, 'data-editor-length');
   }
 };
 
@@ -767,8 +769,8 @@ const updateSegmentRecord = (
 };
 
 const sameDecorationAttributes = (
-  left: PliteDecorationAttributes,
-  right: PliteDecorationAttributes
+  left: DecorationAttributes,
+  right: DecorationAttributes
 ) => {
   if (left === right) return true;
   const leftNames = Object.keys(left);
@@ -787,7 +789,7 @@ const sameDecorationAttributes = (
 
 const reconcileDecorationAttributeChange = (
   record: TextDOMRecord,
-  nextDecorations: readonly PliteDecorationSlice[]
+  nextDecorations: readonly DecorationSlice[]
 ) => {
   if (record.decorations.length !== nextDecorations.length) return false;
   const changedIdentities = new Set<string>();
@@ -858,8 +860,8 @@ const reconcileDecorationAttributeChange = (
 };
 
 const followsInsertion = (
-  previous: PliteDecorationSlice,
-  next: PliteDecorationSlice,
+  previous: DecorationSlice,
+  next: DecorationSlice,
   insertion: { length: number; start: number }
 ) => {
   const expectedStart =
@@ -884,7 +886,7 @@ const reconcilePureInsertion = ({
 }: {
   requireDOMMatch: boolean;
   isLast: boolean;
-  nextDecorations: readonly PliteDecorationSlice[];
+  nextDecorations: readonly DecorationSlice[];
   nextText: string;
   paint: TextFlowPaint;
   record: TextDOMRecord;
@@ -1104,7 +1106,7 @@ const reconcilePaintChange = (
   document: Document,
   record: TextDOMRecord,
   text: string,
-  decorations: readonly PliteDecorationSlice[],
+  decorations: readonly DecorationSlice[],
   isLast: boolean,
   paint: TextFlowPaint
 ) => {
@@ -1257,10 +1259,10 @@ const reconcileSegments = (
 };
 
 const setTextHostCapability = (host: HTMLSpanElement) => {
-  setExpectedAttribute(host, 'data-plite-node', 'text');
-  setExpectedAttribute(host, 'data-plite-text-flow-host', 'true');
-  setExpectedAttribute(host, 'data-plite-dom-sync', 'true');
-  removeExpectedAttribute(host, 'data-plite-dom-sync-reason');
+  setExpectedAttribute(host, 'data-editor-node', 'text');
+  setExpectedAttribute(host, 'data-editor-text-flow-host', 'true');
+  setExpectedAttribute(host, 'data-editor-dom-sync', 'true');
+  removeExpectedAttribute(host, 'data-editor-dom-sync-reason');
 };
 
 const disposeRecord = (
@@ -1282,7 +1284,7 @@ const reconcileTextFlow = ({
   requireDOMMatch,
   state,
 }: {
-  buckets: ReadonlyArray<readonly PliteDecorationSlice[]>;
+  buckets: ReadonlyArray<readonly DecorationSlice[]>;
   editor: ReturnType<typeof useEditorContext>;
   entries: readonly EditableTextFlowEntry[];
   root: HTMLSpanElement;
@@ -1591,67 +1593,67 @@ const reconcileTextFlow = ({
     singleRecord.segments[0].rootNode.nodeType === Node.TEXT_NODE;
 
   if (singleRecord) {
-    setExpectedAttribute(root, 'data-plite-node-key', singleRecord.nodeKey);
-    setExpectedAttribute(root, 'data-plite-path', singleRecord.path.join(','));
+    setExpectedAttribute(root, 'data-editor-node-key', singleRecord.nodeKey);
+    setExpectedAttribute(root, 'data-editor-path', singleRecord.path.join(','));
   } else {
-    removeExpectedAttribute(root, 'data-plite-node-key');
-    removeExpectedAttribute(root, 'data-plite-path');
+    removeExpectedAttribute(root, 'data-editor-node-key');
+    removeExpectedAttribute(root, 'data-editor-path');
   }
   if (isPlainSingleSegment) {
-    setExpectedAttribute(root, 'data-plite-string', 'true');
+    setExpectedAttribute(root, 'data-editor-string', 'true');
   } else {
-    removeExpectedAttribute(root, 'data-plite-string');
+    removeExpectedAttribute(root, 'data-editor-string');
   }
   state.deferredTextChangeCount += deferredTextChanges;
   state.incrementalTextChangeCount += incrementalTextChanges;
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-boundary-visits',
+    'data-editor-text-flow-boundary-visits',
     String(boundaryVisits)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-created-segments',
+    'data-editor-text-flow-created-segments',
     String(createdSegments)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-deferred-text-changes',
+    'data-editor-text-flow-deferred-text-changes',
     String(deferredTextChanges)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-incremental-text-changes',
+    'data-editor-text-flow-incremental-text-changes',
     String(incrementalTextChanges)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-deferred-text-change-count',
+    'data-editor-text-flow-deferred-text-change-count',
     String(state.deferredTextChangeCount)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-incremental-text-change-count',
+    'data-editor-text-flow-incremental-text-change-count',
     String(state.incrementalTextChangeCount)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-records',
+    'data-editor-text-flow-records',
     String(next.length)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-removed-segments',
+    'data-editor-text-flow-removed-segments',
     String(removedSegments)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-reused-segments',
+    'data-editor-text-flow-reused-segments',
     String(reusedSegments)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-segments',
+    'data-editor-text-flow-segments',
     String(nextSegmentCount)
   );
   state.reconcileCount += 1;
@@ -1659,17 +1661,17 @@ const reconcileTextFlow = ({
     (globalThis.performance?.now() ?? reconcileStartedAt) - reconcileStartedAt;
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-rebuild-count',
+    'data-editor-text-flow-rebuild-count',
     String(state.rebuildCount)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-reconcile-count',
+    'data-editor-text-flow-reconcile-count',
     String(state.reconcileCount)
   );
   setExpectedAttribute(
     root,
-    'data-plite-text-flow-reconcile-ms',
+    'data-editor-text-flow-reconcile-ms',
     String(state.reconcileMs)
   );
 
@@ -1711,10 +1713,8 @@ export const EditableTextFlow = ({
         ? entriesRef.current.flatMap((entry) => {
             const { node, path } = readNodeByKey(editor, entry.nodeKey);
 
-            return node &&
-              path &&
-              typeof (node as PliteTextNode).text === 'string'
-              ? [{ ...entry, node: node as PliteTextNode, path }]
+            return node && path && typeof (node as TextNode).text === 'string'
+              ? [{ ...entry, node: node as TextNode, path }]
               : [];
           })
         : entriesRef.current;
@@ -1865,7 +1865,7 @@ export const EditableTextFlow = ({
 
   return (
     <span
-      data-plite-text-flow="true"
+      data-editor-text-flow="true"
       ref={rootRef}
       suppressContentEditableWarning
     />

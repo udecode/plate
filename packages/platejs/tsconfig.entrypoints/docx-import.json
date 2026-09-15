@@ -26,6 +26,12 @@
     },
     {
       "path": "./docx-html.json"
+    },
+    {
+      "path": "./docx-internal.json"
+    },
+    {
+      "path": "./proxies.json"
     }
   ]
 }

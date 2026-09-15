@@ -1,15 +1,15 @@
-import { defineExtension, schema } from 'plitejs';
+import { definePlugin, schema } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderVoidProps,
-  Plite,
+  EditorRoot,
   useEditorContext,
-  usePliteChildRoot,
+  useChildRoot,
   useEditor,
-  usePliteRootChrome,
+  useRootChrome,
 } from 'plitejs/react';
 import type { PointerEvent } from 'react';
 
@@ -65,7 +65,7 @@ const createEmptyEditableVoidBody = (): CustomValue => [paragraph('')];
 
 const EditableVoidsExample = () => {
   const editor = useEditor({
-    extensions: [history(), editableVoid()],
+    plugins: [history(), editableVoid()],
     initialValue: {
       children: [
         {
@@ -93,24 +93,23 @@ const EditableVoidsExample = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Toolbar>
         <InsertEditableVoidButton />
       </Toolbar>
 
       <Editable
-        domStrategy="full"
         placeholder="Enter some text..."
         renderElement={renderElement}
         renderLeaf={renderLeaf}
         renderVoid={renderVoid}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 
 const editableVoid = () =>
-  defineExtension('editable-voids', {
+  definePlugin('editable-voids', {
     schema: {
       elements: {
         'editable-void': {
@@ -187,17 +186,17 @@ const ParagraphElement = ({
   <p {...attributes}>{children}</p>
 );
 
-const unsetWidthStyle = 'plite-editable-voids-unset-width-style';
+const unsetWidthStyle = 'editor-editable-voids-unset-width-style';
 
 const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
-  const bodyRoot = usePliteChildRoot(element, 'body');
-  const chrome = usePliteRootChrome(bodyRoot);
+  const bodyRoot = useChildRoot(element, 'body');
+  const chrome = useRootChrome(bodyRoot);
 
   return (
-    <div className="plite-editable-voids-card">
+    <div className="editor-editable-voids-card">
       <div contentEditable={false}>
         <h4>Name:</h4>
-        <input className="plite-editable-voids-input" type="text" />
+        <input className="editor-editable-voids-input" type="text" />
         <h4>Left or right handed:</h4>
         <input
           className={unsetWidthStyle}
@@ -219,8 +218,7 @@ const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
       <div {...chrome.props}>
         <Editable
           aria-label="Editable void rich content"
-          className="plite-editable-voids-child-editor"
-          domStrategy="full"
+          className="editor-editable-voids-child-editor"
           placeholder="Tell us about yourself..."
           renderElement={renderElement}
           renderLeaf={renderLeaf}

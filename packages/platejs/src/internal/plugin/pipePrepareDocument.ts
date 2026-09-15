@@ -2,7 +2,7 @@ import {
   DocumentChange,
   ElementApi,
   type EditorDocumentValue,
-  type Editor as PliteEditor,
+  type Editor as RuntimeEditor,
   type Path,
   type NodeKey,
   type Selection,
@@ -118,6 +118,61 @@ export const mapDocumentSelection = (
   return applyDocumentMigrationSelectionMapper(after, selection, mapped);
 };
 
+const applyPluginPreparation = (
+  editor: Editor,
+  document: EditorDocumentValue,
+  name: string
+) => {
+  const plugin =
+    getCompiledPlatePlugin(editor, name) ??
+    getPlateRuntime(editor).plugins[name] ??
+    failInvariant('Expected value to be defined');
+
+  if (
+    isEditOnly(editor.read.view.isReadOnly(), plugin, 'prepareDocument') ||
+    !plugin.prepareDocument
+  ) {
+    return document;
+  }
+
+  const nextDocument = Reflect.apply(plugin.prepareDocument, undefined, [
+    {
+      ...createPluginContext(editor, plugin),
+      document,
+    },
+  ]);
+
+  if (
+    !nextDocument ||
+    Array.isArray(nextDocument) ||
+    !Array.isArray(nextDocument.children)
+  ) {
+    throw new Error(
+      `Plugin "${name}" prepareDocument must return an editor document with primary-root children.`
+    );
+  }
+
+  return nextDocument;
+};
+
+/** Apply one installed preparation before a migration splits document projections. */
+export const prepareDocumentWithPlugin = (
+  editor: Editor,
+  input: EditorDocumentValue,
+  name: string
+) => {
+  const runtime = getPlateRuntime(editor);
+  if (!runtime.pluginCache.prepareDocument.includes(name)) return input;
+  const wasNormalizing = editor.runtime.isNormalizing;
+
+  editor.runtime.isNormalizing = true;
+  try {
+    return applyPluginPreparation(editor, input, name);
+  } finally {
+    editor.runtime.isNormalizing = wasNormalizing;
+  }
+};
+
 /** Apply every enabled plugin preparation to one detached document input. */
 export const prepareDocument = (
   editor: Editor,
@@ -132,33 +187,7 @@ export const prepareDocument = (
   editor.runtime.isNormalizing = true;
   try {
     getPlateRuntime(editor).pluginCache.prepareDocument.forEach((name) => {
-      const plugin =
-        getCompiledPlatePlugin(editor, name) ??
-        failInvariant('Expected value to be defined');
-
-      if (
-        isEditOnly(editor.read.view.isReadOnly(), plugin, 'prepareDocument') ||
-        !plugin.prepareDocument
-      ) {
-        return;
-      }
-
-      const nextDocument = Reflect.apply(plugin.prepareDocument, undefined, [
-        {
-          ...createPluginContext(editor, plugin),
-          document,
-        },
-      ]);
-
-      if (
-        !nextDocument ||
-        Array.isArray(nextDocument) ||
-        !Array.isArray(nextDocument.children)
-      ) {
-        throw new Error(
-          `Plugin "${name}" prepareDocument must return an editor document with primary-root children.`
-        );
-      }
+      const nextDocument = applyPluginPreparation(editor, document, name);
 
       selection = mapDocumentSelection(
         editor,
@@ -183,7 +212,7 @@ export const pipePrepareDocument = <
 >(
   editor: InternalBaseEditorWithInstalledPlugins<V, P>
 ) => {
-  runTrustedUpdate(editor as unknown as PliteEditor<V>, (tx) => {
+  runTrustedUpdate(editor as unknown as RuntimeEditor<V>, (tx) => {
     tx.value.replace({
       document: editor.read.value(),
       schema: editor.read.schema.identity(),

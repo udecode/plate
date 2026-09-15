@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
@@ -9,26 +9,26 @@ const CASE_ID = 'dnd:drag-handle-excluded-from-native-selection';
 test(CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/', { waitUntil: 'commit' });
-    const harness = createPliteBrowserEditorHarness(
+    const harness = createBrowserEditorHarness(
       page,
       CASE_ID,
-      page.locator('.plite-editor')
+      page.locator('.editor-editor')
     );
     await harness.ready({ editor: 'visible', text: 'Collaborative Editing' });
 
     const heading = page.getByRole('heading', {
       name: 'Collaborative Editing',
     });
-    const draggable = page.locator('.plite-editor > div').filter({
+    const draggable = page.locator('.editor-editor > div').filter({
       has: heading,
     });
     const previousText = draggable
       .locator('xpath=preceding-sibling::*[1]')
-      .locator('[data-plite-node="text"]')
+      .locator('[data-editor-node="text"]')
       .last();
     const handle = draggable.getByRole('button', { name: 'Drag block' });
 

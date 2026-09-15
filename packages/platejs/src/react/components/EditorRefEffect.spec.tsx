@@ -8,17 +8,17 @@ import {
   PlateRenderedAttributeProvider,
   usePlateRenderedAttributes,
 } from '../internal/rendered-attributes';
-import { definePlatePlugin } from '../plugin';
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
+import { definePlugin } from '../plugin';
+import type { AnyResolvedPlugin } from '../plugin/PlatePlugin';
 import { useEditorMounted } from '../stores';
 import { ViewElementAttributesEffect } from './EditorRefEffect';
-import { Plate } from './Plate';
-import { PlateContent } from './PlateContent';
+import { EditorRoot } from './Plate';
+import { EditorContent } from './PlateContent';
 
 describe('EditorRefEffect', () => {
   it('remounts changed view-attribute hooks and clears their publication', async () => {
     const events: string[] = [];
-    const AttributesPlugin = definePlatePlugin('attributeReplacement', {
+    const AttributesPlugin = definePlugin('attributeReplacement', {
       render: {
         useViewElementAttributes: ({ view }) => {
           React.useLayoutEffect(() => {
@@ -39,7 +39,7 @@ describe('EditorRefEffect', () => {
     const plugin = getCompiledPlatePlugin(
       editor,
       AttributesPlugin
-    ) as unknown as AnyResolvedPlatePlugin;
+    ) as unknown as AnyResolvedPlugin;
     const replacement = brandPluginDescriptor(
       {
         ...plugin,
@@ -63,7 +63,7 @@ describe('EditorRefEffect', () => {
         },
       },
       plugin
-    ) as AnyResolvedPlatePlugin;
+    ) as AnyResolvedPlugin;
 
     function AttributeSnapshot() {
       const attributes = usePlateRenderedAttributes(editor.key([0]));
@@ -71,15 +71,15 @@ describe('EditorRefEffect', () => {
       return <output>{JSON.stringify(attributes)}</output>;
     }
 
-    const tree = (current: AnyResolvedPlatePlugin | null) => (
-      <Plate editor={editor}>
+    const tree = (current: AnyResolvedPlugin | null) => (
+      <EditorRoot editor={editor}>
         <PlateRenderedAttributeProvider>
           {current && (
             <ViewElementAttributesEffect plugin={current} sourceOrder={0} />
           )}
           <AttributeSnapshot />
         </PlateRenderedAttributeProvider>
-      </Plate>
+      </EditorRoot>
     );
     const mounted = render(tree(plugin));
 
@@ -121,10 +121,10 @@ describe('EditorRefEffect', () => {
 
     const tree = (current: typeof editor, showContent: boolean) => (
       <React.StrictMode>
-        <Plate editor={current}>
+        <EditorRoot editor={current}>
           <MountedState />
-          {showContent && <PlateContent />}
-        </Plate>
+          {showContent && <EditorContent />}
+        </EditorRoot>
       </React.StrictMode>
     );
     const mounted = render(tree(editor, false));
@@ -151,11 +151,11 @@ describe('EditorRefEffect', () => {
 
     const tree = (first: boolean, second: boolean) => (
       <React.StrictMode>
-        <Plate editor={editor} suppressInstanceWarning>
+        <EditorRoot editor={editor} suppressInstanceWarning>
           <MountedState />
-          {first && <PlateContent data-testid="first-content" />}
-          {second && <PlateContent data-testid="second-content" />}
-        </Plate>
+          {first && <EditorContent data-testid="first-content" />}
+          {second && <EditorContent data-testid="second-content" />}
+        </EditorRoot>
       </React.StrictMode>
     );
     const mounted = render(tree(true, true));

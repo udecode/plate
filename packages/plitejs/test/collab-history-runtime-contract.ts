@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   DocumentChange,
   type EditorTransactionSpecBuilder,
   type EditorUpdatePolicy,
@@ -43,7 +43,7 @@ const createCollabEditor = () => {
 };
 
 const createHistoryCollabEditor = () => {
-  const editor = createEditor({ extensions: [history()] as const });
+  const editor = createEditor({ plugins: [history()] as const });
 
   editorReplace(editor, {
     children: [paragraph('one'), paragraph('two'), paragraph('three')],
@@ -107,17 +107,17 @@ const importRemoteCommit = (
 };
 
 describe('collab and history runtime contract', () => {
-  it('publishes one commit truth for collab subscribers, extension listeners, and history', () => {
-    const extensionCommits: Array<
+  it('publishes one commit truth for collab subscribers, plugin listeners, and history', () => {
+    const pluginCommits: Array<
       NonNullable<ReturnType<typeof editorGetLastCommit>>
     > = [];
     const editor = createEditor({
-      extensions: [
+      plugins: [
         history(),
-        defineExtension('collab-commit-listener', {
+        definePlugin('collab-commit-listener', {
           on: {
             commit({ commit }) {
-              extensionCommits.push(commit);
+              pluginCommits.push(commit);
             },
           },
         }),
@@ -132,7 +132,7 @@ describe('collab and history runtime contract', () => {
         focus: { path: [0, 0], offset: 3 },
       },
     });
-    extensionCommits.length = 0;
+    pluginCommits.length = 0;
 
     const nodeKey = editorGetNodeKey(editor, [0, 0]);
 
@@ -157,11 +157,11 @@ describe('collab and history runtime contract', () => {
     unsubscribeSubscribe();
 
     assert.equal(subscribedCommits.length, 1);
-    assert.equal(extensionCommits.length, 1);
+    assert.equal(pluginCommits.length, 1);
 
     const commit = subscribedCommits[0];
 
-    assert.equal(extensionCommits[0], commit);
+    assert.equal(pluginCommits[0], commit);
     assert.equal(editorGetLastCommit(editor), commit);
     assert.equal(commit.changed.has('text'), true);
     assert.deepEqual(commit.tags, ['collab-local']);

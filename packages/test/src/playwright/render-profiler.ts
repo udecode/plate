@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 
-/** Render-profiler event categories emitted by Plite React. */
-export type PliteReactRenderKind =
+/** Render-profiler event categories emitted by editor React. */
+export type ReactRenderKind =
   | 'core-time'
   | 'dom-text-sync'
   | 'editable'
@@ -14,35 +14,35 @@ export type PliteReactRenderKind =
   | 'text'
   | 'void';
 
-/** One Plite React render-profiler event. */
-export type PliteReactRenderProfilerEvent = {
-  kind: PliteReactRenderKind;
+/** One editor React render-profiler event. */
+export type ReactRenderProfilerEvent = {
+  kind: ReactRenderKind;
   id?: string | null;
   nodeKey?: string | null;
 };
 
-/** Collected Plite React render profiler events and counters. */
-/** Snapshot returned by the Plite React render profiler. */
-export type PliteReactRenderProfilerSnapshot = {
+/** Collected editor React render profiler events and counters. */
+/** Snapshot returned by the editor React render profiler. */
+export type ReactRenderProfilerSnapshot = {
   byKey: Record<string, number>;
-  byKind: Partial<Record<PliteReactRenderKind, number>>;
-  events: PliteReactRenderProfilerEvent[];
+  byKind: Partial<Record<ReactRenderKind, number>>;
+  events: ReactRenderProfilerEvent[];
   total: number;
 };
 
-const installPliteReactRenderProfilerScript = () => {
+const installRenderProfilerScript = () => {
   const target = window as Window & {
-    __PLITE_REACT_RENDER_PROFILER__?: {
-      record: (event: PliteReactRenderProfilerEvent) => void;
+    __EDITOR_REACT_RENDER_PROFILER__?: {
+      record: (event: ReactRenderProfilerEvent) => void;
     };
-    __PLITE_REACT_RENDER_PROFILER_RESET__?: () => void;
-    __PLITE_REACT_RENDER_PROFILER_SNAPSHOT__?: () => PliteReactRenderProfilerSnapshot;
+    __EDITOR_REACT_RENDER_PROFILER_RESET__?: () => void;
+    __EDITOR_REACT_RENDER_PROFILER_SNAPSHOT__?: () => ReactRenderProfilerSnapshot;
   };
-  const events: PliteReactRenderProfilerEvent[] = [];
-  const snapshot = (): PliteReactRenderProfilerSnapshot => {
+  const events: ReactRenderProfilerEvent[] = [];
+  const snapshot = (): ReactRenderProfilerSnapshot => {
     const byKey: Record<string, number> = {};
-    const byKind: Partial<Record<PliteReactRenderKind, number>> = {};
-    const isRenderEvent = (event: PliteReactRenderProfilerEvent) =>
+    const byKind: Partial<Record<ReactRenderKind, number>> = {};
+    const isRenderEvent = (event: ReactRenderProfilerEvent) =>
       event.kind !== 'core-time' &&
       event.kind !== 'dom-text-sync' &&
       event.kind !== 'runtime-time' &&
@@ -63,45 +63,45 @@ const installPliteReactRenderProfilerScript = () => {
     };
   };
 
-  target.__PLITE_REACT_RENDER_PROFILER__ = {
+  target.__EDITOR_REACT_RENDER_PROFILER__ = {
     record(event) {
       events.push({ ...event });
     },
   };
-  target.__PLITE_REACT_RENDER_PROFILER_RESET__ = () => {
+  target.__EDITOR_REACT_RENDER_PROFILER_RESET__ = () => {
     events.length = 0;
   };
-  target.__PLITE_REACT_RENDER_PROFILER_SNAPSHOT__ = snapshot;
+  target.__EDITOR_REACT_RENDER_PROFILER_SNAPSHOT__ = snapshot;
 };
 
-/** Install the Plite React render profiler bridge in a Playwright page. */
-export const installPliteReactRenderProfiler = async (page: Page) => {
-  await page.addInitScript(installPliteReactRenderProfilerScript);
-  await page.evaluate(installPliteReactRenderProfilerScript).catch(() => {});
+/** Install the editor React render profiler bridge in a Playwright page. */
+export const installReactRenderProfiler = async (page: Page) => {
+  await page.addInitScript(installRenderProfilerScript);
+  await page.evaluate(installRenderProfilerScript).catch(() => {});
 };
 
-/** Reset collected Plite React render profiler events in the page. */
-export const resetPliteReactRenderProfiler = async (page: Page) => {
+/** Reset collected editor React render profiler events in the page. */
+export const resetReactRenderProfiler = async (page: Page) => {
   await page.evaluate(() => {
     const target = window as Window & {
-      __PLITE_REACT_RENDER_PROFILER_RESET__?: () => void;
+      __EDITOR_REACT_RENDER_PROFILER_RESET__?: () => void;
     };
 
-    target.__PLITE_REACT_RENDER_PROFILER_RESET__?.();
+    target.__EDITOR_REACT_RENDER_PROFILER_RESET__?.();
   });
 };
 
-/** Read the current Plite React render profiler snapshot from the page. */
-export const getPliteReactRenderProfilerSnapshot = async (
+/** Read the current editor React render profiler snapshot from the page. */
+export const getReactRenderProfilerSnapshot = async (
   page: Page
-): Promise<PliteReactRenderProfilerSnapshot> =>
+): Promise<ReactRenderProfilerSnapshot> =>
   page.evaluate(() => {
     const target = window as Window & {
-      __PLITE_REACT_RENDER_PROFILER_SNAPSHOT__?: () => PliteReactRenderProfilerSnapshot;
+      __EDITOR_REACT_RENDER_PROFILER_SNAPSHOT__?: () => ReactRenderProfilerSnapshot;
     };
 
     return (
-      target.__PLITE_REACT_RENDER_PROFILER_SNAPSHOT__?.() ?? {
+      target.__EDITOR_REACT_RENDER_PROFILER_SNAPSHOT__?.() ?? {
         byKey: {},
         byKind: {},
         events: [],

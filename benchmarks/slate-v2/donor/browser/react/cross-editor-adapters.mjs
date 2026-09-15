@@ -55,21 +55,21 @@ import { getEditableKernelTrace } from 'cross-plite-kernel';
 ${
   surface === 'plite'
     ? "import {createEditor, Editable, Plite, setDOMTextSyncRendererCapability} from 'plitejs/react';"
-    : "import {createEditor, Plate, PlateContent, BoldPlugin, ParagraphPlugin} from 'platejs/react';"
+    : "import {createEditor, Plate, EditorContent, BoldPlugin, ParagraphPlugin} from 'platejs/react';"
 }
 export async function mount(host, lines, options) {
   ${treeHelpers}
   const counter = createPliteReactRenderCounter();
-  if (options.counters) globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+  if (options.counters) globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
   const editor = createEditor(${
     surface === 'plite'
-      ? '{initialValue:value,extensions:[history()]}'
+      ? '{initialValue:value,plugins:[history()]}'
       : "{initialValue:value,plugins:[ParagraphPlugin.configure({component:renderElement}),BoldPlugin.configure({component:({attributes,children})=>React.createElement('strong',attributes,children)})]}"
   });
   let commits = 0;
   const unsubscribe = editor.subscribeCommit(() => {commits++;globalThis.__crossRecordModel?.()});
   const root = createRoot(host);
-  const props = {spellCheck:false,domStrategy:options.domStrategy ?? 'full',renderElement,renderLeaf};
+  const props = {spellCheck:false,renderElement,renderLeaf};
   ${
     surface === 'plite'
       ? `if(options.retained) {
@@ -86,7 +86,7 @@ export async function mount(host, lines, options) {
   root.render(${
     surface === 'plite'
       ? 'React.createElement(Plite,{editor},React.createElement(Editable,props))'
-      : 'React.createElement(Plate,{editor,suppressInstanceWarning:true},React.createElement(PlateContent,{...props,disableDefaultStyles:true}))'
+      : 'React.createElement(Plate,{editor,suppressInstanceWarning:true},React.createElement(EditorContent,{...props,disableDefaultStyles:true}))'
   });
   const dom = await until(() => host.querySelector('[contenteditable="true"]'));
   const handle = await until(() => dom.__pliteBrowserHandle);
@@ -100,9 +100,9 @@ export async function mount(host, lines, options) {
     select(block,from,to=from){handle.selectRange(range(handle.getValue().children,block,from,to));handle.focus()},
     bold:(block,from,to)=>boldRange(handle.getValue().children[block].children.map(node=>({text:node.text,bold:node.bold===true})),from,to),
     json:()=>handle.getValue(),
-    counters:()=>({commits,...counter.snapshot(),strategy:handle.getDOMStrategyMetrics?.()}),
+    counters:()=>({commits,...counter.snapshot()}),
     resetCounters(){commits=0;counter.reset()},
-    destroy(){unsubscribe();root.unmount();globalThis.__PLITE_REACT_RENDER_PROFILER__=undefined},
+    destroy(){unsubscribe();root.unmount();globalThis.__EDITOR_REACT_RENDER_PROFILER__=undefined},
   };
 }
 `;

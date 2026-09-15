@@ -1,12 +1,12 @@
 import {
   BaseParagraphPlugin,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   schema,
 } from '../../../core';
 import { BaseDetailsPlugin } from './BaseDetailsPlugin';
 
-const ContainerPlugin = defineBasePlugin('testContainer', {
+const ContainerPlugin = definePlugin('testContainer', {
   dependencies: [BaseParagraphPlugin],
   schema: {
     element: {

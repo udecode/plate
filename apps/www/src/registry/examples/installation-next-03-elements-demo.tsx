@@ -7,7 +7,7 @@ import {
   HeadingPlugin,
   ItalicPlugin,
   UnderlinePlugin,
-  Plate,
+  EditorRoot,
   useCreateEditor,
 } from 'platejs/react';
 import * as React from 'react';
@@ -57,7 +57,7 @@ export default function MyEditorPage() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
         <ToolbarButton
           onClick={() => {
@@ -103,6 +103,6 @@ export default function MyEditorPage() {
       <EditorContainer>
         <Editor placeholder="Type your amazing content here..." />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

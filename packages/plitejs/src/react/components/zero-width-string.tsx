@@ -12,16 +12,16 @@ export const ZeroWidthString = ({
   includeSentinel?: boolean;
 }) => {
   const attributes: {
-    'data-plite-zero-width': string;
-    'data-plite-length': number;
-    'data-plite-mark-placeholder'?: boolean;
+    'data-editor-zero-width': string;
+    'data-editor-length': number;
+    'data-editor-mark-placeholder'?: boolean;
   } = {
-    'data-plite-zero-width': isLineBreak ? 'n' : 'z',
-    'data-plite-length': length,
+    'data-editor-zero-width': isLineBreak ? 'n' : 'z',
+    'data-editor-length': length,
   };
 
   if (isMarkPlaceholder) {
-    attributes['data-plite-mark-placeholder'] = true;
+    attributes['data-editor-mark-placeholder'] = true;
   }
 
   if (isLineBreak) {

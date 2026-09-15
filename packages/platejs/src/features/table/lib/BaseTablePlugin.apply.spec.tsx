@@ -3,6 +3,8 @@
 
 import assert from 'node:assert/strict';
 
+import * as Y from 'yjs';
+
 import {
   jsxt,
   projectTestSelectionRange,
@@ -10,7 +12,7 @@ import {
 } from '#platejs-test-internal';
 
 import { ElementIdPlugin, DocumentChange } from '../../../core';
-import { BaseYjsPlugin } from '../../../yjs/react';
+import { YjsPlugin } from '../../../yjs/react';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -457,29 +459,35 @@ describe('BaseTablePlugin apply', () => {
       focus: { offset: 0, path: [0, 0, 0, 0, 0] },
       kind: 'text' as const,
     };
+    const sourceDoc = new Y.Doc();
+    const SourceCollaboration = YjsPlugin.create({
+      doc: sourceDoc,
+      initialReady: true,
+      seed: true,
+    });
     const source = createTestTableEditor({
-      plugins: [
-        ElementIdPlugin,
-        BaseTablePlugin,
-        BaseYjsPlugin.configure({ initialState: { clientId: 'source' } }),
-      ],
+      plugins: [ElementIdPlugin, BaseTablePlugin, SourceCollaboration],
       selection,
       initialValue,
     });
-    const doc = source.extension(BaseYjsPlugin).read.doc();
+    const replayDoc = new Y.Doc();
+
+    Y.applyUpdate(replayDoc, Y.encodeStateAsUpdate(sourceDoc));
+
+    const ReplayCollaboration = YjsPlugin.create({
+      doc: replayDoc,
+      initialReady: true,
+    });
     const replay = createTestTableEditor({
-      plugins: [
-        ElementIdPlugin,
-        BaseTablePlugin,
-        BaseYjsPlugin.configure({
-          initialState: { clientId: 'replay', doc },
-        }),
-      ],
+      plugins: [ElementIdPlugin, BaseTablePlugin, ReplayCollaboration],
       initialValue: [{ children: [{ text: 'local' }], type: 'paragraph' }],
     });
     let updateCount = 0;
 
-    doc.on('update', () => (updateCount += 1) - 1);
+    sourceDoc.on('update', (update) => {
+      updateCount += 1;
+      Y.applyUpdate(replayDoc, update);
+    });
     source.update.table.insertColumn();
 
     expect(updateCount).toBe(1);

@@ -10,7 +10,7 @@ import type { DOMRange } from '../../dom';
 import { IS_READ_ONLY } from '../../dom/internal';
 import type {
   EditableDOMBeforeInputHandler,
-  EditableDOMStrategyRuntime,
+  EditableViewportRuntime,
   EditableKeyDownHandler,
 } from '../components/editable';
 import { useFlushDeferredSelectorsOnRender } from '../hooks/use-editor-selector';
@@ -96,7 +96,7 @@ export const useEditableRootRuntime = ({
   deferNativeTextInputRepair,
   editor,
   forwardedRef,
-  domStrategyRuntime,
+  viewportRuntime,
   onDOMBeforeInput,
   onKeyDown,
   readOnly: readOnlyProp,
@@ -107,7 +107,7 @@ export const useEditableRootRuntime = ({
   deferNativeTextInputRepair?: boolean;
   editor: ReactRuntimeEditor;
   forwardedRef?: ForwardedRef<HTMLDivElement>;
-  domStrategyRuntime: EditableDOMStrategyRuntime | null;
+  viewportRuntime: EditableViewportRuntime | null;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onKeyDown?: EditableKeyDownHandler;
   readOnly: boolean;
@@ -131,14 +131,14 @@ export const useEditableRootRuntime = ({
   const readOnly = readOnlyProp || viewReadOnly;
 
   const rootRuntimeState = useEditableRootRuntimeState({
-    domStrategyRuntime,
+    viewportRuntime,
     editor,
     readOnly,
   });
   const {
     isComposing,
-    isPartialDOMBackedSelection,
-    partialDOMBackedSelection,
+    isViewportBackedSelection,
+    viewportBackedSelection,
     runtime,
   } = rootRuntimeState;
   const { domPhaseScheduler, inputController, rootRef } = runtime;
@@ -181,7 +181,7 @@ export const useEditableRootRuntime = ({
   });
 
   const { syncDOMSelectionToEditor } = useEditableSelectionReconciler({
-    partialDOMBackedSelection,
+    viewportBackedSelection,
     runtime,
     scrollSelectionIntoView,
   });
@@ -293,13 +293,13 @@ export const useEditableRootRuntime = ({
         selectionImportController.syncDOMSelectionFromRuntime();
         selectionImportController.flushSelectionChange();
       },
-      isPartialDOMBackedSelection,
+      isViewportBackedSelection,
       syncDOMSelectionToEditor,
     };
   }, [
     editor,
     inputController,
-    isPartialDOMBackedSelection,
+    isViewportBackedSelection,
     runtime,
     selectionImportController,
     syncDOMSelectionToEditor,
@@ -307,10 +307,10 @@ export const useEditableRootRuntime = ({
   const eventRuntime = useEditableEventRuntime({
     callbacks,
     deferNativeTextInputRepair,
-    domStrategyRuntime,
+    viewportRuntime,
     onDOMBeforeInput,
     onKeyDown,
-    partialDOMBackedSelection,
+    viewportBackedSelection,
     readOnly,
     repair: repairRuntime,
     runtime,
@@ -372,7 +372,7 @@ export const useEditableRootRuntime = ({
     isComposing,
     rootRef,
     rootInteractionSelectionBridge,
-    partialDOMBackedSelection,
+    viewportBackedSelection,
     runtime,
   };
 };

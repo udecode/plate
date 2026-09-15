@@ -98,8 +98,9 @@ export const editor = createEditor({
 
 ### Add type-specific copy
 
-Keys in `placeholders` are plugin names. The plugin resolves each `name` through
-`editor.plugin(name).schema.type` before matching the active block type.
+Keys in `placeholders` are capability names. The plugin resolves each configured
+name against the editor's installed registry before matching the active block
+type. Application code should keep using descriptors with `editor.plugin`.
 
 ```tsx
 BlockPlaceholderPlugin.configure({

@@ -1,9 +1,9 @@
 export {
-  clipboardHandler,
+  domCommands,
   hostCodecs,
   isHotkey,
   parseDOMClipboardHtml,
-  PliteDOMResolutionError,
+  DOMResolutionError,
   writeHostFragmentData,
 } from 'plitejs/dom';
 
@@ -12,8 +12,6 @@ export type {
   ClipboardSliceWrite,
   DOMApi,
   DOMClipboardApi,
-  DOMClipboardHandler,
-  DOMClipboardInsertContext,
   DOMElement,
   DOMNode,
   DOMPoint,

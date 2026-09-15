@@ -4,7 +4,7 @@ import { StrictMode } from 'react';
 import {
   createEditor,
   Editable,
-  Plite,
+  EditorRoot,
   useEditorFocused,
 } from '../../src/react';
 
@@ -18,10 +18,10 @@ test.each([false, true])(
     const editor = createEditor();
     function App({ visible = true }: { visible?: boolean }) {
       return (
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           {visible && <Editable aria-label="editor" />}
           <FocusState />
-        </Plite>
+        </EditorRoot>
       );
     }
     const wrapper = (visible = true) =>

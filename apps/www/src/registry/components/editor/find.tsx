@@ -6,7 +6,7 @@ import { isHotkey } from 'platejs/dom';
 import { BaseFindPlugin } from 'platejs/find';
 import {
   type Editor,
-  toPlatePlugin,
+  toReactPlugin,
   useEditor,
   usePluginStore,
 } from 'platejs/react';
@@ -164,7 +164,7 @@ function FindBar({
       aria-busy={inputQuery !== query}
       aria-label="Find in document"
       className="absolute top-2 right-2 z-[60] w-[min(24rem,calc(100%-1rem))] rounded-xl border bg-background p-2 shadow-lg"
-      data-plite-keep-selection-visible=""
+      data-editor-keep-selection-visible=""
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           setFocused(false);
@@ -257,7 +257,7 @@ function FindBar({
 }
 
 export const FindKit = [
-  toPlatePlugin(BaseFindPlugin).configure({
+  toReactPlugin(BaseFindPlugin).configure({
     editOnly: { render: false },
     decorate: {
       attributes: {

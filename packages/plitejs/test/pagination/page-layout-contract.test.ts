@@ -1,27 +1,27 @@
 import { afterAll, describe, expect, it } from 'bun:test';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import { act, renderHook } from '@testing-library/react';
-import { createEditor, defineExtension, defineStateField } from 'plitejs';
+import { createEditor, definePlugin, defineStateField } from 'plitejs';
 import { createElement, StrictMode, type PropsWithChildren } from 'react';
 
 import * as PliteLayout from '../../src/pagination';
 import {
   createEstimatedPageLayoutEngine,
-  createPliteLayout,
-  createPlitePage,
-  getPlitePageLayoutDecorations,
-  getPlitePageLayoutGeometry,
-  getPlitePageLayoutProjection,
-  paginatePlitePageLayoutBlocks,
-  plitePageBreakSnapshotCodec,
-  plitePageSettingsCodec,
+  createLayout,
+  createPage,
+  getPageLayoutDecorations,
+  getPageLayoutGeometry,
+  getPageLayoutProjection,
+  paginatePageLayoutBlocks,
+  pageBreakSnapshotCodec,
+  pageSettingsCodec,
   pretextPageLayoutEngine,
-  type PlitePageBreakSnapshot,
-  type PlitePageLayoutError,
-  type PlitePageLayoutSnapshot,
-  type PlitePageSettings,
+  type PageBreakSnapshot,
+  type PageLayoutError,
+  type PageLayoutSnapshot,
+  type PageSettings,
 } from '../../src/pagination';
 import {
   createPagedEditablePageMountPlan,
@@ -29,7 +29,7 @@ import {
   getPagedEditableVisiblePageMountItems,
 } from '../../src/pagination/page-mount-plan';
 import * as PliteLayoutReact from '../../src/pagination/react';
-import { usePliteLayout } from '../../src/pagination/react';
+import { useLayout } from '../../src/pagination/react';
 
 const registeredDom = typeof document === 'undefined';
 
@@ -91,40 +91,40 @@ const waitFor = async (
 const StrictModeWrapper = ({ children }: PropsWithChildren) =>
   createElement(StrictMode, null, children);
 
-const pageSettings = defineStateField<PlitePageSettings>({
+const pageSettings = defineStateField<PageSettings>({
   key: 'layout.page',
   collab: 'shared',
   history: 'push',
   initial: () => ({ margins: 96, preset: 'a4' }),
-  persist: plitePageSettingsCodec,
+  persist: pageSettingsCodec,
 });
-const pageSettingsExtension = defineExtension('page-settings', {
+const pageSettingsPlugin = definePlugin('page-settings', {
   stateFields: [pageSettings],
 });
 
 const expectedPliteLayoutRuntimeRootExports = [
   'createEstimatedPageLayoutEngine',
-  'createPliteLayout',
-  'createPlitePage',
-  'createPlitePageBreakSnapshot',
-  'getPlitePageLayoutDecorations',
-  'getPlitePageLayoutFragments',
-  'getPlitePageLayoutGeometry',
-  'getPlitePageLayoutPathKey',
-  'getPlitePageLayoutProjection',
-  'getPlitePagePresetSize',
-  'normalizePlitePageSettings',
-  'paginatePlitePageLayoutBlocks',
-  'plitePageBreakSnapshotCodec',
-  'plitePageSettingsCodec',
+  'createLayout',
+  'createPage',
+  'createPageBreakSnapshot',
+  'getPageLayoutDecorations',
+  'getPageLayoutFragments',
+  'getPageLayoutGeometry',
+  'getPageLayoutPathKey',
+  'getPageLayoutProjection',
+  'getPagePresetSize',
+  'normalizePageSettings',
+  'paginatePageLayoutBlocks',
+  'pageBreakSnapshotCodec',
+  'pageSettingsCodec',
   'pretextPageLayoutEngine',
 ];
 
 const expectedPliteLayoutRuntimeReactExports = [
   'PagedEditable',
-  'usePliteLayout',
-  'usePliteLayoutFragmentsAtPath',
-  'usePliteLayoutSnapshot',
+  'useLayout',
+  'useLayoutFragmentsAtPath',
+  'useLayoutSnapshot',
 ];
 
 describe('pagination public runtime exports', () => {
@@ -137,7 +137,7 @@ describe('pagination public runtime exports', () => {
         ...expectedPliteLayoutRuntimeRootExports,
         ...expectedPliteLayoutRuntimeReactExports,
       ].sort(),
-      root: expectedPliteLayoutRuntimeRootExports,
+      root: expectedPliteLayoutRuntimeRootExports.toSorted(),
     });
   });
 });
@@ -149,30 +149,30 @@ describe('pagination public docs', () => {
       'utf-8'
     );
     const libraryReadmeUrl = new URL(
-      '../../../../content/docs/plite/libraries/plite-pagination/index.mdx',
+      '../../../../content/docs/(guides)/pagination.mdx',
       import.meta.url
     );
-    const libraryReadme = existsSync(libraryReadmeUrl)
-      ? readFileSync(libraryReadmeUrl, 'utf-8')
-      : packageReadme;
+    const libraryReadme = readFileSync(libraryReadmeUrl, 'utf-8');
 
     expect(packageReadme).toContain('layout');
     expect(packageReadme).toContain('explicit `plitejs/*` subpaths');
     expect(packageReadme).not.toMatch(/\b[Ee]xperimental\b/);
 
-    expect(libraryReadme).toContain('explicit flags');
+    expect(libraryReadme).toContain('omits offscreen blocks');
     expect(libraryReadme).toContain('authoritative page breaks');
-    expect(libraryReadme).toMatch(/^## Headless and static use$/im);
     expect(libraryReadme).toContain(
-      'authoritative PDF, print, or collaboration'
+      'Headless measurement can fall back to estimates'
     );
-    expect(libraryReadme).toContain('derived geometry');
-    expect(libraryReadme).toContain('plitejs/pagination/react');
+    expect(libraryReadme).toContain(
+      'not an authoritative PDF or shared page-break source'
+    );
+    expect(libraryReadme).toContain('Layout is a read model');
+    expect(libraryReadme).toContain('platejs/pagination/react');
     expect(libraryReadme).not.toContain('Experimental');
   });
 });
 
-describe('createPliteLayout', () => {
+describe('createLayout', () => {
   it('balances default-engine subscriptions under StrictMode', async () => {
     const editor = createEditor({
       initialValue: [
@@ -198,7 +198,7 @@ describe('createPliteLayout', () => {
 
     const { unmount } = renderHook(
       () =>
-        usePliteLayout(editor, {
+        useLayout(editor, {
           page: { margins: 72, preset: 'letter' },
         }),
       { wrapper: StrictModeWrapper }
@@ -244,7 +244,7 @@ describe('createPliteLayout', () => {
 
     const { unmount } = renderHook(
       () =>
-        usePliteLayout(editor, {
+        useLayout(editor, {
           engine: createEstimatedPageLayoutEngine(),
           page: { margins: 72, preset: 'letter' },
         }),
@@ -276,11 +276,11 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const createPage = (margins: number) =>
+    const createPageSettings = (margins: number) =>
       ({ margins, preset: 'letter' }) as const;
     const { result, rerender, unmount } = renderHook(
-      ({ page }) => usePliteLayout(editor, { page }),
-      { initialProps: { page: createPage(72) } }
+      ({ page }) => useLayout(editor, { page }),
+      { initialProps: { page: createPageSettings(72) } }
     );
     const layout = result.current;
 
@@ -288,14 +288,14 @@ describe('createPliteLayout', () => {
     const { composeCount } = layout.getMetrics();
 
     await act(async () => {
-      rerender({ page: createPage(72) });
+      rerender({ page: createPageSettings(72) });
     });
 
     expect(result.current).toBe(layout);
     expect(layout.getMetrics().composeCount).toBe(composeCount);
 
     await act(async () => {
-      rerender({ page: createPage(96) });
+      rerender({ page: createPageSettings(96) });
     });
 
     expect(layout.getMetrics().composeCount).toBeGreaterThan(composeCount);
@@ -306,7 +306,7 @@ describe('createPliteLayout', () => {
   it('exports Pretext as the built-in page layout engine', () => {
     Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
     const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPlitePage(settings);
+    const page = createPage(settings);
 
     const output = pretextPageLayoutEngine().compose({
       blocks: [
@@ -340,7 +340,7 @@ describe('createPliteLayout', () => {
   it('uses rich-inline fragments for normal whitespace mixed runs', () => {
     Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
     const settings = { margins: 358, preset: 'letter' } as const;
-    const page = createPlitePage(settings);
+    const page = createPage(settings);
     const output = pretextPageLayoutEngine({ whiteSpace: 'normal' }).compose({
       blocks: [
         {
@@ -443,7 +443,7 @@ describe('createPliteLayout', () => {
   it('lets Pretext callers estimate selected cold blocks', () => {
     Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
     const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPlitePage(settings);
+    const page = createPage(settings);
     const output = pretextPageLayoutEngine({
       estimateBlock: ({ blockIndex }) => blockIndex === 0,
     }).compose({
@@ -488,7 +488,7 @@ describe('createPliteLayout', () => {
   it('keeps hard line breaks when estimating cold Pretext blocks', () => {
     Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
     const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPlitePage(settings);
+    const page = createPage(settings);
     const output = pretextPageLayoutEngine({
       estimateBlock: () => true,
     }).compose({
@@ -535,7 +535,7 @@ describe('createPliteLayout', () => {
   it('projects collapsed rich-inline whitespace at style boundaries', () => {
     Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -543,7 +543,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: pretextPageLayoutEngine({ whiteSpace: 'normal' }),
       page: pageSettings,
     });
@@ -569,10 +569,10 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       page: { margins: 72, preset: 'letter' },
     });
-    const snapshot: PlitePageLayoutSnapshot = layout.getSnapshot();
+    const snapshot: PageLayoutSnapshot = layout.getSnapshot();
 
     expect(snapshot.settings).toEqual({ margins: 72, preset: 'letter' });
     expect(snapshot.page.width).toBe(816);
@@ -583,7 +583,7 @@ describe('createPliteLayout', () => {
 
   it('rejects explicit public main roots in layout options', () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -593,7 +593,7 @@ describe('createPliteLayout', () => {
     });
 
     expect(() =>
-      createPliteLayout(editor, {
+      createLayout(editor, {
         engine: createEstimatedPageLayoutEngine(),
         page: pageSettings,
         root: 'main',
@@ -603,7 +603,7 @@ describe('createPliteLayout', () => {
 
   it('rejects explicit public main roots in layout projection options', () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -611,7 +611,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -646,7 +646,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 72, preset: 'letter' },
     });
@@ -667,7 +667,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       page: { margins: 72, preset: 'letter' },
     });
     const { composeCount } = layout.getMetrics();
@@ -711,11 +711,11 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const errors: PlitePageLayoutError[] = [];
-    const layout = createPliteLayout(editor, {
+    const errors: PageLayoutError[] = [];
+    const layout = createLayout(editor, {
       page: { margins: 72, preset: 'letter' },
     });
-    const observedSettings: PlitePageSettings[] = [];
+    const observedSettings: PageSettings[] = [];
 
     layout.subscribe(() => {
       throw new Error('broken layout subscriber');
@@ -772,7 +772,7 @@ describe('createPliteLayout', () => {
           },
         ],
       });
-      const layout = createPliteLayout(editor, {
+      const layout = createLayout(editor, {
         page: { margins: 72, preset: 'letter' },
       });
       const snapshot = layout.getSnapshot();
@@ -793,7 +793,7 @@ describe('createPliteLayout', () => {
 
   it('keeps page settings in state fields and layout output in the derived store', () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: {
         children: [
           {
@@ -809,7 +809,7 @@ describe('createPliteLayout', () => {
         },
       },
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -828,20 +828,18 @@ describe('createPliteLayout', () => {
   });
 
   it('keeps authoritative page break snapshots opt-in and profile checked', () => {
-    const pageBreaks = defineStateField<PlitePageBreakSnapshot | null>({
+    const pageBreaks = defineStateField<PageBreakSnapshot | null>({
       key: 'layout.pageBreaks',
-      applyPatch: (_value, patch) => patch as PlitePageBreakSnapshot | null,
+      applyPatch: (_value, patch) => patch as PageBreakSnapshot | null,
       collab: 'shared',
       diff: (_previous, value) => value,
       history: 'skip',
       initial: () => null,
       invertPatch: (_patch, previous) => previous,
-      persist: plitePageBreakSnapshotCodec,
+      persist: pageBreakSnapshotCodec,
     });
     const editor = createEditor({
-      extensions: [
-        defineExtension('page-breaks', { stateFields: [pageBreaks] }),
-      ],
+      plugins: [definePlugin('page-breaks', { stateFields: [pageBreaks] })],
       initialValue: [
         {
           type: 'paragraph',
@@ -849,7 +847,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 96, preset: 'a4' },
       pageBreaks: {
@@ -868,7 +866,7 @@ describe('createPliteLayout', () => {
 
     layout.destroy();
 
-    const reader = createPliteLayout(editor, {
+    const reader = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 96, preset: 'a4' },
       pageBreaks: {
@@ -892,7 +890,7 @@ describe('createPliteLayout', () => {
       });
     });
 
-    const staleReader = createPliteLayout(editor, {
+    const staleReader = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: { margins: 96, preset: 'a4' },
       pageBreaks: {
@@ -929,9 +927,9 @@ describe('createPliteLayout', () => {
       root: 'main',
       schemaVersion: 1,
       writerId: 'writer',
-    } satisfies PlitePageBreakSnapshot;
+    } satisfies PageBreakSnapshot;
 
-    expect(plitePageBreakSnapshotCodec.decode(snapshot)).toEqual(snapshot);
+    expect(pageBreakSnapshotCodec.decode(snapshot)).toEqual(snapshot);
 
     for (const invalid of [
       { ...snapshot, documentKey: '' },
@@ -965,13 +963,13 @@ describe('createPliteLayout', () => {
         },
       },
     ]) {
-      expect(() => plitePageBreakSnapshotCodec.decode(invalid)).toThrow();
+      expect(() => pageBreakSnapshotCodec.decode(invalid)).toThrow();
     }
   });
 
   it('refreshes subscribers after editor text changes', async () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -979,7 +977,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -1006,7 +1004,7 @@ describe('createPliteLayout', () => {
 
   it('bounds deferred text refreshes during sustained typing', async () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -1014,7 +1012,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
       textChangeRefresh: 'deferred',
@@ -1040,7 +1038,7 @@ describe('createPliteLayout', () => {
 
   it('coalesces deferred text refreshes for text commits that mark children dirty', async () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -1048,7 +1046,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
       textChangeRefresh: { delayMs: 25, maxDelayMs: 100, mode: 'deferred' },
@@ -1080,7 +1078,7 @@ describe('createPliteLayout', () => {
     const headerText = 'Header '.repeat(160);
     const mainText = 'Main '.repeat(12);
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: {
         children: [
           {
@@ -1098,7 +1096,7 @@ describe('createPliteLayout', () => {
         },
       },
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       root: 'header',
       page: pageSettings,
@@ -1142,7 +1140,7 @@ describe('createPliteLayout', () => {
   it('projects ranges through the requested page geometry', () => {
     const text = 'Long '.repeat(6000);
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -1150,7 +1148,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -1194,7 +1192,7 @@ describe('createPliteLayout', () => {
 
   it('projects only the requested partial range and collapsed caret', () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -1202,7 +1200,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -1237,7 +1235,7 @@ describe('createPliteLayout', () => {
 
   it('projects spanning ranges without leaking unrelated blocks', () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -1253,7 +1251,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -1272,7 +1270,7 @@ describe('createPliteLayout', () => {
 
   it('extracts leaf runs with block offsets and projects placed runs on lines', () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -1283,7 +1281,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
       typography: {
@@ -1302,7 +1300,7 @@ describe('createPliteLayout', () => {
     });
     const snapshot = layout.getSnapshot();
     const block = snapshot.blocks[0];
-    const projection = getPlitePageLayoutProjection(snapshot);
+    const projection = getPageLayoutProjection(snapshot);
 
     expect(block.text).toBe('Bold code');
     expect(
@@ -1356,7 +1354,7 @@ describe('createPliteLayout', () => {
 
   it('extracts block-local boxes for structured Markdown nodes', () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'code-block',
@@ -1392,7 +1390,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
@@ -1474,7 +1472,7 @@ describe('createPliteLayout', () => {
 
   it('lets providers own media and BFC-like box sizing without a product TableKit', () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'image',
@@ -1487,7 +1485,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       nodeLayout({ defaults, element, path }) {
         if (element.type === 'image') {
           return {
@@ -1576,7 +1574,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({ defaults, element, path }) {
         if (element.type !== 'table') {
@@ -1687,14 +1685,14 @@ describe('createPliteLayout', () => {
       ],
     });
     const page = { margins: 96, preset: 'a4' } as const;
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({ element, path, pageSettings: innerPageSettings }) {
         if (element.type !== 'table') {
           return { type: 'text' };
         }
 
-        const pageRect = createPlitePage(innerPageSettings);
+        const pageRect = createPage(innerPageSettings);
 
         return {
           boxes: [
@@ -1746,15 +1744,15 @@ describe('createPliteLayout', () => {
   });
 
   it('writes authoritative page breaks for provider-owned unit fragments', () => {
-    const pageBreaks = defineStateField<PlitePageBreakSnapshot | null>({
+    const pageBreaks = defineStateField<PageBreakSnapshot | null>({
       key: 'layout.unitPageBreaks',
-      applyPatch: (_value, patch) => patch as PlitePageBreakSnapshot | null,
+      applyPatch: (_value, patch) => patch as PageBreakSnapshot | null,
       collab: 'shared',
       diff: (_previous, value) => value,
       history: 'skip',
       initial: () => null,
       invertPatch: (_patch, previous) => previous,
-      persist: plitePageBreakSnapshotCodec,
+      persist: pageBreakSnapshotCodec,
     });
     const rows = Array.from({ length: 4 }, (_, rowIndex) => ({
       type: 'table-row',
@@ -1766,8 +1764,8 @@ describe('createPliteLayout', () => {
       ],
     }));
     const editor = createEditor({
-      extensions: [
-        defineExtension('unit-page-breaks', { stateFields: [pageBreaks] }),
+      plugins: [
+        definePlugin('unit-page-breaks', { stateFields: [pageBreaks] }),
       ],
       initialValue: [
         {
@@ -1776,8 +1774,8 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const createLayout = (mode: 'read' | 'write') =>
-      createPliteLayout(editor, {
+    const createUnitLayout = (mode: 'read' | 'write') =>
+      createLayout(editor, {
         engine: createEstimatedPageLayoutEngine(),
         nodeLayout({
           defaults,
@@ -1789,7 +1787,7 @@ describe('createPliteLayout', () => {
             return { boxes: defaults.boxes, type: 'text' };
           }
 
-          const page = createPlitePage(innerPageSettings2);
+          const page = createPage(innerPageSettings2);
 
           return {
             boxes: defaults.boxes,
@@ -1814,7 +1812,7 @@ describe('createPliteLayout', () => {
             ? { mode, source: pageBreaks, writerId: 'writer-units' }
             : { mode, source: pageBreaks },
       });
-    const writer = createLayout('write');
+    const writer = createUnitLayout('write');
     const storedSnapshot = editor.read((state) => state.getField(pageBreaks));
 
     expect(storedSnapshot?.writerId).toBe('writer-units');
@@ -1828,7 +1826,7 @@ describe('createPliteLayout', () => {
 
     writer.destroy();
 
-    const reader = createLayout('read');
+    const reader = createUnitLayout('read');
 
     expect(reader.getSnapshot().pageBreaks).toEqual(storedSnapshot);
     expect(reader.getSnapshot().pageBreaksStatus).toBe('accepted');
@@ -1850,7 +1848,7 @@ describe('createPliteLayout', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       nodeLayout({
         defaults,
@@ -1862,7 +1860,7 @@ describe('createPliteLayout', () => {
           return { boxes: defaults.boxes, type: 'text' };
         }
 
-        const page = createPlitePage(innerPageSettings3);
+        const page = createPage(innerPageSettings3);
 
         return {
           box: {
@@ -1904,11 +1902,11 @@ describe('createPliteLayout', () => {
   });
 });
 
-describe('paginatePlitePageLayoutBlocks', () => {
+describe('paginatePageLayoutBlocks', () => {
   it('moves overflow fragments to later fixed-size pages', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPlitePage(settings);
-    const output = paginatePlitePageLayoutBlocks({
+    const page = createPage(settings);
+    const output = paginatePageLayoutBlocks({
       measuredBlocks: [
         {
           blockIndex: 0,
@@ -1944,8 +1942,8 @@ describe('paginatePlitePageLayoutBlocks', () => {
 
   it('moves avoid-split structured blocks to the next page when they do not fit', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPlitePage(settings);
-    const output = paginatePlitePageLayoutBlocks({
+    const page = createPage(settings);
+    const output = paginatePageLayoutBlocks({
       measuredBlocks: [
         {
           blockIndex: 0,
@@ -2016,10 +2014,10 @@ describe('paginatePlitePageLayoutBlocks', () => {
   });
 });
 
-describe('getPlitePageLayoutProjection', () => {
+describe('getPageLayoutProjection', () => {
   it('projects text and native hit rects without changing visual width', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPlitePage(settings);
+    const page = createPage(settings);
     const measuredBlocks = Array.from({ length: 2 }, (_, blockIndex) => ({
       blockIndex,
       element: {
@@ -2042,13 +2040,13 @@ describe('getPlitePageLayoutProjection', () => {
       text: blockIndex === 0 ? 'Hi' : 'Next',
       textStyle: { font: '400 16px Inter' },
     }));
-    const output = paginatePlitePageLayoutBlocks({
+    const output = paginatePageLayoutBlocks({
       measuredBlocks,
       page,
       settings,
       version: 1,
     });
-    const projection = getPlitePageLayoutProjection(
+    const projection = getPageLayoutProjection(
       {
         blocks: measuredBlocks,
         fragments: output.fragments,
@@ -2083,7 +2081,7 @@ describe('getPlitePageLayoutProjection', () => {
 
   it('builds per-text decorations from projected layout runs', () => {
     const editor = createEditor({
-      extensions: [pageSettingsExtension],
+      plugins: [pageSettingsPlugin],
       initialValue: [
         {
           type: 'paragraph',
@@ -2094,14 +2092,14 @@ describe('getPlitePageLayoutProjection', () => {
         },
       ],
     });
-    const layout = createPliteLayout(editor, {
+    const layout = createLayout(editor, {
       engine: createEstimatedPageLayoutEngine(),
       page: pageSettings,
     });
-    const projection = getPlitePageLayoutProjection(layout.getSnapshot(), {
+    const projection = getPageLayoutProjection(layout.getSnapshot(), {
       hitTesting: { inlineInset: 2 },
     });
-    const decorations = getPlitePageLayoutDecorations(projection, {
+    const decorations = getPageLayoutDecorations(projection, {
       data: ({ rects }) => ({
         paginationLine: {
           hitRect: rects.hitRect,
@@ -2180,7 +2178,7 @@ describe('getPlitePageLayoutProjection', () => {
     ]);
 
     expect([
-      ...getPlitePageLayoutDecorations(projection, {
+      ...getPageLayoutDecorations(projection, {
         filter: ({ run }) => run.path[1] === 1,
       }).keys(),
     ]).toEqual(['0.1']);
@@ -2190,7 +2188,7 @@ describe('getPlitePageLayoutProjection', () => {
 
   it('projects repeated empty inserted blocks into separate editable boxes', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPlitePage(settings);
+    const page = createPage(settings);
     const measuredBlocks = Array.from({ length: 4 }, (_, blockIndex) => ({
       blockIndex,
       element: {
@@ -2213,13 +2211,13 @@ describe('getPlitePageLayoutProjection', () => {
       text: '',
       textStyle: { font: '400 16px Inter' },
     }));
-    const output = paginatePlitePageLayoutBlocks({
+    const output = paginatePageLayoutBlocks({
       measuredBlocks,
       page,
       settings,
       version: 1,
     });
-    const projection = getPlitePageLayoutProjection({
+    const projection = getPageLayoutProjection({
       blocks: measuredBlocks,
       fragments: output.fragments,
       page,
@@ -2259,11 +2257,11 @@ describe('getPlitePageLayoutProjection', () => {
   });
 });
 
-describe('getPlitePageLayoutGeometry', () => {
+describe('getPageLayoutGeometry', () => {
   it('stacks single-page mode without changing page dimensions', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
-    const pages = [createPlitePage(settings, 0), createPlitePage(settings, 1)];
-    const geometry = getPlitePageLayoutGeometry(pages, {
+    const pages = [createPage(settings, 0), createPage(settings, 1)];
+    const geometry = getPageLayoutGeometry(pages, {
       pageGap: 24,
       pageLayoutMode: 'single',
     });
@@ -2279,11 +2277,11 @@ describe('getPlitePageLayoutGeometry', () => {
   it('places facing pages in rows while keeping odd trailing pages on the left', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
     const pages = [
-      createPlitePage(settings, 0),
-      createPlitePage(settings, 1),
-      createPlitePage(settings, 2),
+      createPage(settings, 0),
+      createPage(settings, 1),
+      createPage(settings, 2),
     ];
-    const geometry = getPlitePageLayoutGeometry(pages, {
+    const geometry = getPageLayoutGeometry(pages, {
       pageGap: 24,
       pageLayoutMode: 'spread',
     });
@@ -2302,11 +2300,11 @@ describe('PagedEditable page mount plan', () => {
   it('creates one mount item per page in single-page mode', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
     const pages = [
-      createPlitePage(settings, 0),
-      createPlitePage(settings, 1),
-      createPlitePage(settings, 2),
+      createPage(settings, 0),
+      createPage(settings, 1),
+      createPage(settings, 2),
     ];
-    const geometry = getPlitePageLayoutGeometry(pages, {
+    const geometry = getPageLayoutGeometry(pages, {
       pageGap: 24,
       pageLayoutMode: 'single',
     });
@@ -2363,11 +2361,11 @@ describe('PagedEditable page mount plan', () => {
   it('groups facing pages into spread mount items', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
     const pages = [
-      createPlitePage(settings, 0),
-      createPlitePage(settings, 1),
-      createPlitePage(settings, 2),
+      createPage(settings, 0),
+      createPage(settings, 1),
+      createPage(settings, 2),
     ];
-    const geometry = getPlitePageLayoutGeometry(pages, {
+    const geometry = getPageLayoutGeometry(pages, {
       pageGap: 24,
       pageLayoutMode: 'spread',
     });
@@ -2410,12 +2408,12 @@ describe('PagedEditable page mount plan', () => {
   it('mounts an initial virtualized page window before the viewport is known', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
     const pages = [
-      createPlitePage(settings, 0),
-      createPlitePage(settings, 1),
-      createPlitePage(settings, 2),
-      createPlitePage(settings, 3),
+      createPage(settings, 0),
+      createPage(settings, 1),
+      createPage(settings, 2),
+      createPage(settings, 3),
     ];
-    const geometry = getPlitePageLayoutGeometry(pages, {
+    const geometry = getPageLayoutGeometry(pages, {
       pageGap: 24,
       pageLayoutMode: 'single',
     });
@@ -2462,11 +2460,11 @@ describe('PagedEditable page mount plan', () => {
   it('retains split blocks on every page that owns one of their fragments', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
     const pages = [
-      createPlitePage(settings, 0),
-      createPlitePage(settings, 1),
-      createPlitePage(settings, 2),
+      createPage(settings, 0),
+      createPage(settings, 1),
+      createPage(settings, 2),
     ];
-    const geometry = getPlitePageLayoutGeometry(pages, {
+    const geometry = getPageLayoutGeometry(pages, {
       pageGap: 24,
       pageLayoutMode: 'single',
     });
@@ -2497,9 +2495,9 @@ describe('PagedEditable page mount plan', () => {
   it('retains visible, selected, promoted, and composing pages', () => {
     const settings = { margins: 96, preset: 'a4' } as const;
     const pages = Array.from({ length: 6 }, (_, index) =>
-      createPlitePage(settings, index)
+      createPage(settings, index)
     );
-    const geometry = getPlitePageLayoutGeometry(pages, {
+    const geometry = getPageLayoutGeometry(pages, {
       pageGap: 24,
       pageLayoutMode: 'spread',
     });

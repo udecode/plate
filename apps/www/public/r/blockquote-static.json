@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/blockquote-static.tsx",
-      "content": "import type { BaseBlockquotePlugin } from 'platejs';\nimport { type PliteElementProps, PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nexport function BlockquoteElementStatic(\n  props: PliteElementProps<typeof BaseBlockquotePlugin>\n) {\n  return (\n    <PliteElement\n      as=\"blockquote\"\n      className=\"my-1 border-l-2 pl-6 italic\"\n      {...props}\n    />\n  );\n}\n",
+      "content": "import type { BaseBlockquotePlugin } from 'platejs';\nimport { type EditorElementProps, EditorElement } from 'platejs/static';\nimport * as React from 'react';\n\nexport function BlockquoteElementStatic(\n  props: EditorElementProps<typeof BaseBlockquotePlugin>\n) {\n  return (\n    <EditorElement\n      as=\"blockquote\"\n      className=\"my-1 border-l-2 pl-6 italic\"\n      {...props}\n    />\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/blockquote-static.tsx"
     }

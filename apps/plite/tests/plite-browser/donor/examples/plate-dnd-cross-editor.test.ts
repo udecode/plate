@@ -1,5 +1,5 @@
 import {
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
@@ -44,7 +44,7 @@ test.describe('Plate cross-editor block drag', () => {
   test('moves after target insertion and leaves a third editor isolated', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const {
@@ -87,7 +87,7 @@ test.describe('Plate cross-editor block drag', () => {
   test('does not paint a text cursor while a same-editor block drag is held', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const { source, sourceHandle } = await openPlateDndEditors(page);
@@ -115,7 +115,7 @@ test.describe('Plate cross-editor block drag', () => {
 
         await expect(page.locator('body')).toHaveClass(/\bdragging\b/);
         await expect(
-          source.locator('[data-plite-drop-cursor]:visible')
+          source.locator('[data-editor-drop-cursor]:visible')
         ).toHaveCount(0);
         await expect
           .poll(() =>

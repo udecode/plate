@@ -5,7 +5,8 @@ import {
   SelectionApi,
   type Value,
 } from '..';
-import { getInternalDocumentChangeRootKeys, MAIN_ROOT_KEY } from '../internal';
+import { getInternalDocumentChangeRootKeys } from '../core/change/document-change';
+import { MAIN_ROOT_KEY } from '../core/public-root';
 import type { Batch } from './history';
 
 export const clonePoint = (point: Point, root?: string): Point => {

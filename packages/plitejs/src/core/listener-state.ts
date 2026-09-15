@@ -13,6 +13,10 @@ const SOURCE_LISTENERS = new WeakMap<
   Editor,
   Map<EditorCommitSource, Set<SnapshotListener>>
 >();
+const COMMIT_SOURCES = new WeakMap<
+  EditorCommit,
+  readonly EditorCommitSource[]
+>();
 
 export const initializeListenerState = (editor: Editor) => {
   LISTENERS.set(editor, new Set());
@@ -56,6 +60,8 @@ const hasSourceListeners = (editor: Editor) => {
 export const getSourcesForChange = (
   change: EditorCommit
 ): readonly EditorCommitSource[] => {
+  const cached = COMMIT_SOURCES.get(change);
+  if (cached) return cached;
   const sources: EditorCommitSource[] = ['commit'];
 
   if (
@@ -85,7 +91,9 @@ export const getSourcesForChange = (
     sources.push('state');
   }
 
-  return sources;
+  const result = Object.freeze(sources);
+  COMMIT_SOURCES.set(change, result);
+  return result;
 };
 
 export const subscribe = <V extends Value>(

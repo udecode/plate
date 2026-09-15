@@ -20,7 +20,7 @@ import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefiniti
 import type { UnknownObject } from '../../lib/types/AnyObject';
 import { useComposedRef } from '../internal/react-helpers';
 import type { EditableElementSlots } from '../plite-react';
-import type { AnyPlatePluginContext, PlatePluginContext } from '../plugin';
+import type { AnyPluginContext, PluginContext } from '../plugin';
 
 const VOID_HTML_TAGS = new Set<keyof HTMLElementTagNameMap>([
   'area',
@@ -44,32 +44,32 @@ const getAttributeRef = (attributes: UnknownObject) =>
 export const isHtmlVoidElementTag = (tag: keyof HTMLElementTagNameMap) =>
   VOID_HTML_TAGS.has(tag);
 
-type PlateNodePropsDescriptor = EditorSchemaSource & PluginReference;
+type NodePropsDescriptor = EditorSchemaSource & PluginReference;
 
-type PlateElementPropsNode<TPlugin extends PlateNodePropsDescriptor> = Extract<
+type ElementPropsNode<TPlugin extends NodePropsDescriptor> = Extract<
   ElementOf<TPlugin>,
   Element
 >;
 
-type PlateElementPropsConfig<TPlugin extends PlateNodePropsDescriptor> =
+type ElementPropsConfig<TPlugin extends NodePropsDescriptor> =
   InternalPluginDefinitionOf<TPlugin>;
 
-type PlateTextPropsNode<TPlugin extends PlateNodePropsDescriptor> = Extract<
+type TextPropsNode<TPlugin extends NodePropsDescriptor> = Extract<
   TextOf<TPlugin>,
   Text
 >;
 
-type PlateTextPropsConfig<TPlugin extends PlateNodePropsDescriptor> =
+type TextPropsConfig<TPlugin extends NodePropsDescriptor> =
   InternalPluginDefinitionOf<TPlugin>;
 
-type PlateNodeContext<C extends AnyBasePluginDefinition> = [C] extends [never]
-  ? Omit<AnyPlatePluginContext, 'slots'>
-  : Omit<PlatePluginContext<C>, 'slots'>;
+type NodeContext<C extends AnyBasePluginDefinition> = [C] extends [never]
+  ? Omit<AnyPluginContext, 'slots'>
+  : Omit<PluginContext<C>, 'slots'>;
 
-type PlateElementRenderProps<
+type ElementRenderProps<
   N extends Element = Element,
   C extends AnyBasePluginDefinition = never,
-> = PlateNodeProps<C> &
+> = EditorNodeProps<C> &
   Omit<RenderElementProps<N>, 'path' | 'slots'> & {
     attributes: UnknownObject;
     slots: Omit<EditableElementSlots, 'contentRoot'> &
@@ -77,16 +77,13 @@ type PlateElementRenderProps<
   };
 
 /** Props for the element component owned by a plugin descriptor. */
-export type PlateElementProps<TPlugin extends PlateNodePropsDescriptor> =
-  TPlugin extends PlateNodePropsDescriptor
-    ? PlateElementRenderProps<
-        PlateElementPropsNode<TPlugin>,
-        PlateElementPropsConfig<TPlugin>
-      >
+export type EditorElementProps<TPlugin extends NodePropsDescriptor> =
+  TPlugin extends NodePropsDescriptor
+    ? ElementRenderProps<ElementPropsNode<TPlugin>, ElementPropsConfig<TPlugin>>
     : never;
 
-export type PlateNodeProps<C extends AnyBasePluginDefinition = never> =
-  PlateNodeContext<NoInfer<C>> & {
+export type EditorNodeProps<C extends AnyBasePluginDefinition = never> =
+  NodeContext<NoInfer<C>> & {
     /**
      * Optional ref to be merged with `attributes.ref`
      *
@@ -95,15 +92,15 @@ export type PlateNodeProps<C extends AnyBasePluginDefinition = never> =
     ref?: any;
   };
 
-export type PlateHTMLProps<
+export type EditorHTMLProps<
   C extends AnyBasePluginDefinition = never,
   T extends
-    | React.ComponentType<PlateElementRenderProps>
+    | React.ComponentType<ElementRenderProps>
     | keyof HTMLElementTagNameMap = 'div',
-> = PlateNodeProps<C> & {
+> = EditorNodeProps<C> & {
   /** HTML attributes to pass to the underlying HTML element */
   attributes: React.PropsWithoutRef<
-    T extends React.ComponentType<PlateElementRenderProps>
+    T extends React.ComponentType<ElementRenderProps>
       ? React.ComponentProps<T>
       : T extends keyof HTMLElementTagNameMap
         ? React.JSX.IntrinsicElements[T]
@@ -116,14 +113,14 @@ export type PlateHTMLProps<
   style?: React.CSSProperties;
 };
 
-export const PlateElement = function PlateElement({
+export const EditorElement = function EditorElement({
   as: Tag = 'div',
   children,
   insetProp,
   ref,
   ...props
 }: Omit<RenderElementProps, 'attributes' | 'path'> &
-  Pick<PlateNodeProps, 'ref'> & {
+  Pick<EditorNodeProps, 'ref'> & {
     attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements['div']> &
       UnknownObject;
     as?: 'div';
@@ -165,7 +162,7 @@ export const PlateElement = function PlateElement({
     T extends keyof HTMLElementTagNameMap = 'div',
   >(
     props: Omit<RenderElementProps<N>, 'attributes' | 'path'> &
-      Pick<PlateNodeProps<C>, 'ref'> & {
+      Pick<EditorNodeProps<C>, 'ref'> & {
         attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
           UnknownObject;
         as?: T;
@@ -181,7 +178,7 @@ export const PlateElement = function PlateElement({
   ): React.ReactElement;
   <T extends keyof HTMLElementTagNameMap = 'div'>(
     props: Omit<RenderElementProps, 'attributes' | 'path'> &
-      Pick<PlateNodeProps, 'ref'> & {
+      Pick<EditorNodeProps, 'ref'> & {
         attributes: React.PropsWithoutRef<React.JSX.IntrinsicElements[T]> &
           UnknownObject;
         as?: T;
@@ -215,10 +212,10 @@ function PlateElementBody({
       {inset && <NonBreakingSpace />}
       {isVoidTag ? (
         <div
-          data-plite-node="element"
-          data-plite-inline={
-            (attributes as { 'data-plite-inline'?: boolean })[
-              'data-plite-inline'
+          data-editor-node="element"
+          data-editor-inline={
+            (attributes as { 'data-editor-inline'?: boolean })[
+              'data-editor-inline'
             ]
           }
           {...attributes}
@@ -234,10 +231,10 @@ function PlateElementBody({
         </div>
       ) : (
         <Tag
-          data-plite-node="element"
-          data-plite-inline={
-            (attributes as { 'data-plite-inline'?: boolean })[
-              'data-plite-inline'
+          data-editor-node="element"
+          data-editor-inline={
+            (attributes as { 'data-editor-inline'?: boolean })[
+              'data-editor-inline'
             ]
           }
           {...attributes}
@@ -258,24 +255,24 @@ function PlateElementBody({
 }
 
 /** Props for the text component owned by a plugin descriptor. */
-export type PlateTextProps<TPlugin extends PlateNodePropsDescriptor> =
-  TPlugin extends PlateNodePropsDescriptor
-    ? PlateNodeProps<PlateTextPropsConfig<TPlugin>> &
-        RenderTextProps<PlateTextPropsNode<TPlugin>> & {
+export type EditorTextProps<TPlugin extends NodePropsDescriptor> =
+  TPlugin extends NodePropsDescriptor
+    ? EditorNodeProps<TextPropsConfig<TPlugin>> &
+        RenderTextProps<TextPropsNode<TPlugin>> & {
           attributes: UnknownObject;
         }
     : never;
 
-export const PlateText = function PlateText({
+export const EditorText = function EditorText({
   as: Tag = 'span',
   children,
   ref,
   ...props
-}: (PlateNodeProps &
+}: (EditorNodeProps &
   RenderTextProps & {
     attributes: UnknownObject;
   }) &
-  PlateHTMLProps<never, 'span'>) {
+  EditorHTMLProps<never, 'span'>) {
   const attributes = {
     ...props.attributes,
     className:
@@ -296,29 +293,26 @@ export const PlateText = function PlateText({
   C extends AnyBasePluginDefinition = never,
   T extends keyof HTMLElementTagNameMap = 'span',
 >(
-  props: (PlateNodeProps<C> &
+  props: (EditorNodeProps<C> &
     RenderTextProps<N> & {
       attributes: UnknownObject;
     }) &
-    PlateHTMLProps<C, T>
+    EditorHTMLProps<C, T>
 ) => React.ReactElement;
 
-type PlateLeafRenderProps<
+type LeafRenderProps<
   N extends Text = Text,
   C extends AnyBasePluginDefinition = never,
-> = PlateNodeProps<C> &
+> = EditorNodeProps<C> &
   RenderLeafProps<N, N> & {
     attributes: UnknownObject;
     inset?: boolean;
   };
 
 /** Props for the leaf component owned by a plugin descriptor. */
-export type PlateLeafProps<TPlugin extends PlateNodePropsDescriptor> =
-  TPlugin extends PlateNodePropsDescriptor
-    ? PlateLeafRenderProps<
-        PlateTextPropsNode<TPlugin>,
-        PlateTextPropsConfig<TPlugin>
-      >
+export type EditorLeafProps<TPlugin extends NodePropsDescriptor> =
+  TPlugin extends NodePropsDescriptor
+    ? LeafRenderProps<TextPropsNode<TPlugin>, TextPropsConfig<TPlugin>>
     : never;
 
 const NonBreakingSpace = () => (
@@ -327,18 +321,18 @@ const NonBreakingSpace = () => (
   </span>
 );
 
-export const PlateLeaf = function PlateLeaf({
+export const EditorLeaf = function EditorLeaf({
   as: Tag = 'span',
   children,
   inset: insetProp,
   ref,
   ...props
-}: (PlateNodeProps &
+}: (EditorNodeProps &
   RenderLeafProps<Text, Text> & {
     attributes: UnknownObject;
     inset?: boolean;
   }) &
-  PlateHTMLProps<never, 'span'>) {
+  EditorHTMLProps<never, 'span'>) {
   const attributes = {
     ...props.attributes,
     className:
@@ -376,9 +370,9 @@ export const PlateLeaf = function PlateLeaf({
 >({
   className,
   ...props
-}: (PlateNodeProps<C> &
+}: (EditorNodeProps<C> &
   RenderLeafProps<N, N> & {
     attributes: UnknownObject;
     inset?: boolean;
   }) &
-  PlateHTMLProps<C, T>) => React.ReactElement;
+  EditorHTMLProps<C, T>) => React.ReactElement;

@@ -1,7 +1,7 @@
 import { act, render } from '@testing-library/react';
 import * as React from 'react';
 
-import { Plate } from '../../core';
+import { EditorRoot } from '../../core';
 import { createEditor } from '../../editor';
 import { Resizable, ResizeHandle } from './Resizable';
 
@@ -44,11 +44,11 @@ const fixture = (container?: HTMLElement) => {
   const editor = createEditor();
   const commit = vi.fn();
   const tree = (width = 300, readOnly = false) => (
-    <Plate editor={editor} readOnly={readOnly} suppressInstanceWarning>
+    <EditorRoot editor={editor} readOnly={readOnly} suppressInstanceWarning>
       <Resizable align="left" onResizeEnd={commit} width={width}>
         <ResizeHandle direction="right" />
       </Resizable>
-    </Plate>
+    </EditorRoot>
   );
   const view = render(tree(), container ? { container } : undefined);
   const handle = Array.from(view.container.getElementsByTagName('div')).find(

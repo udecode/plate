@@ -5,11 +5,11 @@ import { schema } from 'platejs';
 import {
   BoldPlugin,
   FontSizePlugin,
-  Plate,
-  PlateContent,
-  PlateController,
+  EditorRoot,
+  EditorContent,
+  EditorController,
   createEditor,
-  definePlatePlugin,
+  definePlugin,
   useEditorRuntimeState,
   useOptionalEditor,
 } from 'platejs/react';
@@ -24,7 +24,7 @@ import {
 } from '@/registry/components/editor/history-toolbar-button';
 import { MarkToolbarButton } from '@/registry/components/editor/mark-toolbar-button';
 
-const HolderPlugin = definePlatePlugin('multiEditorRoot', {
+const HolderPlugin = definePlugin('multiEditorRoot', {
   schema: {
     element: {
       blockContent: true,
@@ -125,18 +125,18 @@ export function MultiEditorBrowserProbe() {
               Replace model A
             </button>
           </nav>
-          <PlateController>
+          <EditorController>
             <SharedTools />
-            <Plate editor={model}>
+            <EditorRoot editor={model}>
               {mounted && (
-                <PlateContent aria-label="A" root="note" readOnly={readOnly} />
+                <EditorContent aria-label="A" root="note" readOnly={readOnly} />
               )}
-              <PlateContent aria-label="A copy" root="note" />
-            </Plate>
-            <Plate editor={other} primary={false}>
-              <PlateContent aria-label="B" root="note" />
-            </Plate>
-          </PlateController>
+              <EditorContent aria-label="A copy" root="note" />
+            </EditorRoot>
+            <EditorRoot editor={other} primary={false}>
+              <EditorContent aria-label="B" root="note" />
+            </EditorRoot>
+          </EditorController>
           <pre className="break-all whitespace-pre-wrap" data-testid="model-a">
             {JSON.stringify(value)}
           </pre>

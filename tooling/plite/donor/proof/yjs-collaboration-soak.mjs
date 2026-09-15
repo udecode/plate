@@ -302,11 +302,11 @@ async function snapshot() {
     );
     const peers = roots.map((root, index) => {
       const blocks = Array.from(
-        root.querySelectorAll(':scope > [data-plite-node="element"]')
+        root.querySelectorAll(':scope > [data-editor-node="element"]')
       ).map((el) => ({
-        childElementCount: el.querySelectorAll('[data-plite-node="element"]')
+        childElementCount: el.querySelectorAll('[data-editor-node="element"]')
           .length,
-        path: el.getAttribute('data-plite-path'),
+        path: el.getAttribute('data-editor-path'),
         tag: el.tagName,
         text: normalizePliteText(el.textContent),
       }));

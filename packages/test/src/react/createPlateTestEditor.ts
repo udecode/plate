@@ -10,26 +10,28 @@ import {
   type CreateEditorOptions,
   type Editor,
   type EditorApplicationSchema,
+  type PluginInput,
   type Value,
   createEditor,
 } from 'platejs/react';
 import React from 'react';
 
-import { PlateTest } from './PlateTest';
+import { EditorTest } from './PlateTest';
 
-export type PlateTestHarnessOptions = {
-  componentProps?: Partial<React.ComponentProps<typeof PlateTest>>;
+export type EditorTestHarnessOptions = {
+  componentProps?: Partial<React.ComponentProps<typeof EditorTest>>;
   debug?: boolean;
   testID?: string;
 };
 
 type ClipboardDataType = 'image/png' | 'text/html' | 'text/plain';
+type SharedPluginReference = Exclude<PluginInput, readonly unknown[]>;
 
 type PasteOptions = {
   types?: ClipboardDataType[];
 };
 
-export type PlateTestActions = {
+export type EditorTestActions = {
   deleteBackward: () => Promise<void>;
   deleteEntireSoftline: () => Promise<void>;
   deleteForward: () => Promise<void>;
@@ -50,13 +52,63 @@ export type PlateTestActions = {
   undo: () => Promise<void>;
 };
 
-export type PlateTestRenderResult = RenderResult;
+export type EditorTestRenderResult = RenderResult;
 
-export type PlateTestEditor<
+export type ReactTestEditor<
   V extends Value = Value,
-  TPlugins = readonly [],
-  TSchema = undefined,
-> = Editor<V, readonly [], TPlugins, TSchema>;
+  TPlugins extends readonly SharedPluginReference[] = readonly [],
+  TSchema extends EditorApplicationSchema | undefined = undefined,
+> = Editor<
+  V,
+  RuntimePluginsFromTuple<TPlugins>,
+  PlatePluginsFromTuple<TPlugins>,
+  TSchema
+>;
+
+type PlatePluginsFromTuple<TPlugins extends readonly SharedPluginReference[]> =
+  [TPlugins[number]] extends [BasePluginInput]
+    ? Extract<TPlugins, readonly BasePluginInput[]>
+    : [Extract<TPlugins[number], BasePluginInput>] extends [never]
+      ? readonly []
+      : number extends TPlugins['length']
+        ? ReadonlyArray<Extract<TPlugins[number], BasePluginInput>>
+        : TPlugins extends readonly [infer TPlugin, ...infer TRest]
+          ? TPlugin extends BasePluginInput
+            ? readonly [
+                TPlugin,
+                ...PlatePluginsFromTuple<
+                  Extract<TRest, readonly SharedPluginReference[]>
+                >,
+              ]
+            : PlatePluginsFromTuple<
+                Extract<TRest, readonly SharedPluginReference[]>
+              >
+          : readonly [];
+
+type RuntimePluginsFromTuple<
+  TPlugins extends readonly SharedPluginReference[],
+> = [TPlugins[number]] extends [BasePluginInput]
+  ? readonly []
+  : [Extract<TPlugins[number], BasePluginInput>] extends [never]
+    ? TPlugins
+    : number extends TPlugins['length']
+      ? ReadonlyArray<Exclude<TPlugins[number], BasePluginInput>>
+      : TPlugins extends readonly [infer TPlugin, ...infer TRest]
+        ? TPlugin extends BasePluginInput
+          ? RuntimePluginsFromTuple<
+              Extract<TRest, readonly SharedPluginReference[]>
+            >
+          : TPlugin extends SharedPluginReference
+            ? readonly [
+                TPlugin,
+                ...RuntimePluginsFromTuple<
+                  Extract<TRest, readonly SharedPluginReference[]>
+                >,
+              ]
+            : RuntimePluginsFromTuple<
+                Extract<TRest, readonly SharedPluginReference[]>
+              >
+        : readonly [];
 
 const fireBeforeInput = (element: HTMLElement, init: InputEventInit): void => {
   fireEvent(
@@ -69,18 +121,18 @@ const fireBeforeInput = (element: HTMLElement, init: InputEventInit): void => {
   );
 };
 
-export const createPlateTestEditor = async <
+export const createTestEditor = async <
   V extends Value = Value,
-  const TPlugins extends readonly BasePluginInput[] = readonly [],
+  const TPlugins extends readonly SharedPluginReference[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  options: CreateEditorOptions<V, readonly [], TPlugins, TSchema>,
-  harnessOptions: PlateTestHarnessOptions = {}
+  options: CreateEditorOptions<V, TPlugins, TSchema>,
+  harnessOptions: EditorTestHarnessOptions = {}
 ): Promise<
   [
-    PlateTestEditor<V, TPlugins, TSchema>,
-    PlateTestActions,
-    PlateTestRenderResult,
+    ReactTestEditor<V, TPlugins, TSchema>,
+    EditorTestActions,
+    EditorTestRenderResult,
   ]
 > => {
   const {
@@ -88,13 +140,17 @@ export const createPlateTestEditor = async <
     debug = false,
     testID = 'plite-content-editable',
   } = harnessOptions;
-  const editor = createEditor(options);
+  const editor = createEditor(options as any) as unknown as ReactTestEditor<
+    V,
+    TPlugins,
+    TSchema
+  >;
   const plateProps = {
     ...componentProps,
     editor,
     suppressInstanceWarning: true,
   };
-  const rendered = render(React.createElement(PlateTest, plateProps as any));
+  const rendered = render(React.createElement(EditorTest, plateProps as any));
 
   await act(async () => rendered);
 
@@ -212,7 +268,7 @@ export const createPlateTestEditor = async <
         optionalHistoryEditor.redo?.();
       },
       rerender: () => {
-        rendered.rerender(React.createElement(PlateTest, plateProps as any));
+        rendered.rerender(React.createElement(EditorTest, plateProps as any));
       },
       selectAll: async () =>
         act(async () => {
@@ -227,8 +283,8 @@ export const createPlateTestEditor = async <
     },
     rendered,
   ] as [
-    PlateTestEditor<V, TPlugins, TSchema>,
-    PlateTestActions,
-    PlateTestRenderResult,
+    ReactTestEditor<V, TPlugins, TSchema>,
+    EditorTestActions,
+    EditorTestRenderResult,
   ];
 };

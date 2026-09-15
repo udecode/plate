@@ -1,10 +1,10 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
-const rootSelector = '[data-plite-editor="true"][contenteditable="true"]';
+const rootSelector = '[data-editor="true"][contenteditable="true"]';
 const widths = (table: Locator) =>
   table
     .locator('col')
@@ -28,16 +28,12 @@ for (const width of [1280, 390]) {
   test(`table resize previews, commits, and undoes at ${width}px`, async ({
     page,
   }, testInfo) => {
-    const errors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
     try {
       await page.setViewportSize({ width, height: 844 });
       await page.goto('/blocks/table-demo');
       const root = page.locator(rootSelector).first();
-      const editor = createPliteBrowserEditorHarness(
-        page,
-        testInfo.title,
-        root
-      );
+      const editor = createBrowserEditorHarness(page, testInfo.title, root);
       await editor.ready({ editor: 'visible', text: 'Plugin' });
       const table = root.locator('table');
       const original = await widths(table);
@@ -84,11 +80,11 @@ for (const width of [1280, 390]) {
 test('table resize cancellation restores the rendered sizes', async ({
   page,
 }, testInfo) => {
-  const errors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
   try {
     await page.goto('/blocks/table-demo');
     const root = page.locator(rootSelector).first();
-    const editor = createPliteBrowserEditorHarness(page, testInfo.title, root);
+    const editor = createBrowserEditorHarness(page, testInfo.title, root);
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     const table = root.locator('table');
     const original = await widths(table);
@@ -130,11 +126,11 @@ test('table resize cancellation restores the rendered sizes', async ({
 test('table toolbar commands preserve cell focus and border controls', async ({
   page,
 }, testInfo) => {
-  const errors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
   try {
     await page.goto('/blocks/table-demo');
     const root = page.locator(rootSelector).first();
-    const editor = createPliteBrowserEditorHarness(page, testInfo.title, root);
+    const editor = createBrowserEditorHarness(page, testInfo.title, root);
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     const table = root.locator('table');
     await table.getByText('Heading', { exact: true }).click();
@@ -167,11 +163,11 @@ test('large tables defer column layout until pointer release', async ({
   page,
 }, testInfo) => {
   test.setTimeout(60_000);
-  const errors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+  const errors = recordBrowserRuntimeErrors(page, { strict: true });
   try {
     await page.goto('/blocks/table-demo');
     const root = page.locator(rootSelector).first();
-    const editor = createPliteBrowserEditorHarness(page, testInfo.title, root);
+    const editor = createBrowserEditorHarness(page, testInfo.title, root);
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await editor.focus();
     await editor.selectAll();

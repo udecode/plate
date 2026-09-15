@@ -1,4 +1,4 @@
-import { NodeApi, RangeApi, type Range as PliteRange } from '../..';
+import { NodeApi, RangeApi, type Range as ModelRange } from '../..';
 import {
   type DOMCoverageSession,
   replaceDOMSelectionRange,
@@ -16,7 +16,7 @@ type BoundaryRangeRole = 'anchor' | 'focus' | 'interior';
 const getBoundaryRangeRole = (
   coverage: DOMCoverageSession,
   boundaryId: string,
-  selection: PliteRange
+  selection: ModelRange
 ): BoundaryRangeRole => {
   const focusBoundary = coverage.getBoundaryForPoint(selection.focus);
 
@@ -35,7 +35,7 @@ const getBoundaryRangeRole = (
 
 const hasAnchorSideVisibleText = (
   editor: ReactRuntimeEditor,
-  selection: PliteRange
+  selection: ModelRange
 ) => {
   if (RangeApi.isCollapsed(selection)) {
     return false;
@@ -63,8 +63,8 @@ const hasAnchorSideVisibleText = (
 
 const getFocusSideVisibleRange = (
   editor: ReactRuntimeEditor,
-  selection: PliteRange
-): PliteRange | null => {
+  selection: ModelRange
+): ModelRange | null => {
   if (RangeApi.isCollapsed(selection)) {
     return null;
   }
@@ -98,7 +98,7 @@ const getFocusSideVisibleRange = (
 
 const getDOMRangeProjection = (
   editor: ReactRuntimeEditor,
-  selection: PliteRange,
+  selection: ModelRange,
   editorElement?: HTMLElement
 ): DOMRangeProjection | null => {
   const fullDOMRange = hasAnchorSideVisibleText(editor, selection)
@@ -180,7 +180,7 @@ export const applyDOMCoverageSelectionPolicy = ({
   editorElement?: HTMLElement;
   forceDOMRangeRebuild?: boolean;
   onDOMSelectionWillChange?: () => void;
-  selection: PliteRange;
+  selection: ModelRange;
 }) => {
   const boundaries = coverage.getBoundariesForRange(selection);
 

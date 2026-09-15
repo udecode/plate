@@ -3,7 +3,7 @@
 import type { Value } from 'platejs';
 import type { CommentThread } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { createCommentValue } from '@/registry/components/editor/comment';
@@ -14,7 +14,6 @@ import {
   RedoToolbarButton,
   UndoToolbarButton,
 } from '@/registry/components/editor/history-toolbar-button';
-import { SuggestionKit } from '@/registry/components/editor/suggestion';
 import { Toolbar } from '@/registry/components/editor/toolbar';
 import { commentUsers } from '@/registry/examples/values/comment-value';
 
@@ -22,7 +21,6 @@ export default function CommentOverlapDemo() {
   const editor = useCreateEditor({
     plugins: [
       ...BasicBlocksKit,
-      ...SuggestionKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
@@ -36,7 +34,7 @@ export default function CommentOverlapDemo() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer className="h-[360px]" variant="demo">
         <Toolbar className="border-b px-3 py-1">
           <UndoToolbarButton aria-label="Undo" />
@@ -49,7 +47,7 @@ export default function CommentOverlapDemo() {
           variant="demo"
         />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 

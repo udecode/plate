@@ -11,7 +11,7 @@ import {
 import {
   createEditor,
   Editable,
-  Plite,
+  EditorRoot,
 } from '../../../packages/plitejs/dist/react/index.js';
 
 const app = document.getElementById('app');
@@ -39,7 +39,7 @@ const model = defineEditorSchema('schema:external-text-benchmark', {
 
 let current = null;
 let events = {};
-globalThis.__PLITE_REACT_RENDER_PROFILER__ = {
+globalThis.__EDITOR_REACT_RENDER_PROFILER__ = {
   record({ kind, id }) {
     const key = `${kind}:${id ?? ''}`;
     events[key] = (events[key] ?? 0) + 1;
@@ -150,7 +150,7 @@ const createBoundedAdapter = (records, viewIndex) => ({
 });
 
 const readMetrics = () => {
-  const editables = [...app.querySelectorAll('[data-plite-editor="true"]')];
+  const editables = [...app.querySelectorAll('[data-editor="true"]')];
   const external = editables.map((element) =>
     element.__pliteBrowserHandle.getExternalTextMetrics()
   );
@@ -278,10 +278,10 @@ const install = async ({
     'height:600px;overflow:auto;font:14px/1.35 ui-monospace,monospace';
   app.append(shell);
   const editorStart = performance.now();
-  const editor = createEditor({ extensions: [model, history()], initialValue });
+  const editor = createEditor({ plugins: [model, history()], initialValue });
   const independentEditor = independent
     ? createEditor({
-        extensions: [model, history()],
+        plugins: [model, history()],
         initialValue: initialValue.slice(0, 1),
       })
     : null;
@@ -291,7 +291,6 @@ const install = async ({
   const rows = Array.from({ length: viewCount }, (_, viewIndex) => {
     const adapter = createBoundedAdapter(records, viewIndex);
     return React.createElement(Editable, {
-      domStrategy: 'full',
       key: viewIndex,
       spellCheck: false,
       renderElement: ({ attributes, slots }) =>
@@ -307,10 +306,9 @@ const install = async ({
   });
   const independentView = independentEditor
     ? React.createElement(
-        Plite,
+        EditorRoot,
         { editor: independentEditor },
         React.createElement(Editable, {
-          domStrategy: 'full',
           spellCheck: false,
           renderElement: ({ attributes, slots }) =>
             React.createElement(
@@ -379,14 +377,14 @@ const install = async ({
     React.createElement(
       React.Fragment,
       null,
-      React.createElement(Plite, { decorations, editor }, rows),
+      React.createElement(EditorRoot, { decorations, editor }, rows),
       independentView
     )
   );
   for (let attempt = 0; attempt < 600; attempt++) {
     if (
       records.length === blockCount * viewCount + Number(independent) &&
-      app.querySelector('[data-plite-editor]')?.__pliteBrowserHandle
+      app.querySelector('[data-editor]')?.__pliteBrowserHandle
     ) {
       break;
     }
@@ -399,13 +397,13 @@ const install = async ({
     refreshDecorations?.({ nodeKeys: [editor.key([0, 0])] });
   };
   verify();
-  const editables = [...app.querySelectorAll('[data-plite-editor="true"]')];
+  const editables = [...app.querySelectorAll('[data-editor="true"]')];
   const domElements = editables.reduce(
     (sum, editable) => sum + editable.querySelectorAll('*').length,
     0
   );
   const pliteTextHosts = app.querySelectorAll(
-    '[data-plite-node="text"]'
+    '[data-editor-node="text"]'
   ).length;
   const adapterElements = app.querySelectorAll(
     '[data-benchmark-adapter]'
@@ -487,7 +485,7 @@ const exercise = async ({ iterations = 20, spans = 1 }) => {
     decoration: [],
   };
   const source = createEditor({
-    extensions: [model],
+    plugins: [model],
     initialValue: current.initialValue,
   });
   const origin = current.records[0];
@@ -556,5 +554,5 @@ const exercise = async ({ iterations = 20, spans = 1 }) => {
   return { metrics: readMetrics(), rows };
 };
 
-globalThis.__PLITE_EXTERNAL_TEXT_BENCHMARK__ = { clear, exercise, install };
-globalThis.__PLITE_EXTERNAL_TEXT_BENCHMARK_READY__ = true;
+globalThis.__EDITOR_EXTERNAL_TEXT_BENCHMARK__ = { clear, exercise, install };
+globalThis.__EDITOR_EXTERNAL_TEXT_BENCHMARK_READY__ = true;

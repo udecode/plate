@@ -5,21 +5,13 @@ import type {
   SerializedEditorEffect,
   SerializedEditorValue,
 } from '../interfaces/editor';
-import { deepFreeze } from './clone';
+import { freezeOwnedJsonValue, isOwnedJsonValue } from './clone';
 import { createEditorEffect } from './transaction-values';
 
 const getFunctionSource = (value: object) =>
   Function.prototype.toString.call(value);
 const arrayConstructorSource = getFunctionSource(Array);
 const objectConstructorSource = getFunctionSource(Object);
-const TRUSTED_FROZEN_EDITOR_JSON_VALUES = new WeakSet<object>();
-
-const freezeTrustedEditorJsonValue = <T extends object>(value: T): T => {
-  Object.freeze(value);
-  TRUSTED_FROZEN_EDITOR_JSON_VALUES.add(value);
-
-  return value;
-};
 
 const hasIntrinsicConstructor = (
   prototype: object,
@@ -127,10 +119,7 @@ export const isEditorJsonValue = (
       return Number.isFinite(value) && !Object.is(value, -0);
     }
     case 'object': {
-      if (
-        Object.isFrozen(value) &&
-        TRUSTED_FROZEN_EDITOR_JSON_VALUES.has(value)
-      ) {
+      if (isOwnedJsonValue(value)) {
         return true;
       }
       if (seen.has(value)) return false;
@@ -280,6 +269,7 @@ export const snapshotEditorJsonValue = <T>(value: T, label: string): T => {
         return input;
       }
       case 'object': {
+        if (isOwnedJsonValue(input)) return input;
         if (seen.has(input)) invalid();
         seen.add(input);
 
@@ -287,14 +277,12 @@ export const snapshotEditorJsonValue = <T>(value: T, label: string): T => {
           if (Array.isArray(input)) {
             const items = getEditorJsonArrayItems(input) ?? invalid();
 
-            return freezeTrustedEditorJsonValue(
-              items.map((item) => clone(item, seen))
-            );
+            return freezeOwnedJsonValue(items.map((item) => clone(item, seen)));
           }
 
           const entries = getEditorJsonRecordEntries(input) ?? invalid();
 
-          return freezeTrustedEditorJsonValue(
+          return freezeOwnedJsonValue(
             Object.fromEntries(
               entries.map(([key, item]) => [key, clone(item, seen)])
             )
@@ -312,15 +300,8 @@ export const snapshotEditorJsonValue = <T>(value: T, label: string): T => {
   return clone(value, new WeakSet()) as T;
 };
 
-export const cloneFrozenEditorJsonValue = <T>(value: T): T => {
-  const cloned = deepFreeze(cloneEditorJsonValue(value));
-
-  if (cloned !== null && typeof cloned === 'object') {
-    TRUSTED_FROZEN_EDITOR_JSON_VALUES.add(cloned);
-  }
-
-  return cloned;
-};
+export const cloneFrozenEditorJsonValue = <T>(value: T): T =>
+  snapshotEditorJsonValue(value, 'Editor value');
 
 const assertCodecVersion = (version: number) => {
   if (!Number.isSafeInteger(version) || version < 1) {
@@ -337,14 +318,63 @@ const assertJsonValue = (value: unknown, label: string) => {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
+const CODEC_OWNED_CURRENT_INPUTS = new WeakSet<object>();
+
+/**
+ * Mark a codec whose current-version decoder validates and detaches its own
+ * input before returning an owned editor JSON value.
+ *
+ * @internal
+ */
+export const ownCurrentEditorValueCodecInput = <TValue>(
+  codec: EditorValueCodec<TValue>
+): EditorValueCodec<TValue> => {
+  CODEC_OWNED_CURRENT_INPUTS.add(codec);
+
+  return codec;
+};
+
 /** Define a versioned codec for persisted editor state and effects. */
 export const defineValueCodec = <TValue>(
   codec: EditorValueCodec<TValue>
 ): EditorValueCodec<TValue> => {
   assertCodecVersion(codec.version);
 
-  return Object.freeze({ ...codec });
+  const previousVersions = codec.previousVersions
+    ? Object.freeze({ ...codec.previousVersions })
+    : undefined;
+  for (const [savedVersion, decode] of Object.entries(previousVersions ?? {})) {
+    const version = Number(savedVersion);
+    if (
+      !Number.isSafeInteger(version) ||
+      version < 1 ||
+      version >= codec.version ||
+      typeof decode !== 'function'
+    ) {
+      throw new Error(
+        'Editor value codec previous versions must be positive integers below the current version.'
+      );
+    }
+  }
+
+  const defined = Object.freeze({
+    ...codec,
+    ...(previousVersions ? { previousVersions } : {}),
+  });
+  if (CODEC_OWNED_CURRENT_INPUTS.has(codec)) {
+    CODEC_OWNED_CURRENT_INPUTS.add(defined);
+  }
+
+  return defined;
 };
+
+/** @internal */
+export const supportsEditorValueCodecVersion = <TValue>(
+  codec: EditorValueCodec<TValue>,
+  version: number
+) =>
+  version === codec.version ||
+  Object.hasOwn(codec.previousVersions ?? {}, version);
 
 /** Strict codecs for primitive JSON state values. */
 export const valueCodecs = Object.freeze({
@@ -387,16 +417,11 @@ export const encodeVersionedValue = <TValue>(
   codec: EditorValueCodec<TValue>,
   value: TValue,
   label: string
-): SerializedEditorValue => {
-  const encoded = codec.encode(value);
-
-  assertJsonValue(encoded, label);
-
-  return Object.freeze({
-    value: cloneFrozenEditorJsonValue(encoded),
-    version: codec.version,
-  });
-};
+): SerializedEditorValue =>
+  snapshotEditorJsonValue(
+    { value: codec.encode(value), version: codec.version },
+    label
+  );
 
 export const decodeVersionedValue = <TValue>(
   codec: EditorValueCodec<TValue>,
@@ -410,15 +435,39 @@ export const decodeVersionedValue = <TValue>(
   ) {
     throw new Error(`Invalid ${label} envelope.`);
   }
-  if (input.version !== codec.version) {
+  const version = input.version as number;
+  if (!supportsEditorValueCodecVersion(codec, version)) {
+    const supported = [
+      ...Object.keys(codec.previousVersions ?? {}).map(Number),
+      codec.version,
+    ].sort((left, right) => left - right);
     throw new Error(
-      `Unsupported ${label} version ${String(input.version)}; expected ${codec.version}.`
+      `Unsupported ${label} version ${String(version)}; expected ${supported.join(
+        ' or '
+      )}.`
     );
   }
 
-  assertJsonValue(input.value, label);
+  const decode =
+    version === codec.version
+      ? codec.decode
+      : codec.previousVersions?.[version];
+  if (!decode) throw new Error(`Unsupported ${label} version.`);
 
-  return codec.decode(cloneFrozenEditorJsonValue(input.value));
+  if (version === codec.version && CODEC_OWNED_CURRENT_INPUTS.has(codec)) {
+    const decoded = decode(input.value);
+    if (
+      decoded !== null &&
+      typeof decoded === 'object' &&
+      !isOwnedJsonValue(decoded)
+    ) {
+      throw new Error(`${label} decoder must return owned JSON data.`);
+    }
+
+    return decoded;
+  }
+
+  return decode(cloneFrozenEditorJsonValue(input.value));
 };
 
 export const encodeEditorEffect = <TValue>(

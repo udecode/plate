@@ -12,7 +12,7 @@ import {
   assertRenderedDOMShape,
 } from './dom-shape';
 import { getBlockTexts, normalizeHtml } from './dom-text';
-import { findPliteBrowserKernelTraceEntry } from './scenario-kernel-trace';
+import { findBrowserKernelTraceEntry } from './scenario-kernel-trace';
 import { getFocusOwnerSnapshot } from './selection-geometry';
 import {
   assertCollapsedModelDOMSelectionExpectation,
@@ -29,17 +29,17 @@ import type {
   HtmlNormalizationOptions,
   RenderedDOMShapeExpectation,
   SelectionSnapshotExpectation,
-  PliteBrowserEditorHarness,
-  PliteBrowserKernelTraceExpectation,
+  BrowserEditorHarness,
+  BrowserKernelTraceExpectation,
 } from './types';
 
 export const createEditorHarnessAssertions = ({
   getHarness,
   root,
 }: {
-  getHarness: () => PliteBrowserEditorHarness;
+  getHarness: () => BrowserEditorHarness;
   root: Locator;
-}): PliteBrowserEditorHarness['assert'] => ({
+}): BrowserEditorHarness['assert'] => ({
   text: async (text: RegExp | string) => {
     await expect(root).toContainText(text);
   },
@@ -90,11 +90,11 @@ export const createEditorHarnessAssertions = ({
       })
       .toBe(expected);
   },
-  kernelTrace: async (expected: PliteBrowserKernelTraceExpectation) => {
+  kernelTrace: async (expected: BrowserKernelTraceExpectation) => {
     await expect
       .poll(async () =>
         Boolean(
-          findPliteBrowserKernelTraceEntry(
+          findBrowserKernelTraceEntry(
             await getHarness().get.kernelTrace(),
             expected
           )
@@ -143,7 +143,7 @@ export const createEditorHarnessAssertions = ({
   },
   placeholderShape: async (
     expected: PlaceholderShape,
-    selector = '[data-plite-zero-width]'
+    selector = '[data-editor-zero-width]'
   ) => {
     await expect
       .poll(() =>
@@ -153,13 +153,13 @@ export const createEditorHarnessAssertions = ({
           .evaluate((element: Element) => ({
             hasBr: !!element.querySelector('br'),
             hasFEFF: element.textContent?.includes('\uFEFF') ?? false,
-            kind: element.getAttribute('data-plite-zero-width'),
+            kind: element.getAttribute('data-editor-zero-width'),
           }))
       )
       .toEqual(expected);
   },
   placeholderVisible: async (visible = true) => {
-    const placeholder = root.locator('[data-plite-placeholder="true"]');
+    const placeholder = root.locator('[data-editor-placeholder="true"]');
 
     if (visible) {
       await expect(placeholder).toBeVisible();

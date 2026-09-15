@@ -1,34 +1,25 @@
 /** @jsx jsxt */
 
-import {
-  jsxt,
-  projectTestSelectionRange,
-  type TestEditorFixture,
-} from '@platejs/test';
-import {
-  type Editor,
-  createEditor as createProductEditor,
-  type Value,
-} from 'platejs';
-import { BaseSuggestionPlugin } from 'platejs/suggestion';
+import { jsxt, type TestEditorFixture } from '@platejs/test';
+import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { createEditor as createProductEditor } from 'platejs/react';
+import { SuggestionPlugin } from 'platejs/suggestion/react';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+import { SuggestionKit } from '@/registry/components/editor/suggestion';
 
 jsxt;
 
 const createEditor = (input: TestEditorFixture) =>
   createProductEditor({
-    plugins: BaseEditorKit,
+    plugins: [...BaseEditorKit, ...SuggestionKit],
+    userId: 'alice',
     selection: input.selection,
     initialValue: input.children,
-  } as any);
+  });
 
-const deleteBackwardCharacter = (editor: ReturnType<typeof createEditor>) => {
-  editor.update.text.deleteBackward({ unit: 'character' });
-};
-
-describe('suggestion link integration', () => {
-  it('marks only the previous link character when deleting backward after a link', () => {
+describe('native authored link integration', () => {
+  it('proposes only the previous link character when deleting backward after a link', () => {
     const input = (
       <editor>
         <hp>
@@ -41,145 +32,82 @@ describe('suggestion link integration', () => {
         </hp>
       </editor>
     ) as TestEditorFixture;
-
-    const output = (
-      <editor>
-        <hp>
-          <htext>before </htext>
-          <ha url="https://example.com">
-            <htext>lin</htext>
-            <htext
-              suggestion
-              suggestion_1={{
-                id: 'placeholder',
-                createdAt: 0,
-                type: 'remove',
-                userId: 'alice',
-              }}
-            >
-              <cursor />k
-            </htext>
-          </ha>
-          <htext>{' after'}</htext>
-        </hp>
-      </editor>
-    ) as TestEditorFixture;
-
     const editor = createEditor(input);
-    editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
 
-    deleteBackwardCharacter(editor);
+    editor.plugin(SuggestionPlugin).api.setMode('suggesting');
+    editor.update.text.deleteBackward({ unit: 'character' });
 
-    const outputLinkNode = output.children[0].children[1] as any;
-    const linkNode = editor.read.children()[0].children[1] as any;
-    const suggestionLeaf = linkNode.children[1];
-    const suggestionData = editor
-      .plugin(BaseSuggestionPlugin)
-      .api.suggestionData(suggestionLeaf) as any;
-
-    expect(editor.read.children()[0].children[0]).toEqual(
-      output.children[0].children[0]
-    );
-    expect(linkNode.children[0]).toEqual(outputLinkNode.children[0]);
-    expect(suggestionLeaf.text).toBe(outputLinkNode.children[1].text);
-    expect(suggestionData?.type).toBe('remove');
-    expect(suggestionData?.userId).toBe('alice');
-    expect(linkNode.suggestion).toBeUndefined();
-    expect(
-      Object.keys(linkNode).filter((key) => key.startsWith('suggestion_'))
-    ).toHaveLength(0);
-    expect(editor.read.children()[0].children[2]).toEqual(
-      output.children[0].children[2]
-    );
-    expect(editor.read.selection()).toEqual(
-      projectTestSelectionRange(output.selection)
-    );
-  });
-
-  it('removes an empty link after accepting the last removed character', () => {
-    const removeData = {
-      id: '1',
-      createdAt: Date.now(),
-      type: 'remove',
-      userId: 'alice',
+    const change = editor.plugin(DefaultAuthoredPlugin).read.changes({
+      status: 'pending',
+    }).items[0];
+    const link = editor.read.children()[0].children[1] as unknown as {
+      children: Array<{ text: string }>;
     };
 
+    expect(editor.read.value().children).toEqual(input.children);
+    expect(link.children.map(({ text }) => text).join('')).toBe('lin');
+    expect(change).toMatchObject({
+      authorId: 'alice',
+      kind: 'delete',
+      status: 'pending',
+    });
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 3, path: [0, 1, 0] },
+      focus: { offset: 3, path: [0, 1, 0] },
+    });
+  });
+
+  it('removes an empty link after accepting its last-character deletion', () => {
     const input = (
       <editor>
         <hp>
-          before{' '}
-          <ha url="https://reactjs.org">
-            <htext suggestion_1={removeData} suggestion>
-              t
-            </htext>
-          </ha>
+          before <ha url="https://reactjs.org">t</ha>
           <htext />
         </hp>
       </editor>
     ) as TestEditorFixture;
-
-    const output = (
-      <editor>
-        <hp>before </hp>
-      </editor>
-    ) as TestEditorFixture;
-
     const editor = createEditor(input);
+    const authored = editor.plugin(DefaultAuthoredPlugin);
+
     editor.update.selection.set({
       kind: 'text',
       anchor: { offset: 1, path: [0, 1, 0] },
       focus: { offset: 1, path: [0, 1, 0] },
     });
+    editor.plugin(SuggestionPlugin).api.setMode('suggesting');
+    editor.update.text.deleteBackward({ unit: 'character' });
+    const selection = authored.read.select({
+      status: 'pending',
+    });
 
-    (
-      editor as Editor<
-        Value,
-        readonly [],
-        readonly [typeof BaseSuggestionPlugin]
-      >
-    ).update.suggestion.accept('1');
-
-    expect(editor.read.children()).toEqual(output.children);
+    expect(authored.update.decide({ action: 'accept', selection }).status).toBe(
+      'applied'
+    );
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'before ' }], type: 'paragraph' },
+    ]);
   });
 
-  it('rejects remove suggestion on inline link elements', () => {
-    const removeData = {
-      id: '1',
-      createdAt: Date.now(),
-      type: 'remove',
-      userId: 'alice',
-    };
-
+  it('restores a removed inline link when rejecting its proposal', () => {
     const input = (
-      <editor>
-        <hp>
-          before{' '}
-          <ha suggestion suggestion_1={removeData} url="https://example.com">
-            link
-          </ha>{' '}
-          after
-        </hp>
-      </editor>
-    ) as TestEditorFixture;
-
-    const output = (
       <editor>
         <hp>
           before <ha url="https://example.com">link</ha> after
         </hp>
       </editor>
     ) as TestEditorFixture;
-
     const editor = createEditor(input);
+    const authored = editor.plugin(DefaultAuthoredPlugin);
 
-    (
-      editor as Editor<
-        Value,
-        readonly [],
-        readonly [typeof BaseSuggestionPlugin]
-      >
-    ).update.suggestion.reject('1');
+    editor.plugin(SuggestionPlugin).api.setMode('suggesting');
+    editor.update.nodes.remove({ at: [0, 1] });
+    const selection = authored.read.select({
+      status: 'pending',
+    });
 
-    expect(editor.read.children()).toEqual(output.children);
+    expect(authored.update.decide({ action: 'reject', selection }).status).toBe(
+      'applied'
+    );
+    expect(editor.read.children()).toEqual(input.children);
   });
 });

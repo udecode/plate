@@ -172,16 +172,16 @@ describe('Plate registry editor files', () => {
     expect(editorAi?.files).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          path: 'blocks/editor-ai/components/editor/plate-editor.tsx',
-          target: '@components/editor/plate-editor.tsx',
+          path: 'blocks/editor-ai/components/editor/rich-text-editor.tsx',
+          target: '@components/editor/rich-text-editor.tsx',
         }),
       ])
     );
     expect(editorBasic?.files).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          path: 'blocks/editor-basic/components/editor/plate-editor.tsx',
-          target: '@components/editor/plate-editor.tsx',
+          path: 'blocks/editor-basic/components/editor/rich-text-editor.tsx',
+          target: '@components/editor/rich-text-editor.tsx',
         }),
       ])
     );
@@ -349,7 +349,8 @@ describe('Plate registry editor files', () => {
       itemsByName.get('editor-ai')?.files?.map((file) => file.path)
     ).toEqual([
       'blocks/editor-ai/page.tsx',
-      'blocks/editor-ai/components/editor/plate-editor.tsx',
+      'blocks/editor-ai/components/editor/rich-text-editor.tsx',
+      'blocks/editor-ai/components/editor/rich-text-editor-value.ts',
     ]);
     expect(
       itemsByName.get('copilot-demo')?.files?.map((file) => file.path)
@@ -403,6 +404,7 @@ describe('Plate registry editor files', () => {
     expect(docxDemo?.registryDependencies).toEqual(
       expect.arrayContaining([
         '@plate/docx',
+        '@plate/docx-source',
         '@plate/editor',
         '@plate/editor-plugins',
         '@plate/export-toolbar-button',

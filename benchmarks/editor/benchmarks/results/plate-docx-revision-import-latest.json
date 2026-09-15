@@ -1,0 +1,2910 @@
+{
+  "environment": {
+    "bun": "1.3.12",
+    "platform": "darwin arm64"
+  },
+  "frozenBaseline": {
+    "normal": 27.326,
+    "large": 139.885,
+    "stress": 777.777,
+    "pathological": 3681.535
+  },
+  "rows": [
+    {
+      "baselineMedianMs": 27.326,
+      "maxMs": 250,
+      "name": "normal",
+      "packets": 0,
+      "paragraphs": 4,
+      "revisions": 4,
+      "samples": [
+        {
+          "durationMs": 24.056582999999932,
+          "eventLoopDelayMs": 5.745542,
+          "heapDeltaBytes": 1490554,
+          "rssDeltaBytes": 2850816,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 22.698624999999993,
+          "eventLoopDelayMs": 5.816082999999935,
+          "heapDeltaBytes": 1743634,
+          "rssDeltaBytes": 1785856,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 21.92054100000007,
+          "eventLoopDelayMs": 5.350750000000062,
+          "heapDeltaBytes": 1319579,
+          "rssDeltaBytes": 1589248,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 23.755874999999946,
+          "eventLoopDelayMs": 5.5412919999999986,
+          "heapDeltaBytes": 1266592,
+          "rssDeltaBytes": 4096000,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 22.173375000000078,
+          "eventLoopDelayMs": 5.338791000000015,
+          "heapDeltaBytes": 1734566,
+          "rssDeltaBytes": 1851392,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        }
+      ],
+      "cold": {
+        "durationMs": 25.401209000000108,
+        "eventLoopDelayMs": 6.408500000000004,
+        "heapDeltaBytes": 0,
+        "rssDeltaBytes": 4112384,
+        "work": {
+          "documentDiffs": 2,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "xmlParses": 1,
+          "zipLoads": 1
+        }
+      },
+      "compressedBytes": 20468,
+      "expandedDocumentXmlBytes": 1936,
+      "medianMs": 22.698624999999993,
+      "p95Ms": 24.056582999999932,
+      "packetSamples": []
+    },
+    {
+      "baselineMedianMs": 139.885,
+      "maxMs": 500,
+      "name": "large",
+      "packets": 0,
+      "paragraphs": 24,
+      "revisions": 16,
+      "samples": [
+        {
+          "durationMs": 41.8941249999998,
+          "eventLoopDelayMs": 6.694042000000081,
+          "heapDeltaBytes": 1627921,
+          "rssDeltaBytes": 3129344,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 44.58916700000009,
+          "eventLoopDelayMs": 6.033040999999912,
+          "heapDeltaBytes": 1794729,
+          "rssDeltaBytes": 5062656,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 40.781208000000106,
+          "eventLoopDelayMs": 5.834083999999848,
+          "heapDeltaBytes": 1546523,
+          "rssDeltaBytes": 7618560,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 38.56833299999994,
+          "eventLoopDelayMs": 5.544165999999905,
+          "heapDeltaBytes": 1938603,
+          "rssDeltaBytes": 2260992,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 42.597041999999874,
+          "eventLoopDelayMs": 5.575375000000122,
+          "heapDeltaBytes": 1790797,
+          "rssDeltaBytes": 1884160,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        }
+      ],
+      "cold": {
+        "durationMs": 49.01308300000005,
+        "eventLoopDelayMs": 8.037833999999975,
+        "heapDeltaBytes": 1814432,
+        "rssDeltaBytes": 18038784,
+        "work": {
+          "documentDiffs": 2,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "xmlParses": 1,
+          "zipLoads": 1
+        }
+      },
+      "compressedBytes": 23287,
+      "expandedDocumentXmlBytes": 4755,
+      "medianMs": 41.8941249999998,
+      "p95Ms": 44.58916700000009,
+      "packetSamples": []
+    },
+    {
+      "baselineMedianMs": 777.777,
+      "maxMs": 1000,
+      "name": "stress",
+      "packets": 5,
+      "paragraphs": 96,
+      "revisions": 48,
+      "samples": [
+        {
+          "durationMs": 115.10116599999992,
+          "eventLoopDelayMs": 7.303417000000081,
+          "heapDeltaBytes": 3300739,
+          "rssDeltaBytes": 12713984,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 131.17058299999985,
+          "eventLoopDelayMs": 7.774208000000044,
+          "heapDeltaBytes": 3414713,
+          "rssDeltaBytes": 11059200,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 120.37812499999973,
+          "eventLoopDelayMs": 6.998082999999951,
+          "heapDeltaBytes": 4018663,
+          "rssDeltaBytes": 17465344,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        }
+      ],
+      "cold": {
+        "durationMs": 132.75874999999996,
+        "eventLoopDelayMs": 7.250666999999794,
+        "heapDeltaBytes": 8826090,
+        "rssDeltaBytes": 133578752,
+        "work": {
+          "documentDiffs": 2,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "xmlParses": 1,
+          "zipLoads": 1
+        }
+      },
+      "compressedBytes": 31999,
+      "expandedDocumentXmlBytes": 13467,
+      "medianMs": 120.37812499999973,
+      "p95Ms": 194.17154200000004,
+      "packetSamples": [
+        {
+          "durationMs": 108.92691699999978,
+          "eventLoopDelayMs": 6.991708000000017,
+          "heapDeltaBytes": 0,
+          "rssDeltaBytes": 16941056,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 107.02358400000003,
+          "eventLoopDelayMs": 6.8217500000000655,
+          "heapDeltaBytes": 3537986,
+          "rssDeltaBytes": 7585792,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 113.87450000000035,
+          "eventLoopDelayMs": 6.772958000000017,
+          "heapDeltaBytes": 3427616,
+          "rssDeltaBytes": 3653632,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 104.65625,
+          "eventLoopDelayMs": 7.061708000000181,
+          "heapDeltaBytes": 3287742,
+          "rssDeltaBytes": 4046848,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 104.98770800000011,
+          "eventLoopDelayMs": 7.041917000000012,
+          "heapDeltaBytes": 3399375,
+          "rssDeltaBytes": 3588096,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 106.09445800000003,
+          "eventLoopDelayMs": 9.59741699999995,
+          "heapDeltaBytes": 3390569,
+          "rssDeltaBytes": 4341760,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 103.91379099999995,
+          "eventLoopDelayMs": 6.791374999999789,
+          "heapDeltaBytes": 3308212,
+          "rssDeltaBytes": 4554752,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 106.05650000000014,
+          "eventLoopDelayMs": 6.51758400000017,
+          "heapDeltaBytes": 3200766,
+          "rssDeltaBytes": 4849664,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 102.06337500000018,
+          "eventLoopDelayMs": 6.538082999999915,
+          "heapDeltaBytes": 3626063,
+          "rssDeltaBytes": 3538944,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 103.99579199999971,
+          "eventLoopDelayMs": 6.679250000000138,
+          "heapDeltaBytes": 3338666,
+          "rssDeltaBytes": 4407296,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 113.77316699999983,
+          "eventLoopDelayMs": 6.704917000000023,
+          "heapDeltaBytes": 3310628,
+          "rssDeltaBytes": 3440640,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 126.93074999999999,
+          "eventLoopDelayMs": 7.038875000000189,
+          "heapDeltaBytes": 3313583,
+          "rssDeltaBytes": 4177920,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 126.54887500000041,
+          "eventLoopDelayMs": 9.541208000000552,
+          "heapDeltaBytes": 3450396,
+          "rssDeltaBytes": 3620864,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 111.3961249999993,
+          "eventLoopDelayMs": 6.6852080000007845,
+          "heapDeltaBytes": 3428891,
+          "rssDeltaBytes": 3604480,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 129.82266600000003,
+          "eventLoopDelayMs": 6.826167000000169,
+          "heapDeltaBytes": 3360406,
+          "rssDeltaBytes": 8650752,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 120.28666599999997,
+          "eventLoopDelayMs": 6.7659160000002885,
+          "heapDeltaBytes": 3537083,
+          "rssDeltaBytes": 3883008,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 126.05258400000002,
+          "eventLoopDelayMs": 6.876666999999543,
+          "heapDeltaBytes": 2941546,
+          "rssDeltaBytes": 4096000,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 127.32233300000007,
+          "eventLoopDelayMs": 7.219875000000684,
+          "heapDeltaBytes": 2917167,
+          "rssDeltaBytes": 4177920,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 115.99395800000002,
+          "eventLoopDelayMs": 6.531417000000147,
+          "heapDeltaBytes": 0,
+          "rssDeltaBytes": 3604480,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 126.55749999999989,
+          "eventLoopDelayMs": 7.4232920000004015,
+          "heapDeltaBytes": 921292,
+          "rssDeltaBytes": 3178496,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 124.55545799999982,
+          "eventLoopDelayMs": 6.8735420000002705,
+          "heapDeltaBytes": 0,
+          "rssDeltaBytes": 3227648,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 115.14408300000014,
+          "eventLoopDelayMs": 6.549667000000227,
+          "heapDeltaBytes": 2812411,
+          "rssDeltaBytes": 3473408,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 115.87670799999978,
+          "eventLoopDelayMs": 6.72808299999997,
+          "heapDeltaBytes": 3307231,
+          "rssDeltaBytes": 3571712,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 109.06537500000013,
+          "eventLoopDelayMs": 6.98962500000016,
+          "heapDeltaBytes": 3306970,
+          "rssDeltaBytes": 3571712,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 111.19987500000025,
+          "eventLoopDelayMs": 6.5306659999996555,
+          "heapDeltaBytes": 3230614,
+          "rssDeltaBytes": 3932160,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 100.71366699999999,
+          "eventLoopDelayMs": 6.392000000000735,
+          "heapDeltaBytes": 3362006,
+          "rssDeltaBytes": 3473408,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 100.87887499999943,
+          "eventLoopDelayMs": 6.666874999999891,
+          "heapDeltaBytes": 3239023,
+          "rssDeltaBytes": 3506176,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 111.58604099999957,
+          "eventLoopDelayMs": 6.675000000000182,
+          "heapDeltaBytes": 3556413,
+          "rssDeltaBytes": 4276224,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 107.80104200000005,
+          "eventLoopDelayMs": 6.492792000000009,
+          "heapDeltaBytes": 3577671,
+          "rssDeltaBytes": 3801088,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 126.95979199999965,
+          "eventLoopDelayMs": 7.448666999999659,
+          "heapDeltaBytes": 2986618,
+          "rssDeltaBytes": 6176768,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 206.97550000000047,
+          "eventLoopDelayMs": 11.94641700000011,
+          "heapDeltaBytes": 3399936,
+          "rssDeltaBytes": 3637248,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 193.6954169999999,
+          "eventLoopDelayMs": 10.146542000000409,
+          "heapDeltaBytes": 3060722,
+          "rssDeltaBytes": 3948544,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 194.17154200000004,
+          "eventLoopDelayMs": 10.77495799999997,
+          "heapDeltaBytes": 3429421,
+          "rssDeltaBytes": 3981312,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 143.74404200000026,
+          "eventLoopDelayMs": 8.507082999999511,
+          "heapDeltaBytes": 3216552,
+          "rssDeltaBytes": 3407872,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 153.76516699999956,
+          "eventLoopDelayMs": 11.981999999999971,
+          "heapDeltaBytes": 3309361,
+          "rssDeltaBytes": 3883008,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 179.26300000000083,
+          "eventLoopDelayMs": 8.298791999999594,
+          "heapDeltaBytes": 3085266,
+          "rssDeltaBytes": 4390912,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 164.92562499999985,
+          "eventLoopDelayMs": 13.900207999999111,
+          "heapDeltaBytes": 3431338,
+          "rssDeltaBytes": 3620864,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 127.68725000000086,
+          "eventLoopDelayMs": 10.554333000000042,
+          "heapDeltaBytes": 3183928,
+          "rssDeltaBytes": 3686400,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 122.71912500000144,
+          "eventLoopDelayMs": 6.409541999999419,
+          "heapDeltaBytes": 3495038,
+          "rssDeltaBytes": 3653632,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 120.58050000000003,
+          "eventLoopDelayMs": 6.186874999999418,
+          "heapDeltaBytes": 3189696,
+          "rssDeltaBytes": 4784128,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 112.18425000000025,
+          "eventLoopDelayMs": 6.672375000000102,
+          "heapDeltaBytes": 3253360,
+          "rssDeltaBytes": 2244608,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 125.11674999999923,
+          "eventLoopDelayMs": 6.571374999999534,
+          "heapDeltaBytes": 3172943,
+          "rssDeltaBytes": 3653632,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 101.93058399999973,
+          "eventLoopDelayMs": 6.962916999998924,
+          "heapDeltaBytes": 3324990,
+          "rssDeltaBytes": 3571712,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 104.3418330000004,
+          "eventLoopDelayMs": 6.376915999999255,
+          "heapDeltaBytes": 3245213,
+          "rssDeltaBytes": 4603904,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 110.29516700000022,
+          "eventLoopDelayMs": 6.445957999998427,
+          "heapDeltaBytes": 3362460,
+          "rssDeltaBytes": 3538944,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 125.22050000000127,
+          "eventLoopDelayMs": 7.189916999999696,
+          "heapDeltaBytes": 3299612,
+          "rssDeltaBytes": 3506176,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 124.28370799999902,
+          "eventLoopDelayMs": 6.080583999999362,
+          "heapDeltaBytes": 3439521,
+          "rssDeltaBytes": 3555328,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 122.59229100000084,
+          "eventLoopDelayMs": 6.82799999999952,
+          "heapDeltaBytes": 3240226,
+          "rssDeltaBytes": 3866624,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 115.15891700000066,
+          "eventLoopDelayMs": 6.231499999999869,
+          "heapDeltaBytes": 3200435,
+          "rssDeltaBytes": 3424256,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 108.86770799999977,
+          "eventLoopDelayMs": 6.210915999999997,
+          "heapDeltaBytes": 3252573,
+          "rssDeltaBytes": 3964928,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 122.73479099999895,
+          "eventLoopDelayMs": 6.676416000000245,
+          "heapDeltaBytes": 3210896,
+          "rssDeltaBytes": 3375104,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 122.83116700000028,
+          "eventLoopDelayMs": 6.165875000000597,
+          "heapDeltaBytes": 3237223,
+          "rssDeltaBytes": 3670016,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 125.16570900000079,
+          "eventLoopDelayMs": 9.238041000000521,
+          "heapDeltaBytes": 3275524,
+          "rssDeltaBytes": 3948544,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 100.4030840000014,
+          "eventLoopDelayMs": 6.458416000001307,
+          "heapDeltaBytes": 3197858,
+          "rssDeltaBytes": 4063232,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 100.47637500000019,
+          "eventLoopDelayMs": 6.197124999998778,
+          "heapDeltaBytes": 3260213,
+          "rssDeltaBytes": 3555328,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 125.8419159999994,
+          "eventLoopDelayMs": 7.035915999998906,
+          "heapDeltaBytes": 3226796,
+          "rssDeltaBytes": 3522560,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 130.48595899999964,
+          "eventLoopDelayMs": 7.244249999999738,
+          "heapDeltaBytes": 3243252,
+          "rssDeltaBytes": 4128768,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 125.44533299999966,
+          "eventLoopDelayMs": 10.05450000000019,
+          "heapDeltaBytes": 3225226,
+          "rssDeltaBytes": 3620864,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 104.53791699999965,
+          "eventLoopDelayMs": 7.566457999999329,
+          "heapDeltaBytes": 3425651,
+          "rssDeltaBytes": 3751936,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 102.105375000001,
+          "eventLoopDelayMs": 6.391083000000435,
+          "heapDeltaBytes": 3050710,
+          "rssDeltaBytes": 3915776,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 118.56841700000041,
+          "eventLoopDelayMs": 6.34741700000086,
+          "heapDeltaBytes": 3241282,
+          "rssDeltaBytes": 3522560,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 114.74925000000076,
+          "eventLoopDelayMs": 6.305625000000873,
+          "heapDeltaBytes": 3282008,
+          "rssDeltaBytes": 3768320,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 130.86441600000035,
+          "eventLoopDelayMs": 7.417207999998936,
+          "heapDeltaBytes": 3247903,
+          "rssDeltaBytes": 3489792,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 116.22729199999958,
+          "eventLoopDelayMs": 6.517582999998922,
+          "heapDeltaBytes": 3140456,
+          "rssDeltaBytes": 3473408,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 133.81645799999933,
+          "eventLoopDelayMs": 7.888249999999971,
+          "heapDeltaBytes": 3206231,
+          "rssDeltaBytes": 3768320,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 122.5420839999988,
+          "eventLoopDelayMs": 6.714208000001236,
+          "heapDeltaBytes": 3230658,
+          "rssDeltaBytes": 18071552,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 117.25045800000044,
+          "eventLoopDelayMs": 6.896542000000409,
+          "heapDeltaBytes": 3249525,
+          "rssDeltaBytes": 3932160,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 118.42554199999904,
+          "eventLoopDelayMs": 7.835417000000234,
+          "heapDeltaBytes": 3128065,
+          "rssDeltaBytes": 3751936,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 121.55349999999999,
+          "eventLoopDelayMs": 6.676416999998764,
+          "heapDeltaBytes": 3027544,
+          "rssDeltaBytes": 5586944,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 131.3677090000001,
+          "eventLoopDelayMs": 10.573832999998558,
+          "heapDeltaBytes": 793681,
+          "rssDeltaBytes": 3260416,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 116.23745899999994,
+          "eventLoopDelayMs": 10.260708000001614,
+          "heapDeltaBytes": 0,
+          "rssDeltaBytes": 4653056,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 105.92558299999837,
+          "eventLoopDelayMs": 8.135541999999987,
+          "heapDeltaBytes": 4036251,
+          "rssDeltaBytes": 2768896,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 119.2055419999997,
+          "eventLoopDelayMs": 6.711375000000771,
+          "heapDeltaBytes": 3637018,
+          "rssDeltaBytes": 3424256,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 121.12254200000098,
+          "eventLoopDelayMs": 6.7710839999999735,
+          "heapDeltaBytes": 3913270,
+          "rssDeltaBytes": 3538944,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 116.99687500000073,
+          "eventLoopDelayMs": 6.369041000001744,
+          "heapDeltaBytes": 3245549,
+          "rssDeltaBytes": 3489792,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 117.14050000000134,
+          "eventLoopDelayMs": 6.299665999998979,
+          "heapDeltaBytes": 3397916,
+          "rssDeltaBytes": 3784704,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 116.64720800000214,
+          "eventLoopDelayMs": 9.759333000001789,
+          "heapDeltaBytes": 3180292,
+          "rssDeltaBytes": 3325952,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 102.1663750000007,
+          "eventLoopDelayMs": 6.349042000001646,
+          "heapDeltaBytes": 3248197,
+          "rssDeltaBytes": 3555328,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 109.0356670000001,
+          "eventLoopDelayMs": 6.215583000001061,
+          "heapDeltaBytes": 3379010,
+          "rssDeltaBytes": 3457024,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 118.67958299999736,
+          "eventLoopDelayMs": 6.048500000000786,
+          "heapDeltaBytes": 3371324,
+          "rssDeltaBytes": 3506176,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 114.0903330000001,
+          "eventLoopDelayMs": 6.641374999999243,
+          "heapDeltaBytes": 3213022,
+          "rssDeltaBytes": 3440640,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 124.57383299999856,
+          "eventLoopDelayMs": 7.319250000000466,
+          "heapDeltaBytes": 3300292,
+          "rssDeltaBytes": 3604480,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 256.75641599999653,
+          "eventLoopDelayMs": 8.446416999999201,
+          "heapDeltaBytes": 3355775,
+          "rssDeltaBytes": 3358720,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 232.1398330000011,
+          "eventLoopDelayMs": 14.642542000001413,
+          "heapDeltaBytes": 3050264,
+          "rssDeltaBytes": 3391488,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 222.429583000001,
+          "eventLoopDelayMs": 15.409584000000905,
+          "heapDeltaBytes": 3317378,
+          "rssDeltaBytes": 3555328,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 222.6506249999984,
+          "eventLoopDelayMs": 13.759541999999783,
+          "heapDeltaBytes": 3224706,
+          "rssDeltaBytes": 3522560,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 170.18704100000105,
+          "eventLoopDelayMs": 14.833416000001307,
+          "heapDeltaBytes": 3688542,
+          "rssDeltaBytes": 3768320,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 140.94058399999994,
+          "eventLoopDelayMs": 7.396874999998545,
+          "heapDeltaBytes": 3123961,
+          "rssDeltaBytes": 3260416,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 140.2455829999999,
+          "eventLoopDelayMs": 7.742583999999624,
+          "heapDeltaBytes": 3327484,
+          "rssDeltaBytes": 3440640,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 143.87658300000112,
+          "eventLoopDelayMs": 10.731292000000394,
+          "heapDeltaBytes": 2041128,
+          "rssDeltaBytes": 3735552,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 129.25279199999932,
+          "eventLoopDelayMs": 12.878375000000233,
+          "heapDeltaBytes": 3818211,
+          "rssDeltaBytes": 3506176,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 128.79870800000208,
+          "eventLoopDelayMs": 6.669999999998254,
+          "heapDeltaBytes": 3456396,
+          "rssDeltaBytes": 5586944,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 107.02512500000012,
+          "eventLoopDelayMs": 6.725000000002183,
+          "heapDeltaBytes": 3172470,
+          "rssDeltaBytes": 3391488,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 111.38012499999968,
+          "eventLoopDelayMs": 6.931790999999066,
+          "heapDeltaBytes": 3226104,
+          "rssDeltaBytes": 3588096,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 148.2559160000019,
+          "eventLoopDelayMs": 7.274958000001789,
+          "heapDeltaBytes": 3416198,
+          "rssDeltaBytes": 3391488,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 128.3647920000003,
+          "eventLoopDelayMs": 6.896624999997584,
+          "heapDeltaBytes": 3176791,
+          "rssDeltaBytes": 3686400,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 130.07849999999962,
+          "eventLoopDelayMs": 6.853125000001455,
+          "heapDeltaBytes": 2979798,
+          "rssDeltaBytes": 3538944,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 107.0917920000029,
+          "eventLoopDelayMs": 7.267040999999153,
+          "heapDeltaBytes": 3390167,
+          "rssDeltaBytes": 3457024,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 141.3529579999995,
+          "eventLoopDelayMs": 7.445542000001296,
+          "heapDeltaBytes": 3396082,
+          "rssDeltaBytes": 4915200,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 142.20266700000138,
+          "eventLoopDelayMs": 7.269041999999899,
+          "heapDeltaBytes": 3232363,
+          "rssDeltaBytes": 33046528,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        }
+      ]
+    },
+    {
+      "baselineMedianMs": 3681.535,
+      "maxMs": 2000,
+      "name": "pathological",
+      "packets": 5,
+      "paragraphs": 256,
+      "revisions": 96,
+      "samples": [
+        {
+          "durationMs": 293.04333399999814,
+          "eventLoopDelayMs": 8.478374999998778,
+          "heapDeltaBytes": 7018370,
+          "rssDeltaBytes": 11550720,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        }
+      ],
+      "cold": {
+        "durationMs": 438.99445800000103,
+        "eventLoopDelayMs": 9.3626660000009,
+        "heapDeltaBytes": 6135242,
+        "rssDeltaBytes": 490651648,
+        "work": {
+          "documentDiffs": 2,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "xmlParses": 1,
+          "zipLoads": 1
+        }
+      },
+      "compressedBytes": 48395,
+      "expandedDocumentXmlBytes": 29863,
+      "medianMs": 293.04333399999814,
+      "p95Ms": 571.1271249999991,
+      "packetSamples": [
+        {
+          "durationMs": 291.372292,
+          "eventLoopDelayMs": 9.42541600000186,
+          "heapDeltaBytes": 7064649,
+          "rssDeltaBytes": 11943936,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 294.94641599999886,
+          "eventLoopDelayMs": 9.381083000000217,
+          "heapDeltaBytes": 6866112,
+          "rssDeltaBytes": 8454144,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 300.3322079999998,
+          "eventLoopDelayMs": 8.861708999997063,
+          "heapDeltaBytes": 7460630,
+          "rssDeltaBytes": 7520256,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 309.39408300000287,
+          "eventLoopDelayMs": 17.126749999999447,
+          "heapDeltaBytes": 5402732,
+          "rssDeltaBytes": 7585792,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 299.4390000000021,
+          "eventLoopDelayMs": 9.406709000002593,
+          "heapDeltaBytes": 7954371,
+          "rssDeltaBytes": 7847936,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 294.0132080000003,
+          "eventLoopDelayMs": 13.250040999999328,
+          "heapDeltaBytes": 7002806,
+          "rssDeltaBytes": 8437760,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 290.7584999999999,
+          "eventLoopDelayMs": 8.963708999999653,
+          "heapDeltaBytes": 7510292,
+          "rssDeltaBytes": 7716864,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 306.6519589999989,
+          "eventLoopDelayMs": 12.555041999999958,
+          "heapDeltaBytes": 7429654,
+          "rssDeltaBytes": 7880704,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 315.8844160000008,
+          "eventLoopDelayMs": 12.390999999999622,
+          "heapDeltaBytes": 7350914,
+          "rssDeltaBytes": 7634944,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 324.0314160000016,
+          "eventLoopDelayMs": 10.029624999999214,
+          "heapDeltaBytes": 6172339,
+          "rssDeltaBytes": 6930432,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 697.4266669999997,
+          "eventLoopDelayMs": 9.061916999999085,
+          "heapDeltaBytes": 7124462,
+          "rssDeltaBytes": 8257536,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 306.5789589999986,
+          "eventLoopDelayMs": 9.986166999999114,
+          "heapDeltaBytes": 7053261,
+          "rssDeltaBytes": 7585792,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 336.76866699999664,
+          "eventLoopDelayMs": 13.609583000001294,
+          "heapDeltaBytes": 5690867,
+          "rssDeltaBytes": 7897088,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 319.3774999999987,
+          "eventLoopDelayMs": 10.60833300000013,
+          "heapDeltaBytes": 6809880,
+          "rssDeltaBytes": 7274496,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 320.76166699999885,
+          "eventLoopDelayMs": 12.701124999999593,
+          "heapDeltaBytes": 5886781,
+          "rssDeltaBytes": 7929856,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 353.0368340000023,
+          "eventLoopDelayMs": 10.947832999998354,
+          "heapDeltaBytes": 7982850,
+          "rssDeltaBytes": 7520256,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 449.41166599999997,
+          "eventLoopDelayMs": 10.052499999997963,
+          "heapDeltaBytes": 7742980,
+          "rssDeltaBytes": 7847936,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 708.1925000000047,
+          "eventLoopDelayMs": 16.311374999997497,
+          "heapDeltaBytes": 6687183,
+          "rssDeltaBytes": 7716864,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 506.44950000000244,
+          "eventLoopDelayMs": 13.267875000005006,
+          "heapDeltaBytes": 7343330,
+          "rssDeltaBytes": 9060352,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 291.02566600000137,
+          "eventLoopDelayMs": 9.537167000002228,
+          "heapDeltaBytes": 7118720,
+          "rssDeltaBytes": 6651904,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 300.2487500000061,
+          "eventLoopDelayMs": 9.083375000001979,
+          "heapDeltaBytes": 7052257,
+          "rssDeltaBytes": 7946240,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 293.9386249999952,
+          "eventLoopDelayMs": 15.795042000005196,
+          "heapDeltaBytes": 6775240,
+          "rssDeltaBytes": 7618560,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 297.2883750000037,
+          "eventLoopDelayMs": 8.791624999998021,
+          "heapDeltaBytes": 7491311,
+          "rssDeltaBytes": 7667712,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 302.8992920000019,
+          "eventLoopDelayMs": 18.34770800000115,
+          "heapDeltaBytes": 5689357,
+          "rssDeltaBytes": 7929856,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 313.07091599999694,
+          "eventLoopDelayMs": 9.608165999998164,
+          "heapDeltaBytes": 7576471,
+          "rssDeltaBytes": 7979008,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 298.294167,
+          "eventLoopDelayMs": 9.925332999999227,
+          "heapDeltaBytes": 7674883,
+          "rssDeltaBytes": 7815168,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 327.7364170000001,
+          "eventLoopDelayMs": 9.563374999997905,
+          "heapDeltaBytes": 7731196,
+          "rssDeltaBytes": 8257536,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 304.06270799999766,
+          "eventLoopDelayMs": 10.222874999999476,
+          "heapDeltaBytes": 7146056,
+          "rssDeltaBytes": 7618560,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 305.4998330000017,
+          "eventLoopDelayMs": 9.72637499999837,
+          "heapDeltaBytes": 6586392,
+          "rssDeltaBytes": 7798784,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 375.93858300000284,
+          "eventLoopDelayMs": 9.65283400000044,
+          "heapDeltaBytes": 7475974,
+          "rssDeltaBytes": 7733248,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 302.26095799999894,
+          "eventLoopDelayMs": 8.68933300000208,
+          "heapDeltaBytes": 6677727,
+          "rssDeltaBytes": 7913472,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 378.40866700000333,
+          "eventLoopDelayMs": 15.083958000002895,
+          "heapDeltaBytes": 7067875,
+          "rssDeltaBytes": 7864320,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 380.8119579999984,
+          "eventLoopDelayMs": 12.3125,
+          "heapDeltaBytes": 6998690,
+          "rssDeltaBytes": 7290880,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 387.3477920000005,
+          "eventLoopDelayMs": 14.784500000001572,
+          "heapDeltaBytes": 6103378,
+          "rssDeltaBytes": 7979008,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 331.78266600000643,
+          "eventLoopDelayMs": 9.475333000002138,
+          "heapDeltaBytes": 7717007,
+          "rssDeltaBytes": 7798784,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 384.9403749999983,
+          "eventLoopDelayMs": 15.933375000000524,
+          "heapDeltaBytes": 7024683,
+          "rssDeltaBytes": 8175616,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 384.59466599999723,
+          "eventLoopDelayMs": 11.194709000003058,
+          "heapDeltaBytes": 7523359,
+          "rssDeltaBytes": 7831552,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 380.84249999999884,
+          "eventLoopDelayMs": 10.335791999998037,
+          "heapDeltaBytes": 6978797,
+          "rssDeltaBytes": 9682944,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 297.69287500000064,
+          "eventLoopDelayMs": 9.942874999993364,
+          "heapDeltaBytes": 7198217,
+          "rssDeltaBytes": 5603328,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 382.4779580000031,
+          "eventLoopDelayMs": 10.177416999998968,
+          "heapDeltaBytes": 6960117,
+          "rssDeltaBytes": 8388608,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 387.7143750000032,
+          "eventLoopDelayMs": 13.196541999997862,
+          "heapDeltaBytes": 6256039,
+          "rssDeltaBytes": 7241728,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 393.9521669999958,
+          "eventLoopDelayMs": 12.782292000003508,
+          "heapDeltaBytes": 7155322,
+          "rssDeltaBytes": 7749632,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 390.84933399999863,
+          "eventLoopDelayMs": 14.41191699999763,
+          "heapDeltaBytes": 6535577,
+          "rssDeltaBytes": 7897088,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 481.6650000000009,
+          "eventLoopDelayMs": 10.511750000005122,
+          "heapDeltaBytes": 7388436,
+          "rssDeltaBytes": 8077312,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 571.1271249999991,
+          "eventLoopDelayMs": 11.70966700000281,
+          "heapDeltaBytes": 7320841,
+          "rssDeltaBytes": 7684096,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 410.50066700000025,
+          "eventLoopDelayMs": 11.584415999997873,
+          "heapDeltaBytes": 7243234,
+          "rssDeltaBytes": 8044544,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 389.1472090000025,
+          "eventLoopDelayMs": 10.552457999998296,
+          "heapDeltaBytes": 7120715,
+          "rssDeltaBytes": 7176192,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 410.05908400000044,
+          "eventLoopDelayMs": 11.89166600000317,
+          "heapDeltaBytes": 6716859,
+          "rssDeltaBytes": 7946240,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 411.99429200000304,
+          "eventLoopDelayMs": 11.893416999999317,
+          "heapDeltaBytes": 7330714,
+          "rssDeltaBytes": 8634368,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 413.2538340000028,
+          "eventLoopDelayMs": 13.80095799999981,
+          "heapDeltaBytes": 7004233,
+          "rssDeltaBytes": 7569408,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 396.5079590000023,
+          "eventLoopDelayMs": 14.210583000000042,
+          "heapDeltaBytes": 6243306,
+          "rssDeltaBytes": 7356416,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 398.38604199999827,
+          "eventLoopDelayMs": 11.250250000004598,
+          "heapDeltaBytes": 7577961,
+          "rssDeltaBytes": 9027584,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 383.0829589999994,
+          "eventLoopDelayMs": 15.856375000003027,
+          "heapDeltaBytes": 7021603,
+          "rssDeltaBytes": 7028736,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 388.4136670000007,
+          "eventLoopDelayMs": 10.684124999999767,
+          "heapDeltaBytes": 7018166,
+          "rssDeltaBytes": 7782400,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 393.52045799999905,
+          "eventLoopDelayMs": 16.244833999997354,
+          "heapDeltaBytes": 7042999,
+          "rssDeltaBytes": 8224768,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 311.64537500000006,
+          "eventLoopDelayMs": 15.93212499999936,
+          "heapDeltaBytes": 7157025,
+          "rssDeltaBytes": 7798784,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 390.58758300000045,
+          "eventLoopDelayMs": 11.33404100000189,
+          "heapDeltaBytes": 7084609,
+          "rssDeltaBytes": 7307264,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 390.3396250000005,
+          "eventLoopDelayMs": 11.563666000001831,
+          "heapDeltaBytes": 7103046,
+          "rssDeltaBytes": 7454720,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 403.453042000001,
+          "eventLoopDelayMs": 12.552833000001556,
+          "heapDeltaBytes": 7058851,
+          "rssDeltaBytes": 7880704,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 416.63308400000096,
+          "eventLoopDelayMs": 21.22733299999527,
+          "heapDeltaBytes": 6098592,
+          "rssDeltaBytes": 8650752,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 384.1945829999968,
+          "eventLoopDelayMs": 16.440999999998894,
+          "heapDeltaBytes": 7545259,
+          "rssDeltaBytes": 7667712,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 342.91645900000003,
+          "eventLoopDelayMs": 10.305459000002884,
+          "heapDeltaBytes": 7351761,
+          "rssDeltaBytes": 7962624,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 591.148000000001,
+          "eventLoopDelayMs": 11.093583000001672,
+          "heapDeltaBytes": 7415080,
+          "rssDeltaBytes": 8011776,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 514.9497080000001,
+          "eventLoopDelayMs": 16.164582999997947,
+          "heapDeltaBytes": 6684710,
+          "rssDeltaBytes": 9666560,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 388.83587499999703,
+          "eventLoopDelayMs": 11.936125000000175,
+          "heapDeltaBytes": 7317356,
+          "rssDeltaBytes": 7471104,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 386.10050000000047,
+          "eventLoopDelayMs": 12.570999999996275,
+          "heapDeltaBytes": 6843464,
+          "rssDeltaBytes": 7487488,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 403.9797910000052,
+          "eventLoopDelayMs": 20.365624999998545,
+          "heapDeltaBytes": 6852189,
+          "rssDeltaBytes": 27213824,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 399.23091600000043,
+          "eventLoopDelayMs": 14.480708000002778,
+          "heapDeltaBytes": 6311628,
+          "rssDeltaBytes": 7536640,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 335.18979099999706,
+          "eventLoopDelayMs": 12.07220899999811,
+          "heapDeltaBytes": 7328598,
+          "rssDeltaBytes": 7798784,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 316.6513750000013,
+          "eventLoopDelayMs": 9.483332999996492,
+          "heapDeltaBytes": 7184512,
+          "rssDeltaBytes": 8060928,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 387.4662499999977,
+          "eventLoopDelayMs": 11.109208999987459,
+          "heapDeltaBytes": 7354569,
+          "rssDeltaBytes": 9928704,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 384.5793340000091,
+          "eventLoopDelayMs": 11.192000000010012,
+          "heapDeltaBytes": 7130341,
+          "rssDeltaBytes": 7471104,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 384.71616599999834,
+          "eventLoopDelayMs": 11.535459000006085,
+          "heapDeltaBytes": 7186515,
+          "rssDeltaBytes": 7880704,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 389.8817080000008,
+          "eventLoopDelayMs": 11.592749999996158,
+          "heapDeltaBytes": 6818314,
+          "rssDeltaBytes": 7864320,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 419.1243339999928,
+          "eventLoopDelayMs": 13.900416999997105,
+          "heapDeltaBytes": 7341435,
+          "rssDeltaBytes": 7831552,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 359.05645799999184,
+          "eventLoopDelayMs": 14.538083999999799,
+          "heapDeltaBytes": 6179121,
+          "rssDeltaBytes": 6914048,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 372.04204200000095,
+          "eventLoopDelayMs": 12.005834000010509,
+          "heapDeltaBytes": 7490902,
+          "rssDeltaBytes": 8306688,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 405.4998750000086,
+          "eventLoopDelayMs": 10.706916999988607,
+          "heapDeltaBytes": 6961914,
+          "rssDeltaBytes": 7733248,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 379.48179099999834,
+          "eventLoopDelayMs": 11.144165999998222,
+          "heapDeltaBytes": 7514717,
+          "rssDeltaBytes": 7929856,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 327.85095799999544,
+          "eventLoopDelayMs": 10.394167000005837,
+          "heapDeltaBytes": 6932257,
+          "rssDeltaBytes": 7831552,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 402.91224999999395,
+          "eventLoopDelayMs": 11.645874999987427,
+          "heapDeltaBytes": 6734308,
+          "rssDeltaBytes": 7766016,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 386.2123330000031,
+          "eventLoopDelayMs": 11.174584000007599,
+          "heapDeltaBytes": 7321760,
+          "rssDeltaBytes": 7913472,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 397.90820799999346,
+          "eventLoopDelayMs": 13.137084000001778,
+          "heapDeltaBytes": 6859765,
+          "rssDeltaBytes": 9846784,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 410.7112919999927,
+          "eventLoopDelayMs": 13.989874999999302,
+          "heapDeltaBytes": 6320989,
+          "rssDeltaBytes": 7733248,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 571.8652080000029,
+          "eventLoopDelayMs": 12.598958000002312,
+          "heapDeltaBytes": 7997415,
+          "rssDeltaBytes": 8765440,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 439.33520800000406,
+          "eventLoopDelayMs": 12.572541999994428,
+          "heapDeltaBytes": 7823487,
+          "rssDeltaBytes": 6356992,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 390.3332919999957,
+          "eventLoopDelayMs": 18.66479100000288,
+          "heapDeltaBytes": 5437382,
+          "rssDeltaBytes": 7340032,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 386.41624999999476,
+          "eventLoopDelayMs": 11.361582999990787,
+          "heapDeltaBytes": 7433510,
+          "rssDeltaBytes": 7946240,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 389.2351670000062,
+          "eventLoopDelayMs": 10.259790999989491,
+          "heapDeltaBytes": 6770266,
+          "rssDeltaBytes": 7913472,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 395.1463749999966,
+          "eventLoopDelayMs": 13.200624999997672,
+          "heapDeltaBytes": 6760925,
+          "rssDeltaBytes": 7536640,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 349.1295420000097,
+          "eventLoopDelayMs": 21.36462500000198,
+          "heapDeltaBytes": 6255942,
+          "rssDeltaBytes": 7847936,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 612.6315840000025,
+          "eventLoopDelayMs": 14.464582999993581,
+          "heapDeltaBytes": 7920533,
+          "rssDeltaBytes": 7569408,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 558.929999999993,
+          "eventLoopDelayMs": 14.270457999999053,
+          "heapDeltaBytes": 7253044,
+          "rssDeltaBytes": 7979008,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 402.0422499999986,
+          "eventLoopDelayMs": 12.758291999998619,
+          "heapDeltaBytes": 6827061,
+          "rssDeltaBytes": 7667712,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 391.2972919999884,
+          "eventLoopDelayMs": 11.545917000010377,
+          "heapDeltaBytes": 7520899,
+          "rssDeltaBytes": 7503872,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 382.0701670000126,
+          "eventLoopDelayMs": 11.707666999995126,
+          "heapDeltaBytes": 6682529,
+          "rssDeltaBytes": 8044544,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 332.0952499999985,
+          "eventLoopDelayMs": 11.71279200000572,
+          "heapDeltaBytes": 7171465,
+          "rssDeltaBytes": 7421952,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 426.2648749999935,
+          "eventLoopDelayMs": 15.962250000011409,
+          "heapDeltaBytes": 6258609,
+          "rssDeltaBytes": 7585792,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 413.908666000003,
+          "eventLoopDelayMs": 13.060542000006535,
+          "heapDeltaBytes": 7068766,
+          "rssDeltaBytes": 7979008,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        },
+        {
+          "durationMs": 393.8923749999958,
+          "eventLoopDelayMs": 12.721709000004921,
+          "heapDeltaBytes": 7841044,
+          "rssDeltaBytes": 7716864,
+          "work": {
+            "documentDiffs": 2,
+            "htmlConversions": 1,
+            "packageGenerations": 1,
+            "xmlParses": 1,
+            "zipLoads": 1
+          }
+        }
+      ]
+    }
+  ]
+}

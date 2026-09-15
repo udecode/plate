@@ -9,11 +9,11 @@ import ReactDOM from 'react-dom';
 import { schema } from '../../core';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createEditor } from '../editor/withPlate';
-import { definePlatePlugin } from '../plugin/definePlatePlugin';
+import { definePlugin } from '../plugin/definePlugin';
 import { NodeSelectionDrag, NodeSelectionHighlight } from './NodeSelection';
-import { Plate } from './Plate';
-import { PlateElement } from './plate-nodes';
-import { PlateContent } from './PlateContent';
+import { EditorRoot } from './Plate';
+import { EditorElement } from './plate-nodes';
+import { EditorContent } from './PlateContent';
 
 const renderNodeSelection = (selectedPaths = [[0]]) => {
   const editor = createEditor({
@@ -29,8 +29,8 @@ const renderNodeSelection = (selectedPaths = [[0]]) => {
   return {
     editor,
     view: render(
-      <Plate editor={editor} suppressInstanceWarning>
-        <PlateContent />
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
         <NodeSelectionHighlight
           className="selection-highlight"
           data-testid="selection-highlight"
@@ -38,7 +38,7 @@ const renderNodeSelection = (selectedPaths = [[0]]) => {
           title="Selected"
         />
         <NodeSelectionDrag className="selection-drag" />
-      </Plate>
+      </EditorRoot>
     ),
   };
 };
@@ -71,7 +71,7 @@ describe('NodeSelection', () => {
   });
 
   it('excludes structural and non-selectable elements', async () => {
-    const StructuralPlugin = definePlatePlugin('structuralSelectionTest', {
+    const StructuralPlugin = definePlugin('structuralSelectionTest', {
       schema: {
         element: {
           ...schema.element.textBlock(),
@@ -80,10 +80,10 @@ describe('NodeSelection', () => {
       },
     }).configure({
       component: ({ children, ...props }) => (
-        <PlateElement {...props}>{children}</PlateElement>
+        <EditorElement {...props}>{children}</EditorElement>
       ),
     });
-    const ContainerPlugin = definePlatePlugin('selectionTestContainer', {
+    const ContainerPlugin = definePlugin('selectionTestContainer', {
       schema: {
         element: {
           content: schema.content.element(StructuralPlugin, { min: 1 }),
@@ -91,22 +91,19 @@ describe('NodeSelection', () => {
       },
     }).configure({
       component: ({ children, ...props }) => (
-        <PlateElement {...props}>{children}</PlateElement>
+        <EditorElement {...props}>{children}</EditorElement>
       ),
     });
-    const NonSelectablePlugin = definePlatePlugin(
-      'nonSelectableSelectionTest',
-      {
-        schema: {
-          element: {
-            ...schema.element.textBlock(),
-            selectable: false,
-          },
+    const NonSelectablePlugin = definePlugin('nonSelectableSelectionTest', {
+      schema: {
+        element: {
+          ...schema.element.textBlock(),
+          selectable: false,
         },
-      }
-    ).configure({
+      },
+    }).configure({
       component: ({ children, ...props }) => (
-        <PlateElement {...props}>{children}</PlateElement>
+        <EditorElement {...props}>{children}</EditorElement>
       ),
     });
     const editor = createEditor({
@@ -134,10 +131,10 @@ describe('NodeSelection', () => {
     editor.update.selection.setNodes([[0, 0], [1], [2]]);
 
     const view = render(
-      <Plate editor={editor} suppressInstanceWarning>
-        <PlateContent />
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
         <NodeSelectionHighlight />
-      </Plate>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -150,13 +147,13 @@ describe('NodeSelection', () => {
   });
 
   it('does not duplicate a component-owned highlight', async () => {
-    const SelfOwnedPlugin = definePlatePlugin('selfOwnedSelectionTest', {
+    const SelfOwnedPlugin = definePlugin('selfOwnedSelectionTest', {
       schema: {
         element: schema.element.textBlock(),
       },
     }).configure({
       component: ({ attributes, children, ...props }) => (
-        <PlateElement
+        <EditorElement
           {...props}
           attributes={{
             ...attributes,
@@ -165,7 +162,7 @@ describe('NodeSelection', () => {
         >
           <div contentEditable={false} data-slot="node-selection-highlight" />
           {children}
-        </PlateElement>
+        </EditorElement>
       ),
     });
     const editor = createEditor({
@@ -179,10 +176,10 @@ describe('NodeSelection', () => {
     editor.update.selection.setNodes([[0], [1]]);
 
     const view = render(
-      <Plate editor={editor} suppressInstanceWarning>
-        <PlateContent />
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
         <NodeSelectionHighlight />
-      </Plate>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -195,7 +192,7 @@ describe('NodeSelection', () => {
   });
 
   it('canonicalizes nested drag candidates', async () => {
-    const ContainerPlugin = definePlatePlugin('selectionTestContainer', {
+    const ContainerPlugin = definePlugin('selectionTestContainer', {
       schema: {
         element: {
           content: schema.content.element(BaseParagraphPlugin, { min: 1 }),
@@ -203,7 +200,7 @@ describe('NodeSelection', () => {
       },
     }).configure({
       component: ({ children, ...props }) => (
-        <PlateElement {...props}>{children}</PlateElement>
+        <EditorElement {...props}>{children}</EditorElement>
       ),
     });
     const editor = createEditor({
@@ -216,17 +213,15 @@ describe('NodeSelection', () => {
       plugins: [BaseParagraphPlugin, ContainerPlugin],
     });
     const view = render(
-      <Plate editor={editor} suppressInstanceWarning>
-        <PlateContent />
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
         <NodeSelectionHighlight />
         <NodeSelectionDrag />
-      </Plate>
+      </EditorRoot>
     );
-    const editable = view.container.querySelector<HTMLElement>(
-      '[data-plite-editor]'
-    );
+    const editable = view.container.querySelector<HTMLElement>('[data-editor]');
     const elements = editable?.querySelectorAll<HTMLElement>(
-      '[data-plite-node="element"]'
+      '[data-editor-node="element"]'
     );
 
     expect(editable).toBeTruthy();
@@ -270,11 +265,9 @@ describe('NodeSelection', () => {
 
   it('contracts the live selection when a drag returns toward its anchor', async () => {
     const { editor, view } = renderNodeSelection([]);
-    const editable = view.container.querySelector<HTMLElement>(
-      '[data-plite-editor]'
-    );
+    const editable = view.container.querySelector<HTMLElement>('[data-editor]');
     const elements = editable?.querySelectorAll<HTMLElement>(
-      '[data-plite-node="element"]'
+      '[data-editor-node="element"]'
     );
 
     expect(editable).toBeTruthy();
@@ -463,8 +456,8 @@ describe('NodeSelection', () => {
       (children, container, key) => createPortal(children, container, key)
     );
     const view = render(
-      <Plate editor={editor} suppressInstanceWarning>
-        <PlateContent />
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
         <React.Profiler
           id="node-selection-highlight"
           onRender={() => {
@@ -473,7 +466,7 @@ describe('NodeSelection', () => {
         >
           <NodeSelectionHighlight />
         </React.Profiler>
-      </Plate>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -518,16 +511,14 @@ describe('NodeSelection', () => {
       plugins: [BaseParagraphPlugin],
     });
     const view = render(
-      <Plate editor={editor} suppressInstanceWarning>
-        <PlateContent />
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
         <NodeSelectionDrag />
-      </Plate>
+      </EditorRoot>
     );
-    const editable = view.container.querySelector<HTMLElement>(
-      '[data-plite-editor]'
-    );
+    const editable = view.container.querySelector<HTMLElement>('[data-editor]');
     const elements = editable?.querySelectorAll<HTMLElement>(
-      '[data-plite-node="element"]'
+      '[data-editor-node="element"]'
     );
 
     expect(editable).toBeTruthy();

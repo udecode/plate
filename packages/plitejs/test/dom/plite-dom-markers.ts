@@ -19,23 +19,23 @@ describe('plite-dom markers', () => {
     const { document } = dom.window;
 
     const root = document.createElement('div');
-    root.setAttribute('data-plite-editor', 'true');
+    root.setAttribute('data-editor', 'true');
 
     const element = document.createElement('p');
-    element.setAttribute('data-plite-node', 'element');
+    element.setAttribute('data-editor-node', 'element');
     root.append(element);
 
     const text = document.createElement('span');
-    text.setAttribute('data-plite-node', 'text');
+    text.setAttribute('data-editor-node', 'text');
 
     const leaf = document.createElement('span');
-    leaf.setAttribute('data-plite-leaf', 'true');
+    leaf.setAttribute('data-editor-leaf', 'true');
 
     const string = document.createElement('span');
-    string.setAttribute('data-plite-string', 'true');
+    string.setAttribute('data-editor-string', 'true');
 
     const voidElement = document.createElement('div');
-    voidElement.setAttribute('data-plite-void', 'true');
+    voidElement.setAttribute('data-editor-void', 'true');
 
     expect(isEditor(root)).toBe(true);
     expect(isElement(element)).toBe(true);
@@ -53,21 +53,21 @@ describe('plite-dom markers', () => {
 
   test('owns Plite DOM data attribute names for primitive node props', () => {
     expect(keyToDataAttribute('backgroundColor')).toBe(
-      'data-plite-background-color'
+      'data-editor-background-color'
     );
-    expect(keyToDataAttribute('URLValue')).toBe('data-plite-url-value');
+    expect(keyToDataAttribute('URLValue')).toBe('data-editor-url-value');
     expect(
       getNodeDataAttributeKeys({
         type: 'paragraph',
         children: [{ text: 'A' }],
         id: 'p1',
       })
-    ).toEqual(['data-plite-type', 'data-plite-id']);
+    ).toEqual(['data-editor-type', 'data-editor-id']);
     expect(
       getNodeDataAttributeKeys({
         bold: true,
         text: 'A',
       })
-    ).toEqual(['data-plite-bold']);
+    ).toEqual(['data-editor-bold']);
   });
 });

@@ -290,8 +290,8 @@ test('nested editable DOM targets are owned by their closest editor root', () =>
   const childEditor = document.createElement('div');
   const childText = document.createTextNode('child');
 
-  outerEditor.setAttribute('data-plite-editor', 'true');
-  childEditor.setAttribute('data-plite-editor', 'true');
+  outerEditor.setAttribute('data-editor', 'true');
+  childEditor.setAttribute('data-editor', 'true');
   childEditor.append(childText);
   outerEditor.append(childEditor);
 
@@ -306,8 +306,8 @@ test('nested editable DOM targets are interactive boundaries for containing edit
   const childEditor = document.createElement('div');
   const childText = document.createTextNode('child');
 
-  outerEditor.setAttribute('data-plite-editor', 'true');
-  childEditor.setAttribute('data-plite-editor', 'true');
+  outerEditor.setAttribute('data-editor', 'true');
+  childEditor.setAttribute('data-editor', 'true');
   childEditor.append(childText);
   outerEditor.append(childEditor);
 
@@ -362,7 +362,7 @@ test('failed DOM selection export clears the updating guard', () => {
     syncEditableDOMSelectionToEditor({
       editor,
       scrollSelectionIntoView: vi.fn(),
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       state,
     });
 
@@ -404,7 +404,7 @@ test('model selection export preserves a focused editor control', () => {
       editor,
       editorElement,
       scrollSelectionIntoView: vi.fn(),
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       state: {
         isUpdatingSelection: false,
         outsideFocusBoundarySettleUntil: 0,
@@ -477,7 +477,7 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
       editor,
       options: { forceModelExport: true, preserveScroll: true },
       scrollSelectionIntoView: vi.fn(),
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       state,
     });
 
@@ -495,7 +495,7 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
       editor,
       options: { forceModelExport: true, preserveScroll: true },
       scrollSelectionIntoView: vi.fn(),
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       state,
     });
 
@@ -522,7 +522,7 @@ test('view selection export clears stale native selection ranges', () => {
     throw new Error('Expected document selection');
   }
 
-  editorElement.setAttribute('data-plite-editor', 'true');
+  editorElement.setAttribute('data-editor', 'true');
   editorElement.append(staleText);
   document.body.append(editorElement);
 
@@ -563,7 +563,7 @@ test('view selection export clears stale native selection ranges', () => {
     syncEditableDOMSelectionToEditor({
       editor,
       scrollSelectionIntoView: vi.fn(),
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       state,
     });
 
@@ -610,7 +610,7 @@ test('model selection export is owned by the matching root view only', () => {
   syncEditableDOMSelectionToEditor({
     editor: mainEditor,
     scrollSelectionIntoView: vi.fn(),
-    partialDOMBackedSelection: false,
+    viewportBackedSelection: false,
     state: {
       outsideFocusBoundarySettleUntil: 0,
       isUpdatingSelection: false,
@@ -640,7 +640,7 @@ test('model selection export preserves preferred collapsed DOM point', () => {
     throw new Error('Expected document selection');
   }
 
-  editorElement.setAttribute('data-plite-editor', 'true');
+  editorElement.setAttribute('data-editor', 'true');
   editorElement.append(firstLine, secondLine);
   document.body.append(editorElement);
 
@@ -682,7 +682,7 @@ test('model selection export preserves preferred collapsed DOM point', () => {
     syncEditableDOMSelectionToEditor({
       editor,
       scrollSelectionIntoView: vi.fn(),
-      partialDOMBackedSelection: false,
+      viewportBackedSelection: false,
       state: {
         isUpdatingSelection: false,
         outsideFocusBoundarySettleUntil: 0,
@@ -858,7 +858,7 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
     }),
   });
 
-  editorElement.setAttribute('data-plite-editor', 'true');
+  editorElement.setAttribute('data-editor', 'true');
   editorElement.append(textNode);
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'selection' }] }],
@@ -875,8 +875,8 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
   const hasSelectableTarget = vi
     .spyOn(ReactEditor, 'hasSelectableTarget')
     .mockReturnValue(true);
-  const resolvePliteRange = vi
-    .spyOn(ReactEditor, 'resolvePliteRange')
+  const resolveRange = vi
+    .spyOn(ReactEditor, 'resolveRange')
     .mockReturnValue(nextSelection);
 
   const commits: Array<NonNullable<ReturnType<typeof editor.read.lastCommit>>> =
@@ -896,7 +896,7 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
     });
 
     expect(hasSelectableTarget).toHaveBeenCalledTimes(2);
-    expect(resolvePliteRange).toHaveBeenCalledOnce();
+    expect(resolveRange).toHaveBeenCalledOnce();
     expect(inputController.preferModelSelectionForInputRef.current).toBe(false);
     expect(editorGetSelection(editor)).toEqual(nextSelection);
     expect(commits).toHaveLength(1);
@@ -910,7 +910,7 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
 
 test('projected DOM selection import publishes its anchor selection commit', () => {
   const runtime = createCoreEditor({
-    extensions: [react({ dom: dom() }), projectedSelectionSchema],
+    plugins: [react({ dom: dom() }), projectedSelectionSchema],
     initialValue: {
       children: [
         { type: 'paragraph', children: [{ text: 'Before' }] },
@@ -966,14 +966,14 @@ test('projected DOM selection import publishes its anchor selection commit', () 
     }),
   });
 
-  editorElement.setAttribute('data-plite-editor', 'true');
-  ownerElement.setAttribute('data-plite-node', 'element');
-  ownerElement.setAttribute('data-plite-path', '1');
-  slotElement.setAttribute('data-plite-content-root-slot', 'body');
-  slotElement.setAttribute('data-plite-content-root-owner-path', '1');
-  slotElement.setAttribute('data-plite-content-root-owner-root', 'main');
-  childEditorElement.setAttribute('data-plite-editor', 'true');
-  childEditorElement.setAttribute('data-plite-root', PROJECTED_SELECTION_ROOT);
+  editorElement.setAttribute('data-editor', 'true');
+  ownerElement.setAttribute('data-editor-node', 'element');
+  ownerElement.setAttribute('data-editor-path', '1');
+  slotElement.setAttribute('data-editor-content-root-slot', 'body');
+  slotElement.setAttribute('data-editor-content-root-owner-path', '1');
+  slotElement.setAttribute('data-editor-content-root-owner-root', 'main');
+  childEditorElement.setAttribute('data-editor', 'true');
+  childEditorElement.setAttribute('data-editor-root', PROJECTED_SELECTION_ROOT);
   childEditorElement.append(childTextNode);
   slotElement.append(childEditorElement);
   ownerElement.append(slotElement);
@@ -984,7 +984,7 @@ test('projected DOM selection import publishes its anchor selection commit', () 
 
   vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(root);
-  vi.spyOn(ReactEditor, 'resolvePliteRange').mockImplementation(
+  vi.spyOn(ReactEditor, 'resolveRange').mockImplementation(
     (_editor, domRange) => {
       const startContainer =
         'startContainer' in domRange
@@ -1186,7 +1186,7 @@ test('model-owned collapsed programmatic selectionchange skips DOM range resolut
     throw new Error('Expected document selection');
   }
 
-  editorElement.setAttribute('data-plite-editor', 'true');
+  editorElement.setAttribute('data-editor', 'true');
   editorElement.append(textNode);
   document.body.append(editorElement);
 
@@ -1194,7 +1194,7 @@ test('model-owned collapsed programmatic selectionchange skips DOM range resolut
 
   vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-  const resolvePliteRange = vi.spyOn(ReactEditor, 'resolvePliteRange');
+  const resolveRange = vi.spyOn(ReactEditor, 'resolveRange');
 
   try {
     applyEditableDOMSelectionChange({
@@ -1206,7 +1206,7 @@ test('model-owned collapsed programmatic selectionchange skips DOM range resolut
       rerunOnDirtyNodeMap: vi.fn(),
     });
 
-    expect(resolvePliteRange).not.toHaveBeenCalled();
+    expect(resolveRange).not.toHaveBeenCalled();
     expect(inputController.preferModelSelectionForInputRef.current).toBe(true);
     expect(inputController.state.selectionSource).toBe('model-owned');
   } finally {
@@ -1245,9 +1245,9 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
   });
 
   editorElement.setAttribute('contenteditable', 'true');
-  editorElement.setAttribute('data-plite-editor', 'true');
-  staleTextHost.setAttribute('data-plite-node', 'text');
-  staleTextHost.setAttribute('data-plite-path', '0,0');
+  editorElement.setAttribute('data-editor', 'true');
+  staleTextHost.setAttribute('data-editor-node', 'text');
+  staleTextHost.setAttribute('data-editor-path', '0,0');
   markEditable(editorElement);
   markEditable(staleTextHost);
   staleTextHost.append(staleTextNode);
@@ -1281,7 +1281,7 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
 
   vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(fakeRoot);
-  const resolvePliteRange = vi.spyOn(ReactEditor, 'resolvePliteRange');
+  const resolveRange = vi.spyOn(ReactEditor, 'resolveRange');
 
   try {
     applyEditableDOMSelectionChange({
@@ -1293,7 +1293,7 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
       rerunOnDirtyNodeMap: vi.fn(),
     });
 
-    expect(resolvePliteRange).not.toHaveBeenCalled();
+    expect(resolveRange).not.toHaveBeenCalled();
     expect(editorGetSelection(editor)).toEqual({
       kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
@@ -1344,9 +1344,9 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
   });
 
   editorElement.setAttribute('contenteditable', 'true');
-  editorElement.setAttribute('data-plite-editor', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
+  editorElement.setAttribute('data-editor', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
   markEditable(editorElement);
   markEditable(textHost);
   textHost.append(textNode);
@@ -1368,7 +1368,7 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
 
   vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
-  const resolvePliteRange = vi.spyOn(ReactEditor, 'resolvePliteRange');
+  const resolveRange = vi.spyOn(ReactEditor, 'resolveRange');
 
   try {
     applyEditableDOMSelectionChange({
@@ -1380,7 +1380,7 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
       rerunOnDirtyNodeMap: vi.fn(),
     });
 
-    expect(resolvePliteRange).not.toHaveBeenCalled();
+    expect(resolveRange).not.toHaveBeenCalled();
     expect(editorGetSelection(editor)).toEqual({
       kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
@@ -1429,7 +1429,7 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
   });
 
   editorElement.setAttribute('contenteditable', 'true');
-  editorElement.setAttribute('data-plite-editor', 'true');
+  editorElement.setAttribute('data-editor', 'true');
   markEditable(editorElement);
   shadowRoot.append(shadowText);
   host.append(editorElement);
@@ -1459,7 +1459,7 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
 
   vi.spyOn(ReactEditor, 'assertDOMNode').mockReturnValue(editorElement);
   vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(fakeRoot);
-  const resolvePliteRange = vi.spyOn(ReactEditor, 'resolvePliteRange');
+  const resolveRange = vi.spyOn(ReactEditor, 'resolveRange');
 
   try {
     applyEditableDOMSelectionChange({
@@ -1471,7 +1471,7 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
       rerunOnDirtyNodeMap: vi.fn(),
     });
 
-    expect(resolvePliteRange).not.toHaveBeenCalled();
+    expect(resolveRange).not.toHaveBeenCalled();
     expect(editorGetSelection(editor)).toEqual({
       kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
@@ -1860,7 +1860,7 @@ test('native insertText preserves explicit model-owned input guards', () => {
     'composition',
     'internal-control',
     'model-command',
-    'partial-dom-backed',
+    'viewport-backed',
     'repair-induced',
   ] as const) {
     const inputController = createEditableInputController({

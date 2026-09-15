@@ -18,11 +18,10 @@ describe('core static renderStaticHtml mark rendering', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
-    expect(html).toContain(
-      '<span data-plite-leaf="true"><strong><span data-plite-string="true">bold</span></strong></span>'
-    );
+    expect(html).toContain('<span><strong><span>bold</span></strong></span>');
   });
 
   it('renders italic text', async () => {
@@ -40,11 +39,10 @@ describe('core static renderStaticHtml mark rendering', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
-    expect(html).toContain(
-      '<span data-plite-leaf="true"><em><span data-plite-string="true">italic</span></em></span>'
-    );
+    expect(html).toContain('<span><em><span>italic</span></em></span>');
   });
 
   it('renders underlined text', async () => {
@@ -62,11 +60,10 @@ describe('core static renderStaticHtml mark rendering', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
-    expect(html).toContain(
-      '<span data-plite-leaf="true"><u><span data-plite-string="true">underlined</span></u></span>'
-    );
+    expect(html).toContain('<span><u><span>underlined</span></u></span>');
   });
 
   it('renders strikethrough text', async () => {
@@ -84,11 +81,10 @@ describe('core static renderStaticHtml mark rendering', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
-    expect(html).toContain(
-      '<span data-plite-leaf="true"><s><span data-plite-string="true">strikethrough</span></s></span>'
-    );
+    expect(html).toContain('<span><s><span>strikethrough</span></s></span>');
   });
 
   it('renders code text', async () => {
@@ -106,11 +102,10 @@ describe('core static renderStaticHtml mark rendering', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
-    expect(html).toContain(
-      '<span data-plite-leaf="true"><code><span data-plite-string="true">some code</span></code></span>'
-    );
+    expect(html).toContain('<span><code><span>some code</span></code></span>');
   });
 
   it('renders subscript text', async () => {
@@ -128,11 +123,10 @@ describe('core static renderStaticHtml mark rendering', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
-    expect(html).toContain(
-      '<span data-plite-leaf="true"><sub><span data-plite-string="true">subscripted</span></sub></span>'
-    );
+    expect(html).toContain('<span><sub><span>subscripted</span></sub></span>');
   });
 
   it('renders superscript text', async () => {
@@ -150,10 +144,11 @@ describe('core static renderStaticHtml mark rendering', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true"><sup><span data-plite-string="true">superscripted</span></sup></span>'
+      '<span><sup><span>superscripted</span></sup></span>'
     );
   });
 
@@ -172,10 +167,11 @@ describe('core static renderStaticHtml mark rendering', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true"><kbd><span data-plite-string="true">keyboard shortcut</span></kbd></span>'
+      '<span><kbd><span>keyboard shortcut</span></kbd></span>'
     );
   });
 
@@ -194,10 +190,11 @@ describe('core static renderStaticHtml mark rendering', () => {
     const html = await renderStaticHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
+      stripDataAttributes: true,
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true"><em><strong><span data-plite-string="true">bold and italic</span></strong></em></span>'
+      '<span><em><strong><span>bold and italic</span></strong></em></span>'
     );
   });
 });

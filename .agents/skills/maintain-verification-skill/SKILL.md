@@ -1,9 +1,9 @@
 ---
 name: maintain-verification-skill
-description: "Periodic pass that keeps a project's verification skill and feature map honest: parallel source readers per feature, one live session driving every feature, at most one PR of proven corrections. Use for /maintain-verification-skill or \"audit the verify skill\"."
+description: "Audit and repair an existing verification skill and feature inventory when requested."
 ---
 
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
+For platform-specific commands or delegation, read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md). Use the complete domain method below under current project scope and proof requirements.
 
 # Maintain a verification skill
 
@@ -30,6 +30,12 @@ The default denominator is the entire canonical feature inventory. Narrow it onl
 1. **Index hygiene.** Read the feature map README and glob its sibling files. Fix missing, extra, duplicate, or dead entries. Preserve a typed or generated inventory when it is already canonical; reconcile its generated view with the source owner.
 
 2. **Source wave.** One read-only subagent per feature file, launched concurrently. Each explains "how does this user-facing feature work?" from source, flags likely doc drift with citations, and returns one concise live-verification recipe. Children never drive the app and never edit files. Return shape: feature summary / source entry points / likely drift or none / one recipe.
+
+   For reference-product parity, migration fidelity, or a contradicted journey-completion claim, follow [journey coverage](references/journey-coverage.md). Discover retained capabilities from the complete reference journey and source contracts before accepting the existing inventory as complete. Carry its source-to-target proof mapping into reconciliation and the live pass; component receipts cannot close a missing journey.
+
+   For features backed by an external provider, also follow [interface coverage](references/interface-coverage.md). Compare the accepted outcome, provider contract, actual callers and observed external result independently. A legacy implementation can omit a supported operation; a local save can omit the promised provider write.
+
+   For OpenAPI 3, run `node scripts/check-interface-coverage.mjs --spec <openapi.json> --coverage <coverage.json> --tag '<exact API tag>' --require-reviewed` from this skill directory. The reference defines the register and the separate `--require-covered` product-proof check.
 
 3. **Reconcile.** Every feature file has a returned summary. Merge overlapping recipes into as few app states as practical. Spot-check cited drift; don't re-prove clean claims. Sweep recent churn for user-facing surfaces missing from the map — require a concrete source path before calling one missing.
 

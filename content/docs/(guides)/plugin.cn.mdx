@@ -8,7 +8,7 @@ update、rendering，或这些字段的必要组合。独立字段直接在创�
 app-owned 值才使用 terminal configuration。
 
 - [入门指南：组件](/docs/installation/plate-ui) - 添加插件到编辑器的说明
-- [PlatePlugin API](/docs/api/core/plate-plugin) - 创建插件的完整 API 参考
+- [Plugin API](/docs/api/core/plate-plugin) - 创建插件的完整 API 参考
 
 ## 基础插件配置
 
@@ -17,7 +17,7 @@ app-owned 值才使用 terminal configuration。
 最基本的插件配置只需一个`name`：
 
 ```ts
-const MyPlugin = definePlatePlugin("minimal", {});
+const MyPlugin = definePlugin("minimal", {});
 ```
 
 虽然这个插件目前没有任何功能，但它是更复杂配置的起点。
@@ -45,7 +45,7 @@ Schema 插件在 `schema` 下声明持久化文档身份和结构。React compon
 ```ts
 import { schema } from "platejs";
 
-const NoticePlugin = definePlatePlugin("noticeFeature", {
+const NoticePlugin = definePlugin("noticeFeature", {
   schema: {
     element: { ...schema.element.textBlock(), type: "notice" },
   },
@@ -57,7 +57,7 @@ const NoticePlugin = definePlatePlugin("noticeFeature", {
 ```ts
 import { schema } from "platejs";
 
-const NoticePlugin = definePlatePlugin("noticeFeature", {
+const NoticePlugin = definePlugin("noticeFeature", {
   component: NoticeElement,
   schema: {
     element: { ...schema.element.textBlock(), type: "notice" },
@@ -71,7 +71,7 @@ Plate 默认把每个非行内元素视为普通文档流中的块内容。结�
 声明 `blockContent: false`，而不是用该字段排除仍应可选择的块。
 
 ```ts
-const RowPlugin = definePlatePlugin("row", {
+const RowPlugin = definePlugin("row", {
   schema: {
     element: {
       ...schema.element.textBlock(),
@@ -97,7 +97,7 @@ editor.read.schema.isBlockContent(element);
 ```ts
 import { property, schema } from "platejs";
 
-const CustomLinkPlugin = definePlatePlugin("customLink", {
+const CustomLinkPlugin = definePlugin("customLink", {
   schema: {
     element: {
       content: schema.content.text({ default: "text", min: 1 }),
@@ -106,11 +106,11 @@ const CustomLinkPlugin = definePlatePlugin("customLink", {
   },
 });
 
-const CustomImagePlugin = definePlatePlugin("customImage", {
+const CustomImagePlugin = definePlugin("customImage", {
   schema: { element: { void: "block" } },
 });
 
-const CustomBoldPlugin = definePlatePlugin("customBold", {
+const CustomBoldPlugin = definePlugin("customBold", {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -139,16 +139,16 @@ HeadingPlugin.configure({
 
 完整规则列表和可用操作请见[插件规则指南](/docs/plugin-rules)。
 
-### 事件处理器
+### 事件处理器 [#event-handlers]
 
 插件的 `on` 字段同时管理 editor lifecycle 和 React DOM 事件。DOM handler
-接收 `PlatePluginContext & { event }` 对象。
+接收 `PluginContext & { event }` 对象。
 
 子项名称不重复 `on` 前缀。Lifecycle handler 使用 `commit`、`nodeChange`
 和 `textChange`；DOM handler 使用 `keyDown`、`paste` 和 `click`。
 
 ```ts showLineNumbers
-const ExamplePlugin = definePlatePlugin("example", {
+const ExamplePlugin = definePlugin("example", {
   on: {
     commit: ({ editor, snapshot }) => {
       console.info(editor, snapshot.children);
@@ -167,7 +167,7 @@ const ExamplePlugin = definePlatePlugin("example", {
 ```ts showLineNumbers
 import { PLUGINS, property, schema, target } from "platejs";
 
-const TextAlignPlugin = definePlatePlugin("textAlign", {
+const TextAlignPlugin = definePlugin("textAlign", {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       "text/html": {
@@ -240,7 +240,7 @@ export type CustomPluginState = {
   prefix: string;
 };
 
-const CustomPlugin = definePlatePlugin("custom", {
+const CustomPlugin = definePlugin("custom", {
   api: ({ store }) => ({
     getPrefix: () => store.get("prefix"),
   }),
@@ -266,23 +266,23 @@ editor.update.custom.insertPrefix();
 通用包代码可以通过 `editor.plugin(CustomPlugin).api.getPrefix()` 访问同一个
 immutable API object。
 
-### 原生 Plite 能力
+### 编辑器能力
 
-Plate 插件直接在插件根级声明 Plite 能力。使用 `readMiddleware`、`commands`、
-`corrections`、`stateFields`、`effectTypes`、`facetProviders`、
+Plate 插件直接在插件根级声明 Plate 能力。使用 `readMiddleware`、`commands`、
+`corrections`、`stateFields`、`effectTypes`、
 `contributions`、`on`、`activate` 和 `validate`，
 不再添加第二层 wrapper。
 
 ```ts showLineNumbers
 import { defineStateField } from "platejs";
-import { definePlatePlugin } from "platejs/react";
+import { definePlugin } from "platejs/react";
 
 const enabledField = defineStateField({
   initial: false,
   key: "customState.enabled",
 });
 
-const CustomStatePlugin = definePlatePlugin("customState", {
+const CustomStatePlugin = definePlugin("customState", {
   stateFields: [enabledField],
   read: ({ state }) => ({
     enabled: () => state.getField(enabledField),
@@ -300,9 +300,9 @@ const CustomStatePlugin = definePlatePlugin("customState", {
   constructor 无法访问的 shared factory 或前一阶段类型才使用 `.extend()`。
 </Callout>
 
-独立复用的 standalone Plite descriptor 使用从 `platejs` import 的
-`defineExtension`。详见
-[插件方法](/docs/plugin-methods#install-plite-capabilities)。
+独立复用的 standalone Plate descriptor 使用从 `platejs` import 的
+`definePlugin`。详见
+[插件方法](/docs/plugin-methods#commands)。
 
 ## 高级插件配置
 
@@ -315,7 +315,7 @@ type MyPluginState = {
   count: number;
 };
 
-const MyPlugin = definePlatePlugin("myPlugin", {
+const MyPlugin = definePlugin("myPlugin", {
   initialState: {
     count: 0,
   } satisfies MyPluginState,
@@ -358,7 +358,7 @@ const MyComponent = () => {
 使用插件对象声明所需依赖项。Plate 会递归安装依赖图，按插件名称去重，并在依赖插件之后加载当前插件。
 
 ```ts
-const MyPlugin = definePlatePlugin("myPlugin", {
+const MyPlugin = definePlugin("myPlugin", {
   dependencies: [ParagraphPlugin, ListPlugin],
 });
 ```
@@ -368,7 +368,7 @@ const MyPlugin = definePlatePlugin("myPlugin", {
 `enabled`属性允许您有条件地启用或禁用插件：
 
 ```ts
-const MyPlugin = definePlatePlugin("myPlugin", {
+const MyPlugin = definePlugin("myPlugin", {
   enabled: true, // 或false禁用
 });
 ```
@@ -379,7 +379,7 @@ const MyPlugin = definePlatePlugin("myPlugin", {
 能力依赖宿主：
 
 ```ts
-const CodeHighlightPlugin = definePlatePlugin("codeHighlight", {
+const CodeHighlightPlugin = definePlugin("codeHighlight", {
   dependencies: [CodeBlockPlugin],
 });
 
@@ -434,7 +434,7 @@ program，并返回 `{ key, attributes }[]`。`render.attributes` 与
 或转换已解码的 fragment。
 
 ```ts
-const HtmlCleanupPlugin = definePlatePlugin("htmlCleanup", {
+const HtmlCleanupPlugin = definePlugin("htmlCleanup", {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       "text/html": {
@@ -453,17 +453,17 @@ const HtmlCleanupPlugin = definePlatePlugin("htmlCleanup", {
 
 ## 类型化插件
 
-`definePlatePlugin` 会从 author object 推断一个精确 definition。通过带类型的
+`definePlugin` 会从 author object 推断一个精确 definition。通过带类型的
 `initialState` 值或 `satisfies` 固定 state contract；不要向 factory 传入调用方
 泛型。
 
-### 使用 definePlatePlugin
+### 使用 definePlugin
 
 推断后的 definition 会携带插件 name、state、API、read 和 update：
 
 ```ts
 import { property, schema } from "platejs";
-import { definePlatePlugin } from "platejs/react";
+import { definePlugin } from "platejs/react";
 
 export type SnippetPluginState = {
   language: string;
@@ -471,7 +471,7 @@ export type SnippetPluginState = {
   syntaxPopularFirst: boolean;
 };
 
-export const SnippetPlugin = definePlatePlugin("snippet", {
+export const SnippetPlugin = definePlugin("snippet", {
   api: ({ store }) => ({
     getLanguage: () => store.get("language"),
     getSyntaxState: () => store.get("syntax"),
@@ -523,4 +523,4 @@ editor.update.snippet.insertCurrentLanguage();
 
 ## 另请参阅
 
-更多插件选项请见[PlatePlugin API](/docs/api/core/plate-plugin)。
+更多插件选项请见[Plugin API](/docs/api/core/plate-plugin)。

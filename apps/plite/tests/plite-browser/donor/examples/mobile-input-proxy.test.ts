@@ -1,7 +1,7 @@
 import { expect, type Locator, test } from '@playwright/test';
 import {
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 
 const mobileProxyProjects = new Set(['mobile-webkit']);
@@ -85,7 +85,7 @@ test.describe('synthetic mobile beforeinput proxy', () => {
   });
 
   test('applies beforeinput-only paragraph insertion once', async ({ page }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/plaintext', {
       ready: { editor: 'visible' },
     });
@@ -139,7 +139,7 @@ test.describe('synthetic mobile beforeinput proxy', () => {
   test('applies repeated beforeinput-only Backspace once per target range', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/plaintext', {
       ready: { editor: 'visible' },
     });

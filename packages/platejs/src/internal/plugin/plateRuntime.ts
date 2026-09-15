@@ -1,10 +1,17 @@
-import type { Editor as PliteEditor } from '../../facade';
+import type {
+  DecorationAttributes,
+  Editor as RuntimeEditor,
+} from '../../facade';
 import { getEditorRuntimeOwner } from '../../facade';
 import type { AnyBasePlugin, EditorShortcut } from '../../lib';
 import type { ResolvedInputRulesMeta } from '../../lib/plugins/input-rules/types';
 import type { CompiledPlateShortcut } from './compilePlateShortcuts';
 
 export type PlatePluginCache = Readonly<{
+  contentAttributes: Readonly<{
+    editable: DecorationAttributes;
+    readOnly: DecorationAttributes;
+  }>;
   decorate: readonly string[];
   on: Readonly<{
     nodeChange: readonly string[];
@@ -65,8 +72,8 @@ export type PlateRuntime = Readonly<{
 
 const CANDIDATE_PLATE_RUNTIMES = new WeakMap<object, PlateRuntime>();
 
-export const getPlateRuntimeOwner = (editor: object): PliteEditor =>
-  getEditorRuntimeOwner(editor as PliteEditor);
+export const getPlateRuntimeOwner = (editor: object): RuntimeEditor =>
+  getEditorRuntimeOwner(editor as RuntimeEditor);
 
 export const clearPlateRuntimeCandidate = (editor: object) => {
   CANDIDATE_PLATE_RUNTIMES.delete(getPlateRuntimeOwner(editor));

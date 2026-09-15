@@ -23,7 +23,7 @@ const initialValue = [
 describe('authored content movement', () => {
   it('carries accepted typing through a pending root move and its rejection', () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: {
         children: initialValue,
         roots: { note: [paragraph('Note')] },
@@ -54,7 +54,7 @@ describe('authored content movement', () => {
     ]);
     assert.deepEqual(view.read.root('note'), [paragraph('Note')]);
     const reopened = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: JSON.parse(JSON.stringify(source.read.value())),
     });
     assert.deepEqual(reopened.read.children(), source.read.children());
@@ -63,7 +63,7 @@ describe('authored content movement', () => {
   it('refuses to reject a placement superseded by an accepted move', () => {
     let authorId = 'alice';
     const source = createEditor({
-      extensions: [authored({ authorId: () => authorId })],
+      plugins: [authored({ authorId: () => authorId })],
       initialValue,
     });
     const view = createEditorView(source, { authored: proposal });
@@ -88,7 +88,7 @@ describe('authored content movement', () => {
   for (const action of ['accept', 'reject'] as const) {
     it(`retains a range across a root move, reload and ${action}`, () => {
       const source = createEditor({
-        extensions: [history(), authored({ authorId: 'alice' })],
+        plugins: [history(), authored({ authorId: 'alice' })],
         initialValue: {
           children: initialValue,
           roots: { note: [paragraph('Note')] },
@@ -114,7 +114,7 @@ describe('authored content movement', () => {
       assert.equal(view.read.selection(), null);
       const bornAfterMove = view.anchor(movedRange, { deletion: 'drop' });
       const reopened = createEditor({
-        extensions: [authored({ authorId: 'alice' })],
+        plugins: [authored({ authorId: 'alice' })],
         initialValue: JSON.parse(JSON.stringify(source.read.value())),
       });
       const reopenedView = createEditorView(reopened, { authored: proposal });
@@ -163,7 +163,7 @@ describe('authored content movement', () => {
     for (const typingFirst of [false, true]) {
       it(`${action}s a compound move with typing ${typingFirst ? 'before' : 'after'} it through reload`, () => {
         const source = createEditor({
-          extensions: [authored({ authorId: 'alice' })],
+          plugins: [authored({ authorId: 'alice' })],
           initialValue,
         });
         const view = createEditorView(source, { authored: proposal });
@@ -179,7 +179,7 @@ describe('authored content movement', () => {
           }
         });
         const reopened = createEditor({
-          extensions: [authored({ authorId: 'alice' })],
+          plugins: [authored({ authorId: 'alice' })],
           initialValue: JSON.parse(JSON.stringify(source.read.value())),
         });
         const reopenedView = createEditorView(reopened, { authored: proposal });
@@ -207,7 +207,7 @@ describe('authored content movement', () => {
             : range(0)
         );
         const final = createEditor({
-          extensions: [authored({ authorId: 'alice' })],
+          plugins: [authored({ authorId: 'alice' })],
           initialValue: JSON.parse(JSON.stringify(reopened.read.value())),
         });
         assert.deepEqual(final.read.children(), reopened.read.children());
@@ -220,7 +220,7 @@ describe('authored content movement', () => {
   for (const typingFirst of [false, true]) {
     it(`retains identity through a compound move with typing ${typingFirst ? 'before' : 'after'} it`, () => {
       const source = createEditor({
-        extensions: [history(), authored({ authorId: 'alice' })],
+        plugins: [history(), authored({ authorId: 'alice' })],
         initialValue,
       });
       const view = createEditorView(source, { authored: proposal });
@@ -242,7 +242,7 @@ describe('authored content movement', () => {
       assert.deepEqual(node.resolve(), [2]);
       assert.equal(view.read.authored.changes().items[0].revision, 1);
       const reloaded = createEditor({
-        extensions: [authored({ authorId: 'alice' })],
+        plugins: [authored({ authorId: 'alice' })],
         initialValue: JSON.parse(JSON.stringify(source.read.value())),
       });
       const reopened = createEditorView(reloaded, { authored: proposal });
@@ -266,7 +266,7 @@ describe('authored content movement', () => {
 
   it('preserves an independent accepted edit when rejecting a pending move', () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue,
     });
     const view = createEditorView(source, { authored: proposal });
@@ -299,7 +299,7 @@ describe('authored content movement', () => {
 
   it('moves a pending edit with its accepted containing block', () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue,
     });
     const view = createEditorView(source, { authored: proposal });
@@ -340,7 +340,7 @@ describe('authored content movement', () => {
   ]) {
     it(`retains range identity when moving block ${from} to ${to} and undoing`, () => {
       const source = createEditor({
-        extensions: [history(), authored({ authorId: 'alice' })],
+        plugins: [history(), authored({ authorId: 'alice' })],
         initialValue,
       });
       const view = createEditorView(source, { authored: proposal });
@@ -361,7 +361,7 @@ describe('authored content movement', () => {
   for (const action of ['accept', 'reject'] as const) {
     it(`preserves moved range identity through reload and ${action}`, () => {
       const source = createEditor({
-        extensions: [authored({ authorId: 'alice' })],
+        plugins: [authored({ authorId: 'alice' })],
         initialValue,
       });
       const view = createEditorView(source, { authored: proposal });
@@ -369,7 +369,7 @@ describe('authored content movement', () => {
       view.update.nodes.move({ at: [0], to: [2] });
       const saved = JSON.parse(JSON.stringify(view.anchor.save(anchor)));
       const reloaded = createEditor({
-        extensions: [authored({ authorId: 'alice' })],
+        plugins: [authored({ authorId: 'alice' })],
         initialValue: JSON.parse(JSON.stringify(source.read.value())),
       });
       const reopened = createEditorView(reloaded, { authored: proposal });
@@ -397,7 +397,7 @@ describe('authored content movement', () => {
   it('records the pending placement as a dependency of another authors edit', () => {
     let authorId = 'alice';
     const source = createEditor({
-      extensions: [authored({ authorId: () => authorId })],
+      plugins: [authored({ authorId: () => authorId })],
       initialValue,
     });
     const view = createEditorView(source, { authored: proposal });

@@ -63,7 +63,7 @@ const redo = (editor: ReturnType<typeof createHistoryEditor>) => {
 };
 
 const createHistoryEditor = () =>
-  createEditor({ extensions: [history()] as const });
+  createEditor({ plugins: [history()] as const });
 
 const assertUndoRedoRoundTrip = (
   editor: ReturnType<typeof createHistoryEditor>,
@@ -95,7 +95,7 @@ describe('plite-history seeded soak contract', () => {
     () => {
       const random = createSeededRandom(0x20_26_09_03);
       const editor = createEditor({
-        extensions: [history({ maxDepth: 200, newBatchDelay: 0 })],
+        plugins: [history({ maxDepth: 200, newBatchDelay: 0 })],
         initialValue: [paragraph('persistent-anchor-history')],
       });
       const anchor = editor.anchor(
@@ -177,7 +177,7 @@ describe('plite-history seeded soak contract', () => {
 
   it('queues remote bursts without eagerly walking deep history', () => {
     const editor = createEditor({
-      extensions: [history({ maxDepth: 1000 })],
+      plugins: [history({ maxDepth: 1000 })],
       initialValue: [paragraph('body')],
     });
 

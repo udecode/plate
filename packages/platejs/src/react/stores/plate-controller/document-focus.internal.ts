@@ -62,7 +62,7 @@ export function bindDocumentFocus(
   const focus = () => {
     const root = element.getRootNode() as Document | ShadowRoot;
     const active = root.activeElement;
-    if (active?.closest('[data-plite-editor]') !== element) return;
+    if (active?.closest('[data-editor]') !== element) return;
     owner.focus(editor, element);
     onFocus();
   };

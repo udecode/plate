@@ -7,7 +7,21 @@ import {
   PencilLineIcon,
   XIcon,
 } from 'lucide-react';
-import { type NodeKey, RangeApi } from 'platejs';
+import {
+  type NodeKey,
+  type Path,
+  PathApi,
+  PointApi,
+  type Range,
+  RangeApi,
+} from 'platejs';
+import type {
+  AuthoredChange,
+  AuthoredChangeDetails,
+  AuthoredChangePart,
+  AuthoredResult,
+} from 'platejs/authored';
+import { DefaultAuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   type EditableSiblingProps,
@@ -15,10 +29,14 @@ import {
   type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
   useEditor,
-  useEditorPlugin,
   useEditorSelector,
   usePluginStore,
 } from 'platejs/react';
+import {
+  SuggestionPlugin,
+  useActiveSuggestion,
+  useSuggestionChanges,
+} from 'platejs/suggestion/react';
 import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -38,11 +56,6 @@ import {
   FloatingPopoverAnchor,
   FloatingPopoverContent,
 } from '@/registry/components/editor/floating-popover';
-import {
-  type SuggestionDiscussionReview,
-  suggestionPlugin,
-  useSuggestionDiscussionReviews,
-} from '@/registry/components/editor/suggestion';
 
 type DiscussionItem =
   | Readonly<{
@@ -52,11 +65,11 @@ type DiscussionItem =
       kind: 'comment';
     }>
   | Readonly<{
-      blockIndices: readonly number[];
+      change: AuthoredChange;
       createdAt: Date;
       id: string;
       kind: 'suggestion';
-      review: SuggestionDiscussionReview;
+      range: Range | null;
       threadIds: readonly string[];
     }>;
 
@@ -79,8 +92,7 @@ type DiscussionTarget = Readonly<{
 }>;
 
 type DiscussionSnapshot = Readonly<{
-  groupsByKey: ReadonlyMap<NodeKey, DiscussionGroup>;
-  items: readonly DiscussionItem[];
+  revision: number;
   target: DiscussionTarget | null;
 }>;
 
@@ -91,15 +103,30 @@ const EMPTY_BLOCK_SNAPSHOT: DiscussionBlockSnapshot = Object.freeze({
   totalCount: 0,
 });
 const EMPTY_DISCUSSION_SNAPSHOT: DiscussionSnapshot = Object.freeze({
-  groupsByKey: new Map(),
-  items: Object.freeze([]),
+  revision: 0,
   target: null,
 });
+const DISCUSSION_PAGE_SIZE = 20;
 
 const sortDiscussionItems = (items: readonly DiscussionItem[]) =>
   items.toSorted(
     (left, right) => left.createdAt.getTime() - right.createdAt.getTime()
   );
+
+const sameSuggestionChanges = (
+  left: readonly AuthoredChange[] | undefined,
+  right: readonly AuthoredChange[]
+) =>
+  left?.length === right.length &&
+  left.every((change, index) => {
+    const current = right[index];
+
+    return (
+      current?.id === change.id &&
+      current.revision === change.revision &&
+      current.status === change.status
+    );
+  });
 
 const sameBlockSnapshot = (
   left: DiscussionBlockSnapshot | undefined,
@@ -114,14 +141,107 @@ const createDiscussionStore = () => {
   const listeners = new Set<() => void>();
   const blockListeners = new Map<NodeKey, Set<() => void>>();
   const blockTriggers = new Map<NodeKey, HTMLElement>();
-  let blockSnapshots = new Map<NodeKey, DiscussionBlockSnapshot>();
+  const blockSnapshots = new Map<NodeKey, DiscussionBlockSnapshot>();
+  let commentBlocks = new Map<
+    NodeKey,
+    Readonly<{
+      blockIndex: number;
+      items: ReadonlyArray<Extract<DiscussionItem, { kind: 'comment' }>>;
+    }>
+  >();
+  let commentsById = new Map<
+    string,
+    Extract<DiscussionItem, { kind: 'comment' }>
+  >();
+  let notifyQueued = false;
   let prepareSelection: (() => void) | null = null;
+  const suggestionBlocks = new Map<
+    NodeKey,
+    Readonly<{
+      blockIndex: number;
+      changes: readonly AuthoredChange[];
+    }>
+  >();
+  const suggestionLocations = new Map<string, Map<NodeKey, AuthoredChange>>();
+  let suggestionThreads = new Map<string, readonly string[]>();
   let snapshot = EMPTY_DISCUSSION_SNAPSHOT;
 
   const notifyBlocks = (keys: ReadonlySet<NodeKey>) => {
     keys.forEach((key) => {
       blockListeners.get(key)?.forEach((listener) => listener());
     });
+  };
+  const notify = () => {
+    if (notifyQueued) return;
+    notifyQueued = true;
+    queueMicrotask(() => {
+      notifyQueued = false;
+      listeners.forEach((listener) => listener());
+    });
+  };
+  const getGroup = (blockKey: NodeKey): DiscussionGroup | undefined => {
+    const comments = commentBlocks.get(blockKey);
+    const suggestions = suggestionBlocks.get(blockKey);
+    const items: DiscussionItem[] = [
+      ...(comments?.items ?? []),
+      ...(suggestions?.changes.map((change): DiscussionItem => ({
+        change,
+        createdAt: new Date(change.createdAt),
+        id: change.id,
+        kind: 'suggestion',
+        range: change.ranges[0] ?? null,
+        threadIds: suggestionThreads.get(change.id) ?? [],
+      })) ?? []),
+    ];
+
+    if (items.length === 0) return undefined;
+
+    return {
+      blockIndex: suggestions?.blockIndex ?? comments?.blockIndex ?? 0,
+      blockKey,
+      items: sortDiscussionItems(items),
+    };
+  };
+  const readBlockSnapshot = (blockKey: NodeKey): DiscussionBlockSnapshot => {
+    const group = getGroup(blockKey);
+    if (!group) return EMPTY_BLOCK_SNAPSHOT;
+
+    return {
+      active: snapshot.target?.blockKey === blockKey,
+      hasComments: group.items.some(
+        (item) =>
+          item.kind === 'comment' ||
+          (item.kind === 'suggestion' && item.threadIds.length > 0)
+      ),
+      hasSuggestions: group.items.some(({ kind }) => kind === 'suggestion'),
+      totalCount: group.items.reduce(
+        (count, item) =>
+          count + 1 + (item.kind === 'suggestion' ? item.threadIds.length : 0),
+        0
+      ),
+    };
+  };
+  const publishBlocks = (keys: ReadonlySet<NodeKey>) => {
+    const changedKeys = new Set<NodeKey>();
+
+    keys.forEach((key) => {
+      const previous = blockSnapshots.get(key);
+      const next = readBlockSnapshot(key);
+
+      if (next === EMPTY_BLOCK_SNAPSHOT) blockSnapshots.delete(key);
+      else if (previous && sameBlockSnapshot(previous, next)) return;
+      else blockSnapshots.set(key, next);
+      if (previous !== next) changedKeys.add(key);
+    });
+    notifyBlocks(changedKeys);
+    snapshot = {
+      revision: snapshot.revision + 1,
+      target:
+        snapshot.target && !getGroup(snapshot.target.blockKey)
+          ? null
+          : snapshot.target,
+    };
+    notify();
   };
   const publishTarget = (target: DiscussionTarget | null) => {
     if (snapshot.target === target) return;
@@ -158,15 +278,72 @@ const createDiscussionStore = () => {
     getBlockTrigger(key: NodeKey) {
       return blockTriggers.get(key) ?? null;
     },
+    getComment(id: string) {
+      return commentsById.get(id) ?? null;
+    },
+    getGroup,
     getSnapshot: () => snapshot,
+    getSuggestion(id: string) {
+      const location = suggestionLocations.get(id)?.values().next().value;
+
+      return location
+        ? ({
+            change: location,
+            createdAt: new Date(location.createdAt),
+            id: location.id,
+            kind: 'suggestion',
+            range: location.ranges[0] ?? null,
+            threadIds: suggestionThreads.get(location.id) ?? [],
+          } satisfies Extract<DiscussionItem, { kind: 'suggestion' }>)
+        : null;
+    },
     selectBlock(blockKey: NodeKey, anchor: HTMLElement) {
-      if (!blockSnapshots.has(blockKey) || !prepareSelection) return;
+      if (!getGroup(blockKey) || !prepareSelection) return;
 
       prepareSelection();
 
       publishTarget(
         snapshot.target?.blockKey === blockKey ? null : { anchor, blockKey }
       );
+    },
+    removeBlock(blockKey: NodeKey) {
+      const previous = suggestionBlocks.get(blockKey);
+      if (!previous) return;
+      suggestionBlocks.delete(blockKey);
+      previous.changes.forEach((change) => {
+        const locations = suggestionLocations.get(change.id);
+        locations?.delete(blockKey);
+        if (locations?.size === 0) suggestionLocations.delete(change.id);
+      });
+      publishBlocks(new Set([blockKey]));
+    },
+    setBlockSuggestions(
+      blockKey: NodeKey,
+      blockIndex: number,
+      changes: readonly AuthoredChange[]
+    ) {
+      const previous = suggestionBlocks.get(blockKey);
+      if (
+        previous?.blockIndex === blockIndex &&
+        sameSuggestionChanges(previous.changes, changes)
+      ) {
+        return;
+      }
+      previous?.changes.forEach((change) => {
+        const locations = suggestionLocations.get(change.id);
+        locations?.delete(blockKey);
+        if (locations?.size === 0) suggestionLocations.delete(change.id);
+      });
+      suggestionBlocks.set(blockKey, { blockIndex, changes });
+      changes.forEach((change) => {
+        const locations =
+          suggestionLocations.get(change.id) ??
+          new Map<NodeKey, AuthoredChange>();
+
+        locations.set(blockKey, change);
+        suggestionLocations.set(change.id, locations);
+      });
+      publishBlocks(new Set([blockKey]));
     },
     subscribe: (listener: () => void) => {
       listeners.add(listener);
@@ -194,83 +371,39 @@ const createDiscussionStore = () => {
         blockTriggers.delete(key);
       }
     },
-    update(editor: Editor, items: readonly DiscussionItem[]) {
-      const grouped = new Map<
+    update(
+      currentEditor: Editor,
+      items: ReadonlyArray<Extract<DiscussionItem, { kind: 'comment' }>>,
+      threads: ReadonlyMap<string, readonly string[]>
+    ) {
+      const previousKeys = new Set(commentBlocks.keys());
+      const nextBlocks = new Map<
         NodeKey,
-        { blockIndex: number; items: DiscussionItem[] }
+        {
+          blockIndex: number;
+          items: Array<Extract<DiscussionItem, { kind: 'comment' }>>;
+        }
       >();
-
+      commentsById = new Map(items.map((item) => [item.id, item]));
       items.forEach((item) => {
         item.blockIndices.forEach((blockIndex) => {
-          const blockKey = editor.key([blockIndex]);
-
+          const blockKey = currentEditor.key([blockIndex]);
           if (!blockKey) return;
+          const block = nextBlocks.get(blockKey);
 
-          const group = grouped.get(blockKey);
-
-          if (group) {
-            group.items.push(item);
-          } else {
-            grouped.set(blockKey, {
-              blockIndex,
-              items: [item],
-            });
-          }
+          if (block) block.items.push(item);
+          else nextBlocks.set(blockKey, { blockIndex, items: [item] });
         });
       });
-
-      const target =
-        snapshot.target && grouped.has(snapshot.target.blockKey)
-          ? snapshot.target
-          : null;
-      const changedKeys = new Set<NodeKey>();
-      const nextBlockSnapshots = new Map<NodeKey, DiscussionBlockSnapshot>();
-      const groups = [...grouped]
-        .map(([blockKey, group]): DiscussionGroup => {
-          const nextBlockSnapshot: DiscussionBlockSnapshot = {
-            active: target?.blockKey === blockKey,
-            hasComments: group.items.some(({ kind }) => kind === 'comment'),
-            hasSuggestions: group.items.some(
-              ({ kind }) => kind === 'suggestion'
-            ),
-            totalCount: group.items.length,
-          };
-          const previousBlockSnapshot = blockSnapshots.get(blockKey);
-          const blockSnapshot =
-            previousBlockSnapshot &&
-            sameBlockSnapshot(previousBlockSnapshot, nextBlockSnapshot)
-              ? previousBlockSnapshot
-              : nextBlockSnapshot;
-
-          nextBlockSnapshots.set(blockKey, blockSnapshot);
-          if (blockSnapshot !== previousBlockSnapshot) {
-            changedKeys.add(blockKey);
-          }
-
-          return {
-            blockIndex: group.blockIndex,
-            blockKey,
-            items: sortDiscussionItems(group.items),
-          };
-        })
-        .toSorted((left, right) => left.blockIndex - right.blockIndex);
-
-      blockSnapshots.forEach((_, blockKey) => {
-        if (!nextBlockSnapshots.has(blockKey)) changedKeys.add(blockKey);
-      });
-
-      const groupsByKey = new Map(
-        groups.map((group) => [group.blockKey, group] as const)
+      commentBlocks = nextBlocks;
+      suggestionThreads = new Map(threads);
+      publishBlocks(
+        new Set([
+          ...previousKeys,
+          ...commentBlocks.keys(),
+          ...suggestionBlocks.keys(),
+        ])
       );
-
-      blockSnapshots = nextBlockSnapshots;
-      snapshot = {
-        groupsByKey,
-        items,
-        target,
-      };
-      listeners.forEach((listener) => listener());
-      notifyBlocks(changedKeys);
     },
   };
 };
@@ -289,14 +422,11 @@ const useDiscussionStore = () => {
 
 const useDiscussionController = () => {
   const editor = useEditor();
-  const { api: comments } = useEditorPlugin(CommentsPlugin);
+  const { api: comments } = useEditor().plugin(CommentsPlugin);
   const visibleThreadIds = useVisibleCommentThreadIds();
-  const suggestions = useSuggestionDiscussionReviews();
   const [store] = React.useState(createDiscussionStore);
   React.useEffect(() => {
     const { api } = editor.plugin(CommentsPlugin);
-    const suggestionThreads = new Map<string, string[]>();
-    const commentItems = new Map<string, DiscussionItem>();
     const locate = (id: string, thread = comments.getThread(id)) => {
       const range = api.range(id);
       if (
@@ -319,59 +449,33 @@ const useDiscussionController = () => {
         kind: 'comment' as const,
       };
     };
-    visibleThreadIds.forEach((id) => {
-      const thread = comments.getThread(id);
-      if (thread?.target.type === 'suggestion') {
-        const ids = suggestionThreads.get(thread.target.id) ?? [];
-        ids.push(id);
-        suggestionThreads.set(thread.target.id, ids);
-      } else if (thread) {
-        const item = locate(id, thread);
-        if (item) commentItems.set(id, item);
-      }
-    });
-    const suggestionItems = suggestions.map((review): DiscussionItem => ({
-      blockIndices: review.blockIndices,
-      createdAt: review.createdAt,
-      id: review.suggestionId,
-      kind: 'suggestion',
-      review,
-      threadIds: suggestionThreads.get(review.suggestionId) ?? [],
-    }));
-    const publish = () =>
-      store.update(editor, [...commentItems.values(), ...suggestionItems]);
-    const unsubscribe = api.subscribe(({ ids }) => {
-      let changed = false;
-      ids.forEach((id) => {
-        const previous = commentItems.get(id);
-        const next = locate(id);
-        if (
-          previous?.blockIndices.length === next?.blockIndices.length &&
-          previous?.blockIndices.every(
-            (blockIndex, index) => blockIndex === next?.blockIndices[index]
-          )
-        ) {
+    const publish = () => {
+      const suggestionThreads = new Map<string, string[]>();
+      const commentItems: Array<Extract<DiscussionItem, { kind: 'comment' }>> =
+        [];
+      const visible = new Set(visibleThreadIds);
+
+      comments.getThreads().forEach((thread) => {
+        if (thread.resolved) return;
+        if (thread.target.type === 'change') {
+          const ids = suggestionThreads.get(thread.target.id) ?? [];
+
+          ids.push(thread.id);
+          suggestionThreads.set(thread.target.id, ids);
+
           return;
         }
-        if (next) commentItems.set(id, next);
-        else commentItems.delete(id);
-        changed = true;
+        if (!visible.has(thread.id)) return;
+        const item = locate(thread.id, thread);
+        if (item) commentItems.push(item);
       });
-      if (changed) publish();
-    });
+      store.update(editor, commentItems, suggestionThreads);
+    };
+    const unsubscribe = api.subscribe(publish);
+
     publish();
     return unsubscribe;
-  }, [comments, editor, store, suggestions, visibleThreadIds]);
-
-  React.useEffect(() => {
-    store.setPrepareSelection(() => {
-      comments.cancel();
-      editor.plugin(CommentsPlugin).api.setActive([]);
-      editor.plugin(suggestionPlugin).store.set({ activeId: null });
-    });
-
-    return () => store.setPrepareSelection(null);
-  }, [comments, editor, store]);
+  }, [comments, editor, store, visibleThreadIds]);
 
   return store;
 };
@@ -386,34 +490,286 @@ function DiscussionCard({ item }: { item: DiscussionItem }) {
   return item.kind === 'comment' ? (
     <CommentThreadCard id={item.id} />
   ) : (
-    <SuggestionDiscussionCard review={item.review} threadIds={item.threadIds} />
+    <SuggestionDiscussionCard
+      change={item.change}
+      createdAt={item.createdAt}
+      threadIds={item.threadIds}
+    />
   );
 }
 
-const getSuggestionSummaryItems = (text: string) => {
-  const items = text
-    .split('\n')
-    .map((item) => item.trim())
-    .filter(Boolean);
+const readContentText = (value: unknown): string => {
+  if (!value || typeof value !== 'object') return '';
+  const node = value as { children?: unknown; text?: unknown };
 
-  return items.length > 0 ? items : ['Line break'];
+  if (typeof node.text === 'string') return node.text;
+  if (!Array.isArray(node.children)) return '';
+
+  return node.children.map(readContentText).join('');
+};
+
+const contentText = (
+  content: Extract<AuthoredChangePart, { kind: 'content' }>['after']
+) => {
+  if (!content) return '';
+
+  return content.content.content.map(readContentText).join('\n');
+};
+
+const textPreview = (text: string) => {
+  const preview = text.trim();
+
+  return preview.length > 80 ? `${preview.slice(0, 77)}…` : preview;
+};
+
+const contentPreview = (
+  content: Extract<AuthoredChangePart, { kind: 'content' }>['after']
+) => textPreview(contentText(content));
+
+const insertionPartsAreAdjacent = (
+  editor: Editor,
+  left: Extract<AuthoredChangePart, { kind: 'content' }>,
+  right: Extract<AuthoredChangePart, { kind: 'content' }>
+) => {
+  if (left.action !== 'insert' || right.action !== 'insert') return false;
+  const leftLocation = left.after?.location;
+  const rightLocation = right.after?.location;
+
+  if (
+    left.after?.root !== right.after?.root ||
+    leftLocation?.kind !== 'range' ||
+    rightLocation?.kind !== 'range'
+  ) {
+    return false;
+  }
+
+  const [, leftEnd] = RangeApi.edges(leftLocation.range);
+  const [rightStart] = RangeApi.edges(rightLocation.range);
+  const afterLeft = editor.read.points.after(leftEnd);
+
+  return (
+    PointApi.equals(leftEnd, rightStart) ||
+    (!PathApi.equals(leftEnd.path, rightStart.path) &&
+      !!afterLeft &&
+      PointApi.equals(afterLeft, rightStart))
+  );
+};
+
+const formatPropertyName = (key: string) =>
+  `${key[0]?.toUpperCase() ?? ''}${key.slice(1)}`
+    .replaceAll(/[_-]+/g, ' ')
+    .replaceAll(/([a-z0-9])([A-Z])/g, '$1 $2');
+
+const formatPropertyValue = (value: unknown) => {
+  if (value === undefined) return 'none';
+  if (typeof value === 'boolean') return value ? 'on' : 'off';
+  if (typeof value === 'string' || typeof value === 'number') {
+    return String(value);
+  }
+
+  return JSON.stringify(value);
+};
+
+const describeSuggestionPart = (
+  part: AuthoredChangePart
+): readonly string[] => {
+  switch (part.kind) {
+    case 'boundary': {
+      return [
+        part.action === 'split'
+          ? 'Add paragraph break'
+          : 'Delete paragraph break',
+      ];
+    }
+    case 'content': {
+      const before = contentPreview(part.before);
+      const after = contentPreview(part.after);
+
+      switch (part.action) {
+        case 'delete': {
+          return [before ? `Delete “${before}”` : 'Delete content'];
+        }
+        case 'insert': {
+          return [after ? `Add “${after}”` : 'Add content'];
+        }
+        case 'move': {
+          return [before ? `Move “${before}”` : 'Move content'];
+        }
+        case 'replace': {
+          return [
+            before && after
+              ? `Replace “${before}” with “${after}”`
+              : 'Replace content',
+          ];
+        }
+      }
+
+      return [];
+    }
+    case 'properties': {
+      const keys = [
+        ...new Set([...Object.keys(part.before), ...Object.keys(part.after)]),
+      ].sort();
+
+      return keys.map(
+        (key) =>
+          `${formatPropertyName(key)}: ${formatPropertyValue(
+            part.before[key]
+          )} → ${formatPropertyValue(part.after[key])}`
+      );
+    }
+    case 'root': {
+      return [
+        `${part.after ? 'Add' : 'Delete'} ${
+          part.root === 'main' ? 'document content' : part.root
+        }`,
+      ];
+    }
+  }
+
+  return [];
+};
+
+const describeSuggestion = (
+  editor: Editor,
+  details: AuthoredChangeDetails | null,
+  fallback: AuthoredChange['kind']
+) => {
+  if (details?.parts.status === 'available') {
+    const descriptions: string[] = [];
+
+    for (let index = 0; index < details.parts.items.length; index++) {
+      const part = details.parts.items[index];
+
+      if (part.kind !== 'content' || part.action !== 'insert') {
+        descriptions.push(...describeSuggestionPart(part));
+        continue;
+      }
+
+      let text = contentText(part.after);
+      let current = part;
+      while (index + 1 < details.parts.items.length) {
+        const next = details.parts.items[index + 1];
+        if (
+          next.kind !== 'content' ||
+          !insertionPartsAreAdjacent(editor, current, next)
+        ) {
+          break;
+        }
+        text += contentText(next.after);
+        current = next;
+        index += 1;
+      }
+      const preview = textPreview(text);
+      descriptions.push(preview ? `Add “${preview}”` : 'Add content');
+    }
+
+    if (descriptions.length > 0) return descriptions;
+  }
+
+  return [
+    {
+      delete: 'Delete content',
+      format: 'Change formatting',
+      insert: 'Add content',
+      mixed: 'Edit content',
+      structure: 'Change structure',
+    }[fallback],
+  ];
 };
 
 function SuggestionDiscussionCard({
-  review,
+  change,
+  createdAt,
   threadIds,
 }: {
-  review: SuggestionDiscussionReview;
+  change: AuthoredChange;
+  createdAt: Date;
   threadIds: readonly string[];
 }) {
-  const { api: comments } = useEditorPlugin(CommentsPlugin);
-  const { store, update } = useEditorPlugin(suggestionPlugin);
-  const user = useCommentUser(review.userId);
+  const editor = useEditor();
+  const { api: comments } = useEditor().plugin(CommentsPlugin);
+  const user = useCommentUser(change.authorId);
+  const changeKey = `${change.id}:${change.revision}`;
+  const [outcomeState, setOutcomeState] = React.useState<{
+    changeKey: string;
+    result: AuthoredResult;
+  } | null>(null);
+  const outcome =
+    outcomeState?.changeKey === changeKey ? outcomeState.result : null;
+  const details = useEditorSelector(
+    (current) =>
+      current.plugin(DefaultAuthoredPlugin).read.details(change.id) ?? null,
+    {
+      shouldUpdate: (commit) =>
+        !commit ||
+        commit.changed.hasAny('document') ||
+        commit.changed.hasAny('state'),
+    }
+  );
+  const descriptions = describeSuggestion(editor, details ?? null, change.kind);
+  const setOutcome = (result: AuthoredResult) =>
+    setOutcomeState({ changeKey, result });
+
+  const decide = (
+    action: 'accept' | 'reject',
+    related: readonly string[] = []
+  ) => {
+    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const latest = authored.read.change(change.id);
+    if (!latest) {
+      setOutcome({ status: 'stale', ids: [change.id] });
+      return;
+    }
+    const ids = [...new Set([latest.id, ...related])];
+    const input = {
+      action,
+      selection: authored.read.select({ ids }),
+    };
+    const result =
+      latest.status === 'conflicted'
+        ? authored.update.resolve(input)
+        : authored.update.decide(input);
+
+    if (result.status === 'applied' || result.status === 'unchanged') return;
+    setOutcome(result);
+  };
+  const relatedIds =
+    outcome?.status === 'blocked'
+      ? [...outcome.dependencies, ...outcome.dependants, ...outcome.conflicts]
+      : [];
+  const outcomeMessage = (() => {
+    if (!outcome) return null;
+    switch (outcome.status) {
+      case 'applied': {
+        return null;
+      }
+      case 'unchanged': {
+        return null;
+      }
+      case 'blocked': {
+        return `This decision also affects ${
+          relatedIds.length
+        } related suggestion${relatedIds.length === 1 ? '' : 's'}.`;
+      }
+      case 'invalid': {
+        return 'This suggestion no longer belongs to the current document.';
+      }
+      case 'stale': {
+        return 'This suggestion changed. Review it again before deciding.';
+      }
+      case 'unavailable': {
+        return 'The retained content needed for this action is unavailable.';
+      }
+    }
+
+    return null;
+  })();
 
   return (
     <article
-      className="relative flex flex-col focus-within:[&>header>.plite-suggestion-actions]:pointer-events-auto focus-within:[&>header>.plite-suggestion-actions]:opacity-100 hover:[&>header>.plite-suggestion-actions]:pointer-events-auto hover:[&>header>.plite-suggestion-actions]:opacity-100"
-      data-suggestion-review={review.suggestionId}
+      className="relative flex flex-col focus-within:[&>header>.editor-suggestion-actions]:pointer-events-auto focus-within:[&>header>.editor-suggestion-actions]:opacity-100 hover:[&>header>.editor-suggestion-actions]:pointer-events-auto hover:[&>header>.editor-suggestion-actions]:opacity-100"
+      data-suggestion-review={change.id}
     >
       <header className="relative flex items-center">
         <Avatar className="size-5">
@@ -421,19 +777,16 @@ function SuggestionDiscussionCard({
           <AvatarFallback>{user?.name?.[0] ?? '?'}</AvatarFallback>
         </Avatar>
         <span className="mx-2 text-sm leading-none font-semibold">
-          {user?.name ?? review.userId}
+          {user?.name ?? change.authorId}
         </span>
         <span className="text-xs leading-none text-muted-foreground/80">
-          {formatCommentDate(review.createdAt)}
+          {formatCommentDate(createdAt)}
         </span>
-        <span className="plite-suggestion-actions pointer-events-none absolute top-0 right-0 flex gap-2 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
+        <span className="editor-suggestion-actions pointer-events-none absolute top-0 right-0 flex gap-2 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
           <Button
             aria-label="Accept suggestion"
             className="size-6 p-1 text-muted-foreground"
-            onClick={() => {
-              update.accept(review.suggestionId);
-              store.set({ activeId: null });
-            }}
+            onClick={() => decide('accept')}
             variant="ghost"
           >
             <CheckIcon className="size-4" />
@@ -441,10 +794,7 @@ function SuggestionDiscussionCard({
           <Button
             aria-label="Reject suggestion"
             className="size-6 p-1 text-muted-foreground"
-            onClick={() => {
-              update.reject(review.suggestionId);
-              store.set({ activeId: null });
-            }}
+            onClick={() => decide('reject')}
             variant="ghost"
           >
             <XIcon className="size-4" />
@@ -453,49 +803,33 @@ function SuggestionDiscussionCard({
       </header>
 
       <div className="relative mt-1 mb-4 flex flex-col gap-2 pl-[32px] text-sm">
-        {review.type === 'remove' && (
-          <p className="whitespace-pre-wrap">
-            <span className="text-muted-foreground">Delete: </span>
-            {getSuggestionSummaryItems(review.text ?? '').join('\n')}
+        {descriptions.map((description, index) => (
+          <p className="text-muted-foreground" key={`${index}:${description}`}>
+            {description}
           </p>
-        )}
-        {review.type === 'insert' && (
-          <p className="whitespace-pre-wrap">
-            <span className="text-muted-foreground">Add: </span>
-            {getSuggestionSummaryItems(review.newText ?? '').join('\n')}
-          </p>
-        )}
-        {review.type === 'replace' && (
-          <>
-            <p>
-              <span className="text-brand/80">With: </span>
-              {review.newText}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Replace: </span>
-              {review.text}
-            </p>
-          </>
-        )}
-        {review.type === 'update' && (
-          <>
-            <p className="text-muted-foreground">
-              {[
-                ...Object.keys(review.properties ?? {})
-                  .filter((key) => !(key in (review.newProperties ?? {})))
-                  .map((key) => `Remove ${key}`),
-                ...Object.entries(review.newProperties ?? {}).map(
-                  ([key, value]) =>
-                    value === null || value === false
-                      ? `Remove ${key}`
-                      : value === true
-                        ? `Add ${key}`
-                        : `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`
-                ),
-              ].join(', ')}
-            </p>
-            {review.newText && <p>{review.newText}</p>}
-          </>
+        ))}
+        {outcomeMessage && (
+          <div className="flex flex-col items-start gap-2" role="alert">
+            <p>{outcomeMessage}</p>
+            {outcome?.status === 'blocked' && relatedIds.length > 0 && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => decide('accept', relatedIds)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Accept related
+                </Button>
+                <Button
+                  onClick={() => decide('reject', relatedIds)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Reject related
+                </Button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -508,8 +842,8 @@ function SuggestionDiscussionCard({
         onSubmit={(body) =>
           comments.createThread({
             body,
-            excerpt: `${review.type} suggestion`,
-            target: { id: review.suggestionId, type: 'suggestion' },
+            excerpt: `${change.kind} suggestion`,
+            target: { id: change.id, type: 'change' },
           })
         }
         placeholder="Reply..."
@@ -520,7 +854,7 @@ function SuggestionDiscussionCard({
 
 function NewComment({ editableRef }: EditableSiblingProps) {
   const editor = useEditor();
-  const { api: comments } = useEditorPlugin(CommentsPlugin);
+  const { api: comments } = useEditor().plugin(CommentsPlugin);
 
   return (
     <CommentComposer
@@ -544,10 +878,55 @@ function NewComment({ editableRef }: EditableSiblingProps) {
 function DiscussionBlock({
   children,
   editor,
-  element,
+  renderPath,
 }: RenderNodeWrapperProps<typeof CommentsPlugin>) {
+  const blockKey = editor.key(renderPath);
+
+  if (!blockKey) return children;
+
+  const props = {
+    blockIndex: renderPath[0] ?? 0,
+    blockKey,
+    children,
+  };
+
+  if (editor.plugin(SuggestionPlugin).installed) {
+    return <SuggestionDiscussionBlockContent {...props} path={renderPath} />;
+  }
+
+  return <DiscussionBlockContent {...props} changes={[]} />;
+}
+
+function SuggestionDiscussionBlockContent({
+  path,
+  ...props
+}: React.PropsWithChildren<{
+  blockIndex: number;
+  blockKey: NodeKey;
+  path: Path;
+}>) {
+  const changes = useSuggestionChanges(path);
+
+  return <DiscussionBlockContent {...props} changes={changes} />;
+}
+
+function DiscussionBlockContent({
+  blockIndex,
+  blockKey,
+  changes,
+  children,
+}: React.PropsWithChildren<{
+  blockIndex: number;
+  blockKey: NodeKey;
+  changes: readonly AuthoredChange[];
+}>) {
   const store = useDiscussionStore();
-  const blockKey = editor.key(element);
+
+  React.useEffect(() => {
+    store.setBlockSuggestions(blockKey, blockIndex, changes);
+
+    return () => store.removeBlock(blockKey);
+  }, [blockIndex, blockKey, changes, store]);
   const subscribe = React.useCallback(
     (listener: () => void) => store.subscribeBlock(blockKey, listener),
     [blockKey, store]
@@ -583,12 +962,14 @@ function DiscussionBlock({
         {block.totalCount > 0 && (
           <Button
             aria-expanded={isActive}
-            aria-label={`${isActive ? 'Close' : 'Open'} ${block.totalCount} discussion ${itemLabel} for this block`}
+            aria-label={`${isActive ? 'Close' : 'Open'} ${
+              block.totalCount
+            } discussion ${itemLabel} for this block`}
             className="mt-1 ml-1 flex h-6 gap-1 !px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
             contentEditable={false}
             data-active={isActive}
             data-discussion-block-trigger
-            data-plite-keep-selection-visible
+            data-editor-keep-selection-visible
             onClick={(event) => {
               event.stopPropagation();
               store.selectBlock(blockKey, event.currentTarget);
@@ -618,37 +999,59 @@ const DiscussionBlockSlot: RenderNodeWrapperDescriptor<typeof CommentsPlugin> =
   };
 
 function DiscussionPopover({
+  activeSuggestionId,
   editableRef,
+  setActiveSuggestionId,
   snapshot,
-}: EditableSiblingProps & { snapshot: DiscussionSnapshot }) {
+}: EditableSiblingProps & {
+  activeSuggestionId: string | null;
+  setActiveSuggestionId?: (id: string | null) => void;
+  snapshot: DiscussionSnapshot;
+}) {
   const editor = useEditor();
   const store = useDiscussionStore();
-  const { api: comments } = useEditorPlugin(CommentsPlugin);
+  const { api: comments } = useEditor().plugin(CommentsPlugin);
   const pending = usePendingComment();
   const activeCommentIds = usePluginStore(CommentsPlugin, 'activeIds');
-  const activeSuggestionId = usePluginStore(suggestionPlugin, 'activeId');
   const activeOrder = new Map(activeCommentIds.map((id, index) => [id, index]));
-  const activeItems = snapshot.items
-    .filter((item) =>
-      item.kind === 'comment'
-        ? activeOrder.has(item.id)
-        : item.id === activeSuggestionId
-    )
-    .toSorted(
-      (left, right) =>
-        (activeOrder.get(left.id) ?? activeCommentIds.length) -
-        (activeOrder.get(right.id) ?? activeCommentIds.length)
-    );
+  const activeItems: DiscussionItem[] = [
+    ...activeCommentIds.flatMap((id) => {
+      const item = store.getComment(id);
+
+      return item ? [item] : [];
+    }),
+    ...(activeSuggestionId
+      ? (() => {
+          const item = store.getSuggestion(activeSuggestionId);
+
+          return item ? [item] : [];
+        })()
+      : []),
+  ].toSorted(
+    (left, right) =>
+      (activeOrder.get(left.id) ?? activeCommentIds.length) -
+      (activeOrder.get(right.id) ?? activeCommentIds.length)
+  );
   const targetGroup = snapshot.target
-    ? snapshot.groupsByKey.get(snapshot.target.blockKey)
+    ? store.getGroup(snapshot.target.blockKey)
     : undefined;
   const target = !pending && activeItems.length === 0 ? snapshot.target : null;
+  const targetKey = snapshot.target?.blockKey ?? null;
+  const [pagination, setPagination] = React.useState<{
+    count: number;
+    targetKey: NodeKey | null;
+  }>({ count: DISCUSSION_PAGE_SIZE, targetKey });
+  const visibleCount =
+    pagination.targetKey === targetKey
+      ? pagination.count
+      : DISCUSSION_PAGE_SIZE;
+  const targetItems = targetGroup?.items ?? [];
   const shownItems =
-    activeItems.length > 0 ? activeItems : (targetGroup?.items ?? []);
+    activeItems.length > 0 ? activeItems : targetItems.slice(0, visibleCount);
   const activeSuggestionRange = activeItems.find(
     (item): item is Extract<DiscussionItem, { kind: 'suggestion' }> =>
       item.kind === 'suggestion'
-  )?.review.range;
+  )?.range;
   const { api } = editor.plugin(CommentsPlugin);
   const subscribe = React.useCallback(
     (listener: () => void) => api.subscribe(listener),
@@ -734,7 +1137,7 @@ function DiscussionPopover({
           store.clearTarget();
           comments.cancel();
           editor.plugin(CommentsPlugin).api.setActive([]);
-          editor.plugin(suggestionPlugin).store.set({ activeId: null });
+          setActiveSuggestionId?.(null);
         }}
       >
         {anchorElement && <FloatingPopoverAnchor element={anchorElement} />}
@@ -743,7 +1146,7 @@ function DiscussionPopover({
           aria-label={pending ? 'New comment' : 'Discussion items'}
           className="max-h-[min(50dvh,calc(-24px+var(--floating-popover-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] gap-0 overflow-y-auto p-0 data-[state=closed]:opacity-0"
           data-discussion-popover=""
-          data-plite-keep-selection-visible
+          data-editor-keep-selection-visible
           onFinalFocus={(event) => {
             event.preventDefault();
             if (!openRef.current) editableRef.current?.focus();
@@ -756,20 +1159,95 @@ function DiscussionPopover({
               <NewComment editableRef={editableRef} />
             </div>
           ) : (
-            shownItems.map((item, index) => (
-              <React.Fragment key={`${item.kind}-${item.id}`}>
-                <div className="p-4">
-                  <DiscussionCard item={item} />
-                </div>
-                {index < shownItems.length - 1 && (
-                  <Separator data-discussion-separator="" />
+            <>
+              {shownItems.map((item, index) => (
+                <React.Fragment key={`${item.kind}-${item.id}`}>
+                  <div className="p-4">
+                    <DiscussionCard item={item} />
+                  </div>
+                  {(index < shownItems.length - 1 ||
+                    shownItems.length < targetItems.length) && (
+                    <Separator data-discussion-separator="" />
+                  )}
+                </React.Fragment>
+              ))}
+              {activeItems.length === 0 &&
+                shownItems.length < targetItems.length && (
+                  <div className="p-3">
+                    <Button
+                      className="w-full"
+                      onClick={() =>
+                        setPagination({
+                          count: Math.min(
+                            visibleCount + DISCUSSION_PAGE_SIZE,
+                            targetItems.length
+                          ),
+                          targetKey,
+                        })
+                      }
+                      size="sm"
+                      variant="ghost"
+                    >
+                      Show more discussion items
+                    </Button>
+                  </div>
                 )}
-              </React.Fragment>
-            ))
+            </>
           )}
         </FloatingPopoverContent>
       </FloatingPopover>
     </div>
+  );
+}
+
+const usePrepareDiscussionSelection = (
+  setActiveSuggestionId?: (id: string | null) => void
+) => {
+  const editor = useEditor();
+  const store = useDiscussionStore();
+  const { api: comments } = editor.plugin(CommentsPlugin);
+
+  React.useEffect(() => {
+    store.setPrepareSelection(() => {
+      comments.cancel();
+      editor.plugin(CommentsPlugin).api.setActive([]);
+      setActiveSuggestionId?.(null);
+    });
+
+    return () => store.setPrepareSelection(null);
+  }, [comments, editor, setActiveSuggestionId, store]);
+};
+
+function SuggestionDiscussion({
+  editableRef,
+  snapshot,
+}: EditableSiblingProps & { snapshot: DiscussionSnapshot }) {
+  const { activeId, setActiveId } = useActiveSuggestion();
+
+  usePrepareDiscussionSelection(setActiveId);
+
+  return (
+    <DiscussionPopover
+      activeSuggestionId={activeId}
+      editableRef={editableRef}
+      setActiveSuggestionId={setActiveId}
+      snapshot={snapshot}
+    />
+  );
+}
+
+function CommentDiscussion({
+  editableRef,
+  snapshot,
+}: EditableSiblingProps & { snapshot: DiscussionSnapshot }) {
+  usePrepareDiscussionSelection();
+
+  return (
+    <DiscussionPopover
+      activeSuggestionId={null}
+      editableRef={editableRef}
+      snapshot={snapshot}
+    />
   );
 }
 
@@ -780,8 +1258,15 @@ function Discussion({ editableRef }: EditableSiblingProps) {
     store.getSnapshot,
     store.getSnapshot
   );
+  const suggestionsInstalled = useEditorSelector(
+    (editor) => editor.plugin(SuggestionPlugin).installed
+  );
 
-  return <DiscussionPopover editableRef={editableRef} snapshot={snapshot} />;
+  return suggestionsInstalled ? (
+    <SuggestionDiscussion editableRef={editableRef} snapshot={snapshot} />
+  ) : (
+    <CommentDiscussion editableRef={editableRef} snapshot={snapshot} />
+  );
 }
 
 export const DiscussionSlots = {

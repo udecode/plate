@@ -188,7 +188,9 @@ export const getEditableChildAndIndex = (
   while (
     isDOMComment(child) ||
     (isDOMElement(child) && child.childNodes.length === 0) ||
-    (isDOMElement(child) && child.getAttribute('contenteditable') === 'false')
+    (isDOMElement(child) &&
+      (child.getAttribute('contenteditable') === 'false' ||
+        child.hasAttribute('data-editor-retained')))
   ) {
     if (triedForward && triedBackward) {
       break;
@@ -262,16 +264,14 @@ export const getPlainText = (domNode: DOMNode) => {
   return text;
 };
 
-const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
+const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-editor-fragment';
 const catchOpeningHtmlTag = /<[A-Za-z][^<>]*?>/g;
-const catchPliteFragment = /\bdata-plite-fragment\s*=\s*(["'])(.*?)\1/i;
-const catchPliteFragmentFormat =
-  /\bdata-plite-fragment-format\s*=\s*(["'])(.*?)\1/i;
+const catchEditorFragment = /\bdata-editor-fragment\s*=\s*(["'])(.*?)\1/i;
+const catchEditorFragmentFormat =
+  /\bdata-editor-fragment-format\s*=\s*(["'])(.*?)\1/i;
 
-/**
- * Get x-plite-fragment attribute from data-plite-fragment
- */
-export const getPliteFragmentAttribute = (
+/** Read an HTML clipboard envelope for the editor's configured format. */
+export const getFragmentAttribute = (
   dataTransfer: Pick<DataTransfer, 'getData'>,
   clipboardFormatKey = DEFAULT_CLIPBOARD_FORMAT_KEY
 ): string | void => {
@@ -279,38 +279,56 @@ export const getPliteFragmentAttribute = (
   const openingTags = htmlData.match(catchOpeningHtmlTag) ?? [];
 
   for (const tag of openingTags) {
-    const fragment = tag.match(catchPliteFragment)?.[2];
+    const fragment = tag.match(catchEditorFragment)?.[2];
 
-    if (!fragment) continue;
-    const fragmentFormat = tag.match(catchPliteFragmentFormat)?.[2];
+    if (fragment === undefined) continue;
+    const fragmentFormat = tag.match(catchEditorFragmentFormat)?.[2];
 
-    if (fragmentFormat) {
-      if (fragmentFormat === clipboardFormatKey) return fragment;
-      continue;
+    if (
+      fragmentFormat === clipboardFormatKey ||
+      (fragmentFormat === undefined &&
+        clipboardFormatKey === DEFAULT_CLIPBOARD_FORMAT_KEY)
+    ) {
+      return fragment;
     }
-    if (clipboardFormatKey === DEFAULT_CLIPBOARD_FORMAT_KEY) return fragment;
   }
 };
 
-/**
- * Get the x-plite-fragment attribute that exist in text/html data
- * and append it to the DataTransfer object
- */
+export const readClipboardFragmentPayload = (
+  data: Pick<DataTransfer, 'getData'> & Partial<Pick<DataTransfer, 'types'>>,
+  clipboardFormatKey: string
+): { source: 'html' | 'mime'; value: string } | null => {
+  const mime = `application/${clipboardFormatKey}`;
+  const value = data.getData(mime);
+
+  if (value || Array.from(data.types ?? []).includes(mime)) {
+    return { source: 'mime', value };
+  }
+
+  const htmlValue = getFragmentAttribute(data, clipboardFormatKey);
+
+  return htmlValue === undefined ? null : { source: 'html', value: htmlValue };
+};
+
+/** Make a supported HTML envelope available under the configured MIME. */
 export const getClipboardData = (
   dataTransfer: DataTransfer,
   clipboardFormatKey = DEFAULT_CLIPBOARD_FORMAT_KEY
 ): DataTransfer => {
   if (!dataTransfer.getData(`application/${clipboardFormatKey}`)) {
-    const fragment = getPliteFragmentAttribute(
+    const fragment = readClipboardFragmentPayload(
       dataTransfer,
       clipboardFormatKey
     );
-    if (fragment) {
+    if (fragment?.value) {
       const clipboardData = new DataTransfer();
       dataTransfer.types.forEach((type) => {
         clipboardData.setData(type, dataTransfer.getData(type));
       });
-      clipboardData.setData(`application/${clipboardFormatKey}`, fragment);
+      clipboardData.setData(
+        `application/${clipboardFormatKey}`,
+        fragment.value
+      );
       return clipboardData;
     }
   }

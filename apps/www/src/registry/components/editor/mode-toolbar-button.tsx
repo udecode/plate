@@ -2,8 +2,12 @@
 
 import { EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
 import { setEditorReadOnly } from 'platejs';
-import { useEditor, useEditorViewState, usePluginStore } from 'platejs/react';
-import { SuggestionPlugin } from 'platejs/suggestion/react';
+import {
+  useEditor,
+  useEditorSelector,
+  useEditorViewState,
+} from 'platejs/react';
+import { SuggestionPlugin, useSuggestionMode } from 'platejs/suggestion/react';
 import * as React from 'react';
 
 import {
@@ -31,12 +35,33 @@ const MODE_ITEMS = {
 } satisfies Record<string, { icon: React.ReactNode; label: string }>;
 
 export function ModeToolbarButton() {
+  const suggestionsInstalled = useEditorSelector(
+    (editor) => editor.plugin(SuggestionPlugin).installed
+  );
+
+  return suggestionsInstalled ? (
+    <SuggestionModeToolbarButton />
+  ) : (
+    <ModeToolbarButtonContent suggestionMode={null} />
+  );
+}
+
+function SuggestionModeToolbarButton() {
+  const suggestionMode = useSuggestionMode();
+
+  return <ModeToolbarButtonContent suggestionMode={suggestionMode} />;
+}
+
+function ModeToolbarButtonContent({
+  suggestionMode,
+}: {
+  suggestionMode: 'editing' | 'suggesting' | null;
+}) {
   const editor = useEditor();
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const [open, setOpen] = React.useState(false);
-
-  const isSuggesting = usePluginStore(SuggestionPlugin, 'isSuggesting');
-
+  const suggestionsInstalled = suggestionMode !== null;
+  const isSuggesting = suggestionMode === 'suggesting';
   const value = readOnly ? 'viewing' : isSuggesting ? 'suggestion' : 'editing';
 
   return (
@@ -59,11 +84,13 @@ export function ModeToolbarButton() {
             setEditorReadOnly(editor, false);
 
             if (newValue === 'suggestion') {
-              editor.plugin(SuggestionPlugin).store.set({ isSuggesting: true });
+              editor.plugin(SuggestionPlugin).api.setMode('suggesting');
 
               return;
             }
-            editor.plugin(SuggestionPlugin).store.set({ isSuggesting: false });
+            if (suggestionsInstalled) {
+              editor.plugin(SuggestionPlugin).api.setMode('editing');
+            }
 
             if (newValue === 'editing') {
               editor.api.dom.focus();
@@ -87,13 +114,15 @@ export function ModeToolbarButton() {
             {MODE_ITEMS.viewing.label}
           </DropdownMenuRadioItem>
 
-          <DropdownMenuRadioItem
-            className="pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"
-            value="suggestion"
-          >
-            {MODE_ITEMS.suggestion.icon}
-            {MODE_ITEMS.suggestion.label}
-          </DropdownMenuRadioItem>
+          {suggestionsInstalled && (
+            <DropdownMenuRadioItem
+              className="pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"
+              value="suggestion"
+            >
+              {MODE_ITEMS.suggestion.icon}
+              {MODE_ITEMS.suggestion.label}
+            </DropdownMenuRadioItem>
+          )}
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>

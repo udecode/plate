@@ -6,12 +6,12 @@
 ## Status Counts
 
 - `active-app-example`: 50
-- `active-benchmark-or-proof-script`: 49
+- `active-benchmark-or-proof-script`: 48
 - `active-browser-proof`: 41
 - `active-fumadocs-doc`: 88
 - `active-package`: 1777
 - `active-research-raw`: 21
-- `archived-exact`: 122
+- `archived-exact`: 123
 - `existing-plate-ui-plus-archived-donor`: 9
 
 ## Missing Rows

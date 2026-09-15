@@ -1,4 +1,4 @@
-import { createEditor, defineExtension, editorCommands } from 'plitejs';
+import { createEditor, definePlugin, editorCommands } from 'plitejs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { IS_COMPOSING } from '../../src/dom/internal';
@@ -175,17 +175,17 @@ describe('model input strategy', () => {
     const events: Array<{ id?: string | null; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: unknown;
+        __EDITOR_REACT_RENDER_PROFILER__?: unknown;
       }
-    ).__PLITE_REACT_RENDER_PROFILER__;
+    ).__EDITOR_REACT_RENDER_PROFILER__;
 
     (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: {
+        __EDITOR_REACT_RENDER_PROFILER__?: {
           record: (event: { id: string; kind: string }) => void;
         };
       }
-    ).__PLITE_REACT_RENDER_PROFILER__ = {
+    ).__EDITOR_REACT_RENDER_PROFILER__ = {
       record: (event) => events.push(event),
     };
 
@@ -207,9 +207,9 @@ describe('model input strategy', () => {
     } finally {
       (
         globalThis as typeof globalThis & {
-          __PLITE_REACT_RENDER_PROFILER__?: unknown;
+          __EDITOR_REACT_RENDER_PROFILER__?: unknown;
         }
-      ).__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      ).__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     expect(editorString(editor, [])).toBe('ab!cd');
@@ -231,17 +231,17 @@ describe('model input strategy', () => {
     const events: Array<{ id?: string | null; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: unknown;
+        __EDITOR_REACT_RENDER_PROFILER__?: unknown;
       }
-    ).__PLITE_REACT_RENDER_PROFILER__;
+    ).__EDITOR_REACT_RENDER_PROFILER__;
 
     (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: {
+        __EDITOR_REACT_RENDER_PROFILER__?: {
           record: (event: { id: string; kind: string }) => void;
         };
       }
-    ).__PLITE_REACT_RENDER_PROFILER__ = {
+    ).__EDITOR_REACT_RENDER_PROFILER__ = {
       record: (event) => events.push(event),
     };
 
@@ -263,9 +263,9 @@ describe('model input strategy', () => {
     } finally {
       (
         globalThis as typeof globalThis & {
-          __PLITE_REACT_RENDER_PROFILER__?: unknown;
+          __EDITOR_REACT_RENDER_PROFILER__?: unknown;
         }
-      ).__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      ).__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     expect(editorString(editor, [])).toBe('a');
@@ -287,9 +287,9 @@ describe('model input strategy', () => {
     const events: Array<{ id?: string | null; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: unknown;
+        __EDITOR_REACT_RENDER_PROFILER__?: unknown;
       }
-    ).__PLITE_REACT_RENDER_PROFILER__;
+    ).__EDITOR_REACT_RENDER_PROFILER__;
 
     editorReplace(editor, {
       children: [
@@ -307,11 +307,11 @@ describe('model input strategy', () => {
 
     (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: {
+        __EDITOR_REACT_RENDER_PROFILER__?: {
           record: (event: { id: string; kind: string }) => void;
         };
       }
-    ).__PLITE_REACT_RENDER_PROFILER__ = {
+    ).__EDITOR_REACT_RENDER_PROFILER__ = {
       record: (event) => events.push(event),
     };
 
@@ -333,9 +333,9 @@ describe('model input strategy', () => {
     } finally {
       (
         globalThis as typeof globalThis & {
-          __PLITE_REACT_RENDER_PROFILER__?: unknown;
+          __EDITOR_REACT_RENDER_PROFILER__?: unknown;
         }
-      ).__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      ).__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     expect(editorString(editor, [])).toBe('a');
@@ -363,9 +363,9 @@ describe('model input strategy', () => {
     const events: Array<{ id?: string | null; kind: string }> = [];
     const previousProfiler = (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: unknown;
+        __EDITOR_REACT_RENDER_PROFILER__?: unknown;
       }
-    ).__PLITE_REACT_RENDER_PROFILER__;
+    ).__EDITOR_REACT_RENDER_PROFILER__;
 
     editorReplace(editor, {
       children: [
@@ -379,11 +379,11 @@ describe('model input strategy', () => {
 
     (
       globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: {
+        __EDITOR_REACT_RENDER_PROFILER__?: {
           record: (event: { id: string; kind: string }) => void;
         };
       }
-    ).__PLITE_REACT_RENDER_PROFILER__ = {
+    ).__EDITOR_REACT_RENDER_PROFILER__ = {
       record: (event) => events.push(event),
     };
 
@@ -405,9 +405,9 @@ describe('model input strategy', () => {
     } finally {
       (
         globalThis as typeof globalThis & {
-          __PLITE_REACT_RENDER_PROFILER__?: unknown;
+          __EDITOR_REACT_RENDER_PROFILER__?: unknown;
         }
-      ).__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      ).__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     expect(editorGetChildren(editor)).toEqual([
@@ -469,7 +469,7 @@ describe('model input strategy', () => {
     const editor = createTextEditor('-', 1);
 
     editor.install(
-      defineExtension('markdown-shortcut-command', {
+      definePlugin('markdown-shortcut-command', {
         commands: ({ handle }) => [
           handle(editorCommands.insertText, ({ input, state }) => {
             if (input.text !== ' ') return false;

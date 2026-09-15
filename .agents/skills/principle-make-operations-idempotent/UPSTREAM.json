@@ -9,13 +9,14 @@
       "upstream": "skills/principle-make-operations-idempotent/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "540738217c3da7bf513b9886924ad6a2bc77e58be867f5bd2e1831c74bf2ce70",
-      "destinationSha256": "8b5160045ee301b53ae5ef6d8ba494fbad8cd76935eb2276de9e119988d3fa51",
+      "destinationSha256": "5d0ab11155217941ddf44aed3bddbb4767a34d18777be2ff911173f460a11659",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-make-operations-idempotent/SKILL.md\n+++ skills/principle-make-operations-idempotent/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-make-operations-idempotent\n description: \"Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Make Operations Idempotent\n \n"
+      "unifiedDiff": "--- skills/principle-make-operations-idempotent/SKILL.md\n+++ skills/principle-make-operations-idempotent/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-make-operations-idempotent\n-description: \"Apply when designing commands, lifecycle steps, or processing loops that run amid crashes, restarts, and retries. Converge to the same end state regardless of partial prior runs.\"\n-disable-model-invocation: true\n+description: \"Design commands and lifecycle operations whose retries or partial prior runs can change the outcome.\"\n ---\n \n # Make Operations Idempotent\n"
     }
   ],
   "ownedFiles": [

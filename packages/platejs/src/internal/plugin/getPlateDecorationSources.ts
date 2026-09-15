@@ -1,8 +1,4 @@
-import type {
-  NodeEntry,
-  PliteDecoration,
-  PliteDecorationRefresh,
-} from '../../facade';
+import type { NodeEntry, Decoration, DecorationRefresh } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { failInvariant } from '../failInvariant';
@@ -13,12 +9,12 @@ type PlateDecorationSource = Readonly<{
   id: string;
   observe?: (context: {
     editor?: object;
-    refresh: (input: PliteDecorationRefresh) => void;
+    refresh: (input: DecorationRefresh) => void;
   }) => () => void;
   read: (context: {
     editor?: object;
     entry: NodeEntry;
-  }) => readonly PliteDecoration[];
+  }) => readonly Decoration[];
 }>;
 
 export const getPlateDecorationSources = (
@@ -49,7 +45,7 @@ export const getPlateDecorationSources = (
         const context = Object.assign(Object.create(pluginContext), {
           entry,
         });
-        const decorations: readonly PliteDecoration[] = Reflect.apply(
+        const decorations: readonly Decoration[] = Reflect.apply(
           decorate.read,
           undefined,
           [context]

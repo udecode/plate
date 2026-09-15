@@ -14,7 +14,7 @@ import { DebugPlugin, NodeApi, schema } from '../../../core';
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
 import { BaseTablePlugin } from '../../../features/table/lib/BaseTablePlugin';
 import { createTableNodeSelection } from '../../../features/table/lib/internal/selection';
-import { definePlatePlugin, type Editor } from '../../core';
+import { definePlugin, type Editor } from '../../core';
 import { createPluginContext } from '../../plugin/createPluginContext.internal';
 import { TablePlugin } from './TablePlugin';
 
@@ -124,7 +124,7 @@ const rootPoint = (root: string | undefined, cell: number) => ({
 const createRootMoveEditor = (
   direction: 'named-to-primary' | 'primary-to-named'
 ) => {
-  const RootHolderPlugin = definePlatePlugin('tableDropRootHolder', {
+  const RootHolderPlugin = definePlugin('tableDropRootHolder', {
     schema: {
       element: {
         contentRoots: {
@@ -285,7 +285,7 @@ const installDOMSelectionApi = (
   spyOn(editor.api.dom, 'findDocumentOrShadowRoot').mockReturnValue({
     getSelection: () => domSelection,
   });
-  spyOn(editor.api.dom, 'resolvePliteRange').mockReturnValue(range);
+  spyOn(editor.api.dom, 'resolveRange').mockReturnValue(range);
 };
 
 const readTable = (editor: Editor, index: number) => {
@@ -327,7 +327,7 @@ const dragSelectedCells = (
   const dataTransfer = {
     dropEffect: 'move',
     setData: mock(),
-    types: ['application/x-plate-table-cell-selection'],
+    types: ['application/x-editor-table-cell-selection'],
   } as unknown as DataTransfer;
   const dragStart = createDragEvent(dataTransfer, {
     dragCellKey: sourceCellKey,
@@ -429,7 +429,7 @@ describe('TablePlugin table drag/drop', () => {
 
     const dataTransfer = {
       setData: mock(),
-      types: ['application/x-plate-table-cell-selection'],
+      types: ['application/x-editor-table-cell-selection'],
     } as unknown as DataTransfer;
     const dragStart = createDragEvent(dataTransfer, {
       dragCellKey: sourceCellKey,
@@ -508,7 +508,7 @@ describe('TablePlugin table drag/drop', () => {
     const internalTransfer = {
       dropEffect: 'move',
       setData: mock(),
-      types: ['application/x-plate-table-cell-selection'],
+      types: ['application/x-editor-table-cell-selection'],
     } as unknown as DataTransfer;
     const externalTransfer = {
       dropEffect: 'move',
@@ -533,7 +533,7 @@ describe('TablePlugin table drag/drop', () => {
     const dataTransfer = {
       dropEffect: 'move',
       setData: mock(),
-      types: ['application/x-plate-table-cell-selection'],
+      types: ['application/x-editor-table-cell-selection'],
     } as unknown as DataTransfer;
     const dragStart = createDragEvent(dataTransfer, { dragCellKey: 's1' });
     const dragEnd = createDragEvent(dataTransfer);

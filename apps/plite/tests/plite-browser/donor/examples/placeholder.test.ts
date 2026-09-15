@@ -1,7 +1,7 @@
 import { expect, type Locator, test } from '@playwright/test';
 import {
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 
 const getBrowserUndoHotkey = async (root: Locator) =>
@@ -20,7 +20,7 @@ test.describe('placeholder example', () => {
   );
 
   test('renders custom placeholder', async ({ page }) => {
-    const placeholderElement = page.locator('[data-plite-placeholder=true]');
+    const placeholderElement = page.locator('[data-editor-placeholder=true]');
 
     await expect(placeholderElement).toContainText('Type something');
     await expect(page.locator('pre')).toContainText('renderPlaceholder');
@@ -54,7 +54,7 @@ test.describe('placeholder example', () => {
       'Desktop native selection proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/custom-placeholder', {
@@ -112,8 +112,8 @@ test.describe('placeholder example', () => {
   });
 
   test('renders editor tall enough to fit placeholder', async ({ page }) => {
-    const pliteEditor = page.locator('[data-plite-editor=true]');
-    const placeholderElement = page.locator('[data-plite-placeholder=true]');
+    const pliteEditor = page.locator('[data-editor=true]');
+    const placeholderElement = page.locator('[data-editor-placeholder=true]');
 
     await expect(placeholderElement).toBeVisible();
 

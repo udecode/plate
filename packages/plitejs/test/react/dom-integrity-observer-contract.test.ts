@@ -49,8 +49,8 @@ const createHarness = ({
         ? (mutation.target as Element)
         : mutation.target.parentElement
       )
-        ?.closest('[data-plite-path]')
-        ?.getAttribute('data-plite-path') ?? null,
+        ?.closest('[data-editor-path]')
+        ?.getAttribute('data-editor-path') ?? null,
     schedule: (callback, options) => {
       const task = { callback, cancelled: false, timing: options.timing };
 
@@ -63,7 +63,7 @@ const createHarness = ({
   });
 
   root.setAttribute('contenteditable', 'true');
-  root.setAttribute('data-plite-editor', 'true');
+  root.setAttribute('data-editor', 'true');
   document.body.append(root);
   observer.connect(root);
 
@@ -90,7 +90,7 @@ const mountRetainedFlow = (harness: ReturnType<typeof createHarness>) => {
     const stringElement = document.createElement('span');
     const textNode = document.createTextNode(text);
 
-    stringElement.setAttribute('data-plite-string', 'true');
+    stringElement.setAttribute('data-editor-string', 'true');
     stringElement.append(textNode);
     rootNode.append(stringElement);
     host.append(rootNode);
@@ -263,16 +263,16 @@ test('ignores runtime-owned, composition, canonical, and React commit mutations'
   harness.observer.resumeAfterHostCommit();
 
   harness.observer.runOwned('scheduler', () => {
-    harness.root.setAttribute('data-plite-runtime-write', 'true');
+    harness.root.setAttribute('data-editor-runtime-write', 'true');
   });
 
   taggedOwned = true;
-  harness.root.setAttribute('data-plite-tagged-write', 'true');
+  harness.root.setAttribute('data-editor-tagged-write', 'true');
   await waitForMutations();
   taggedOwned = false;
 
   rootChrome.setAttribute('contenteditable', 'false');
-  rootChrome.setAttribute('data-plite-root-chrome-ignore', 'true');
+  rootChrome.setAttribute('data-editor-root-chrome-ignore', 'true');
   harness.root.append(rootChrome);
   await waitForMutations();
 
@@ -291,7 +291,7 @@ test('ignores runtime-owned, composition, canonical, and React commit mutations'
   await waitForMutations();
 
   harness.observer.pauseForHostCommit();
-  harness.root.setAttribute('data-plite-react-write', 'true');
+  harness.root.setAttribute('data-editor-react-write', 'true');
   harness.observer.resumeAfterHostCommit();
   await waitForMutations();
 
@@ -305,9 +305,9 @@ test('ignores runtime-owned, composition, canonical, and React commit mutations'
     ignoredOwnedMutations: 3,
     repairedMutations: 0,
   });
-  expect(harness.root.getAttribute('data-plite-runtime-write')).toBe('true');
-  expect(harness.root.getAttribute('data-plite-tagged-write')).toBe('true');
-  expect(harness.root.getAttribute('data-plite-react-write')).toBe('true');
+  expect(harness.root.getAttribute('data-editor-runtime-write')).toBe('true');
+  expect(harness.root.getAttribute('data-editor-tagged-write')).toBe('true');
+  expect(harness.root.getAttribute('data-editor-react-write')).toBe('true');
   expect(harness.root.contains(rootChrome)).toBe(true);
 
   harness.observer.destroy();
@@ -350,8 +350,8 @@ test('repairs external text, attribute, and child corruption without changing th
   const text = document.createTextNode('model');
   const rogue = document.createElement('aside');
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
   textHost.append(text);
   paragraph.append(textHost);
   harness.observer.pauseForHostCommit();
@@ -360,14 +360,14 @@ test('repairs external text, attribute, and child corruption without changing th
   onRepair.mockClear();
 
   text.nodeValue = 'corrupt';
-  paragraph.setAttribute('data-plite-path', 'corrupt');
+  paragraph.setAttribute('data-editor-path', 'corrupt');
   paragraph.remove();
   harness.root.append(rogue);
   await waitForMutations();
 
   expect(harness.run('microtask')).toBe(true);
   expect(text.nodeValue).toBe('model');
-  expect(paragraph.hasAttribute('data-plite-path')).toBe(false);
+  expect(paragraph.hasAttribute('data-editor-path')).toBe(false);
   expect(harness.root.firstChild).toBe(paragraph);
   expect(harness.root.contains(rogue)).toBe(false);
   expect(onRepair).toHaveBeenCalledTimes(1);
@@ -391,22 +391,24 @@ test('filters presentation attributes per record without dropping critical mutat
   const textHost = document.createElement('span');
   const rogue = document.createElement('aside');
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
   harness.observer.pauseForHostCommit();
   harness.root.append(textHost);
   harness.observer.resumeAfterHostCommit();
 
   textHost.className = 'application-state';
   textHost.setAttribute('aria-label', 'application label');
-  textHost.setAttribute('data-plite-path', 'corrupt');
+  textHost.setAttribute('data-editor-status', 'application state');
+  textHost.setAttribute('data-editor-path', 'corrupt');
   harness.root.append(rogue);
   await waitForMutations();
 
   expect(harness.run('microtask')).toBe(true);
   expect(textHost.className).toBe('application-state');
   expect(textHost.getAttribute('aria-label')).toBe('application label');
-  expect(textHost.getAttribute('data-plite-path')).toBe('0,0');
+  expect(textHost.getAttribute('data-editor-status')).toBe('application state');
+  expect(textHost.getAttribute('data-editor-path')).toBe('0,0');
   expect(rogue.isConnected).toBe(false);
   const diagnostics = harness.observer.diagnostics();
 
@@ -453,8 +455,8 @@ test('preserves the DOM selection and requests authoritative model selection exp
   const selection = document.getSelection()!;
   const range = document.createRange();
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
   textHost.append(text);
   harness.observer.pauseForHostCommit();
   harness.root.append(textHost);
@@ -483,8 +485,8 @@ test('unwraps unauthorized external wrappers around model text', async () => {
   const text = document.createTextNode('model');
   const wrapper = document.createElement('span');
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
+  textHost.setAttribute('data-editor-node', 'text');
+  textHost.setAttribute('data-editor-path', '0,0');
   textHost.append(text);
   harness.observer.pauseForHostCommit();
   harness.root.append(textHost);
@@ -507,25 +509,25 @@ test('unwraps unauthorized external wrappers around model text', async () => {
   harness.observer.destroy();
 });
 
-test('repairs mounted content in read-only partial-DOM roots', async () => {
+test('repairs mounted content in read-only viewport-backed roots', async () => {
   const harness = createHarness();
   const boundary = document.createElement('section');
   const text = document.createTextNode('mounted');
 
   harness.observer.pauseForHostCommit();
   harness.root.setAttribute('contenteditable', 'false');
-  boundary.setAttribute('data-plite-dom-coverage-boundary', 'true');
+  boundary.setAttribute('data-editor-dom-coverage-boundary', 'true');
   boundary.append(text);
   harness.root.append(boundary);
   harness.observer.resumeAfterHostCommit();
 
   text.nodeValue = 'corrupt';
-  boundary.setAttribute('data-plite-path', 'external');
+  boundary.setAttribute('data-editor-path', 'external');
   await waitForMutations();
   harness.run('microtask');
 
   expect(text.nodeValue).toBe('mounted');
-  expect(boundary.hasAttribute('data-plite-path')).toBe(false);
+  expect(boundary.hasAttribute('data-editor-path')).toBe(false);
   expect(harness.observer.diagnostics().repairedMutations).toBe(2);
 
   harness.observer.destroy();
@@ -563,23 +565,23 @@ test('isolates nested and sibling editable roots', async () => {
   const nestedText = document.createTextNode('nested');
   const siblingRoot = document.createElement('div');
 
-  nestedRoot.setAttribute('data-plite-editor', 'true');
+  nestedRoot.setAttribute('data-editor', 'true');
   nestedRoot.append(nestedText);
   harness.observer.pauseForHostCommit();
   harness.root.append(owned, nestedRoot);
-  siblingRoot.setAttribute('data-plite-editor', 'true');
+  siblingRoot.setAttribute('data-editor', 'true');
   document.body.append(siblingRoot);
   harness.observer.resumeAfterHostCommit();
 
   nestedText.nodeValue = 'nested-corrupt';
-  siblingRoot.setAttribute('data-plite-path', 'sibling');
-  owned.setAttribute('data-plite-path', 'owned');
+  siblingRoot.setAttribute('data-editor-path', 'sibling');
+  owned.setAttribute('data-editor-path', 'owned');
   await waitForMutations();
   harness.run('microtask');
 
   expect(nestedText.nodeValue).toBe('nested-corrupt');
-  expect(siblingRoot.getAttribute('data-plite-path')).toBe('sibling');
-  expect(owned.hasAttribute('data-plite-path')).toBe(false);
+  expect(siblingRoot.getAttribute('data-editor-path')).toBe('sibling');
+  expect(owned.hasAttribute('data-editor-path')).toBe(false);
   expect(harness.observer.diagnostics().externalMutations).toBe(1);
 
   harness.observer.destroy();
@@ -589,20 +591,20 @@ test('disconnects old roots, remounts cleanly, and stops after destroy', async (
   const harness = createHarness();
   const replacement = document.createElement('div');
 
-  replacement.setAttribute('data-plite-editor', 'true');
+  replacement.setAttribute('data-editor', 'true');
   document.body.append(replacement);
-  harness.root.setAttribute('data-plite-path', 'old-root');
+  harness.root.setAttribute('data-editor-path', 'old-root');
   await waitForMutations();
   harness.observer.setRoot(replacement);
 
   expect(harness.tasks.every((task) => task.cancelled)).toBe(true);
 
-  replacement.setAttribute('data-plite-path', 'new-root');
+  replacement.setAttribute('data-editor-path', 'new-root');
   await waitForMutations();
   harness.run('microtask');
 
-  expect(harness.root.getAttribute('data-plite-path')).toBe('old-root');
-  expect(replacement.hasAttribute('data-plite-path')).toBe(false);
+  expect(harness.root.getAttribute('data-editor-path')).toBe('old-root');
+  expect(replacement.hasAttribute('data-editor-path')).toBe(false);
 
   harness.observer.destroy();
   replacement.setAttribute('data-after-destroy', 'external');

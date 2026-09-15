@@ -1,12 +1,12 @@
 import {
   createEditor,
-  definePlatePlugin,
-  type PlateElementProps,
+  definePlugin,
+  type EditorElementProps,
 } from 'platejs/react';
 
 import { schema } from '../src/core';
 
-const FigurePlugin = definePlatePlugin('typedFigure', {
+const FigurePlugin = definePlugin('typedFigure', {
   schema: {
     element: {
       contentRoots: {
@@ -23,7 +23,7 @@ const FigurePlugin = definePlatePlugin('typedFigure', {
   },
 });
 
-declare const figureProps: PlateElementProps<typeof FigurePlugin>;
+declare const figureProps: EditorElementProps<typeof FigurePlugin>;
 
 void figureProps.slots.contentRoot('caption');
 

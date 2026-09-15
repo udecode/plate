@@ -1,11 +1,10 @@
 import { parseAsBoolean, useQueryStates } from 'nuqs';
-import { NodeApi, type Element as PliteElementNode } from 'plitejs';
+import { NodeApi, type Element as ElementNode } from 'plitejs';
 import {
   Editable,
-  type EditableDOMStrategyMetrics,
-  PliteElement,
+  EditorElement,
   type RenderElementProps,
-  Plite,
+  EditorRoot,
   useEditor,
 } from 'plitejs/react';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -109,7 +108,7 @@ const DomCoverageBoundariesExample = () => {
         type: 'footer',
         children: [{ text: 'Hidden footer text' }],
       },
-    ] as PliteElementNode[],
+    ] as ElementNode[],
   });
   const [
     { deepHidden, footerHidden, headerHidden, innerHidden, outerHidden },
@@ -119,9 +118,6 @@ const DomCoverageBoundariesExample = () => {
     urlKeys: hiddenBoundaryUrlKeys,
   });
   const [copyPreview, setCopyPreview] = useState('');
-  const [metrics, setMetrics] = useState<EditableDOMStrategyMetrics | null>(
-    null
-  );
   const [traceTick, setTraceTick] = useState(0);
   const hiddenBoundaries = useMemo(
     () => ({
@@ -203,7 +199,7 @@ const DomCoverageBoundariesExample = () => {
         `text/plain: ${data.getData('text/plain')}`,
         `text/html: ${data.getData('text/html')}`,
         `fragment: ${
-          data.getData('application/x-plite-fragment') ? 'present' : 'missing'
+          data.getData('application/x-editor-fragment') ? 'present' : 'missing'
         }`,
       ].join('\n\n')
     );
@@ -216,8 +212,8 @@ const DomCoverageBoundariesExample = () => {
   );
 
   return (
-    <div className="plite-dom-coverage-page">
-      <div className="plite-dom-coverage-toolbar">
+    <div className="editor-dom-coverage-page">
+      <div className="editor-dom-coverage-toolbar">
         <Button
           onClick={() => {
             toggleHiddenBoundary('headerHidden');
@@ -277,25 +273,24 @@ const DomCoverageBoundariesExample = () => {
         </Button>
       </div>
 
-      <div className="plite-dom-coverage-editor-wrap">
-        <Plite editor={editor}>
+      <div className="editor-dom-coverage-editor-wrap">
+        <EditorRoot editor={editor}>
           <Editable
             autoFocus
-            className="plite-dom-coverage-editor"
+            className="editor-dom-coverage-editor"
             placeholder="Try toggles, selection, and copy"
-            onDOMStrategyMetrics={setMetrics}
             renderElement={renderElement}
             spellCheck
           />
-        </Plite>
+        </EditorRoot>
       </div>
 
-      <pre className="plite-dom-coverage-debug">
-        {JSON.stringify({ hiddenBoundaries, metrics }, null, 2)}
+      <pre className="editor-dom-coverage-debug">
+        {JSON.stringify({ hiddenBoundaries }, null, 2)}
         {traceTick ? `\ntraceTick: ${traceTick}` : ''}
       </pre>
 
-      <pre className="plite-dom-coverage-copy">
+      <pre className="editor-dom-coverage-copy">
         {copyPreview || 'copy payload appears here'}
       </pre>
     </div>
@@ -329,8 +324,8 @@ const Element = ({
     }
     case 'section': {
       return (
-        <PliteElement style={{ position: 'relative' }}>
-          <div className="plite-dom-coverage-summary" contentEditable={false}>
+        <EditorElement style={{ position: 'relative' }}>
+          <div className="editor-dom-coverage-summary" contentEditable={false}>
             Outer section
           </div>
           {childNodes[0]}
@@ -344,13 +339,13 @@ const Element = ({
             )}
             scope={{ from: 1, to: childNodes.length - 1, type: 'children' }}
           />
-        </PliteElement>
+        </EditorElement>
       );
     }
     case 'nested-section': {
       return (
-        <PliteElement style={{ position: 'relative' }}>
-          <div className="plite-dom-coverage-summary" contentEditable={false}>
+        <EditorElement style={{ position: 'relative' }}>
+          <div className="editor-dom-coverage-summary" contentEditable={false}>
             Nested section
           </div>
           {childNodes[0]}
@@ -364,13 +359,13 @@ const Element = ({
             )}
             scope={{ from: 1, to: childNodes.length - 1, type: 'children' }}
           />
-        </PliteElement>
+        </EditorElement>
       );
     }
     case 'deep-section': {
       return (
-        <PliteElement style={{ position: 'relative' }}>
-          <div className="plite-dom-coverage-summary" contentEditable={false}>
+        <EditorElement style={{ position: 'relative' }}>
+          <div className="editor-dom-coverage-summary" contentEditable={false}>
             Deep section
           </div>
           {childNodes[0]}
@@ -384,7 +379,7 @@ const Element = ({
             )}
             scope={{ from: 1, to: childNodes.length - 1, type: 'children' }}
           />
-        </PliteElement>
+        </EditorElement>
       );
     }
     case 'bulleted-list': {
@@ -409,7 +404,9 @@ const Element = ({
     }
     default: {
       return (
-        <PliteElement style={{ position: 'relative' }}>{children}</PliteElement>
+        <EditorElement style={{ position: 'relative' }}>
+          {children}
+        </EditorElement>
       );
     }
   }
@@ -424,7 +421,7 @@ const CoveragePlaceholder = ({
 }) => (
   <span
     aria-label={label}
-    className="plite-dom-coverage-placeholder"
+    className="editor-dom-coverage-placeholder"
     role="note"
   >
     {children}

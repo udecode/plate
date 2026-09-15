@@ -3,7 +3,7 @@ import type { EditorUpdatePolicy } from 'platejs';
 
 import {
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 
 type EditorHarness = Awaited<ReturnType<typeof openExample>>;
@@ -178,7 +178,7 @@ test.describe('document state example', () => {
       'Desktop focus-event mutation proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/document-state', {
       ready: {
         editor: 'visible',

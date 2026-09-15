@@ -1,9 +1,9 @@
 import { history } from 'plitejs/history';
-import { Editable, Plite, useEditor } from 'plitejs/react';
+import { Editable, EditorRoot, useEditor } from 'plitejs/react';
 
 const PlainTextExample = () => {
   const editor = useEditor({
-    extensions: [history()],
+    plugins: [history()],
     initialValue: [
       {
         type: 'paragraph',
@@ -14,9 +14,9 @@ const PlainTextExample = () => {
     ],
   });
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable placeholder="Enter some plain text..." />
-    </Plite>
+    </EditorRoot>
   );
 };
 

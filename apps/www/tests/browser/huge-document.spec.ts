@@ -1,11 +1,11 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 test('huge document mounts both editors with the current heading schema', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/docs/examples/huge-document', {

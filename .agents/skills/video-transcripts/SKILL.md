@@ -1,6 +1,6 @@
 ---
 name: video-transcripts
-description: Generate structured video transcripts from local files or video URLs using Gemini Files API. Use when a GitHub or Linear tracker item, comment, or attachment includes a screen recording, .mov, .mp4, or tracker-hosted video and you need a <video-transcripts> block instead of hand-written notes.
+description: "Transcribe a supplied local or linked video with Gemini Files API when its contents are needed as evidence."
 disable-model-invocation: true
 ---
 

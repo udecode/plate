@@ -81,10 +81,10 @@ const DEFAULT_DERIVED_EDITOR_SCHEMA: EditorSchemaDefinition = Object.freeze({
 
 const DEFAULT_DERIVED_EDITOR_SCHEMA_RECORD: Readonly<{
   contribution: EditorSchemaDeclaration;
-  extensionName: string;
+  pluginName: string;
 }> = Object.freeze({
   contribution: DEFAULT_DERIVED_EDITOR_SCHEMA,
-  extensionName: 'plite:derived-base-schema',
+  pluginName: 'plite:derived-base-schema',
 });
 
 const isCompleteSchemaDeclaration = (
@@ -141,7 +141,7 @@ const createDerivedBaseSchemaRecord = (
           }),
         }),
       }),
-      extensionName: DEFAULT_DERIVED_EDITOR_SCHEMA_RECORD.extensionName,
+      pluginName: DEFAULT_DERIVED_EDITOR_SCHEMA_RECORD.pluginName,
     });
   }
 
@@ -150,13 +150,13 @@ const createDerivedBaseSchemaRecord = (
       ...DEFAULT_DERIVED_EDITOR_SCHEMA,
       elements: Object.freeze({}),
     }),
-    extensionName: DEFAULT_DERIVED_EDITOR_SCHEMA_RECORD.extensionName,
+    pluginName: DEFAULT_DERIVED_EDITOR_SCHEMA_RECORD.pluginName,
   });
 };
 
 export type EditorSchemaContributionRecord = Readonly<{
   contribution: EditorSchemaDeclaration;
-  extensionName: string;
+  pluginName: string;
 }>;
 
 /**
@@ -255,7 +255,7 @@ export const readEditorSchemaIdentity = (
 
 export type EditorSchemaDiagnostic = Readonly<{
   code: string;
-  extensions: readonly string[];
+  plugins: readonly string[];
   message: string;
   path: string;
 }>;
@@ -269,9 +269,7 @@ export class EditorSchemaCompileError extends Error {
         left.path.localeCompare(right.path) ||
         left.code.localeCompare(right.code) ||
         left.message.localeCompare(right.message) ||
-        left.extensions
-          .join('\u0000')
-          .localeCompare(right.extensions.join('\u0000'))
+        left.plugins.join('\u0000').localeCompare(right.plugins.join('\u0000'))
     );
 
     super(sorted.map(({ message }) => message).join('\n'));
@@ -280,7 +278,7 @@ export class EditorSchemaCompileError extends Error {
       sorted.map((diagnostic) =>
         Object.freeze({
           ...diagnostic,
-          extensions: Object.freeze([...new Set(diagnostic.extensions)].sort()),
+          plugins: Object.freeze([...new Set(diagnostic.plugins)].sort()),
         })
       )
     );
@@ -546,7 +544,7 @@ export const resolveCompiledSchemaWrapperPlan = (
 };
 
 type Source<TValue> = Readonly<{
-  extensionName: string;
+  pluginName: string;
   path: string;
   value: TValue;
 }>;
@@ -660,12 +658,12 @@ const compileFailure = (
   sources: ReadonlyArray<Source<unknown>> | readonly string[],
   path: string
 ): never => {
-  const extensions = sources.map((source) =>
-    typeof source === 'string' ? source : source.extensionName
+  const plugins = sources.map((source) =>
+    typeof source === 'string' ? source : source.pluginName
   );
 
   throw new EditorSchemaCompileError([
-    Object.freeze({ code, extensions, message, path }),
+    Object.freeze({ code, plugins, message, path }),
   ]);
 };
 
@@ -674,15 +672,15 @@ const assertSchemaDeclarationOwnership = (
 ) => {
   const diagnostics: EditorSchemaDiagnostic[] = [];
 
-  for (const { contribution, extensionName } of records) {
+  for (const { contribution, pluginName } of records) {
     if (isCompleteSchemaDeclaration(contribution)) {
       for (const field of COMPLETE_SCHEMA_COMMON_FIELDS) {
         if (Object.hasOwn(contribution, field)) continue;
         diagnostics.push(
           Object.freeze({
             code: 'missing-complete-schema-field',
-            extensions: Object.freeze([extensionName]),
-            message: `Complete schema definition "${extensionName}" must own schema field "${field}".`,
+            plugins: Object.freeze([pluginName]),
+            message: `Complete schema definition "${pluginName}" must own schema field "${field}".`,
             path: `schema.${field}`,
           })
         );
@@ -696,8 +694,8 @@ const assertSchemaDeclarationOwnership = (
           diagnostics.push(
             Object.freeze({
               code: 'missing-complete-schema-field',
-              extensions: Object.freeze([extensionName]),
-              message: `Named schema definition "${extensionName}" must own schema field "${field}".`,
+              plugins: Object.freeze([pluginName]),
+              message: `Named schema definition "${pluginName}" must own schema field "${field}".`,
               path: `schema.${field}`,
             })
           );
@@ -711,8 +709,8 @@ const assertSchemaDeclarationOwnership = (
       diagnostics.push(
         Object.freeze({
           code: 'partial-schema-complete-field',
-          extensions: Object.freeze([extensionName]),
-          message: `Partial schema contribution "${extensionName}" cannot declare complete schema field "${field}".`,
+          plugins: Object.freeze([pluginName]),
+          message: `Partial schema contribution "${pluginName}" cannot declare complete schema field "${field}".`,
           path: `schema.${field}`,
         })
       );
@@ -726,11 +724,11 @@ const collectSchemaKeyDiagnostics = (
   records: readonly EditorSchemaContributionRecord[]
 ) => {
   const diagnostics: EditorSchemaDiagnostic[] = [];
-  const reportShape = (extensionName: string, path: string, shape: string) => {
+  const reportShape = (pluginName: string, path: string, shape: string) => {
     diagnostics.push(
       Object.freeze({
         code: 'invalid-schema-shape',
-        extensions: Object.freeze([extensionName]),
+        plugins: Object.freeze([pluginName]),
         message: `Schema declaration at ${path} must be ${shape}.`,
         path,
       })
@@ -738,11 +736,11 @@ const collectSchemaKeyDiagnostics = (
   };
   const object = (
     value: unknown,
-    extensionName: string,
+    pluginName: string,
     path: string
   ): Readonly<Record<string, unknown>> | null => {
     if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-      reportShape(extensionName, path, 'a plain object');
+      reportShape(pluginName, path, 'a plain object');
       return null;
     }
     const prototype = Object.getPrototypeOf(value);
@@ -752,7 +750,7 @@ const collectSchemaKeyDiagnostics = (
       Object.getPrototypeOf(prototype) === null;
 
     if (!plainObject) {
-      reportShape(extensionName, path, 'a plain object');
+      reportShape(pluginName, path, 'a plain object');
       return null;
     }
 
@@ -760,24 +758,24 @@ const collectSchemaKeyDiagnostics = (
   };
   const array = (
     value: unknown,
-    extensionName: string,
+    pluginName: string,
     path: string
   ): readonly unknown[] | null => {
     if (Array.isArray(value)) return value;
-    reportShape(extensionName, path, 'an array');
+    reportShape(pluginName, path, 'an array');
     return null;
   };
   const check = (
     value: unknown,
     allowed: readonly string[],
-    extensionName: string,
+    pluginName: string,
     path: string,
     options: Readonly<{
       nonEnumerable?: readonly string[];
       symbols?: boolean;
     }> = {}
   ) => {
-    const record = object(value, extensionName, path);
+    const record = object(value, pluginName, path);
 
     if (!record) return null;
     const supported = new Set(allowed);
@@ -803,8 +801,10 @@ const collectSchemaKeyDiagnostics = (
       diagnostics.push(
         Object.freeze({
           code: 'unknown-schema-key',
-          extensions: Object.freeze([extensionName]),
-          message: `Schema declaration at ${path} does not support key "${String(key)}".`,
+          plugins: Object.freeze([pluginName]),
+          message: `Schema declaration at ${path} does not support key "${String(
+            key
+          )}".`,
           path: `${path}.${label}`,
         })
       );
@@ -950,7 +950,7 @@ const collectSchemaKeyDiagnostics = (
     }
   };
 
-  for (const { contribution, extensionName } of records) {
+  for (const { contribution, pluginName } of records) {
     const complete = isCompleteSchemaDeclaration(contribution);
     const declaration = check(
       contribution,
@@ -967,7 +967,7 @@ const collectSchemaKeyDiagnostics = (
             'version',
           ]
         : ['contentRoots', 'elements', 'groups', 'properties', 'roots'],
-      extensionName,
+      pluginName,
       'schema'
     );
 
@@ -975,7 +975,7 @@ const collectSchemaKeyDiagnostics = (
     const elements =
       declaration.elements === undefined
         ? null
-        : object(declaration.elements, extensionName, 'elements');
+        : object(declaration.elements, pluginName, 'elements');
 
     for (const [type, value] of Object.entries(elements ?? {})) {
       const path = `elements.${type}`;
@@ -996,26 +996,26 @@ const collectSchemaKeyDiagnostics = (
           'slice',
           'void',
         ],
-        extensionName,
+        pluginName,
         path
       );
 
       if (!element) continue;
       if (element.content !== undefined) {
-        visitContent(element.content, extensionName, `${path}.content`);
+        visitContent(element.content, pluginName, `${path}.content`);
       }
       if (element.groups !== undefined) {
-        array(element.groups, extensionName, `${path}.groups`);
+        array(element.groups, pluginName, `${path}.groups`);
       }
       const contentRoots =
         element.contentRoots === undefined
           ? null
-          : object(element.contentRoots, extensionName, `${path}.contentRoots`);
+          : object(element.contentRoots, pluginName, `${path}.contentRoots`);
 
       for (const [slot, contentRoot] of Object.entries(contentRoots ?? {})) {
         visitContentRoot(
           contentRoot,
-          extensionName,
+          pluginName,
           `${path}.contentRoots.${slot}`,
           false
         );
@@ -1023,16 +1023,16 @@ const collectSchemaKeyDiagnostics = (
       const properties =
         element.properties === undefined
           ? null
-          : object(element.properties, extensionName, `${path}.properties`);
+          : object(element.properties, pluginName, `${path}.properties`);
 
       for (const [key, descriptor] of Object.entries(properties ?? {})) {
-        visitDescriptor(descriptor, extensionName, `${path}.properties.${key}`);
+        visitDescriptor(descriptor, pluginName, `${path}.properties.${key}`);
       }
       if (element.slice !== undefined) {
         check(
           element.slice,
           ['preserveContext', 'replaceWhenCovered'],
-          extensionName,
+          pluginName,
           `${path}.slice`
         );
       }
@@ -1040,44 +1040,39 @@ const collectSchemaKeyDiagnostics = (
     const groups =
       declaration.groups === undefined
         ? null
-        : object(declaration.groups, extensionName, 'groups');
+        : object(declaration.groups, pluginName, 'groups');
 
     for (const [group, value] of Object.entries(groups ?? {})) {
       const groupPath = `groups.${group}`;
-      const groupDeclaration = check(
-        value,
-        ['extends'],
-        extensionName,
-        groupPath
-      );
+      const groupDeclaration = check(value, ['extends'], pluginName, groupPath);
 
       if (groupDeclaration?.extends !== undefined) {
-        array(groupDeclaration.extends, extensionName, `${groupPath}.extends`);
+        array(groupDeclaration.extends, pluginName, `${groupPath}.extends`);
       }
     }
     if (declaration.root !== undefined) {
-      visitContent(declaration.root, extensionName, 'root');
+      visitContent(declaration.root, pluginName, 'root');
     }
     const roots =
       declaration.roots === undefined
         ? null
-        : object(declaration.roots, extensionName, 'roots');
+        : object(declaration.roots, pluginName, 'roots');
 
     for (const [name, value] of Object.entries(roots ?? {})) {
-      visitContent(value, extensionName, `roots.${name}`);
+      visitContent(value, pluginName, `roots.${name}`);
     }
     if (declaration.contentRoots !== undefined) {
-      array(declaration.contentRoots, extensionName, 'contentRoots')?.forEach(
+      array(declaration.contentRoots, pluginName, 'contentRoots')?.forEach(
         (value, index) => {
-          visitContentRoot(value, extensionName, `contentRoots.${index}`, true);
+          visitContentRoot(value, pluginName, `contentRoots.${index}`, true);
         }
       );
     }
     if (declaration.properties !== undefined) {
-      array(declaration.properties, extensionName, 'properties')?.forEach(
+      array(declaration.properties, pluginName, 'properties')?.forEach(
         (value, index) => {
           const path = `properties.${index}`;
-          const property = object(value, extensionName, path);
+          const property = object(value, pluginName, path);
           const placement = property?.placement;
 
           if (!property) return;
@@ -1106,56 +1101,49 @@ const collectSchemaKeyDiagnostics = (
                   'typeChange',
                   'value',
                 ],
-            extensionName,
+            pluginName,
             path,
             { symbols: true }
           );
           if (property.exclusive !== undefined) {
-            array(
-              property.exclusive,
-              extensionName,
-              `${path}.exclusive`
-            )?.forEach((innerValue, groupIndex) => {
-              const groupPath = `${path}.exclusive.${groupIndex}`;
-              const group = check(
-                innerValue,
-                ['id', 'kind'],
-                extensionName,
-                groupPath
-              );
-
-              if (
-                group &&
-                (typeof group.id !== 'string' ||
-                  group.id.length === 0 ||
-                  group.kind !== 'exclusive')
-              ) {
-                diagnostics.push(
-                  Object.freeze({
-                    code: 'invalid-schema-declaration',
-                    extensions: Object.freeze([extensionName]),
-                    message: `Schema declaration at ${groupPath} must be an exclusive property group with a non-empty id.`,
-                    path: groupPath,
-                  })
+            array(property.exclusive, pluginName, `${path}.exclusive`)?.forEach(
+              (innerValue, groupIndex) => {
+                const groupPath = `${path}.exclusive.${groupIndex}`;
+                const group = check(
+                  innerValue,
+                  ['id', 'kind'],
+                  pluginName,
+                  groupPath
                 );
+
+                if (
+                  group &&
+                  (typeof group.id !== 'string' ||
+                    group.id.length === 0 ||
+                    group.kind !== 'exclusive')
+                ) {
+                  diagnostics.push(
+                    Object.freeze({
+                      code: 'invalid-schema-declaration',
+                      plugins: Object.freeze([pluginName]),
+                      message: `Schema declaration at ${groupPath} must be an exclusive property group with a non-empty id.`,
+                      path: groupPath,
+                    })
+                  );
+                }
               }
-            });
+            );
           }
           if (
             property.key !== null &&
             typeof property.key === 'object' &&
             !Array.isArray(property.key)
           ) {
-            check(
-              property.key,
-              ['kind', 'prefix'],
-              extensionName,
-              `${path}.key`
-            );
+            check(property.key, ['kind', 'prefix'], pluginName, `${path}.key`);
           }
-          visitDescriptor(property.value, extensionName, `${path}.value`);
+          visitDescriptor(property.value, pluginName, `${path}.value`);
           if (property.target !== undefined) {
-            visitTarget(property.target, extensionName, `${path}.target`);
+            visitTarget(property.target, pluginName, `${path}.target`);
           }
         }
       );
@@ -1184,7 +1172,7 @@ const collectSchemaOwnershipConflictDiagnostics = (
         declarationsFor(record.contribution) ?? {}
       )) {
         const source: Source<unknown> = {
-          extensionName: record.extensionName,
+          pluginName: record.pluginName,
           path: pathFor(key),
           value,
         };
@@ -1195,16 +1183,16 @@ const collectSchemaOwnershipConflictDiagnostics = (
 
     for (const [key, owners] of sources) {
       if (owners.length < 2) continue;
-      const names = owners.map(({ extensionName }) => extensionName);
+      const names = owners.map(({ pluginName }) => pluginName);
       const ownership =
         names.length === 2
           ? `both "${names[0]}" and "${names[1]}"`
-          : `extensions ${names.map((name) => `"${name}"`).join(', ')}`;
+          : `plugins ${names.map((name) => `"${name}"`).join(', ')}`;
 
       diagnostics.push(
         Object.freeze({
           code,
-          extensions: Object.freeze(names),
+          plugins: Object.freeze(names),
           message: `Schema ${label} "${key}" is owned by ${ownership}.`,
           path: pathFor(key),
         })
@@ -1577,9 +1565,9 @@ const prepareEditorSchemaRecords = (
   )
     ? records
     : Object.freeze([...records, createDerivedBaseSchemaRecord(records)]);
-  const overrides = completeRecords.flatMap(({ contribution, extensionName }) =>
+  const overrides = completeRecords.flatMap(({ contribution, pluginName }) =>
     (contribution.overrides ?? []).map((override) => ({
-      extensionName,
+      pluginName,
       override,
     }))
   );
@@ -1590,31 +1578,31 @@ const prepareEditorSchemaRecords = (
 
   for (const record of completeRecords) {
     for (const type of Object.keys(record.contribution.elements ?? {})) {
-      elementOwners.set(`${record.extensionName}\u0000${type}`, type);
+      elementOwners.set(`${record.pluginName}\u0000${type}`, type);
     }
   }
 
   const elementPatches = new Map<string, ElementOverridePatch>();
   const propertyPatches = new Map<string, PropertyOverridePatch>();
   const claimedFacets = new Map<string, string>();
-  const claim = (key: string, extensionName: string) => {
+  const claim = (key: string, pluginName: string) => {
     const known = claimedFacets.get(key);
 
     if (known) {
       throw new Error(
-        `Schema override facet "${key}" is owned by both "${known}" and "${extensionName}".`
+        `Schema override facet "${key}" is owned by both "${known}" and "${pluginName}".`
       );
     }
-    claimedFacets.set(key, extensionName);
+    claimedFacets.set(key, pluginName);
   };
 
-  for (const { extensionName, override } of overrides) {
+  for (const { pluginName, override } of overrides) {
     if (override.kind === 'element') {
       const key = `${override.source}\u0000${override.element}`;
 
       if (!elementOwners.has(key)) {
         throw new Error(
-          `Schema override from "${extensionName}" targets unknown element "${override.source}:${override.element}".`
+          `Schema override from "${pluginName}" targets unknown element "${override.source}:${override.element}".`
         );
       }
       if (
@@ -1622,14 +1610,14 @@ const prepareEditorSchemaRecords = (
         (typeof override.type !== 'string' || override.type.length === 0)
       ) {
         throw new Error(
-          `Schema element type override from "${extensionName}" must be a non-empty string.`
+          `Schema element type override from "${pluginName}" must be a non-empty string.`
         );
       }
       for (const facet of ['content', 'groups', 'type'] as const) {
         if (override[facet] !== undefined) {
           claim(
             `element:${override.source}:${override.element}:${facet}`,
-            extensionName
+            pluginName
           );
         }
       }
@@ -1651,7 +1639,7 @@ const prepareEditorSchemaRecords = (
       if (override[facet] !== undefined) {
         claim(
           `property:${override.source}:${override.id}:${facet}`,
-          extensionName
+          pluginName
         );
       }
     }
@@ -1686,12 +1674,12 @@ const prepareEditorSchemaRecords = (
   }
 
   const usedPropertyPatches = new Set<string>();
-  const prepared = completeRecords.map(({ contribution, extensionName }) => {
+  const prepared = completeRecords.map(({ contribution, pluginName }) => {
     const { overrides: _overrides, ...declaration } = contribution;
     const promotedProperties: SchemaElementProperty[] = [];
     const elements = Object.fromEntries(
       Object.entries(declaration.elements ?? {}).map(([type, element]) => {
-        const patch = elementPatches.get(`${extensionName}\u0000${type}`);
+        const patch = elementPatches.get(`${pluginName}\u0000${type}`);
         const finalType = patch?.type ?? type;
         const content = patch?.content ?? element.content;
         const propertyEntries = Object.entries(
@@ -1706,7 +1694,7 @@ const prepareEditorSchemaRecords = (
             placement: 'element',
             target: originalTarget,
           });
-          const patchKey = `${extensionName}\u0000${id}`;
+          const patchKey = `${pluginName}\u0000${id}`;
           const propertyPatch = propertyPatches.get(patchKey);
 
           if (propertyPatch) usedPropertyPatches.add(patchKey);
@@ -1716,7 +1704,7 @@ const prepareEditorSchemaRecords = (
             propertyPatch.target === null
           ) {
             throw new Error(
-              `Schema property override "${extensionName}:${id}" cannot remove an element-property target.`
+              `Schema property override "${pluginName}:${id}" cannot remove an element-property target.`
             );
           }
           const finalTarget = remapSchemaTarget(
@@ -1790,7 +1778,7 @@ const prepareEditorSchemaRecords = (
     const properties = [
       ...(declaration.properties ?? []).map((property) => {
         const id = getCompiledSchemaPropertyId(property);
-        const patchKey = `${extensionName}\u0000${id}`;
+        const patchKey = `${pluginName}\u0000${id}`;
         const patch = propertyPatches.get(patchKey);
 
         if (patch) usedPropertyPatches.add(patchKey);
@@ -1801,7 +1789,7 @@ const prepareEditorSchemaRecords = (
           property.placement === 'element'
         ) {
           throw new Error(
-            `Schema property override "${extensionName}:${id}" cannot remove an element-property target.`
+            `Schema property override "${pluginName}:${id}" cannot remove an element-property target.`
           );
         }
         const target =
@@ -1861,7 +1849,7 @@ const prepareEditorSchemaRecords = (
             }
           : {}),
       }) as EditorSchemaDeclaration,
-      extensionName,
+      pluginName,
     });
   });
 
@@ -1896,9 +1884,9 @@ export const getEditorSchemaDeclarationKey = (
 
   assertSchemaDeclarationOwnership(prepared);
   const declarations = prepared
-    .map(({ contribution, extensionName }) => ({
+    .map(({ contribution, pluginName }) => ({
       contribution: getSchemaContributionDeclarationKey(contribution),
-      extensionName,
+      pluginName,
     }))
     .sort((left, right) =>
       JSON.stringify(left).localeCompare(JSON.stringify(right))
@@ -2251,7 +2239,11 @@ const compileContent = (
         'ambiguous-content-default',
         candidates.length === 0
           ? `Required schema content at ${source.path} has no constructible default.`
-          : `Required schema content at ${source.path} needs an explicit default; candidates are ${candidates.join(', ')}.`,
+          : `Required schema content at ${
+              source.path
+            } needs an explicit default; candidates are ${candidates.join(
+              ', '
+            )}.`,
         [source],
         source.path
       );
@@ -2714,7 +2706,9 @@ const canonicalizePropertyValue = (
     } catch (error) {
       compileFailure(
         'invalid-property-default',
-        `Schema property default at ${source.path} is not JSON: ${(error as Error).message}`,
+        `Schema property default at ${source.path} is not JSON: ${
+          (error as Error).message
+        }`,
         [source],
         source.path
       );
@@ -2751,7 +2745,9 @@ const canonicalizePropertyValue = (
     } catch (error) {
       compileFailure(
         'property-validation-failure',
-        `Schema property validation at ${source.path} threw: ${(error as Error).message}`,
+        `Schema property validation at ${source.path} threw: ${
+          (error as Error).message
+        }`,
         [source],
         source.path
       );
@@ -2968,7 +2964,9 @@ export const getCompiledSchemaPropertyId = (
       ? `exact:${declaration.key}`
       : `prefix:${declaration.key.prefix}`;
 
-  return `${declaration.placement}:${propertyKeyLabel(declaration.key)}@${hashSchemaIdentityString(
+  return `${declaration.placement}:${propertyKeyLabel(
+    declaration.key
+  )}@${hashSchemaIdentityString(
     `${selector}\u0000${canonicalTarget(declaration.target ?? null)}`
   )}`;
 };
@@ -3192,18 +3190,18 @@ const compileEditorSchemaInternal = (
   collectSchemaKeyDiagnostics(inputRecords);
 
   const explicitRecords = [...inputRecords].sort((left, right) =>
-    left.extensionName.localeCompare(right.extensionName)
+    left.pluginName.localeCompare(right.pluginName)
   );
-  const duplicateExtension = explicitRecords.find(
+  const duplicatePlugin = explicitRecords.find(
     (record, index) =>
-      explicitRecords[index - 1]?.extensionName === record.extensionName
+      explicitRecords[index - 1]?.pluginName === record.pluginName
   );
 
-  if (duplicateExtension) {
+  if (duplicatePlugin) {
     compileFailure(
       'duplicate-schema-contribution',
-      `Editor extension "${duplicateExtension.extensionName}" contributes schema more than once.`,
-      [duplicateExtension.extensionName],
+      `Editor plugin "${duplicatePlugin.pluginName}" contributes schema more than once.`,
+      [duplicatePlugin.pluginName],
       'schema'
     );
   }
@@ -3216,9 +3214,9 @@ const compileEditorSchemaInternal = (
     compileFailure(
       'duplicate-complete-schema',
       `Schema contributions contain multiple complete schemas: ${complete
-        .map(({ extensionName }) => extensionName)
+        .map(({ pluginName }) => pluginName)
         .join(', ')}.`,
-      complete.map(({ extensionName }) => extensionName),
+      complete.map(({ pluginName }) => pluginName),
       'schema'
     );
   }
@@ -3230,14 +3228,12 @@ const compileEditorSchemaInternal = (
     complete.length === 0
       ? [...explicitRecords, derivedBaseRecord]
       : explicitRecords
-  ).sort((left, right) =>
-    left.extensionName.localeCompare(right.extensionName)
-  );
+  ).sort((left, right) => left.pluginName.localeCompare(right.pluginName));
 
   collectSchemaOwnershipConflictDiagnostics(records);
   const definition = completeRecord.contribution as EditorSchemaDefinition;
   const identitySource: Source<unknown> = {
-    extensionName: completeRecord.extensionName,
+    pluginName: completeRecord.pluginName,
     path: 'schema',
     value: definition,
   };
@@ -3264,7 +3260,9 @@ const compileEditorSchemaInternal = (
   if (unknownPolicy !== 'preserve' && unknownPolicy !== 'reject') {
     compileFailure(
       'invalid-unknown-policy',
-      `${derived ? 'Derived editor schema' : `Editor schema "${definition.id}"`} unknown policy must be "preserve" or "reject".`,
+      `${
+        derived ? 'Derived editor schema' : `Editor schema "${definition.id}"`
+      } unknown policy must be "preserve" or "reject".`,
       [identitySource],
       'schema.unknown'
     );
@@ -3279,7 +3277,7 @@ const compileEditorSchemaInternal = (
       record.contribution.groups ?? {}
     ).sort(([left], [right]) => left.localeCompare(right))) {
       const source: Source<unknown> = {
-        extensionName: record.extensionName,
+        pluginName: record.pluginName,
         path: `groups.${group}`,
         value: declaration,
       };
@@ -3298,7 +3296,7 @@ const compileEditorSchemaInternal = (
       if (known) {
         compileFailure(
           'duplicate-group',
-          `Schema group "${group}" is owned by both "${known.extensionName}" and "${record.extensionName}".`,
+          `Schema group "${group}" is owned by both "${known.pluginName}" and "${record.pluginName}".`,
           [known, source],
           source.path
         );
@@ -3337,7 +3335,7 @@ const compileEditorSchemaInternal = (
       record.contribution.elements ?? {}
     ).sort(([left], [right]) => left.localeCompare(right))) {
       const source: Source<SchemaElement> = {
-        extensionName: record.extensionName,
+        pluginName: record.pluginName,
         path: `elements.${type}`,
         value: input,
       };
@@ -3348,7 +3346,7 @@ const compileEditorSchemaInternal = (
       if (known) {
         compileFailure(
           'duplicate-element-type',
-          `Schema element type "${type}" is owned by both "${known.source.extensionName}" and "${record.extensionName}".`,
+          `Schema element type "${type}" is owned by both "${known.source.pluginName}" and "${record.pluginName}".`,
           [known.source, source],
           source.path
         );
@@ -3410,7 +3408,7 @@ const compileEditorSchemaInternal = (
             ([slot, contentRoot]: [string, SchemaContentRootInput]) => [
               slot,
               {
-                extensionName: record.extensionName,
+                pluginName: record.pluginName,
                 path: `${source.path}.contentRoots.${slot}`,
                 value: Object.hasOwn(contentRoot, 'allowed')
                   ? Object.freeze({
@@ -3486,7 +3484,7 @@ const compileEditorSchemaInternal = (
   for (const element of mutableElements.values()) {
     if (!element.behavior.inline) {
       const source: Source<SchemaContent> = {
-        extensionName: element.source.extensionName,
+        pluginName: element.source.pluginName,
         path: `${element.source.path}.content`,
         value: element.content,
       };
@@ -3508,7 +3506,7 @@ const compileEditorSchemaInternal = (
   const mutableGroups = toGroupMembers(memberships);
   const rootsByName = new Map<string, Source<SchemaContent>>();
   const primaryRoot: Source<SchemaContent> = {
-    extensionName: completeRecord.extensionName,
+    pluginName: completeRecord.pluginName,
     path: 'root',
     value: definition.root,
   };
@@ -3518,7 +3516,7 @@ const compileEditorSchemaInternal = (
       record.contribution.roots ?? {}
     ).sort(([left], [right]) => left.localeCompare(right))) {
       const source: Source<SchemaContent> = {
-        extensionName: record.extensionName,
+        pluginName: record.pluginName,
         path: `roots.${name}`,
         value: root,
       };
@@ -3537,7 +3535,7 @@ const compileEditorSchemaInternal = (
       if (known) {
         compileFailure(
           'duplicate-root',
-          `Schema root "${name}" is owned by both "${known.extensionName}" and "${record.extensionName}".`,
+          `Schema root "${name}" is owned by both "${known.pluginName}" and "${record.pluginName}".`,
           [known, source],
           source.path
         );
@@ -3581,7 +3579,7 @@ const compileEditorSchemaInternal = (
       record.contribution.contentRoots ?? []
     ).entries()) {
       const source: Source<SchemaContentRootContribution> = {
-        extensionName: record.extensionName,
+        pluginName: record.pluginName,
         path: `contentRoots.${index}`,
         value: contribution,
       };
@@ -3617,7 +3615,7 @@ const compileEditorSchemaInternal = (
         if (previous) {
           compileFailure(
             'content-root-slot-conflict',
-            `Schema content root slot "${contribution.slot}" for element type "${type}" is declared by both "${previous.extensionName}" and "${record.extensionName}".`,
+            `Schema content root slot "${contribution.slot}" for element type "${type}" is declared by both "${previous.pluginName}" and "${record.pluginName}".`,
             [previous, source],
             source.path
           );
@@ -3625,7 +3623,7 @@ const compileEditorSchemaInternal = (
         element.contentRoots.set(
           contribution.slot,
           Object.freeze({
-            extensionName: record.extensionName,
+            pluginName: record.pluginName,
             path: source.path,
             value: Object.freeze({
               content: contribution.content,
@@ -3649,7 +3647,7 @@ const compileEditorSchemaInternal = (
 
   for (const element of mutableElements.values()) {
     const source: Source<SchemaContent> = {
-      extensionName: element.source.extensionName,
+      pluginName: element.source.pluginName,
       path: `${element.source.path}.content`,
       value: element.content,
     };
@@ -3729,7 +3727,7 @@ const compileEditorSchemaInternal = (
     mutablePrograms.set(`element:${element.type}`, program);
     for (const [slot, root] of element.contentRoots) {
       const contentSource: Source<SchemaContent> = {
-        extensionName: root.extensionName,
+        pluginName: root.pluginName,
         path: `${root.path}.content`,
         value: root.value.content,
       };
@@ -3907,7 +3905,7 @@ const compileEditorSchemaInternal = (
       key: clonedKey,
       lifecycle: Object.freeze({ ...lifecycle, copy }),
       merge: descriptor.kind === 'set' ? 'set' : 'replace',
-      owner: source.extensionName,
+      owner: source.pluginName,
       placement,
       role,
       ...(semanticId ? { semanticId } : {}),
@@ -3921,7 +3919,7 @@ const compileEditorSchemaInternal = (
       element.input.properties ?? {}
     ).sort(([left], [right]) => left.localeCompare(right))) {
       const source: Source<PropertyValueDescriptor> = {
-        extensionName: element.source.extensionName,
+        pluginName: element.source.pluginName,
         path: `${element.source.path}.properties.${key}`,
         value: descriptor,
       };
@@ -3947,7 +3945,7 @@ const compileEditorSchemaInternal = (
       record.contribution.properties ?? []
     ).entries()) {
       const source: Source<SchemaProperty> = {
-        extensionName: record.extensionName,
+        pluginName: record.pluginName,
         path: `properties.${index}`,
         value: property,
       };
@@ -4032,8 +4030,16 @@ const compileEditorSchemaInternal = (
       selectorDiagnostics.push(
         Object.freeze({
           code: 'property-selector-conflict',
-          extensions: Object.freeze([left.owner, right.owner]),
-          message: `Schema ${left.placement} property selectors "${propertyKeyLabel(left.key)}" and "${propertyKeyLabel(right.key)}" overlap in declarations from "${left.owner}" and "${right.owner}".`,
+          plugins: Object.freeze([left.owner, right.owner]),
+          message: `Schema ${
+            left.placement
+          } property selectors "${propertyKeyLabel(
+            left.key
+          )}" and "${propertyKeyLabel(
+            right.key
+          )}" overlap in declarations from "${left.owner}" and "${
+            right.owner
+          }".`,
           path: right.source.path,
         })
       );
@@ -4429,7 +4435,7 @@ const collectRuntimePropertyDescriptors = (
           Object.freeze({
             descriptor,
             source: {
-              extensionName: record.extensionName,
+              pluginName: record.pluginName,
               path: `elements.${type}.properties.${key}`,
               value: descriptor,
             },
@@ -4445,7 +4451,7 @@ const collectRuntimePropertyDescriptors = (
         Object.freeze({
           descriptor: property.value,
           source: {
-            extensionName: record.extensionName,
+            pluginName: record.pluginName,
             path: `properties.${index}`,
             value: property,
           },
@@ -5206,7 +5212,7 @@ const isEditorSchemaContractShape = (value: Record<string, unknown>) => {
       (diagnostic) =>
         isRecord(diagnostic) &&
         typeof diagnostic.code === 'string' &&
-        isStringArray(diagnostic.extensions) &&
+        isStringArray(diagnostic.plugins) &&
         typeof diagnostic.message === 'string' &&
         typeof diagnostic.path === 'string'
     ) &&

@@ -6,7 +6,7 @@ export type RenderLeafProps<N extends Text = Text, L extends Text = N> = {
   attributes: {
     [key: string]: unknown;
     className?: string;
-    'data-plite-leaf'?: true;
+    'data-editor-leaf'?: true;
     style?: any;
   };
   children: any;
@@ -22,7 +22,7 @@ export type StaticRenderLeafProps<N extends Text = Text, L extends Text = N> = {
   attributes: {
     [key: string]: unknown;
     className?: string;
-    'data-plite-leaf'?: true;
+    'data-editor-leaf'?: true;
     style?: any;
   };
   children: any;

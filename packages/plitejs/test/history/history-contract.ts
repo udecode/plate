@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
 import type {
@@ -31,13 +30,6 @@ import {
 } from '../../src/internal';
 import { inheritNodeKeys } from '../../src/utils/node-keys';
 
-const PLITE_IMPORT_RE = /import \{ createEditor \} from "plitejs"/;
-const PLITE_REACT_IMPORT_RE =
-  /import \{ useEditor \} from ["']plitejs\/react["']/;
-const HISTORY_SKIP_DOC_RE =
-  /editor\.update\(\{ history: "skip" \}\)\.text\.insert\("draft"\)/;
-const USE_PLITE_EDITOR_RE = /const editor = useEditor\(\{/;
-const CREATE_REACT_EDITOR_RE = /createReactEditor/;
 const ROLLBACK_ERROR_RE = /rollback/;
 
 const paragraph = (
@@ -84,7 +76,7 @@ const ContentRootHistorySchema = defineEditorSchema(
   }
 );
 
-const historyTestEditor = () => createEditor({ extensions: [history()] });
+const historyTestEditor = () => createEditor({ plugins: [history()] });
 
 const getHistory = (editor: EditorType) =>
   editor.read((state: any) => state.history());
@@ -163,22 +155,6 @@ const structuralDocumentChange = (change: DocumentChange): DocumentChange =>
   });
 
 describe('plite-history contract', () => {
-  it('documents React-owned history setup through useEditor', () => {
-    const docs = readFileSync(
-      new URL(
-        '../../../../content/docs/plite/libraries/plite-history/history-extension-setup.mdx',
-        import.meta.url
-      ),
-      'utf-8'
-    );
-
-    assert.match(docs, PLITE_IMPORT_RE);
-    assert.match(docs, PLITE_REACT_IMPORT_RE);
-    assert.match(docs, HISTORY_SKIP_DOC_RE);
-    assert.match(docs, USE_PLITE_EDITOR_RE);
-    assert.doesNotMatch(docs, CREATE_REACT_EDITOR_RE);
-  });
-
   it('keeps History.isHistory true before edits and across edit, undo, and redo', () => {
     const editor = historyTestEditor();
 
@@ -204,7 +180,7 @@ describe('plite-history contract', () => {
 
   it('revives runtime node keys across in-memory undo and redo without serializing them', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('one'), paragraph('two')],
     });
     const blockKeys = [editor.key([0]), editor.key([1])];
@@ -249,7 +225,7 @@ describe('plite-history contract', () => {
 
   it('rebases restored node keys across skipped edits and named roots', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: {
@@ -315,7 +291,7 @@ describe('plite-history contract', () => {
 
   it('preserves a key revived by a skipped edit when undo restores the same content', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('one'), paragraph('two')],
     });
     const revived = editor.read.children()[0];
@@ -660,7 +636,7 @@ describe('plite-history contract', () => {
 
   it('does not merge adjacent text history batches across roots', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('x')],
         roots: { header: [paragraph('')] },
@@ -694,7 +670,7 @@ describe('plite-history contract', () => {
 
   it('does not merge view-local text history batches across roots', () => {
     const runtime = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('m')],
         roots: { footer: [paragraph('f')], header: [paragraph('h')] },
@@ -759,7 +735,7 @@ describe('plite-history contract', () => {
 
   it('does not let explicit merge policy merge text batches across roots', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('m')],
         roots: { footer: [paragraph('f')], header: [paragraph('h')] },
@@ -834,7 +810,7 @@ describe('plite-history contract', () => {
 
   it('does not restore a primary selection into a sibling root undo batch', () => {
     const runtime = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -885,7 +861,7 @@ describe('plite-history contract', () => {
       children: [{ text: '' }],
     } as Descendant;
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('body')] },
     });
 
@@ -927,7 +903,7 @@ describe('plite-history contract', () => {
       type: 'portal',
     } as Descendant;
     const editor = createEditor({
-      extensions: [ContentRootHistorySchema, history()],
+      plugins: [ContentRootHistorySchema, history()],
       initialSelection: {
         anchor: { offset: 3, path: [0, 0], root: 'portal:1' },
         focus: { offset: 3, path: [0, 0], root: 'portal:1' },
@@ -1105,7 +1081,7 @@ describe('plite-history contract', () => {
     const oldChild = paragraph('old');
     const newChild = paragraph('new');
     const runtime = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [oldChild, paragraph('tail')] },
@@ -1220,7 +1196,7 @@ describe('plite-history contract', () => {
       type: 'quote',
     });
     const runtime = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('main')],
         roots: {

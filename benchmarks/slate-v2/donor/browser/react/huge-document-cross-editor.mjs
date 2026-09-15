@@ -571,7 +571,7 @@ const artifact = {
     browserName,
     viewport: { width: 1280, height: 720 },
     dpr: 1,
-    domStrategy: 'full',
+    rendering: 'complete',
     interleave: 'rotate surfaces by sample; same action sequence',
     clock:
       'First trusted event to last event-scheduled two-frame opportunity; not a verified paint or compositor timestamp. inputToVerifiedStateMs is an upper-bound snapshot-completion clock after extra settlement frames; text/format/clipboard oracles run afterward.',

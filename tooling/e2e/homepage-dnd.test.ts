@@ -1,21 +1,19 @@
 import { expect, test } from '@playwright/test';
 
-import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+import { recordBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 test.describe('homepage block drag', () => {
   test('moves a block without breaking follow-up editing', async ({ page }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
       strict: true,
     });
-    const editor = page.locator(
-      '[data-plite-editor="true"][contenteditable="true"]'
-    );
+    const editor = page.locator('[data-editor="true"][contenteditable="true"]');
     const welcomeBlock = editor
-      .locator('[data-plite-node="element"][data-plite-path]:visible')
+      .locator('[data-editor-node="element"][data-editor-path]:visible')
       .filter({ hasText: 'Welcome to the Plate Playground!' })
       .first();
     const introBlock = editor
-      .locator('[data-plite-node="element"][data-plite-path]:visible')
+      .locator('[data-editor-node="element"][data-editor-path]:visible')
       .filter({
         hasText: 'Experience a modern rich-text editor built with',
       })
@@ -75,7 +73,7 @@ test.describe('homepage block drag', () => {
           )
           .toBe(false);
         await expect(
-          editor.locator('[data-plite-drop-cursor]:visible')
+          editor.locator('[data-editor-drop-cursor]:visible')
         ).toHaveCount(0);
       } finally {
         await page.mouse.up();
@@ -90,8 +88,8 @@ test.describe('homepage block drag', () => {
 
       await expect
         .poll(async () => ({
-          intro: await introBlock.getAttribute('data-plite-path'),
-          welcome: await welcomeBlock.getAttribute('data-plite-path'),
+          intro: await introBlock.getAttribute('data-editor-path'),
+          welcome: await welcomeBlock.getAttribute('data-editor-path'),
         }))
         .toEqual({ intro: '0', welcome: '1' });
       await expect

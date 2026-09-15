@@ -2,7 +2,10 @@ import React, { useInsertionEffect, useRef } from 'react';
 
 import type { NodeKey, Path } from '../..';
 import type { ExternalTextAdapter } from '../external-text';
-import { useEditableDOMRuntime } from '../hooks/use-claim-editable-dom-commit';
+import {
+  useClaimEditableDOMCommit,
+  useEditableDOMRuntime,
+} from '../hooks/use-claim-editable-dom-commit';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 
 /** The stable noneditable host owns no canonical Text DOM. */
@@ -26,6 +29,7 @@ export const EditableExternalText = <TConfig,>({
     update: (config: TConfig) => void;
   } | null>(null);
 
+  useClaimEditableDOMCommit();
   useInsertionEffect(() => {
     runtime?.externalText.invalidateProjections();
   });
@@ -55,8 +59,8 @@ export const EditableExternalText = <TConfig,>({
     <span
       aria-label={ariaLabel}
       contentEditable={false}
-      data-plite-external-text=""
-      data-plite-external-text-path={elementPath.join(',')}
+      data-editor-external-text=""
+      data-editor-external-text-path={elementPath.join(',')}
       ref={host}
       role="group"
       style={{ display: 'block' }}

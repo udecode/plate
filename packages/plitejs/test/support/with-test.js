@@ -22,7 +22,7 @@ export const createFixtureTransactionApi = (editor, tx) => {
   const runtime = getEditorRuntime(editor);
 
   const api = {
-    install: (extension) => editor.install(extension),
+    install: (plugin) => editor.install(plugin),
     fragment: tx.fragment,
     marks: tx.marks,
     nodes: tx.nodes,

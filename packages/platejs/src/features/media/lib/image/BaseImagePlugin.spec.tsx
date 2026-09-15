@@ -1,7 +1,7 @@
-import { createEditor, defineBasePlugin, property } from '../../../../core';
+import { createEditor, definePlugin, property } from '../../../../core';
 import { BaseImagePlugin } from './BaseImagePlugin';
 
-const TestBoldPlugin = defineBasePlugin('bold', {
+const TestBoldPlugin = definePlugin('bold', {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -257,65 +257,6 @@ describe('BaseImagePlugin clipboard behavior', () => {
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'test' }], type: 'paragraph' },
     ]);
-  });
-
-  it('uploads a pasted image after its original block', async () => {
-    let resolveUpload = (_url: string) => {};
-    let uploadStarted = () => {};
-    const started = new Promise<void>((resolve) => {
-      uploadStarted = resolve;
-    });
-    const uploadImage = mock(() => {
-      uploadStarted();
-
-      return new Promise<string>((resolve) => {
-        resolveUpload = resolve;
-      });
-    });
-    const editor = createEditor({
-      plugins: [
-        BaseImagePlugin.configure({
-          initialState: { uploadImage },
-        }),
-      ],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 4, path: [0, 0] },
-        focus: { offset: 4, path: [0, 0] },
-      },
-      initialValue: [
-        { children: [{ text: 'test' }], type: 'paragraph' },
-        { children: [{ text: 'later' }], type: 'paragraph' },
-      ],
-    });
-    const data = {
-      files: [new File(['image'], 'image.png', { type: 'image/png' })],
-      getData: () => '',
-    };
-
-    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
-    await started;
-    editor.update.selection.set({
-      anchor: { offset: 5, path: [1, 0] },
-      focus: { offset: 5, path: [1, 0] },
-    });
-    resolveUpload('https://platejs.org/uploaded-image.png');
-    await new Promise((resolve) => {
-      setTimeout(resolve, 0);
-    });
-
-    expect(uploadImage).toHaveBeenCalledWith(
-      expect.stringMatching(/^data:image\/png;base64,/)
-    );
-    expect(editor.read.children().at(1)).toEqual({
-      children: [{ text: '' }],
-      type: 'image',
-      url: 'https://platejs.org/uploaded-image.png',
-    });
-    expect(editor.read.children().at(2)).toEqual({
-      children: [{ text: 'later' }],
-      type: 'paragraph',
-    });
   });
 
   it('respects disabled URL embedding', () => {

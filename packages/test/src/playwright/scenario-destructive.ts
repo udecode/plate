@@ -1,6 +1,6 @@
 import type {
-  PliteBrowserDestructiveEditingGauntletOptions,
-  PliteBrowserScenarioStep,
+  BrowserDestructiveEditingGauntletOptions,
+  BrowserScenarioStep,
 } from './types';
 
 const requirePositiveWordDeleteIterations = (value: number) => {
@@ -12,7 +12,7 @@ const requirePositiveWordDeleteIterations = (value: number) => {
 };
 
 /** Create a destructive editing conformance scenario. */
-export const createPliteBrowserDestructiveEditingGauntlet = ({
+export const createBrowserDestructiveEditingGauntlet = ({
   deleteAfterPasteKey = 'Backspace',
   domShape,
   followUpText,
@@ -28,7 +28,7 @@ export const createPliteBrowserDestructiveEditingGauntlet = ({
   wordDeleteIterations = 4,
   wordDeleteKey = 'Alt+Backspace',
   wordDeleteSelection,
-}: PliteBrowserDestructiveEditingGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserDestructiveEditingGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'select',
     label: 'select-paste-range',
@@ -147,7 +147,7 @@ export const createPliteBrowserDestructiveEditingGauntlet = ({
   },
   ...Array.from(
     { length: requirePositiveWordDeleteIterations(wordDeleteIterations) },
-    (_, index): PliteBrowserScenarioStep[] => [
+    (_, index): BrowserScenarioStep[] => [
       {
         key: wordDeleteKey,
         kind: 'press',

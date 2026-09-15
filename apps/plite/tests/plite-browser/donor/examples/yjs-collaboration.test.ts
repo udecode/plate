@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
 
 test.describe('yjs collaboration example', () => {
   test('maps Plite history across offline and remote edits', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const peerIds = ['a', 'b', 'c', 'd'] as const;
     const editor = (peerId: (typeof peerIds)[number]) =>
       page.locator(
@@ -79,7 +79,7 @@ test.describe('yjs collaboration example', () => {
   test('keeps a claimed schema room atomic across rejected peers and reconfiguration', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const peerIds = ['a', 'b', 'c', 'd'] as const;
     const readDocuments = () =>
       Promise.all(

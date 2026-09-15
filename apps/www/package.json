@@ -58,7 +58,7 @@
     "@excalidraw/excalidraw": "0.18.0",
     "@faker-js/faker": "9.8.0",
     "@floating-ui/react": "^0.26.23",
-    "@hocuspocus/provider": "2.15.2",
+    "@hocuspocus/provider": "3.4.4",
     "@hookform/resolvers": "5.1.1",
     "@lezer/highlight": "1.2.3",
     "@next/third-parties": "16.3.2",

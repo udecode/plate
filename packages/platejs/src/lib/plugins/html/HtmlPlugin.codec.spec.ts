@@ -12,7 +12,7 @@ import {
 } from '../../../facade';
 import { createEditor } from '../../editor';
 import { createEditorWithEditor } from '../../editor/withPlite';
-import { defineBasePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { BaseParagraphPlugin } from '../paragraph';
 
 describe('compilePlateHtmlCodec', () => {
@@ -32,7 +32,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('decodes and encodes one inferred element rule', () => {
-    const ParagraphPlugin = defineBasePlugin('customParagraph', {
+    const ParagraphPlugin = definePlugin('customParagraph', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/html': {
@@ -117,7 +117,7 @@ describe('compilePlateHtmlCodec', () => {
     expect(
       editor.api.html.deserialize({
         element:
-          '<p>Before<span data-plite-spacer style="color: transparent">﻿</span>After</p>',
+          '<p>Before<span data-editor-spacer style="color: transparent">﻿</span>After</p>',
       })
     ).toEqual([
       {
@@ -128,7 +128,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('fits inline content into structural containers without losing block boundaries', () => {
-    const QuotePlugin = defineBasePlugin('quoteCodec', {
+    const QuotePlugin = definePlugin('quoteCodec', {
       schema: {
         element: {
           content: schema.content.type('paragraph', {
@@ -175,7 +175,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('wraps root inline HTML in the structural application root without document padding', () => {
-    const SectionPlugin = defineBasePlugin('htmlApplicationSection', {
+    const SectionPlugin = definePlugin('htmlApplicationSection', {
       schema: {
         element: {
           content: schema.content.element(BaseParagraphPlugin, { min: 1 }),
@@ -200,7 +200,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('materializes each unmatched root block with its applicable properties', () => {
-    const AlignPlugin = defineBasePlugin('rootAlign', {
+    const AlignPlugin = definePlugin('rootAlign', {
       schema: () => ({
         properties: {
           align: schema.elementProperty(property.string(), {
@@ -218,7 +218,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const LineHeightPlugin = defineBasePlugin('rootLineHeight', {
+    const LineHeightPlugin = definePlugin('rootLineHeight', {
       schema: () => ({
         properties: {
           lineHeight: schema.elementProperty(property.number(), {
@@ -236,7 +236,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const IndentPlugin = defineBasePlugin('rootIndent', {
+    const IndentPlugin = definePlugin('rootIndent', {
       schema: () => ({
         properties: {
           indent: schema.elementProperty(property.number(), {
@@ -285,7 +285,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('keeps unmatched table metadata wrappers transparent', () => {
-    const CellPlugin = defineBasePlugin('tableCell', {
+    const CellPlugin = definePlugin('tableCell', {
       schema: ({ plugins }) => ({
         element: {
           content: plugins.blockContent({
@@ -303,7 +303,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const RowPlugin = defineBasePlugin('tableRow', {
+    const RowPlugin = definePlugin('tableRow', {
       schema: {
         element: {
           content: schema.content.element(CellPlugin, { min: 1 }),
@@ -318,7 +318,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const TablePlugin = defineBasePlugin('table', {
+    const TablePlugin = definePlugin('table', {
       dependencies: [RowPlugin, CellPlugin],
       schema: {
         element: {
@@ -382,7 +382,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('reserves text/html for the inferred HTML compiler', () => {
-    const InvalidPlugin = defineBasePlugin('invalidGenericHtml', {
+    const InvalidPlugin = definePlugin('invalidGenericHtml', {
       // @plate-schema-adoption-negative-codec
       codecs: () =>
         ({
@@ -399,7 +399,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('composes inferred mark wrappers and element-property patches', () => {
-    const ParagraphPlugin = defineBasePlugin('paragraphCodec', {
+    const ParagraphPlugin = definePlugin('paragraphCodec', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -415,7 +415,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const BoldPlugin = defineBasePlugin('boldCodec', {
+    const BoldPlugin = definePlugin('boldCodec', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -428,7 +428,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const AlignPlugin = defineBasePlugin('alignCodec', {
+    const AlignPlugin = definePlugin('alignCodec', {
       schema: {
         properties: {
           align: schema.elementProperty(property.string(), {
@@ -485,7 +485,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('delegates plain-equivalent HTML so plain text keeps active marks', () => {
-    const BoldPlugin = defineBasePlugin('boldPlainTextFallback', {
+    const BoldPlugin = definePlugin('boldPlainTextFallback', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -526,7 +526,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('keeps meaningful HTML in the Plate codec when plain text also exists', () => {
-    const BoldPlugin = defineBasePlugin('boldMeaningfulHtml', {
+    const BoldPlugin = definePlugin('boldMeaningfulHtml', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -555,7 +555,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('preserves case-sensitive CSS custom property names', () => {
-    const ParagraphPlugin = defineBasePlugin('brandParagraph', {
+    const ParagraphPlugin = definePlugin('brandParagraph', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -602,7 +602,7 @@ describe('compilePlateHtmlCodec', () => {
 
   it('validates CSS declaration names and values before encoding', () => {
     const reports = spyOn(console, 'error').mockImplementation(() => {});
-    const ParagraphPlugin = defineBasePlugin('cssParagraph', {
+    const ParagraphPlugin = definePlugin('cssParagraph', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -683,7 +683,7 @@ describe('compilePlateHtmlCodec', () => {
 
   it('runs direct flat hooks exactly once around compiled traversal', () => {
     const calls: string[] = [];
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase1', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase1', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -699,7 +699,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const HooksPlugin = defineBasePlugin('htmlHooks', {
+    const HooksPlugin = definePlugin('htmlHooks', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/html': {
@@ -741,7 +741,7 @@ describe('compilePlateHtmlCodec', () => {
       children: [{ text }],
       type: 'htmlParagraphCase2' as const,
     });
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase2', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase2', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -757,7 +757,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const FirstPlugin = defineBasePlugin('firstHtmlHook', {
+    const FirstPlugin = definePlugin('firstHtmlHook', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/html': {
@@ -774,7 +774,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const SecondPlugin = defineBasePlugin('secondHtmlHook', {
+    const SecondPlugin = definePlugin('secondHtmlHook', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/html': {
@@ -815,7 +815,7 @@ describe('compilePlateHtmlCodec', () => {
 
   it('stops before flat transforms and node callbacks when query rejects', () => {
     const calls: string[] = [];
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase3', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase3', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -835,7 +835,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const HooksPlugin = defineBasePlugin('rejectHtml', {
+    const HooksPlugin = definePlugin('rejectHtml', {
       codecs: ({ defineCodecs }) =>
         defineCodecs({
           'text/html': {
@@ -869,7 +869,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('derives a declared primary element and patches its nested target', () => {
-    const ParagraphPlugin = defineBasePlugin('listParagraph', {
+    const ParagraphPlugin = definePlugin('listParagraph', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -891,7 +891,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const ListPlugin = defineBasePlugin('listCodec', {
+    const ListPlugin = definePlugin('listCodec', {
       schema: {
         properties: {
           listStart: schema.elementProperty(property.number(), {
@@ -932,7 +932,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const IndentPlugin = defineBasePlugin('indentCodec', {
+    const IndentPlugin = definePlugin('indentCodec', {
       schema: {
         properties: {
           indent: schema.elementProperty(property.number(), {
@@ -997,7 +997,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('does not skip a missing configured primary element target', () => {
-    const ParagraphPlugin = defineBasePlugin('configuredPrimary', {
+    const ParagraphPlugin = definePlugin('configuredPrimary', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1013,7 +1013,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const ListPlugin = defineBasePlugin('missingPrimaryList', {
+    const ListPlugin = definePlugin('missingPrimaryList', {
       schema: {
         properties: {
           listStyle: schema.elementProperty(property.string(), {
@@ -1039,7 +1039,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('orders composable wrappers independently of plugin array order', () => {
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase4', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase4', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1055,7 +1055,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const AlphaPlugin = defineBasePlugin('alphaMark', {
+    const AlphaPlugin = definePlugin('alphaMark', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -1068,7 +1068,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const ZuluPlugin = defineBasePlugin('zuluMark', {
+    const ZuluPlugin = definePlugin('zuluMark', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -1109,7 +1109,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('keeps generated plugin permutations and mark sets deterministic', () => {
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase5', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase5', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1126,7 +1126,7 @@ describe('compilePlateHtmlCodec', () => {
         }),
     });
     const mark = (name: string, tag: string) =>
-      defineBasePlugin(name, {
+      definePlugin(name, {
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
         },
@@ -1197,7 +1197,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('fuzzes escaped DOM values without mutation using replayable seed 0xc05', () => {
-    const ParagraphPlugin = defineBasePlugin('labeledParagraph', {
+    const ParagraphPlugin = definePlugin('labeledParagraph', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1263,7 +1263,7 @@ describe('compilePlateHtmlCodec', () => {
   it('keeps indexed large-payload callback growth linear', () => {
     let paragraphCalls = 0;
     let unrelatedCalls = 0;
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase6', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase6', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1284,7 +1284,7 @@ describe('compilePlateHtmlCodec', () => {
         }),
     });
     const unrelated = Array.from({ length: 48 }, (_, index) =>
-      defineBasePlugin(`indexedUnrelated${index}`, {
+      definePlugin(`indexedUnrelated${index}`, {
         schema: {
           element: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -1325,7 +1325,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('rejects equal-priority overlapping element candidates', () => {
-    const AlphaPlugin = defineBasePlugin('alphaElementCodec', {
+    const AlphaPlugin = definePlugin('alphaElementCodec', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1340,7 +1340,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const ZuluPlugin = defineBasePlugin('zuluElementCodec', {
+    const ZuluPlugin = definePlugin('zuluElementCodec', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1362,7 +1362,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('delegates an exclusive decode to the next lower-priority candidate', () => {
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase7', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase7', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1378,7 +1378,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const HigherPlugin = defineBasePlugin('higherElementCodec', {
+    const HigherPlugin = definePlugin('higherElementCodec', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1396,7 +1396,7 @@ describe('compilePlateHtmlCodec', () => {
         },
       }),
     }));
-    const LowerPlugin = defineBasePlugin('lowerElementCodec', {
+    const LowerPlugin = definePlugin('lowerElementCodec', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1435,7 +1435,7 @@ describe('compilePlateHtmlCodec', () => {
     let lowerMarkCalls = 0;
     let lowerPropertyCalls = 0;
     const reports: unknown[] = [];
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase8', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase8', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1451,7 +1451,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const BoldPlugin = defineBasePlugin('winnerBold', {
+    const BoldPlugin = definePlugin('winnerBold', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -1477,7 +1477,7 @@ describe('compilePlateHtmlCodec', () => {
         },
       }),
     }));
-    const AlignPlugin = defineBasePlugin('winnerAlign', {
+    const AlignPlugin = definePlugin('winnerAlign', {
       schema: {
         properties: {
           align: schema.elementProperty(property.string(), {
@@ -1534,7 +1534,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('delegates an invalid exclusive decode result without leaking fields', () => {
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase9', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase9', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1550,7 +1550,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const HigherPlugin = defineBasePlugin('invalidHigherElementCodec', {
+    const HigherPlugin = definePlugin('invalidHigherElementCodec', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1566,7 +1566,7 @@ describe('compilePlateHtmlCodec', () => {
         },
       }),
     }));
-    const LowerPlugin = defineBasePlugin('validLowerElementCodec', {
+    const LowerPlugin = definePlugin('validLowerElementCodec', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1603,7 +1603,7 @@ describe('compilePlateHtmlCodec', () => {
 
   it('delegates schema-invalid explicit children to a lower element candidate', () => {
     const reports: unknown[] = [];
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase10', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase10', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1619,7 +1619,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const HigherPlugin = defineBasePlugin('invalidChildrenHigher', {
+    const HigherPlugin = definePlugin('invalidChildrenHigher', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1642,7 +1642,7 @@ describe('compilePlateHtmlCodec', () => {
         },
       }),
     }));
-    const LowerPlugin = defineBasePlugin('validChildrenLower', {
+    const LowerPlugin = definePlugin('validChildrenLower', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1686,7 +1686,7 @@ describe('compilePlateHtmlCodec', () => {
   it('returns null instead of falling back when direct compiled decode is invalid', () => {
     const reports: unknown[] = [];
     let validations = 0;
-    const ParagraphPlugin = defineBasePlugin('validatedParagraph', {
+    const ParagraphPlugin = definePlugin('validatedParagraph', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1733,7 +1733,7 @@ describe('compilePlateHtmlCodec', () => {
 
   it('reports one contextual lifecycle error for an encode callback failure', () => {
     const reports: unknown[] = [];
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase11', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase11', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1782,7 +1782,7 @@ describe('compilePlateHtmlCodec', () => {
 
   it('allows safe iframes and raster data images but rejects active content', () => {
     const reports: unknown[] = [];
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase12', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase12', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1798,7 +1798,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const FramePlugin = defineBasePlugin('safeFrame', {
+    const FramePlugin = definePlugin('safeFrame', {
       schema: {
         element: {
           properties: {
@@ -1829,7 +1829,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const ImagePlugin = defineBasePlugin('safeImage', {
+    const ImagePlugin = definePlugin('safeImage', {
       schema: {
         element: {
           properties: { src: property.string() },
@@ -1850,7 +1850,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const BaseUrlPlugin = defineBasePlugin('baseUrl', {
+    const BaseUrlPlugin = definePlugin('baseUrl', {
       schema: {
         element: {
           properties: { href: property.string() },
@@ -1972,7 +1972,7 @@ describe('compilePlateHtmlCodec', () => {
 
   it('aborts the whole encode on conflicting normalized patch writes', () => {
     const report = spyOn(console, 'error').mockImplementation(() => {});
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase13', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase13', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -1988,7 +1988,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const ColorPlugin = defineBasePlugin('colorCodec', {
+    const ColorPlugin = definePlugin('colorCodec', {
       schema: {
         properties: {
           color: schema.elementProperty(property.string(), {
@@ -2005,7 +2005,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const TonePlugin = defineBasePlugin('toneCodec', {
+    const TonePlugin = definePlugin('toneCodec', {
       schema: {
         properties: {
           tone: schema.elementProperty(property.string(), {
@@ -2047,7 +2047,7 @@ describe('compilePlateHtmlCodec', () => {
 
   it('aborts encode when structural and patch specs use both style channels', () => {
     const report = spyOn(console, 'error').mockImplementation(() => {});
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase14', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase14', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -2067,7 +2067,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const TonePlugin = defineBasePlugin('toneStyleChannel', {
+    const TonePlugin = definePlugin('toneStyleChannel', {
       schema: {
         properties: {
           tone: schema.elementProperty(property.string(), {
@@ -2109,7 +2109,7 @@ describe('compilePlateHtmlCodec', () => {
 
   it('rejects cyclic specs without writing partial HTML', () => {
     const report = spyOn(console, 'error').mockImplementation(() => {});
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase15', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase15', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -2149,7 +2149,7 @@ describe('compilePlateHtmlCodec', () => {
 
   it('rejects duplicate patch targets without writing partial HTML', () => {
     const report = spyOn(console, 'error').mockImplementation(() => {});
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase16', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase16', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -2192,7 +2192,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('omits metadata and aborts unmapped content properties', () => {
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase17', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase17', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -2208,7 +2208,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const UnmappedPlugin = defineBasePlugin('unmappedProperty', {
+    const UnmappedPlugin = definePlugin('unmappedProperty', {
       schema: {
         properties: {
           unmapped: schema.elementProperty(property.string(), {
@@ -2259,7 +2259,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('aborts encode when a decode-only property claim is present', () => {
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase18', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase18', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -2275,7 +2275,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const DecodeOnlyPlugin = defineBasePlugin('decodeOnlyProperty', {
+    const DecodeOnlyPlugin = definePlugin('decodeOnlyProperty', {
       schema: {
         properties: {
           tone: schema.elementProperty(property.string(), {
@@ -2317,7 +2317,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('keeps JSON null as an owned property value', () => {
-    const ParagraphPlugin = defineBasePlugin('htmlParagraphCase19', {
+    const ParagraphPlugin = definePlugin('htmlParagraphCase19', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -2333,7 +2333,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const NullablePlugin = defineBasePlugin('nullableCodec', {
+    const NullablePlugin = definePlugin('nullableCodec', {
       schema: {
         properties: {
           nullable: schema.elementProperty(property.json(), {
@@ -2385,7 +2385,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('rejects equal-priority foreign encoders for one property claim', () => {
-    const AlignPlugin = defineBasePlugin('foreignAlignTarget', {
+    const AlignPlugin = definePlugin('foreignAlignTarget', {
       schema: {
         properties: {
           align: schema.elementProperty(property.string(), {
@@ -2394,7 +2394,7 @@ describe('compilePlateHtmlCodec', () => {
         },
       },
     });
-    const AlphaPlugin = defineBasePlugin('alphaForeignAlign', {
+    const AlphaPlugin = definePlugin('alphaForeignAlign', {
       codecs: ({ defineCodecs }) =>
         defineCodecs(AlignPlugin, {
           'text/html': {
@@ -2404,7 +2404,7 @@ describe('compilePlateHtmlCodec', () => {
           },
         }),
     });
-    const ZuluPlugin = defineBasePlugin('zuluForeignAlign', {
+    const ZuluPlugin = definePlugin('zuluForeignAlign', {
       codecs: ({ defineCodecs }) =>
         defineCodecs(AlignPlugin, {
           'text/html': {
@@ -2423,17 +2423,17 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('rejects same-owner wrapper encoders with an unresolved ordering tie', () => {
-    const AlphaMark = defineBasePlugin('alphaForeignMark', {
+    const AlphaMark = definePlugin('alphaForeignMark', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
     });
-    const BetaMark = defineBasePlugin('betaForeignMark', {
+    const BetaMark = definePlugin('betaForeignMark', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
     });
-    const OwnerPlugin = defineBasePlugin('tiedForeignMarkOwner', {
+    const OwnerPlugin = definePlugin('tiedForeignMarkOwner', {
       codecs: ({ defineCodecs }) =>
         defineCodecs(AlphaMark, {
           'text/html': {
@@ -2458,7 +2458,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('resolves a foreign target name to its installed declared type', () => {
-    const TargetPlugin = defineBasePlugin('foreignParagraph', {
+    const TargetPlugin = definePlugin('foreignParagraph', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -2466,7 +2466,7 @@ describe('compilePlateHtmlCodec', () => {
         },
       },
     });
-    const ForeignOwner = defineBasePlugin('foreignElementOwner', {
+    const ForeignOwner = definePlugin('foreignElementOwner', {
       codecs: ({ defineCodecs }) =>
         defineCodecs(TargetPlugin, {
           'text/html': {
@@ -2517,7 +2517,7 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('rejects an unrelated same-name foreign schema family', () => {
-    const AuthoredTarget = defineBasePlugin('foreignFamilyTarget', {
+    const AuthoredTarget = definePlugin('foreignFamilyTarget', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -2525,7 +2525,7 @@ describe('compilePlateHtmlCodec', () => {
         },
       },
     });
-    const InstalledTarget = defineBasePlugin(AuthoredTarget.name, {
+    const InstalledTarget = definePlugin(AuthoredTarget.name, {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -2533,7 +2533,7 @@ describe('compilePlateHtmlCodec', () => {
         },
       },
     });
-    const ForeignOwner = defineBasePlugin('foreignFamilyOwner', {
+    const ForeignOwner = definePlugin('foreignFamilyOwner', {
       codecs: ({ defineCodecs }) =>
         defineCodecs(AuthoredTarget, {
           'text/html': {
@@ -2554,12 +2554,12 @@ describe('compilePlateHtmlCodec', () => {
   });
 
   it('keeps foreign family metadata distinct when one callback is reused', () => {
-    const AlphaMark = defineBasePlugin('reusedAlphaMark', {
+    const AlphaMark = definePlugin('reusedAlphaMark', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
     });
-    const BetaMark = defineBasePlugin('reusedBetaMark', {
+    const BetaMark = definePlugin('reusedBetaMark', {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -2569,7 +2569,7 @@ describe('compilePlateHtmlCodec', () => {
       decodeOnly: true as const,
       match: [{ tag: 'strong' }] as const,
     });
-    const Owner = defineBasePlugin('reusedForeignOwner', {
+    const Owner = definePlugin('reusedForeignOwner', {
       codecs: ({ defineCodecs }) =>
         defineCodecs(AlphaMark, {
           'text/html': {

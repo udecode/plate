@@ -1,5 +1,222 @@
 # Research Log
 
+## [2026-09-14] review | Suggestion initialization ownership
+
+- Pursue removing fixture edit replay, author switching and late thread
+  attachment from the rich-text editor example. Load one native authored
+  document and matching application threads through their existing owners.
+- Reject a parallel suggestion store in plugin state. Compare declarative
+  mode defaults with exposing the native mounted-view input through Plate;
+  the existing view owner is the strongest candidate.
+- This bounded source review reaffirms native authored and optional-plugin
+  ownership. It adds no implementation, browser or performance certification.
+
+See [the decision](decisions/suggestion-review-semantics.md) and
+[the immutable review](review-records/2026-09-14-suggestions-initialization.json).
+
+## [2026-09-14] review | Collaboration lifetime ownership
+
+- Reviewed ledger item 10 across 12 census groups. Pursue separating transport
+  and presence operations from document transactions and cutting Plate's
+  duplicate Yjs configuration store. Retain CRDT identity, sync/schema admission,
+  canonical imports and exact-view cursor presentation.
+- Reproduced disconnect, pause and cursor publication from both a discarded
+  spec and an aborted update, with unchanged text and zero commits. Seventy-seven
+  existing contracts pass; no browser, real server or performance proof claimed.
+- Task design/planning owns the coupled configuration, readiness, lifetime,
+  adoption and proof decisions. No product implementation in this review.
+
+See [the decision](decisions/collaboration-ownership.md),
+[the proof receipt](../plans/artifacts/2026-09-14-collaboration-proof.md), and
+[the immutable review](review-records/2026-09-14-collaboration-lifetime-ownership.json).
+
+## [2026-09-13] review | Suggestion-audit omission challenge
+
+- Retracted the first audit's 32-family completeness claim after three
+  independent omission audits and a cross-judge. The bounded denominator is
+  44 families: 37 Google-facing and seven Plate/Plite platform/lifecycle rows.
+- Added programmatic/bulk creation, author withdrawal, closed review history,
+  partial publication failure, and document/named styles. Made structural
+  producers, AI, external text, anchors, retained history, codecs/formats, and
+  mounted-view lifetime explicit.
+- Mapped all 48 current Google request union members and all earlier F01–F32
+  contracts to the corrected families. The check proves inventory coverage
+  within those sources; it does not certify Google web-UI or Plate parity.
+- Reaffirmed native authored ownership and the cut of kind-plus-ranges as the
+  sole review contract. The corrected target also needs producer outcomes,
+  durable review provenance, global scopes, and actionable stale/partial states.
+
+See [the corrected audit](../plans/artifacts/google-docs-suggestion-audit/audit.md),
+[the crosswalk](../plans/artifacts/google-docs-suggestion-audit/coverage-crosswalk.json),
+[the challenge synthesis](../plans/artifacts/google-docs-suggestion-audit/omission-synthesis.md),
+[the decision](decisions/suggestion-review-semantics.md), and
+[the correcting review](review-records/2026-09-13-suggestions-omission-audit.json).
+
+## [2026-09-13] review | Google Docs suggesting behavior and Plate coverage
+
+- Audited 32 behavior families using primary Google sources, Chrome probes in
+  a synthetic document tab, current native/Plate source, and the pinned main
+  Suggestion package. Nineteen families have a live Google subset; seven rely
+  on documentation; six have unresolved Google behavior. No full parity claim.
+- Pursue native per-change semantic details and complete Plate review. Cut
+  the assumption that kind and text ranges fully describe paragraph boundaries,
+  property values, lists, and tables. Do not restore a second mutation engine.
+- Found a first-200-pending card limit, omitted conflicted changes, generic
+  descriptions, and silent non-applied decisions. Corrected the interpretation
+  of earlier broad completion claims while preserving their historical proof.
+- Task design/planning owns the coupled contract and adoption question,
+  beginning with actual paragraph split/merge and valued-mark review lifecycles.
+  This audit changed research artifacts only; no implementation or test run.
+
+See [the audit](../plans/artifacts/google-docs-suggestion-audit/audit.md),
+[the decision](decisions/suggestion-review-semantics.md), and
+[the immutable review](review-records/2026-09-13-suggestions-google-docs-audit.json).
+
+## [2026-09-12] design | Directly loadable authored state
+
+- Keep ordinary loading/saving calls and the native authored capability. Target
+  the removal of full operation reduction and pending-edit replay during open.
+- Three fresh-process pairs per runtime measure current native loading at
+  about 2.51 seconds. A strictly validated retained-text subset decodes in
+  67.8 ms Bun / 71.6 ms Node; its payload is 5.19 MB versus 17.12 MB.
+- Defer production representation acceptance. The subset has no native
+  transaction/anchor/causal runtime and its detached decisions scan everything.
+  The redundant mirror control grows to 44.25 MB without improving loading;
+  skipping consistency validation admits forged projected text.
+- Task owns the remaining coupled Plite format, incremental runtime, retention
+  and proof job. The new packet fingerprints current sources; earlier full
+  suites remain evidence of their original snapshots. No fourth production
+  optimization trial or product edit was started.
+
+See [the design](../plans/2026-09-12-authored-loadable-state-design.md),
+[probe evidence](../plans/artifacts/authored-loadable-state/summary.json) and
+[immutable review](review-records/2026-09-12-authored-loadable-state.json).
+
+## [2026-09-12] review | Authored state loading and scalability
+
+- Pursue directly loadable current authored state, cutting operation reduction
+  and pending-edit replay on open. Keep native review semantics and the measured
+  bulk optimizations; the exact checkpoint/content representation is provisional.
+- Reused the matched reload evidence with all 193 loaded Plite inputs unchanged.
+  Current native load is about 2.5 seconds. The all-pending fixture rules out
+  archiving closed history as a sufficient fix.
+- Compared continued optimization, checkpoint changes, new loading machinery,
+  deletion of replay authority, retained-content representation, plain marks and
+  whole-substrate replacement. Preserve identities, dependencies, deleted
+  content, validation, atomic decisions and delayed-peer behavior.
+- Reconciled the earlier adoption record and stale compiled status. Best API
+  owns the current-state/retention contract, with Benchmark required before
+  accepting the runtime representation. No product edit or fourth trial ran.
+
+See [the decision](decisions/authored-change-ownership.md) and
+[immutable review](review-records/2026-09-12-authored-scalability.json).
+
+## [2026-09-12] research | Large-document contract and native lifetime
+
+- Reopened the provisional design against six local reference repositories and
+  current rendering, pagination, clipboard, package and SSR owners.
+- Confirmed host/focus replacement, overlapping virtual-child replacement,
+  implicit pagination unit filtering and mixed copy-policy behavior with five
+  package probes. Three projection comparisons preserve keys/extent while
+  removing the second page projection's repeated work; native rendering remains
+  gated.
+- Prefer pagination's existing canvas coordinates and private mounted-key
+  adapter. Withdraw the extra coordinate normalization and root CSS marker.
+  Keep one explicit omission input as the leading public shape, with a virtual
+  entrypoint as the material dependency/lifetime challenger.
+- Reconciled 126 bounded owner rows, 83 adoption paths, nine server-output
+  cases, static dependency reachability and the proposed type sketch. Recorded
+  P0–P4 prototype gates and S1–S7 adoption without implementing the API.
+
+See [the research run](../plite/research/2026-09-11-large-documents-contract/README.md),
+[current contract](decisions/large-documents-rendering-api.md) and
+[Task plan](../plans/2026-09-11-large-documents-api-review.md).
+
+## [2026-09-11] design | Explicit DOM omission
+
+- Specified one Editable with a proposed `virtualize` input; remove strategy
+  names, automatic segments, staged retention and public layout/metrics plumbing.
+  The default does not omit by size. Runtime consolidation remains provisional.
+- Compared three call shapes and accounted for 111 bounded source/owner rows.
+  The proposed raw/Plate calls typecheck, preserving contextual callbacks, DOM
+  refs and named-root props.
+- Pagination's metrics callback drives positioning. Its removal requires
+  normalized rendered coordinates and a committed root DOM marker for copied
+  CSS; the decision trail corrects the earlier diagnostic-only classification.
+- The normal-size browser packet is diagnostic only because captured sources
+  changed during the run window. Further scale, native, geometry and package
+  acceptance requires the named source-stable disposable comparison.
+
+See [the design](decisions/large-documents-rendering-api.md) and
+[probe result](../plans/artifacts/large-documents-api-design/probe-result.json).
+
+## [2026-09-11] review | Large documents and partial DOM coverage
+
+- Reviewed all eight selected inventory groups. Pursue an explicit omission
+  contract: default `auto` mounts only 32 of 1,001 blocks, contradicting the
+  DOM-present default direction in Vision.
+- Retain the shared coverage/selection/clipboard owner for real collapsed and
+  externally rendered content. Challenge segment/staged duplication and inert
+  `findPolicy`; no runtime consolidation is accepted without its scale probe.
+- Five focused suites pass 112 contracts. No fresh browser, native or timing
+  proof is claimed. The earlier E19 hidden-key deletion is already implemented.
+- Recorded the immutable assessment; adoption and browser proof stay separate.
+
+See [the decision](decisions/large-documents-dom-coverage.md) and
+[receipt](../plans/artifacts/large-documents-api-review/verification.json).
+
+## [2026-09-11] adoption | Plite core cuts
+
+- Implemented the approved facet and public command descriptor `build()` cuts.
+  Retained fields/effects, typed contributions, atomic slots and continuations.
+- Focused core, React selector/provider, history and Plate package checks pass.
+  Both production comparison runs pass the frozen non-regression screen;
+  facet map and field-revision copy counts are zero.
+- Regenerated API documentation and skill resources; doctrine version 183
+  validates. Reconciled live ledger membership and preserved immutable history.
+- Full handoff remains in progress: three React failures reproduce on the
+  saved baseline, contract/export/size snapshots have drift, and concurrent
+  Yjs source mutation invalidated the browser matrix.
+- Fixed historical-reference validation so deleting an audited source owner
+  leaves its immutable review readable with stale source evidence.
+
+See [the adoption plan](../plans/2026-09-11-plite-core-cuts.md) and
+[receipt](../plans/artifacts/plite-core-cuts/verification.json).
+
+## [2026-09-11] review | Plite core ownership
+
+- Reviewed all four Plite core questions. Runtime and extension composition:
+  Stop further redesign. State and commands: Pursue removing unused facets
+  and the public descriptor's default-only `build()` method.
+- Recorded the current requirements, six design lanes, consumer census and
+  immutable per-question verdicts. Superseded the July schema assessment with
+  a fresh comparison against current owners.
+- Ran 180 current-source tests and public/generic type contracts. The same 159
+  headless contracts pass against the disposable facet deletion prototype.
+- The paired facet probe passes its frozen non-regression screen and removes
+  measured facet map/entry work. It does not establish a consistent speedup,
+  native/browser parity or completed product adoption.
+
+See [the decision](decisions/plite-core-ownership.md) and
+[verification receipt](../plans/artifacts/plite-core-api-review/verification.json).
+
+## [2026-09-11] maintain | core architecture review groups
+
+- Grouped runtime/state/schema/commands as Plite core;
+  React/selection/native/accessibility/geometry as Plite view architecture;
+  and Plate API/distribution as Plate core.
+- Reduced the 58 pending questions to 50 review investigations: three core
+  groups and 47 independent questions. Math, emoji and other features retain
+  their own reviews; compiler/CLI and registry kits also remain separate.
+- Preserved all 61 question IDs, feature membership, recorded verdicts,
+  adoption/proof state and immutable history. Groups change investigation
+  scheduling and expose every member through lookup.
+- Added derived queue ordering/counts and validation for group membership,
+  external prerequisites and cycles. Individual draft/record routes stay intact.
+
+See [the ledger](reviews.md), [group contract](schema.md#core-architecture-review-groups)
+and [verification plan](../plans/2026-09-11-core-review-groups.md).
+
 ## [2026-09-11] maintain | automatic review history and feature ledger
 
 - Added the current-source feature review index and generated queue, with
@@ -671,3 +888,52 @@ See [the ledger](reviews.md), [record contract](schema.md#review-history), and
 - recorded Tiptap Pages evidence that pagination failure lives in split policy,
   table/media boxes, page content rects, and oversized non-splittable blocks,
   not just text measurement
+
+## [2026-09-11] review | reads and demand-driven invalidation
+
+- Recorded Pursue for commit-owned precise membership and demand-sensitive
+  subscription dispatch in [the reads decision](decisions/reads-demand-driven-invalidation.md).
+- Retained the live read/snapshot distinction and the earlier generic-selector
+  rewrite defer. A fresh primary-root probe compares current aggregate path
+  work against direct and memoized membership; 56 focused tests pass.
+- Adoption, cold-index and mounted/browser proof remain with Plite Plan.
+
+## [2026-09-12] review | Plite view ownership
+
+- Recorded all five questions in `plite-view`: Pursue for geometry and React;
+  Stop for selection, native input and accessibility. The
+  [compiled decision](decisions/plite-view-ownership.md) recommends direct-domain
+  geometry and removal of the public Runtime forwarding handle.
+- Reconsidered August's retained Widget abstraction and superseded the July
+  React vocabulary proposal; preserved private exact-view, input, selection and
+  announcement lifetimes. Historical evidence remains unchanged.
+- Source and selected assertions were inspected with two bounded read-only
+  investigations reconciled by the lead. No runtime, browser, device or scale
+  proof was replayed; adoption and proof states remain unchanged. Best API owns
+  the next detailed contract and its required scale comparison.
+- Refreshed the source census and mapped the live suggestion-demo addition to
+  its existing suggestions question, without changing that question's review,
+  adoption or proof state.
+
+## [2026-09-14] research and review | documents conversion fidelity
+
+- Compiled seven current DOCX source families and explicit corpus dispositions: 67 selected current external files, exact revisions/hashes/licenses, zero issue/PR bodies, no upstream execution. SuperDoc current v2 serializer remains an explicit proprietary-engine evidence gap.
+- Mapped all 10 documents census units and reconciled September 8 boundary work. Main replayed 123 existing package tests; a worker observed 12 additional fixture/demo tests. Two new historical probes confirmed stale sidecar authority and mixed export snapshots.
+- [Decision](decisions/documents-conversion-fidelity.md): Pursue Task design/planning; direct OOXML versus repaired HTML remains a candidate comparison. Product code, doctrine and public docs remain unchanged. [Raw run](../plite/research/2026-09-14-docx-interoperability-oss/README.md), [source synthesis](sources/docx-interoperability-oss.md), [open questions](open-questions/documents-conversion-proof.md).
+
+- Post-record freshness: concurrent edits changed shared authored EN guidance and Plate doctrine. Relevant sections were reread and still support the review; the immutable snapshot remains flagged stale rather than being overwritten. DOCX source still matches. See the run’s `post-record-freshness.json`.
+
+## [2026-09-15] review | external text ownership
+
+- Assessed all 11 `external-text` census units and related authored consumers.
+  [Decision](decisions/external-text-ownership.md): Pursue removal of deferred
+  canonical feedback in the CodeMirror adapter; retain the public slot,
+  versioned actions and document/view ownership split.
+- The mounted probe displays `agoodd` against canonical `Ragood`. An in-memory
+  synchronous candidate passes the three diagnostics and ten adapter tests.
+  Product source is unchanged; no browser, device or performance claim is made.
+- Plite's existing external-text suite reports 57 pass and one authored
+  stale-selection failure after successful external edits. Its expected
+  contribution boundaries need reconciliation before implementation closure.
+- Census comparison found no added/removed feature IDs; changed fingerprints
+  are observations only and do not advance unrelated review or proof state.

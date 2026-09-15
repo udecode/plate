@@ -38,7 +38,7 @@ const editor = createEditor({
 
 ### 高亮目标
 
-从 `useEditor()` 或 `useEditorPlugin()` 获取已挂载视图的编辑器，在该视图中
+从 `useEditor()` 获取已挂载视图的编辑器，在该视图中
 获取元素的 `NodeKey`，然后传入本次操作的样式：
 
 ```tsx title="flash-first-block.tsx" showLineNumbers
@@ -87,7 +87,7 @@ export function FlashFirstBlock() {
 | `data-nav-pulse` | 当前已挂载视图递增的脉冲计数。 |
 | `--plate-nav-feedback-duration` | CSS 时长，例如 `"1200ms"`。 |
 
-`PlateElement` 会在根元素上接收这些属性。嵌套按钮可根据父元素的
+`EditorElement` 会在根元素上接收这些属性。嵌套按钮可根据父元素的
 `data-nav-target` 设置样式。需要动画时，可用 `data-nav-cycle` 在两个动画名称
 之间切换，让重复高亮重新播放。样式由请求反馈的功能组件定义。
 
@@ -125,7 +125,7 @@ editor.api.navigation.clear();
       <APISubListItem parent="options" name="key" type="NodeKey">
         当前编辑器和内容根中的元素标识。
       </APISubListItem>
-      <APISubListItem parent="options" name="attributes" type="PlateViewElementAttributes" optional>
+      <APISubListItem parent="options" name="attributes" type="ViewElementAttributes" optional>
         本次高亮的安全整元素样式。
       </APISubListItem>
       <APISubListItem parent="options" name="duration" type="number" optional>

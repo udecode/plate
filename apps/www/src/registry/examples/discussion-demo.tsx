@@ -3,7 +3,8 @@
 import type { Value } from 'platejs';
 import type { CommentThread } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { createCommentValue } from '@/registry/components/editor/comment';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
@@ -39,20 +40,36 @@ export default function DiscussionDemo() {
         },
       }),
     ],
+    userId: 'alice',
     initialValue: value,
   });
+  React.useEffect(() => {
+    if (editor.read.authored.changes({ status: 'pending' }).items.length > 0) {
+      return;
+    }
+    editor.update((tx) => {
+      tx.history.skip();
+      tx.authored.propose();
+      tx.text.insert('collaboratively ', {
+        at: { offset: 18, path: [1, 0] },
+      });
+    });
+  }, [editor]);
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer
         className="grid grid-rows-[auto_minmax(0,1fr)] overflow-hidden"
         variant="demo"
       >
         <Editor className="min-w-0" variant="demo" />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
+
+const discussionTrailingText =
+  ' on many text segments. You can even have overlapping annotations!';
 
 const initialThreads: CommentThread[] = [
   {
@@ -65,8 +82,11 @@ const initialThreads: CommentThread[] = [
     target: {
       type: 'range',
       range: {
-        anchor: { path: [1, 6, 0], offset: 0 },
-        focus: { path: [1, 7], offset: 22 },
+        anchor: { path: [1, 3, 0], offset: 0 },
+        focus: {
+          path: [1, 4],
+          offset: discussionTrailingText.indexOf('.'),
+        },
       },
     },
     messages: [
@@ -98,8 +118,16 @@ const initialThreads: CommentThread[] = [
     target: {
       type: 'range',
       range: {
-        anchor: { path: [1, 8], offset: 0 },
-        focus: { path: [1, 8], offset: 11 },
+        anchor: {
+          path: [1, 4],
+          offset: discussionTrailingText.indexOf('overlapping'),
+        },
+        focus: {
+          path: [1, 4],
+          offset:
+            discussionTrailingText.indexOf('overlapping') +
+            'overlapping'.length,
+        },
       },
     },
     messages: [
@@ -122,8 +150,6 @@ const initialThreads: CommentThread[] = [
     ],
   },
 ];
-
-const createdAt = Date.now();
 const value: Value = [
   { type: 'heading', level: 2, children: [{ text: 'Discussions' }] },
   {
@@ -136,52 +162,14 @@ const value: Value = [
         children: [
           {
             text: 'suggestions',
-            suggestion: true,
-            suggestion_playground1: {
-              id: 'playground1',
-              createdAt,
-              type: 'insert',
-              userId: 'alice',
-            },
           },
         ],
       },
       {
-        text: ' like this added text',
-        suggestion: true,
-        suggestion_playground1: {
-          id: 'playground1',
-          createdAt,
-          type: 'insert',
-          userId: 'alice',
-        },
+        text: ' like this added text or to mark text for removal. Discuss changes using ',
       },
-      { text: ' or to ' },
-      {
-        text: 'mark text for removal',
-        suggestion: true,
-        suggestion_playground2: {
-          id: 'playground2',
-          createdAt: createdAt + 1,
-          type: 'remove',
-          userId: 'bob',
-        },
-      },
-      { text: '. Discuss changes using ' },
       { type: 'link', url: '/docs/comment', children: [{ text: 'comments' }] },
-      { text: ' on many text segments' },
-      { text: '. You can even have ' },
-      {
-        text: 'overlapping',
-        suggestion: true,
-        suggestion_playground3: {
-          id: 'playground3',
-          createdAt: createdAt + 2,
-          type: 'insert',
-          userId: 'charlie',
-        },
-      },
-      { text: ' annotations!' },
+      { text: discussionTrailingText },
     ],
   },
 ];

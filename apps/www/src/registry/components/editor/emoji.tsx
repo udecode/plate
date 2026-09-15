@@ -4,8 +4,8 @@ import emojiMartData, { type EmojiMartData } from '@emoji-mart/data';
 import { createEmojiSearch } from 'platejs/emoji';
 import { EmojiInputPlugin, EmojiPlugin } from 'platejs/emoji/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
@@ -30,7 +30,7 @@ export const emojiPlugin = EmojiPlugin.extend({
 });
 
 export function EmojiInputElement(
-  props: PlateElementProps<typeof EmojiInputPlugin>
+  props: EditorElementProps<typeof EmojiInputPlugin>
 ) {
   const { children, element } = props;
   const data = usePluginStore(emojiPlugin, 'data');
@@ -48,7 +48,7 @@ export function EmojiInputElement(
   }, [search, debouncedValue]);
 
   return (
-    <PlateElement as="span" {...props}>
+    <EditorElement as="span" {...props}>
       <InlineCombobox
         value={value}
         element={element}
@@ -79,7 +79,7 @@ export function EmojiInputElement(
       </InlineCombobox>
 
       {children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 

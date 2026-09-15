@@ -1,13 +1,13 @@
 import React from 'react';
 
 import type { Editor } from '../lib';
-import type { PlateStaticProps } from './components/PlateStatic';
-import { PlateStatic } from './components/PlateStatic';
+import type { EditorStaticProps } from './components/PlateStatic';
+import { EditorStatic } from './components/PlateStatic';
 import { stripHtmlClassNames } from './utils/stripHtmlClassNames.internal';
 import { stripPliteDataAttributes } from './utils/stripPliteDataAttributes.internal';
 
 export type RenderStaticHtmlOptions<
-  T extends PlateStaticProps = PlateStaticProps,
+  T extends EditorStaticProps = EditorStaticProps,
 > = {
   /** The component used to render the editor content */
   editorComponent?: React.ComponentType<T>;
@@ -26,11 +26,11 @@ export type RenderStaticHtmlOptions<
  * the editor component. Pass a custom component to control presentation.
  */
 export const renderStaticHtml = async <
-  T extends PlateStaticProps = PlateStaticProps,
+  T extends EditorStaticProps = EditorStaticProps,
 >(
   editor: Editor,
   {
-    editorComponent: EditorComponent = PlateStatic,
+    editorComponent: EditorComponent = EditorStatic,
     preserveClassNames,
     props = {},
     stripClassNames = false,

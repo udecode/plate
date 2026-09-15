@@ -30,7 +30,9 @@ export const projectRangeInSnapshot = (
     }
     if (point.offset < 0 || point.offset > node.text.length) {
       throw new Error(
-        `Point offset ${point.offset} is outside text bounds for ${point.path.join('.')}`
+        `Point offset ${
+          point.offset
+        } is outside text bounds for ${point.path.join('.')}`
       );
     }
   }

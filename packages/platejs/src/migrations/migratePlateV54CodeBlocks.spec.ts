@@ -5,12 +5,12 @@ import {
   migrateDocument,
 } from '../lib/editor/documentMigrations';
 import { createEditor } from '../lib/editor/withPlite';
-import { migratePlateV54 } from './migratePlateV54';
+import { migrateV54 } from './migratePlateV54';
 
 const MigrationSchema = { id: 'plate', version: 54 } as const;
 const migrations = defineDocumentMigrations(MigrationSchema, {
   sourceFingerprints: { 53: 'plate-v53' },
-  steps: { 54: migratePlateV54 },
+  steps: { 54: migrateV54 },
   unversioned: 53,
 });
 
@@ -80,7 +80,7 @@ describe('migratePlateV54 code blocks', () => {
         ],
       },
     };
-    const result = migratePlateV54({ document, editor });
+    const result = migrateV54({ document, editor });
 
     expect(result.children[0]).toBe(canonical);
     expect(result.roots?.footnotes).toEqual([
@@ -218,7 +218,7 @@ describe('migratePlateV54 code blocks', () => {
     const editor = createMigrationEditor();
 
     expect(() =>
-      migratePlateV54({
+      migrateV54({
         document: {
           children: [
             {

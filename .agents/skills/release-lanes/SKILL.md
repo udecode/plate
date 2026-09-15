@@ -1,5 +1,5 @@
 ---
-description: 'Maintain Plate''s latest and beta release lanes end-to-end through Task: promote next to main, sync main directly back into next, repair release metadata conflicts, re-enter beta, and verify npm/GitHub release state.'
+description: Promote Plate beta releases, sync main back to next and verify published npm/GitHub state with release authority.
 argument-hint: '[status | sync [dry-run] | promote [dry-run|execute] | verify | full <authorized release scope>]'
 name: release-lanes
 metadata:

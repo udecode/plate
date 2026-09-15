@@ -1,0 +1,1447 @@
+{
+  "originalNonexceptionGroups": 174,
+  "groups": [
+    {
+      "original": "content/docs/(guides)/authored-changes.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/authored-changes.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/authored-changes.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/authored-changes.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/browser.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/browser.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/controlled.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/controlled.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/controlled.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/controlled.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/debugging.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/debugging.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/document-model.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/document-model.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/document-model.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/document-model.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/editing-behavior.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/editing-behavior.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/editor-methods.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/editor-methods.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin-components.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin-components.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin-components.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin-components.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin-context.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin-context.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin-context.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin-context.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin-input-rules.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin-input-rules.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin-methods.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin-methods.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin-methods.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin-methods.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin-rules.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin-rules.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin-rules.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin-rules.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/plugin.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/plugin.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/selection.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/selection.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/selection.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/selection.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/static.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/static.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/static.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/static.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/troubleshooting.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/troubleshooting.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(guides)/troubleshooting.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(guides)/troubleshooting.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(ai)/ai.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(ai)/ai.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(ai)/ai.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(ai)/ai.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(collaboration)/suggestion.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(collaboration)/suggestion.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(collaboration)/yjs.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(collaboration)/yjs.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(collaboration)/yjs.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(collaboration)/yjs.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(elements)/date.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(elements)/date.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(elements)/equation.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(elements)/equation.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(elements)/excalidraw.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(elements)/excalidraw.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(elements)/horizontal-rule.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(elements)/horizontal-rule.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(elements)/media.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(elements)/media.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(elements)/media.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(elements)/media.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(elements)/mention.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(elements)/mention.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(functionality)/(utils)/forced-layout.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(functionality)/(utils)/forced-layout.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(functionality)/(utils)/single-block.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(functionality)/(utils)/single-block.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(functionality)/(utils)/single-block.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(functionality)/(utils)/single-block.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(functionality)/(utils)/trailing-block.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(functionality)/(utils)/trailing-block.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(functionality)/block-menu.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(functionality)/block-menu.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(functionality)/block-menu.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(functionality)/block-menu.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(functionality)/dnd.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(functionality)/dnd.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(functionality)/dnd.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(functionality)/dnd.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(functionality)/tabbable.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(functionality)/tabbable.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(functionality)/tabbable.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(functionality)/tabbable.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(marks)/code.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(marks)/code.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(marks)/highlight.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(marks)/highlight.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(marks)/kbd.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(marks)/kbd.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(serializing)/html.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(serializing)/html.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(serializing)/html.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(serializing)/html.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(serializing)/markdown.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(serializing)/markdown.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(serializing)/markdown.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(serializing)/markdown.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(styles)/line-height.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(styles)/line-height.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/(plugins)/(styles)/text-align.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/(plugins)/(styles)/text-align.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/core/plate-components.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/api/core/plate-components.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/core/plate-components.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/api/core/plate-components.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/core/plate-editor.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/api/core/plate-editor.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/core/plate-editor.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/api/core/plate-editor.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/core/plate-plugin.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/api/core/plate-plugin.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/core/plate-plugin.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/api/core/plate-plugin.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/core.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/api/core.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/core.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/api/core.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/plate.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/api/plate.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/plate.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/api/plate.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/api/plite/document-change.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/document-change"
+    },
+    {
+      "original": "content/docs/api/plite/document-change.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/document-change"
+    },
+    {
+      "original": "content/docs/api/plite/editor-api.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/editor-api"
+    },
+    {
+      "original": "content/docs/api/plite/editor-api.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/editor-api"
+    },
+    {
+      "original": "content/docs/api/plite/editor-transforms.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/editor-transforms"
+    },
+    {
+      "original": "content/docs/api/plite/editor-transforms.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/editor-transforms"
+    },
+    {
+      "original": "content/docs/api/plite/element.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/element"
+    },
+    {
+      "original": "content/docs/api/plite/element.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/element"
+    },
+    {
+      "original": "content/docs/api/plite/location-ref.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/anchor"
+    },
+    {
+      "original": "content/docs/api/plite/location-ref.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/anchor"
+    },
+    {
+      "original": "content/docs/api/plite/location.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/location"
+    },
+    {
+      "original": "content/docs/api/plite/location.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/location"
+    },
+    {
+      "original": "content/docs/api/plite/node.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/node"
+    },
+    {
+      "original": "content/docs/api/plite/node.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/node"
+    },
+    {
+      "original": "content/docs/api/plite/path.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/path"
+    },
+    {
+      "original": "content/docs/api/plite/path.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/path"
+    },
+    {
+      "original": "content/docs/api/plite/point.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/point"
+    },
+    {
+      "original": "content/docs/api/plite/point.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/point"
+    },
+    {
+      "original": "content/docs/api/plite/range.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/range"
+    },
+    {
+      "original": "content/docs/api/plite/range.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/range"
+    },
+    {
+      "original": "content/docs/api/plite/text.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/text"
+    },
+    {
+      "original": "content/docs/api/plite/text.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/text"
+    },
+    {
+      "original": "content/docs/api/plite.cn.mdx",
+      "scope": "raw-api",
+      "locale": "cn",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/plate"
+    },
+    {
+      "original": "content/docs/api/plite.mdx",
+      "scope": "raw-api",
+      "locale": "en-or-shared",
+      "status": "public-consolidated",
+      "publicDestination": "/docs/api/plate"
+    },
+    {
+      "original": "content/docs/examples/collaboration-example.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/examples/collaboration-example.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/examples/editable-voids.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/examples/editable-voids.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/examples/preview-markdown.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/examples/preview-markdown.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/index.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/index.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/installation/manual.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/installation/manual.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/installation/manual.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/installation/manual.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/installation/node.cn.mdx",
+      "scope": "plate",
+      "locale": "cn",
+      "status": "public-adapted",
+      "destination": "content/docs/installation/node.cn.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/installation/node.mdx",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "public-adapted",
+      "destination": "content/docs/installation/node.mdx",
+      "remainingPliteLines": 0
+    },
+    {
+      "original": "content/docs/meta.json",
+      "scope": "plate",
+      "locale": "en-or-shared",
+      "status": "navigation-consolidated",
+      "destination": "content/docs/meta.json",
+      "remainingPliteLines": "approved-comparison-only"
+    },
+    {
+      "original": "content/docs/migration/index.cn.mdx",
+      "scope": "migration-release",
+      "locale": "cn",
+      "status": "historical-archive",
+      "archive": "docs/plite/reference/history/migration/index.cn.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/releases"
+    },
+    {
+      "original": "content/docs/migration/v48.cn.mdx",
+      "scope": "migration-release",
+      "locale": "cn",
+      "status": "historical-archive",
+      "archive": "docs/plite/reference/history/migration/v48.cn.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/releases"
+    },
+    {
+      "original": "content/docs/migration/v48.mdx",
+      "scope": "migration-release",
+      "locale": "en-or-shared",
+      "status": "historical-archive",
+      "archive": "docs/plite/reference/history/migration/v48.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/releases"
+    },
+    {
+      "original": "content/docs/plite/api/locations/index.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/locations/index.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/location"
+    },
+    {
+      "original": "content/docs/plite/api/locations/location.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/locations/location.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/location"
+    },
+    {
+      "original": "content/docs/plite/api/locations/path.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/locations/path.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/path"
+    },
+    {
+      "original": "content/docs/plite/api/locations/point.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/locations/point.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/point"
+    },
+    {
+      "original": "content/docs/plite/api/locations/range.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/locations/range.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/range"
+    },
+    {
+      "original": "content/docs/plite/api/locations/selection.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/locations/selection.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/selection"
+    },
+    {
+      "original": "content/docs/plite/api/nodes/editor.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/nodes/editor.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/editor-api"
+    },
+    {
+      "original": "content/docs/plite/api/nodes/element.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/nodes/element.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/element"
+    },
+    {
+      "original": "content/docs/plite/api/nodes/index.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/nodes/index.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/node"
+    },
+    {
+      "original": "content/docs/plite/api/nodes/node-entry.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/nodes/node-entry.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/node#nodeentry"
+    },
+    {
+      "original": "content/docs/plite/api/nodes/node.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/nodes/node.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/node"
+    },
+    {
+      "original": "content/docs/plite/api/nodes/text.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/nodes/text.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/text"
+    },
+    {
+      "original": "content/docs/plite/api/scrubber.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/api/scrubber.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/debugging#scrubbing-values"
+    },
+    {
+      "original": "content/docs/plite/concepts/01-interfaces.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/01-interfaces.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/document-model"
+    },
+    {
+      "original": "content/docs/plite/concepts/02-nodes.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/02-nodes.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/document-model"
+    },
+    {
+      "original": "content/docs/plite/concepts/03-locations.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/03-locations.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/locations"
+    },
+    {
+      "original": "content/docs/plite/concepts/04-transforms.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/04-transforms.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/transactions"
+    },
+    {
+      "original": "content/docs/plite/concepts/05-document-changes.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/05-document-changes.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/document-change"
+    },
+    {
+      "original": "content/docs/plite/concepts/06-commands.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/06-commands.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/plugin-methods#commands"
+    },
+    {
+      "original": "content/docs/plite/concepts/07-editor.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/07-editor.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/editor-methods"
+    },
+    {
+      "original": "content/docs/plite/concepts/08-extensions.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/08-plugins.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/plugin-methods"
+    },
+    {
+      "original": "content/docs/plite/concepts/09-rendering.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/09-rendering.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/plugin-components"
+    },
+    {
+      "original": "content/docs/plite/concepts/10-serializing.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/10-serializing.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/serializing"
+    },
+    {
+      "original": "content/docs/plite/concepts/11-normalizing.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/11-normalizing.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/editing-behavior#normalize-behavior"
+    },
+    {
+      "original": "content/docs/plite/concepts/12-typescript.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/12-typescript.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/document-model"
+    },
+    {
+      "original": "content/docs/plite/concepts/13-roots.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/13-roots.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/roots"
+    },
+    {
+      "original": "content/docs/plite/concepts/14-document-state.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/14-document-state.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/document-meta"
+    },
+    {
+      "original": "content/docs/plite/concepts/15-editing-behavior.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/15-editing-behavior.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/editing-behavior"
+    },
+    {
+      "original": "content/docs/plite/concepts/16-selection-and-dom.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/16-selection-and-dom.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/selection"
+    },
+    {
+      "original": "content/docs/plite/concepts/17-clipboard-and-paste.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/17-clipboard-and-paste.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/clipboard"
+    },
+    {
+      "original": "content/docs/plite/concepts/18-decorations-annotations-widgets.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/18-decorations-annotations-widgets.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/decorations"
+    },
+    {
+      "original": "content/docs/plite/concepts/19-schema.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/concepts/19-schema.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/schema"
+    },
+    {
+      "original": "content/docs/plite/general/contributing.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/general/contributing.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/troubleshooting#report-a-reproduction"
+    },
+    {
+      "original": "content/docs/plite/general/docs-proof-map.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/general/docs-proof-map.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/browser"
+    },
+    {
+      "original": "content/docs/plite/general/faq.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/general/faq.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/troubleshooting"
+    },
+    {
+      "original": "content/docs/plite/general/resources.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/general/resources.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs"
+    },
+    {
+      "original": "content/docs/plite/index.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/index.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-authored.cn.mdx",
+      "scope": "raw-tree",
+      "locale": "cn",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-authored.cn.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/authored-changes"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-authored.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-authored.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/authored-changes"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-dom.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-dom.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/dom"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-history/history-editor.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-history/history-editor.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/history"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-history/history-extension-setup.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-history/history-plugin-setup.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/history"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-history/history.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-history/history.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/history"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-history/index.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-history/index.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/history"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-hyperscript.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-hyperscript.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/unit-testing"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-pagination/index.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-pagination/index.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/pagination"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/annotations.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/annotations.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/annotations"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/dom-coverage-boundaries.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/dom-coverage-boundaries.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/dom-coverage"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/editable.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/editable.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/core/plate-components"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/event-handling.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/event-handling.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/plugin#event-handlers"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/external-text.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/external-text.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/external-text"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/hooks.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/hooks.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/react-hooks"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/index.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/index.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/editor"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/plite.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/plite.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/core/plate-components"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/react-editor-setup.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/react-editor-setup.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/editor"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/react-editor.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/react-editor.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/dom"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-react/virtualized-rendering.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-react/virtualized-rendering.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/virtualized-rendering"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite-yjs.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite-yjs.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/yjs"
+    },
+    {
+      "original": "content/docs/plite/libraries/plite.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/libraries/plite.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/plate"
+    },
+    {
+      "original": "content/docs/plite/meta.json",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "internal-reference",
+      "archive": "docs/plite/reference/public-docs/meta.json",
+      "archiveExists": true,
+      "publicDestination": null
+    },
+    {
+      "original": "content/docs/plite/migration.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/migration.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/migration/plite-to-plate"
+    },
+    {
+      "original": "content/docs/plite/walkthroughs/01-installing-plite.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/walkthroughs/01-installing-plite.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/installation/react"
+    },
+    {
+      "original": "content/docs/plite/walkthroughs/02-adding-event-handlers.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/walkthroughs/02-adding-event-handlers.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/plugin#event-handlers"
+    },
+    {
+      "original": "content/docs/plite/walkthroughs/03-defining-custom-elements.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/walkthroughs/03-defining-custom-elements.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/plugin-components"
+    },
+    {
+      "original": "content/docs/plite/walkthroughs/04-applying-custom-formatting.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/walkthroughs/04-applying-custom-formatting.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/plugin-components"
+    },
+    {
+      "original": "content/docs/plite/walkthroughs/05-executing-commands.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/walkthroughs/05-executing-commands.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/plugin-methods#commands"
+    },
+    {
+      "original": "content/docs/plite/walkthroughs/06-saving-to-a-database.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/walkthroughs/06-saving-to-a-database.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/document-meta"
+    },
+    {
+      "original": "content/docs/plite/walkthroughs/07-canonical-change-substrate.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/walkthroughs/07-canonical-change-substrate.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/api/document-change"
+    },
+    {
+      "original": "content/docs/plite/walkthroughs/09-performance.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/walkthroughs/09-performance.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/performance"
+    },
+    {
+      "original": "content/docs/plite/why-this-fork.mdx",
+      "scope": "raw-tree",
+      "locale": "en-or-shared",
+      "status": "archived-and-consolidated",
+      "archive": "docs/plite/reference/public-docs/why-this-fork.mdx",
+      "archiveExists": true,
+      "publicDestination": "/docs/migration/plite-to-plate"
+    }
+  ],
+  "preservation": "The original raw teaching and historical narratives are preserved internally. Applicable public contracts have Plate-owned guides/references; native renderer/bootstrap APIs are not advertised as Plate APIs. Mapping accounts for the original audit groups, not full runtime correctness of all snippets."
+}

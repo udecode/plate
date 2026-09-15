@@ -72,7 +72,7 @@ const summaryDirectory = path.join(
   appRoot,
   'test-results/plite-browser-runner'
 );
-const appBuildManifest = path.join(appRoot, 'out/.plite-proof-build.json');
+const appBuildManifest = path.join(appRoot, 'out/.editor-proof-build.json');
 const browserOutputRoot = path.join(repoRoot, 'packages/test/dist');
 const appOutputRoot = path.join(appRoot, 'out');
 const projectOutputDirectory = (project) =>
@@ -115,9 +115,19 @@ const smokeSelectors = [
   'tests/plite-browser/donor/examples/yjs-collaboration.test.ts',
   '--grep=(plaintext typing keeps DOM and model text in sync|external DOM corruption is repaired from the model without moving selection|renders rich text|mounts peer editors and local collaboration controls)',
 ];
-const planEnvironmentNames = ['CI', 'STRESS_FAMILIES', 'STRESS_ROUTES'];
+const planEnvironmentNames = [
+  'CI',
+  'PLITE_AUTHORED_MOUNTED_PERFORMANCE',
+  'PLITE_AUTHORED_MOUNTED_PERFORMANCE_COHORT',
+  'PLITE_AUTHORED_PERFORMANCE',
+  'PLITE_AUTHORED_PERFORMANCE_COHORT',
+  'STRESS_FAMILIES',
+  'STRESS_ROUTES',
+];
 const runEnvironmentNames = [
   ...planEnvironmentNames,
+  'PLITE_AUTHORED_MOUNTED_PERFORMANCE_OUTPUT',
+  'PLITE_AUTHORED_PERFORMANCE_OUTPUT',
   'PLITE_BROWSER_CLIPBOARD_LOCK_TIMEOUT_MS',
   'PLITE_MENTIONS_FIREFOX_SELECT_ALL_DIAGNOSTIC',
   'PLITE_PAGINATION_AUTOSCROLL_PROOF',
@@ -799,6 +809,7 @@ const writeSummary = ({
   reusedUnitIds,
   scope,
   selectedUnits,
+  sourceInputDigest,
   status,
   unitWorkers: innerUnitWorkers,
 }) => {
@@ -814,6 +825,7 @@ const writeSummary = ({
     reusedUnitIds,
     scope,
     selectedUnits,
+    sourceInputDigest,
     status,
     unitTimeoutFloorMs,
     unitWorkers: innerUnitWorkers,
@@ -904,6 +916,7 @@ const runManagedProject = async (
     writeSummary({
       ...options,
       maxTestsPerProcess: projectMaxTestsPerProcess,
+      sourceInputDigest: proofSession.runInputDigest,
       unitWorkers: workerCap,
     });
 

@@ -24,7 +24,7 @@ Export complete `*PluginState` contracts for audio, file, video, image, media em
 - Keep package upload defaults limit-free; copied `MediaKit` owns concrete file counts and size quotas
 - Target image, embed, and placeholder insertion through exact `at` locations or a live source node through `after`; `replaceEmpty` replaces only an empty writable text block
 - Preserve plugin API inference in typed component integrations and accept arrays when inserting placeholder media
-- Publish pending upload state only after its placeholder transaction commits
+- Start configured uploads only after the placeholder transaction commits, and bind each upload to the exact accepted placeholder key
 - Expose the `MediaPlugin` union for typed floating-media URL controls
 - Rename `MediaPluginOptions` to `MediaPluginState`
 - Use `PlaceholderPluginState` for the shared upload owner; the React `PlaceholderPlugin` adds DOM input adaptation

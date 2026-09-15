@@ -3,24 +3,24 @@ import { useInsertionEffect, useMemo, useRef } from 'react';
 import type { Editor, Value } from '../..';
 import {
   createDormantPliteAnnotationStore,
-  type PliteAnnotation,
-  type PliteAnnotationStore,
+  type Annotation,
+  type AnnotationStore,
 } from '../../annotations/store';
-import type { PliteViewSourceErrorSink } from '../../internal/view/view-source';
+import type { ViewSourceErrorSink } from '../../internal/view/view-source';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 /** Options for a React-owned annotation store. */
-export type UsePliteAnnotationStoreOptions = {
+export type UseAnnotationStoreOptions = {
   id?: string;
-  onError?: PliteViewSourceErrorSink;
+  onError?: ViewSourceErrorSink;
   /** Explicit invalidation token for a mutable external annotation source. */
   revision?: unknown;
 };
 
 const createAnnotationStoreOwner = <TData,>(
   editor: unknown,
-  annotations: ReadonlyArray<PliteAnnotation<TData>>,
-  options: UsePliteAnnotationStoreOptions
+  annotations: ReadonlyArray<Annotation<TData>>,
+  options: UseAnnotationStoreOptions
 ) => {
   const annotationsCell = { current: annotations };
   const optionsCell = { current: options };
@@ -42,15 +42,15 @@ const createAnnotationStoreOwner = <TData,>(
  * New array identities refresh automatically. Pass `revision` only when an
  * external mutable source changes without producing a new array.
  */
-export function usePliteAnnotationStore<
+export function useAnnotationStore<
   TData = unknown,
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TPlugins extends readonly unknown[] = readonly [],
 >(
-  editor: Editor<V, TExtensions>,
-  annotations: ReadonlyArray<PliteAnnotation<TData>>,
-  options: UsePliteAnnotationStoreOptions = {}
-): PliteAnnotationStore<TData> {
+  editor: Editor<V, TPlugins>,
+  annotations: ReadonlyArray<Annotation<TData>>,
+  options: UseAnnotationStoreOptions = {}
+): AnnotationStore<TData> {
   const sourceId = options.id;
   // Data and callbacks seed a new owner, then publish only after commit.
   const owner = useMemo(

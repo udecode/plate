@@ -7,14 +7,14 @@ import {
 
 it('captures DOM and editor-shaped selection snapshots for a simple editor tree', () => {
   document.body.innerHTML = `
-    <div data-plite-editor="true">
-      <span data-plite-node="text" data-plite-path="0,0"><span data-plite-string>alpha</span></span>
-      <span data-plite-node="text" data-plite-path="1,0"><span data-plite-string>beta</span></span>
+    <div data-editor="true">
+      <span data-editor-node="text" data-editor-path="0,0"><span data-editor-string>alpha</span></span>
+      <span data-editor-node="text" data-editor-path="1,0"><span data-editor-string>beta</span></span>
     </div>
   `;
 
-  const root = document.querySelector('[data-plite-editor="true"]')!;
-  const first = root.querySelector('[data-plite-string]')!.firstChild as Text;
+  const root = document.querySelector('[data-editor="true"]')!;
+  const first = root.querySelector('[data-editor-string]')!.firstChild as Text;
   const selection = document.getSelection()!;
   const range = document.createRange();
 
@@ -44,20 +44,20 @@ it('captures DOM and editor-shaped selection snapshots for a simple editor tree'
 
 it('uses Plite DOM paths for sibling text nodes inside the same element', () => {
   document.body.innerHTML = `
-    <div data-plite-editor="true">
-      <div data-plite-node="element" data-plite-path="0">
-        <span data-plite-node="text" data-plite-path="0,0">
-          <span data-plite-string>alpha</span>
+    <div data-editor="true">
+      <div data-editor-node="element" data-editor-path="0">
+        <span data-editor-node="text" data-editor-path="0,0">
+          <span data-editor-string>alpha</span>
         </span>
-        <span data-plite-node="text" data-plite-path="0,1">
-          <span data-plite-string>beta</span>
+        <span data-editor-node="text" data-editor-path="0,1">
+          <span data-editor-string>beta</span>
         </span>
       </div>
     </div>
   `;
 
-  const root = document.querySelector('[data-plite-editor="true"]')!;
-  const second = root.querySelectorAll('[data-plite-string]')[1]
+  const root = document.querySelector('[data-editor="true"]')!;
+  const second = root.querySelectorAll('[data-editor-string]')[1]
     .firstChild as Text;
   const selection = document.getSelection()!;
   const range = document.createRange();
@@ -81,20 +81,20 @@ it('uses Plite DOM paths for sibling text nodes inside the same element', () => 
 
 it('fails closed instead of flattening nested text nodes without Plite DOM paths', () => {
   document.body.innerHTML = `
-    <div data-plite-editor="true">
-      <div data-plite-node="element">
-        <span data-plite-node="text">
-          <span data-plite-string>alpha</span>
+    <div data-editor="true">
+      <div data-editor-node="element">
+        <span data-editor-node="text">
+          <span data-editor-string>alpha</span>
         </span>
-        <span data-plite-node="text">
-          <span data-plite-string>beta</span>
+        <span data-editor-node="text">
+          <span data-editor-string>beta</span>
         </span>
       </div>
     </div>
   `;
 
-  const root = document.querySelector('[data-plite-editor="true"]')!;
-  const second = root.querySelectorAll('[data-plite-string]')[1]
+  const root = document.querySelector('[data-editor="true"]')!;
+  const second = root.querySelectorAll('[data-editor-string]')[1]
     .firstChild as Text;
   const selection = document.getSelection()!;
   const range = document.createRange();
@@ -109,17 +109,17 @@ it('fails closed instead of flattening nested text nodes without Plite DOM paths
 
 it('normalizes zero-width DOM artifact offsets back to editor offset zero', () => {
   document.body.innerHTML = `
-    <div data-plite-editor="true">
-      <span data-plite-node="text" data-plite-path="0,0">
-        <span data-plite-leaf="true">
-          <span data-plite-zero-width="n" data-plite-length="0">\uFEFF<br /></span>
+    <div data-editor="true">
+      <span data-editor-node="text" data-editor-path="0,0">
+        <span data-editor-leaf="true">
+          <span data-editor-zero-width="n" data-editor-length="0">\uFEFF<br /></span>
         </span>
       </span>
     </div>
   `;
 
-  const root = document.querySelector('[data-plite-editor="true"]')!;
-  const marker = root.querySelector('[data-plite-zero-width="n"]')!;
+  const root = document.querySelector('[data-editor="true"]')!;
+  const marker = root.querySelector('[data-editor-zero-width="n"]')!;
   const text = marker.firstChild as Text;
   const br = marker.querySelector('br')!;
   const selection = document.getSelection()!;
@@ -165,16 +165,16 @@ it('normalizes zero-width DOM artifact offsets back to editor offset zero', () =
 it('maps RTL DOM selections while preserving browser geometry direction', () => {
   document.body.innerHTML = `
     <div
-      data-plite-editor="true"
+      data-editor="true"
       dir="rtl"
       style="font: 18px Arial; line-height: 24px; width: 240px;"
     >
-      <span data-plite-node="text" data-plite-path="0,0"><span data-plite-string>אבגד</span></span>
+      <span data-editor-node="text" data-editor-path="0,0"><span data-editor-string>אבגד</span></span>
     </div>
   `;
 
-  const root = document.querySelector('[data-plite-editor="true"]')!;
-  const text = root.querySelector('[data-plite-string]')!.firstChild as Text;
+  const root = document.querySelector('[data-editor="true"]')!;
+  const text = root.querySelector('[data-editor-string]')!.firstChild as Text;
   const selection = document.getSelection()!;
   const range = document.createRange();
   const firstCharacterRange = document.createRange();
@@ -207,17 +207,17 @@ it('maps RTL DOM selections while preserving browser geometry direction', () => 
 it('keeps wrapped-line DOM rectangles tied to one editor selection', () => {
   document.body.innerHTML = `
     <div
-      data-plite-editor="true"
+      data-editor="true"
       style="font: 16px monospace; line-height: 20px; width: 90px;"
     >
-      <span data-plite-node="text" data-plite-path="0,0">
-        <span data-plite-string>alpha beta gamma delta epsilon</span>
+      <span data-editor-node="text" data-editor-path="0,0">
+        <span data-editor-string>alpha beta gamma delta epsilon</span>
       </span>
     </div>
   `;
 
-  const root = document.querySelector('[data-plite-editor="true"]')!;
-  const text = root.querySelector('[data-plite-string]')!.firstChild as Text;
+  const root = document.querySelector('[data-editor="true"]')!;
+  const text = root.querySelector('[data-editor-string]')!.firstChild as Text;
   const selection = document.getSelection()!;
   const range = document.createRange();
 
@@ -248,14 +248,14 @@ it('maps editor selections inside a shadow root against the local root', () => {
   const host = document.createElement('div');
   const shadowRoot = host.attachShadow({ mode: 'open' });
   shadowRoot.innerHTML = `
-    <div data-plite-editor="true">
-      <span data-plite-node="text" data-plite-path="0,0"><span data-plite-string>shadow alpha</span></span>
+    <div data-editor="true">
+      <span data-editor-node="text" data-editor-path="0,0"><span data-editor-string>shadow alpha</span></span>
     </div>
   `;
   document.body.append(host);
 
-  const root = shadowRoot.querySelector('[data-plite-editor="true"]')!;
-  const text = root.querySelector('[data-plite-string]')!.firstChild as Text;
+  const root = shadowRoot.querySelector('[data-editor="true"]')!;
+  const text = root.querySelector('[data-editor-string]')!.firstChild as Text;
   const selection = document.getSelection()!;
   const range = document.createRange();
 
@@ -282,13 +282,13 @@ it('maps editor selections inside a shadow root against the local root', () => {
 
 it('fails closed when the DOM selection is outside the editor root', () => {
   document.body.innerHTML = `
-    <div data-plite-editor="true">
-      <span data-plite-node="text" data-plite-path="0,0"><span data-plite-string>inside</span></span>
+    <div data-editor="true">
+      <span data-editor-node="text" data-editor-path="0,0"><span data-editor-string>inside</span></span>
     </div>
     <p id="outside">outside</p>
   `;
 
-  const root = document.querySelector('[data-plite-editor="true"]')!;
+  const root = document.querySelector('[data-editor="true"]')!;
   const outside = document.querySelector('#outside')!.firstChild as Text;
   const selection = document.getSelection()!;
   const range = document.createRange();
@@ -309,14 +309,14 @@ it('fails closed when the DOM selection is outside the editor root', () => {
 
 it('fails closed when the DOM selection only partly belongs to the editor', () => {
   document.body.innerHTML = `
-    <div data-plite-editor="true">
-      <span data-plite-node="text" data-plite-path="0,0"><span data-plite-string>inside</span></span>
+    <div data-editor="true">
+      <span data-editor-node="text" data-editor-path="0,0"><span data-editor-string>inside</span></span>
     </div>
     <p id="outside">outside</p>
   `;
 
-  const root = document.querySelector('[data-plite-editor="true"]')!;
-  const inside = root.querySelector('[data-plite-string]')!.firstChild as Text;
+  const root = document.querySelector('[data-editor="true"]')!;
+  const inside = root.querySelector('[data-editor-string]')!.firstChild as Text;
   const outside = document.querySelector('#outside')!.firstChild as Text;
   const selection = document.getSelection()!;
   const range = document.createRange();

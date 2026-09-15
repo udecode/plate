@@ -1,14 +1,14 @@
 import type {
   ContentSlice,
-  DefinitionOf as PliteDefinitionOf,
+  DefinitionOf as RuntimeDefinitionOf,
   Descendant,
   Element,
   EditorCommitContext,
   EditorDocumentValue,
-  EditorExtension,
-  EditorSchemaExtensionProvider,
-  EditorExtensionDefinitionInput,
-  EditorExtensionReference,
+  RuntimePlugin,
+  EditorSchemaPluginProvider,
+  RuntimePluginDefinitionInput,
+  RuntimePluginReference,
   EditorReadMethodRecord,
   EditorReadMethodTree,
   EditorNodeChangeContext,
@@ -20,9 +20,9 @@ import type {
   NodeMatch,
   NodeTypeSelector,
   Path,
-  PliteDecoration,
-  PliteDecorationAttributes,
-  PliteDecorationRefresh,
+  Decoration,
+  DecorationAttributes,
+  DecorationRefresh,
   PropertyValueDescriptor,
   PropertyValueOf,
   SchemaElementProperty,
@@ -31,16 +31,16 @@ import type {
   Text,
   Value,
   EditorSchemaSourceProvider,
-  EditorExtensionTypeProviderOf,
-  EditorExtensionWitnessFor,
+  RuntimePluginTypeProviderOf,
+  RuntimePluginWitnessFor,
 } from '../../facade';
-import type { Editor, InternalBaseEditorWithPlatePlugins } from '../editor';
+import type { Editor, InternalBaseEditorWithPlugins } from '../editor';
 import type {
-  InternalPlateSchemaExtensionForPlugin,
-  PlatePluginRead,
-  PlatePluginReadState,
-  PlatePluginTransaction,
-  PlatePluginUpdate,
+  InternalSchemaPluginsForPlugin,
+  PluginReadCapability,
+  PluginReadState,
+  PluginTransaction,
+  PluginUpdate,
 } from '../editor/pluginRuntimeTypes';
 import type {
   InputRulesConfig,
@@ -99,7 +99,11 @@ import type {
   WithAnyName,
 } from './PluginDefinition';
 import type { InternalPluginDefinitionOf } from './pluginDefinitionLookup.internal';
-import type { MergePluginDefinitions } from './pluginDefinitionMerge.internal';
+import type {
+  MergePluginDefinitions,
+  PluginCompatibilityArguments,
+  PluginContributionCompatibility,
+} from './pluginDefinitionMerge.internal';
 import type { RequiredPluginState } from './pluginInitialState.internal';
 import type { ElementWith } from './pluginNodeTypes';
 import type {
@@ -149,11 +153,11 @@ export type ErasedPluginCallable<TResult = unknown> = (
 ) => TResult;
 type ErasedDecorate = Readonly<{
   attributes?:
-    | PliteDecorationAttributes
-    | ErasedPluginCallable<PliteDecorationAttributes>
+    | DecorationAttributes
+    | ErasedPluginCallable<DecorationAttributes>
     | null;
   observe?: ErasedPluginCallable<() => void>;
-  read: ErasedPluginCallable<readonly PliteDecoration[]>;
+  read: ErasedPluginCallable<readonly Decoration[]>;
 }>;
 type ErasedPluginOn = Record<
   string,
@@ -161,6 +165,7 @@ type ErasedPluginOn = Record<
 >;
 type ErasedPluginRender = {
   attributes?: unknown;
+  contentAttributes?: DecorationAttributes | null;
   mark?: Readonly<{
     leafAttributes?: unknown;
     leafComponent?: NodeComponent | null;
@@ -206,9 +211,7 @@ export type ErasedPluginConfigurationLayer =
     }>;
 
 /** Type-erased boundary for heterogeneous plugin collections. */
-type AnyPluginDependencyDescriptor =
-  | PluginReference
-  | Readonly<Pick<EditorExtensionReference, 'enabled' | 'name'>>;
+type AnyPluginDependencyDescriptor = RuntimePluginReference | PluginReference;
 
 export type AnyBasePlugin = {
   activate?: ErasedPluginCallable;
@@ -226,7 +229,6 @@ export type AnyBasePlugin = {
   effectTypes?: readonly unknown[];
   enabled?: boolean;
   extend: ErasedPluginCallable;
-  facetProviders?: readonly unknown[];
   inject: ErasedPluginInject;
   inputRules: InputRulesDefinition | InputRulesConfig;
   initialState: object;
@@ -242,14 +244,15 @@ export type AnyBasePlugin = {
   shortcuts: Record<string, EditorShortcut | null | undefined>;
   slots: ErasedPluginSlots;
   stateFields?: NonNullable<
-    EditorExtensionDefinitionInput<Editor>['stateFields']
+    RuntimePluginDefinitionInput<Editor>['stateFields']
   >;
   targetPlugins: ReadonlyArray<PluginReference | string>;
   prepareDocument?: ErasedPluginCallable<EditorDocumentValue | Value> | null;
   update?: ErasedPluginCallable<object>;
   validate?: ErasedPluginCallable;
 } & PluginReference;
-export type AnyPluginBase = Omit<AnyBasePlugin, 'configure' | 'extend'>;
+export type AnyPluginBase = Omit<AnyBasePlugin, 'configure' | 'extend'> &
+  PluginReference;
 
 /** Type-erased consumer portal for name-only and heterogeneous lookups. */
 export type AnyBasePluginPortal = Omit<
@@ -281,22 +284,22 @@ export type Decorate<C extends AnyBasePluginDefinition = BasePluginDefinition> =
   Readonly<{
     /** Pure presentation applied after read. Observation remains owned by observe. */
     attributes?:
-      | PliteDecorationAttributes
+      | DecorationAttributes
       | ((
           ctx: BasePluginContext<C> & {
-            decoration: PliteDecoration;
+            decoration: Decoration;
             entry: NodeEntry;
           }
-        ) => PliteDecorationAttributes)
+        ) => DecorationAttributes)
       | null;
     observe?: (
       ctx: BasePluginContext<C> & {
-        refresh: (input: PliteDecorationRefresh) => void;
+        refresh: (input: DecorationRefresh) => void;
       }
     ) => () => void;
     read: (
       ctx: BasePluginContext<C> & { entry: NodeEntry }
-    ) => readonly PliteDecoration[];
+    ) => readonly Decoration[];
   }>;
 
 type DecorateInput<C extends AnyBasePluginDefinition> = Omit<
@@ -309,7 +312,7 @@ type DecorateInput<C extends AnyBasePluginDefinition> = Omit<
 
 // -----------------------------------------------------------------------------
 
-export type ResolvedPlatePlugin<
+export type ResolvedPlugin<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = BasePluginDescriptor<C>;
 
@@ -1051,13 +1054,13 @@ export type RenderStaticNodeWrapperProps<
 /** Cache the full invariant editor shape across author callback comparisons. */
 export interface BasePluginContextEditor<
   in out C extends AnyBasePluginDefinition = BasePluginDefinition,
-> extends InternalBaseEditorWithPlatePlugins<Value, C> {}
+> extends InternalBaseEditorWithPlugins<Value, C> {}
 
 export type BasePluginImplementationContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = PluginBaseContext<C> & {
   editor: BasePluginContextEditor<C>;
-  plugin: ResolvedPlatePlugin<C>;
+  plugin: ResolvedPlugin<C>;
 };
 
 type BasePluginLifecycleContext<
@@ -1066,10 +1069,10 @@ type BasePluginLifecycleContext<
 > = Omit<TContext, 'editor' | 'tx'> &
   BasePluginContext<C> & {
     editor: BasePluginContextEditor<C>;
-    plugin: ResolvedPlatePlugin<C>;
+    plugin: ResolvedPlugin<C>;
   } & ('tx' extends keyof TContext
     ? Readonly<{
-        tx: PlatePluginTransaction<C>;
+        tx: PluginTransaction<C>;
       }>
     : {});
 
@@ -1102,8 +1105,8 @@ export type BasePluginOn<
   ) => void;
 }>;
 
-type BaseNativeExtensionFields<C extends AnyBasePluginDefinition> = Omit<
-  EditorExtensionDefinitionInput<BasePluginContextEditor<C>>,
+type BaseRuntimePluginFields<C extends AnyBasePluginDefinition> = Omit<
+  RuntimePluginDefinitionInput<BasePluginContextEditor<C>>,
   | 'api'
   | 'conflicts'
   | 'corrections'
@@ -1117,7 +1120,7 @@ type BaseNativeExtensionFields<C extends AnyBasePluginDefinition> = Omit<
 >;
 
 type BaseNativeCorrection<C extends AnyBasePluginDefinition> = NonNullable<
-  EditorExtensionDefinitionInput<BasePluginContextEditor<C>>['corrections']
+  RuntimePluginDefinitionInput<BasePluginContextEditor<C>>['corrections']
 >[number];
 
 type BaseNativeCorrectionContext<C extends AnyBasePluginDefinition> =
@@ -1134,7 +1137,7 @@ type BasePluginCorrection<C extends AnyBasePluginDefinition> = Omit<
 > & {
   correct: (
     context: Omit<BaseNativeCorrectionContext<C>, 'tx'> & {
-      tx: BaseNativeCorrectionContext<C>['tx'] & PlatePluginTransaction<C>;
+      tx: BaseNativeCorrectionContext<C>['tx'] & PluginTransaction<C>;
     }
   ) => void;
   query?:
@@ -1148,7 +1151,7 @@ type BasePluginCorrection<C extends AnyBasePluginDefinition> = Omit<
 type BasePluginAuthorFields<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = Omit<PluginBase<C>, 'dependencies' | 'render' | 'slots'> &
-  BaseNativeExtensionFields<C> & {
+  BaseRuntimePluginFields<C> & {
     api?: (context: BasePluginContext<C>) => InferApi<C>;
     conflicts: BasePluginDependencyDescriptors<InferConflicts<C>>;
     corrections?: ReadonlyArray<BasePluginCorrection<C>>;
@@ -1156,13 +1159,13 @@ type BasePluginAuthorFields<
     on: BasePluginOn<C>;
     read?: (
       context: BasePluginContext<C> & {
-        state: PlatePluginReadState<C>;
+        state: PluginReadState<C>;
       }
     ) => InferPluginRead<C>;
     update?: (
       context: BasePluginContext<C> & {
         context: EditorUpdateContext;
-        tx: PlatePluginTransaction<C>;
+        tx: PluginTransaction<C>;
       }
     ) => InferUpdate<C>;
   } & Nullable<{
@@ -1186,6 +1189,14 @@ type BasePluginAuthorFields<
     render: Nullable<{
       /** Adds attributes to the primary element, leaf, or text renderer. */
       attributes?: NodeStaticProps<WithAnyName<C>>;
+      /**
+       * Adds static presentation to the existing live and static content root.
+       * Enabled plugins compose in compiled order: classes append, styles
+       * merge, and later attributes win. Explicit content props apply last.
+       * Core identity and editable-state attributes are reserved. Use `null`
+       * to clear inherited configuration; use slots for actual structure.
+       */
+      contentAttributes?: DecorationAttributes;
       /** Configures rendering for a schema mark. */
       mark?:
         | Readonly<{
@@ -1226,7 +1237,7 @@ type BasePluginAuthorFields<
         wrapNode?: RenderStaticNodeWrapper<C>;
         /** Wraps a rendered node's children. */
         wrapNodeChildren?: RenderStaticNodeWrapper<C>;
-        /** Wraps the complete Plite root for this Plate view. */
+        /** Wraps the complete editor root for this view. */
         wrapRoot?: NodeComponent<{ children: any }>;
       }>;
     rules: {
@@ -1307,12 +1318,10 @@ type BasePluginContextualDescriptor<C extends AnyBasePluginDefinition> = Pick<
 /** Nominal identity carried across renderer adapters. */
 type BasePluginDescriptorCarrier<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = EditorExtensionWitnessFor<() => LowerBasePlugin<C>> &
+> = RuntimePluginWitnessFor<() => LowerBasePlugin<C>> &
   BasePluginInstalledCapabilityWitness<C> &
   InferPluginNodeTypeProvider<C> &
-  EditorSchemaExtensionProvider<
-    () => InternalPlateSchemaExtensionForPlugin<C>
-  > &
+  EditorSchemaPluginProvider<() => InternalSchemaPluginsForPlugin<C>> &
   EditorSchemaSourceProvider<() => InferPluginSchemaContribution<C>> &
   PluginReference<C['name']> &
   PluginDefinitionWitness<C>;
@@ -1321,7 +1330,7 @@ type BasePluginDescriptorCarrier<
 type BasePluginRuntimeDescriptor<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = Omit<
-  EditorExtension<LowerBasePlugin<C>>,
+  RuntimePlugin<LowerBasePlugin<C>>,
   | 'api'
   | 'conflicts'
   | 'decorate'
@@ -1364,19 +1373,17 @@ type BasePluginRuntime = Omit<
   | 'update'
 >;
 
-/** Exact render-capable Plate descriptor built once on a Plite extension. */
+/** Exact Plate plugin descriptor with schema, behavior, and rendering. */
 export interface BasePlugin<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 >
   extends
     BasePluginRuntime,
     BasePluginMethods<C>,
-    EditorExtensionWitnessFor<() => LowerBasePlugin<C>>,
+    RuntimePluginWitnessFor<() => LowerBasePlugin<C>>,
     BasePluginInstalledCapabilityWitness<C>,
     InferPluginNodeTypeProvider<C>,
-    EditorSchemaExtensionProvider<
-      () => InternalPlateSchemaExtensionForPlugin<C>
-    >,
+    EditorSchemaPluginProvider<() => InternalSchemaPluginsForPlugin<C>>,
     EditorSchemaSourceProvider<() => InferPluginSchemaContribution<C>>,
     PluginReference<C['name']>,
     PluginDefinitionWitness<C> {
@@ -1387,7 +1394,7 @@ export interface BasePlugin<
   readonly name: C['name'];
   read?: (
     context: BasePluginContext<C> & {
-      state: PlatePluginReadState<C>;
+      state: PluginReadState<C>;
     }
   ) => InferPluginRead<C>;
   readonly schema: InferPluginSchema<C>;
@@ -1402,7 +1409,7 @@ export interface BasePlugin<
   update?: (
     context: BasePluginContext<C> & {
       context: EditorUpdateContext;
-      tx: PlatePluginTransaction<C>;
+      tx: PluginTransaction<C>;
     }
   ) => InferUpdate<C>;
 }
@@ -1428,14 +1435,14 @@ type BasePluginInputFields<C extends AnyBasePluginDefinition> = Omit<
   name: C['name'];
   read?: (
     context: BasePluginContext<C> & {
-      state: PlatePluginReadState<C>;
+      state: PluginReadState<C>;
     }
   ) => InferPluginRead<C>;
   schema?: PluginSchema<C> | null;
   update?: (
     context: BasePluginContext<C> & {
       context: EditorUpdateContext;
-      tx: PlatePluginTransaction<C>;
+      tx: PluginTransaction<C>;
     }
   ) => InferUpdate<C>;
 };
@@ -1444,7 +1451,7 @@ export type BasePluginDefinitionInput<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = BasePluginInputFields<C> & Readonly<{ component?: NodeComponent }>;
 
-type BasePluginExtensionObject<C extends AnyBasePluginDefinition> = Omit<
+type BasePluginStageObject<C extends AnyBasePluginDefinition> = Omit<
   BasePluginInputFields<C>,
   | 'api'
   | 'decorate'
@@ -1464,14 +1471,14 @@ type BasePluginExtensionObject<C extends AnyBasePluginDefinition> = Omit<
   initialState?: object | ((context: BasePluginContext<C>) => object);
   read?: (
     context: BasePluginContext<C> & {
-      state: PlatePluginReadState<C>;
+      state: PluginReadState<C>;
     }
   ) => PluginReadMethodTree<C>;
   selectors?: PluginSelectors<InferPluginStoreState<C>>;
   update?: (
     context: BasePluginContext<C> & {
       context: EditorUpdateContext;
-      tx: PlatePluginTransaction<C>;
+      tx: PluginTransaction<C>;
     }
   ) => object;
 };
@@ -1483,7 +1490,7 @@ type BasePluginShortcutRecord = Record<
 
 type BasePluginStageConflictInput<TNames extends readonly string[]> = {
   readonly [TIndex in keyof TNames]: (
-    | EditorExtensionReference
+    | RuntimePluginReference
     | PluginReference
   ) &
     Readonly<{ name: TNames[TIndex] }>;
@@ -1491,7 +1498,7 @@ type BasePluginStageConflictInput<TNames extends readonly string[]> = {
 
 type BasePluginStageInput<
   C extends AnyBasePluginDefinition,
-  TKeys extends keyof BasePluginExtensionObject<C>,
+  TKeys extends keyof BasePluginStageObject<C>,
   S extends object,
   TApi extends object,
   TRead extends PluginReadMethodTree<C>,
@@ -1502,10 +1509,7 @@ type BasePluginStageInput<
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
   TShortcuts extends BasePluginShortcutRecord,
 > = Readonly<Record<TKeys, unknown>> &
-  Pick<
-    BasePluginExtensionObject<C>,
-    Exclude<TKeys, BasePluginStageSpecialKey>
-  > &
+  Pick<BasePluginStageObject<C>, Exclude<TKeys, BasePluginStageSpecialKey>> &
   Readonly<{
     api?: (context: BasePluginContext<C>) => TApi;
     conflicts?: BasePluginStageConflictInput<TConflictNames>;
@@ -1518,7 +1522,7 @@ type BasePluginStageInput<
         ) => S & RequiredPluginState<NoInfer<S>>);
     read?: (
       context: BasePluginContext<C> & {
-        state: PlatePluginReadState<C>;
+        state: PluginReadState<C>;
       }
     ) => TRead;
     selectors?: TSelectors & PluginSelectors<InferPluginStoreState<C>>;
@@ -1527,29 +1531,77 @@ type BasePluginStageInput<
     update?: (
       context: BasePluginContext<C> & {
         context: EditorUpdateContext;
-        tx: PlatePluginTransaction<C>;
+        tx: PluginTransaction<C>;
       }
     ) => TUpdate;
   }>;
 
+type BasePluginStageCompatibility<
+  C extends AnyBasePluginDefinition,
+  S extends object,
+  TApi extends object,
+  TRead extends object,
+  TSelectors extends object,
+  TUpdate extends object,
+> = PluginContributionCompatibility<InferApi<C>, TApi> &
+  PluginContributionCompatibility<InferPluginStoreState<C>, S> &
+  PluginContributionCompatibility<InferRead<C>, TRead> &
+  PluginContributionCompatibility<InferSelectors<C>, TSelectors> &
+  PluginContributionCompatibility<InferUpdate<C>, TUpdate>;
+
+type BasePluginRuntimeCompatibility<
+  C extends AnyBasePluginDefinition,
+  TPlugin extends RuntimePluginReference,
+> = PluginContributionCompatibility<
+  InferApi<C>,
+  InferApi<PluginStageResult<TPlugin>>
+> &
+  PluginContributionCompatibility<
+    InferRead<C>,
+    InferRead<PluginStageResult<TPlugin>>
+  > &
+  PluginContributionCompatibility<
+    InferUpdate<C>,
+    InferUpdate<PluginStageResult<TPlugin>>
+  >;
+
 export type BasePluginExtendInput<C extends AnyBasePluginDefinition> =
-  | BasePluginExtensionObject<C>
-  | EditorExtensionReference
+  | BasePluginStageObject<C>
+  | RuntimePluginReference
   | ((
       context: BasePluginContext<C>
-    ) => BasePluginExtensionObject<C> | EditorExtensionReference);
+    ) => BasePluginStageObject<C> | RuntimePluginReference);
 
-type ExtensionResult<TInput> = TInput extends (...args: any[]) => infer TResult
-  ? ExtensionResult<TResult>
-  : TInput extends EditorExtensionReference
-    ? Omit<PliteDefinitionOf<TInput>, 'conflicts' | 'dependencies' | 'name'>
+type PluginStageResult<TInput> = TInput extends (
+  ...args: any[]
+) => infer TResult
+  ? PluginStageResult<TResult>
+  : TInput extends RuntimePluginReference
+    ? Omit<RuntimeDefinitionOf<TInput>, 'conflicts' | 'dependencies' | 'name'>
     : TInput;
 
-type NonCallbackExtension<TExtension> = TExtension extends (
-  ...args: never[]
-) => unknown
+/**
+ * Exact result of extending one Base descriptor with a runtime plugin.
+ *
+ * @internal
+ */
+export type InternalBasePluginRuntimeExtension<
+  TSource,
+  C extends AnyBasePluginDefinition,
+  TPlugin extends RuntimePluginReference,
+> = BasePlugin<
+  MergePluginDefinitions<
+    C,
+    PluginStageResult<TPlugin>,
+    PluginStageResult<TPlugin>
+  >
+> &
+  RuntimePluginTypeProviderOf<TSource> &
+  RuntimePluginTypeProviderOf<TPlugin>;
+
+type NonCallbackPlugin<TPlugin> = TPlugin extends (...args: never[]) => unknown
   ? never
-  : TExtension;
+  : TPlugin;
 
 type BasePluginStageSpecialKey =
   | 'api'
@@ -1677,7 +1729,6 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   | 'dependencies'
   | 'enabled'
   | 'effectTypes'
-  | 'facetProviders'
   | 'initialState'
   | 'key'
   | 'name'
@@ -1701,25 +1752,26 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
 export type BasePluginPortal<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   S = C,
-> = Omit<ResolvedPlatePlugin<C>, keyof PluginPortalContext<C> | 'schema'> &
+> = Omit<ResolvedPlugin<C>, keyof PluginPortalContext<C> | 'schema'> &
+  PluginReference<C['name']> &
   Omit<PluginPortalContext<C>, 'read' | 'update'> & {
     /** State-bound reads scoped directly to this plugin. */
-    read: PlatePluginRead<C>;
+    read: PluginReadCapability<C>;
     /** One-shot updates scoped directly to this plugin. */
-    update: PlatePluginUpdate<C, S>;
+    update: PluginUpdate<C, S>;
   };
 
 // Author capabilities replace consumer methods; do not build that portal first.
 type BasePluginContextFields<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = Omit<
-  ResolvedPlatePlugin<C>,
+  ResolvedPlugin<C>,
   keyof PluginPortalContext<C> | keyof PluginBaseContext<C> | 'schema'
 > &
   PluginBaseContext<C> & {
     defineCodecs: DefinePluginCodecs<C>;
     editor: BasePluginContextEditor<C>;
-    plugin: ResolvedPlatePlugin<C>;
+    plugin: ResolvedPlugin<C>;
   };
 
 export type BasePluginContext<
@@ -1736,9 +1788,9 @@ interface BasePluginMethods<
       | BasePluginConfiguration<C>
       | ((context: BasePluginContext<C>) => BasePluginConfiguration<C>)
   ): ConfiguredBasePlugin<C>;
-  // Callback overload must precede the raw-extension overload for contextual inference.
+  // Callback overload must precede the runtime-plugin overload for contextual inference.
   extend<
-    const TKeys extends keyof BasePluginExtensionObject<C>,
+    const TKeys extends keyof BasePluginStageObject<C>,
     S extends object = {},
     const TApi extends object = {},
     const TRead extends PluginReadMethodTree<C> = {},
@@ -1750,7 +1802,7 @@ interface BasePluginMethods<
       readonly [],
     const TShortcuts extends BasePluginShortcutRecord = {},
   >(
-    extension: (
+    stage: (
       context: BasePluginContext<C>
     ) => BasePluginStageInput<
       C,
@@ -1764,6 +1816,9 @@ interface BasePluginMethods<
       TEnabled,
       TTargetPlugins,
       TShortcuts
+    >,
+    ...compatibility: PluginCompatibilityArguments<
+      BasePluginStageCompatibility<C, S, TApi, TRead, TSelectors, TUpdate>
     >
   ): BasePlugin<
     BasePluginStageDefinition<
@@ -1779,33 +1834,23 @@ interface BasePluginMethods<
       TTargetPlugins
     >
   > &
-    EditorExtensionTypeProviderOf<this>;
-  extend<const TExtension extends EditorExtensionReference>(
-    extension: (
+    RuntimePluginTypeProviderOf<this>;
+  extend<const TPlugin extends RuntimePluginReference>(
+    plugin: (
       context: BasePluginContext<C>
-    ) => TExtension & Readonly<{ decorate?: never }>
-  ): BasePlugin<
-    MergePluginDefinitions<
-      C,
-      ExtensionResult<TExtension>,
-      ExtensionResult<TExtension>
+    ) => TPlugin & Readonly<{ decorate?: never }>,
+    ...compatibility: PluginCompatibilityArguments<
+      BasePluginRuntimeCompatibility<C, TPlugin>
     >
-  > &
-    EditorExtensionTypeProviderOf<this> &
-    EditorExtensionTypeProviderOf<TExtension>;
-  extend<const TExtension extends EditorExtensionReference>(
-    extension: NonCallbackExtension<TExtension>
-  ): BasePlugin<
-    MergePluginDefinitions<
-      C,
-      ExtensionResult<TExtension>,
-      ExtensionResult<TExtension>
+  ): InternalBasePluginRuntimeExtension<this, C, TPlugin>;
+  extend<const TPlugin extends RuntimePluginReference>(
+    plugin: NonCallbackPlugin<TPlugin>,
+    ...compatibility: PluginCompatibilityArguments<
+      BasePluginRuntimeCompatibility<C, TPlugin>
     >
-  > &
-    EditorExtensionTypeProviderOf<this> &
-    EditorExtensionTypeProviderOf<TExtension>;
+  ): InternalBasePluginRuntimeExtension<this, C, TPlugin>;
   extend<
-    const TKeys extends keyof BasePluginExtensionObject<C>,
+    const TKeys extends keyof BasePluginStageObject<C>,
     S extends object = {},
     const TApi extends object = {},
     const TRead extends PluginReadMethodTree<C> = {},
@@ -1818,7 +1863,7 @@ interface BasePluginMethods<
     const TShortcuts extends BasePluginShortcutRecord = {},
   >(
     // Invalid callbacks must not fall through to the object overload.
-    extension: Readonly<{ call?: never }> &
+    stage: Readonly<{ call?: never }> &
       BasePluginStageInput<
         C,
         TKeys,
@@ -1831,7 +1876,10 @@ interface BasePluginMethods<
         TEnabled,
         TTargetPlugins,
         TShortcuts
-      >
+      >,
+    ...compatibility: PluginCompatibilityArguments<
+      BasePluginStageCompatibility<C, S, TApi, TRead, TSelectors, TUpdate>
+    >
   ): BasePlugin<
     BasePluginStageDefinition<
       C,
@@ -1846,7 +1894,7 @@ interface BasePluginMethods<
       TTargetPlugins
     >
   > &
-    EditorExtensionTypeProviderOf<this>;
+    RuntimePluginTypeProviderOf<this>;
 }
 
 export declare class ConfiguredPluginDescriptor {
@@ -1859,7 +1907,7 @@ export type ConfiguredBasePlugin<
   ConfiguredPluginDescriptor & {
     configure: never;
     extend: never;
-  };
+  } & PluginReference<C['name']>;
 
 export type BasePlugins = AnyBasePlugin[];
 
@@ -1918,7 +1966,7 @@ type ShortcutFunctionKey<T> = {
   string;
 
 type PluginShortcutUpdateKey<C extends AnyBasePluginDefinition> =
-  ShortcutFunctionKey<PlatePluginUpdate<C>>;
+  ShortcutFunctionKey<PluginUpdate<C>>;
 
 type PluginShortcutApiKey<C extends AnyBasePluginDefinition> =
   ShortcutFunctionKey<InferApi<C>>;

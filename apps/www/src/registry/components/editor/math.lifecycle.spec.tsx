@@ -8,7 +8,7 @@ import {
   within,
 } from '@testing-library/react';
 import { InlineEquationPlugin } from 'platejs/math/react';
-import { createEditor, Plate, PlateContent } from 'platejs/react';
+import { createEditor, EditorRoot, EditorContent } from 'platejs/react';
 import * as React from 'react';
 
 import { MathKit } from './math';
@@ -30,9 +30,9 @@ const setup = (isInline = true) => {
       : [{ type: 'equation', latex: 'x', children: [{ text: '' }] }],
   });
   const view = render(
-    <Plate editor={editor}>
-      <PlateContent />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent />
+    </EditorRoot>
   );
   fireEvent.click(view.getByRole('button', { name: 'Edit equation' }), {
     detail: 1,

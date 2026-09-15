@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
@@ -11,10 +11,10 @@ export default function EditorDefault() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor variant="fullWidth" placeholder="Type your message here." />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

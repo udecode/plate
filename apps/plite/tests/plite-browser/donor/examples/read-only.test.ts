@@ -7,7 +7,7 @@ test.describe('readonly editor', () => {
   });
 
   test('should not be editable', async ({ page }) => {
-    const pliteEditor = '[data-plite-editor="true"]';
+    const pliteEditor = '[data-editor="true"]';
     const editor = page.locator(pliteEditor);
     const initialText = await editor.textContent();
 
@@ -116,6 +116,6 @@ test.describe('readonly editor', () => {
     const payload = await editor.clipboard.copyEventPayload();
 
     expect(payload.text).toBe('This example');
-    expect(payload.html).toContain('data-plite-fragment=');
+    expect(payload.html).toContain('data-editor-fragment=');
   });
 });

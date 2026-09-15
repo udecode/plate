@@ -1,20 +1,20 @@
 import React from 'react';
 
-import type { PliteDecorationAttributes } from '../decoration-source';
+import type { DecorationAttributes } from '../decoration-source';
 
 export const DecoratedTextString = ({
   attributes,
   isTrailing = false,
   text,
 }: {
-  attributes: PliteDecorationAttributes;
+  attributes: DecorationAttributes;
   isTrailing?: boolean;
   text: string;
 }) => (
   <span
     {...attributes}
-    data-plite-length={isTrailing ? text.length : undefined}
-    data-plite-string
+    data-editor-length={isTrailing ? text.length : undefined}
+    data-editor-string
   >
     {`${text ?? ''}${isTrailing ? '\n' : ''}`}
   </span>
@@ -28,8 +28,8 @@ export const TextString = ({
   isTrailing?: boolean;
 }) => (
   <span
-    data-plite-length={isTrailing ? text.length : undefined}
-    data-plite-string
+    data-editor-length={isTrailing ? text.length : undefined}
+    data-editor-string
   >
     {`${text ?? ''}${isTrailing ? '\n' : ''}`}
   </span>

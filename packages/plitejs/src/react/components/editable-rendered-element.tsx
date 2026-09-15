@@ -3,8 +3,8 @@ import React, { type ComponentType } from 'react';
 import type {
   Descendant,
   Path,
-  Element as PliteElementNode,
-  Text as PliteTextNode,
+  Element as ElementNode,
+  Text as TextNode,
 } from '../..';
 import type { DOMCoverageSession } from '../../dom/internal';
 import {
@@ -19,8 +19,8 @@ import type {
   RenderElementRenderer,
 } from './editable-text-blocks';
 
-const isText = (value: Descendant): value is PliteTextNode =>
-  typeof (value as PliteTextNode).text === 'string';
+const isText = (value: Descendant): value is TextNode =>
+  typeof (value as TextNode).text === 'string';
 
 type ProcessLike = {
   env?: {
@@ -47,7 +47,7 @@ const RENDERER_BOUNDARIES = new WeakMap<
   ComponentType<RendererBoundaryProps>
 >();
 
-export const getEditableElementRenderer = <TElement extends PliteElementNode>(
+export const getEditableElementRenderer = <TElement extends ElementNode>(
   renderer: RenderElementRenderer<TElement>
 ) => {
   let Boundary = RENDERER_BOUNDARIES.get(renderer);
@@ -79,7 +79,7 @@ const RenderedChildrenGuard = ({
   path,
 }: {
   children: React.ReactNode;
-  element: PliteElementNode;
+  element: ElementNode;
   path: Path;
 }) => {
   const editor = useEditorContext();
@@ -132,7 +132,7 @@ const assertRenderedElementChildrenHaveDOMOrCoverage = (
     path,
   }: {
     coverage: DOMCoverageSession | undefined;
-    element: PliteElementNode;
+    element: ElementNode;
     path: Path;
   }
 ) => {
@@ -152,9 +152,9 @@ const assertRenderedElementChildrenHaveDOMOrCoverage = (
 
     if (!editor.api.dom.resolveDOMPoint(point)) {
       console.error(
-        `Plite renderElement for "${String(
-          element.type
-        )}" at ${path.join('.')} omitted editable child ${childPath.join(
+        `Plite renderElement for "${String(element.type)}" at ${path.join(
+          '.'
+        )} omitted editable child ${childPath.join(
           '.'
         )} without a DOM coverage boundary. Render children or register a DOMCoverage boundary.`
       );

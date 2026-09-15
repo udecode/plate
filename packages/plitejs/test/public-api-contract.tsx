@@ -2,7 +2,7 @@ import {
   createEditor as createHeadlessEditor,
   createEditorView,
   type CreateEditorOptions as CreateHeadlessEditorOptions,
-  defineExtension,
+  definePlugin,
   type Editor as HeadlessEditor,
   type EditorDocumentRange,
   type Range,
@@ -10,6 +10,8 @@ import {
 import {
   authored,
   type AuthoredChange,
+  type AuthoredChangeDetails,
+  type AuthoredChangePart,
   type AuthoredResult,
   type AuthoredSelection,
   type AuthoredView,
@@ -25,18 +27,18 @@ import {
   useOptionalEditorContext,
 } from 'plitejs/react';
 
-const ping = defineExtension('ping', {
+const ping = definePlugin('ping', {
   api: () => ({ ping: () => 'pong' as const }),
 });
 
 const headlessBaseOptions: CreateHeadlessEditorOptions = {};
-const headlessOptions = { extensions: [ping] } as const;
+const headlessOptions = { plugins: [ping] } as const;
 const headlessEditor = createHeadlessEditor(headlessOptions);
 const headlessResult: 'pong' = headlessEditor.api.ping.ping();
 const typedHeadlessEditor: HeadlessEditor = headlessEditor;
 
 const reactBaseOptions: CreateReactEditorOptions = {};
-const reactOptions = { extensions: [ping] } as const;
+const reactOptions = { plugins: [ping] } as const;
 const reactEditor = createReactViewEditor(reactOptions);
 const reactResult: 'pong' = reactEditor.api.ping.ping();
 const typedReactEditor: ReactEditor = reactEditor;
@@ -121,7 +123,7 @@ void externalRenderer;
 
 const assertAuthoredInference = () => {
   const editor = createHeadlessEditor({
-    extensions: [authored({ authorId: () => 'alice', retainHistory: true })],
+    plugins: [authored({ authorId: () => 'alice', retainHistory: true })],
   });
   const view = createEditorView(editor, {
     authored: { intent: 'propose', projection: 'markup' },
@@ -172,10 +174,25 @@ const assertAuthoredInference = () => {
     authorId: 'alice',
     limit: 20,
   }).items;
+  const changesAt: readonly AuthoredChange[] = editor.read.authored.changesAt({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 1 },
+  });
+  const details: AuthoredChangeDetails | null = editor.read.authored.details(
+    changes[0]?.id ?? ''
+  );
+  const parts: readonly AuthoredChangePart[] =
+    details?.parts.status === 'available' ? details.parts.items : [];
+  // @ts-expect-error range lookup requires native range coordinates
+  editor.read.authored.changesAt({ path: [0, 0], offset: 0 });
+  // @ts-expect-error details lookup requires a logical change identity
+  editor.read.authored.details(1);
   const result: AuthoredResult = editor.update.authored.decide({
     action: 'accept',
     selection,
   });
+  void changesAt;
+  void parts;
   const reverted: AuthoredResult = editor.update.authored.revert({ selection });
   if (reverted.status === 'applied') {
     // @ts-expect-error compensation identities are immutable

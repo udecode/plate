@@ -1,7 +1,7 @@
 import {
   BaseParagraphPlugin,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   ContentSlice,
   schema,
   PLUGINS,
@@ -463,7 +463,7 @@ describe('BaseLineHeightPlugin', () => {
 
 describe('BaseTextAlignPlugin', () => {
   it('admits the canonical property on configured element targets', () => {
-    const ImagePlugin = defineBasePlugin(PLUGINS.image, {
+    const ImagePlugin = definePlugin(PLUGINS.image, {
       schema: { element: schema.element.textBlock() },
     });
     const TextAlignPlugin = BaseTextAlignPlugin.configure({

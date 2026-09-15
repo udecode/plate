@@ -1,5 +1,13 @@
-export * from './awareness';
 export { YjsUpdatePolicy } from './editor-adapter';
-export * from './extension';
-export * from './selection';
-export type * from './types';
+export { yjs } from './plugin';
+export type {
+  YjsAdmissionStatus,
+  YjsAwarenessChange,
+  YjsAwarenessLike,
+  YjsAwarenessState,
+  YjsCursorDataSchema,
+  YjsInitialReadiness,
+  YjsPluginOptions,
+  YjsRemoteCursor,
+  YjsRemoteCursorData,
+} from './types';

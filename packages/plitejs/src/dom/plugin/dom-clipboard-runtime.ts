@@ -2,43 +2,65 @@ import {
   ContentSlice,
   type ContentSlice as ContentSliceValue,
   type Descendant,
-  defineExtensionPoint,
+  defineCommand,
   type Editor,
-  type EditorExtensionContribution,
-  type EditorExtensionPoint,
+  type EditorStateView,
   editorCommands,
-  type EditorUpdateTransaction,
-  type EditorUpdateTransactionOf,
   type NodeSelection,
   NodeApi as PliteNode,
+  PathApi,
+  type Point,
+  PointApi,
   type Range,
   RangeApi,
   SelectionApi,
   type Value,
 } from '../..';
 import {
-  failInvariant,
   dispatchCommand,
+  evaluateCommandWithState,
+  getActiveCommandEditor,
+} from '../../core/command-registry';
+import { getInstalledPlugin } from '../../core/plugin';
+import {
   getSelection as getEditorSelection,
   void as editorVoid,
-} from '../../internal';
+} from '../../interfaces/editor';
+import { failInvariant } from '../../internal/fail-invariant';
 import {
   getPlainText,
-  getPliteFragmentAttribute,
+  readClipboardFragmentPayload,
   isDOMElement,
   isDOMText,
 } from '../utils/dom';
-import type { DOMCoverageSession } from './dom-coverage';
+import type { DOMCoverageBoundary, DOMCoverageSession } from './dom-coverage';
 import { DOMEditor } from './dom-editor';
 import { findEditorDOMRootRuntime } from './dom-root-runtime';
-import { insertHostData, writeHostFragmentData } from './host-codec';
+import {
+  createHostDataTransactionSpec,
+  insertHostData,
+  writeHostFragmentData,
+} from './host-codec';
 
-const PLITE_FRAGMENT_ATTRIBUTE_RE = /\bdata-plite-fragment\s*=/i;
+const PLITE_FRAGMENT_ATTRIBUTE_RE = /\bdata-editor-fragment\s*=/i;
 const OPENING_HTML_TAG_RE = /<[A-Za-z][^<>]*?>/;
-const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
-const PLITE_FRAGMENT_FORMAT_ATTRIBUTE = 'data-plite-fragment-format';
+const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-editor-fragment';
+const PLITE_FRAGMENT_FORMAT_ATTRIBUTE = 'data-editor-fragment-format';
 
 const EDITOR_TO_CLIPBOARD_FORMAT_KEY = new WeakMap<object, string>();
+
+/** Semantic commands that own DOM clipboard ingress. */
+export const domCommands = Object.freeze({
+  insertData: defineCommand<DataTransfer>('dom.insertData', {
+    build: ({ input, state }) => {
+      const editor = getActiveCommandEditor();
+
+      return getInstalledPlugin(editor, 'dom')
+        ? createDOMDataTransactionSpec(editor, input, state)
+        : false;
+    },
+  }),
+});
 
 export type ClipboardSliceRead<V extends Value = Value> =
   | Readonly<{ kind: 'absent' }>
@@ -50,87 +72,15 @@ export type ClipboardSliceWrite<V extends Value = Value> = Readonly<{
   slice: ContentSliceValue<V>;
 }>;
 
-export type DOMClipboardInsertContext<TEditor extends Editor<any> = Editor> =
-  Readonly<{
-    next: (data?: DataTransfer) => boolean;
-    tx: EditorUpdateTransactionOf<TEditor>;
-  }>;
-
-export type DOMClipboardHandler<TEditor extends Editor<any> = Editor> =
-  Readonly<{
-    insertData(
-      data: DataTransfer,
-      context: DOMClipboardInsertContext<TEditor>
-    ): boolean;
-  }>;
-
-export const DOM_CLIPBOARD_HANDLERS: EditorExtensionPoint<
-  DOMClipboardHandler<any>
-> = defineExtensionPoint<DOMClipboardHandler<any>>(
-  'plite-dom:clipboard-handler'
-);
-
-/** Contribute one DOM clipboard ingress handler from an editor extension. */
-export const clipboardHandler = <
-  TEditor extends Editor<any> = Editor,
-  const TInsertData extends (...args: any[]) => boolean =
-    DOMClipboardHandler<TEditor>['insertData'],
->(
-  handler: DOMClipboardHandler<TEditor> & Readonly<{ insertData: TInsertData }>
-): EditorExtensionContribution<
-  DOMClipboardHandler<TEditor>,
-  Parameters<TInsertData> extends [] | [DataTransfer]
-    ? Editor<any, any>
-    : TEditor
-> => DOM_CLIPBOARD_HANDLERS.of(handler);
-
-/**
- * Run the DOM-owned clipboard chain inside an existing transaction.
- *
- * @internal
- */
-export const dispatchDOMClipboardHandlers = <
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  handlers: ReadonlyArray<DOMClipboardHandler<any>>,
-  data: DataTransfer,
-  tx: EditorUpdateTransaction<V, TExtensions>,
-  fallback: (data: DataTransfer) => boolean
-) => {
-  const dispatch = (index: number, nextData: DataTransfer): boolean => {
-    const handler = handlers[index];
-
-    if (!handler) return fallback(nextData);
-    let delegated = false;
-
-    return handler.insertData(nextData, {
-      next(replacement = nextData) {
-        if (delegated) {
-          throw new Error(
-            'DOM clipboard handler next() can only be called once.'
-          );
-        }
-        delegated = true;
-
-        return dispatch(index - 1, replacement);
-      },
-      tx,
-    });
-  };
-
-  return dispatch(handlers.length - 1, data);
-};
-
 const stripRenderOnlyLeafWrappers = (root: ParentNode) => {
   const candidates = Array.from(
     root.querySelectorAll(
-      '[data-plite-leaf] span:not([data-plite-string]):not([data-plite-zero-width])'
+      '[data-editor-leaf] span:not([data-editor-string]):not([data-editor-zero-width])'
     )
   );
 
   candidates.forEach((candidate) => {
-    if (candidate.closest('[data-plite-leaf]')) {
+    if (candidate.closest('[data-editor-leaf]')) {
       candidate.replaceWith(...Array.from(candidate.childNodes));
     }
   });
@@ -164,10 +114,10 @@ const attachFragmentMetadataToHtml = (
 ) => {
   const escapedEncoded = escapeHtmlAttribute(encoded);
   const escapedFormatKey = escapeHtmlAttribute(clipboardFormatKey);
-  const attributes = ` data-plite-fragment="${escapedEncoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapedFormatKey}"`;
+  const attributes = ` data-editor-fragment="${escapedEncoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapedFormatKey}"`;
 
   if (
-    html.includes(`data-plite-fragment="${escapedEncoded}"`) &&
+    html.includes(`data-editor-fragment="${escapedEncoded}"`) &&
     html.includes(`${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapedFormatKey}"`)
   ) {
     return html;
@@ -183,9 +133,13 @@ const attachFragmentMetadataToHtml = (
 
   const tag = openingTag[0];
   const insertionOffset = tag.endsWith('/>') ? tag.length - 2 : tag.length - 1;
-  const markedTag = `${tag.slice(0, insertionOffset)}${attributes}${tag.slice(insertionOffset)}`;
+  const markedTag = `${tag.slice(0, insertionOffset)}${attributes}${tag.slice(
+    insertionOffset
+  )}`;
 
-  return `${html.slice(0, openingTag.index)}${markedTag}${html.slice(openingTag.index + tag.length)}`;
+  return `${html.slice(0, openingTag.index)}${markedTag}${html.slice(
+    openingTag.index + tag.length
+  )}`;
 };
 
 const preserveFragmentMetadataInHostHtml = (
@@ -208,6 +162,124 @@ const preserveFragmentMetadataInHostHtml = (
 
 const getFragmentText = <V extends Value>(slice: ContentSliceValue<V>) =>
   slice.content.map((node) => PliteNode.string(node)).join('\n');
+
+const joinSliceContent = (
+  left: readonly Descendant[],
+  right: readonly Descendant[],
+  depth: number
+): readonly Descendant[] => {
+  if (depth === 0) return [...left, ...right];
+
+  const before = left.at(-1);
+  const after = right[0];
+
+  if (
+    !before ||
+    !after ||
+    !PliteNode.isElement(before) ||
+    !PliteNode.isElement(after)
+  ) {
+    throw new Error('Clipboard slices lost their shared element context.');
+  }
+
+  return [
+    ...left.slice(0, -1),
+    {
+      ...before,
+      children: joinSliceContent(before.children, after.children, depth - 1),
+    },
+    ...right.slice(1),
+  ];
+};
+
+const joinSlices = <V extends Value>(
+  parts: ReadonlyArray<{
+    range: Range;
+    slice: ContentSliceValue<V>;
+  }>
+): ContentSliceValue<V> => {
+  const [first, ...rest] = parts;
+
+  if (!first) return ContentSlice.empty;
+
+  let previousRange = first.range;
+
+  return rest.reduce<ContentSliceValue<V>>((result, part) => {
+    const { slice } = part;
+    const roots = { ...result.roots, ...slice.roots };
+    const [, previousEnd] = RangeApi.edges(previousRange);
+    const [nextStart] = RangeApi.edges(part.range);
+    const sharedDepth = Math.min(
+      result.openEnd,
+      slice.openStart,
+      PathApi.common(previousEnd.path, nextStart.path).length
+    );
+
+    previousRange = part.range;
+
+    return ContentSlice.fromJSON<V>({
+      content: joinSliceContent(result.content, slice.content, sharedDepth),
+      openEnd: slice.openEnd,
+      openStart: result.openStart,
+      ...(Object.keys(roots).length > 0 ? { roots } : {}),
+    });
+  }, first.slice);
+};
+
+const laterPoint = (left: Point, right: Point) =>
+  PointApi.isAfter(left, right) ? left : right;
+
+const earlierPoint = (left: Point, right: Point) =>
+  PointApi.isBefore(left, right) ? left : right;
+
+const getModelSliceWithoutExcludedBoundaries = <V extends Value>(
+  editor: DOMEditor<V>,
+  range: Range,
+  boundaries: readonly DOMCoverageBoundary[]
+) => {
+  const [selectionStart, selectionEnd] = RangeApi.edges(range);
+  const exclusions = boundaries
+    .filter((boundary) => boundary.copyPolicy === 'exclude')
+    .flatMap((boundary) => boundary.coveredPathRanges)
+    .flatMap(({ anchor, focus }) => {
+      const startPath = PathApi.isBefore(anchor, focus) ? anchor : focus;
+      const endPath = PathApi.isBefore(anchor, focus) ? focus : anchor;
+      const start =
+        editor.read.points.before(startPath) ??
+        editor.read.points.start(startPath);
+      const after = editor.read.points.after(endPath);
+      const end = after ?? editor.read.points.end(endPath);
+
+      return start && end ? [{ end, start }] : [];
+    })
+    .map(({ end, start }) => ({
+      end: earlierPoint(end, selectionEnd),
+      start: laterPoint(start, selectionStart),
+    }))
+    .filter(({ end, start }) => PointApi.isBefore(start, end))
+    .sort((left, right) => PointApi.compare(left.start, right.start));
+  const allowed: Range[] = [];
+  let cursor = selectionStart;
+
+  exclusions.forEach((exclusion) => {
+    if (PointApi.isAfter(exclusion.start, cursor)) {
+      allowed.push({ anchor: cursor, focus: exclusion.start });
+    }
+    if (PointApi.isAfter(exclusion.end, cursor)) {
+      cursor = exclusion.end;
+    }
+  });
+  if (PointApi.isBefore(cursor, selectionEnd)) {
+    allowed.push({ anchor: cursor, focus: selectionEnd });
+  }
+
+  return joinSlices(
+    allowed.map((allowedRange) => ({
+      range: allowedRange,
+      slice: editor.read.slice.export({ at: allowedRange }),
+    }))
+  );
+};
 
 /** HTML payload for a serialized Plite fragment. */
 export type DOMFragmentDataHtml =
@@ -234,6 +306,10 @@ const stringifyDOMFragmentData = <V extends Value>(
 ) => {
   const nodes = new WeakSet<object>();
   const pending: Descendant[] = [...slice.content];
+
+  for (const children of Object.values(slice.roots ?? {})) {
+    pending.push(...children);
+  }
 
   while (pending.length > 0) {
     const node = pending.pop() ?? failInvariant('Expected value to be defined');
@@ -300,7 +376,9 @@ export const writeDOMFragmentData = <V extends Value>(
   data.setData('text/plain', sourceText);
   data.setData(
     'text/html',
-    attachFragmentMetadataToHtml(htmlPayload, encoded, clipboardFormatKey)
+    htmlPayload.length > 0
+      ? attachFragmentMetadataToHtml(htmlPayload, encoded, clipboardFormatKey)
+      : htmlPayload
   );
 
   return encoded;
@@ -310,7 +388,8 @@ export const writeDOMFragmentData = <V extends Value>(
 export const writeDOMHostFragmentData = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>,
-  payload: DOMFragmentDataPayload<V>
+  payload: DOMFragmentDataPayload<V>,
+  options: Readonly<{ explicitFormats?: readonly string[] }> = {}
 ) => {
   const clipboardFormatKey =
     payload.clipboardFormatKey ?? getDOMClipboardFormatKey(editor);
@@ -329,11 +408,22 @@ export const writeDOMHostFragmentData = <V extends Value>(
     window,
   });
 
+  const { explicitFormats } = options;
+  const writtenFormats = writeHostFragmentData(
+    editor,
+    {
+      setData: (format, value) => {
+        data.setData(format, value);
+      },
+    },
+    payload.slice,
+    { excludeFormats: explicitFormats }
+  );
   preserveFragmentMetadataInHostHtml(
     data,
     encoded,
     clipboardFormatKey,
-    writeHostFragmentData(editor, data, payload.slice)
+    writtenFormats
   );
 
   return encoded;
@@ -385,7 +475,9 @@ const writeModelBackedRangeData = <V extends Value>(
   writeDOMHostFragmentData(editor, data, {
     clipboardFormatKey,
     html: ({ clipboardFormatKey: innerClipboardFormatKey, encoded, text }) =>
-      `<span data-plite-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(innerClipboardFormatKey)}">${escapeHtmlText(text)}</span>`,
+      `<span data-editor-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(
+        innerClipboardFormatKey
+      )}">${escapeHtmlText(text)}</span>`,
     slice,
   });
 };
@@ -448,45 +540,17 @@ export const writeDOMRangeData = <V extends Value>(
 
   const coverage =
     options.coverage ?? findEditorDOMRootRuntime(editor)?.domCoverage;
-  let coveredBoundaries = coverage?.getBoundariesForRange(range) ?? [];
-  const materializedBoundaryIds = new Set<string>();
-
-  for (const boundary of coveredBoundaries) {
-    if (boundary.copyPolicy === 'materialize') {
-      const result = coverage?.materializeBoundary(
-        boundary.boundaryId,
-        'copy',
-        {
-          range,
-        }
-      );
-
-      if (result?.status === 'handled') {
-        materializedBoundaryIds.add(boundary.boundaryId);
-      }
-    }
-  }
-
-  if (materializedBoundaryIds.size > 0) {
-    coveredBoundaries = coverage?.getBoundariesForRange(range) ?? [];
-  }
-
+  const coveredBoundaries = coverage?.getBoundariesForRange(range) ?? [];
   const hasPolicyBoundaries = coveredBoundaries.length > 0;
-  const shouldWriteModelBackedSelection = coveredBoundaries.some(
-    (boundary) =>
-      boundary.copyPolicy === 'model' ||
-      (boundary.copyPolicy === 'materialize' &&
-        materializedBoundaryIds.has(boundary.boundaryId))
-  );
 
-  if (shouldWriteModelBackedSelection) {
-    writeModelBackedRangeData(
+  if (hasPolicyBoundaries) {
+    const slice = getModelSliceWithoutExcludedBoundaries(
       editor,
-      data,
-      clipboardFormatKey,
       range,
-      options.slice
+      coveredBoundaries
     );
+
+    writeModelBackedRangeData(editor, data, clipboardFormatKey, range, slice);
     return undefined;
   }
 
@@ -537,25 +601,25 @@ export const writeDOMRangeData = <V extends Value>(
   // most browsers. (2018/04/27)
   if (startVoid) {
     attach =
-      contents.querySelector('[data-plite-spacer]') ??
+      contents.querySelector('[data-editor-spacer]') ??
       contents.querySelector(
-        '[data-plite-node="element"], [data-plite-node="text"], [data-plite-string], [data-plite-zero-width]'
+        '[data-editor-node="element"], [data-editor-node="text"], [data-editor-string], [data-editor-zero-width]'
       ) ??
       attach;
   }
 
   // Remove any zero-width space spans from the cloned DOM so that they don't
   // show up elsewhere when pasted.
-  Array.from(contents.querySelectorAll('[data-plite-zero-width]')).forEach(
+  Array.from(contents.querySelectorAll('[data-editor-zero-width]')).forEach(
     (zw) => {
-      const isNewline = zw.getAttribute('data-plite-zero-width') === 'n';
+      const isNewline = zw.getAttribute('data-editor-zero-width') === 'n';
       zw.textContent = isNewline ? '\n' : '';
     }
   );
 
   stripRenderOnlyLeafWrappers(contents);
 
-  // Set a `data-plite-fragment` attribute on a non-empty node, so it shows up
+  // Set a `data-editor-fragment` attribute on a non-empty node, so it shows up
   // in the HTML, and can be used for intra-Plite pasting. If it's a text
   // node, wrap it in a `<span>` so we have something to set an attribute on.
   if (isDOMText(attach)) {
@@ -595,7 +659,7 @@ export const writeDOMRangeData = <V extends Value>(
     writeDOMHostFragmentData(editor, data, {
       clipboardFormatKey,
       html: ({ encoded }) => {
-        attachElement.setAttribute('data-plite-fragment', encoded);
+        attachElement.setAttribute('data-editor-fragment', encoded);
         attachElement.setAttribute(
           PLITE_FRAGMENT_FORMAT_ATTRIBUTE,
           clipboardFormatKey
@@ -606,9 +670,6 @@ export const writeDOMRangeData = <V extends Value>(
       text: getPlainText(div),
       slice,
     });
-  } else {
-    data.setData('text/html', div.innerHTML);
-    data.setData('text/plain', getPlainText(div));
   }
   div.remove();
   return data;
@@ -617,22 +678,38 @@ export const writeDOMRangeData = <V extends Value>(
 export const insertDOMData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
-): boolean => {
-  if (insertDOMFragmentData(editor, data)) return true;
+): boolean => dispatchCommand(editor, domCommands.insertData, data);
 
-  return insertHostData(editor, data);
+/** Interpret DOM data into one unpublished transaction spec. */
+export const createDOMDataTransactionSpec = <V extends Value>(
+  editor: Editor<V, any>,
+  data: DataTransfer,
+  state: EditorStateView<V, any>
+) => {
+  const slice = readDOMFragmentData(editor as DOMEditor<V>, data);
+
+  if (slice) {
+    const { result } = evaluateCommandWithState(
+      editor,
+      editorCommands.replaceSlice,
+      state,
+      { slice }
+    );
+
+    if (result !== false) return result;
+  }
+
+  return createHostDataTransactionSpec(editor, data, { state });
 };
 
 export const readDOMFragmentData = <V extends Value>(
   editor: DOMEditor<V>,
-  data: Pick<DataTransfer, 'getData'>,
+  data: Pick<DataTransfer, 'getData'> & Partial<Pick<DataTransfer, 'types'>>,
   clipboardFormatKey = getDOMClipboardFormatKey(editor)
 ): ContentSliceValue<V> | null => {
-  const fragment =
-    data.getData(`application/${clipboardFormatKey}`) ||
-    getPliteFragmentAttribute(data, clipboardFormatKey);
+  const fragment = readClipboardFragmentPayload(data, clipboardFormatKey);
 
-  if (fragment) {
+  if (fragment?.value) {
     let window: Pick<Window, 'atob'> | undefined;
 
     try {
@@ -641,7 +718,7 @@ export const readDOMFragmentData = <V extends Value>(
       // Headless host adapters use the ambient decoder.
     }
 
-    return decodeClipboardSlice(fragment, window);
+    return decodeClipboardSlice(fragment.value, window);
   }
 
   return null;
@@ -653,9 +730,9 @@ export const readDOMClipboardSlice = <V extends Value>(
   data: Pick<DataTransfer, 'getData' | 'types'>
 ): ClipboardSliceRead<V> => {
   const clipboardFormatKey = getDOMClipboardFormatKey(editor);
-  const mime = `application/${clipboardFormatKey}`;
-  const mimeValue = data.getData(mime);
-  const claimsMime = Array.from(data.types ?? []).includes(mime) || !!mimeValue;
+  const payload = readClipboardFragmentPayload(data, clipboardFormatKey);
+
+  if (!payload) return Object.freeze({ kind: 'absent' });
   let window: Pick<Window, 'atob'> | undefined;
 
   try {
@@ -664,22 +741,13 @@ export const readDOMClipboardSlice = <V extends Value>(
     // Headless host adapters use the ambient decoder.
   }
 
-  if (claimsMime) {
-    const slice = mimeValue ? decodeClipboardSlice<V>(mimeValue, window) : null;
-
-    return slice
-      ? Object.freeze({ kind: 'slice', slice })
-      : Object.freeze({ kind: 'invalid', source: 'mime' });
-  }
-
-  const htmlValue = getPliteFragmentAttribute(data, clipboardFormatKey);
-
-  if (!htmlValue) return Object.freeze({ kind: 'absent' });
-  const slice = decodeClipboardSlice<V>(htmlValue, window);
+  const slice = payload.value
+    ? decodeClipboardSlice<V>(payload.value, window)
+    : null;
 
   return slice
     ? Object.freeze({ kind: 'slice', slice })
-    : Object.freeze({ kind: 'invalid', source: 'html' });
+    : Object.freeze({ kind: 'invalid', source: payload.source });
 };
 
 /** Write one exact Plite slice plus optional host formats. */
@@ -694,7 +762,12 @@ export const writeDOMClipboardSlice = <V extends Value>(
     ...extraFormats
   } = formats;
 
-  writeDOMHostFragmentData(editor, data, { html, slice, text });
+  writeDOMHostFragmentData(
+    editor,
+    data,
+    { html, slice, text },
+    { explicitFormats: Object.keys(formats) }
+  );
   Object.entries(extraFormats).forEach(([format, value]) => {
     data.setData(format, value);
   });

@@ -3,7 +3,7 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import {
   type BasePluginInput,
-  defineBasePlugin,
+  definePlugin as defineHeadlessPlugin,
   ElementIdPlugin,
 } from 'platejs';
 import { ParagraphPlugin, useEditor } from 'platejs/react';
@@ -17,18 +17,18 @@ import {
   target,
   type Value,
 } from '../../facade';
-import { Plate } from '../components/Plate';
-import { PlateContent } from '../components/PlateContent';
-import type { InternalPlateEditorWithInstalledPlugins } from '../editor/Editor';
+import { EditorRoot } from '../components/Plate';
+import { EditorContent } from '../components/PlateContent';
+import type { InternalReactEditorWithInstalledPlugins } from '../editor/Editor';
 import { createEditorWithEditor } from '../editor/withPlate';
 import { useEditorContext } from '../internal/plite-components';
-import { definePlatePlugin } from '../plugin/definePlatePlugin';
+import { definePlugin } from '../plugin/definePlugin';
 import {
   BlockPlaceholderPlugin,
   type BlockPlaceholderDefinition,
 } from './BlockPlaceholderPlugin';
 
-const BlockPlaceholderFixtureSchemaPlugin = defineBasePlugin(
+const BlockPlaceholderFixtureSchemaPlugin = defineHeadlessPlugin(
   'blockPlaceholderFixtureSchema',
   {
     schema: {
@@ -48,7 +48,7 @@ const ParagraphWithComponentPlugin = ParagraphPlugin.configure({
     <div {...attributes}>{children}</div>
   ),
 });
-const RootOwnerPlugin = defineBasePlugin('blockPlaceholderRootOwner', {
+const RootOwnerPlugin = defineHeadlessPlugin('blockPlaceholderRootOwner', {
   schema: {
     element: {
       blockContent: true,
@@ -67,7 +67,7 @@ const RootOwnerPlugin = defineBasePlugin('blockPlaceholderRootOwner', {
 });
 
 const renderPlaceholderEditor = <V extends Value, D>(
-  editor: InternalPlateEditorWithInstalledPlugins<V, D>,
+  editor: InternalReactEditorWithInstalledPlugins<V, D>,
   options?: { autoFocus?: boolean; readOnly?: boolean }
 ) => {
   let mountedEditor: ReturnType<typeof useEditor> | undefined;
@@ -77,7 +77,7 @@ const renderPlaceholderEditor = <V extends Value, D>(
       mountedEditor = view;
     }, [view]);
     return (
-      <PlateContent
+      <EditorContent
         autoFocus={options?.autoFocus ?? false}
         data-testid="plite-content-editable"
         data-variant="wordProcessor"
@@ -85,9 +85,13 @@ const renderPlaceholderEditor = <V extends Value, D>(
     );
   }
   const rendered = render(
-    <Plate editor={editor} readOnly={options?.readOnly} suppressInstanceWarning>
+    <EditorRoot
+      editor={editor}
+      readOnly={options?.readOnly}
+      suppressInstanceWarning
+    >
       <Content />
-    </Plate>
+    </EditorRoot>
   );
   return {
     ...rendered,
@@ -203,7 +207,7 @@ describe('block placeholder behavior', () => {
   });
 
   it('honors custom node metadata rules for pristine empty blocks', async () => {
-    const CustomMetadataPlugin = defineBasePlugin('customMetadata', {
+    const CustomMetadataPlugin = defineHeadlessPlugin('customMetadata', {
       schema: {
         properties: {
           dataTestId: schema.elementProperty(
@@ -320,7 +324,7 @@ describe('block placeholder behavior', () => {
 
       return null;
     }
-    const ViewProbePlugin = definePlatePlugin('blockPlaceholderViewProbe', {
+    const ViewProbePlugin = definePlugin('blockPlaceholderViewProbe', {
       slots: { afterEditable: ViewProbe },
     });
     const editor = createEditor({
@@ -347,10 +351,10 @@ describe('block placeholder behavior', () => {
       },
     });
     const { getByTestId } = render(
-      <Plate editor={editor} suppressInstanceWarning>
-        <PlateContent data-testid="writable-view" root="header:1" />
-        <PlateContent data-testid="read-only-view" readOnly root="header:1" />
-      </Plate>
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent data-testid="writable-view" root="header:1" />
+        <EditorContent data-testid="read-only-view" readOnly root="header:1" />
+      </EditorRoot>
     );
     const editableView = getByTestId('writable-view');
     const readOnlyView = getByTestId('read-only-view');
@@ -430,18 +434,18 @@ describe('block placeholder behavior', () => {
 
     const editor = createEditor({
       plugins: [
-        definePlatePlugin('composingViewProbe', {
+        definePlugin('composingViewProbe', {
           slots: { afterEditable: ViewProbe },
         }),
       ],
     });
     const mounted = render(
-      <Plate editor={editor} readOnly={false} suppressInstanceWarning>
-        <PlateContent data-testid="first-view" />
-        <Plate editor={editor} readOnly={false} suppressInstanceWarning>
-          <PlateContent data-testid="second-view" />
-        </Plate>
-      </Plate>
+      <EditorRoot editor={editor} readOnly={false} suppressInstanceWarning>
+        <EditorContent data-testid="first-view" />
+        <EditorRoot editor={editor} readOnly={false} suppressInstanceWarning>
+          <EditorContent data-testid="second-view" />
+        </EditorRoot>
+      </EditorRoot>
     );
     const firstElement = mounted.getByTestId('first-view');
     const secondElement = mounted.getByTestId('second-view');

@@ -1,5 +1,5 @@
 import { replace as editorReplace } from '../../src/internal';
-import { PliteReactUpdatePolicy } from '../../src/react';
+import { ReactUpdatePolicy } from '../../src/react';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   createEditableInputControllerState,
@@ -16,11 +16,9 @@ import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor } from '../../src/react/plugin/with-react';
 
 test('selection preservation policy is deeply frozen', () => {
-  expect(Object.isFrozen(PliteReactUpdatePolicy)).toBe(true);
-  expect(Object.isFrozen(PliteReactUpdatePolicy.preserveSelection)).toBe(true);
-  expect(Object.isFrozen(PliteReactUpdatePolicy.preserveSelection.tags)).toBe(
-    true
-  );
+  expect(Object.isFrozen(ReactUpdatePolicy)).toBe(true);
+  expect(Object.isFrozen(ReactUpdatePolicy.preserveSelection)).toBe(true);
+  expect(Object.isFrozen(ReactUpdatePolicy.preserveSelection.tags)).toBe(true);
 });
 
 const createRemoteSelectionEditor = () => {
@@ -35,7 +33,7 @@ const createRemoteSelectionEditor = () => {
     },
   });
 
-  editor.update(PliteReactUpdatePolicy.preserveSelection, (tx) => {
+  editor.update(ReactUpdatePolicy.preserveSelection, (tx) => {
     tx.selection.set({
       kind: 'text',
       anchor: { path: [0, 0], offset: 1 },

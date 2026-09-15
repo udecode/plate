@@ -9,10 +9,10 @@ import {
 import {
   createEditorView,
   type Descendant,
-  defineExtension,
+  definePlugin,
   defineEditorSchema,
-  defineExtensionSlot,
-  defineFacet,
+  definePluginSlot,
+  definePluginPoint,
   type Element,
   type EditorCommit,
   type InitialValue,
@@ -20,9 +20,15 @@ import {
   NodeApi,
   schema,
 } from 'plitejs';
-import { clipboardHandler } from 'plitejs/dom';
-import { type ReactNode, useLayoutEffect } from 'react';
+import { domCommands } from 'plitejs/dom';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useLayoutEffect,
+} from 'react';
 
+import { getPluginContributions } from '../../src/core/plugin';
 import {
   EDITOR_TO_PENDING_ACTION,
   EDITOR_TO_PENDING_DIFFS,
@@ -31,23 +37,83 @@ import {
 import {
   createEditor,
   Editable,
-  Plite,
-  PliteRuntime,
+  EditorRoot as ProductEditorRoot,
   useEditorContext,
   useEditorFocused,
   useEditorSelector,
   useEditorState,
-  usePliteActiveRoot,
-  usePliteChildRoot,
-  usePliteContentRoot,
-  usePliteRootEditor,
-  usePliteRootState,
-  usePliteRuntime,
-  usePliteRuntimeState,
+  useActiveRoot,
+  useChildRoot,
+  useContentRoot,
+  useRootEditor,
+  useRootState,
+  useEditor,
+  useRuntimeState,
 } from '../../src/react';
 import { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
-import { useRootDocumentEpoch } from '../../src/react/editable/root-selector-sources';
 import { didSyncTextPathToDOM } from '../../src/react/hooks/use-plite-node-ref';
+import {
+  PliteRuntimeProvider,
+  useMountedEditorRuntimeOwner,
+} from '../../src/react/hooks/use-plite-runtime';
+
+const TestEditorContext = createContext<ReturnType<
+  typeof useEditor<any, any>
+> | null>(null);
+
+const useTestEditor = <
+  V extends Value = Value,
+  const TPlugins extends readonly unknown[] = readonly [],
+>(
+  options?: Parameters<typeof useEditor<V, TPlugins>>[0]
+) => {
+  const inheritedEditor = useContext(TestEditorContext);
+  const createdEditor = useEditor<V, TPlugins>(options);
+  const editor =
+    inheritedEditor && options === undefined
+      ? (inheritedEditor as unknown as typeof createdEditor)
+      : createdEditor;
+
+  return Object.assign(editor, { editor });
+};
+
+const TestProvider = <
+  V extends Value,
+  const TPlugins extends readonly unknown[],
+>({
+  children,
+  runtime,
+}: {
+  children: ReactNode;
+  runtime: ReturnType<typeof useTestEditor<V, TPlugins>>;
+}) => {
+  useMountedEditorRuntimeOwner('EditorRoot', runtime.editor);
+
+  return (
+    <TestEditorContext
+      value={
+        runtime.editor as unknown as ReturnType<typeof useEditor<any, any>>
+      }
+    >
+      <PliteRuntimeProvider editor={runtime.editor}>
+        {children}
+      </PliteRuntimeProvider>
+    </TestEditorContext>
+  );
+};
+
+const TestRoot = ({ editor, ...props }: any) => {
+  const inheritedEditor = useContext(TestEditorContext);
+  const resolvedEditor = editor ?? inheritedEditor;
+
+  if (!resolvedEditor) throw new Error('Expected a test editor.');
+
+  return (
+    <TestEditorContext value={resolvedEditor}>
+      <ProductEditorRoot {...props} editor={resolvedEditor} />
+    </TestEditorContext>
+  );
+};
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -102,7 +168,7 @@ const formCard = defineEditorSchema('schema:test-form-card', {
   version: 1,
 });
 
-const contentRootExtension = defineEditorSchema('schema:test-content-root', {
+const contentRootPlugin = defineEditorSchema('schema:test-content-root', {
   elements: {
     'details-content': {
       content: schema.content.open(),
@@ -117,95 +183,94 @@ const contentRootExtension = defineEditorSchema('schema:test-content-root', {
   version: 1,
 });
 
-const createRuntimeWrapper =
+const createProviderWrapper =
   (value: InitialValue = initialValue()) =>
   ({ children }: { children: ReactNode }) => {
-    const runtime = usePliteRuntime({ initialValue: value });
+    const runtime = useTestEditor({ initialValue: value });
 
-    return <PliteRuntime runtime={runtime}>{children}</PliteRuntime>;
+    return <TestProvider runtime={runtime}>{children}</TestProvider>;
   };
 
 const createRootWrapper =
   (root?: string) =>
   ({ children }: { children: ReactNode }) => {
-    const RuntimeWrapper = createRuntimeWrapper();
+    const ProviderWrapper = createProviderWrapper();
 
     return (
-      <RuntimeWrapper>
-        <Plite root={root}>{children}</Plite>
-      </RuntimeWrapper>
+      <ProviderWrapper>
+        <TestRoot root={root}>{children}</TestRoot>
+      </ProviderWrapper>
     );
   };
 
-describe('PliteRuntime provider contract', () => {
+describe('EditorRoot provider contract', () => {
   test('rejects replacing a mounted runtime owner', () => {
     const runtimeA = renderHook(() =>
-      usePliteRuntime({ initialValue: [paragraph('A')] })
+      useTestEditor({ initialValue: [paragraph('A')] })
     ).result.current;
     const runtimeB = renderHook(() =>
-      usePliteRuntime({ initialValue: [paragraph('B')] })
+      useTestEditor({ initialValue: [paragraph('B')] })
     ).result.current;
     const rendered = render(
-      <PliteRuntime runtime={runtimeA}>
+      <TestProvider runtime={runtimeA}>
         <span>runtime</span>
-      </PliteRuntime>
+      </TestProvider>
     );
 
     expect(() =>
       rendered.rerender(
-        <PliteRuntime runtime={runtimeB}>
+        <TestProvider runtime={runtimeB}>
           <span>runtime</span>
-        </PliteRuntime>
+        </TestProvider>
       )
     ).toThrow(
-      '[PliteRuntime] Cannot replace the editor runtime of a mounted provider. Remount <PliteRuntime> with a different React key.'
+      '[EditorRoot] Cannot replace the editor runtime of a mounted provider. Remount <EditorRoot> with a different React key.'
     );
   });
 
   test('provides a replacement runtime after a keyed remount', () => {
     const runtimeA = renderHook(() =>
-      usePliteRuntime({ initialValue: [paragraph('A')] })
+      useTestEditor({ initialValue: [paragraph('A')] })
     ).result.current;
     const runtimeB = renderHook(() =>
-      usePliteRuntime({ initialValue: [paragraph('B')] })
+      useTestEditor({ initialValue: [paragraph('B')] })
     ).result.current;
     const Probe = () => (
-      <span data-testid="runtime-value">{usePliteRuntimeState(rootText)}</span>
+      <span data-testid="runtime-value">{useRuntimeState(rootText)}</span>
     );
     const rendered = render(
-      <PliteRuntime key="runtime-a" runtime={runtimeA}>
+      <TestProvider key="runtime-a" runtime={runtimeA}>
         <Probe />
-      </PliteRuntime>
+      </TestProvider>
     );
 
     expect(rendered.getByTestId('runtime-value')).toHaveTextContent('A');
 
     rendered.rerender(
-      <PliteRuntime key="runtime-b" runtime={runtimeB}>
+      <TestProvider key="runtime-b" runtime={runtimeB}>
         <Probe />
-      </PliteRuntime>
+      </TestProvider>
     );
 
     expect(rendered.getByTestId('runtime-value')).toHaveTextContent('B');
   });
 
   test('publishes one React runtime revision for slot reconfiguration', async () => {
-    const mode = defineFacet<string, string>({
-      combine: (values) => values.at(-1) ?? 'missing',
-      key: 'react-runtime-configuration-mode',
-    });
-    const slot = defineExtensionSlot('react-runtime-configuration-mode');
-    const extension = (value: string) =>
-      defineExtension(`react-runtime-configuration-mode-${value}`, {
-        facetProviders: [mode.of(value)],
+    const mode = definePluginPoint<string>('react-runtime-configuration-mode');
+    const slot = definePluginSlot('react-runtime-configuration-mode');
+    const plugin = (value: string) =>
+      definePlugin(`react-runtime-configuration-mode-${value}`, {
+        contributions: [mode.of(value)],
       });
     const editor = createEditor({
-      extensions: [slot.of(extension('read'))] as const,
+      plugins: [slot.of(plugin('read'))] as const,
       initialValue: [paragraph('body')],
     });
     const renders: string[] = [];
     const Probe = () => {
-      const value = useEditorState((state) => state.facet(mode));
+      const value = useEditorState(
+        () => getPluginContributions(editor, mode).at(-1) ?? 'missing'
+      );
 
       renders.push(value);
 
@@ -213,16 +278,16 @@ describe('PliteRuntime provider contract', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <TestRoot editor={editor}>
         <Probe />
-      </Plite>
+      </TestRoot>
     );
 
     expect(screen.getByTestId('configuration-mode')).toHaveTextContent('read');
 
     await act(async () => {
       editor.update((tx) => {
-        tx.extensions.reconfigure(slot, extension('write'));
+        tx.plugins.reconfigure(slot, plugin('write'));
       });
     });
 
@@ -233,7 +298,7 @@ describe('PliteRuntime provider contract', () => {
   test('usePliteChildRoot renders same-runtime rich island content', async () => {
     const childRoot = 'island-a:body';
     const editor = createEditor({
-      extensions: [formCard],
+      plugins: [formCard],
       initialValue: {
         children: [
           {
@@ -245,13 +310,13 @@ describe('PliteRuntime provider contract', () => {
         roots: { [childRoot]: [paragraph('about')] },
       },
     });
-    let childEditor!: ReturnType<typeof usePliteRootEditor>;
+    let childEditor!: ReturnType<typeof useRootEditor>;
 
     const IslandBody = ({ element }: { element: Element }) => {
-      const root = usePliteChildRoot(element, 'body');
-      const text = usePliteRootState(root, rootText);
+      const root = useChildRoot(element, 'body');
+      const text = useRootState(root, rootText);
 
-      childEditor = usePliteRootEditor(root);
+      childEditor = useRootEditor(root);
 
       return (
         <div>
@@ -264,12 +329,12 @@ describe('PliteRuntime provider contract', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <TestRoot editor={editor}>
         <Editable
           aria-label="Outer editor"
           renderVoid={({ element }) => <IslandBody element={element} />}
         />
-      </Plite>
+      </TestRoot>
     );
 
     expect(screen.getByTestId('island-body-status')).toHaveTextContent(
@@ -302,19 +367,19 @@ describe('PliteRuntime provider contract', () => {
       children: [{ text: '' }],
     } satisfies Element & { childRoots: Record<string, string> };
     const editor = createEditor({
-      extensions: [contentRootExtension],
+      plugins: [contentRootPlugin],
       initialValue: {
         children: [element],
         roots: { [childRoot]: [paragraph('about')] },
       },
     });
-    let contentRootEditor!: ReturnType<typeof usePliteRootEditor>;
+    let contentRootEditor!: ReturnType<typeof useRootEditor>;
 
     const ContentRoot = ({ element: innerElement }: { element: Element }) => {
-      const { chrome, root } = usePliteContentRoot(innerElement);
-      const text = usePliteRootState(root, rootText);
+      const { chrome, root } = useContentRoot(innerElement);
+      const text = useRootState(root, rootText);
 
-      contentRootEditor = usePliteRootEditor(root);
+      contentRootEditor = useRootEditor(root);
 
       return (
         <div data-testid="content-root" {...chrome.props}>
@@ -324,14 +389,14 @@ describe('PliteRuntime provider contract', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <TestRoot editor={editor}>
         <ContentRoot element={element} />
-      </Plite>
+      </TestRoot>
     );
 
     await screen.findByText(`${childRoot}:about`);
     expect(screen.getByTestId('content-root')).toHaveAttribute(
-      'data-plite-root-chrome',
+      'data-editor-root-chrome',
       childRoot
     );
     expect(contentRootEditor.root).toBe(childRoot);
@@ -367,7 +432,7 @@ describe('PliteRuntime provider contract', () => {
       children: [{ text: '' }],
     } satisfies Element & { childRoots: Record<string, string> };
     const editor = createEditor({
-      extensions: [multiSlotSchema],
+      plugins: [multiSlotSchema],
       initialValue: {
         children: [element],
         roots: {
@@ -377,15 +442,15 @@ describe('PliteRuntime provider contract', () => {
       },
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <Plite editor={editor}>{children}</Plite>
+      <TestRoot editor={editor}>{children}</TestRoot>
     );
 
     expect(() =>
-      renderHook(() => usePliteContentRoot(element), { wrapper })
+      renderHook(() => useContentRoot(element), { wrapper })
     ).toThrow(/pass options\.slot/);
 
     const { result } = renderHook(
-      () => usePliteContentRoot(element, { slot: 'caption' }),
+      () => useContentRoot(element, { slot: 'caption' }),
       { wrapper }
     );
 
@@ -400,7 +465,7 @@ describe('PliteRuntime provider contract', () => {
       children: [{ text: '' }],
     } satisfies Element & { childRoots: Record<string, string> };
     const editor = createEditor({
-      extensions: [contentRootExtension],
+      plugins: [contentRootPlugin],
       initialValue: {
         children: [element],
         roots: { [childRoot]: [paragraph('slot body')] },
@@ -408,7 +473,7 @@ describe('PliteRuntime provider contract', () => {
     });
 
     render(
-      <Plite editor={editor}>
+      <TestRoot editor={editor}>
         <Editable
           aria-label="Outer editor"
           renderElement={(props) =>
@@ -423,7 +488,7 @@ describe('PliteRuntime provider contract', () => {
             )
           }
         />
-      </Plite>
+      </TestRoot>
     );
 
     await screen.findByLabelText('Details body');
@@ -431,33 +496,33 @@ describe('PliteRuntime provider contract', () => {
       'slot body'
     );
     expect(screen.getByTestId('details-slot')).toHaveAttribute(
-      'data-plite-node',
+      'data-editor-node',
       'element'
     );
   });
 
   test('Plite editor hosts multiple root-bound Editable surfaces', async () => {
     const editor = createEditor({ initialValue: initialValue() });
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
     const headerValues: string[] = [];
 
     const Probe = () => {
-      const activeRoot = usePliteActiveRoot();
-      const headerText = usePliteRootState('header', rootText);
+      const activeRoot = useActiveRoot();
+      const headerText = useRootState('header', rootText);
 
-      headerEditor = usePliteRootEditor('header');
+      headerEditor = useRootEditor('header');
       headerValues.push(headerText);
 
       return <span data-testid="active-root">{activeRoot ?? 'primary'}</span>;
     };
 
     render(
-      <Plite editor={editor}>
+      <TestRoot editor={editor}>
         <Probe />
         <Editable aria-label="Header editor" root="header" />
         <Editable aria-label="Main editor" />
         <Editable aria-label="Footer editor" root="footer" />
-      </Plite>
+      </TestRoot>
     );
 
     expect(screen.getByLabelText('Header editor')).toHaveTextContent('header');
@@ -490,22 +555,28 @@ describe('PliteRuntime provider contract', () => {
 
   test('Plite onCommit observes sibling root edits while value callbacks ignore them', async () => {
     const editor = createEditor({ initialValue: initialValue() });
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
+    let mountedEditor!: ReturnType<typeof useEditorContext>;
     const onCommit = vi.fn();
     const onValueChange = vi.fn();
 
     const Probe = () => {
-      headerEditor = usePliteRootEditor('header');
+      mountedEditor = useEditorContext();
+      headerEditor = useRootEditor('header');
 
       return null;
     };
 
     render(
-      <Plite editor={editor} onCommit={onCommit} onValueChange={onValueChange}>
+      <TestRoot
+        editor={editor}
+        onCommit={onCommit}
+        onValueChange={onValueChange}
+      >
         <Probe />
         <Editable aria-label="Header editor" root="header" />
         <Editable aria-label="Main editor" />
-      </Plite>
+      </TestRoot>
     );
 
     await act(async () => {
@@ -514,7 +585,9 @@ describe('PliteRuntime provider contract', () => {
       });
     });
 
-    expect(onCommit).toHaveBeenCalledWith(expect.objectContaining({ editor }));
+    expect(onCommit).toHaveBeenCalledWith(
+      expect.objectContaining({ editor: mountedEditor })
+    );
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
@@ -522,7 +595,7 @@ describe('PliteRuntime provider contract', () => {
     'Plite %s callbacks publish nested commits in version order with paired snapshots',
     async (mode) => {
       const { result } = renderHook(() =>
-        usePliteRuntime({ initialValue: [paragraph('body')] })
+        useTestEditor({ initialValue: [paragraph('body')] })
       );
       const { editor } = result.current;
       const onCommit = vi.fn();
@@ -541,19 +614,19 @@ describe('PliteRuntime provider contract', () => {
 
       render(
         mode === 'direct' ? (
-          <Plite
+          <TestRoot
             editor={editor}
             onCommit={onCommit}
             onValueChange={onValueChange}
           >
             <span />
-          </Plite>
+          </TestRoot>
         ) : (
-          <PliteRuntime runtime={result.current}>
-            <Plite onCommit={onCommit} onValueChange={onValueChange}>
+          <TestProvider runtime={result.current}>
+            <TestRoot onCommit={onCommit} onValueChange={onValueChange}>
               <span />
-            </Plite>
-          </PliteRuntime>
+            </TestRoot>
+          </TestProvider>
         )
       );
 
@@ -620,19 +693,21 @@ describe('PliteRuntime provider contract', () => {
 
   test('Plite onCommit observes sibling commits while selection callbacks stay root-scoped', async () => {
     const editor = createEditor({ initialValue: initialValue() });
-    let headerEditor!: ReturnType<typeof usePliteRootEditor>;
+    let headerEditor!: ReturnType<typeof useRootEditor>;
+    let mountedEditor!: ReturnType<typeof useEditorContext>;
     const onCommit = vi.fn();
     const onSelectionChange = vi.fn();
     const onValueChange = vi.fn();
 
     const Probe = () => {
-      headerEditor = usePliteRootEditor('header');
+      mountedEditor = useEditorContext();
+      headerEditor = useRootEditor('header');
 
       return null;
     };
 
     render(
-      <Plite
+      <TestRoot
         editor={editor}
         onCommit={onCommit}
         onSelectionChange={onSelectionChange}
@@ -641,7 +716,7 @@ describe('PliteRuntime provider contract', () => {
         <Probe />
         <Editable aria-label="Header editor" root="header" />
         <Editable aria-label="Main editor" />
-      </Plite>
+      </TestRoot>
     );
 
     await act(async () => {
@@ -678,13 +753,13 @@ describe('PliteRuntime provider contract', () => {
 
     expect(onCommit).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        editor,
+        editor: mountedEditor,
         snapshot: expect.objectContaining({ selection: expectedSelection }),
       })
     );
     expect(onSelectionChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        editor,
+        editor: mountedEditor,
         selection: expectedSelection,
         snapshot: expect.objectContaining({ selection: expectedSelection }),
       })
@@ -693,11 +768,11 @@ describe('PliteRuntime provider contract', () => {
   });
 
   test('usePliteActiveRoot rerenders only when the active root changes', async () => {
-    let runtime!: ReturnType<typeof usePliteRuntime>;
+    let runtime!: ReturnType<typeof useTestEditor>;
     const activeRoots: Array<string | undefined> = [];
 
     const Probe = () => {
-      const activeRoot = usePliteActiveRoot();
+      const activeRoot = useActiveRoot();
 
       activeRoots.push(activeRoot);
 
@@ -705,12 +780,12 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      runtime = usePliteRuntime({ initialValue: initialValue() });
+      runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
+        <TestProvider runtime={runtime}>
           <Probe />
-        </PliteRuntime>
+        </TestProvider>
       );
     };
 
@@ -764,44 +839,40 @@ describe('PliteRuntime provider contract', () => {
     });
   });
 
-  test('Plite root requires PliteRuntime and rejects editor plus root', () => {
+  test('EditorRoot requires an editor and accepts an explicit root', () => {
     expect(() =>
       render(
-        <Plite root="header">
+        <ProductEditorRoot {...({ root: 'header' } as any)}>
           <span />
-        </Plite>
+        </ProductEditorRoot>
       )
-    ).toThrow(/PliteRuntime/);
+    ).toThrow(/editor is invalid/);
 
-    const editor = createEditor();
-    const BadPlite = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+    const editor = createEditor({ initialValue: initialValue() });
+    const rendered = render(
+      <ProductEditorRoot editor={editor} root="header">
+        <Editable aria-label="Header editor" />
+      </ProductEditorRoot>
+    );
 
-      return (
-        <PliteRuntime runtime={runtime}>
-          <Plite editor={editor} root="header">
-            <span />
-          </Plite>
-        </PliteRuntime>
-      );
-    };
-
-    expect(() => render(<BadPlite />)).toThrow(/editor.*root|root.*editor/i);
+    expect(rendered.getByLabelText('Header editor')).toHaveTextContent(
+      'header'
+    );
   });
 
   test('nested PliteRuntime providers isolate runtime selectors', () => {
-    const OuterRuntime = createRuntimeWrapper({
+    const OuterProvider = createProviderWrapper({
       children: [paragraph('outer')],
     });
-    const InnerRuntime = createRuntimeWrapper({
+    const InnerProvider = createProviderWrapper({
       children: [paragraph('inner')],
     });
 
-    const { result } = renderHook(() => usePliteRuntimeState(rootText), {
+    const { result } = renderHook(() => useRuntimeState(rootText), {
       wrapper: ({ children }) => (
-        <OuterRuntime>
-          <InnerRuntime>{children}</InnerRuntime>
-        </OuterRuntime>
+        <OuterProvider>
+          <InnerProvider>{children}</InnerProvider>
+        </OuterProvider>
       ),
     });
 
@@ -809,17 +880,17 @@ describe('PliteRuntime provider contract', () => {
   });
 
   test('usePliteRootState reads a sibling root without prop-drilled editors', async () => {
-    let runtime!: ReturnType<typeof usePliteRuntime>;
+    let runtime!: ReturnType<typeof useTestEditor>;
     const headerSelector = vi.fn(rootText);
-    const RuntimeWrapper = ({ children }: { children: ReactNode }) => {
-      runtime = usePliteRuntime({ initialValue: initialValue() });
+    const ProviderWrapper = ({ children }: { children: ReactNode }) => {
+      runtime = useTestEditor({ initialValue: initialValue() });
 
-      return <PliteRuntime runtime={runtime}>{children}</PliteRuntime>;
+      return <TestProvider runtime={runtime}>{children}</TestProvider>;
     };
 
     const { result } = renderHook(
-      () => usePliteRootState('header', headerSelector),
-      { wrapper: RuntimeWrapper }
+      () => useRootState('header', headerSelector),
+      { wrapper: ProviderWrapper }
     );
 
     expect(result.current).toBe('header');
@@ -837,16 +908,16 @@ describe('PliteRuntime provider contract', () => {
   });
 
   test('usePliteRootState clears selection when focus moves to another root', async () => {
-    let runtime!: ReturnType<typeof usePliteRuntime>;
-    const RuntimeWrapper = ({ children }: { children: ReactNode }) => {
-      runtime = usePliteRuntime({ initialValue: initialValue() });
+    let runtime!: ReturnType<typeof useTestEditor>;
+    const ProviderWrapper = ({ children }: { children: ReactNode }) => {
+      runtime = useTestEditor({ initialValue: initialValue() });
 
-      return <PliteRuntime runtime={runtime}>{children}</PliteRuntime>;
+      return <TestProvider runtime={runtime}>{children}</TestProvider>;
     };
 
     const { result } = renderHook(
-      () => usePliteRootState('header', (state) => state.selection()),
-      { wrapper: RuntimeWrapper }
+      () => useRootState('header', (state) => state.selection()),
+      { wrapper: ProviderWrapper }
     );
 
     await act(async () => {
@@ -879,13 +950,13 @@ describe('PliteRuntime provider contract', () => {
 
   test('usePliteRootState observes root changes with an inline selector', () => {
     const selector = vi.fn(rootText);
-    const RuntimeWrapper = createRuntimeWrapper();
+    const ProviderWrapper = createProviderWrapper();
 
     const { result, rerender } = renderHook(
-      ({ root }) => usePliteRootState(root, selector),
+      ({ root }) => useRootState(root, selector),
       {
         initialProps: { root: 'header' },
-        wrapper: RuntimeWrapper,
+        wrapper: ProviderWrapper,
       }
     );
 
@@ -897,7 +968,7 @@ describe('PliteRuntime provider contract', () => {
   });
 
   test('root changes cancel deferred selector work from the previous view', async () => {
-    let runtime!: ReturnType<typeof usePliteRuntime>;
+    let runtime!: ReturnType<typeof useTestEditor>;
     const selectRootText = (editor: ReturnType<typeof createEditor>) =>
       editor.read(rootText);
     const selector = vi.fn(selectRootText);
@@ -908,14 +979,14 @@ describe('PliteRuntime provider contract', () => {
       </span>
     );
     const RuntimeViews = ({ root }: { root: 'footer' | 'header' }) => {
-      runtime = usePliteRuntime({ initialValue: initialValue() });
+      runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root={root}>
+        <TestProvider runtime={runtime}>
+          <TestRoot root={root}>
             <Probe />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -964,22 +1035,22 @@ describe('PliteRuntime provider contract', () => {
   });
 
   test('usePliteRuntimeState forwards commits to shouldUpdate filters', async () => {
-    let runtime!: ReturnType<typeof usePliteRuntime>;
+    let runtime!: ReturnType<typeof useTestEditor>;
     const shouldUpdate = vi.fn<(change?: EditorCommit) => boolean>(() => false);
 
     const Probe = () => {
-      usePliteRuntimeState(rootText, { shouldUpdate });
+      useRuntimeState(rootText, { shouldUpdate });
 
       return null;
     };
 
     const RuntimeViews = () => {
-      runtime = usePliteRuntime({ initialValue: initialValue() });
+      runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
+        <TestProvider runtime={runtime}>
           <Probe />
-        </PliteRuntime>
+        </TestProvider>
       );
     };
 
@@ -1005,7 +1076,7 @@ describe('PliteRuntime provider contract', () => {
   });
 
   test('runtime selectors catch up when changed filters miss a child layout commit', () => {
-    let runtime!: ReturnType<typeof usePliteRuntime>;
+    let runtime!: ReturnType<typeof useTestEditor>;
 
     const CommitFromChildLayout = ({ text }: { text?: string }) => {
       useLayoutEffect(() => {
@@ -1019,10 +1090,10 @@ describe('PliteRuntime provider contract', () => {
       return null;
     };
     const Probe = ({ allow, insert }: { allow: boolean; insert?: string }) => {
-      const runtimeText = usePliteRuntimeState(rootText, {
+      const runtimeText = useRuntimeState(rootText, {
         shouldUpdate: () => allow,
       });
-      const primaryRootText = usePliteRootState(undefined, rootText, {
+      const primaryRootText = useRootState(undefined, rootText, {
         shouldUpdate: () => allow,
       });
 
@@ -1041,12 +1112,12 @@ describe('PliteRuntime provider contract', () => {
       allow: boolean;
       insert?: string;
     }) => {
-      runtime = usePliteRuntime({ initialValue: initialValue() });
+      runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
+        <TestProvider runtime={runtime}>
           <Probe allow={allow} insert={insert} />
-        </PliteRuntime>
+        </TestProvider>
       );
     };
     const rendered = render(<RuntimeViews allow={false} />);
@@ -1063,7 +1134,7 @@ describe('PliteRuntime provider contract', () => {
     const observedValues: string[] = [];
 
     const Probe = () => {
-      const text = usePliteRuntimeState(rootText);
+      const text = useRuntimeState(rootText);
 
       observedValues.push(text);
 
@@ -1071,7 +1142,7 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const CommitBeforeProviderSubscription = () => {
-      const runtime = usePliteRuntime();
+      const runtime = useTestEditor();
 
       useLayoutEffect(() => {
         runtime.update((tx) => {
@@ -1083,13 +1154,13 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
+        <TestProvider runtime={runtime}>
           <Probe />
           <CommitBeforeProviderSubscription />
-        </PliteRuntime>
+        </TestProvider>
       );
     };
 
@@ -1111,14 +1182,14 @@ describe('PliteRuntime provider contract', () => {
       },
       {
         wrapper: ({ children }) => {
-          const RuntimeWrapper = createRuntimeWrapper();
+          const ProviderWrapper = createProviderWrapper();
 
           return (
-            <RuntimeWrapper>
-              <Plite readOnly root="header">
+            <ProviderWrapper>
+              <TestRoot readOnly root="header">
                 {children}
-              </Plite>
-            </RuntimeWrapper>
+              </TestRoot>
+            </ProviderWrapper>
           );
         },
       }
@@ -1158,11 +1229,11 @@ describe('PliteRuntime provider contract', () => {
       return <Editable aria-label="view" />;
     };
     const App = ({ readOnly = false }: { readOnly?: boolean }) => (
-      <Plite editor={editor}>
-        <Plite readOnly={readOnly}>
+      <TestRoot editor={editor}>
+        <TestRoot readOnly={readOnly}>
           <Capture />
-        </Plite>
-      </Plite>
+        </TestRoot>
+      </TestRoot>
     );
     const result = render(<App />);
     const captured = view!;
@@ -1185,14 +1256,14 @@ describe('PliteRuntime provider contract', () => {
 
   test('read-only root Plite makes nested Editable read-only', () => {
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite readOnly root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot readOnly root="header">
             <Editable aria-label="Header editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1210,14 +1281,14 @@ describe('PliteRuntime provider contract', () => {
 
   test('root prop Editable inherits read-only from parent Plite', () => {
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite readOnly>
+        <TestProvider runtime={runtime}>
+          <TestRoot readOnly>
             <Editable aria-label="Header editor" root="header" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1237,9 +1308,9 @@ describe('PliteRuntime provider contract', () => {
     const editor = createEditor({ initialValue: [paragraph('body')] });
 
     render(
-      <Plite editor={editor} readOnly>
+      <TestRoot editor={editor} readOnly>
         <Editable aria-label="Body editor" />
-      </Plite>
+      </TestRoot>
     );
 
     expect(screen.getByLabelText('Body editor')).toHaveAttribute(
@@ -1264,9 +1335,9 @@ describe('PliteRuntime provider contract', () => {
     });
 
     render(
-      <Plite editor={editor} readOnly>
+      <TestRoot editor={editor} readOnly>
         <Editable aria-label="Body editor" />
-      </Plite>
+      </TestRoot>
     );
 
     screen.getByLabelText('Body editor').blur();
@@ -1296,12 +1367,12 @@ describe('PliteRuntime provider contract', () => {
       const editor = createEditor({ initialValue: [paragraph('body')] });
 
       render(
-        <Plite editor={editor}>
+        <TestRoot editor={editor}>
           <Editable aria-label="Writable view" />
-          <Plite editor={editor} readOnly>
+          <TestRoot editor={editor} readOnly>
             <Editable aria-label="Read-only sibling" />
-          </Plite>
-        </Plite>
+          </TestRoot>
+        </TestRoot>
       );
 
       const writable = screen.getByLabelText('Writable view');
@@ -1346,12 +1417,12 @@ describe('PliteRuntime provider contract', () => {
 
     render(
       <>
-        <Plite editor={previous} readOnly>
+        <TestRoot editor={previous} readOnly>
           <Editable aria-label="Previous editor" />
-        </Plite>
-        <Plite editor={editor}>
+        </TestRoot>
+        <TestRoot editor={editor}>
           <Editable aria-label="Independent editor" />
-        </Plite>
+        </TestRoot>
       </>
     );
 
@@ -1388,14 +1459,14 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <HeaderProbe />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1421,20 +1492,27 @@ describe('PliteRuntime provider contract', () => {
 
   test('runtime text sync leaves composing DOM under native ownership', async () => {
     const editor = createEditor({ initialValue: [paragraph('body')] });
+    let mountedEditor!: ReturnType<typeof useEditorContext>;
+    const CaptureEditor = () => {
+      mountedEditor = useEditorContext();
+
+      return null;
+    };
 
     render(
-      <Plite editor={editor}>
+      <TestRoot editor={editor}>
+        <CaptureEditor />
         <Editable aria-label="Body editor" />
-      </Plite>
+      </TestRoot>
     );
 
-    const runtime = getMountedEditableDOMRuntime(editor)!;
+    const runtime = getMountedEditableDOMRuntime(mountedEditor)!;
     act(() => runtime.setComposing(true));
 
     try {
       const textHost = screen
         .getByLabelText('Body editor')
-        .querySelector<HTMLElement>('[data-plite-node="text"]');
+        .querySelector<HTMLElement>('[data-editor-node="text"]');
       const textNode =
         textHost &&
         document.createTreeWalker(textHost, NodeFilter.SHOW_TEXT).nextNode();
@@ -1447,7 +1525,7 @@ describe('PliteRuntime provider contract', () => {
         });
       });
 
-      expect(didSyncTextPathToDOM(editor, [0, 0])).toBe(false);
+      expect(didSyncTextPathToDOM(mountedEditor, [0, 0])).toBe(false);
       expect(screen.getByLabelText('Body editor')).toHaveTextContent('body!');
     } finally {
       act(() => runtime.setComposing(false));
@@ -1455,7 +1533,7 @@ describe('PliteRuntime provider contract', () => {
   });
 
   test('runtime root pending native state transforms on mounted root view editors', async () => {
-    let mainEditor!: ReturnType<typeof usePliteRuntime>['editor'];
+    let mainEditor!: ReturnType<typeof useTestEditor>['editor'];
     let headerEditor!: ReturnType<typeof useEditorContext>;
 
     const HeaderProbe = () => {
@@ -1465,7 +1543,7 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime<Value>({
+      const runtime = useTestEditor<Value>({
         initialValue: {
           children: [paragraph('body')],
           roots: {
@@ -1478,11 +1556,11 @@ describe('PliteRuntime provider contract', () => {
       mainEditor = runtime.editor;
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <HeaderProbe />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1566,13 +1644,13 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const HeaderMarksProbe = () => {
-      headerMarks(usePliteRootState('header', (state) => state.marks()));
+      headerMarks(useRootState('header', (state) => state.marks()));
 
       return null;
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime<Value>({
+      const runtime = useTestEditor<Value>({
         initialValue: {
           children: [paragraph('body')],
           roots: {
@@ -1583,13 +1661,13 @@ describe('PliteRuntime provider contract', () => {
       });
 
       return (
-        <PliteRuntime runtime={runtime}>
+        <TestProvider runtime={runtime}>
           <HeaderMarksProbe />
-          <Plite root="header">
+          <TestRoot root="header">
             <HeaderProbe />
             <Editable aria-label="Header editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1628,20 +1706,20 @@ describe('PliteRuntime provider contract', () => {
   test('runtime views do not install document focus listeners', () => {
     const addEventListener = vi.spyOn(document, 'addEventListener');
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <span />
-          </Plite>
-          <Plite>
+          </TestRoot>
+          <TestRoot>
             <span />
-          </Plite>
-          <Plite root="footer">
+          </TestRoot>
+          <TestRoot root="footer">
             <span />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1664,20 +1742,20 @@ describe('PliteRuntime provider contract', () => {
       return null;
     };
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <Probe />
-          </Plite>
-          <Plite>
+          </TestRoot>
+          <TestRoot>
             <Probe />
-          </Plite>
-          <Plite root="footer">
+          </TestRoot>
+          <TestRoot root="footer">
             <Probe />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1686,81 +1764,16 @@ describe('PliteRuntime provider contract', () => {
     expect(new Set(seen)).toHaveLength(3);
   });
 
-  test('root document epochs ignore replacements in sibling roots', async () => {
-    let headerEditor!: ReturnType<typeof useEditorContext>;
-    const headerRenders = vi.fn();
-    const footerRenders = vi.fn();
-    const EpochProbe = ({ root }: { root: 'footer' | 'header' }) => {
-      const editor = useEditorContext();
-      const epoch = useRootDocumentEpoch();
-
-      if (root === 'header') {
-        headerEditor = editor;
-        headerRenders(epoch);
-      } else {
-        footerRenders(epoch);
-      }
-
-      return <span data-testid={`${root}-epoch`}>{epoch}</span>;
-    };
-    const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
-
-      return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
-            <EpochProbe root="header" />
-          </Plite>
-          <Plite root="footer">
-            <EpochProbe root="footer" />
-          </Plite>
-        </PliteRuntime>
-      );
-    };
-
-    render(<RuntimeViews />);
-    const headerRenderCount = headerRenders.mock.calls.length;
-    const footerRenderCount = footerRenders.mock.calls.length;
-
-    await act(async () => {
-      headerEditor.update((tx) => {
-        tx.value.replace({
-          children: [paragraph('next header')],
-          selection: null,
-        });
-      });
-    });
-
-    expect(screen.getByTestId('header-epoch')).not.toHaveTextContent('0');
-    expect(headerRenders.mock.calls.length).toBeGreaterThan(headerRenderCount);
-    expect(screen.getByTestId('footer-epoch')).toHaveTextContent('0');
-    expect(footerRenders).toHaveBeenCalledTimes(footerRenderCount);
-
-    const headerEpoch = screen.getByTestId('header-epoch').textContent;
-    const postReplaceHeaderRenderCount = headerRenders.mock.calls.length;
-
-    await act(async () => {
-      headerEditor.update((tx) => {
-        tx.text.insert('updated ', {
-          at: { offset: 0, path: [0, 0] },
-        });
-      });
-    });
-
-    expect(screen.getByTestId('header-epoch')).toHaveTextContent(headerEpoch);
-    expect(headerRenders).toHaveBeenCalledTimes(postReplaceHeaderRenderCount);
-  });
-
   test('root-bound Plite renders Editable from the selected root', () => {
     const HeaderEditable = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <Editable aria-label="Header editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1779,15 +1792,15 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const HeaderEditable = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <HeaderProbe />
             <Editable aria-label="Header editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1808,18 +1821,18 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <HeaderProbe />
             <Editable aria-label="Header editor" />
-          </Plite>
-          <Plite>
+          </TestRoot>
+          <TestRoot>
             <Editable aria-label="Main editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1843,19 +1856,15 @@ describe('PliteRuntime provider contract', () => {
     expect(screen.getByLabelText('Main editor')).toHaveTextContent('body');
   });
 
-  test('root-bound Plite clipboard API uses runtime extension handlers', async () => {
+  test('root-bound Plite clipboard API uses runtime plugin handlers', async () => {
     let headerEditor!: ReturnType<typeof useEditorContext>;
-    let insertCount = 0;
-
-    const clipboardExtension = defineExtension('custom-clipboard', {
-      contributions: [
-        clipboardHandler({
-          insertData() {
-            insertCount += 1;
-
-            return true;
-          },
-        }),
+    const clipboardPlugin = definePlugin('custom-clipboard', {
+      commands: ({ handle }) => [
+        handle(domCommands.insertData, ({ state }) =>
+          state.transaction((tx) => {
+            tx.text.insert('handled');
+          })
+        ),
       ],
     });
 
@@ -1866,21 +1875,21 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({
-        extensions: [clipboardExtension],
+      const runtime = useTestEditor({
+        plugins: [clipboardPlugin],
         initialValue: initialValue(),
       });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <HeaderProbe />
             <Editable aria-label="Header editor" />
-          </Plite>
-          <Plite>
+          </TestRoot>
+          <TestRoot>
             <Editable aria-label="Main editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1902,8 +1911,9 @@ describe('PliteRuntime provider contract', () => {
       });
     });
 
-    expect(insertCount).toBe(1);
-    expect(screen.getByLabelText('Header editor')).toHaveTextContent('header');
+    expect(screen.getByLabelText('Header editor')).toHaveTextContent(
+      'headerhandled'
+    );
     expect(screen.getByLabelText('Main editor')).toHaveTextContent('body');
   });
 
@@ -1923,19 +1933,19 @@ describe('PliteRuntime provider contract', () => {
     );
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <HeaderProbe />
             <Editable aria-label="Header editor" />
-          </Plite>
-          <Plite>
+          </TestRoot>
+          <TestRoot>
             <MainProbe />
             <Editable aria-label="Main editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -1973,16 +1983,16 @@ describe('PliteRuntime provider contract', () => {
     );
 
     render(
-      <Plite editor={editor}>
-        <Plite root="header">
+      <TestRoot editor={editor}>
+        <TestRoot root="header">
           <HeaderProbe />
           <Editable aria-label="Header editor" />
-        </Plite>
-        <Plite>
+        </TestRoot>
+        <TestRoot>
           <MainProbe />
           <Editable aria-label="Main editor" />
-        </Plite>
-      </Plite>
+        </TestRoot>
+      </TestRoot>
     );
 
     const headerRoot = screen.getByLabelText('Header editor');
@@ -2010,18 +2020,18 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <HeaderProbe />
             <Editable aria-label="Header editor" />
-          </Plite>
-          <Plite>
+          </TestRoot>
+          <TestRoot>
             <Editable aria-label="Main editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -2061,11 +2071,11 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite
+        <TestProvider runtime={runtime}>
+          <TestRoot
             onCommit={onCommit}
             onSelectionChange={onSelectionChange}
             onValueChange={onValueChange}
@@ -2073,8 +2083,8 @@ describe('PliteRuntime provider contract', () => {
           >
             <HeaderProbe />
             <Editable aria-label="Header editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -2135,15 +2145,15 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite onValueChange={onValueChange} root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot onValueChange={onValueChange} root="header">
             <CommitBeforeViewSubscription />
             <Editable aria-label="Header editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -2189,18 +2199,18 @@ describe('PliteRuntime provider contract', () => {
       onCommit: typeof previousOnCommit;
       onValueChange: typeof previousOnValueChange;
     }) => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite
+        <TestProvider runtime={runtime}>
+          <TestRoot
             onCommit={onCommit}
             onValueChange={onValueChange}
             root="header"
           >
             <CommitInLayout commit={commit} />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
     const rendered = render(
@@ -2238,15 +2248,15 @@ describe('PliteRuntime provider contract', () => {
       return null;
     };
     const RuntimeViews = ({ observe }: { observe: boolean }) => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite onCommit={observe ? onCommit : undefined} root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot onCommit={observe ? onCommit : undefined} root="header">
             <HeaderProbe />
             <Editable aria-label="Header editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
     const rendered = render(<RuntimeViews observe={false} />);
@@ -2273,18 +2283,18 @@ describe('PliteRuntime provider contract', () => {
   });
 
   test('root-bound Plite resets callback baselines when the root changes', async () => {
-    let runtime!: ReturnType<typeof usePliteRuntime>;
+    let runtime!: ReturnType<typeof useTestEditor>;
     const onSelectionChange = vi.fn();
 
     const RuntimeViews = ({ root }: { root: 'footer' | 'header' }) => {
-      runtime = usePliteRuntime({ initialValue: initialValue() });
+      runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite onSelectionChange={onSelectionChange} root={root}>
+        <TestProvider runtime={runtime}>
+          <TestRoot onSelectionChange={onSelectionChange} root={root}>
             <Editable aria-label={`${root} editor`} />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -2322,23 +2332,23 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite
+        <TestProvider runtime={runtime}>
+          <TestRoot
             onCommit={onCommit}
             onSelectionChange={onSelectionChange}
             onValueChange={onValueChange}
             root="header"
           >
             <Editable aria-label="Header editor" />
-          </Plite>
-          <Plite>
+          </TestRoot>
+          <TestRoot>
             <MainProbe />
             <Editable aria-label="Main editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 
@@ -2368,22 +2378,22 @@ describe('PliteRuntime provider contract', () => {
     };
 
     const RuntimeViews = () => {
-      const runtime = usePliteRuntime({ initialValue: initialValue() });
+      const runtime = useTestEditor({ initialValue: initialValue() });
 
       return (
-        <PliteRuntime runtime={runtime}>
-          <Plite root="header">
+        <TestProvider runtime={runtime}>
+          <TestRoot root="header">
             <HeaderProbe />
             <Editable aria-label="Header editor" />
-          </Plite>
-          <Plite
+          </TestRoot>
+          <TestRoot
             onCommit={onCommit}
             onSelectionChange={onSelectionChange}
             onValueChange={onValueChange}
           >
             <Editable aria-label="Main editor" />
-          </Plite>
-        </PliteRuntime>
+          </TestRoot>
+        </TestProvider>
       );
     };
 

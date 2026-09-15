@@ -95,6 +95,83 @@ const findSource = (
   );
 };
 
+const resolveSymbol = (checker: ts.TypeChecker, symbol: ts.Symbol) =>
+  symbol.flags & ts.SymbolFlags.Alias
+    ? checker.getAliasedSymbol(symbol)
+    : symbol;
+
+type PublicTypeExport = { entrypoint: string; name: string };
+
+const formatDeclaration = (
+  declaration: ts.Declaration,
+  checker: ts.TypeChecker,
+  publicExports: Map<ts.Symbol, PublicTypeExport[]>
+) => {
+  const sourceFile = declaration.getSourceFile();
+  const start = declaration.getStart(sourceFile);
+  const replacements: Array<{ end: number; start: number; text: string }> = [];
+
+  const visit = (node: ts.Node) => {
+    if (
+      ts.isImportTypeNode(node) &&
+      ts.isLiteralTypeNode(node.argument) &&
+      ts.isStringLiteral(node.argument.literal) &&
+      node.qualifier
+    ) {
+      const moduleName = node.argument.literal.text;
+
+      if (moduleName === 'plitejs' || moduleName.startsWith('plitejs/')) {
+        let { qualifier } = node;
+
+        while (ts.isQualifiedName(qualifier)) qualifier = qualifier.left;
+
+        const qualifierName = qualifier.text;
+        const symbol = checker.getSymbolAtLocation(qualifier);
+        const resolved = symbol && resolveSymbol(checker, symbol);
+        const candidates = resolved?.declarations?.length
+          ? publicExports.get(resolved)
+          : undefined;
+        const preferredEntrypoint = moduleName.replace(/^plitejs/, 'platejs');
+        const candidate = candidates
+          ?.filter((entry) => entry.name === qualifierName)
+          .sort(
+            (left, right) =>
+              Number(right.entrypoint === preferredEntrypoint) -
+                Number(left.entrypoint === preferredEntrypoint) ||
+              left.entrypoint.length - right.entrypoint.length ||
+              left.entrypoint.localeCompare(right.entrypoint)
+          )[0];
+
+        if (!candidate) {
+          throw new Error(
+            `No identical public Plate export for ${moduleName}.${qualifierName}.`
+          );
+        }
+
+        replacements.push({
+          end: node.argument.literal.end - start,
+          start: node.argument.literal.getStart(sourceFile) - start,
+          text: JSON.stringify(candidate.entrypoint),
+        });
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(declaration);
+
+  return replacements
+    .sort((left, right) => right.start - left.start)
+    .reduce(
+      (text, replacement) =>
+        text.slice(0, replacement.start) +
+        replacement.text +
+        text.slice(replacement.end),
+      declaration.getText(sourceFile)
+    );
+};
+
 const extractEntrypoint = async (
   packageName: string,
   packageDirectory: string,
@@ -102,18 +179,12 @@ const extractEntrypoint = async (
   entrypoint: string,
   declarationRelativePath: string,
   runtimeRelativePath: string,
-  decision: EntrypointDecision
+  decision: EntrypointDecision,
+  program: ts.Program,
+  publicExports: Map<ts.Symbol, PublicTypeExport[]>
 ) => {
   const declarationPath = join(packageRoot, declarationRelativePath);
   const runtimePath = join(packageRoot, runtimeRelativePath);
-  const program = ts.createProgram([declarationPath], {
-    allowJs: false,
-    module: ts.ModuleKind.NodeNext,
-    moduleResolution: ts.ModuleResolutionKind.NodeNext,
-    noEmit: true,
-    skipLibCheck: true,
-    target: ts.ScriptTarget.ESNext,
-  });
   const checker = program.getTypeChecker();
   const sourceFile = program.getSourceFile(declarationPath);
 
@@ -173,10 +244,7 @@ const extractEntrypoint = async (
   }
 
   return exportedSymbols.map((exportedSymbol): SymbolFact => {
-    const symbol =
-      exportedSymbol.flags & ts.SymbolFlags.Alias
-        ? checker.getAliasedSymbol(exportedSymbol)
-        : exportedSymbol;
+    const symbol = resolveSymbol(checker, exportedSymbol);
     const declaration = symbol.declarations?.[0];
     const declarationSourceFile = declaration?.getSourceFile();
     const aliases =
@@ -205,7 +273,7 @@ const extractEntrypoint = async (
       runtime: runtimeNames.has(exportedSymbol.name),
       signature:
         declaration && declarationSourceFile
-          ? declaration.getText(declarationSourceFile)
+          ? formatDeclaration(declaration, checker, publicExports)
           : checker.typeToString(
               checker.getTypeOfSymbolAtLocation(exportedSymbol, sourceFile),
               sourceFile,
@@ -257,6 +325,47 @@ const main = async () => {
         >;
       };
       const symbols: Record<string, SymbolFact> = {};
+      const declarationEntrypoints = Object.entries(
+        packageJson.exports
+      ).flatMap(([entrypoint, target]) =>
+        typeof target !== 'string' && target.types
+          ? [{ entrypoint, path: join(packageRoot, target.types) }]
+          : []
+      );
+      const program = ts.createProgram(
+        declarationEntrypoints.map((entry) => entry.path),
+        {
+          allowJs: false,
+          module: ts.ModuleKind.NodeNext,
+          moduleResolution: ts.ModuleResolutionKind.NodeNext,
+          noEmit: true,
+          skipLibCheck: true,
+          target: ts.ScriptTarget.ESNext,
+        }
+      );
+      const checker = program.getTypeChecker();
+      const publicExports = new Map<ts.Symbol, PublicTypeExport[]>();
+
+      for (const entry of declarationEntrypoints) {
+        const sourceFile = program.getSourceFile(entry.path);
+        const moduleSymbol =
+          sourceFile && checker.getSymbolAtLocation(sourceFile);
+
+        if (!moduleSymbol) continue;
+
+        for (const exported of checker.getExportsOfModule(moduleSymbol)) {
+          const symbol = resolveSymbol(checker, exported);
+          const entries = publicExports.get(symbol) ?? [];
+          entries.push({
+            entrypoint:
+              entry.entrypoint === '.'
+                ? packageConfig.name
+                : `${packageConfig.name}${entry.entrypoint.slice(1)}`,
+            name: exported.name,
+          });
+          publicExports.set(symbol, entries);
+        }
+      }
 
       for (const [entrypoint, decision] of Object.entries(
         packageConfig.entrypoints
@@ -285,7 +394,9 @@ const main = async () => {
           entrypoint,
           declarationPath,
           runtimePath,
-          decision
+          decision,
+          program,
+          publicExports
         );
 
         if (args.has('--init')) {

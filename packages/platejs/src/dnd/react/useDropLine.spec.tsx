@@ -3,7 +3,7 @@ import { describe, expect, it, mock } from 'bun:test';
 import { act, render } from '@testing-library/react';
 import React from 'react';
 
-import { TestPlate as Plate } from '../../react/__tests__/TestPlate';
+import { TestPlate as EditorRoot } from '../../react/__tests__/TestPlate';
 import { createEditor } from '../../react/editor';
 import { ElementProvider } from '../../react/stores/element/useElementStore';
 import { DndStorePlugin } from './internal/DndStorePlugin';
@@ -34,7 +34,7 @@ describe('useDropLine', () => {
     }
 
     const view = render(
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         {elements.map((element, index) => (
           <ElementProvider
             key={editor.key(element)}
@@ -45,7 +45,7 @@ describe('useDropLine', () => {
             <DropLine index={index} />
           </ElementProvider>
         ))}
-      </Plate>
+      </EditorRoot>
     );
 
     act(() =>

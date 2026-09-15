@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, Download, Minus, Plus, X } from 'lucide-react';
 import { type NodeKey, isHotkey } from 'platejs';
 import { BaseImagePlugin, type ImageElement } from 'platejs/media';
 import { ImagePlugin } from 'platejs/media/react';
-import { useComposedRef, useEditorPlugin, usePluginStore } from 'platejs/react';
+import { useComposedRef, useEditor, usePluginStore } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -190,7 +190,7 @@ export const imagePlugin = ImagePlugin.extend({
 }));
 
 export function MediaPreviewDialog() {
-  const { api } = useEditorPlugin(imagePlugin);
+  const { api } = useEditor().plugin(imagePlugin);
   const preview = usePluginStore(imagePlugin, 'preview');
   const isOpen = usePluginStore(imagePlugin, 'previewOpen');
   const {
@@ -423,7 +423,7 @@ function PreviewImage({
   ref,
   ...props
 }: React.ComponentPropsWithRef<'img'>) {
-  const { api, store } = useEditorPlugin(imagePlugin);
+  const { api, store } = useEditor().plugin(imagePlugin);
   const preview = usePluginStore(imagePlugin, 'preview');
   const imageRef = React.useRef<HTMLImageElement>(null);
   const isZoomIn = preview.scale <= 1;

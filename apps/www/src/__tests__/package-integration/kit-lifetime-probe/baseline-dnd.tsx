@@ -168,8 +168,8 @@ function Draggable({
             )}
             style={{ top: `${dragButtonTop + 3}px` }}
             type="button"
-            data-plate-prevent-deselect
-            data-plate-selectable
+            data-editor-prevent-deselect
+            data-editor-selectable
             onFocus={() => {
               activate();
               setIsPointerActive(true);
@@ -206,7 +206,7 @@ function Draggable({
 
       <DropLine dropLine={dropLine} />
 
-      <div ref={nodeRef} className="plite-blockWrapper flow-root">
+      <div ref={nodeRef} className="editor-blockWrapper flow-root">
         {children}
       </div>
     </div>
@@ -332,7 +332,7 @@ function Gutter({
         className
       )}
       contentEditable={false}
-      data-plate-selectable
+      data-editor-selectable
     >
       {children}
     </div>
@@ -468,7 +468,7 @@ function DragHandle({
           onMouseUp={() => {
             resetPreview();
           }}
-          data-plate-prevent-deselect
+          data-editor-prevent-deselect
           role="button"
           tabIndex={0}
         >

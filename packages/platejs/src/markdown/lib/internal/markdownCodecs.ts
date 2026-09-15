@@ -7,7 +7,7 @@ import type {
   Descendant,
 } from '../../../core';
 import { getPlateNodeCodecContributions } from '../../../internal/plugin/collectPlateNodeCodecs';
-import type { PlateNodeCodecContribution } from '../../../internal/plugin/collectPlateNodeCodecs';
+import type { NodeCodecContribution } from '../../../internal/plugin/collectPlateNodeCodecs';
 import { failInvariant } from '../../internal/failInvariant';
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
 import {
@@ -60,7 +60,7 @@ type ErasedMarkdownNodeCodec = Readonly<{
 type CompiledMarkdownNodeCodec = Readonly<{
   codec: ErasedMarkdownNodeCodec;
   owner: string;
-  schema: PlateNodeCodecContribution['schema'];
+  schema: NodeCodecContribution['schema'];
   targetKey: string | null;
   targetPlugin: string;
   targetType: string | null;

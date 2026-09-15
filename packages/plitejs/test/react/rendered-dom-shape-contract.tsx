@@ -1,7 +1,7 @@
 import { act, render, waitFor } from '@testing-library/react';
 import {
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   type Descendant,
   schema,
   TextApi,
@@ -16,9 +16,10 @@ import {
 import {
   createEditor,
   Editable,
-  Plite,
-  type PliteDecorationSource,
+  EditorRoot,
+  type DecorationSource,
 } from '../../src/react';
+import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { getPliteNodeElementByPath } from '../../src/react/hooks/use-plite-node-ref';
 
 const inlineLinkSchema = defineEditorSchema(
@@ -49,7 +50,7 @@ const inlineVoidSchema = defineEditorSchema(
 );
 
 const getFirstElement = (container: HTMLElement) => {
-  const element = container.querySelector('[data-plite-node="element"]');
+  const element = container.querySelector('[data-editor-node="element"]');
 
   if (!(element instanceof HTMLElement)) {
     throw new Error('Expected the editor to render a block element.');
@@ -60,7 +61,7 @@ const getFirstElement = (container: HTMLElement) => {
 
 const getElementByPath = (container: HTMLElement, path: string) => {
   const element = container.querySelector(
-    `[data-plite-node="element"][data-plite-path="${path}"]`
+    `[data-editor-node="element"][data-editor-path="${path}"]`
   );
 
   if (!(element instanceof HTMLElement)) {
@@ -72,29 +73,29 @@ const getElementByPath = (container: HTMLElement, path: string) => {
 
 const getTextByPath = (container: HTMLElement, path: string) => {
   const element = container.querySelector(
-    `[data-plite-node="text"][data-plite-path="${path}"]`
+    `[data-editor-node="text"][data-editor-path="${path}"]`
   );
 
   if (!(element instanceof HTMLElement)) {
-    throw new Error(`Expected Plite text at path ${path}.`);
+    throw new Error(`Expected EditorRoot text at path ${path}.`);
   }
 
   return element;
 };
 
 const getZeroWidthLineBreaks = (element: HTMLElement) =>
-  Array.from(element.querySelectorAll('[data-plite-zero-width="n"]')).filter(
+  Array.from(element.querySelectorAll('[data-editor-zero-width="n"]')).filter(
     (zeroWidth) => zeroWidth.querySelector('br')
   );
 
 const getRenderedShape = (container: HTMLElement) =>
-  Array.from(container.querySelectorAll('[data-plite-node]')).map((node) => ({
-    inline: node.getAttribute('data-plite-inline'),
-    node: node.getAttribute('data-plite-node'),
-    path: node.getAttribute('data-plite-path'),
+  Array.from(container.querySelectorAll('[data-editor-node]')).map((node) => ({
+    inline: node.getAttribute('data-editor-inline'),
+    node: node.getAttribute('data-editor-node'),
+    path: node.getAttribute('data-editor-path'),
     tag: node.tagName.toLowerCase(),
     text: node.textContent?.replaceAll('\uFEFF', '') ?? '',
-    void: node.getAttribute('data-plite-void'),
+    void: node.getAttribute('data-editor-void'),
     zeroWidthLines: getZeroWidthLineBreaks(node as HTMLElement).length,
   }));
 
@@ -110,7 +111,7 @@ const createSeededRandom = (initialSeed: number) => {
 
 describe('rendered DOM shape contract', () => {
   test('schema reconfiguration republishes mounted element classification without document writes', async () => {
-    const slot = defineExtensionSlot('rendered-dom-schema-reconfiguration');
+    const slot = definePluginSlot('rendered-dom-schema-reconfiguration');
     const createSchema = (profile: 'block' | 'inline' | 'void') =>
       defineEditorSchema('schema:rendered-dom-schema-reconfiguration', {
         elements: {
@@ -131,7 +132,7 @@ describe('rendered DOM shape contract', () => {
         version: profile === 'block' ? 1 : profile === 'inline' ? 2 : 3,
       });
     const editor = createEditor({
-      extensions: [slot.of(createSchema('block'))] as const,
+      plugins: [slot.of(createSchema('block'))] as const,
       initialValue: [
         {
           type: 'probe',
@@ -140,38 +141,38 @@ describe('rendered DOM shape contract', () => {
       ],
     });
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable id="rendered-dom-schema-reconfiguration" />
-      </Plite>
+      </EditorRoot>
     );
     const initialDocument = editor.read.value();
     const initialNodeKey = getFirstElement(rendered.container).getAttribute(
-      'data-plite-node-key'
+      'data-editor-node-key'
     );
 
     await act(async () => {
-      editor.update.extensions.reconfigure(slot, createSchema('inline'));
+      editor.update.plugins.reconfigure(slot, createSchema('inline'));
     });
 
     await waitFor(() => {
       const element = getFirstElement(rendered.container);
 
       expect(element.tagName).toBe('SPAN');
-      expect(element).toHaveAttribute('data-plite-inline', 'true');
+      expect(element).toHaveAttribute('data-editor-inline', 'true');
     });
 
     await act(async () => {
-      editor.update.extensions.reconfigure(slot, createSchema('void'));
+      editor.update.plugins.reconfigure(slot, createSchema('void'));
     });
 
     await waitFor(() => {
       const element = getFirstElement(rendered.container);
 
-      expect(element).toHaveAttribute('data-plite-void', 'true');
-      expect(element).not.toHaveAttribute('data-plite-inline');
+      expect(element).toHaveAttribute('data-editor-void', 'true');
+      expect(element).not.toHaveAttribute('data-editor-inline');
     });
     expect(getFirstElement(rendered.container)).toHaveAttribute(
-      'data-plite-node-key',
+      'data-editor-node-key',
       initialNodeKey
     );
     expect(editor.read.value()).toEqual(initialDocument);
@@ -192,7 +193,7 @@ describe('rendered DOM shape contract', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="rendered-dom-shape-path-metadata"
           renderElement={({ attributes, children }) => (
@@ -202,13 +203,13 @@ describe('rendered DOM shape contract', () => {
             <span {...attributes}>{children}</span>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
     const block = getFirstElement(rendered.container);
-    const text = rendered.container.querySelector('[data-plite-node="text"]');
+    const text = rendered.container.querySelector('[data-editor-node="text"]');
 
-    expect(block.getAttribute('data-plite-path')).toBe('0');
-    expect(text?.getAttribute('data-plite-path')).toBe('0,0');
+    expect(block.getAttribute('data-editor-path')).toBe('0');
+    expect(text?.getAttribute('data-editor-path')).toBe('0,0');
   });
 
   test('editing one block preserves unaffected sibling DOM identity', async () => {
@@ -226,9 +227,9 @@ describe('rendered DOM shape contract', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable id="rendered-dom-shape-unaffected-sibling-identity" />
-      </Plite>
+      </EditorRoot>
     );
     const untouchedBlock = getElementByPath(rendered.container, '1');
     const untouchedText = getTextByPath(rendered.container, '1,0');
@@ -256,7 +257,7 @@ describe('rendered DOM shape contract', () => {
       ],
     });
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="rendered-dom-shape-element-property"
           renderElement={({ attributes, children, element }) => (
@@ -270,7 +271,7 @@ describe('rendered DOM shape contract', () => {
             </p>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(getFirstElement(rendered.container).style.textAlign).toBe('');
@@ -306,9 +307,9 @@ describe('rendered DOM shape contract', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable id="rendered-dom-shape-invalid-empty-leaves" />
-      </Plite>
+      </EditorRoot>
     );
     const block = getFirstElement(rendered.container);
 
@@ -331,7 +332,7 @@ describe('rendered DOM shape contract', () => {
       selection: null,
     });
     const modelValue = editor.read.value();
-    const trailingDecoration: PliteDecorationSource<typeof editor> = {
+    const trailingDecoration: DecorationSource<typeof editor> = {
       id: 'trailing-newline',
       read: ({ entry: [node, path] }) =>
         TextApi.isText(node) && node.text === 'beta\n'
@@ -348,12 +349,15 @@ describe('rendered DOM shape contract', () => {
           : [],
     };
 
-    render(
-      <Plite decorations={[trailingDecoration]} editor={editor}>
+    const rendered = render(
+      <EditorRoot decorations={[trailingDecoration]} editor={editor}>
         <Editable id="rendered-dom-shape-trailing-newline" />
-      </Plite>
+      </EditorRoot>
     );
-    const flow = getPliteNodeElementByPath(editor, [0, 0]);
+    const mountedEditor = findMountedEditableDOMRuntime(
+      rendered.container.querySelector('[data-editor]')!
+    )!.editor;
+    const flow = getPliteNodeElementByPath(mountedEditor, [0, 0]);
     const leadingKey = editorGetNodeKey(editor, [0, 0]);
     const trailingKey = editorGetNodeKey(editor, [0, 1]);
     const leadingPoint =
@@ -363,13 +367,13 @@ describe('rendered DOM shape contract', () => {
         ? resolveDOMTextFlowPoint(flow, 0, trailingKey)
         : null;
     const trailingString = trailingPoint?.node.parentElement?.closest(
-      '[data-plite-string][data-trailing-newline]'
+      '[data-editor-string][data-trailing-newline]'
     );
 
-    expect(getPliteNodeElementByPath(editor, [0, 1])).toBe(flow);
+    expect(getPliteNodeElementByPath(mountedEditor, [0, 1])).toBe(flow);
     expect(leadingPoint?.node.textContent).toBe('alpha\n');
     expect(trailingString?.textContent).toBe('beta\n\n');
-    expect(trailingString).toHaveAttribute('data-plite-length', '5');
+    expect(trailingString).toHaveAttribute('data-editor-length', '5');
     expect(editor.read.value()).toEqual(modelValue);
   });
 
@@ -383,7 +387,7 @@ describe('rendered DOM shape contract', () => {
         },
       ],
     });
-    const decorations: PliteDecorationSource<typeof editor> = {
+    const decorations: DecorationSource<typeof editor> = {
       id: 'point-round-trip',
       read: ({ entry: [node, path] }) =>
         TextApi.isText(node)
@@ -408,18 +412,21 @@ describe('rendered DOM shape contract', () => {
           : [],
     };
 
-    render(
-      <Plite decorations={[decorations]} editor={editor}>
+    const rendered = render(
+      <EditorRoot decorations={[decorations]} editor={editor}>
         <Editable id="rendered-dom-shape-point-round-trip" />
-      </Plite>
+      </EditorRoot>
     );
+    const mountedEditor = findMountedEditableDOMRuntime(
+      rendered.container.querySelector('[data-editor]')!
+    )!.editor;
     const point = { offset: text.length, path: [0, 0] };
-    const domPoint = editor.api.dom.resolveDOMPoint(point);
+    const domPoint = mountedEditor.api.dom.resolveDOMPoint(point);
 
     expect(domPoint).not.toBeNull();
     expect(
       domPoint &&
-        editor.api.dom.resolvePlitePoint(domPoint, { exactMatch: true })
+        mountedEditor.api.dom.resolvePoint(domPoint, { exactMatch: true })
     ).toEqual(point);
   });
 
@@ -446,7 +453,7 @@ describe('rendered DOM shape contract', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="rendered-dom-shape-empty-inline"
           renderElement={({ attributes, children, element }) => {
@@ -457,11 +464,11 @@ describe('rendered DOM shape contract', () => {
             return <p {...attributes}>{children}</p>;
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
     const block = getFirstElement(rendered.container);
     const inline = rendered.container.querySelector(
-      'a[data-plite-inline="true"]'
+      'a[data-editor-inline="true"]'
     );
 
     expect(inline).toBeTruthy();
@@ -482,7 +489,7 @@ describe('rendered DOM shape contract', () => {
     editor.install(inlineVoidSchema);
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="rendered-dom-shape-inline-void"
           renderLeaf={({ attributes, children }) => (
@@ -490,7 +497,7 @@ describe('rendered DOM shape contract', () => {
           )}
           renderVoid={() => <span>@</span>}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(
@@ -514,12 +521,12 @@ describe('rendered DOM shape contract', () => {
     ).toHaveLength(1);
     expect(
       getTextByPath(rendered.container, '0,0').querySelector(
-        '[data-plite-zero-width="z"]'
+        '[data-editor-zero-width="z"]'
       )
     ).toBeTruthy();
     expect(
       getTextByPath(rendered.container, '0,2').querySelector(
-        '[data-plite-zero-width="n"] > br'
+        '[data-editor-zero-width="n"] > br'
       )
     ).toBeTruthy();
   });
@@ -538,9 +545,9 @@ describe('rendered DOM shape contract', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable id="rendered-dom-shape-empty-block" />
-      </Plite>
+      </EditorRoot>
     );
     const block = getFirstElement(rendered.container);
 
@@ -554,7 +561,7 @@ describe('rendered DOM shape contract', () => {
 
     HTMLElement.prototype.getBoundingClientRect =
       function getBoundingClientRect() {
-        if (this.matches('[data-plite-placeholder="true"]')) {
+        if (this.matches('[data-editor-placeholder="true"]')) {
           return {
             bottom: 86,
             height: 86,
@@ -585,7 +592,7 @@ describe('rendered DOM shape contract', () => {
       });
 
       const rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable
             id="rendered-dom-shape-custom-placeholder-height"
             placeholder="Type something"
@@ -596,10 +603,10 @@ describe('rendered DOM shape contract', () => {
               </div>
             )}
           />
-        </Plite>
+        </EditorRoot>
       );
       const editable = rendered.container.querySelector(
-        '[data-plite-editor="true"]'
+        '[data-editor="true"]'
       ) as HTMLElement | null;
 
       await waitFor(() => {
@@ -618,7 +625,7 @@ describe('rendered DOM shape contract', () => {
 
     HTMLElement.prototype.getBoundingClientRect =
       function getBoundingClientRect() {
-        if (this.matches('[data-plite-placeholder="true"]')) {
+        if (this.matches('[data-editor-placeholder="true"]')) {
           return {
             bottom: 86,
             height: 86,
@@ -649,7 +656,7 @@ describe('rendered DOM shape contract', () => {
       });
 
       const rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable
             id="rendered-dom-shape-custom-placeholder-delete-empty"
             placeholder="Type something"
@@ -660,15 +667,15 @@ describe('rendered DOM shape contract', () => {
               </div>
             )}
           />
-        </Plite>
+        </EditorRoot>
       );
       const editable = rendered.container.querySelector(
-        '[data-plite-editor="true"]'
+        '[data-editor="true"]'
       ) as HTMLElement | null;
 
       await waitFor(() => {
         const placeholder = rendered.container.querySelector(
-          '[data-plite-placeholder="true"]'
+          '[data-editor-placeholder="true"]'
         );
 
         expect(placeholder?.textContent).toContain('Type something');
@@ -683,7 +690,7 @@ describe('rendered DOM shape contract', () => {
 
       await waitFor(() => {
         expect(
-          rendered.container.querySelector('[data-plite-placeholder="true"]')
+          rendered.container.querySelector('[data-editor-placeholder="true"]')
         ).toBeNull();
         expect(editable?.style.minHeight).toBe('');
       });
@@ -702,7 +709,7 @@ describe('rendered DOM shape contract', () => {
 
       await waitFor(() => {
         const placeholder = rendered.container.querySelector(
-          '[data-plite-placeholder="true"]'
+          '[data-editor-placeholder="true"]'
         );
 
         expect(placeholder?.textContent).toContain('Type something');
@@ -726,9 +733,9 @@ describe('rendered DOM shape contract', () => {
         })),
       });
       const incremental = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable id={`rendered-dom-differential-${seed}`} />
-        </Plite>
+        </EditorRoot>
       );
       const trace: string[] = [];
 
@@ -823,9 +830,9 @@ describe('rendered DOM shape contract', () => {
             initialValue: structuredClone(editor.read.value().children),
           });
           const fresh = render(
-            <Plite editor={freshEditor}>
+            <EditorRoot editor={freshEditor}>
               <Editable id={`rendered-dom-fresh-${seed}-${step}`} />
-            </Plite>
+            </EditorRoot>
           );
 
           expect(getRenderedShape(incremental.container)).toEqual(

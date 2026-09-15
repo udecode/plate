@@ -19,10 +19,12 @@ npm install platejs @tanstack/react-virtual
 
 ```ts
 // 之前
-import { Plite, Editable, useEditor } from 'plitejs/react';
+import { EditorRoot, Editable, useEditor } from 'plitejs/react';
+```
 
+```ts
 // 之后
-import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
+import { EditorRoot, EditorContent, useCreateEditor } from 'platejs/react';
 ```
 
 ## 3. 创建 Plate 编辑器
@@ -48,18 +50,18 @@ const editor = useCreateEditor({
 
 ## 4. 替换 Plite 和 Editable 组件
 
-将 `Plite` 和 `Editable` 组件替换为 Plate 的 `Plate` 组件：
+将 `EditorRoot` 和 `Editable` 组件替换为 Plate 的 `EditorRoot` 组件：
 
 ```tsx
 // 之前
-<Plite editor={editor}>
+<EditorRoot editor={editor}>
   <Editable className="p-4" />
-</Plite>
+</EditorRoot>
 
 // 之后
-<Plate editor={editor}>
-  <PlateContent className="p-4" />
-</Plate>
+<EditorRoot editor={editor}>
+  <EditorContent className="p-4" />
+</EditorRoot>
 ```
 
 ## 5. 转换自定义元素和叶子
@@ -78,20 +80,20 @@ const renderElement = useCallback(({ attributes, children, element }) => {
 
 // 之后
 import { schema } from 'platejs';
-import { definePlatePlugin, PlateElement, type PlateElementProps } from 'platejs/react';
+import { definePlugin, EditorElement, type EditorElementProps } from 'platejs/react';
 import { cn } from '@/lib/utils';
 
 export function ParagraphElement(
-  props: PlateElementProps<typeof ParagraphPlugin>
+  props: EditorElementProps<typeof ParagraphPlugin>
 ) {
   return (
-    <PlateElement {...props} className="m-0 px-0 py-1">
+    <EditorElement {...props} className="m-0 px-0 py-1">
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 
-const ParagraphPlugin = definePlatePlugin('p', {
+const ParagraphPlugin = definePlugin('p', {
   type: 'paragraph',
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
@@ -107,10 +109,10 @@ const ParagraphPlugin = definePlatePlugin('p', {
 `editor.update(...)` 的事务对象上：
 
 ```ts
-const SignaturePlugin = definePlatePlugin('signature', {
+const SignaturePlugin = definePlugin('signature', {
   update: ({ tx }) => ({
     insert() {
-      tx.text.insert(' - Plate');
+      tx.text.insert(' - EditorRoot');
     },
   }),
 });
@@ -123,7 +125,7 @@ editor.update((tx) => {
 插件 portal 已经拥有插件名，因此方法应保持扁平并直接描述任务：
 
 ```ts
-const CalloutPlugin = definePlatePlugin('callout', {
+const CalloutPlugin = definePlugin('callout', {
   update: ({ tx }) => ({
     insertCallout() {
       tx.nodes.insert({
@@ -161,7 +163,7 @@ const onKeyDown = (event) => {
 };
 
 // 之后
-const TabPlugin = definePlatePlugin('tab', {
+const TabPlugin = definePlugin('tab', {
   on: {
     keyDown: ({ editor, event }) => {
       if (event.key === 'Tab') {
@@ -175,7 +177,7 @@ const TabPlugin = definePlatePlugin('tab', {
 或者，您可以使用 Plate 强大的快捷键系统：
 
 ```ts
-const TabPlugin = definePlatePlugin('tab', {
+const TabPlugin = definePlugin('tab', {
   shortcuts: {
     indent: {
       handler: ({ editor }) => {

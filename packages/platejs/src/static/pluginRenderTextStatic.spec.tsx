@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { property } from '../core';
-import { type RenderTextProps, defineBasePlugin } from '../lib';
+import { type RenderTextProps, definePlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderTextStatic,
@@ -9,7 +9,7 @@ import {
 } from './pluginRenderTextStatic.internal';
 
 describe('pluginRenderTextStatic', () => {
-  const TonePlugin = defineBasePlugin('tone', {
+  const TonePlugin = definePlugin('tone', {
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       mark: {
@@ -32,7 +32,7 @@ describe('pluginRenderTextStatic', () => {
         editor,
         editor.plugin(TonePlugin)
       )({
-        attributes: { 'data-plite-node': 'text', ref: null },
+        attributes: { 'data-editor-node': 'text', ref: null },
         children: 'plain',
         text: { text: 'plain' },
       } satisfies RenderTextProps)
@@ -51,7 +51,7 @@ describe('pluginRenderTextStatic', () => {
       editor,
       editor.plugin(ConfiguredTonePlugin)
     )({
-      attributes: { 'data-plite-node': 'text', ref: null },
+      attributes: { 'data-editor-node': 'text', ref: null },
       children: 'hi',
       text: { text: 'hi', tone: true },
     } satisfies RenderTextProps);
@@ -83,7 +83,7 @@ describe('pluginRenderTextStatic', () => {
         );
       },
     })({
-      attributes: { 'data-plite-node': 'text', className: 'base', ref: null },
+      attributes: { 'data-editor-node': 'text', className: 'base', ref: null },
       children: 'hi',
       text: { text: 'hi', tone: true },
     } satisfies RenderTextProps);

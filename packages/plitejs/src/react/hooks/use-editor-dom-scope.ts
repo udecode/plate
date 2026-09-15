@@ -45,7 +45,7 @@ export const useEditorRootElement = (editor: DOMScopeEditor) =>
     useCallback(() => editor.api.dom.root(), [editor])
   );
 
-/** Return the element Plite should treat as the editor scroll container. */
+/** Return the editor scroll container element. */
 export const useEditorScrollElement = (editor: DOMScopeEditor) =>
   useEditorDOMScopeElement(
     editor,

@@ -1,5 +1,5 @@
 import {
-  defineBasePlugin,
+  definePlugin,
   createRuleFactory,
   someHtmlElement,
   property,
@@ -119,7 +119,7 @@ export const MarkComboRules = {
 };
 
 /** Enables support for bold formatting. */
-export const BaseBoldPlugin = defineBasePlugin(PLUGINS.bold, {
+export const BaseBoldPlugin = definePlugin(PLUGINS.bold, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -149,7 +149,7 @@ export const BaseBoldPlugin = defineBasePlugin(PLUGINS.bold, {
 });
 
 /** Enables support for code formatting. */
-export const BaseCodePlugin = defineBasePlugin(PLUGINS.code, {
+export const BaseCodePlugin = definePlugin(PLUGINS.code, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -187,7 +187,7 @@ export const BaseCodePlugin = defineBasePlugin(PLUGINS.code, {
  * Enables support for highlights, useful when reviewing content or highlighting
  * it for future reference.
  */
-export const BaseHighlightPlugin = defineBasePlugin(PLUGINS.highlight, {
+export const BaseHighlightPlugin = definePlugin(PLUGINS.highlight, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -218,7 +218,7 @@ export const BaseHighlightPlugin = defineBasePlugin(PLUGINS.highlight, {
 });
 
 /** Enables support for italic formatting. */
-export const BaseItalicPlugin = defineBasePlugin(PLUGINS.italic, {
+export const BaseItalicPlugin = definePlugin(PLUGINS.italic, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -245,7 +245,7 @@ export const BaseItalicPlugin = defineBasePlugin(PLUGINS.italic, {
 });
 
 /** Enables support for keyboard-input formatting. */
-export const BaseKbdPlugin = defineBasePlugin(PLUGINS.kbd, {
+export const BaseKbdPlugin = definePlugin(PLUGINS.kbd, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -276,7 +276,7 @@ export const BaseKbdPlugin = defineBasePlugin(PLUGINS.kbd, {
 });
 
 /** Enables subscript and superscript through one enum-valued mark. */
-export const BaseScriptPlugin = defineBasePlugin(PLUGINS.script, {
+export const BaseScriptPlugin = definePlugin(PLUGINS.script, {
   schema: {
     mark: property.enum(scriptValues),
   },
@@ -327,7 +327,7 @@ export const BaseScriptPlugin = defineBasePlugin(PLUGINS.script, {
 });
 
 /** Enables support for strikethrough formatting. */
-export const BaseStrikethroughPlugin = defineBasePlugin(PLUGINS.strikethrough, {
+export const BaseStrikethroughPlugin = definePlugin(PLUGINS.strikethrough, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -369,7 +369,7 @@ export const BaseStrikethroughPlugin = defineBasePlugin(PLUGINS.strikethrough, {
 });
 
 /** Enables support for underline formatting. */
-export const BaseUnderlinePlugin = defineBasePlugin(PLUGINS.underline, {
+export const BaseUnderlinePlugin = definePlugin(PLUGINS.underline, {
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },

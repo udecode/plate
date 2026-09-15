@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import React from 'react';
 
 import type { Element, NodeEntry } from '../../../core';
-import { TestPlate as Plate } from '../../__tests__/TestPlate';
+import { TestPlate as EditorRoot } from '../../__tests__/TestPlate';
 import { createEditor } from '../../editor';
 import { useElementSelector } from './useElementSelector';
 import { ElementProvider } from './useElementStore';
@@ -38,7 +38,7 @@ describe('useElementSelector', () => {
       );
 
       return (
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <ElementProvider
             element={nameEntry[0]}
             entry={nameEntry}
@@ -54,7 +54,7 @@ describe('useElementSelector', () => {
               {children}
             </ElementProvider>
           </ElementProvider>
-        </Plate>
+        </EditorRoot>
       );
     };
 
@@ -97,7 +97,7 @@ describe('useElementSelector', () => {
       setEntry = updateEntry;
 
       return (
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <ElementProvider
             element={entry[0]}
             entry={entry}
@@ -106,7 +106,7 @@ describe('useElementSelector', () => {
           >
             {children}
           </ElementProvider>
-        </Plate>
+        </EditorRoot>
       );
     };
 
@@ -158,7 +158,7 @@ describe('useElementSelector', () => {
       [0],
     ] as any;
     const Wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <ElementProvider
           element={entry[0]}
           entry={entry}
@@ -167,7 +167,7 @@ describe('useElementSelector', () => {
         >
           {children}
         </ElementProvider>
-      </Plate>
+      </EditorRoot>
     );
 
     const { rerender, result } = renderHook(

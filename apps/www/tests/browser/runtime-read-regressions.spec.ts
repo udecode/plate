@@ -1,22 +1,22 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
-const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
+const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 
 test('find: decorated input keeps exact history and follow-up typing', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/find-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       'find:decorated-history',
       root
@@ -44,7 +44,7 @@ test('find: decorated input keeps exact history and follow-up typing', async ({
     await page.keyboard.press('ControlOrMeta+z');
 
     await editor.assert.modelBlockTexts(expectedAfterType);
-    await expect(root.locator('[data-plite-node="element"]')).toHaveText(
+    await expect(root.locator('[data-editor-node="element"]')).toHaveText(
       expectedAfterType
     );
     await editor.assert.focusOwner('editor');
@@ -66,13 +66,13 @@ test('select-editor: controlled tags restore the exact tree after undo', async (
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/select-editor-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       'select-editor:controlled-history',
       root
@@ -132,13 +132,13 @@ test('select-editor: Enter preserves a query with no selectable item', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/select-editor-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       'select-editor:empty-result-enter',
       root

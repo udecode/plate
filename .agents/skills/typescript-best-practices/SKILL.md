@@ -1,15 +1,15 @@
 ---
 name: typescript-best-practices
-description: TypeScript best practices. Use when reading or editing any .ts or .tsx file.
+description: "Resolve TypeScript modeling, narrowing, schema and inference choices using concrete language patterns."
 metadata:
   upstream-paths: ["**/*.ts", "**/*.tsx"]
 ---
 
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
+For platform-specific commands or delegation, read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md). Use the complete domain method below under current project scope and proof requirements.
 
 # TypeScript best practices
 
-Apply the **type-system-discipline** principle skill first; this skill grounds it in TypeScript syntax.
+Use the patterns below for the TypeScript choice at hand. Read **type-system-discipline** when the underlying state model or contract remains unresolved; established types do not require another method.
 
 | Rule | Summary |
 |------|---------|

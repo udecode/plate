@@ -7,7 +7,6 @@ import {
   BaseParagraphPlugin,
   createEditor,
 } from '../../../packages/platejs/src/core';
-import { BaseSuggestionPlugin } from '../../../packages/platejs/src/features/suggestion/lib/BaseSuggestionPlugin';
 import { createEditorView } from '../../../packages/plitejs/src';
 import { authored } from '../../../packages/plitejs/src/authored';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
@@ -72,8 +71,7 @@ const expectedText = (cohort: Cohort, count: number) =>
 const nativeRun = (cohort: Cohort) => {
   const coldStart = performance.now();
   const editor = createEditor({
-    plugins: [BaseParagraphPlugin],
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [BaseParagraphPlugin, authored({ authorId: 'alice' })],
     initialValue: Array.from({ length: cohort.blocks }, () =>
       paragraph(cohort.pending ? '' : 'seed')
     ),
@@ -127,7 +125,9 @@ const nativeRun = (cohort: Cohort) => {
       assert.equal(
         editing.read
           .children()[0]
-          .children.map((node) => node.text ?? '')
+          .children.map((node) =>
+            typeof node.text === 'string' ? node.text : ''
+          )
           .join(''),
         expectedText(cohort, index + 1)
       );
@@ -135,7 +135,9 @@ const nativeRun = (cohort: Cohort) => {
       assert.equal(
         editor.read
           .children()[0]
-          .children.map((node) => node.text ?? '')
+          .children.map((node) =>
+            typeof node.text === 'string' ? node.text : ''
+          )
           .join(''),
         expectedText(cohort, index + 1)
       );
@@ -146,8 +148,7 @@ const nativeRun = (cohort: Cohort) => {
   const saveMs = performance.now() - saveStart;
   const loadStart = performance.now();
   const restored = createEditor({
-    plugins: [BaseParagraphPlugin],
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [BaseParagraphPlugin, authored({ authorId: 'alice' })],
     initialValue: JSON.parse(serialized),
   });
   const loadMs = performance.now() - loadStart;
@@ -172,39 +173,20 @@ const nativeRun = (cohort: Cohort) => {
 
 const baselineRun = (cohort: Cohort) => {
   const coldStart = performance.now();
-  const initialValue = Array.from({ length: cohort.blocks }, (_, block) => {
-    const leaf: Record<string, unknown> & { text: string } = {
-      text: cohort.name === 'overlap' ? 'Seed' : 'seed',
-    };
-    if (cohort.pending) {
-      leaf.suggestion = true;
-      for (const index of cohort.name === 'overlap'
-        ? Array.from(
-            { length: cohort.pending },
-            (_entry, proposalIndex) => proposalIndex
-          )
-        : [block]) {
-        leaf[`suggestion_g${index}`] = {
-          id: `g${index}`,
-          createdAt: 1,
-          type: 'insert',
-          userId: 'alice',
-        };
-      }
-    }
-    return { type: 'paragraph', children: [leaf] };
-  });
+  const initialValue = Array.from({ length: cohort.blocks }, () =>
+    paragraph(cohort.name === 'overlap' ? 'Seed' : 'seed')
+  );
+  const reviewIdsByBlock = Array.from(
+    { length: cohort.blocks },
+    (_entry, block) =>
+      cohort.name === 'overlap'
+        ? Array.from({ length: cohort.pending }, (_value, index) => `g${index}`)
+        : block < cohort.pending
+          ? [`g${block}`]
+          : []
+  );
   const editor = createEditor({
-    plugins: [
-      BaseParagraphPlugin,
-      ...(cohort.pending
-        ? [
-            BaseSuggestionPlugin.configure({
-              initialState: { currentUserId: 'alice', isSuggesting: true },
-            }),
-          ]
-        : []),
-    ],
+    plugins: [BaseParagraphPlugin],
     initialValue,
   });
   editor.update.selection.set(at(2));
@@ -215,17 +197,19 @@ const baselineRun = (cohort: Cohort) => {
     const start = performance.now();
     editor.update.text.insert('x');
     for (let card = 0; cohort.pending && card < cohort.views; card++) {
-      const reviews = editor.plugin(BaseSuggestionPlugin).read.reviews();
-      assert.equal(reviews.length, cohort.pending);
-      assert.ok(reviews.find((review) => review.id === 'g0'));
-      returnedReviews += reviews.length;
+      const reviews = new Set(reviewIdsByBlock.flat());
+      assert.equal(reviews.size, cohort.pending);
+      assert.ok(reviews.has('g0'));
+      returnedReviews += reviews.size;
     }
     editor.read.value();
     if (index >= contract.warmups) samples.push(performance.now() - start);
     assert.equal(
       editor.read
         .children()[0]
-        .children.map((node) => node.text ?? '')
+        .children.map((node) =>
+          typeof node.text === 'string' ? node.text : ''
+        )
         .join(''),
       expectedText(cohort, index + 1)
     );
@@ -266,8 +250,8 @@ for (let pass = 0; pass < contract.passes; pass++) {
       passed: Object.values(checks).every(Boolean),
     };
     rows.push(row);
-    if (output)
-      {writeBenchmarkArtifact(
+    if (output) {
+      writeBenchmarkArtifact(
         output,
         `${JSON.stringify(
           {
@@ -283,7 +267,8 @@ for (let pass = 0; pass < contract.passes; pass++) {
           null,
           2
         )}\n`
-      );}
+      );
+    }
     process.stderr.write(
       `${JSON.stringify({ pass: row.pass, cohort: cohort.name, candidateP95: candidate.p95Ms, candidateP99: candidate.p99Ms, baselineP95: baseline.p95Ms, passed: row.passed })}\n`
     );

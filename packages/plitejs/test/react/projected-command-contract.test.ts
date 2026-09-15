@@ -1,16 +1,16 @@
 import {
   createEditor,
   createEditorView,
-  defineExtension,
+  definePlugin,
   defineEditorSchema,
   editorCommands,
   schema,
-  type EditorExtensionInput,
+  type PluginInput,
   type Point,
   type RootKey,
 } from 'plitejs';
 import { authored } from 'plitejs/authored';
-import { clipboardHandler, dom } from 'plitejs/dom';
+import { dom, domCommands } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import { describe, expect, it } from 'vitest';
 
@@ -66,28 +66,25 @@ const encodePliteFragment = (fragment: unknown) =>
     )
   );
 
-const contentRootExtension = defineEditorSchema(
-  'schema:projected-command-test',
-  {
-    elements: {
-      paragraph: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-      },
-      'content-card': {
-        contentRoots: {
-          body: schema.content.not(schema.content.text()),
-        },
-        void: 'block',
-      },
+const contentRootPlugin = defineEditorSchema('schema:projected-command-test', {
+  elements: {
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
     },
-    id: 'projected-command-test',
-    root: schema.content.not(schema.content.text()),
-    unknown: 'preserve',
-    version: 1,
-  }
-);
+    'content-card': {
+      contentRoots: {
+        body: schema.content.not(schema.content.text()),
+      },
+      void: 'block',
+    },
+  },
+  id: 'projected-command-test',
+  root: schema.content.not(schema.content.text()),
+  unknown: 'preserve',
+  version: 1,
+});
 
-const splitSchemaDocumentExtension = defineEditorSchema(
+const splitSchemaDocumentPlugin = defineEditorSchema(
   'schema:projected-command-split-schema-document',
   {
     elements: {},
@@ -98,7 +95,7 @@ const splitSchemaDocumentExtension = defineEditorSchema(
   }
 );
 
-const splitSchemaSyncedBlockExtension = defineExtension(
+const splitSchemaSyncedBlockPlugin = definePlugin(
   'projected-command-split-schema-synced-block',
   {
     schema: {
@@ -114,7 +111,7 @@ const splitSchemaSyncedBlockExtension = defineExtension(
   }
 );
 
-const inlineLinkExtension = defineEditorSchema(
+const inlineLinkPlugin = defineEditorSchema(
   'schema:projected-command-inline-test',
   {
     elements: {
@@ -130,7 +127,7 @@ const inlineLinkExtension = defineEditorSchema(
   }
 );
 
-const structuralListExtension = defineEditorSchema(
+const structuralListPlugin = defineEditorSchema(
   'schema:projected-command-structural-list-test',
   {
     elements: {
@@ -192,9 +189,9 @@ const point = (
   offset,
 });
 
-const createFixture = (extensions: EditorExtensionInput[] = []) => {
+const createFixture = (plugins: PluginInput[] = []) => {
   const runtime = createEditor({
-    extensions: [history(), dom(), contentRootExtension, ...extensions],
+    plugins: [history(), dom(), contentRootPlugin, ...plugins],
     initialValue: {
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
@@ -213,7 +210,7 @@ const createFixture = (extensions: EditorExtensionInput[] = []) => {
 
 const createRepeatedRootFixture = () => {
   const runtime = createEditor({
-    extensions: [history(), dom(), contentRootExtension],
+    plugins: [history(), dom(), contentRootPlugin],
     initialValue: {
       children: [
         paragraph('Before'),
@@ -282,11 +279,7 @@ describe('projected editable commands', () => {
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
     };
     const source = createEditor({
-      extensions: [
-        authored({ authorId: 'alice' }),
-        dom(),
-        contentRootExtension,
-      ],
+      plugins: [authored({ authorId: 'alice' }), dom(), contentRootPlugin],
       initialValue,
     });
     const editor = createEditorView(source, {
@@ -329,7 +322,7 @@ describe('projected editable commands', () => {
 
   it('replaces proposed selection coordinates through the originating authored view', () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' }), dom()],
+      plugins: [authored({ authorId: 'alice' }), dom()],
       initialValue: [paragraph('AB')],
     });
     const editor = createEditorView(source, {
@@ -479,21 +472,19 @@ describe('projected editable commands', () => {
 
   it('declining clipboard handlers preserve unsupported projected paste payloads', () => {
     let insertCount = 0;
-    const clipboardExtension = defineExtension(
+    const clipboardPlugin = definePlugin(
       'projected-command-declining-clipboard',
       {
-        contributions: [
-          clipboardHandler({
-            insertData() {
-              insertCount += 1;
+        commands: ({ handle }) => [
+          handle(domCommands.insertData, () => {
+            insertCount += 1;
 
-              return false;
-            },
+            return false;
           }),
         ],
       }
     );
-    const { editor, graph } = createFixture([clipboardExtension]);
+    const { editor, graph } = createFixture([clipboardPlugin]);
     const data = new FakeDataTransfer();
 
     writeForwardProjectedSelection(editor, graph);
@@ -522,7 +513,7 @@ describe('projected editable commands', () => {
 
     writeForwardProjectedSelection(editor, graph);
     data.setData(
-      'application/x-plite-fragment',
+      'application/x-editor-fragment',
       encodePliteFragment([paragraph('Z')])
     );
 
@@ -546,7 +537,7 @@ describe('projected editable commands', () => {
     const data = new FakeDataTransfer();
 
     writeForwardProjectedSelection(editor, graph);
-    data.setData('application/x-plite-fragment', encodePliteFragment([]));
+    data.setData('application/x-editor-fragment', encodePliteFragment([]));
 
     expect(
       applyEditableCommand({
@@ -580,7 +571,7 @@ describe('projected editable commands', () => {
     const data = new FakeDataTransfer();
 
     writeForwardProjectedSelection(editor, graph);
-    data.setData('application/x-plite-fragment', encodePliteFragment([]));
+    data.setData('application/x-editor-fragment', encodePliteFragment([]));
     data.setData('text/plain', 'Z');
 
     expect(
@@ -603,27 +594,23 @@ describe('projected editable commands', () => {
 
   it('lets clipboard insertData handlers own projected Plite fragment pastes', () => {
     let insertCount = 0;
-    const clipboardExtension = defineExtension(
-      'projected-command-custom-clipboard',
-      {
-        contributions: [
-          clipboardHandler({
-            insertData(_data, { tx }) {
-              insertCount += 1;
-              tx.text.insert('H');
+    const clipboardPlugin = definePlugin('projected-command-custom-clipboard', {
+      commands: ({ handle }) => [
+        handle(domCommands.insertData, ({ state }) => {
+          insertCount += 1;
 
-              return true;
-            },
-          }),
-        ],
-      }
-    );
-    const { editor, graph } = createFixture([clipboardExtension]);
+          return state.transaction((tx) => {
+            tx.text.insert('H');
+          });
+        }),
+      ],
+    });
+    const { editor, graph } = createFixture([clipboardPlugin]);
     const data = new FakeDataTransfer();
 
     writeForwardProjectedSelection(editor, graph);
     data.setData(
-      'application/x-plite-fragment',
+      'application/x-editor-fragment',
       encodePliteFragment([paragraph('Z')])
     );
 
@@ -644,22 +631,21 @@ describe('projected editable commands', () => {
 
   it('offers unsupported projected paste payloads to clipboard handlers', () => {
     let insertCount = 0;
-    const clipboardExtension = defineExtension(
+    const clipboardPlugin = definePlugin(
       'projected-command-custom-payload-clipboard',
       {
-        contributions: [
-          clipboardHandler({
-            insertData(_data, { tx }) {
-              insertCount += 1;
-              tx.text.insert('H');
+        commands: ({ handle }) => [
+          handle(domCommands.insertData, ({ state }) => {
+            insertCount += 1;
 
-              return true;
-            },
+            return state.transaction((tx) => {
+              tx.text.insert('H');
+            });
           }),
         ],
       }
     );
-    const { editor, graph } = createFixture([clipboardExtension]);
+    const { editor, graph } = createFixture([clipboardPlugin]);
     const data = new FakeDataTransfer();
 
     writeForwardProjectedSelection(editor, graph);
@@ -682,19 +668,17 @@ describe('projected editable commands', () => {
 
   it('preserves projected selection when clipboard insertData handlers throw', () => {
     const pasteError = new Error('custom paste failed');
-    const clipboardExtension = defineExtension(
+    const clipboardPlugin = definePlugin(
       'projected-command-throwing-clipboard',
       {
-        contributions: [
-          clipboardHandler({
-            insertData() {
-              throw pasteError;
-            },
+        commands: ({ handle }) => [
+          handle(domCommands.insertData, () => {
+            throw pasteError;
           }),
         ],
       }
     );
-    const { editor, graph } = createFixture([clipboardExtension]);
+    const { editor, graph } = createFixture([clipboardPlugin]);
     const data = new FakeDataTransfer();
 
     writeForwardProjectedSelection(editor, graph);
@@ -718,7 +702,7 @@ describe('projected editable commands', () => {
     writeForwardProjectedSelection(editor, graph);
     data.setData(
       'text/html',
-      `<span data-plite-fragment="${fragment}" data-plite-fragment-format="foreign-plite">Z</span>`
+      `<span data-editor-fragment="${fragment}" data-editor-fragment-format="foreign-plite">Z</span>`
     );
 
     expect(
@@ -743,7 +727,7 @@ describe('projected editable commands', () => {
     writeForwardProjectedSelection(editor, graph);
     data.setData(
       'text/html',
-      `<pre>data-plite-fragment="${fragment}" data-plite-fragment-format="x-plite-fragment"</pre>`
+      `<pre>data-editor-fragment="${fragment}" data-editor-fragment-format="x-editor-fragment"</pre>`
     );
 
     expect(
@@ -785,11 +769,11 @@ describe('projected editable commands', () => {
 
   it('deletes a projected selection across split-schema main and named roots atomically', () => {
     const runtime = createEditor({
-      extensions: [
+      plugins: [
         history(),
         dom(),
-        splitSchemaDocumentExtension,
-        splitSchemaSyncedBlockExtension,
+        splitSchemaDocumentPlugin,
+        splitSchemaSyncedBlockPlugin,
       ],
       initialValue: {
         children: [
@@ -1013,8 +997,8 @@ describe('projected editable commands', () => {
   it('delete-fragment honors an explicit model selection target', () => {
     const seenDirections: Array<string | undefined> = [];
     const runtime = createEditor({
-      extensions: [
-        defineExtension('projected-command-delete-fragment-handler', {
+      plugins: [
+        definePlugin('projected-command-delete-fragment-handler', {
           commands: ({ handle }) => [
             handle(editorCommands.deleteFragment, ({ input }) => {
               seenDirections.push(input.direction);
@@ -1245,7 +1229,7 @@ describe('projected editable commands', () => {
 
   it('insert-text over a whole text block with inline children preserves the block', () => {
     const runtime = createEditor({
-      extensions: [dom(), inlineLinkExtension],
+      plugins: [dom(), inlineLinkPlugin],
       initialValue: [
         {
           type: 'heading-one',
@@ -1298,7 +1282,7 @@ describe('projected editable commands', () => {
 
   it('insert-text over a whole structural block falls back to a paragraph', () => {
     const runtime = createEditor({
-      extensions: [structuralListExtension],
+      plugins: [structuralListPlugin],
       initialValue: [
         {
           type: 'bulleted-list',
@@ -1368,7 +1352,7 @@ describe('projected editable commands', () => {
 
   it('ownerless projected paste undo restores the transaction-start model selection', () => {
     const runtime = createEditor({
-      extensions: [history(), dom()],
+      plugins: [history(), dom()],
       initialValue: [paragraph('Before'), paragraph('After')],
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
@@ -1449,7 +1433,7 @@ describe('projected editable commands', () => {
       paragraph(`block-${index}`)
     );
     const runtime = createEditor({
-      extensions: [history(), dom()],
+      plugins: [history(), dom()],
       initialValue,
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
@@ -1469,12 +1453,12 @@ describe('projected editable commands', () => {
 
     const events: Array<{ id?: string | null }> = [];
     const target = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record: (event: { id?: string | null }) => void;
       };
     };
-    const previousProfiler = target.__PLITE_REACT_RENDER_PROFILER__;
-    target.__PLITE_REACT_RENDER_PROFILER__ = {
+    const previousProfiler = target.__EDITOR_REACT_RENDER_PROFILER__;
+    target.__EDITOR_REACT_RENDER_PROFILER__ = {
       record(event) {
         events.push(event);
       },
@@ -1485,7 +1469,7 @@ describe('projected editable commands', () => {
         true
       );
     } finally {
-      target.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      target.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
     expect(events.map((event) => event.id)).not.toContain(
@@ -1651,7 +1635,9 @@ describe('projected editable commands', () => {
     writeForwardProjectedSelection(editor, graph);
     data.setData(
       'text/html',
-      `<span data-plite-fragment="${encodePliteFragment([paragraph('Z')])}" data-plite-fragment-format="x-other-plite-fragment"></span>`
+      `<span data-editor-fragment="${encodePliteFragment([
+        paragraph('Z'),
+      ])}" data-editor-fragment-format="x-other-plite-fragment"></span>`
     );
 
     const beforeValue = structuredClone(editor.read((state) => state.value()));
@@ -1679,7 +1665,7 @@ describe('projected editable commands', () => {
       });
     });
     writeForwardProjectedSelection(editor, graph);
-    data.setData('application/x-plite-fragment', encodePliteFragment([]));
+    data.setData('application/x-editor-fragment', encodePliteFragment([]));
 
     expect(
       applyEditableCommand({

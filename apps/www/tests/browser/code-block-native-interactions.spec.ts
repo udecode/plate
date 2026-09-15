@@ -1,8 +1,8 @@
 import { writeFileSync } from 'node:fs';
 
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 import type { Value } from 'platejs';
@@ -15,12 +15,12 @@ for (const [lines, width] of [
     page,
   }, info) => {
     test.setTimeout(120_000);
-    const errors = recordPliteBrowserRuntimeErrors(page);
+    const errors = recordBrowserRuntimeErrors(page);
     try {
       await page.setViewportSize({ width, height: 844 });
       await page.goto('/blocks/code-block-huge-demo', { waitUntil: 'commit' });
-      const root = page.locator('.plite-editor');
-      const editor = createPliteBrowserEditorHarness(
+      const root = page.locator('.editor-editor');
+      const editor = createBrowserEditorHarness(
         page,
         'code-block:native-continuous',
         root
@@ -185,8 +185,8 @@ for (const width of [1280, 390]) {
   }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/blocks/code-block-demo', { waitUntil: 'commit' });
-    const root = page.locator('.plite-editor');
-    const editor = createPliteBrowserEditorHarness(
+    const root = page.locator('.editor-editor');
+    const editor = createBrowserEditorHarness(
       page,
       'code-block:syntax-move',
       root
@@ -199,15 +199,15 @@ for (const width of [1280, 390]) {
     await editor.focus();
     await page.keyboard.press('Enter');
     const paragraph = root.locator(
-      '[data-plite-node="element"][data-plite-path="2"]'
+      '[data-editor-node="element"][data-editor-path="2"]'
     );
     await expect(paragraph).toContainText('Showcase your code');
     await expect(paragraph.locator('[data-code-block-syntax]')).toHaveCount(0);
     await expect(code).toHaveText(codeText!);
     await expect(code.locator('.hljs-keyword').first()).toHaveText('async');
     await expect(
-      code.locator('xpath=ancestor::*[@data-plite-path][1]')
-    ).toHaveAttribute('data-plite-path', '3');
+      code.locator('xpath=ancestor::*[@data-editor-path][1]')
+    ).toHaveAttribute('data-editor-path', '3');
   });
 }
 
@@ -216,8 +216,8 @@ test('native huge code keeps hover and adjacent typing bounded', async ({
 }, testInfo) => {
   await page.setViewportSize({ width: 2005, height: 1169 });
   await page.goto('/blocks/code-block-huge-demo', { waitUntil: 'commit' });
-  const editor = page.locator('.plite-editor');
-  const harness = createPliteBrowserEditorHarness(
+  const editor = page.locator('.editor-editor');
+  const harness = createBrowserEditorHarness(
     page,
     'code-block:native-interactions',
     editor
@@ -270,7 +270,7 @@ test('native huge code keeps hover and adjacent typing bounded', async ({
 
   for (const path of ['1', '3']) {
     const paragraph = editor.locator(
-      `[data-plite-node="element"][data-plite-path="${path}"]`
+      `[data-editor-node="element"][data-editor-path="${path}"]`
     );
     const before = await paragraph.textContent();
     await paragraph.scrollIntoViewIfNeeded();

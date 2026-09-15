@@ -1,5 +1,5 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import { TextApi } from 'plitejs';
+import { getEditorRuntimeOwner, TextApi } from 'plitejs';
 import type { DOMRange } from 'plitejs/dom';
 import { createRef, StrictMode, useLayoutEffect } from 'react';
 
@@ -8,9 +8,10 @@ import {
   createEditor,
   Editable,
   type EditableProps,
-  Plite,
+  EditorRoot,
 } from '../../src/react';
 import { defaultScrollSelectionIntoView } from '../../src/react/components/editable';
+import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   createPliteInactiveSelectionStore,
   registerPliteInactiveSelectionFocus,
@@ -23,14 +24,14 @@ describe('plite-react editable behavior', () => {
     const editor = createEditor({ initialValue });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
 
-    expect(
-      rendered.container.querySelector('[data-plite-editor]')
-    ).toHaveTextContent('test');
+    expect(rendered.container.querySelector('[data-editor]')).toHaveTextContent(
+      'test'
+    );
   });
 
   test('forwards ref to the editable DOM root', () => {
@@ -39,12 +40,12 @@ describe('plite-react editable behavior', () => {
     const editableRef = createRef<HTMLDivElement>();
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable ref={editableRef} />
-      </Plite>
+      </EditorRoot>
     );
 
-    const editable = rendered.container.querySelector('[data-plite-editor]');
+    const editable = rendered.container.querySelector('[data-editor]');
 
     expect(editableRef.current).toBe(editable);
     expect(editableRef.current).toHaveAttribute('contenteditable', 'true');
@@ -68,10 +69,10 @@ describe('plite-react editable behavior', () => {
     }
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable ref={editableRef} autoFocus />
         <FirstKeyProbe />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(document.activeElement).toBe(editableRef.current);
@@ -90,9 +91,9 @@ describe('plite-react editable behavior', () => {
     const readOnlyRef = createRef<HTMLDivElement>();
     const remountedRef = createRef<HTMLDivElement>();
     const rendered = render(
-      <Plite editor={firstEditor}>
+      <EditorRoot editor={firstEditor}>
         <Editable ref={firstRef} autoFocus />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(document.activeElement).toBe(firstRef.current);
@@ -103,26 +104,26 @@ describe('plite-react editable behavior', () => {
     expect(firstEditor.read.selection()).toBeNull();
     expect(() =>
       rendered.rerender(
-        <Plite editor={firstEditor} readOnly>
+        <EditorRoot editor={firstEditor} readOnly>
           <Editable ref={firstRef} autoFocus />
-        </Plite>
+        </EditorRoot>
       )
     ).not.toThrow();
 
     expect(() =>
       rendered.rerender(
-        <Plite key="read-only" editor={readOnlyEditor} readOnly>
+        <EditorRoot key="read-only" editor={readOnlyEditor} readOnly>
           <Editable ref={readOnlyRef} autoFocus />
-        </Plite>
+        </EditorRoot>
       )
     ).not.toThrow();
     expect(document.activeElement).toBe(readOnlyRef.current);
     expect(readOnlyEditor.read.selection()).toBeNull();
 
     rendered.rerender(
-      <Plite key="remounted" editor={remountedEditor}>
+      <EditorRoot key="remounted" editor={remountedEditor}>
         <Editable ref={remountedRef} autoFocus />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(document.activeElement).toBe(remountedRef.current);
@@ -136,12 +137,12 @@ describe('plite-react editable behavior', () => {
     const editor = createEditor({ initialValue });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
 
-    const editable = rendered.container.querySelector('[data-plite-editor]');
+    const editable = rendered.container.querySelector('[data-editor]');
 
     expect(editable).toBeInstanceOf(HTMLElement);
     expect((editable as HTMLElement).style.position).toBe('relative');
@@ -156,12 +157,12 @@ describe('plite-react editable behavior', () => {
     const editor = createEditor({ initialValue });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable style={{ zIndex: 2 }} />
-      </Plite>
+      </EditorRoot>
     );
 
-    const editable = rendered.container.querySelector('[data-plite-editor]');
+    const editable = rendered.container.querySelector('[data-editor]');
 
     expect(editable).toBeInstanceOf(HTMLElement);
     expect((editable as HTMLElement).style.zIndex).toBe('2');
@@ -172,12 +173,12 @@ describe('plite-react editable behavior', () => {
     const editor = createEditor({ initialValue });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable disableDefaultStyles />
-      </Plite>
+      </EditorRoot>
     );
 
-    const editable = rendered.container.querySelector('[data-plite-editor]');
+    const editable = rendered.container.querySelector('[data-editor]');
 
     expect(editable).toBeInstanceOf(HTMLElement);
     expect((editable as HTMLElement).style.position).toBe('');
@@ -192,15 +193,15 @@ describe('plite-react editable behavior', () => {
     });
     const rendered = render(
       <>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
-        </Plite>
-        <div data-plite-keep-selection-visible>
+        </EditorRoot>
+        <div data-editor-keep-selection-visible>
           <button type="button">Keep selection</button>
         </div>
       </>
     );
-    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const editable = rendered.container.querySelector('[data-editor]')!;
     const control = rendered.getByRole('button', { name: 'Keep selection' });
 
     await act(async () => {
@@ -213,7 +214,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toBeNull();
 
     await act(async () => {
@@ -222,7 +223,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toHaveTextContent('es');
 
     await act(async () => {
@@ -235,7 +236,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toHaveTextContent('t');
   });
 
@@ -246,15 +247,15 @@ describe('plite-react editable behavior', () => {
     });
     const rendered = render(
       <StrictMode>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
-        </Plite>
-        <button data-plite-keep-selection-visible type="button">
+        </EditorRoot>
+        <button data-editor-keep-selection-visible type="button">
           Keep selection
         </button>
       </StrictMode>
     );
-    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const editable = rendered.container.querySelector('[data-editor]')!;
     const control = rendered.getByRole('button', { name: 'Keep selection' });
 
     await act(async () => {
@@ -268,7 +269,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toBeNull();
 
     await act(async () => {
@@ -276,7 +277,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toHaveTextContent('es');
   });
 
@@ -286,18 +287,18 @@ describe('plite-react editable behavior', () => {
     });
     const rendered = render(
       <>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
-        </Plite>
+        </EditorRoot>
         <div data-testid="shadow-host" />
       </>
     );
-    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const editable = rendered.container.querySelector('[data-editor]')!;
     const host = rendered.getByTestId('shadow-host');
     const shadowRoot = host.attachShadow({ mode: 'open' });
     const control = document.createElement('button');
 
-    control.setAttribute('data-plite-keep-selection-visible', '');
+    control.setAttribute('data-editor-keep-selection-visible', '');
     control.textContent = 'Keep selection';
     shadowRoot.append(control);
 
@@ -313,7 +314,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toHaveTextContent('es');
   });
 
@@ -323,16 +324,16 @@ describe('plite-react editable behavior', () => {
     });
     const rendered = render(
       <>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
-        </Plite>
-        <button data-plite-keep-selection-visible type="button">
+        </EditorRoot>
+        <button data-editor-keep-selection-visible type="button">
           Keep selection
         </button>
         <button type="button">Clear selection</button>
       </>
     );
-    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const editable = rendered.container.querySelector('[data-editor]')!;
     const keepControl = rendered.getByRole('button', {
       name: 'Keep selection',
     });
@@ -353,7 +354,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toBeNull();
 
     await act(async () => {
@@ -364,7 +365,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toBeNull();
   });
 
@@ -374,16 +375,16 @@ describe('plite-react editable behavior', () => {
     });
     const rendered = render(
       <>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
-        </Plite>
-        <button data-plite-keep-selection-visible type="button">
+        </EditorRoot>
+        <button data-editor-keep-selection-visible type="button">
           Keep selection
         </button>
         <button type="button">Clear selection</button>
       </>
     );
-    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const editable = rendered.container.querySelector('[data-editor]')!;
     const keepControl = rendered.getByRole('button', {
       name: 'Keep selection',
     });
@@ -403,7 +404,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).not.toBeNull();
 
     await act(async () => {
@@ -411,7 +412,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toBeNull();
   });
 
@@ -420,14 +421,14 @@ describe('plite-react editable behavior', () => {
       initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
     });
     const rendered = render(
-      <div data-plite-keep-selection-visible>
-        <Plite editor={editor}>
+      <div data-editor-keep-selection-visible>
+        <EditorRoot editor={editor}>
           <Editable />
-        </Plite>
+        </EditorRoot>
         <button type="button">Keep selection</button>
       </div>
     );
-    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const editable = rendered.container.querySelector('[data-editor]')!;
     const control = rendered.getByRole('button', { name: 'Keep selection' });
 
     await act(async () => {
@@ -442,7 +443,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).not.toBeNull();
 
     await act(async () => {
@@ -450,7 +451,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toBeNull();
   });
 
@@ -460,15 +461,15 @@ describe('plite-react editable behavior', () => {
     });
     const rendered = render(
       <>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
-        </Plite>
-        <button data-plite-keep-selection-visible type="button">
+        </EditorRoot>
+        <button data-editor-keep-selection-visible type="button">
           Keep selection
         </button>
       </>
     );
-    const editable = rendered.container.querySelector('[data-plite-editor]')!;
+    const editable = rendered.container.querySelector('[data-editor]')!;
     const control = rendered.getByRole('button', { name: 'Keep selection' });
 
     await act(async () => {
@@ -483,7 +484,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).not.toBeNull();
 
     await act(async () => {
@@ -491,7 +492,7 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      rendered.container.querySelector('[data-plite-inactive-selection]')
+      rendered.container.querySelector('[data-editor-inactive-selection]')
     ).toBeNull();
   });
 
@@ -538,7 +539,7 @@ describe('plite-react editable behavior', () => {
       const unregister = registerPliteInactiveSelectionFocus(document, store);
       const host = document.createElement('div');
       host.innerHTML =
-        '<div contenteditable="true"><div contenteditable="false"><button data-target="embedded">Control</button><div contenteditable="true"><span data-target="nested">Nested</span></div></div></div><div data-plite-keep-selection-visible><button data-target="marked">Marked</button></div>';
+        '<div contenteditable="true"><div contenteditable="false"><button data-target="embedded">Control</button><div contenteditable="true"><span data-target="nested">Nested</span></div></div></div><div data-editor-keep-selection-visible><button data-target="marked">Marked</button></div>';
       document.body.append(host);
       const targetElement = host.querySelector(`[data-target="${target}"]`)!;
       let visibleAtMouseDown: boolean | undefined;
@@ -652,15 +653,15 @@ describe('plite-react editable behavior', () => {
       });
       const rendered = render(
         <>
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
-          </Plite>
-          <button data-plite-keep-selection-visible type="button">
+          </EditorRoot>
+          <button data-editor-keep-selection-visible type="button">
             Keep selection
           </button>
         </>
       );
-      const editable = rendered.container.querySelector('[data-plite-editor]')!;
+      const editable = rendered.container.querySelector('[data-editor]')!;
       const control = rendered.getByRole('button', {
         name: 'Keep selection',
       });
@@ -676,18 +677,18 @@ describe('plite-react editable behavior', () => {
       await waitFor(() =>
         expect(
           rendered.container.querySelector(
-            '[data-plite-inactive-selection-caret]'
+            '[data-editor-inactive-selection-caret]'
           )
         ).toBeTruthy()
       );
       const caret = rendered.container.querySelector<HTMLElement>(
-        '[data-plite-inactive-selection-caret]'
+        '[data-editor-inactive-selection-caret]'
       )!;
 
       expect(caret).toHaveAttribute('aria-hidden', 'true');
       expect(caret).toHaveStyle({ left: '30px', top: '40px' });
       expect(
-        rendered.container.querySelector('[data-plite-inactive-selection]')
+        rendered.container.querySelector('[data-editor-inactive-selection]')
       ).toBeNull();
     } finally {
       if (previousBoundingRect) {
@@ -721,23 +722,23 @@ describe('plite-react editable behavior', () => {
     const rendered = render(
       <>
         <div data-testid="first-editor">
-          <Plite editor={firstEditor}>
+          <EditorRoot editor={firstEditor}>
             <Editable />
-          </Plite>
+          </EditorRoot>
         </div>
         <div data-testid="second-editor">
-          <Plite editor={secondEditor}>
+          <EditorRoot editor={secondEditor}>
             <Editable />
-          </Plite>
+          </EditorRoot>
         </div>
-        <button data-plite-keep-selection-visible type="button">
+        <button data-editor-keep-selection-visible type="button">
           Keep selection
         </button>
       </>
     );
     const firstRoot = rendered.getByTestId('first-editor');
     const secondRoot = rendered.getByTestId('second-editor');
-    const firstEditable = firstRoot.querySelector('[data-plite-editor]')!;
+    const firstEditable = firstRoot.querySelector('[data-editor]')!;
     const control = rendered.getByRole('button', { name: 'Keep selection' });
 
     await act(async () => {
@@ -758,10 +759,10 @@ describe('plite-react editable behavior', () => {
     });
 
     expect(
-      firstRoot.querySelector('[data-plite-inactive-selection]')
+      firstRoot.querySelector('[data-editor-inactive-selection]')
     ).toHaveTextContent('fir');
     expect(
-      secondRoot.querySelector('[data-plite-inactive-selection]')
+      secondRoot.querySelector('[data-editor-inactive-selection]')
     ).toBeNull();
   });
 
@@ -775,18 +776,22 @@ describe('plite-react editable behavior', () => {
     const onSelectionChange = vi.fn();
     const onValueChange = vi.fn();
 
+    let rendered!: ReturnType<typeof render>;
     act(() => {
-      render(
-        <Plite
+      rendered = render(
+        <EditorRoot
           editor={editor}
           onCommit={onCommit}
           onSelectionChange={onSelectionChange}
           onValueChange={onValueChange}
         >
           <Editable />
-        </Plite>
+        </EditorRoot>
       );
     });
+    const mountedEditor = findMountedEditableDOMRuntime(
+      rendered.container.querySelector('[data-editor]')!
+    )!.editor;
 
     await act(async () => {
       editor.update((tx) => {
@@ -802,13 +807,13 @@ describe('plite-react editable behavior', () => {
 
     expect(onCommit).toHaveBeenCalledWith(
       expect.objectContaining({
-        editor,
+        editor: mountedEditor,
         snapshot: expect.objectContaining({ selection: expectedSelection }),
       })
     );
     expect(onSelectionChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        editor,
+        editor: mountedEditor,
         selection: expectedSelection,
         snapshot: expect.objectContaining({ selection: expectedSelection }),
       })
@@ -823,18 +828,22 @@ describe('plite-react editable behavior', () => {
     const onSelectionChange = vi.fn();
     const onValueChange = vi.fn();
 
+    let rendered!: ReturnType<typeof render>;
     act(() => {
-      render(
-        <Plite
+      rendered = render(
+        <EditorRoot
           editor={editor}
           onCommit={onCommit}
           onSelectionChange={onSelectionChange}
           onValueChange={onValueChange}
         >
           <Editable />
-        </Plite>
+        </EditorRoot>
       );
     });
+    const mountedEditor = findMountedEditableDOMRuntime(
+      rendered.container.querySelector('[data-editor]')!
+    )!.editor;
 
     await act(async () => {
       editor.update((tx) => {
@@ -848,12 +857,12 @@ describe('plite-react editable behavior', () => {
 
     expect(onCommit).toHaveBeenCalledWith(
       expect.objectContaining({
-        editor,
+        editor: mountedEditor,
         snapshot: expect.objectContaining({ children: expectedValue }),
       })
     );
     expect(onValueChange).toHaveBeenCalledWith(
-      expect.objectContaining({ editor, value: expectedValue })
+      expect.objectContaining({ editor: mountedEditor, value: expectedValue })
     );
     expect(onSelectionChange).not.toHaveBeenCalled();
   });
@@ -866,13 +875,13 @@ describe('plite-react editable behavior', () => {
 
     act(() => {
       render(
-        <Plite
+        <EditorRoot
           editor={editor}
           onCommit={onCommit}
           onValueChange={onValueChange}
         >
           <Editable />
-        </Plite>
+        </EditorRoot>
       );
     });
 
@@ -914,14 +923,15 @@ describe('plite-react editable behavior', () => {
     let rendered!: ReturnType<typeof render>;
     act(() => {
       rendered = render(
-        <Plite editor={editor} onCommit={onCommit}>
+        <EditorRoot editor={editor} onCommit={onCommit}>
           <Editable onKeyDown={onKeyDown} />
-        </Plite>
+        </EditorRoot>
       );
     });
 
-    const editable = rendered.container.querySelector('[data-plite-editor]');
+    const editable = rendered.container.querySelector('[data-editor]');
     expect(editable).toBeTruthy();
+    const mountedEditor = findMountedEditableDOMRuntime(editable!)!.editor;
     Object.defineProperty(editable, 'isContentEditable', {
       configurable: true,
       value: true,
@@ -933,11 +943,11 @@ describe('plite-react editable behavior', () => {
 
     expect(onKeyDown).toHaveBeenCalledWith(
       expect.objectContaining({ key: 'x' }),
-      { editor }
+      { editor: mountedEditor }
     );
     expect(onCommit).toHaveBeenCalledWith(
       expect.objectContaining({
-        editor,
+        editor: mountedEditor,
         snapshot: expect.objectContaining({
           children: [{ type: 'block', children: [{ text: 'testx' }] }],
         }),
@@ -953,7 +963,7 @@ describe('plite-react editable behavior', () => {
         return undefined;
       }
 
-      expect(context.editor).toBe(editor);
+      expect(getEditorRuntimeOwner(context.editor)).toBe(editor);
       expect(context.inputType).toBe('formatBold');
       expect(context.native).toBe(false);
       return true;
@@ -962,13 +972,13 @@ describe('plite-react editable behavior', () => {
     let rendered!: ReturnType<typeof render>;
     act(() => {
       rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable onDOMBeforeInput={onDOMBeforeInput} />
-        </Plite>
+        </EditorRoot>
       );
     });
 
-    const editable = rendered.container.querySelector('[data-plite-editor]');
+    const editable = rendered.container.querySelector('[data-editor]');
     expect(editable).toBeTruthy();
     Object.defineProperty(editable, 'isContentEditable', {
       configurable: true,
@@ -998,16 +1008,16 @@ describe('plite-react editable behavior', () => {
     let rendered!: ReturnType<typeof render>;
     act(() => {
       rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable
             onBeforeInput={onBeforeInput}
             onDOMBeforeInput={onDOMBeforeInput}
           />
-        </Plite>
+        </EditorRoot>
       );
     });
 
-    const editable = rendered.container.querySelector('[data-plite-editor]');
+    const editable = rendered.container.querySelector('[data-editor]');
     expect(editable).toBeTruthy();
     Object.defineProperty(editable, 'isContentEditable', {
       configurable: true,

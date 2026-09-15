@@ -20,6 +20,7 @@ import {
   orderScopes,
   recordReview,
   records,
+  reviewQueue,
   searchResearch,
   validate,
 } from './review-ledger.mjs';
@@ -59,6 +60,8 @@ function fixture(t) {
     consumers: ['docs/evidence.md'],
     proof: ['docs/evidence.md'],
     plans: [],
+    inspection: 'Fixture owner and consumer inspected.',
+    gaps: 'No product behavior is exercised by this fixture.',
   }));
   const index = {
     version: 1,
@@ -79,7 +82,7 @@ function fixture(t) {
 
 function completed(root, index, overrides = {}) {
   return {
-    ...draftReview(root, index, 'comments'),
+    ...draftReview(root, index, overrides.scope ?? 'comments'),
     id: '2026-09-11-comments-first',
     date: '2026-09-11',
     model: 'fixture-model-a',
@@ -195,13 +198,81 @@ test('source changes invalidate only affected observations and stale drafts cann
   assert.throws(() => recordReview(root, index, record), /Source changed/);
 });
 
-test('draft records transitive dependency source and changing it invalidates reuse', (t) => {
+test('historical references survive source deletion while new references must exist', (t) => {
+  const { root, put, index } = fixture(t);
+  const evidence = 'docs/retired-proof.md';
+  put(evidence, 'Observed owner before adoption.');
+  index.scopes[0].evidenceInputs = [evidence];
+  const record = completed(root, index, { references: [evidence] });
+  const path = recordReview(root, index, record);
+  const original = readFileSync(join(root, path), 'utf-8');
+  rmSync(join(root, evidence));
+  index.scopes[0].evidenceInputs = [];
+  put('docs/research/review-index.json', JSON.stringify(index));
+
+  main(root, ['refresh']);
+  main(root, ['render']);
+  assert.equal(main(root, ['check']).records, 1);
+  assert.equal(
+    main(root, ['lookup', 'comments'])[0].history[0].freshness,
+    'stale'
+  );
+  assert.equal(readFileSync(join(root, path), 'utf-8'), original);
+  assert.throws(
+    () =>
+      recordReview(
+        root,
+        index,
+        completed(root, index, {
+          id: '2026-09-11-comments-second',
+          references: [evidence],
+          previous: record.id,
+          relation: 'reaffirms',
+        })
+      ),
+    /Missing evidence/
+  );
+});
+
+test('queue prerequisites do not capture unrelated source; explicit directory evidence detects additions', (t) => {
   const { root, put, index } = fixture(t);
   index.scopes[0].dependsOn = ['link'];
   const draft = completed(root, index);
-  assert.ok(draft.source.features['platejs/link']);
+  assert.ok(!draft.source.features['platejs/link']);
   put('packages/platejs/src/features/link/new.ts', 'export const added = 1;');
-  assert.equal(freshness(root, draft, discover(root, index)), 'stale');
+  assert.equal(freshness(root, draft, discover(root, index)), 'matching');
+  index.scopes[0].evidenceInputs = ['packages/platejs/src/features/link'];
+  const compared = completed(root, index);
+  assert.ok(compared.source.directories['packages/platejs/src/features/link']);
+  put(
+    'packages/platejs/src/features/link/another.ts',
+    'export const another = 1;'
+  );
+  assert.equal(freshness(root, compared, discover(root, index)), 'stale');
+});
+
+test('declared proof and runner inputs are required and independently invalidate evidence', (t) => {
+  const { root, put, index } = fixture(t);
+  put('docs/proof.test.ts', 'original proof');
+  put('docs/runner.json', 'original runner');
+  index.scopes[0].proof = ['docs/proof.test.ts'];
+  index.scopes[0].evidenceInputs = ['docs/runner.json'];
+  const record = completed(root, index);
+  assert.equal(
+    record.source.files['docs/proof.test.ts'],
+    digest('original proof')
+  );
+  const incomplete = structuredClone(record);
+  delete incomplete.source.files['docs/proof.test.ts'];
+  assert.throws(
+    () => recordReview(root, index, incomplete),
+    /capture declared evidence/
+  );
+  put('docs/proof.test.ts', 'changed assertion');
+  assert.equal(freshness(root, record, discover(root, index)), 'stale');
+  put('docs/proof.test.ts', 'original proof');
+  put('docs/runner.json', 'changed runner');
+  assert.equal(freshness(root, record, discover(root, index)), 'stale');
 });
 
 test('unknown historical provenance stays unknown and an old import does not replace a completed review', (t) => {
@@ -296,6 +367,139 @@ test('AI stays last despite a higher score; missing dependencies and cycles fail
   );
 });
 
+test('grouped reviews preserve external prerequisites, internal order and AI-last', (t) => {
+  const { index } = fixture(t);
+  const scope = (id, dependsOn = []) => ({
+    ...index.scopes[0],
+    id,
+    dependsOn,
+  });
+  index.scopes[0].dependsOn = ['base'];
+  index.scopes[1].dependsOn = ['comments'];
+  index.scopes.push(scope('base'), scope('consumer', ['link']), {
+    ...scope('ai'),
+    last: true,
+    opportunity: { score: 10 },
+  });
+  index.reviewGroups = [
+    {
+      id: 'core',
+      title: 'Core',
+      scopes: ['comments', 'link'],
+      reason: 'Synthetic shared architecture.',
+    },
+  ];
+  const queue = reviewQueue(index);
+  assert.deepEqual(
+    queue.map((unit) => unit.id),
+    ['base', 'core', 'consumer', 'ai']
+  );
+  assert.deepEqual(queue[1].dependsOn, ['base']);
+  assert.deepEqual(queue[2].dependsOn, ['core']);
+  assert.deepEqual(index.scopes[1].dependsOn, ['comments']);
+  assert.equal(queue[1].pending, 2);
+});
+
+test('group lookup and partial completion retain individual records, proof and feature routes', (t) => {
+  const { root, put, index } = fixture(t);
+  const first = completed(root, index);
+  const recordPath = recordReview(root, index, first);
+  const original = readFileSync(join(root, recordPath), 'utf-8');
+  const features = structuredClone(index.features);
+  index.scopes[1].title = 'Link comments in text';
+  index.reviewGroups = [
+    {
+      id: 'core',
+      title: 'Core',
+      scopes: ['comments', 'link'],
+      reason: 'Synthetic shared architecture.',
+    },
+  ];
+  put('docs/research/review-index.json', JSON.stringify(index));
+
+  const [unit] = main(root, ['queue']);
+  assert.equal(unit.reviewed, 1);
+  assert.equal(unit.pending, 1);
+  const lookup = main(root, ['lookup', 'core']);
+  assert.deepEqual(
+    lookup.map((scope) => scope.id),
+    ['comments', 'link']
+  );
+  assert.equal(lookup[0].history[0].id, first.id);
+  assert.equal(lookup[1].history.length, 0);
+  assert.equal(lookup[1].review, 'unassessed');
+  assert.equal(lookup[1].proofState, 'not-replayed');
+  assert.equal(lookup[1].adoption, 'not-assessed');
+  assert.equal(lookup[1].reviewGroup.id, 'core');
+  assert.deepEqual(
+    main(root, ['lookup', 'comments']).map((scope) => scope.id),
+    ['comments']
+  );
+  assert.deepEqual(
+    main(root, ['lookup', 'platejs/link']).map((scope) => scope.id),
+    ['link']
+  );
+  assert.equal(main(root, ['draft', 'link']).previous, null);
+  assert.deepEqual(index.features, features);
+  assert.equal(readFileSync(join(root, recordPath), 'utf-8'), original);
+
+  main(root, ['render']);
+  const rendered = readFileSync(
+    join(root, 'docs/research/reviews.md'),
+    'utf-8'
+  );
+  assert.match(
+    rendered,
+    /1 pending reviews across 1 pending questions; 1 reviews in total/
+  );
+  assert.match(
+    rendered,
+    /Review: unassessed\. Adoption: not-assessed\. Proof: not-replayed/
+  );
+  assert.equal(main(root, ['check']).records, 1);
+
+  recordReview(
+    root,
+    index,
+    completed(root, index, {
+      scope: 'link',
+      id: '2026-09-11-link-first',
+    })
+  );
+  assert.equal(reviewQueue(index)[0].pending, 0);
+  assert.equal(reviewQueue(index)[0].reviewed, 2);
+});
+
+test('invalid groups and dependency cycles introduced by grouping are rejected', (t) => {
+  const { index } = fixture(t);
+  const group = {
+    id: 'core',
+    title: 'Core',
+    scopes: ['comments', 'link'],
+    reason: 'Shared owner.',
+  };
+  for (const groups of [
+    [{ ...group, id: 'comments' }],
+    [group, group],
+    [{ ...group, scopes: ['comments', 'missing'] }],
+    [{ ...group, scopes: ['comments', 'comments'] }],
+    [{ ...group, scopes: ['comments'] }],
+    [group, { ...group, id: 'other' }],
+  ]) {
+    assert.throws(
+      () => reviewQueue({ ...index, reviewGroups: groups }),
+      /review group/
+    );
+  }
+  index.scopes.push({ ...index.scopes[0], id: 'bridge', dependsOn: ['link'] });
+  index.scopes[0].dependsOn = ['bridge'];
+  assert.doesNotThrow(() => orderScopes(index.scopes));
+  assert.throws(
+    () => reviewQueue({ ...index, reviewGroups: [group] }),
+    /cycle or missing/
+  );
+});
+
 test('cross-run lookup preserves rejected leads, historical headers, exact status and malformed-row warnings', (t) => {
   const { root, put } = fixture(t);
   put(
@@ -328,7 +532,7 @@ test('cross-run lookup preserves rejected leads, historical headers, exact statu
   assert.equal(result.warnings[0].line, 3);
 });
 
-test('capabilities declared together still have individual inventory members and consumer evidence', (t) => {
+test('single- and double-quoted capabilities retain individual inventory and consumer evidence', (t) => {
   const { root, put, index } = fixture(t);
   put(
     'packages/platejs/src/utils/plate-keys.ts',
@@ -351,6 +555,14 @@ test('capabilities declared together still have individual inventory members and
   );
   put(
     'packages/platejs/src/utils/plate-keys.ts',
+    'export const PLUGINS = {\n  bold: "bold",\n  italic: "italic",\n} as const;\n'
+  );
+  assert.deepEqual(
+    discover(root, index).map(({ id, paths }) => ({ id, paths })),
+    found.map(({ id, paths }) => ({ id, paths }))
+  );
+  put(
+    'packages/platejs/src/utils/plate-keys.ts',
     'export const PLUGINS = otherCatalog;'
   );
   assert.throws(() => discover(root, index), /catalog changed shape/);
@@ -365,7 +577,10 @@ test('a proposed scope records comparator evidence without inventing current fea
     dependsOn: ['comments'],
   });
   const draft = draftReview(root, index, 'proposal');
-  assert.ok(draft.source.features['platejs/comments']);
+  assert.ok(
+    draft.source.files['packages/platejs/src/features/comments/owner.ts']
+  );
+  assert.deepEqual(draft.source.features, {});
   assert.ok(!index.features.some((feature) => feature.scope === 'proposal'));
   const record = {
     ...completed(root, index),
@@ -385,6 +600,83 @@ test('a proposed scope records comparator evidence without inventing current fea
   };
   recordReview(root, index, record);
   assert.equal(index.scopes.at(-1).review, 'reviewed');
+});
+
+test('actual example keys and loader targets are reconciled instead of inferred from labels', (t) => {
+  const { root, put, index } = fixture(t);
+  const directory = 'apps/www/src/app/(app)/examples/plite';
+  index.inventory.roots.push(directory, 'apps/www/tests/browser');
+  put(
+    `${directory}/plite-example-registry.ts`,
+    "export const EXAMPLE_NAMES_AND_PATHS = [\n  ['Plain Text', 'plaintext'],\n] as const;\n"
+  );
+  put(
+    `${directory}/plite-example-loaders.tsx`,
+    "export const pliteExampleComponents = {\n  plaintext: createPliteExampleLoader(() => import('./_examples/plaintext')),\n};\n"
+  );
+  put(
+    `${directory}/_examples/plaintext.tsx`,
+    'export default function Example() {}'
+  );
+  put('apps/www/tests/browser/input.spec.ts', 'native input proof');
+  const found = discover(root, index);
+  assert.ok(
+    found
+      .find((item) => item.id === 'example/plite/plaintext')
+      .paths.includes(`${directory}/_examples/plaintext.tsx`)
+  );
+  assert.ok(!found.some((item) => item.id === 'example/plite/plain-text'));
+  assert.ok(found.some((item) => item.id === 'browser/input'));
+  put(
+    `${directory}/plite-example-registry.ts`,
+    "export const EXAMPLE_NAMES_AND_PATHS = [\n  ['Plain Text', 'plain-text'],\n] as const;\n"
+  );
+  assert.throws(() => discover(root, index), /catalog and loaders disagree/);
+});
+
+test('snapshot refresh preserves history and related scopes provide context without adopting a verdict', (t) => {
+  const { root, put, index } = fixture(t);
+  const first = completed(root, index);
+  recordReview(root, index, first);
+  const original = readFileSync(
+    join(root, 'docs/research/review-records', `${first.id}.json`),
+    'utf-8'
+  );
+  index.scopes[1].relatedScopes = ['comments'];
+  put('docs/research/review-index.json', JSON.stringify(index));
+  main(root, ['refresh']);
+  const next = JSON.parse(
+    readFileSync(join(root, 'docs/research/review-index.json'), 'utf-8')
+  );
+  assert.match(next.inventory.snapshot.fingerprint, /^[a-f0-9]{64}$/);
+  assert.equal(next.inventory.snapshot.kind, 'working-tree');
+  assert.equal(
+    readFileSync(
+      join(root, 'docs/research/review-records', `${first.id}.json`),
+      'utf-8'
+    ),
+    original
+  );
+  const [link] = main(root, ['lookup', 'link']);
+  assert.equal(link.review, 'unassessed');
+  assert.equal(link.observation.inventoryStatus, 'matching');
+  assert.equal(link.related[0].history[0].id, first.id);
+  assert.equal(draftReview(root, next, 'link').previous, null);
+  main(root, ['render']);
+  assert.equal(main(root, ['check']).records, 1);
+  put('packages/platejs/src/features/table/owner.ts', 'new feature');
+  const [unrelated] = main(root, ['lookup', 'link']);
+  assert.equal(unrelated.observation.status, 'matching');
+  assert.equal(unrelated.observation.inventoryStatus, 'stale');
+});
+
+test('a missing proof owner requires an explicit gap without inventing a test', (t) => {
+  const { root, index } = fixture(t);
+  index.scopes[0].proof = [];
+  index.scopes[0].gaps = '';
+  assert.throws(() => validate(root, index), /Missing proof gap/);
+  index.scopes[0].gaps = 'No relevant behavior proof located.';
+  assert.doesNotThrow(() => validate(root, index));
 });
 
 test('generated declarations and proof scratch do not change the source inventory', (t) => {

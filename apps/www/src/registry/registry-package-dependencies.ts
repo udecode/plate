@@ -5,6 +5,7 @@ export const EDITOR_AI_PACKAGE_ENTRYPOINTS = [
   'platejs',
   'platejs/ai',
   'platejs/ai/react',
+  'platejs/authored',
   'platejs/callout',
   'platejs/callout/react',
   'platejs/code-drawing',
@@ -17,7 +18,7 @@ export const EDITOR_AI_PACKAGE_ENTRYPOINTS = [
   'platejs/details',
   'platejs/details/react',
   'platejs/dnd/react',
-  'platejs/docx',
+  'platejs/docx/paste',
   'platejs/emoji',
   'platejs/emoji/react',
   'platejs/excalidraw',
@@ -36,7 +37,6 @@ export const EDITOR_AI_PACKAGE_ENTRYPOINTS = [
   'platejs/resizable/react',
   'platejs/slash-command/react',
   'platejs/static',
-  'platejs/suggestion',
   'platejs/suggestion/react',
   'platejs/table',
   'platejs/table/react',
@@ -48,10 +48,8 @@ export const EDITOR_AI_OPTIONAL_PEER_NAMES = [
   '@ai-sdk/react',
   '@emoji-mart/data',
   '@excalidraw/excalidraw',
-  '@tanstack/react-virtual',
   '@types/papaparse',
   'ai',
-  'diff-match-patch-ts',
   'fastest-levenshtein',
   'flowchart.js',
   'juice',
@@ -76,9 +74,7 @@ export const EDITOR_BASIC_PACKAGE_ENTRYPOINTS = [
   'platejs/react',
 ] as const;
 
-export const EDITOR_BASIC_OPTIONAL_PEER_NAMES = [
-  '@tanstack/react-virtual',
-] as const;
+export const EDITOR_BASIC_OPTIONAL_PEER_NAMES = [] as const;
 
 const optionalPeerVersions: Record<string, string> = {
   ...platejsPackage.peerDependencies,

@@ -4,7 +4,10 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   createEditorView,
-  defineExtension,
+  defineEditorSchema,
+  definePlugin,
+  property,
+  schema,
   SelectionApi,
   type EditorCommit,
 } from 'plitejs';
@@ -27,7 +30,7 @@ const proposal = { intent: 'propose', projection: 'proposed' } as const;
 
 const setup = () => {
   const source = createEditor({
-    extensions: [authored({ authorId: 'alice', retainHistory: true })],
+    plugins: [authored({ authorId: 'alice', retainHistory: true })],
     initialValue: [paragraph('Base')],
   });
   return {
@@ -38,6 +41,100 @@ const setup = () => {
 };
 
 describe('native authored views', () => {
+  it('formats text after a proposed block insertion using projected paths', () => {
+    const source = createEditor({
+      plugins: [
+        defineEditorSchema('schema:authored-projected-marks', {
+          elements: { paragraph: { content: schema.content.text() } },
+          id: 'authored-projected-marks',
+          properties: [schema.textProperty('bold', property.boolean())],
+          root: schema.content.type('paragraph'),
+          unknown: 'reject',
+          version: 1,
+        }),
+        authored({ authorId: 'alice' }),
+      ],
+      initialValue: [paragraph('First.'), paragraph('Last.')],
+    });
+    const view = createEditorView(source, {
+      authored: { intent: 'propose', projection: 'markup' },
+    });
+    view.update.nodes.insert(paragraph('Inserted.'), { at: [1] });
+    view.update.selection.set({ path: [2, 0], offset: 5 });
+    view.update.marks.toggle('bold');
+    assert.deepEqual(view.read.marks(), { bold: true });
+    view.update.text.insert(' bold');
+    assert.deepEqual(view.read.children()[2], {
+      type: 'paragraph',
+      children: [{ text: 'Last.' }, { text: ' bold', bold: true }],
+    });
+
+    view.update.selection.set({
+      anchor: { path: [2, 0], offset: 0 },
+      focus: { path: [2, 0], offset: 5 },
+    });
+    view.update.marks.toggle('bold');
+    assert.deepEqual(view.read.children()[2], {
+      type: 'paragraph',
+      children: [{ text: 'Last. bold', bold: true }],
+    });
+    assert.deepEqual(source.read.children(), [
+      paragraph('First.'),
+      paragraph('Last.'),
+    ]);
+    assert.equal(source.read.marks(), null);
+  });
+
+  it('preserves caret mark toggles for the next proposed insertion', () => {
+    const source = createEditor({
+      plugins: [
+        defineEditorSchema('schema:authored-caret-marks', {
+          elements: { paragraph: { content: schema.content.text() } },
+          id: 'authored-caret-marks',
+          properties: [schema.textProperty('bold', property.boolean())],
+          root: schema.content.type('paragraph'),
+          unknown: 'reject',
+          version: 1,
+        }),
+        authored({ authorId: 'alice' }),
+      ],
+      initialValue: [paragraph('Base')],
+    });
+    const view = createEditorView(source, {
+      authored: { intent: 'propose', projection: 'markup' },
+    });
+    view.update.selection.set(point(4));
+    view.update.marks.toggle('bold');
+    view.update.text.insert(' bold');
+    assert.deepEqual(view.read.children(), [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Base' }, { text: ' bold', bold: true }],
+      },
+    ]);
+
+    view.update.marks.toggle('bold');
+    view.update.text.insert(' plain');
+    assert.deepEqual(view.read.children(), [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'Base' },
+          { text: ' bold', bold: true },
+          { text: ' plain' },
+        ],
+      },
+    ]);
+    assert.deepEqual(source.read.children(), [paragraph('Base')]);
+    assert.ok(
+      source.read.authored
+        .changes()
+        .items.every(
+          (change) => change.authorId === 'alice' && change.status === 'pending'
+        )
+    );
+  });
+
   it('exposes the last commit in the same coordinates as its view subscription', () => {
     const { source, proposed, accepted } = setup();
     let published: EditorCommit | null = null;
@@ -88,7 +185,7 @@ describe('native authored views', () => {
 
   it('restores proposal caret history from JSON in a new native view', () => {
     const source = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base')],
     });
     const proposed = createEditorView(source, { authored: proposal });
@@ -96,7 +193,7 @@ describe('native authored views', () => {
     proposed.update.text.insert(' draft');
     const savedHistory = JSON.parse(JSON.stringify(History.toJSON(proposed)));
     const restored = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: JSON.parse(JSON.stringify(source.read.value())),
     });
     const restoredView = createEditorView(restored, { authored: proposal });
@@ -148,7 +245,7 @@ describe('native authored views', () => {
   it('rejects readonly and unattributed input before either projection changes', () => {
     let authorId = 'alice';
     const source = createEditor({
-      extensions: [authored({ authorId: () => authorId })],
+      plugins: [authored({ authorId: () => authorId })],
       initialValue: [paragraph('Base')],
     });
     const locked = createEditorView(source, {
@@ -174,7 +271,7 @@ describe('native authored views', () => {
 
   it('retains a named-root caret through decisions and a projection switch', () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: {
         children: [paragraph('Main')],
         roots: { note: [paragraph('Note')] },
@@ -201,8 +298,8 @@ describe('native authored views', () => {
     assert.equal(source.read.text.string([]), 'Main');
   });
 
-  it('binds extension updates, reads and callbacks to the actual view', () => {
-    const contribution = defineExtension('contribution', {
+  it('binds plugin updates, reads and callbacks to the actual view', () => {
+    const contribution = definePlugin('contribution', {
       update: ({ editor, tx, context }) => ({
         write() {
           assert.equal(editor.read.text.string([]), 'Base draft');
@@ -219,7 +316,7 @@ describe('native authored views', () => {
       }),
     });
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' }), contribution],
+      plugins: [authored({ authorId: 'alice' }), contribution],
       initialValue: [paragraph('Base')],
     });
     const proposed = createEditorView(source, { authored: proposal });
@@ -265,7 +362,7 @@ describe('native authored views', () => {
 
   it('undoes and redoes proposal-view typing with the same identity and caret', () => {
     const source = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base')],
     });
     const proposed = createEditorView(source, { authored: proposal });
@@ -449,15 +546,15 @@ describe('native authored views', () => {
     assert.deepEqual(change.ranges, [{ anchor: point(4), focus: point(10) }]);
   });
 
-  it('rebinds extension reads without leaking projection into nested source reads', () => {
-    const readText = defineExtension('reading', {
+  it('rebinds plugin reads without leaking projection into nested source reads', () => {
+    const readText = definePlugin('reading', {
       read: ({ editor, state }) => ({
         text: () => state.text.string([]),
         sameEditor: () => editor,
       }),
     });
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' }), readText],
+      plugins: [authored({ authorId: 'alice' }), readText],
       initialValue: [paragraph('Base')],
     });
     const proposed = createEditorView(source, { authored: proposal });
@@ -510,7 +607,7 @@ describe('native authored views', () => {
 
   it('keeps named-root input and reads in projected coordinates', () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: {
         children: [paragraph('Body')],
         roots: { notes: [paragraph('Foot')] },

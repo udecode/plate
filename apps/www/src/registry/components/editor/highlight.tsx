@@ -2,15 +2,15 @@
 
 import {
   type HighlightPlugin,
-  type PlateLeafProps,
-  PlateLeaf,
+  type EditorLeafProps,
+  EditorLeaf,
 } from 'platejs/react';
 import * as React from 'react';
 
-export function HighlightLeaf(props: PlateLeafProps<typeof HighlightPlugin>) {
+export function HighlightLeaf(props: EditorLeafProps<typeof HighlightPlugin>) {
   return (
-    <PlateLeaf {...props} as="mark" className="bg-highlight/30 text-inherit">
+    <EditorLeaf {...props} as="mark" className="bg-highlight/30 text-inherit">
       {props.children}
-    </PlateLeaf>
+    </EditorLeaf>
   );
 }

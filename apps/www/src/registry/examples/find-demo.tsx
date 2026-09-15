@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -21,16 +21,16 @@ export default function FindDemo() {
 
   return (
     <div className="space-y-4">
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <EditorContainer aria-label="First view" role="region" variant="demo">
           <Editor aria-label="First editor" />
         </EditorContainer>
-      </Plate>
+      </EditorRoot>
       <Button onClick={() => setSecondView(!secondView)} variant="outline">
         {secondView ? 'Hide second view' : 'Show second view'}
       </Button>
       {secondView && (
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <EditorContainer
             aria-label="Second view"
             role="region"
@@ -38,7 +38,7 @@ export default function FindDemo() {
           >
             <Editor aria-label="Second editor" />
           </EditorContainer>
-        </Plate>
+        </EditorRoot>
       )}
     </div>
   );

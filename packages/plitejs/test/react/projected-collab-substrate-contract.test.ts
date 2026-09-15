@@ -55,7 +55,7 @@ const initialValue = {
 
 const createProjectedEditor = () =>
   createEditor({
-    extensions: [history()],
+    plugins: [history()],
     initialValue: clone(initialValue),
   });
 

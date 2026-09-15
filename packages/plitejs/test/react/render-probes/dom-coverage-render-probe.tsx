@@ -1,7 +1,12 @@
 import { NodeApi } from 'plitejs';
 import React from 'react';
 
-import { Editable, PliteElement, Plite, type Editor } from '../../../src/react';
+import {
+  Editable,
+  EditorElement,
+  EditorRoot,
+  type Editor,
+} from '../../../src/react';
 import { DOMCoverageBoundaryRange } from '../../../src/react/components/dom-coverage-boundary';
 
 export type DOMCoverageRenderCounts = {
@@ -20,7 +25,7 @@ export const createLargeBoundarySurface = ({
 }) =>
   function LargeBoundarySurface({ hidden }: { hidden: boolean }) {
     return (
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-large-boundary-expand"
           renderElement={({ children, element }) => {
@@ -38,7 +43,7 @@ export const createLargeBoundarySurface = ({
               const childNodes = React.Children.toArray(children);
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="large-section-body"
@@ -49,17 +54,17 @@ export const createLargeBoundarySurface = ({
                   >
                     Large body collapsed
                   </DOMCoverageBoundaryRange>
-                </PliteElement>
+                </EditorElement>
               );
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
   };

@@ -13,7 +13,7 @@ const paragraph = (text: string): Element => ({
 describe('immutable history branches', () => {
   it('publishes frozen revisioned snapshots and clips configurable depth', () => {
     const editor = createEditor({
-      extensions: [history({ maxDepth: 2 })],
+      plugins: [history({ maxDepth: 2 })],
       initialValue: [paragraph('')],
     });
 
@@ -39,7 +39,7 @@ describe('immutable history branches', () => {
   it('matches eagerly resolved history after composed structural mappings', () => {
     const create = () =>
       createEditor({
-        extensions: [history()],
+        plugins: [history()],
         initialValue: [paragraph('ab'), paragraph('cd')],
       });
     const eager = create();
@@ -78,7 +78,7 @@ describe('immutable history branches', () => {
 
   it('keeps a skipped merge-boundary insert on the surviving left block', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('alpha'), paragraph('beta')],
     });
 
@@ -100,7 +100,7 @@ describe('immutable history branches', () => {
 
   it('keeps a skipped boundary insert through a broad text replacement', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('alpha')],
     });
 
@@ -123,7 +123,7 @@ describe('immutable history branches', () => {
 
   it('keeps a skipped sibling insert after undo restores and crosses it', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('alpha')],
     });
 
@@ -155,7 +155,7 @@ describe('immutable history branches', () => {
 
   it('does not apply one skipped change twice across consecutive undos', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('alpha')],
     });
 
@@ -187,7 +187,7 @@ describe('immutable history branches', () => {
 
   it('throws an unresolvable mapping instead of silently deleting history', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('old')] },
@@ -211,13 +211,13 @@ describe('immutable history branches', () => {
 
   it('decodes without mutation and restores in one observable commit', () => {
     const source = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('body')],
     });
 
     source.update((tx) => tx.text.insert('local'));
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: source.read.value(),
     });
     const before = editor.read.history();

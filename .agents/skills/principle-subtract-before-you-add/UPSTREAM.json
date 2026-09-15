@@ -9,13 +9,14 @@
       "upstream": "skills/principle-subtract-before-you-add/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "3999888dc21ced33b86054c2ffde1a3cb438e16bed1213f5dab2b5c000446292",
-      "destinationSha256": "a273930bd7083ece67002229005b79ea522540df1229c369423a5a9944a1a3cf",
+      "destinationSha256": "417452459a7ef086d04c4cba6eed15873db309fa7a7d90399022b5dbd094c849",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-subtract-before-you-add/SKILL.md\n+++ skills/principle-subtract-before-you-add/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-subtract-before-you-add\n description: \"Apply when sequencing an addition, refactor, or rewrite. Remove dead weight, redundant validators, and stub references first, then build on the simpler base.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Subtract Before You Add\n \n"
+      "unifiedDiff": "--- skills/principle-subtract-before-you-add/SKILL.md\n+++ skills/principle-subtract-before-you-add/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-subtract-before-you-add\n-description: \"Apply when sequencing an addition, refactor, or rewrite. Remove dead weight, redundant validators, and stub references first, then build on the simpler base.\"\n-disable-model-invocation: true\n+description: \"Remove evidenced dead or duplicate structure before an authorized addition or redesign.\"\n ---\n \n # Subtract Before You Add\n"
     }
   ],
   "ownedFiles": [

@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react';
 import {
   createEditor,
   Editable,
-  Plite,
+  EditorRoot,
   type RenderElementProps,
 } from '../../src/react';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
@@ -36,13 +36,11 @@ test('a descendant wrapper change preserves its remounted editable text', async 
     ],
   });
   const mounted = render(
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable renderElement={(props) => <NestedElement {...props} />} />
-    </Plite>
+    </EditorRoot>
   );
-  const root = mounted.container.querySelector<HTMLElement>(
-    '[data-plite-editor]'
-  )!;
+  const root = mounted.container.querySelector<HTMLElement>('[data-editor]')!;
   const runtime = findMountedEditableDOMRuntime(root)!;
 
   expect(root.textContent).toBe('Preserve this text');
@@ -58,7 +56,7 @@ test('a descendant wrapper change preserves its remounted editable text', async 
     'Preserve this text'
   );
 
-  root.querySelector('section')!.setAttribute('data-plite-path', 'external');
+  root.querySelector('section')!.setAttribute('data-editor-path', 'external');
   await act(async () => {
     await new Promise((resolve) => {
       setTimeout(resolve, 0);
@@ -66,7 +64,7 @@ test('a descendant wrapper change preserves its remounted editable text', async 
   });
   runtime.domPhaseScheduler.flush();
 
-  expect(root.querySelector('section')).not.toHaveAttribute('data-plite-path');
+  expect(root.querySelector('section')).not.toHaveAttribute('data-editor-path');
   expect(root.textContent).toBe('Preserve this text');
   mounted.unmount();
 });

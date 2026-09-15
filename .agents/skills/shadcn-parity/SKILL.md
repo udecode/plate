@@ -1,5 +1,5 @@
 ---
-description: Clone shadcn implementation patterns with source-by-source parity. Use when the user says "shadcn parity", asks to mirror shadcn, copy shadcn UX/architecture/tests, or wants more than inspiration. Excludes post-release template output and synchronization unless explicitly scoped.
+description: Adopt shadcn implementation patterns with source-by-source parity when the user requests mirroring or cloning.
 name: shadcn-parity
 metadata:
   skiller:

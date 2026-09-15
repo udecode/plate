@@ -1,5 +1,7 @@
 import mergeWith from 'lodash/mergeWith.js';
+import { brandPluginDescriptor as brandRuntimePluginDescriptor } from 'plitejs/internal';
 
+import type { RuntimePluginReference } from '../../facade';
 import type {
   BasePlugin,
   ErasedPluginCallable,
@@ -13,9 +15,10 @@ const pluginDescriptors = new WeakSet<object>();
 export type PluginDescriptorMetadata = Readonly<{
   configured: boolean;
   configurationLayers: readonly ErasedPluginConfigurationLayer[];
+  sourceReferences: readonly RuntimePluginReference[];
   htmlCodecContributions: ReadonlyArray<
     Readonly<{
-      extension: ErasedPluginCallable;
+      factory: ErasedPluginCallable;
       targetPlugin: string | null;
     }>
   >;
@@ -147,14 +150,24 @@ export const brandPluginDescriptor = <T extends object>(
 
     pluginDescriptorMetadata.set(
       value,
-      sourceMetadata ??
-        Object.freeze({
-          configured: false,
-          configurationLayers: Object.freeze([]),
-          htmlCodecContributions: Object.freeze([]),
-          resolved: false,
-          stages: Object.freeze([]),
-        })
+      Object.freeze(
+        sourceMetadata && familySource
+          ? {
+              ...sourceMetadata,
+              sourceReferences: Object.freeze([
+                ...sourceMetadata.sourceReferences,
+                familySource as RuntimePluginReference,
+              ]),
+            }
+          : {
+              configured: false,
+              configurationLayers: Object.freeze([]),
+              htmlCodecContributions: Object.freeze([]),
+              resolved: false,
+              sourceReferences: Object.freeze([]),
+              stages: Object.freeze([]),
+            }
+      )
     );
   }
   const family = familySource
@@ -162,6 +175,11 @@ export const brandPluginDescriptor = <T extends object>(
     : pluginSchemaFamilies.get(value);
 
   pluginSchemaFamilies.set(value, family ?? createPluginSchemaFamily());
+
+  brandRuntimePluginDescriptor(
+    value,
+    familySource as RuntimePluginReference | undefined
+  );
 
   return value;
 };
@@ -185,6 +203,9 @@ export const setPluginDescriptorMetadata = (
   pluginDescriptorMetadata.set(value, Object.freeze(metadata));
 };
 
+export const getPluginSourceReferences = (value: object) =>
+  getPluginDescriptorMetadata(value).sourceReferences;
+
 export const isConfiguredPluginDescriptor = (value: object) =>
   pluginDescriptorMetadata.get(value)?.configured === true;
 
@@ -197,24 +218,24 @@ export const getPluginSchemaFamily = (value: object): object | null =>
 export const registerHtmlCodecSchemaFamilies = <
   T extends (...args: never[]) => unknown,
 >(
-  extension: T,
+  factory: T,
   owner: object,
   target: object
 ): T => {
   htmlCodecSchemaFamilies.set(
-    extension,
+    factory,
     Object.freeze({
       owner: getPluginSchemaFamily(owner),
       target: getPluginSchemaFamily(target),
     })
   );
 
-  return extension;
+  return factory;
 };
 
 export const getHtmlCodecSchemaFamilies = (
-  extension: (...args: never[]) => unknown
-) => htmlCodecSchemaFamilies.get(extension);
+  factory: (...args: never[]) => unknown
+) => htmlCodecSchemaFamilies.get(factory);
 
 const hasStringIdentity = (value: object): value is NominalPluginReference => {
   const name = Object.getOwnPropertyDescriptor(value, 'name');

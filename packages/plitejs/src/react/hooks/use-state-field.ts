@@ -7,7 +7,7 @@ import type {
 } from '../..';
 import {
   withPliteReactPreservedSelection,
-  PliteReactUpdatePolicy,
+  ReactUpdatePolicy,
 } from '../update-policy';
 import { useEditorContext } from './use-editor-context';
 import {
@@ -64,7 +64,7 @@ export function useSetStateField<TValue>(
           tx.setField(field, value);
         });
       } else {
-        editor.update(PliteReactUpdatePolicy.preserveSelection, (tx) => {
+        editor.update(ReactUpdatePolicy.preserveSelection, (tx) => {
           tx.setField(field, value);
         });
       }

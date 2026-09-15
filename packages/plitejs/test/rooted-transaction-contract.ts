@@ -121,7 +121,7 @@ describe('rooted transaction contract', () => {
 
   it('routes explicit point inserts against the target root', () => {
     const editor = createEditor({
-      extensions: [voidBlock] as const,
+      plugins: [voidBlock] as const,
       initialValue: {
         children: [{ type: 'void-block', children: [{ text: '' }] }],
         roots: { header: [paragraph('head')] },

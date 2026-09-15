@@ -8,7 +8,7 @@ import {
   isVoid as editorIsVoid,
   point as editorPoint,
   range as editorRange,
-} from '../../internal';
+} from '../../interfaces/editor';
 import { isDOMElement, isDOMNode } from '../utils/dom';
 import { readDOMFragmentData } from './dom-clipboard-runtime';
 import type { DOMEditor } from './dom-editor';

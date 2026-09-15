@@ -113,7 +113,7 @@ describe('read/update contract', () => {
   });
 
   it('toggles schema-exclusive marks without caller-owned clearing', () => {
-    const editor = createEditor({ extensions: [ScriptSchema] });
+    const editor = createEditor({ plugins: [ScriptSchema] });
 
     replaceEditorValue(editor, {
       children: [paragraph('one')],

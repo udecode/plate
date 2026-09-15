@@ -20,19 +20,14 @@ import {
   EMPTY_EDITOR_UPDATE_POLICY,
 } from './update-policy';
 
-type RunEditorRead<V extends Value, TExtensions extends readonly unknown[]> = <
-  T,
->(
-  fn: (state: EditorStateView<V, TExtensions>) => T
+type RunEditorRead<V extends Value, TPlugins extends readonly unknown[]> = <T>(
+  fn: (state: EditorStateView<V, TPlugins>) => T
 ) => T;
 
-type RunEditorUpdate<
-  V extends Value,
-  TExtensions extends readonly unknown[],
-> = (
+type RunEditorUpdate<V extends Value, TPlugins extends readonly unknown[]> = (
   fn: (
-    transaction: EditorUpdateTransaction<V, TExtensions>,
-    context: EditorUpdateContext<Editor<V, TExtensions>>
+    transaction: EditorUpdateTransaction<V, TPlugins>,
+    context: EditorUpdateContext<Editor<V, TPlugins>>
   ) => void,
   policy: CompiledEditorUpdatePolicy
 ) => void;
@@ -47,7 +42,7 @@ const assertHistoryCapability = (options: {
 }) => {
   if (!options.hasTxGroup?.('history')) {
     throw new Error(
-      'Editor update history policy requires the history extension.'
+      'Editor update history policy requires the history plugin.'
     );
   }
 };
@@ -94,11 +89,11 @@ const resolvePath = (value: unknown, path: readonly string[]) => {
   return { owner, value: current };
 };
 
-const createReadExtensionPath = <
+const createReadPluginPath = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  read: RunEditorRead<V, TExtensions>,
+  read: RunEditorRead<V, TPlugins>,
   groupName: string,
   pathCache: Map<string, unknown>,
   path: readonly string[] = []
@@ -108,7 +103,7 @@ const createReadExtensionPath = <
 
   if (existing) return existing;
 
-  const extensionPath = new Proxy(() => {}, {
+  const pluginPath = new Proxy(() => {}, {
     apply(_target, _thisArg, args) {
       return read((state) => {
         const group = (state as Record<string, unknown>)[groupName];
@@ -128,26 +123,23 @@ const createReadExtensionPath = <
     get(_target, key) {
       if (typeof key !== 'string') return undefined;
       if (key === 'then' || key === 'toJSON') return undefined;
-      return createReadExtensionPath(read, groupName, pathCache, [
-        ...path,
-        key,
-      ]);
+      return createReadPluginPath(read, groupName, pathCache, [...path, key]);
     },
   });
 
-  pathCache.set(cacheKey, extensionPath);
+  pathCache.set(cacheKey, pluginPath);
 
-  return extensionPath;
+  return pluginPath;
 };
 
-const createUpdateExtensionPath = <
+const createUpdatePluginPath = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
   runUpdate: (
     fn: (
-      transaction: EditorUpdateTransaction<V, TExtensions>,
-      context: EditorUpdateContext<Editor<V, TExtensions>>
+      transaction: EditorUpdateTransaction<V, TPlugins>,
+      context: EditorUpdateContext<Editor<V, TPlugins>>
     ) => void
   ) => void,
   groupName: string,
@@ -161,7 +153,7 @@ const createUpdateExtensionPath = <
     return existing;
   }
 
-  const extensionPath = new Proxy(() => {}, {
+  const pluginPath = new Proxy(() => {}, {
     apply(_target, _thisArg, args) {
       let result: unknown;
 
@@ -200,28 +192,28 @@ const createUpdateExtensionPath = <
     get(_target, key) {
       if (typeof key !== 'string') return undefined;
       if (key === 'then' || key === 'toJSON') return undefined;
-      return createUpdateExtensionPath(runUpdate, groupName, pathCache, [
+      return createUpdatePluginPath(runUpdate, groupName, pathCache, [
         ...path,
         key,
       ]);
     },
   });
 
-  pathCache.set(cacheKey, extensionPath);
+  pathCache.set(cacheKey, pluginPath);
 
-  return extensionPath;
+  return pluginPath;
 };
 
 export const createEditorReadApi = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  runRead: RunEditorRead<V, TExtensions>
-): EditorRead<V, TExtensions> => {
+  runRead: RunEditorRead<V, TPlugins>
+): EditorRead<V, TPlugins> => {
   type RuntimeReadMethods = Omit<EditorCoreStateView<V>, 'key'>;
-  const extensionPathCache = new Map<string, unknown>();
-  const read = (<T>(fn: (state: EditorStateView<V, TExtensions>) => T): T =>
-    runRead(fn)) as EditorRead<V, TExtensions>;
+  const pluginPathCache = new Map<string, unknown>();
+  const read = (<T>(fn: (state: EditorStateView<V, TPlugins>) => T): T =>
+    runRead(fn)) as EditorRead<V, TPlugins>;
 
   const createGroup = <TGroup extends keyof RuntimeReadMethods>(
     groupName: TGroup
@@ -297,7 +289,6 @@ export const createEditorReadApi = <
 
   const methods = {
     children: (...args) => read((state) => state.children(...args)),
-    facet: (...args) => read((state) => state.facet(...args)),
     fragment: createCallableGroup('fragment'),
     getField: ((...args) =>
       read((state) =>
@@ -337,36 +328,33 @@ export const createEditorReadApi = <
         return Reflect.get(target, groupName, receiver);
       }
 
-      return createReadExtensionPath(read, groupName, extensionPathCache);
+      return createReadPluginPath(read, groupName, pluginPathCache);
     },
   });
 };
 
 export const createEditorUpdateApi = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  runUpdate: RunEditorUpdate<V, TExtensions>,
+  runUpdate: RunEditorUpdate<V, TPlugins>,
   apiOptions: EditorUpdateApiOptions
-): EditorUpdate<V, TExtensions> => {
+): EditorUpdate<V, TPlugins> => {
   type UpdateCallback = (
-    transaction: EditorUpdateTransaction<V, TExtensions>,
-    context: EditorUpdateContext<Editor<V, TExtensions>>
+    transaction: EditorUpdateTransaction<V, TPlugins>,
+    context: EditorUpdateContext<Editor<V, TPlugins>>
   ) => void;
 
   const historyFacades = new Map<
     NonNullable<EditorUpdatePolicy['history']>,
-    EditorUpdateMethods<V, TExtensions>
+    EditorUpdateMethods<V, TPlugins>
   >();
-  const taggedFacades = new WeakMap<
-    object,
-    EditorUpdateMethods<V, TExtensions>
-  >();
-  let defaultFacade!: EditorUpdate<V, TExtensions>;
+  const taggedFacades = new WeakMap<object, EditorUpdateMethods<V, TPlugins>>();
+  let defaultFacade!: EditorUpdate<V, TPlugins>;
 
   const getConfiguredFacade = (
     policy: EditorUpdatePolicy
-  ): EditorUpdateMethods<V, TExtensions> => {
+  ): EditorUpdateMethods<V, TPlugins> => {
     assertUpdatePolicy(policy, apiOptions);
 
     if (!policy.history && policy.tags === undefined) {
@@ -404,9 +392,9 @@ export const createEditorUpdateApi = <
   const createFacade = (
     compiledPolicy?: CompiledEditorUpdatePolicy,
     requiresHistory = false
-  ): EditorUpdate<V, TExtensions> => {
+  ): EditorUpdate<V, TPlugins> => {
     const propertyCache = new Map<string, unknown>();
-    const extensionPathCache = new Map<string, unknown>();
+    const pluginPathCache = new Map<string, unknown>();
     const invoke = (fn: UpdateCallback) => {
       if (requiresHistory) {
         assertHistoryCapability(apiOptions);
@@ -417,7 +405,7 @@ export const createEditorUpdateApi = <
     const update = ((
       policyOrFn: EditorUpdatePolicy | UpdateCallback,
       fn?: UpdateCallback
-    ): EditorUpdateMethods<V, TExtensions> | void => {
+    ): EditorUpdateMethods<V, TPlugins> | void => {
       if (typeof policyOrFn === 'function') {
         if (fn !== undefined) {
           throw new Error(
@@ -437,7 +425,7 @@ export const createEditorUpdateApi = <
       }
 
       return getConfiguredFacade(policyOrFn);
-    }) as EditorUpdate<V, TExtensions>;
+    }) as EditorUpdate<V, TPlugins>;
 
     const createGroup = <
       TGroup extends
@@ -452,7 +440,7 @@ export const createEditorUpdateApi = <
         | 'text',
     >(
       groupName: TGroup
-    ): EditorCoreUpdateMethods<V, TExtensions>[TGroup] => {
+    ): EditorCoreUpdateMethods<V, TPlugins>[TGroup] => {
       const methodCache = new Map<string, (...args: unknown[]) => unknown>();
 
       return new Proxy(
@@ -493,7 +481,7 @@ export const createEditorUpdateApi = <
             return method;
           },
         }
-      ) as EditorCoreUpdateMethods<V, TExtensions>[TGroup];
+      ) as EditorCoreUpdateMethods<V, TPlugins>[TGroup];
     };
 
     const getUpdateProperty = (property: string): unknown => {
@@ -535,7 +523,7 @@ export const createEditorUpdateApi = <
         case 'setField': {
           value = (
             ...args: Parameters<
-              EditorCoreUpdateMethods<V, TExtensions>['setField']
+              EditorCoreUpdateMethods<V, TPlugins>['setField']
             >
           ) => {
             invoke((tx) => tx.setField(...args));
@@ -550,7 +538,7 @@ export const createEditorUpdateApi = <
             },
             replace: (
               input: Parameters<
-                EditorCoreUpdateMethods<V, TExtensions>['value']['replace']
+                EditorCoreUpdateMethods<V, TPlugins>['value']['replace']
               >[0]
             ) => {
               invoke((tx) => {
@@ -570,10 +558,10 @@ export const createEditorUpdateApi = <
                 if (methodName === 'then' || methodName === 'toJSON') {
                   return undefined;
                 }
-                return createUpdateExtensionPath(
+                return createUpdatePluginPath(
                   invoke,
                   property,
-                  extensionPathCache,
+                  pluginPathCache,
                   [methodName]
                 );
               },

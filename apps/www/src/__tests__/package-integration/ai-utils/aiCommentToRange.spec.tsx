@@ -54,7 +54,7 @@ describe('AIChatPlugin read.commentRange', () => {
               },
             ],
             type: 'link',
-            url: 'https://platejs.org/docs/plite',
+            url: 'https://platejs.org/docs',
           },
           {
             text: ' and ',
@@ -105,13 +105,6 @@ describe('AIChatPlugin read.commentRange', () => {
           {
             children: [
               {
-                suggestion: true,
-                suggestion_playground1: {
-                  id: 'playground1',
-                  createdAt: 1_756_601_648_507,
-                  type: 'insert',
-                  userId: 'alice',
-                },
                 text: 'suggestions',
               },
             ],
@@ -119,26 +112,12 @@ describe('AIChatPlugin read.commentRange', () => {
             url: '/docs/suggestion',
           },
           {
-            suggestion: true,
-            suggestion_playground1: {
-              id: 'playground1',
-              createdAt: 1_756_601_648_507,
-              type: 'insert',
-              userId: 'alice',
-            },
             text: ' like this added text',
           },
           {
             text: ' or to ',
           },
           {
-            suggestion: true,
-            suggestion_playground2: {
-              id: 'playground2',
-              createdAt: 1_756_601_648_507,
-              type: 'remove',
-              userId: 'bob',
-            },
             text: 'mark text for removal',
           },
           {
@@ -160,13 +139,6 @@ describe('AIChatPlugin read.commentRange', () => {
             text: '. You can even have ',
           },
           {
-            suggestion: true,
-            suggestion_playground3: {
-              id: 'playground3',
-              createdAt: 1_756_601_648_507,
-              type: 'insert',
-              userId: 'charlie',
-            },
             text: 'overlapping',
           },
           {
@@ -414,7 +386,7 @@ describe('AIChatPlugin read.commentRange', () => {
         comment:
           'This sentence introduces the technologies used to build the rich-text editor, Plite and React.',
         content:
-          'Experience a modern rich-text editor built with [Plite](https://platejs.org/docs/plite) and [React](https://reactjs.org).',
+          'Experience a modern rich-text editor built with [Plite](https://platejs.org/docs) and [React](https://reactjs.org).',
       },
       {
         blockRef: refByFixtureId.GznILN9jX7,

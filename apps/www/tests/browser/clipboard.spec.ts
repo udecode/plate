@@ -1,4 +1,4 @@
-import { createPliteBrowserEditorHarness } from '@platejs/test/playwright';
+import { createBrowserEditorHarness } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 for (const mode of ['native', 'event'] as const) {
@@ -9,11 +9,7 @@ for (const mode of ['native', 'event'] as const) {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('/blocks/html-demo');
     const root = page.locator('[contenteditable="true"]');
-    const editor = createPliteBrowserEditorHarness(
-      page,
-      'html-clipboard',
-      root
-    );
+    const editor = createBrowserEditorHarness(page, 'html-clipboard', root);
     await editor.ready({ editor: 'visible', text: 'HTML' });
     await root.getByRole('heading', { name: 'HTML', exact: true }).click();
     await root.press('ControlOrMeta+A');

@@ -99,7 +99,7 @@ export const Button = ({
   <ShadcnButton
     {...props}
     className={cn(
-      'plite-example-button',
+      'editor-example-button',
       active && 'is-active',
       reversed && 'is-reversed',
       className
@@ -142,7 +142,7 @@ export const Instruction = ({
 }: React.ComponentPropsWithRef<'div'>) => (
   <div
     {...props}
-    className={cn('plite-example-instruction', className)}
+    className={cn('editor-example-instruction', className)}
     ref={ref}
   />
 );
@@ -154,7 +154,7 @@ export const Menu = ({
 }: React.ComponentPropsWithRef<'div'>) => (
   <div
     {...props}
-    className={cn('plite-example-menu', className)}
+    className={cn('editor-example-menu', className)}
     data-test-id="menu"
     ref={ref}
   />
@@ -172,7 +172,7 @@ export const Toolbar = ({
 }: React.ComponentPropsWithRef<'div'>) => (
   <Menu
     {...props}
-    className={cn('plite-example-toolbar', className)}
+    className={cn('editor-example-toolbar', className)}
     ref={ref}
   />
 );

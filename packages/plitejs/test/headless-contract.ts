@@ -38,7 +38,7 @@ const createSelectedEditor = (): EditorType =>
 
 describe('plite headless contract', () => {
   it('supports package-split headless composition through source-resolved package imports', () => {
-    const editor = createEditor({ extensions: [history()] as const });
+    const editor = createEditor({ plugins: [history()] as const });
     const input = createSelectedEditor();
     const h = createHyperscript({
       elements: {

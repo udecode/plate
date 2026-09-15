@@ -6,19 +6,20 @@ import {
   SelectionApi,
   type Value,
 } from '..';
+import { getPluginRegistry as getInternalPluginRegistry } from '../core/plugin-registry';
+import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
-  type AnyEditor,
   areEditorSchemaIdentitiesEqual,
-  assertSelectionSupported,
-  decodeEditorEffect,
-  decodeEditorSelection,
-  encodeEditorEffect,
-  encodeEditorSelection,
-  getEditorExtensionRegistry,
-  isObject,
-  MAIN_ROOT_KEY,
   readEditorSchemaIdentity,
-} from '../internal';
+} from '../core/schema-compiler';
+import {
+  assertSelectionSupported,
+  decodeEditorSelection,
+  encodeEditorSelection,
+} from '../core/selection-protocol';
+import { decodeEditorEffect, encodeEditorEffect } from '../core/value-codec';
+import type { AnyEditor } from '../interfaces/editor';
+import { isObject } from '../utils/is-object';
 import type { Batch, History, HistoryBatchJSON, HistoryJSON } from './history';
 import { freezeHistoryBatch } from './history-state';
 
@@ -86,7 +87,9 @@ const assertSchemaIdentity = (
   }
 
   throw new Error(
-    `History schema mismatch: history uses ${describeSchema(persisted)}, but the editor uses ${describeSchema(current)}.`
+    `History schema mismatch: history uses ${describeSchema(
+      persisted
+    )}, but the editor uses ${describeSchema(current)}.`
   );
 };
 
@@ -227,7 +230,7 @@ export const decodeHistoryValue = <V extends Value>(
 
   assertSchemaIdentity(editor, schema);
 
-  const { effectTypes } = getEditorExtensionRegistry(editor);
+  const { effectTypes } = getInternalPluginRegistry(editor);
   const history = Object.freeze({
     redos: Object.freeze(
       json.redos.map((batch) =>

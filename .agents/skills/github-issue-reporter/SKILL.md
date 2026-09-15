@@ -1,5 +1,5 @@
 ---
-description: Draft or publish a Plate next/Beta issue from bug videos or text, preserving exact main/next roles, reproduction, real media and final GitHub read-back. Publish only when the user requests it.
+description: Draft a Plate Beta issue from video or text, with exact reproduction and media; publish only when requested.
 name: github-issue-reporter
 metadata:
   skiller:

@@ -1,5 +1,5 @@
-import { createEditor, defineBasePlugin } from 'platejs';
-import { definePlatePlugin, toPlatePlugin } from 'platejs/react';
+import { createEditor, definePlugin as defineHeadlessPlugin } from 'platejs';
+import { definePlugin, toReactPlugin } from 'platejs/react';
 
 type OptionalState = { value?: string };
 type UndefinedState = { value: string | undefined };
@@ -13,53 +13,53 @@ const undefinedState: UndefinedState = { value: undefined };
 const nullableState: NullableState = { nested: {}, value: null };
 declare const unknownValue: unknown;
 
-defineBasePlugin('optionalBaseState', {
+defineHeadlessPlugin('optionalBaseState', {
   // @ts-expect-error Every declared store field needs an initial value.
   initialState: optionalState,
 });
-defineBasePlugin('optionalBaseFactoryState', {
+defineHeadlessPlugin('optionalBaseFactoryState', {
   // @ts-expect-error A factory cannot omit declared store fields.
   initialState: (): OptionalState => ({}),
 });
-defineBasePlugin('undefinedBaseState', {
+defineHeadlessPlugin('undefinedBaseState', {
   // @ts-expect-error Use null for an empty store field.
   initialState: undefinedState,
 });
-defineBasePlugin('undefinedBaseFactoryState', {
+defineHeadlessPlugin('undefinedBaseFactoryState', {
   // @ts-expect-error Factory state must also exclude undefined.
   initialState: () => ({ value: undefined }),
 });
-defineBasePlugin('missingBaseFactoryState', {
+defineHeadlessPlugin('missingBaseFactoryState', {
   // @ts-expect-error An initial-state factory must return a state record.
   initialState: () => undefined,
 });
-defineBasePlugin('unknownBaseState', {
+defineHeadlessPlugin('unknownBaseState', {
   // @ts-expect-error Unknown includes undefined and is not a concrete field type.
   initialState: { value: unknownValue },
 });
 
-definePlatePlugin('optionalPlateState', {
+definePlugin('optionalPlateState', {
   // @ts-expect-error Every declared store field needs an initial value.
   initialState: optionalState,
 });
-definePlatePlugin('optionalPlateFactoryState', {
+definePlugin('optionalPlateFactoryState', {
   // @ts-expect-error A factory cannot omit declared store fields.
   initialState: (): OptionalState => ({}),
 });
-definePlatePlugin('undefinedPlateState', {
+definePlugin('undefinedPlateState', {
   // @ts-expect-error Use null for an empty store field.
   initialState: undefinedState,
 });
-definePlatePlugin('undefinedPlateFactoryState', {
+definePlugin('undefinedPlateFactoryState', {
   // @ts-expect-error Factory state must also exclude undefined.
   initialState: () => ({ value: undefined }),
 });
-definePlatePlugin('missingPlateFactoryState', {
+definePlugin('missingPlateFactoryState', {
   // @ts-expect-error An initial-state factory must return a state record.
   initialState: () => undefined,
 });
 
-const Base = defineBasePlugin('completeBaseState', {
+const Base = defineHeadlessPlugin('completeBaseState', {
   initialState: nullableState,
 }).extend(({ store }) => {
   store.get('value') satisfies string | null;
@@ -70,7 +70,7 @@ const Base = defineBasePlugin('completeBaseState', {
   return { initialState: { count: 0 } };
 });
 
-const Plate = definePlatePlugin('completePlateState', {
+const EditorRoot = definePlugin('completePlateState', {
   initialState: (): NullableState => nullableState,
 }).extend(({ store }) => {
   store.get('value') satisfies string | null;
@@ -80,39 +80,39 @@ const Plate = definePlatePlugin('completePlateState', {
   return { initialState: { count: 0 } };
 });
 
-// @ts-expect-error Extension stages cannot introduce optional store fields.
+// @ts-expect-error Plugin stages cannot introduce optional store fields.
 Base.extend({ initialState: optionalState });
 // @ts-expect-error Contextual stages cannot introduce undefined store fields.
 Base.extend(() => ({ initialState: { added: undefined } }));
-// @ts-expect-error Extension factories cannot introduce optional store fields.
+// @ts-expect-error Plugin stage factories cannot introduce optional store fields.
 Base.extend({ initialState: (): OptionalState => ({}) });
-// @ts-expect-error Contextual extension factories cannot omit declared fields.
+// @ts-expect-error Contextual plugin stage factories cannot omit declared fields.
 Base.extend(() => ({ initialState: (): OptionalState => ({}) }));
 // @ts-expect-error React stages cannot introduce optional store fields.
-Plate.extend({ initialState: optionalState });
+EditorRoot.extend({ initialState: optionalState });
 // @ts-expect-error React contextual stages cannot introduce undefined fields.
-Plate.extend(() => ({ initialState: { added: undefined } }));
-// @ts-expect-error React extension factories need complete state.
-Plate.extend({ initialState: (): OptionalState => ({}) });
-// @ts-expect-error React contextual extension factories need complete state.
-Plate.extend(() => ({ initialState: (): OptionalState => ({}) }));
+EditorRoot.extend(() => ({ initialState: { added: undefined } }));
+// @ts-expect-error React plugin stage factories need complete state.
+EditorRoot.extend({ initialState: (): OptionalState => ({}) });
+// @ts-expect-error React contextual plugin stage factories need complete state.
+EditorRoot.extend(() => ({ initialState: (): OptionalState => ({}) }));
 // @ts-expect-error The React adapter retains the same state contract.
-toPlatePlugin(Base).extend({ initialState: optionalState });
+toReactPlugin(Base).extend({ initialState: optionalState });
 
 Base.configure({ initialState: { value: 'configured' } });
-Plate.configure(({ store }) => ({
+EditorRoot.configure(({ store }) => ({
   initialState: { count: store.get('count') + 1 },
 }));
 Base.extend({ initialState: { value: 'extended' } });
-Plate.extend({ initialState: { value: null } });
+EditorRoot.extend({ initialState: { value: null } });
 
-const editor = createEditor({ plugins: [Base, Plate] });
+const editor = createEditor({ plugins: [Base, EditorRoot] });
 editor.plugin(Base).store.set({ value: null });
 editor.plugin(Base).store.set((state) => {
   // @ts-expect-error Draft writes preserve the non-undefined state contract.
   state.value = undefined;
 });
-editor.plugin(Plate).store.get('count') satisfies number;
+editor.plugin(EditorRoot).store.get('count') satisfies number;
 
-defineBasePlugin('statelessBase', {});
-definePlatePlugin('statelessPlate', {});
+defineHeadlessPlugin('statelessBase', {});
+definePlugin('statelessPlate', {});

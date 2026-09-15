@@ -17,7 +17,7 @@ import {
 import { type MarkdownEditor, MarkdownPlugin } from '../../markdown';
 import {
   type Editor,
-  definePlatePlugin,
+  definePlugin,
   useEditorViewState,
 } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
@@ -151,7 +151,7 @@ const initialState: CopilotPluginState = {
     editor.read.selection.isCollapsed() && editor.read.selection.isAtBlockEnd(),
 };
 
-export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
+export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
   dependencies,
   effectTypes: [copilotSuggestionEffect],
   stateFields: [copilotSuggestionField],
@@ -518,7 +518,7 @@ export const CopilotPlugin = definePlatePlugin(PLUGINS.copilot, {
       },
       api: () => ({
         stop,
-        triggerSuggestion: debouncedTrigger ?? triggerImmediately,
+        triggerSuggestion: () => (debouncedTrigger ?? triggerImmediately)(),
       }),
     };
   })

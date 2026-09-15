@@ -3,8 +3,8 @@
 import { FileUp } from 'lucide-react';
 import type { FilePlugin } from 'platejs/media/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useElementSelected,
   usePath,
 } from 'platejs/react';
@@ -14,13 +14,13 @@ import { cn } from '@/lib/utils';
 
 import { Caption, useCaptionFocused } from './caption';
 
-export function FileElement(props: PlateElementProps<typeof FilePlugin>) {
+export function FileElement(props: EditorElementProps<typeof FilePlugin>) {
   const path = usePath();
   const selected = useElementSelected({ mode: 'node' });
   const captionFocused = useCaptionFocused(path);
 
   return (
-    <PlateElement className="my-px rounded-sm" {...props}>
+    <EditorElement className="my-px rounded-sm" {...props}>
       <figure className="group relative m-0 [&>figcaption]:text-left">
         <div contentEditable={false}>
           <a
@@ -47,6 +47,6 @@ export function FileElement(props: PlateElementProps<typeof FilePlugin>) {
           {props.children}
         </Caption>
       </figure>
-    </PlateElement>
+    </EditorElement>
   );
 }

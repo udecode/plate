@@ -7,6 +7,7 @@ type ExpectedEditorApiKeys =
   | 'ai'
   | 'aiChat'
   | 'audio'
+  | 'authored'
   | 'combobox'
   | 'csv'
   | 'debug'
@@ -59,9 +60,6 @@ type _MediaApiKeepsItsMethods = Assert<
 >;
 type _DomApiKeepsClipboardMethods = Assert<
   'insertData' extends keyof Editor['api']['dom']['clipboard'] ? true : false
->;
-type _SuggestionApiKeepsItsMethods = Assert<
-  'untracked' extends keyof Editor['api']['suggestion'] ? true : false
 >;
 type _NavigationApiKeepsItsMethods = Assert<
   'flashTarget' | 'clear' extends keyof Editor['api']['navigation']

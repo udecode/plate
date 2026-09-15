@@ -36,7 +36,7 @@ const redo = (editor: Editor) => {
 describe('persistent anchor history contract', () => {
   it('restores a fully deleted inward range exactly through undo and redo', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const before = {
@@ -69,7 +69,7 @@ describe('persistent anchor history contract', () => {
 
   it('keeps the earliest and latest range across an explicitly merged batch', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('abcd')] },
     });
     const anchor = editor.anchor(
@@ -124,7 +124,7 @@ describe('persistent anchor history contract', () => {
 
   it('preserves backward range direction after full deletion', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const before = {
@@ -152,7 +152,7 @@ describe('persistent anchor history contract', () => {
 
   it('restores a path that shifts across a structural history batch', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('alpha'), paragraph('beta')],
       },
@@ -175,7 +175,7 @@ describe('persistent anchor history contract', () => {
 
   it('restores the exact side of a point at a text-node boundary', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [
           {
@@ -209,7 +209,7 @@ describe('persistent anchor history contract', () => {
 
   it('round-trips an expanded range in a named root', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('Title')] },
@@ -239,7 +239,7 @@ describe('persistent anchor history contract', () => {
 
   it('never resurrects dropped or released anchors from private recovery', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const range = {
@@ -282,7 +282,7 @@ describe('persistent anchor history contract', () => {
 
   it('maps an anchor created after an edit without applying older recovery', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const deleted = {
@@ -310,7 +310,7 @@ describe('persistent anchor history contract', () => {
 
   it('publishes exact historic geometry atomically with a compact record', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const before = {
@@ -350,7 +350,7 @@ describe('persistent anchor history contract', () => {
 
   it('does not serialize runtime anchor recovery through history restore', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const before = {
@@ -380,7 +380,7 @@ describe('persistent anchor history contract', () => {
 
   it('maps both recovery sides through a skipped edit before undo and redo', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const deleted = {
@@ -418,7 +418,7 @@ describe('persistent anchor history contract', () => {
 
   it('maps both recovery sides with a block moved before undo and redo', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('alpha'), paragraph('beta')],
       },
@@ -459,7 +459,7 @@ describe('persistent anchor history contract', () => {
 
   it('maps path recovery with its block moved before undo and redo', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('alpha'), paragraph('beta')],
       },
@@ -491,7 +491,7 @@ describe('persistent anchor history contract', () => {
 
   it('maps a child-boundary recovery with its parent moved before history', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('alpha'), paragraph('beta')],
       },
@@ -517,7 +517,7 @@ describe('persistent anchor history contract', () => {
 
   it('round-trips the earliest and latest range across automatic text grouping', () => {
     const editor = createEditor({
-      extensions: [history({ newBatchDelay: 10_000 })],
+      plugins: [history({ newBatchDelay: 10_000 })],
       initialValue: { children: [paragraph('ab')] },
     });
     const anchor = editor.anchor(
@@ -559,7 +559,7 @@ describe('persistent anchor history contract', () => {
 
   it('captures only anchors affected by a distributed edit', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: Array.from({ length: 100 }, (_, index) =>
           paragraph(`row-${index}`)
@@ -608,7 +608,7 @@ describe('persistent anchor history contract', () => {
 
   it('does not leak staged recovery from an aborted history action', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const before = {
@@ -645,7 +645,7 @@ describe('persistent anchor history contract', () => {
 
   it('keeps compact recovery exact across a new branch without an interim resolve', () => {
     const editor = createEditor({
-      extensions: [history({ newBatchDelay: 0 })],
+      plugins: [history({ newBatchDelay: 0 })],
       initialValue: { children: [paragraph('abcd')] },
     });
     const before = {
@@ -682,7 +682,7 @@ describe('persistent anchor history contract', () => {
 
   it('maps unresolved recovery through a remote skip before redo', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const before = {
@@ -717,7 +717,7 @@ describe('persistent anchor history contract', () => {
 
   it('preserves unresolved backward direction through a skipped edit', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('abcd')] },
     });
     const before = {
@@ -745,7 +745,7 @@ describe('persistent anchor history contract', () => {
 
   it('rolls compact recovery back when a following edit aborts', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const before = {
@@ -773,7 +773,7 @@ describe('persistent anchor history contract', () => {
 
   it('materializes unresolved recovery before a structural branch', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('lead'), paragraph('This')],
       },
@@ -807,7 +807,7 @@ describe('persistent anchor history contract', () => {
 
   it('keeps a full replacement attached and restores both exact spans', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('This')] },
     });
     const before = {
@@ -837,7 +837,7 @@ describe('persistent anchor history contract', () => {
 
   it('round-trips an emoji range spanning marked text nodes', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [
           {
@@ -870,7 +870,7 @@ describe('persistent anchor history contract', () => {
 
   it('round-trips exact range paths across a structural split', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: { children: [paragraph('abcd')] },
     });
     const before = {
@@ -896,7 +896,7 @@ describe('persistent anchor history contract', () => {
 
   it('round-trips exact range paths across a block merge', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('alpha'), paragraph('beta')],
       },
@@ -927,7 +927,7 @@ describe('persistent anchor history contract', () => {
 
   it('round-trips exact range paths with a moved block', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('alpha'), paragraph('beta')],
       },
@@ -958,7 +958,7 @@ describe('persistent anchor history contract', () => {
 
   it('restores an exact range after its containing block is removed', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('alpha'), paragraph('beta')],
       },
@@ -997,7 +997,7 @@ describe('persistent anchor history contract', () => {
         ),
         (operations) => {
           const editor = createEditor({
-            extensions: [history({ maxDepth: 100, newBatchDelay: 0 })],
+            plugins: [history({ maxDepth: 100, newBatchDelay: 0 })],
             initialValue: {
               children: [
                 paragraph('alpha'),
@@ -1153,7 +1153,7 @@ describe('persistent anchor history contract', () => {
         (operations) => {
           const create = () =>
             createEditor({
-              extensions: [history({ maxDepth: 100, newBatchDelay: 0 })],
+              plugins: [history({ maxDepth: 100, newBatchDelay: 0 })],
               initialValue: { children: [paragraph('abcdefgh')] },
             });
           const eagerEditor = create();
@@ -1257,7 +1257,7 @@ describe('persistent anchor history contract', () => {
         ),
         (operations) => {
           const editor = createEditor({
-            extensions: [history({ maxDepth: 100, newBatchDelay: 0 })],
+            plugins: [history({ maxDepth: 100, newBatchDelay: 0 })],
             initialValue: { children: [paragraph('abcdefgh')] },
           });
           const anchor = editor.anchor(

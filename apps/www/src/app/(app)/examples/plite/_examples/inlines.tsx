@@ -1,13 +1,13 @@
 import isUrl from 'is-url';
 import {
-  defineExtension,
+  definePlugin,
   editorCommands,
   type EditorTransactionSpecBuilder,
   NodeApi,
   RangeApi,
   schema,
 } from 'plitejs';
-import { clipboardHandler, isHotkey } from 'plitejs/dom';
+import { domCommands, isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import * as PliteReact from 'plitejs/react';
 import {
@@ -36,7 +36,7 @@ import type {
 
 const InlinesExample = () => {
   const editor = useEditor({
-    extensions: [history(), inline()],
+    plugins: [history(), inline()],
     initialValue: [
       {
         type: 'paragraph',
@@ -110,7 +110,7 @@ const InlinesExample = () => {
   };
 
   return (
-    <PliteReact.Plite editor={editor}>
+    <PliteReact.EditorRoot editor={editor}>
       <Toolbar>
         <AddLinkButton />
         <RemoveLinkButton />
@@ -122,55 +122,49 @@ const InlinesExample = () => {
         renderElement={renderElement}
         renderText={InlineText}
       />
-    </PliteReact.Plite>
+    </PliteReact.EditorRoot>
   );
 };
 
 const inline = () =>
-  defineExtension('inline', {
-    contributions: [
-      clipboardHandler({
-        insertData(data, { next, tx }) {
-          const text = data.getData('text/plain');
+  definePlugin('inline', {
+    commands: ({ around, handle }) => [
+      around(domCommands.insertData, ({ input, next, state }) => {
+        const text = input.getData('text/plain');
+        const selection = state.selection();
 
-          if (text && isUrl(text)) {
-            if (
-              tx.nodes.some({
-                match: (node) =>
-                  NodeApi.isElement(node) && node.type === 'link',
-              })
-            ) {
-              tx.nodes.unwrap({
-                match: (node) =>
-                  NodeApi.isElement(node) && node.type === 'link',
-              });
-            }
+        if (!text || !isUrl(text) || !selection) return next();
 
-            const selection = tx.selection();
-
-            if (!selection) return next();
-
-            const isCollapsed = RangeApi.isCollapsed(selection);
-            const link: LinkElement = {
-              type: 'link',
-              url: text,
-              children: isCollapsed ? [{ text }] : [],
-            };
-
-            if (isCollapsed) {
-              tx.nodes.insert(link);
-              tx.selection.move({ unit: 'offset' });
-            } else {
-              tx.nodes.wrap(link, { split: true });
-            }
-
-            return true;
+        return state.transaction((tx) => {
+          if (
+            tx.nodes.some({
+              match: (node) => NodeApi.isElement(node) && node.type === 'link',
+            })
+          ) {
+            tx.nodes.unwrap({
+              match: (node) => NodeApi.isElement(node) && node.type === 'link',
+            });
           }
-          return next();
-        },
+
+          const currentSelection = tx.selection();
+
+          if (!currentSelection) return;
+
+          const isCollapsed = RangeApi.isCollapsed(currentSelection);
+          const link: LinkElement = {
+            type: 'link',
+            url: text,
+            children: isCollapsed ? [{ text }] : [],
+          };
+
+          if (isCollapsed) {
+            tx.nodes.insert(link);
+            tx.selection.move({ unit: 'offset' });
+          } else {
+            tx.nodes.wrap(link, { split: true });
+          }
+        });
       }),
-    ],
-    commands: ({ handle }) => [
       handle(editorCommands.insertText, ({ input, state }) => {
         if (isUrl(input.text)) {
           return state.transaction((tx) => {
@@ -428,7 +422,7 @@ const wrapButton = (editor: CustomEditor) => {
 // Put this at the start and end of an inline component to work around this Chromium bug:
 // https://bugs.chromium.org/p/chromium/issues/detail?id=1249405
 const InlineChromiumBugfix = () => (
-  <span className="plite-inlines-chromium-bugfix" contentEditable={false}>
+  <span className="editor-inlines-chromium-bugfix" contentEditable={false}>
     {/* Non-breaking space */}
     {String.fromCodePoint(160)}
   </span>
@@ -458,7 +452,7 @@ const LinkComponent = ({
   return (
     <a
       {...attributes}
-      className={cn(selected && 'plite-inlines-link-selected')}
+      className={cn(selected && 'editor-inlines-link-selected')}
       href={safeUrl}
     >
       <InlineChromiumBugfix />
@@ -483,7 +477,7 @@ const EditableButtonComponent = ({
   <span
     {...attributes}
     // Margin is necessary to clearly show the cursor adjacent to the button
-    className="plite-inlines-editable-button"
+    className="editor-inlines-editable-button"
     onClick={(ev) => {
       ev.preventDefault();
     }}
@@ -510,7 +504,7 @@ const BadgeComponent = ({
   return (
     <span
       {...attributes}
-      className={cn('plite-inlines-badge', selected && 'is-selected')}
+      className={cn('editor-inlines-badge', selected && 'is-selected')}
       contentEditable={false}
       data-playwright-selected={selected}
     >
@@ -532,7 +526,7 @@ const InlineText = (props: RenderTextProps) => {
     <span
       // Keeps end-of-block clicks outside the trailing inline in Chromium.
       // https://github.com/ianstormtaylor/slate/issues/4704#issuecomment-1006696364
-      className={cn(text.text === '' && 'plite-inlines-empty-text')}
+      className={cn(text.text === '' && 'editor-inlines-empty-text')}
       {...attributes}
     >
       {children}

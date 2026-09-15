@@ -2,7 +2,7 @@
 
 Core Plite editor runtime.
 
-Plite owns the document model, canonical changes, paths, points, ranges, transactions, state fields, schema extensions, and pure node/location helper namespaces.
+Plite owns the document model, canonical changes, paths, points, ranges, transactions, state fields, schema plugins, and pure node/location helper namespaces.
 
 ```ts
 import { createEditor } from 'plitejs';
@@ -40,7 +40,7 @@ editor.update((tx) => {
 });
 ```
 
-Use `defineEditorSchema`, `element`, `schema`, and `property` for declarative document grammar and property laws. Use `defineExtension` and `defineStateField` for state groups, transaction groups, corrections, commit listeners, and mounted runtime APIs.
+Use `defineEditorSchema`, `element`, `schema`, and `property` for declarative document grammar and property laws. Use `definePlugin` and `defineStateField` for state groups, transaction groups, corrections, commit listeners, and mounted runtime APIs.
 
 Declared schemas reject unknown vocabulary by default. Set `unknown: 'preserve'` only when the application intentionally carries undeclared elements and properties; an unknown element must also be admitted by its parent's compiled content grammar.
 
@@ -52,7 +52,7 @@ editor.update.fragment.replace([
 ]);
 ```
 
-Persist state fields and shared effects through versioned codecs. Primitive values use `valueCodecs`; custom values use `defineValueCodec`. Install each standalone effect descriptor once through an extension's `effects` resource.
+Persist state fields and shared effects through versioned codecs. Primitive values use `valueCodecs`; custom values use `defineValueCodec`. Install each standalone effect descriptor once through an plugin's `effects` resource.
 
 ```ts
 import { defineStateField, valueCodecs } from 'plitejs';
@@ -65,19 +65,19 @@ const documentTitle = defineStateField({
 ```
 
 ```ts
-import { defineExtension, defineEffect } from 'plitejs';
+import { definePlugin, defineEffect } from 'plitejs';
 
 const refreshIndex = defineEffect({ key: 'search.refresh-index' });
 
-const searchEffects = defineExtension('search-effects', {
+const searchEffects = definePlugin('search-effects', {
   effectTypes: [refreshIndex],
 });
 ```
 
 Advanced library code can install descriptor-based read middleware and grouped transaction, commit, node, or text listeners through `on`. Diagnostic tooling can configure the debug value scrubber.
 
-Pure data helpers live on namespaces such as `ElementApi`, `NodeApi`, `PathApi`, `PointApi`, `RangeApi`, `SpanApi`, and `TextApi`. Inside a live editor, prefer `editor.read.<group>.<method>()` for one-shot reads, grouped `state.*` reads for custom read logic, `editor.update.<group>.<method>()` for one-shot writes, and grouped `tx.*` writes for composed commands. Extension `read` factories return callable method trees built once per configuration; methods read live state when invoked.
+Pure data helpers live on namespaces such as `ElementApi`, `NodeApi`, `PathApi`, `PointApi`, `RangeApi`, `SpanApi`, and `TextApi`. Inside a live editor, prefer `editor.read.<group>.<method>()` for one-shot reads, grouped `state.*` reads for custom read logic, `editor.update.<group>.<method>()` for one-shot writes, and grouped `tx.*` writes for composed commands. Plugin `read` factories return callable method trees built once per configuration; methods read live state when invoked.
 
 DOM, React, annotations, history, hyperscript, layout, diff, and testing APIs live on explicit `plitejs/*` subpaths. There is no public `/internal` entrypoint.
 
-React components create annotation stores with `usePliteAnnotationStore` from `plitejs/react`. Framework adapters with an independent lifetime use `createPliteAnnotationStore` from `plitejs/annotations`; the React root does not export the imperative constructor.
+React components create annotation stores with `useAnnotationStore` from `plitejs/react`. Framework adapters with an independent lifetime use `createAnnotationStore` from `plitejs/annotations`; the React root does not export the imperative constructor.

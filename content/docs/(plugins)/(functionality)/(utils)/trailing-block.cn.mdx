@@ -65,19 +65,6 @@ const editor = createEditor({
 
 </Steps>
 
-## 与建议套件组合
-
-`SuggestionKit` 不会安装 `TrailingBlockPlugin`。编辑器需要两种行为时，请分别组合：
-
-```tsx
-const editor = createEditor({
-  plugins: [...SuggestionKit, TrailingBlockPlugin],
-});
-```
-
-同时安装两者时，建议套件会弱适配尾部块插入，避免将规范化生成的块记录为建议。
-直接传给 `TrailingBlockPlugin.configure(...)` 的选项具有更高优先级。
-
 ## 插件
 
 ### `TrailingBlockPlugin`
@@ -104,8 +91,8 @@ const editor = createEditor({
   <APIItem name="match" type="NodeMatch" optional>
     限制触发插入的最后一个节点。
   </APIItem>
-  <APIItem name="insert" type="(editor, options) => void" optional>
-    包装生成的插入。回调负责调用 `options.insert()`。
+  <APIItem name="insert" type="(defaultInsert: () => void) => void" optional>
+    包装生成的插入。回调负责调用 `defaultInsert()`。
   </APIItem>
 </APIOptions>
 </API>

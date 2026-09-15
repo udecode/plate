@@ -5,19 +5,19 @@ import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import {
   createEditor as createPlateEditor,
-  defineBasePlugin,
+  definePlugin,
 } from '../../../../../packages/platejs/src/index.tsx';
 import {
   ContentSlice,
   createEditor,
-  defineExtensionSlot,
+  definePluginSlot,
 } from '../../../../../packages/plitejs/src/index.ts';
 import {
   dom,
   hostCodecs,
   writeHostFragmentData,
 } from '../../../../../packages/plitejs/src/dom/index.ts';
-import { getExtensionRegistry } from '../../../../../packages/plitejs/src/internal/index.ts';
+import { getPluginRegistry } from '../../../../../packages/plitejs/src/internal/index.ts';
 import { EDITOR_TO_WINDOW } from '../../../../../packages/plitejs/src/dom/internal/index.ts';
 import { insertHostData } from '../../../../../packages/plitejs/src/dom/plugin/host-codec.ts';
 import {
@@ -35,7 +35,7 @@ import {
   isClipboardAuthorityArtifactPath,
 } from '../../../../editor/benchmarks/plite-clipboard-large-payload-gate.mjs';
 
-const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
+const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-editor-fragment';
 
 const iterations = Number(process.env.PLITE_CLIPBOARD_BENCH_ITERATIONS || 3);
 const stressIterations = Number(
@@ -161,12 +161,12 @@ const benchmarkHostFormat = 'application/x-plite-benchmark-json';
 const benchmarkPlateFormat = 'application/x-plate-benchmark-json';
 const benchmarkPlateReconfigurationFormat =
   'application/x-plate-benchmark-reconfiguration';
-const plateCodecReconfigurationSlot = defineExtensionSlot(
+const plateCodecReconfigurationSlot = definePluginSlot(
   'benchmark-plate-codec-reconfiguration'
 );
 const hostCodecParseDurations = [];
 const hostCodecSerializeDurations = [];
-const benchmarkHostCodecExtension = hostCodecs('benchmark-host-codec', [
+const benchmarkHostCodecPlugin = hostCodecs('benchmark-host-codec', [
   {
     format: benchmarkHostFormat,
     key: 'benchmark:json',
@@ -202,7 +202,7 @@ const createPlateCodecCounters = () => ({
   query: 0,
 });
 
-const createPlateReconfigurationCodecExtension = (label, counters) => {
+const createPlateReconfigurationCodecPlugin = (label, counters) => {
   counters.compilation += 1;
 
   return hostCodecs(`benchmark-plate-codec-reconfiguration:${label}`, [
@@ -231,7 +231,7 @@ const createPlateReconfigurationCodecExtension = (label, counters) => {
 };
 
 const createPlateBenchmarkCodecPlugin = (counters, format) =>
-  defineBasePlugin('benchmarkPlateCodec', {
+  definePlugin('benchmarkPlateCodec', {
     codecs: ({ defineCodecs }) => {
       counters.compilation += 1;
 
@@ -268,9 +268,9 @@ const createPlateBenchmarkCodecPlugin = (counters, format) =>
     },
   });
 
-const createBenchmarkEditor = (children, selection, extensions = []) => {
+const createBenchmarkEditor = (children, selection, plugins = []) => {
   const editor = createEditor({
-    extensions: [dom(), ...extensions],
+    plugins: [dom(), ...plugins],
     initialSelection: selection,
     initialValue: children,
   });
@@ -299,7 +299,7 @@ const createPlateCodecReconfigurationEditor = (initialCounters) =>
     collapsedStartSelection,
     [
       plateCodecReconfigurationSlot.of(
-        createPlateReconfigurationCodecExtension('initial', initialCounters)
+        createPlateReconfigurationCodecPlugin('initial', initialCounters)
       ),
     ]
   );
@@ -607,7 +607,7 @@ const measureFragmentEncode = (lineCount, sampleCount) => {
     const encoded = writeDOMFragmentData(data, {
       clipboardFormatKey: DEFAULT_CLIPBOARD_FORMAT_KEY,
       html: ({ encoded, text }) =>
-        `<span data-plite-fragment="${encoded}" data-plite-fragment-format="${DEFAULT_CLIPBOARD_FORMAT_KEY}">${text}</span>`,
+        `<span data-editor-fragment="${encoded}" data-editor-fragment-format="${DEFAULT_CLIPBOARD_FORMAT_KEY}">${text}</span>`,
       slice,
       window: benchmarkWindow,
     });
@@ -795,7 +795,7 @@ const measureHostCodecInsert = (lineCount, sampleCount) => {
       const editor = createBenchmarkEditor(
         [createParagraph('')],
         collapsedStartSelection,
-        [benchmarkHostCodecExtension]
+        [benchmarkHostCodecPlugin]
       );
       const data = new FakeDataTransfer();
 
@@ -848,7 +848,7 @@ const measureHostCodecSerialize = (lineCount, sampleCount) => {
     () => ({
       data: new FakeDataTransfer(),
       editor: createBenchmarkEditor(fragment, null, [
-        benchmarkHostCodecExtension,
+        benchmarkHostCodecPlugin,
       ]),
       serializeSample: hostCodecSerializeDurations.length,
     }),
@@ -937,7 +937,7 @@ const measurePlateCodecReconfiguration = (sampleCount) =>
 
       return {
         configurationRevisionBefore:
-          getExtensionRegistry(editor).configurationRevision,
+          getPluginRegistry(editor).configurationRevision,
         initialCounters,
         replacementCounters,
         editor,
@@ -945,9 +945,9 @@ const measurePlateCodecReconfiguration = (sampleCount) =>
       };
     },
     ({ editor, replacementCounters }) => {
-      editor.update.extensions.reconfigure(
+      editor.update.plugins.reconfigure(
         plateCodecReconfigurationSlot,
-        createPlateReconfigurationCodecExtension(
+        createPlateReconfigurationCodecPlugin(
           'replacement',
           replacementCounters
         )
@@ -963,7 +963,7 @@ const measurePlateCodecReconfiguration = (sampleCount) =>
       }) => {
         const configurationCommit = editor.read.lastCommit();
         const configurationRevisionAfter =
-          getExtensionRegistry(editor).configurationRevision;
+          getPluginRegistry(editor).configurationRevision;
         const configurationCommitCount =
           editor.read.runtime.snapshot().version - versionBefore;
 
@@ -1204,7 +1204,7 @@ const measureFullSelectionCopy = (
     }
   );
   const editor = createBenchmarkEditor(children, selection);
-  const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+  const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
   const copiedNodes = new WeakSet(editor.read.children().flatMap((node) => [node, ...node.children]));
   const originalEntries = Object.entries;
   let copyPropertyVisitCount = 0;
@@ -1213,7 +1213,7 @@ const measureFullSelectionCopy = (
     if (copiedNodes.has(value)) copyPropertyVisitCount += 1;
     return originalEntries(value);
   };
-  globalThis.__PLITE_REACT_RENDER_PROFILER__ = {
+  globalThis.__EDITOR_REACT_RENDER_PROFILER__ = {
     record(event) {
       if (event.kind === 'core-time' && event.id === 'runtime-index-full-build') {
         runtimeIndexBuildCount += 1;
@@ -1225,7 +1225,7 @@ const measureFullSelectionCopy = (
     writeDOMSelectionData(editor, data);
     verify(data.getData('text/plain').length > 0, 'Copy locality probe must write the selected text');
   } finally {
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     Object.entries = originalEntries;
   }
   verify(runtimeIndexBuildCount === 0, 'Model-backed copy must not build identities for missing DOM');

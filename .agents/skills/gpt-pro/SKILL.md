@@ -1,5 +1,5 @@
 ---
-description: Create a self-contained GPT Pro or external-review prompt with full repo context, current state, evidence, and pointed review questions because the reviewer has no local file access.
+description: Prepare a self-contained external-review prompt with the exact repository context, evidence and unresolved questions.
 argument-hint: '[topic | plan path | review target | prompt request]'
 disable-model-invocation: true
 name: gpt-pro

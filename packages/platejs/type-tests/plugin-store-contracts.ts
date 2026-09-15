@@ -1,28 +1,28 @@
-import { defineBasePlugin } from 'platejs';
-import { createEditor, toPlatePlugin, usePluginStore } from 'platejs/react';
+import { definePlugin } from 'platejs';
+import { createEditor, toReactPlugin, usePluginStore } from 'platejs/react';
 
 import { useEditorPluginStore } from '../src/react/stores/plate/usePluginStore';
 
-type SuggestionPluginState = {
+type StoreContractState = {
   activeId: string | null;
   enabled: boolean;
   hoverId: string | null;
 };
 
-const suggestionInitialState: SuggestionPluginState = {
+const initialState: StoreContractState = {
   activeId: null,
   enabled: true,
   hoverId: null,
 };
 
-const BaseStoreContractPlugin = defineBasePlugin('storeContract', {
-  initialState: suggestionInitialState,
+const BaseStoreContractPlugin = definePlugin('storeContract', {
+  initialState,
   selectors: {
     isActive: (state, id: string) => state.activeId === id,
   },
 });
 
-const StoreContractPlugin = toPlatePlugin(BaseStoreContractPlugin).configure(
+const StoreContractPlugin = toReactPlugin(BaseStoreContractPlugin).configure(
   {}
 );
 
@@ -30,11 +30,7 @@ const editor = createEditor({ plugins: [StoreContractPlugin] });
 
 const usePluginStoreContracts = () => {
   const activeId = usePluginStore(StoreContractPlugin, 'activeId');
-  const active = usePluginStore(
-    StoreContractPlugin,
-    'isActive',
-    'suggestion-1'
-  );
+  const active = usePluginStore(StoreContractPlugin, 'isActive', 'record-1');
   const selected = usePluginStore(
     StoreContractPlugin,
     (state) => {
@@ -62,11 +58,11 @@ const usePluginStoreContracts = () => {
     editor,
     StoreContractPlugin,
     'isActive',
-    'suggestion-1'
+    'record-1'
   );
   const portalActive = editor
     .plugin(StoreContractPlugin)
-    .store.get('isActive', 'suggestion-1');
+    .store.get('isActive', 'record-1');
 
   const exactActiveId: string | null = activeId;
   const exactActive: boolean = active;

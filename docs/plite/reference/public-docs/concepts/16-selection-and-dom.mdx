@@ -1,0 +1,270 @@
+---
+title: "Selection And DOM"
+description: "Understand model selection, browser-native selection, DOM coverage, voids, hidden content, and browser proof."
+---
+
+Plite stores selection in the model, then reconciles it with browser-native selection in React. Use this page for caret and DOM rules; use [Editing Behavior](15-editing-behavior) for the full event-to-commit pipeline.
+
+## Choose the right assertion
+
+Selection bugs need the layer that can actually fail.
+
+| Claim                                           | Assert                                                      | Owner                                           |
+| ----------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| The Plite selection is correct                  | model selection                                             | `plitejs`                                |
+| The browser caret lands in the right DOM text   | DOM caret or DOM selection                                  | `plitejs/react` and `plitejs/dom` |
+| The visible browser highlight is not duplicated | displayed selection snapshot                                | `@platejs/test`                              |
+| Hidden content remains selectable or copyable   | DOM coverage policy plus model result                       | `plitejs/dom` and `plitejs/react` |
+| Follow-up typing still works                    | text, selection, focus, and commit after the asserted state | `@platejs/test`                              |
+
+Do not close a selection bug with only one layer unless the bug only exists in that layer.
+
+## Selection ownership
+
+Plite has two selection systems in a React editor:
+
+| Selection        | What it means                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Model selection  | The serializable `TextSelection`, `NodeSelection`, or `null` stored by the Plite editor.          |
+| Native selection | The browser `Selection` visible in the contenteditable DOM. Only text selection projects to it. |
+
+Most editor code should write the model selection and let Plite export the DOM/native selection. Plite imports the native selection when the browser is the current source of truth, such as user selection movement or native input.
+
+## Model selection
+
+Read selection through `editor.read(...)`.
+
+```tsx
+const selection = editor.read((state) => state.selection());
+```
+
+Write selection inside `editor.update(...)`.
+
+```tsx
+import { SelectionApi } from "plitejs";
+
+editor.update((tx) => {
+  tx.selection.set(
+    SelectionApi.text({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 3 },
+    })
+  );
+});
+```
+
+## Selection queries
+
+Use explicit predicates instead of rebuilding point and block comparisons in
+feature code.
+
+```tsx
+const acrossBlocks = editor.read.selection.isAcrossBlocks();
+const atHeadingStart = editor.read.selection.isAtBlockStart({
+  type: "heading",
+});
+const intersectsIntro = editor.read.selection.intersects([0]);
+const containsRange = editor.read.selection.contains(range);
+const atWordEnd = editor.read.points.isWordEnd(point);
+```
+
+`isWithinBlock`, `isAcrossBlocks`, `isAtBlockStart`, and `isAtBlockEnd` accept
+`at`, `type`, and `match` options. Omit `at` to inspect the current selection.
+These queries return `false` when the target or current selection does not
+resolve.
+
+Use [Locations](03-locations) for `Path`, `Point`, `Range`, and anchors. Use [Transforms](04-transforms#selection) for transaction selection helpers.
+
+## Native selection
+
+The browser can move native selection through mouse, keyboard, touch, composition, spellcheck, selection handles, and platform editing commands. Plite React observes those moves and imports them when they should become model state.
+
+Application code should not patch the browser `Selection` directly for normal editor behavior. Use model transactions, `Editable` handlers, or DOM-aware React APIs that preserve Plite's repair path.
+
+Use [React Editor](../libraries/plite-react/react-editor) for DOM translation helpers and [Plite React Event Handling](../libraries/plite-react/event-handling) for browser event hooks.
+
+Horizontal arrow and word movement are visual DOM operations. Plite React asks
+the DOM capability for the next physical left or right point and affinity, so
+mixed-direction text follows the browser's rendered order rather than one
+block-wide direction guess. Core point transforms remain logical and DOM-free.
+
+```tsx
+const next = editor.api.dom.resolveVisualPoint(point, {
+  affinity: "forward",
+  direction: "left",
+  unit: "word",
+});
+```
+
+This low-level API is useful for renderer integrations. Normal editors should
+let `<Editable>` own keyboard movement.
+
+## Keyboard-selectable content
+
+Use a non-void, isolating element with `keyboardSelectable: true` when one
+document node owns both non-editable asset chrome and editable child content.
+The model keeps its focus states distinct:
+
+| State | Behavior |
+| --- | --- |
+| `NodeSelection` at the owner path | Focuses the asset. The native browser selection stays empty. `ArrowDown` enters the owner's text content, and Backspace or Delete removes the owner. |
+| `TextSelection` inside the owner | Edits child content. `ArrowUp` from its leading visual boundary returns to the owner `NodeSelection`. |
+
+Clicking a `contenteditable="false"` descendant of a keyboard-selectable owner
+creates its `NodeSelection`. Clicking editable child text creates a normal
+`TextSelection`.
+
+```tsx
+import { definePlugin, schema } from "plitejs";
+
+const media = definePlugin("media", {
+  schema: {
+    elements: {
+      image: {
+        content: schema.content.text({ default: "text", min: 1 }),
+        isolating: true,
+        keyboardSelectable: true,
+      },
+    },
+  },
+});
+```
+
+In React node UI, use `useElementSelected({ mode: "node" })` for the exact
+asset-focused state. The default intersection mode also matches text selection
+inside the element.
+
+## DOM phase order
+
+Each mounted `Editable` owns one bounded scheduler for post-model browser work.
+It runs queued tasks in this order:
+
+1. model work
+2. DOM reads
+3. DOM or React writes
+4. selection export and repair
+
+Selection export, scroll restoration, native-input repair, drag auto-scroll,
+projected caret cleanup, focus restoration, and DOM repair share that owner.
+Semantic browser clocks such as composition guard lifetimes can wait on a
+timer, but their DOM or selection side effects re-enter the phase scheduler.
+Recursive scheduling is bounded and recorded as a loop diagnostic instead of
+spinning indefinitely.
+
+## DOM coverage
+
+DOM coverage boundaries represent model content whose editable DOM is not mounted.
+
+| Policy                          | Use it when                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| `selectionPolicy="skip"`        | Hidden content is app chrome or should not receive cursor movement.         |
+| `selectionPolicy="model"`       | Hidden content can be selected in the Plite model without mounting DOM.     |
+| `selectionPolicy="materialize"` | Plite should ask the app to reveal content before moving selection into it. |
+
+Clipboard has its own policy. Model-backed copy can include hidden document content without selecting every hidden DOM node.
+Use [Clipboard And Paste](17-clipboard-and-paste) for copy, paste, drop, and
+fragment import ownership.
+
+Use [DOM Coverage Boundaries](../libraries/plite-react/dom-coverage-boundaries) for `selectionPolicy`, `copyPolicy`, and materialization behavior.
+
+Coverage belongs to one mounted view, not the editor globally. Native and
+external views of the same document can therefore have different coverage.
+
+## External text views
+
+An [external text view](../libraries/plite-react/external-text) replaces native
+Plite rendering for one Text without replacing its canonical model. Only the
+focused adapter may own native selection. Other views paint model selection
+without moving browser selection or focus.
+
+A cross-boundary selection stays complete in Plite even when only its visible
+native part can form a DOM range. The adapter paints its intersecting range,
+and Plite copy/cut uses the complete canonical selection. A partial native
+range must never overwrite that model range during reconciliation.
+
+The adapter owns local search, accessibility, and print behavior. Keeping text
+in the model does not make unmounted text searchable by native browser find.
+
+## Voids and editable content
+
+Void elements are atomic in the outer document. Plite renders their hidden text
+anchor so selection can move around them. Native form controls belong inside
+the noneditable void UI; they do not edit that anchor.
+
+Declare an atomic block with `void: "block"`:
+
+```tsx
+import { definePlugin } from "plitejs";
+
+const media = definePlugin("media", {
+  schema: {
+    elements: {
+      image: {
+        void: "block",
+      },
+    },
+  },
+});
+```
+
+Install this feature contribution beside the editor's complete schema.
+
+Keep visible void UI inside the void renderer. Let Plite render the shell and text anchor. Use [Editable Component](../libraries/plite-react/editable#rendervoid) for void rendering rules.
+
+Keep editable document text in an ordinary element. Use a named content root
+when a void's rich body needs independently addressed content with the same
+editor runtime and history.
+
+## Large documents
+
+`Editable` mounts the complete document DOM. `VirtualizedEditable` from
+`plitejs/react/virtualized` explicitly omits offscreen top-level blocks when a
+large document exceeds the product's tested DOM budget.
+
+In a virtualized view, a model selection can cover the full document while the
+mounted DOM covers the measured window, selected endpoints, and requested
+targets. Native browser selection and find can prove facts only about mounted
+content.
+
+Use [Editable Component](../libraries/plite-react/editable#dom-rendering) for the
+complete surface and [Virtualized Rendering](../libraries/plite-react/virtualized-rendering)
+for explicit omission.
+
+## Browser proof
+
+Selection proof should assert the layers named by the claim.
+
+```tsx
+import { openExample } from "@platejs/test/playwright";
+
+const editor = await openExample(page, "plaintext", {
+  ready: { editor: "visible" },
+});
+
+await editor.focus();
+await editor.selectAll();
+await editor.type("Hello");
+
+await editor.assert.selection({
+  anchor: { path: [0, 0], offset: 5 },
+  focus: { path: [0, 0], offset: 5 },
+});
+
+await editor.assert.domCaret({ text: "Hello", offset: 5 });
+await editor.assert.noDoubleSelectionHighlight();
+await editor.type("!");
+await editor.assert.text("Hello!");
+```
+
+Use [Browser](/docs/browser) for Playwright helpers that capture model selection, DOM selection, displayed selection, focus, native event traces, clipboard, screenshots, and follow-up typing.
+
+## Reference
+
+- [Range API](../api/locations/range)
+- [Point API](../api/locations/point)
+- [Transforms API](../api/transforms)
+- [Clipboard And Paste](17-clipboard-and-paste)
+- [Decorations, annotations, and widgets](18-decorations-annotations-widgets)
+- [React Editor](../libraries/plite-react/react-editor)
+- [DOM Coverage Boundaries](../libraries/plite-react/dom-coverage-boundaries)
+- [Browser](/docs/browser)

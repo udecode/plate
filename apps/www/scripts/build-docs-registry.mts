@@ -219,8 +219,8 @@ export async function createDocsRegistry(): Promise<Registry> {
             type: 'registry:file',
           },
           {
-            path: 'src/registry/blocks/fumadocs/mdx-plate-components.tsx',
-            target: 'mdx-plate-components.tsx',
+            path: 'src/registry/blocks/fumadocs/mdx-api-components.tsx',
+            target: 'mdx-api-components.tsx',
             type: 'registry:file',
           },
         ],

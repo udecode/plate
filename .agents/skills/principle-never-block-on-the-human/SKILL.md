@@ -1,9 +1,7 @@
 ---
 name: principle-never-block-on-the-human
-description: "Apply when tempted to ask 'should I do X?' on reversible work. Proceed, present the result, let the human course-correct after the fact; reserve confirmation for irreversible actions."
+description: "Resolve an unnecessary permission pause when reversible work is already authorized and intent is clear."
 ---
-
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
 
 # Never Block on the Human
 
@@ -19,6 +17,6 @@ The human supervises asynchronously. Agents must stay unblocked: make reasonable
 - **Code is cheap, attention is scarce.** A wrong implementation costs minutes to fix. A blocked agent costs the human's attention to unblock.
 
 **Boundaries:**
-- **Irreversible actions** (force-push, delete production data, send external messages) still require confirmation.
+- **Irreversible actions** (force-push, delete production data, send external messages) require applicable authority. Honor explicit authorization already given; ask only when it is missing.
 - **Reversible actions** (write code, edit notes, split tasks) should proceed without blocking.
 - **Product direction** comes from the human; *execution* should not block.

@@ -1,28 +1,22 @@
 import { BaseLinkPlugin } from 'platejs';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
-import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
-
 export function LinkElementStatic(
-  props: PliteElementProps<typeof BaseLinkPlugin>
+  props: EditorElementProps<typeof BaseLinkPlugin>
 ) {
   return (
-    <PliteElement
+    <EditorElement
       {...props}
       as="a"
-      className={cn(
-        'font-medium text-primary underline decoration-primary underline-offset-4',
-        inlineSuggestionVariants()
-      )}
+      className="font-medium text-primary underline decoration-primary underline-offset-4"
       attributes={{
         ...props.attributes,
         ...props.editor.plugin(BaseLinkPlugin).api.getAttributes(props.element),
       }}
     >
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 

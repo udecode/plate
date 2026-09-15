@@ -9,8 +9,8 @@ import {
 import { isObject } from '../utils/is-object';
 
 /**
- * `Range` objects are a set of points that refer to a specific span of a Plite
- * document. They can define a span inside a single node or a can span across
+ * `Range` objects are a set of points that refer to a specific span of a
+ * document. They can define a span inside a single node or can span across
  * multiple nodes.
  */
 

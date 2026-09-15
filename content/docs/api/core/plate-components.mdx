@@ -3,14 +3,14 @@ title: Plate Components
 description: API reference for Plate React components.
 ---
 
-Plate components connect an `Editor` to React rendering. Use `Plate` and `PlateContent` for editable editors, `PlateView` for read-only static views, and the node primitives when writing custom plugin components.
+Plate components connect an `Editor` to React rendering. Use `EditorRoot` and `EditorContent` for editable editors, `EditorPreview` for read-only static views, and the node primitives when writing custom plugin components.
 
 ## Editable editor
 
-`Plate` owns the editor store. `PlateContent` renders the editable surface under that store.
+`EditorRoot` owns one mounted editor view and provides its context. `EditorContent` renders the editable surface under that view.
 
 ```tsx title="components/editor.tsx"
-import { Plate, PlateContent, useCreateEditor } from "platejs/react";
+import { EditorRoot, EditorContent, useCreateEditor } from "platejs/react";
 
 export function Editor() {
   const editor = useCreateEditor({
@@ -23,25 +23,46 @@ export function Editor() {
   });
 
   return (
-    <Plate editor={editor}>
-      <PlateContent placeholder="Write..." />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent placeholder="Write..." />
+    </EditorRoot>
   );
 }
 ```
 
 <Callout type="warning" title="Provider required">
-  `PlateContent` must render below `Plate`. `useEditor()` requires an active
+  `EditorContent` must render below `EditorRoot`. `useEditor()` requires an active
   editor and throws otherwise. Use `useOptionalEditor()` only in controller UI
   that intentionally handles `null` while no editor is active.
 </Callout>
 
+### Authored view
+
+For an editor with [authored changes](/docs/authored-changes), pass `authored` to choose its starting input intent and visible projection:
+
+```tsx
+<EditorRoot
+  editor={editor}
+  authored={{ intent: 'propose', projection: 'markup' }}
+>
+  <EditorContent />
+</EditorRoot>
+```
+
+| `authored` value | Behavior |
+| --- | --- |
+| `{ intent: 'edit', projection: 'accepted' }` | Edit accepted content. |
+| `{ intent: 'propose', projection: 'markup' }` | Propose edits and display retained review content. |
+| `{ intent: 'propose', projection: 'proposed' }` | Propose edits and display the proposed result. |
+
+The prop requires an installed authored capability. Each `EditorRoot` configures its own view, so two views of one document can use different values. Changing the intent or projection updates that view without remounting it. Rerendering with equivalent values preserves mode changes made through its mounted plugin portal. The prop does not change the saved document or accept or reject suggestions.
+
 ## Read-only view
 
-Use `PlateView` with a static editor when you need rendered content and Plate copy behavior without an editable surface.
+Use `EditorPreview` with a static editor when you need rendered content and Plate copy behavior without an editable surface.
 
 ```tsx title="components/read-only-editor.tsx"
-import { PlateView, useStaticEditor } from "platejs/react";
+import { EditorPreview, useStaticEditor } from "platejs/react";
 
 const value = [
   {
@@ -55,58 +76,58 @@ export function ReadOnlyEditor() {
 
   if (!editor) return null;
 
-  return <PlateView editor={editor} />;
+  return <EditorPreview editor={editor} />;
 }
 ```
 
-The default `onCopy` handler on `PlateView` writes Plate fragment data to the clipboard. Pass `onCopy` to supply your own handler.
+The default `onCopy` handler on `EditorPreview` writes Plate fragment data to the clipboard. Pass `onCopy` to supply your own handler.
 
 ## Component map
 
 | Component                | Use For                                                                                          |
 | ------------------------ | ------------------------------------------------------------------------------------------------ |
-| `Plate`                  | Store provider for one editor instance.                                                          |
-| `PlateContent`           | Editable Plite surface with plugin events, decorations, renderers, shortcuts, and editor effects. |
-| `PlateView`              | Static read-only rendering with Plate fragment copy support.                                     |
-| `PlateContainer`         | Editor container `div` plus `beforeContainer` and `afterContainer` plugin slots.                 |
+| `EditorRoot`                  | Lifecycle and context for one mounted editor view.                                               |
+| `EditorContent`           | Editable Plate surface with plugin events, decorations, renderers, shortcuts, and editor effects. |
+| `EditorPreview`              | Static read-only rendering with Plate fragment copy support.                                     |
+| `EditorContainer`         | Editor container `div` plus `beforeContainer` and `afterContainer` plugin slots.                 |
 | `NodeSelectionHighlight` | Highlight overlays for selected selectable blocks.                                               |
 | `NodeSelectionDrag`      | Blank-space pointer-drag selection and its drag rectangle.                                       |
-| `PlateElement`           | Default element renderer for block and inline elements.                                          |
-| `PlateLeaf`              | Default persisted-mark renderer for a text segment.                                               |
-| `PlateText`              | Default wrapper around every rendered segment of one text node.                                  |
+| `EditorElement`           | Default element renderer for block and inline elements.                                          |
+| `EditorLeaf`              | Default persisted-mark renderer for a text segment.                                               |
+| `EditorText`              | Default wrapper around every rendered segment of one text node.                                  |
 
 ## Render pipeline
 
-`PlateContent` composes its editable behavior from intrinsic surface props and
+`EditorContent` composes its editable behavior from intrinsic surface props and
 installed plugins. Structural renderers and Decoration sources are plugin-owned.
-Compose the public components and plugin slots; `PlateContent` owns its internal
+Compose the public components and plugin slots; `EditorContent` owns its internal
 lifecycle.
 
-`PlateContent` composes `slots.wrapRoot` around each editable view and supplies its `editableRef` to every root slot. The ref is `null` before attachment and after detach; integrations read it after commit and clean up the element they captured. Feature kits use this boundary for required React integration.
+`EditorContent` composes `slots.wrapRoot` around each editable view and supplies its `editableRef` to every root slot. The ref is `null` before attachment and after detach; integrations read it after commit and clean up the element they captured. Feature kits use this boundary for required React integration.
 
 | Stage           | Source                                                                                                                  |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Editor context | `Plate` provides the editor and plugin Decoration sources; `PlateContent` selects the content root. |
-| Editable props  | `PlateContent` pipes plugin DOM events and plugin-owned element, leaf, and text renderers.                              |
+| Editor context | `EditorRoot` provides the editor and plugin Decoration sources; `EditorContent` selects the content root. |
+| Editable props  | `EditorContent` pipes plugin DOM events and plugin-owned element, leaf, and text renderers.                              |
 | Plugin slots    | `slots.wrapRoot`, `slots.wrapContent`, `slots.beforeEditable`, and `slots.afterEditable` compose the editable surface.                    |
-| Lifecycle | `PlateContent` automatically manages shortcuts, editor refs, controller registration, and cleanup. |
-| Read-only state | `disabled` forces read-only; `PlateContent` can override the `readOnly` value supplied by `Plate`. |
+| Lifecycle | `EditorContent` automatically manages shortcuts, editor refs, controller registration, and cleanup. |
+| Read-only state | `disabled` forces read-only; `EditorContent` can override the `readOnly` value supplied by `EditorRoot`. |
 
 ## Node primitives
 
-Use `PlateElement`, `PlateLeaf`, and `PlateText` inside plugin components. They merge Plite attributes with your `className`, `style`, and `ref`.
+Use `EditorElement`, `EditorLeaf`, and `EditorText` inside plugin components. They merge Plate attributes with your `className`, `style`, and `ref`.
 
 ```tsx title="components/paragraph-element.tsx"
 import {
   ParagraphPlugin,
-  PlateElement,
-  type PlateElementProps,
+  EditorElement,
+  type EditorElementProps,
 } from "platejs/react";
 
 export function ParagraphElement(
-  props: PlateElementProps<typeof ParagraphPlugin>
+  props: EditorElementProps<typeof ParagraphPlugin>
 ) {
-  return <PlateElement as="p" className="leading-7" {...props} />;
+  return <EditorElement as="p" className="leading-7" {...props} />;
 }
 ```
 
@@ -115,10 +136,10 @@ infer that plugin's configured element type.
 
 ```tsx title="components/quote-element.tsx"
 import { QuotePlugin } from "@/components/editor/quote-plugin";
-import { PlateElement, type PlateElementProps } from "platejs/react";
+import { EditorElement, type EditorElementProps } from "platejs/react";
 
-export function QuoteElement(props: PlateElementProps<typeof QuotePlugin>) {
-  return <PlateElement as="blockquote" {...props} />;
+export function QuoteElement(props: EditorElementProps<typeof QuotePlugin>) {
+  return <EditorElement as="blockquote" {...props} />;
 }
 ```
 
@@ -141,13 +162,13 @@ static rendering; Plate chooses an editable root view or static root children.
 
 ```tsx title="components/figure-element.tsx"
 import { FigurePlugin } from "@/components/editor/figure-plugin";
-import type { PlateElementProps } from "platejs/react";
+import type { EditorElementProps } from "platejs/react";
 
 export function FigureElement({
   attributes,
   children,
   slots,
-}: PlateElementProps<typeof FigurePlugin>) {
+}: EditorElementProps<typeof FigurePlugin>) {
   return (
     <figure {...attributes}>
       {children}
@@ -159,28 +180,28 @@ export function FigureElement({
 
 | Primitive           | Behavior                                                                                                                                                                                                                      |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PlateElement`      | Adds `data-plite-node="element"`, preserves Plite's `data-plite-node-key`, exposes typed element-owned content-root slots, and adds directional-affinity spacers when needed. |
-| `PlateLeaf`         | Renders persisted marks around a text segment and adds hard-affinity spacers when needed.                                                                                                                                      |
-| `PlateText`         | Renders one text-node wrapper around all mark and Decoration segments.                                                                                                                                                          |
+| `EditorElement`      | Adds `data-editor-node="element"`, preserves Plate's `data-editor-node-key`, exposes typed element-owned content-root slots, and adds directional-affinity spacers when needed. |
+| `EditorLeaf`         | Renders persisted marks around a text segment and adds hard-affinity spacers when needed.                                                                                                                                      |
+| `EditorText`         | Renders one text-node wrapper around all mark and Decoration segments.                                                                                                                                                          |
 
 ## Node selection
 
-Plite stores node selection in the editor model. Plate React provides two
+Plate stores node selection in the editor model. Plate React provides two
 independent DOM primitives for its visual presentation and pointer-drag input.
-Compose them as siblings after `PlateContent` under the same `Plate` provider.
+Compose them as siblings after `EditorContent` under the same `EditorRoot` provider.
 
 ```tsx title="components/editor.tsx"
 import {
   NodeSelectionDrag,
   NodeSelectionHighlight,
-  PlateContent,
-  type PlateContentProps,
+  EditorContent,
+  type EditorContentProps,
 } from "platejs/react";
 
-export function Editor(props: PlateContentProps) {
+export function Editor(props: EditorContentProps) {
   return (
     <>
-      <PlateContent {...props} />
+      <EditorContent {...props} />
       <NodeSelectionHighlight className="z-1 bg-brand/[.13]" />
       <NodeSelectionDrag className="z-50 border border-brand/25 bg-brand/15" />
     </>
@@ -208,20 +229,20 @@ read its exact state with `useElementSelected({ mode: "node" })`.
 | `NodeSelectionHighlight` | Accepts `div` attributes except `children`; renders `data-slot="node-selection-highlight"` with required inset positioning. |
 | `NodeSelectionDrag`      | Accepts `div` attributes except `children`; renders `data-slot="node-selection-drag"` with required fixed positioning.      |
 
-Use the [Selection API](/docs/plite/api/locations/selection) for model reads
+Use the [Selection API](/docs/api/selection) for model reads
 and writes. See the [Node Selection demo](/docs/examples/node-selection) for
 the copied Editor composition.
 
 ## API Reference
 
-### `Plate`
+### `EditorRoot`
 
 Root provider for one editor instance.
 
 <API name="Plate">
   <APIProps>
     <APIItem name="editor" type="Editor | null">
-      Editor instance. When `null`, `Plate` renders nothing.
+      Editor instance. When `null`, `EditorRoot` renders nothing.
     </APIItem>
     <APIItem name="children" type="React.ReactNode">
       React children that can read the selected editor context.
@@ -230,14 +251,14 @@ Root provider for one editor instance.
       Read-only state provided to content views. Defaults to `editor.read.view.isReadOnly()`.
     </APIItem>
     <APIItem name="primary" type="boolean" optional>
-      Registers the editor as a primary editor for `PlateController`.
+      Registers the editor as a primary editor for `EditorController`.
     </APIItem>
     <APIItem
       name="onCommit"
       type="({ commit, editor, snapshot }) => void"
       optional
     >
-      Observes every published editor commit for the lifetime of the `Plate`
+      Observes every published editor commit for the lifetime of the `EditorRoot`
       provider.
     </APIItem>
     <APIItem
@@ -260,14 +281,14 @@ Root provider for one editor instance.
       type="({ editor, kind, node, path, previousNode, previousPath, commit }) => void"
       optional
     >
-      Observes canonical node changes for the lifetime of the `Plate` provider.
+      Observes canonical node changes for the lifetime of the `EditorRoot` provider.
     </APIItem>
     <APIItem
       name="onTextChange"
       type="({ editor, node, path, previousPath, previousText, text, commit }) => void"
       optional
     >
-      Observes canonical text changes for the lifetime of the `Plate` provider.
+      Observes canonical text changes for the lifetime of the `EditorRoot` provider.
     </APIItem>
     <APIItem name="suppressInstanceWarning" type="boolean" optional>
       Suppresses warnings about mounting the same editor instance more than once.
@@ -275,11 +296,11 @@ Root provider for one editor instance.
   </APIProps>
 </API>
 
-### `PlateContent`
+### `EditorContent`
 
-Editable surface for a `Plate` editor.
+Editable surface for an `EditorRoot` editor.
 
-<API name="PlateContent">
+<API name="EditorContent">
   <APIProps>
     <APIItem name="autoFocusOnEditable" type="boolean" optional>
       Focuses the editor at the end when `readOnly` changes from `true` to
@@ -289,7 +310,7 @@ Editable surface for a `Plate` editor.
       Forces read-only state and sets `aria-disabled`.
     </APIItem>
     <APIItem name="readOnly" type="boolean" optional>
-      Overrides the read-only value supplied by `Plate`. `disabled` always forces read-only.
+      Overrides the read-only value supplied by `EditorRoot`. `disabled` always forces read-only.
     </APIItem>
     <APIItem name="placeholder" type="React.ReactNode" optional>
       Placeholder content for the editable surface.
@@ -299,7 +320,7 @@ Editable surface for a `Plate` editor.
       type="(editor, domRange) => void"
       optional
     >
-      Plite selection scrolling hook.
+      Plate selection scrolling hook.
     </APIItem>
     <APIItem
       name="onDOMBeforeInput"
@@ -316,24 +337,24 @@ Editable surface for a `Plate` editor.
       Keyboard handler passed through the plugin handler pipeline.
     </APIItem>
     <APIItem name="disableDefaultStyles" type="boolean" optional>
-      Passed to Plite `Editable`.
+      Passed to Plate `Editable`.
     </APIItem>
     <APIItem name="role" type="string" optional>
-      ARIA role passed to Plite `Editable`.
+      ARIA role passed to Plate `Editable`.
     </APIItem>
     <APIItem name="style" type="React.CSSProperties" optional>
-      Style object passed to Plite `Editable`.
+      Style object passed to Plate `Editable`.
     </APIItem>
   </APIProps>
 </API>
 
-`PlateContent` also accepts the DOM handler props listed in `DOMHandlers`, including clipboard, composition, focus, keyboard, pointer, mouse, drag, touch, media, and form handlers.
+`EditorContent` also accepts the DOM handler props listed in `DOMHandlers`, including clipboard, composition, focus, keyboard, pointer, mouse, drag, touch, media, and form handlers.
 
-### `PlateView`
+### `EditorPreview`
 
 Read-only static renderer with Plate copy support.
 
-<API name="PlateView">
+<API name="EditorPreview">
   <APIProps>
     <APIItem name="editor" type="Editor">
       Static editor instance.
@@ -346,7 +367,7 @@ Read-only static renderer with Plate copy support.
       Overrides the default Plate fragment copy handler.
     </APIItem>
     <APIItem name="className" type="string" optional>
-      Merged with the `plite-editor` class by `PlateStatic`.
+      Merged with the `editor-editor` class by `EditorStatic`.
     </APIItem>
     <APIItem name="style" type="React.CSSProperties" optional>
       Style object passed to the static root `div`.
@@ -354,11 +375,11 @@ Read-only static renderer with Plate copy support.
   </APIProps>
 </API>
 
-### `PlateContainer`
+### `EditorContainer`
 
 Container `div` with plugin container slots.
 
-<API name="PlateContainer">
+<API name="EditorContainer">
   <APIProps>
     <APIItem name="children" type="React.ReactNode" optional>
       Content rendered inside the container.
@@ -377,6 +398,6 @@ Container `div` with plugin container slots.
 
 | API            | Default Element    | Notes                                                                                                            |
 | -------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `PlateElement` | `div`              | Accepts `as`, `attributes`, `className`, `style`, `ref`, `element`, `path`, `editor`, `plugin`, and `insetProp`. |
-| `PlateLeaf`    | `span`             | Accepts `as`, `attributes`, `className`, `style`, `ref`, `leaf`, `text`, `editor`, `plugin`, and `inset`.        |
-| `PlateText`    | `span`             | Accepts `as`, `attributes`, `className`, `style`, `ref`, `text`, `editor`, and `plugin`.                         |
+| `EditorElement` | `div`              | Accepts `as`, `attributes`, `className`, `style`, `ref`, `element`, `path`, `editor`, `plugin`, and `insetProp`. |
+| `EditorLeaf`    | `span`             | Accepts `as`, `attributes`, `className`, `style`, `ref`, `leaf`, `text`, `editor`, `plugin`, and `inset`.        |
+| `EditorText`    | `span`             | Accepts `as`, `attributes`, `className`, `style`, `ref`, `text`, `editor`, and `plugin`.                         |

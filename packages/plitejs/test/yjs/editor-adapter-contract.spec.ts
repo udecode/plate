@@ -34,14 +34,14 @@ describe('plitejs/yjs editor adapter', () => {
       }
     });
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         acceptsCoreDuration?: (id: string) => boolean;
         record?: (event: { id?: string | null; kind: string }) => void;
       };
     };
-    const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     let detachedTransactions = 0;
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
       acceptsCoreDuration: (id) => id === 'transaction-spec-callback',
       record(event) {
         if (
@@ -55,7 +55,7 @@ describe('plitejs/yjs editor adapter', () => {
     try {
       syncConnectedPeers([source, target]);
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
     assert.deepEqual(
       target.editor.read.children(),

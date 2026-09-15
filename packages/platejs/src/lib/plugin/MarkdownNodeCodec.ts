@@ -86,7 +86,7 @@ type PropertyEntries<
 >;
 
 /** Plate node narrowed from the codec target's schema contribution. */
-export type MarkdownPlateNode<D extends AnyBasePluginDefinition> = [
+export type MarkdownNode<D extends AnyBasePluginDefinition> = [
   ElementNode<D>,
 ] extends [never]
   ? [PropertyEntries<D, 'text'>] extends [never]
@@ -162,7 +162,6 @@ type DefaultMdastNode<TType extends string> = TType extends 'link'
                                                 | 'kbd'
                                                 | 'mention'
                                                 | 'script'
-                                                | 'suggestion'
                                                 | 'underline'
                                             ? MdxJsxTextElement
                                             : RootContent | UnistNode;
@@ -212,7 +211,6 @@ type SourceNodeMap = {
   span: MdxJsxTextElement;
   strong: Strong;
   sub: MdxJsxTextElement;
-  suggestion: MdxJsxTextElement;
   summary: MdxJsxFlowElement;
   sup: MdxJsxTextElement;
   table: Table;
@@ -311,7 +309,7 @@ type MarkdownNodeCodecBase<
     context: MarkdownDecodeContext<TSource, D>
   ) => Descendant | Descendant[] | undefined;
   encode?: (
-    context: MarkdownEncodeContext<MarkdownPlateNode<D>, D>
+    context: MarkdownEncodeContext<MarkdownNode<D>, D>
   ) => RootContent | undefined;
   kind: 'node';
   mark?: boolean;

@@ -78,7 +78,7 @@ export const insertInlineMap = {
 | `date` | Registry UI | Renders the editable popover/calendar element and static element. |
 | `platejs/markdown` | Package | Converts date MDX tags to the package-owned `value`. |
 
-`BaseDatePlugin` is inline and void. The text child exists only to satisfy Plite's element shape.
+`BaseDatePlugin` is inline and void. The text child exists only to satisfy Plate's element shape.
 
 ## Manual setup
 
@@ -147,7 +147,7 @@ const value = [
 | Field | Type | Notes |
 |-------|------|-------|
 | `type` | `'date'` | Persisted element type owned by `BaseDatePlugin`. |
-| `children` | `[{ text: '' }]` | Required Plite child for the inline void element. |
+| `children` | `[{ text: '' }]` | Required Plate child for the inline void element. |
 | `value` | `string` | Required canonical date or authored date text. |
 
 ## Date normalization

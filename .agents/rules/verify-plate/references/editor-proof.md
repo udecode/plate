@@ -34,7 +34,7 @@ pixel/geometry proof.
 
 For vertical selection/navigation, prove reverse movement. A Shift+Down row is
 not complete until Shift+Up is run from the resulting state and its focus
-sequence equals the reverse of the Shift+Down prefix. Staged-vs-virtualized
+sequence equals the reverse of the Shift+Down prefix. Complete-vs-virtualized
 parity is useful, but never sufficient by itself: both modes can be wrong in
 the same way. Add an independent oracle such as reverse-path equality, native
 or upstream Slate behavior, exact visual-line geometry, or screenshot proof.
@@ -86,7 +86,7 @@ For route-level editor proof, simulate real use:
 - undo/redo after edits;
 - copy/paste/select-all where relevant;
 - scroll away and back, then continue typing;
-- strategy/control changes when the example exposes them.
+- rendering-control changes when the example exposes them.
 
 When using the in-app Browser:
 
@@ -119,7 +119,8 @@ Build rows from these axes:
 - document topology: paragraphs, wrapped text, lists, tables, voids, pages,
   blank space, hidden/materialized blocks, inline boundaries with marks/links,
   multi-leaf text, and huge-doc windows present on the route;
-- viewport and strategy: staged, virtualized, auto, rows/count controls,
+- viewport and rendering: complete, virtualized, paginated virtualization,
+  rows/count controls,
   desktop/mobile where relevant, top/middle/end scroll positions;
 - editor gesture: click, double click, drag selection, margin click, arrow nav,
   type burst, Enter burst, paste, select-all, undo/redo, scroll away/back;
@@ -136,7 +137,7 @@ rects when the bug is about the exact selection location.
 
 For any row involving vertical Shift+Arrow selection, include the reverse leg:
 drive several steps in the reported direction, then drive back and verify the
-focus path reverses the prior sequence. Include staged and virtualized when the
+focus path reverses the prior sequence. Include complete and virtualized when the
 surface has both, but keep a non-parity oracle so two broken strategies do not
 produce fake confidence. If the row uses projected/view selection, assert
 `noDoubleSelectionHighlight` so the test fails on mixed native and projected

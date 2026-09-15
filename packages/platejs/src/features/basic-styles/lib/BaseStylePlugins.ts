@@ -1,6 +1,6 @@
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  definePlugin,
   getInjectMatch,
   PLUGINS,
   property,
@@ -65,7 +65,7 @@ export type TextIndentPluginState = {
   unit: string;
 };
 
-export const BaseFontBackgroundColorPlugin = defineBasePlugin(
+export const BaseFontBackgroundColorPlugin = definePlugin(
   PLUGINS.backgroundColor,
   {
     schema: { mark: property.string() },
@@ -117,7 +117,7 @@ export const BaseFontBackgroundColorPlugin = defineBasePlugin(
   }
 );
 
-export const BaseFontColorPlugin = defineBasePlugin(PLUGINS.color, {
+export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
   schema: { mark: property.string() },
   codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
@@ -164,7 +164,7 @@ export const BaseFontColorPlugin = defineBasePlugin(PLUGINS.color, {
   },
 });
 
-export const BaseFontFamilyPlugin = defineBasePlugin(PLUGINS.fontFamily, {
+export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
   schema: { mark: property.string() },
   codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
@@ -210,7 +210,7 @@ export const BaseFontFamilyPlugin = defineBasePlugin(PLUGINS.fontFamily, {
   },
 });
 
-export const BaseFontSizePlugin = defineBasePlugin(PLUGINS.fontSize, {
+export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
   schema: { mark: property.string() },
   codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
@@ -256,7 +256,7 @@ export const BaseFontSizePlugin = defineBasePlugin(PLUGINS.fontSize, {
   },
 });
 
-export const BaseFontWeightPlugin = defineBasePlugin(PLUGINS.fontWeight, {
+export const BaseFontWeightPlugin = definePlugin(PLUGINS.fontWeight, {
   schema: { mark: property.string() },
   codecs: ({ defineCodecs, schema: { key } }) =>
     defineCodecs({
@@ -306,7 +306,7 @@ export const BaseFontWeightPlugin = defineBasePlugin(PLUGINS.fontWeight, {
 });
 
 /** Enables configurable line spacing on targeted block elements. */
-export const BaseLineHeightPlugin = defineBasePlugin(PLUGINS.lineHeight, {
+export const BaseLineHeightPlugin = definePlugin(PLUGINS.lineHeight, {
   schema: ({ targetElementTypes }) => ({
     properties: {
       lineHeight: schema.elementProperty(
@@ -371,7 +371,7 @@ export const BaseLineHeightPlugin = defineBasePlugin(PLUGINS.lineHeight, {
 });
 
 /** Creates a plugin that adds alignment functionality to the editor. */
-export const BaseTextAlignPlugin = defineBasePlugin(PLUGINS.textAlign, {
+export const BaseTextAlignPlugin = definePlugin(PLUGINS.textAlign, {
   schema: ({ targetElementTypes }) => ({
     properties: {
       textAlign: schema.elementProperty(property.enum(ALIGNMENTS), {
@@ -432,7 +432,7 @@ export const BaseTextAlignPlugin = defineBasePlugin(PLUGINS.textAlign, {
   }),
 });
 
-export const BaseTextIndentPlugin = defineBasePlugin(PLUGINS.textIndent, {
+export const BaseTextIndentPlugin = definePlugin(PLUGINS.textIndent, {
   initialState: (): TextIndentPluginState => ({
     offset: 24,
     unit: 'px',

@@ -135,7 +135,11 @@ export const subscribeSelectionOnlyDOMExport = ({
   ) => boolean;
   syncDOMSelectionToEditor: SyncDOMSelectionToEditor;
 }) => {
-  const pendingDOMExportCancels = new Set<CancelScheduledDOMExport>();
+  let pendingDOMExport: {
+    cancel: CancelScheduledDOMExport;
+    generation: number;
+  } | null = null;
+  let nextDOMExportGeneration = 0;
   let subscribed = true;
   const readProjection = () => {
     const modelSelection = getModelSelection();
@@ -199,12 +203,19 @@ export const subscribeSelectionOnlyDOMExport = ({
       };
 
       if (commit?.changed.hasAny('document')) {
+        nextDOMExportGeneration += 1;
+        const generation = nextDOMExportGeneration;
+        pendingDOMExport?.cancel();
+        pendingDOMExport = null;
         let cancelScheduledDOMExport: CancelScheduledDOMExport | undefined;
         let didRunScheduledDOMExport = false;
         const runScheduledDOMExport = () => {
           didRunScheduledDOMExport = true;
-          if (cancelScheduledDOMExport) {
-            pendingDOMExportCancels.delete(cancelScheduledDOMExport);
+          if (!subscribed || generation !== nextDOMExportGeneration) {
+            return;
+          }
+          if (pendingDOMExport?.generation === generation) {
+            pendingDOMExport = null;
           }
 
           sync();
@@ -217,7 +228,10 @@ export const subscribeSelectionOnlyDOMExport = ({
         if (nextCancelScheduledDOMExport) {
           cancelScheduledDOMExport = nextCancelScheduledDOMExport;
           if (subscribed && !didRunScheduledDOMExport) {
-            pendingDOMExportCancels.add(cancelScheduledDOMExport);
+            pendingDOMExport = {
+              cancel: cancelScheduledDOMExport,
+              generation,
+            };
           } else if (!didRunScheduledDOMExport) {
             cancelScheduledDOMExport();
           }
@@ -237,10 +251,9 @@ export const subscribeSelectionOnlyDOMExport = ({
 
   return () => {
     subscribed = false;
-    for (const cancelPendingDOMExport of pendingDOMExportCancels) {
-      cancelPendingDOMExport();
-    }
-    pendingDOMExportCancels.clear();
+    nextDOMExportGeneration += 1;
+    pendingDOMExport?.cancel();
+    pendingDOMExport = null;
     unsubscribeSelector();
   };
 };

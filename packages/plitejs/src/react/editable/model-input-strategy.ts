@@ -186,9 +186,9 @@ export const applyEditableInput = ({
     const anchorNode = domSelection?.anchorNode ?? null;
     const anchorOffset = domSelection?.anchorOffset ?? null;
     const textHost = isDOMText(anchorNode)
-      ? anchorNode.parentElement?.closest('[data-plite-node="text"]')
+      ? anchorNode.parentElement?.closest('[data-editor-node="text"]')
       : isDOMElement(anchorNode)
-        ? anchorNode.closest('[data-plite-node="text"]')
+        ? anchorNode.closest('[data-editor-node="text"]')
         : null;
     const runtimeSelection = readRuntimeSelection(editor);
     const runtimePoint =

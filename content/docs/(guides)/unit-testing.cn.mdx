@@ -143,7 +143,7 @@ it('should collapse selection on backspace', () => {
 当你需要直接测试键盘处理程序时：
 
 ```typescript
-import { createEditor, definePlatePlugin } from 'platejs/react';
+import { createEditor, definePlugin } from 'platejs/react';
 
 it('should call the keyDown handler', () => {
   const input = (
@@ -157,7 +157,7 @@ it('should call the keyDown handler', () => {
   // Create a mock handler to verify it's called
   const keyDownMock = jest.fn();
 
-  const TestPlugin = definePlatePlugin('test', {
+  const TestPlugin = definePlugin('test', {
     on: {
       keyDown: keyDownMock,
     },

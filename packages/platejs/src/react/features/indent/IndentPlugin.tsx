@@ -1,4 +1,4 @@
 import { BaseIndentPlugin } from '../../../features/indent/lib/BaseIndentPlugin';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
-export const IndentPlugin = toPlatePlugin(BaseIndentPlugin);
+export const IndentPlugin = toReactPlugin(BaseIndentPlugin);

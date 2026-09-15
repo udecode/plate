@@ -1,15 +1,9 @@
 ---
 title: Version History
-description: Save Plate value snapshots and render a diff against the live editor.
+description: Retain accepted changes by author and selectively revert one contribution.
 ---
 
-This example stores immutable Plate value snapshots in local React state. It compares the selected revision with the current value through `platejs/diff`.
-
-## Installation
-
-```bash
-npm install platejs @tanstack/react-virtual diff-match-patch-ts
-```
+This example installs native authored changes with `retainHistory: true`. Edit as Alice or Bob, then revert one accepted contribution without erasing independent work by the other author.
 
 ## Demo
 
@@ -23,29 +17,39 @@ npm install platejs @tanstack/react-virtual diff-match-patch-ts
 
 | Piece | Owner | Role |
 | --- | --- | --- |
-| `createVersionSnapshot` | registry example | Clones each `Value` with `cloneDeep` before saving or diffing. |
-| `revisions` | registry example | Stores the saved Plate values and feeds the revision picker. |
-| `computeDiff` | `platejs/diff` | Compares the selected revision and live value, then returns diff-marked nodes. |
-| `DiffPlugin` | registry example | Renders diff leaves and wraps diff elements with insert, delete, or update styling. |
-| `InlinePlugin` and `InlineVoidPlugin` | registry example | Keep inline and inline-void nodes in the demo value so the diff path covers mixed content. |
-| `excludeDiffFragment` | `platejs/diff` | Removes `diff` and `diffOperation` metadata from copied fragments. |
+| `authored({ retainHistory: true })` | `platejs/authored` | Captures accepted edits with stable author and change identities and retains their edit bodies. |
+| `authorId` callback | application | Resolves the selected authenticated author once per transaction. |
+| `read.authored.changes(...)` | native authored reads | Returns accepted history as cursor-paged `AuthoredChange` records. |
+| `update.authored.revert(...)` | native authored updates | Creates a compensating contribution for the selected retained change. |
+| `BasicMarksKit` | copied Plate UI | Provides normal rich-text marks for the editable document. |
 
-## Snapshot flow
+## Retained history flow
 
-1. The editor starts from `initialValue` and keeps the live value in local state.
-2. `Save revision` clones the live value and appends it to `revisions`.
-3. The select menu chooses one saved revision for comparison.
-4. `computeDiff` receives the selected revision, current value, `state.schema.isInline`, and `lineBreakChar: '¶'`.
-5. The read-only diff editor renders the returned value with the same inline plugins plus `DiffPlugin`.
+1. The editor starts with `authored` and `retainHistory: true`.
+2. The author selector changes the identity returned for later transactions.
+3. Ordinary accepted edits create attributed records.
+4. The history list reads accepted changes by stable ID and revision.
+5. **Revert** captures a snapshot-bound selection and calls `update.authored.revert(...)`.
+6. The new compensating change belongs to the current author; the original record remains intact.
 
-## Product preview
+A revert can be blocked by dependent work or become unavailable when the required retained content has expired. Local undo and redo remain separate interaction history. Use native `decide(...)` to accept or reject pending review proposals.
 
-Potion uses the same document-history idea in a full app surface with stored versions, restore actions, and visual comparison.
+## Persist the history
 
-<ComponentPreview name="potion-iframe-demo" />
+Save `editor.read.value()` as one document. The authored envelope includes accepted content, causal records, decisions, and the retained bodies selected by policy.
 
-## Related
+```tsx
+const saved = editor.read.value();
 
-- [Controlled Value](/docs/controlled) for owning editor value from React state.
-- [Plate Plugin](/docs/api/core/plate-plugin) for component binding and
-  structural slots such as `slots.wrapNode`.
+const reloaded = createEditor({
+  plugins: [
+    authored({
+      authorId: () => session.user.id,
+      retainHistory: true,
+    }),
+  ],
+  initialValue: saved,
+});
+```
+
+See [Authored Changes](/docs/authored-changes) for review views, decision results, collaboration, and format projections.

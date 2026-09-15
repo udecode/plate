@@ -4,7 +4,7 @@ import { ElementApi, PLUGINS } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import {
   IndentPlugin,
-  definePlatePlugin,
+  definePlugin,
   useEditor,
   useEditorReadOnly,
 } from 'platejs/react';
@@ -75,9 +75,9 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
         onContextMenu={(event) => {
           const { dataset } = event.target as HTMLElement;
           const disabled =
-            dataset?.pliteEditor === 'true' ||
+            dataset?.editor === 'true' ||
             readOnly ||
-            dataset?.plateOpenContextMenu === 'false';
+            dataset?.editorOpenContextMenu === 'false';
 
           if (disabled) {
             event.preventDefault();
@@ -85,10 +85,10 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
           }
 
           const selectable = (event.target as HTMLElement).closest<HTMLElement>(
-            '[data-plite-node="element"]'
+            '[data-editor-node="element"]'
           );
           const node = selectable
-            ? editor.api.dom.resolvePliteNode(selectable)
+            ? editor.api.dom.resolveNode(selectable)
             : null;
 
           if (
@@ -238,7 +238,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
 }
 
 export const BlockMenuKit = [
-  definePlatePlugin('blockMenuUi', {
+  definePlugin('blockMenuUi', {
     slots: { wrapContent: BlockContextMenu },
   }),
 ];

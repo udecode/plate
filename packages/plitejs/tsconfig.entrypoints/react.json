@@ -12,6 +12,8 @@
     "tsBuildInfoFile": "../.turbo/entrypoint-types/react.tsbuildinfo"
   },
   "exclude": [
+    "../src/react/virtualized.*",
+    "../src/react/virtualized/**/*",
     "../src/**/*.spec.*",
     "../src/**/*.test.*",
     "../src/**/*.slow.*",

@@ -1,13 +1,13 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 test('Copilot accepts formatted text before list indentation and supports dismissal', async ({
   page,
 }) => {
-  const errors = recordPliteBrowserRuntimeErrors(page);
+  const errors = recordBrowserRuntimeErrors(page);
   try {
     await page.route('**/api/ai/copilot', (route) =>
       route.fulfill({
@@ -17,12 +17,8 @@ test('Copilot accepts formatted text before list indentation and supports dismis
       })
     );
     await page.goto('/blocks/copilot-demo', { waitUntil: 'commit' });
-    const root = page.locator('.plite-editor[contenteditable="true"]').first();
-    const editor = createPliteBrowserEditorHarness(
-      page,
-      'copilot:session',
-      root
-    );
+    const root = page.locator('.editor-editor[contenteditable="true"]').first();
+    const editor = createBrowserEditorHarness(page, 'copilot:session', root);
     await editor.ready({
       editor: 'visible',
       text: 'Choose from the suggested completions:',
@@ -54,7 +50,7 @@ test('Copilot accepts formatted text before list indentation and supports dismis
 test('AI preview renders generated text, accepts it, and preserves undo on a narrow view', async ({
   page,
 }, info) => {
-  const errors = recordPliteBrowserRuntimeErrors(page);
+  const errors = recordBrowserRuntimeErrors(page);
   const response = `${[
     { type: 'start', messageId: 'preview' },
     { type: 'data-toolName', data: 'generate' },
@@ -78,8 +74,8 @@ test('AI preview renders generated text, accepts it, and preserves undo on a nar
       })
     );
     await page.goto('/blocks/ai-demo', { waitUntil: 'commit' });
-    const root = page.locator('.plite-editor[contenteditable="true"]').first();
-    const editor = createPliteBrowserEditorHarness(page, 'ai:session', root);
+    const root = page.locator('.editor-editor[contenteditable="true"]').first();
+    const editor = createBrowserEditorHarness(page, 'ai:session', root);
     await editor.ready({
       editor: 'visible',
       text: 'Generate and refine content with AI.',
@@ -94,7 +90,7 @@ test('AI preview renders generated text, accepts it, and preserves undo on a nar
     const prompt = page.getByRole('dialog').getByRole('combobox');
     await prompt.fill('Write a summary');
     await prompt.press('Enter');
-    const preview = page.getByRole('dialog').locator('.plite-editor');
+    const preview = page.getByRole('dialog').locator('.editor-editor');
     await expect(preview).toContainText('Generated preview text.');
     expect(await editor.get.modelValue()).toEqual(before);
     await page.setViewportSize({ width: 390, height: 844 });

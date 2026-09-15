@@ -54,7 +54,7 @@ const plugins = [
 ~~~tsx
 export function HeadingElement(props) {
   const tag = `h${props.element.level}`;
-  return <PlateElement as={tag} {...props} />;
+  return <EditorElement as={tag} {...props} />;
 }
 ~~~
 

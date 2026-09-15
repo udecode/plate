@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 
 export const mediaResizeHandleVariants = cva(
   cn(
-    'plite-media-resize-handle top-0 flex w-6 select-none flex-col justify-center',
+    'editor-media-resize-handle top-0 flex w-6 select-none flex-col justify-center',
     "after:flex after:h-16 after:w-[3px] after:rounded-[6px] after:bg-ring after:opacity-0 after:content-['_']"
   ),
   {

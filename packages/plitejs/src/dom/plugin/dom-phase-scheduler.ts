@@ -1,5 +1,5 @@
-import type { AnyEditor as Editor } from '../../internal';
-import { failInvariant } from '../../internal';
+import type { AnyEditor as Editor } from '../../interfaces/editor';
+import { failInvariant } from '../../internal/fail-invariant';
 import {
   EDITOR_TO_DOM_ROOT,
   EDITOR_TO_ELEMENT,
@@ -529,7 +529,7 @@ export const scheduleEditorDOMPhase = (
   );
 };
 
-/** Destroy only the standalone fallback owned by the DOM extension. */
+/** Destroy only the standalone fallback owned by the DOM plugin. */
 export const destroyEditorDOMPhaseSchedulerFallback = (editor: Editor) => {
   EDITOR_TO_FALLBACK_DOM_PHASE_SCHEDULERS.get(editor)?.forEach((scheduler) => {
     scheduler.destroy();

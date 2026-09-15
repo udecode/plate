@@ -1,0 +1,530 @@
+---
+title: "Editable Component"
+description: "Render a complete editable surface and configure browser events, rendering, and overlays."
+---
+
+`Editable` renders the editable document surface for the nearest `Plite` provider; app code customizes what content looks like while the runtime owns browser selection, DOM repair, void shells, and editing events. Use [Editing Behavior](../../concepts/15-editing-behavior) for the event-to-commit pipeline and [Selection And DOM](../../concepts/16-selection-and-dom) for model selection, native selection, DOM coverage, and large-document selection proof.
+
+## Minimal usage
+
+```tsx
+<Plite editor={editor}>
+  <Editable />
+</Plite>
+```
+
+## On this page
+
+- [Props](editable#props)
+- [Render Props](editable#render-props)
+- [`renderElement`](editable#renderelement)
+- [External Text Views](editable#external-text-views)
+- [`renderVoid`](editable#rendervoid)
+- [`renderLeaf`](editable#renderleaf)
+- [`renderText`](editable#rendertext)
+- [Decorations](editable#decorations)
+- [`placeholder` And `renderPlaceholder`](editable#placeholder-and-renderplaceholder)
+- [Event Props](editable#event-props)
+- [Inactive Selection](editable#inactive-selection)
+- [DOM Rendering](editable#dom-rendering)
+- [DOM Coverage Boundaries](editable#dom-coverage-boundaries)
+- [Multiple Roots](editable#multiple-roots)
+- [Styling](editable#styling)
+
+## Props
+
+```typescript
+type EditableProps = {
+  autoFocus?: boolean;
+  className?: string;
+  disableDefaultStyles?: boolean;
+  id?: string;
+  ignoreBlankEditableRootClicks?: boolean;
+  onBeforeInput?: React.FormEventHandler<HTMLDivElement>;
+  onDOMBeforeInput?: (
+    event: InputEvent,
+    context: EditableDOMBeforeInputContext
+  ) => boolean | EditableRepairRequest | void;
+  onKeyDown?: EditableKeyDownHandler;
+  onPaste?: React.ClipboardEventHandler<HTMLDivElement>;
+  placeholder?: React.ReactNode;
+  readOnly?: boolean;
+  ref?: React.Ref<HTMLDivElement>;
+  renderElement?: (props: RenderElementProps) => React.ReactNode;
+  renderLeaf?: (props: RenderLeafProps) => React.ReactNode;
+  renderPlaceholder?: (props: RenderPlaceholderProps) => React.ReactNode;
+  renderText?: (props: RenderTextProps) => React.ReactNode;
+  renderVoid?: (props: RenderVoidProps) => React.ReactNode;
+  root?: RootKey;
+  scrollSelectionIntoView?: (
+    editor: Editor,
+    domRange: globalThis.Range
+  ) => void;
+  spellCheck?: boolean;
+  style?: React.CSSProperties;
+};
+```
+
+`Editable` also accepts safe `div` attributes such as `aria-*`, `data-*`, and event handlers that are not owned by Plite.
+
+`scrollSelectionIntoView` scrolls the caret or selection focus into view by
+default. Supply a callback to own scrolling in a custom viewport.
+
+## Render props
+
+Use raw render props for content rendering. Keep renderer functions stable by
+defining them at module scope or creating them once with the editor.
+
+```ts
+type RenderElementProps = {
+  attributes: {
+    "data-plite-inline"?: true;
+    "data-plite-node": "element";
+    "data-plite-path": string;
+    "data-plite-node-key": NodeKey;
+    "data-plite-void"?: true;
+    ref: React.RefCallback<HTMLElement>;
+  };
+  children: React.ReactNode;
+  element: Element;
+  isInline: boolean;
+  slots: EditableElementSlots;
+};
+```
+
+## `renderElement`
+
+Use `renderElement` for non-void elements. Each element chooses native Plite
+children or an external text view.
+
+```tsx
+const renderElement = ({ attributes, children, element }) => {
+  switch (element.type) {
+    case "code":
+      return (
+        <pre {...attributes}>
+          <code>{children}</code>
+        </pre>
+      );
+    default:
+      return <p {...attributes}>{children}</p>;
+  }
+};
+```
+
+Spread `attributes` on the top-level DOM element. Native renderers render
+`children` or `slots.children()`; external renderers use only
+`slots.externalText(...)` for that element's text.
+
+## External text views
+
+Use `slots.externalText({ adapter, ariaLabel, config? })` for a non-void block
+whose schema and value contain exactly one direct Text. Plite owns the value,
+selection, history, and remote changes. The adapter owns its DOM and local input.
+
+Do not read `children` in the external branch: native children are lazy, and
+each element may have only one text projection. Rich children and partial marks
+remain on the native path. No fixed height or document virtualization is
+required.
+
+See [External Text Views](external-text) for the adapter protocol and the
+[raw example](/examples/plite/external-text) for a textarea demonstration.
+
+## `renderVoid`
+
+Use `renderVoid` for void elements. A void renderer returns visible content only.
+
+```tsx
+const renderVoid = ({ element }) => {
+  switch (element.type) {
+    case "image":
+      return <ImageElement element={element} />;
+    default:
+      return null;
+  }
+};
+```
+
+Do not render `children`, hidden text anchors, or shell wrappers in normal void renderers. Plite renders the shell and model anchor for you.
+
+If a void needs selected UI, subscribe from inside the void component.
+
+```tsx
+const ImageElement = ({ element }) => {
+  const selected = useElementSelected({ mode: "collapsed" });
+
+  return <img data-selected={selected || undefined} src={element.url} />;
+};
+```
+
+If an event handler needs the current location of the rendered element, resolve
+the path inside the handler.
+
+```tsx
+const ImageElement = ({ element }) => {
+  const editor = useEditorContext();
+
+  return (
+    <button
+      onClick={() => {
+        const path = editor.api.dom.resolvePath(element);
+
+        if (!path) return;
+
+        editor.update((tx) => {
+          tx.nodes.remove({ at: path, voids: true });
+        });
+      }}
+    />
+  );
+};
+```
+
+## `renderLeaf`
+
+Use `renderLeaf` for text marks.
+
+Live leaf renderers receive marks, an optional leaf position, and a stable text
+path, but not Decoration data. Decoration attributes are already applied inside
+`children`. Render those children for the text.
+A custom `renderLeaf` stays on the conservative model-owned input path because
+arbitrary returned DOM cannot be proven safe. Internally compiled Plate mark
+renderers can publish native DOM capability without an app-owned flag.
+
+```tsx
+const renderLeaf = ({ attributes, children, leaf }) => {
+  return (
+    <span
+      {...attributes}
+      style={{
+        fontWeight: leaf.bold ? "bold" : "normal",
+        fontStyle: leaf.italic ? "italic" : "normal",
+      }}
+    >
+      {children}
+    </span>
+  );
+};
+```
+
+## `renderText`
+
+Use `renderText` when you need to wrap a whole text node, regardless of how
+decorations split it into rendered segments.
+
+`renderText` is the advanced model-owned lane for whole-text DOM structure. A
+custom text renderer deliberately gives up direct native DOM text sync. Prefer
+`renderLeaf` for ordinary mark presentation and Decoration attributes for
+transient paint.
+
+```tsx
+const renderText = ({ attributes, children, text }) => {
+  return (
+    <span {...attributes} data-commented={text.commentId || undefined}>
+      {children}
+    </span>
+  );
+};
+```
+
+## Decorations
+
+`Editable` renders decorations from the nearest `Plite` provider. Each
+decoration wraps its text range in a `span` with the supplied `className`,
+`style`, `aria-*`, and `data-*` attributes. It needs no render callback.
+
+```tsx
+const searchDecorations = {
+  id: "search",
+  read: ({ entry: [node, path] }) => {
+    if (!TextApi.isText(node)) return [];
+
+    const start = node.text.indexOf(query);
+
+    return start === -1
+      ? []
+      : [
+          {
+            attributes: { className: "search-match" },
+            key: `search:${path.join(".")}:${start}`,
+            range: {
+              anchor: { path, offset: start },
+              focus: { path, offset: start + query.length },
+            },
+          },
+        ];
+  },
+} satisfies PliteDecorationSource;
+
+<Plite decorations={[searchDecorations]} editor={editor}>
+  <Editable />
+</Plite>;
+```
+
+Use [Decorations, annotations, and widgets](../../concepts/18-decorations-annotations-widgets)
+for source refresh, durable range identity, and anchored UI.
+
+## `placeholder` and `renderPlaceholder`
+
+Use `placeholder` for the normal empty-editor message.
+
+```tsx
+<Editable placeholder="Start typing..." />
+```
+
+Use `renderPlaceholder` when the placeholder needs custom markup.
+
+```tsx
+<Editable
+  placeholder="Start typing..."
+  renderPlaceholder={({ attributes, children }) => (
+    <span
+      {...attributes}
+      style={{ ...attributes.style, color: "#6b7280", opacity: 0.6 }}
+    >
+      {children}
+    </span>
+  )}
+/>
+```
+
+Keep the provided attributes. They supply the structural positioning,
+pointer-inert behavior, and selection isolation that make the placeholder
+editor chrome instead of document content. The host owns presentation such as
+color, opacity, and text decoration.
+
+## Event props
+
+Use `onKeyDown` for UI hotkeys on one `Editable` instance.
+
+```tsx
+<Editable
+  onKeyDown={(event, { editor }) => {
+    if (event.key === "`" && event.ctrlKey) {
+      editor.update((tx) => {
+        tx.nodes.set({ type: "code" });
+      });
+      return true;
+    }
+  }}
+/>
+```
+
+Use plugin `commands` for model behavior such as deleting, inserting text,
+and inserting breaks. Those handlers run for keyboard input, native input,
+programmatic commands, and tests.
+Use [Clipboard And Paste](../../concepts/17-clipboard-and-paste) for paste,
+copy, drop, and fragment import ownership.
+
+```tsx
+import {
+  definePlugin,
+  editorCommands,
+  RangeApi,
+} from "plitejs";
+
+const markdown = definePlugin("markdown", {
+  commands: ({ handle }) => [
+    handle(editorCommands.insertText, ({ input, state }) => {
+      const selection = state.selection();
+
+      if (
+        input.text !== " " ||
+        !selection ||
+        !RangeApi.isCollapsed(selection)
+      ) {
+        return false;
+      }
+
+      return state.transaction((tx) => {
+        tx.nodes.set({ type: "code" });
+        tx.text.insert(input.text, input.options);
+      });
+    }),
+  ],
+});
+```
+
+`onBeforeInput` is the React form-event hook on the editable root. Use
+`onDOMBeforeInput` only when you need the raw native `InputEvent`. Returning
+`true` or calling `event.preventDefault()` marks the event handled.
+
+## Inactive selection
+
+`Editable` keeps its live canonical selection visible when focus moves to an
+owned external control. Mark the focus target or any composed ancestor with
+`data-plite-keep-selection-visible`:
+
+```tsx
+<Plite editor={editor}>
+  <Editable />
+  <button data-plite-keep-selection-visible="" type="button">
+    Edit link
+  </button>
+</Plite>
+```
+
+The exact `Editable` that loses focus paints an expanded range with
+`data-plite-inactive-selection` or a collapsed caret with
+`data-plite-inactive-selection-caret`. Focus returning to the editor or moving
+to an unmarked target clears that paint.
+
+Style the output hooks in product CSS:
+
+```css
+[data-plite-inactive-selection] {
+  background: Highlight;
+}
+
+[data-plite-inactive-selection-caret] {
+  width: 2px;
+  background: currentColor;
+}
+```
+
+This is built-in view behavior, not a prop or plugin. `Editable` stores only
+private transition state and reads the current canonical selection for each
+paint. It never copies a `Range` or changes document, selection, history,
+clipboard, or collaboration state.
+
+Inline, void, selectable, and read-only behavior belongs to the editor schema.
+
+```tsx
+import { defineEditorSchema, schema } from "plitejs";
+
+const MentionSchema = defineEditorSchema("schema:mentions", {
+  elements: {
+    mention: {
+      void: "markable-inline",
+    },
+    paragraph: {
+      content: schema.content.any(
+        [schema.content.text(), schema.content.type("mention")],
+        { default: "text", min: 1 }
+      ),
+    },
+  },
+  id: "mentions",
+  root: schema.content.type("paragraph", {
+    default: { type: "paragraph" },
+    min: 1,
+  }),
+  unknown: "reject",
+  version: 1,
+});
+
+const editor = useEditor({
+  plugins: [MentionSchema] as const,
+  initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+});
+```
+
+Product input rules belong in higher-level command layers or editor plugins. Keep raw `Editable` focused on rendering and DOM events.
+
+## DOM rendering
+
+`Editable` mounts the complete document DOM. This gives native browser find,
+assistive technology, printing, and DOM integrations access to every rendered
+block.
+
+For an explicitly bounded surface, render
+[`VirtualizedEditable`](./virtualized-rendering) from
+`plitejs/react/virtualized`. The component choice defines the mounted view's
+lifetime. Keep that choice stable while the view is focused or composing.
+
+For paginated documents, use
+[`PagedEditable`](../plite-pagination). Pagination owns page geometry and its
+optional page virtualization directly.
+
+## DOM coverage boundaries
+
+`renderElement` receives `slots.contentBoundary` for model content whose DOM is
+intentionally not mounted. Use it for closed accordions, inactive tab panels,
+collapsed sections, or hidden element shells that still exist in the Plite
+value.
+
+```tsx
+const renderElement = ({ children, element, slots }) => {
+  if (element.type === "section") {
+    return (
+      <PliteElement style={{ position: 'relative' }}>
+        {React.Children.toArray(children)[0]}
+        {slots.contentBoundary({
+          mounted: !element.collapsed,
+          onMaterialize: () =>
+            openSection(editor.key(element)),
+          renderPlaceholder: ({ materialize }) => (
+            <button onClick={materialize} type="button">
+              Show section
+            </button>
+          ),
+          scope: { from: 1, type: "children" },
+          selectionPolicy: "materialize",
+        })}
+      </PliteElement>
+    );
+  }
+
+  if (element.type === "hidden-header") {
+    return (
+      <PliteElement style={{ position: 'relative' }}>
+        {slots.contentBoundary({
+          boundaryId: "hidden-header",
+          children: <button type="button">Show header</button>,
+          copyPolicy: "exclude",
+          mounted: !element.hidden,
+          reason: "app-hidden",
+          scope: { type: "self" },
+          selectionPolicy: "skip",
+        })}
+      </PliteElement>
+    );
+  }
+
+  return <PliteElement style={{ position: 'relative' }}>{children}</PliteElement>;
+};
+```
+
+Boundary content is model-present but DOM-incomplete while `mounted` is `false`.
+Plite maps selection, copy, paste, and DOM point import through the boundary
+registry instead of resolving missing descendants with raw DOM lookups.
+
+Use the dedicated [DOM Coverage Boundaries](./dom-coverage-boundaries) page
+for `selectionPolicy`, `copyPolicy`, and `onMaterialize`.
+
+## Multiple roots
+
+Pass `root` when one editor renders a named document root.
+
+```tsx
+<Plite editor={editor}>
+  <Editable aria-label="Header" root="header" />
+  <Editable aria-label="Body" />
+  <Editable aria-label="Footer" root="footer" />
+</Plite>
+```
+
+Use `slots.contentRoot(slot)` from `renderElement` when an element owns an
+editable child root, such as a synced block body.
+
+```tsx
+const SyncedBlock = ({ attributes, element, slots }) => (
+  <section {...attributes}>
+    <header>Synced block</header>
+    {slots.contentRoot("body", { ariaLabel: "Synced block body" })}
+  </section>
+);
+```
+
+See [Roots](../../concepts/13-roots) for the value shape, `tx.roots`, root
+chrome, and content-root ownership.
+
+## Styling
+
+Use `style` or `className` for editor styling.
+
+```tsx
+<Editable style={{ minHeight: 200 }} />
+```
+
+Pass `disableDefaultStyles` only when your CSS replaces Plite's default editable-surface styles.

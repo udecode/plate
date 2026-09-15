@@ -1,6 +1,6 @@
 import { act, fireEvent, render } from '@testing-library/react';
 
-import { createEditor, Editable, Plite } from '../../src/react';
+import { createEditor, Editable, EditorRoot } from '../../src/react';
 
 test.each([
   [false, 'keyboard'],
@@ -18,14 +18,14 @@ test.each([
       return true;
     });
     const tree = (locked: boolean) => (
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           aria-label="Draft"
           readOnly={locked}
           onKeyDown={handleInput}
           onDOMBeforeInput={handleInput}
         />
-      </Plite>
+      </EditorRoot>
     );
     const mounted = render(tree(!readOnly));
     const textbox = mounted.getByRole('textbox', { name: 'Draft' });

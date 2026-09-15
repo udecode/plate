@@ -1,1 +1,0 @@
-import './widget-layer-contract';

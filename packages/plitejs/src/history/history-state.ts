@@ -12,18 +12,22 @@ import {
   mapAnchorHistoryRecovery,
 } from '../core/anchor-state';
 import {
-  failInvariant,
-  type AnyEditor,
-  areEditorSchemaIdentitiesEqual,
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeRootKeys,
-  MAIN_ROOT_KEY,
-  mapSelectionThroughChange,
-} from '../internal';
+} from '../core/change/document-change';
+import { getEditorRuntimeOwner } from '../core/editor-runtime';
+import { MAIN_ROOT_KEY } from '../core/public-root';
+import { areEditorSchemaIdentitiesEqual } from '../core/schema-compiler';
+import { mapSelectionThroughChange } from '../core/selection-protocol';
+import type { AnyEditor } from '../interfaces/editor';
 import type { Batch, History } from './history';
 import type { HistoryBatchGroup } from './history-merge-policy';
 
 type HistoryStack = 'redos' | 'undos';
+
+const failInvariant = (message: string): never => {
+  throw new Error(message);
+};
 
 type PendingMapping<V extends Value> = Readonly<{
   before: EditorDocumentValue<V>;
@@ -58,14 +62,15 @@ type HistoryStore<V extends Value> = Readonly<{
 
 const HISTORY = new WeakMap<AnyEditor, HistoryStore<Value>>();
 
-export const captureHistoryState = (editor: AnyEditor) => HISTORY.get(editor);
+export const captureHistoryState = (editor: AnyEditor) =>
+  HISTORY.get(getEditorRuntimeOwner(editor));
 
 export const restoreHistoryState = (
   editor: AnyEditor,
   state: HistoryStore<Value> | undefined
 ) => {
-  if (state) HISTORY.set(editor, state);
-  else HISTORY.delete(editor);
+  if (state) HISTORY.set(getEditorRuntimeOwner(editor), state);
+  else HISTORY.delete(getEditorRuntimeOwner(editor));
 };
 
 const createStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => ({
@@ -78,11 +83,12 @@ const createStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => ({
 });
 
 const getStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => {
-  let store = HISTORY.get(editor) as HistoryStore<V> | undefined;
+  const owner = getEditorRuntimeOwner(editor);
+  let store = HISTORY.get(owner) as HistoryStore<V> | undefined;
 
   if (!store) {
     store = createStore(editor);
-    HISTORY.set(editor, store);
+    HISTORY.set(owner, store);
   }
 
   return store;
@@ -92,7 +98,7 @@ const setStore = <V extends Value>(
   editor: Editor<V>,
   store: HistoryStore<V>
 ) => {
-  HISTORY.set(editor, store);
+  HISTORY.set(getEditorRuntimeOwner(editor), store);
 };
 
 const publish = <V extends Value>(
@@ -706,7 +712,7 @@ export const queueHistoryMapping = <V extends Value>(
 };
 
 export const clearHistoryState = (editor: Editor) => {
-  HISTORY.delete(editor);
+  HISTORY.delete(getEditorRuntimeOwner(editor));
 };
 
 export const replaceHistoryState = <V extends Value>(

@@ -95,7 +95,7 @@ const subscribeHydration = () => () => {};
 const getHydratedSnapshot = () => true;
 const getServerHydratedSnapshot = () => false;
 const getEditorRootSnapshot = () =>
-  document.querySelector<HTMLElement>('[data-plite-editor="true"]');
+  document.querySelector<HTMLElement>('[data-editor="true"]');
 const getServerEditorRootSnapshot = () => null;
 const subscribeEditorRoot = (onStoreChange: () => void) => {
   const observer = new MutationObserver(onStoreChange);
@@ -148,7 +148,7 @@ const readHandle = (root: HTMLElement): BrowserHandle | null =>
 
 const readTargetPath = (target: EventTarget | null) =>
   target instanceof Element
-    ? (target.closest('[data-plite-path]')?.getAttribute('data-plite-path') ??
+    ? (target.closest('[data-editor-path]')?.getAttribute('data-editor-path') ??
       null)
     : null;
 
@@ -345,7 +345,7 @@ function HydratedMobileLabClient() {
   return (
     <main
       className="mx-auto flex max-w-5xl min-w-0 flex-col gap-6 px-4 py-6"
-      data-plite-mobile-lab
+      data-editor-mobile-lab
     >
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold">Mobile input lab</h1>

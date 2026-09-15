@@ -85,7 +85,7 @@ separate from the UI that consumes it.
 Copy:
 
 - stable command/state contracts
-- extension-owned capabilities
+- plugin-owned capabilities
 - UI composition on top
 
 Do not copy:

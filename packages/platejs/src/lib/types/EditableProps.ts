@@ -17,12 +17,10 @@ export type EditableProps = {
   role?: string;
   style?: any;
   decorate?: (entry: NodeEntry) => Range[];
-  domStrategy?: unknown;
-  onDOMStrategyMetrics?: (metrics: unknown) => void;
   renderPlaceholder?: (props: {
     attributes: {
       contentEditable: boolean;
-      'data-plite-placeholder': boolean;
+      'data-editor-placeholder': boolean;
       ref: (element: any) => void;
       style: any;
       dir?: 'rtl';

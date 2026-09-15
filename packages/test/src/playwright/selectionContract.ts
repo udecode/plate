@@ -1,14 +1,14 @@
 import { expect } from '@playwright/test';
 
 import type {
-  PliteBrowserEditorHarness,
-  PliteBrowserSelectionContractExpectation,
+  BrowserEditorHarness,
+  BrowserSelectionContractExpectation,
 } from './types';
 
 /** Assert model, DOM, native, and visual selection expectations. */
-export const assertPliteBrowserSelectionContract = async (
-  harness: PliteBrowserEditorHarness,
-  expected: PliteBrowserSelectionContractExpectation
+export const assertBrowserSelectionContract = async (
+  harness: BrowserEditorHarness,
+  expected: BrowserSelectionContractExpectation
 ) => {
   if (expected.selection) {
     await harness.assert.selection(expected.selection);

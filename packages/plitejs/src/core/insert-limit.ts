@@ -7,7 +7,10 @@ import type {
   Value,
 } from '../interfaces';
 import { ElementApi, NodeApi, RangeApi, TextApi } from '../interfaces';
-import { ContentSlice as ContentSliceValue } from './content-slice';
+import {
+  ContentSlice as ContentSliceValue,
+  prepareContentSliceVariant,
+} from './content-slice';
 import { getEditorMaxLength } from './public-state';
 
 const getReplacementLength = (
@@ -133,11 +136,11 @@ export const limitSliceInsert = <V extends Value>(
 
   if (limited === content) return slice;
 
-  return ContentSliceValue.fromJSON<V>({
-    content: limited,
-    openEnd: Math.min(slice.openEnd, getOpenEdgeDepth(limited, 'end')),
-    openStart: Math.min(slice.openStart, getOpenEdgeDepth(limited, 'start')),
-  });
+  return prepareContentSliceVariant(
+    ContentSliceValue.withContent(slice, limited, { open: 'closed' }),
+    Math.min(slice.openStart, getOpenEdgeDepth(limited, 'start')),
+    Math.min(slice.openEnd, getOpenEdgeDepth(limited, 'end'))
+  );
 };
 
 export const limitNodeInsert = <

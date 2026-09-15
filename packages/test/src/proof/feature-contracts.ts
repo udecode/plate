@@ -1,5 +1,5 @@
 /** One browser behavior family owned by a feature area. */
-export type PliteBrowserFeatureContractRow = {
+export type BrowserFeatureContractRow = {
   assertions: readonly string[];
   family: string;
   feature: string;
@@ -7,30 +7,30 @@ export type PliteBrowserFeatureContractRow = {
 };
 
 /** Declarative browser contract bundle for one feature area. */
-export type PliteBrowserFeatureContractDefinition = {
+export type BrowserFeatureContractDefinition = {
   feature: string;
-  rows: ReadonlyArray<Omit<PliteBrowserFeatureContractRow, 'feature'>>;
+  rows: ReadonlyArray<Omit<BrowserFeatureContractRow, 'feature'>>;
 };
 
 /** Indexed browser contract registry built from feature definitions. */
-export type PliteBrowserFeatureContractRegistry = {
-  rowByFamily: ReadonlyMap<string, PliteBrowserFeatureContractRow>;
-  rows: readonly PliteBrowserFeatureContractRow[];
+export type BrowserFeatureContractRegistry = {
+  rowByFamily: ReadonlyMap<string, BrowserFeatureContractRow>;
+  rows: readonly BrowserFeatureContractRow[];
 };
 
 /** Preserve a feature contract definition with exact literal family names. */
-export const definePliteBrowserFeatureContract = <
-  T extends PliteBrowserFeatureContractDefinition,
+export const defineBrowserFeatureContract = <
+  T extends BrowserFeatureContractDefinition,
 >(
   contract: T
 ): T => contract;
 
 /** Build and validate a browser contract registry from feature definitions. */
-export const createPliteBrowserFeatureContractRegistry = (
-  definitions: readonly PliteBrowserFeatureContractDefinition[]
-): PliteBrowserFeatureContractRegistry => {
-  const rows: PliteBrowserFeatureContractRow[] = [];
-  const rowByFamily = new Map<string, PliteBrowserFeatureContractRow>();
+export const createBrowserFeatureContractRegistry = (
+  definitions: readonly BrowserFeatureContractDefinition[]
+): BrowserFeatureContractRegistry => {
+  const rows: BrowserFeatureContractRow[] = [];
+  const rowByFamily = new Map<string, BrowserFeatureContractRow>();
 
   for (const definition of definitions) {
     if (!definition.feature) {

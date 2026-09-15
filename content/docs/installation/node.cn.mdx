@@ -159,13 +159,13 @@ processDocument(mySlateValue).then(result => {
 
 ### 可用API
 
--   **[`editor.read`](/docs/api/plite/editor-api)**: 查询已提交的编辑器状态：
+-   **[`editor.read`](/docs/api/editor-api)**: 查询已提交的编辑器状态：
     -   `editor.read.nodes.entries({ at: [], match })`: 查找特定节点
     -   `editor.read.text.string([])`: 提取文本内容
     -   [HTML序列化](/docs/html)
     -   [Markdown序列化](/docs/markdown)
 
--   **[`editor.update`](/docs/api/plite/editor-transforms)**: 使用事务修改编辑器内容：
+-   **[`editor.update`](/docs/api/editor-transforms)**: 使用事务修改编辑器内容：
     -   `tx.nodes.insert(nodes, opts)`: 插入新节点
     -   `tx.nodes.remove(opts)`: 删除节点
     -   `tx.nodes.set(props, opts)`: 更新现有节点属性
@@ -181,4 +181,4 @@ processDocument(mySlateValue).then(result => {
 *   **批量操作**: 对现有Plate文档执行批量更新或转换
 *   **数据提取**: 验证内容结构或从文档中提取特定数据
 *   **后端集成**: 与其他后端服务集成构建内容处理管道
-*   **静态生成**: 探索[Markdown序列化](/docs/markdown)、[HTML序列化](/docs/html)和[`PlateStatic`](/docs/static)生成静态内容
+*   **静态生成**: 探索[Markdown序列化](/docs/markdown)、[HTML序列化](/docs/html)和[`EditorStatic`](/docs/static)生成静态内容

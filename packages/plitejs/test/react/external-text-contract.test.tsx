@@ -1,13 +1,15 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import {
+  createEditorView,
   defineEditorSchema,
-  defineExtension,
-  defineExtensionSlot,
+  definePlugin,
+  definePluginSlot,
   property,
   schema,
   setEditorReadOnly,
   TextApi,
 } from 'plitejs';
+import { authored } from 'plitejs/authored';
 import { getEditorDOMRoot } from 'plitejs/dom';
 import { History, history } from 'plitejs/history';
 import React from 'react';
@@ -18,14 +20,14 @@ import { getLastCommit } from '../../src/internal';
 import {
   createEditor,
   Editable,
-  Plite,
-  type PliteDecorationSource,
+  EditorRoot,
+  type DecorationSource,
+  type RenderElementProps,
+  useEditorSelector,
 } from '../../src/react';
 import { applyDOMCoverageSelectionPolicy } from '../../src/react/editable/dom-coverage-selection';
-import {
-  findMountedEditableDOMRuntime,
-  getMountedEditableDOMRuntime,
-} from '../../src/react/editable/editable-dom-runtime';
+import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
+import type { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { subscribeSource } from '../../src/react/editable/runtime-editor-api';
 import { createRuntimeSelectionChangeHandler } from '../../src/react/editable/runtime-selection-engine';
 import { applyEditableDOMSelectionChange } from '../../src/react/editable/selection-controller';
@@ -35,6 +37,8 @@ import type {
   ExternalTextChange,
   ExternalTextState,
 } from '../../src/react/external-text';
+import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
+import { VirtualizedEditable } from '../../src/react/virtualized';
 
 const textSchema = defineEditorSchema('schema:external-text-test', {
   elements: {
@@ -50,7 +54,7 @@ const textSchema = defineEditorSchema('schema:external-text-test', {
 
 const createFixture = (text = 'A😀B\nC') =>
   createEditor({
-    extensions: [textSchema, history()],
+    plugins: [textSchema, history()],
     initialValue: [{ type: 'code', children: [{ text }] }],
   });
 
@@ -94,6 +98,17 @@ const createAdapter = () => {
   return { adapter, records };
 };
 
+const getMountedRuntime = (node: Node) => {
+  const runtime = findMountedEditableDOMRuntime(node);
+
+  if (!runtime) throw new Error('Expected a mounted Editable runtime.');
+
+  return runtime;
+};
+
+const getMountedEditorFor = (record: { host: HTMLElement }) =>
+  getMountedRuntime(record.host).editor;
+
 class ProjectionErrorBoundary extends React.Component<
   { children: React.ReactNode; onError: (error: Error) => void },
   { error: Error | null }
@@ -126,9 +141,357 @@ const externalRenderer =
   );
 
 describe('external text views', () => {
+  test('remounts an external projection after rejecting its changes in native markup', async () => {
+    const authoring = authored({ authorId: 'alice' });
+    const source = createEditor({
+      plugins: [textSchema, history(), authoring],
+      initialValue: [{ type: 'code', children: [{ text: 'AB' }] }],
+    });
+    const proposal = { intent: 'propose', projection: 'proposed' } as const;
+    const view = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: proposal })
+    );
+    const { adapter, records } = createAdapter();
+    const RenderNode = ({
+      props: { attributes, slots },
+    }: {
+      props: RenderElementProps;
+    }) => {
+      const mode = useEditorSelector((current) =>
+        current.plugin(authoring).read.view()
+      );
+      return (
+        <div {...attributes}>
+          {mode.projection === 'markup'
+            ? slots.children()
+            : slots.externalText({ adapter, ariaLabel: 'Code' })}
+        </div>
+      );
+    };
+    const Renderer = (props: RenderElementProps) => (
+      <RenderNode props={props} />
+    );
+    const rendered = render(
+      <EditorRoot editor={view}>
+        <Editable renderElement={Renderer} />
+      </EditorRoot>
+    );
+    const external = records[0];
+    const mountedView = getMountedEditorFor(external);
+    await act(async () =>
+      external.actions.dispatch({
+        baseVersion: external.state.version,
+        changes: [{ from: 1, to: 2, insert: '' }],
+        intent: 'cut',
+        selection: { anchor: 1, focus: 1 },
+      })
+    );
+    await act(async () =>
+      external.actions.dispatch({
+        baseVersion: external.state.version,
+        changes: [{ from: 1, to: 1, insert: 'X' }],
+        intent: 'paste',
+        selection: { anchor: 2, focus: 2 },
+      })
+    );
+    await act(async () =>
+      mountedView.api.authored.setView({
+        intent: 'propose',
+        projection: 'markup',
+      })
+    );
+    expect(rendered.container.textContent?.replaceAll('\uFEFF', '')).toBe(
+      'AXB'
+    );
+    expect(external.destroyed).toBe(1);
+    await act(async () =>
+      source.update.authored.decide({
+        action: 'reject',
+        selection: source.read.authored.select({ status: 'pending' }),
+      })
+    );
+    expect(rendered.container.textContent).toBe('AB');
+    await act(async () => mountedView.api.authored.setView(proposal));
+    expect(records).toHaveLength(2);
+    expect(records[1].host.isConnected).toBe(true);
+    expect(rendered.getByRole('textbox', { name: 'Code' })).toHaveValue('AB');
+    rendered.unmount();
+    expect(records.every((record) => record.destroyed === 1)).toBe(true);
+  });
+
+  test('rejects input observed under an earlier authored mode even when its text is unchanged', async () => {
+    const source = createEditor({
+      plugins: [textSchema, authored({ authorId: 'alice' })],
+      initialValue: [{ type: 'code', children: [{ text: 'AB' }] }],
+    });
+    const proposal = { intent: 'propose', projection: 'proposed' } as const;
+    const view = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: proposal })
+    );
+    const { adapter, records } = createAdapter();
+    const rendered = render(
+      <EditorRoot editor={view}>
+        <Editable renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    const external = records[0];
+    const mountedView = getMountedEditorFor(external);
+    const observed = external.state.version;
+    await act(async () =>
+      mountedView.api.authored.setView({
+        intent: 'edit',
+        projection: 'accepted',
+      })
+    );
+    await act(async () => {
+      expect(
+        external.actions.dispatch({
+          baseVersion: observed,
+          changes: [{ from: 1, to: 1, insert: 'X' }],
+          intent: 'input',
+          selection: { anchor: 2, focus: 2 },
+        }).status
+      ).toBe('stale');
+    });
+    expect(source.read.text.string([])).toBe('AB');
+    expect(external.state.text).toBe('AB');
+    const acceptedVersion = external.state.version;
+    await act(async () => mountedView.api.authored.setView(proposal));
+    await act(async () => {
+      expect(
+        external.actions.select({
+          baseVersion: acceptedVersion,
+          selection: { anchor: 1, focus: 1 },
+        }).status
+      ).toBe('stale');
+      expect(
+        external.actions.dispatch({
+          baseVersion: external.state.version,
+          changes: [{ from: 1, to: 1, insert: 'Y' }],
+          intent: 'input',
+          selection: { anchor: 2, focus: 2 },
+        }).status
+      ).toBe('applied');
+    });
+    expect(external.state.text).toBe('AYB');
+    expect(source.read.text.string([])).toBe('AB');
+    expect(records).toHaveLength(1);
+    rendered.unmount();
+    expect(external.destroyed).toBe(1);
+  });
+
+  test('captures composition as proposals and defers its mode change without changing accepted content', async () => {
+    const source = createEditor({
+      plugins: [textSchema, history(), authored({ authorId: 'alice' })],
+      initialValue: [{ type: 'code', children: [{ text: 'AB' }] }],
+    });
+    const proposal = { intent: 'propose', projection: 'proposed' } as const;
+    const view = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: proposal })
+    );
+    const sibling = createReactRuntimeViewEditor(
+      createEditorView(source, { authored: proposal })
+    );
+    const { adapter, records } = createAdapter();
+    const rendered = render(
+      <>
+        <EditorRoot editor={source}>
+          <Editable aria-label="Accepted code" />
+        </EditorRoot>
+        <EditorRoot editor={sibling}>
+          <Editable aria-label="Proposed code" />
+        </EditorRoot>
+        <EditorRoot editor={view}>
+          <Editable renderElement={externalRenderer(adapter)} />
+        </EditorRoot>
+      </>
+    );
+    const external = records[0];
+    const mountedView = getMountedEditorFor(external);
+    const input = external.host.querySelector('textarea')!;
+    act(() => {
+      input.focus();
+      external.actions.select({
+        baseVersion: external.state.version,
+        selection: { anchor: 1, focus: 1 },
+      });
+      external.actions.composition('start');
+    });
+    await act(async () => {
+      expect(
+        external.actions.dispatch({
+          baseVersion: external.state.version,
+          changes: [{ from: 1, to: 1, insert: 'a' }],
+          intent: 'composition',
+          selection: { anchor: 2, focus: 2 },
+        }).status
+      ).toBe('applied');
+    });
+    expect(
+      rendered.getByRole('textbox', { name: 'Accepted code' }).textContent
+    ).toBe('AB');
+    expect(
+      rendered.getByRole('textbox', { name: 'Proposed code' }).textContent
+    ).toBe('AaB');
+    await act(async () => {
+      await mountedView.api.authored.setView({
+        intent: 'edit',
+        projection: 'accepted',
+      });
+    });
+    expect(mountedView.read.authored.view()).toEqual(proposal);
+    expect(mountedView.read.view.isComposing()).toBe(true);
+    await act(async () => {
+      expect(
+        external.actions.dispatch({
+          baseVersion: external.state.version,
+          changes: [{ from: 1, to: 2, insert: 'あ' }],
+          intent: 'composition',
+          selection: { anchor: 2, focus: 2 },
+        }).status
+      ).toBe('applied');
+    });
+    await act(async () => external.actions.composition('end'));
+    expect(mountedView.read.authored.view()).toEqual({
+      intent: 'edit',
+      projection: 'accepted',
+    });
+    expect(mountedView.read.view.isComposing()).toBe(false);
+    expect(external.state.text).toBe('AB');
+    expect(document.activeElement).toBe(input);
+    expect(
+      rendered.getByRole('textbox', { name: 'Proposed code' }).textContent
+    ).toBe('AあB');
+    expect(source.read.children()).toEqual([
+      { type: 'code', children: [{ text: 'AB' }] },
+    ]);
+    expect(source.read.history.undos()).toHaveLength(1);
+    await act(async () => mountedView.api.authored.setView(proposal));
+    expect(external.state.text).toBe('AあB');
+    expect(document.activeElement).toBe(input);
+    await act(async () => {
+      external.actions.dispatch({
+        baseVersion: external.state.version,
+        changes: [{ from: 2, to: 2, insert: '!' }],
+        intent: 'input',
+        selection: { anchor: 3, focus: 3 },
+      });
+    });
+    expect(source.read.history.undos()).toHaveLength(2);
+    for (const text of ['AあB', 'AB']) {
+      await act(async () =>
+        expect(external.actions.history('undo')).toBe(true)
+      );
+      expect(external.state.text).toBe(text);
+      expect(
+        rendered.getByRole('textbox', { name: 'Proposed code' }).textContent
+      ).toBe(text);
+    }
+    for (const text of ['AあB', 'Aあ!B']) {
+      await act(async () =>
+        expect(external.actions.history('redo')).toBe(true)
+      );
+      expect(external.state.text).toBe(text);
+    }
+    await act(async () =>
+      source.update.authored.decide({
+        action: 'reject',
+        selection: source.read.authored.select({ status: 'pending' }),
+      })
+    );
+    expect(external.state.text).toBe('AB');
+    expect(
+      rendered.getByRole('textbox', { name: 'Proposed code' }).textContent
+    ).toBe('AB');
+    rendered.unmount();
+    expect(records.every((record) => record.destroyed === 1)).toBe(true);
+  });
+
+  test('captures external text deletion and insertion while a sibling displays retained content', async () => {
+    let authorId = 'alice';
+    const source = createEditor({
+      plugins: [textSchema, history(), authored({ authorId: () => authorId })],
+      initialValue: [{ type: 'code', children: [{ text: 'ABCD' }] }],
+    });
+    const view = createReactRuntimeViewEditor(
+      createEditorView(source, {
+        authored: { intent: 'propose', projection: 'proposed' },
+      })
+    );
+    const sibling = createReactRuntimeViewEditor(
+      createEditorView(source, {
+        authored: { intent: 'propose', projection: 'markup' },
+      })
+    );
+    const { adapter, records } = createAdapter();
+    const rendered = render(
+      <>
+        <EditorRoot editor={sibling}>
+          <Editable aria-label="Code markup" />
+        </EditorRoot>
+        <EditorRoot editor={view}>
+          <Editable renderElement={externalRenderer(adapter)} />
+        </EditorRoot>
+      </>
+    );
+    const external = records[0];
+    await act(async () => {
+      expect(
+        external.actions.dispatch({
+          baseVersion: external.state.version,
+          changes: [{ from: 1, to: 3, insert: '' }],
+          intent: 'cut',
+          selection: { anchor: 1, focus: 1 },
+        }).status
+      ).toBe('applied');
+    });
+    const deletion = source.read.authored.select({ status: 'pending' });
+    expect(external.state.text).toBe('AD');
+    expect(
+      rendered.getByRole('textbox', { name: 'Code markup' }).textContent
+    ).toBe('ABCD');
+    authorId = 'bob';
+    await act(async () => {
+      external.actions.dispatch({
+        baseVersion: external.state.version,
+        changes: [{ from: 1, to: 1, insert: 'X' }],
+        intent: 'paste',
+        selection: { anchor: 2, focus: 2 },
+      });
+    });
+    expect(external.state.text).toBe('AXD');
+    expect(
+      rendered.getByRole('textbox', { name: 'Code markup' }).textContent
+    ).toBe('AXBCD');
+    expect(source.read.text.string([])).toBe('ABCD');
+    await act(async () =>
+      expect(
+        source.update.authored.decide({
+          action: 'accept',
+          selection: deletion,
+        }).status
+      ).toBe('applied')
+    );
+    expect(source.read.text.string([])).toBe('AD');
+    expect(external.state.text).toBe('AXD');
+    expect(
+      rendered.getByRole('textbox', { name: 'Code markup' }).textContent
+    ).toBe('AXD');
+    await act(async () =>
+      expect(
+        source.update.authored.decide({
+          action: 'reject',
+          selection: source.read.authored.select({ status: 'pending' }),
+        }).status
+      ).toBe('applied')
+    );
+    expect(external.state.text).toBe('AD');
+    rendered.unmount();
+  });
+
   test('resolves the surviving mounted DOM owner after the focused third view unmounts', async () => {
     const editor = createEditor({
-      extensions: [textSchema, history()],
+      plugins: [textSchema, history()],
       initialValue: [
         {
           type: 'paragraph',
@@ -148,7 +511,7 @@ describe('external text views', () => {
     );
     const tree = (third: boolean) => (
       <React.StrictMode>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           {nativeView}
           {primaryView}
           {third && (
@@ -157,7 +520,7 @@ describe('external text views', () => {
               renderElement={externalRenderer(adapter)}
             />
           )}
-        </Plite>
+        </EditorRoot>
       </React.StrictMode>
     );
     const errors: unknown[][] = [];
@@ -177,7 +540,7 @@ describe('external text views', () => {
       const removedRuntime = findMountedEditableDOMRuntime(secondary)!;
       const { dom } = survivorRuntime.editor.api;
       await act(async () => secondary.focus());
-      expect(getEditorDOMRoot(editor)).toBe(secondary);
+      expect(getEditorDOMRoot(survivorRuntime.editor)).toBe(secondary);
       expect(dom.editable()).toBe(secondary);
       expect(errors).toEqual([]);
 
@@ -185,13 +548,13 @@ describe('external text views', () => {
       expect(removedRuntime.connected).toBe(false);
       expect(survivorRuntime.connected).toBe(true);
       await act(async () => native.focus());
-      expect(getEditorDOMRoot(editor)).toBe(native);
+      expect(getEditorDOMRoot(survivorRuntime.editor)).toBe(native);
       expect.soft(dom.editable()).toBe(native);
       expect.soft(dom.root()).toBe(native);
       expect.soft(dom.resolveDOMNode(survivorRuntime.editor)).toBe(native);
       expect.soft(() => dom.hasEditableTarget(native)).not.toThrow();
       expect(dom.resolveDOMNode(editor.read.nodes.get([0])![0])).toBe(
-        native.querySelector('[data-plite-path="0"]')
+        native.querySelector('[data-editor-path="0"]')
       );
       expect(
         native.contains(dom.resolveDOMPoint({ path: [0, 0], offset: 0 })![0])
@@ -207,7 +570,7 @@ describe('external text views', () => {
     'validates %i mounted projections in one DOM pass',
     (count) => {
       const editor = createEditor({
-        extensions: [textSchema],
+        plugins: [textSchema],
         initialValue: Array.from({ length: count }, (_, index) => ({
           type: 'code',
           children: [{ text: `code ${index}` }],
@@ -220,16 +583,16 @@ describe('external text views', () => {
         .spyOn(Element.prototype, 'querySelectorAll')
         .mockImplementation(function spy(this: Element, selector) {
           const result = query.call(this, selector);
-          if (selector === '[data-plite-external-text-path]') {
+          if (selector === '[data-editor-external-text-path]') {
             visited += result.length;
           }
           return result;
         });
       try {
         const view = render(
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable renderElement={externalRenderer(adapter)} />
-          </Plite>
+          </EditorRoot>
         );
         expect(records).toHaveLength(count);
         expect(visited).toBe(count);
@@ -250,7 +613,7 @@ describe('external text views', () => {
       runtime?.externalText.focusSelection();
     });
     const view = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderElement={externalRenderer({
             mount(options) {
@@ -265,11 +628,13 @@ describe('external text views', () => {
             },
           })}
         />
-      </Plite>
+      </EditorRoot>
     );
-    runtime = getMountedEditableDOMRuntime(editor);
+    runtime = findMountedEditableDOMRuntime(
+      view.container.querySelector('[data-editor]')!
+    );
     act(() => {
-      view.container.querySelector<HTMLElement>('[data-plite-editor]')!.focus();
+      view.container.querySelector<HTMLElement>('[data-editor]')!.focus();
       editor.update.selection.set({
         anchor: { path: [0, 0], offset: 2 },
         focus: { path: [0, 0], offset: 2 },
@@ -284,7 +649,7 @@ describe('external text views', () => {
     const { adapter, records } = createAdapter();
     const nativeText = vi.fn(() => null);
     const view = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderText={nativeText}
           renderElement={({ attributes, slots }) => (
@@ -293,15 +658,17 @@ describe('external text views', () => {
             </div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
     expect(records).toHaveLength(1);
     expect(records[0].state.text).toHaveLength(100_000);
     expect(records[0].updates).toHaveLength(0);
     expect(nativeText).not.toHaveBeenCalled();
-    expect(view.container.querySelector('[data-plite-node="text"]')).toBeNull();
     expect(
-      view.container.querySelectorAll('[data-plite-external-text]')
+      view.container.querySelector('[data-editor-node="text"]')
+    ).toBeNull();
+    expect(
+      view.container.querySelectorAll('[data-editor-external-text]')
     ).toHaveLength(1);
     view.unmount();
     expect(records[0].destroyed).toBe(1);
@@ -328,9 +695,9 @@ describe('external text views', () => {
       );
     };
     const view = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={Renderer} />
-      </Plite>
+      </EditorRoot>
     );
     act(() => view.getByRole('button').click());
     expect(view.getByRole('button').textContent).toBe('1');
@@ -372,9 +739,9 @@ describe('external text views', () => {
       </div>
     );
     const view = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={Renderer} />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(records).toHaveLength(1);
@@ -401,9 +768,9 @@ describe('external text views', () => {
 
     expect(() =>
       render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable renderElement={Renderer} />
-        </Plite>
+        </EditorRoot>
       )
     ).not.toThrow();
     expect(records).toHaveLength(1);
@@ -416,7 +783,7 @@ describe('external text views', () => {
 
     render(
       <ProjectionErrorBoundary onError={(error) => errors.push(error)}>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable
             renderElement={({ slots }) => (
               <div>
@@ -425,7 +792,7 @@ describe('external text views', () => {
               </div>
             )}
           />
-        </Plite>
+        </EditorRoot>
       </ProjectionErrorBoundary>
     );
 
@@ -446,7 +813,7 @@ describe('external text views', () => {
 
     render(
       <ProjectionErrorBoundary onError={(error) => errors.push(error)}>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable
             renderElement={({ slots }) => (
               <div>
@@ -455,7 +822,7 @@ describe('external text views', () => {
               </div>
             )}
           />
-        </Plite>
+        </EditorRoot>
       </ProjectionErrorBoundary>
     );
 
@@ -471,26 +838,26 @@ describe('external text views', () => {
 
   test('requires an exact-one-Text grammar, not merely a currently single leaf', () => {
     const editor = createEditor({
-      extensions: [textSchema],
+      plugins: [textSchema],
       initialValue: [{ type: 'paragraph', children: [{ text: 'native' }] }],
     });
     const { adapter, records } = createAdapter();
     expect(() =>
       render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable
             renderElement={({ slots }) => (
               <div>{slots.externalText({ adapter, ariaLabel: 'Code' })}</div>
             )}
           />
-        </Plite>
+        </EditorRoot>
       )
     ).toThrow(/exactly one Text/i);
     expect(records).toHaveLength(0);
   });
 
   test('invalidates the external binding when schema reconfiguration changes its domain', () => {
-    const slot = defineExtensionSlot('external-text-schema');
+    const slot = definePluginSlot('external-text-schema');
     const createSchema = (max: number, version: number) =>
       defineEditorSchema('schema:external-text-reconfiguration', {
         elements: { code: { content: schema.content.text({ min: 1, max }) } },
@@ -499,12 +866,12 @@ describe('external text views', () => {
         version,
       });
     const editor = createEditor({
-      extensions: [slot.of(createSchema(1, 1))],
+      plugins: [slot.of(createSchema(1, 1))],
       initialValue: [{ type: 'code', children: [{ text: 'canonical' }] }],
     });
     const { adapter, records } = createAdapter();
     const view = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderElement={({ attributes, element, slots }) => (
             <div {...attributes}>
@@ -516,17 +883,17 @@ describe('external text views', () => {
             </div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
     const original = records[0];
     const value = editor.read.value();
-    act(() => editor.update.extensions.reconfigure(slot, createSchema(2, 2)));
+    act(() => editor.update.plugins.reconfigure(slot, createSchema(2, 2)));
     expect(original.destroyed).toBe(1);
     expect(
-      view.container.querySelector('[data-plite-external-text]')
+      view.container.querySelector('[data-editor-external-text]')
     ).toBeNull();
     expect(
-      view.container.querySelector('[data-plite-node="text"]')
+      view.container.querySelector('[data-editor-node="text"]')
     ).not.toBeNull();
     act(() =>
       expect(
@@ -539,7 +906,7 @@ describe('external text views', () => {
       ).toBe('stale')
     );
     expect(editor.read.value()).toEqual(value);
-    act(() => editor.update.extensions.reconfigure(slot, createSchema(1, 3)));
+    act(() => editor.update.plugins.reconfigure(slot, createSchema(1, 3)));
     expect(records).toHaveLength(2);
     expect(records[1].state.text).toBe('canonical');
     view.unmount();
@@ -559,10 +926,10 @@ describe('external text views', () => {
       </div>
     );
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={renderer} />
         <Editable renderElement={renderer} />
-      </Plite>
+      </EditorRoot>
     );
     const [origin, sibling] = records;
     expect(records).toHaveLength(2);
@@ -605,9 +972,9 @@ describe('external text views', () => {
       </div>
     );
     const view = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={renderer} />
-      </Plite>
+      </EditorRoot>
     );
     const record = records[0];
     expect(record.destroyed).toBe(0);
@@ -624,9 +991,9 @@ describe('external text views', () => {
     act(() => expect(record.actions.dispatch(input).status).toBe('stale'));
     expect(record.updates.at(-1)).toBeNull();
     view.rerender(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable readOnly renderElement={renderer} />
-      </Plite>
+      </EditorRoot>
     );
     act(() =>
       expect(
@@ -642,7 +1009,7 @@ describe('external text views', () => {
     const { adapter, records } = createAdapter();
     const outer = vi.fn();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           onBeforeInput={outer}
           onDOMBeforeInput={outer}
@@ -667,7 +1034,7 @@ describe('external text views', () => {
             </div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
     const foreign = document.createElement('div');
     foreign.contentEditable = 'true';
@@ -699,7 +1066,7 @@ describe('external text views', () => {
     });
     expect(outer).not.toHaveBeenCalled();
     expect(editor.read.children()[0].children[0].text).toBe('A😀B\nC');
-    expect(editor.read.view.isComposing()).toBe(false);
+    expect(getMountedEditorFor(records[0]).read.view.isComposing()).toBe(false);
   });
 
   test('only the focused view receives native selection; DOM selection import cannot clear it', () => {
@@ -713,10 +1080,10 @@ describe('external text views', () => {
       </div>
     );
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={renderer} />
         <Editable renderElement={renderer} />
-      </Plite>
+      </EditorRoot>
     );
     const [first, second] = records;
     act(() => {
@@ -746,9 +1113,9 @@ describe('external text views', () => {
     expect(second.state.selection?.mode).toBe('native');
   });
 
-  test("an unfocused sibling cannot import another view's partial DOM selection", () => {
+  test("an unfocused sibling cannot import another view's viewport-backed selection", () => {
     const editor = createEditor({
-      extensions: [textSchema],
+      plugins: [textSchema],
       initialValue: [
         { type: 'paragraph', children: [{ text: 'before' }] },
         { type: 'code', children: [{ text: 'canonical' }] },
@@ -756,18 +1123,17 @@ describe('external text views', () => {
     });
     const { adapter, records } = createAdapter();
     const view = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable id="native-sibling" />
         <Editable
           id="external-owner"
           renderElement={externalRenderer(adapter)}
         />
-      </Plite>
+      </EditorRoot>
     );
-    const native = getMountedEditableDOMRuntime(
-      editor,
+    const native = getMountedRuntime(
       view.container.querySelector('#native-sibling')!
-    )!;
+    );
     act(() => {
       records[0].host.querySelector('textarea')!.focus();
       records[0].actions.select({
@@ -782,7 +1148,7 @@ describe('external text views', () => {
     });
     const canonical = editor.read.selection();
     const before = view.container.querySelector(
-      '#external-owner [data-plite-path="0"]'
+      '#external-owner [data-editor-path="0"]'
     )!;
     const text = document
       .createTreeWalker(before, NodeFilter.SHOW_TEXT)
@@ -812,7 +1178,7 @@ describe('external text views', () => {
     'preserves visible %s anchor text when the selection focus is external',
     (direction) => {
       const editor = createEditor({
-        extensions: [textSchema],
+        plugins: [textSchema],
         initialValue: [
           { type: 'paragraph', children: [{ text: 'before' }] },
           { type: 'code', children: [{ text: 'canonical' }] },
@@ -821,14 +1187,12 @@ describe('external text views', () => {
       });
       const { adapter } = createAdapter();
       const view = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable renderElement={externalRenderer(adapter)} />
-        </Plite>
+        </EditorRoot>
       );
-      const root = view.container.querySelector<HTMLElement>(
-        '[data-plite-editor]'
-      )!;
-      const runtime = getMountedEditableDOMRuntime(editor, root)!;
+      const root = view.container.querySelector<HTMLElement>('[data-editor]')!;
+      const runtime = getMountedRuntime(root);
       const selection = {
         anchor: { path: [direction === 'forward' ? 0 : 2, 0], offset: 2 },
         focus: { path: [1, 0], offset: 3 },
@@ -856,7 +1220,7 @@ describe('external text views', () => {
     const editor = createFixture('native and external');
     const { adapter, records } = createAdapter();
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable id="native-first" />
         <Editable id="native-second" />
         <Editable
@@ -866,7 +1230,7 @@ describe('external text views', () => {
             </div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
     await act(async () => {
       records[0].actions.dispatch({
@@ -889,7 +1253,7 @@ describe('external text views', () => {
     const source = createFixture('abcd');
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderElement={({ attributes, slots }) => (
             <div {...attributes}>
@@ -897,7 +1261,7 @@ describe('external text views', () => {
             </div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
     const view = records[0];
     act(() =>
@@ -927,7 +1291,7 @@ describe('external text views', () => {
 
   test('unrelated blocks receive zero updates and retain a valid observed version', () => {
     const editor = createEditor({
-      extensions: [textSchema],
+      plugins: [textSchema],
       initialValue: [
         { type: 'code', children: [{ text: 'first' }] },
         { type: 'code', children: [{ text: 'second' }] },
@@ -935,7 +1299,7 @@ describe('external text views', () => {
     });
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderElement={({ attributes, slots }) => (
             <div {...attributes}>
@@ -943,7 +1307,7 @@ describe('external text views', () => {
             </div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
     const [first, second] = records;
     const count = first.updates.length;
@@ -970,9 +1334,9 @@ describe('external text views', () => {
     const editor = createFixture('x'.repeat(100_000));
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const counters = {
       fullStringCopies: 0,
@@ -1064,7 +1428,7 @@ describe('external text views', () => {
     const editor = createFixture('abcd');
     const { adapter, records } = createAdapter();
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderElement={({ attributes, slots }) => (
             <div {...attributes}>
@@ -1072,7 +1436,7 @@ describe('external text views', () => {
             </div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
     const view = records[0];
     const invalid = [
@@ -1098,7 +1462,7 @@ describe('external text views', () => {
       );
     }
     expect(editor.read.children()[0].children[0].text).toBe('abcd');
-    const runtime = getMountedEditableDOMRuntime(editor)!;
+    const runtime = getMountedRuntime(view.host);
     expect(runtime.externalText.metrics().staleWrites).toBe(invalid.length);
     rendered.unmount();
     expect(
@@ -1114,7 +1478,7 @@ describe('external text views', () => {
     const editor = createFixture('');
     const { adapter, records } = createAdapter();
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable id="native-ime-sibling" />
         <Editable
           renderElement={({ attributes, slots }) => (
@@ -1123,7 +1487,7 @@ describe('external text views', () => {
             </div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
     const view = records[0];
     act(() => {
@@ -1153,7 +1517,7 @@ describe('external text views', () => {
       rendered.container.querySelector('#native-ime-sibling')?.textContent
     ).toBe('あ');
     act(() => view.actions.composition('end'));
-    expect(editor.read.view.isComposing()).toBe(false);
+    expect(getMountedEditorFor(view).read.view.isComposing()).toBe(false);
     expect(editor.read.history.undos()).toHaveLength(1);
     act(() => {
       view.actions.dispatch({
@@ -1179,7 +1543,7 @@ describe('external text views', () => {
     const editor = createFixture('abcd');
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderElement={({ attributes, slots }) => (
             <div {...attributes}>
@@ -1187,10 +1551,10 @@ describe('external text views', () => {
             </div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
     const view = records[0];
-    const runtime = getMountedEditableDOMRuntime(editor)!;
+    const runtime = getMountedRuntime(view.host);
     act(() => view.actions.composition('start'));
     act(() =>
       editor.update({ tags: ['collaboration'] }, (tx) =>
@@ -1199,7 +1563,7 @@ describe('external text views', () => {
     );
     expect(view.state.text).toBe('Rabcd');
     expect(runtime.externalText.metrics().resets).toBe(1);
-    expect(editor.read.view.isComposing()).toBe(false);
+    expect(runtime.editor.read.view.isComposing()).toBe(false);
     act(() =>
       expect(
         view.actions.dispatch({
@@ -1247,9 +1611,9 @@ describe('external text views', () => {
     };
     const tree = (config: { language: string }) => (
       <Config.Provider value={config}>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable renderElement={Renderer} />
-        </Plite>
+        </EditorRoot>
       </Config.Provider>
     );
     const rendered = render(tree({ language: 'text' }));
@@ -1263,16 +1627,16 @@ describe('external text views', () => {
 
   test('preserves whole-Text marks across offset edits', () => {
     const editor = createEditor({
-      extensions: [textSchema],
+      plugins: [textSchema],
       initialValue: [
         { type: 'code', children: [{ bold: true, text: 'marked' }] },
       ],
     });
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const view = records[0];
     act(() => {
@@ -1291,7 +1655,7 @@ describe('external text views', () => {
 
   test('isolates named roots and independent editors', () => {
     const editor = createEditor({
-      extensions: [textSchema, history()],
+      plugins: [textSchema, history()],
       initialValue: {
         children: [{ type: 'code', children: [{ text: 'main' }] }],
         roots: { notes: [{ type: 'code', children: [{ text: 'notes' }] }] },
@@ -1302,13 +1666,13 @@ describe('external text views', () => {
     const renderer = externalRenderer(adapter);
     render(
       <>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable renderElement={renderer} />
           <Editable renderElement={renderer} root="notes" />
-        </Plite>
-        <Plite editor={independent}>
+        </EditorRoot>
+        <EditorRoot editor={independent}>
           <Editable renderElement={renderer} />
-        </Plite>
+        </EditorRoot>
       </>
     );
     const main = records.find((record) => record.state.text === 'main')!;
@@ -1344,11 +1708,11 @@ describe('external text views', () => {
       const { adapter, records } = createAdapter();
       const renderer = externalRenderer(adapter);
       const tree = (visible: number[]) => (
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           {visible.map((index) => (
             <Editable key={index} renderElement={renderer} />
           ))}
-        </Plite>
+        </EditorRoot>
       );
       const rendered = render(tree([0, 1]));
       const survivor = records[1 - removed];
@@ -1373,7 +1737,7 @@ describe('external text views', () => {
 
   test('retains a moved owner and destroys removed owners exactly once', () => {
     const editor = createEditor({
-      extensions: [textSchema],
+      plugins: [textSchema],
       initialValue: [
         { type: 'code', children: [{ text: 'first' }] },
         { type: 'code', children: [{ text: 'second' }] },
@@ -1381,9 +1745,9 @@ describe('external text views', () => {
     });
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const second = records[1];
     act(() => editor.update.nodes.move({ at: [1], to: [0] }));
@@ -1408,9 +1772,9 @@ describe('external text views', () => {
     const editor = createFixture('old');
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const view = records[0];
     const previousKey = editor.key([0, 0]);
@@ -1423,8 +1787,7 @@ describe('external text views', () => {
     expect(editor.key([0, 0])).not.toBe(previousKey);
     expect(records).toHaveLength(1);
     expect(view.updates).toEqual([null]);
-    const boundaries =
-      getMountedEditableDOMRuntime(editor)!.domCoverage.getBoundaries();
+    const boundaries = getMountedRuntime(view.host).domCoverage.getBoundaries();
     expect(boundaries).toHaveLength(1);
     expect(boundaries[0].coveredRuntimeRanges).toEqual([
       { anchor: editor.key([0, 0]), focus: editor.key([0, 0]) },
@@ -1446,7 +1809,7 @@ describe('external text views', () => {
     'boundary deletion %s keeps the resulting selection usable',
     async (direction) => {
       const editor = createEditor({
-        extensions: [textSchema, history()],
+        plugins: [textSchema, history()],
         initialValue: [
           { type: 'paragraph', children: [{ text: 'before' }] },
           { type: 'code', children: [{ text: 'code' }] },
@@ -1455,13 +1818,13 @@ describe('external text views', () => {
       });
       const { adapter, records } = createAdapter();
       const rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
           <Editable
             id="delete-owner"
             renderElement={externalRenderer(adapter)}
           />
-        </Plite>
+        </EditorRoot>
       );
       const view = records[0];
       act(() => {
@@ -1498,9 +1861,9 @@ describe('external text views', () => {
     const source = createFixture('before');
     const fixture = createAdapter();
     render(
-      <Plite editor={source}>
+      <EditorRoot editor={source}>
         <Editable renderElement={externalRenderer(fixture.adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const origin = fixture.records[0];
     act(() => {
@@ -1513,14 +1876,14 @@ describe('external text views', () => {
     });
     const saved = JSON.parse(JSON.stringify(History.toJSON(source)));
     const restored = createEditor({
-      extensions: [textSchema, history()],
+      plugins: [textSchema, history()],
       initialValue: source.read.value(),
     });
     const next = createAdapter();
     render(
-      <Plite editor={restored}>
+      <EditorRoot editor={restored}>
         <Editable renderElement={externalRenderer(next.adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     act(() =>
       restored.update((tx) =>
@@ -1541,7 +1904,7 @@ describe('external text views', () => {
     (phase) => {
       const errors = vi.fn();
       const editor = createEditor({
-        extensions: [textSchema],
+        plugins: [textSchema],
         initialValue: [{ type: 'code', children: [{ text: 'secret' }] }],
         lifecycleErrorSink: errors,
       });
@@ -1559,11 +1922,13 @@ describe('external text views', () => {
         },
       };
       const rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable renderElement={externalRenderer(adapter)} />
-        </Plite>
+        </EditorRoot>
       );
-      const runtime = getMountedEditableDOMRuntime(editor)!;
+      const runtime = getMountedRuntime(
+        rendered.container.querySelector('[data-editor]')!
+      );
       if (phase === 'focus') {
         act(() => {
           runtime.rootElement!.focus();
@@ -1595,7 +1960,7 @@ describe('external text views', () => {
   test('isolates adapter failures from canonical publication and recovers only after reset', () => {
     const errors = vi.fn();
     const editor = createEditor({
-      extensions: [textSchema],
+      plugins: [textSchema],
       initialValue: [{ type: 'code', children: [{ text: 'abcd' }] }],
       lifecycleErrorSink: errors,
     });
@@ -1618,12 +1983,12 @@ describe('external text views', () => {
       },
     };
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const record = fixture.records[0];
-    const runtime = getMountedEditableDOMRuntime(editor)!;
+    const runtime = getMountedRuntime(record.host);
     act(() =>
       editor.update.text.insert('!', { at: { path: [0, 0], offset: 0 } })
     );
@@ -1670,7 +2035,7 @@ describe('external text views', () => {
   });
 
   test('runs canonical corrections and resets the originating prediction when they change it', () => {
-    const correction = defineExtension('external-text-correction', {
+    const correction = definePlugin('external-text-correction', {
       corrections: [
         {
           event: 'content',
@@ -1689,14 +2054,14 @@ describe('external text views', () => {
       ],
     });
     const editor = createEditor({
-      extensions: [textSchema, correction],
+      plugins: [textSchema, correction],
       initialValue: [{ type: 'code', children: [{ text: 'a' }] }],
     });
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const view = records[0];
     act(() => {
@@ -1719,24 +2084,25 @@ describe('external text views', () => {
       const { adapter, records } = createAdapter();
       const renderer = externalRenderer(adapter);
       const rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable renderElement={renderer} />
-        </Plite>
+        </EditorRoot>
       );
       const view = records[0];
+      const mountedEditor = getMountedEditorFor(view);
       act(() => view.actions.composition('start'));
-      expect(editor.read.view.isComposing()).toBe(true);
+      expect(mountedEditor.read.view.isComposing()).toBe(true);
       if (source === 'prop') {
         rendered.rerender(
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable readOnly renderElement={renderer} />
-          </Plite>
+          </EditorRoot>
         );
       } else {
-        await act(async () => setEditorReadOnly(editor, true));
+        await act(async () => setEditorReadOnly(mountedEditor, true));
       }
       expect(view.state.readOnly).toBe(true);
-      expect(editor.read.view.isComposing()).toBe(false);
+      expect(mountedEditor.read.view.isComposing()).toBe(false);
       act(() =>
         expect(
           view.actions.dispatch({
@@ -1752,7 +2118,7 @@ describe('external text views', () => {
   );
 
   test('resets a rejected transaction prediction and ends its composition epoch', () => {
-    const correction = defineExtension('reject-external-text', {
+    const correction = definePlugin('reject-external-text', {
       corrections: [
         {
           event: 'content',
@@ -1765,14 +2131,14 @@ describe('external text views', () => {
       ],
     });
     const editor = createEditor({
-      extensions: [textSchema, correction, history()],
+      plugins: [textSchema, correction, history()],
       initialValue: [{ type: 'code', children: [{ text: 'a' }] }],
     });
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const view = records[0];
     act(() => view.actions.composition('start'));
@@ -1789,7 +2155,7 @@ describe('external text views', () => {
     expect(editor.read.text.string([0])).toBe('a');
     expect(view.state.text).toBe('a');
     expect(view.updates.at(-1)).toBeNull();
-    expect(editor.read.view.isComposing()).toBe(false);
+    expect(getMountedEditorFor(view).read.view.isComposing()).toBe(false);
     act(() =>
       expect(
         view.actions.dispatch({
@@ -1807,9 +2173,9 @@ describe('external text views', () => {
     const editor = createFixture('a');
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const view = records[0];
     act(() => view.actions.composition('start'));
@@ -1831,7 +2197,7 @@ describe('external text views', () => {
         }).status
       ).toBe('stale')
     );
-    expect(editor.read.view.isComposing()).toBe(false);
+    expect(getMountedEditorFor(view).read.view.isComposing()).toBe(false);
     act(() => {
       view.actions.dispatch({
         baseVersion: view.state.version,
@@ -1877,9 +2243,9 @@ describe('external text views', () => {
       },
     };
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     act(() =>
       editor.update.text.insert('!', { at: { path: [0, 0], offset: 0 } })
@@ -1894,10 +2260,10 @@ describe('external text views', () => {
     const { adapter, records } = createAdapter();
     const renderer = externalRenderer(adapter);
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable readOnly renderElement={renderer} />
         <Editable renderElement={renderer} />
-      </Plite>
+      </EditorRoot>
     );
     const [locked, writable] = records;
     expect(locked.state.readOnly).toBe(true);
@@ -1928,7 +2294,7 @@ describe('external text views', () => {
 
   test('allows directed selection in a read-only named view without changing its document', () => {
     const editor = createEditor({
-      extensions: [textSchema],
+      plugins: [textSchema],
       initialValue: {
         children: [{ type: 'code', children: [{ text: 'main' }] }],
         roots: { notes: [{ type: 'code', children: [{ text: 'notes' }] }] },
@@ -1936,13 +2302,13 @@ describe('external text views', () => {
     });
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           readOnly
           root="notes"
           renderElement={externalRenderer(adapter)}
         />
-      </Plite>
+      </EditorRoot>
     );
     const view = records[0];
     const before = editor.read.value();
@@ -1973,7 +2339,7 @@ describe('external text views', () => {
 
   test('deselects a read-only named view through the selection owner', () => {
     const editor = createEditor({
-      extensions: [textSchema],
+      plugins: [textSchema],
       initialValue: {
         children: [{ type: 'code', children: [{ text: 'main' }] }],
         roots: { notes: [{ type: 'code', children: [{ text: 'notes' }] }] },
@@ -1981,17 +2347,15 @@ describe('external text views', () => {
     });
     const { adapter } = createAdapter();
     const view = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           readOnly
           root="notes"
           renderElement={externalRenderer(adapter)}
         />
-      </Plite>
+      </EditorRoot>
     );
-    const root = view.container.querySelector<HTMLElement>(
-      '[data-plite-editor]'
-    )!;
+    const root = view.container.querySelector<HTMLElement>('[data-editor]')!;
     const runtime = findMountedEditableDOMRuntime(root)!;
     const before = editor.read.value();
     act(() => {
@@ -2027,7 +2391,7 @@ describe('external text views', () => {
       version: 1,
     });
     const editor = createEditor({
-      extensions: [nestedSchema],
+      plugins: [nestedSchema],
       initialValue: [
         {
           type: 'locked',
@@ -2041,9 +2405,9 @@ describe('external text views', () => {
     });
     const { adapter, records } = createAdapter();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     expect(records[0].state.readOnly).toBe(true);
     expect(records[1].state.readOnly).toBe(false);
@@ -2080,9 +2444,9 @@ describe('external text views', () => {
     const renderer = externalRenderer(adapter);
     const tree = (editor: ReturnType<typeof createFixture>) => (
       <React.StrictMode>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable renderElement={renderer} />
-        </Plite>
+        </EditorRoot>
       </React.StrictMode>
     );
     const server = tree(createFixture('canonical-only'));
@@ -2122,14 +2486,14 @@ describe('external text views', () => {
     const { adapter, records } = createAdapter();
     const outerInput = vi.fn();
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           onInput={outerInput}
           renderElement={externalRenderer(adapter)}
         />
-      </Plite>
+      </EditorRoot>
     );
-    const runtime = getMountedEditableDOMRuntime(editor)!;
+    const runtime = getMountedRuntime(records[0].host);
     await act(async () => {});
     const before = runtime.domIntegrityDiagnostics();
     const foreign = document.createElement('span');
@@ -2159,7 +2523,7 @@ describe('external text views', () => {
   test('delivers overlapping decoration ranges without internal selection attributes', () => {
     const editor = createFixture('abcdefgh');
     const { adapter, records } = createAdapter();
-    const decorations: Array<PliteDecorationSource<typeof editor>> = [
+    const decorations: Array<DecorationSource<typeof editor>> = [
       {
         id: 'external-ranges',
         read: ({ entry: [node, path] }) =>
@@ -2183,7 +2547,7 @@ describe('external text views', () => {
                 },
                 {
                   key: 'internal',
-                  attributes: { 'data-plite-inactive-selection': true },
+                  attributes: { 'data-editor-inactive-selection': true },
                   range: {
                     anchor: { path, offset: 1 },
                     focus: { path, offset: 3 },
@@ -2194,9 +2558,9 @@ describe('external text views', () => {
       },
     ];
     render(
-      <Plite decorations={decorations} editor={editor}>
+      <EditorRoot decorations={decorations} editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const ranges = records[0].state.decorations;
     expect(ranges).toHaveLength(2);
@@ -2206,7 +2570,7 @@ describe('external text views', () => {
     ]);
     expect(
       ranges.every(
-        ({ attributes }) => !('data-plite-inactive-selection' in attributes)
+        ({ attributes }) => !('data-editor-inactive-selection' in attributes)
       )
     ).toBe(true);
   });
@@ -2214,7 +2578,7 @@ describe('external text views', () => {
   test('delivers canonical text and its mapped decorations together once per commit', () => {
     const editor = createFixture('abc');
     const { adapter, records } = createAdapter();
-    const decorations: Array<PliteDecorationSource<typeof editor>> = [
+    const decorations: Array<DecorationSource<typeof editor>> = [
       {
         id: 'length-range',
         read: ({ entry: [node, path] }) =>
@@ -2233,9 +2597,9 @@ describe('external text views', () => {
       },
     ];
     render(
-      <Plite decorations={decorations} editor={editor}>
+      <EditorRoot decorations={decorations} editor={editor}>
         <Editable renderElement={externalRenderer(adapter)} />
-      </Plite>
+      </EditorRoot>
     );
     const record = records[0];
     record.updates.length = 0;
@@ -2248,67 +2612,56 @@ describe('external text views', () => {
     expect(record.state.decorations[0].end).toBe(4);
   });
 
-  test.each(['staged', 'virtualized'] as const)(
-    'balances adapter lifetimes when %s document coverage changes',
-    async (strategy) => {
-      const editor = createEditor({
-        extensions: [textSchema],
-        initialValue: Array.from({ length: 600 }, (_, index) => ({
-          type: 'code',
-          children: [{ text: `block-${index}` }],
-        })),
-      });
-      const { adapter, records } = createAdapter();
-      const rendered = render(
-        <Plite editor={editor}>
-          <Editable
-            domStrategy={
-              strategy === 'virtualized'
-                ? {
-                    type: 'virtualized',
-                    threshold: 1,
-                    overscan: 0,
-                    estimatedBlockSize: 24,
-                  }
-                : 'staged'
-            }
-            renderElement={externalRenderer(adapter)}
-            style={{ height: 48, overflowY: 'auto' }}
-          />
-        </Plite>
-      );
-      await act(async () =>
-        editor.update.selection.set({
-          anchor: { path: [500, 0], offset: 0 },
-          focus: { path: [500, 0], offset: 0 },
-        })
-      );
-      await waitFor(() =>
-        expect(
-          records.some(
-            (record) => !record.destroyed && record.state.text === 'block-500'
-          )
-        ).toBe(true)
-      );
-      act(() =>
-        editor.update.text.insert('!', { at: { path: [0, 0], offset: 7 } })
-      );
-      await act(async () =>
-        editor.update.selection.set({
-          anchor: { path: [0, 0], offset: 8 },
-          focus: { path: [0, 0], offset: 8 },
-        })
-      );
-      await waitFor(() =>
-        expect(
-          records.some(
-            (record) => !record.destroyed && record.state.text === 'block-0!'
-          )
-        ).toBe(true)
-      );
-      rendered.unmount();
-      expect(records.length).toBeGreaterThan(1);
-      expect(records.every((record) => record.destroyed === 1)).toBe(true);
-    }
-  );
+  test('balances adapter lifetimes when the virtualized document window changes', async () => {
+    const editor = createEditor({
+      plugins: [textSchema],
+      initialValue: Array.from({ length: 600 }, (_, index) => ({
+        type: 'code',
+        children: [{ text: `block-${index}` }],
+      })),
+    });
+    const { adapter, records } = createAdapter();
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <VirtualizedEditable
+          estimatedBlockSize={24}
+          overscan={0}
+          renderElement={externalRenderer(adapter)}
+          style={{ height: 48, overflowY: 'auto' }}
+        />
+      </EditorRoot>
+    );
+    await act(async () =>
+      editor.update.selection.set({
+        anchor: { path: [500, 0], offset: 0 },
+        focus: { path: [500, 0], offset: 0 },
+      })
+    );
+    await waitFor(() =>
+      expect(
+        records.some(
+          (record) => !record.destroyed && record.state.text === 'block-500'
+        )
+      ).toBe(true)
+    );
+    act(() =>
+      editor.update.text.insert('!', { at: { path: [0, 0], offset: 7 } })
+    );
+    await act(async () =>
+      editor.update.selection.set({
+        anchor: { path: [0, 0], offset: 8 },
+        focus: { path: [0, 0], offset: 8 },
+      })
+    );
+    await waitFor(() =>
+      expect(
+        records.some(
+          (record) => !record.destroyed && record.state.text === 'block-0!'
+        )
+      ).toBe(true)
+    );
+    rendered.unmount();
+    expect(records.length).toBeGreaterThan(1);
+    expect(records.every((record) => record.destroyed === 1)).toBe(true);
+  });
 });

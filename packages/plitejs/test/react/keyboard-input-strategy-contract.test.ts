@@ -11,7 +11,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createDOMPhaseScheduler } from '../../src/dom/internal';
 import { getNodeKey } from '../../src/internal';
-import { isSelectAllHotkey } from '../../src/react/dom-strategy/dom-strategy-commands';
 import { getTextDirection } from '../../src/react/editable/caret-engine';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
@@ -40,6 +39,7 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
+import { isSelectAllHotkey } from '../../src/react/viewport-commands';
 
 type ApplyEditableKeyDownOptions = Parameters<
   typeof applyRuntimeEditableKeyDown
@@ -69,10 +69,10 @@ const applyEditableKeyDown = (
       target?.nodeType === 1 ? (target as Element) : target?.parentElement;
     const root =
       options.event.currentTarget ??
-      element?.closest<HTMLElement>('[data-plite-editor]') ??
+      element?.closest<HTMLElement>('[data-editor]') ??
       document.createElement('div');
     if (!root.isConnected) document.body.append(root);
-    root.setAttribute('data-plite-editor', 'true');
+    root.setAttribute('data-editor', 'true');
     runtime.setRoot(root);
     runtime.connect();
   }
@@ -173,7 +173,7 @@ const paragraph = (text: string) =>
     children: [{ text }],
   }) satisfies Descendant;
 
-const contentRootExtension = defineEditorSchema(
+const contentRootPlugin = defineEditorSchema(
   'schema:keyboard-content-root-test',
   {
     elements: {
@@ -343,13 +343,13 @@ describe('keyboard input strategy', () => {
 
     expect(
       isNativeVerticalKeyFastPathFullyMounted({
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         editor,
       })
     ).toBe(true);
     expect(
       isNativeVerticalKeyFastPathFullyMounted({
-        domStrategyRuntime: {
+        viewportRuntime: {
           mountedTopLevelNodeKeys: new Set([
             getNodeKey(editor, [0])!,
             getNodeKey(editor, [1])!,
@@ -361,7 +361,7 @@ describe('keyboard input strategy', () => {
     ).toBe(false);
     expect(
       isNativeVerticalKeyFastPathFullyMounted({
-        domStrategyRuntime: {
+        viewportRuntime: {
           mountedTopLevelNodeKeys: new Set([
             getNodeKey(editor, [0])!,
             getNodeKey(editor, [1])!,
@@ -377,7 +377,7 @@ describe('keyboard input strategy', () => {
     ).toBe(true);
   });
 
-  it('model-owns plain vertical shift extension in large DOM-strategy documents', () => {
+  it('model-owns plain vertical shift plugin in large virtualized documents', () => {
     const initialValue = Array.from({ length: 1001 }, (_, index) =>
       paragraph(`row-${index}`)
     );
@@ -405,13 +405,13 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: {
+        viewportRuntime: {
           mountedTopLevelNodeKeys: new Set(),
-          type: 'staged',
+          type: 'virtualized',
         },
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -459,14 +459,14 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: {
+        viewportRuntime: {
           mountedTopLevelRanges: [{ endIndex: 6, startIndex: 0 }],
           mountedTopLevelNodeKeys: new Set(['0', '1', '2', '3', '4', '5', '6']),
           type: 'virtualized',
         },
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -487,7 +487,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('leaves plain vertical shift extension native in small DOM-strategy documents', () => {
+  it('leaves plain vertical shift plugin native in small virtualized documents', () => {
     const editor = createEditor({
       initialSelection: {
         kind: 'text',
@@ -512,13 +512,13 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: {
+        viewportRuntime: {
           mountedTopLevelNodeKeys: new Set(),
-          type: 'staged',
+          type: 'virtualized',
         },
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(false);
@@ -529,7 +529,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('model-owns rich multi-leaf vertical shift extension in large DOM-strategy documents', () => {
+  it('model-owns rich multi-leaf vertical shift plugin in large virtualized documents', () => {
     const initialValue = Array.from({ length: 1001 }, (_, index) =>
       index === 0
         ? {
@@ -562,13 +562,13 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: {
+        viewportRuntime: {
           mountedTopLevelNodeKeys: new Set(),
-          type: 'staged',
+          type: 'virtualized',
         },
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -583,7 +583,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('model-owns wrapped single-leaf vertical shift extension in large DOM-strategy documents', () => {
+  it('model-owns wrapped single-leaf vertical shift plugin in large virtualized documents', () => {
     const initialValue = Array.from({ length: 1001 }, (_, index) =>
       paragraph(index === 0 ? 'wrapped row 0' : `row-${index}`)
     );
@@ -623,11 +623,11 @@ describe('keyboard input strategy', () => {
       },
     };
 
-    root.setAttribute('data-plite-editor', 'true');
-    block.setAttribute('data-plite-node', 'element');
-    block.setAttribute('data-plite-path', '0');
-    textHost.setAttribute('data-plite-node', 'text');
-    textHost.setAttribute('data-plite-path', '0,0');
+    root.setAttribute('data-editor', 'true');
+    block.setAttribute('data-editor-node', 'element');
+    block.setAttribute('data-editor-path', '0');
+    textHost.setAttribute('data-editor-node', 'text');
+    textHost.setAttribute('data-editor-path', '0,0');
     textHost.append(text);
     block.append(textHost);
     root.append(block);
@@ -658,13 +658,13 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: {
+        viewportRuntime: {
           mountedTopLevelNodeKeys: new Set(),
-          type: 'staged',
+          type: 'virtualized',
         },
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -722,10 +722,10 @@ describe('keyboard input strategy', () => {
         forceRender,
         inputController: {} as any,
         readOnly: true,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -757,10 +757,10 @@ describe('keyboard input strategy', () => {
         forceRender,
         inputController: {} as any,
         readOnly: true,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -795,8 +795,8 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'hasEditableTarget')
       .mockReturnValue(false);
 
-    root.dataset.pliteEditor = 'true';
-    nested.dataset.pliteEditor = 'true';
+    root.dataset.editor = 'true';
+    nested.dataset.editor = 'true';
     root.append(nested);
     document.body.append(root);
     event.target = nested;
@@ -816,10 +816,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: true,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -837,7 +837,7 @@ describe('keyboard input strategy', () => {
 
   it('uses the nested editable selection when promoting a child-root Shift+Arrow move', () => {
     const runtime = createEditor({
-      extensions: [contentRootExtension],
+      plugins: [contentRootPlugin],
       initialValue: {
         children: [paragraph('p1'), contentCard(), paragraph('p2')],
         roots: { 'card:body': [paragraph('Shared mission statement')] },
@@ -865,10 +865,10 @@ describe('keyboard input strategy', () => {
       innerRoot === 'card:body' ? bodyEditor : null
     );
 
-    root.dataset.pliteEditor = 'true';
-    root.dataset.pliteRoot = 'main';
-    nested.dataset.pliteEditor = 'true';
-    nested.dataset.pliteRoot = 'card:body';
+    root.dataset.editor = 'true';
+    root.dataset.editorRoot = 'main';
+    nested.dataset.editor = 'true';
+    nested.dataset.editorRoot = 'card:body';
     root.append(nested);
     document.body.append(root);
     event.target = nested;
@@ -901,10 +901,10 @@ describe('keyboard input strategy', () => {
         getMountedViewEditor,
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -926,7 +926,7 @@ describe('keyboard input strategy', () => {
 
   it('uses the nested DOM selection when child-root selection import is stale', () => {
     const runtime = createEditor({
-      extensions: [contentRootExtension],
+      plugins: [contentRootPlugin],
       initialValue: {
         children: [paragraph('p1'), contentCard(), paragraph('p2')],
         roots: { 'card:body': [paragraph('Shared mission statement')] },
@@ -957,20 +957,18 @@ describe('keyboard input strategy', () => {
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
-    const resolvePliteRange = vi
-      .spyOn(ReactEditor, 'resolvePliteRange')
-      .mockReturnValue({
-        anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 0], offset: 0 },
-      });
+    const resolveRange = vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue({
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 0 },
+    });
     const getMountedViewEditor = vi.fn((innerRoot3: string) =>
       innerRoot3 === 'card:body' ? bodyEditor : null
     );
 
-    root.dataset.pliteEditor = 'true';
-    root.dataset.pliteRoot = 'main';
-    nested.dataset.pliteEditor = 'true';
-    nested.dataset.pliteRoot = 'card:body';
+    root.dataset.editor = 'true';
+    root.dataset.editorRoot = 'main';
+    nested.dataset.editor = 'true';
+    nested.dataset.editorRoot = 'card:body';
     nested.append(nativeText);
     root.append(nested);
     document.body.append(root);
@@ -1005,10 +1003,10 @@ describe('keyboard input strategy', () => {
         getMountedViewEditor,
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -1028,7 +1026,7 @@ describe('keyboard input strategy', () => {
       findDocumentOrShadowRoot.mockRestore();
       hasEditableTarget.mockRestore();
       hasSelectableTarget.mockRestore();
-      resolvePliteRange.mockRestore();
+      resolveRange.mockRestore();
     }
   });
 
@@ -1051,10 +1049,10 @@ describe('keyboard input strategy', () => {
       forceRender: vi.fn(),
       inputController: {} as any,
       readOnly: false,
-      domStrategyRuntime: null,
+      viewportRuntime: null,
       setComposing: vi.fn(),
-      setExplicitPartialDOMBackedSelection: vi.fn(),
-      partialDOMBackedSelection: false,
+      setExplicitViewportBackedSelection: vi.fn(),
+      viewportBackedSelection: false,
     });
 
     expect(result.handled).toBe(true);
@@ -1066,7 +1064,7 @@ describe('keyboard input strategy', () => {
 
   it('lets the public keydown handler override model-owned history', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialSelection: {
         kind: 'text',
         anchor: { path: [0, 0], offset: 4 },
@@ -1100,10 +1098,10 @@ describe('keyboard input strategy', () => {
         inputController: {} as any,
         onKeyDown,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -1140,10 +1138,10 @@ describe('keyboard input strategy', () => {
         inputController: {} as any,
         onKeyDown,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -1160,7 +1158,7 @@ describe('keyboard input strategy', () => {
 
   it("repairs history focus to the preserved selection root when undoing another root's batch", () => {
     const runtime = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1208,10 +1206,10 @@ describe('keyboard input strategy', () => {
             getMountedViewEditor,
             inputController: {} as any,
             readOnly: false,
-            domStrategyRuntime: null,
+            viewportRuntime: null,
             setComposing: vi.fn(),
-            setExplicitPartialDOMBackedSelection: vi.fn(),
-            partialDOMBackedSelection: false,
+            setExplicitViewportBackedSelection: vi.fn(),
+            viewportBackedSelection: false,
           })
         );
       }
@@ -1237,7 +1235,7 @@ describe('keyboard input strategy', () => {
 
   it('skips caret DOM repair when history restores an expanded view selection', () => {
     const runtime = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [paragraph('Before'), paragraph('After')],
     });
     const editor = createEditorView(runtime) as unknown as ReactEditorType;
@@ -1274,10 +1272,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -1336,7 +1334,7 @@ describe('keyboard input strategy', () => {
 
   it('shares resolved focus ownership with native history beforeinput', () => {
     const runtime = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
         roots: { header: [paragraph('header')] },
@@ -1423,10 +1421,10 @@ describe('keyboard input strategy', () => {
       inputController: {} as any,
       onKeyDown,
       readOnly: false,
-      domStrategyRuntime: null,
+      viewportRuntime: null,
       setComposing: vi.fn(),
-      setExplicitPartialDOMBackedSelection: vi.fn(),
-      partialDOMBackedSelection: false,
+      setExplicitViewportBackedSelection: vi.fn(),
+      viewportBackedSelection: false,
     });
 
     expect(result.handled).toBe(true);
@@ -1467,10 +1465,10 @@ describe('keyboard input strategy', () => {
       getMountedViewEditor: () => null,
       inputController: {} as any,
       readOnly: false,
-      domStrategyRuntime: null,
+      viewportRuntime: null,
       setComposing: vi.fn(),
-      setExplicitPartialDOMBackedSelection: vi.fn(),
-      partialDOMBackedSelection: false,
+      setExplicitViewportBackedSelection: vi.fn(),
+      viewportBackedSelection: false,
     });
 
     expect(result.handled).toBe(false);
@@ -1510,9 +1508,9 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    root.setAttribute('data-plite-editor', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
-    textHost.setAttribute('data-plite-path', '2500,0');
+    root.setAttribute('data-editor', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
+    textHost.setAttribute('data-editor-path', '2500,0');
     textHost.append(text);
     root.append(textHost);
     document.body.append(root);
@@ -1530,13 +1528,13 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: {
+        viewportRuntime: {
           mountedTopLevelNodeKeys: new Set(),
           type: 'virtualized',
         },
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: true,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: true,
       });
 
       expect(result.handled).toBe(false);
@@ -1587,9 +1585,9 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    root.setAttribute('data-plite-editor', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
-    textHost.setAttribute('data-plite-path', '2500,0');
+    root.setAttribute('data-editor', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
+    textHost.setAttribute('data-editor-path', '2500,0');
     textHost.append(text);
     root.append(textHost);
     document.body.append(root);
@@ -1607,13 +1605,13 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController,
         readOnly: false,
-        domStrategyRuntime: {
+        viewportRuntime: {
           mountedTopLevelNodeKeys: new Set(),
           type: 'virtualized',
         },
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: true,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: true,
       });
 
       expect(result.handled).toBe(false);
@@ -1658,9 +1656,9 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    root.setAttribute('data-plite-editor', 'true');
-    textHost.setAttribute('data-plite-node', 'text');
-    textHost.setAttribute('data-plite-path', '2500,0');
+    root.setAttribute('data-editor', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
+    textHost.setAttribute('data-editor-path', '2500,0');
     textHost.append(text);
     root.append(textHost);
     document.body.append(root);
@@ -1678,13 +1676,13 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: {
+        viewportRuntime: {
           mountedTopLevelNodeKeys: new Set(),
           type: 'virtualized',
         },
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: true,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: true,
       });
 
       expect(result.handled).toBe(true);
@@ -1738,7 +1736,6 @@ describe('keyboard input strategy', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: [0, 1], focus: [0, 1] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -1755,10 +1752,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -1826,7 +1823,6 @@ describe('keyboard input strategy', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: [1, 0], focus: [1, 1] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -1843,10 +1839,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -1904,7 +1900,6 @@ describe('keyboard input strategy', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -1921,10 +1916,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -1940,7 +1935,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('keeps word selection extension model-owned across skip-policy hidden ranges', () => {
+  it('keeps word selection plugin model-owned across skip-policy hidden ranges', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
@@ -1979,7 +1974,6 @@ describe('keyboard input strategy', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -1996,10 +1990,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -2015,7 +2009,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('keeps reverse word selection extension out of already-spanned hidden ranges', () => {
+  it('keeps reverse word selection plugin out of already-spanned hidden ranges', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
@@ -2054,7 +2048,6 @@ describe('keyboard input strategy', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -2071,10 +2064,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -2134,7 +2127,6 @@ describe('keyboard input strategy', () => {
         { anchor: [2, 0], focus: [2, 0] },
       ],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -2151,10 +2143,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -2210,7 +2202,6 @@ describe('keyboard input strategy', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -2227,10 +2218,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -2247,7 +2238,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('model-owns plain vertical shift extension into materialize hidden ranges', () => {
+  it('model-owns plain vertical shift plugin into materialize hidden ranges', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
@@ -2284,7 +2275,6 @@ describe('keyboard input strategy', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -2301,10 +2291,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -2320,7 +2310,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('model-owns plain vertical shift extension from mid-line visible text into materialize hidden ranges', () => {
+  it('model-owns plain vertical shift plugin from mid-line visible text into materialize hidden ranges', () => {
     const intro = 'Intro visible before hidden blocks.';
     const startOffset = 'Intro visible before '.length;
     const editor = createEditor({
@@ -2358,7 +2348,6 @@ describe('keyboard input strategy', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -2375,10 +2364,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -2394,7 +2383,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('model-owns plain vertical shift extension from split visible text into materialize hidden ranges', () => {
+  it('model-owns plain vertical shift plugin from split visible text into materialize hidden ranges', () => {
     const introStart = 'Intro visible before ';
     const introEnd = 'hidden blocks.';
     const editor = createEditor({
@@ -2432,7 +2421,6 @@ describe('keyboard input strategy', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -2449,10 +2437,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -2468,7 +2456,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it('leaves plain vertical shift extension native after materialized ranges are selected', () => {
+  it('leaves plain vertical shift plugin native after materialized ranges are selected', () => {
     const intro = 'Intro visible before hidden blocks.';
     const editor = createEditor({
       initialSelection: {
@@ -2505,7 +2493,6 @@ describe('keyboard input strategy', () => {
       copyPolicy: 'model',
       coveredPathRanges: [{ anchor: [1, 0], focus: [1, 0] }],
       coveredRuntimeRanges: [],
-      findPolicy: 'native',
       ownerPath: [],
       ownerNodeKey: null,
       reason: 'app-hidden',
@@ -2522,10 +2509,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(false);
@@ -2599,10 +2586,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -2656,7 +2643,7 @@ describe('keyboard input strategy', () => {
         import('../../src/react/editable/keyboard-input-strategy'),
       ]);
       const editor = innerCreateEditor2({
-        extensions: [
+        plugins: [
           innerDefineEditorSchema(
             'schema:keyboard-input-strategy-inline-void-test',
             {
@@ -2704,10 +2691,10 @@ describe('keyboard input strategy', () => {
         forceRender: vi.fn(),
         inputController: {} as any,
         readOnly: false,
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         setComposing: vi.fn(),
-        setExplicitPartialDOMBackedSelection: vi.fn(),
-        partialDOMBackedSelection: false,
+        setExplicitViewportBackedSelection: vi.fn(),
+        viewportBackedSelection: false,
       });
 
       expect(result.handled).toBe(true);
@@ -2783,7 +2770,7 @@ describe('keyboard input strategy', () => {
           import('../../src/react/editable/keyboard-input-strategy'),
         ]);
         const editor = innerCreateEditor3({
-          extensions: [
+          plugins: [
             innerDefineEditorSchema2(
               'schema:keyboard-input-strategy-void-test',
               {
@@ -2845,10 +2832,10 @@ describe('keyboard input strategy', () => {
           forceRender: vi.fn(),
           inputController: {} as any,
           readOnly: false,
-          domStrategyRuntime: null,
+          viewportRuntime: null,
           setComposing: vi.fn(),
-          setExplicitPartialDOMBackedSelection: vi.fn(),
-          partialDOMBackedSelection: false,
+          setExplicitViewportBackedSelection: vi.fn(),
+          viewportBackedSelection: false,
         });
 
         expect(result.handled).toBe(true);

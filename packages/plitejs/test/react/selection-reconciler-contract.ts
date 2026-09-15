@@ -110,11 +110,11 @@ describe('selection reconciler', () => {
       focus: { path: [0, 0], offset: 3 },
     };
     const originalHasSelectableTarget = ReactEditor.hasSelectableTarget;
-    const originalResolvePliteRange = ReactEditor.resolvePliteRange;
+    const originalResolvePliteRange = ReactEditor.resolveRange;
 
     try {
       ReactEditor.hasSelectableTarget = () => true;
-      ReactEditor.resolvePliteRange = () => targetPliteRange;
+      ReactEditor.resolveRange = () => targetPliteRange;
 
       const result = syncSelectionForBeforeInput({
         allowDOMSelectionImport: true,
@@ -136,7 +136,7 @@ describe('selection reconciler', () => {
       assert.deepEqual(editorGetSelection(editor), targetPliteRange);
     } finally {
       ReactEditor.hasSelectableTarget = originalHasSelectableTarget;
-      ReactEditor.resolvePliteRange = originalResolvePliteRange;
+      ReactEditor.resolveRange = originalResolvePliteRange;
     }
   });
 
@@ -150,11 +150,11 @@ describe('selection reconciler', () => {
       focus: { path: [0, 0], offset: 3 },
     };
     const originalHasSelectableTarget = ReactEditor.hasSelectableTarget;
-    const originalResolvePliteRange = ReactEditor.resolvePliteRange;
+    const originalResolvePliteRange = ReactEditor.resolveRange;
 
     try {
       ReactEditor.hasSelectableTarget = () => true;
-      ReactEditor.resolvePliteRange = () => targetPliteRange;
+      ReactEditor.resolveRange = () => targetPliteRange;
 
       const result = syncSelectionForBeforeInput({
         allowDOMSelectionImport: false,
@@ -176,7 +176,7 @@ describe('selection reconciler', () => {
       assert.deepEqual(editorGetSelection(editor), selection);
     } finally {
       ReactEditor.hasSelectableTarget = originalHasSelectableTarget;
-      ReactEditor.resolvePliteRange = originalResolvePliteRange;
+      ReactEditor.resolveRange = originalResolvePliteRange;
     }
   });
 
@@ -190,11 +190,11 @@ describe('selection reconciler', () => {
       focus: { path: [0, 0], offset: 3 },
     };
     const originalHasSelectableTarget = ReactEditor.hasSelectableTarget;
-    const originalResolvePliteRange = ReactEditor.resolvePliteRange;
+    const originalResolvePliteRange = ReactEditor.resolveRange;
 
     try {
       ReactEditor.hasSelectableTarget = () => true;
-      ReactEditor.resolvePliteRange = () => targetPliteRange;
+      ReactEditor.resolveRange = () => targetPliteRange;
 
       const result = syncSelectionForBeforeInput({
         allowDOMSelectionImport: true,
@@ -216,7 +216,7 @@ describe('selection reconciler', () => {
       assert.deepEqual(editorGetSelection(editor), targetPliteRange);
     } finally {
       ReactEditor.hasSelectableTarget = originalHasSelectableTarget;
-      ReactEditor.resolvePliteRange = originalResolvePliteRange;
+      ReactEditor.resolveRange = originalResolvePliteRange;
     }
   });
 });

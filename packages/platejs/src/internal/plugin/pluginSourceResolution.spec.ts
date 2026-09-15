@@ -1,8 +1,11 @@
 import { createEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
-import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import { getPlateRuntime } from './compilePlateModel';
-import { resolveAndSortPlugins } from './resolvePlugins';
+import {
+  resolveAndSortPlugins,
+  snapshotPlatePluginSources,
+} from './resolvePlugins';
 
 const resolveSourceNames = (sources: {
   baseCore?: readonly AnyBasePlugin[];
@@ -19,14 +22,24 @@ const resolveSourceNames = (sources: {
 };
 
 describe('plugin source resolution', () => {
+  it('preserves exact dependency descriptor identity in source snapshots', () => {
+    const Dependency = definePlugin('dependency', {});
+    const Parent = definePlugin('parent', {
+      dependencies: [Dependency],
+    });
+    const snapshot = snapshotPlatePluginSources({ user: [Parent] });
+
+    expect(snapshot.user[0].dependencies[0]).toBe(Dependency);
+  });
+
   it('selects whole descriptors by user, React core, then Base core precedence', () => {
-    const Base = defineBasePlugin('shared', {
+    const Base = definePlugin('shared', {
       initialState: { owner: 'base' },
     });
-    const React = defineBasePlugin('shared', {
+    const React = definePlugin('shared', {
       initialState: { owner: 'react' },
     });
-    const User = defineBasePlugin('shared', {
+    const User = definePlugin('shared', {
       initialState: { owner: 'user' },
     });
     const editor = createEditor();
@@ -42,10 +55,10 @@ describe('plugin source resolution', () => {
   });
 
   it('selects React core over Base core without merging descriptors', () => {
-    const Base = defineBasePlugin('shared', {
+    const Base = definePlugin('shared', {
       initialState: { base: true },
     });
-    const React = defineBasePlugin('shared', {
+    const React = definePlugin('shared', {
       initialState: { react: true },
     });
     const editor = createEditor();
@@ -59,7 +72,7 @@ describe('plugin source resolution', () => {
   });
 
   it('lets a disabled user descriptor suppress a non-required core default', () => {
-    const Core = defineBasePlugin('sharedCore', {});
+    const Core = definePlugin('sharedCore', {});
     const editor = createEditor();
 
     expect(
@@ -74,17 +87,14 @@ describe('plugin source resolution', () => {
   it('rejects unrelated explicit descriptor families with one name', () => {
     expect(() =>
       resolveSourceNames({
-        user: [
-          defineBasePlugin('duplicate', {}),
-          defineBasePlugin('duplicate', {}),
-        ],
+        user: [definePlugin('duplicate', {}), definePlugin('duplicate', {})],
       })
     ).toThrow(/duplicate.*user\[0\].*user\[1\]/i);
   });
 
   it('composes same-family descriptors in source order', () => {
     const Component = () => null;
-    const Shared = defineBasePlugin('shared', {
+    const Shared = definePlugin('shared', {
       initialState: { owner: 'base', stable: 'base' },
     });
     const editor = createEditor({
@@ -103,7 +113,7 @@ describe('plugin source resolution', () => {
   });
 
   it('resolves capabilities from the composed configuration', () => {
-    const Shared = defineBasePlugin('shared', {
+    const Shared = definePlugin('shared', {
       api: ({ store }) => ({
         ...(store.get().exposeExtra ? { extra: () => store.get().stable } : {}),
         owner: () => store.get().owner,
@@ -128,7 +138,7 @@ describe('plugin source resolution', () => {
   });
 
   it('accepts a descriptor followed by one of its authoring descendants', () => {
-    const Shared = defineBasePlugin('shared', {
+    const Shared = definePlugin('shared', {
       api: () => ({ base: () => true }),
     });
     const Extended = Shared.extend(({ api }) => ({
@@ -140,7 +150,7 @@ describe('plugin source resolution', () => {
   });
 
   it('rejects divergent authoring branches from one plugin family', () => {
-    const Shared = defineBasePlugin('shared', {});
+    const Shared = definePlugin('shared', {});
 
     expect(() =>
       createEditor({
@@ -153,7 +163,7 @@ describe('plugin source resolution', () => {
   });
 
   it('deduplicates the same explicit descriptor identity', () => {
-    const Shared = defineBasePlugin('shared', {});
+    const Shared = definePlugin('shared', {});
 
     expect(resolveSourceNames({ user: [Shared, Shared] })).toEqual(['shared']);
   });
@@ -164,7 +174,7 @@ describe('plugin source resolution', () => {
   ])(
     'lets a literal-disabled user descriptor suppress the same explicit name regardless of order: %s',
     (_name, disabledFirst) => {
-      const Enabled = defineBasePlugin('suppressed', {});
+      const Enabled = definePlugin('suppressed', {});
       const Disabled = Enabled.configure({ enabled: false });
 
       expect(
@@ -176,8 +186,8 @@ describe('plugin source resolution', () => {
   );
 
   it('rejects a disabled descriptor required by an enabled owner', () => {
-    const Required = defineBasePlugin('required', {});
-    const Parent = defineBasePlugin('parent', {
+    const Required = definePlugin('required', {});
+    const Parent = definePlugin('parent', {
       dependencies: [Required],
     });
 
@@ -189,8 +199,8 @@ describe('plugin source resolution', () => {
   });
 
   it('does not install relationships owned only by a disabled root', () => {
-    const Dependency = defineBasePlugin('dependency', {});
-    const Disabled = defineBasePlugin('disabled', {
+    const Dependency = definePlugin('dependency', {});
+    const Disabled = definePlugin('disabled', {
       dependencies: [Dependency],
       enabled: false,
     });
@@ -199,14 +209,14 @@ describe('plugin source resolution', () => {
   });
 
   it('uses stable Kahn ordering by canonical source order', () => {
-    const Shared = defineBasePlugin('shared', {});
-    const First = defineBasePlugin('first', {
+    const Shared = definePlugin('shared', {});
+    const First = definePlugin('first', {
       dependencies: [Shared],
     });
-    const Second = defineBasePlugin('second', {
+    const Second = definePlugin('second', {
       dependencies: [Shared],
     });
-    const Independent = defineBasePlugin('independent', {});
+    const Independent = definePlugin('independent', {});
 
     expect(resolveSourceNames({ user: [First, Second, Independent] })).toEqual([
       'shared',
@@ -219,7 +229,7 @@ describe('plugin source resolution', () => {
   it('reserves the public root name while preserving root editor API', () => {
     expect(() =>
       createEditor({
-        plugins: [defineBasePlugin('root', {})],
+        plugins: [definePlugin('root', {})],
       })
     ).toThrow(/plugin name "root".*reserved/i);
 
@@ -232,7 +242,7 @@ describe('plugin source resolution', () => {
   });
 
   it('does not mutate the caller plugin array while installing core roles', () => {
-    const Plugin = defineBasePlugin('custom', {});
+    const Plugin = definePlugin('custom', {});
     const plugins = [Plugin];
 
     createEditor({ plugins });

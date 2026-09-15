@@ -9,12 +9,12 @@ import {
 } from 'platejs/media';
 import { VideoPlugin } from 'platejs/media/react';
 import {
-  PlateElement,
+  EditorElement,
   useEditor,
   useEditorMounted,
   useElementSelected,
   usePath,
-  type PlateElementProps,
+  type EditorElementProps,
 } from 'platejs/react';
 import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
@@ -29,7 +29,7 @@ import {
   ResizeHandle,
 } from './resize-handle';
 
-export function VideoElement(props: PlateElementProps<typeof VideoPlugin>) {
+export function VideoElement(props: EditorElementProps<typeof VideoPlugin>) {
   const path = usePath();
   const selected = useElementSelected({ mode: 'node' });
   const { provider, url: unsafeUrl } = props.element;
@@ -64,8 +64,8 @@ export function VideoElement(props: PlateElementProps<typeof VideoPlugin>) {
   });
 
   return (
-    <PlateElement className="py-2.5" {...props}>
-      <figure className="relative m-0 cursor-default hover:[&_.plite-media-resize-handle]:after:opacity-100">
+    <EditorElement className="py-2.5" {...props}>
+      <figure className="relative m-0 cursor-default hover:[&_.editor-media-resize-handle]:after:opacity-100">
         <div contentEditable={false}>
           <Resizable
             className={cn(isDragging && 'opacity-50')}
@@ -146,6 +146,6 @@ export function VideoElement(props: PlateElementProps<typeof VideoPlugin>) {
           {props.children}
         </Caption>
       </figure>
-    </PlateElement>
+    </EditorElement>
   );
 }

@@ -15,6 +15,12 @@ and proof limits. Use `research <key-or-term>` on the same helper for read,
 lead and rejection lookup across dated Plite research runs. A text hit routes
 inspection; it does not prove semantic equivalence or current source reuse.
 
+Treat the source census and semantic questions separately. Read the scope's
+inspection depth and gaps; a populated directory bucket does not establish
+feature coverage. Check the local observation against its base commit and
+fingerprint before interpreting a GitHub-versus-local discrepancy. Related
+scope history supplies context without transferring its review/proof status.
+
 Every repeated invocation requests a fresh review, even with unchanged source
 and the same model. No reassessment flag is required. Frame the ideal from
 current jobs and hard laws, compare all material design lanes, then reconcile
@@ -24,12 +30,17 @@ deliberate reconsideration names what was rechecked and why; it does not start
 external discovery or implementation without that scope.
 
 If no scope matches a new proposal, add its semantic question to the index
-with the current comparison owners and dependencies. A proposed scope may have
-no current feature members; its real comparator dependencies supply the source
+with the current comparison owners and explicit evidence inputs. A proposed scope may have
+no current feature members; its real comparator files supply the source
 fingerprints. Do not invent a source path for the proposed API.
 
-For a material review, use `draft <scope>` to capture the current source and
-dependency fingerprints into a JSON draft under the existing task artifacts.
+For a material review, use `draft <scope>` to capture the scope's current source,
+owners, consumers, selected proof and additional `evidenceInputs` into a JSON
+draft under the existing task artifacts. Review prerequisites control queue
+order only. Add decision-critical shared contracts, fixtures and runner inputs
+explicitly; do not fingerprint every prerequisite's whole implementation.
+When no relevant proof is located, record the gap instead of borrowing an
+unrelated test or treating a demo as proof.
 Complete its requirements, alternatives, rationale, source references, proof
 limits, available model identity and relation to the previous review. Record
 with `record <repo-relative-json-path>` before closeout. The helper appends an
@@ -88,19 +99,26 @@ Keep any proposed API clearly labeled and name the deleted protocol or caller
 work. Do not accept changed runtime machinery without its required executable
 scale comparison.
 
-For Pursue or Defer, choose the first unresolved job:
+For Pursue or Defer, choose the entry point for the whole remaining job. When
+API, architecture, lifetime, adoption and proof decisions remain coupled,
+recommend `$task design plan <scope>`. Task applies Best API, the owning layer
+plan and Benchmark as needed inside one lifecycle. Do not narrow that work to
+a standalone Best API handoff merely because its public contract is unresolved.
+Keep assessed cuts as candidates to validate during design.
 
 | Remaining question | Next owner |
 | --- | --- |
-| Which reusable public contract should exist? | [Best API](../../../skills/best-api/SKILL.md), `design` or `review` with the exact surface |
+| API and architecture choices remain coupled across owners, with adoption or proof to resolve together | [Task](../../../skills/task/SKILL.md), `design plan <scope>` through its [complex-work method](./complex-work.md) |
+| One bounded public-contract decision remains | [Best API](../../../skills/best-api/SKILL.md), `design` or `review` with the exact surface |
 | The Plate target is clear; adoption and proof span owners | [Plate Plan](../../../skills/plate-plan/SKILL.md) |
 | The Plite substrate target is clear; adoption and proof span owners | [Plite Plan](../../../skills/plite-plan/SKILL.md) |
 | The target and bounded implementation/proof path are clear | [Task](../../../skills/task/SKILL.md) |
 | Runtime scale can decide whether the target is justified | [Benchmark](../../../skills/benchmark/SKILL.md), with the exact comparison; verdict stays Defer |
 | Missing ownership/lifetime evidence needs a deeper, scored audit | [Plate Review](../../../skills/plate-review/SKILL.md), with one resolved surface; verdict stays Defer |
 
-For work crossing Plate and Plite, pick the plan that owns the first unresolved
-boundary. Do not recommend both by default. The assessment must expose the
+Within Task, or when an accepted target needs only adoption planning, pick the
+layer plan that owns the first unresolved boundary. Do not recommend both by
+default. The assessment must expose the
 strongest plausible breaking direction before routing detailed API design or
 adoption. Best API's pre-acceptance scale gate remains binding; an unmeasured
 runtime target stays provisional even when its direction earns further work.

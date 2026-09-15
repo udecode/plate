@@ -6,16 +6,18 @@ import React, { useRef } from 'react';
 
 import type { Element, RootKey } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
+import { mergePlateRenderedAttributes } from '../../internal/mergePlateRenderedAttributes';
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { Editor } from '../editor/Editor';
+import { PlateContentEditableContext } from '../internal/plate-content-editable.internal';
 import { usePlateModel } from '../internal/plate-context';
 import {
   Editable,
-  type EditableProps as PliteEditableProps,
+  type EditableProps as RuntimeEditableProps,
 } from '../internal/plite-components';
 import { useComposedRef } from '../internal/react-helpers';
 import { PlateRenderedAttributeProvider } from '../internal/rendered-attributes';
@@ -31,11 +33,11 @@ import { pipeRenderText } from '../utils/pipeRenderText.internal';
 import { EditorRefEffect } from './EditorRefEffect';
 import { PlateRoot } from './PlateRoot.internal';
 
-export type PlateContentProps<
+export type EditorContentProps<
   TElement extends Element = Element,
   TRoot extends RootKey = RootKey,
 > = Omit<
-  PliteEditableProps<TElement, TRoot>,
+  RuntimeEditableProps<TElement, TRoot>,
   | 'renderElement'
   | 'renderLeaf'
   | 'renderPlaceholder'
@@ -67,7 +69,7 @@ const getPlateContentReadOnly = ({
  * - Slots.beforeEditable
  * - Plugin renderers and hooks
  */
-function PlateContent<
+function EditorContent<
   TElement extends Element = Element,
   TRoot extends RootKey = RootKey,
 >({
@@ -75,7 +77,7 @@ function PlateContent<
   readOnly: readOnlyProp,
   ref,
   ...props
-}: PlateContentProps<TElement, TRoot>) {
+}: EditorContentProps<TElement, TRoot>) {
   const { editor, readOnly: plateReadOnly } = usePlateModel();
   const editableRef = useRef<HTMLDivElement | null>(null);
   const previousElementRef = useRef<{
@@ -112,7 +114,7 @@ function PlateContent<
     );
   }
 
-  const branchProps = props as PlateContentProps;
+  const branchProps = props as EditorContentProps;
 
   return (
     <PlateRoot
@@ -139,17 +141,20 @@ function PlateContentBranch({
   plateReadOnly,
   ref,
   ...props
-}: PlateContentProps & {
+}: EditorContentProps & {
   editableRef: React.RefObject<HTMLDivElement | null>;
   plateReadOnly: boolean;
 }) {
   const editor = useEditor();
+  const editableOverride = React.useContext(PlateContentEditableContext);
   const { disabled, root, ...editableInput } = {
     ...props,
     readOnly: plateReadOnly,
   };
   const modelRevision = usePlateModelRevision(editor);
-  const { shortcutTable } = getPlateRuntime(editor);
+  const { pluginCache, shortcutTable } = getPlateRuntime(editor);
+  const contentAttributes =
+    pluginCache.contentAttributes[plateReadOnly ? 'readOnly' : 'editable'];
   const renderElement = React.useMemo(() => {
     void modelRevision;
 
@@ -166,7 +171,7 @@ function PlateContentBranch({
     return pipeRenderText(editor);
   }, [editor, modelRevision]);
   const scrollSelectionIntoView = React.useMemo<
-    PliteEditableProps['scrollSelectionIntoView']
+    RuntimeEditableProps['scrollSelectionIntoView']
   >(() => {
     if (!editableInput.scrollSelectionIntoView) return undefined;
 
@@ -174,8 +179,8 @@ function PlateContentBranch({
       editableInput.scrollSelectionIntoView?.(editor, domRange);
     };
   }, [editableInput, editor]);
-  const pipedProps: PliteEditableProps = useDeepCompareMemo(() => {
-    const nextProps: PliteEditableProps = {
+  const pipedProps: RuntimeEditableProps = useDeepCompareMemo(() => {
+    const nextProps: RuntimeEditableProps = {
       renderElement,
       renderLeaf,
       renderText,
@@ -239,17 +244,21 @@ function PlateContentBranch({
     renderText,
     shortcutTable,
   ]);
-  const editableProps = useDeepCompareMemo(
-    () => ({
-      ...omit(editableInput, [...DOM_HANDLERS, 'scrollSelectionIntoView']),
+  const editableProps = useDeepCompareMemo(() => {
+    const attributes = mergePlateRenderedAttributes(
+      contentAttributes,
+      omit(editableInput, [...DOM_HANDLERS, 'scrollSelectionIntoView'])
+    );
+
+    return {
+      ...attributes,
       ...pipedProps,
       'aria-disabled': disabled,
-      className: clsx('plite-editor', editableInput.className),
+      className: clsx('editor-editor', attributes.className),
       'data-readonly': plateReadOnly ? 'true' : undefined,
       readOnly: plateReadOnly,
-    }),
-    [disabled, editableInput, pipedProps, plateReadOnly]
-  );
+    };
+  }, [contentAttributes, disabled, editableInput, pipedProps, plateReadOnly]);
 
   const children = editor.read.children();
 
@@ -258,7 +267,14 @@ function PlateContentBranch({
     return null;
   }
 
-  const editable = <Editable ref={ref} {...editableProps} />;
+  const EditableComponent = editableOverride?.component ?? Editable;
+  const editable = (
+    <EditableComponent
+      ref={ref}
+      {...editableProps}
+      {...editableOverride?.props}
+    />
+  );
 
   let afterEditable: React.ReactNode = null;
   let beforeEditable: React.ReactNode = null;
@@ -361,4 +377,4 @@ function PlateContentStateEffect({
   return null;
 }
 
-export { PlateContent };
+export { EditorContent };

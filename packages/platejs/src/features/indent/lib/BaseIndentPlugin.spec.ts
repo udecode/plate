@@ -1,7 +1,7 @@
 import {
   BaseParagraphPlugin,
   createEditor as createHeadlessEditor,
-  defineBasePlugin,
+  definePlugin,
   ContentSlice,
   EditorSchemaValidationError,
   type Value,
@@ -62,7 +62,7 @@ describe('BaseIndentPlugin', () => {
       plugins: [
         BaseParagraphPlugin,
         BaseIndentPlugin,
-        defineBasePlugin('testIndentProps', {
+        definePlugin('testIndentProps', {
           schema: {
             properties: {
               foo: schema.elementProperty(property.string(), {
@@ -122,7 +122,7 @@ describe('BaseIndentPlugin', () => {
   });
 
   it('uses configured targets for both model validation and injection', () => {
-    const QuotePlugin = defineBasePlugin('quote', {
+    const QuotePlugin = definePlugin('quote', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -356,7 +356,7 @@ describe('BaseIndentPlugin', () => {
       createEditor({
         plugins: [
           BaseParagraphPlugin,
-          defineBasePlugin('quote', {
+          definePlugin('quote', {
             schema: {
               element: {
                 content: schema.content.text({ default: 'text', min: 1 }),

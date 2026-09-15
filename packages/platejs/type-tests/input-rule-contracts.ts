@@ -1,14 +1,14 @@
 import {
   type BlockFenceInputRuleMatch,
   type BlockStartInputRuleMatch,
-  defineBasePlugin,
+  definePlugin,
   createRuleFactory,
   type InputRuleEditor,
   type InsertTextInputRule,
   type TextSubstitutionMatch,
 } from 'platejs';
 
-const ListInputRulePlugin = defineBasePlugin('listInputRule', {
+const ListInputRulePlugin = definePlugin('listInputRule', {
   update: () => ({
     toggle: (style: 'decimal' | 'disc') => style,
   }),

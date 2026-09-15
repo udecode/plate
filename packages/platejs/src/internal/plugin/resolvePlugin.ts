@@ -1,8 +1,8 @@
 import type {
-  EditorExtensionReference,
+  RuntimePluginReference,
   EditorReadMethodTree,
 } from '../../facade';
-import { isEditorExtension } from '../../facade';
+import { isRuntimePlugin } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
@@ -25,6 +25,7 @@ export type ResolvedPluginConfiguration = Readonly<
 type PluginContribution = Record<PropertyKey, unknown> & {
   api?: (context: object) => object;
   codecs?: Readonly<Record<PropertyKey, unknown>>;
+  commands?: (context: object) => readonly unknown[];
   name?: string;
   on?: Readonly<Record<PropertyKey, unknown>>;
   read?: (context: object) => EditorReadMethodTree;
@@ -49,7 +50,7 @@ export type ResolvedPluginCapabilityContribution = Readonly<{
 
 type ResolvedPluginCapabilities = Readonly<{
   api: readonly ResolvedPluginApiContribution[];
-  nativeSources: readonly EditorExtensionReference[];
+  nativeSources: readonly RuntimePluginReference[];
   read: readonly ResolvedPluginCapabilityContribution[];
   update: readonly ResolvedPluginCapabilityContribution[];
 }>;
@@ -161,6 +162,28 @@ const mergeFactory =
     return mergePlugins(prior, contribution);
   };
 
+const mergeCommandFactories =
+  (
+    plugin: Readonly<{ name: string }>,
+    previous: unknown,
+    next: (context: object) => readonly unknown[]
+  ) =>
+  (context: object) => {
+    const prior =
+      typeof previous === 'function'
+        ? Reflect.apply(previous, undefined, [context])
+        : [];
+    const contribution = Reflect.apply(next, undefined, [context]);
+
+    if (!Array.isArray(prior) || !Array.isArray(contribution)) {
+      throw new Error(
+        `Plate plugin "${plugin.name}" command factories must return arrays.`
+      );
+    }
+
+    return [...prior, ...contribution];
+  };
+
 const assertNativeTopology = (
   plugin: AnyBasePlugin,
   field: 'conflicts' | 'dependencies',
@@ -177,7 +200,7 @@ const assertNativeTopology = (
     )
   ) {
     throw new Error(
-      `Plate plugin "${plugin.name}" adopted a native extension with invalid ${field}.`
+      `Plate plugin "${plugin.name}" adopted a Plite plugin with invalid ${field}.`
     );
   }
 
@@ -191,7 +214,7 @@ const assertNativeTopology = (
     )
   ) {
     throw new Error(
-      `Plate plugin "${plugin.name}" must declare the same ${field} as its adopted native extension.`
+      `Plate plugin "${plugin.name}" must declare the same ${field} as its adopted Plite plugin.`
     );
   }
 };
@@ -313,7 +336,7 @@ const applyCodecs = (
       htmlCodecContributions: [
         ...metadata.htmlCodecContributions,
         Object.freeze({
-          extension: contribution,
+          factory: contribution,
           targetPlugin: target === undefined ? null : targetPlugin.name,
         }),
       ],
@@ -336,7 +359,9 @@ const applyStage = (
   contribution: PluginContribution,
   pluginContext: Readonly<{ plugin: Readonly<{ name: string }> }>
 ) => {
-  const isRawPliteDescriptor = isEditorExtension(contribution);
+  const isRawPliteDescriptor = Boolean(
+    isRuntimePlugin(contribution) && !isNominalPluginDescriptor(contribution)
+  );
 
   if (
     isRawPliteDescriptor &&
@@ -344,13 +369,14 @@ const applyStage = (
     contribution.name !== plugin.name
   ) {
     throw new Error(
-      `Plate plugin "${plugin.name}" cannot adopt Plite extension "${contribution.name}". Their names must match.`
+      `Plate plugin "${plugin.name}" cannot adopt Plite plugin "${contribution.name}". Their names must match.`
     );
   }
 
   const {
     api,
     codecs,
+    commands,
     conflicts,
     dependencies,
     name: _name,
@@ -380,7 +406,10 @@ const applyStage = (
   let updateContributions = previousCapabilities.update;
 
   if (isRawPliteDescriptor) {
-    nativeSources = Object.freeze([...nativeSources, contribution]);
+    nativeSources = Object.freeze([
+      ...nativeSources,
+      contribution as unknown as RuntimePluginReference,
+    ]);
   }
 
   if (on !== undefined) {
@@ -391,6 +420,18 @@ const applyStage = (
       next,
       'on',
       mergeLifecycleHandlers(plugin, Reflect.get(next, 'on'), on)
+    );
+  }
+  if (commands !== undefined) {
+    if (typeof commands !== 'function') {
+      throw new Error(
+        `Plate plugin "${plugin.name}" commands must be a context factory.`
+      );
+    }
+    Reflect.set(
+      next,
+      'commands',
+      mergeCommandFactories(plugin, Reflect.get(next, 'commands'), commands)
     );
   }
   if (api !== undefined) {
@@ -619,7 +660,7 @@ export const validatePlugin = (
     };
 
     api.error(
-      `Invalid plugin '${(plugin as { name: string }).name}', use defineBasePlugin.`,
+      `Invalid plugin '${(plugin as { name: string }).name}', use definePlugin.`,
       'USE_CREATE_PLUGIN'
     );
   }

@@ -1640,7 +1640,7 @@ export type NormalizedEditorSchemaInput<TInput extends EditorSchemaDefinition> =
       : never;
 
 /**
- * Define one complete immutable schema extension and its inferred value
+ * Define one complete immutable schema plugin and its inferred value
  * vocabulary. Omit `id` and `version` for exact semantic matching without
  * application-owned persistence lineage, or provide both for named History,
  * collaboration, and migration lineage.
@@ -1665,7 +1665,7 @@ export type EditorSchemaDefinitionInput<TInput extends EditorSchemaDefinition> =
     WithoutReservedPrimaryRoot<TInput>;
 
 /**
- * Normalize complete schema grammar before extension compilation.
+ * Normalize complete schema grammar before plugin compilation.
  *
  * @internal
  */

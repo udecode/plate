@@ -1,6 +1,6 @@
 ---
 name: best-api-review
-description: Judge whether an API or architecture change is worth pursuing, including new primitives and breaking redesigns beyond today's API. Give harsh, source-backed stop, pursue, or defer feedback before detailed design or implementation.
+description: "Judge whether a proposed API or architecture direction merits pursuit before detailed design or implementation."
 metadata:
   source: udecode/dotai
   source-path: skills/best-api-review
@@ -149,10 +149,19 @@ balanced praise, or a menu of equally good choices.
 
 ## Recommend the next owner
 
+Choose the next owner for the whole remaining job, not merely its first
+unresolved question. When public contracts, ownership, lifetimes, adoption and
+proof need to be designed together, recommend the project's task owner in its
+design/planning mode. It applies API design and other specialist methods within
+one workflow; an unresolved API does not require a separate user handoff first.
+Keep the review's candidate directions open to that design, not predetermined
+implementation instructions.
+
 Choose from routes that actually exist in the project:
 
-- A worthwhile direction still needs its public contract chosen: the API design
-  skill.
+- A bounded public-contract decision is the remaining job: the API design skill.
+- Architecture and API choices remain coupled across owners, with adoption or
+  proof to resolve together: the task's design/planning workflow.
 - The target is clear but adoption crosses owners or needs a proof sequence:
   the owning architecture or migration plan skill.
 - The target and scope are clear, with a direct implementation and proof path:

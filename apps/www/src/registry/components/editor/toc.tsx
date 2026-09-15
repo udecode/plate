@@ -3,11 +3,10 @@
 import { cva } from 'class-variance-authority';
 import type { NodeKey } from 'platejs';
 import {
-  type PlateElementProps,
+  type EditorElementProps,
   NavigationFeedbackPlugin,
-  PlateElement,
+  EditorElement,
   useEditor,
-  useEditorPlugin,
   useEditorRootElement,
   useEditorScrollElement,
   useEditorSelector,
@@ -38,12 +37,12 @@ export function TocElement({
   isScroll = true,
   topOffset = 80,
   ...props
-}: PlateElementProps<typeof TocPlugin> & {
+}: EditorElementProps<typeof TocPlugin> & {
   isScroll?: boolean;
   topOffset?: number;
 }) {
   const editor = useEditor();
-  const navigation = useEditorPlugin(NavigationFeedbackPlugin);
+  const navigation = useEditor().plugin(NavigationFeedbackPlugin);
   const headingList = useEditorSelector(
     (innerEditor) => innerEditor.plugin(TocPlugin).read.headings(),
     {
@@ -130,7 +129,7 @@ export function TocElement({
   ]);
 
   return (
-    <PlateElement {...props} className="mb-1 p-0">
+    <EditorElement {...props} className="mb-1 p-0">
       <div contentEditable={false}>
         {headingList.length > 0 ? (
           headingList.map((item) => (
@@ -186,7 +185,7 @@ export function TocElement({
         )}
       </div>
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 

@@ -5,6 +5,7 @@ import {
   createEditor,
   createEditorView,
   defineEditorSchema,
+  EditorSchemaValidationError,
   schema,
   type EditorSchemaIdentity,
 } from 'plitejs';
@@ -17,9 +18,9 @@ import {
 } from '../src/internal';
 
 const record = (
-  extensionName: string,
+  pluginName: string,
   contribution: EditorSchemaContributionRecord['contribution']
-): EditorSchemaContributionRecord => ({ contribution, extensionName });
+): EditorSchemaContributionRecord => ({ contribution, pluginName });
 
 describe('schema identity contract', () => {
   it('derives complete schema identity when lineage is omitted', () => {
@@ -46,7 +47,7 @@ describe('schema identity contract', () => {
       record(NamedSchema.name, NamedSchema.schema),
     ]);
     const editor = createEditor({
-      extensions: [DerivedSchema],
+      plugins: [DerivedSchema],
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const name: 'schema:derived' = DerivedSchema.name;
@@ -98,7 +99,7 @@ describe('schema identity contract', () => {
         assert.deepEqual(error.diagnostics, [
           {
             code: 'missing-complete-schema-field',
-            extensions: ['missing-id'],
+            plugins: ['missing-id'],
             message:
               'Named schema definition "missing-id" must own schema field "id".',
             path: 'schema.id',
@@ -118,7 +119,7 @@ describe('schema identity contract', () => {
       version: 2,
     });
     const editor = createEditor({
-      extensions: [ArticleSchema],
+      plugins: [ArticleSchema],
       initialValue: [{ children: [{ text: 'before' }], type: 'paragraph' }],
     });
     const document = {
@@ -184,6 +185,99 @@ describe('schema identity contract', () => {
         schema: editor.read.schema.identity(),
       });
     }, /Persisted document envelope field "children" is not supported/);
+  });
+
+  it('rejects malformed document containers at every document ingress', () => {
+    const ClosedDocumentSchema = defineEditorSchema(
+      'schema:document-boundary',
+      {
+        elements: { paragraph: schema.element.textBlock() },
+        root: schema.content.type('paragraph', { min: 1 }),
+      }
+    );
+    const validDocument = {
+      children: [{ children: [{ text: 'before' }], type: 'paragraph' }],
+    } as const;
+    const malformedDocuments = [
+      ['numeric metadata', { ...validDocument, meta: 7 }],
+      ['array metadata', { ...validDocument, meta: [] }],
+      ['null metadata', { ...validDocument, meta: null }],
+      ['numeric roots', { ...validDocument, roots: 7 }],
+      ['array roots', { ...validDocument, roots: [] }],
+      ['null roots', { ...validDocument, roots: null }],
+      [
+        'primary root redefinition',
+        {
+          ...validDocument,
+          roots: {
+            main: [{ children: [{ text: 'wrong' }], type: 'paragraph' }],
+          },
+        },
+      ],
+      ['non-array named root', { ...validDocument, roots: { sidebar: {} } }],
+    ] as const;
+    const modes = [
+      {
+        create: (initialValue: unknown = validDocument) =>
+          createEditor({ initialValue: initialValue as never }),
+        name: 'raw',
+      },
+      {
+        create: (initialValue: unknown = validDocument) =>
+          createEditor({
+            plugins: [ClosedDocumentSchema],
+            initialValue: initialValue as never,
+          }),
+        name: 'closed',
+      },
+    ] as const;
+
+    for (const mode of modes) {
+      for (const [caseName, document] of malformedDocuments) {
+        const editor = mode.create();
+        const before = editor.read.value();
+
+        assert.throws(
+          () => editor.read.schema.assertDocument(document),
+          EditorSchemaValidationError,
+          `${mode.name}: ${caseName}: assertion`
+        );
+        assert.throws(
+          () => mode.create(document),
+          undefined,
+          `${mode.name}: ${caseName}: construction`
+        );
+        assert.throws(
+          () => editor.read.schema.fitDocument(document as never),
+          EditorSchemaValidationError,
+          `${mode.name}: ${caseName}: schema fitting`
+        );
+        assert.throws(
+          () => editor.update.value.replace(document as never),
+          undefined,
+          `${mode.name}: ${caseName}: direct replacement`
+        );
+        assert.deepEqual(
+          editor.read.value(),
+          before,
+          `${mode.name}: ${caseName}: direct replacement atomicity`
+        );
+        assert.throws(
+          () =>
+            editor.update.value.replace({
+              document,
+              schema: editor.read.schema.identity(),
+            } as never),
+          undefined,
+          `${mode.name}: ${caseName}: persisted replacement`
+        );
+        assert.deepEqual(
+          editor.read.value(),
+          before,
+          `${mode.name}: ${caseName}: persisted replacement atomicity`
+        );
+      }
+    }
   });
 
   it('rejects persisted envelopes from views before host transforms run', () => {
@@ -253,7 +347,7 @@ describe('schema identity contract', () => {
         assert.deepEqual(error.diagnostics, [
           {
             code: 'duplicate-complete-schema',
-            extensions: ['derived', 'named'],
+            plugins: ['derived', 'named'],
             message:
               'Schema contributions contain multiple complete schemas: derived, named.',
             path: 'schema',

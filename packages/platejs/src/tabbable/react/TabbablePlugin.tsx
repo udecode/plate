@@ -1,10 +1,10 @@
 import type { DefinitionOf } from '../../core';
 import { PLUGINS } from '../../core';
-import { definePlatePlugin } from '../../react/core';
+import { definePlugin } from '../../react/core';
 import type { TabbablePluginState } from '../lib/TabbablePluginTypes';
 import { TabbableEffects } from './TabbableEffects.internal';
 
-export const TabbablePlugin = definePlatePlugin(PLUGINS.tabbable, {
+export const TabbablePlugin = definePlugin(PLUGINS.tabbable, {
   initialState: ({ editor }): TabbablePluginState => ({
     globalEventListener: false,
     insertTabbableEntries: (_event) => [],

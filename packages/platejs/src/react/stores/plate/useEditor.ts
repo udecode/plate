@@ -3,7 +3,7 @@ import React from 'react';
 import {
   type EditorCommit,
   type EditorStateView,
-  type ExtensionsOf,
+  type PluginsOf,
   type Range,
   RangeApi,
   type ValueOf,
@@ -11,6 +11,7 @@ import {
 import type { Editor } from '../../editor';
 import {
   PlateEditorContext,
+  PlateModelContext,
   PlateViewFactsContext,
 } from '../../internal/plate-context';
 import {
@@ -28,6 +29,15 @@ const selectionChanged = (change?: { selectionChanged?: boolean }) =>
 export function useEditor(): Editor {
   const editor = useOptionalEditor();
   if (!editor) throw new Error('useEditor() requires an active Plate editor.');
+  return editor;
+}
+
+/** Get the complete document editor owned by the nearest EditorRoot. */
+export function useModelEditor(): Editor {
+  const editor = React.useContext(PlateModelContext)?.editor;
+  if (!editor) {
+    throw new Error('useModelEditor() requires an active EditorRoot.');
+  }
   return editor;
 }
 
@@ -82,9 +92,7 @@ export type UseEditorStateOptions<T> = EditorRuntimeStateSelectorOptions<
 
 /** Subscribe to a value derived from the selected editor's immutable state. */
 export const useEditorState = <T>(
-  selector: (
-    state: EditorStateView<ValueOf<Editor>, ExtensionsOf<Editor>>
-  ) => T,
+  selector: (state: EditorStateView<ValueOf<Editor>, PluginsOf<Editor>>) => T,
   options: UseEditorStateOptions<T> = {}
 ): T => useEditorRuntimeState(useEditor(), selector, options);
 

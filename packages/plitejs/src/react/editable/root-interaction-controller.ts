@@ -19,10 +19,11 @@ import {
   TextApi,
 } from '../..';
 import { getSelection } from '../../dom';
-import type {
-  DOMPhase,
-  DOMPhaseScheduler,
-  DOMPhaseTiming,
+import {
+  createDOMGeometryKernel,
+  type DOMPhase,
+  type DOMPhaseScheduler,
+  type DOMPhaseTiming,
 } from '../../dom/internal';
 import {
   type focusPliteEditable,
@@ -35,6 +36,7 @@ import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import { getPliteRootBoundaryPoint } from '../view-boundary-graph';
 import {
   createPliteViewSelection,
+  readPliteViewSelection,
   refreshPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
@@ -91,12 +93,14 @@ import {
   getSelectionDOMRange,
   toInternalRoot,
 } from './runtime-editor-api';
+import { writeRuntimeSelection } from './runtime-mutation-state';
+import { resolveProjectedDOMSelectionEndpoint } from './selection-projected-dom';
 
 export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selection-replay';
 
 type PliteFocusableEditor = Parameters<typeof focusPliteEditable>[0];
 const NATIVE_EDITABLE_TEXT_TARGET =
-  '[data-plite-string], [data-plite-zero-width], [data-plite-leaf], [data-plite-node="text"]';
+  '[data-editor-string], [data-editor-zero-width], [data-editor-leaf], [data-editor-node="text"]';
 
 export { canScrollY, getDragAutoScrollTarget } from './drag-auto-scroll-target';
 
@@ -124,7 +128,7 @@ export type RootInteractionControllerOptions = {
     beforeModelSelection: () => void;
     finishProjectedDrag: () => void;
     importDOMSelection: () => void;
-    isPartialDOMBackedSelection: (selection: Range | null) => boolean;
+    isViewportBackedSelection: (selection: Range | null) => boolean;
     syncDOMSelectionToEditor: (
       options?: EditableDOMSelectionSyncOptions
     ) => void;
@@ -174,6 +178,8 @@ type PendingRootInteraction = {
 };
 
 type RootInteractionDragEndpoint = {
+  affinity?: 'backward' | 'forward';
+  fragmentId?: string;
   isDOMCoverageBoundary: boolean;
   owner?: ContentRootOwner | null;
   point: Point;
@@ -281,6 +287,7 @@ const isSameProjectedEndpoint = (
   left: RootInteractionDragEndpoint,
   right: RootInteractionDragEndpoint
 ) =>
+  (left.fragmentId ?? null) === (right.fragmentId ?? null) &&
   left.root === right.root &&
   isSameOwner(left.owner, right.owner) &&
   PathApi.equals(left.point.path, right.point.path) &&
@@ -291,7 +298,7 @@ const toRootedPoint = (point: Point, root: RootKey): Point =>
 
 const isDOMCoverageBoundaryTarget = (target: EventTarget | null) =>
   !!mouseEventTargetToElement(target)?.closest(
-    '[data-plite-dom-coverage-boundary]'
+    '[data-editor-dom-coverage-boundary]'
   );
 
 const shouldUseViewProjectedDragSelection = ({
@@ -303,6 +310,8 @@ const shouldUseViewProjectedDragSelection = ({
   editor: RootInteractionEditor;
   focus: RootInteractionDragEndpoint;
 }) =>
+  !!anchor.fragmentId ||
+  !!focus.fragmentId ||
   anchor.root !== focus.root ||
   !isSameOwner(anchor.owner, focus.owner) ||
   hasContentRootOwnerBetweenDragEndpoints({ anchor, editor, focus });
@@ -386,10 +395,12 @@ const resolveContentRootOwnerChromeEdge = ({
 }): 'end' | 'start' => {
   const element = mouseEventTargetToElement(event.target);
   const ownerElement = element?.closest<HTMLElement>(
-    `[data-plite-node="element"][data-plite-path="${owner.ownerPath.join(',')}"]`
+    `[data-editor-node="element"][data-editor-path="${owner.ownerPath.join(
+      ','
+    )}"]`
   );
   const slotElement = ownerElement?.querySelector<HTMLElement>(
-    '[data-plite-content-root-slot]'
+    '[data-editor-content-root-slot]'
   );
 
   if (!slotElement) {
@@ -448,6 +459,35 @@ const resolveProjectedDragEndpoint = ({
   range?: Range | null;
   root?: RootKey;
 }): RootInteractionDragEndpoint | null => {
+  const retained = mouseEventTargetToElement(
+    event.target
+  )?.closest<HTMLElement>('[data-editor-retained]');
+
+  if (retained) {
+    const domPoint = createDOMGeometryKernel({
+      root: event.currentTarget,
+      target: retained,
+    }).pointAtCoordinates({ x: event.clientX, y: event.clientY });
+    const endpoint = domPoint
+      ? resolveProjectedDOMSelectionEndpoint({
+          node: domPoint.point[0],
+          offset: domPoint.point[1],
+          owners: findContentRootOwners(editor),
+        })
+      : null;
+
+    if (endpoint?.fragmentId) {
+      return {
+        affinity: endpoint.affinity,
+        fragmentId: endpoint.fragmentId,
+        isDOMCoverageBoundary: isDOMCoverageBoundaryTarget(event.target),
+        owner: endpoint.owner,
+        point: endpoint.point,
+        root: endpoint.root,
+      };
+    }
+  }
+
   const targetRoot = resolvedRoot ?? getEditableRootFromTarget(event.target);
   const targetEditor = getMountedViewEditor(targetRoot) ?? editor;
   const eventRange =
@@ -509,9 +549,7 @@ const resolveExistingSelectionProjectedDragEndpoint = ({
   getMountedViewEditor: (root: RootKey) => RootInteractionEditor | null;
 }): RootInteractionDragEndpoint | null => {
   const element = mouseEventTargetToElement(event.target);
-  const editableRoot = element?.closest<HTMLElement>(
-    '[data-plite-editor="true"]'
-  );
+  const editableRoot = element?.closest<HTMLElement>('[data-editor="true"]');
 
   if (
     !editableRoot ||
@@ -582,10 +620,14 @@ const applyProjectedDragSelection = ({
       createContentRootViewBoundaryGraph(editor, owners),
       {
         anchor: {
+          ...(anchor.affinity ? { affinity: anchor.affinity } : {}),
+          ...(anchor.fragmentId ? { fragmentId: anchor.fragmentId } : {}),
           ...(anchorOwner ? { owner: anchorOwner } : {}),
           point: anchor.point,
         },
         focus: {
+          ...(focus.affinity ? { affinity: focus.affinity } : {}),
+          ...(focus.fragmentId ? { fragmentId: focus.fragmentId } : {}),
           ...(focusOwner ? { owner: focusOwner } : {}),
           point: focus.point,
         },
@@ -604,6 +646,11 @@ const collapseModelSelectionToProjectedDragAnchor = ({
   anchor: RootInteractionDragEndpoint;
   editor: RootInteractionEditor;
 }) => {
+  if (anchor.fragmentId) {
+    writeRuntimeSelection(editor, null);
+    return;
+  }
+
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
 
   if (anchor.root !== viewRoot) {
@@ -664,15 +711,13 @@ const getEditableRootChromeCoordinatePlacement = ({
 }): PliteStringCoordinatePlacement => {
   const element = mouseEventTargetToElement(event.target);
   const targetEditableRoot = element?.closest<HTMLElement>(
-    '[data-plite-editor="true"]'
+    '[data-editor="true"]'
   );
   const currentTargetEditableRoot = event.currentTarget.matches(
-    '[data-plite-editor="true"]'
+    '[data-editor="true"]'
   )
     ? event.currentTarget
-    : event.currentTarget.querySelector<HTMLElement>(
-        '[data-plite-editor="true"]'
-      );
+    : event.currentTarget.querySelector<HTMLElement>('[data-editor="true"]');
   let mountedEditableRoot: HTMLElement | null = null;
 
   try {
@@ -709,7 +754,7 @@ const resolvePliteStringPlacementRange = ({
   placement: NonNullable<PliteStringCoordinatePlacement>;
 }): Range | null => {
   const textHost = placement.string.closest<HTMLElement>(
-    '[data-plite-node="text"]'
+    '[data-editor-node="text"]'
   );
   const path =
     textHost instanceof HTMLElement
@@ -943,7 +988,7 @@ const applyModelDragSelection = ({
 }) => {
   const rootedRange = withInteractionRangeRoot(range, root);
   const useViewSelection =
-    (selectionBridge?.isPartialDOMBackedSelection(rootedRange) ?? false) ||
+    (selectionBridge?.isViewportBackedSelection(rootedRange) ?? false) ||
     hasContentRootOwnerBetweenDragEndpoints({
       anchor: {
         isDOMCoverageBoundary: false,
@@ -1406,7 +1451,7 @@ export const useRootInteractionController = ({
           Boolean(
             target.target.closest(NATIVE_EDITABLE_TEXT_TARGET) ??
             target.target.closest(
-              '[data-plite-inline="true"][data-plite-node="element"]'
+              '[data-editor-inline="true"][data-editor-node="element"]'
             )
           );
         const nativeEditableMultiClick =
@@ -1612,6 +1657,7 @@ export const useRootInteractionController = ({
           !nativeEditableSelectedTextTarget &&
           !nativeEditableModifiedClick
         ) {
+          writePliteViewSelection(pendingProjectedDrag.editor, null);
           collapseModelSelectionToProjectedDragAnchor({
             anchor: pendingProjectedDrag.endpoint,
             editor: pendingProjectedDrag.editor,
@@ -1931,7 +1977,7 @@ export const useRootInteractionController = ({
           target.kind === 'native-editable' &&
           !!target.target.closest(NATIVE_EDITABLE_TEXT_TARGET);
 
-        if (!disabled) {
+        if (!disabled && !readPliteViewSelection(editor)) {
           const expandedSelectionImport = importExpandedDOMSelection();
 
           if (
@@ -1944,7 +1990,9 @@ export const useRootInteractionController = ({
             scheduleInteractionFrame(
               'root-interaction-selection-import',
               () => {
-                selectionBridge?.importDOMSelection();
+                if (!readPliteViewSelection(editor)) {
+                  selectionBridge?.importDOMSelection();
+                }
               },
               { target: currentTarget }
             );

@@ -4,6 +4,7 @@ import {
   BaseCodeBlockPlugin,
   BaseHorizontalRulePlugin,
   PLUGINS,
+  type Value,
 } from 'platejs';
 import { BaseCalloutPlugin } from 'platejs/callout';
 import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
@@ -71,7 +72,9 @@ describe('slash insertion transaction', () => {
           BaseTablePlugin,
           BaseTocPlugin,
         ],
-        initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+        initialValue: [
+          { type: 'paragraph', children: [{ text: '' }] },
+        ] as Value,
         selection: {
           kind: 'text',
           anchor: { path: [0, 0], offset: 0 },

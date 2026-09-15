@@ -1,4 +1,4 @@
-import { defineBasePlugin } from '../src/core';
+import { definePlugin } from '../src/core';
 import type { TableCellElement } from '../src/features/table';
 import { BaseTablePlugin } from '../src/features/table';
 import { TablePlugin } from '../src/react/features/table';
@@ -55,7 +55,7 @@ const extendedTablePlugin = TablePlugin.extend((ctx) => {
 
 void extendedTablePlugin;
 
-const tableDependentPlugin = defineBasePlugin('tableDependent', {
+const tableDependentPlugin = definePlugin('tableDependent', {
   dependencies: [BaseTablePlugin],
 }).extend(({ editor }) => ({
   api: () => ({
@@ -71,14 +71,14 @@ const tableDependentPlugin = defineBasePlugin('tableDependent', {
   }),
 }));
 
-const stagedTableExtension = BaseTablePlugin.extend(({ api }) => ({
+const stagedTablePlugin = BaseTablePlugin.extend(({ api }) => ({
   api: () => ({
     createHeaderRow: () => api.createRow({ colCount: 2, header: true }),
   }),
 })).extend(({ plugin }) => ({
   update: ({ tx }) => ({
     hideLeftBorder: () => {
-      tx.plugin(plugin).setBorderWidth(0, { border: 'left' });
+      tx.plugin(plugin.name).setBorderWidth(0, { border: 'left' });
 
       const selection = tx.selection();
       const tableSelection = tx.table.selection();
@@ -89,4 +89,4 @@ const stagedTableExtension = BaseTablePlugin.extend(({ api }) => ({
 }));
 
 void tableDependentPlugin;
-void stagedTableExtension;
+void stagedTablePlugin;

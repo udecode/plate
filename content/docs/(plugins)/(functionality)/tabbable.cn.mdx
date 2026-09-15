@@ -67,14 +67,14 @@ const editor = createEditor({
 
 ```tsx
 import { TabbablePlugin } from 'platejs/tabbable/react';
-import { PLUGINS } from 'platejs';
+import { BaseCodeBlockPlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
 
 const editor = createEditor({
   plugins: [
     // ...其他插件,
     TabbablePlugin.configure(({ editor }) => {
-      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
       const blockedTypes = [codeBlock].flatMap((plugin) =>
         plugin.installed ? [plugin.schema.type] : []
       );
@@ -114,7 +114,7 @@ Tabbable插件可能会与处理`Tab`键的其他插件产生冲突，例如：
 
 ```tsx
 TabbablePlugin.configure(({ editor }) => {
-  const codeBlock = editor.plugin(PLUGINS.codeBlock);
+  const codeBlock = editor.plugin(BaseCodeBlockPlugin);
   const blockedTypes = [codeBlock].flatMap((plugin) =>
     plugin.installed ? [plugin.schema.type] : []
   );
@@ -139,11 +139,11 @@ query: (event) => !!editor.read.nodes.some({
 }),
 ```
 
-### 非空Plite节点
+### 非空Plate节点
 
 将为编辑器中的每个可聚焦DOM元素创建一个`TabbableEntry`，使用[tabbable](https://www.npmjs.com/package/tabbable) NPM包确定。然后使用`isTabbable`过滤可聚焦列表。
 
-默认情况下，`isTabbable`仅对void Plite节点内的entry返回true。可以覆盖`isTabbable`以支持其他类型Plite节点中包含的DOM元素：
+默认情况下，`isTabbable`仅对void Plate节点内的entry返回true。可以覆盖`isTabbable`以支持其他类型Plate节点中包含的DOM元素：
 
 ```tsx
 // 启用CUSTOM_ELEMENT内的可聚焦DOM元素
@@ -157,7 +157,7 @@ isTabbable: (tabbableEntry) => (
 
 某些情况下，可能需要允许用户从编辑器切换到外部渲染的DOM元素(如交互式弹出框)。
 
-为此，覆盖`insertTabbableEntries`返回`TabbableEntry`对象数组，每个对象对应一个要包含在可聚焦列表中的外部DOM元素。`TabbableEntry`的`slateNode`和`path`应引用当DOM元素可聚焦时用户光标所在的Plite节点。
+为此，覆盖`insertTabbableEntries`返回`TabbableEntry`对象数组，每个对象对应一个要包含在可聚焦列表中的外部DOM元素。`TabbableEntry`的`slateNode`和`path`应引用当DOM元素可聚焦时用户光标所在的Plate节点。
 
 将`globalEventListener`选项设为`true`以确保Tabbable插件能将用户焦点返回到编辑器。
 
@@ -222,10 +222,10 @@ insertTabbableEntries: () => {
     表示可聚焦 entry 的 HTML 或 SVG 元素。
   </APIItem>
   <APIItem name="slateNode" type="Node">
-    对应的Plite节点。
+    对应的Plate节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    文档中Plite节点的路径。
+    文档中Plate节点的路径。
   </APIItem>
 </APIAttributes>
 </API>

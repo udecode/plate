@@ -2,10 +2,10 @@ import { act, render } from '@testing-library/react';
 import React from 'react';
 
 import { createEditorView, schema } from '../../../facade';
-import { TestPlate as Plate } from '../../__tests__/TestPlate';
-import { PlateContent } from '../../components/PlateContent';
+import { TestPlate as EditorRoot } from '../../__tests__/TestPlate';
+import { EditorContent } from '../../components/PlateContent';
 import { createEditor } from '../../editor';
-import { definePlatePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { useEditor } from '../../stores';
 import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
 
@@ -23,16 +23,16 @@ const mount = (readOnly = false, duration = 1600) => {
     React.useLayoutEffect(() => {
       views[index] = view;
     }, [index, view]);
-    return <PlateContent readOnly={readOnly} />;
+    return <EditorContent readOnly={readOnly} />;
   }
   const rendered = render(
     <>
-      <Plate editor={editor} readOnly={readOnly}>
+      <EditorRoot editor={editor} readOnly={readOnly}>
         <Capture index={0} />
-      </Plate>
-      <Plate editor={editor} readOnly={readOnly}>
+      </EditorRoot>
+      <EditorRoot editor={editor} readOnly={readOnly}>
         <Capture index={1} />
-      </Plate>
+      </EditorRoot>
     </>
   );
   const roots = rendered.getAllByRole('textbox');
@@ -140,7 +140,7 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('rejects keys from another content root without replacing the current target', () => {
-    const FigurePlugin = definePlatePlugin('figure', {
+    const FigurePlugin = definePlugin('figure', {
       schema: {
         element: {
           void: 'block',
@@ -175,12 +175,12 @@ describe('NavigationFeedbackPlugin', () => {
     let view: ReturnType<typeof useEditor> | undefined;
     function Capture() {
       view = useEditor();
-      return <PlateContent />;
+      return <EditorContent />;
     }
     const rendered = render(
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <Capture />
-      </Plate>
+      </EditorRoot>
     );
     if (!view) throw new Error('Missing mounted view');
     const { api } = view.plugin(NavigationFeedbackPlugin);

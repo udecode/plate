@@ -1,6 +1,6 @@
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  definePlugin,
   ElementApi,
   getInjectMatch,
   PLUGINS,
@@ -12,6 +12,7 @@ import {
   type Element,
   type NodeMatchPredicate,
 } from '../../../core';
+import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 
 export type IndentChangeOptions = {
   nodes?: Omit<EditorNodesOptions<Element>, 'match'> & {
@@ -48,7 +49,7 @@ const initialState: IndentPluginState = {
 const isNonNegativeSafeInteger = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
 
-export const BaseIndentPlugin = defineBasePlugin(PLUGINS.indent, {
+export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
   initialState,
   schema: ({ targetElementTypes }) => ({
     properties: {
@@ -145,9 +146,13 @@ export const BaseIndentPlugin = defineBasePlugin(PLUGINS.indent, {
         if (!match(element, path)) return false;
 
         if (!element.indent) {
-          const blockquote = editor.plugin(PLUGINS.blockquote);
+          const blockquoteDescriptor = getCompiledPlatePlugin(
+            editor,
+            PLUGINS.blockquote
+          );
 
-          if (!blockquote.installed) return true;
+          if (!blockquoteDescriptor) return true;
+          const blockquote = editor.plugin(blockquoteDescriptor);
 
           return !tx.nodes.above({
             at: path,

@@ -1,12 +1,20 @@
 import * as Y from 'yjs';
 
+import {
+  getAuthoredCommitView,
+  getAuthoredProjectedChange,
+  getAuthoredViewCommit,
+  readAuthoredView,
+} from '../../core/authored-runtime';
 import { getInternalDocumentChangeRootKeys as getDocumentChangeRootKeys } from '../../core/change/document-change';
 import {
   getCompiledEditorSchema,
-  getExtensionRegistry as getEditorExtensionRegistry,
-} from '../../core/extension-registry';
+  getPluginRegistry,
+} from '../../core/plugin-registry';
 import {
+  assertEditorExternalMutationAllowed,
   getCollabEffects,
+  registerEditorTransactionGuard,
   scheduleAfterCommitNotification,
 } from '../../core/public-state';
 import { getCompiledPropertyMergeStrategy } from '../../core/schema-compiler';
@@ -17,9 +25,7 @@ import type {
   EditorEffect,
   EditorSchemaIdentity,
   EditorSnapshot,
-  EditorUpdateTransaction,
   JsonEditorValue,
-  Value,
 } from '../../index';
 import {
   areEditorSchemaIdentitiesEqual,
@@ -55,10 +61,6 @@ import {
   type YjsEventImportFallback,
   type YjsEventNormalization,
 } from './event-change-bridge';
-import {
-  createYjsProviderLifecycleAdapter,
-  type YjsProviderLifecycleAdapter,
-} from './provider-lifecycle-adapter';
 import { isRecord } from './record';
 import {
   assertYjsSchemaIdentity,
@@ -67,18 +69,20 @@ import {
   writeYjsSchemaEnvelope,
 } from './schema-metadata';
 import {
+  type PendingYjsEffect,
   type PreparedYjsSharedEffects,
   YjsSharedEffectLog,
 } from './shared-effect-log';
 import type {
   YjsAwarenessChange,
   YjsAwarenessLike,
-  YjsExtensionOptions,
-  YjsProviderLike,
+  YjsAdmissionStatus,
+  YjsBaseApi,
+  YjsCompactionApi,
+  YjsPluginOptions,
+  YjsPresenceApi,
   YjsRemoteCursorData,
-  YjsState,
   YjsTraceEntry,
-  YjsTx,
 } from './types';
 
 const notifySubscribers = (subscribers: ReadonlySet<() => void>): void => {
@@ -86,6 +90,17 @@ const notifySubscribers = (subscribers: ReadonlySet<() => void>): void => {
     listener();
   }
 };
+
+const WAITING_FOR_LOAD = Object.freeze({
+  reason: 'load',
+  state: 'waiting',
+}) satisfies YjsAdmissionStatus;
+const WAITING_FOR_SEED = Object.freeze({
+  reason: 'seed',
+  state: 'waiting',
+}) satisfies YjsAdmissionStatus;
+const READY = Object.freeze({ state: 'ready' }) satisfies YjsAdmissionStatus;
+const EMPTY_REMOTE_CURSORS = Object.freeze([]);
 
 const copyTraceEntries = (
   traceEntries: readonly YjsTraceEntry[]
@@ -122,15 +137,10 @@ const asDescendants = (
 export class YjsController<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
 > {
-  private readonly autoSendSelection: boolean;
   private readonly awareness?: YjsAwarenessLike;
-  private readonly awarenessAdapter: YjsAwarenessAdapter<TCursorData>;
-  private readonly awarenessDataField: string;
+  private readonly awarenessAdapter?: YjsAwarenessAdapter<TCursorData>;
   private readonly awarenessObserver: (event: YjsAwarenessChange) => void;
-  private readonly awarenessSelectionField: string;
-  private readonly awarenessSubscribers = new Set<() => void>();
-  private readonly clientId: number | string;
-  private readonly destroyProviderOnUnmount: boolean;
+  private readonly admissionSubscribers = new Set<() => void>();
   private readonly doc: Y.Doc;
   private readonly editor: YjsEditor;
   private readonly editorAdapter: YjsEditorAdapter;
@@ -144,9 +154,8 @@ export class YjsController<
     events: Array<Y.YEvent<Y.AbstractType<unknown>>>,
     transaction: Y.Transaction
   ) => void;
-  private readonly provider?: YjsProviderLike;
-  private readonly providerLifecycle: YjsProviderLifecycleAdapter;
-  private readonly providerOwnedDoc: boolean;
+  private readonly initialReady: true | YjsPluginOptions['initialReady'];
+  private readonly rootName: string;
   private readonly root: Y.XmlElement;
   private readonly roots: Y.Map<Y.XmlElement>;
   private readonly rootsObserver: (
@@ -166,23 +175,28 @@ export class YjsController<
   private readonly afterTransactionObserver: (
     transaction: Y.Transaction
   ) => void;
-  private readonly seedProviderOnSync: boolean;
+  private readonly readinessObserver: () => void;
+  private readonly seedGranted: boolean;
   private readonly traceEntries: YjsTraceEntry[] = [];
 
+  private admitted = false;
+  private admissionAttempting = false;
+  private admissionStatusValue: YjsAdmissionStatus = WAITING_FOR_LOAD;
   private awarenessRevision = 0;
-  private paused = false;
+  private disposed = false;
+  private initialized = false;
   private pendingRemoteEvents: CapturedYjsEventBatch | null = null;
   private pendingRemoteEffects = false;
   private readonly pendingRemoteNamedRoots = new Set<string>();
   private pendingRemoteRootChange = false;
   private pendingRemoteSchemaChange = false;
-  private schemaError: Error | null = null;
-  private seeded = false;
-  private initialized = false;
+  private published = false;
+  private readinessUnsubscribe: (() => void) | undefined;
+  private unregisterTransactionGuard: (() => void) | undefined;
 
   constructor(
     editor: YjsEditor,
-    options: YjsExtensionOptions<TCursorData>,
+    options: YjsPluginOptions<TCursorData>,
     context: Readonly<{
       canonicalize: YjsEditorAdapter['canonicalize'];
       emptyValueFor: (root: string) => readonly Descendant[];
@@ -208,23 +222,34 @@ export class YjsController<
         ) === 'set'
       );
     };
-    this.provider = options.provider;
-    this.providerOwnedDoc =
-      this.provider !== undefined &&
-      (options.doc !== undefined || this.provider.doc !== undefined);
-    this.doc = options.doc ?? this.provider?.doc ?? new Y.Doc();
-    const rootName = options.rootName ?? 'plitejs';
+    this.doc = options.doc;
+    this.initialReady = options.initialReady;
+    this.rootName = options.rootName ?? 'plitejs';
+    this.seedGranted = options.seed === true;
+    this.awareness = options.awareness;
 
-    this.root = this.doc.get(rootName, Y.XmlElement);
-    this.roots = this.doc.getMap(`${rootName}:roots`);
-    this.schemaMetadata = this.doc.getMap(getYjsSchemaMetadataName(rootName));
+    if (this.initialReady !== true && this.initialReady.doc !== this.doc) {
+      throw new Error(
+        'Yjs initial readiness must belong to the configured document.'
+      );
+    }
+    if (this.awareness && this.awareness.doc !== this.doc) {
+      throw new Error('Yjs awareness must belong to the configured document.');
+    }
+
+    this.root = this.doc.get(this.rootName, Y.XmlElement);
+    this.roots = this.doc.getMap(`${this.rootName}:roots`);
+    this.schemaMetadata = this.doc.getMap(
+      getYjsSchemaMetadataName(this.rootName)
+    );
     this.sharedEffectLog = new YjsSharedEffectLog(
       this.doc,
-      rootName,
+      this.rootName,
       this.root,
-      (key) => getEditorExtensionRegistry(editor).effectTypes.get(key)?.type,
+      (key) => getPluginRegistry(editor).effectTypes.get(key)?.type,
       {
         authorityId: options.sharedEffectCompaction?.authorityId,
+        editor,
         captureSnapshotEffects: () => this.captureSharedSnapshotEffects(),
         onCheckpoint: () => {
           this.pendingRemoteEffects = true;
@@ -235,31 +260,11 @@ export class YjsController<
           : { threshold: options.sharedEffectCompaction.threshold }),
       }
     );
-    this.clientId = options.clientId ?? this.doc.clientID;
-    this.destroyProviderOnUnmount = options.destroyProviderOnUnmount ?? false;
-    this.seedProviderOnSync = options.seedProviderOnSync ?? true;
-    this.awareness = options.awareness ?? this.provider?.awareness;
-    this.awarenessDataField = options.awarenessDataField ?? 'data';
-    this.awarenessSelectionField =
-      options.awarenessSelectionField ?? 'selection';
-    this.autoSendSelection = options.autoSendSelection ?? true;
     this.awarenessObserver = (event) => {
-      this.awarenessAdapter.handleAwarenessChange(event);
-      this.updateAwarenessRevision();
+      if (this.disposed) return;
+      this.awarenessAdapter?.handleAwarenessChange(event);
+      this.awarenessRevision += 1;
     };
-    this.providerLifecycle = createYjsProviderLifecycleAdapter({
-      onConnectedChange: (connected) => {
-        if (!connected) {
-          this.awarenessAdapter.clearSelection();
-        }
-        this.awarenessAdapter.rebuild();
-        this.updateAwarenessRevision();
-      },
-      onProviderSyncedChange: () => {
-        this.reconcileProviderOwnedDocAfterSync();
-      },
-      provider: this.provider,
-    });
     this.bindings.set(
       MAIN_ROOT_KEY,
       this.createRootBinding(MAIN_ROOT_KEY, this.root, Object.freeze([]))
@@ -273,21 +278,16 @@ export class YjsController<
         this.createRootBinding(root, yRoot, Object.freeze([]))
       );
     }
-    this.awarenessAdapter = createYjsAwarenessAdapter<TCursorData>({
-      awareness: this.awareness,
-      awarenessDataField: this.awarenessDataField,
-      awarenessSelectionField: this.awarenessSelectionField,
-      canSendSelection: () =>
-        !this.shouldWaitForProviderSync() &&
-        !this.shouldWaitForAppSeededProviderDoc(),
-      clientId: this.clientId,
-      doc: this.doc,
-      editor: this.editor,
-      isConnected: () => this.providerLifecycle.connected(),
-      rootFor: (root) => this.rootFor(root),
-      validateCursorData: (value): value is TCursorData =>
-        options.cursorData?.validate(value) ?? isRecord(value),
-    });
+    this.awarenessAdapter = this.awareness
+      ? createYjsAwarenessAdapter<TCursorData>({
+          awareness: this.awareness,
+          canSyncSelection: () => this.admissionStatusValue.state === 'ready',
+          editor: this.editor,
+          rootFor: (root) => this.rootFor(root),
+          validateCursorData: (value): value is TCursorData =>
+            options.cursorData?.validate(value) ?? isRecord(value),
+        })
+      : undefined;
     this.observer = (events, transaction) => {
       if (this.shouldIgnoreRemoteTransaction(transaction)) return;
 
@@ -336,14 +336,20 @@ export class YjsController<
 
       this.pendingRemoteSchemaChange = true;
     };
-    this.afterTransactionObserver = () => {
-      if (!this.seeded) return;
-      if (this.shouldWaitForProviderSync()) return;
+    this.readinessObserver = () => {
+      if (!this.disposed && this.published) this.processAvailableInput();
+    };
+    this.afterTransactionObserver = (transaction) => {
+      if (
+        this.disposed ||
+        !this.published ||
+        this.shouldIgnoreRemoteTransaction(transaction) ||
+        this.sharedEffectLog.isInternalTransaction(transaction)
+      ) {
+        return;
+      }
 
-      this.assertRoomSchemaForImport();
-
-      this.flushRemoteTransaction();
-      this.sharedEffectLog.settle();
+      this.processAvailableInput();
     };
   }
 
@@ -381,22 +387,9 @@ export class YjsController<
   initializeCanonicalState(): void {
     if (this.initialized) return;
 
-    const schemaEnvelope = readYjsSchemaEnvelope(this.schemaMetadata);
-    const isUnclaimedDocument = schemaEnvelope === null;
-
     for (const [root, binding] of this.bindings) {
-      binding.synchronizedChildren =
-        this.providerOwnedDoc || isUnclaimedDocument
-          ? this.editorAdapter.readChildren(root)
-          : this.readYjsRootValue(binding);
+      binding.synchronizedChildren = this.editorAdapter.readChildren(root);
       binding.bridge.reset(binding.synchronizedChildren);
-    }
-
-    if (
-      !this.providerOwnedDoc ||
-      this.providerLifecycle.providerSynced() === true
-    ) {
-      this.assertRoomSchemaForImport();
     }
 
     this.schemaMetadata.observe(this.schemaObserver);
@@ -407,8 +400,17 @@ export class YjsController<
 
     try {
       this.bindExternalEvents();
+      this.unregisterTransactionGuard = registerEditorTransactionGuard(
+        this.editor,
+        ({ change, effects }) => this.assertTransactionAllowed(change, effects)
+      );
       this.initialized = true;
+
+      if (this.readInitialReady()) this.assertRoomSchemaForImport();
     } catch (error) {
+      this.initialized = false;
+      this.unregisterTransactionGuard?.();
+      this.unregisterTransactionGuard = undefined;
       this.unbindExternalEvents();
       this.schemaMetadata.unobserve(this.schemaObserver);
       this.root.unobserveDeep(this.observer);
@@ -419,72 +421,123 @@ export class YjsController<
     }
   }
 
-  destroy(replacement?: YjsController): void {
-    this.seeded = false;
+  destroy(): void {
+    if (this.disposed) return;
+
+    this.disposed = true;
+    this.unregisterTransactionGuard?.();
+    this.unregisterTransactionGuard = undefined;
     this.sharedEffectLog.destroy();
     if (this.initialized) {
       this.initialized = false;
       this.unbindExternalEvents();
-      if (
-        this.awareness !== undefined &&
-        replacement?.awareness !== this.awareness
-      ) {
-        this.awarenessAdapter.clearSelection();
-      }
       this.schemaMetadata.unobserve(this.schemaObserver);
       this.root.unobserveDeep(this.observer);
       this.roots.unobserveDeep(this.rootsObserver);
       this.sharedEffectLog.unobserve(this.sharedEffectsObserver);
       this.doc.off('afterTransaction', this.afterTransactionObserver);
     }
-    if (
-      this.destroyProviderOnUnmount &&
-      replacement?.provider !== this.provider
-    ) {
-      this.provider?.destroy?.();
-    }
-    this.awarenessAdapter.destroy();
+    this.awarenessAdapter?.destroy();
+    this.admissionSubscribers.clear();
   }
 
-  cursorCache(): YjsAwarenessAdapter<TCursorData> {
-    return this.awarenessAdapter;
+  cursorCache(view: YjsEditor = this.editor): YjsAwarenessAdapter<TCursorData> {
+    const adapter = this.awarenessAdapter;
+
+    if (!adapter) {
+      throw new Error('Yjs awareness is not configured for this binding.');
+    }
+
+    return adapter.forView(view);
   }
 
   private bindExternalEvents(): void {
-    this.awareness?.on?.('change', this.awarenessObserver);
-    this.providerLifecycle.bind();
+    this.awareness?.on('change', this.awarenessObserver);
+    if (this.initialReady !== true) {
+      const unsubscribe = this.initialReady.subscribe(this.readinessObserver);
+      let active = true;
+
+      this.readinessUnsubscribe = () => {
+        if (!active) return;
+
+        active = false;
+        unsubscribe();
+      };
+    }
   }
 
   private unbindExternalEvents(): void {
-    this.awareness?.off?.('change', this.awarenessObserver);
-    this.providerLifecycle.unbind();
+    this.readinessUnsubscribe?.();
+    this.readinessUnsubscribe = undefined;
+    this.awareness?.off('change', this.awarenessObserver);
+  }
+
+  matches(doc: Y.Doc, rootName: string): boolean {
+    return this.doc === doc && this.rootName === rootName;
+  }
+
+  start(): void {
+    this.assertActive();
+    if (this.published) return;
+
+    this.published = true;
+    this.processAvailableInput();
   }
 
   handleCommit(commit: EditorCommit, _snapshot: EditorSnapshot): void {
     if (
-      this.seeded &&
-      !this.paused &&
+      this.admissionStatusValue.state === 'error' &&
       commit.dirtyStateKeys.includes('$configuration')
     ) {
       scheduleAfterCommitNotification(this.editor, () => {
-        if (!this.seeded || this.paused) return;
-
         this.pendingRemoteEffects = true;
-        this.flushRemoteTransaction();
+        this.processAvailableInput();
       });
     }
 
+    const view = getAuthoredCommitView(this.editor, commit);
+    const cursorCache = this.awarenessAdapter?.forView(view);
+    if (readAuthoredView(this.editor)) {
+      const projected = getAuthoredProjectedChange(this.editor, commit);
+      this.awarenessAdapter?.publishMappedRoots(
+        new Set([
+          ...getDocumentChangeRootKeys(commit.changes),
+          ...getDocumentChangeRootKeys(projected),
+          ...commit.changes.createRoots,
+          ...commit.changes.deleteRoots,
+          ...projected.createRoots,
+          ...projected.deleteRoots,
+        ])
+      );
+    }
     const sharedEffects = getCollabEffects(this.editor, commit);
-    const shouldSendSelection =
-      this.autoSendSelection && commit.selectionChanged;
+    const shouldSyncSelection =
+      cursorCache !== undefined &&
+      getAuthoredViewCommit(view, commit).selectionChanged;
+
+    if (this.admissionStatusValue.state !== 'ready') {
+      if (shouldSyncSelection) cursorCache.claimSelection();
+
+      return;
+    }
 
     if (
       this.shouldSkipCommit(
         commit,
         sharedEffects.length > 0,
-        shouldSendSelection
+        shouldSyncSelection
       )
     ) {
+      return;
+    }
+
+    if (readAuthoredView(this.editor)) {
+      const prepared = this.sharedEffectLog.prepare(sharedEffects, commit);
+      this.doc.transact(() => {
+        this.appendSharedEffects(prepared);
+      }, this.localOrigin);
+      this.sharedEffectLog.settle();
+      if (shouldSyncSelection) cursorCache.syncSelection();
       return;
     }
 
@@ -521,46 +574,9 @@ export class YjsController<
     const documentChanged = changedRoots.size > 0;
 
     if (!documentChanged && sharedEffects.length === 0) {
-      if (shouldSendSelection) {
-        this.awarenessAdapter.sendSelection();
-      }
+      if (shouldSyncSelection) cursorCache.syncSelection();
 
       return;
-    }
-
-    if (this.shouldRejectUnsafeProviderCommit()) {
-      scheduleAfterCommitNotification(this.editor, () => {
-        const currentValue = this.editorAdapter.readValue();
-        const previousValue = documentChanged
-          ? commit.inverseChanges.apply(currentValue)
-          : currentValue;
-
-        try {
-          this.editor.read.schema.assertDocument(previousValue);
-        } catch {
-          return;
-        }
-
-        this.editorAdapter.applyRemote({
-          ...(documentChanged
-            ? {
-                change: DocumentChange.between(currentValue, previousValue),
-                selection: commit.selectionBefore,
-              }
-            : {}),
-          effects: [...sharedEffects].reverse().map((effect) => ({
-            type: effect.type,
-            value: effect.type.invert(effect.value),
-          })),
-        });
-      });
-
-      return;
-    }
-    if (this.shouldSeedEmptyProviderDocForCommit()) {
-      this.seedValue(
-        commit.inverseChanges.apply(this.editorAdapter.readValue())
-      );
     }
     const preparedSharedEffects = this.sharedEffectLog.prepare(sharedEffects);
 
@@ -568,10 +584,9 @@ export class YjsController<
       this.doc.transact(() => {
         this.appendSharedEffects(preparedSharedEffects);
       }, this.localOrigin);
+      this.sharedEffectLog.settle();
 
-      if (shouldSendSelection) {
-        this.awarenessAdapter.sendSelection();
-      }
+      if (shouldSyncSelection) cursorCache.syncSelection();
 
       return;
     }
@@ -692,6 +707,7 @@ export class YjsController<
       }
       this.appendSharedEffects(preparedSharedEffects);
     }, this.localOrigin);
+    this.sharedEffectLog.settle();
 
     for (const root of removedBindings) {
       this.bindings.delete(root);
@@ -708,18 +724,10 @@ export class YjsController<
         binding.synchronizedChildren = this.editorAdapter.readChildren(root);
       }
     }
-    this.awarenessAdapter.publishMappedRoots(changedRoots, {
+    this.awarenessAdapter?.publishMappedRoots(changedRoots, {
       fallbackRoots: fallbacks,
     });
-    if (shouldSendSelection) {
-      this.awarenessAdapter.sendSelection();
-    }
-  }
-
-  handleTransactionChange(tx: EditorUpdateTransaction<Value, any>): void {
-    if (this.shouldRejectUnsafeProviderCommit()) {
-      tx.tags.add('history-skip');
-    }
+    if (shouldSyncSelection) cursorCache.syncSelection();
   }
 
   assertSchemaIdentity(next: EditorSchemaIdentity): void {
@@ -727,14 +735,6 @@ export class YjsController<
 
     if (areEditorSchemaIdentitiesEqual(current, next)) {
       return;
-    }
-    if (
-      this.providerOwnedDoc &&
-      this.providerLifecycle.providerSynced() !== true
-    ) {
-      throw new Error(
-        'Cannot reconfigure the editor schema before the Yjs provider is synchronized.'
-      );
     }
 
     const envelope = readYjsSchemaEnvelope(this.schemaMetadata);
@@ -752,57 +752,119 @@ export class YjsController<
     assertYjsSchemaIdentity(next, envelope.identity);
   }
 
-  seed(): void {
-    this.sharedEffectLog.activate();
+  private readInitialReady(): boolean {
+    return this.initialReady === true || this.initialReady.getSnapshot();
+  }
 
-    if (this.shouldWaitForProviderSync()) {
-      this.seeded = true;
+  private setAdmissionStatus(status: YjsAdmissionStatus): void {
+    if (this.admissionStatusValue === status) return;
 
+    this.admissionStatusValue = status;
+    notifySubscribers(this.admissionSubscribers);
+  }
+
+  private setAdmissionError(cause: unknown): void {
+    if (
+      this.admissionStatusValue.state === 'error' &&
+      this.admissionStatusValue.cause === cause
+    ) {
       return;
     }
 
-    this.assertRoomSchemaForImport();
-    const pending = this.sharedEffectLog.pending();
+    this.setAdmissionStatus(Object.freeze({ cause, state: 'error' }));
+  }
 
-    this.seedInitialValueOrImportFromYjs(
-      this.shouldSeedInitialProviderDoc(),
-      pending.effects
-    );
-    this.sharedEffectLog.acknowledge(pending.eventIds);
+  private publishReady(): void {
+    const previous = this.admissionStatusValue;
+
+    this.admissionStatusValue = READY;
+    try {
+      this.awarenessAdapter?.syncSelection();
+    } catch (error) {
+      this.admissionStatusValue = previous;
+      throw error;
+    }
+
+    if (previous !== READY) notifySubscribers(this.admissionSubscribers);
+  }
+
+  private clearPendingInput(): void {
     this.pendingRemoteEvents = null;
     this.pendingRemoteRootChange = false;
     this.pendingRemoteNamedRoots.clear();
     this.pendingRemoteEffects = false;
     this.pendingRemoteSchemaChange = false;
-    this.seeded = true;
-    this.sharedEffectLog.settle();
+  }
+
+  private processAvailableInput(): void {
+    if (this.disposed || this.admissionAttempting) return;
+
+    this.admissionAttempting = true;
+    try {
+      if (!this.admitted) {
+        if (!this.readInitialReady()) {
+          this.setAdmissionStatus(WAITING_FOR_LOAD);
+
+          return;
+        }
+
+        const claimed = this.assertRoomSchemaForImport();
+
+        if (!claimed && !this.seedGranted) {
+          this.setAdmissionStatus(WAITING_FOR_SEED);
+
+          return;
+        }
+
+        const pending = this.sharedEffectLog.pending();
+
+        if (claimed) {
+          this.importDocumentFromYjs('seed', pending.effects);
+        } else {
+          this.seedInitialValue();
+          if (pending.effects.length > 0) {
+            this.editorAdapter.applyRemote({ effects: pending.effects });
+          }
+        }
+
+        this.sharedEffectLog.activate();
+        this.sharedEffectLog.acknowledge(pending.eventIds);
+        this.clearPendingInput();
+        this.admitted = true;
+      } else {
+        this.assertRoomSchemaForImport();
+        this.flushRemoteTransaction();
+      }
+
+      this.sharedEffectLog.settle();
+      this.publishReady();
+    } catch (error) {
+      this.setAdmissionError(error);
+    } finally {
+      this.admissionAttempting = false;
+    }
   }
 
   private assertRoomSchemaForImport(): boolean {
-    try {
-      const envelope = readYjsSchemaEnvelope(this.schemaMetadata);
+    const envelope = readYjsSchemaEnvelope(this.schemaMetadata);
 
-      if (envelope === null) {
-        if (this.root.length === 0 && this.roots.size === 0) {
-          this.schemaError = null;
-
-          return false;
-        }
-
-        throw new Error(
-          'Cannot import a nonempty Yjs document without schema metadata.'
-        );
+    if (envelope === null) {
+      if (
+        this.root.length === 0 &&
+        this.roots.size === 0 &&
+        this.sharedEffectLog.empty()
+      ) {
+        return false;
       }
 
-      assertYjsSchemaIdentity(this.localSchemaIdentity(), envelope.identity);
-      this.schemaError = null;
-
-      return true;
-    } catch (error) {
-      this.schemaError =
-        error instanceof Error ? error : new Error(String(error));
-      throw error;
+      throw new Error(
+        'Cannot import a nonempty Yjs document without schema metadata.'
+      );
     }
+
+    assertYjsSchemaIdentity(this.localSchemaIdentity(), envelope.identity);
+
+    return true;
   }
 
   private appendSharedEffects(effects: PreparedYjsSharedEffects): void {
@@ -817,7 +879,7 @@ export class YjsController<
     return this.editor.read((state) => {
       const effects: EditorEffect[] = [];
 
-      for (const { type } of getEditorExtensionRegistry(
+      for (const { type } of getPluginRegistry(
         this.editor
       ).effectTypes.values()) {
         if (type.collab !== 'shared' || type.collabReplay !== 'latest') {
@@ -839,8 +901,7 @@ export class YjsController<
     return (
       transaction.origin === this.localOrigin ||
       transaction.origin === this.canonicalizeOrigin ||
-      transaction.origin === this.seedOrigin ||
-      this.paused
+      transaction.origin === this.seedOrigin
     );
   }
 
@@ -859,13 +920,9 @@ export class YjsController<
     const events = this.pendingRemoteEvents;
     const pending = this.sharedEffectLog.pending();
 
-    this.pendingRemoteEvents = null;
-    this.pendingRemoteRootChange = false;
-    this.pendingRemoteNamedRoots.clear();
-    this.pendingRemoteEffects = false;
-    this.pendingRemoteSchemaChange = false;
-
-    if (!rootChanged && namedRoots.size === 1 && events !== null) {
+    if (readAuthoredView(this.editor)) {
+      this.importDocumentFromYjs('remote-reconcile', pending.effects);
+    } else if (!rootChanged && namedRoots.size === 1 && events !== null) {
       this.importYjsEvents(events, pending.effects, [...namedRoots][0]);
     } else if (namedRoots.size > 0) {
       this.importDocumentFromYjs('remote-reconcile', pending.effects, {
@@ -882,151 +939,177 @@ export class YjsController<
       this.editorAdapter.applyRemote({ effects: pending.effects });
     }
     this.sharedEffectLog.acknowledge(pending.eventIds);
+    this.clearPendingInput();
   }
 
   private shouldSkipCommit(
     commit: EditorCommit,
     hasSharedEffects: boolean,
-    shouldSendSelection: boolean
+    shouldSyncSelection: boolean
   ): boolean {
     return (
       this.editorAdapter.importing() ||
-      this.paused ||
       (!commit.changed.hasAny('document') &&
         !hasSharedEffects &&
-        !shouldSendSelection) ||
+        !shouldSyncSelection) ||
       commit.tags.includes('skip-collab') ||
       commit.tags.includes('collaboration')
     );
   }
 
-  state(): YjsState<TCursorData> {
-    return {
-      awarenessRevision: () => this.awarenessRevision,
-      clientId: () => this.clientId,
-      connected: () => this.providerLifecycle.connected(),
-      doc: () => this.doc,
-      paused: () => this.paused,
-      providerRevision: () => this.providerLifecycle.providerRevision(),
-      providerStatus: () => this.providerLifecycle.providerStatus(),
-      providerSynced: () => this.providerLifecycle.providerSynced(),
-      remoteCursor: (clientId) => this.awarenessAdapter.remoteCursor(clientId),
-      remoteCursors: () => this.awarenessAdapter.remoteCursors(),
-      root: () => this.root,
-      subscribeRemoteCursors: (listener) =>
-        this.awarenessAdapter.subscribeCursors(listener),
-      subscribeAwareness: (listener) => this.subscribeAwareness(listener),
-      subscribeProvider: (listener) =>
-        this.providerLifecycle.subscribe(listener),
-      trace: () => copyTraceEntries(this.traceEntries),
-    };
+  baseApi(): YjsBaseApi {
+    return Object.freeze({
+      admissionStatus: () => {
+        this.assertActive();
+
+        return this.admissionStatusValue;
+      },
+      retryImport: () => {
+        this.assertExternalMutationAllowed();
+        if (this.admissionStatusValue.state !== 'error') return;
+
+        this.processAvailableInput();
+        if (this.admissionStatusValue.state === 'error') {
+          throw this.admissionStatusValue.cause;
+        }
+      },
+      subscribeAdmissionStatus: (listener) =>
+        this.subscribeAdmissionStatus(listener),
+    });
   }
 
-  tx(): YjsTx<TCursorData> {
-    return {
+  presenceApi(view: YjsEditor): YjsPresenceApi<TCursorData> {
+    const adapter = this.cursorCache(view);
+
+    return Object.freeze({
       clearSelection: () => {
-        this.awarenessAdapter.clearSelection();
+        this.assertExternalMutationAllowed();
+        adapter.clearSelection();
       },
-      clearTrace: () => {
-        this.traceEntries.length = 0;
+      remoteCursor: (clientId) => {
+        this.assertActive();
+
+        return this.admissionStatusValue.state === 'ready'
+          ? adapter.remoteCursor(clientId)
+          : null;
       },
-      connect: () => {
-        this.providerLifecycle.connect();
+      remoteCursors: () => {
+        this.assertActive();
+
+        return this.admissionStatusValue.state === 'ready'
+          ? adapter.remoteCursors()
+          : EMPTY_REMOTE_CURSORS;
       },
-      disconnect: () => {
-        this.providerLifecycle.disconnect();
+      setCursorData: (data) => {
+        this.assertExternalMutationAllowed();
+        adapter.setCursorData(data);
       },
-      pause: () => {
-        this.paused = true;
+      subscribeRemoteCursors: (listener) => {
+        this.assertActive();
+        const unsubscribeCursors = adapter.subscribeCursors(listener);
+        const unsubscribeAdmission = this.subscribeAdmissionStatus(listener);
+        let active = true;
+
+        return () => {
+          if (!active) return;
+
+          active = false;
+          unsubscribeCursors();
+          unsubscribeAdmission();
+        };
       },
-      reconcile: () => {
-        this.reconcile();
+      syncSelection: () => {
+        this.assertExternalMutationAllowed();
+        if (this.admissionStatusValue.state !== 'ready') {
+          throw new Error('Cannot publish a Yjs selection before admission.');
+        }
+        adapter.syncSelection();
       },
-      reconnect: () => {
-        this.providerLifecycle.reconnect();
-      },
-      resume: () => {
-        this.paused = false;
-      },
-      retireSharedEffectPeer: (peerId) => {
-        this.sharedEffectLog.retirePeer(String(peerId));
-      },
-      sendCursorData: (data) => {
-        this.awarenessAdapter.sendCursorData(data);
-      },
-      sendSelection: (range, data) => {
-        this.awarenessAdapter.sendSelection(range, data);
-      },
-    };
+    });
   }
 
-  private subscribeAwareness(listener: () => void): () => void {
-    this.awarenessSubscribers.add(listener);
-
-    return () => {
-      this.awarenessSubscribers.delete(listener);
-    };
+  compactionApi(): YjsCompactionApi {
+    return Object.freeze({
+      retireSharedEffectPeer: (clientId) => {
+        this.assertExternalMutationAllowed();
+        if (!Number.isSafeInteger(clientId) || clientId < 0) {
+          throw new Error('A Yjs peer ID must be a non-negative client ID.');
+        }
+        this.sharedEffectLog.retirePeer(String(clientId));
+      },
+    });
   }
 
-  private updateAwarenessRevision(): void {
-    this.awarenessRevision += 1;
-
-    notifySubscribers(this.awarenessSubscribers);
+  private assertActive(): void {
+    if (this.disposed) {
+      throw new Error('Yjs binding is no longer active.');
+    }
   }
 
-  private reconcile(): void {
-    if (this.shouldWaitForProviderSync()) return;
+  private assertExternalMutationAllowed(): void {
+    this.assertActive();
+    assertEditorExternalMutationAllowed(this.editor);
+  }
 
-    this.assertRoomSchemaForImport();
-
-    if (this.isProviderOwnedEmptyDoc()) {
-      this.reconcileProviderOwnedDocAfterSync();
-
+  private assertTransactionAllowed(
+    change: DocumentChange,
+    effects: readonly EditorEffect[]
+  ): void {
+    if (
+      this.editorAdapter.importing() ||
+      this.admissionStatusValue.state === 'ready' ||
+      (change.empty &&
+        effects.every((effect) => effect.type.collab !== 'shared'))
+    ) {
       return;
     }
 
-    const pending = this.sharedEffectLog.pending();
+    const detail =
+      this.admissionStatusValue.state === 'error'
+        ? 'the binding has an admission error'
+        : `the binding is waiting for ${this.admissionStatusValue.reason}`;
 
-    this.importDocumentFromYjs('remote-reconcile', pending.effects);
-    this.sharedEffectLog.acknowledge(pending.eventIds);
-  }
-
-  private shouldWaitForProviderSync(): boolean {
-    return (
-      this.providerOwnedDoc && this.providerLifecycle.providerSynced() !== true
+    throw new Error(
+      `Cannot publish collaborative editor work while ${detail}.`
     );
   }
 
-  private shouldSeedEmptyProviderDocForCommit(): boolean {
-    return (
-      this.isProviderOwnedEmptyDoc() &&
-      this.seedProviderOnSync &&
-      this.providerLifecycle.providerSynced() === true
-    );
+  private subscribeAdmissionStatus(listener: () => void): () => void {
+    this.assertActive();
+    this.admissionSubscribers.add(listener);
+    let active = true;
+
+    return () => {
+      if (!active) return;
+
+      active = false;
+      this.admissionSubscribers.delete(listener);
+    };
   }
 
-  private shouldSeedInitialProviderDoc(): boolean {
-    return (
-      (!this.providerOwnedDoc || this.seedProviderOnSync) &&
-      !this.shouldWaitForProviderSync()
-    );
+  debugRoot(): Y.XmlElement {
+    return this.root;
   }
 
-  private shouldRejectUnsafeProviderCommit(): boolean {
-    return (
-      this.shouldWaitForProviderSync() ||
-      this.schemaError !== null ||
-      (this.isProviderOwnedEmptyDoc() && !this.seedProviderOnSync)
-    );
+  debugTrace(): readonly YjsTraceEntry[] {
+    return copyTraceEntries(this.traceEntries);
   }
 
-  private shouldWaitForAppSeededProviderDoc(): boolean {
-    return this.isProviderOwnedEmptyDoc();
+  clearDebugTrace(): void {
+    this.traceEntries.length = 0;
   }
 
-  private isProviderOwnedEmptyDoc(): boolean {
+  debugAwarenessRevision(): number {
+    return this.awarenessRevision;
+  }
+
+  debugProcessAvailableInput(): void {
+    this.processAvailableInput();
+  }
+
+  private currentSelection() {
     return (
-      this.providerOwnedDoc && this.root.length === 0 && this.roots.size === 0
+      this.awarenessAdapter?.currentSelection() ?? this.editor.read.selection()
     );
   }
 
@@ -1035,6 +1118,9 @@ export class YjsController<
   }
 
   private seedValue(value: JsonEditorValue): void {
+    const snapshots = this.sharedEffectLog.prepare(
+      this.captureSharedSnapshotEffects()
+    );
     this.doc.transact(() => {
       const envelope = readYjsSchemaEnvelope(this.schemaMetadata);
       const identity = this.localSchemaIdentity();
@@ -1045,76 +1131,38 @@ export class YjsController<
         assertYjsSchemaIdentity(identity, envelope.identity);
       }
 
-      replaceYjsChildren(
-        this.root,
-        asDescendants(value.children),
-        this.isSetValued,
-        {
-          ancestors: [],
-          path: [],
-          root: null,
+      if (!readAuthoredView(this.editor)) {
+        replaceYjsChildren(
+          this.root,
+          asDescendants(value.children),
+          this.isSetValued,
+          {
+            ancestors: [],
+            path: [],
+            root: null,
+          }
+        );
+        this.roots.clear();
+        for (const [root, children] of Object.entries(value.roots ?? {})) {
+          const yRoot = new Y.XmlElement();
+
+          this.roots.set(root, yRoot);
+          replaceYjsChildren(yRoot, asDescendants(children), this.isSetValued, {
+            ancestors: [],
+            path: [],
+            root,
+          });
         }
-      );
-      this.roots.clear();
-      for (const [root, children] of Object.entries(value.roots ?? {})) {
-        const yRoot = new Y.XmlElement();
-
-        this.roots.set(root, yRoot);
-        replaceYjsChildren(yRoot, asDescendants(children), this.isSetValued, {
-          ancestors: [],
-          path: [],
-          root,
-        });
       }
+      this.appendSharedEffects(snapshots);
     }, this.seedOrigin);
-    this.resetBindingsFromYjs();
+    if (!readAuthoredView(this.editor)) this.resetBindingsFromYjs();
     this.traceEntries.push({ mode: 'seed' });
-  }
-
-  private seedInitialValueOrImportFromYjs(
-    seedWhenEmpty: boolean,
-    effects: readonly EditorEffect[] = []
-  ): void {
-    if (this.root.length === 0 && this.roots.size === 0) {
-      if (seedWhenEmpty) {
-        this.seedInitialValue();
-      }
-      if (effects.length > 0) {
-        this.editorAdapter.applyRemote({ effects });
-      }
-
-      return;
-    }
-
-    this.importDocumentFromYjs('seed', effects);
-  }
-
-  private reconcileProviderOwnedDocAfterSync(): void {
-    if (
-      !this.seeded ||
-      !this.providerOwnedDoc ||
-      this.providerLifecycle.providerSynced() !== true
-    ) {
-      return;
-    }
-
-    const claimed = this.assertRoomSchemaForImport();
-
-    if (!claimed && !this.seedProviderOnSync) return;
-
-    const pending = this.sharedEffectLog.pending();
-
-    this.seedInitialValueOrImportFromYjs(
-      this.seedProviderOnSync,
-      pending.effects
-    );
-    this.sharedEffectLog.acknowledge(pending.eventIds);
-    this.pendingRemoteSchemaChange = false;
   }
 
   private importFromYjs(
     mode: YjsTraceEntry['mode'] = 'remote-reconcile',
-    effects: readonly EditorEffect[] = [],
+    effects: readonly PendingYjsEffect[] = [],
     trace: {
       fallback?: YjsEventImportFallback;
       importKind?: YjsTraceEntry['importKind'];
@@ -1151,25 +1199,33 @@ export class YjsController<
     this.editorAdapter.applyRemote({
       change,
       effects,
-      selection: this.awarenessAdapter.currentSelection(),
+      selection: this.currentSelection(),
     });
     binding.synchronizedChildren = children;
     binding.bridge.reset(children);
     const changedRoots = new Set([MAIN_ROOT_KEY]);
 
-    this.awarenessAdapter.publishMappedRoots(changedRoots, {
+    this.awarenessAdapter?.publishMappedRoots(changedRoots, {
       fallbackRoots: changedRoots,
     });
   }
 
   private importDocumentFromYjs(
     mode: YjsTraceEntry['mode'] = 'remote-reconcile',
-    effects: readonly EditorEffect[] = [],
+    effects: readonly PendingYjsEffect[] = [],
     changed?: Readonly<{
       main: boolean;
       named: ReadonlySet<string>;
     }>
   ): void {
+    if (readAuthoredView(this.editor)) {
+      if (this.root.length || this.roots.size) {
+        throw new Error('Authored Yjs documents require a native checkpoint.');
+      }
+      if (effects.length) this.editorAdapter.applyRemote({ effects });
+      this.traceEntries.push({ mode });
+      return;
+    }
     const namedRoots =
       changed?.named ??
       new Set([
@@ -1232,13 +1288,13 @@ export class YjsController<
     this.editorAdapter.applyRemote({
       change,
       effects,
-      selection: this.awarenessAdapter.currentSelection(),
+      selection: this.currentSelection(),
     });
     this.resetBindingsFromYjs({
       main: changed?.main ?? true,
       named: namedRoots,
     });
-    this.awarenessAdapter.publishMappedRoots(roots, {
+    this.awarenessAdapter?.publishMappedRoots(roots, {
       fallbackRoots: roots,
     });
   }
@@ -1362,7 +1418,7 @@ export class YjsController<
 
   private importYjsEvents(
     events: CapturedYjsEventBatch,
-    effects: readonly EditorEffect[],
+    effects: readonly PendingYjsEffect[],
     root = MAIN_ROOT_KEY
   ): void {
     const binding = this.bindings.get(root);
@@ -1401,10 +1457,10 @@ export class YjsController<
     this.editorAdapter.applyRemote({
       change: result.import.change,
       effects,
-      selection: this.awarenessAdapter.currentSelection(),
+      selection: this.currentSelection(),
     });
     binding.synchronizedChildren = result.import.children;
     result.import.accept(binding.synchronizedChildren);
-    this.awarenessAdapter.publishMappedRoots(new Set([root]));
+    this.awarenessAdapter?.publishMappedRoots(new Set([root]));
   }
 }

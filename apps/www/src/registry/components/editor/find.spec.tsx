@@ -11,10 +11,10 @@ import { NodeApi } from 'platejs';
 import { BaseFindPlugin } from 'platejs/find';
 import {
   LinkPlugin,
-  Plate,
-  PlateContent,
+  EditorRoot,
+  EditorContent,
   createEditor,
-  definePlatePlugin,
+  definePlugin,
   useEditor,
 } from 'platejs/react';
 import * as React from 'react';
@@ -48,14 +48,14 @@ const setup = () => {
     plugins: [
       LinkPlugin,
       ...FindKit,
-      definePlatePlugin('controls', { slots: { beforeEditable: Capture } }),
+      definePlugin('controls', { slots: { beforeEditable: Capture } }),
     ],
     initialValue: value,
   });
   const view = render(
-    <Plate editor={editor}>
-      <PlateContent aria-label="Editor" />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent aria-label="Editor" />
+    </EditorRoot>
   );
   if (!commands) throw new Error('Find commands did not mount');
   const setInputQuery = (query: string) =>
@@ -77,18 +77,18 @@ describe('FindKit', () => {
         plugins: [LinkPlugin, ...FindKit],
         initialValue: value,
       });
-      const first = <PlateContent aria-label="first editor" />;
-      const second = <PlateContent aria-label="second editor" />;
+      const first = <EditorContent aria-label="first editor" />;
+      const second = <EditorContent aria-label="second editor" />;
       const view = render(
         layout === 'one provider' ? (
-          <Plate editor={editor}>
+          <EditorRoot editor={editor}>
             {first}
             {second}
-          </Plate>
+          </EditorRoot>
         ) : (
           <>
-            <Plate editor={editor}>{first}</Plate>
-            <Plate editor={editor}>{second}</Plate>
+            <EditorRoot editor={editor}>{first}</EditorRoot>
+            <EditorRoot editor={editor}>{second}</EditorRoot>
           </>
         )
       );
@@ -136,16 +136,16 @@ describe('FindKit', () => {
         plugins: [
           LinkPlugin,
           ...FindKit,
-          definePlatePlugin('controls', {
+          definePlugin('controls', {
             slots: { beforeEditable: Controls },
           }),
         ],
         initialValue: value,
       });
       const view = render(
-        <Plate editor={editor}>
-          <PlateContent aria-label="Editor" />
-        </Plate>
+        <EditorRoot editor={editor}>
+          <EditorContent aria-label="Editor" />
+        </EditorRoot>
       );
       const find = editor.plugin(BaseFindPlugin);
       act(() => find.api.search('world'));
@@ -200,7 +200,7 @@ describe('FindKit', () => {
       plugins: [
         LinkPlugin,
         ...FindKit,
-        definePlatePlugin('controls', { slots: { beforeEditable: OpenFind } }),
+        definePlugin('controls', { slots: { beforeEditable: OpenFind } }),
       ],
       initialValue: value,
     });
@@ -209,15 +209,15 @@ describe('FindKit', () => {
       <>
         {first && (
           <section aria-label="first view">
-            <Plate editor={editor}>
-              <PlateContent aria-label="first editor" />
-            </Plate>
+            <EditorRoot editor={editor}>
+              <EditorContent aria-label="first editor" />
+            </EditorRoot>
           </section>
         )}
         <section aria-label="second view">
-          <Plate editor={editor}>
-            <PlateContent aria-label="second editor" />
-          </Plate>
+          <EditorRoot editor={editor}>
+            <EditorContent aria-label="second editor" />
+          </EditorRoot>
         </section>
       </>
     );
@@ -271,9 +271,9 @@ describe('FindKit', () => {
       initialValue: value,
     });
     const view = render(
-      <Plate editor={editor}>
-        <PlateContent aria-label="Editor" readOnly />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent aria-label="Editor" readOnly />
+      </EditorRoot>
     );
     act(() =>
       editor.update.selection.set({
@@ -302,24 +302,24 @@ describe('FindKit', () => {
     });
     const NestedView = () => (
       <section aria-label="nested view">
-        <Plate editor={inner}>
-          <PlateContent aria-label="nested editor" />
-        </Plate>
+        <EditorRoot editor={inner}>
+          <EditorContent aria-label="nested editor" />
+        </EditorRoot>
       </section>
     );
     const outer = createEditor({
       plugins: [
         LinkPlugin,
         ...FindKit,
-        definePlatePlugin('nested', { slots: { beforeEditable: NestedView } }),
+        definePlugin('nested', { slots: { beforeEditable: NestedView } }),
       ],
       initialValue: value,
     });
     const view = render(
       <React.StrictMode>
-        <Plate editor={outer}>
-          <PlateContent aria-label="outer editor" />
-        </Plate>
+        <EditorRoot editor={outer}>
+          <EditorContent aria-label="outer editor" />
+        </EditorRoot>
       </React.StrictMode>
     );
     const nested = within(view.getByRole('region', { name: 'nested view' }));
@@ -354,7 +354,7 @@ describe('FindKit', () => {
       plugins: [
         LinkPlugin,
         ...FindKit,
-        definePlatePlugin('controls', {
+        definePlugin('controls', {
           slots: { beforeEditable: SelectMatch },
         }),
       ],
@@ -362,9 +362,9 @@ describe('FindKit', () => {
     });
     const find = editor.plugin(BaseFindPlugin);
     const view = render(
-      <Plate editor={editor}>
-        <PlateContent aria-label="Editor" />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent aria-label="Editor" />
+      </EditorRoot>
     );
     act(() => find.api.search('world'));
     await waitFor(() => expect(find.store.get('count')).toBe(1));
@@ -390,14 +390,14 @@ describe('FindKit', () => {
       const view = render(
         <>
           <section aria-label="first view">
-            <Plate editor={editor}>
-              <PlateContent aria-label="first editor" />
-            </Plate>
+            <EditorRoot editor={editor}>
+              <EditorContent aria-label="first editor" />
+            </EditorRoot>
           </section>
           <section aria-label="second view">
-            <Plate editor={editor}>
-              <PlateContent aria-label="second editor" />
-            </Plate>
+            <EditorRoot editor={editor}>
+              <EditorContent aria-label="second editor" />
+            </EditorRoot>
           </section>
         </>
       );

@@ -69,7 +69,7 @@ export const getReadRegistrationRuntime = <
 
   if (!runtime) {
     throw new Error(
-      'Editor read registrations must be created by the extension read factory.'
+      'Editor read registrations must be created by the plugin read factory.'
     );
   }
 

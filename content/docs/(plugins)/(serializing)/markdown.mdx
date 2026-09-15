@@ -6,7 +6,7 @@ toc: true
 
 `platejs/markdown` converts Markdown to Plate documents and Plate documents back to Markdown.
 
-<ComponentPreview name="markdown-to-plite-demo" />
+<ComponentPreview name="markdown-to-editor-demo" />
 
 <ComponentPreview name="markdown-demo" />
 
@@ -136,7 +136,7 @@ const editor = createEditor({
 <Callout type="warning" title="Primary content only">
   Markdown is a projection of `document.children`. It does not preserve named
   roots or open slice edges. Clipboard transport uses
-  `application/x-plite-fragment` when exact roots, `openStart`, and `openEnd`
+  `application/x-editor-fragment` when exact roots, `openStart`, and `openEnd`
   must survive.
 </Callout>
 
@@ -153,7 +153,7 @@ import { ItalicPlugin } from 'platejs/react';
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
 // ... import other necessary Plate plugins for rendering elements
 
-const markdownString = '# Hello, *Plate*!';
+const markdownString = '# Hello, *EditorRoot*!';
 
 const editor = createEditor({
   plugins: [
@@ -213,6 +213,21 @@ console.info(partialMarkdownOutput);
 Markdown image alt text maps to one paragraph child of the image. Rich MDX
 media children map directly to the media element's block children.
 
+### Authored-change projections
+
+When the editor installs `authored`, choose the content that Markdown represents:
+
+```tsx
+const output = editor.api.markdown.serializeAuthored({
+  projection: 'review',
+});
+const document = editor.api.markdown.deserialize(output.data);
+```
+
+`accepted` and `proposed` return plain Markdown plus an `authored-lossy-projection` diagnostic when pending changes are omitted. `review` appends a Plate authored envelope and returns no diagnostic when the canonical document is preserved. `deserialize` reads that envelope automatically.
+
+Markdown review output preserves the native document in its envelope. The readable Markdown body shows the proposed projection; other Markdown tools ignore the trailing HTML comment. See [Authored Changes](/docs/authored-changes) for JSON, HTML, and DOCX behavior.
+
 ### Round-trip serialization with custom elements (MDX)
 
 A key feature is handling custom Plate elements that lack standard Markdown
@@ -246,10 +261,10 @@ When one plugin owns both HTML and Markdown codecs, declare both format keys in
 one `defineCodecs` object. Each format keeps its schema-specific inference.
 
 ```tsx title="lib/plate-editor.ts"
-import { defineBasePlugin } from 'platejs';
+import { definePlugin } from 'platejs';
 import { property } from 'platejs';
 
-export const BaseDatePlugin = defineBasePlugin('date', {
+export const BaseDatePlugin = definePlugin('date', {
   codecs: ({ defineCodecs, schema: { type } }) =>
     defineCodecs({
       'text/html': {
@@ -312,7 +327,7 @@ Pass Markdown conversion behavior through `MarkdownPlugin.configure({ initialSta
     <APIItem name="allowNode" type="AllowNodeConfig">
       Fine-grained node filtering with custom functions, applied *after*
       `allowedNodes`/`disallowedNodes`. - `deserialize?: (mdastNode: any) =>
-      boolean`: Filter for Markdown → Plate. Return `true` to keep. -
+      boolean`: Filter for Markdown → EditorRoot. Return `true` to keep. -
       `serialize?: (node: Descendant) => boolean`: Filter for Plate → Markdown.
       Return `true` to keep.
     </APIItem>
@@ -342,7 +357,7 @@ these product codecs:
 | `text/markdown` | Yes | Yes | Closed primary-content slice |
 | `text/plain` | Yes | No | Closed primary-content slice |
 
-The generic clipboard pipeline prefers `application/x-plite-fragment` for an
+The generic clipboard pipeline prefers `application/x-editor-fragment` for an
 exact Plate slice and delegates to these external formats when needed.
 
 ---
@@ -401,7 +416,7 @@ Converts a Markdown string into an `EditorDocumentValue`.
 
 ### `editor.api.markdown.deserializeInline`
 
-Converts inline Markdown text into Plite children.
+Converts inline Markdown text into Plate children.
 
 <API name="deserializeInline">
   <APIParameters>
@@ -412,7 +427,7 @@ Converts inline Markdown text into Plite children.
       Options for this call, overriding the shared Markdown configuration.
     </APIItem>
   </APIParameters>
-  <APIReturns type="Descendant[]">Plite children for inline content.</APIReturns>
+  <APIReturns type="Descendant[]">Plate children for inline content.</APIReturns>
 </API>
 
 ---
@@ -514,9 +529,9 @@ and autolinks.
 import { createEditor } from 'platejs/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 import remarkGfm from 'remark-gfm';
-// Import Plate plugins for GFM elements
+// GFM element plugins
 import { TablePlugin } from 'platejs/table/react';
-import { TodoListPlugin } from 'platejs/react'; // Ensure this is the correct List plugin for tasks
+import { ListPlugin } from 'platejs/react';
 import { StrikethroughPlugin } from 'platejs/react';
 import { LinkPlugin } from 'platejs/react';
 
@@ -524,7 +539,7 @@ const editor = createEditor({
   plugins: [
     // ...other plugins
     TablePlugin,
-    TodoListPlugin, // Or your specific task list plugin
+    ListPlugin,
     StrikethroughPlugin,
     LinkPlugin,
     MarkdownPlugin.configure({
@@ -570,7 +585,7 @@ conversion needs a different document shape.
 **Background:**
 
 - `platejs/markdown` converts Markdown fenced code blocks (e.g., \`\`\`js ...
-  \`\`\`) to Plate `codeBlock` elements with one newline-bearing text child.
+  \`\`\`) to EditorRoot `codeBlock` elements with one newline-bearing text child.
 - The copied `CodeBlockElement` renders this multiline text.
 - Syntax highlighting comes from `CodeHighlightPlugin` and a library like `lowlight`. See [Code Block Plugin](/docs/code-block) for details.
 
@@ -646,7 +661,7 @@ Enable TeX math syntax (`$inline$`, `$$block$$`).
 import { createEditor } from 'platejs/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 import remarkMath from 'remark-math';
-// Import Plate math plugins for rendering
+// Math element plugins
 import {
   EquationPlugin,
   InlineEquationPlugin,
@@ -988,7 +1003,7 @@ editor.api.markdown.deserialize(markdown, {
 | `platejs`, `platejs/math` | Code and math |
 | `platejs` | Images, files, audio, video, embeds |
 | `platejs`, `platejs` | Tables and columns |
-| Feature packages | Dates, mentions, footnotes, callouts, comments, suggestions, TOC |
+| Feature packages | Dates, mentions, footnotes, callouts, comments, TOC |
 
 **Emoji shortcodes:** Add [`remark-emoji`](https://github.com/rhysd/remark-emoji) to `remarkPlugins` to turn `:fire:` into unicode `🔥` on deserialization and back to unicode on serialization.
 
@@ -1028,7 +1043,7 @@ to _render_ Plate nodes. Bind each component to its owning plugin descriptor.
 **Example:**
 
 ```tsx title="components/my-editor.tsx"
-import { createEditor, ParagraphPlugin, PlateLeaf } from 'platejs/react';
+import { createEditor, ParagraphPlugin, EditorLeaf } from 'platejs/react';
 import { BoldPlugin } from 'platejs/react';
 import { CodeBlockPlugin } from 'platejs/react';
 import { ParagraphElement } from '@/components/editor/paragraph'; // Example UI component
@@ -1052,7 +1067,7 @@ For a `react-markdown`-like component for read-only display:
 
 ```tsx title="components/plate-markdown.tsx"
 import React, { useEffect } from 'react';
-import { Plate, PlateContent, useCreateEditor } from 'platejs/react';
+import { EditorRoot, EditorContent, useCreateEditor } from 'platejs/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 // Import necessary Plate plugins for common Markdown features
 import { BasicBlocksKit } from '@/components/editor/basic-blocks';
@@ -1083,9 +1098,9 @@ export function PlateMarkdown({
   }, [children, editor]); // Re-deserialize when the Markdown changes
 
   return (
-    <Plate editor={editor}>
-      <PlateContent readOnly className={className} />
-    </Plate>
+    <EditorRoot editor={editor}>
+      <EditorContent readOnly className={className} />
+    </EditorRoot>
   );
 }
 

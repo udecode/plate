@@ -16,7 +16,12 @@ import { history } from 'plitejs/history';
 import { authoredPositionSpans } from '../src/authored/positions';
 import { records } from '../src/authored/record-tree';
 import { readAuthoredRetainedContent } from '../src/authored/retained';
-import { authoredState, type AuthoredState } from '../src/authored/state';
+import {
+  authoredState,
+  checksumAuthoredPayload,
+  materializeAuthoredEdit,
+  type AuthoredState,
+} from '../src/authored/state';
 import { createAuthoredFragmentView } from '../src/core/authored-fragment-view';
 import { readAuthoredViewFragments } from '../src/core/authored-runtime';
 
@@ -24,12 +29,43 @@ const paragraph = (text: string) => ({
   type: 'paragraph',
   children: [{ text }],
 });
+const rootedPortal = (root: string) => ({
+  childRoots: { body: root },
+  children: [{ text: '' }],
+  type: 'rooted-portal',
+});
+const RootedAuthoredSchema = defineEditorSchema('schema:authored-roots', {
+  elements: {
+    paragraph: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+    'rooted-portal': {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      contentRoots: {
+        body: {
+          content: schema.content.types(['paragraph', 'rooted-portal'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+    },
+  },
+  id: 'authored-roots',
+  root: schema.content.types(['paragraph', 'rooted-portal'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
 const markup = { intent: 'propose', projection: 'markup' } as const;
 const point = (offset: number) => ({ path: [0, 0], offset });
 const contents = (state: AuthoredState) =>
   [...records(state.operations)].flatMap(([, operation]) =>
     operation.kind === 'edit'
-      ? operation.steps.flatMap((step) =>
+      ? materializeAuthoredEdit(operation).steps.flatMap((step) =>
           step.targets.flatMap((target) => {
             const retained = readAuthoredRetainedContent(target);
             return retained ? [{ retained, target }] : [];
@@ -39,10 +75,440 @@ const contents = (state: AuthoredState) =>
   );
 
 describe('native retained counterparts', () => {
+  it('returns no model point when markup retains the only removed block', () => {
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('Only')],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'proposed' },
+    });
+
+    view.update((tx) => {
+      tx.authored.propose();
+      tx.nodes.remove({ at: [0] });
+    });
+
+    assert.deepEqual(view.read.children(), []);
+    const [{ id }] = editor.read.authored.changes().items;
+    view.api.authored.setView(markup);
+    assert.deepEqual(view.read.children(), []);
+    assert.deepEqual(readAuthoredViewFragments(view, id)[0].slice.content, [
+      paragraph('Only'),
+    ]);
+    assert.equal(view.read.points.get([]), undefined);
+    assert.equal(view.read.points.start([]), undefined);
+    assert.equal(view.read.points.end([]), undefined);
+  });
+
+  for (const offset of [0, 1]) {
+    for (const sequential of [false, true]) {
+      it(`keeps a pending replacement at offset ${offset} in its original paragraph through rejection${
+        sequential ? ' with separate native steps' : ''
+      }`, () => {
+        let authorId = 'alice';
+        const plugin = authored({ authorId: () => authorId });
+        const source = createEditor({
+          plugins: [history(), plugin],
+          initialValue: [paragraph('AB'), paragraph('CD')],
+        });
+        const view = createEditorView(source, { authored: markup });
+        view.update.text.delete({
+          at: { anchor: point(1), focus: { path: [1, 0], offset: 1 } },
+        });
+        const deletion = source.read.authored.changes().items[0].id;
+        authorId = 'bob';
+        const range = { anchor: point(offset), focus: point(offset + 1) };
+        if (sequential) {
+          view.update((tx) => {
+            tx.text.delete({ at: range });
+            tx.text.insert('X', { at: point(offset) });
+          });
+        } else view.update.text.insert('X', { at: range });
+        const pending = source.read.value();
+        const expected = (offset ? ['AB', 'CX'] : ['XB', 'CD']).map(paragraph);
+        assert.equal(
+          source.update.authored.decide({
+            action: 'reject',
+            selection: source.read.authored.select({ ids: [deletion] }),
+          }).status,
+          'applied'
+        );
+        assert.deepEqual(view.read.children(), expected);
+        source.update.history.undo();
+        assert.deepEqual(view.read.children(), [
+          paragraph(offset ? 'AX' : 'XD'),
+        ]);
+        source.update.history.redo();
+        assert.deepEqual(view.read.children(), expected);
+        const restored = createEditor({
+          plugins: [plugin],
+          initialValue: JSON.parse(JSON.stringify(pending)),
+        });
+        const restoredView = createEditorView(restored, { authored: markup });
+        assert.equal(
+          restored.update.authored.decide({
+            action: 'reject',
+            selection: restored.read.authored.select({ ids: [deletion] }),
+          }).status,
+          'applied'
+        );
+        assert.deepEqual(restoredView.read.children(), expected);
+        assert.equal(
+          restored.update.authored.decide({
+            action: 'accept',
+            selection: restored.read.authored.select({
+              authorId: 'bob',
+              status: 'pending',
+            }),
+          }).status,
+          'applied'
+        );
+        assert.deepEqual(restored.read.children(), expected);
+      });
+    }
+  }
+  for (const nested of [false, true]) {
+    for (const block of [0, 1]) {
+      for (const offset of [0, 1, 2]) {
+        it(`restores accepted typing at block ${block} offset ${offset} through a ${
+          nested ? 'quote' : 'paragraph'
+        } range deletion`, () => {
+          const source = createEditor({
+            plugins: [authored({ authorId: 'alice' })],
+            initialValue: [
+              paragraph('AB'),
+              nested
+                ? { type: 'quote', children: [paragraph('CD')] }
+                : paragraph('CD'),
+            ],
+          });
+          const view = createEditorView(source, { authored: markup });
+          const second = nested ? [1, 0, 0] : [1, 0];
+          view.update.text.delete({
+            at: { anchor: point(1), focus: { path: second, offset: 1 } },
+          });
+          const { id } = source.read.authored.changes().items[0];
+          source.update.text.insert('!', {
+            at: { path: block ? second : [0, 0], offset },
+          });
+          const accepted = source.read.children();
+          assert.equal(
+            source.update.authored.decide({
+              action: 'reject',
+              selection: source.read.authored.select({ ids: [id] }),
+            }).status,
+            'applied'
+          );
+          assert.deepEqual(view.read.children(), accepted);
+        });
+      }
+    }
+  }
+
+  for (const fixture of [
+    {
+      name: 'into a quote',
+      value: [paragraph('AB'), { type: 'quote', children: [paragraph('CD')] }],
+      anchor: point(1),
+      focus: { path: [1, 0, 0], offset: 1 },
+    },
+    {
+      name: 'out of a quote',
+      value: [{ type: 'quote', children: [paragraph('AB')] }, paragraph('CD')],
+      anchor: { path: [0, 0, 0], offset: 1 },
+      focus: { path: [1, 0], offset: 1 },
+    },
+    {
+      name: 'between quotes',
+      value: [
+        { type: 'quote', children: [paragraph('AB')] },
+        { type: 'quote', children: [paragraph('CD')] },
+      ],
+      anchor: { path: [0, 0, 0], offset: 1 },
+      focus: { path: [1, 0, 0], offset: 1 },
+    },
+  ]) {
+    it(`keeps accepted boundary typing in its original block after rejecting deletion ${fixture.name}`, () => {
+      const source = createEditor({
+        plugins: [history(), authored({ authorId: 'alice' })],
+        initialValue: fixture.value,
+      });
+      const view = createEditorView(source, { authored: markup });
+      view.update.text.delete({
+        at: { anchor: fixture.anchor, focus: fixture.focus },
+      });
+      const { id } = source.read.authored.changes().items[0];
+      source.update.text.insert('!', { at: fixture.focus });
+      const accepted = source.read.children();
+      assert.deepEqual(accepted.map(NodeApi.string), ['AB', 'C!D']);
+      const proposed = view.read.children();
+      assert.equal(
+        source.update.authored.decide({
+          action: 'reject',
+          selection: source.read.authored.select({ ids: [id] }),
+        }).status,
+        'applied'
+      );
+      assert.deepEqual(source.read.children(), accepted);
+      assert.deepEqual(view.read.children(), accepted);
+      source.update.history.undo();
+      assert.deepEqual(view.read.children(), proposed);
+      source.update.history.redo();
+      assert.deepEqual(view.read.children(), accepted);
+      const loaded = createEditor({
+        plugins: [authored({ authorId: 'alice' })],
+        initialValue: JSON.parse(JSON.stringify(source.read.value())),
+      });
+      assert.deepEqual(
+        createEditorView(loaded, { authored: markup }).read.children(),
+        accepted
+      );
+    });
+
+    it(`rejects the complete native range deletion ${fixture.name}`, () => {
+      const source = createEditor({
+        plugins: [history(), authored({ authorId: 'alice' })],
+        initialValue: fixture.value,
+      });
+      const view = createEditorView(source, { authored: markup });
+      view.update.text.delete({
+        at: { anchor: fixture.anchor, focus: fixture.focus },
+      });
+      const proposed = view.read.children();
+      const { id } = source.read.authored.changes().items[0];
+      assert.equal(
+        source.update.authored.decide({
+          action: 'reject',
+          selection: source.read.authored.select({ ids: [id] }),
+        }).status,
+        'applied'
+      );
+      assert.deepEqual(view.read.children(), fixture.value);
+      source.update.history.undo();
+      assert.deepEqual(view.read.children(), proposed);
+      source.update.history.redo();
+      assert.deepEqual(view.read.children(), fixture.value);
+      const loaded = createEditor({
+        plugins: [authored({ authorId: 'alice' })],
+        initialValue: JSON.parse(JSON.stringify(source.read.value())),
+      });
+      assert.deepEqual(
+        createEditorView(loaded, { authored: markup }).read.children(),
+        fixture.value
+      );
+    });
+  }
+
+  it('preserves later accepted text while reversing normalization moves across a quote', () => {
+    const source = createEditor({
+      plugins: [history(), authored({ authorId: 'alice' })],
+      initialValue: [
+        paragraph('ABcd'),
+        { type: 'quote', children: [paragraph('EFgh')] },
+      ],
+    });
+    const view = createEditorView(source, { authored: markup });
+    view.update.text.delete({
+      at: { anchor: point(1), focus: { path: [1, 0, 0], offset: 2 } },
+    });
+    const { id } = source.read.authored.changes().items[0];
+    source.update.text.insert('X', { at: point(2) });
+    source.update.text.insert('Y', { at: { path: [1, 0, 0], offset: 1 } });
+    const accepted = [
+      paragraph('ABXcd'),
+      { type: 'quote', children: [paragraph('EYFgh')] },
+    ];
+    assert.deepEqual(source.read.children(), accepted);
+    assert.deepEqual(view.read.children(), [paragraph('Agh')]);
+    assert.equal(
+      source.update.authored.decide({
+        action: 'reject',
+        selection: source.read.authored.select({ ids: [id] }),
+      }).status,
+      'applied'
+    );
+    assert.deepEqual(view.read.children(), accepted);
+    source.update.history.undo();
+    assert.deepEqual(view.read.children(), [paragraph('Agh')]);
+    source.update.history.redo();
+    assert.deepEqual(view.read.children(), accepted);
+  });
+
+  it('rejects adjacent native deletion sections whose inverse encodes one insertion', () => {
+    const value = [
+      paragraph('A shared draft.'),
+      paragraph('Select a phrase, type a replacement, and review the result.'),
+    ];
+    const editor = createEditor({
+      plugins: [history(), authored({ authorId: 'alice' })],
+      initialValue: value,
+    });
+    const view = createEditorView(editor, { authored: markup });
+    view.update.changes.apply(
+      DocumentChange.fromJSON({
+        version: 3,
+        primary: [
+          { length: 4 },
+          { length: 13, replacement: [] },
+          { length: 4, replacement: [] },
+          { length: 6, replacement: [] },
+          { length: 55 },
+        ],
+      })
+    );
+    const { id } = editor.read.authored.changes().items[0];
+    const projected = [
+      paragraph('A  a phrase, type a replacement, and review the result.'),
+    ];
+    assert.deepEqual(view.read.children(), projected);
+    assert.equal(
+      view.update.authored.decide({
+        action: 'reject',
+        selection: view.read.authored.select({ ids: [id] }),
+      }).status,
+      'applied'
+    );
+    assert.deepEqual(view.read.children(), value);
+    view.update.history.undo();
+    assert.deepEqual(view.read.children(), projected);
+    view.update.history.redo();
+    assert.deepEqual(view.read.children(), value);
+    const loaded = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: JSON.parse(JSON.stringify(editor.read.value())),
+    });
+    assert.deepEqual(
+      createEditorView(loaded, { authored: markup }).read.children(),
+      value
+    );
+  });
+
+  for (const [name, value] of [
+    ['two paragraphs', [paragraph('AB'), paragraph('CD')]],
+    [
+      'three paragraphs',
+      [paragraph('AB'), paragraph('Middle'), paragraph('CD')],
+    ],
+  ] as const) {
+    for (const action of ['accept', 'reject'] as const) {
+      it(`${action}s a range deletion merging ${name} through history and reload`, () => {
+        const editor = createEditor({
+          plugins: [history(), authored({ authorId: 'alice' })],
+          initialValue: value,
+        });
+        const view = createEditorView(editor, { authored: markup });
+        view.update.text.delete({
+          at: {
+            anchor: point(1),
+            focus: { path: [value.length - 1, 0], offset: 1 },
+          },
+        });
+        const { id } = editor.read.authored.changes().items[0];
+        assert.equal(
+          editor.update.authored.decide({
+            action,
+            selection: editor.read.authored.select({ ids: [id] }),
+          }).status,
+          'applied'
+        );
+        const expected = action === 'accept' ? [paragraph('AD')] : value;
+        assert.deepEqual(editor.read.children(), expected);
+        assert.deepEqual(view.read.children(), expected);
+        editor.update.history.undo();
+        assert.equal(editor.read.authored.change(id)?.status, 'pending');
+        assert.deepEqual(editor.read.children(), value);
+        assert.deepEqual(view.read.children(), [paragraph('AD')]);
+        editor.update.history.redo();
+        assert.deepEqual(view.read.children(), expected);
+        const loaded = createEditor({
+          plugins: [authored({ authorId: 'alice' })],
+          initialValue: JSON.parse(JSON.stringify(editor.read.value())),
+        });
+        const restored = createEditorView(loaded, { authored: markup });
+        assert.deepEqual(loaded.read.children(), expected);
+        assert.deepEqual(restored.read.children(), expected);
+      });
+    }
+  }
+
+  it('restores the current accepted text without duplicating structural boundaries', () => {
+    const editor = createEditor({
+      plugins: [history(), authored({ authorId: 'alice' })],
+      initialValue: [paragraph('ABcd'), paragraph('EFgh')],
+    });
+    const view = createEditorView(editor, { authored: markup });
+    view.update.text.delete({
+      at: { anchor: point(1), focus: { path: [1, 0], offset: 2 } },
+    });
+    const { id } = editor.read.authored.changes().items[0];
+    editor.update.text.insert('X', { at: point(2) });
+    editor.update.text.insert('Y', { at: { path: [1, 0], offset: 1 } });
+    const accepted = [paragraph('ABXcd'), paragraph('EYFgh')];
+    assert.deepEqual(editor.read.children(), accepted);
+    assert.deepEqual(view.read.children(), [paragraph('Agh')]);
+    assert.equal(
+      editor.update.authored.decide({
+        action: 'reject',
+        selection: editor.read.authored.select({ ids: [id] }),
+      }).status,
+      'applied'
+    );
+    assert.deepEqual(view.read.children(), accepted);
+    editor.update.history.undo();
+    assert.deepEqual(view.read.children(), [paragraph('Agh')]);
+    editor.update.history.redo();
+    assert.deepEqual(view.read.children(), accepted);
+  });
+
   for (const affinity of ['backward', 'forward'] as const) {
+    for (const middle of [[], [paragraph('Middle')]]) {
+      it(`keeps a ${
+        middle.length + 2
+      }-paragraph deletion together around ${affinity} input`, () => {
+        const editor = createEditor({
+          plugins: [history(), authored({ authorId: 'alice' })],
+          initialValue: [paragraph('AB'), ...middle, paragraph('CD')],
+        });
+        const view = createEditorView(editor, { authored: markup });
+        view.update.text.delete({
+          at: {
+            anchor: point(1),
+            focus: { path: [middle.length + 1, 0], offset: 1 },
+          },
+        });
+        const { id } = editor.read.authored.changes().items[0];
+        view.update.selection.set(
+          SelectionApi.text({ anchor: point(1), focus: point(1) }, { affinity })
+        );
+        view.update.text.insert('X');
+        const check = (current: typeof view) => {
+          assert.equal(current.read.text.string([]), 'AXD');
+          const fragments = readAuthoredViewFragments(current, id);
+          assert.ok(fragments.length > 1);
+          for (const fragment of fragments) {
+            assert.deepEqual(fragment.placement, {
+              kind: 'text',
+              point: point(affinity === 'backward' ? 2 : 1),
+            });
+          }
+        };
+        check(view);
+        view.update.history.undo();
+        assert.equal(view.read.text.string([]), 'AD');
+        view.update.history.redo();
+        check(view);
+        const loaded = createEditor({
+          plugins: [authored({ authorId: 'alice' })],
+          initialValue: JSON.parse(JSON.stringify(editor.read.value())),
+        });
+        check(createEditorView(loaded, { authored: markup }));
+      });
+    }
+
     it(`preserves ${affinity} insertion at a retained boundary through history, reload and decisions`, () => {
       const editor = createEditor({
-        extensions: [history(), authored({ authorId: 'alice' })],
+        plugins: [history(), authored({ authorId: 'alice' })],
         initialValue: [paragraph('A shared draft.')],
       });
       const view = createEditorView(editor, { authored: markup });
@@ -75,7 +541,7 @@ describe('native retained counterparts', () => {
       const saved = JSON.stringify(editor.read.value());
       for (const action of ['accept', 'reject'] as const) {
         const loaded = createEditor({
-          extensions: [history(), authored({ authorId: 'alice' })],
+          plugins: [history(), authored({ authorId: 'alice' })],
           initialValue: JSON.parse(saved),
         });
         const loadedView = createEditorView(loaded, { authored: markup });
@@ -116,7 +582,7 @@ describe('native retained counterparts', () => {
 
     it(`captures a ${affinity} caret selected inside the insertion transaction`, () => {
       const editor = createEditor({
-        extensions: [authored({ authorId: 'alice' })],
+        plugins: [authored({ authorId: 'alice' })],
         initialValue: [paragraph('A shared draft.')],
       });
       const view = createEditorView(editor, { authored: markup });
@@ -151,7 +617,7 @@ describe('native retained counterparts', () => {
       root: schema.content.not(schema.content.text()),
     });
     const editor = createEditor({
-      extensions: [links, authored({ authorId: 'alice' })],
+      plugins: [links, authored({ authorId: 'alice' })],
       initialValue: [
         {
           type: 'paragraph',
@@ -181,7 +647,7 @@ describe('native retained counterparts', () => {
 
   it('publishes retained snapshots in version order when an earlier observer edits again', () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Before middle after')],
     });
     const parent = createEditorView(source, { authored: markup });
@@ -216,7 +682,7 @@ describe('native retained counterparts', () => {
 
   it('routes fragment subscriptions to affected content and disposes independent registrations', () => {
     const source = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Before middle after'), paragraph('Unrelated')],
     });
     const parent = createEditorView(source, { authored: markup });
@@ -255,7 +721,7 @@ describe('native retained counterparts', () => {
 
   it('binds retained reads, keys and clipboard slices to the shared native owner', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Before middle after')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -270,10 +736,7 @@ describe('native retained counterparts', () => {
       { text: 'middle' },
       [0, 0],
     ]);
-    assert.deepEqual(retained.read.points.end([]), {
-      ...point(6),
-      root: 'main',
-    });
+    assert.deepEqual(retained.read.points.end([]), point(6));
     assert.deepEqual(
       retained.read.slice.get({
         at: {
@@ -299,7 +762,7 @@ describe('native retained counterparts', () => {
 
   it('saves retained anchors in canonical origins across accepted edits and reload', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Before middle after')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -330,7 +793,7 @@ describe('native retained counterparts', () => {
       focus: point(13),
     });
     const restored = createEditor({
-      extensions: [authored({ authorId: 'bob' })],
+      plugins: [authored({ authorId: 'bob' })],
       initialValue: JSON.parse(JSON.stringify(editor.read.value())),
     });
     const restoredMarkup = createEditorView(restored, { authored: markup });
@@ -348,7 +811,7 @@ describe('native retained counterparts', () => {
 
   it('publishes fragment-local snapshots and change coordinates at the canonical version', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Before middle after')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -390,7 +853,7 @@ describe('native retained counterparts', () => {
 
   it('retains named-root coordinates without conflating the primary document', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: {
         children: [paragraph('Primary')],
         roots: { caption: [paragraph('Caption')] },
@@ -423,7 +886,7 @@ describe('native retained counterparts', () => {
 
   it('detaches retained views and anchors when their parent leaves markup', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Original')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -459,7 +922,7 @@ describe('native retained counterparts', () => {
 
   it('binds a retained range created during accepted editing and rolls it back on abort', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Before middle after')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -505,7 +968,7 @@ describe('native retained counterparts', () => {
 
   it('exposes removed content only to markup views and maps its current placement', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Before middle after')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -536,7 +999,7 @@ describe('native retained counterparts', () => {
 
   it('drops a retained deletion after undo and restores it after redo', () => {
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Original')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -552,7 +1015,7 @@ describe('native retained counterparts', () => {
 
   it('omits deleted text introduced by the same proposal', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('AB')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -569,9 +1032,91 @@ describe('native retained counterparts', () => {
     assert.deepEqual(view.read.children(), [paragraph('A')]);
   });
 
+  it('retains each accepted character once when a range deletion also merges three blocks', () => {
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('AB'), paragraph('Middle'), paragraph('CD')],
+    });
+    const view = createEditorView(editor, { authored: markup });
+    view.update.text.delete({
+      at: { anchor: point(1), focus: { path: [2, 0], offset: 1 } },
+    });
+    const { id } = editor.read.authored.changes().items[0];
+    const fragments = readAuthoredViewFragments(view, id);
+    const text = fragments
+      .flatMap((fragment) =>
+        fragment.kind === 'properties'
+          ? []
+          : fragment.slice.content.map(NodeApi.string)
+      )
+      .join('');
+    assert.equal(text.split('Middle').length - 1, 1);
+    assert.deepEqual(view.read.children(), [paragraph('AD')]);
+  });
+
+  it("does not absorb another author's retained text between disconnected origins", () => {
+    let authorId = 'alice';
+    const editor = createEditor({
+      plugins: [authored({ authorId: () => authorId })],
+      initialValue: [paragraph('ABCDE')],
+    });
+    const view = createEditorView(editor, { authored: markup });
+    view.update.text.delete({ at: { anchor: point(1), focus: point(2) } });
+    authorId = 'bob';
+    view.update.text.delete({ at: { anchor: point(0), focus: point(2) } });
+    for (const [author, expected] of [
+      ['alice', 'B'],
+      ['bob', 'AC'],
+    ]) {
+      const { id } = editor.read.authored.changes({ authorId: author })
+        .items[0];
+      assert.equal(
+        readAuthoredViewFragments(view, id)
+          .flatMap((fragment) =>
+            fragment.kind === 'properties'
+              ? []
+              : fragment.slice.content.map(NodeApi.string)
+          )
+          .join(''),
+        expected
+      );
+    }
+    assert.deepEqual(view.read.children(), [paragraph('DE')]);
+  });
+
+  it('keeps a later accepted insertion between retained origins in its original fragment', () => {
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('ABCD')],
+    });
+    editor.update.text.insert('xy', { at: point(2) });
+    const view = createEditorView(editor, { authored: markup });
+    view.update.text.delete({ at: { anchor: point(1), focus: point(5) } });
+    const { id } = editor.read.authored.changes({ status: 'pending' }).items[0];
+    editor.update.text.insert('Z', { at: point(2) });
+    const fragments = readAuthoredViewFragments(view, id);
+    assert.deepEqual(
+      fragments.flatMap((fragment) =>
+        fragment.kind === 'properties'
+          ? []
+          : fragment.slice.content.map(NodeApi.string)
+      ),
+      ['BZxyC']
+    );
+    assert.deepEqual(view.read.children(), [paragraph('AD')]);
+    assert.equal(
+      editor.update.authored.decide({
+        action: 'reject',
+        selection: editor.read.authored.select({ ids: [id] }),
+      }).status,
+      'applied'
+    );
+    assert.deepEqual(view.read.children(), [paragraph('ABZxyCD')]);
+  });
+
   it('shows accepted edits made inside the pending removed content', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Start middle end')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -587,7 +1132,7 @@ describe('native retained counterparts', () => {
 
   it('clips a counterpart when its accepted content is partly or fully deleted', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Start middle end')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -604,7 +1149,7 @@ describe('native retained counterparts', () => {
   it('refreshes the accepted part of a deletion spanning another pending insertion', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [authored({ authorId: () => authorId })],
+      plugins: [authored({ authorId: () => authorId })],
       initialValue: [paragraph('ABCD')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -627,7 +1172,7 @@ describe('native retained counterparts', () => {
 
   it('combines property amendments and suppresses their complete undo', () => {
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('Text')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -650,7 +1195,7 @@ describe('native retained counterparts', () => {
   it('removes counterpart fragments after either review decision', () => {
     for (const action of ['accept', 'reject'] as const) {
       const editor = createEditor({
-        extensions: [authored({ authorId: 'alice' })],
+        plugins: [authored({ authorId: 'alice' })],
         initialValue: [paragraph('Original')],
       });
       const view = createEditorView(editor, { authored: markup });
@@ -667,9 +1212,9 @@ describe('native retained counterparts', () => {
 
   it('retains another authors proposed text across parent acceptance and reload', () => {
     let authorId = 'alice';
-    const extension = authored({ authorId: () => authorId });
+    const plugin = authored({ authorId: () => authorId });
     const editor = createEditor({
-      extensions: [extension],
+      plugins: [plugin],
       initialValue: [paragraph('Base')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -693,7 +1238,7 @@ describe('native retained counterparts', () => {
     );
     assert.deepEqual(readAuthoredViewFragments(view, child), fragments);
     const restored = createEditor({
-      extensions: [extension],
+      plugins: [plugin],
       initialValue: JSON.parse(JSON.stringify(editor.read.value())),
     });
     const reopened = createEditorView(restored, { authored: markup });
@@ -702,7 +1247,7 @@ describe('native retained counterparts', () => {
 
   it('retains only the still-deleted part after undoing an amendment', () => {
     const editor = createEditor({
-      extensions: [history(), authored({ authorId: 'alice' })],
+      plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [paragraph('ABCDEF')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -730,7 +1275,7 @@ describe('native retained counterparts', () => {
       { type: 'table', children: [row('First'), row('Second')] },
     ];
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue,
     });
     const view = createEditorView(editor, { authored: markup });
@@ -749,7 +1294,7 @@ describe('native retained counterparts', () => {
   it('keeps independent accepted formatting when showing a proposed property counterpart', () => {
     let authorId = 'alice';
     const editor = createEditor({
-      extensions: [authored({ authorId: () => authorId })],
+      plugins: [authored({ authorId: () => authorId })],
       initialValue: [paragraph('Text')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -773,7 +1318,7 @@ describe('native retained counterparts', () => {
       paragraph('Unrelated content'),
     ];
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue,
     });
     const view = createEditorView(editor, { authored: markup });
@@ -815,7 +1360,7 @@ describe('native retained counterparts', () => {
       paragraph('Following'),
     ];
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue,
     });
     const view = createEditorView(editor, { authored: markup });
@@ -838,7 +1383,7 @@ describe('native retained counterparts', () => {
 
   it('retains removed content across differently formatted text boundaries', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [
         {
           type: 'paragraph',
@@ -869,22 +1414,29 @@ describe('native retained counterparts', () => {
 
   it('keeps the old properties without retaining the formatted node subtree', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('This content stays editable')],
     });
     const view = createEditorView(editor, { authored: markup });
     view.update.nodes.set({ bold: true }, { at: [0, 0] });
-    assert.deepEqual(
-      contents(editor.read.getField(authoredState)).map(
-        ({ retained }) => retained
-      ),
-      [{ kind: 'properties', nodeKind: 'text', properties: {} }]
+    const retained = contents(editor.read.getField(authoredState)).map(
+      (entry) => entry.retained
     );
+    assert.equal(retained.length, 1);
+    assert.equal(retained[0].kind, 'properties');
+    if (retained[0].kind !== 'properties') assert.fail();
+    assert.equal(retained[0].nodeKind, 'text');
+    assert.deepEqual(retained[0].properties, {});
+    assert.equal(
+      retained[0].spans?.reduce((length, span) => length + span.length, 0),
+      27
+    );
+    assert.equal(Object.hasOwn(retained[0], 'slice'), false);
   });
 
   it('distinguishes an old placement from a deletion', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Moved'), paragraph('Stationary')],
     });
     const view = createEditorView(editor, { authored: markup });
@@ -897,17 +1449,18 @@ describe('native retained counterparts', () => {
     assert.equal(retained.slice.openEnd, 0);
   });
 
-  it('recovers the same counterpart from JSON without extending the stored operation', () => {
-    const extension = authored({ authorId: 'alice' });
+  it('recovers the same counterpart from an immutable saved operation', () => {
+    const plugin = authored({ authorId: 'alice' });
     const editor = createEditor({
-      extensions: [history(), extension],
+      plugins: [history(), plugin],
       initialValue: [paragraph('Original wording')],
     });
     const view = createEditorView(editor, { authored: markup });
     view.update.text.delete({ at: { anchor: point(0), focus: point(8) } });
-    const saved = JSON.parse(JSON.stringify(editor.read.value()));
+    const serialized = JSON.stringify(editor.read.value());
+    const saved = JSON.parse(serialized);
     const restored = createEditor({
-      extensions: [history(), extension],
+      plugins: [history(), plugin],
       initialValue: saved,
     });
     const original = contents(editor.read.getField(authoredState));
@@ -924,7 +1477,6 @@ describe('native retained counterparts', () => {
         };
       });
     assert.deepEqual(comparable(reopened), comparable(original));
-    assert.equal(JSON.stringify(saved).includes('openStart'), false);
     assert.notEqual(reopened[0].target, original[0].target);
     const restoredView = createEditorView(restored, { authored: markup });
     restoredView.update.text.insert('New ', { at: point(0) });
@@ -932,7 +1484,50 @@ describe('native retained counterparts', () => {
       contents(restored.read.getField(authoredState))[0],
       reopened[0]
     );
+    assert.equal(JSON.stringify(saved), serialized);
   });
+
+  for (const corruption of [
+    'missing payload',
+    'origin',
+    'length',
+    'open context',
+  ] as const) {
+    it(`rejects retained ${corruption} corruption before opening a saved document`, () => {
+      const editor = createEditor({
+        plugins: [authored({ authorId: 'alice' })],
+        initialValue: [paragraph('Original wording')],
+      });
+      createEditorView(editor, { authored: markup }).update.text.delete({
+        at: { anchor: point(0), focus: point(8) },
+      });
+      const saved = JSON.stringify(editor.read.value());
+      const changed = JSON.parse(saved);
+      const payload = changed.meta.authored.value;
+      const operation = payload.operations[0];
+      const steps = JSON.parse(operation[15]);
+      const target = steps[0][2][0];
+      const retained = target[6];
+      if (corruption === 'missing payload') target[6] = null;
+      else if (corruption === 'origin') {
+        retained.spans[2].origin = 'another-origin';
+      } else if (corruption === 'length') retained.spans[1].length += 1;
+      else retained.from = 0;
+      operation[15] = JSON.stringify(steps);
+      operation[14] = checksumAuthoredPayload(operation[15]);
+      assert.throws(
+        () =>
+          createEditor({
+            plugins: [authored({ authorId: 'reader' })],
+            initialValue: changed,
+          }),
+        corruption === 'origin'
+          ? /retained content does not match its target/
+          : /retained/
+      );
+      assert.equal(JSON.stringify(editor.read.value()), saved);
+    });
+  }
 
   it('retains the deleted named root and its root identity', () => {
     const before = {
@@ -940,7 +1535,7 @@ describe('native retained counterparts', () => {
       roots: { note: [paragraph('Footnote')] },
     };
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: before,
     });
     editor.update((tx) => {
@@ -958,9 +1553,71 @@ describe('native retained counterparts', () => {
     assert.deepEqual(retained.slice.content, [paragraph('Footnote')]);
   });
 
+  it('retains only the complete root payload reachable from removed content', () => {
+    const initialValue = {
+      children: [
+        rootedPortal('retained'),
+        rootedPortal('unrelated'),
+        paragraph('Body'),
+      ],
+      roots: {
+        retained: [paragraph('Retained payload')],
+        unrelated: [paragraph('Unrelated payload')],
+      },
+    };
+    const plugin = authored({ authorId: 'alice' });
+    const editor = createEditor({
+      plugins: [RootedAuthoredSchema, plugin],
+      initialValue,
+    });
+    const view = createEditorView(editor, { authored: markup });
+
+    view.update.nodes.remove({ at: [0] });
+
+    const removed = contents(editor.read.getField(authoredState)).find(
+      ({ retained }) =>
+        retained.kind !== 'properties' &&
+        retained.slice.content.some(
+          (node) => NodeApi.isElement(node) && node.type === 'rooted-portal'
+        )
+    );
+
+    assert.ok(removed);
+    assert.notEqual(removed.retained.kind, 'properties');
+    if (removed.retained.kind === 'properties') assert.fail();
+    assert.deepEqual(removed.retained.slice.roots, {
+      retained: [paragraph('Retained payload')],
+    });
+    assert.equal(
+      JSON.stringify(removed.retained.slice).includes('Unrelated payload'),
+      false
+    );
+
+    const restored = createEditor({
+      plugins: [RootedAuthoredSchema, plugin],
+      initialValue: JSON.parse(JSON.stringify(editor.read.value())),
+    });
+    const restoredRemoved = contents(
+      restored.read.getField(authoredState)
+    ).find(
+      ({ retained }) =>
+        retained.kind !== 'properties' &&
+        retained.slice.content.some(
+          (node) => NodeApi.isElement(node) && node.type === 'rooted-portal'
+        )
+    );
+
+    assert.ok(restoredRemoved);
+    assert.notEqual(restoredRemoved.retained.kind, 'properties');
+    if (restoredRemoved.retained.kind === 'properties') assert.fail();
+    assert.deepEqual(restoredRemoved.retained.slice.roots, {
+      retained: [paragraph('Retained payload')],
+    });
+  });
+
   it('publishes no counterpart from an aborted transaction', () => {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Preserved')],
     });
     const view = createEditorView(editor, { authored: markup });

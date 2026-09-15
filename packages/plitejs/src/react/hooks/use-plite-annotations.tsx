@@ -7,31 +7,31 @@ import {
 } from 'react';
 
 import type {
-  PliteAnnotationSnapshot,
-  PliteAnnotationStore,
-  PliteResolvedAnnotation,
+  AnnotationSnapshot,
+  AnnotationStore,
+  ResolvedAnnotation,
 } from '../../annotations';
 
 const EMPTY_SNAPSHOT = Object.freeze({
   allIds: Object.freeze([]),
   byId: new Map(),
-}) as PliteAnnotationSnapshot;
+}) as AnnotationSnapshot;
 
 const subscribeEmpty = () => () => {};
 
 const getEmptySnapshot = <TData = unknown,>() =>
-  EMPTY_SNAPSHOT as PliteAnnotationSnapshot<TData>;
+  EMPTY_SNAPSHOT as AnnotationSnapshot<TData>;
 
 export const PliteAnnotationStoreContext =
-  createContext<PliteAnnotationStore | null>(null);
+  createContext<AnnotationStore | null>(null);
 
 /** Provide one annotation store to annotation reader hooks. */
-export const PliteAnnotationProvider = <TData,>({
+export const AnnotationProvider = <TData,>({
   children,
   store,
 }: {
   children: ReactNode;
-  store: PliteAnnotationStore<TData>;
+  store: AnnotationStore<TData>;
 }) => (
   <PliteAnnotationStoreContext value={store}>
     {children}
@@ -39,18 +39,18 @@ export const PliteAnnotationProvider = <TData,>({
 );
 
 const useResolvedPliteAnnotationStore = <TData = unknown,>(
-  store?: PliteAnnotationStore<TData> | null
+  store?: AnnotationStore<TData> | null
 ) => {
   const contextStore = useContext(PliteAnnotationStoreContext);
 
-  return (store ?? contextStore) as PliteAnnotationStore<TData> | null;
+  return (store ?? contextStore) as AnnotationStore<TData> | null;
 };
 
 /** Read one resolved annotation by id. */
-export function usePliteAnnotation<TData = unknown>(
+export function useAnnotation<TData = unknown>(
   id: string,
-  store?: PliteAnnotationStore<TData> | null
-): PliteResolvedAnnotation<TData> | null {
+  store?: AnnotationStore<TData> | null
+): ResolvedAnnotation<TData> | null {
   const resolvedStore = useResolvedPliteAnnotationStore(store);
   const subscribe = useCallback(
     (listener: () => void) =>
@@ -68,9 +68,9 @@ export function usePliteAnnotation<TData = unknown>(
 }
 
 /** Read the current annotation snapshot from an explicit or provider store. */
-export function usePliteAnnotations<TData = unknown>(
-  store?: PliteAnnotationStore<TData> | null
-): PliteAnnotationSnapshot<TData> {
+export function useAnnotations<TData = unknown>(
+  store?: AnnotationStore<TData> | null
+): AnnotationSnapshot<TData> {
   const resolvedStore = useResolvedPliteAnnotationStore(store);
   const subscribe = useCallback(
     (listener: () => void) =>

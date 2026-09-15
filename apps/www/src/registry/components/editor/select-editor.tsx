@@ -4,7 +4,7 @@ import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
 import { isHotkey, TextApi } from 'platejs';
 import {
-  Plate,
+  EditorRoot,
   useEditor,
   useEditorSelector,
   useCreateEditor,
@@ -132,7 +132,7 @@ export function SelectEditorContent({
   );
 
   return (
-    <Plate
+    <EditorRoot
       onValueChange={({ editor: innerEditor }) => {
         setSearch(innerEditor.read.text.string([]));
       }}
@@ -140,7 +140,7 @@ export function SelectEditorContent({
     >
       <SelectEditorValueSync controlled={controlled} value={value} />
       <EditorContainer variant="select">{children}</EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 

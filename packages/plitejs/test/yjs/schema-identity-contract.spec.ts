@@ -7,7 +7,7 @@ import { History, history } from '../../src/history';
 import {
   createEditor,
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   ElementApi,
   type EditorStateSchemaApi,
   property,
@@ -15,15 +15,47 @@ import {
   type Descendant,
 } from '../../src/index';
 import { createYjsNode } from '../../src/yjs/core/document';
-import { yjs } from '../../src/yjs/core/extension';
+import { yjs } from '../../src/yjs/core/plugin';
 import {
   createYjsSchemaEnvelope,
   getYjsSchemaMetadataName,
   readYjsSchemaEnvelope,
 } from '../../src/yjs/core/schema-metadata';
-import { FakeProvider } from './support/provider';
+import type { YjsInitialReadiness } from '../../src/yjs/core/types';
 
 const rootName = 'schema-identity-contract';
+
+class TestInitialReadiness implements YjsInitialReadiness {
+  readonly doc: Y.Doc;
+  private readonly listeners = new Set<() => void>();
+  private ready: boolean;
+
+  constructor(doc: Y.Doc, ready = false) {
+    this.doc = doc;
+    this.ready = ready;
+  }
+
+  readonly getSnapshot = () => this.ready;
+
+  readonly subscribe = (listener: () => void) => {
+    this.listeners.add(listener);
+    let active = true;
+
+    return () => {
+      if (!active) return;
+
+      active = false;
+      this.listeners.delete(listener);
+    };
+  };
+
+  setReady(ready: boolean): void {
+    if (this.ready === ready) return;
+
+    this.ready = ready;
+    for (const listener of this.listeners) listener();
+  }
+}
 
 const paragraph = (text: string): Descendant => ({
   children: [{ text }],
@@ -121,9 +153,9 @@ const seedUpdate = (
   const doc = new Y.Doc();
 
   createEditor({
-    extensions: [
+    plugins: [
       ...(editorSchema ? [editorSchema] : []),
-      yjs({ doc, rootName }),
+      yjs({ doc, initialReady: true, rootName, seed: true }),
     ],
     initialValue: [paragraph(text)],
   });
@@ -135,7 +167,10 @@ describe('plitejs/yjs schema identity contract', () => {
   it('derives an empty Yjs root from the compiled schema minimum', () => {
     const doc = new Y.Doc();
     const editor = createEditor({
-      extensions: [requiredCardSchema, yjs({ doc, rootName })],
+      plugins: [
+        requiredCardSchema,
+        yjs({ doc, initialReady: true, rootName, seed: true }),
+      ],
       initialValue: [card('one'), card('two')],
     });
     const root = doc.get(rootName, Y.XmlElement);
@@ -150,7 +185,7 @@ describe('plitejs/yjs schema identity contract', () => {
     const doc = new Y.Doc();
 
     const editor = createEditor({
-      extensions: [yjs({ doc, rootName })],
+      plugins: [yjs({ doc, initialReady: true, rootName, seed: true })],
       initialValue: [paragraph('open')],
     });
 
@@ -170,7 +205,7 @@ describe('plitejs/yjs schema identity contract', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [yjs({ doc, rootName })],
+          plugins: [yjs({ doc, initialReady: true, rootName })],
           initialValue: [paragraph('local')],
         }),
       /nonempty Yjs document without schema metadata/
@@ -187,7 +222,7 @@ describe('plitejs/yjs schema identity contract', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [yjs({ doc, rootName })],
+          plugins: [yjs({ doc, initialReady: true, rootName })],
           initialValue: [paragraph('local')],
         }),
       /Invalid Yjs schema metadata envelope/
@@ -267,36 +302,45 @@ describe('plitejs/yjs schema identity contract', () => {
     assert.throws(
       () =>
         createEditor({
-          extensions: [yjs({ doc, rootName })],
+          plugins: [yjs({ doc, initialReady: true, rootName })],
           initialValue: [paragraph('local')],
         }),
       /Invalid Yjs schema metadata envelope/
     );
   });
 
-  it('waits for provider sync before importing a claimed room', () => {
+  it('waits for application readiness before importing a claimed room', () => {
     const doc = new Y.Doc();
 
     Y.applyUpdate(doc, seedUpdate(articleSchema(1)));
 
-    const provider = new FakeProvider({ doc, synced: false });
+    const initialReady = new TestInitialReadiness(doc);
+    const binding = yjs({ doc, initialReady, rootName });
     const editor = createEditor({
-      extensions: [articleSchema(1), yjs({ provider, rootName })],
+      plugins: [articleSchema(1), binding],
       initialValue: [paragraph('local')],
     });
 
     assert.deepEqual(editor.read.children(), [paragraph('local')]);
+    assert.deepEqual(editor.plugin(binding).api.admissionStatus(), {
+      reason: 'load',
+      state: 'waiting',
+    });
 
-    provider.emitSync(true);
+    initialReady.setReady(true);
 
     assert.deepEqual(editor.read.children(), [paragraph('remote')]);
+    assert.equal(editor.plugin(binding).api.admissionStatus().state, 'ready');
   });
 
-  it('claims an empty provider room and seeds content atomically after sync', () => {
+  it('claims an empty room and seeds content atomically after readiness', () => {
     const doc = new Y.Doc();
-    const provider = new FakeProvider({ doc, synced: false });
+    const initialReady = new TestInitialReadiness(doc);
     const editor = createEditor({
-      extensions: [articleSchema(1), yjs({ provider, rootName })],
+      plugins: [
+        articleSchema(1),
+        yjs({ doc, initialReady, rootName, seed: true }),
+      ],
       initialValue: [paragraph('seed')],
     });
     const root = doc.get(rootName, Y.XmlElement);
@@ -315,7 +359,7 @@ describe('plitejs/yjs schema identity contract', () => {
     assert.equal(root.length, 0);
     assert.equal(metadata.get('current'), undefined);
 
-    provider.emitSync(true);
+    initialReady.setReady(true);
 
     assert.equal(root.length, 1);
     assert.deepEqual(metadata.get('current'), {
@@ -330,24 +374,32 @@ describe('plitejs/yjs schema identity contract', () => {
     );
   });
 
-  it('blocks a provider schema mismatch before content import', () => {
+  it('blocks a room schema mismatch before content import', () => {
     const doc = new Y.Doc();
 
     Y.applyUpdate(doc, seedUpdate(articleSchema(1)));
 
-    const provider = new FakeProvider({ doc, synced: false });
+    const initialReady = new TestInitialReadiness(doc);
+    const binding = yjs({ doc, initialReady, rootName });
     const editor = createEditor({
-      extensions: [articleSchema(2), yjs({ provider, rootName })],
+      plugins: [articleSchema(2), binding],
       initialValue: [paragraph('local')],
     });
 
-    assert.throws(
-      () => provider.emitSync(true),
-      /local version 2, room version 1/
-    );
+    initialReady.setReady(true);
+
+    const status = editor.plugin(binding).api.admissionStatus();
+
+    assert.equal(status.state, 'error');
+    if (status.state === 'error') {
+      assert.match(String(status.cause), /local version 2, room version 1/);
+    }
     assert.deepEqual(editor.read.children(), [paragraph('local')]);
 
-    editor.update.text.insert('!', { at: { path: [0, 0], offset: 5 } });
+    assert.throws(
+      () => editor.update.text.insert('!', { at: { path: [0, 0], offset: 5 } }),
+      /binding has an admission error/
+    );
 
     assert.deepEqual(editor.read.children(), [paragraph('local')]);
   });
@@ -357,16 +409,24 @@ describe('plitejs/yjs schema identity contract', () => {
 
     Y.applyUpdate(doc, seedUpdate(articleSchema(1)));
 
-    const provider = new FakeProvider({ doc, synced: false });
+    const initialReady = new TestInitialReadiness(doc);
+    const binding = yjs({ doc, initialReady, rootName });
     const editor = createEditor({
-      extensions: [yjs({ provider, rootName })],
+      plugins: [binding],
       initialValue: [paragraph('local')],
     });
 
-    assert.throws(
-      () => provider.emitSync(true),
-      /local derived schema .* cannot join room schema "article"/
-    );
+    initialReady.setReady(true);
+
+    const status = editor.plugin(binding).api.admissionStatus();
+
+    assert.equal(status.state, 'error');
+    if (status.state === 'error') {
+      assert.match(
+        String(status.cause),
+        /local derived schema .* cannot join room schema "article"/
+      );
+    }
     assert.deepEqual(editor.read.children(), [paragraph('local')]);
   });
 
@@ -375,55 +435,71 @@ describe('plitejs/yjs schema identity contract', () => {
 
     Y.applyUpdate(doc, seedUpdate(articleSchema(1)));
 
-    const provider = new FakeProvider({ doc, synced: false });
+    const initialReady = new TestInitialReadiness(doc);
+    const binding = yjs({ doc, initialReady, rootName });
 
-    createEditor({
-      extensions: [articleSchema(1, true), yjs({ provider, rootName })],
+    const editor = createEditor({
+      plugins: [articleSchema(1, true), binding],
       initialValue: [paragraph('local')],
     });
 
-    assert.throws(
-      () => provider.emitSync(true),
-      /semantics changed without a version bump/
-    );
+    initialReady.setReady(true);
+
+    const status = editor.plugin(binding).api.admissionStatus();
+
+    assert.equal(status.state, 'error');
+    if (status.state === 'error') {
+      assert.match(
+        String(status.cause),
+        /semantics changed without a version bump/
+      );
+    }
   });
 
   it('observes schema metadata before flushing remote content', () => {
     const doc = new Y.Doc();
+    const binding = yjs({ doc, initialReady: true, rootName, seed: true });
     const editor = createEditor({
-      extensions: [articleSchema(1), yjs({ doc, rootName })],
+      plugins: [articleSchema(1), binding],
       initialValue: [paragraph('local')],
     });
     const nextIdentity = createEditor({
-      extensions: [articleSchema(2)],
+      plugins: [articleSchema(2)],
       initialValue: [paragraph('unused')],
     }).read.schema.identity();
     const root = doc.get(rootName, Y.XmlElement);
     const metadata = doc.getMap(getYjsSchemaMetadataName(rootName));
 
     assert.ok(nextIdentity);
-    assert.throws(
-      () =>
-        doc.transact(() => {
-          metadata.set('current', createYjsSchemaEnvelope(nextIdentity));
-          root.delete(0, root.length);
-          root.insert(0, [createYjsNode(paragraph('blocked'))]);
-        }),
-      /local version 1, room version 2/
-    );
+    doc.transact(() => {
+      metadata.set('current', createYjsSchemaEnvelope(nextIdentity));
+      root.delete(0, root.length);
+      root.insert(0, [createYjsNode(paragraph('blocked'))]);
+    });
+
+    const status = editor.plugin(binding).api.admissionStatus();
+
+    assert.equal(status.state, 'error');
+    if (status.state === 'error') {
+      assert.match(String(status.cause), /local version 1, room version 2/);
+    }
     assert.deepEqual(editor.read.children(), [paragraph('local')]);
   });
 
   it('rejects local schema reconfiguration against a claimed room', () => {
-    const slot = defineExtensionSlot('article-schema');
+    const slot = definePluginSlot('article-schema');
+    const doc = new Y.Doc();
     const editor = createEditor({
-      extensions: [slot.of(articleSchema(1)), yjs({ rootName })],
+      plugins: [
+        slot.of(articleSchema(1)),
+        yjs({ doc, initialReady: true, rootName, seed: true }),
+      ],
       initialValue: [paragraph('local')],
     });
     const identity = editor.read.schema.identity();
 
     assert.throws(
-      () => editor.update.extensions.reconfigure(slot, articleSchema(2)),
+      () => editor.update.plugins.reconfigure(slot, articleSchema(2)),
       /local version 2, room version 1/
     );
     assert.equal(editor.read.schema.identity(), identity);
@@ -431,13 +507,13 @@ describe('plitejs/yjs schema identity contract', () => {
 
   it('keeps randomized History, Yjs, live policies, and configuration atomic', () => {
     const calls: string[] = [];
-    const slot = defineExtensionSlot('randomized-policy-schema');
+    const slot = definePluginSlot('randomized-policy-schema');
     const doc = new Y.Doc();
     const editor = createEditor({
-      extensions: [
+      plugins: [
         slot.of(policySchema({ calls, label: 'policy-0' })),
         history(),
-        yjs({ doc, rootName }),
+        yjs({ doc, initialReady: true, rootName, seed: true }),
       ] as const,
       initialValue: [policyParagraph('local', 0)],
     });
@@ -517,7 +593,7 @@ describe('plitejs/yjs schema identity contract', () => {
         expectedPayloadRevision += 1;
         editor.update((tx) => {
           tx.history.newBatch();
-          tx.extensions.reconfigure(
+          tx.plugins.reconfigure(
             slot,
             policySchema({ calls, label: activePolicy })
           );
@@ -547,7 +623,7 @@ describe('plitejs/yjs schema identity contract', () => {
                 throw new Error('generated configuration rollback');
               }
 
-              tx.extensions.reconfigure(
+              tx.plugins.reconfigure(
                 slot,
                 policySchema({
                   calls,
@@ -598,9 +674,9 @@ describe('plitejs/yjs schema identity contract', () => {
     );
 
     const localCalls: string[] = [];
-    const localSlot = defineExtensionSlot('randomized-policy-local-schema');
+    const localSlot = definePluginSlot('randomized-policy-local-schema');
     const local = createEditor({
-      extensions: [
+      plugins: [
         localSlot.of(policySchema({ calls: localCalls, label: 'local-1' })),
         history(),
       ] as const,
@@ -613,7 +689,7 @@ describe('plitejs/yjs schema identity contract', () => {
     });
     assert.equal(local.read.history().undos.length, 1);
 
-    local.update.extensions.reconfigure(
+    local.update.plugins.reconfigure(
       localSlot,
       policySchema({
         calls: localCalls,

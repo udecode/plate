@@ -25,8 +25,8 @@ export function PliteExampleClient({
   return (
     <main
       className="mx-auto flex max-w-5xl min-w-0 flex-col gap-6 px-6 py-8"
-      data-plite-example={exampleId}
-      data-plite-scope="proof-route"
+      data-editor-example={exampleId}
+      data-editor-scope="proof-route"
     >
       <h1 className="example-page-title text-3xl font-semibold tracking-tight">
         {title}
@@ -44,14 +44,14 @@ function PliteExampleNavigation({
 }) {
   return (
     <>
-      <details data-plite-example-mobile-nav>
+      <details data-editor-example-mobile-nav>
         <summary>Examples</summary>
         <PliteExampleLinks activeExample={activeExample} />
       </details>
       <nav
         aria-label="Plite examples"
-        data-plite-example-sidebar
-        data-plite-desktop-nav
+        data-editor-example-sidebar
+        data-editor-desktop-nav
       >
         <PliteExampleLinks activeExample={activeExample} />
       </nav>
@@ -72,7 +72,7 @@ function PliteExampleLinks({
         return (
           <Link
             data-active={activeExample === slug}
-            data-plite-example-nav-link={slug}
+            data-editor-example-nav-link={slug}
             href={`/examples/plite/${slug}`}
             key={slug}
             prefetch={false}
@@ -80,7 +80,7 @@ function PliteExampleLinks({
             <span>{name}</span>
             {isNewExample ? (
               <span
-                data-plite-example-new-dot={slug}
+                data-editor-example-new-dot={slug}
                 title="New"
                 aria-hidden="true"
               />

@@ -114,7 +114,6 @@ describe('PreparedTablePaste benchmark', () => {
         const result = planPreparedTablePaste(context, prepared, {
           createCell,
           createRow,
-          fitChildren: (_cell, children) => children,
           startCol: 16,
           startRow: 16,
         });
@@ -138,7 +137,7 @@ describe('PreparedTablePaste benchmark', () => {
     expect(large / Math.max(small, 0.001)).toBeLessThan(2.5);
   });
 
-  it('fits repeated and clipped sources once per used source anchor', () => {
+  it('keeps repeated and clipped sources in independent tile groups', () => {
     const one = prepare(denseTable(1, 'one'));
     const block = prepare(denseTable(32, 'block'));
 
@@ -147,16 +146,10 @@ describe('PreparedTablePaste benchmark', () => {
     }
 
     const context = createDetachedTableContext(denseTable(64, 'target'), [0]);
-    let oneFits = 0;
-    let blockFits = 0;
     const repeated = planPreparedTablePaste(context, one, {
       createCell,
       createRow,
       fillBounds: { maxCol: 31, maxRow: 31, minCol: 0, minRow: 0 },
-      fitChildren: (_cell, children) => {
-        oneFits += 1;
-        return children;
-      },
       startCol: 0,
       startRow: 0,
     });
@@ -164,18 +157,17 @@ describe('PreparedTablePaste benchmark', () => {
       createCell,
       createRow,
       fillBounds: { maxCol: 47, maxRow: 47, minCol: 0, minRow: 0 },
-      fitChildren: (_cell, children) => {
-        blockFits += 1;
-        return children;
-      },
       startCol: 0,
       startRow: 0,
     });
 
     expect(repeated.kind).toBe('plan');
     expect(clipped.kind).toBe('plan');
-    expect(oneFits).toBe(1);
-    expect(blockFits).toBe(32 * 32);
+    if (repeated.kind !== 'plan' || clipped.kind !== 'plan') {
+      throw new Error('Expected placement plans');
+    }
+    expect(repeated.placementGroups).toHaveLength(32 * 32);
+    expect(clipped.placementGroups).toHaveLength(4);
   });
 
   it('bounds a four-boundary span fallback by affected rows', () => {
@@ -213,7 +205,6 @@ describe('PreparedTablePaste benchmark', () => {
       {
         createCell,
         createRow,
-        fitChildren: (_cell, children) => children,
         startCol: 30,
         startRow: 30,
       }
@@ -239,7 +230,6 @@ describe('PreparedTablePaste benchmark', () => {
       planPreparedTablePaste(context, prepared, {
         createCell,
         createRow,
-        fitChildren: (_cell, children) => children,
         startCol: index % 60,
         startRow: index % 60,
       });

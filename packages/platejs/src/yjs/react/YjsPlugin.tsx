@@ -1,13 +1,56 @@
-import { PathApi, RangeApi, TextApi } from '../../core';
-import { toPlatePlugin } from '../../react/core';
-import { BaseYjsPlugin } from '../BaseYjsPlugin';
+import { yjs, type YjsRemoteCursor } from 'plitejs/yjs/react';
 
-/** Installs Yjs collaboration and unstyled remote-selection decorations. */
-export const YjsPlugin = toPlatePlugin(BaseYjsPlugin).extend({
+import {
+  PathApi,
+  RangeApi,
+  TextApi,
+  type DecorationRefresh,
+  type NodeEntry,
+  type NodeKey,
+} from '../../core';
+import type {
+  RuntimePluginFactoryTypeLambda,
+  RuntimePluginFactoryTypeProviderOf,
+} from '../../facade';
+import type { InternalBasePluginRuntimeExtension } from '../../lib/plugin/BasePlugin';
+import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
+import { definePlugin, toReactPlugin } from '../../react/core';
+import { createPluginFactory } from '../../react/plugin/pluginFactory.internal';
+import type { InternalReactPluginAdapterResult } from '../../react/plugin/toReactPlugin';
+
+type RemoteCursorDecorationApi = Readonly<{
+  remoteCursors: () => readonly YjsRemoteCursor[];
+  subscribeRemoteCursors: (listener: () => void) => () => void;
+}>;
+
+type RemoteCursorDecorationContext = Readonly<{
+  api: object;
+  editor: Readonly<{
+    key: (path: readonly number[]) => NodeKey | null;
+  }>;
+}>;
+
+const hasRemoteCursorDecorationApi = (
+  api: object
+): api is RemoteCursorDecorationApi =>
+  'remoteCursors' in api &&
+  typeof api.remoteCursors === 'function' &&
+  'subscribeRemoteCursors' in api &&
+  typeof api.subscribeRemoteCursors === 'function';
+
+const remoteCursorDecoration = {
   decorate: {
-    observe: ({ editor, read, refresh }) => {
+    observe: ({
+      api,
+      editor,
+      refresh,
+    }: RemoteCursorDecorationContext & {
+      refresh: (input: DecorationRefresh) => void;
+    }) => {
+      if (!hasRemoteCursorDecorationApi(api)) return () => {};
+
       let previous = new Map(
-        read.remoteCursors().map((cursor) => [
+        api.remoteCursors().map((cursor) => [
           cursor.clientId,
           {
             cursor,
@@ -18,9 +61,9 @@ export const YjsPlugin = toPlatePlugin(BaseYjsPlugin).extend({
         ])
       );
 
-      return read.subscribeRemoteCursors(() => {
+      return api.subscribeRemoteCursors(() => {
         const next = new Map(
-          read.remoteCursors().map((cursor) => [
+          api.remoteCursors().map((cursor) => [
             cursor.clientId,
             {
               cursor,
@@ -48,10 +91,17 @@ export const YjsPlugin = toPlatePlugin(BaseYjsPlugin).extend({
         if (nodeKeys.size > 0) refresh({ nodeKeys: [...nodeKeys] });
       });
     },
-    read: ({ read, entry: [node, path] }) => {
-      if (!TextApi.isText(node)) return [];
+    read: ({
+      api,
+      entry: [node, path],
+    }: RemoteCursorDecorationContext & {
+      entry: NodeEntry;
+    }) => {
+      if (!TextApi.isText(node) || !hasRemoteCursorDecorationApi(api)) {
+        return [];
+      }
 
-      return read.remoteCursors().flatMap((cursor) => {
+      return api.remoteCursors().flatMap((cursor) => {
         const { selection } = cursor;
 
         if (
@@ -75,4 +125,33 @@ export const YjsPlugin = toPlatePlugin(BaseYjsPlugin).extend({
       });
     },
   },
-});
+} as const;
+
+type ApplyRuntimePluginFactory<
+  TType extends RuntimePluginFactoryTypeLambda,
+  TInput extends TType['input'],
+> = (TType & Readonly<{ input: TInput }>)['output'];
+
+const BaseYjsBridge = definePlugin('yjs', {});
+
+type NativeYjsFactoryType = RuntimePluginFactoryTypeProviderOf<typeof yjs>;
+type BaseYjsBridgeDefinition = InternalPluginDefinitionOf<typeof BaseYjsBridge>;
+type PlateYjsPlugin<TInput extends NativeYjsFactoryType['input']> =
+  InternalReactPluginAdapterResult<
+    InternalBasePluginRuntimeExtension<
+      typeof BaseYjsBridge,
+      BaseYjsBridgeDefinition,
+      ApplyRuntimePluginFactory<NativeYjsFactoryType, TInput>
+    >,
+    typeof remoteCursorDecoration
+  >;
+
+interface YjsPluginFactoryType {
+  readonly input: NativeYjsFactoryType['input'];
+  readonly output: PlateYjsPlugin<this['input']>;
+}
+
+/** Creates complete Plate Yjs descriptors from app-owned resources. */
+export const YjsPlugin = createPluginFactory<YjsPluginFactoryType>((options) =>
+  toReactPlugin(BaseYjsBridge.extend(yjs(options)), remoteCursorDecoration)
+);

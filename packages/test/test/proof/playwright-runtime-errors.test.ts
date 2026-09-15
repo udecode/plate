@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { recordPliteBrowserRuntimeErrors } from '../../src/playwright/runtime-errors';
+import { recordBrowserRuntimeErrors } from '../../src/playwright/runtime-errors';
 
 type PageEvent = 'console' | 'pageerror';
 
@@ -14,20 +14,20 @@ const createPage = () => {
       on: (event: PageEvent, listener: (value: unknown) => void) => {
         listeners.set(event, listener);
       },
-    } as unknown as Parameters<typeof recordPliteBrowserRuntimeErrors>[0],
+    } as unknown as Parameters<typeof recordBrowserRuntimeErrors>[0],
   };
 };
 
 describe('Playwright runtime errors', () => {
   test.each([
-    'PliteDOMResolutionError: Cannot resolve a DOM node from Plite node: {"children":[{"text":"One canonical text."}]}',
-    'PliteDOMResolutionError: Cannot resolve a DOM point from Plite point: {"path":[0,0],"offset":0}',
-    'PliteDOMResolutionError: Cannot resolve a DOM range from Plite range',
+    'DOMResolutionError: Cannot resolve a DOM node from Plite node: {"children":[{"text":"One canonical text."}]}',
+    'DOMResolutionError: Cannot resolve a DOM point from Plite point: {"path":[0,0],"offset":0}',
+    'DOMResolutionError: Cannot resolve a DOM range from Plite range',
   ])(
     'rejects a caught DOM resolution error logged to the console: %s',
     (text) => {
       const { emit, page } = createPage();
-      const recorder = recordPliteBrowserRuntimeErrors(page);
+      const recorder = recordBrowserRuntimeErrors(page);
 
       emit('console', { text: () => text, type: () => 'error' });
 
@@ -38,7 +38,7 @@ describe('Playwright runtime errors', () => {
 
   test('uses custom console patterns instead of the defaults', () => {
     const { emit, page } = createPage();
-    const recorder = recordPliteBrowserRuntimeErrors(page, {
+    const recorder = recordBrowserRuntimeErrors(page, {
       patterns: ['Custom application failure'],
     });
 
@@ -59,7 +59,7 @@ describe('Playwright runtime errors', () => {
 
   test('ignores unrelated console errors and non-error DOM messages', () => {
     const { emit, page } = createPage();
-    const recorder = recordPliteBrowserRuntimeErrors(page);
+    const recorder = recordBrowserRuntimeErrors(page);
 
     emit('console', {
       text: () => 'An unrelated console error',
@@ -75,7 +75,7 @@ describe('Playwright runtime errors', () => {
 
   test('ignores Vimeo cookie access denied by its sandbox', () => {
     const { emit, page } = createPage();
-    const recorder = recordPliteBrowserRuntimeErrors(page);
+    const recorder = recordBrowserRuntimeErrors(page);
 
     emit(
       'pageerror',
@@ -90,7 +90,7 @@ describe('Playwright runtime errors', () => {
 
   test('keeps the same cookie error from first-party pages', () => {
     const { emit, page } = createPage();
-    const recorder = recordPliteBrowserRuntimeErrors(page);
+    const recorder = recordBrowserRuntimeErrors(page);
 
     emit(
       'pageerror',

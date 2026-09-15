@@ -1,0 +1,62 @@
+---
+title: Decorations, annotations, and widgets
+description: Paint transient ranges, retain annotation identities, and place anchored editor UI.
+---
+
+Use decorations for transient text paint, annotations for ranges with durable identity, and widgets for UI anchored to nodes, selections, or annotations.
+
+## Decorate text
+
+The [Find plugin](/docs/find) supplies search ranges and refreshes them as the query or document changes. Configure its appearance on the owning plugin:
+
+```tsx title="search-editor.tsx" showLineNumbers
+import { BaseFindPlugin } from 'platejs/find';
+import { EditorContent, EditorRoot, useCreateEditor } from 'platejs/react';
+
+const FindPlugin = BaseFindPlugin.configure({
+  decorate: { attributes: { className: 'rounded bg-yellow-200' } },
+});
+
+export function SearchEditor() {
+  const editor = useCreateEditor({ plugins: [FindPlugin] });
+
+  return (
+    <EditorRoot editor={editor}>
+      <input
+        aria-label="Find text"
+        onChange={(event) => editor.plugin(FindPlugin).api.search(event.target.value)}
+      />
+      <EditorContent />
+    </EditorRoot>
+  );
+}
+```
+
+Plate collects decoration ranges from installed plugins. Keep paint on `plugin.decorate`; the editor root does not accept a separate application decoration source.
+
+The [Preview Markdown example](/docs/examples/preview-markdown) shows a custom reader that returns keyed ranges for syntax tokens.
+
+## Custom sources
+
+A plugin's `decorate.read({ entry, ...context })` returns keyed ranges with render-safe attributes. `decorate.observe({ refresh, ...context })` subscribes to external changes and returns cleanup. Static rendering reads the source without subscribing.
+
+Keep range keys stable and unique within the source. Attributes support `className`, `style`, `aria-*`, and `data-*`. React markup and event handlers belong in components.
+
+Use `decorate.attributes` for presentation without copying an existing reader. Its inferred callback receives `entry` and `decoration` as well as plugin context. `null` clears inherited presentation. Classes concatenate, styles merge shallowly, and later values win for other attributes.
+
+Document edits already refresh affected entries. External owners call `refresh({ nodeKeys })` with exact changed inputs; use `{ nodeKeys: 'all' }` only when the owner cannot identify them. Selection-only changes do not reread document decoration sources.
+
+Whole-element paint uses `render.useViewElementAttributes`. It runs once per enabled plugin per mounted view and returns sparse `{ key, attributes }` entries. Keep per-node render and attribute callbacks free of hooks.
+
+## Annotations
+
+Annotations attach IDs and application data to anchors. `useAnnotationStore` resolves them against commits. Wrap consumers in `AnnotationProvider` to supply the default store; use `useAnnotation(id)` for one item and `useAnnotations()` when the consumer needs the full snapshot.
+
+Annotation data does not paint text by itself. The feature that knows the visual states supplies its plugin's decoration reader. Keep comment bodies, permissions, and audit events in their application store.
+
+See [Annotations](/docs/annotations) for local anchors, external stores, channels, deletion policy, and refresh behavior.
+
+Document content stays in nodes, named roots, and document metadata. Decoration
+ranges and selection geometry are view data. Keep annotations in their
+application-owned store, and read them with `useAnnotation` or `useAnnotations`.
+See [React Hooks](/docs/api/react-hooks) for exact hook contracts.

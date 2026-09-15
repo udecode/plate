@@ -8,8 +8,8 @@ description: 通过 Plate React hook 读取编辑器、插件和焦点状态。
 
 ## 编辑器状态
 
-编辑器 hook 需要位于 `Plate` 下，或位于连接共享 UI 和编辑器的
-[PlateController](/docs/api/core/plate-controller) 下。
+编辑器 hook 需要位于 `EditorRoot` 下，或位于连接共享 UI 和编辑器的
+[EditorController](/docs/api/core/plate-controller) 下。
 
 | Hook | 返回值 |
 | --- | --- |
@@ -22,7 +22,7 @@ description: 通过 Plate React hook 读取编辑器、插件和焦点状态。
 | `useEditorValue()` | 当前所选根的子节点。 |
 | `useEditorState(selector, options?)` | 从不可变编辑器状态派生并订阅的值。 |
 
-hook 使用最近的 `PlateContent`、`Plate`、`PlateController` 或 `EditorProvider` 所选的编辑器。`useOptionalEditor()` 在没有 provider 或没有所选编辑器时返回 `null`。应用 ID 不参与挂载视图的查找。
+hook 使用最近的 `EditorContent`、`EditorRoot`、`EditorController` 或 `EditorProvider` 所选的编辑器。`useOptionalEditor()` 在没有 provider 或没有所选编辑器时返回 `null`。应用 ID 不参与挂载视图的查找。
 
 ```tsx
 import { useEditorMounted, useEditorValue } from 'platejs/react';
@@ -37,10 +37,10 @@ export function EditorStatus() {
 
 ## 容器和生命周期
 
-`useEditorContainerRef()` 返回匹配的 `PlateContainer` 引用。挂载前和卸载后，
+`useEditorContainerRef()` 返回匹配的 `EditorContainer` 引用。挂载前和卸载后，
 其 `current` 值为 `null`。使用它将编辑器 UI 锚定到容器；它不代表可编辑 DOM 元素。
 
-`Plate` 和 `PlateContent` 管理编辑器注册及挂载状态。通过 `Plate` 的 `primary`
+`EditorRoot` 和 `EditorContent` 管理编辑器注册及挂载状态。通过 `EditorRoot` 的 `primary`
 prop 设置主编辑器资格，通过它们的 `readOnly` prop 传入只读状态。
 
 ## 插件状态
@@ -48,9 +48,9 @@ prop 设置主编辑器资格，通过它们的 `readOnly` prop 传入只读状�
 插件状态属于已安装的描述符及其编辑器。让描述符推断状态键和 selector 返回值。
 
 ```tsx
-import { definePlatePlugin, usePluginStore } from 'platejs/react';
+import { definePlugin, usePluginStore } from 'platejs/react';
 
-export const PanelPlugin = definePlatePlugin('panel', {
+export const PanelPlugin = definePlugin('panel', {
   initialState: { open: false },
 });
 
@@ -63,7 +63,7 @@ export function PanelStatus() {
 
 在编辑器的 `plugins` 数组中加入 `PanelPlugin`。需要 selector 回调时，使用
 `usePluginStore(PanelPlugin, (state) => state.open)`。
-`useEditorPlugin(PanelPlugin)` 返回从描述符推断的 portal，供调用 API；它不会
+`useEditor().plugin(PanelPlugin)` 返回从描述符推断的 portal，供调用 API；它不会
 订阅插件状态。在 React 渲染之外，通过
 `editor.plugin(PanelPlugin).store.get('open')` 读取当前值。
 
@@ -85,7 +85,7 @@ export function EditorTools() {
 }
 ```
 
-在 `Plate` 下使用此 hook，或在拥有活动编辑器的 `PlateController` 下使用。
+在 `EditorRoot` 下使用此 hook，或在拥有活动编辑器的 `EditorController` 下使用。
 控制器为空时，先用 `useOptionalEditor()` 判断是否挂载包含严格编辑器 hook 的子组件。
 状态、值和选区 hook 都需要活动编辑器。
 

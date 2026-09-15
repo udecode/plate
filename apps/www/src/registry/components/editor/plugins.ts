@@ -1,6 +1,6 @@
 import { TrailingBlockPlugin } from 'platejs';
 import { CsvPlugin } from 'platejs/csv';
-import { DocxPlugin } from 'platejs/docx';
+import { WordPastePlugin } from 'platejs/docx/paste';
 
 import { AIKit } from './ai';
 import { AlignKit } from './align';
@@ -74,7 +74,7 @@ export const EditorKit = [
 
   // Parsers
   CsvPlugin,
-  DocxPlugin,
+  WordPastePlugin,
   ...MarkdownKit,
 
   // UI

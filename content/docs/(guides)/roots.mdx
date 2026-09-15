@@ -1,0 +1,186 @@
+---
+title: "Roots"
+description: "Use extra roots for headers, footers, synced blocks, captions, and other editable regions."
+---
+
+Plate stores the primary document as a normal block array. Extra roots let one
+editor own headers, footers, synced blocks, captions, side panels, and other
+editable regions without creating separate editor instances. Use roots when the
+content should share editor state, history, collaboration, schema, and commands.
+
+## Value shape
+
+The shortest editor value is still an array of blocks. Plate treats it as the
+primary document.
+
+```tsx
+const editor = createEditor({
+  initialValue: [{ type: "paragraph", children: [{ text: "Body" }] }],
+});
+```
+
+Pass `initialValue.children` plus `initialValue.roots` when the editor owns
+extra roots.
+
+```tsx
+const editor = createEditor({
+  initialValue: {
+    children: [{ type: "paragraph", children: [{ text: "Body" }] }],
+    roots: {
+      header: [{ type: "paragraph", children: [{ text: "Draft" }] }],
+      footer: [{ type: "paragraph", children: [{ text: "Internal" }] }],
+    },
+  },
+});
+```
+
+Each root is a normal Plate block array. Rootless transforms, points, and
+selections resolve against the current editor or view root. A root-bound view
+resolves rootless locations against its own root.
+
+Persist roots through the full [Document Meta](/docs/document-meta) value
+instead of saving only one mounted root. When an application publishes a
+complete external snapshot, use only `tx.value.replace({ children, roots,
+meta, selection })`. It fits the combined document atomically, removes omitted
+roots, resets omitted persisted meta, and clears selection when `selection` is
+omitted. An invalid combined payload returns `false` and publishes nothing.
+Use `tx.roots.*` only for a targeted named-root change.
+
+## Reading and writing roots
+
+Read the primary document with `editor.read.children()`. Read an extra root by key.
+
+```tsx
+const body = editor.read.children();
+const header = editor.read.root("header");
+```
+
+Create, replace, or delete extra roots inside `editor.update`.
+
+```tsx
+editor.update((tx) => {
+  tx.roots.create("aside:1", [
+    { type: "paragraph", children: [{ text: "Aside" }] },
+  ]);
+});
+```
+
+Mutate the primary document with normal node and text transforms instead of
+`tx.roots`.
+
+## Rendering roots
+
+Pass `root` to `EditorContent` when one React tree renders a named root.
+
+```tsx
+<EditorRoot editor={editor}>
+  <EditorContent aria-label="Header" root="header" />
+  <EditorContent aria-label="Body" />
+  <EditorContent aria-label="Footer" root="footer" />
+</EditorRoot>
+```
+
+Use `useRootChrome(root)` on non-editable wrappers that should participate
+in mouse selection and focus restoration for that root.
+
+```tsx
+const chrome = useRootChrome("header");
+
+return (
+  <section {...chrome.props}>
+    <EditorContent root="header" />
+  </section>
+);
+```
+
+Use `useRootState(root, selector)` for UI that reads one root without
+subscribing to every editor change. Use `useRootEditor(root)` for commands
+that must run against a specific root.
+
+## Content roots
+
+Content roots attach a separately addressed editable root to an element in
+another root. `element.childRoots[slot]` stores the root key, and the detached
+content lives in `editor.read.root(rootKey)`. Keep ordinary structural content
+in the element's `children`.
+
+```tsx
+import { definePlugin, schema } from 'platejs/react';
+
+const SyncedBlockPlugin = definePlugin('synced-block', {
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      contentRoots: {
+        body: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'shared',
+        },
+      },
+    },
+  },
+});
+```
+
+Install `SyncedBlockPlugin` in the editor's `plugins` array.
+
+Create a persistent content root by storing the root key on the owning element
+and creating the named root in the same transaction.
+
+```tsx
+const bodyRoot = `synced-block:${blockId}:body`;
+
+editor.update((tx) => {
+  tx.roots.create(bodyRoot, [
+    { type: "paragraph", children: [{ text: "Synced body" }] },
+  ]);
+  tx.nodes.insert({
+    type: "synced-block",
+    childRoots: { body: bodyRoot },
+    children: [{ text: "" }],
+  });
+});
+```
+
+Each `contentRoots` entry declares a slot, child-root grammar, and ownership.
+`childRoots[slot]` is the persisted ownership link that survives save/load and
+collaboration.
+
+Use `ownership: "shared"` when several owners intentionally project the same
+root, as with synced blocks. Shared aliases stay attached to one root; removing
+even the last owner preserves that root. Use `ownership: "exclusive"` for
+a separately mounted document that belongs to exactly one element, such as an
+element-owned annotation surface. Moving an owner preserves its root key.
+Removing, retargeting, or changing the type of an exclusive owner removes the
+root only when it becomes orphaned.
+
+Duplicate and copy/paste clone detached roots. Keys remap deterministically to
+`:copy`, then `:copy:2`, while shared aliases in the copied group continue to
+share one remapped root. Owner-first and root-first creation are both valid
+inside one transaction. `ContentSlice` carries the transitive detached-root
+payload across clipboard and insertion boundaries, including a collapsed
+target. Cut captures that payload before deleting the owner and root in one
+transaction. Undo and redo restore the owner, root content, and root-qualified
+selection together.
+
+Render the child root from the plugin component with `slots.contentRoot(slot)`.
+
+```tsx
+const SyncedBlock = ({ attributes, element, slots }) => (
+  <section {...attributes}>
+    <header>Synced block</header>
+    {slots.contentRoot("body", {
+      ariaLabel: "Synced block body",
+      placeholder: "Empty synced block",
+    })}
+  </section>
+);
+```
+
+Use content roots for synced blocks, editable cards, and element-owned editable
+regions. Use [DOM coverage boundaries](/docs/dom-coverage)
+when the content is in the same root but intentionally not mounted, such as a
+closed accordion body or inactive tab panel.

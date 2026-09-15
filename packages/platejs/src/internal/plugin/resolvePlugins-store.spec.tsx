@@ -1,5 +1,5 @@
 import { type BasePluginInput, createEditor } from '../../lib/editor';
-import { defineBasePlugin } from '../../lib/plugin';
+import { definePlugin } from '../../lib/plugin';
 import { getPluginStore } from './pluginStore';
 
 const createStoreEditor = <const P extends readonly BasePluginInput[]>(
@@ -8,10 +8,10 @@ const createStoreEditor = <const P extends readonly BasePluginInput[]>(
 
 describe('plugin store', () => {
   it('owns one store per installed plugin', () => {
-    const FirstPlugin = defineBasePlugin('first', {
+    const FirstPlugin = definePlugin('first', {
       initialState: { value: 1 },
     });
-    const SecondPlugin = defineBasePlugin('second', {
+    const SecondPlugin = definePlugin('second', {
       initialState: { value: 2 },
     });
     const editor = createStoreEditor([FirstPlugin, SecondPlugin]);
@@ -28,7 +28,7 @@ describe('plugin store', () => {
   });
 
   it('isolates the same plugin store across editors', () => {
-    const Plugin = defineBasePlugin('plugin', {
+    const Plugin = definePlugin('plugin', {
       initialState: { value: 1 },
     });
     const first = createStoreEditor([Plugin]);
@@ -44,14 +44,14 @@ describe('plugin store', () => {
   });
 
   it('uses an empty state when initialState is omitted', () => {
-    const Plugin = defineBasePlugin('plugin', {});
+    const Plugin = definePlugin('plugin', {});
     const editor = createStoreEditor([Plugin]);
 
     expect(editor.plugin(Plugin).store.get()).toEqual({});
   });
 
   it('supports partial and draft updates', () => {
-    const Plugin = defineBasePlugin('plugin', {
+    const Plugin = definePlugin('plugin', {
       initialState: {
         nested: { label: 'one' },
         untouched: true,
@@ -75,7 +75,7 @@ describe('plugin store', () => {
 
   it('shares owned immutable input while keeping caller data and editor writes isolated', () => {
     const records = Object.freeze([{ nested: { value: 1 } }]);
-    const Plugin = defineBasePlugin('records', {
+    const Plugin = definePlugin('records', {
       initialState: {
         records: [] as typeof records,
         selection: null as string | null,
@@ -106,7 +106,7 @@ describe('plugin store', () => {
   });
 
   it('owns and freezes writes without leaking caller mutation', () => {
-    const Plugin = defineBasePlugin('plugin', {
+    const Plugin = definePlugin('plugin', {
       initialState: { nested: { value: 1 } },
     });
     const editor = createStoreEditor([Plugin]);
@@ -146,7 +146,7 @@ describe('plugin store', () => {
   });
 
   it('evaluates pure selectors against current state', () => {
-    const Plugin = defineBasePlugin('plugin', {
+    const Plugin = definePlugin('plugin', {
       initialState: { value: 2 },
       selectors: {
         multiplied: (state, factor: number) => state.value * factor,
@@ -162,8 +162,8 @@ describe('plugin store', () => {
     expect(store.get('multiplied', 3)).toBe(12);
   });
 
-  it('merges selector declarations from extensions', () => {
-    const Plugin = defineBasePlugin('plugin', {
+  it('merges selector declarations from stages', () => {
+    const Plugin = definePlugin('plugin', {
       initialState: { value: 2 },
       selectors: {
         doubled: (state) => state.value * 2,
@@ -181,7 +181,7 @@ describe('plugin store', () => {
   });
 
   it('rejects state and selector key collisions', () => {
-    const Plugin = defineBasePlugin('plugin', {
+    const Plugin = definePlugin('plugin', {
       initialState: { value: 2 },
       selectors: {
         value: (state) => state.value * 2,
@@ -194,7 +194,7 @@ describe('plugin store', () => {
   });
 
   it('throws for unknown state fields or selectors', () => {
-    const Plugin = defineBasePlugin('plugin', {
+    const Plugin = definePlugin('plugin', {
       initialState: { value: 1 },
     });
     const editor = createStoreEditor([Plugin]);

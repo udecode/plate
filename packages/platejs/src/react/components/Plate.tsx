@@ -6,6 +6,7 @@ import type {
   EditorDocumentValue,
   EditorNodeChangeContext,
   EditorTextChangeContext,
+  EditorViewOptions,
   Selection,
 } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
@@ -19,52 +20,53 @@ import {
   PlateScopeProvider,
   type PlateTarget,
 } from '../internal/plate-context';
-import { Plite } from '../internal/plite-components';
+import { EditorRoot as RuntimeEditorRoot } from '../internal/plite-components';
 import { usePlateInstancesWarn } from '../internal/usePlateInstancesWarn';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import { EditorReadOnlyProvider, useEditorViewState } from '../plite-react';
 
-export type PlateSelectionChangeContext<E = Editor> = PlateCommitContext<E> & {
+export type SelectionChangeContext<E = Editor> = CommitContext<E> & {
   selection: Selection;
 };
 
-export type PlateCommitContext<E = Editor> = Omit<
-  EditorCommitContext,
-  'editor'
-> & {
+export type CommitContext<E = Editor> = Omit<EditorCommitContext, 'editor'> & {
   editor: E;
 };
 
-type PlateNodeChangeContext<E> = Omit<EditorNodeChangeContext, 'editor'> & {
+type NodeChangeContext<E> = Omit<EditorNodeChangeContext, 'editor'> & {
   editor: E;
 };
 
-type PlateTextChangeContext<E> = Omit<EditorTextChangeContext, 'editor'> & {
+type TextChangeContext<E> = Omit<EditorTextChangeContext, 'editor'> & {
   editor: E;
 };
 
-export type PlateValueChangeContext<E = Editor> = PlateCommitContext<E> & {
+export type ValueChangeContext<E = Editor> = CommitContext<E> & {
   value: EditorDocumentValue;
 };
 
-export interface PlateProps<E = Editor> {
+export interface EditorRootProps<E = Editor> {
+  /** Native authored input and projection for this mounted view. */
+  authored?: NoInfer<E> extends { read: { authored: unknown } }
+    ? EditorViewOptions['authored']
+    : never;
   children: React.ReactNode;
   editor: E | null;
 
   /** Observe every published editor commit. */
-  onCommit?: (context: PlateCommitContext<E>) => void;
+  onCommit?: (context: CommitContext<E>) => void;
 
   /** Observe canonical node changes for this editor. */
-  onNodeChange?: (context: PlateNodeChangeContext<E>) => void;
+  onNodeChange?: (context: NodeChangeContext<E>) => void;
 
   /** Observe commits that change the primary-root selection. */
-  onSelectionChange?: (context: PlateSelectionChangeContext<E>) => void;
+  onSelectionChange?: (context: SelectionChangeContext<E>) => void;
 
   /** Observe canonical text changes for this editor. */
-  onTextChange?: (context: PlateTextChangeContext<E>) => void;
+  onTextChange?: (context: TextChangeContext<E>) => void;
 
   /** Observe commits that change the full serializable document value. */
-  onValueChange?: (context: PlateValueChangeContext<E>) => void;
+  onValueChange?: (context: ValueChangeContext<E>) => void;
 
   /** Whether this editor is the primary editor for its controller. */
   primary?: boolean;
@@ -75,6 +77,7 @@ export interface PlateProps<E = Editor> {
 }
 
 function PlateInner({
+  authored,
   children,
   containerRef,
   editor,
@@ -85,7 +88,8 @@ function PlateInner({
   onSelectionChange,
   onTextChange,
   onValueChange,
-}: PlateProps & {
+}: Omit<EditorRootProps, 'authored'> & {
+  authored?: EditorViewOptions['authored'];
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const currentEditor = editor ?? failInvariant('Expected value to be defined');
@@ -107,13 +111,14 @@ function PlateInner({
   const plateReadOnly = readOnly ?? editorReadOnly;
   const model = React.useMemo(
     () => ({
+      authored,
       editor: currentEditor,
       containerRef,
       primary: primary ?? true,
       readOnly: plateReadOnly,
       scope,
     }),
-    [containerRef, currentEditor, plateReadOnly, primary, scope]
+    [authored, containerRef, currentEditor, plateReadOnly, primary, scope]
   );
   const observerBaselineVersion = React.useMemo(
     () => editor?.read.lastCommit()?.version ?? 0,
@@ -225,7 +230,8 @@ function PlateInner({
   }, [editor, observerBaselineVersion]);
 
   return (
-    <Plite
+    <RuntimeEditorRoot
+      authored={authored}
       decorations={decorations}
       editor={currentEditor}
       readOnly={plateReadOnly}
@@ -241,14 +247,14 @@ function PlateInner({
           </PlateScopeProvider>
         </PlateModelContext>
       </EditorReadOnlyProvider>
-    </Plite>
+    </RuntimeEditorRoot>
   );
 }
 
-export function Plate<E = Editor>(
-  props: PlateProps<E>
+export function EditorRoot<E = Editor>(
+  props: EditorRootProps<E>
 ): React.ReactElement | null;
-export function Plate(props: PlateProps<any>) {
+export function EditorRoot(props: EditorRootProps<any>) {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   usePlateInstancesWarn(props.suppressInstanceWarning);

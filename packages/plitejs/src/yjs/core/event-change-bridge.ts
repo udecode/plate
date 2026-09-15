@@ -201,7 +201,7 @@ const applyExactYjsRelocation = (
 const isElement = (node: Descendant | null): node is Element =>
   node !== null && NodeApi.isElement(node);
 
-type PliteText = Text;
+type EditorText = Text;
 
 const isText = (node: Descendant | null) =>
   node !== null && NodeApi.isText(node);
@@ -222,11 +222,11 @@ const nodePropertiesEqual = (
 
 type ElementTextMerge = Readonly<{
   after: Element;
-  afterText: PliteText;
+  afterText: EditorText;
   before: readonly Element[];
-  firstText: PliteText;
+  firstText: EditorText;
   from: number;
-  lastText: PliteText;
+  lastText: EditorText;
   parentPath: readonly number[];
   prefix: string;
   suffix: string;
@@ -355,11 +355,11 @@ const findTextMergeAtLevel = (
     return null;
   }
 
-  const firstText = elements[0].children[0] as PliteText;
+  const firstText = elements[0].children[0] as EditorText;
   const lastText = (
     elements.at(-1) ?? failInvariant('Expected value to be defined')
-  ).children[0] as PliteText;
-  const afterText = merged.children[0] as PliteText;
+  ).children[0] as EditorText;
+  const afterText = merged.children[0] as EditorText;
 
   if (
     !nodePropertiesEqual(firstText, afterText, 'text') ||
@@ -552,7 +552,7 @@ const findTextLeafMergeTopIndex = (
     }
 
     const first = oldElement.children[0];
-    const merged = newElement.children[0] as PliteText;
+    const merged = newElement.children[0] as EditorText;
 
     if (
       !nodePropertiesEqual(first, merged, 'text') ||

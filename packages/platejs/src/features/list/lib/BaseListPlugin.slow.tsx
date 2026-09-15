@@ -1,14 +1,14 @@
 import {
   BaseParagraphPlugin,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   ElementApi,
   PathApi,
   schema,
 } from '../../../core';
 import { BaseListPlugin, ListType } from './BaseListPlugin';
 
-const PagePlugin = defineBasePlugin('page', {
+const PagePlugin = definePlugin('page', {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({ default: BaseParagraphPlugin, min: 1 }),

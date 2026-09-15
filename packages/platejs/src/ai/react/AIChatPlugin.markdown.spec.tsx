@@ -7,7 +7,7 @@ import { jsxt, type TestEditor } from '#platejs-test-internal';
 
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  definePlugin,
   createEditorView,
   schema,
 } from '../../core';
@@ -32,6 +32,7 @@ const createTestEditor = async (input: TestEditor) => {
       MarkdownPlugin,
       AIChatPlugin,
     ],
+    userId: 'alice',
     selection: input.selection,
     initialValue: input.children,
   });
@@ -44,6 +45,7 @@ describe('AIChatPlugin read.markdown', () => {
     const { AIChatPlugin } = await import('./AIChatPlugin');
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, MarkdownPlugin, AIChatPlugin],
+      userId: 'alice',
       initialValue: [
         { children: [{ text: 'Current block' }], type: 'paragraph' },
         { children: [{ text: 'Other block' }], type: 'paragraph' },
@@ -219,7 +221,7 @@ describe('AIChatPlugin read.markdown', () => {
 
     it('resolves cell references in the selection named root', async () => {
       const { AIChatPlugin } = await import('./AIChatPlugin');
-      const RootHolderPlugin = defineBasePlugin('tableRootHolder', {
+      const RootHolderPlugin = definePlugin('tableRootHolder', {
         schema: {
           element: {
             blockContent: true,
@@ -246,6 +248,7 @@ describe('AIChatPlugin read.markdown', () => {
           AIChatPlugin,
           RootHolderPlugin,
         ],
+        userId: 'alice',
         selection: {
           anchor: { offset: 0, path: [0, 0, 0, 0, 0], root: 'header' },
           focus: { offset: 4, path: [0, 0, 0, 0, 0], root: 'header' },
@@ -287,9 +290,10 @@ describe('AIChatPlugin read.markdown', () => {
       const aiChat = editor.plugin(AIChatPlugin);
       const result = aiChat.read.markdown({ type: 'tableCellWithRef' });
       const ref = aiChat.store.get('_tableCellRefs').c1;
-      const cellKey = createEditorView(editor, {
+      const header = createEditorView(editor, {
         root: 'header',
-      }).key([0, 0, 0]);
+      });
+      const cellKey = header.key([0, 0, 0]);
 
       if (!cellKey) throw new Error('Expected a named-root table cell key');
 
@@ -297,19 +301,19 @@ describe('AIChatPlugin read.markdown', () => {
       expect(ref?.root).toBe('header');
       expect(ref?.key).toBe(cellKey);
 
-      aiChat.update.applyTableCellSuggestion({
+      header.api.authored.setView({
+        intent: 'propose',
+        projection: 'markup',
+      });
+      header.plugin(AIChatPlugin).update.applyTableCellSuggestion({
         content: 'replacement',
         ref: 'c1',
       });
 
-      expect(
-        createEditorView(editor, { root: 'header' }).read.text.string([])
-      ).toContain('replacement');
-      expect(
-        createEditorView(editor, { root: 'header' }).read.nodes.get([
-          0, 0, 0, 0,
-        ])?.[0]
-      ).toMatchObject({ type: 'paragraph' });
+      expect(header.read.text.string([])).toContain('replacement');
+      expect(header.read.nodes.get([0, 0, 0, 0])?.[0]).toMatchObject({
+        type: 'paragraph',
+      });
     });
   });
 });

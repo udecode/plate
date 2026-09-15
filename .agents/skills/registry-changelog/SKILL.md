@@ -1,5 +1,5 @@
 ---
-description: Author and verify Plate registry changelog entries for user-visible registry UI, kit, example, and registry metadata changes.
+description: Write and verify user-facing changelog entries for registry UI, kits, examples and metadata.
 name: registry-changelog
 metadata:
   skiller:

@@ -1,4 +1,4 @@
 import { BaseMultiSelectPlugin } from '../../../features/tag/lib';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
-export const MultiSelectPlugin = toPlatePlugin(BaseMultiSelectPlugin);
+export const MultiSelectPlugin = toReactPlugin(BaseMultiSelectPlugin);

@@ -397,19 +397,33 @@ export const ContentSlice = Object.freeze({
     content: ReadonlyArray<DescendantIn<V>>,
     options: Readonly<{ open: 'closed' | 'preserve' }>
   ): ContentSliceValue<V> => {
-    if (options.open === 'closed') return closed(content);
-    if (options.open !== 'preserve') {
+    if (options.open !== 'closed' && options.open !== 'preserve') {
       throw new Error('Content slice openness must be closed or preserved.');
     }
 
     const source = fromJSON<V>(slice);
+    const openEnd = options.open === 'closed' ? 0 : source.openEnd;
+    const openStart = options.open === 'closed' ? 0 : source.openStart;
 
-    return snapshot<V>({
-      content,
-      openEnd: source.openEnd,
-      openStart: source.openStart,
+    if (
+      content === source.content &&
+      openEnd === source.openEnd &&
+      openStart === source.openStart
+    ) {
+      return source;
+    }
+
+    const result = Object.freeze({
+      content: snapshotSliceContent(content),
+      openEnd,
+      openStart,
       ...(source.roots ? { roots: source.roots } : {}),
-    });
+    }) as ContentSliceValue<V>;
+
+    assertOpenDepth(result.content, result.openStart, 'start');
+    assertOpenDepth(result.content, result.openEnd, 'end');
+
+    return prepare(result, true);
   },
 });
 

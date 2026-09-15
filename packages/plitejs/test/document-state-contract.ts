@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   type Descendant,
-  defineExtension,
+  definePlugin,
   defineStateField,
   defineValueCodec,
   valueCodecs,
@@ -17,6 +17,36 @@ const paragraph = (text: string) =>
   }) satisfies Descendant;
 
 describe('document meta contract', () => {
+  it('serializes persisted state only when document metadata is read', () => {
+    let encodeCalls = 0;
+    const counter = defineStateField({
+      initial: 0,
+      key: 'document.lazy-counter',
+      persist: defineValueCodec<number>({
+        decode: (value) => value as number,
+        encode: (value) => {
+          encodeCalls += 1;
+
+          return value;
+        },
+        version: 1,
+      }),
+    });
+    const editor = createEditor({
+      plugins: [definePlugin('lazy-counter', { stateFields: [counter] })],
+      initialValue: [paragraph('body')],
+    });
+
+    editor.update((tx) => tx.setField(counter, 1));
+    const value = editor.read.value();
+
+    assert.equal(encodeCalls, 0);
+    assert.deepEqual(value.meta?.[counter.key], { value: 1, version: 1 });
+    assert.equal(encodeCalls, 1);
+    assert.equal(JSON.stringify(value).includes('lazy-counter'), true);
+    assert.equal(encodeCalls, 1);
+  });
+
   it('initializes persisted state fields and reads them by descriptor', () => {
     const documentTitle = defineStateField({
       key: 'document.title',
@@ -27,8 +57,8 @@ describe('document meta contract', () => {
     });
 
     const explicit = createEditor({
-      extensions: [
-        defineExtension('document-title', { stateFields: [documentTitle] }),
+      plugins: [
+        definePlugin('document-title', { stateFields: [documentTitle] }),
       ] as const,
       initialValue: {
         children: [paragraph('body')],
@@ -38,8 +68,8 @@ describe('document meta contract', () => {
       },
     });
     const defaulted = createEditor({
-      extensions: [
-        defineExtension('document-title', { stateFields: [documentTitle] }),
+      plugins: [
+        definePlugin('document-title', { stateFields: [documentTitle] }),
       ] as const,
       initialValue: [paragraph('body')],
     });
@@ -83,8 +113,8 @@ describe('document meta contract', () => {
       initial: () => 'closed',
     });
     const editor = createEditor({
-      extensions: [
-        defineExtension('document-meta', {
+      plugins: [
+        definePlugin('document-meta', {
           stateFields: [documentTitle, localPanel],
         }),
       ] as const,
@@ -141,14 +171,14 @@ describe('document meta contract', () => {
         meta: { unknown: { retained: true } },
       },
     });
-    const persistedExtension = defineExtension('document-counter', {
+    const persistedPlugin = definePlugin('document-counter', {
       stateFields: [persisted],
     });
-    const localExtension = defineExtension('local-panel', {
+    const localPlugin = definePlugin('local-panel', {
       stateFields: [local],
     });
-    const removePersisted = editor.install(persistedExtension);
-    const removeLocal = editor.install(localExtension);
+    const removePersisted = editor.install(persistedPlugin);
+    const removeLocal = editor.install(localPlugin);
 
     editor.update((tx) => {
       tx.setField(persisted, { count: 7 });
@@ -173,7 +203,7 @@ describe('document meta contract', () => {
       },
     });
 
-    const removeReinstalled = editor.install(persistedExtension);
+    const removeReinstalled = editor.install(persistedPlugin);
 
     assert.equal(editor.read.getField(persisted), stored);
     assert.equal(initialCalls, initialCallsBeforeReinstall);
@@ -193,7 +223,7 @@ describe('document meta contract', () => {
     assert.throws(
       () =>
         editor.install(
-          defineExtension('document-counter-impostor', {
+          definePlugin('document-counter-impostor', {
             stateFields: [impostor],
           })
         ),

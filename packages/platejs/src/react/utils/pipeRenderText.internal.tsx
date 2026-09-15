@@ -10,8 +10,9 @@ import {
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { AnyBasePlugin, EditableProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
-import { PlateText } from '../components/plate-nodes';
+import { EditorText } from '../components/plate-nodes';
 import type { Editor } from '../editor/Editor';
+import { usePlateRenderContext } from '../internal/plate-context';
 import { setDOMTextSyncRendererCapability } from '../plite-react';
 import { getRenderNodeProps } from './getRenderNodeProps.internal';
 import { type RenderText, pluginRenderText } from './pluginRenderText.internal';
@@ -42,7 +43,7 @@ const isTextMarkActive = (marks: Record<string, unknown>, textKey: string) =>
 
 /** @see {@link RenderText} */
 export const pipeRenderText = (
-  editor: Editor,
+  modelEditor: Editor,
   renderTextProp?: EditableProps['renderText']
 ): EditableProps['renderText'] => {
   const renderTexts: RenderTextEntry[] = [];
@@ -50,13 +51,13 @@ export const pipeRenderText = (
   const simpleRenderTexts: SimpleRenderText[] = [];
   const simpleRenderTextByKey = new Map<string, true>();
   const textAttributeEntries: TextAttributesEntry[] = [];
-  const plateRuntime = getPlateRuntime(editor);
+  const plateRuntime = getPlateRuntime(modelEditor);
   const hasInjectNodeProps =
     plateRuntime.pluginCache.inject.nodeProps.text.length > 0;
   const textInjectionPlugins =
     plateRuntime.pluginCache.inject.nodeProps.text.flatMap((name) => {
       const plugin =
-        getCompiledPlatePlugin(editor, name) ??
+        getCompiledPlatePlugin(modelEditor, name) ??
         failInvariant('Expected value to be defined');
       const { nodeProps } = plugin.inject;
       const hasTextInjectionTransform = [
@@ -71,7 +72,7 @@ export const pipeRenderText = (
   const hasUnknownTextInjection = textInjectionPlugins.length > 0;
 
   plateRuntime.pluginList.forEach((plugin) => {
-    const binding = getCompiledPlateModelBinding(editor, plugin);
+    const binding = getCompiledPlateModelBinding(modelEditor, plugin);
 
     if (binding?.kind === 'mark' && binding.markPlacement === 'text') {
       const { component } = plugin;
@@ -97,7 +98,7 @@ export const pipeRenderText = (
             (component && typeof component !== 'string') ||
             plugin.render.attributes
           ),
-          renderText: pluginRenderText(editor, plugin),
+          renderText: pluginRenderText(modelEditor, plugin),
           textKey:
             binding.propertyKey ??
             failInvariant('Expected value to be defined'),
@@ -137,11 +138,15 @@ export const pipeRenderText = (
   const canUsePlainOuterText =
     !hasInjectNodeProps && !renderTextProp && textAttributeEntries.length === 0;
 
-  const renderer: NonNullable<EditableProps['renderText']> = ({
-    attributes: initialAttributes,
-    ...props
+  const Renderer = ({
+    nodeProps,
+  }: {
+    nodeProps: Parameters<NonNullable<EditableProps['renderText']>>[0];
   }) => {
+    const { attributes: initialAttributes, ...props } = nodeProps;
+    const { editor, wrap } = usePlateRenderContext(modelEditor);
     let attributes = initialAttributes;
+    let { children } = props;
     const readOnly = editor.read.view.isReadOnly();
     const text = props.text as Record<string, unknown>;
     let hasActiveSimpleRenderText = false;
@@ -171,7 +176,7 @@ export const pipeRenderText = (
         if (!isTextMarkActive(text, textKey)) continue;
         if (isEditOnly(readOnly, plugin, 'render')) continue;
 
-        props.children = <Tag className={className}>{props.children}</Tag>;
+        children = <Tag className={className}>{children}</Tag>;
       }
     }
 
@@ -179,9 +184,7 @@ export const pipeRenderText = (
       for (const { renderText: RenderText, textKey } of renderTexts) {
         if (!isTextMarkActive(text, textKey)) continue;
 
-        props.children = (
-          <RenderText {...(props as any)}>{props.children}</RenderText>
-        );
+        children = <RenderText {...(props as any)}>{children}</RenderText>;
       }
     }
 
@@ -190,7 +193,7 @@ export const pipeRenderText = (
         const textAttributes = plugin.render.mark?.textAttributes;
         const pluginTextProps =
           typeof textAttributes === 'function'
-            ? textAttributes(props as any)
+            ? textAttributes({ ...props, children } as any)
             : (textAttributes ?? {});
 
         attributes = {
@@ -204,20 +207,20 @@ export const pipeRenderText = (
     });
 
     if (canUsePlainOuterText) {
-      return <span {...attributes}>{props.children}</span>;
+      return wrap(<span {...attributes}>{children}</span>);
     }
 
     if (renderTextProp) {
-      return renderTextProp({ attributes, ...props });
+      return wrap(renderTextProp({ attributes, ...props, children }));
     }
 
     const ctxProps = getRenderNodeProps({
       editor,
-      props: { attributes, ...props } as any,
+      props: { attributes, ...props, children } as any,
       readOnly,
     });
 
-    return <PlateText {...ctxProps}>{props.children}</PlateText>;
+    return wrap(<EditorText {...ctxProps}>{children}</EditorText>);
   };
   const resolveDOMTextSync: Parameters<
     typeof setDOMTextSyncRendererCapability
@@ -233,7 +236,10 @@ export const pipeRenderText = (
     );
 
   return setRetainedTextFlowRendererCapability(
-    setDOMTextSyncRendererCapability(renderer, resolveDOMTextSync),
+    setDOMTextSyncRendererCapability(
+      (props) => <Renderer nodeProps={props} />,
+      resolveDOMTextSync
+    ),
     ({ marks }) =>
       !renderTextProp &&
       textInjectionPlugins.length === 0 &&

@@ -13,7 +13,7 @@ Read [Codex playbook execution](../references/codex-playbooks.md) for the tool, 
    - **Smallest safe decomposition.** If one worker is best, name why.
 4. Implement the bounded unit directly, or delegate an independent unit when permitted and useful. Give a delegate the specific file scope, named data shape, organizing structure and success criteria, then inspect its actual diff. Use **arena** when consequential ownership or public-contract alternatives need independent comparison. A routine error-handling or test-layout choice does not require an arena. Preserve the full implementation method: data shape before logic, comments explaining non-obvious reasons, source grounding for upstream-derived files, and complete adoption/proof for shared-primitive improvements. Commit only with actual authority.
 5. Verify on the matching surface. "Inconclusive" or wrong-surface is not a pass; flag it.
-6. Use the **sequence-verifiable-units** principle skill: build and verify each coherent unit before the next. When commits or PRs are authorized, follow the user's current checkout, staging, and history policy. An ordered implementation does not require rebasing or a PR stack.
+6. Build and verify each coherent unit before dependent work; use **sequence-verifiable-units** when verification boundaries remain unclear. When commits or PRs are authorized, follow the user's current checkout, staging, and history policy. An ordered implementation does not require rebasing or a PR stack.
 7. If the design is contested, `interrogate` before shipping.
 8. Run **Opening a PR** only when publication is authorized; otherwise finish the local handoff.
 

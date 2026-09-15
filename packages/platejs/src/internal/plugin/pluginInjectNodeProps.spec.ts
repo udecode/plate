@@ -1,11 +1,11 @@
 import { createEditor } from '../../lib/editor';
-import { defineBasePlugin } from '../../lib/plugin';
+import { definePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph';
 import { pluginInjectNodeProps } from './pluginInjectNodeProps';
 
 describe('pluginInjectNodeProps', () => {
   it('returns default class and style props for matching elements', () => {
-    const AlignPlugin = defineBasePlugin('align', {
+    const AlignPlugin = definePlugin('align', {
       inject: {
         nodeProps: {
           nodeKey: 'align',
@@ -32,7 +32,7 @@ describe('pluginInjectNodeProps', () => {
         () => [0]
       )
     ).toEqual({
-      className: 'plite-align-center',
+      className: 'editor-align-center',
       style: {
         textAlign: 'center',
       },
@@ -40,7 +40,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('returns undefined when the query fails or the node is missing', () => {
-    const BoldPlugin = defineBasePlugin('bold', {
+    const BoldPlugin = definePlugin('bold', {
       inject: {
         nodeProps: {
           nodeKey: 'bold',
@@ -68,7 +68,7 @@ describe('pluginInjectNodeProps', () => {
 
   it('skips transformProps when inject matching rejects the node', () => {
     const transformProps = mock(({ props }) => props);
-    const TargetPlugin = defineBasePlugin('target', {
+    const TargetPlugin = definePlugin('target', {
       targetPlugins: ['quote'],
       inject: {
         nodeProps: {
@@ -102,7 +102,7 @@ describe('pluginInjectNodeProps', () => {
 
   it('skips transformProps when the query rejects the node', () => {
     const transformProps = mock(({ props }) => props);
-    const QueryPlugin = defineBasePlugin('query', {
+    const QueryPlugin = definePlugin('query', {
       inject: {
         nodeProps: {
           nodeKey: 'tone',
@@ -129,7 +129,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('suppresses default node values unless transformProps forces an injection', () => {
-    const ForcedPlugin = defineBasePlugin('forced', {
+    const ForcedPlugin = definePlugin('forced', {
       inject: {
         nodeProps: {
           defaultNodeValue: false,
@@ -142,7 +142,7 @@ describe('pluginInjectNodeProps', () => {
         },
       },
     });
-    const SilentPlugin = defineBasePlugin('silent', {
+    const SilentPlugin = definePlugin('silent', {
       inject: {
         nodeProps: {
           defaultNodeValue: false,
@@ -176,7 +176,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('uses transform callbacks in precedence order', () => {
-    const TonePlugin = defineBasePlugin('tone', {
+    const TonePlugin = definePlugin('tone', {
       inject: {
         nodeProps: {
           classNames: {
@@ -217,7 +217,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('does not resolve a path when inject matching is pathless', () => {
-    const ListishPlugin = defineBasePlugin('list', {
+    const ListishPlugin = definePlugin('list', {
       targetPlugins: [BaseParagraphPlugin],
       inject: {
         nodeProps: {
@@ -256,7 +256,7 @@ describe('pluginInjectNodeProps', () => {
         getPath
       )
     ).toEqual({
-      className: 'plite-markerStyle-disc',
+      className: 'editor-markerStyle-disc',
       style: {
         markerStyle: 'disc',
       },
@@ -266,7 +266,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('does not resolve a path for inject matching when the plugin has no path-based filters', () => {
-    const PathlessPlugin = defineBasePlugin('pathless', {
+    const PathlessPlugin = definePlugin('pathless', {
       inject: {
         nodeProps: {
           styleKey: '',
@@ -292,7 +292,7 @@ describe('pluginInjectNodeProps', () => {
 
   it('skips path-based injection when the live node no longer resolves', () => {
     const transformProps = mock(({ props }) => props);
-    const PathPlugin = defineBasePlugin('path', {
+    const PathPlugin = definePlugin('path', {
       inject: {
         excludeBelowPlugins: ['quote'],
         nodeProps: {

@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-14-collaboration-plugin-factory",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-14-collaboration-plugin-factory.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-14",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Create provider-bound collaboration descriptors through one reusable plugin factory",
+  "targets": [
+    {
+      "name": "remote-cursor-overlay",
+      "files": [
+        "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-14-collaboration-plugin-factory",
+      "kind": "wiring",
+      "summary": "Create provider-bound descriptors with `CollaborationPlugin.create(options)` while preserving copied cursor presentation.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["remote-cursor-overlay", "collaboration-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-14",
+          "entry": "2026-09-14-collaboration-plugin-factory",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

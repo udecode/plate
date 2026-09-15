@@ -10,12 +10,8 @@ import {
 } from '#platejs-test-internal';
 
 import type { Element } from '../../../core';
-import {
-  ContentSlice,
-  NodeApi,
-  defineExtension,
-  editorCommands,
-} from '../../../core';
+import { ContentSlice, NodeApi, editorCommands } from '../../../core';
+import { defineRuntimePlugin } from '../../../facade';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -963,7 +959,7 @@ describe('table clipboard slow contracts', () => {
         const seen: unknown[] = [];
 
         editor.install(
-          defineExtension(`table-slice-delegation-${openDepth}`, {
+          defineRuntimePlugin(`table-slice-delegation-${openDepth}`, {
             commands: ({ handle }) => [
               handle(editorCommands.replaceSlice, ({ input }) => {
                 seen.push(input.slice);
@@ -975,19 +971,20 @@ describe('table clipboard slow contracts', () => {
         );
 
         const profilerGlobal = globalThis as typeof globalThis & {
-          __PLITE_REACT_RENDER_PROFILER__?: {
+          __EDITOR_REACT_RENDER_PROFILER__?: {
             acceptsCoreDuration: (id: string) => boolean;
             record: (event: { id: string }) => void;
           };
         };
-        const previousProfiler = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+        const previousProfiler =
+          profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
         const fitEvents: string[] = [];
         const commits: unknown[] = [];
         const unsubscribe = editor.subscribeCommit((commit) => {
           commits.push(commit);
         });
 
-        profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+        profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
           acceptsCoreDuration: (id) => id === 'slice-fit-input',
           record: ({ id }) => {
             if (id) fitEvents.push(id);
@@ -997,7 +994,7 @@ describe('table clipboard slow contracts', () => {
         try {
           assert.equal(editor.update.slice.replace(slice), true);
         } finally {
-          profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+          profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
           unsubscribe();
         }
 

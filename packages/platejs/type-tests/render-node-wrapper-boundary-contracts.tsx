@@ -1,20 +1,20 @@
 import {
-  defineBasePlugin,
+  definePlugin as defineHeadlessPlugin,
   type RenderStaticNodeWrapper,
   type RenderStaticNodeWrapperProps,
 } from 'platejs';
 import {
-  definePlatePlugin,
+  definePlugin,
   type RenderNodeWrapper,
   type RenderNodeWrapperProps,
-  toPlatePlugin,
+  toReactPlugin,
   useElementSelector,
   usePath,
 } from 'platejs/react';
 
 import { property, schema } from '../src/core';
 
-const BaseWrapperBoundaryPlugin = defineBasePlugin('baseWrapperBoundary', {
+const BaseWrapperBoundaryPlugin = defineHeadlessPlugin('baseWrapperBoundary', {
   schema: {
     element: {
       content: schema.content.text(),
@@ -23,15 +23,21 @@ const BaseWrapperBoundaryPlugin = defineBasePlugin('baseWrapperBoundary', {
   },
 });
 
-const BaseUnrelatedWrapperPlugin = defineBasePlugin('baseUnrelatedWrapper', {});
+const BaseUnrelatedWrapperPlugin = defineHeadlessPlugin(
+  'baseUnrelatedWrapper',
+  {}
+);
 
-const BaseWrapperDependencyPlugin = defineBasePlugin('baseWrapperDependency', {
-  update: () => ({
-    run: () => true as const,
-  }),
-});
+const BaseWrapperDependencyPlugin = defineHeadlessPlugin(
+  'baseWrapperDependency',
+  {
+    update: () => ({
+      run: () => true as const,
+    }),
+  }
+);
 
-const BaseAdaptedWrapperPlugin = defineBasePlugin('adaptedWrapper', {
+const BaseAdaptedWrapperPlugin = defineHeadlessPlugin('adaptedWrapper', {
   dependencies: [BaseWrapperDependencyPlugin],
   schema: {
     element: {
@@ -41,11 +47,11 @@ const BaseAdaptedWrapperPlugin = defineBasePlugin('adaptedWrapper', {
   },
 });
 
-const AdaptedWrapperPlugin = toPlatePlugin(BaseAdaptedWrapperPlugin, {
+const AdaptedWrapperPlugin = toReactPlugin(BaseAdaptedWrapperPlugin, {
   component: () => null,
 });
 
-const WrapperBoundaryPlugin = definePlatePlugin('wrapperBoundary', {
+const WrapperBoundaryPlugin = definePlugin('wrapperBoundary', {
   api: () => ({
     value: () => 'exact' as const,
   }),
@@ -177,7 +183,7 @@ const useSelectedToneContract = () => {
   void invalidSelectedTone;
 };
 
-const UnrelatedWrapperPlugin = definePlatePlugin('unrelatedWrapper', {});
+const UnrelatedWrapperPlugin = definePlugin('unrelatedWrapper', {});
 
 UnrelatedWrapperPlugin.configure({
   slots: {

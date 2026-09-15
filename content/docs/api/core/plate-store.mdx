@@ -8,7 +8,7 @@ state, `usePluginStore` for plugin state, and event hooks for focus history.
 
 ## Editor state
 
-Render editor hooks below `Plate`, or below a [PlateController](/docs/api/core/plate-controller)
+Render editor hooks below `EditorRoot`, or below a [EditorController](/docs/api/core/plate-controller)
 that connects shared UI to its editors.
 
 | Hook | Returns |
@@ -22,7 +22,7 @@ that connects shared UI to its editors.
 | `useEditorValue()` | The current selected-root children. |
 | `useEditorState(selector, options?)` | A subscribed value derived from immutable editor state. |
 
-Hooks use the editor selected by the nearest `PlateContent`, `Plate`, `PlateController`, or `EditorProvider`. `useOptionalEditor()` returns `null` without a provider or selected editor. Application IDs do not route mounted views.
+Hooks use the editor selected by the nearest `EditorContent`, `EditorRoot`, `EditorController`, or `EditorProvider`. `useOptionalEditor()` returns `null` without a provider or selected editor. Application IDs do not route mounted views.
 
 ```tsx
 import { useEditorMounted, useEditorValue } from 'platejs/react';
@@ -37,12 +37,12 @@ export function EditorStatus() {
 
 ## Container and lifetime
 
-`useEditorContainerRef()` returns the matching `PlateContainer` ref. Its
+`useEditorContainerRef()` returns the matching `EditorContainer` ref. Its
 `current` value is `null` before mount and after unmount. Use it to anchor
 editor UI to its container; it does not identify the editable DOM element.
 
-`Plate` and `PlateContent` manage editor registration and mount status. Set
-primary-editor eligibility through `Plate`'s `primary` prop and pass read-only
+`EditorRoot` and `EditorContent` manage editor registration and mount status. Set
+primary-editor eligibility through `EditorRoot`'s `primary` prop and pass read-only
 state through their `readOnly` props.
 
 ## Plugin state
@@ -51,9 +51,9 @@ Plugin state belongs to an installed descriptor and its editor. Let the
 descriptor infer the state keys and selector result.
 
 ```tsx
-import { definePlatePlugin, usePluginStore } from 'platejs/react';
+import { definePlugin, usePluginStore } from 'platejs/react';
 
-export const PanelPlugin = definePlatePlugin('panel', {
+export const PanelPlugin = definePlugin('panel', {
   initialState: { open: false },
 });
 
@@ -66,7 +66,7 @@ export function PanelStatus() {
 
 Include `PanelPlugin` in the editor's `plugins` array. Use
 `usePluginStore(PanelPlugin, (state) => state.open)` for a selector callback.
-`useEditorPlugin(PanelPlugin)` returns the descriptor's inferred portal for API
+`useEditor().plugin(PanelPlugin)` returns the descriptor's inferred portal for API
 calls; it does not subscribe to plugin state. Outside React rendering,
 `editor.plugin(PanelPlugin).store.get('open')` reads the current value.
 
@@ -89,7 +89,7 @@ export function EditorTools() {
 }
 ```
 
-Render this hook under `Plate`, or under `PlateController` with an active editor.
+Render this hook under `EditorRoot`, or under `EditorController` with an active editor.
 Use `useOptionalEditor()` to guard a child containing strict editor hooks while
 an empty controller has no editor. State, value and selection hooks require an
 active editor.

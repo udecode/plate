@@ -1,336 +1,324 @@
 ---
-title: Suggestion
-description: Record proposed document edits and review them with application-owned comments.
+title: Suggestions
+description: Propose text, formatting, and block edits, then review them with copied Plate UI.
 docs:
+  - route: /docs/authored-changes
+    title: Authored Changes
   - route: /docs/discussion
     title: Discussion
   - route: /docs/comment
     title: Comments
-  - route: /docs/components/suggestion
-    title: Suggestion Leaf
   - route: /docs/components/suggestion-toolbar-button
     title: Suggestion Toolbar Button
 ---
 
-<ComponentPreview name="discussion-demo" />
+<ComponentPreview name="suggestion-demo" height="360px" />
 
-Suggestions record proposed document edits. They remain document data because accepting or rejecting one mutates editor content; [Comments](/docs/comment) stay outside the document, and [Discussion](/docs/discussion) presents both in one review view.
+The demo starts in Suggestion mode with a proposed insertion and deletion. Open a paragraph's discussion button to accept or reject its change, then try undo and redo. Switch to Editing to see accepted content, or type in Suggestion mode to propose an edit.
+
+You can type, paste, or press Enter inside your own pending deletion. These edits remain part of that deletion. Backspace preserves the original deleted characters and removes text you added inside it. Reject restores the original content; Accept removes the entire deletion, including your additions.
 
 <PackageInfo>
 
 ## Features
 
-- **Text Suggestions:** Add suggestions as text marks with inline annotations
-- **Block Suggestions:** Create suggestions for entire blocks of content
-- **State Tracking:** Track suggestion state and user interactions
-- **Undo/Redo Support:** Full undo/redo support for suggestion changes
-- **Combined Review:** Accept, reject, and discuss suggestions in the copied Discussion UI
+- Switch a mounted editor view between editing and suggesting
+- Decorate proposed text, formatting, structural edits, and retained content
+- Keep active suggestion state local to each mounted view
+- Read stable native authored changes for custom review UI
+- Save pending changes and decisions with the complete document
+- Add review cards and comment replies through copied registry UI
 
 </PackageInfo>
 
-## Kit usage
+## Kit Usage
 
 <Steps>
 
 ### Installation
 
-The fastest way to add suggestion functionality is with the `SuggestionKit`, which includes pre-configured `SuggestionPlugin` and related components along with their [Plate UI](/docs/installation/plate-ui) components.
+Start with an [Editor](/docs/editor), then install the suggestion and discussion UI:
+
+```bash
+npx shadcn@latest add https://platejs.org/r/basic-blocks.json https://platejs.org/r/suggestion.json https://platejs.org/r/discussion.json https://platejs.org/r/suggestion-toolbar-button.json https://platejs.org/r/history-toolbar-button.json
+```
 
 <ComponentSource name="suggestion" />
 
-- [`SuggestionLeaf`](/docs/components/suggestion): Renders suggestion text marks
-- `VoidRemoveSuggestionOverlay`: Renders removed block suggestions
-- [`SuggestionLineBreak`](/docs/components/suggestion): Handles line breaks in suggestions
+`SuggestionKit` configures the package `SuggestionPlugin` with `render.contentAttributes` for its default styles. The package supplies suggestion modes, semantic attributes, active-change behavior, and authored-change hooks. Core applies the kit's classes to the existing content root, including when you render `EditorContent` directly. `DiscussionKit` adds block buttons, Accept and Reject cards, and comment replies.
 
-### Add kit
+### Add the kits
 
-```tsx
-import { createEditor } from 'platejs/react';
+```tsx title="components/editor/suggestion-editor.tsx" showLineNumbers
+'use client';
+
+import { CommentsPlugin } from 'platejs/comments/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
+
+import { BasicBlocksKit } from '@/components/editor/basic-blocks';
+import { DiscussionKit } from '@/components/editor/discussion';
+import { Editor, EditorContainer } from '@/components/editor/editor';
+import {
+  RedoToolbarButton,
+  UndoToolbarButton,
+} from '@/components/editor/history-toolbar-button';
 import { SuggestionKit } from '@/components/editor/suggestion';
+import { SuggestionToolbarButton } from '@/components/editor/suggestion-toolbar-button';
+import { Toolbar } from '@/components/editor/toolbar';
 
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...SuggestionKit,
-  ],
-});
+export function SuggestionEditor() {
+  const editor = useCreateEditor({
+    plugins: [
+      ...BasicBlocksKit,
+      ...SuggestionKit,
+      ...DiscussionKit,
+      CommentsPlugin.configure({
+        initialState: {
+          currentUserId: 'alice',
+          users: { alice: { id: 'alice', name: 'Alice' } },
+        },
+      }),
+    ],
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'Edit this sentence.' }] },
+    ],
+    userId: 'alice',
+  });
+
+  return (
+    <EditorRoot
+      editor={editor}
+      authored={{ intent: 'propose', projection: 'markup' }}
+    >
+      <EditorContainer>
+        <Toolbar>
+          <UndoToolbarButton />
+          <RedoToolbarButton />
+          <SuggestionToolbarButton />
+        </Toolbar>
+        <Editor />
+      </EditorContainer>
+    </EditorRoot>
+  );
+}
 ```
+
+Replace `'alice'` with the authenticated user's ID in both `userId` and Comments' `currentUserId`. `userId` attributes document changes. `currentUserId` identifies the person writing replies, while `users` supplies names and optional avatars.
+
+`SuggestionPlugin` depends on `DefaultAuthoredPlugin`, which reads the editor's `userId` once per transaction. A missing identity rejects tracked document writes. Do not install another `authored(...)` descriptor alongside the kit.
 
 </Steps>
 
-## Manual usage
+## Set the mode
 
-<Steps>
+Set the starting view with `EditorRoot authored={{ intent: 'propose', projection: 'markup' }}` as in the example above. Changing either value updates that view. Rerendering with the same values preserves mode changes made by its controls.
 
-### Installation
-
-```bash
-npm install platejs @tanstack/react-virtual
-```
-
-### Extend suggestion plugin
-
-Create the suggestion plugin with extended configuration for state management:
+For an interactive mode control, call the `SuggestionPlugin` portal from the mounted editor view:
 
 ```tsx
-import { SuggestionPlugin } from 'platejs/suggestion/react';
-import {
-  SuggestionLeaf,
-  SuggestionLineBreak,
-  VoidRemoveSuggestionOverlay,
-} from '@/components/editor/suggestion';
+import { SuggestionPlugin, useSuggestionMode } from 'platejs/suggestion/react';
+import { useEditor } from 'platejs/react';
 
-export const suggestionPlugin = SuggestionPlugin.configure({
-  component: SuggestionLeaf,
-  initialState: {
-    currentUserId: 'alice',
-  },
-  slots: {
-    afterNodeChildren: VoidRemoveSuggestionOverlay,
-    wrapNodeChildren: SuggestionLineBreak,
-  },
-});
-```
-
-- `SuggestionPlugin` owns the active and hovered suggestion state used by renderers
-- `initialState.currentUserId`: ID of the current user creating suggestions
-- `.configure({ component: SuggestionLeaf })`: Renders suggestion text marks with
-  [`SuggestionLeaf`](/docs/components/suggestion)
-- `slots.afterNodeChildren`: Renders the remove overlay for block suggestions
-- `slots.wrapNodeChildren`: Renders suggested line breaks
-
-### Add plugins
-
-```tsx
-import { createEditor } from 'platejs/react';
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    suggestionPlugin,
-  ],
-});
-```
-
-### Enable suggestion mode
-
-Use the plugin's API to control suggestion mode:
-
-```tsx
-import { useEditor, usePluginStore } from 'platejs/react';
-
-function SuggestionToolbar() {
+export function SuggestionModeButton() {
   const editor = useEditor();
-  const isSuggesting = usePluginStore(suggestionPlugin, 'isSuggesting');
-
-  const toggleSuggesting = () => {
-    editor
-      .plugin(suggestionPlugin)
-      .store.set({ isSuggesting: !isSuggesting });
-  };
+  const mode = useSuggestionMode();
+  const suggestion = editor.plugin(SuggestionPlugin);
 
   return (
-    <button onClick={toggleSuggesting}>
-      {isSuggesting ? 'Stop Suggesting' : 'Start Suggesting'}
+    <button
+      onClick={() =>
+        suggestion.api.setMode(
+          mode === 'suggesting' ? 'editing' : 'suggesting'
+        )
+      }
+    >
+      {mode === 'suggesting' ? 'Stop suggesting' : 'Suggest edits'}
     </button>
   );
 }
 ```
 
-### Add toolbar button
+The two modes map to authored views:
 
-You can add [`SuggestionToolbarButton`](/docs/components/suggestion-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle suggestion mode in the editor.
-
-</Steps>
-
-## Keyboard shortcuts
-
-<KeyTable>
-  <KeyTableItem hotkey="Cmd + Shift + S">
-    Add a suggestion on the selected text.
-  </KeyTableItem>
-</KeyTable>
-
-## Discussion review
-
-The copied Discussion UI reads suggestions from the editor and renders one card per current suggestion. Each card shows the author, timestamp, proposed add/delete/replace/update operation, Accept and Reject actions, and application-owned comment threads attached to that suggestion.
-
-Install the combined view from the [Discussion guide](/docs/discussion). `editor.update.suggestion.accept` and `editor.update.suggestion.reject` remain the only document mutation owners; the Discussion UI only calls those updates and renders their current state.
-
-## Plugins
-
-### `SuggestionPlugin`
-
-Plugin for creating and managing text and block suggestions with state tracking.
-
-<API name="SuggestionPlugin">
-<APIOptions>
-  <APIItem name="currentUserId" type="string | null">
-    ID of the current user creating suggestions. Required for proper suggestion attribution.
-  </APIItem>
-  <APIItem name="isSuggesting" type="boolean">
-    Whether the editor is currently in suggestion mode. Used internally to track state.
-  </APIItem>
-</APIOptions>
-</API>
-
-## Plugin API
-
-Suggestion queries and value helpers live on the installed plugin. This keeps
-the editor type, plugin state, and schema in the inference path.
-
-```tsx
-const { api, read } = editor.plugin(BaseSuggestionPlugin);
-const suggestions = read.nodes();
-const reviews = read.reviews();
-```
-
-| Method | Description |
+| Suggestion mode | Authored view |
 | --- | --- |
-| `read.reviews()` | Returns current groups with IDs, operation kinds, ranges, and typed changes. |
-| `api.createFragment(fragment, identity)` | Adds explicit insertion suggestion identity to a fragment. |
-| `api.createIdentity(options?)` | Creates a suggestion ID and timestamp. |
-| `api.dataList(node)` | Returns every inline suggestion record on a text node. |
-| `read.findIdentity(options)` | Finds an existing suggestion identity. |
-| `api.getProps(node, options?)` | Builds suggestion properties for a node. |
-| `api.inlineData(node)` | Returns the active inline suggestion record. |
-| `api.isBlockSuggestion(node)` | Narrows a node to a block suggestion. |
-| `api.isCurrentUser(node)` | Checks suggestion ownership against `currentUserId`. |
-| `api.isTracking(tags)` | Checks whether suggestion middleware tracks an update. |
-| `api.key(id?)` / `api.keyId(node)` / `api.keys(node)` | Reads and builds inline suggestion keys. |
-| `read.node(options?)` / `read.nodes(options?)` | Finds one or all suggestion entries. |
-| `read.nodeEntries(id, options?)` | Finds inline entries for a suggestion ID. |
-| `api.id(node)` | Returns a node's suggestion ID. |
-| `api.skipDeletes(node)` | Returns text without removed suggestions. |
-| `api.suggestionData(node)` | Returns direct suggestion data, with text-child inheritance for inline elements. |
-| `api.untracked(fn)` | Runs synchronous work without recursively creating suggestions. |
-| `api.userId(node)` / `api.userIds(node)` | Returns suggestion author IDs. |
+| `'suggesting'` | `{ intent: 'propose', projection: 'markup' }` |
+| `'editing'` | `{ intent: 'edit', projection: 'accepted' }` |
 
-## Review data
+Mode belongs to the exact mounted view. Two views over one document can use different modes without changing each other.
 
-`read.reviews()` returns `SuggestionReview` records with `id`, `createdAt` (a
-numeric timestamp), `userId`, `type`, `range`, and `changes`. Each change contains
-its current `node`, `path`, and serialized suggestion `data`. Operation kinds
-include `insert`, `remove`, `replace`, and `update`, including empty suggestions.
-
-React views can read the same groups with `useSuggestionReviews` from
-`platejs/suggestion/react`. The hook refreshes relevant document changes and
-shares the feature's snapshot between readers. Format labels and dates in the
-view. The copied kit keeps its active card ID in its own plugin state.
-
-## Updates
-
-Accept and reject take a suggestion ID and resolve its current document data:
+For proposed content without retained review fragments, set an advanced authored view directly:
 
 ```tsx
-editor.update.suggestion.accept(id);
-editor.update.suggestion.reject(id);
-```
+import { DefaultAuthoredPlugin } from 'platejs/authored';
 
-| Update | Description |
-| --- | --- |
-| `editor.update.suggestion.accept(id)` | Applies the proposed change. |
-| `editor.update.suggestion.reject(id)` | Discards the proposed change. |
-| `editor.update.suggestion.addMark(key, value)` | Adds a mark as a suggestion. |
-| `editor.update.suggestion.removeMark(key, previousValue?)` | Removes a mark as a suggestion. |
-| `editor.update.suggestion.delete(at, options?)` | Records a range deletion. |
-| `editor.update.suggestion.deleteFragment(options?)` | Records deletion of the active selection. |
-| `editor.update.suggestion.insertFragment(fragment, insertContent?)` | Inserts a suggested fragment. |
-| `editor.update.suggestion.insertText(text)` | Inserts suggested text. |
-| `editor.update.suggestion.removeNodes(nodes)` | Records node removals. |
-| `editor.update.suggestion.setNodes(options?)` | Records node property updates. |
+const authored = editor.plugin(DefaultAuthoredPlugin);
 
-## Update policies
-
-### `SuggestionUpdatePolicy.skip`
-
-Runs an update without creating suggestion marks. Use the package-owned preset
-for direct or atomic updates.
-
-```tsx
-import { SuggestionUpdatePolicy } from 'platejs/suggestion';
-
-editor.update(SuggestionUpdatePolicy.skip, (tx) => {
-  tx.text.insert('Accepted text');
+authored.api.setView({
+  intent: 'propose',
+  projection: 'proposed',
 });
 ```
 
-## Types
+Changing the projection does not accept or reject changes. Coordinates can differ between projections, so read selections and apply edits through the view that produced them.
 
-### `SuggestionText`
+## Read view state
 
-Text nodes that can contain suggestions.
+The React entrypoint exposes focused hooks for custom controls and review UI:
 
-<API name="SuggestionText">
-<APIAttributes>
-  <APIItem name="suggestion" type="boolean" optional>
-    Whether this is a suggestion.
-  </APIItem>
-  <APIItem name="suggestion_<id>" type="InlineSuggestionData" optional>
-    Suggestion data. Multiple suggestions can exist in one text node.
-  </APIItem>
-</APIAttributes>
-</API>
+```tsx
+import {
+  useActiveSuggestion,
+  useSuggestionChanges,
+  useSuggestionMode,
+} from 'platejs/suggestion/react';
 
-### `SuggestionElement`
+const mode = useSuggestionMode();
+const changes = useSuggestionChanges(path);
+const { activeId, setActiveId } = useActiveSuggestion();
+```
 
-Block elements that contain suggestion metadata.
+`useSuggestionChanges(path)` returns native `AuthoredChange` records touching that block. It updates for document, authored-state, and projection changes while preserving stable results when the visible records are unchanged.
 
-<API name="SuggestionElement">
-<APIAttributes>
-  <APIItem name="suggestion" type="SuggestionData">
-    Block-level suggestion data including type, user, and timing information.
-  </APIItem>
-</APIAttributes>
-</API>
+Clicking an element with `data-editor-authored-change` activates its change in the current view. Clicking unmarked editor content clears it. Unmounting the view, changing projection, or deciding the change also clears stale active state. Use `setActiveId` when a custom card or control needs to activate a change directly.
 
-### `InlineSuggestionData`
+## Examples
 
-Data structure for inline text suggestions.
+### Formatting and blocks
 
-<API name="InlineSuggestionData">
-<APIAttributes>
-  <APIItem name="id" type="string">
-    Unique identifier for the suggestion.
-  </APIItem>
-  <APIItem name="userId" type="string">
-    ID of the user who created the suggestion.
-  </APIItem>
-  <APIItem name="createdAt" type="number">
-    Timestamp when the suggestion was created.
-  </APIItem>
-  <APIItem name="type" type="'insert' | 'remove' | 'update'">
-    Type of suggestion operation.
-  </APIItem>
-  <APIItem name="newProperties" type="object" optional>
-    For update suggestions, the new mark properties being suggested.
-  </APIItem>
-  <APIItem name="properties" type="object" optional>
-    For update suggestions, the previous mark properties.
-  </APIItem>
-</APIAttributes>
-</API>
+The first proposal makes a sentence bold; the second inserts a paragraph. Open each block's discussion button to accept or reject it. Select text and use **Bold**, or press Enter to propose another paragraph.
 
-### `SuggestionData`
+<ComponentPreview name="suggestion-format-demo" height="360px" />
 
-Data structure for block-level suggestions.
+Add [Basic Marks](/docs/basic-marks) for supported text formatting. Normal editor commands record text, mark, and node operations as proposals while the view is in suggesting mode.
 
-<API name="SuggestionData">
-<APIAttributes>
-  <APIItem name="id" type="string">
-    Unique identifier for the suggestion.
-  </APIItem>
-  <APIItem name="userId" type="string">
-    ID of the user who created the suggestion.
-  </APIItem>
-  <APIItem name="createdAt" type="number">
-    Timestamp when the suggestion was created.
-  </APIItem>
-  <APIItem name="type" type="'insert' | 'remove'">
-    Type of block suggestion operation.
-  </APIItem>
-  <APIItem name="isLineBreak" type="boolean" optional>
-    Whether this suggestion represents a line break insertion.
-  </APIItem>
-</APIAttributes>
-</API>
+### Accepted, proposed, and markup
+
+Switch projections to compare accepted content, the proposed result, and retained review fragments. The proposals stay pending in all three views.
+
+<ComponentPreview name="suggestion-view-demo" height="400px" />
+
+This example sets `readOnly` on both `EditorRoot` and `Editor`. Projection controls choose visible content; read-only prevents document input. The application still owns authorization for review actions and remote writes.
+
+### Save proposals and replies
+
+Open a change's discussion button and add a reply, then save a snapshot. Accept or reject that change, or type another proposal, and reload the snapshot.
+
+<ComponentPreview name="suggestion-persistence-demo" height="440px" />
+
+The snapshot stays in memory and disappears when the page reloads. **Reload snapshot** creates an editor from the saved document and threads, discarding unsaved work. Pending changes and decisions belong to the document; the local undo stack belongs to the editor session.
+
+## Create and decide changes
+
+Suggesting mode turns ordinary input and editor commands into native proposals. A headless or explicit transaction can begin a proposal with `tx.authored.propose()`:
+
+```tsx
+let changeId = '';
+
+editor.update((tx) => {
+  changeId = tx.authored.propose();
+  tx.text.insert(' proposed', {
+    at: { offset: 4, path: [0, 0] },
+  });
+});
+```
+
+Pass `{ changeId }` to amend a pending contribution owned by the current author. Use separate proposing transactions when reviewers need to decide the edits independently.
+
+Authored owns review decisions and their structured results:
+
+```tsx
+import { DefaultAuthoredPlugin } from 'platejs/authored';
+
+const authored = editor.plugin(DefaultAuthoredPlugin);
+const selection = authored.read.select({ ids: [changeId] });
+const result = authored.update.decide({
+  action: 'accept',
+  selection,
+});
+```
+
+Use `action: 'reject'` to reject the change. Inspect `result.status`: another edit can make the selection `stale`, while dependencies or conflicts can make it `blocked`. [Authored Changes](/docs/authored-changes#review-changes) covers queries, previews, bulk decisions, and result handling.
+
+## Save and reload
+
+Save the complete value returned by `editor.read.value()`. Its `meta.authored` field belongs to the document codec; do not edit it or copy proposal metadata into nodes.
+
+```tsx
+const savedDocument = editor.read.value();
+const savedThreads = editor.plugin(CommentsPlugin).api.getThreads();
+```
+
+Persist the document and comment threads together for the same application revision. Use the same content plugins when loading the document. Saving only `children` discards the authored records.
+
+Pass the saved document to `initialValue` and the saved threads to `CommentsPlugin.configure({ initialState: { initialThreads: savedThreads } })`. The document preserves each change's author and ID, so reply targets remain attached to the same suggestions. Set `userId` to the current author; loading another author's suggestions does not require changing it or replaying their edits.
+
+For JSON, Markdown, HTML, or DOCX, choose an explicit [export projection](/docs/authored-changes#export-explicit-projections). Accepted and proposed exports omit review records; use `review` when the saved format must preserve them.
+
+## Headless usage
+
+Use `BaseSuggestionPlugin` for suggestion modes and semantic decorations without React, Comments, or copied UI:
+
+```tsx title="suggestion-editor.ts" showLineNumbers
+import { BaseParagraphPlugin, createEditor } from 'platejs';
+import { BaseSuggestionPlugin } from 'platejs/suggestion';
+
+const editor = createEditor({
+  plugins: [BaseParagraphPlugin, BaseSuggestionPlugin],
+  initialValue: [
+    { type: 'paragraph', children: [{ text: 'Edit this sentence.' }] },
+  ],
+  userId: 'alice',
+});
+
+editor.plugin(BaseSuggestionPlugin).api.setMode('suggesting');
+```
+
+Ordinary suggestion ranges expose `data-editor-authored-change`, `data-editor-authored-kind`, and `data-editor-authored-status`. Retained fragments expose `data-editor-authored-change` and `data-editor-retained`. Add application styles against these attributes through the plugin's `render.contentAttributes`. Static presets can configure `BaseSuggestionPlugin` with a server-safe attribute object; `SuggestionKit` supplies the live default styles.
+
+## Discussion review
+
+Add [DiscussionKit](/docs/discussion) for Accept and Reject cards and replies attached to a change. It composes optional Comments data with native authored changes; review presentation remains copied application code.
+
+To attach a conversation programmatically, target the authored change ID:
+
+```tsx
+await editor.plugin(CommentsPlugin).api.createThread({
+  body: [
+    { type: 'paragraph', children: [{ text: 'Can we explain this edit?' }] },
+  ],
+  target: { type: 'change', id: changeId },
+});
+```
+
+Comments stores thread records separately from the document. Accepting or rejecting a change hides its review card without resolving its thread.
+
+## API Reference
+
+### `BaseSuggestionPlugin`
+
+Import from `platejs/suggestion`. It supplies the two suggestion modes and CSS-free semantic decorations, and depends on `DefaultAuthoredPlugin` for change records and identity.
+
+### `SuggestionPlugin`
+
+Import from `platejs/suggestion/react`. It extends `BaseSuggestionPlugin` with exact-view active state and click activation.
+
+### `suggestion.api.setMode(mode)`
+
+Set the exact view to `'suggesting'` or `'editing'` through `editor.plugin(SuggestionPlugin)` or `editor.plugin(BaseSuggestionPlugin)`.
+
+### `suggestion.read.mode()`
+
+Read `'suggesting'` or `'editing'` for that editor view.
+
+### React hooks
+
+| Hook | Result |
+| --- | --- |
+| `useSuggestionMode()` | The exact mounted view's `'suggesting' \| 'editing'` mode. |
+| `useSuggestionChanges(path)` | Native `AuthoredChange` records touching the block at `path`. |
+| `useActiveSuggestion()` | The view-local `activeId` and `setActiveId` function. |
+
+### `SuggestionKit`
+
+The copied registry kit configures `SuggestionPlugin` with content-root styles. Generic editor components remain independent of suggestions. Review cards, Comments integration, toolbars, and popovers remain in registry code.

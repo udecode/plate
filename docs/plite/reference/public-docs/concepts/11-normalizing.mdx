@@ -1,0 +1,143 @@
+---
+title: "Normalizing"
+description: "Keep complex Plite documents valid with built-in constraints and focused repairs."
+---
+
+Plite constructs canonical document shapes before publication. Plugins add
+focused corrections for app-specific invariants; there is no public
+operation-by-operation normalizer loop.
+
+## Canonical constraints
+
+Plite enforces a small structural contract. It keeps browser selection,
+canonical changes, history, and collaboration deterministic.
+
+1. **Every `Element` has a text descendant.** Even void elements keep an empty text child so selections can always point into text.
+2. **Adjacent text nodes with the same properties merge.** Construction emits one canonical leaf instead of retaining equivalent neighbors.
+3. **Blocks contain either blocks, or inline/text content.** A block cannot mix block children with inline/text children.
+4. **Inline nodes have text on both sides.** Empty text nodes are inserted before, after, or between inline nodes when needed.
+5. **The editor root contains block nodes.** Top-level inline or text nodes are removed.
+6. **Nodes must be JSON-serializable.** Documents and changes need to move cleanly through storage and collaboration layers.
+7. **Node property values should not be `null`.** Use optional properties instead so the document has one unambiguous property shape.
+
+These constraints are the base document contract, not app preferences.
+Construction and contextual slice fitting produce this shape directly.
+Imported `DocumentChange` values are validated against the compiled schema
+instead of being accepted and repaired later.
+
+## Write canonical shapes
+
+Commands should create the shape they intend to read later in the same
+transaction. Corrections run during transaction closeout, so command logic must
+not depend on correction timing.
+
+Avoid writes that leave invalid property values:
+
+```javascript
+editor.update((tx) => {
+  tx.nodes.set({ url: null }, { at: path });
+});
+```
+
+`null` is not a valid node property value. The write fails validation instead
+of becoming an ambiguous document state.
+
+Prefer a repair that produces a valid shape:
+
+```javascript
+editor.update((tx) => {
+  tx.nodes.unset("url", { at: path });
+});
+```
+
+Or remove the invalid wrapper:
+
+```javascript
+editor.update((tx) => {
+  tx.nodes.unwrap({ at: path });
+});
+```
+
+## Group related writes
+
+Put related structural writes in one `editor.update(...)`. The callback reads
+one isolated draft, and Plite publishes one canonical `DocumentChange`.
+
+```ts
+import { ElementApi, type Editor } from "plitejs";
+
+const LIST_TYPES = ["numbered-list", "bulleted-list"];
+
+function changeBlockType(editor: Editor, type: string) {
+  editor.update((tx) => {
+    const isActive = isBlockActive(tx, type);
+    const isList = LIST_TYPES.includes(type);
+
+    tx.nodes.unwrap({
+      match: (node) =>
+        ElementApi.isElement(node) && LIST_TYPES.includes(node.type),
+      split: true,
+    });
+
+    tx.nodes.set({
+      type: isActive ? "paragraph" : isList ? "list-item" : type,
+    });
+
+    if (!isActive && isList) {
+      tx.nodes.wrap({ type, children: [] });
+    }
+  });
+}
+```
+
+The callback reads the live draft. Plite runs deterministic corrections over
+the changed ranges, then publishes one immutable commit.
+
+## Plugin corrections
+
+Reusable app-specific repairs belong in editor plugins. Each correction
+declares the node event that can make its invariant stale: `children`,
+`content`, or `properties`.
+
+```ts
+import { ElementApi, definePlugin } from "plitejs";
+
+const ValidLinkPlugin = definePlugin("valid-link", {
+  corrections: [
+    {
+      event: "properties",
+      correct({ entry: [node, path], tx }) {
+        if (
+          ElementApi.isElement(node) &&
+          node.type === "link" &&
+          node.url === null
+        ) {
+          tx.nodes.unset("url", { at: path });
+        }
+      },
+    },
+  ],
+});
+```
+
+Corrections are event-indexed and start from the transaction's changed ranges.
+When a correction changes another relevant entry, the bounded worklist queues
+that entry. This is targeted maintenance, not a whole-document pass after every
+operation.
+
+## Repairing a whole document
+
+Use `editor.update.value.repair()` when raw initial data or a newly installed
+correction may need an all-root maintenance pass.
+
+```ts
+editor.update.value.repair();
+```
+
+Repair starts its own history-skipped update, scans the primary document and
+every named root, and publishes nothing when the value is already canonical.
+It cannot run inside another `editor.update(...)`. Feature commands should rely
+on normal changed-range closeout instead.
+
+Use transaction methods inside corrections and fix one concrete violation per
+entry. Avoid direct mutable editor fields.

@@ -1,16 +1,16 @@
 import { schema } from '../../core';
 import { createEditor } from '../editor';
 import type { AnyBasePlugin } from '../plugin';
-import { defineBasePlugin } from '../plugin';
+import { definePlugin } from '../plugin';
 import { getInjectMatch } from './getInjectMatch';
 
-const ParagraphPlugin = defineBasePlugin('paragraph', {
+const ParagraphPlugin = definePlugin('paragraph', {
   schema: {
     element: { content: schema.content.open({ default: 'text', min: 1 }) },
   },
 });
 
-const QuotePlugin = defineBasePlugin('quote', {
+const QuotePlugin = definePlugin('quote', {
   schema: {
     element: {
       content: schema.content.group('block'),
@@ -18,7 +18,7 @@ const QuotePlugin = defineBasePlugin('quote', {
   },
 });
 
-const LinkPlugin = defineBasePlugin('link', {
+const LinkPlugin = definePlugin('link', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -40,13 +40,13 @@ const createMatchEditor = (plugin: AnyBasePlugin) =>
 
 describe('getInjectMatch', () => {
   it('respects isElement, isBlock, and isLeaf filters', () => {
-    const elementPlugin = defineBasePlugin('elementFilter', {
+    const elementPlugin = definePlugin('elementFilter', {
       inject: { isElement: true },
     });
-    const blockPlugin = defineBasePlugin('blockFilter', {
+    const blockPlugin = definePlugin('blockFilter', {
       inject: { isBlock: true },
     });
-    const leafPlugin = defineBasePlugin('leafFilter', {
+    const leafPlugin = definePlugin('leafFilter', {
       inject: { isLeaf: true },
     });
 
@@ -84,13 +84,13 @@ describe('getInjectMatch', () => {
   });
 
   it('respects targetPlugins and excludePlugins', () => {
-    const targetPlugin = defineBasePlugin('targetFilter', {
+    const targetPlugin = definePlugin('targetFilter', {
       targetPlugins: [ParagraphPlugin],
     });
-    const excludePlugin = defineBasePlugin('excludeFilter', {
+    const excludePlugin = definePlugin('excludeFilter', {
       inject: { excludePlugins: [QuotePlugin] },
     });
-    const missingTargetPlugin = defineBasePlugin('missingTargetFilter', {
+    const missingTargetPlugin = definePlugin('missingTargetFilter', {
       targetPlugins: ['missingOptionalPlugin'],
     });
 
@@ -138,7 +138,7 @@ describe('getInjectMatch', () => {
   });
 
   it('respects excludeBelowPlugins and maxLevel', () => {
-    const plugin = defineBasePlugin('depthFilter', {
+    const plugin = definePlugin('depthFilter', {
       inject: {
         excludeBelowPlugins: [QuotePlugin],
         maxLevel: 1,
@@ -163,7 +163,7 @@ describe('getInjectMatch', () => {
   });
 
   it('resolves string exclusions through configured schema types', () => {
-    const AliasedQuotePlugin = defineBasePlugin('aliasedQuote', {
+    const AliasedQuotePlugin = definePlugin('aliasedQuote', {
       schema: {
         element: {
           content: schema.content.group('block'),
@@ -171,7 +171,7 @@ describe('getInjectMatch', () => {
         },
       },
     });
-    const plugin = defineBasePlugin('stringFilter', {
+    const plugin = definePlugin('stringFilter', {
       inject: {
         excludeBelowPlugins: ['aliasedQuote'],
       },
@@ -193,8 +193,8 @@ describe('getInjectMatch', () => {
   });
 
   it('does not collapse exact exclusions to a same-name plugin family', () => {
-    const ForeignQuotePlugin = defineBasePlugin('quote', {});
-    const plugin = defineBasePlugin('familyFilter', {
+    const ForeignQuotePlugin = definePlugin('quote', {});
+    const plugin = definePlugin('familyFilter', {
       inject: {
         excludeBelowPlugins: [ForeignQuotePlugin],
         excludePlugins: [ForeignQuotePlugin],

@@ -24,9 +24,9 @@ const ROOT_TO_EDITABLE_FOCUS_REQUEST = new WeakMap<globalThis.Node, object>();
 
 const createEditableFocusRequest = <
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TPlugins extends readonly unknown[] = readonly [],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>
+  editor: ReactRuntimeEditor<V, TPlugins>
 ): EditableFocusRequest | null => {
   try {
     const element = editor.api.dom.assertDOMNode(editor as unknown as Node);
@@ -47,9 +47,9 @@ const ownsEditableFocusRequest = (request: EditableFocusRequest | null) =>
 
 const syncPreferredModelSelectionToDOM = <
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TPlugins extends readonly unknown[] = readonly [],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>,
+  editor: ReactRuntimeEditor<V, TPlugins>,
   element: HTMLElement
 ) => {
   try {
@@ -120,9 +120,9 @@ const syncPreferredModelSelectionToDOM = <
 
 const focusPliteEditableForRequest = <
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TPlugins extends readonly unknown[] = readonly [],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>,
+  editor: ReactRuntimeEditor<V, TPlugins>,
   request: EditableFocusRequest | null
 ) => {
   if (!ownsEditableFocusRequest(request)) return;
@@ -163,18 +163,18 @@ const focusPliteEditableForRequest = <
 
 export const focusPliteEditable = <
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TPlugins extends readonly unknown[] = readonly [],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>
+  editor: ReactRuntimeEditor<V, TPlugins>
 ) => {
   focusPliteEditableForRequest(editor, createEditableFocusRequest(editor));
 };
 
 export const focusPliteEditableAfterEventFrame = <
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TPlugins extends readonly unknown[] = readonly [],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>
+  editor: ReactRuntimeEditor<V, TPlugins>
 ) => {
   const request = createEditableFocusRequest(editor);
 

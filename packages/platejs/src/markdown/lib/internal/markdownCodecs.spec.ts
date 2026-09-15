@@ -1,7 +1,7 @@
 import {
   BaseParagraphPlugin,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   property,
   schema,
 } from '../../../core';
@@ -10,7 +10,7 @@ import { remarkMdx } from '../plugins';
 import { compileMarkdownCodecs } from './markdownCodecs';
 
 const elementPlugin = (name: string) =>
-  defineBasePlugin(name, {
+  definePlugin(name, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -22,7 +22,7 @@ describe('Markdown node codec compiler', () => {
   it('indexes codecs and contexts by persisted schema identity', () => {
     let elementIdentity: string | undefined;
     let markIdentity: string | undefined;
-    const ElementPlugin = defineBasePlugin('elementCapability', {
+    const ElementPlugin = definePlugin('elementCapability', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -41,7 +41,7 @@ describe('Markdown node codec compiler', () => {
           },
         }),
     });
-    const MarkPlugin = defineBasePlugin('markCapability', {
+    const MarkPlugin = definePlugin('markCapability', {
       schema: {
         mark: {
           key: 'persistedMark',
@@ -88,7 +88,7 @@ describe('Markdown node codec compiler', () => {
   });
 
   it('round-trips custom MDX tags through the final application schema type', () => {
-    const CustomPlugin = defineBasePlugin('customCapability', {
+    const CustomPlugin = definePlugin('customCapability', {
       codecs: ({ defineCodecs, schema: { type } }) =>
         defineCodecs({
           'text/markdown': {

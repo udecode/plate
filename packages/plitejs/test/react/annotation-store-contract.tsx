@@ -1,16 +1,16 @@
 import { act, render } from '@testing-library/react';
 import type { Editor, Range } from 'plitejs';
 
-import { createPliteAnnotationStore } from '../../src/annotations';
+import { createAnnotationStore } from '../../src/annotations';
 import { history } from '../../src/history';
 import { replace as editorReplace } from '../../src/internal';
 import {
   createEditor,
-  type PliteAnnotation,
-  PliteAnnotationProvider,
-  usePliteAnnotation,
-  usePliteAnnotationStore,
-  usePliteAnnotations,
+  type Annotation,
+  AnnotationProvider,
+  useAnnotation,
+  useAnnotationStore,
+  useAnnotations,
 } from '../../src/react';
 
 type CommentData = {
@@ -35,8 +35,8 @@ const formatRange = (range: Range | null) =>
     : 'none';
 
 const AnnotationProbe = () => {
-  const comment = usePliteAnnotation<CommentData>('comment-1');
-  const snapshot = usePliteAnnotations<CommentData>();
+  const comment = useAnnotation<CommentData>('comment-1');
+  const snapshot = useAnnotations<CommentData>();
 
   return (
     <>
@@ -54,22 +54,22 @@ const AnnotationHarness = ({
   annotations,
   editor,
 }: {
-  annotations: ReadonlyArray<PliteAnnotation<CommentData>>;
+  annotations: ReadonlyArray<Annotation<CommentData>>;
   editor: ReturnType<typeof createEditor>;
 }) => {
-  const store = usePliteAnnotationStore(editor, annotations);
+  const store = useAnnotationStore(editor, annotations);
 
   return (
-    <PliteAnnotationProvider store={store}>
+    <AnnotationProvider store={store}>
       <AnnotationProbe />
-    </PliteAnnotationProvider>
+    </AnnotationProvider>
   );
 };
 
 describe('plite-react annotation store contract', () => {
   test('publishes exact nearest annotation ranges through undo and redo', () => {
     const editor = createEditor({
-      extensions: [history()],
+      plugins: [history()],
       initialValue: [{ type: 'paragraph', children: [{ text: 'This' }] }],
     });
     const before = {
@@ -84,9 +84,7 @@ describe('plite-react annotation store contract', () => {
       association: 'inward',
       deletion: 'nearest',
     });
-    const store = createPliteAnnotationStore(editor, [
-      { anchor, id: 'comment-1' },
-    ]);
+    const store = createAnnotationStore(editor, [{ anchor, id: 'comment-1' }]);
 
     editor.update({ history: 'new-batch' }, (tx) => {
       tx.text.delete({ at: { ...before, kind: 'text' } });
@@ -117,7 +115,7 @@ describe('plite-react annotation store contract', () => {
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 4 },
     });
-    const store = createPliteAnnotationStore(editor, [
+    const store = createAnnotationStore(editor, [
       { anchor: secondAnchor, id: 'second' },
       { anchor: otherAnchor, id: 'other' },
       { anchor: firstAnchor, id: 'first' },
@@ -154,7 +152,7 @@ describe('plite-react annotation store contract', () => {
         return `annotation-${index}`;
       },
     }));
-    const store = createPliteAnnotationStore(editor, () => annotations);
+    const store = createAnnotationStore(editor, () => annotations);
 
     idReads = 0;
     editor.update.text.insert('x', { at: { path: [0, 0], offset: 0 } });
@@ -184,7 +182,7 @@ describe('plite-react annotation store contract', () => {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 5 },
     });
-    const annotation = (label: string): PliteAnnotation<CommentData> => ({
+    const annotation = (label: string): Annotation<CommentData> => ({
       anchor,
       data: { label },
       id: 'comment-1',
@@ -219,9 +217,7 @@ describe('plite-react annotation store contract', () => {
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 4 },
     });
-    const store = createPliteAnnotationStore(editor, [
-      { anchor, id: 'comment-1' },
-    ]);
+    const store = createAnnotationStore(editor, [{ anchor, id: 'comment-1' }]);
     const changes: unknown[] = [];
     let wakes = 0;
 
@@ -263,11 +259,11 @@ describe('plite-react annotation store contract', () => {
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 4 },
     });
-    let annotations: ReadonlyArray<PliteAnnotation<CommentData>> = [
+    let annotations: ReadonlyArray<Annotation<CommentData>> = [
       { anchor: firstAnchor, data: { label: 'one' }, id: 'one' },
       { anchor: secondAnchor, data: { label: 'two' }, id: 'two' },
     ];
-    const store = createPliteAnnotationStore(editor, () => annotations);
+    const store = createAnnotationStore(editor, () => annotations);
     const changes: unknown[] = [];
     let firstWakes = 0;
     let secondWakes = 0;
@@ -307,7 +303,7 @@ describe('plite-react annotation store contract', () => {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 2 },
     };
-    const store = createPliteAnnotationStore(editor, [
+    const store = createAnnotationStore(editor, [
       {
         anchor: {
           release() {
@@ -359,8 +355,8 @@ describe('plite-react annotation store contract', () => {
     });
     const first = { anchor: firstAnchor, id: 'first' };
     const second = { anchor: secondAnchor, id: 'second' };
-    let annotations: readonly PliteAnnotation[] = [first, second];
-    const store = createPliteAnnotationStore(editor, () => annotations);
+    let annotations: readonly Annotation[] = [first, second];
+    const store = createAnnotationStore(editor, () => annotations);
     const changes: unknown[] = [];
 
     store.subscribeChanges((change) => changes.push(change));
@@ -401,7 +397,7 @@ describe('plite-react annotation store contract', () => {
       focus: { path: [0, 0], offset: 5 },
     });
     let label = 'before';
-    const store = createPliteAnnotationStore(editor, () => [
+    const store = createAnnotationStore(editor, () => [
       { anchor, data: { label }, id: 'comment-1' },
     ]);
 
@@ -425,9 +421,7 @@ describe('plite-react annotation store contract', () => {
       },
       resolve: () => range,
     };
-    const store = createPliteAnnotationStore(editor, [
-      { anchor, id: 'comment-1' },
-    ]);
+    const store = createAnnotationStore(editor, [{ anchor, id: 'comment-1' }]);
     const changes: unknown[] = [];
 
     expect(store.getAnnotation('comment-1')?.range).toBeNull();
@@ -466,7 +460,7 @@ describe('plite-react annotation store contract', () => {
     });
     const payload = new Map([['count', 1]]);
     let data = { label: 'one', payload };
-    const store = createPliteAnnotationStore(editor, () => [
+    const store = createAnnotationStore(editor, () => [
       { anchor, data, id: 'comment-1' },
     ]);
     let wakes = 0;
@@ -492,7 +486,7 @@ describe('plite-react annotation store contract', () => {
       focus: { path: [0, 0], offset: 5 },
     });
     let label = 'before';
-    const store = createPliteAnnotationStore(editor, () => [
+    const store = createAnnotationStore(editor, () => [
       { anchor, data: { label }, id: 'comment-1' },
     ]);
     const baseline = store.getMetrics();

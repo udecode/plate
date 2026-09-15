@@ -1,99 +1,92 @@
-import type { Value } from '../../facade';
+import type {
+  RuntimePluginPortal,
+  RuntimePluginReference,
+  Value,
+} from '../../facade';
 import type { GeneratedEditorMutations } from '../../internal/editor/generatedEditorTypes';
 import type {
   AnyBasePlugin,
   AnyBasePluginDefinition,
   AnyPluginBase,
-  BasePluginPortal,
   BasePluginInput,
-  CorePluginDefinition,
-  CorePlugins,
   InferPlugins,
   InferEditorRuntimePlugins,
   InternalEditorMutationProvider,
   InternalInstalledSchemaMutationProvider,
   InternalBaseEditorWithInstalledPlugins,
   MergeInstalledPluginDefinitions,
-  DynamicBasePluginPortal,
   PluginReference,
 } from '../../lib';
 import type { CoreEditorApi } from '../../lib/editor/coreEditorCapabilityDefinition.internal';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
+import type {
+  CorePluginDefinition,
+  CorePlugins,
+} from '../../lib/plugins/getCorePlugins.internal';
 import type { ReactApi } from '../plite-react';
 import type {
-  AnyResolvedPlatePlugin,
-  AnyPlatePlugin,
-  DynamicPlatePluginPortal,
-  PlatePluginPortal,
+  AnyResolvedPlugin,
+  AnyPlugin,
+  DynamicPluginPortal,
+  PluginPortal,
 } from '../plugin/PlatePlugin';
-import type { PlateCorePlugins } from './getPlateCorePlugins.internal';
+import type { ReactCorePlugins } from './getPlateCorePlugins.internal';
 
-declare const plateEditorReference: unique symbol;
+declare const reactEditorReference: unique symbol;
 
 /** Nominal identity shared by every Plate editor specialization. */
 export type EditorReference = Readonly<{
-  [plateEditorReference]: true;
+  [reactEditorReference]: true;
 }>;
 
-type InternalPlateEditorBase<
+type InternalReactEditorBase<
   V extends Value,
   D,
   S,
-  TExtensions extends readonly unknown[],
+  TRuntimePlugins extends readonly unknown[],
 > = Omit<
-  InternalBaseEditorWithInstalledPlugins<V, D, S, TExtensions>,
+  InternalBaseEditorWithInstalledPlugins<V, D, S, TRuntimePlugins>,
   'plugin'
 >;
 
-type PlatePortalFor<TPlugin, S> = [
-  InternalPluginDefinitionOf<TPlugin>,
-] extends [never]
-  ? DynamicPlatePluginPortal
-  : PlatePluginPortal<
-      Extract<InternalPluginDefinitionOf<TPlugin>, AnyBasePluginDefinition>,
-      S
-    >;
-
-type BasePortalFor<TPlugin, S> = [InternalPluginDefinitionOf<TPlugin>] extends [
+type PortalFor<TPlugin, S> = [InternalPluginDefinitionOf<TPlugin>] extends [
   never,
 ]
-  ? DynamicBasePluginPortal
-  : BasePluginPortal<
+  ? DynamicPluginPortal
+  : PluginPortal<
       Extract<InternalPluginDefinitionOf<TPlugin>, AnyBasePluginDefinition>,
       S
     >;
 
-type InternalPlatePluginPortal<S> = {
-  <TPlugin extends (AnyResolvedPlatePlugin | AnyPlatePlugin) & PluginReference>(
-    plugin: TPlugin
-  ): PlatePortalFor<TPlugin, S>;
-  <TPlugin extends (AnyBasePlugin | AnyPluginBase) & PluginReference>(
-    plugin: TPlugin
-  ): BasePortalFor<TPlugin, S>;
+type InternalPluginPortal<V extends Value, S> = {
+  <TPlugin extends PluginReference>(plugin: TPlugin): PortalFor<TPlugin, S>;
   (
-    plugin: AnyBasePlugin | AnyPluginBase | PluginReference | string
-  ): DynamicPlatePluginPortal;
+    plugin: AnyResolvedPlugin | AnyPlugin | AnyBasePlugin | AnyPluginBase
+  ): DynamicPluginPortal;
+  <const TPlugin extends RuntimePluginReference>(
+    plugin: TPlugin
+  ): RuntimePluginPortal<TPlugin, V>;
 };
 
-type NormalizePlatePluginInput<TPlugins> =
+type NormalizePluginInput<TPlugins> =
   TPlugins extends readonly BasePluginInput[]
     ? TPlugins
     : TPlugins extends BasePluginInput
       ? readonly [TPlugins]
       : readonly [];
 
-type PlateInstalledRuntimeCorePlugin = MergeInstalledPluginDefinitions<
+type InstalledRuntimeCorePlugin = MergeInstalledPluginDefinitions<
   InferEditorRuntimePlugins<CorePlugins>,
-  InferEditorRuntimePlugins<PlateCorePlugins>
+  InferEditorRuntimePlugins<ReactCorePlugins>
 >;
 
 type PlateInstalledSchemaCorePlugin = MergeInstalledPluginDefinitions<
   CorePluginDefinition,
-  InferPlugins<PlateCorePlugins>
+  InferPlugins<ReactCorePlugins>
 >;
 
-type MergePlateEditorRuntimePlugins<D> = MergeInstalledPluginDefinitions<
-  PlateInstalledRuntimeCorePlugin,
+type MergeEditorRuntimePlugins<D> = MergeInstalledPluginDefinitions<
+  InstalledRuntimeCorePlugin,
   D
 >;
 
@@ -107,11 +100,11 @@ type MergePlateEditorSchemaPlugins<D> = MergeInstalledPluginDefinitions<
  *
  * @internal
  */
-export type InferPlateEditorPlugins<TPlugins> =
-  NormalizePlatePluginInput<TPlugins>[number] extends never
-    ? PlateInstalledRuntimeCorePlugin
-    : MergePlateEditorRuntimePlugins<
-        InferEditorRuntimePlugins<NormalizePlatePluginInput<TPlugins>>
+export type InferEditorPlugins<TPlugins> =
+  NormalizePluginInput<TPlugins>[number] extends never
+    ? InstalledRuntimeCorePlugin
+    : MergeEditorRuntimePlugins<
+        InferEditorRuntimePlugins<NormalizePluginInput<TPlugins>>
       >;
 
 /**
@@ -120,13 +113,13 @@ export type InferPlateEditorPlugins<TPlugins> =
  * @internal
  */
 export type InferPlateEditorSchemaPlugins<TPlugins> =
-  NormalizePlatePluginInput<TPlugins>[number] extends never
+  NormalizePluginInput<TPlugins>[number] extends never
     ? PlateInstalledSchemaCorePlugin
     : MergePlateEditorSchemaPlugins<
-        InferPlugins<NormalizePlatePluginInput<TPlugins>>
+        InferPlugins<NormalizePluginInput<TPlugins>>
       >;
 
-export type InternalPlateEditorMutationProvider<
+export type InternalReactEditorMutationProvider<
   TPlugins,
   TRuntime,
   TSchema = undefined,
@@ -139,49 +132,52 @@ export type InternalPlateEditorMutationProvider<
  *
  * @internal
  */
-export type InternalPlateEditorWithInstalledPlugins<
+export type InternalReactEditorWithInstalledPlugins<
   V extends Value,
   D,
   S = D,
-  TExtensions extends readonly unknown[] = readonly [],
+  TRuntimePlugins extends readonly unknown[] = readonly [],
 > = EditorReference &
-  InternalPlateEditorBase<V, D, S, TExtensions> & {
+  InternalReactEditorBase<V, D, S, TRuntimePlugins> & {
     readonly api: InternalBaseEditorWithInstalledPlugins<
       V,
       D,
       S,
-      TExtensions
+      TRuntimePlugins
     >['api'] &
       CoreEditorApi<V> & {
         react: ReactApi;
       };
-    plugin: InternalPlatePluginPortal<S>;
+    plugin: InternalPluginPortal<V, S>;
   };
 
-/** Editor selected by value, low-level extensions, Plate plugins, and schema. */
+/** Editor selected by value, runtime plugins, Plate plugins, and schema. */
 export type Editor<
   V extends Value = never,
-  TExtensions extends readonly unknown[] = never,
+  TRuntimePlugins extends readonly unknown[] = never,
   TPlugins = never,
   TSchema = undefined,
 > = [TPlugins] extends [never]
   ? [V] extends [never]
-    ? InternalPlateEditorWithInstalledPlugins<
+    ? InternalReactEditorWithInstalledPlugins<
         any,
         AnyBasePluginDefinition,
-        AnyBasePluginDefinition
+        AnyBasePluginDefinition,
+        readonly RuntimePluginReference[]
       >
-    : InternalPlateEditorWithInstalledPlugins<
+    : InternalReactEditorWithInstalledPlugins<
         V,
         AnyBasePluginDefinition,
         AnyBasePluginDefinition,
-        [TExtensions] extends [never] ? readonly [] : TExtensions
+        [TRuntimePlugins] extends [never]
+          ? readonly RuntimePluginReference[]
+          : TRuntimePlugins
       >
-  : InferPlateEditorPlugins<TPlugins> extends infer D
-    ? InternalPlateEditorWithInstalledPlugins<
+  : InferEditorPlugins<TPlugins> extends infer D
+    ? InternalReactEditorWithInstalledPlugins<
         [V] extends [never] ? Value : V,
         D,
-        InternalPlateEditorMutationProvider<TPlugins, D, TSchema>,
-        [TExtensions] extends [never] ? readonly [] : TExtensions
+        InternalReactEditorMutationProvider<TPlugins, D, TSchema>,
+        [TRuntimePlugins] extends [never] ? readonly [] : TRuntimePlugins
       >
     : never;

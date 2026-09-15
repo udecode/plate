@@ -10,9 +10,9 @@ import {
   useOptionalEditor,
 } from '../stores/plate/useEditor';
 import { EditorProvider } from './EditorProvider';
-import { Plate } from './Plate';
-import { PlateContent } from './PlateContent';
-import { PlateController } from './PlateController';
+import { EditorRoot } from './Plate';
+import { EditorContent } from './PlateContent';
+import { EditorController } from './PlateController';
 
 function Active() {
   const editor = useOptionalEditor();
@@ -39,19 +39,19 @@ test('controller transitions from empty to primary to focused and back to empty'
     secondary?: boolean;
   }) {
     return (
-      <PlateController>
+      <EditorController>
         {show && (
-          <Plate editor={a}>
-            <PlateContent aria-label="first" />
-          </Plate>
+          <EditorRoot editor={a}>
+            <EditorContent aria-label="first" />
+          </EditorRoot>
         )}
         {show && secondary && (
-          <Plate editor={b} primary={false}>
-            <PlateContent aria-label="second" />
-          </Plate>
+          <EditorRoot editor={b} primary={false}>
+            <EditorContent aria-label="second" />
+          </EditorRoot>
         )}
         <Active />
-      </PlateController>
+      </EditorController>
     );
   }
   const view = render(<App />);
@@ -72,7 +72,9 @@ test('controller transitions from empty to primary to focused and back to empty'
 test('strict value hooks reject an empty controller', () => {
   expect(() =>
     renderHook(() => useEditorValue(), {
-      wrapper: ({ children }) => <PlateController>{children}</PlateController>,
+      wrapper: ({ children }) => (
+        <EditorController>{children}</EditorController>
+      ),
     })
   ).toThrow('useEditor() requires an active Plate editor.');
 });
@@ -89,20 +91,20 @@ test('nested controllers own their targets and local providers ignore outer focu
   }
   const result = render(
     <React.StrictMode>
-      <PlateController>
-        <Plate editor={outer} suppressInstanceWarning>
-          <PlateContent aria-label="outer" />
+      <EditorController>
+        <EditorRoot editor={outer} suppressInstanceWarning>
+          <EditorContent aria-label="outer" />
           <Probe name="localOuter" />
-        </Plate>
+        </EditorRoot>
         <Probe name="outer" />
-        <PlateController>
-          <Plate editor={inner} suppressInstanceWarning>
-            <PlateContent aria-label="inner" />
+        <EditorController>
+          <EditorRoot editor={inner} suppressInstanceWarning>
+            <EditorContent aria-label="inner" />
             <Probe name="localInner" />
-          </Plate>
+          </EditorRoot>
           <Probe name="inner" />
-        </PlateController>
-      </PlateController>
+        </EditorController>
+      </EditorController>
     </React.StrictMode>
   );
   const a = selected.get('outer');
@@ -120,12 +122,12 @@ test('nested controllers own their targets and local providers ignore outer focu
 test('a controller only offers views with an editable DOM mount', () => {
   const editor = createEditor();
   const result = render(
-    <PlateController>
-      <Plate editor={editor}>
+    <EditorController>
+      <EditorRoot editor={editor}>
         <span>Shell</span>
-      </Plate>
+      </EditorRoot>
       <Active />
-    </PlateController>
+    </EditorController>
   );
   expect(result.getByTestId('active').textContent).toBe('empty');
 });
@@ -145,15 +147,15 @@ test('replacing the editable DOM retires the captured command view', async () =>
     captured: ReturnType<typeof useEditor> | null = null
   ) => (
     <React.StrictMode>
-      <Plate editor={editor}>
-        <PlateContent as={as} aria-label="editor" />
+      <EditorRoot editor={editor}>
+        <EditorContent as={as} aria-label="editor" />
         <Probe />
         {captured && (
           <EditorProvider editor={captured}>
             <Captured />
           </EditorProvider>
         )}
-      </Plate>
+      </EditorRoot>
     </React.StrictMode>
   );
   const result = render(tree('div'));

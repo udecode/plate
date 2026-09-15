@@ -34,7 +34,11 @@ import { getDefined } from '../internal/get-defined';
 import { select as selectSelection } from '../transforms-selection/select';
 import { deleteText } from '../transforms-text/delete-text';
 import { getDefaultInsertLocation } from '../utils';
-import { getNodeKeyForNode, seedNodeKeys } from '../utils/node-keys';
+import {
+  getNodeKeyForNode,
+  seedNodeKeys,
+  seedPreparedNodeKeys,
+} from '../utils/node-keys';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { splitNodes } from './split-nodes';
 
@@ -165,8 +169,12 @@ const insertNodesRuntime = (
       const inheritIdentity =
         nodeKey === null || getPathByNodeKey(editor, nodeKey) === null;
 
-      if (inheritIdentity && !isBuildingTransactionSpec(editor)) {
-        seedNodeKeys([child], owner);
+      if (inheritIdentity) {
+        if (isBuildingTransactionSpec(editor)) {
+          seedPreparedNodeKeys([child], owner);
+        } else {
+          seedNodeKeys([child], owner);
+        }
       }
 
       return inheritIdentity ? [{ path, source: child }] : [];

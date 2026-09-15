@@ -1,4 +1,4 @@
-import { defineBasePlugin } from '../../plugin/defineBasePlugin';
+import { definePlugin } from '../../plugin/definePlugin';
 import type { DefinitionOf } from '../../plugin/PluginDefinition';
 
 export type DebugErrorType =
@@ -52,17 +52,17 @@ const initialState: DebugPluginState = {
   throwErrors: true,
 };
 
-export class PlateError extends Error {
+export class EditorError extends Error {
   type: DebugErrorType;
 
   constructor(message: string, type: DebugErrorType = 'DEFAULT') {
     super(`[${type}] ${message}`);
-    this.name = 'PlateError';
+    this.name = 'EditorError';
     this.type = type;
   }
 }
 
-export const DebugPlugin = defineBasePlugin('debug', {
+export const DebugPlugin = definePlugin('debug', {
   api: ({ store }) => {
     const logLevels: LogLevel[] = ['error', 'warn', 'info', 'log'];
 
@@ -79,7 +79,7 @@ export const DebugPlugin = defineBasePlugin('debug', {
       if (state.isProduction && level === 'log') return;
       if (logLevels.indexOf(level) <= logLevels.indexOf(state.logLevel)) {
         if (level === 'error' && state.throwErrors) {
-          throw new PlateError(message, type);
+          throw new EditorError(message, type);
         }
         state.logger[level]?.(message, type, details);
       }

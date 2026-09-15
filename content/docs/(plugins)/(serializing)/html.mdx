@@ -44,15 +44,15 @@ const html = await renderStaticHtml(editor);
 
 See a complete server-side HTML generation example:
 
-<ComponentSource name="plate-to-html" />
+<ComponentSource name="html-export" />
 
 </Steps>
 
-## Plate to HTML
+## HTML Export
 
 Convert Plate editor content (Plate nodes) into an HTML string. This is often done server-side.
 
-[View Server-Side Example](/docs/examples/plate-to-html)
+[View Server-Side Example](/docs/examples/html-export)
 
 <Callout type="warning" title="Key Server-Side Constraint">
   When using `renderStaticHtml` or other Plate utilities in a server environment (Node.js, RSC), you **must not** import from `/react` subpaths of any `platejs*` package. Always use the base imports (e.g., `platejs` instead of `platejs/react`).
@@ -135,21 +135,37 @@ Refer to the [Static Rendering Guide](/docs/static) for detailed instructions on
 ```tsx title="components/editor/paragraph-static.tsx"
 import React from 'react';
 import type { BaseParagraphPlugin } from 'platejs';
-import type { PliteElementProps } from 'platejs/static';
+import type { EditorElementProps } from 'platejs/static';
 
 // Example static paragraph component
 export function ParagraphElementStatic(
-  props: PliteElementProps<typeof BaseParagraphPlugin>
+  props: EditorElementProps<typeof BaseParagraphPlugin>
 ) {
   return (
-    <PliteElement {...props} className={cn('m-0 px-0 py-1')}>
+    <EditorElement {...props} className={cn('m-0 px-0 py-1')}>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 ```
 
 </Steps>
+
+### Authored-change projections
+
+Use `renderAuthoredHtml` when the editor contains native authored changes:
+
+```tsx
+import { renderAuthoredHtml } from 'platejs/static';
+
+const output = await renderAuthoredHtml(editor, {
+  projection: 'review',
+});
+```
+
+`accepted` and `proposed` render the chosen static content and report `authored-lossy-projection` when pending changes are omitted. `review` renders proposed static content and appends an escaped `application/vnd.editor.authored+json` script containing the canonical document envelope.
+
+Call `deserializeAuthoredHtml(editor, output.data)` to recover that envelope. HTML without an authored script follows the editor's installed HTML codecs. See [Authored Changes](/docs/authored-changes) for the complete format contract.
 
 ---
 
@@ -266,9 +282,9 @@ storage type:
 
 ```tsx title="lib/callout-plugin.ts"
 import { property, schema } from 'platejs';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-const CalloutPlugin = definePlatePlugin('callout', {
+const CalloutPlugin = definePlugin('callout', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -311,7 +327,7 @@ Use `query`, `transformData`, and `transformFragment` on the plugin's
 hooks run before or after node decoding; they do not declare node matches.
 
 ```ts title="lib/html-cleanup-plugin.ts"
-const HtmlCleanupPlugin = definePlatePlugin('htmlCleanup', {
+const HtmlCleanupPlugin = definePlugin('htmlCleanup', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -329,7 +345,7 @@ const HtmlCleanupPlugin = definePlatePlugin('htmlCleanup', {
 
 ### `renderStaticHtml(editor, options)`
 
-Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML string. This function is typically used server-side.
+Converts Plate nodes from `editor.read.children()` (or a provided `value`) into an HTML string. This function is typically used server-side.
 
 <API name="renderStaticHtml">
 <APIParameters>
@@ -340,16 +356,16 @@ Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML
     Static React rendering options.
   </APIItem>
 </APIParameters>
-<APIOptions type="RenderStaticHtmlOptions<P = PlateStaticProps>">
+<APIOptions type="RenderStaticHtmlOptions<P = EditorStaticProps>">
   <APIItem name="editorComponent" type="React.ComponentType<P>" optional>
-    A React component to wrap the entire editor content during static rendering. Defaults to `PlateStatic`.
+    A React component to wrap the entire editor content during static rendering. Defaults to `EditorStatic`.
     The component receives `editor` and any `props` passed here.
   </APIItem>
   <APIItem name="props" type="Partial<P>" optional>
-    Props to pass to the `editorComponent`. `P` defaults to `PlateStaticProps`.
+    Props to pass to the `editorComponent`. `P` defaults to `EditorStaticProps`.
   </APIItem>
   <APIItem name="preserveClassNames" type="string[]" optional>
-    Class name prefixes to preserve when `stripClassNames` is true. Default preserve list in the stripping helper: `['plite-']`.
+    Class name prefixes to preserve when `stripClassNames` is true. Default preserve list in the stripping helper: `['editor-']`.
   </APIItem>
   <APIItem name="stripClassNames" type="boolean" optional>
     If `true`, removes all class names from the output HTML except those whose prefixes are listed in `preserveClassNames`. Default: `false`.
@@ -400,4 +416,4 @@ Parses an HTML string or `HTMLElement` into a Plate `Value` (an array of `Descen
 
 -   Explore the [Static Rendering guide](/docs/static) for creating server-safe components.
 -   Review individual plugin documentation for specific HTML serialization/deserialization capabilities and default rules.
--   See the [Server-Side HTML Generation Example](/docs/examples/plate-to-html).
+-   See the [Server-Side HTML Generation Example](/docs/examples/html-export).

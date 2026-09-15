@@ -7,7 +7,7 @@ primitive, classify the blocker instead of patching around it:
 
 - `Plite gap`: generic editor substrate is missing or too weak: reads,
   updates, transactions, schema, selection, ranges, paths, DOM runtime,
-  extension install, history substrate, serialization, or proof harness.
+  plugin install, history substrate, serialization, or proof harness.
 - `Plate gap`: product composition is missing or too weak: plugin typing,
   plugin lifecycle, API/read/update projection, UI/default route,
   registry/docs, product command ergonomics, or Plate package ownership.
@@ -69,9 +69,9 @@ tuples invariant, erase only at named internal runtime boundaries, and keep
 direct `update.selection` mutation-only. Public editor capability generics
 default to the core-only `readonly []` tuple; a bare `Editor`
 must not expose arbitrary groups through `any`. Reserve `AnyEditor` for named
-internal runtime erasure. Project installed extension capabilities once; never
+internal runtime erasure. Project installed plugin capabilities once; never
 re-intersect whole React/DOM editor read or update surfaces onto Plate after
-their extensions are already installed.
+their plugins are already installed.
 Generic helpers follow the same law: accept only the structural capabilities
 they consume, or preserve a layered caller type when returning a view. Never
 infer one provider and reconstruct a whole raw editor around it. Keep deliberate
@@ -123,7 +123,7 @@ Plate Next means:
 
 - Plite owns editor substrate: nodes, operations, selection, read/update,
   transactions, schema, history substrate, DOM/runtime primitives, and editor
-  extension installation.
+  plugin installation.
 - Plate owns product composition: plugins, UI, app/registry kits, product
   command ergonomics, docs/examples, and app-facing defaults.
 - Plate foundation must not wrap Plite editor APIs under Plate names.

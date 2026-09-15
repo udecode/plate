@@ -183,7 +183,7 @@ const compileTarget = (input: ModelTarget) => {
   const records: EditorSchemaContributionRecord[] = [
     {
       contribution: definition.schema,
-      extensionName: definition.name,
+      pluginName: definition.name,
     },
   ];
   const compiled = compileEditorSchemaContributions(records);

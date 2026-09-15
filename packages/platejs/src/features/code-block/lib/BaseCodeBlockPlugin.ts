@@ -1,7 +1,8 @@
 import {
+  BaseParagraphPlugin,
   ContentSlice,
   DebugPlugin,
-  defineBasePlugin,
+  definePlugin,
   type DefinitionOf,
   editorCommands,
   type Element,
@@ -12,14 +13,14 @@ import {
   type NodeEntry,
   type NodeSelection,
   PathApi,
-  type PlateNodeInsertOptions,
+  type NodeInsertOptions,
   PLUGINS,
   property,
   type Range,
   RangeApi,
   schema,
 } from '../../../core';
-import { clipboardHandler } from '../../../dom/plite-dom.internal';
+import { domCommands } from '../../../dom/plite-dom.internal';
 
 const CODE_LANGUAGE_CLASS_RE = /(?:^|\s)language-([^\s]+)/;
 const NON_WHITESPACE = /\S/;
@@ -176,7 +177,7 @@ const offsetToLinePoint = (text: string, offset: number) => {
   return { line, offset: offset - lineStart };
 };
 
-export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
+export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
   read: ({ plugin, state }) => {
     const entry = ({
       at,
@@ -301,7 +302,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
 
     return {
       update: ({ tx }) => {
-        const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
+        const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
         const codeBlockTextPath = (path: readonly number[]) => [...path, 0];
         const createParagraphs = (code: string) =>
           code.split('\n').map((text) => ({
@@ -369,7 +370,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           }
         };
         const insertBlock = (
-          options: Omit<PlateNodeInsertOptions, 'split'> = {}
+          options: Omit<NodeInsertOptions, 'split'> = {}
         ) => {
           const selection = tx.selection();
 
@@ -496,9 +497,9 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
           },
           insert: (
             {
-              defaultType = editor.plugin(PLUGINS.paragraph).schema.type,
+              defaultType = editor.plugin(BaseParagraphPlugin).schema.type,
             }: { defaultType?: string } = {},
-            options: Omit<PlateNodeInsertOptions, 'split'> = {}
+            options: Omit<NodeInsertOptions, 'split'> = {}
           ) => {
             const selection = tx.selection();
 
@@ -655,32 +656,32 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
     };
   })
   .extend((context) => ({
-    contributions: [
-      clipboardHandler({
-        insertData(data, { next, tx }) {
-          const text = data.getData('text/plain');
-          const vscodeDataString = data.getData('vscode-editor-data');
-          const block = tx.nodes.block();
-          const isInCodeBlock = block?.[0].type === context.schema.type;
+    commands: ({ around, handle }) => [
+      around(domCommands.insertData, ({ input, next, state }) => {
+        const text = input.getData('text/plain');
+        const vscodeDataString = input.getData('vscode-editor-data');
+        const block = state.nodes.block();
+        const isInCodeBlock = block?.[0].type === context.schema.type;
 
-          if (vscodeDataString) {
-            try {
-              const vscodeData: unknown = JSON.parse(vscodeDataString);
-              const language =
-                typeof vscodeData === 'object' &&
-                vscodeData !== null &&
-                'mode' in vscodeData &&
-                typeof vscodeData.mode === 'string'
-                  ? vscodeData.mode
-                  : undefined;
-              if (isInCodeBlock) {
+        if (vscodeDataString) {
+          try {
+            const vscodeData: unknown = JSON.parse(vscodeDataString);
+            const language =
+              typeof vscodeData === 'object' &&
+              vscodeData !== null &&
+              'mode' in vscodeData &&
+              typeof vscodeData.mode === 'string'
+                ? vscodeData.mode
+                : undefined;
+            if (isInCodeBlock) {
+              return state.transaction((tx) => {
                 tx.text.insert(text);
+              });
+            }
 
-                return true;
-              }
+            if (!block) return next();
 
-              if (!block) return next(data);
-
+            return state.transaction((tx) => {
               tx.fragment.replace(
                 [
                   {
@@ -693,24 +694,20 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
                   at: PathApi.next(block[1]),
                 }
               );
-
-              return true;
-            } catch {
-              // Ignore malformed syntax nodes and keep scanning candidates.
-            }
+            });
+          } catch {
+            // Ignore malformed syntax nodes and keep scanning candidates.
           }
+        }
 
-          if (isInCodeBlock && text?.includes('\n')) {
+        if (isInCodeBlock && text?.includes('\n')) {
+          return state.transaction((tx) => {
             tx.text.insert(text);
+          });
+        }
 
-            return true;
-          }
-
-          return next(data);
-        },
+        return next();
       }),
-    ],
-    commands: ({ around, handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         if (input.direction !== 'backward') return false;
 
@@ -737,7 +734,7 @@ export const BaseCodeBlockPlugin = defineBasePlugin(PLUGINS.codeBlock, {
         return state.transaction((tx) => {
           tx.nodes.set(
             {
-              type: context.editor.plugin(PLUGINS.paragraph).schema.type,
+              type: context.editor.plugin(BaseParagraphPlugin).schema.type,
             },
             { at: codeBlock[1] }
           );
@@ -821,7 +818,7 @@ export type CodeHighlightPluginState = {
   lowlight: CodeHighlightLowlight | null;
 };
 
-export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
+export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
   dependencies: [BaseCodeBlockPlugin],
   initialState: (): CodeHighlightPluginState => ({
     defaultLanguage: null,
@@ -1233,7 +1230,7 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
         const { defaultLanguage, lowlight } = store.get();
 
         if (!lowlight || !NodeApi.isText(node)) return [];
-        const codeBlockType = editor.plugin(PLUGINS.codeBlock).schema.type;
+        const codeBlockType = editor.plugin(BaseCodeBlockPlugin).schema.type;
         const entry = editor.read.nodes.parent(path, { type: codeBlockType });
 
         if (!entry) return [];
@@ -1420,7 +1417,7 @@ export const BaseCodeHighlightPlugin = defineBasePlugin(PLUGINS.codeSyntax, {
           commit.changed.hasAny('replace');
 
         if (!structure && !commit.changed.hasAny('properties')) return;
-        const codeBlockType = editor.plugin(PLUGINS.codeBlock).schema.type;
+        const codeBlockType = editor.plugin(BaseCodeBlockPlugin).schema.type;
         const keys = new Set([
           ...commit.changed.nodeKeysAll('node'),
           ...(structure ? commit.changed.nodeKeysAll('presence') : []),

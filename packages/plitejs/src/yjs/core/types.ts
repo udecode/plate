@@ -2,88 +2,40 @@ import type * as Y from 'yjs';
 
 import type { Range } from '../../index';
 
-export type YjsAwarenessChange = {
-  readonly added: readonly number[];
-  readonly removed: readonly number[];
-  readonly updated: readonly number[];
-};
+export type YjsInitialReadiness = Readonly<{
+  doc: Y.Doc;
+  getSnapshot: () => boolean;
+  subscribe: (listener: () => void) => () => void;
+}>;
+
+export type YjsAdmissionStatus =
+  | Readonly<{ state: 'waiting'; reason: 'load' | 'seed' }>
+  | Readonly<{ state: 'ready' }>
+  | Readonly<{ state: 'error'; cause: unknown }>;
+
+export type YjsAwarenessChange = Readonly<{
+  added: readonly number[];
+  removed: readonly number[];
+  updated: readonly number[];
+}>;
 
 export type YjsAwarenessState = Readonly<Record<string, unknown>>;
 
-export type YjsAwarenessLike = {
-  readonly clientID?: number;
-  readonly doc?: { readonly clientID: number };
-  readonly getLocalState: () => YjsAwarenessState | null;
-  readonly getStates: () => ReadonlyMap<number, YjsAwarenessState>;
-  readonly off?: (
-    event: 'change',
-    handler: (event: YjsAwarenessChange) => void
-  ) => void;
-  readonly on?: (
-    event: 'change',
-    handler: (event: YjsAwarenessChange) => void
-  ) => void;
-  readonly setLocalStateField: (field: string, value: unknown) => void;
-};
+export type YjsAwarenessLike = Readonly<{
+  doc: Y.Doc;
+  getLocalState: () => YjsAwarenessState | null;
+  getStates: () => ReadonlyMap<number, YjsAwarenessState>;
+  off: (event: 'change', handler: (event: YjsAwarenessChange) => void) => void;
+  on: (event: 'change', handler: (event: YjsAwarenessChange) => void) => void;
+  setLocalStateField: (field: string, value: unknown) => void;
+}>;
 
-export type YjsProviderStatus =
-  | 'connecting'
-  | 'connected'
-  | 'disconnected'
-  | (string & {});
-
-export type YjsProviderStatusPayload =
-  | YjsProviderStatus
-  | {
-      readonly status: YjsProviderStatus;
-    };
-
-export type YjsProviderSyncedPayload =
-  | boolean
-  | {
-      readonly state: boolean;
-    }
-  | {
-      readonly synced: boolean;
-    };
-
-export type YjsProviderEvent = 'status' | 'sync' | 'synced';
-
-export type YjsProviderStatusHandler = (
-  status: YjsProviderStatusPayload
-) => void;
-
-export type YjsProviderSyncedHandler = (
-  synced: YjsProviderSyncedPayload
-) => void;
-
-export type YjsProviderEventHandler =
-  | YjsProviderStatusHandler
-  | YjsProviderSyncedHandler;
-
-export type YjsProviderLike = {
-  readonly awareness?: YjsAwarenessLike;
-  readonly connect?: () => unknown;
-  readonly destroy?: () => void;
-  readonly disconnect?: () => unknown;
-  readonly doc?: Y.Doc;
-  readonly off?: (
-    event: YjsProviderEvent,
-    handler: YjsProviderEventHandler
-  ) => void;
-  readonly on?: (
-    event: YjsProviderEvent,
-    handler: YjsProviderEventHandler
-  ) => void;
-  status?: YjsProviderStatus;
-  synced?: boolean;
-};
-
-export type YjsAwarenessSelection = {
-  readonly anchor: unknown;
-  readonly focus: unknown;
-  readonly root: string;
-};
+/** Private wire shape retained for the built-in awareness codec. */
+export type YjsAwarenessSelection = Readonly<{
+  anchor: unknown;
+  focus: unknown;
+  root: string;
+}>;
 
 export type YjsRemoteCursorData = Readonly<Record<string, unknown>>;
 
@@ -96,12 +48,58 @@ export type YjsCursorDataSchema<
 
 export type YjsRemoteCursor<
   TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-> = {
-  readonly clientId: number;
-  readonly selection: Range | null;
-  readonly data?: TCursorData;
-};
+> = Readonly<{
+  clientId: number;
+  selection: Range | null;
+  data?: TCursorData;
+}>;
 
+type YjsCursorDataOption<TCursorData extends YjsRemoteCursorData> = [
+  YjsRemoteCursorData,
+] extends [TCursorData]
+  ?
+      | Readonly<{ cursorData?: never }>
+      | Readonly<{ cursorData: YjsCursorDataSchema<TCursorData> }>
+  : Readonly<{ cursorData: YjsCursorDataSchema<TCursorData> }>;
+
+export type YjsPluginOptions<
+  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+> = Readonly<{
+  awareness?: YjsAwarenessLike;
+  doc: Y.Doc;
+  initialReady: true | YjsInitialReadiness;
+  rootName?: string;
+  seed?: true;
+  sharedEffectCompaction?: Readonly<{
+    /** Stable host identity for the sole active compaction authority. */
+    authorityId: string;
+    threshold?: number;
+  }>;
+}> &
+  YjsCursorDataOption<TCursorData>;
+
+export type YjsBaseApi = Readonly<{
+  admissionStatus: () => YjsAdmissionStatus;
+  retryImport: () => void;
+  subscribeAdmissionStatus: (listener: () => void) => () => void;
+}>;
+
+export type YjsPresenceApi<
+  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
+> = Readonly<{
+  clearSelection: () => void;
+  remoteCursor: (clientId: number) => YjsRemoteCursor<TCursorData> | null;
+  remoteCursors: () => ReadonlyArray<YjsRemoteCursor<TCursorData>>;
+  setCursorData: (data: TCursorData | null) => void;
+  subscribeRemoteCursors: (listener: () => void) => () => void;
+  syncSelection: () => void;
+}>;
+
+export type YjsCompactionApi = Readonly<{
+  retireSharedEffectPeer: (clientId: number) => void;
+}>;
+
+/** Package-private diagnostics used by native tests and the benchmark. */
 export type YjsTraceMode = 'canonical-change' | 'remote-reconcile' | 'seed';
 
 export type YjsTraceFallback =
@@ -115,107 +113,14 @@ export type YjsTraceFallback =
   | 'remote-event-root-attributes'
   | 'remote-event-unknown-target';
 
-export type YjsTraceEntry = {
-  readonly canonicalStrategy?: 'compatible' | 'range';
-  /** Number of top-level children inserted or removed by canonical lowering. */
-  readonly changedChildren?: number;
-  readonly fallback?: YjsTraceFallback;
-  /** Describes the import strategy used when Yjs state is read into Plite. */
-  readonly importKind?:
-    | 'event-change'
-    | 'full-diff-fallback'
-    | 'snapshot-change';
-  readonly mode: YjsTraceMode;
-  /** Named document root; omitted for the primary root. */
-  readonly root?: string;
-  /** Number of disjoint canonical ranges compiled from the Yjs event batch. */
-  readonly changedRanges?: number;
-  /** Number of top-level Yjs nodes decoded for the import. */
-  readonly readTopLevelNodes?: number;
-  /** Number of Plite nodes visited to refresh outbound token lengths. */
-  readonly tokenLengthNodes?: number;
-};
-
-export type YjsSharedEffectCompactionOptions = Readonly<{
-  /**
-   * Stable host-owned identity for the authority that compacts this shared
-   * document's effect log. A restarted authority reuses the same identity
-   * even though its Y.Doc client generation changes.
-   *
-   * Exactly one active peer for this identity may compact the effect log.
-   * A live recipient must acknowledge or be explicitly retired by this
-   * authority before its targeted events become checkpoint-safe.
-   */
-  authorityId: string;
-  /** Compact after this many checkpoint-safe events. */
-  threshold?: number;
+export type YjsTraceEntry = Readonly<{
+  canonicalStrategy?: 'compatible' | 'range';
+  changedChildren?: number;
+  changedRanges?: number;
+  fallback?: YjsTraceFallback;
+  importKind?: 'event-change' | 'full-diff-fallback' | 'snapshot-change';
+  mode: YjsTraceMode;
+  readTopLevelNodes?: number;
+  root?: string;
+  tokenLengthNodes?: number;
 }>;
-
-type YjsExtensionBaseOptions = {
-  readonly autoSendSelection?: boolean;
-  readonly awareness?: YjsAwarenessLike;
-  readonly awarenessDataField?: string;
-  readonly awarenessSelectionField?: string;
-  readonly clientId?: number | string;
-  readonly destroyProviderOnUnmount?: boolean;
-  readonly doc?: Y.Doc;
-  readonly provider?: YjsProviderLike;
-  readonly rootName?: string;
-  readonly seedProviderOnSync?: boolean;
-  readonly sharedEffectCompaction?: YjsSharedEffectCompactionOptions;
-};
-
-export type YjsExtensionOptions<
-  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-> = YjsExtensionBaseOptions &
-  ([YjsRemoteCursorData] extends [TCursorData]
-    ?
-        | Readonly<{ cursorData?: never }>
-        | Readonly<{ cursorData: YjsCursorDataSchema<TCursorData> }>
-    : Readonly<{ cursorData: YjsCursorDataSchema<TCursorData> }>);
-
-export type YjsState<
-  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-> = {
-  readonly awarenessRevision: () => number;
-  readonly clientId: () => number | string;
-  readonly connected: () => boolean;
-  readonly doc: () => Y.Doc;
-  readonly paused: () => boolean;
-  readonly providerRevision: () => number;
-  readonly providerStatus: () => YjsProviderStatus | null;
-  readonly providerSynced: () => boolean | null;
-  readonly remoteCursor: (
-    clientId: number
-  ) => YjsRemoteCursor<TCursorData> | null;
-  readonly remoteCursors: () => ReadonlyArray<YjsRemoteCursor<TCursorData>>;
-  readonly root: () => Y.XmlElement;
-  /** Subscribe only when resolved remote cursors change. */
-  readonly subscribeRemoteCursors: (listener: () => void) => () => void;
-  readonly subscribeAwareness: (listener: () => void) => () => void;
-  readonly subscribeProvider: (listener: () => void) => () => void;
-  readonly trace: () => readonly YjsTraceEntry[];
-};
-
-export type YjsTx<
-  TCursorData extends YjsRemoteCursorData = YjsRemoteCursorData,
-> = {
-  readonly clearSelection: () => void;
-  readonly clearTrace: () => void;
-  readonly connect: () => void;
-  readonly disconnect: () => void;
-  readonly pause: () => void;
-  readonly reconcile: () => void;
-  readonly reconnect: () => void;
-  readonly resume: () => void;
-  /**
-   * Permanently retire one crashed Y.Doc client generation from shared-effect
-   * delivery. Compaction-authority only; a returning peer needs a fresh Y.Doc.
-   */
-  readonly retireSharedEffectPeer: (peerId: number | string) => void;
-  readonly sendCursorData: (data: TCursorData | null) => void;
-  readonly sendSelection: (
-    range?: Range | null,
-    data?: TCursorData | null
-  ) => void;
-};

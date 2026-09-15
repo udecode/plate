@@ -11,8 +11,8 @@ import { getEditorRuntimeOwner } from './editor-runtime';
 import {
   type CompiledReadPipeline,
   type CompiledReadRegistry,
-  getExtensionRegistry,
-} from './extension-registry';
+  getPluginRegistry,
+} from './plugin-registry';
 import { enterEditorRead, getEditorStateView } from './public-state';
 import { getReadRegistrationRuntime } from './read-definition';
 
@@ -128,7 +128,7 @@ export const executeEditorRead = <
 ): EditorReadResult<TRead> => {
   const owner = getEditorRuntimeOwner(editor as Editor);
   const entries =
-    getExtensionRegistry(owner).reads.byDescriptor.get(read)?.entries ?? [];
+    getPluginRegistry(owner).reads.byDescriptor.get(read)?.entries ?? [];
   const runInRead = <T>(fn: () => T): T => {
     const exitRead = enterEditorRead(owner);
 

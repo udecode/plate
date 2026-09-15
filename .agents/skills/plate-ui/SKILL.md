@@ -1,5 +1,5 @@
 ---
-description: Master Plate React/UI architecture for package primitives, component families, copied registry UI, kit wiring, and browser proof.
+description: Implement Plate React component families, copied registry UI and kit wiring with exact browser proof.
 name: plate-ui
 metadata:
   skiller:
@@ -71,8 +71,8 @@ schema law, and application typing remain outside this skill.
     per subcomponent.
 11. **Complete blocks name their owner.** Keep the reusable presentation
     component exported by `editor.tsx` as `Editor`. A block-owned
-    `plate-editor.tsx` that creates the editor and mounts `Plate` exports
-    `PlateEditor`; it never forces consumers to alias the presentation
+    `rich-text-editor.tsx` that creates the editor and mounts `EditorRoot` exports
+    `RichTextEditor`; it never forces consumers to alias the presentation
     component as `EditorSurface` or `EditorContent`.
 12. **React APIs are modern by construction.** Use React 19.2 forms directly;
     do not preserve React 18 branches, `forwardRef`, or compatibility wrappers.
@@ -109,15 +109,29 @@ schema law, and application typing remain outside this skill.
     Plate React facade. Never exempt test globs from this rule.
 19. **View-local paint is not plugin state.** When the exact mounted Editable
     derives canonical-state presentation from its DOM lifecycle, let
-    `PlateContent` inherit the behavior without another prop. Copied UI marks
+    `EditorContent` inherit the behavior without another prop. Copied UI marks
     owned focus targets and styles neutral output hooks; it does not install a
     plugin, kit, store, parallel state payload, or redundant controlled input.
-20. **Feature decorations enter through plugins.** Reusable Plate paint uses
-    the owning plugin's `decorate: { read, observe?, attributes? }` descriptor and
-    render-safe attributes. `Plate`, `PlateContent`, and `PlateStatic` do not
+20. **Generic Editor skins never know optional features.** Live and static
+    `Editor` components must not import optional plugins, SDKs, backends, or
+    copied feature UI, or encode their CSS selectors, classes, data attributes,
+    or presentation branches. This includes descendant selectors without an
+    import: knowing a feature's markup is coupling. Editor-native presentation,
+    such as inactive canonical selection, may stay in the generic skin.
+    Optional presentation belongs in the copied feature kit's configuration of
+    its owning plugin. Reusable Plate paint uses that plugin's
+    `decorate: { read, observe?, attributes? }` descriptor and
+    render-safe attributes. `Plate`, `EditorContent`, and `EditorStatic` do not
     accept raw decoration or paint-renderer props. Copied UI configures the
     plugin's `decorate.attributes` with a safe object or pure inferred callback.
-    Keep feature selectors in that copied feature, outside generic Editor skins.
+    For the existing live/static content root, configure the plugin's
+    `render.contentAttributes` with a safe attribute object. Core composes it;
+    the copied feature owns its values. It adds no wrapper, hook host, or
+    subscription. If a required extension is missing, review and repair the
+    core contract; do not move feature knowledge into
+    `editor.tsx` or `editor-static.tsx`, require assemblies to forward its props,
+    or add a wrapper solely to carry styles. Structure, providers, and real
+    interaction boundaries still belong in slots.
     Presentation configuration preserves the semantic reader and observer;
     `null` clears inherited presentation. Keep static presets server-safe and
     omit live interaction styles when the static job does not need them.
@@ -130,7 +144,7 @@ schema law, and application typing remain outside this skill.
     pure; components and slots still own structure.
 22. **Feature kits own required React integration.** Installing a copied kit
     installs its session, provider, and exact-view cleanup. Ordinary assemblies
-    render Plate and Editor without feature roots or ref plumbing. Reuse
+    render EditorRoot and Editor without feature roots or ref plumbing. Reuse
     the existing feature plugin's `slots.wrapRoot` with its actual `editableRef`.
     Sibling presentation slots preserve that integration. Explicitly replacing
     `wrapRoot` owns its integration and cleanup; compose the existing wrapper
@@ -144,8 +158,7 @@ schema law, and application typing remain outside this skill.
     Read-only periods retain the adapter but fence submission and late writes.
     The last view detaching retires captured resources. Controlled read-only
     state belongs on both Plate and Editor. Reuse supplied DnD managers and
-    preserve lazy activation. Generic editor components must not import
-    optional feature SDKs, backends, or copied UI.
+    preserve lazy activation.
 23. **Provider state stays behind semantic hooks.** Public consumers use editor,
     mount, selection, plugin and container-ref contracts. Plate and its content
     own registration and lifecycle writes; controller lookup handles stay
@@ -178,7 +191,7 @@ schema law, and application typing remain outside this skill.
   registry hook or helper. Host documentation components and installed target
   imports count as independent owners; registry tests and metadata do not.
 - When every terminal consumer is copied registry UI, move its UI-only hook,
-  store, provider, hotkey controller, and plugin extension together into that
+  store, provider, hotkey controller, and plugin definition together into that
   registry component family or kit. Do not leave the state owner in npm after
   moving only its renderer adapter.
 - Publish a package React hook only for multiple independent terminal owners or
@@ -241,7 +254,7 @@ schema law, and application typing remain outside this skill.
   Copied registry UI is generic by definition: never import its host editor
   type, authored `editor.ts`, or generated module, and never use root plugin namespaces
   there. Use the core `useEditor()` plus
-  `editor.plugin(plugin)`, or use `useEditorPlugin(plugin)`. A registry example
+  `editor.plugin(plugin)`, or use `useEditor().plugin(plugin)`. A registry example
   whose metadata explicitly depends on `editor-kit` may import the host's
   ordinary plugin composition, but copied UI may not. The `editor-kit` name is
   registry packaging, never an application runtime API noun.
@@ -262,9 +275,9 @@ schema law, and application typing remain outside this skill.
   for AST construction/comparison, serialization or external data, genuinely
   dynamic actions, and optional plugins whose descriptor is intentionally not
   a dependency.
-- If a node renderer forwards to `PlateElement` or `PliteElement`, keep the full incoming `props` object intact. Read from `props`, but do not destructure away `editor`, `element`, or other required fields and then spread only a partial object into the renderer.
+- If a node renderer forwards to `EditorElement` or `EditorElement`, keep the full incoming `props` object intact. Read from `props`, but do not destructure away `editor`, `element`, or other required fields and then spread only a partial object into the renderer.
 - Type every plugin-bound renderer from its stable owner descriptor:
-  `PlateElementProps<typeof FooPlugin>` / `PlateLeafProps<typeof FooPlugin>`
+  `EditorElementProps<typeof FooPlugin>` / `EditorLeafProps<typeof FooPlugin>`
   for live renderers and the matching `Plite*Props<typeof BaseFooPlugin>` for
   static renderers. Do not feed a derived node alias back into renderer props.
   Keep bare props only for deliberately schema-agnostic shared wrappers. This
@@ -287,7 +300,7 @@ schema law, and application typing remain outside this skill.
   does not. Static/base kits declare or terminally replace the owning
   server-safe component and never import `platejs/react` or any
   `platejs/*/react` entrypoint just to bind it.
-- Use `toPlatePlugin()` at the owning React adapter to publish a reusable
+- Use `toReactPlugin()` at the owning React adapter to publish a reusable
   Plate-layer descriptor or add genuine Plate-only authoring. A terminal
   consumer never inserts conversion merely to set `component`.
 
@@ -382,6 +395,12 @@ adds the combined review composition. UI uses the existing Plate provider and
 installed descriptor; consumers do not create a channel, provider, or binding
 effect. User actions remain the path for new comments and replies.
 
+For suggestion setup, load the complete document through `initialValue` and
+set the mounted view's intent and projection through `EditorRoot authored`.
+Mode controls use the installed plugin portal from that view. Do not seed
+examples by replaying edits or switching the current author; follow
+[Best API's loading and lifetime ownership](../best-api/SKILL.md).
+
 For copied UI mounted in a sibling render slot, accept only that slot's exact
 ref. If the component is the complete common composition, own its default
 children and register the component directly. A callback earns its place only
@@ -404,7 +423,7 @@ from the effect. Do not query decoration markers or wrap the DOM API in another
 animation frame; the mounted DOM owner schedules the request.
 
 For inactive canonical selection, mark only the owned external focus target or
-ancestor with `data-plite-keep-selection-visible`. `Editor`/`PlateContent`
+ancestor with `data-plite-keep-selection-visible`. `Editor`/`EditorContent`
 inherits the built-in lifecycle and copied UI styles
 `data-plite-inactive-selection` and
 `data-plite-inactive-selection-caret`. Do not add a boolean prop, mirror the
@@ -434,10 +453,10 @@ one copied family do not establish independent reuse.
 
 ```tsx
 // Good: simple component owns its own renderer behavior directly.
-function MediaImage(props: PlateElementProps<typeof ImagePlugin>) {
+function MediaImage(props: EditorElementProps<typeof ImagePlugin>) {
   const selected = useSelected();
 
-  return <PlateElement {...props} data-selected={selected || undefined} />;
+  return <EditorElement {...props} data-selected={selected || undefined} />;
 }
 
 // Good: one reusable family controller coordinates complex siblings.
@@ -446,10 +465,10 @@ const tableResize = useTableResizeController();
 // Good: host-owned app code outside copied registry UI uses its inferred editor.
 const api = editor.api.comments;
 
-// Good: generic UI code can use an exact descriptor.
-const genericApi = editor.plugin(SuggestionPlugin).api;
+// Good: copied suggestion UI uses its owning descriptor.
+const suggestionApi = editor.plugin(SuggestionPlugin).api;
 
-// Good: optional generic integration keeps the typed portal and checks it.
+// Good: feature-owned cross-feature integration checks the optional portal.
 const optionalSuggestion = editor.plugin(SuggestionPlugin);
 
 if (optionalSuggestion.installed) {

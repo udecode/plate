@@ -1,4 +1,4 @@
-export type { InternalPlateEditorWithInstalledPlugins } from '../editor/Editor';
+export type { InternalReactEditorWithInstalledPlugins } from '../editor/Editor';
 export { createPluginContext } from '../plugin/createPluginContext.internal';
 export * from '../utils/getRenderNodeProps.internal';
 export * from '../utils/pipeRenderElement.internal';

@@ -16,17 +16,17 @@ npm install platejs @tanstack/react-virtual
 ## Usage
 
 ```tsx
-import type { PlateElementProps } from 'platejs/react';
-import { PlateElement, useEditor, usePath } from 'platejs/react';
+import type { EditorElementProps } from 'platejs/react';
+import { EditorElement, useEditor, usePath } from 'platejs/react';
 import { ImagePlugin } from 'platejs/media/react';
 import { Resizable, ResizeHandle } from 'platejs/resizable/react';
 
-export function ImageElement(props: PlateElementProps<typeof ImagePlugin>) {
+export function ImageElement(props: EditorElementProps<typeof ImagePlugin>) {
   const editor = useEditor();
   const path = usePath();
 
   return (
-    <PlateElement {...props}>
+    <EditorElement {...props}>
       <div contentEditable={false}>
         <Resizable
           align="center"
@@ -46,7 +46,7 @@ export function ImageElement(props: PlateElementProps<typeof ImagePlugin>) {
         </Resizable>
       </div>
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 ```

@@ -43,10 +43,9 @@ export const editor = createEditor({
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
 | `TrailingBlockPlugin` | `platejs` | Owns the correction that checks and inserts the trailing block. |
-| `tx.nodes.last([], { level })` | Plite transaction | Finds the last node at the configured depth. |
+| `tx.nodes.last([], { level })` | Plate transaction | Finds the last node at the configured depth. |
 | `NodeApi.matches(...)` | `platejs` | Applies the optional last-node match. |
 | `editor.ts` plugins | Registry | Add `TrailingBlockPlugin` after editing plugins. |
-| `SuggestionKit` | Registry | Weakly adapts an installed trailing block without installing it. |
 
 There is no dedicated trailing-block UI. The plugin is a normalizer.
 
@@ -55,18 +54,22 @@ There is no dedicated trailing-block UI. The plugin is a normalizer.
 Use `type` when the trailing block should be something other than the default paragraph.
 
 ```tsx
-import { ElementApi, PLUGINS, TrailingBlockPlugin } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  ElementApi,
+  TrailingBlockPlugin,
+} from 'platejs';
 
 export const trailingBlockPlugin = TrailingBlockPlugin.configure(
   ({ editor }) => ({
     initialState: {
-      type: editor.plugin(PLUGINS.paragraph).schema.type,
+      type: editor.plugin(BaseParagraphPlugin).schema.type,
     },
   })
 );
 ```
 
-The default is already `editor.plugin(PLUGINS.paragraph).schema.type`, so most editors can use the plugin directly.
+The default is already `editor.plugin(BaseParagraphPlugin).schema.type`, so most editors can use the plugin directly.
 
 ## Match the previous block
 
@@ -74,7 +77,11 @@ Use `match` to limit insertion based on the current last block.
 
 ```tsx
 import { HeadingPlugin } from 'platejs/react';
-import { PLUGINS, TrailingBlockPlugin } from 'platejs';
+import {
+  BaseHeadingPlugin,
+  BaseParagraphPlugin,
+  TrailingBlockPlugin,
+} from 'platejs';
 
 export const trailingBlockPlugins = [
   HeadingPlugin,
@@ -82,8 +89,8 @@ export const trailingBlockPlugins = [
     initialState: {
       match: (node) =>
         ElementApi.isElement(node) &&
-        node.type === editor.plugin(PLUGINS.heading).schema.type,
-      type: editor.plugin(PLUGINS.paragraph).schema.type,
+        node.type === editor.plugin(BaseHeadingPlugin).schema.type,
+      type: editor.plugin(BaseParagraphPlugin).schema.type,
     },
   })),
 ] as const;
@@ -112,33 +119,6 @@ TrailingBlockPlugin.configure({
 ```
 
 Use nested levels when a constrained container must always end with a text block.
-
-## Custom insert
-
-`initialState.insert` lets another plugin wrap the generated insertion. The registry
-suggestion kit contributes this option through `override[PLUGINS.trailingBlock]` only when the
-editor also installs `TrailingBlockPlugin`.
-
-```tsx
-import { SUGGESTION_SKIP_TAG } from 'platejs/suggestion';
-import { TrailingBlockPlugin } from 'platejs';
-
-TrailingBlockPlugin.configure({
-  initialState: {
-    insert: (_editor, { insert, tx }) => {
-      tx.tags.add(SUGGESTION_SKIP_TAG);
-      insert();
-    },
-  },
-});
-```
-
-The callback receives the editor, active transaction tags, insertion path,
-target type, and an `insert()` function. Call `insert()` exactly once unless you
-are intentionally replacing the default insertion.
-
-A direct `TrailingBlockPlugin.configure(...)` call is the strong owner and
-takes precedence over the suggestion kit's weak contribution.
 
 ## Behavior
 

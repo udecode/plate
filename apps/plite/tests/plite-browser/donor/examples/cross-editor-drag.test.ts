@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
@@ -28,17 +28,17 @@ const openCrossEditorDrag = async (page: Page) => {
   await expect(targetRoot).toBeVisible();
   await expect(bystanderRoot).toBeVisible();
 
-  const source = createPliteBrowserEditorHarness(
+  const source = createBrowserEditorHarness(
     page,
     'cross-editor-drag-source',
     sourceRoot
   );
-  const target = createPliteBrowserEditorHarness(
+  const target = createBrowserEditorHarness(
     page,
     'cross-editor-drag-target',
     targetRoot
   );
-  const bystander = createPliteBrowserEditorHarness(
+  const bystander = createBrowserEditorHarness(
     page,
     'cross-editor-drag-bystander',
     bystanderRoot
@@ -231,7 +231,7 @@ test.describe('cross-editor selected-text drag', () => {
   });
 
   test('moves the source range and remains interactive', async ({ page }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const {
@@ -245,7 +245,7 @@ test.describe('cross-editor selected-text drag', () => {
         await openCrossEditorDrag(page);
       const payload = await dispatchSelectedTextDrag(sourceRoot);
 
-      expect(payload.types).toContain('application/x-plite-fragment');
+      expect(payload.types).toContain('application/x-editor-fragment');
       expect(payload.text).toBe('Alpha ');
       await expect.poll(() => source.get.modelText()).toBe('Bravo');
       await expect.poll(() => target.get.modelText()).toContain('Alpha ');

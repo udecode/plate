@@ -1,4 +1,4 @@
-import { createEditor, defineBasePlugin } from 'platejs';
+import { createEditor, definePlugin } from 'platejs';
 
 import type {
   CoreEditorApi,
@@ -7,7 +7,7 @@ import type {
   CoreEditorTransaction,
   CoreEditorUpdate,
 } from '../src/lib/editor/coreEditorCapabilityDefinition.internal';
-import type { CorePluginDefinition } from '../src/lib/plugins/getCorePlugins';
+import type { CorePluginDefinition } from '../src/lib/plugins/getCorePlugins.internal';
 
 type UnionToIntersection<T> = (
   T extends unknown ? (value: T) => void : never
@@ -146,7 +146,7 @@ type CoreEditorUpdateAliasDrift = Assert<
   >
 >;
 
-const CustomHtmlPlugin = defineBasePlugin('html', {
+const CustomHtmlPlugin = definePlugin('html', {
   api: () => ({
     customDeserialize: () => 'custom-html' as const,
   }),

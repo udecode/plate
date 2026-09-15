@@ -28,6 +28,21 @@ test('a new owned method delivers nested resources to both agents and protects i
     assert.deepEqual(syncResources(root, { check: true }), []);
     assert.equal(readFileSync(join(vendor, 'SKILL.md'), 'utf8'), 'Installed vendor content.\n');
 
+    rmSync(join(source, 'references/nested/recipe.md'));
+    assert.deepEqual(syncResources(root, { check: true }), [
+      '.agents/skills/custom-method/references/nested/recipe.md',
+      '.claude/skills/custom-method/references/nested/recipe.md',
+    ]);
+    syncResources(root);
+    for (const agent of ['.agents', '.claude']) {
+      assert.equal(
+        existsSync(
+          join(root, agent, 'skills/custom-method/references/nested/recipe.md')
+        ),
+        false
+      );
+    }
+
     writeFileSync(join(root, '.agents/rules/vendor.mdc'), '---\ndescription: Shadow.\n---\n# Shadow\n');
     assert.throws(() => syncResources(root), /Protected installed skill/);
     assert.equal(readFileSync(join(vendor, 'SKILL.md'), 'utf8'), 'Installed vendor content.\n');

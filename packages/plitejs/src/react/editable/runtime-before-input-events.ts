@@ -54,7 +54,6 @@ import {
 } from './runtime-editor-api';
 import type { EditableEventRuntime } from './runtime-event-engine';
 import {
-  readCommittedSelectionRange,
   readRuntimeSelection,
   readRuntimeSelectionRange,
 } from './runtime-selection-state';
@@ -663,7 +662,9 @@ export const useRuntimeBeforeInputEvents = ({
 
                   if (!evaluation.nativeEquivalent) {
                     recordPliteReactRender({
-                      id: `beforeinput-command-material:${evaluation.materialHandlers.join(',') || 'non-default'}`,
+                      id: `beforeinput-command-material:${
+                        evaluation.materialHandlers.join(',') || 'non-default'
+                      }`,
                       kind: 'runtime-time',
                     });
                   }
@@ -748,7 +749,7 @@ export const useRuntimeBeforeInputEvents = ({
                 onCommitted: () => focusPliteEditable(targetEditor),
                 repair,
                 selection:
-                  currentSelection ?? readCommittedSelectionRange(targetEditor),
+                  currentSelection ?? readRuntimeSelectionRange(targetEditor),
                 setComposing,
               })
             ) {
@@ -770,7 +771,7 @@ export const useRuntimeBeforeInputEvents = ({
                     native: false,
                     selection:
                       currentSelection ??
-                      readCommittedSelectionRange(targetEditor),
+                      readRuntimeSelectionRange(targetEditor),
                     setComposing,
                   });
 

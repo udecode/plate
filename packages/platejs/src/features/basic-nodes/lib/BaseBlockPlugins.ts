@@ -1,6 +1,6 @@
 import {
   BaseParagraphPlugin,
-  defineBasePlugin,
+  definePlugin,
   createRuleFactory,
   type MarkdownDecodeContext,
   ElementApi,
@@ -9,6 +9,7 @@ import {
   type Location,
   type NodeSelection,
 } from '../../../core';
+import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 
 const thematicBreakDashRe = /^(--|—)$/;
 
@@ -18,12 +19,15 @@ export const BlockquoteRules = {
     marker: '>',
     trigger: ' ',
     enabled: ({ editor }) => {
-      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+      const codeBlockDescriptor = getCompiledPlatePlugin(
+        editor,
+        PLUGINS.codeBlock
+      );
 
-      if (!codeBlock.installed) return true;
+      if (!codeBlockDescriptor) return true;
 
       return !editor.read.nodes.some({
-        type: codeBlock.schema.type,
+        type: editor.plugin(codeBlockDescriptor).schema.type,
       });
     },
     match: ({ marker }) => marker,
@@ -36,7 +40,7 @@ export const BlockquoteRules = {
       tx.nodes.wrap(
         {
           children: [],
-          type: editor.plugin(PLUGINS.blockquote).schema.type,
+          type: editor.plugin(BaseBlockquotePlugin).schema.type,
         },
         {
           at: blockEntry[1],
@@ -60,11 +64,11 @@ export const HorizontalRuleRules = {
       }
 
       tx.nodes.set({
-        type: editor.plugin(PLUGINS.horizontalRule).schema.type,
+        type: editor.plugin(BaseHorizontalRulePlugin).schema.type,
       });
       tx.nodes.insert({
         children: [{ text: '' }],
-        type: editor.plugin(PLUGINS.paragraph).schema.type,
+        type: editor.plugin(BaseParagraphPlugin).schema.type,
       });
 
       return true;
@@ -73,7 +77,7 @@ export const HorizontalRuleRules = {
 };
 
 /** Enables support for block quotes, useful for quotations and passages. */
-export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
+export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -133,7 +137,7 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
       if (!ElementApi.isElement(node)) return false;
 
       const isLiftable =
-        node.type === editor.plugin(PLUGINS.paragraph).schema.type &&
+        node.type === editor.plugin(BaseParagraphPlugin).schema.type &&
         !node.listType &&
         !!editor.read.nodes.above({
           at: path,
@@ -178,7 +182,7 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
       tx.blocks.toggle({ type }, { wrap: true });
     },
     untab: () => {
-      const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
+      const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
       const blocks = [
         ...tx.nodes.blocks({
           match: (node, path) =>
@@ -210,35 +214,32 @@ export const BaseBlockquotePlugin = defineBasePlugin(PLUGINS.blockquote, {
   }),
 });
 
-export const BaseHorizontalRulePlugin = defineBasePlugin(
-  PLUGINS.horizontalRule,
-  {
-    schema: {
-      element: {
-        void: 'block',
-      },
+export const BaseHorizontalRulePlugin = definePlugin(PLUGINS.horizontalRule, {
+  schema: {
+    element: {
+      void: 'block',
     },
-    codecs: ({ defineCodecs, schema: { type } }) =>
-      defineCodecs({
-        'text/html': {
-          decode: () => ({}),
-          encode: () => ({ tag: 'hr' }),
-          match: [{ tag: 'hr' }],
-        },
+  },
+  codecs: ({ defineCodecs, schema: { type } }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => ({}),
+        encode: () => ({ tag: 'hr' }),
+        match: [{ tag: 'hr' }],
+      },
 
-        'text/markdown': {
-          from: 'thematicBreak',
-          kind: 'node',
-          decode: () => ({
-            children: [{ text: '' }],
-            type,
-          }),
-          encode: () => ({ type: 'thematicBreak' as const }),
-        },
-      }),
-    component: 'hr',
-  }
-);
+      'text/markdown': {
+        from: 'thematicBreak',
+        kind: 'node',
+        decode: () => ({
+          children: [{ text: '' }],
+          type,
+        }),
+        encode: () => ({ type: 'thematicBreak' as const }),
+      },
+    }),
+  component: 'hr',
+});
 
 const groupInlineChildrenIntoParagraphs = (
   children: ReadonlyArray<import('../../../core').Descendant>,

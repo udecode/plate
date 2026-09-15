@@ -1,5 +1,5 @@
 ---
-description: Interview the user relentlessly about a plan or design until reaching shared understanding, resolving each branch of the decision tree. Use when user wants to stress-test a plan, get grilled on their design, or mentions "grill me".
+description: Stress-test a plan or design through a focused user interview when the user asks to be grilled.
 name: grill-me
 metadata:
   skiller:

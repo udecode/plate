@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   type Element,
   NodeApi,
   type NodeTextRangeRoot,
@@ -53,8 +53,8 @@ it('does not join separate text runs', () => {
 
 it('joins text through schema inline descendants for live editor roots', () => {
   const editor = createEditor({
-    extensions: [
-      defineExtension('links', {
+    plugins: [
+      definePlugin('links', {
         schema: {
           elements: {
             link: {

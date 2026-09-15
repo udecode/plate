@@ -10,7 +10,6 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from 'platejs/react';
-import { BaseSuggestionPlugin } from 'platejs/suggestion';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
@@ -20,7 +19,6 @@ jsxt;
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
-    disallowedNodes: ['suggestion'],
     remarkPlugins: [remarkMath, remarkGfm],
   },
 });
@@ -30,7 +28,6 @@ const createTestEditor = () =>
     plugins: [
       markdownPlugin,
       BaseBlockquotePlugin,
-      BaseSuggestionPlugin,
       BoldPlugin,
       CodePlugin,
       ItalicPlugin,

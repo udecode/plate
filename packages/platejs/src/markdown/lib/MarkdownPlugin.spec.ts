@@ -1,9 +1,11 @@
 import type { Pluggable, Preset, Settings } from 'unified';
 
+import { authored } from '../../authored';
 import {
   BaseParagraphPlugin,
   ContentSlice,
   createEditor,
+  createEditorView,
   ElementIdPlugin,
   PLUGINS,
   type BasePluginInput,
@@ -52,6 +54,44 @@ const createDataTransfer = ({
 };
 
 describe('MarkdownPlugin', () => {
+  it('exports explicit authored projections and reloads the review envelope', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        MarkdownPlugin,
+        authored({ authorId: 'alice' }),
+      ],
+      initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'proposed' },
+    });
+
+    view.update.text.insert(' draft', {
+      at: { offset: 4, path: [0, 0] },
+    });
+
+    expect(editor.api.markdown.serialize()).toBe('Base\n');
+    const accepted = editor.api.markdown.serializeAuthored({
+      projection: 'accepted',
+    });
+    const proposed = editor.api.markdown.serializeAuthored({
+      projection: 'proposed',
+    });
+    const review = editor.api.markdown.serializeAuthored({
+      projection: 'review',
+    });
+
+    expect(accepted.data).toBe('Base\n');
+    expect(proposed.data).toBe('Base draft\n');
+    expect(accepted.diagnostics[0]?.code).toBe('authored-lossy-projection');
+    expect(review.data).toContain('<!--plate-authored:v1:');
+    expect(review.diagnostics).toEqual([]);
+    expect(editor.api.markdown.deserialize(review.data)).toEqual(
+      editor.read.value()
+    );
+  });
+
   it('reads live codec options without changing document schema identity', () => {
     const remarkPlugin = () => undefined;
     const editor = createFixtureEditor({
@@ -188,6 +228,7 @@ describe('MarkdownPlugin', () => {
       'deserialize',
       'deserializeInline',
       'serialize',
+      'serializeAuthored',
     ]);
     expect(editor.plugin(MarkdownPlugin).api.deserialize('**bold**')).toEqual(
       editor.api.markdown.deserialize('**bold**')

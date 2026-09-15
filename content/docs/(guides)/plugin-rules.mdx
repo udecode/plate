@@ -14,7 +14,7 @@ This guide shows you how to use `rules.break`, `rules.delete`, `rules.merge`, `r
 
 Plugin rules use specific action names to define behavior:
 
-- **`'default'`**: Default Plite behavior.
+- **`'default'`**: Default Plate behavior.
 - **`'reset'`**: Changes the current block to a default paragraph, keeping content.
 - **`'exit'`**: Exits the current block, inserting a new paragraph after it. See [Exit Break](/docs/exit-break) to learn more about this behavior.
 - **`'lift'`**: Lifts the current block out of the nearest matching ancestor container, changing one structural level at a time.
@@ -23,7 +23,7 @@ Plugin rules use specific action names to define behavior:
 
 ### `default`
 
-Standard Plite behavior. For `rules.break`, splits the block. For `rules.delete`, merges with the previous block.
+Standard Plate behavior. For `rules.break`, splits the block. For `rules.delete`, merges with the previous block.
 
 ```tsx
 <p>
@@ -518,7 +518,7 @@ After (cell content merged, structure preserved):
 ```
 
 <Callout>
-Plite's default is `true` since the default block (paragraph) is first-class, while Plate plugins are likely used to define other node behaviors that shouldn't automatically remove empty predecessors.
+Plate's default is `true` since the default block (paragraph) is first-class, while Plate plugins are likely used to define other node behaviors that shouldn't automatically remove empty predecessors.
 </Callout>
 
 ## `rules.normalize`
@@ -682,16 +682,16 @@ After `Backspace`:
 
 ## Advanced
 
-Use a Plite command handler when behavior must compose with the built-in Enter,
+Use a Plate command handler when behavior must compose with the built-in Enter,
 Delete, or text-input command pipeline. Declare the handler through the
 constructor's root `commands` field; return `false` when the plugin does not own
 the command.
 
 ```tsx
 import { editorCommands } from 'platejs';
-import { defineBasePlugin } from 'platejs';
+import { definePlugin } from 'platejs';
 
-const SingleLinePlugin = defineBasePlugin('singleLine', {
+const SingleLinePlugin = definePlugin('singleLine', {
   commands: ({ handle }) => [
     handle(editorCommands.insertBreak, ({ state }) =>
       state.transaction(() => {})
@@ -728,7 +728,7 @@ The `affinity` property determines how the cursor behaves when positioned at the
 
 #### `default`
 
-Uses Plite's default behavior. For marks, the cursor has outward affinity at the start edge (typing before the mark doesn't apply it) and inward affinity at the end edge (typing after the mark extends it).
+Uses Plate's default behavior. For marks, the cursor has outward affinity at the start edge (typing before the mark doesn't apply it) and inward affinity at the end edge (typing after the mark extends it).
 
 **At end of mark (inward affinity):**
 ```tsx

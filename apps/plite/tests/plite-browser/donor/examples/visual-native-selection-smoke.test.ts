@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
-  assertPliteBrowserSelectionContract,
-  attachPliteBrowserSelectionScreenshot,
+  assertBrowserSelectionContract,
+  attachBrowserSelectionScreenshot,
   openExample,
 } from '@platejs/test/playwright';
 
@@ -45,7 +45,7 @@ test.describe('visual native selection smoke', () => {
       text: 'abXcdef',
     });
     await editor.assert.noDoubleSelectionHighlight();
-    await attachPliteBrowserSelectionScreenshot(
+    await attachBrowserSelectionScreenshot(
       editor,
       testInfo,
       'richtext-collapsed-caret.png'
@@ -78,7 +78,7 @@ test.describe('visual native selection smoke', () => {
       text: 'This is editable ',
     });
 
-    await assertPliteBrowserSelectionContract(editor, {
+    await assertBrowserSelectionContract(editor, {
       domSelection: {
         anchorNodeText: 'This is editable ',
         anchorOffset: 'This is edit'.length,
@@ -89,7 +89,7 @@ test.describe('visual native selection smoke', () => {
       selectedText: 'able rich text',
       selection,
     });
-    await attachPliteBrowserSelectionScreenshot(
+    await attachBrowserSelectionScreenshot(
       editor,
       testInfo,
       'richtext-multi-leaf-selection.png'
@@ -122,7 +122,7 @@ test.describe('visual native selection smoke', () => {
       await page.keyboard.press('Shift+ArrowLeft');
     }
 
-    await assertPliteBrowserSelectionContract(editor, {
+    await assertBrowserSelectionContract(editor, {
       domSelection: {
         anchorNodeText: text,
         anchorOffset: text.length,
@@ -136,7 +136,7 @@ test.describe('visual native selection smoke', () => {
         focus: { path: [0, 0], offset: text.length - 3 },
       },
     });
-    await attachPliteBrowserSelectionScreenshot(
+    await attachBrowserSelectionScreenshot(
       editor,
       testInfo,
       'plaintext-backward-selection.png'
@@ -164,7 +164,7 @@ test.describe('visual native selection smoke', () => {
       text: '',
     });
     await editor.assert.noDoubleSelectionHighlight();
-    await attachPliteBrowserSelectionScreenshot(
+    await attachBrowserSelectionScreenshot(
       editor,
       testInfo,
       'custom-placeholder-collapsed-caret.png'
@@ -217,7 +217,7 @@ test.describe('visual native selection smoke', () => {
 
     expect(selectedPaths).toEqual(['1.0', '2.1.0']);
     await editor.assert.noDoubleSelectionHighlight();
-    await attachPliteBrowserSelectionScreenshot(
+    await attachBrowserSelectionScreenshot(
       editor,
       testInfo,
       'hidden-dom-boundary-drag-selection.png'
@@ -262,7 +262,7 @@ test.describe('visual native selection smoke', () => {
     );
     await page.mouse.up();
 
-    await assertPliteBrowserSelectionContract(editor, {
+    await assertBrowserSelectionContract(editor, {
       noDoubleSelectionHighlight: true,
       selection: {
         anchor: { path: [3, 0], offset: 0 },
@@ -274,7 +274,7 @@ test.describe('visual native selection smoke', () => {
       anchorPath: [3, 0],
       isCollapsed: true,
     });
-    await attachPliteBrowserSelectionScreenshot(
+    await attachBrowserSelectionScreenshot(
       editor,
       testInfo,
       'images-adjacent-void-selected.png'
@@ -298,7 +298,7 @@ test.describe('visual native selection smoke', () => {
       (await editor.get.blockTexts())[1] ?? ''
     );
 
-    await page.locator('[data-plite-editor] p').nth(1).click({ clickCount: 3 });
+    await page.locator('[data-editor] p').nth(1).click({ clickCount: 3 });
 
     await editor.assert.selection({
       anchor: { path: [1, 0], offset: 0 },
@@ -310,7 +310,7 @@ test.describe('visual native selection smoke', () => {
         normalizeInlineSelectionText(await editor.get.selectedText())
       )
       .toBe(secondBlockText);
-    await attachPliteBrowserSelectionScreenshot(
+    await attachBrowserSelectionScreenshot(
       editor,
       testInfo,
       'inlines-triple-click-paragraph-selection.png'
@@ -362,7 +362,7 @@ test.describe('visual native selection smoke', () => {
             focus: { path: [0, 1, 0], offset: text.length },
           };
 
-    await assertPliteBrowserSelectionContract(editor, {
+    await assertBrowserSelectionContract(editor, {
       domSelection: {
         anchorNodeText: text,
         anchorOffset: expectedSelection.domAnchorOffset,
@@ -376,7 +376,7 @@ test.describe('visual native selection smoke', () => {
         focus: expectedSelection.focus,
       },
     });
-    await attachPliteBrowserSelectionScreenshot(
+    await attachBrowserSelectionScreenshot(
       editor,
       testInfo,
       'inlines-link-drag-selection.png'
@@ -400,7 +400,7 @@ test.describe('visual native selection smoke', () => {
       text: 'Human',
     });
 
-    await assertPliteBrowserSelectionContract(editor, {
+    await assertBrowserSelectionContract(editor, {
       domSelection: {
         anchorNodeText: 'Human',
         anchorOffset: 0,
@@ -414,7 +414,7 @@ test.describe('visual native selection smoke', () => {
         focus: { path: [1, 0, 1, 0], offset: 'Human'.length },
       },
     });
-    await attachPliteBrowserSelectionScreenshot(
+    await attachBrowserSelectionScreenshot(
       editor,
       testInfo,
       'tables-human-cell-drag-selection.png'

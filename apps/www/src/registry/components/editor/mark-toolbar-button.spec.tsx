@@ -28,7 +28,6 @@ const toggleMock = mock();
 const pluginMock = mock();
 
 let currentEditor: any;
-let currentPluginName = 'bold';
 let dropdownOnFinalFocus:
   | ((event: { preventDefault: () => void }) => void)
   | undefined;
@@ -40,7 +39,6 @@ mock.module('platejs/react', () => ({
   useOptionalEditor: () => currentEditor,
   useEditorReadOnly: () => false,
   useEditorHasSelection: () => currentEditor.read.selection?.() != null,
-  useEditorPlugin: () => ({ name: currentPluginName }),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     selector(currentEditor),
   useComposedRef:
@@ -262,7 +260,6 @@ mock.module('@/registry/components/editor/toolbar', () => ({
 
 describe('feature toolbar plugin portals', () => {
   beforeEach(() => {
-    currentPluginName = 'bold';
     dropdownOnFinalFocus = undefined;
     mediaUrlOnChange = undefined;
     clearMock.mockClear();
@@ -340,7 +337,6 @@ describe('feature toolbar plugin portals', () => {
   });
 
   it('changes font size without refocusing from the step buttons', async () => {
-    currentPluginName = 'fontSize';
     currentEditor.read.marks = () => ({ fontSize: '16px' });
     pluginMock.mockReturnValue({
       installed: true,
@@ -424,7 +420,6 @@ describe('feature toolbar plugin portals', () => {
   );
 
   it('changes font size without refocusing from the input', async () => {
-    currentPluginName = 'fontSize';
     currentEditor.read.marks = () => ({ fontSize: '16px' });
     pluginMock.mockReturnValue({
       installed: true,
@@ -449,7 +444,6 @@ describe('feature toolbar plugin portals', () => {
   });
 
   it('changes font size without refocusing from the popover', async () => {
-    currentPluginName = 'fontSize';
     currentEditor.read.marks = () => ({ fontSize: '16px' });
     pluginMock.mockReturnValue({
       installed: true,

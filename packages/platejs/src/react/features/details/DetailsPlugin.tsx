@@ -3,10 +3,10 @@ import {
   BaseDetailsPlugin,
   BaseDetailsSummaryPlugin,
 } from '../../../features/details/lib';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
-export const DetailsSummaryPlugin = toPlatePlugin(BaseDetailsSummaryPlugin);
+export const DetailsSummaryPlugin = toReactPlugin(BaseDetailsSummaryPlugin);
 
-export const DetailsPlugin = toPlatePlugin(BaseDetailsPlugin, {
+export const DetailsPlugin = toReactPlugin(BaseDetailsPlugin, {
   dependencies: [DetailsSummaryPlugin, BaseParagraphPlugin],
 });

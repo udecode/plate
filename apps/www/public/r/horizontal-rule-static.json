@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/horizontal-rule-static.tsx",
-      "content": "import type { BaseHorizontalRulePlugin } from 'platejs';\nimport { type PliteElementProps, PliteElement } from 'platejs/static';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nexport function HrElementStatic(\n  props: PliteElementProps<typeof BaseHorizontalRulePlugin>\n) {\n  return (\n    <PliteElement {...props}>\n      <div className=\"cursor-text py-6\" contentEditable={false}>\n        <hr\n          className={cn(\n            'h-0.5 rounded-sm border-none bg-muted bg-clip-content'\n          )}\n        />\n      </div>\n      {props.children}\n    </PliteElement>\n  );\n}\n",
+      "content": "import type { BaseHorizontalRulePlugin } from 'platejs';\nimport { type EditorElementProps, EditorElement } from 'platejs/static';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nexport function HrElementStatic(\n  props: EditorElementProps<typeof BaseHorizontalRulePlugin>\n) {\n  return (\n    <EditorElement {...props}>\n      <div className=\"cursor-text py-6\" contentEditable={false}>\n        <hr\n          className={cn(\n            'h-0.5 rounded-sm border-none bg-muted bg-clip-content'\n          )}\n        />\n      </div>\n      {props.children}\n    </EditorElement>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/horizontal-rule-static.tsx"
     }

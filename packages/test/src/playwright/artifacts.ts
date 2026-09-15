@@ -3,19 +3,19 @@ import { dirname } from 'node:path';
 
 import type { Page, TestInfo } from '@playwright/test';
 
-import type { PliteBrowserEditorHarness } from './types';
+import type { BrowserEditorHarness } from './types';
 
 const JPEG_SCREENSHOT_EXTENSION_RE = /\.(?:jpe?g)$/i;
 
-/** Screenshot options accepted by Plite browser screenshot helpers. */
-export type PliteBrowserPageScreenshotOptions = Omit<
+/** Screenshot options accepted by editor browser screenshot helpers. */
+export type BrowserPageScreenshotOptions = Omit<
   NonNullable<Parameters<Page['screenshot']>[0]>,
   'path'
 >;
 
 const getScreenshotContentType = (
   name: string,
-  options: PliteBrowserPageScreenshotOptions
+  options: BrowserPageScreenshotOptions
 ) => {
   const type =
     options.type ?? (JPEG_SCREENSHOT_EXTENSION_RE.test(name) ? 'jpeg' : 'png');
@@ -31,7 +31,7 @@ export const attachPageScreenshot = async (
   page: Page,
   testInfo: TestInfo,
   name: string,
-  options: PliteBrowserPageScreenshotOptions = {}
+  options: BrowserPageScreenshotOptions = {}
 ) => {
   const path = testInfo.outputPath(name);
   const contentType = getScreenshotContentType(name, options);
@@ -45,11 +45,11 @@ export const attachPageScreenshot = async (
 /**
  * Attach a focused editor selection screenshot to the current test report.
  */
-export const attachPliteBrowserSelectionScreenshot = async (
-  editor: PliteBrowserEditorHarness,
+export const attachBrowserSelectionScreenshot = async (
+  editor: BrowserEditorHarness,
   testInfo: TestInfo,
   name: string,
-  options: PliteBrowserPageScreenshotOptions = {}
+  options: BrowserPageScreenshotOptions = {}
 ) =>
   attachPageScreenshot(editor.page, testInfo, name, {
     fullPage: false,
@@ -60,7 +60,7 @@ export const attachPliteBrowserSelectionScreenshot = async (
  * Write a JSON proof artifact into the current test output directory and attach
  * that file to the test report.
  */
-export const attachPliteBrowserJsonArtifact = async (
+export const attachBrowserJsonArtifact = async (
   testInfo: TestInfo,
   name: string,
   value: unknown

@@ -41,16 +41,16 @@ describe('playwright selection snapshots', () => {
 
   test('normalizes zero-width DOM artifact offsets back to editor offset zero', async () => {
     document.body.innerHTML = `
-      <div data-plite-editor="true">
-        <span data-plite-node="text" data-plite-path="0,0">
-          <span data-plite-leaf="true">
-            <span data-plite-zero-width="n" data-plite-length="0">\uFEFF<br /></span>
+      <div data-editor="true">
+        <span data-editor-node="text" data-editor-path="0,0">
+          <span data-editor-leaf="true">
+            <span data-editor-zero-width="n" data-editor-length="0">\uFEFF<br /></span>
           </span>
         </span>
       </div>
     `;
 
-    const marker = document.querySelector('[data-plite-zero-width="n"]')!;
+    const marker = document.querySelector('[data-editor-zero-width="n"]')!;
     const text = marker.firstChild as Text;
     const br = marker.querySelector('br')!;
     const selection = window.getSelection()!;
@@ -83,19 +83,19 @@ describe('playwright selection snapshots', () => {
 
   test('includes preceding segments before a zero-width caret', async () => {
     document.body.innerHTML = `
-      <div data-plite-editor="true">
-        <span data-plite-node="text" data-plite-path="0,0">
-          <span data-plite-leaf="true">
-            <span data-plite-string="true">hello</span>
+      <div data-editor="true">
+        <span data-editor-node="text" data-editor-path="0,0">
+          <span data-editor-leaf="true">
+            <span data-editor-string="true">hello</span>
           </span>
-          <span data-plite-leaf="true">
-            <span data-plite-zero-width="n" data-plite-length="0">\uFEFF<br /></span>
+          <span data-editor-leaf="true">
+            <span data-editor-zero-width="n" data-editor-length="0">\uFEFF<br /></span>
           </span>
         </span>
       </div>
     `;
 
-    const marker = document.querySelector('[data-plite-zero-width="n"]')!;
+    const marker = document.querySelector('[data-editor-zero-width="n"]')!;
     const markerText = marker.firstChild as Text;
     const selection = window.getSelection()!;
     const range = document.createRange();
@@ -113,9 +113,9 @@ describe('playwright selection snapshots', () => {
 
   test('reports no visible selection without native text or projected markers', async () => {
     document.body.innerHTML = `
-      <div data-plite-editor="true">
-        <span data-plite-node="text" data-plite-path="0,0">
-          <span data-plite-string="true">hello</span>
+      <div data-editor="true">
+        <span data-editor-node="text" data-editor-path="0,0">
+          <span data-editor-string="true">hello</span>
         </span>
       </div>
     `;
@@ -124,9 +124,7 @@ describe('playwright selection snapshots', () => {
 
     expect(
       await takeDisplayedSelectionSnapshotForRoot(
-        createRootLocator(
-          document.querySelector<HTMLElement>('[data-plite-editor]')!
-        )
+        createRootLocator(document.querySelector<HTMLElement>('[data-editor]')!)
       )
     ).toMatchObject({
       displayed: null,
@@ -141,9 +139,9 @@ describe('playwright selection snapshots', () => {
   });
 
   test('accepts a model selection whose virtualized DOM unmounts during conditional sync', async () => {
-    document.body.innerHTML = '<div data-plite-editor="true"></div>';
+    document.body.innerHTML = '<div data-editor="true"></div>';
 
-    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
+    const root = document.querySelector<HTMLElement>('[data-editor]')!;
 
     (root as any).__pliteBrowserHandle = {
       getSelection: () => ({
@@ -160,18 +158,18 @@ describe('playwright selection snapshots', () => {
     ).resolves.toBeUndefined();
   });
 
-  test('accepts an explicit partial-DOM selection without projected markers', async () => {
+  test('accepts an explicit viewport-backed selection without projected markers', async () => {
     document.body.innerHTML = `
       <div
-        data-plite-editor="true"
-        data-plite-dom-strategy-selection="partial-dom-backed"
+        data-editor="true"
+        data-editor-viewport-selection="viewport-backed"
       >
-        <span data-plite-node="text" data-plite-path="0,0">first</span>
+        <span data-editor-node="text" data-editor-path="0,0">first</span>
       </div>
     `;
 
-    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
-    const text = root.querySelector('[data-plite-node="text"]')!.firstChild!;
+    const root = document.querySelector<HTMLElement>('[data-editor]')!;
+    const text = root.querySelector('[data-editor-node="text"]')!.firstChild!;
     const nativeRange = document.createRange();
 
     nativeRange.setStart(text, 0);
@@ -193,9 +191,9 @@ describe('playwright selection snapshots', () => {
   });
 
   test('still waits for the expected model selection when virtualized DOM is absent', async () => {
-    document.body.innerHTML = '<div data-plite-editor="true"></div>';
+    document.body.innerHTML = '<div data-editor="true"></div>';
 
-    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
+    const root = document.querySelector<HTMLElement>('[data-editor]')!;
     const expected = {
       anchor: { offset: 3, path: [47, 119, 1, 0] },
       focus: { offset: 3, path: [47, 119, 1, 0] },
@@ -226,9 +224,9 @@ describe('playwright selection snapshots', () => {
 
   test('accepts a partial native range only while its view declares model-owned DOM coverage', async () => {
     document.body.innerHTML =
-      '<div data-plite-editor="true"><span data-plite-node="text" data-plite-path="0,0"><span data-plite-string="true">before</span></span></div>';
-    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
-    const text = root.querySelector('[data-plite-string]')!.firstChild!;
+      '<div data-editor="true"><span data-editor-node="text" data-editor-path="0,0"><span data-editor-string="true">before</span></span></div>';
+    const root = document.querySelector<HTMLElement>('[data-editor]')!;
+    const text = root.querySelector('[data-editor-string]')!.firstChild!;
     const nativeRange = document.createRange();
     nativeRange.setStart(text, 0);
     nativeRange.setEnd(text, 6);
@@ -301,17 +299,17 @@ describe('playwright selection snapshots', () => {
 
   test('captures the native selection as the displayed selection', async () => {
     document.body.innerHTML = `
-      <div data-plite-editor="true">
-        <span data-plite-node="text" data-plite-path="0,0">
-          <span data-plite-leaf="true">
-            <span data-plite-string="true">hello</span>
+      <div data-editor="true">
+        <span data-editor-node="text" data-editor-path="0,0">
+          <span data-editor-leaf="true">
+            <span data-editor-string="true">hello</span>
           </span>
         </span>
       </div>
     `;
 
-    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
-    const text = document.querySelector('[data-plite-string]')!.firstChild!;
+    const root = document.querySelector<HTMLElement>('[data-editor]')!;
+    const text = document.querySelector('[data-editor-string]')!.firstChild!;
     const range = document.createRange();
     const selection = window.getSelection()!;
 
@@ -342,17 +340,17 @@ describe('playwright selection snapshots', () => {
 
   test('captures projected view selection when native selection is not expanded', async () => {
     document.body.innerHTML = `
-      <div data-plite-editor="true">
-        <span data-plite-node="text" data-plite-path="0,0">
-          <span data-plite-view-selection="true">hello</span>
+      <div data-editor="true">
+        <span data-editor-node="text" data-editor-path="0,0">
+          <span data-editor-view-selection="true">hello</span>
         </span>
-        <span data-plite-node="text" data-plite-path="1,0">
-          <span data-plite-view-selection="true">world</span>
+        <span data-editor-node="text" data-editor-path="1,0">
+          <span data-editor-view-selection="true">world</span>
         </span>
       </div>
     `;
 
-    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
+    const root = document.querySelector<HTMLElement>('[data-editor]')!;
 
     (root as any).__pliteBrowserHandle = {
       getSelection: () => ({
@@ -367,7 +365,7 @@ describe('playwright selection snapshots', () => {
     window.getSelection()?.removeAllRanges();
 
     const markers = document.querySelectorAll<HTMLElement>(
-      '[data-plite-view-selection="true"]'
+      '[data-editor-view-selection="true"]'
     );
 
     markers.forEach((marker, index) => {
@@ -400,16 +398,16 @@ describe('playwright selection snapshots', () => {
 
   test('detects native plus projected double highlight', async () => {
     document.body.innerHTML = `
-      <div data-plite-editor="true">
-        <span data-plite-node="text" data-plite-path="0,0">
-          <span data-plite-string="true">hello</span>
-          <span data-plite-view-selection="true">hello</span>
+      <div data-editor="true">
+        <span data-editor-node="text" data-editor-path="0,0">
+          <span data-editor-string="true">hello</span>
+          <span data-editor-view-selection="true">hello</span>
         </span>
       </div>
     `;
 
-    const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
-    const text = document.querySelector('[data-plite-string]')!.firstChild!;
+    const root = document.querySelector<HTMLElement>('[data-editor]')!;
+    const text = document.querySelector('[data-editor-string]')!.firstChild!;
     const range = document.createRange();
     const selection = window.getSelection()!;
 

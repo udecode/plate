@@ -1,9 +1,9 @@
 import { areEditorJsonValuesEqual } from '../../core/value-codec';
 import type {
-  PliteViewSourceErrorSink,
-  PliteViewSourceOptions,
-  PliteViewSourcePhase,
-  PliteViewSourceStatus,
+  ViewSourceErrorSink,
+  ViewSourceOptions,
+  ViewSourcePhase,
+  ViewSourceStatus,
 } from './view-source';
 
 type Listener = () => void;
@@ -122,18 +122,18 @@ export const createMappedViewStoreKernel = <TSnapshot>(
 
 type ViewSourceFaultBoundary = {
   activate: () => void;
-  getStatus: () => PliteViewSourceStatus;
+  getStatus: () => ViewSourceStatus;
   run: <T>(
-    phase: PliteViewSourcePhase,
+    phase: ViewSourcePhase,
     read: () => T
   ) => Readonly<{ ok: true; value: T }> | Readonly<{ ok: false }>;
 };
 
 const reportViewSourceError = (
   sourceId: string,
-  phase: PliteViewSourcePhase,
+  phase: ViewSourcePhase,
   cause: unknown,
-  onError?: PliteViewSourceErrorSink
+  onError?: ViewSourceErrorSink
 ) => {
   const error = Object.freeze({ cause, phase, sourceId });
 
@@ -158,7 +158,7 @@ const reportViewSourceError = (
 };
 
 export const createViewSourceFaultBoundary = (
-  options: PliteViewSourceOptions
+  options: ViewSourceOptions
 ): ViewSourceFaultBoundary => {
   let active = true;
   let failureCount = 0;

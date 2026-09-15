@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-09-12T16:46:33.542938+00:00",
+  "registries": {
+    "r": {
+      "payloads": 316,
+      "retiredPayloads": [],
+      "unexpectedPlitePayloads": [],
+      "manifestPresent": true,
+      "docsManifestPresent": true,
+      "treeSha256": "27d0918a8687d5db5de9ad6cdbbf9668e8b4c2655e8045af55b90a6449b02899"
+    },
+    "rd": {
+      "payloads": 316,
+      "retiredPayloads": [],
+      "unexpectedPlitePayloads": [],
+      "manifestPresent": true,
+      "docsManifestPresent": true,
+      "treeSha256": "19d10373c86c265f640456b1b41fafd7065ec340b44ad5f9d0ed2c219110ba48"
+    }
+  },
+  "laneContentMismatchesAfterBaseUrlNormalization": [],
+  "apiManifest": {
+    "path": "apps/www/src/generated/api-reference-manifest.json",
+    "sha256": "f41621c2a2cd44ebad2c73db8f63fd88cc07ad17ffded3de64711b7978b14272",
+    "unexpectedPliteFields": []
+  },
+  "installedSourceParity": {
+    "inlineFilesChecked": 139,
+    "differences": []
+  },
+  "policy": "Only the two approved comparison documents and exact navigation/dependency references to them are exempt. No other payload bodies or metadata items are skipped. API manifest signature, documentation, and other string fields have no exemption.",
+  "generatorBehavior": "Both existing registry lanes clear and rebuild their own complete output directory. Development rd remains live for localhost install commands; production r is generated last for shared overlays.",
+  "signatureOwnership": "Import-type references are formatted through actual identical resolved TypeScript symbols exported by the public Plate package. Unresolved symbols or missing identical exports fail generation. Source JSDoc is repaired at its declaring owner.",
+  "commands": {
+    "pnpm --filter plitejs build": "passed",
+    "pnpm --filter platejs build": "passed",
+    "pnpm --filter www api-reference": "passed",
+    "pnpm --filter www rd": "passed",
+    "pnpm --filter www build:registry": "passed",
+    "pnpm exec ultracite check apps/www/scripts/build-api-reference.mts": "passed",
+    "bun test ./scripts/registry-style-materializer.test.mts (apps/www)": "3 passed, 0 failed, 19 assertions",
+    "pnpm --filter www check:docs": "passed"
+  },
+  "proofLimit": "Generated content/source parity plus linked delegated HTTP anchor proof; no browser or native input claim.",
+  "httpAnchorProof": {
+    "owner": "verify_authored_doc_claims",
+    "receipt": ".audit/plate-public-docs/http/anchor-recheck.json",
+    "effectiveLocaleTargetsPassed": 16,
+    "legacyCnNodeEntryRedirect": "308 \u2192 200; expected nodeentry id present"
+  }
+}

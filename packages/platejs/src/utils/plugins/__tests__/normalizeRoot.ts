@@ -1,25 +1,25 @@
-import { defineBasePlugin } from 'platejs';
+import { definePlugin } from 'platejs';
 import { createEditor } from 'platejs/react';
 
 import { type Selection, type Value, schema } from '../../../core';
 import type { AnyBasePlugin } from '../../../lib/plugin/BasePlugin';
 
 export const fixtureSchemaPlugins = [
-  defineBasePlugin('h1', {
+  definePlugin('h1', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
       },
     },
   }),
-  defineBasePlugin('h2', {
+  definePlugin('h2', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
       },
     },
   }),
-  defineBasePlugin('element', {
+  definePlugin('element', {
     schema: ({ plugins }) => ({
       element: {
         content: plugins.blockContent(),

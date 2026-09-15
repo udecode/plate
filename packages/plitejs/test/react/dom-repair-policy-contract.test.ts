@@ -9,7 +9,10 @@ import {
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
-import { replace as editorReplace } from '../../src/internal';
+import {
+  getNodeKey as editorGetNodeKey,
+  replace as editorReplace,
+} from '../../src/internal';
 import { createEditor } from '../../src/react';
 import {
   beginDOMRepairFrame,
@@ -53,11 +56,22 @@ const markEditable = (element: HTMLElement) => {
   });
 };
 
+const bindTextPath = (
+  editor: ReturnType<typeof createEditor>,
+  element: HTMLElement,
+  path: number[]
+) => {
+  const key = editorGetNodeKey(editor, path);
+  if (!key) throw new Error('Expected a native text key for the fixture');
+  element.setAttribute('data-editor-node-key', key);
+  element.setAttribute('data-editor-path', path.join(','));
+};
+
 const mountEditorRoot = (editor: ReturnType<typeof createEditor>) => {
   const root = document.createElement('div');
 
   root.setAttribute('contenteditable', 'true');
-  root.setAttribute('data-plite-editor', 'true');
+  root.setAttribute('data-editor', 'true');
   markEditable(root);
   document.body.append(root);
 
@@ -110,7 +124,7 @@ test('stale repair frames cannot replace the active frame', () => {
   expect(isDOMRepairFrameCurrent(state, 2)).toBe(true);
 });
 
-test('native input repair skips already synced local text inside partial DOM roots', () => {
+test('native input repair skips already synced local text inside viewport-backed roots', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
 
@@ -147,9 +161,9 @@ test('native input repair skips already synced local text inside partial DOM roo
     syncDOMSelectionToEditor: () => {},
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '1,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [1, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -205,9 +219,9 @@ test('native input repair imports a burst DOM text delta once', () => {
     syncDOMSelectionToEditor: () => {},
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -272,9 +286,9 @@ test('native input repair does not move selection for pathless clicks outside th
     syncDOMSelectionToEditor: () => {},
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   pathlessTarget.textContent = 'click target';
@@ -351,9 +365,9 @@ test('native input repair reconciles captured burst targets against partially sy
     syncDOMSelectionToEditor: () => {},
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -425,9 +439,9 @@ test('native input repair moves model selection when the captured target still o
     syncDOMSelectionToEditor: () => {},
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -497,9 +511,9 @@ test('native input repair guards virtualized DOM replacement selectionchanges', 
       syncDOMSelectionToEditor: () => {},
     });
 
-    textHost.setAttribute('data-plite-node', 'text');
-    textHost.setAttribute('data-plite-path', '0,0');
-    string.setAttribute('data-plite-string', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
+    bindTextPath(editor, textHost, [0, 0]);
+    string.setAttribute('data-editor-string', 'true');
     string.append(text);
     textHost.append(string);
     root.append(textHost);
@@ -563,10 +577,10 @@ test('native text repair keeps model authority inside virtualized pages', () => 
     syncDOMSelectionToEditor: () => {},
   });
 
-  page.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  page.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   page.append(textHost);
@@ -632,10 +646,10 @@ test('native text repair keeps a reconciled virtualized target model-owned until
     syncDOMSelectionToEditor: () => {},
   });
 
-  page.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  page.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   page.append(textHost);
@@ -719,10 +733,10 @@ test('native text repair advances captured virtualized target when DOM offset la
     syncDOMSelectionToEditor: () => {},
   });
 
-  page.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  page.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   page.append(textHost);
@@ -802,10 +816,10 @@ test('native text repair advances captured virtualized target when DOM caret res
     syncDOMSelectionToEditor: () => {},
   });
 
-  page.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  page.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   page.append(textHost);
@@ -882,10 +896,10 @@ test('native text repair keeps model authority when synced virtualized DOM caret
     syncDOMSelectionToEditor: () => {},
   });
 
-  page.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  page.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   page.append(textHost);
@@ -964,10 +978,10 @@ test('text insert caret repair keeps model authority in virtualized DOM', () => 
     syncDOMSelectionToEditor: () => {},
   });
 
-  page.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  page.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   page.append(textHost);
@@ -1028,10 +1042,10 @@ test('text insert caret repair keeps model authority for decorated text', () => 
     syncDOMSelectionToEditor: () => {},
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  textHost.setAttribute('data-plite-dom-sync-reason', 'decoration');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  textHost.setAttribute('data-editor-dom-sync-reason', 'decoration');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -1096,10 +1110,10 @@ test('completed decorated text insert repair does not schedule repair retries', 
   const range = document.createRange();
   const selection = window.getSelection();
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  textHost.setAttribute('data-plite-dom-sync-reason', 'decoration');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  textHost.setAttribute('data-editor-dom-sync-reason', 'decoration');
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -1176,9 +1190,9 @@ test('completed model caret repair does not schedule redundant retries', () => {
   const range = document.createRange();
   const selection = window.getSelection();
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -1251,9 +1265,9 @@ test('model-owned text insert caret repair keeps authority for plain DOM text', 
     syncDOMSelectionToEditor: () => {},
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -1315,10 +1329,10 @@ test('virtualized text insert caret repair ignores stale frame cancellation when
     syncDOMSelectionToEditor: () => {},
   });
 
-  page.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  page.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   page.append(textHost);
@@ -1389,10 +1403,10 @@ test('virtualized text insert caret repair corrects model drift back to pending 
     syncDOMSelectionToEditor: () => {},
   });
 
-  page.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  page.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   page.append(textHost);
@@ -1457,9 +1471,9 @@ test('native input repair trusts captured coalesced inserts when projected DOM i
       syncDOMSelectionToEditor: () => {},
     });
 
-    textHost.setAttribute('data-plite-node', 'text');
-    textHost.setAttribute('data-plite-path', '0,0');
-    string.setAttribute('data-plite-string', 'true');
+    textHost.setAttribute('data-editor-node', 'text');
+    bindTextPath(editor, textHost, [0, 0]);
+    string.setAttribute('data-editor-string', 'true');
     string.append(text);
     textHost.append(string);
     root.append(textHost);
@@ -1537,9 +1551,9 @@ test('native input repair rebases later captured same-path inserts against repai
     syncDOMSelectionToEditor: () => {},
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -1632,9 +1646,9 @@ test('native input repair does not repair the caret for stale captured targets',
     syncDOMSelectionToEditor: () => {},
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -1715,14 +1729,14 @@ test('native input repair does not move selection for stale coalesced targets', 
     syncDOMSelectionToEditor: () => {},
   });
 
-  targetTextHost.setAttribute('data-plite-node', 'text');
-  targetTextHost.setAttribute('data-plite-path', '0,0');
-  targetString.setAttribute('data-plite-string', 'true');
+  targetTextHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, targetTextHost, [0, 0]);
+  targetString.setAttribute('data-editor-string', 'true');
   targetString.append(targetText);
   targetTextHost.append(targetString);
-  clickedTextHost.setAttribute('data-plite-node', 'text');
-  clickedTextHost.setAttribute('data-plite-path', '1,0');
-  clickedString.setAttribute('data-plite-string', 'true');
+  clickedTextHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, clickedTextHost, [1, 0]);
+  clickedString.setAttribute('data-editor-string', 'true');
   clickedString.append(clickedNode);
   clickedTextHost.append(clickedString);
   root.append(targetTextHost, clickedTextHost);
@@ -1793,9 +1807,9 @@ test('native input repair replaces expanded model selections and collapses at th
     syncDOMSelectionToEditor: () => {},
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -1863,9 +1877,9 @@ test('text insert caret repair waits until rendered text matches the model', () 
     },
   });
 
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   root.append(textHost);
@@ -1939,10 +1953,10 @@ test('deferred native input repair still fixes a stale caret after text already 
     },
   });
 
-  virtualRow.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  virtualRow.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   virtualRow.append(textHost);
@@ -2020,10 +2034,10 @@ test('virtualized captured input repair moves selection when DOM selection is ro
     },
   });
 
-  virtualRow.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  virtualRow.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   virtualRow.append(textHost);
@@ -2096,10 +2110,10 @@ test('native input repair prefers live model continuation over stale captured te
     },
   });
 
-  virtualRow.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  virtualRow.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   virtualRow.append(textHost);
@@ -2177,10 +2191,10 @@ test('deferred native input repair fixes a stale caret after text already synced
     },
   });
 
-  virtualRow.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  virtualRow.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   virtualRow.append(textHost);
@@ -2236,10 +2250,10 @@ test('deferred native input repair rechecks a virtualized synced caret after ini
     },
   });
 
-  virtualRow.setAttribute('data-plite-dom-strategy-virtual-row', 'true');
-  textHost.setAttribute('data-plite-node', 'text');
-  textHost.setAttribute('data-plite-path', '0,0');
-  string.setAttribute('data-plite-string', 'true');
+  virtualRow.setAttribute('data-editor-virtualized-row', 'true');
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
   string.append(text);
   textHost.append(string);
   virtualRow.append(textHost);

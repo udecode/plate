@@ -1,6 +1,6 @@
 import { history } from '../../history/plite-history.internal';
-import { defineBasePlugin, type DefinitionOf } from '../plugin';
+import { definePlugin, type DefinitionOf } from '../plugin';
 
-export const HistoryPlugin = defineBasePlugin('history', {}).extend(history());
+export const HistoryPlugin = definePlugin('history', {}).extend(history());
 
 export type HistoryDefinition = DefinitionOf<typeof HistoryPlugin>;

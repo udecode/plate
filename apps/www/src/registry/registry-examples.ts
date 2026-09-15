@@ -2,6 +2,95 @@ import type { Registry } from 'shadcn/schema';
 
 export const examples: Registry['items'] = [
   {
+    name: 'suggestion-format-demo',
+    title: 'Formatting and Block Suggestions',
+    description:
+      'Review proposed formatting and inserted paragraphs with local history.',
+    type: 'registry:example',
+    files: [
+      { path: 'examples/suggestion-format-demo.tsx', type: 'registry:example' },
+    ],
+    meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
+    registryDependencies: [
+      '@plate/basic-blocks',
+      '@plate/basic-marks',
+      '@plate/discussion',
+      '@plate/editor',
+      '@plate/history-toolbar-button',
+      '@plate/mark-toolbar-button',
+      '@plate/mode-toolbar-button',
+      '@plate/suggestion',
+      '@plate/toolbar',
+    ],
+  },
+  {
+    name: 'suggestion-view-demo',
+    title: 'Suggestion Projections',
+    description:
+      'Compare accepted, proposed, and markup content in a read-only document.',
+    type: 'registry:example',
+    files: [
+      { path: 'examples/suggestion-view-demo.tsx', type: 'registry:example' },
+      {
+        path: 'examples/values/suggestion-document.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
+    registryDependencies: [
+      '@plate/basic-blocks',
+      '@plate/editor',
+      '@plate/suggestion',
+      'toggle-group',
+    ],
+  },
+  {
+    name: 'suggestion-persistence-demo',
+    title: 'Save and Reload Suggestions',
+    description:
+      'Save proposals and discussion threads together in an in-memory snapshot.',
+    type: 'registry:example',
+    files: [
+      {
+        path: 'examples/suggestion-persistence-demo.tsx',
+        type: 'registry:example',
+      },
+      {
+        path: 'examples/values/suggestion-document.tsx',
+        type: 'registry:example',
+      },
+    ],
+    meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
+    registryDependencies: [
+      '@plate/basic-blocks',
+      '@plate/discussion',
+      '@plate/editor',
+      '@plate/history-toolbar-button',
+      '@plate/mode-toolbar-button',
+      '@plate/suggestion',
+      '@plate/toolbar',
+      'button',
+    ],
+  },
+  {
+    name: 'suggestion-demo',
+    title: 'Suggestions',
+    description:
+      'Propose text edits, review insertions and deletions, and undo decisions.',
+    type: 'registry:example',
+    files: [{ path: 'examples/suggestion-demo.tsx', type: 'registry:example' }],
+    meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
+    registryDependencies: [
+      '@plate/basic-blocks',
+      '@plate/discussion',
+      '@plate/editor',
+      '@plate/history-toolbar-button',
+      '@plate/mode-toolbar-button',
+      '@plate/suggestion',
+      '@plate/toolbar',
+    ],
+  },
+  {
     name: 'comment-demo',
     title: 'Comments',
     description:
@@ -271,7 +360,7 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['platejs/diff', 'platejs', 'lodash'],
+    dependencies: ['platejs/authored', 'platejs'],
     files: [
       {
         path: 'examples/version-history-demo.tsx',
@@ -306,11 +395,11 @@ export const examples: Registry['items'] = [
     dependencies: ['remark-emoji', 'platejs', 'remark-gfm', 'remark-math'],
     files: [
       {
-        path: 'examples/markdown-to-plite-demo.tsx',
+        path: 'examples/markdown-to-editor-demo.tsx',
         type: 'registry:example',
       },
     ],
-    name: 'markdown-to-plite-demo',
+    name: 'markdown-to-editor-demo',
     registryDependencies: [
       '@plate/editor',
       '@plate/use-debounce',
@@ -1360,6 +1449,7 @@ export const demoExamples: Registry['items'] = (
       name: 'docx-demo',
       registryDependencies: [
         '@plate/docx',
+        '@plate/docx-source',
         '@plate/editor',
         '@plate/editor-plugins',
         '@plate/export-toolbar-button',

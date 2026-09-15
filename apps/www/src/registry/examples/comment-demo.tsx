@@ -1,14 +1,13 @@
 'use client';
 
 import { CommentsPlugin } from 'platejs/comments/react';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { CommentToolbarButton } from '@/registry/components/editor/comment-toolbar-button';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { LinkKit } from '@/registry/components/editor/link';
-import { SuggestionKit } from '@/registry/components/editor/suggestion';
 import { Toolbar } from '@/registry/components/editor/toolbar';
 import {
   commentThreads,
@@ -21,7 +20,6 @@ export default function CommentDemo() {
     plugins: [
       ...BasicBlocksKit,
       ...LinkKit,
-      ...SuggestionKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
@@ -35,7 +33,7 @@ export default function CommentDemo() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer className="h-[420px]" variant="demo">
         <Toolbar className="border-b px-3 py-1">
           <CommentToolbarButton />
@@ -46,6 +44,6 @@ export default function CommentDemo() {
           variant="demo"
         />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

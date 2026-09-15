@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 
 import { schema, property } from '../core';
-import { defineBasePlugin } from '../lib/plugin';
+import { definePlugin } from '../lib/plugin';
 import { BaseParagraphPlugin } from '../lib/plugins';
 import { createStaticEditor } from './editor/withStatic';
 import { renderStaticHtml } from './renderStaticHtml';
@@ -22,7 +22,7 @@ const getObjectProp = (record: Record<string, unknown>, key: string) => {
 
 const plugins = [
   BaseParagraphPlugin,
-  defineBasePlugin('link', {
+  definePlugin('link', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -40,7 +40,7 @@ const plugins = [
           : { target: '_blank' },
     },
   }),
-  defineBasePlugin('image', {
+  definePlugin('image', {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -65,7 +65,7 @@ describe('static HTML plugin node props', () => {
   it('renders a component declared by a Base plugin', async () => {
     const staticEditor = createStaticEditor({
       plugins: [
-        defineBasePlugin('staticCallout', {
+        definePlugin('staticCallout', {
           component: ({ attributes, children }) =>
             createElement(
               'aside',
@@ -159,7 +159,7 @@ describe('static HTML plugin node props', () => {
 
     expect(htmlString).toContain(`alt="Placeholder"`);
     expect(htmlString).toContain(`width="300"`);
-    expect(htmlString).not.toContain('data-plite-secret');
+    expect(htmlString).not.toContain('data-editor-secret');
     expect(htmlString).not.toContain('onerror');
   });
 });

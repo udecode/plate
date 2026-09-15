@@ -1,0 +1,24 @@
+---
+title: 锚点
+description: Plate 中可随文档变更映射的路径、点和范围。
+---
+
+通过 `editor.anchor(value, options)` 创建锚点。每次提交
+`DocumentChange` 时，锚点都会映射其路径、点或范围；调用 `release()`
+后停止跟踪。
+
+使用 `deletion: "nearest"` 的持久锚点会在已保存历史的撤销和重做中，
+恢复操作前后的精确位置。
+
+## 使用
+
+```ts
+const anchor = editor.anchor(point, { deletion: 'nearest' });
+editor.update.text.insert('Hello');
+const current = anchor.resolve();
+anchor.release();
+```
+
+锚点属于创建它的编辑器和文档根。删除映射可以返回 `null`；读取结果后再
+执行依赖该位置的操作。事务内临时位置使用 `tx.anchor(...)`，其生命周期
+限定在当前事务。参见[位置](/docs/locations)和[历史](/docs/history)。

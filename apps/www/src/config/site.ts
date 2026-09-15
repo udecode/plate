@@ -22,11 +22,6 @@ export const siteConfig = {
       labelCn: 'Plate',
     },
     {
-      href: '/docs/plite',
-      label: 'Plite',
-      labelCn: 'Plite',
-    },
-    {
       href: '/editors',
       label: 'Editors',
       labelCn: '编辑器',

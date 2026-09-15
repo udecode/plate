@@ -8,12 +8,12 @@ A recorded artifact was observed locally or retained in earlier history. This do
 
 ## Summary
 
-- Targets: 48
-- Required artifacts: 48
-- Recorded artifacts: 48
+- Targets: 53
+- Required artifacts: 53
+- Recorded artifacts: 52
 - Missing optional artifacts: 0
-- Missing required artifacts: 0
-- Status counts: recorded=48
+- Missing required artifacts: 1
+- Status counts: recorded=52, missing-required-artifact=1
 
 ## Targets
 
@@ -35,11 +35,17 @@ A recorded artifact was observed locally or retained in earlier history. This do
 | core-rich-text-operations-compare | editing-navigation | rich_text_structural_ops_p95_ms | recorded | 1/1 | yes |
 | core-text-selection | core-current | core_benchmark_seconds | recorded | 1/1 | wrapped |
 | core-update-policy-current | core-current | historyToDefaultP95 | recorded | 1/1 | wrapped |
+| cross-editor-human-operations | editing-navigation | plite_first_type_p95_ms | missing-required-artifact | 0/1 | wrapped |
 | decoration-manager-scalability | react-locality | plite_decoration_manager_hard_guard_failures | recorded | 1/1 | yes |
 | dom-phase-scheduler | dom-scheduling | plite_dom_phase_scheduler_guard_failures | recorded | 1/1 | yes |
 | history-compare | history | history_compare_worst_p95_ratio | recorded | 1/1 | yes |
-| issue-6038-transaction-execution | issue-replay | benchmark_seconds | recorded | 1/1 | wrapped |
 | plate-code-block-text-flow-browser | react-text-flow | plate_code_block_text_flow_max_budget_ratio | recorded | 1/1 | yes |
+| plite-authored-checkpoint | core-authored | plite_authored_checkpoint_passed | recorded | 1/1 | yes |
+| plite-authored-collaboration | collaboration | plite_authored_collaboration_passed | recorded | 1/1 | yes |
+| plite-authored-mounted | browser-authored | plite_authored_mounted_passed | recorded | 1/1 | yes |
+| plite-authored-retention | core-authored | plite_authored_retention_passed | recorded | 1/1 | yes |
+| plite-authored-scale | core-authored | plite_authored_scale_passed | recorded | 1/1 | yes |
+| plite-authored-typing | browser-authored | plite_authored_typing_passed | recorded | 1/1 | yes |
 | plite-command-dispatch | core-command | plite_command_dispatch_worst_budget_ratio | recorded | 1/1 | yes |
 | plite-content-slice-value | core-slice | plite_content_slice_value_trusted_identity_reuse | recorded | 1/1 | yes |
 | plite-correction-worklist | core-corrections | plite_correction_worklist_max_touched_targets | recorded | 1/1 | yes |
@@ -56,7 +62,6 @@ A recorded artifact was observed locally or retained in earlier history. This do
 | react-active-typing-breakdown | react-typing | typing_seconds | recorded | 1/1 | wrapped |
 | react-huge-document-browser-trace | react-large-document | react_huge_doc_type_to_paint_p95_ms | recorded | 1/1 | yes |
 | react-huge-document-full | react-large-document | react_huge_doc_full_max_budget_ratio | recorded | 1/1 | yes |
-| react-huge-document-legacy-compare | react-large-document | react_huge_doc_legacy_compare_worst_p95_ratio | recorded | 1/1 | yes |
 | react-huge-document-overlays | react-large-document | benchmark_seconds | recorded | 1/1 | wrapped |
 | react-huge-document-slate-browser-trace | react-large-document | browser_trace_seconds | recorded | 1/1 | wrapped |
 | react-huge-document-virtualized-type-to-paint | react-large-document | react_huge_doc_type_to_paint_p95_ms | recorded | 1/1 | yes |

@@ -1,16 +1,16 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 test.describe('mobile input lab', () => {
   test('exports browser events with model, DOM, selection, and device state', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       await page.goto('/mobile-lab');
-      await expect(page.locator('[data-plite-mobile-lab]')).toBeVisible();
-      const editor = page.locator('[data-plite-editor="true"]');
+      await expect(page.locator('[data-editor-mobile-lab]')).toBeVisible();
+      const editor = page.locator('[data-editor="true"]');
 
       await expect(editor).toBeVisible();
       await editor.click();
@@ -97,7 +97,7 @@ test.describe('mobile input lab', () => {
 
       await page.evaluate(() => {
         const innerEditor = document.querySelector<HTMLElement>(
-          '[data-plite-editor="true"]'
+          '[data-editor="true"]'
         );
         const clear = document.querySelector<HTMLButtonElement>(
           '[data-test-id="mobile-lab-clear"]'

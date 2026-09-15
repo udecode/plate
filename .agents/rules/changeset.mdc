@@ -1,5 +1,5 @@
 ---
-description: 'Command: changeset'
+description: Write and verify package release changesets and the PR’s managed auto-release choice.
 ---
 
 # Changeset

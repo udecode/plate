@@ -1,21 +1,21 @@
 import { expect, type Page, test } from '@playwright/test';
 import {
-  createPliteBrowserEditorHarness,
-  installPliteReactRenderProfiler,
+  createBrowserEditorHarness,
+  installReactRenderProfiler,
   openExample,
-  recordPliteBrowserRuntimeErrors,
-  resetPliteReactRenderProfiler,
-  takePliteBrowserRenderStateSnapshot,
+  recordBrowserRuntimeErrors,
+  resetReactRenderProfiler,
+  takeBrowserRenderStateSnapshot,
 } from '@platejs/test/playwright';
 
 test.describe('hovering toolbar example', () => {
   test.beforeEach(async ({ page }) => {
-    await installPliteReactRenderProfiler(page);
+    await installReactRenderProfiler(page);
     await page.goto('/examples/plite/hovering-toolbar');
   });
 
   const hasExpandedModelSelection = async (page: Page) =>
-    page.locator('[data-plite-editor]').evaluate((element) => {
+    page.locator('[data-editor]').evaluate((element) => {
       const selection = (element as any).__pliteBrowserHandle?.getSelection?.();
 
       if (!selection) {
@@ -29,10 +29,10 @@ test.describe('hovering toolbar example', () => {
     });
 
   const selectFirstTextRange = async (page: Page) => {
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       'hovering-toolbar',
-      page.locator('[data-plite-editor="true"]')
+      page.locator('[data-editor="true"]')
     );
 
     await editor.selection.selectDOM({
@@ -78,21 +78,21 @@ test.describe('hovering toolbar example', () => {
       .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
       .toBe(selectedText);
     await expect(page.getByTestId('menu')).toHaveCSS('opacity', '1');
-    await expect(page.locator('[data-plite-editor] u')).toContainText(
+    await expect(page.locator('[data-editor] u')).toContainText(
       selectedText
     );
   });
 
   test('hovering toolbar appears after DOM selection', async ({ page }) => {
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       'hovering-toolbar',
-      page.locator('[data-plite-editor="true"]')
+      page.locator('[data-editor="true"]')
     );
 
     await expect(page.getByTestId('menu')).toHaveCSS('opacity', '0');
 
-    await resetPliteReactRenderProfiler(page);
+    await resetReactRenderProfiler(page);
     await selectFirstTextRange(page);
 
     await expect
@@ -103,7 +103,7 @@ test.describe('hovering toolbar example', () => {
     await expect(page.getByTestId('menu')).not.toHaveCSS('top', '-10000px');
     await expect(page.getByTestId('menu')).not.toHaveCSS('left', '-10000px');
 
-    const proof = await takePliteBrowserRenderStateSnapshot(editor);
+    const proof = await takeBrowserRenderStateSnapshot(editor);
 
     expect(proof.selection).not.toBeNull();
     expect(proof.focusOwner.kind).toBe('editor');
@@ -126,7 +126,7 @@ test.describe('hovering toolbar example', () => {
       testInfo.project.name === 'mobile',
       'Desktop replacement text repro'
     );
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/hovering-toolbar', {
       ready: {
         editor: 'visible',

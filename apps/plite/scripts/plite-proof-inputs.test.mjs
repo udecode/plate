@@ -187,6 +187,11 @@ test('browser discovery fingerprint covers its executable owner', () => {
     'browser plan does not fingerprint its discovery owner'
   );
   assert.ok(entries.has('apps/plite/scripts/plite-proof-inputs.mjs'));
+  assert.ok(
+    entries.has(
+      'docs/plans/artifacts/native-authored-changes/browser-typing-contract.json'
+    )
+  );
 });
 
 test('browser run identity covers its server, build owners, and built runtime', () => {

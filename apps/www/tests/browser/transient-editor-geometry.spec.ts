@@ -1,16 +1,16 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
-const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
+const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 
 test('inactive selection paints expanded and collapsed selections 5/5', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/inactive-selection-demo', {
@@ -18,17 +18,13 @@ test('inactive selection paints expanded and collapsed selections 5/5', async ({
     });
 
     const root = page.locator(EDITOR_ROOT);
-    const editor = createPliteBrowserEditorHarness(
-      page,
-      'inactive-selection',
-      root
-    );
+    const editor = createBrowserEditorHarness(page, 'inactive-selection', root);
     const retain = page.getByRole('button', {
       name: 'Keep selection visible',
     });
     const clear = page.getByRole('button', { name: 'Clear selection paint' });
-    const fill = page.locator('[data-plite-inactive-selection]');
-    const caret = page.locator('[data-plite-inactive-selection-caret]');
+    const fill = page.locator('[data-editor-inactive-selection]');
+    const caret = page.locator('[data-editor-inactive-selection-caret]');
     const waitForSelectionCommit = () =>
       page.evaluate(async () => {
         await new Promise<void>((resolve) => {
@@ -97,13 +93,13 @@ test('Find highlights, wraps, closes, and returns editor input 5/5', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/find-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT);
-    const editor = createPliteBrowserEditorHarness(page, 'find', root);
+    const editor = createBrowserEditorHarness(page, 'find', root);
 
     await editor.ready({ editor: 'visible' });
     const search = page.getByRole('search', { name: 'Find in document' });
@@ -216,12 +212,12 @@ test('Find opens the requested shared-model view and survives detach 5/5', async
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
   try {
     await page.goto('/blocks/find-demo', { waitUntil: 'commit' });
     const first = page.getByRole('region', { name: 'First view', exact: true });
     const firstRoot = first.locator(EDITOR_ROOT);
-    await createPliteBrowserEditorHarness(page, 'find-first', firstRoot).ready({
+    await createBrowserEditorHarness(page, 'find-first', firstRoot).ready({
       editor: 'visible',
     });
     for (let run = 0; run < 5; run++) {
@@ -236,11 +232,9 @@ test('Find opens the requested shared-model view and survives detach 5/5', async
         exact: true,
       });
       const secondRoot = second.locator(EDITOR_ROOT);
-      await createPliteBrowserEditorHarness(
-        page,
-        'find-second',
-        secondRoot
-      ).ready({ editor: 'visible' });
+      await createBrowserEditorHarness(page, 'find-second', secondRoot).ready({
+        editor: 'visible',
+      });
       await firstRoot.click();
       await firstRoot.press('ControlOrMeta+f');
       const firstInput = first.getByRole('searchbox');
@@ -290,12 +284,12 @@ test('Find scrolls distant ranges while retaining input focus and selection', as
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/find-demo', { waitUntil: 'commit' });
     const root = page.locator(EDITOR_ROOT);
-    const editor = createPliteBrowserEditorHarness(page, 'find', root);
+    const editor = createBrowserEditorHarness(page, 'find', root);
     await expect(root).toBeVisible();
     await editor.focus();
     await root.press('ControlOrMeta+A');
@@ -346,7 +340,7 @@ test('Yjs remote selection and caret geometry pass 5/5', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/collaboration-demo', { waitUntil: 'commit' });
@@ -357,7 +351,7 @@ test('Yjs remote selection and caret geometry pass 5/5', async ({
     const lin = page.getByRole('textbox', {
       name: 'Lin collaborative editor',
     });
-    const editor = createPliteBrowserEditorHarness(page, 'yjs-ada', ada);
+    const editor = createBrowserEditorHarness(page, 'yjs-ada', ada);
     const remoteSelection = page.locator('[data-remote-selection]');
     const remoteCaret = page.locator('[data-remote-caret]');
     const remoteLabel = page.locator('[data-remote-cursor-label]');
@@ -407,17 +401,13 @@ test('floating toolbar tracks exact selection geometry 5/5', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/floating-toolbar-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT);
-    const editor = createPliteBrowserEditorHarness(
-      page,
-      'floating-toolbar',
-      root
-    );
+    const editor = createBrowserEditorHarness(page, 'floating-toolbar', root);
     const toolbars = page.getByRole('toolbar');
 
     await expect(root).toBeVisible();
@@ -450,7 +440,7 @@ test('link floating editor submits on Enter from exact geometry', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     for (const reducedMotion of ['no-preference', 'reduce'] as const) {
@@ -459,7 +449,7 @@ test('link floating editor submits on Enter from exact geometry', async ({
 
       const link = page.getByRole('link', { name: 'hyperlinks' });
       const root = page.locator(EDITOR_ROOT);
-      const editor = createPliteBrowserEditorHarness(page, 'link', root);
+      const editor = createBrowserEditorHarness(page, 'link', root);
 
       await editor.selection.collapse({ offset: 2, path: [1, 1, 0] });
       await editor.focus();
@@ -487,7 +477,7 @@ test('link floating editor opens from an empty paragraph 5/5', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     for (const reducedMotion of ['no-preference', 'reduce'] as const) {
@@ -495,9 +485,9 @@ test('link floating editor opens from an empty paragraph 5/5', async ({
       await page.goto('/blocks/link-demo', { waitUntil: 'commit' });
 
       const root = page.locator(EDITOR_ROOT);
-      const editor = createPliteBrowserEditorHarness(page, 'link-empty', root);
+      const editor = createBrowserEditorHarness(page, 'link-empty', root);
       const input = page.getByPlaceholder('Paste link').last();
-      const emptyLine = root.locator('[data-plite-zero-width]');
+      const emptyLine = root.locator('[data-editor-zero-width]');
 
       await expect(root).toBeVisible();
       await editor.focus();
@@ -513,9 +503,7 @@ test('link floating editor opens from an empty paragraph 5/5', async ({
           if (target.matches('input[placeholder="Paste link"]')) {
             return 'url-input';
           }
-          if (
-            target.matches('[data-plite-editor="true"][contenteditable="true"]')
-          ) {
+          if (target.matches('[data-editor="true"][contenteditable="true"]')) {
             return 'editor';
           }
 
@@ -548,9 +536,7 @@ test('link floating editor opens from an empty paragraph 5/5', async ({
           if (active.matches('input[placeholder="Paste link"]')) {
             return 'url-input';
           }
-          if (
-            active.matches('[data-plite-editor="true"][contenteditable="true"]')
-          ) {
+          if (active.matches('[data-editor="true"][contenteditable="true"]')) {
             return 'editor';
           }
 

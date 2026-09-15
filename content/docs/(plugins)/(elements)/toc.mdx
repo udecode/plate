@@ -122,17 +122,17 @@ You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolba
 ### Scroll container setup
 
 Use [EditorContainer](/docs/components/editor) for the editor's scrolling region.
-For a custom layout, render `PlateContainer` inside `<Plate>` and apply your
-scrolling styles to it. `PlateContainer` registers that region with the editor.
+For a custom layout, render `EditorContainer` inside `<EditorRoot>` and apply your
+scrolling styles to it. `EditorContainer` registers that region with the editor.
 
 ```tsx
-import { PlateContainer, PlateContent } from 'platejs/react';
+import { EditorContainer, EditorContent } from 'platejs/react';
 
 function Layout() {
   return (
-    <PlateContainer className="h-[600px] overflow-y-auto">
-      <PlateContent />
-    </PlateContainer>
+    <EditorContainer className="h-[600px] overflow-y-auto">
+      <EditorContent />
+    </EditorContainer>
   );
 }
 ```

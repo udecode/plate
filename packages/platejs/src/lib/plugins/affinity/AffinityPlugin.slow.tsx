@@ -12,24 +12,24 @@ import {
 } from '../../../testing';
 import type { Editor } from '../../editor';
 import { createEditor } from '../../editor';
-import { defineBasePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { AffinityPlugin } from './AffinityPlugin';
 
 jsxt;
 
-const BaseBoldPlugin = defineBasePlugin('bold', {
+const BaseBoldPlugin = definePlugin('bold', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
-const BaseItalicPlugin = defineBasePlugin('italic', {
+const BaseItalicPlugin = definePlugin('italic', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
-const BaseCodePlugin = defineBasePlugin('code', {
+const BaseCodePlugin = definePlugin('code', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
-const BaseLinkPlugin = defineBasePlugin('a', {
+const BaseLinkPlugin = definePlugin('a', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),

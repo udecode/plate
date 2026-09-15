@@ -3,7 +3,7 @@
 import { property, schema, target } from '../../../core';
 import { jsxt } from '../../../testing';
 import { createEditor } from '../../editor';
-import { defineBasePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { ElementIdPlugin } from '../element-id';
 import { ElementStatePlugin } from './ElementStatePlugin';
 
@@ -52,7 +52,7 @@ describe('ElementStatePlugin', () => {
   });
 
   it('uses compiled metadata roles for element state', () => {
-    const StatePropertiesPlugin = defineBasePlugin('stateProperties', {
+    const StatePropertiesPlugin = definePlugin('stateProperties', {
       schema: {
         properties: {
           ephemeral: schema.elementProperty(property.string(), {

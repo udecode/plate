@@ -143,7 +143,7 @@ test.describe('hidden content blocks example', () => {
     await expect(editor.root).not.toContainText('Collapsible hidden note');
     await expect(editor.root).not.toContainText('Details tab hidden text');
     await expect(
-      editor.root.locator('[data-plite-dom-coverage-boundary]')
+      editor.root.locator('[data-editor-dom-coverage-boundary]')
     ).toHaveCount(3);
     await expect(
       page.getByTestId('hidden-content-native-surface')
@@ -160,7 +160,7 @@ test.describe('hidden content blocks example', () => {
     await expect(editor.root).toContainText('Details tab hidden text');
     await expect(editor.root).not.toContainText('Overview tab visible text');
     await expect(
-      editor.root.locator('[data-plite-dom-coverage-boundary]')
+      editor.root.locator('[data-editor-dom-coverage-boundary]')
     ).toHaveCount(1);
     await expect.poll(() => pageErrors).toEqual([]);
   });
@@ -225,9 +225,9 @@ test.describe('hidden content blocks example', () => {
       'copy payload appears here'
     );
 
-    await page.getByTestId('policy-copy-materialize').click();
+    await page.getByTestId('policy-copy-model').click();
     await expect(page.getByTestId('hidden-content-copy-policy')).toContainText(
-      'materialize'
+      'model'
     );
     await page.getByTestId('select-copy-details').click();
     await expect(page.getByTestId('hidden-content-copy-preview')).toContainText(
@@ -235,7 +235,7 @@ test.describe('hidden content blocks example', () => {
     );
     await expect(page.getByTestId('tab-details')).toHaveAttribute(
       'data-state',
-      'active'
+      'inactive'
     );
   });
 

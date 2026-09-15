@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
@@ -10,7 +10,7 @@ const RESIZE_HANDLE_CASE_ID =
   'table:ignore-resize-handle-hover-during-cell-selection-drag';
 const BLOCK_HANDLE_CASE_ID = 'table:hide-block-handles-during-cell-selection';
 const CELL_ONLY_PAINT_CASE_ID = 'table:paint-only-selected-cells';
-const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
+const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 
 const isTransparent = (color: string) =>
   color === 'transparent' ||
@@ -113,7 +113,7 @@ const setTableSelectionLayerControl = async (
     const id = 'table-selection-layer-control';
     // Inert drag previews have no node keys; controls must target the live table.
     const table = document.querySelector(
-      '[data-plite-editor="true"] table:has(td[data-plite-node-key], th[data-plite-node-key])'
+      '[data-editor="true"] table:has(td[data-editor-node-key], th[data-editor-node-key])'
     );
     const wrapper = table?.parentElement;
 
@@ -151,7 +151,7 @@ const setTableSelectionLayerControl = async (
 
       duplicate.className = cellLayer?.className ?? '';
       duplicate.contentEditable = 'false';
-      duplicate.dataset.pliteRootChromeIgnore = 'true';
+      duplicate.dataset.editorRootChromeIgnore = 'true';
       duplicate.dataset.slot = 'node-selection-highlight';
       duplicate.dataset.testTableSelectionDuplicate = 'true';
       wrapper.append(duplicate);
@@ -211,19 +211,19 @@ const expectCellSelectionDragAffordances = async (
 test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/table-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       CELL_ONLY_PAINT_CASE_ID,
       root
     );
     const cells = root.locator(
-      'table td[data-plite-node-key], table th[data-plite-node-key]'
+      'table td[data-editor-node-key], table th[data-editor-node-key]'
     );
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await expect(cells).toHaveCount(16);
@@ -231,7 +231,7 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
     const paintLayers = () =>
       root.evaluate((element) => {
         const table = element.querySelector(
-          'table:has(td[data-plite-node-key], th[data-plite-node-key])'
+          'table:has(td[data-editor-node-key], th[data-editor-node-key])'
         );
         const wrapper = table?.parentElement;
         const layers = Array.from(
@@ -307,7 +307,7 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
       .toBe(1);
 
     const clip = await root
-      .locator('table:has(td[data-plite-node-key], th[data-plite-node-key])')
+      .locator('table:has(td[data-editor-node-key], th[data-editor-node-key])')
       .first()
       .evaluate((table) => {
         const rect = table.parentElement!.getBoundingClientRect();
@@ -420,19 +420,15 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
 test(BLOCK_HANDLE_CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/table-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(
-      page,
-      BLOCK_HANDLE_CASE_ID,
-      root
-    );
+    const editor = createBrowserEditorHarness(page, BLOCK_HANDLE_CASE_ID, root);
     const cells = root.locator(
-      'table td[data-plite-node-key], table th[data-plite-node-key]'
+      'table td[data-editor-node-key], table th[data-editor-node-key]'
     );
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await expect(cells).toHaveCount(16);
@@ -539,19 +535,19 @@ test(BLOCK_HANDLE_CASE_ID, async ({ page }, testInfo) => {
 test(PAINT_CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/table-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(page, PAINT_CASE_ID, root);
+    const editor = createBrowserEditorHarness(page, PAINT_CASE_ID, root);
     const cells = root.locator(
-      'table td[data-plite-node-key], table th[data-plite-node-key]'
+      'table td[data-editor-node-key], table th[data-editor-node-key]'
     );
     const startText = cells
       .nth(0)
-      .locator('[data-plite-string="true"]')
+      .locator('[data-editor-string="true"]')
       .first();
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await expect(cells).toHaveCount(16);
@@ -606,7 +602,7 @@ test(PAINT_CASE_ID, async ({ page }, testInfo) => {
           .filter((element) => element.hasAttribute('data-table-cell-selected'))
           .map((element) => {
             const text =
-              element.querySelector('[data-plite-string="true"]') ?? element;
+              element.querySelector('[data-editor-string="true"]') ?? element;
 
             return getComputedStyle(text, '::selection').backgroundColor;
           })
@@ -728,19 +724,15 @@ test(PAINT_CASE_ID, async ({ page }, testInfo) => {
 test(CONTRACT_CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/table-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(
-      page,
-      CONTRACT_CASE_ID,
-      root
-    );
+    const editor = createBrowserEditorHarness(page, CONTRACT_CASE_ID, root);
     const cells = root.locator(
-      'table td[data-plite-node-key], table th[data-plite-node-key]'
+      'table td[data-editor-node-key], table th[data-editor-node-key]'
     );
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await expect(cells).toHaveCount(16);
@@ -861,19 +853,19 @@ test(CONTRACT_CASE_ID, async ({ page }, testInfo) => {
 test(RESIZE_HANDLE_CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/table-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITOR_ROOT).first();
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       RESIZE_HANDLE_CASE_ID,
       root
     );
     const cells = root.locator(
-      'table td[data-plite-node-key], table th[data-plite-node-key]'
+      'table td[data-editor-node-key], table th[data-editor-node-key]'
     );
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await expect(cells).toHaveCount(16);

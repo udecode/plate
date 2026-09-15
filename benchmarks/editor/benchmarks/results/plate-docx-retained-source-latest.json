@@ -1,0 +1,434 @@
+{
+  "environment": {
+    "bun": "1.3.12",
+    "platform": "darwin arm64"
+  },
+  "frozenBudgets": {
+    "exactExportP95": "min(50 ms, 50% of matched semantic export p95)",
+    "importCold": "150% of matched baseline cold + 10 ms",
+    "importP95": "130% of matched baseline p95 + 5 ms",
+    "retainedBytes": "compressed input + frozen baseline JSON + comments JSON",
+    "overlayExportP95": "matched semantic export p95 + 75 ms + 100 ms per MiB source input",
+    "overlayRssDelta": "matched semantic export max + 3x compressed input + 64 MiB noise allowance",
+    "targetRssDelta": "matched baseline max + 2x compressed input + 16 MiB noise allowance"
+  },
+  "rows": [
+    {
+      "name": "normal",
+      "opaqueBytes": 0,
+      "overlaySamples": 10,
+      "paragraphs": 4,
+      "revisions": 4,
+      "rootParts": 8,
+      "samples": 20,
+      "baselineCommentBytes": 2,
+      "baselineDocumentBytes": 6386,
+      "baselineImport": {
+        "coldMs": 73.220959,
+        "eventLoopDelayP95Ms": 5.2921250000000555,
+        "heapDeltaMaxBytes": 3221747,
+        "medianMs": 19.305624999999964,
+        "p95Ms": 22.51887499999998,
+        "rssDeltaMaxBytes": 10813440
+      },
+      "budgets": {
+        "exactExportP95Ms": 6.6492920000000595,
+        "importColdMs": 119.83143849999999,
+        "importP95Ms": 34.27453749999998,
+        "retainedBytes": 29031,
+        "overlayExportP95Ms": 90.45798875463879,
+        "overlayRssDeltaBytes": 73517401,
+        "targetRssDeltaBytes": 27635942
+      },
+      "compressedBytes": 22643,
+      "documentXmlBytes": 1936,
+      "exactExport": {
+        "coldMs": 0.6929999999997563,
+        "eventLoopDelayP95Ms": 2.244959000000108,
+        "heapDeltaMaxBytes": 126149,
+        "medianMs": 0.40316699999993943,
+        "p95Ms": 0.4683749999999236,
+        "rssDeltaMaxBytes": 458752
+      },
+      "overlayExport": {
+        "eventLoopDelayP95Ms": 8.305624999999964,
+        "heapDeltaMaxBytes": 5564227,
+        "medianMs": 15.641499999999724,
+        "p95Ms": 17.721541999999772,
+        "rssDeltaMaxBytes": 6684672,
+        "work": {
+          "copiedParts": 8,
+          "finalPackageValidationLoads": 1,
+          "generatedPackageLoads": 1,
+          "packageGenerations": 1,
+          "preservedBytes": 0,
+          "relationshipEdges": 8,
+          "sourcePackageLoads": 1
+        }
+      },
+      "retainedBytes": 29031,
+      "semanticExport": {
+        "coldMs": 25.156375000000025,
+        "eventLoopDelayP95Ms": 9.538167000000158,
+        "heapDeltaMaxBytes": 892023,
+        "medianMs": 10.734500000000025,
+        "p95Ms": 13.298584000000119,
+        "rssDeltaMaxBytes": 6340608
+      },
+      "targetImport": {
+        "coldMs": 29.739417000000003,
+        "eventLoopDelayP95Ms": 7.251999999999953,
+        "heapDeltaMaxBytes": 3399462,
+        "medianMs": 20.07233300000007,
+        "p95Ms": 22.711457999999993,
+        "rssDeltaMaxBytes": 12189696
+      },
+      "work": {
+        "baseline": {
+          "baselineClones": 0,
+          "compressedCopies": 0,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "zipLoads": 1
+        },
+        "exactExport": {
+          "documentDiffs": 1,
+          "htmlConversions": 0,
+          "packageGenerations": 0,
+          "zipLoads": 0
+        },
+        "overlayExport": {
+          "copiedParts": 8,
+          "finalPackageValidationLoads": 1,
+          "generatedPackageLoads": 1,
+          "packageGenerations": 1,
+          "preservedBytes": 0,
+          "relationshipEdges": 8,
+          "sourcePackageLoads": 1
+        },
+        "retainedImport": {
+          "baselineClones": 1,
+          "compressedCopies": 0,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "zipLoads": 1
+        }
+      }
+    },
+    {
+      "name": "large",
+      "opaqueBytes": 1048576,
+      "overlaySamples": 10,
+      "paragraphs": 24,
+      "revisions": 16,
+      "rootParts": 64,
+      "samples": 20,
+      "baselineCommentBytes": 2,
+      "baselineDocumentBytes": 25100,
+      "baselineImport": {
+        "coldMs": 66.19016599999941,
+        "eventLoopDelayP95Ms": 14.251417000000401,
+        "heapDeltaMaxBytes": 14889688,
+        "medianMs": 55.79016599999977,
+        "p95Ms": 96.04229200000009,
+        "rssDeltaMaxBytes": 6963200
+      },
+      "budgets": {
+        "exactExportP95Ms": 9.53795799999989,
+        "importColdMs": 109.28524899999911,
+        "importP95Ms": 129.85497960000012,
+        "retainedBytes": 1113300,
+        "overlayExportP95Ms": 197.85456437646462,
+        "overlayRssDeltaBytes": 74043474,
+        "targetRssDeltaBytes": 25916812
+      },
+      "compressedBytes": 1088198,
+      "documentXmlBytes": 4755,
+      "exactExport": {
+        "coldMs": 0.7156250000007276,
+        "eventLoopDelayP95Ms": 2.5630830000009155,
+        "heapDeltaMaxBytes": 92088,
+        "medianMs": 0.5341669999997976,
+        "p95Ms": 0.5828750000000582,
+        "rssDeltaMaxBytes": 507904
+      },
+      "overlayExport": {
+        "eventLoopDelayP95Ms": 13.374374999999418,
+        "heapDeltaMaxBytes": 10431461,
+        "medianMs": 53.55387499999961,
+        "p95Ms": 66.42104199999994,
+        "rssDeltaMaxBytes": 19841024,
+        "work": {
+          "copiedParts": 64,
+          "finalPackageValidationLoads": 1,
+          "generatedPackageLoads": 1,
+          "packageGenerations": 1,
+          "preservedBytes": 1048576,
+          "relationshipEdges": 64,
+          "sourcePackageLoads": 1
+        }
+      },
+      "retainedBytes": 1113300,
+      "semanticExport": {
+        "coldMs": 24.092749999999796,
+        "eventLoopDelayP95Ms": 13.662709000000177,
+        "heapDeltaMaxBytes": 702691,
+        "medianMs": 18.038125000000946,
+        "p95Ms": 19.07591599999978,
+        "rssDeltaMaxBytes": 3670016
+      },
+      "targetImport": {
+        "coldMs": 52.63312500000029,
+        "eventLoopDelayP95Ms": 14.546791000000667,
+        "heapDeltaMaxBytes": 16198481,
+        "medianMs": 54.808374999998705,
+        "p95Ms": 89.78054200000042,
+        "rssDeltaMaxBytes": 4882432
+      },
+      "work": {
+        "baseline": {
+          "baselineClones": 0,
+          "compressedCopies": 0,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "zipLoads": 1
+        },
+        "exactExport": {
+          "documentDiffs": 1,
+          "htmlConversions": 0,
+          "packageGenerations": 0,
+          "zipLoads": 0
+        },
+        "overlayExport": {
+          "copiedParts": 64,
+          "finalPackageValidationLoads": 1,
+          "generatedPackageLoads": 1,
+          "packageGenerations": 1,
+          "preservedBytes": 1048576,
+          "relationshipEdges": 64,
+          "sourcePackageLoads": 1
+        },
+        "retainedImport": {
+          "baselineClones": 1,
+          "compressedCopies": 0,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "zipLoads": 1
+        }
+      }
+    },
+    {
+      "name": "stress",
+      "opaqueBytes": 8388608,
+      "overlaySamples": 5,
+      "paragraphs": 96,
+      "revisions": 48,
+      "rootParts": 256,
+      "samples": 20,
+      "baselineCommentBytes": 2,
+      "baselineDocumentBytes": 77383,
+      "baselineImport": {
+        "coldMs": 274.0295420000002,
+        "eventLoopDelayP95Ms": 40.94920800000182,
+        "heapDeltaMaxBytes": 29558798,
+        "medianMs": 269.45500000000175,
+        "p95Ms": 407.8129170000029,
+        "rssDeltaMaxBytes": 17022976
+      },
+      "budgets": {
+        "exactExportP95Ms": 23.714708499999688,
+        "importColdMs": 421.04431300000033,
+        "importP95Ms": 535.1567921000038,
+        "retainedBytes": 8563527,
+        "overlayExportP95Ms": 931.7309840776361,
+        "overlayRssDeltaBytes": 358283002,
+        "targetRssDeltaBytes": 50772476
+      },
+      "compressedBytes": 8486142,
+      "documentXmlBytes": 13467,
+      "exactExport": {
+        "coldMs": 1.7743749999972351,
+        "eventLoopDelayP95Ms": 2.836834000001545,
+        "heapDeltaMaxBytes": 106415,
+        "medianMs": 0.9035000000003492,
+        "p95Ms": 0.9832920000008016,
+        "rssDeltaMaxBytes": 32768
+      },
+      "overlayExport": {
+        "eventLoopDelayP95Ms": 45.868374999998196,
+        "heapDeltaMaxBytes": 33272329,
+        "medianMs": 271.39316600000166,
+        "p95Ms": 283.8482499999991,
+        "rssDeltaMaxBytes": 33800192,
+        "work": {
+          "copiedParts": 256,
+          "finalPackageValidationLoads": 1,
+          "generatedPackageLoads": 1,
+          "packageGenerations": 1,
+          "preservedBytes": 8388608,
+          "relationshipEdges": 256,
+          "sourcePackageLoads": 1
+        }
+      },
+      "retainedBytes": 8563527,
+      "semanticExport": {
+        "coldMs": 66.35737499999959,
+        "eventLoopDelayP95Ms": 37.86229100000128,
+        "heapDeltaMaxBytes": 968597,
+        "medianMs": 44.59141699999964,
+        "p95Ms": 47.429416999999376,
+        "rssDeltaMaxBytes": 265715712
+      },
+      "targetImport": {
+        "coldMs": 259.12304100000074,
+        "eventLoopDelayP95Ms": 27.117624999998952,
+        "heapDeltaMaxBytes": 20820082,
+        "medianMs": 273.695499999998,
+        "p95Ms": 302.20816699999705,
+        "rssDeltaMaxBytes": 17022976
+      },
+      "work": {
+        "baseline": {
+          "baselineClones": 0,
+          "compressedCopies": 0,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "zipLoads": 1
+        },
+        "exactExport": {
+          "documentDiffs": 1,
+          "htmlConversions": 0,
+          "packageGenerations": 0,
+          "zipLoads": 0
+        },
+        "overlayExport": {
+          "copiedParts": 256,
+          "finalPackageValidationLoads": 1,
+          "generatedPackageLoads": 1,
+          "packageGenerations": 1,
+          "preservedBytes": 8388608,
+          "relationshipEdges": 256,
+          "sourcePackageLoads": 1
+        },
+        "retainedImport": {
+          "baselineClones": 1,
+          "compressedCopies": 0,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "zipLoads": 1
+        }
+      }
+    },
+    {
+      "name": "pathological",
+      "opaqueBytes": 25165824,
+      "overlaySamples": 3,
+      "paragraphs": 256,
+      "revisions": 96,
+      "rootParts": 900,
+      "samples": 5,
+      "baselineCommentBytes": 2,
+      "baselineDocumentBytes": 161791,
+      "baselineImport": {
+        "coldMs": 853.1299579999977,
+        "eventLoopDelayP95Ms": 79.50020900000527,
+        "heapDeltaMaxBytes": 29854897,
+        "medianMs": 990.0025409999944,
+        "p95Ms": 1219.711500000005,
+        "rssDeltaMaxBytes": 29212672
+      },
+      "budgets": {
+        "exactExportP95Ms": 50,
+        "importColdMs": 1289.6949369999966,
+        "importP95Ms": 1590.6249500000065,
+        "retainedBytes": 25607055,
+        "overlayExportP95Ms": 2618.68690936279,
+        "overlayRssDeltaBytes": 145836714,
+        "targetRssDeltaBytes": 96880412
+      },
+      "compressedBytes": 25445262,
+      "documentXmlBytes": 29863,
+      "exactExport": {
+        "coldMs": 3.7467089999991003,
+        "eventLoopDelayP95Ms": 1.9078750000044238,
+        "heapDeltaMaxBytes": 0,
+        "medianMs": 1.6332499999989523,
+        "p95Ms": 1.8650829999969574,
+        "rssDeltaMaxBytes": 0
+      },
+      "overlayExport": {
+        "eventLoopDelayP95Ms": 134.5223330000008,
+        "heapDeltaMaxBytes": 56736733,
+        "medianMs": 902.4391670000041,
+        "p95Ms": 1039.6573750000025,
+        "rssDeltaMaxBytes": 106971136,
+        "work": {
+          "copiedParts": 900,
+          "finalPackageValidationLoads": 1,
+          "generatedPackageLoads": 1,
+          "packageGenerations": 1,
+          "preservedBytes": 25165824,
+          "relationshipEdges": 900,
+          "sourcePackageLoads": 1
+        }
+      },
+      "retainedBytes": 25607055,
+      "semanticExport": {
+        "coldMs": 145.08116699999664,
+        "eventLoopDelayP95Ms": 92.3384170000063,
+        "heapDeltaMaxBytes": 338077,
+        "medianMs": 110.72387499999604,
+        "p95Ms": 117.0376249999972,
+        "rssDeltaMaxBytes": 2392064
+      },
+      "targetImport": {
+        "coldMs": 856.7372910000049,
+        "eventLoopDelayP95Ms": 80.68204200000037,
+        "heapDeltaMaxBytes": 51168682,
+        "medianMs": 1023.2227500000008,
+        "p95Ms": 1183.9728340000001,
+        "rssDeltaMaxBytes": 51691520
+      },
+      "work": {
+        "baseline": {
+          "baselineClones": 0,
+          "compressedCopies": 0,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "zipLoads": 1
+        },
+        "exactExport": {
+          "documentDiffs": 1,
+          "htmlConversions": 0,
+          "packageGenerations": 0,
+          "zipLoads": 0
+        },
+        "overlayExport": {
+          "copiedParts": 900,
+          "finalPackageValidationLoads": 1,
+          "generatedPackageLoads": 1,
+          "packageGenerations": 1,
+          "preservedBytes": 25165824,
+          "relationshipEdges": 900,
+          "sourcePackageLoads": 1
+        },
+        "retainedImport": {
+          "baselineClones": 1,
+          "compressedCopies": 0,
+          "htmlConversions": 1,
+          "packageGenerations": 1,
+          "zipLoads": 1
+        }
+      }
+    }
+  ],
+  "sourceIdentity": {
+    "packages/platejs/src/docx/import/lib/importDocx.ts": "6f4865a4bb3fb5550052f9b30fb65f74cb2e8b03e4a28506c031d281c0b3896f",
+    "packages/platejs/src/docx/internal/docxPackage.ts": "1d9dfc12dbf2c0dc975b17bdde8df6ab6f8a923f99e802c8a8e7d14d9edd5a5d",
+    "packages/platejs/src/docx/internal/source.ts": "4a0249c93993df3bc79b28eb312626289c6b98cd93fda81ba0a655f6124d289e",
+    "packages/platejs/src/docx/export/lib/exportToDocx.tsx": "ebc1b64876c8184035e10afdbe3ce0a329d5f60a9a2dadd6877b62da40bd31f1",
+    "packages/platejs/src/docx/export/lib/sourcePreservation.ts": "17f0bb5e51fece459a8cc93061d6e4ebda68bb1d68e7f029cfea8f3fb6999afd",
+    "packages/plitejs/src/core/change/document-change.ts": "b151115b88b8f30ec8e5136753ef468eb1e30060aae77ca7cd0e18d0d81916b7",
+    "benchmarks/editor/benchmarks/plate-docx-retained-source-benchmark.test.ts": "b59d3a569a945c6ea08b32bd923dedfcd98a498ef4e489dafff850a24c103221"
+  }
+}

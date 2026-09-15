@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
@@ -23,20 +23,20 @@ export default function InactiveSelectionDemo() {
 
   return (
     <div className="space-y-4" data-inactive-selection-demo="">
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <EditorContainer variant="demo">
           <Editor aria-label="Inactive selection editor" />
         </EditorContainer>
 
         <div className="flex flex-wrap gap-2">
-          <Button data-plite-keep-selection-visible="" type="button">
+          <Button data-editor-keep-selection-visible="" type="button">
             Keep selection visible
           </Button>
           <Button type="button" variant="outline">
             Clear selection paint
           </Button>
         </div>
-      </Plate>
+      </EditorRoot>
     </div>
   );
 }

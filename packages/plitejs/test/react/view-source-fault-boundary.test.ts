@@ -1,13 +1,12 @@
 import { createEditor, type Range } from 'plitejs';
 
-import { createPliteAnnotationStore } from '../../src/annotations';
+import { createAnnotationStore } from '../../src/annotations';
 import { getNodeKey, replace } from '../../src/internal';
-import type { PliteViewSourceError } from '../../src/internal/view/view-source';
+import type { ViewSourceError } from '../../src/internal/view/view-source';
 import {
   createPliteDecorationManager,
-  type PliteDecorationSource,
+  type DecorationSource,
 } from '../../src/react/decoration-source';
-import { createPliteWidgetStore } from '../../src/react/widget-store';
 
 const range: Range = {
   anchor: { path: [0, 0], offset: 0 },
@@ -27,18 +26,17 @@ const createViewEditor = () => {
 
 test('optional view sources isolate failures and recover on refresh', () => {
   const editor = createViewEditor();
-  const failures: PliteViewSourceError[] = [];
+  const failures: ViewSourceError[] = [];
   let decorationFails = true;
   let annotationFails = true;
-  let widgetFails = true;
   let refreshDecoration = () => {};
   const nodeKey = getNodeKey(editor, [0, 0])!;
-  const healthy: PliteDecorationSource<typeof editor> = {
+  const healthy: DecorationSource<typeof editor> = {
     id: 'healthy',
     read: ({ entry: [, path] }) =>
       path.length === 2 ? [{ attributes: {}, key: 'healthy', range }] : [],
   };
-  const flaky: PliteDecorationSource<typeof editor> = {
+  const flaky: DecorationSource<typeof editor> = {
     id: 'flaky-decoration',
     observe: ({ refresh }) => {
       refreshDecoration = () => refresh({ nodeKeys: 'all' });
@@ -59,7 +57,7 @@ test('optional view sources isolate failures and recover on refresh', () => {
     association: 'inward',
     deletion: 'drop',
   });
-  const annotations = createPliteAnnotationStore(
+  const annotations = createAnnotationStore(
     editor,
     () => {
       if (annotationFails) throw new Error('annotation failed');
@@ -71,45 +69,25 @@ test('optional view sources isolate failures and recover on refresh', () => {
       onError: (error) => failures.push(error),
     }
   );
-  const widgets = createPliteWidgetStore(
-    editor,
-    () => {
-      if (widgetFails) throw new Error('widget failed');
-
-      return [{ id: 'toolbar', target: { type: 'selection' } }];
-    },
-    null,
-    {
-      id: 'flaky-widgets',
-      onError: (error) => failures.push(error),
-    }
-  );
-
   expect(decorations.getNodeSnapshot(nodeKey)).toHaveLength(1);
   expect(annotations.getSnapshot().allIds).toEqual([]);
-  expect(widgets.getSnapshot().allIds).toEqual([]);
   expect(failures.map(({ phase, sourceId }) => ({ phase, sourceId }))).toEqual([
     { phase: 'read', sourceId: 'flaky-decoration' },
     { phase: 'read', sourceId: 'flaky-annotations' },
-    { phase: 'read', sourceId: 'flaky-widgets' },
   ]);
 
   decorationFails = false;
   annotationFails = false;
-  widgetFails = false;
   refreshDecoration();
   annotations.retry();
-  widgets.retry();
 
   expect(decorations.getNodeSnapshot(nodeKey)).toHaveLength(2);
   expect(decorations.getMetrics().failureCount).toBe(1);
   expect(annotations.getAnnotation('comment')?.range).toEqual(range);
-  expect(widgets.getWidget('toolbar')?.available).toBe(true);
 
   unmountDecorations();
   decorations.destroy();
   annotations.destroy();
-  widgets.destroy();
   anchor.release();
 });
 

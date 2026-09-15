@@ -1,14 +1,14 @@
 import {
-  defineBasePlugin,
+  definePlugin,
   type ElementOf,
-  type PlateNodeInsertOptions,
+  type NodeInsertOptions,
   PLUGINS,
   property,
 } from '../../../core';
 
 export type TagItem = { url?: string; value: string };
 
-export const BaseTagPlugin = defineBasePlugin(PLUGINS.tag, {
+export const BaseTagPlugin = definePlugin(PLUGINS.tag, {
   schema: {
     element: {
       properties: {
@@ -30,7 +30,7 @@ export const BaseTagPlugin = defineBasePlugin(PLUGINS.tag, {
         ).map(([node]) => ({ value: node.value })),
     }),
     update: ({ tx, schema: { type } }) => ({
-      insert: (props: TagItem, options?: PlateNodeInsertOptions) => {
+      insert: (props: TagItem, options?: NodeInsertOptions) => {
         tx.nodes.insert(
           [
             {

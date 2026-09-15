@@ -15,14 +15,14 @@ import {
 } from '../../../packages/plitejs/src/authored/state';
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   defineStateField,
 } from '../../../packages/plitejs/src/index';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const contractText = readFileSync(
   'docs/plans/artifacts/native-authored-changes/checkpoint-contract.json',
-  'utf8'
+  'utf-8'
 );
 const contract = JSON.parse(contractText);
 const fingerprint = () =>
@@ -35,7 +35,7 @@ const fingerprint = () =>
       'config/workspace-source-entries.mjs',
       'benchmarks/editor/benchmarks/plite-authored-checkpoint-benchmark.ts',
     ],
-    { encoding: 'utf8' }
+    { encoding: 'utf-8' }
   )
     .trim()
     .split('\n')
@@ -76,23 +76,24 @@ const collectPages = (state: AuthoredState) => {
 const rows = [];
 for (const n of contract.cohorts as number[]) {
   const seed = createEditor({
-    extensions: [authored({ authorId: 'alice' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('Base')],
   });
   const coldStart = performance.now();
   let changeId = '';
-  for (let i = 0; i < n; i++)
+  for (let i = 0; i < n; i++) {
     seed.update((tx) => {
       const id = tx.authored.propose();
       if (i === 0) changeId = id;
       tx.text.insert('x', { at });
     });
+  }
   const seedMs = performance.now() - coldStart;
   const initialValue = JSON.parse(JSON.stringify(seed.read.value()));
 
   for (let pass = 0; pass < contract.passes; pass++) {
     const editor = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue,
     });
     const initialState = editor.read.getField(authoredState);
@@ -109,8 +110,8 @@ for (const n of contract.cohorts as number[]) {
       },
     });
     const baseline = createEditor({
-      extensions: [
-        defineExtension('checkpoint-baseline', {
+      plugins: [
+        definePlugin('checkpoint-baseline', {
           stateFields: [baselineField],
         }),
       ],
@@ -166,8 +167,9 @@ for (const n of contract.cohorts as number[]) {
           .length
       );
       for (const [id, value] of records(nextState.changes)) {
-        if (id !== changeId && value !== beforeRecords.get(id))
-          unrelatedPayloadClones++;
+        if (id !== changeId && value !== beforeRecords.get(id)) {
+          unrelatedPayloadClones += 1;
+        }
       }
       assert.deepEqual(editor.read.children(), [paragraph('Base')]);
       assert.equal(editor.read.authored.change(changeId)?.revision, sample + 2);
@@ -196,7 +198,7 @@ for (const n of contract.cohorts as number[]) {
     const serialized = JSON.stringify(editor.read.value());
     const fullSerializeMs = performance.now() - saveStart;
     const restored = createEditor({
-      extensions: [authored({ authorId: 'alice' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: JSON.parse(serialized),
     });
     assert.equal(
@@ -264,8 +266,9 @@ const result = {
 const output = process.argv
   .find((argument) => argument.startsWith('--output='))
   ?.slice('--output='.length);
-if (output)
+if (output) {
   writeBenchmarkArtifact(output, `${JSON.stringify(result, null, 2)}\n`);
+}
 process.stdout.write(
   `METRIC plite_authored_checkpoint_passed=${Number(result.passed)}\n`
 );

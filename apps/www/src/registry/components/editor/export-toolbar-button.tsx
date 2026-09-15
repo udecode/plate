@@ -3,9 +3,10 @@
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { createEditor } from 'platejs';
 import { MarkdownPlugin } from 'platejs/markdown';
-import { useEditor } from 'platejs/react';
+import { useEditor, useModelEditor } from 'platejs/react';
 import { renderStaticHtml } from 'platejs/static';
 import * as React from 'react';
+import { toast } from 'sonner';
 
 import {
   DropdownMenu,
@@ -18,6 +19,7 @@ import {
   DOCX_EXPORT_STYLES,
   DocxExportKit,
 } from '@/registry/components/editor/docx-export';
+import { useDocxSource } from '@/registry/components/editor/docx-source';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
@@ -41,7 +43,9 @@ const downloadFile = async (url: string, filename: string) => {
 
 export function ExportToolbarButton() {
   const editor = useEditor();
+  const model = useModelEditor();
   const [open, setOpen] = React.useState(false);
+  const docxSource = useDocxSource();
 
   const getCanvas = async () => {
     const { default: html2canvas } = await import('html2canvas-pro');
@@ -152,12 +156,23 @@ export function ExportToolbarButton() {
 
   const exportToWord = async () => {
     const { exportToDocx } = await import('platejs/docx/export');
-    const blob = await exportToDocx(editor.read.value().children, {
+    const result = await exportToDocx(model, {
       editorPlugins: [...BaseEditorKit, ...DocxExportKit],
+      projection: docxSource ? 'review' : 'proposed',
+      source: docxSource?.source ?? undefined,
       stylesheet: DOCX_EXPORT_STYLES,
     });
 
-    const url = URL.createObjectURL(blob);
+    if (!result.ok) {
+      toast.error(
+        result.diagnostics.find(({ severity }) => severity === 'error')
+          ?.message ?? 'The Word document could not be exported.'
+      );
+
+      return;
+    }
+
+    const url = URL.createObjectURL(result.blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = 'plate.docx';
@@ -165,12 +180,27 @@ export function ExportToolbarButton() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+
+    const warningCount = result.diagnostics.filter(
+      ({ severity }) => severity === 'warning'
+    ).length;
+
+    if (warningCount > 0) {
+      toast.warning(
+        `Exported with ${warningCount} warning${warningCount === 1 ? '' : 's'}.`
+      );
+    }
   };
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={open} tooltip="Export" isDropdown>
+        <ToolbarButton
+          aria-label="Export"
+          pressed={open}
+          tooltip="Export"
+          isDropdown
+        >
           <ArrowDownToLineIcon className="size-4" />
         </ToolbarButton>
       </DropdownMenuTrigger>

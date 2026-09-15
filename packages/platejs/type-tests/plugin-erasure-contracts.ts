@@ -1,22 +1,20 @@
 import {
   type BasePluginInput,
   createEditor as createHeadlessEditor,
-  defineBasePlugin,
+  definePlugin as defineHeadlessPlugin,
   type DefinitionOf,
   type InferDependencies,
 } from 'platejs';
 import {
   createEditor,
-  definePlatePlugin,
+  definePlugin,
   type Editor,
-  toPlatePlugin,
+  toReactPlugin,
 } from 'platejs/react';
 import { createStaticEditor } from 'platejs/static';
 
-import {
-  type EditorExtensionInstalledCapabilitiesOf,
-  schema,
-} from '../src/core';
+import { schema } from '../src/core';
+import type { RuntimePluginInstalledCapabilitiesOf } from '../src/facade';
 import type {
   NormalizePluginState,
   PluginDependencySource,
@@ -32,7 +30,7 @@ type Equal<TLeft, TRight> = [TLeft] extends [TRight]
 
 type Assert<T extends true> = T;
 
-export const ReactEventPayloadPlugin = definePlatePlugin('eventPayload', {
+export const ReactEventPayloadPlugin = definePlugin('eventPayload', {
   initialState: { active: true },
   on: {
     beforeInput: ({ event }) => {
@@ -79,7 +77,7 @@ export type OpaqueEditorStateRemainsNameable = Assert<
   Equal<NormalizedOpaqueRuntimeState['editor'], Editor | null>
 >;
 
-const BoundaryLeafPlugin = defineBasePlugin('boundaryLeaf', {
+const BoundaryLeafPlugin = defineHeadlessPlugin('boundaryLeaf', {
   api: () => ({
     label: () => 'leaf' as const,
   }),
@@ -102,7 +100,7 @@ const BoundaryLeafPlugin = defineBasePlugin('boundaryLeaf', {
   }),
 });
 
-const BoundaryBranchPlugin = defineBasePlugin('boundaryBranch', {
+const BoundaryBranchPlugin = defineHeadlessPlugin('boundaryBranch', {
   api: ({ editor }) => {
     const transitiveApi: 'leaf' = editor.api.boundaryLeaf.label();
     const transitiveRead: boolean = editor.read.boundaryLeaf.isReady();
@@ -127,7 +125,7 @@ const BoundaryBranchPlugin = defineBasePlugin('boundaryBranch', {
   }),
 });
 
-export const BoundaryOwnerPlugin = defineBasePlugin('boundaryOwner', {
+export const BoundaryOwnerPlugin = defineHeadlessPlugin('boundaryOwner', {
   api: ({ editor }) => {
     const directApi: 'branch' = editor.api.boundaryBranch.label();
     const directRead: 'branch-ready' = editor.read.boundaryBranch.isReady();
@@ -161,7 +159,7 @@ export const BoundaryOwnerPlugin = defineBasePlugin('boundaryOwner', {
   },
 });
 
-export const BoundaryReactOwnerPlugin = toPlatePlugin(BoundaryOwnerPlugin);
+export const BoundaryReactOwnerPlugin = toReactPlugin(BoundaryOwnerPlugin);
 const installableDescriptors: readonly BasePluginInput[] = [
   BoundaryLeafPlugin,
   BoundaryOwnerPlugin,
@@ -180,8 +178,8 @@ createEditor({ plugins: [unbrandedDefinition] });
 createStaticEditor({ plugins: [unbrandedDefinition] });
 void invalidDescriptor;
 
-export const ConvertedDomPlugin = toPlatePlugin(DOMPlugin);
-export const BoundaryStagedPlugin = defineBasePlugin('boundaryStaged', {
+export const ConvertedDomPlugin = toReactPlugin(DOMPlugin);
+export const BoundaryStagedPlugin = defineHeadlessPlugin('boundaryStaged', {
   api: () => ({
     first: () => 'first' as const,
   }),
@@ -258,7 +256,7 @@ export const BoundaryStagedPlugin = defineBasePlugin('boundaryStaged', {
       }),
     };
   });
-export const BoundaryStagedReactPlugin = toPlatePlugin(BoundaryStagedPlugin);
+export const BoundaryStagedReactPlugin = toReactPlugin(BoundaryStagedPlugin);
 
 type BoundaryStagedReactDefinitionIsExact = Assert<
   Equal<
@@ -290,7 +288,7 @@ type BoundaryDependencySourceDropsStoreState = Assert<
   'initialState' extends keyof BoundaryBranchDependencySource ? false : true
 >;
 
-type BoundaryReactInstalled = EditorExtensionInstalledCapabilitiesOf<
+type BoundaryReactInstalled = RuntimePluginInstalledCapabilitiesOf<
   typeof BoundaryReactOwnerPlugin
 >;
 type BoundaryReactInstalledNames =
@@ -312,7 +310,7 @@ type ConvertedDomKeepsBaseUpdate = Assert<
 type ConvertedDomKeepsRawUpdate = Assert<
   'insertData' extends keyof ConvertedDomDefinition['update'] ? true : false
 >;
-type ConvertedDomInstalled = EditorExtensionInstalledCapabilitiesOf<
+type ConvertedDomInstalled = RuntimePluginInstalledCapabilitiesOf<
   typeof ConvertedDomPlugin
 >;
 type ConvertedDomInstalledUpdate = Extract<
@@ -359,9 +357,8 @@ const portalCount: number = leafPortal.store.get('count');
 const portalRead: boolean = leafPortal.read.isReady();
 const portalSelector: number = leafPortal.store.get('doubled');
 const portalUpdate: number = leafPortal.update.increment(1);
-const dynamicPortal = editor.plugin('boundaryLeaf');
-void (dynamicPortal.installed satisfies boolean);
-void (dynamicPortal.name satisfies string);
+// @ts-expect-error Public plugin lookup requires a nominal descriptor.
+editor.plugin('boundaryLeaf');
 const reactEditor = createEditor({ plugins: [BoundaryReactOwnerPlugin] });
 const reactDirectApi: 'branch' = reactEditor.api.boundaryBranch.label();
 const reactTransitiveApi: 'leaf' = reactEditor.api.boundaryLeaf.label();

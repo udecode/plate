@@ -1,11 +1,11 @@
 import type {
-  PliteBrowserMixedEditingConformanceGauntletOptions,
-  PliteBrowserScenarioStep,
-  PliteBrowserSemanticEditingConformanceGauntletOptions,
+  BrowserMixedEditingConformanceGauntletOptions,
+  BrowserScenarioStep,
+  BrowserSemanticEditingConformanceGauntletOptions,
 } from './types';
 
 /** Create a mixed editing conformance scenario across text and structure. */
-export const createPliteBrowserMixedEditingConformanceGauntlet = ({
+export const createBrowserMixedEditingConformanceGauntlet = ({
   deleteKey,
   domCaretAfterDelete,
   domCaretAfterFollowUp,
@@ -23,13 +23,13 @@ export const createPliteBrowserMixedEditingConformanceGauntlet = ({
   toolbarButtonTestId,
   toolbarSelection,
   toolbarSelectionAfterCommand,
-}: PliteBrowserMixedEditingConformanceGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserMixedEditingConformanceGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'select',
     label: 'select-navigation-start',
     selection: startSelection,
   },
-  ...navigationKeys.map((key, index): PliteBrowserScenarioStep => ({
+  ...navigationKeys.map((key, index): BrowserScenarioStep => ({
     key,
     kind: 'press',
     label: `navigate-${index + 1}-${key}`,
@@ -192,7 +192,7 @@ export const createPliteBrowserMixedEditingConformanceGauntlet = ({
 ];
 
 /** Create a semantic editing conformance scenario. */
-export const createPliteBrowserSemanticEditingConformanceGauntlet = ({
+export const createBrowserSemanticEditingConformanceGauntlet = ({
   insertedText,
   selectionAfterDelete,
   selectionAfterFollowUp,
@@ -204,7 +204,7 @@ export const createPliteBrowserSemanticEditingConformanceGauntlet = ({
   toolbarButtonTestId,
   toolbarSelection,
   toolbarSelectionAfterCommand,
-}: PliteBrowserSemanticEditingConformanceGauntletOptions): PliteBrowserScenarioStep[] => [
+}: BrowserSemanticEditingConformanceGauntletOptions): BrowserScenarioStep[] => [
   {
     kind: 'select',
     label: 'select-semantic-start',

@@ -1,6 +1,6 @@
 import { expect, type Locator } from '@playwright/test';
 
-import { PLITE_BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY } from './constants';
 import type {
   RangeAnchorAssociation,
   SelectionAnchorHandle,
@@ -24,7 +24,7 @@ export const captureSelectionAnchorHandle = async (
 
       if (!handle) {
         throw new Error(
-          'This editor surface does not expose a Plite browser handle'
+          'This editor surface does not expose a editor browser handle'
         );
       }
 
@@ -39,7 +39,7 @@ export const captureSelectionAnchorHandle = async (
       };
     },
     {
-      key: PLITE_BROWSER_HANDLE_KEY,
+      key: BROWSER_HANDLE_KEY,
       association: options.association,
     }
   );
@@ -54,14 +54,14 @@ export const resolveSelectionAnchorHandle = async (
 
       if (!handle) {
         throw new Error(
-          'This editor surface does not expose a Plite browser handle'
+          'This editor surface does not expose a editor browser handle'
         );
       }
 
       return handle.resolveRangeAnchor(id);
     },
     {
-      key: PLITE_BROWSER_HANDLE_KEY,
+      key: BROWSER_HANDLE_KEY,
       id: anchor.id,
     }
   );
@@ -76,7 +76,7 @@ export const restoreSelectionAnchorHandle = async (
 
       if (!handle) {
         throw new Error(
-          'This editor surface does not expose a Plite browser handle'
+          'This editor surface does not expose a editor browser handle'
         );
       }
 
@@ -89,7 +89,7 @@ export const restoreSelectionAnchorHandle = async (
       handle.selectRange(range);
     },
     {
-      key: PLITE_BROWSER_HANDLE_KEY,
+      key: BROWSER_HANDLE_KEY,
       id: anchor.id,
     }
   );
@@ -105,14 +105,14 @@ export const releaseSelectionAnchorHandle = async (
 
       if (!handle) {
         throw new Error(
-          'This editor surface does not expose a Plite browser handle'
+          'This editor surface does not expose a editor browser handle'
         );
       }
 
       return handle.releaseRangeAnchor(id);
     },
     {
-      key: PLITE_BROWSER_HANDLE_KEY,
+      key: BROWSER_HANDLE_KEY,
       id: anchor.id,
     }
   );
@@ -150,7 +150,7 @@ export const handleSelectionMatches = async (
       );
     },
     {
-      key: PLITE_BROWSER_HANDLE_KEY,
+      key: BROWSER_HANDLE_KEY,
       selection: expected,
     }
   );

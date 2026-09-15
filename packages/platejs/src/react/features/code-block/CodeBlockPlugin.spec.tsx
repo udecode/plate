@@ -12,7 +12,7 @@ import {
   type BasePluginInput,
   BaseParagraphPlugin,
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   ContentSlice,
   type InitialValue,
   type Value,
@@ -59,7 +59,7 @@ const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
           plugins: [
             BaseParagraphPlugin,
             CodeBlockPlugin,
-            defineBasePlugin('a', {
+            definePlugin('a', {
               codecs: ({ defineCodecs }) =>
                 defineCodecs({
                   'text/plain': {

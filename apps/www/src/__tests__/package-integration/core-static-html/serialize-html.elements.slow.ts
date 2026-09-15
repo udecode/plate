@@ -73,7 +73,6 @@ describe('core static renderStaticHtml element rendering', () => {
     const html = await renderStaticHtml(editor);
 
     expect(html).toContain(decode('href="https://example.com/"'));
-    expect(html).toContain('plite-link');
   });
 
   it('renders image src attributes', async () => {

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
   withExclusiveClipboardAccess,
 } from "@platejs/test/playwright";
 
@@ -44,7 +44,7 @@ test.describe("code highlighting", () => {
   });
 
   test("renders semantic token projections", async ({ page }) => {
-    const editor = page.locator("[data-plite-editor]");
+    const editor = page.locator("[data-editor]");
 
     await expect(editor).toContainText("const initialValue");
     await expect(editor.locator(".token").first()).toBeVisible();
@@ -79,7 +79,7 @@ test.describe("code highlighting", () => {
     await page.getByTestId("language-select").first().selectOption("css");
     await editor.insertText("body { color: red; }");
 
-    const codeBlock = editor.root.locator(".plite-code-highlighting-block");
+    const codeBlock = editor.root.locator(".editor-code-highlighting-block");
 
     await expect(
       codeBlock.locator(".selector").filter({ hasText: "body" })
@@ -112,12 +112,12 @@ test.describe("code highlighting", () => {
     await page.getByTestId("code-block-button").click();
 
     await expect(
-      editor.root.locator(':scope > [data-plite-node="element"]')
+      editor.root.locator(':scope > [data-editor-node="element"]')
     ).toHaveCount(5);
     await expect(editor.locator.text([0, 0])).toHaveText(paragraphText);
     await expect(
       editor.root
-        .locator(':scope > [data-plite-node="element"]')
+        .locator(':scope > [data-editor-node="element"]')
         .first()
         .getByTestId("language-select")
     ).toHaveValue("html");
@@ -157,7 +157,7 @@ test.describe("code highlighting", () => {
 
     await expect(
       editor.root
-        .locator(':scope > [data-plite-node="element"]')
+        .locator(':scope > [data-editor-node="element"]')
         .first()
         .getByTestId("language-select")
     ).toHaveValue("html");
@@ -183,7 +183,7 @@ test.describe("code highlighting", () => {
     await editor.press("Enter");
 
     await expect(
-      editor.root.locator(':scope > [data-plite-node="element"]')
+      editor.root.locator(':scope > [data-editor-node="element"]')
     ).toHaveCount(5);
     await expect(editor.locator.text([1, 0])).toHaveText(
       firstCode.replace("// Add the", "// Add\n the")
@@ -231,7 +231,7 @@ test.describe("code highlighting", () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === "mobile", "Desktop code-block proof");
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
         editor: "visible",
@@ -296,7 +296,7 @@ test.describe("code highlighting", () => {
 
     await expect(
       editor.root
-        .locator(':scope > [data-plite-node="element"]')
+        .locator(':scope > [data-editor-node="element"]')
         .nth(1)
         .getByTestId("language-select")
     ).toHaveValue("html");
@@ -421,8 +421,8 @@ test.describe("code highlighting", () => {
           return {
             closestPliteNode:
               anchorElement
-                ?.closest("[data-plite-node]")
-                ?.getAttribute("data-plite-node") ?? null,
+                ?.closest("[data-editor-node]")
+                ?.getAttribute("data-editor-node") ?? null,
             nodeType: anchorNode?.nodeType ?? null,
           };
         })
@@ -441,7 +441,7 @@ test.describe("code highlighting", () => {
       "Desktop multi-line code replacement proof"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
         editor: "visible",
@@ -479,7 +479,7 @@ test.describe("code highlighting", () => {
       "Desktop cross-block delete proof"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
         editor: "visible",
@@ -517,7 +517,7 @@ test.describe("code highlighting", () => {
       "Desktop code-block boundary Backspace proof"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
         editor: "visible",
@@ -545,7 +545,7 @@ test.describe("code highlighting", () => {
       "Desktop empty code block Backspace proof"
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, "plite/code-highlighting", {
       ready: {
         editor: "visible",
@@ -648,12 +648,12 @@ test.describe("code highlighting", () => {
     });
 
     await expect(
-      editor.root.locator(':scope > [data-plite-node="element"]')
+      editor.root.locator(':scope > [data-editor-node="element"]')
     ).toHaveCount(5);
     await expect(editor.locator.text([1, 0])).toHaveText(`Add${firstCode}`);
     await expect(
       editor.root
-        .locator(':scope > [data-plite-node="element"]')
+        .locator(':scope > [data-editor-node="element"]')
         .nth(1)
         .getByTestId("language-select")
     ).toHaveValue("jsx");

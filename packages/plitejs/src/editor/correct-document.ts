@@ -7,7 +7,7 @@ import {
   matchesEditorCorrection,
   runEditorCorrection,
 } from '../core/correction';
-import { getExtensionRegistry } from '../core/extension-registry';
+import { getPluginRegistry } from '../core/plugin-registry';
 import { toPublicRoot } from '../core/public-root';
 import {
   getActiveTransactionDocumentChange,
@@ -163,7 +163,7 @@ const indexCorrections = (editor: Editor) => {
     CORRECTION_EVENTS.map((event) => [event, []])
   );
 
-  for (const [id, correction] of getExtensionRegistry(editor).corrections) {
+  for (const [id, correction] of getPluginRegistry(editor).corrections) {
     getDefined(byEvent.get(correction.event)).push({ correction, id });
   }
 
@@ -174,13 +174,13 @@ export const correctDocument = (
   editor: Editor,
   options: { force?: boolean; root?: string } = {}
 ) => {
-  if (getExtensionRegistry(editor).corrections.size === 0) return;
+  if (getPluginRegistry(editor).corrections.size === 0) return;
 
   const { force = true, root = getEditorUpdateRoot(editor) } = options;
 
   const runCorrectionWorklist = () => {
     const corrections = indexCorrections(editor);
-    const registry = getExtensionRegistry(editor);
+    const registry = getPluginRegistry(editor);
     const pending = new Map<string, CorrectionTarget>();
     const order: string[] = [];
     const seenTransitions = new Map<string, number>();

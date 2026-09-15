@@ -1,5 +1,5 @@
 ---
-description: Exhaustively compare one or more local editor architectures with live Plite and Plate using a symmetric source inventory, one strict row per atomic concept, verified source commits, and explicit hybrid extraction.
+description: Compare external editor architectures with Plite/Plate through a complete source inventory and explicit extraction decisions.
 argument-hint: '[audit [--target <surface|full>] <repo-path-or-owner/repo>...] | [sync [all|audit-id|artifact-path]...]'
 disable-model-invocation: true
 name: editor-audit

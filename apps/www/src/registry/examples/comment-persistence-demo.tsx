@@ -3,7 +3,7 @@
 import type { EditorValueInput, Value } from 'platejs';
 import type { CommentThread } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,6 @@ import { CommentToolbarButton } from '@/registry/components/editor/comment-toolb
 import { DiscussionKit } from '@/registry/components/editor/discussion';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { LinkKit } from '@/registry/components/editor/link';
-import { SuggestionKit } from '@/registry/components/editor/suggestion';
 import { Toolbar } from '@/registry/components/editor/toolbar';
 import {
   commentThreads,
@@ -42,7 +41,6 @@ export default function CommentPersistenceDemo() {
       plugins: [
         ...BasicBlocksKit,
         ...LinkKit,
-        ...SuggestionKit,
         ...DiscussionKit,
         CommentsPlugin.configure({
           initialState: {
@@ -58,7 +56,7 @@ export default function CommentPersistenceDemo() {
   );
 
   return (
-    <Plate editor={editor} key={editor.id}>
+    <EditorRoot editor={editor} key={editor.id}>
       <div className="flex w-full flex-col gap-4 p-4 sm:p-6">
         <div className="flex flex-wrap gap-2">
           <Button
@@ -144,6 +142,6 @@ export default function CommentPersistenceDemo() {
           />
         </div>
       </div>
-    </Plate>
+    </EditorRoot>
   );
 }

@@ -583,6 +583,18 @@ export const validateRegressionPlan = (
       }
 
       const exactRoute = exactRoutes.get(caseId);
+      const selected = cases.get(caseId);
+
+      if (
+        isBrowserCommandCase(selected) &&
+        !/\bbrowser-source-attestation:\s*\S/i.test(
+          row.freshness_evidence ?? ''
+        )
+      ) {
+        errors.push(
+          `${label} browser proof requires browser-source-attestation: <fresh host restart or served-input digest>`
+        );
+      }
       if (exactRoute) {
         const routePath = getRoutePath(exactRoute);
         if (
@@ -1406,6 +1418,38 @@ export const validateRegressionPlan = (
             errors.push(
               `reporter evidence ${caseId} caret-visible behavior requires applicable oracle ${anchor}`
             );
+          }
+        }
+
+        const claimedInteraction = [row.source_reference, row.claim]
+          .join(" ")
+          .replace(/\binitial-focus:\s*[^;|]+[;|]?/gi, "");
+
+        if (
+          CARET_VISIBILITY_PATTERN.test(claimedInteraction) &&
+          /\bclick(?:s|ed|ing)?\b/i.test(claimedInteraction)
+        ) {
+          const anchor = `geometry-paint@${phase}`;
+          const paintOracle = caseOracles?.get(anchor);
+          const label = `reporter evidence ${caseId} click caret paint`;
+
+          if (!anchors.includes(anchor)) {
+            errors.push(`${label} requires oracle anchor ${anchor}`);
+          }
+          if (!paintOracle || paintOracle.applies?.toLowerCase() !== "yes") {
+            errors.push(`${label} requires applicable oracle ${anchor}`);
+          } else {
+            if (!/\bpaint-trigger:\s*click\b/i.test(paintOracle.positive_assertion ?? "")) {
+              errors.push(`${label} requires paint-trigger: click in ${anchor}`);
+            }
+            const trace = paintOracle.result
+              ?.match(/\bpaint-input-trace:\s*([^;|]+)/i)?.[1]?.trim();
+
+            if (complete && !/^click\s*>\s*pixel-capture$/i.test(trace ?? "")) {
+              errors.push(
+                `${label} requires paint-input-trace: click > pixel-capture before any next input`
+              );
+            }
           }
         }
       }

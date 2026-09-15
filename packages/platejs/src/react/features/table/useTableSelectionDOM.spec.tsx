@@ -10,7 +10,7 @@ import { jsxt, type TestEditor } from '#platejs-test-internal';
 
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
 import { createTableNodeSelection } from '../../../features/table/lib/internal/selection';
-import { Plate } from '../../core';
+import { EditorRoot } from '../../core';
 import { TablePlugin } from './TablePlugin';
 import { useTableSelectionDOM } from './useTableSelectionDOM';
 
@@ -60,10 +60,10 @@ describe('useTableSelectionDOM', () => {
     table.innerHTML = `
       <tbody>
         <tr>
-          <td data-plite-node-key="${cellKeys.c1}"></td>
-          <td data-plite-node-key="${cellKeys.c2}"></td>
-          <td data-plite-node-key="${cellKeys.c3}"></td>
-          <td data-plite-node-key="${cellKeys.c4}"></td>
+          <td data-editor-node-key="${cellKeys.c1}"></td>
+          <td data-editor-node-key="${cellKeys.c2}"></td>
+          <td data-editor-node-key="${cellKeys.c3}"></td>
+          <td data-editor-node-key="${cellKeys.c4}"></td>
         </tr>
       </tbody>
     `;
@@ -72,7 +72,7 @@ describe('useTableSelectionDOM', () => {
     const cells = Object.fromEntries(
       Object.entries(cellKeys).map(([name, key]) => {
         const cell = table.querySelector<HTMLElement>(
-          `[data-plite-node-key="${key}"]`
+          `[data-editor-node-key="${key}"]`
         );
 
         assert.ok(cell);
@@ -82,8 +82,8 @@ describe('useTableSelectionDOM', () => {
     ) as Record<'c1' | 'c2' | 'c3' | 'c4', HTMLElement>;
     const querySelectorAll = spyOn(table, 'querySelectorAll');
     const tableRef = { current: table };
-    const PlateWithChildren = Plate as React.ComponentType<
-      Omit<React.ComponentProps<typeof Plate>, 'children'>
+    const PlateWithChildren = EditorRoot as React.ComponentType<
+      Omit<React.ComponentProps<typeof EditorRoot>, 'children'>
     >;
     const wrapper = ({ children }: { children: React.ReactNode }) =>
       React.createElement(

@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 type PliteSpacerShellAttributes = {
-  'data-plite-spacer': true;
+  'data-editor-spacer': true;
   style: CSSProperties;
 };
 
@@ -20,9 +20,9 @@ export const getPliteElementShellAttributes = ({
   isInline?: boolean;
   isVoid?: boolean;
 }) => ({
-  'data-plite-inline': isInline ? true : undefined,
-  'data-plite-node': 'element' as const,
-  'data-plite-void': isVoid ? true : undefined,
+  'data-editor-inline': isInline ? true : undefined,
+  'data-editor-node': 'element' as const,
+  'data-editor-void': isVoid ? true : undefined,
 });
 
 export const getPliteTextShellAttributes = ({
@@ -32,13 +32,13 @@ export const getPliteTextShellAttributes = ({
   domSync?: boolean;
   domSyncReason?: string | null;
 }) => ({
-  'data-plite-dom-sync': domSync ? true : undefined,
-  'data-plite-dom-sync-reason': domSync ? undefined : domSyncReason,
-  'data-plite-node': 'text' as const,
+  'data-editor-dom-sync': domSync ? true : undefined,
+  'data-editor-dom-sync-reason': domSync ? undefined : domSyncReason,
+  'data-editor-node': 'text' as const,
 });
 
 export const getPliteLeafShellAttributes = () => ({
-  'data-plite-leaf': true as const,
+  'data-editor-leaf': true as const,
 });
 
 export const getPliteSpacerShellStyle = (
@@ -53,6 +53,6 @@ export const getPliteSpacerShellAttributes = ({
 }: {
   style?: CSSProperties;
 } = {}): PliteSpacerShellAttributes => ({
-  'data-plite-spacer': true as const,
+  'data-editor-spacer': true as const,
   style: getPliteSpacerShellStyle(style),
 });

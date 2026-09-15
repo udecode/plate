@@ -26,7 +26,7 @@ const editor = createEditor({
   initialValue: [
     {
       type: 'paragraph',
-      children: [{ text: '你好，Plate!' }],
+      children: [{ text: '你好，EditorRoot!' }],
     },
   ],
 });
@@ -89,11 +89,11 @@ Plate 的标准非空段落 root 不需要 `schema.root`。只有应用需要不
 import { schema } from 'platejs';
 import {
   createEditor,
-  definePlatePlugin,
+  definePlugin,
   ParagraphPlugin,
 } from 'platejs/react';
 
-const SectionPlugin = definePlatePlugin('section', {
+const SectionPlugin = definePlugin('section', {
   schema: {
     element: {
       content: schema.content.element(ParagraphPlugin, { min: 1 }),
@@ -126,7 +126,7 @@ const editor = createEditor({
 import { ParagraphPlugin } from 'platejs/react';
 import {
   defineDocumentMigrations,
-  migratePlateV54,
+  migrateV54,
 } from 'platejs/migrations';
 
 import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
@@ -136,7 +136,7 @@ export const EditorSchema = { id: 'acme-document', version: 54 } as const;
 
 export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
   sourceFingerprints: { 53: v53Fingerprint },
-  steps: { 54: migratePlateV54 },
+  steps: { 54: migrateV54 },
   unversioned: 53,
 });
 ```
@@ -145,7 +145,7 @@ export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
 下限；这些文档不再受支持时应移除该字段。
 
 ```tsx title="src/document-editor.tsx" showLineNumbers
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { EditorKit, EditorMigrations, EditorSchema } from './editor';
 
@@ -157,7 +157,7 @@ export function DocumentEditor({ persisted }) {
     schema: EditorSchema,
   });
 
-  return <Plate editor={editor} />;
+  return <EditorRoot editor={editor} />;
 }
 ```
 
@@ -211,11 +211,11 @@ function AsyncEditor() {
   if (loading) return <div>加载中…</div>;
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
@@ -302,7 +302,7 @@ module，不复制生成的 contract。
 运行时插件组合：
 
 ```tsx title="src/editor/document-editor.tsx"
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import {
   schema as generatedSchema,
@@ -325,7 +325,7 @@ export function DocumentEditor({ initialValue }: { initialValue: Value }) {
 
   generatedSchema.properties.reviewState.key;
 
-  return <Plate editor={editor} />;
+  return <EditorRoot editor={editor} />;
 }
 
 export type DocumentEditorInstance = Editor;
@@ -559,9 +559,9 @@ const editor = createEditor({
 
 ```ts
 import { PLUGINS } from 'platejs';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-const SingleBlockPlugin = definePlatePlugin(PLUGINS.singleBlock, {
+const SingleBlockPlugin = definePlugin(PLUGINS.singleBlock, {
   override: {
     [PLUGINS.trailingBlock]: {
       enabled: false,
@@ -625,7 +625,7 @@ const editor = createEditor({
   initialValue: [
     {
       type: 'paragraph',
-      children: [{ text: '你好，Plate!' }],
+      children: [{ text: '你好，EditorRoot!' }],
     },
   ],
 });
@@ -637,9 +637,12 @@ export type MyValue = ValueOf<typeof editor>;
 组件从 context 读取当前 editor，无需重复 plugin tuple：
 
 ```ts
+import { useEditor } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
+
 const editor = useEditor();
-const table = useEditorPlugin(TablePlugin);
+const table = editor.plugin(TablePlugin);
 ```
 
-组件需要精确插件能力时使用 `useEditorPlugin(Plugin)`。生成的应用类型只留在
+组件需要精确插件能力时使用 `useEditor().plugin(Plugin)`。生成的应用类型只留在
 显式静态边界。

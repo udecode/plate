@@ -6,14 +6,13 @@ import {
   BaseInlineEquationPlugin,
   getEquationHtml,
 } from 'platejs/math';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
-import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
 export function EquationElementStatic(
-  props: PliteElementProps<typeof BaseEquationPlugin>
+  props: EditorElementProps<typeof BaseEquationPlugin>
 ) {
   const { element } = props;
 
@@ -33,7 +32,7 @@ export function EquationElementStatic(
   });
 
   return (
-    <PliteElement className="my-1" {...props}>
+    <EditorElement className="my-1" {...props}>
       <div
         className={cn(
           'group flex select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
@@ -55,12 +54,12 @@ export function EquationElementStatic(
         )}
       </div>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 
 export function InlineEquationElementStatic(
-  props: PliteElementProps<typeof BaseInlineEquationPlugin>
+  props: EditorElementProps<typeof BaseInlineEquationPlugin>
 ) {
   const html = getEquationHtml({
     element: props.element,
@@ -78,7 +77,7 @@ export function InlineEquationElementStatic(
   });
 
   return (
-    <PliteElement
+    <EditorElement
       {...props}
       className="inline-block rounded-sm select-none [&_.katex-display]:my-0"
     >
@@ -86,7 +85,6 @@ export function InlineEquationElementStatic(
         className={cn(
           'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
           'h-6',
-          inlineSuggestionVariants(),
           props.element.latex.length === 0 &&
             'text-muted-foreground after:bg-neutral-500/10'
         )}
@@ -101,7 +99,7 @@ export function InlineEquationElementStatic(
         />
       </div>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 
@@ -110,21 +108,21 @@ export function InlineEquationElementStatic(
  * Displays LaTeX source code with styling.
  */
 export function EquationElementDocx(
-  props: PliteElementProps<typeof BaseEquationPlugin>
+  props: EditorElementProps<typeof BaseEquationPlugin>
 ) {
   const { element } = props;
 
   if (!element.latex || element.latex.length === 0) {
     return (
-      <PliteElement {...props}>
+      <EditorElement {...props}>
         <p style={{ color: '#888', fontStyle: 'italic' }}>[Empty equation]</p>
         {props.children}
-      </PliteElement>
+      </EditorElement>
     );
   }
 
   return (
-    <PliteElement {...props}>
+    <EditorElement {...props}>
       <p
         style={{
           fontFamily: 'Cambria Math, Consolas, monospace',
@@ -136,7 +134,7 @@ export function EquationElementDocx(
         {element.latex}
       </p>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 
@@ -145,21 +143,21 @@ export function EquationElementDocx(
  * Displays LaTeX source code inline.
  */
 export function InlineEquationElementDocx(
-  props: PliteElementProps<typeof BaseInlineEquationPlugin>
+  props: EditorElementProps<typeof BaseInlineEquationPlugin>
 ) {
   const { element } = props;
 
   if (!element.latex || element.latex.length === 0) {
     return (
-      <PliteElement {...props} as="span">
+      <EditorElement {...props} as="span">
         <span style={{ color: '#888', fontStyle: 'italic' }}>[equation]</span>
         {props.children}
-      </PliteElement>
+      </EditorElement>
     );
   }
 
   return (
-    <PliteElement {...props} as="span">
+    <EditorElement {...props} as="span">
       <span
         style={{
           fontFamily: 'Cambria Math, Consolas, monospace',
@@ -168,7 +166,7 @@ export function InlineEquationElementDocx(
         {element.latex}
       </span>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 

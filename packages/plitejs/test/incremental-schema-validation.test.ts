@@ -5,7 +5,7 @@ import fc from 'fast-check';
 import {
   createEditor,
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   DocumentChange,
   type EditorDocumentValue,
   ElementApi,
@@ -51,7 +51,7 @@ const section = (children: Element[]): Element => ({
 });
 const createValidationEditor = (maxBlocks = 3) =>
   createEditor({
-    extensions: [
+    plugins: [
       defineEditorSchema('schema:incremental-validation-laws', {
         elements: {
           heading: {
@@ -102,7 +102,7 @@ const createValidationEditor = (maxBlocks = 3) =>
   });
 
 const OWNED_ROOT = 'owned:shared';
-const ownedRootExtension = defineEditorSchema(
+const ownedRootPlugin = defineEditorSchema(
   'schema:incremental-owned-root-index',
   {
     elements: {
@@ -153,7 +153,7 @@ const ownedRootElement = (
 });
 const createOwnedRootEditor = () =>
   createEditor({
-    extensions: [ownedRootExtension],
+    plugins: [ownedRootPlugin],
     initialValue: {
       children: [
         {
@@ -260,7 +260,7 @@ describe('incremental schema validation', () => {
       version: 1,
     });
     const editor = createEditor({
-      extensions: [contextual],
+      plugins: [contextual],
       initialValue: [
         {
           type: 'aside',
@@ -308,14 +308,14 @@ describe('incremental schema validation', () => {
         unknown: 'reject',
         version,
       });
-    const slot = defineExtensionSlot('canonical-baseline-authority');
+    const slot = definePluginSlot('canonical-baseline-authority');
     const editor = createEditor({
-      extensions: [slot.of(schemaAt(1, false))],
+      plugins: [slot.of(schemaAt(1, false))],
       initialValue: [paragraph('word')],
     });
     const before = editor.read.children();
 
-    editor.update.extensions.reconfigure(slot, schemaAt(2, true), {
+    editor.update.plugins.reconfigure(slot, schemaAt(2, true), {
       migrate: ({ document, next }) => next.fitDocument(document),
     });
     const schemaApi = getEditorSchema(editor);
@@ -367,7 +367,7 @@ describe('incremental schema validation', () => {
         validationVersion: 1,
       });
       const editor = createEditor({
-        extensions: [
+        plugins: [
           defineEditorSchema('schema:incremental-validation-locality', {
             elements: {
               paragraph: {
@@ -417,13 +417,13 @@ describe('incremental schema validation', () => {
         ],
       });
       const profilerGlobal = globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: {
+        __EDITOR_REACT_RENDER_PROFILER__?: {
           record: (event: { id: string }) => void;
         };
       };
-      const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+      const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
       const events: string[] = [];
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record: ({ id }) => events.push(id),
       };
 
@@ -446,14 +446,14 @@ describe('incremental schema validation', () => {
           'remote'
         );
       } finally {
-        profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+        profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
       }
     }
   });
 
   it('prunes descendant validation without confusing sibling path prefixes', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineEditorSchema('schema:incremental-validation-siblings', {
           elements: {
             paragraph: {
@@ -615,15 +615,15 @@ describe('incremental schema validation', () => {
       children: [section([paragraph('changed'), paragraph('beta')])],
     });
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record: (event: { id: string }) => void;
       };
     };
-    const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     const events: string[] = [];
 
     schemaApi.assertDocument(before);
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
       record: ({ id }) => events.push(id),
     };
 
@@ -667,21 +667,21 @@ describe('incremental schema validation', () => {
         1
       );
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
     }
   });
 
   it('never full-scans an ordinary live update', () => {
     const editor = createValidationEditor();
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record: (event: { id: string }) => void;
       };
     };
-    const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     const events: string[] = [];
 
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
       record: ({ id }) => events.push(id),
     };
 
@@ -701,24 +701,24 @@ describe('incremental schema validation', () => {
         0
       );
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
     }
   });
 
-  it('stamps an explicit document when initial extension publication is empty', () => {
+  it('stamps an explicit document when initial plugin publication is empty', () => {
     const editor = createEditor({
-      extensions: [],
+      plugins: [],
       initialValue: [paragraph('alpha')],
     });
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record: (event: { id: string }) => void;
       };
     };
-    const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     const events: string[] = [];
 
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
       record: ({ id }) => events.push(id),
     };
 
@@ -738,7 +738,7 @@ describe('incremental schema validation', () => {
         0
       );
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
     }
   });
 
@@ -780,7 +780,7 @@ describe('incremental schema validation', () => {
     () => {
       const ownerCount = 50_000;
       const editor = createEditor({
-        extensions: [ownedRootExtension],
+        plugins: [ownedRootPlugin],
         initialValue: {
           children: Array.from({ length: ownerCount }, (_, index) =>
             ownedRootElement('paragraph-owner', OWNED_ROOT, `${index}`)
@@ -789,14 +789,14 @@ describe('incremental schema validation', () => {
         },
       });
       const profilerGlobal = globalThis as typeof globalThis & {
-        __PLITE_REACT_RENDER_PROFILER__?: {
+        __EDITOR_REACT_RENDER_PROFILER__?: {
           record: (event: { id: string }) => void;
         };
       };
-      const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+      const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
       const events: string[] = [];
 
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
         record: ({ id }) => events.push(id),
       };
 
@@ -836,7 +836,7 @@ describe('incremental schema validation', () => {
           0
         );
       } finally {
-        profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+        profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
       }
     }
   );
@@ -952,14 +952,14 @@ describe('incremental schema validation', () => {
     ]);
     const after = change.apply(before);
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record: (event: { id: string }) => void;
       };
     };
-    const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     const events: string[] = [];
 
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
       record: ({ id }) => events.push(id),
     };
 
@@ -994,21 +994,21 @@ describe('incremental schema validation', () => {
       );
       assert.equal(incrementalOwnerVisits, 1);
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
     }
   });
 
   it('rebases moved nested-owner provenance without visiting its subtree', () => {
     const editor = createOwnedRootEditor();
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record: (event: { id: string }) => void;
       };
     };
-    const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     const events: string[] = [];
 
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
       record: ({ id }) => events.push(id),
     };
 
@@ -1051,13 +1051,13 @@ describe('incremental schema validation', () => {
         0
       );
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
     }
   });
 
   it('maps cloned-owner provenance through later sibling shifts', () => {
     const editor = createEditor({
-      extensions: [ownedRootExtension],
+      plugins: [ownedRootPlugin],
       initialValue: {
         children: [
           paragraph('left'),
@@ -1068,14 +1068,14 @@ describe('incremental schema validation', () => {
       },
     });
     const profilerGlobal = globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record: (event: { id: string }) => void;
       };
     };
-    const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
+    const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
     const events: string[] = [];
 
-    profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
+    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
       record: ({ id }) => events.push(id),
     };
 
@@ -1110,7 +1110,7 @@ describe('incremental schema validation', () => {
         0
       );
     } finally {
-      profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = previous;
+      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
     }
   });
 

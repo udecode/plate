@@ -11,13 +11,14 @@ import {
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { type EditableProps, getPluginNodeClass } from '../../lib';
-import { isHtmlVoidElementTag, PlateElement } from '../components';
+import { isHtmlVoidElementTag, EditorElement } from '../components';
 import type { Editor } from '../editor/Editor';
+import { usePlateRenderContext } from '../internal/plate-context';
 import { useEditorContext } from '../internal/plite-components';
 import { usePlateRenderedAttributes } from '../internal/rendered-attributes';
 import { useEditorReadOnly } from '../plite-react';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
+import type { AnyResolvedPlugin } from '../plugin/PlatePlugin';
 import { ElementProvider } from '../stores';
 import { getRenderNodeProps } from './getRenderNodeProps.internal';
 import {
@@ -34,7 +35,7 @@ const getRenderedElementPath = (
   element: Element,
   attributes: RenderElementProps['attributes']
 ) => {
-  const pathAttribute = attributes['data-plite-path'];
+  const pathAttribute = attributes['data-editor-path'];
 
   if (typeof pathAttribute === 'string') {
     const path = pathAttribute.split(',').map(Number);
@@ -47,7 +48,7 @@ const getRenderedElementPath = (
       return path;
     }
 
-    throw new Error('Rendered element has an invalid data-plite-path.');
+    throw new Error('Rendered element has an invalid data-editor-path.');
   }
 
   const path = editor.read.nodes.path(element);
@@ -71,7 +72,7 @@ function FastElementWithPath({
   children: React.ReactNode;
   editor: Editor;
   element: Element;
-  plugin: AnyResolvedPlatePlugin;
+  plugin: AnyResolvedPlugin;
   slots: RenderElementProps['slots'];
 }) {
   const path = getRenderedElementPath(editor, element, attributes);
@@ -142,7 +143,7 @@ function FastElementBody({
   editor: Editor;
   element: Element;
   path: Path;
-  plugin: AnyResolvedPlatePlugin;
+  plugin: AnyResolvedPlugin;
   slots: RenderElementProps['slots'];
 }) {
   const readOnly = useEditorReadOnly();
@@ -166,7 +167,7 @@ function FastElementBody({
   if (isEditOnly(readOnly, plugin, 'render')) return null;
 
   return (
-    <PlateElement
+    <EditorElement
       {...pluginContext}
       as={typeof plugin.component === 'string' ? plugin.component : undefined}
       attributes={mergedAttributes}
@@ -174,7 +175,7 @@ function FastElementBody({
       slots={slots}
     >
       {children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 
@@ -194,7 +195,7 @@ function FastIntrinsicElement({
   editor: Editor;
   element: Element;
   isVoidTag: boolean;
-  plugin: AnyResolvedPlatePlugin;
+  plugin: AnyResolvedPlugin;
   renderBelowNodes: boolean;
   slots: RenderElementProps['slots'];
   tag: keyof HTMLElementTagNameMap;
@@ -243,7 +244,7 @@ function FastIntrinsicElementBody({
   element: Element;
   isVoidTag: boolean;
   path: Path;
-  plugin: AnyResolvedPlatePlugin;
+  plugin: AnyResolvedPlugin;
   renderBelowNodes: boolean;
   slots: RenderElementProps['slots'];
   tag: keyof HTMLElementTagNameMap;
@@ -300,9 +301,9 @@ function FastIntrinsicElementBody({
   }
 
   const fastElementProps: React.HTMLAttributes<HTMLElement> &
-    React.RefAttributes<HTMLElement> & { 'data-plite-node': 'element' } = {
+    React.RefAttributes<HTMLElement> & { 'data-editor-node': 'element' } = {
     ...mergedAttributes,
-    'data-plite-node': 'element',
+    'data-editor-node': 'element',
     style: {
       position: 'relative',
       ...mergedAttributes.style,
@@ -327,7 +328,7 @@ function PluginElementWithPath({
   props,
 }: {
   editor: Editor;
-  plugin: AnyResolvedPlatePlugin;
+  plugin: AnyResolvedPlugin;
   props: RenderElementProps;
 }) {
   const path = getRenderedElementPath(editor, props.element, props.attributes);
@@ -366,7 +367,7 @@ function DefaultElementWithPath({
     ctxProps.attributes,
     renderedAttributes
   );
-  const DefaultPlateElement = PlateElement as unknown as React.ComponentType<
+  const DefaultPlateElement = EditorElement as unknown as React.ComponentType<
     Omit<typeof ctxProps, 'path'> & { children: React.ReactNode }
   >;
   const { path: _path, ...nodeProps } = ctxProps;
@@ -389,15 +390,15 @@ function DefaultElementWithPath({
 
 /** @see {@link RenderElement} */
 export const pipeRenderElement = (
-  editor: Editor,
+  modelEditor: Editor,
   renderElementProp?: EditableProps['renderElement']
 ): EditableProps['renderElement'] => {
   const hasNodeWrappers =
-    getPlateRuntime(editor).pluginCache.slots.wrapNode.length > 0;
+    getPlateRuntime(modelEditor).pluginCache.slots.wrapNode.length > 0;
   const hasAfterNodeChildren =
-    getPlateRuntime(editor).pluginCache.slots.afterNodeChildren.length > 0;
+    getPlateRuntime(modelEditor).pluginCache.slots.afterNodeChildren.length > 0;
 
-  return function render(props) {
+  const render = (editor: Editor, props: RenderElementProps) => {
     if (renderElementProp) {
       const path = getRenderedElementPath(
         editor,
@@ -412,7 +413,7 @@ export const pipeRenderElement = (
     const plugin = getCompiledPlatePluginByType(
       editor,
       props.element.type
-    ) as unknown as AnyResolvedPlatePlugin | undefined;
+    ) as unknown as AnyResolvedPlugin | undefined;
     const binding = plugin
       ? getCompiledPlateModelBinding(editor, plugin)
       : undefined;
@@ -501,5 +502,15 @@ export const pipeRenderElement = (
     }
 
     return <DefaultElementWithPath editor={editor} props={props} />;
+  };
+
+  const RenderElement = ({ props }: { props: RenderElementProps }) => {
+    const { editor: viewEditor, wrap } = usePlateRenderContext(modelEditor);
+
+    return wrap(render(viewEditor, props));
+  };
+
+  return function renderElement(props) {
+    return <RenderElement props={props} />;
   };
 };

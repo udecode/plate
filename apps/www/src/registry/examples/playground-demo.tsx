@@ -1,8 +1,8 @@
 'use client';
 
-import { NodeApi, NormalizeTypesPlugin } from 'platejs';
+import { NodeApi, NormalizeTypesPlugin, TextApi } from 'platejs';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { createEditor, EditorRoot } from 'platejs/react';
 import * as React from 'react';
 
 import { useLocale } from '@/hooks/useLocale';
@@ -24,9 +24,37 @@ export default function PlaygroundDemo({
   const locale = useLocale();
   const value = React.useMemo(() => getI18nValues(locale).playground, [locale]);
   const [createdAt] = React.useState(() => Date.now());
+  const editor = React.useMemo(() => {
+    const initialValue = structuredClone(value);
+    const root = { children: initialValue.children, type: '' };
+    const suggestion = NodeApi.get(root, [3, 1, 0]);
+    const sentence = NodeApi.get(root, [3, 2]);
+    const discussionTail = NodeApi.get(root, [3, 4]);
+    const addedText =
+      locale === 'cn' ? ' 像这样添加文本' : ' like this added text';
+    const deletedText =
+      locale === 'cn' ? '标记要删除的文本' : 'mark text for removal';
+    const overlapText = locale === 'cn' ? '重叠的' : 'overlapping ';
 
-  const editor = useCreateEditor(
-    {
+    if (
+      !TextApi.isText(suggestion) ||
+      !TextApi.isText(sentence) ||
+      !TextApi.isText(discussionTail)
+    ) {
+      throw new Error('Invalid playground suggestion fixture.');
+    }
+
+    const suggestionText = suggestion.text;
+    const overlapOffset = discussionTail.text.indexOf(overlapText);
+
+    (suggestion as { text: string }).text = '';
+    (sentence as { text: string }).text = sentence.text.replace(addedText, '');
+    (discussionTail as { text: string }).text = discussionTail.text.replace(
+      overlapText,
+      ''
+    );
+
+    const current = createEditor({
       plugins: [
         ...EditorKit,
         ...DiscussionKit,
@@ -51,90 +79,7 @@ export default function PlaygroundDemo({
                   'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
               },
             },
-            initialThreads: [
-              {
-                id: 'discussion1',
-                createdAt: new Date(createdAt).toISOString(),
-                excerpt: 'comments',
-                userId: 'charlie',
-                resolved: false,
-                status: 'published',
-                target: {
-                  type: 'range',
-                  range: {
-                    anchor: { path: [3, 6, 0], offset: 0 },
-                    focus: {
-                      path: [3, 7],
-                      offset: NodeApi.string(
-                        NodeApi.get(
-                          { type: '', children: value.children },
-                          [3, 8]
-                        )
-                      ).length,
-                    },
-                  },
-                },
-                messages: [
-                  {
-                    id: 'comment1',
-                    userId: 'charlie',
-                    createdAt: new Date(createdAt - 600_000).toISOString(),
-                    body: createCommentValue(
-                      'Comments are a great way to provide feedback and discuss changes.'
-                    ),
-                  },
-                  {
-                    id: 'comment2',
-                    userId: 'bob',
-                    createdAt: new Date(createdAt - 500_000).toISOString(),
-                    body: createCommentValue(
-                      'Agreed! The link to the docs makes it easy to learn more.'
-                    ),
-                  },
-                ],
-              },
-              {
-                id: 'discussion2',
-                createdAt: new Date(createdAt).toISOString(),
-                excerpt: 'overlapping',
-                userId: 'bob',
-                resolved: false,
-                status: 'published',
-                target: {
-                  type: 'range',
-                  range: {
-                    anchor: { path: [3, 8], offset: 0 },
-                    focus: {
-                      path: [3, 8],
-                      offset: NodeApi.string(
-                        NodeApi.get(
-                          { type: '', children: value.children },
-                          [3, 10]
-                        )
-                      ).length,
-                    },
-                  },
-                },
-                messages: [
-                  {
-                    id: 'comment1',
-                    userId: 'bob',
-                    createdAt: new Date(createdAt - 300_000).toISOString(),
-                    body: createCommentValue(
-                      'Nice demonstration of overlapping annotations with both comments and suggestions!'
-                    ),
-                  },
-                  {
-                    id: 'comment2',
-                    userId: 'charlie',
-                    createdAt: new Date(createdAt - 200_000).toISOString(),
-                    body: createCommentValue(
-                      'This helps users understand how powerful the editor can be.'
-                    ),
-                  },
-                ],
-              },
-            ],
+            initialThreads: [],
           },
         }),
         ...CodeDrawingKit,
@@ -146,20 +91,130 @@ export default function PlaygroundDemo({
           },
         }),
       ],
-      initialValue: value,
-    },
-    [id, locale]
-  );
+      userId: 'alice',
+      initialValue,
+    });
+
+    current.update((tx) => {
+      tx.history.skip();
+      tx.authored.propose();
+      tx.text.insert(suggestionText, {
+        at: { offset: 0, path: [3, 1, 0] },
+      });
+      tx.text.insert(addedText, { at: { offset: 0, path: [3, 2] } });
+    });
+    current.runtime.userId = 'bob';
+    current.update((tx) => {
+      const offset = addedText.length + sentence.text.indexOf(deletedText);
+
+      tx.history.skip();
+      tx.authored.propose();
+      tx.text.delete({
+        at: {
+          anchor: { offset, path: [3, 2] },
+          focus: { offset: offset + deletedText.length, path: [3, 2] },
+        },
+      });
+    });
+    current.runtime.userId = 'charlie';
+    let overlapChangeId = '';
+    current.update((tx) => {
+      tx.history.skip();
+      overlapChangeId = tx.authored.propose();
+      tx.text.insert(overlapText, {
+        at: { offset: overlapOffset, path: [3, 4] },
+      });
+    });
+    current.runtime.userId = 'alice';
+    current.plugin(CommentsPlugin).api.setThreads([
+      {
+        id: 'discussion1',
+        createdAt: new Date(createdAt).toISOString(),
+        excerpt: 'comments',
+        userId: 'charlie',
+        resolved: false,
+        status: 'published',
+        target: {
+          type: 'range',
+          range: {
+            anchor: { path: [3, 3, 0], offset: 0 },
+            focus: {
+              path: [3, 4],
+              offset: discussionTail.text.indexOf(locale === 'cn' ? '。' : '.'),
+            },
+          },
+        },
+        messages: [
+          {
+            id: 'comment1',
+            userId: 'charlie',
+            createdAt: new Date(createdAt - 600_000).toISOString(),
+            body: createCommentValue(
+              'Comments are a great way to provide feedback and discuss changes.'
+            ),
+          },
+          {
+            id: 'comment2',
+            userId: 'bob',
+            createdAt: new Date(createdAt - 500_000).toISOString(),
+            body: createCommentValue(
+              'Agreed! The link to the docs makes it easy to learn more.'
+            ),
+          },
+        ],
+      },
+      {
+        id: 'discussion2',
+        createdAt: new Date(createdAt).toISOString(),
+        excerpt: 'overlapping',
+        userId: 'bob',
+        resolved: false,
+        status: 'published',
+        target: { id: overlapChangeId, type: 'change' },
+        messages: [
+          {
+            id: 'comment1',
+            userId: 'bob',
+            createdAt: new Date(createdAt - 300_000).toISOString(),
+            body: createCommentValue(
+              'Nice demonstration of overlapping annotations with both comments and suggestions!'
+            ),
+          },
+          {
+            id: 'comment2',
+            userId: 'charlie',
+            createdAt: new Date(createdAt - 200_000).toISOString(),
+            body: createCommentValue(
+              'This helps users understand how powerful the editor can be.'
+            ),
+          },
+        ],
+      },
+    ]);
+
+    return current;
+  }, [createdAt, id, locale, value]);
+
   return (
-    <Plate editor={editor}>
-      <EditorContainer className={className}>
-        <Editor
-          variant="demo"
-          className="pb-[20vh]"
-          placeholder="Type something..."
-          spellCheck={false}
-        />
-      </EditorContainer>
-    </Plate>
+    <EditorRoot
+      editor={editor}
+      key={editor.id}
+      authored={{ intent: 'propose', projection: 'markup' }}
+    >
+      <PlaygroundDemoContent className={className} />
+    </EditorRoot>
+  );
+}
+
+function PlaygroundDemoContent({ className }: { className?: string }) {
+  return (
+    <EditorContainer className={className}>
+      <Editor
+        variant="demo"
+        className="pb-[20vh]"
+        placeholder="Type something..."
+        spellCheck={false}
+      />
+    </EditorContainer>
   );
 }

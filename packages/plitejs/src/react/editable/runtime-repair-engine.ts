@@ -110,14 +110,14 @@ export const useRuntimeRepairEngine = ({
     const textPath = evidence.mutations[0]?.path?.split(',').map(Number);
     const modelText = textPath ? readRuntimeText(editor, textPath)?.text : null;
     const domText = evidence.root.querySelector<HTMLElement>(
-      `[data-plite-path="${evidence.mutations[0]?.path ?? ''}"]`
+      `[data-editor-path="${evidence.mutations[0]?.path ?? ''}"]`
     )?.textContent;
     recordPliteReactRender({
       id: `dom-integrity-force-render:${evidence.mutations
         .map(({ path, type }) => `${type}:${path ?? 'unknown'}`)
-        .join(
-          ','
-        )}:dom-${domText?.length ?? -1}:model-${modelText?.length ?? -1}`,
+        .join(',')}:dom-${domText?.length ?? -1}:model-${
+        modelText?.length ?? -1
+      }`,
       kind: 'runtime-time',
     });
     forceRender();

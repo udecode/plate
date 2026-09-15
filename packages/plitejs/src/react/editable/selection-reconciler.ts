@@ -42,7 +42,6 @@ import {
 import { applyDOMCoverageSelectionPolicy } from './dom-coverage-selection';
 import { getInputEventTargetRanges } from './dom-input-event';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
-import { createFastDOMSelectionRange } from './fast-dom-selection-range';
 import {
   type EditableDOMSelectionSyncOptions,
   type EditableInputController,
@@ -114,11 +113,11 @@ const getTextHostForDOMPoint = (node: globalThis.Node | null) => {
       ? node
       : null;
 
-  return element?.closest('[data-plite-node="text"]') ?? null;
+  return element?.closest('[data-editor-node="text"]') ?? null;
 };
 
 const isDecoratedTextHost = (textHost: Element | null | undefined) =>
-  textHost?.getAttribute('data-plite-dom-sync-reason') === 'decoration';
+  textHost?.getAttribute('data-editor-dom-sync-reason') === 'decoration';
 
 const isDecoratedTextRange = (range: StaticRange | null) =>
   !!range &&
@@ -212,7 +211,7 @@ export const applyEditableBlur = ({
   // the editor to inside a void node's spacer element.
   if (
     isDOMElement(relatedTarget) &&
-    relatedTarget.hasAttribute('data-plite-spacer')
+    relatedTarget.hasAttribute('data-editor-spacer')
   ) {
     return;
   }
@@ -226,7 +225,7 @@ export const applyEditableBlur = ({
     ReactEditor.hasDOMNode(editor, relatedTarget)
   ) {
     try {
-      const node = ReactEditor.resolvePliteNode(editor, relatedTarget);
+      const node = ReactEditor.resolveNode(editor, relatedTarget);
 
       if (node && NodeApi.isElement(node) && !editorIsVoid(editor, node)) {
         return;
@@ -515,6 +514,16 @@ export const syncSelectionForBeforeInput = ({
   nativeBlocker?: string;
   selection: Range | null;
 } => {
+  if (
+    readPliteViewSelection(editor)?.segments.parts.some((part) => part.fragment)
+  ) {
+    return {
+      native: false,
+      nativeBlocker: 'projected-view-selection',
+      selection,
+    };
+  }
+
   let nextNative = native;
   let nativeBlocker: string | undefined;
   let nextSelection = selection;
@@ -527,7 +536,7 @@ export const syncSelectionForBeforeInput = ({
       ? domSelectionAnchorNode
       : null;
   const domSelectionTextHost =
-    domSelectionAnchorElement?.closest('[data-plite-node="text"]') ?? null;
+    domSelectionAnchorElement?.closest('[data-editor-node="text"]') ?? null;
   const domSelectionUsesProjectedTextHost =
     type === 'insertText' && isDecoratedTextHost(domSelectionTextHost);
   const hasProjectedViewSelection = readPliteViewSelection(editor) !== null;
@@ -562,7 +571,7 @@ export const syncSelectionForBeforeInput = ({
   const pendingNativeTextInputRepairPath =
     pendingNativeTextInputRepairPathKey?.split(',').map(Number) ?? null;
   const pendingNativeTextInputRepairTextHostPath =
-    domSelectionTextHost?.getAttribute('data-plite-path') ?? null;
+    domSelectionTextHost?.getAttribute('data-editor-path') ?? null;
   const pendingNativeTextInputRepairDOMOffset =
     domSelection?.isCollapsed && isDOMText(domSelection.anchorNode)
       ? domSelection.anchorOffset
@@ -653,7 +662,7 @@ export const syncSelectionForBeforeInput = ({
         textHostRange ??
         (nodeMapDirty
           ? null
-          : ReactEditor.resolvePliteRange(editor, targetRange, {
+          : ReactEditor.resolveRange(editor, targetRange, {
               exactMatch: false,
             }));
       const range = resolvedRange;
@@ -722,7 +731,7 @@ export const syncSelectionForBeforeInput = ({
       resolvePliteRangeFromDOMSelection(editor, domSelection, editorElement) ??
       (IS_NODE_MAP_DIRTY.get(editor)
         ? null
-        : ReactEditor.resolvePliteRange(editor, domSelection, {
+        : ReactEditor.resolveRange(editor, domSelection, {
             exactMatch: false,
           }));
     const pendingNativeTextInputRepairOwnsSelection =
@@ -827,7 +836,7 @@ export const syncSelectionForBeforeInput = ({
   ) {
     const range =
       resolvePliteRangeFromDOMSelection(editor, domSelection, editorElement) ??
-      ReactEditor.resolvePliteRange(editor, domSelection, {
+      ReactEditor.resolveRange(editor, domSelection, {
         exactMatch: false,
       });
 
@@ -949,7 +958,7 @@ export const handleWebKitShadowDOMBeforeInput = ({
   newRange.setEnd(range.endContainer, range.endOffset);
 
   // Translate the DOM Range into a Plite Range
-  const pliteRange = ReactEditor.resolvePliteRange(editor, newRange, {
+  const pliteRange = ReactEditor.resolveRange(editor, newRange, {
     exactMatch: false,
   });
 
@@ -968,11 +977,11 @@ export const handleWebKitShadowDOMBeforeInput = ({
 };
 
 export const useEditableSelectionReconciler = ({
-  partialDOMBackedSelection,
+  viewportBackedSelection,
   runtime,
   scrollSelectionIntoView,
 }: {
-  partialDOMBackedSelection: boolean;
+  viewportBackedSelection: boolean;
   runtime: EditableDOMRuntime;
   scrollSelectionIntoView: (
     editor: ReactRuntimeEditor,
@@ -1074,7 +1083,7 @@ export const useEditableSelectionReconciler = ({
       return undefined;
     }
 
-    if (partialDOMBackedSelection && selectionHasDOMCoverage) {
+    if (viewportBackedSelection && selectionHasDOMCoverage) {
       domSelection.removeAllRanges();
       return undefined;
     }
@@ -1138,7 +1147,7 @@ export const useEditableSelectionReconciler = ({
         selection &&
         !forceChange
       ) {
-        const pliteRange = ReactEditor.resolvePliteRange(editor, domSelection, {
+        const pliteRange = ReactEditor.resolveRange(editor, domSelection, {
           exactMatch: true,
 
           // domSelection is not necessarily a valid Plite range
@@ -1152,7 +1161,7 @@ export const useEditableSelectionReconciler = ({
           domSelection.isCollapsed &&
           RangeApi.isCollapsed(pliteRange) &&
           RangeApi.isCollapsed(projectedSelection) &&
-          retainedTextHost?.getAttribute('data-plite-text-flow-host') ===
+          retainedTextHost?.getAttribute('data-editor-text-flow-host') ===
             'true' &&
           (state.textInputOwnership === 'native' ||
             state.pendingRootDOMInput?.inputType === 'insertText') &&
@@ -1195,11 +1204,9 @@ export const useEditableSelectionReconciler = ({
         projectedSelection &&
         !ReactEditor.hasRange(editor, projectedSelection)
       ) {
-        const resolvedRange = ReactEditor.resolvePliteRange(
-          editor,
-          domSelection,
-          { exactMatch: false }
-        );
+        const resolvedRange = ReactEditor.resolveRange(editor, domSelection, {
+          exactMatch: false,
+        });
 
         writeRuntimeSelection(
           editor,
@@ -1234,7 +1241,11 @@ export const useEditableSelectionReconciler = ({
       // Otherwise the DOM selection is out of sync, so update it.
       const mismatchDetail =
         resolvedDOMSelection && projectedSelection
-          ? `:${resolvedDOMSelection.anchor.path.join('.')}:${resolvedDOMSelection.anchor.offset}->${projectedSelection.anchor.path.join('.')}:${projectedSelection.anchor.offset}`
+          ? `:${resolvedDOMSelection.anchor.path.join('.')}:${
+              resolvedDOMSelection.anchor.offset
+            }->${projectedSelection.anchor.path.join('.')}:${
+              projectedSelection.anchor.offset
+            }`
           : '';
       recordPliteReactRender({
         id: `selection-export-write:${
@@ -1257,12 +1268,6 @@ export const useEditableSelectionReconciler = ({
         ? (readModelSelectionDOMPreference({
             editor,
             editorElement,
-            selection: projectedSelection,
-          }) ??
-          createFastDOMSelectionRange({
-            editor,
-            editorElement,
-            includeFullDocument: false,
             selection: projectedSelection,
           }) ??
           resolveDOMRangeInRoot(editor, projectedSelection, editorElement))
@@ -1401,14 +1406,14 @@ export const useEditableSelectionReconciler = ({
             editor,
             options,
             scrollSelectionIntoView,
-            partialDOMBackedSelection,
+            viewportBackedSelection,
             state,
           });
         },
         selectionPolicy: { kind: 'export-model', reason: 'model-owned' },
       });
     },
-    [editor, scrollSelectionIntoView, partialDOMBackedSelection, state]
+    [editor, scrollSelectionIntoView, viewportBackedSelection, state]
   );
 
   return { syncDOMSelectionToEditor };

@@ -231,3 +231,37 @@ export const seedNodeKeys = (
     }
   }
 };
+
+/** Attach non-live prepared identities to one detached forest. */
+export const seedPreparedNodeKeys = (
+  children: readonly Descendant[],
+  editor: Editor
+) => {
+  let count = 0;
+  const visit = (nodes: readonly Descendant[]) => {
+    for (const node of nodes) {
+      count += 1;
+      if ('children' in node && Array.isArray(node.children)) {
+        visit(node.children);
+      }
+    }
+  };
+
+  visit(children);
+  const range = reservePreparedNodeKeyRange(count);
+  let offset = 0;
+  const assign = (nodes: readonly Descendant[]) => {
+    for (const node of nodes) {
+      const nodeKey = preparedNodeKeyAt(range, offset);
+
+      offset += 1;
+      if (!nodeKey) throw new Error('Missing prepared node key.');
+      setNodeKey(node, editor, nodeKey);
+      if ('children' in node && Array.isArray(node.children)) {
+        assign(node.children);
+      }
+    }
+  };
+
+  assign(children);
+};

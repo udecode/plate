@@ -8,15 +8,15 @@ import {
   BaseTextAlignPlugin,
   BaseTextIndentPlugin,
 } from '../../../features/basic-styles/lib';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
-export const FontBackgroundColorPlugin = toPlatePlugin(
+export const FontBackgroundColorPlugin = toReactPlugin(
   BaseFontBackgroundColorPlugin
 );
-export const FontColorPlugin = toPlatePlugin(BaseFontColorPlugin);
-export const FontFamilyPlugin = toPlatePlugin(BaseFontFamilyPlugin);
-export const FontSizePlugin = toPlatePlugin(BaseFontSizePlugin);
-export const FontWeightPlugin = toPlatePlugin(BaseFontWeightPlugin);
-export const LineHeightPlugin = toPlatePlugin(BaseLineHeightPlugin);
-export const TextAlignPlugin = toPlatePlugin(BaseTextAlignPlugin);
-export const TextIndentPlugin = toPlatePlugin(BaseTextIndentPlugin);
+export const FontColorPlugin = toReactPlugin(BaseFontColorPlugin);
+export const FontFamilyPlugin = toReactPlugin(BaseFontFamilyPlugin);
+export const FontSizePlugin = toReactPlugin(BaseFontSizePlugin);
+export const FontWeightPlugin = toReactPlugin(BaseFontWeightPlugin);
+export const LineHeightPlugin = toReactPlugin(BaseLineHeightPlugin);
+export const TextAlignPlugin = toReactPlugin(BaseTextAlignPlugin);
+export const TextIndentPlugin = toReactPlugin(BaseTextIndentPlugin);

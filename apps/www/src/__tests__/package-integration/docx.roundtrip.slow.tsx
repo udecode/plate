@@ -4,7 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { jsx } from '@platejs/test';
-import { type Node as PliteNode, createEditor, type Value } from 'platejs';
+import {
+  type EditorDocumentValue,
+  type Node as PliteNode,
+  type Value,
+  createEditor,
+} from 'platejs';
 import { exportToDocx } from 'platejs/docx/export';
 import { importDocx } from 'platejs/docx/import';
 import { renderStaticHtml } from 'platejs/static';
@@ -29,21 +34,30 @@ const readDocxFixture = (filename: string): Buffer => {
 const importDocxBuffer = async (
   editor: ReturnType<typeof createTestEditor>,
   buffer: Buffer
-): Promise<PliteNode[]> => {
+): Promise<EditorDocumentValue> => {
   const arrayBuffer = new ArrayBuffer(buffer.byteLength);
   new Uint8Array(arrayBuffer).set(buffer);
 
   const result = await importDocx(editor, arrayBuffer);
 
-  return result.nodes;
+  if (!result.ok) throw new Error(result.diagnostics[0]?.message);
+
+  return result.document;
 };
 
-const exportNodesToDocx = async (nodes: PliteNode[]): Promise<Buffer> => {
-  const blob = await exportToDocx(nodes as Value, {
+const exportDocumentToDocx = async (
+  document: EditorDocumentValue
+): Promise<Buffer> => {
+  const editor = createTestEditor();
+  editor.update.value.replace(document);
+  const result = await exportToDocx(editor, {
     editorPlugins: [...BaseEditorKit, ...DocxExportKit],
+    projection: 'proposed',
   });
 
-  return Buffer.from(await blob.arrayBuffer());
+  if (!result.ok) throw new Error(result.diagnostics[0]?.message);
+
+  return Buffer.from(await result.blob.arrayBuffer());
 };
 
 describe('docx roundtrip', () => {
@@ -65,31 +79,31 @@ describe('docx roundtrip', () => {
     'preserves data for %s',
     async (name) => {
       const editor = createTestEditor();
-      const importedNodes = await importDocxBuffer(
+      const importedDocument = await importDocxBuffer(
         editor,
         readDocxFixture(name)
       );
-      const roundtrippedNodes = await importDocxBuffer(
+      const roundtrippedDocument = await importDocxBuffer(
         editor,
-        await exportNodesToDocx(importedNodes)
+        await exportDocumentToDocx(importedDocument)
       );
 
-      expect(roundtrippedNodes).toEqual(importedNodes);
+      expect(roundtrippedDocument.children).toEqual(importedDocument.children);
     }
   );
 
   it('preserves data for links with URL normalization', async () => {
     const editor = createTestEditor();
-    const importedNodes = await importDocxBuffer(
+    const importedDocument = await importDocxBuffer(
       editor,
       readDocxFixture('links')
     );
-    const roundtrippedNodes = await importDocxBuffer(
+    const roundtrippedDocument = await importDocxBuffer(
       editor,
-      await exportNodesToDocx(importedNodes)
+      await exportDocumentToDocx(importedDocument)
     );
 
-    const normalizeUrls = (nodes: PliteNode[]) =>
+    const normalizeUrls = (nodes: readonly PliteNode[]) =>
       JSON.parse(
         JSON.stringify(nodes).replaceAll(
           /"url":"(https?:\/\/[^"/]+)"/g,
@@ -97,22 +111,22 @@ describe('docx roundtrip', () => {
         )
       );
 
-    expect(normalizeUrls(roundtrippedNodes)).toEqual(
-      normalizeUrls(importedNodes)
+    expect(normalizeUrls(roundtrippedDocument.children)).toEqual(
+      normalizeUrls(importedDocument.children)
     );
   });
 
   it('reimports inline formatting after export without dropping all content', async () => {
     const editor = createTestEditor();
-    const importedNodes = await importDocxBuffer(
+    const importedDocument = await importDocxBuffer(
       editor,
       readDocxFixture('inline_formatting')
     );
-    const roundtrippedNodes = await importDocxBuffer(
+    const roundtrippedDocument = await importDocxBuffer(
       editor,
-      await exportNodesToDocx(importedNodes)
+      await exportDocumentToDocx(importedDocument)
     );
 
-    expect(roundtrippedNodes.length).toBeGreaterThan(0);
+    expect(roundtrippedDocument.children.length).toBeGreaterThan(0);
   });
 });

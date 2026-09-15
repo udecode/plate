@@ -77,7 +77,6 @@ const paste = (
     {
       createCell,
       createRow,
-      fitChildren: (_cell, children) => children,
       startCol: 0,
       startRow: 0,
       ...options,
@@ -385,13 +384,12 @@ describe('PreparedTablePaste planning contracts', () => {
     generatedId = 0;
   });
 
-  it('fits each used source anchor once, not each destination', () => {
+  it('keeps each repeated source tile as an independent placement group', () => {
     const source = table([row([cell('x'), cell('y')])]);
     const prepared = prepare(source);
 
     if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
 
-    let fits = 0;
     const result = planPreparedTablePaste(
       createDetachedTableContext(
         table([
@@ -405,20 +403,23 @@ describe('PreparedTablePaste planning contracts', () => {
         createCell,
         createRow,
         fillBounds: { maxCol: 3, maxRow: 1, minCol: 0, minRow: 0 },
-        fitChildren: (_cell, children) => {
-          fits += 1;
-          return children;
-        },
         startCol: 0,
         startRow: 0,
       }
     );
 
     expect(result.kind).toBe('plan');
-    expect(fits).toBe(2);
+    if (result.kind !== 'plan') throw new Error(JSON.stringify(result));
+    expect(result.placementGroups).toHaveLength(4);
+    expect(
+      result.placementGroups.every((group) => group.source === prepared.slice)
+    ).toBe(true);
+    expect(
+      result.placementGroups.flatMap((group) => group.placements)
+    ).toHaveLength(8);
   });
 
-  it('consumes content rejection as an immutable diagnostic plan result', () => {
+  it('keeps source content unfitted until the transaction owns destination roots', () => {
     const prepared = prepare(table([row([cell('x')])]));
 
     if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
@@ -429,17 +430,17 @@ describe('PreparedTablePaste planning contracts', () => {
       {
         createCell,
         createRow,
-        fitChildren: () => null,
         startCol: 0,
         startRow: 0,
       }
     );
 
-    expect(result).toEqual({
-      kind: 'invalid-source',
-      reason: 'content-rejected',
-      sourceCellKey: prepared.grid.anchors[0].key,
-    });
+    expect(result.kind).toBe('plan');
+    if (result.kind !== 'plan') throw new Error(JSON.stringify(result));
+    expect(result.placementGroups[0]?.source).toBe(prepared.slice);
+    expect(result.placementGroups[0]?.placements[0]?.content).toEqual([
+      { text: 'x' },
+    ]);
     expect(Object.isFrozen(result)).toBe(true);
   });
 
@@ -467,7 +468,6 @@ describe('PreparedTablePaste planning contracts', () => {
       {
         createCell,
         createRow,
-        fitChildren: (_cell, children) => children,
         startCol: 62,
         startRow: 62,
       }
@@ -505,7 +505,6 @@ describe('PreparedTablePaste planning contracts', () => {
         {
           createCell,
           createRow,
-          fitChildren: (_cell, children) => children,
           startCol: 0,
           startRow: 0,
         }

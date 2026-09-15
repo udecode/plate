@@ -43,7 +43,7 @@ const NestedTargetSchema = defineEditorSchema('schema:nested-target-runtime', {
 describe('compiled schema target runtime', () => {
   it('applies marks with concrete root and ancestor context', () => {
     const editor = createEditor({
-      extensions: [NestedTargetSchema],
+      plugins: [NestedTargetSchema],
       initialSelection: {
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 4, path: [0, 0, 0] },

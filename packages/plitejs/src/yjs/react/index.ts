@@ -1,2 +1,7 @@
-export * from '..';
-export * from './useYjs';
+export * from '../index';
+export {
+  useYjsAdmissionStatus,
+  useYjsRemoteCursor,
+  useYjsRemoteCursorGeometry,
+  useYjsRemoteCursorIds,
+} from './useYjs';

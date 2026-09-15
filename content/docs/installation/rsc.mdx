@@ -29,11 +29,11 @@ the `editor-static` UI component used by server rendering.
 ### Render static content
 
 Create a static editor in the Server Component and render it with
-`<PlateStatic>`.
+`<EditorStatic>`.
 
 ```tsx title="app/documents/page.tsx" showLineNumbers
 import type { Value } from 'platejs';
-import { createStaticEditor, PlateStatic } from 'platejs/static';
+import { createStaticEditor, EditorStatic } from 'platejs/static';
 
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 
@@ -54,7 +54,7 @@ export default function DocumentsPage() {
     initialValue: value,
   });
 
-  return <PlateStatic editor={editor} />;
+  return <EditorStatic editor={editor} />;
 }
 ```
 
@@ -115,15 +115,15 @@ components.
 
 | Runtime | Import from | Use for |
 | --- | --- | --- |
-| Server Component | `platejs/static` | Read-only React output with `<PlateStatic>`. |
+| Server Component | `platejs/static` | Read-only React output with `<EditorStatic>`. |
 | Route handler | `platejs/static` | Static React rendering with `renderStaticHtml`. |
 | Node script | `platejs`, `platejs/*` | Validation, migration, Markdown IO. |
 | Client editor | `platejs/react`, `platejs/*/react` | Editable UI, hooks, toolbar interactions. |
 
 <Callout type="info">
-  `createStaticEditor` includes the static `ViewPlugin` before your plugins.
-  Use it for rendered output. Use `createEditor` when the script only
-  reads or transforms a value.
+  `createStaticEditor` includes the core DOM capability used by static output.
+  Use it for rendered output. Use `createEditor` when the script only reads or
+  transforms a value.
 </Callout>
 
 ## Next steps

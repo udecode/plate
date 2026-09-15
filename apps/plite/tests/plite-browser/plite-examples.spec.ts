@@ -1,7 +1,7 @@
 import {
   attachPageScreenshot,
   openExample,
-  recordPliteBrowserRuntimeErrors,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
@@ -42,13 +42,13 @@ const openPliteExample = async (
 
 test.describe('Plite app example routes', () => {
   for (const id of pliteExampleIds) {
-    test(`${id} loads with Plite browser handle`, async ({ page }) => {
-      const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    test(`${id} loads with Editor browser handle`, async ({ page }) => {
+      const runtimeErrors = recordBrowserRuntimeErrors(page);
 
       try {
         const editor = await openPliteExample(page, id);
 
-        await expect(editor.root).toHaveAttribute('data-plite-editor', 'true');
+        await expect(editor.root).toHaveAttribute('data-editor', 'true');
         await expect
           .poll(() =>
             editor.root.evaluate(
@@ -80,7 +80,7 @@ test.describe('Plite app example routes', () => {
   test('plaintext typing keeps DOM and model text in sync', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openPliteExample(page, 'plaintext');
@@ -101,7 +101,7 @@ test.describe('Plite app example routes', () => {
   test('richtext route supports undo and redo after typing', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openPliteExample(page, 'richtext');
@@ -128,7 +128,7 @@ test.describe('Plite app example routes', () => {
   test('richtext route keeps native and model selections aligned', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openPliteExample(page, 'richtext');
@@ -159,7 +159,7 @@ test.describe('Plite app example routes', () => {
   test('custom placeholder shows for empty content and hides after typing', async ({
     page,
   }, testInfo) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/custom-placeholder', {
@@ -191,12 +191,12 @@ test.describe('Plite app example routes', () => {
   test('editable void and hidden content routes keep surrounding model text', async ({
     page,
   }) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editableVoids = await openPliteExample(page, 'editable-voids');
       await expect(
-        editableVoids.root.locator('[data-plite-void="true"]')
+        editableVoids.root.locator('[data-editor-void="true"]')
       ).toHaveCount(1);
       await expect
         .poll(() => editableVoids.get.modelText())
@@ -219,7 +219,7 @@ test.describe('Plite app example routes', () => {
   test('huge document route renders, scrolls, types, and captures visual proof', async ({
     page,
   }, testInfo) => {
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(

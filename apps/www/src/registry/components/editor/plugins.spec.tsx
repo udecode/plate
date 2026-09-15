@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 
-import { createEditor } from 'platejs';
+import { MentionInputPlugin } from 'platejs/mention/react';
+import { createEditor } from 'platejs/react';
+import { SlashInputPlugin } from 'platejs/slash-command/react';
 
 import { EmojiKit } from './emoji';
 import { FootnoteKit } from './footnote';
@@ -47,8 +49,10 @@ describe('EditorKit combobox triggers', () => {
         type: 'paragraph',
       },
     ]);
-    expect(editor.plugin('mentionInput').component).toBe(MentionInputElement);
-    expect(editor.plugin('slashInput').component).toBe(SlashInputElement);
+    expect(editor.plugin(MentionInputPlugin).component).toBe(
+      MentionInputElement
+    );
+    expect(editor.plugin(SlashInputPlugin).component).toBe(SlashInputElement);
     expect(commits).toHaveLength(1);
     expect(commits[0]?.changed.hasAny('structure')).toBe(true);
   });
@@ -61,6 +65,7 @@ describe('EditorKit combobox triggers', () => {
     const { EditorKit } = await import('./plugins');
     const editor = createEditor({
       plugins: EditorKit,
+      userId: 'alice',
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [0, 0] },

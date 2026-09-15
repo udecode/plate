@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 import type { Value } from 'platejs';
@@ -25,11 +25,11 @@ for (const lines of [20, 2000, 10_000, 100_000]) {
     page,
   }, info) => {
     expect(info.retry).toBe(0);
-    const errors = recordPliteBrowserRuntimeErrors(page);
+    const errors = recordBrowserRuntimeErrors(page);
     try {
       await page.goto(ROUTE, { waitUntil: 'commit' });
-      const root = page.locator('.plite-editor').first();
-      const editor = createPliteBrowserEditorHarness(
+      const root = page.locator('.editor-editor').first();
+      const editor = createBrowserEditorHarness(
         page,
         'code-block:syntax-corpus',
         root

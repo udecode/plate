@@ -27,7 +27,7 @@ Every inspected file/API/helper gets one verdict:
 
 Default suspicion list:
 
-- `with*` wrappers that just install a Plite extension or call another helper.
+- `with*` wrappers that just install a Plite plugin or call another helper.
 - `extendEditor` callback semantics, `extendTransforms`, `editor.tf`,
   `editor.transforms`, `plugin.transforms`, `getTransforms`, `getPluginApi`,
   old `getApi` surfaces, and command fallbacks that compete with
@@ -36,7 +36,7 @@ Default suspicion list:
   schema/runtime behavior.
 - `any`/`unknown` casts hiding type loss from migration.
 - explicit callback/helper types in tests that replace inference from
-  `defineBasePlugin`, Plate `createEditor`, exact definitions, update groups, or editor
+  `definePlugin`, Plate `createEditor`, exact definitions, update groups, or editor
   API calls.
 - local variable annotations that duplicate an obvious initializer type,
   especially `const x: NodeEntry<...>[] = editor.read...`,
@@ -44,7 +44,7 @@ Default suspicion list:
   initializer should own inference. Empty arrays and external boundaries are
   the exception, not the default.
 - plugin export annotations/casts that replace inference from
-  `defineBasePlugin`, `definePlatePlugin`, `toPlatePlugin`, or chained
+  `definePlugin`, `definePlugin`, `toReactPlugin`, or chained
   `.extend()` calls. They cap the file below `100` until removed or justified as
   a real external boundary.
 - any `PluginConfig` alias, public `__config`, caller-supplied whole-plugin
@@ -52,8 +52,8 @@ Default suspicion list:
   `type FooConfig = DefinitionOf<typeof FooPlugin>`. Keep explicit domain
   capability contracts separate, name extracted definitions `FooDefinition`,
   and let the plugin definition infer.
-- imported Plite `defineExtension(plugin.name, {... })` or
-  `defineExtension(PLUGINS.foo, {... })` around an inline plugin
+- imported Plite `definePlugin(plugin.name, {... })` or
+  `definePlugin(PLUGINS.foo, {... })` around an inline plugin
   native-field contribution. The plugin builder owns inline contextual typing,
   callback-return typing, and exact definition normalization.
   Independently reusable standalone Plite descriptors may use the imported
@@ -84,8 +84,11 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   optional through `ElementIdPlugin`; never serialize a `NodeKey`.
 - later tx stages that call an earlier method through a portal one-shot,
   `context.update`, or `editor.update.*` instead of
-  `tx.plugin(Plugin)` or a generated direct `tx.pluginName` group. Computed
-  `tx[plugin.name]` and `tx.extension(...)` are equally rejected.
+  `tx.plugin(Plugin)` when the caller owns the descriptor,
+  `tx.plugin(pluginName)` at an intentionally decoupled package boundary, or a
+  generated direct `tx.pluginName` group. Descriptor input is nominal and
+  typed; name input is erased and runtime-checked. Computed transaction indexing
+  by plugin name is rejected.
 - nested `editor.update.*` calls inside any `editor.update` callback,
   especially `editor.update.withoutNormalizing(() => { editor.update.* })`.
   The owning API should pass `({ tx })`, and the callback must mutate through
@@ -274,8 +277,8 @@ Rules:
     `as any`, or local helper types hiding weak owner types;
   - no plugin-owned helper threads editor/runtime plumbing that an earlier
     inferred API/tx stage can own;
-  - staged tx-to-tx reuse stays on `tx.plugin(Plugin)` or a generated direct
-    `tx.pluginName` group and has compile/runtime proof;
+  - staged tx-to-tx reuse stays on `tx.plugin(pluginOrName)` or a generated
+    direct `tx.pluginName` group and has compile/runtime proof;
   - a native runtime callback that consumes staged API has runtime proof for lazy
     `context.api` publication;
   - no legacy compat alias, shim, old command fallback, or duplicate wrapper

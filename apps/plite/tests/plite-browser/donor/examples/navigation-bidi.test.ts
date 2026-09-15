@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 import {
   openExample,
-  type PliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  type BrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 
 type NativeCaretFixture = Readonly<{
@@ -40,7 +40,7 @@ const normalizeText = (text: null | string | undefined) =>
   text?.replaceAll('\uFEFF', '') ?? null;
 
 const expectSynchronizedCaret = async (
-  editor: PliteBrowserEditorHarness,
+  editor: BrowserEditorHarness,
   leaves: readonly string[],
   stableOffsets: readonly number[]
 ) => {
@@ -97,7 +97,7 @@ const traverseNativeCaret = async ({
   stableOffsets,
   terminalOffset,
 }: {
-  editor: PliteBrowserEditorHarness;
+  editor: BrowserEditorHarness;
   key: 'ArrowLeft' | 'ArrowRight';
   leaves: readonly string[];
   stableOffsets: readonly number[];
@@ -141,7 +141,7 @@ test.describe('browser-native mixed-bidi caret proof', () => {
       );
       test.setTimeout(60_000);
 
-      const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+      const runtimeErrors = recordBrowserRuntimeErrors(page);
       const editor = await openExample(page, 'plite/plaintext', {
         ready: {
           editor: 'visible',
@@ -150,7 +150,7 @@ test.describe('browser-native mixed-bidi caret proof', () => {
 
       try {
         await page.addStyleTag({
-          content: `[data-plite-editor="true"] { direction: ${fixture.direction}; }`,
+          content: `[data-editor="true"] { direction: ${fixture.direction}; }`,
         });
         await editor.selection.selectAll();
         await page.keyboard.insertText(fixture.text);
@@ -199,7 +199,7 @@ test.describe('browser-native mixed-bidi caret proof', () => {
 
     await page.goto('/examples/plite/richtext');
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',
@@ -211,7 +211,7 @@ test.describe('browser-native mixed-bidi caret proof', () => {
 
     try {
       await page.addStyleTag({
-        content: '[data-plite-editor="true"] { direction: ltr; }',
+        content: '[data-editor="true"] { direction: ltr; }',
       });
       await editor.selectAll();
       await editor.deleteFragment();

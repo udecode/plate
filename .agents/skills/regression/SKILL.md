@@ -1,5 +1,5 @@
 ---
-description: Test-first Plate/Plite regression methodology for reporter-complete oracles, exact reproduction, one-case Patch delegation, proof receipts, corpus replay, failed-fix interruption, and automatic workflow repair.
+description: Prove reporter-complete Plate/Plite regressions, replay explicit corpora and repair failed-fix methodology.
 argument-hint: '[repair <expectation> | <bug|surface|corpus>] [full-loop | timed 1h|2h|overnight | batch-loop]'
 disable-model-invocation: true
 name: regression
@@ -131,6 +131,12 @@ testing behavior.
 
 Repair command shape, stale server, missing export, generated drift, or host
 readiness before scaling cases.
+
+After product-source edits, every browser proof records
+`browser-source-attestation: <fresh host restart or served-input digest>` before
+the behavior assertion. Navigating an unexplained running server, changing
+browser family against that server, or relying on hot reload without a served-
+input attestation cannot validate current bytes.
 
 For a reporter-named route, bind one literal `exact-route:` across the selected
 case environment and Proof-host readiness row. The final proof command must
@@ -390,6 +396,16 @@ independently from wrapper height, DOM markers, model selection, and block
 highlighting, then prove the next valid edit still works. A zero-height spacer,
 selection-capable hidden text node, static screenshot without the selection
 phase, or geometry-only pixel classifier cannot close a caret-visible claim.
+
+When clicking is the claimed caret-paint trigger, map that evidence to an
+applicable `geometry-paint` row at the same phase with `paint-trigger: click`
+in its positive assertion. Capture and classify the actual pixels after the
+delivered click and before another key, pointer gesture, focus call, or
+selection write. Completion records `paint-input-trace: click > pixel-capture`
+from that interval, with the existing pixel controls. A DOM caret assertion
+after click followed by pixels captured only after arrow navigation is invalid
+for click paint. Record later keyboard paint separately; a caret mentioned only
+as the initial focus setup does not acquire this gate.
 
 Any required positive authority/reference evidence that names layout, width,
 size, centering/alignment, position, spacing, compression, or a full row must

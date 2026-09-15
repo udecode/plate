@@ -9,13 +9,6 @@ const coreCurrentDir = fileURLToPath(
 const benchmarkTargetsPath = fileURLToPath(
   new URL('../../../benchmarks/targets/slate-v2.json', import.meta.url)
 );
-const legacyReactComparePath = fileURLToPath(
-  new URL(
-    '../../../benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs',
-    import.meta.url
-  )
-);
-
 const observationComparePath = fileURLToPath(
   new URL(
     '../../../benchmarks/slate-v2/donor/core/compare/observation.mjs',
@@ -72,7 +65,6 @@ type BenchmarkSummary = {
 };
 
 const compareBenchmarkSummaryPaths = [
-  legacyReactComparePath,
   observationComparePath,
   hugeDocumentComparePath,
   historyComparePath,

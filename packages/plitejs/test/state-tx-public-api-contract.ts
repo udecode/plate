@@ -316,7 +316,7 @@ describe('state/tx public API contract', () => {
 
   it('keeps a replacement selection after an inline during canonicalization', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineTestSchema('inline-schema-definition', {
           inline: { inline: true },
         }),
@@ -361,7 +361,7 @@ describe('state/tx public API contract', () => {
 
   it('keeps a replacement selection before an inline during canonicalization', () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         defineTestSchema('inline-schema-definition', {
           inline: { inline: true },
         }),

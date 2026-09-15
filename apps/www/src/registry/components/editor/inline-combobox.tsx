@@ -16,8 +16,8 @@ import { cva } from 'class-variance-authority';
 import {
   Hotkeys,
   isHotkey,
-  type PlatePluginTransaction,
   type Element,
+  type PluginTransaction,
 } from 'platejs';
 import { BaseComboboxPlugin, filterWords } from 'platejs/combobox';
 import { useComposedRef, useEditor, useElementSelected } from 'platejs/react';
@@ -38,7 +38,7 @@ type InlineComboboxContextValue = {
   >;
   inputRef: React.RefObject<HTMLInputElement | null>;
   commit: (
-    callback: (tx: PlatePluginTransaction) => void,
+    callback: (tx: PluginTransaction) => void,
     focusEditor?: boolean
   ) => boolean;
   showTrigger: boolean;
@@ -106,7 +106,7 @@ const InlineCombobox = ({
   const canEdit = combobox.read.canEdit(inputKey);
 
   const commit = React.useCallback(
-    (callback: (tx: PlatePluginTransaction) => void, focusEditor = false) => {
+    (callback: (tx: PluginTransaction) => void, focusEditor = false) => {
       const completed = combobox.api.commit(inputKey, callback);
 
       if (completed && focusEditor) editor.api.dom.focus();
@@ -376,7 +376,7 @@ const InlineComboboxItem = ({
   keywords?: string[];
   label?: string;
   value: string;
-  onSelect?: (tx: PlatePluginTransaction) => void;
+  onSelect?: (tx: PluginTransaction) => void;
 }) => {
   const { value } = props;
 

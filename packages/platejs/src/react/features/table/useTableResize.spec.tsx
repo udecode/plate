@@ -5,7 +5,7 @@ import * as React from 'react';
 
 import type { TableResize } from '../../../features/table';
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
-import { Plate } from '../../core';
+import { EditorRoot } from '../../core';
 import { TablePlugin } from './TablePlugin';
 import { useTableResize } from './useTableResize';
 
@@ -86,9 +86,9 @@ const createFixture = (container?: HTMLElement) => {
     );
   };
   const view = (readOnly = false) => (
-    <Plate editor={editor} readOnly={readOnly} suppressInstanceWarning>
+    <EditorRoot editor={editor} readOnly={readOnly} suppressInstanceWarning>
       <Probe />
-    </Plate>
+    </EditorRoot>
   );
   const mounted = render(view(), container ? { container } : undefined);
   const button = mounted.container.getElementsByTagName('button')[0];

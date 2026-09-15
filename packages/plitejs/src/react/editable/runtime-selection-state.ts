@@ -1,28 +1,29 @@
-import { type Range, RangeApi, SelectionApi, type Selection } from '../..';
+import {
+  type Editor as CoreEditor,
+  type Range,
+  RangeApi,
+  type Selection,
+  type Value,
+} from '../..';
 import {
   type Editor,
-  getEditorLiveSelection,
   getSelection as editorGetSelection,
 } from './runtime-editor-api';
 
-export const readLiveSelection = (editor: Editor): Selection =>
-  getEditorLiveSelection(editor);
+export function readRuntimeSelection<
+  V extends Value,
+  TPlugins extends readonly unknown[],
+>(editor: CoreEditor<V, TPlugins>): Selection;
+export function readRuntimeSelection(editor: Editor): Selection {
+  return editorGetSelection(editor);
+}
 
-export const readRuntimeSelection = (editor: Editor): Selection =>
-  readLiveSelection(editor) ?? editorGetSelection(editor);
-
-export const readCommittedSelectionRange = (editor: Editor): Range | null => {
-  const selection = editorGetSelection(editor);
+export function readRuntimeSelectionRange<
+  V extends Value,
+  TPlugins extends readonly unknown[],
+>(editor: CoreEditor<V, TPlugins>): Range | null;
+export function readRuntimeSelectionRange(editor: Editor): Range | null {
+  const selection = readRuntimeSelection(editor);
 
   return RangeApi.isRange(selection) ? selection : null;
-};
-
-export const readRuntimeSelectionRange = (editor: Editor): Range | null => {
-  const liveSelection = readLiveSelection(editor);
-
-  if (SelectionApi.isText(liveSelection)) {
-    return liveSelection;
-  }
-
-  return readCommittedSelectionRange(editor);
-};
+}

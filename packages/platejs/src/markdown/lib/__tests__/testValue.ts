@@ -29,23 +29,9 @@ export const testValue = [
         text: ' to provide additional conte1xt, ',
       },
       {
-        suggestion: true,
-        suggestion_suggestion1: {
-          id: 'suggestion1',
-          createdAt: 1_742_652_370_104,
-          type: 'remove',
-          userId: 'charlie',
-        },
         text: 'insights',
       },
       {
-        suggestion: true,
-        suggestion_suggestion1: {
-          id: 'suggestion1',
-          createdAt: 1_742_652_370_104,
-          type: 'insert',
-          userId: 'charlie',
-        },
         text: 'suggestions',
       },
       {

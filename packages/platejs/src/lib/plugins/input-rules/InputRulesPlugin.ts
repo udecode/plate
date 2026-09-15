@@ -1,4 +1,4 @@
-import { clipboardHandler } from '../../../dom/plite-dom.internal';
+import { domCommands } from '../../../dom/plite-dom.internal';
 import {
   type EditorStateView,
   editorCommands,
@@ -6,7 +6,7 @@ import {
   RangeApi,
 } from '../../../facade';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
-import { defineBasePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import type {
   InsertBreakInputRuleContext,
   InsertDataInputRuleContext,
@@ -14,7 +14,7 @@ import type {
   SelectionInputRuleContext,
 } from './types';
 
-export const InputRulesPlugin = defineBasePlugin('inputRules', {
+export const InputRulesPlugin = definePlugin('inputRules', {
   editOnly: true,
 }).extend(({ editor }) => {
   const createCachedGetter = <TValue>(compute: () => TValue) => {
@@ -110,20 +110,34 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
   };
 
   return {
-    contributions: [
-      clipboardHandler({
-        insertData(data, { next, tx }) {
-          const text = data.getData('text/plain') || null;
-          const dataTypes = new Set(data.types);
-          const selectionContext = createSelectionContext({ state: tx });
-          let handled = false;
+    commands: ({ around }) => [
+      around(domCommands.insertData, ({ input, state, next }) => {
+        const rules = getPlateRuntime(editor).inputRules.insertData;
 
-          for (const rule of getPlateRuntime(editor).inputRules.insertData) {
+        if (rules.length === 0) return next();
+
+        const data = input;
+        const text = data.getData('text/plain') || null;
+        const dataTypes = new Set(data.types);
+        let handled = false;
+        let continued = false;
+        let continuation: DataTransfer | undefined;
+        const prefix = state.transaction((tx) => {
+          const selectionContext = createSelectionContext({ state: tx });
+
+          for (const rule of rules) {
             const context = {
               cause: 'insertData',
               data,
               insertData: (nextData) => {
-                next(nextData);
+                if (continued) {
+                  throw new Error(
+                    'An input rule cannot continue insertData more than once.'
+                  );
+                }
+
+                continued = true;
+                continuation = nextData;
               },
               plugin: rule.plugin,
               text,
@@ -168,21 +182,25 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
               break;
             }
           }
+        });
 
-          if (handled) return true;
+        if (!handled || continued) {
+          return next.after(prefix, continuation ?? input);
+        }
 
-          return next(data);
-        },
+        return prefix;
       }),
-    ],
-    commands: ({ around }) => [
       around(editorCommands.insertBreak, ({ state, next }) => {
+        const rules = getPlateRuntime(editor).inputRules.insertBreak;
+
+        if (rules.length === 0) return next();
+
         let handled = false;
         let continueInsertion = false;
         const prefix = state.transaction((tx) => {
           const selectionContext = createSelectionContext({ state: tx });
 
-          for (const rule of getPlateRuntime(editor).inputRules.insertBreak) {
+          for (const rule of rules) {
             const context = {
               cause: 'insertBreak',
               insertBreak: () => {
@@ -222,7 +240,8 @@ export const InputRulesPlugin = defineBasePlugin('inputRules', {
           }
         });
 
-        if (handled && !continueInsertion) return prefix;
+        if (!handled) return next();
+        if (!continueInsertion) return prefix;
 
         return next.after(prefix);
       }),

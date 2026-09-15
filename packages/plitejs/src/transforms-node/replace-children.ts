@@ -32,7 +32,9 @@ const getParentChildren = <V extends Value>(
 
   if (!ElementApi.isElement(parent)) {
     throw new Error(
-      `Cannot replace children at path [${at.join(',')}] because it does not reference an ancestor node.`
+      `Cannot replace children at path [${at.join(
+        ','
+      )}] because it does not reference an ancestor node.`
     );
   }
 
@@ -61,9 +63,9 @@ const findNodeReferencePath = (
 
 export const replaceChildren = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: Editor<V, TExtensions>,
+  editor: Editor<V, TPlugins>,
   children: ReadonlyArray<ElementOrTextIn<NoInfer<V>>>,
   {
     at,

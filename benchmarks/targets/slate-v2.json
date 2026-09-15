@@ -12,6 +12,76 @@
   },
   "targets": [
     {
+      "id": "plite-authored-typing",
+      "question": "Does complete trusted typing in native markup meet the normal and large paint-boundary budgets with two actual shared views?",
+      "owner": "plite",
+      "family": "browser-authored",
+      "kind": "current",
+      "cwd": ".",
+      "command": "bun benchmarks/editor/benchmarks/plite-authored-typing-benchmark.ts --output=tmp/plite-authored-typing-benchmark.json",
+      "metrics": {
+        "primary": "plite_authored_typing_passed",
+        "direction": "higher",
+        "unit": "boolean",
+        "printsMetric": true,
+        "upgrade": "Normal 100/100 and large 1000/1000 blocks/pending deletions, two mounted shared views, three fresh passes with 20 warmups and 100 trusted keys. Every pass requires keydown-to-verified-paint-boundary p95 <= 50 ms and p99 <= 100 ms. All raw rows retained; a normal failure stops large."
+      },
+      "correctness": {
+        "command": "pnpm --filter plitejs test:react test/react/authored-fragment-provider.test.tsx test/react/dom-repair-policy-contract.test.ts && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
+        "policy": "Every key retains trusted event identity, exact native input target, model text, DOM text, focused native caret and paint-boundary readiness. Accepted and independent content, all saved pending records and mounted retained fragments remain exact. Uses the actual route's explicit virtualized rendering; record its mounted paths and boundaries. Double requestAnimationFrame is a presentation opportunity, not a compositor timestamp. No complete large-document DOM, cold-mount, heap, 1/8-view, physical IME or complete F30 claim."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-typing-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",
+          "docs/plans/artifacts/native-authored-changes/browser-typing-contract.json"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_authored_typing_passed=1"
+      }
+    },
+    {
+      "id": "plite-authored-mounted",
+      "question": "Do 1, 2 and 8 actual shared authored views, including a complete 1000-block mounted DOM, meet trusted input and retained browser-heap budgets?",
+      "owner": "plite/react+authored",
+      "family": "browser-authored",
+      "kind": "current",
+      "cwd": ".",
+      "command": "bun benchmarks/editor/benchmarks/plite-authored-mounted-benchmark.ts --output=tmp/plite-authored-mounted-benchmark.json",
+      "metrics": {
+        "primary": "plite_authored_mounted_passed",
+        "direction": "higher",
+        "unit": "boolean",
+        "printsMetric": true,
+        "upgrade": "At 100 blocks, measure 1, 2 and 8 real shared Editable roots; at 1000 blocks, measure two complete roots. Three alternating fresh-context zero, matched pending-insertion and retained-deletion arms use 10 warmups and 50 trusted keys. Every arm requires paint-boundary p95 <= 50 ms and p99 <= 100 ms. Retained p95 overhead is at most the larger of 1 ms or 10% against the matched arm, and post-GC JS heap is at most 1.5x that equal-record/card/view control."
+      },
+      "correctness": {
+        "command": "pnpm --filter plitejs test:react test/react/authored-fragment-provider.test.tsx test/react/authored-view.test.tsx test/react/plite-runtime-provider-contract.test.tsx && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
+        "policy": "Mount exactly the selected shared view count and blocks times views top-level elements with no viewport placeholders. Each markup view retains every deleted counterpart; all projected views receive the typed proposal while accepted content, original pending IDs and the independent editor stay exact. Runtime errors and every trusted input guard must remain empty. This does not prove cold page hydration or disabled-capability overhead."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-mounted-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",
+          "docs/plans/artifacts/native-authored-changes/browser-mounted-contract.json"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_authored_mounted_passed=1"
+      }
+    },
+    {
       "id": "plite-authored-scale",
       "question": "Does installed native proposal amendment and current-card reading meet the frozen zero, normal, large, stress, overlap and read-fanout budgets?",
       "owner": "plite",
@@ -30,9 +100,20 @@
         "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-changes-contract.test.ts packages/plitejs/test/authored-structure-contract.test.ts packages/plitejs/test/authored-view-contract.test.ts packages/platejs/src/authored/authored.api.spec.ts",
         "policy": "Same proposed text and review count after every edit, accepted content preserved, native save/reload checked. Edits and reads use actual native headless views. No overlap ownership ratio, DOM/paint, heap or complete F30 claim."
       },
-      "artifacts": [{ "path": "tmp/plite-authored-scale-benchmark.json", "required": true }],
-      "docs": { "sources": ["docs/plans/2026-09-10-native-authored-changes-and-suggestions.md"] },
-      "thresholds": { "promotion": "plite_authored_scale_passed=1" }
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-scale-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_authored_scale_passed=1"
+      }
     },
     {
       "id": "plite-authored-checkpoint",
@@ -66,6 +147,77 @@
       },
       "thresholds": {
         "promotion": "plite_authored_checkpoint_passed=1"
+      }
+    },
+    {
+      "id": "plite-authored-retention",
+      "question": "Does installed native authored state retain bounded cold heap for one, 1000 and 10000 closed contribution pairs under default and archival policy?",
+      "owner": "plitejs/authored",
+      "family": "core-authored",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_AUTHORED_RETENTION_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-retention-benchmark.ts --output=tmp/plite-authored-retention-benchmark.json",
+      "metrics": {
+        "primary": "plite_authored_retention_passed",
+        "direction": "higher",
+        "unit": "boolean",
+        "printsMetric": true,
+        "upgrade": "Three fresh isolated cold loads per policy at one, 1000 and 10000 accepted insert/delete pairs. After equivalent warmup and forced GC, default total heap must stay within 1.5x the same-contribution full-retention archive control."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-retention-contract.test.ts packages/plitejs/test/authored-history-contract.test.ts packages/plitejs/test/yjs/authored-contract.spec.ts",
+        "policy": "Both policies restore the same accepted document and exact operation count with no pending changes. Default persistence omits closed fixture bodies; the archive control retains those same bodies. The target measures retained JavaScript heap after cold load, not construction peak, DOM/provider memory, zero-review overhead or mounted-view heap."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-retention-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",
+          "docs/plans/artifacts/native-authored-changes/retention-heap-contract.json"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_authored_retention_passed=1"
+      }
+    },
+    {
+      "id": "plite-authored-collaboration",
+      "question": "Does the installed native authored owner receive one Yjs operation and publish exact accepted and proposed content within the frozen collaboration budgets at 100, 1000 and 10000 pending changes?",
+      "owner": "plitejs/authored+yjs",
+      "family": "collaboration",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_AUTHORED_COLLABORATION_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-collaboration-benchmark.ts --output=tmp/plite-authored-collaboration-benchmark.json",
+      "metrics": {
+        "primary": "plite_authored_collaboration_passed",
+        "direction": "higher",
+        "unit": "boolean",
+        "printsMetric": true,
+        "upgrade": "Three passes of five warmups and 50 distinct-block receives for proposed and accepted insertion at 100, 1000 and 10000 seeded proposals. One canonical native N-operation seed per cohort initializes each Yjs pair through its genesis checkpoint. Every phase runs in a fresh process. Accepted rows at 1000 and 10000 changes first prime that path with 55 untimed operations on a disposable prior-cohort owner of 100 or 1000 changes. This reproduces the frozen cohort-order JIT state without contaminating proposed timing or carrying large heaps between measured rows. Receipt includes missing-update encoding, synchronous Yjs apply and one proposed-view read. Every aggregate requires p95 <= 50 ms, p99 <= 100 ms and p95 within 1.1x plus 2 ms of the immutable version-4 design-target artifact on the same machine class."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/yjs/authored-contract.spec.ts packages/plitejs/test/authored-history-contract.test.ts packages/plitejs/test/authored-retention-contract.test.ts",
+        "policy": "Every receive adds one native operation and preserves exact accepted and proposed content, logical and pending counts, immutable initial snapshots, duplicate-update identity and saved-value reload. The package tests cover concurrent proposals, decisions, retained content, checkpoints, history and local retention. Provider lifecycle, awareness, browser input, DOM, heap and paint remain separate gates."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-authored-collaboration-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",
+          "docs/plans/artifacts/native-authored-changes/collaboration-owner-contract.json",
+          "docs/plans/artifacts/native-authored-changes/execution/collaboration-owner-frozen-full-1.json"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_authored_collaboration_passed=1"
       }
     },
     {
@@ -292,7 +444,7 @@
         "upgrade": "Every simple and prefix lane must stay within its explicit absolute p50/p95 budget. Simple dispatch at 20,000 blocks must remain within 2x its 100-block p50 at every handler depth. Runtime proof observes zero callable continuation identities in simple handlers and one fresh identity per around visit. Prefix document-size ratios are recorded only because each handler intentionally constructs a generic immutable TransactionSpec. The synthetic same-run interpreter is a correctness and machine-noise control, never a replacement for the unavailable pre-edit baseline."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/command-spec.test.ts ./packages/plitejs/test/extension-configuration.test.ts ./benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/command-spec.test.ts ./packages/plitejs/test/plugin-configuration.test.ts ./benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.test.ts",
         "policy": "Promotion requires command fallback/prefix/rollback/configuration laws, exact actual/reference visit and handled-result parity, exact callable-continuation identity evidence, zero no-op commits, fixed absolute latency budgets, and the simple large-document ratio gate."
       },
       "artifacts": [
@@ -435,7 +587,7 @@
       "docs": {
         "sources": [
           "docs/plans/2026-09-03-editable-island-substrate-closure.md",
-          "content/docs/plite/libraries/plite-react/external-text.mdx"
+          "content/docs/external-text.mdx"
         ]
       },
       "thresholds": {
@@ -477,49 +629,6 @@
       }
     },
     {
-      "id": "react-huge-document-legacy-compare",
-      "question": "Does Slate v2 beat legacy Slate for 5,000-block React editing, selection, startup, and full-document replacement?",
-      "owner": "slate-v2",
-      "family": "react-large-document",
-      "kind": "slate-legacy-compare",
-      "cwd": ".",
-      "command": "REACT_HUGE_COMPARE_LEGACY_REPO=../slate REACT_HUGE_COMPARE_DISPOSE_DELAY_MS=0 REACT_HUGE_COMPARE_SPLIT_SELECTION=1 REACT_HUGE_COMPARE_ISOLATE_SURFACES=1 REACT_HUGE_COMPARE_SURFACES=v2DefaultRenderAuto,v2DomPresent REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs",
-      "metrics": {
-        "primary": "react_huge_doc_legacy_compare_worst_p95_ratio",
-        "direction": "lower",
-        "unit": "ratio",
-        "printsMetric": true,
-        "upgrade": "Primary metric is the worst p95 ratio across the 5,000-block default/render-auto and DOM-present product lanes versus legacy chunking-on."
-      },
-      "correctness": {
-        "command": "pnpm check:plite",
-        "policy": "Promotion requires the benchmark p95 ratio plus the full Plite package and Chromium check suite."
-      },
-      "artifacts": [
-        {
-          "path": "tmp/slate-react-huge-document-legacy-compare-benchmark.json",
-          "required": true
-        }
-      ],
-      "docs": {
-        "sources": [
-          "benchmarks/editor/research/evidence-source-map.md",
-          "benchmarks/editor/iterations/003-evidence-control-plane.md",
-          "docs/plans/2026-06-01-react-huge-document-legacy-ar-perf.md"
-        ]
-      },
-      "thresholds": {
-        "promotion": "react_huge_doc_legacy_compare_worst_p95_ratio<=1.5",
-        "stop": "stop when the promotion target is stable across two correctness-green repeat packets or when the remaining owner needs architecture work"
-      },
-      "migration": {
-        "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
-        "evidenceKitId": "react-huge-document-legacy-compare",
-        "evidenceKitCategory": "slate-react-huge-document-legacy-compare",
-        "evidenceKitActive": true
-      }
-    },
-    {
       "id": "react-huge-document-full",
       "question": "Does Slate v2 stay fast and local across the full huge-document benchmark suite?",
       "owner": "slate-v2",
@@ -532,7 +641,7 @@
         "direction": "lower",
         "unit": "ratio",
         "printsMetric": true,
-        "upgrade": "Primary metric is the worst normalized budget ratio across core huge-doc ops, React legacy compare, browser type-to-paint, click latency, cold and materialized selection, model-backed typing, DOM budget, long-task, listener, selector, and overlay locality lanes. Strict budget mode must be enabled so over-budget rows fail instead of only printing metrics."
+        "upgrade": "Primary metric is the worst normalized budget ratio across core huge-document operations, explicit complete and virtualized browser rendering, click latency, cold and mounted selection, model-backed typing, DOM budget, long-task, listener, selector, and overlay locality lanes. Strict budget mode makes over-budget rows fail."
       },
       "correctness": {
         "command": "pnpm check:plite",
@@ -546,8 +655,7 @@
       ],
       "docs": {
         "sources": [
-          "docs/plans/2026-06-01-react-huge-document-full-benchmark.md",
-          "docs/plans/2026-06-01-react-huge-document-legacy-ar-perf.md"
+          "docs/plans/2026-06-01-react-huge-document-full-benchmark.md"
         ]
       },
       "thresholds": {
@@ -628,7 +736,7 @@
     },
     {
       "id": "react-huge-document-overlays",
-      "question": "Do overlay and partial-DOM promotion paths stay local in huge documents?",
+      "question": "Do overlay updates, requested viewport mounts, and active edits stay local in virtualized huge documents?",
       "owner": "slate-v2",
       "family": "react-large-document",
       "kind": "current",
@@ -873,13 +981,13 @@
       "family": "react-large-document",
       "kind": "browser-trace",
       "cwd": ".",
-      "command": "PLITE_BROWSER_TRACE_LATEST_ARTIFACT_PATH=tmp/slate-react-huge-document-default-browser-trace-benchmark.json bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
+      "command": "PLITE_BROWSER_TRACE_LATEST_ARTIFACT_PATH=tmp/slate-react-huge-document-default-browser-trace-benchmark.json PLITE_BROWSER_TRACE_SURFACES=pliteComplete bun benchmarks/slate-v2/donor/browser/react/huge-document-browser-trace.mjs",
       "metrics": {
         "primary": "react_huge_doc_type_to_paint_p95_ms",
         "direction": "lower",
         "unit": "ms",
         "printsMetric": true,
-        "upgrade": "Primary metric is browser p95 type-to-paint for the default auto and staged DOM-present surfaces. Supporting METRIC lines cover click-to-paint, click-to-selection-ready, cold select-to-paint, materialized select-to-paint, model-backed typing, DOM nodes, heap, long tasks, listener counts, and selector counts."
+        "upgrade": "Primary metric is browser p95 type-to-paint for the explicit complete-DOM surface. Supporting METRIC lines cover click-to-paint, click-to-selection-ready, selection, model-backed typing, DOM nodes, heap, long tasks, listener counts, and selector counts."
       },
       "correctness": {
         "command": "pnpm check:plite",
@@ -920,7 +1028,7 @@
         "upgrade": "Primary metric is browser p95 type-to-paint for the virtualized surface; DOM, heap, and long-task metrics remain supporting guardrails."
       },
       "correctness": {
-        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/huge-document.test.ts -g \"exposes virtualized DOM strategy controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",
+        "command": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/huge-document.test.ts -g \"exposes virtualized rendering controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",
         "policy": "Promotion requires virtualized example controls, bounded coverage metrics, and stable dynamic-height scroll behavior."
       },
       "artifacts": [
@@ -1356,7 +1464,7 @@
         "direction": "lower",
         "unit": "ms",
         "printsMetric": true,
-        "upgrade": "Primary metric is the worst total p95 across multi-editor sync, awareness updates, reconnect, and large-document sync. Pair it with yjs_collaboration_worst_work_p95_ms, yjs_collaboration_worst_verification_p95_ms, yjs_large_doc_local_edit_p95_ms, yjs_large_doc_remote_sync_p95_ms, yjs_large_doc_remote_encode_p95_ms, yjs_large_doc_remote_apply_p95_ms, and yjs_correctness_failures so work-time wins do not hide verification, remote-import, or convergence regressions."
+        "upgrade": "Primary metric is the worst candidate p95 across changed and unchanged presence, local edit plus peer import, edit plus cursor remap, and failed-import retry. Pair it with p99, construction, A/B paired excess, A/A control excess, per-operation p95, deterministic resource invariants, and yjs_correctness_failures=0 across the independent block and cursor cohorts."
       },
       "correctness": {
         "command": "pnpm check:plite",
@@ -1378,7 +1486,7 @@
       "thresholds": {
         "calibration": "repeat 3 baseline runs before enforcing a promotion threshold",
         "correctness": "yjs_correctness_failures=0",
-        "plateau": "stop after two correctness-green packets with no meaningful yjs_collaboration_worst_work_p95_ms improvement; if large-doc remains worst, use yjs_large_doc_local_edit_p95_ms, yjs_large_doc_remote_sync_p95_ms, yjs_large_doc_remote_encode_p95_ms, and yjs_large_doc_remote_apply_p95_ms to pick the next owner"
+        "plateau": "stop after two correctness-green packets with no meaningful yjs_collaboration_worst_p95_ms improvement; use the per-cohort operation rows and paired excess to identify whether document size, cursor count, construction, import, remap, presence, or retry owns the next bottleneck"
       }
     },
     {
@@ -1685,27 +1793,27 @@
       }
     },
     {
-      "id": "plite-extension-graph",
+      "id": "plite-plugin-graph",
       "question": "Do descriptor-owned required dependencies compile and reconfigure within fixed budgets at 10, 100, and 1,000 descriptors while cleanup retains zero registry records?",
       "owner": "plite",
       "family": "core-extension",
       "kind": "current",
       "cwd": ".",
-      "command": "PLITE_EXTENSION_GRAPH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-extension-graph-benchmark.ts --output=tmp/plite-extension-graph-benchmark.json",
+      "command": "PLITE_PLUGIN_GRAPH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-plugin-graph-benchmark.ts --output=tmp/plite-plugin-graph-benchmark.json",
       "metrics": {
-        "primary": "plite_extension_graph_worst_budget_ratio",
+        "primary": "plite_plugin_graph_worst_budget_ratio",
         "direction": "lower",
         "unit": "ratio",
         "printsMetric": true,
         "upgrade": "Cold transitive compile, dynamic root install, and reverse cleanup must stay below fixed 1,000 ms p95 budgets at 1,000 descriptors. Every cycle must activate and clean each descriptor exactly once and retain zero extension, descriptor, dependency-order, output, state, or transaction registry records after removal."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/extension-configuration.test.ts ./packages/plitejs/test/extension-methods-contract.ts ./benchmarks/editor/benchmarks/plite-extension-graph-benchmark.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/plugin-configuration.test.ts ./packages/plitejs/test/plugin-methods-contract.ts ./benchmarks/editor/benchmarks/plite-plugin-graph-benchmark.test.ts",
         "policy": "Promotion requires descriptor inference, DAG order, cycle/conflict/duplicate rejection, candidate isolation, transitive reference counting, rollback, reverse cleanup, fixed p95 budgets, and zero post-removal registry records."
       },
       "artifacts": [
         {
-          "path": "tmp/plite-extension-graph-benchmark.json",
+          "path": "tmp/plite-plugin-graph-benchmark.json",
           "required": true
         }
       ],
@@ -1716,7 +1824,7 @@
         ]
       },
       "thresholds": {
-        "promotion": "plite_extension_graph_worst_budget_ratio<1 and plite_extension_graph_removed_registry_records=0"
+        "promotion": "plite_plugin_graph_worst_budget_ratio<1 and plite_plugin_graph_removed_registry_records=0"
       }
     },
     {

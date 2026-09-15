@@ -1,7 +1,7 @@
 import type { Emoji } from '@emoji-mart/data';
 
 import {
-  defineBasePlugin,
+  definePlugin,
   type EditorUpdateTransaction,
   type ElementOf,
   property,
@@ -31,7 +31,7 @@ export type EmojiPluginState = {
   >;
 } & TriggerComboboxPluginState;
 
-export const BaseEmojiInputPlugin = defineBasePlugin(PLUGINS.emojiInput, {
+export const BaseEmojiInputPlugin = definePlugin(PLUGINS.emojiInput, {
   dependencies: [BaseComboboxPlugin],
   schema: {
     element: {
@@ -48,7 +48,7 @@ export const BaseEmojiInputPlugin = defineBasePlugin(PLUGINS.emojiInput, {
 
 export type EmojiInputElement = ElementOf<typeof BaseEmojiInputPlugin>;
 
-export const BaseEmojiPlugin = defineBasePlugin(PLUGINS.emoji, {
+export const BaseEmojiPlugin = definePlugin(PLUGINS.emoji, {
   dependencies: [BaseEmojiInputPlugin],
   initialState: ({ editor }): EmojiPluginState => ({
     createComboboxInput: () => ({

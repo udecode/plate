@@ -1,9 +1,9 @@
 ---
 name: setup-pstack
-description: Configure which models pstack uses per role. Detects your available models and writes the project role configuration that overrides the skill defaults. Use for /setup-pstack, "configure pstack models", or changing pstack's model choices.
+description: "Configure pstack model roles when requested, using models available in the current runtime."
 ---
 
-Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.
+For platform-specific commands or delegation, read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md). Use the complete domain method below under current project scope and proof requirements.
 
 # Setup pstack
 

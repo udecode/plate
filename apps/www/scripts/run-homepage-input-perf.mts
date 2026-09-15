@@ -48,7 +48,7 @@ type ProbeWindow = Window & {
     nativeBlockers: string[];
     rows: ProbeRow[];
   };
-  __PLITE_REACT_RENDER_PROFILER__?: {
+  __EDITOR_REACT_RENDER_PROFILER__?: {
     record: (event: {
       duration?: number;
       id?: string | null;
@@ -187,9 +187,9 @@ try {
           ? [...(root?.querySelectorAll(innerEnterTargetSelector) ?? [])].find(
               (element) => element.textContent?.includes(innerEnterTargetText)
             )
-          : [...(root?.querySelectorAll('[data-plite-path]') ?? [])].find(
+          : [...(root?.querySelectorAll('[data-editor-path]') ?? [])].find(
               (element) => {
-                const innerPath = element.getAttribute('data-plite-path');
+                const innerPath = element.getAttribute('data-editor-path');
                 const isTopLevelPath =
                   !!innerPath &&
                   Array.from(innerPath).every(
@@ -204,7 +204,7 @@ try {
 
       return target
         ? {
-            path: target.getAttribute('data-plite-path'),
+            path: target.getAttribute('data-editor-path'),
             selector: innerAction === 'enter' ? innerEnterTargetSelector : null,
             text: target.textContent ?? '',
           }
@@ -224,7 +224,7 @@ try {
       );
       const target = innerTargetIdentity.path
         ? root?.querySelector(
-            `[data-plite-path="${CSS.escape(innerTargetIdentity.path)}"]`
+            `[data-editor-path="${CSS.escape(innerTargetIdentity.path)}"]`
           )
         : [
             ...(root?.querySelectorAll(innerTargetIdentity.selector ?? '*') ??
@@ -272,7 +272,7 @@ try {
 
       if (!root) throw new Error('Homepage editor is not mounted.');
       const targetSelector = innerTargetIdentity2.path
-        ? `[data-plite-path="${CSS.escape(innerTargetIdentity2.path)}"]`
+        ? `[data-editor-path="${CSS.escape(innerTargetIdentity2.path)}"]`
         : (innerTargetIdentity2.selector ?? '*');
 
       probeWindow.__homepageInputProbe = {
@@ -285,7 +285,7 @@ try {
         rows: [],
       };
       if (innerDiagnose) {
-        probeWindow.__PLITE_REACT_RENDER_PROFILER__ = {
+        probeWindow.__EDITOR_REACT_RENDER_PROFILER__ = {
           record(event) {
             if (
               ![
@@ -381,7 +381,7 @@ try {
           }
 
           const target = root.querySelector(targetSelector);
-          const textHost = target?.querySelector('[data-plite-node="text"]');
+          const textHost = target?.querySelector('[data-editor-node="text"]');
           const handle = (
             root as HTMLElement & {
               __pliteBrowserHandle?: {
@@ -392,14 +392,14 @@ try {
           const row: ProbeRow = {
             blockCountBefore: root.childElementCount,
             commitBefore: handle?.getLastCommit()?.version ?? null,
-            domSync: textHost?.getAttribute('data-plite-dom-sync') ?? null,
+            domSync: textHost?.getAttribute('data-editor-dom-sync') ?? null,
             domSyncReason:
-              textHost?.getAttribute('data-plite-dom-sync-reason') ?? null,
+              textHost?.getAttribute('data-editor-dom-sync-reason') ?? null,
             key: event.key,
             keydown: performance.now(),
             keydownTrusted: event.isTrusted,
             projectedDomSync:
-              textHost?.getAttribute('data-plite-projected-dom-sync') ?? null,
+              textHost?.getAttribute('data-editor-projected-dom-sync') ?? null,
             tableCountBefore: root.querySelectorAll('table').length,
             textBefore: target?.textContent ?? '',
           };
@@ -560,7 +560,7 @@ try {
           );
           const target = innerTargetIdentity3.path
             ? root?.querySelector(
-                `[data-plite-path="${CSS.escape(innerTargetIdentity3.path)}"]`
+                `[data-editor-path="${CSS.escape(innerTargetIdentity3.path)}"]`
               )
             : [
                 ...(root?.querySelectorAll(
@@ -758,7 +758,7 @@ try {
         finalCommitVersion: handle?.getLastCommit()?.version ?? null,
         finalText: innerTargetIdentity4.path
           ? document.querySelector(
-              `[data-plite-path="${CSS.escape(innerTargetIdentity4.path)}"]`
+              `[data-editor-path="${CSS.escape(innerTargetIdentity4.path)}"]`
             )?.textContent
           : [
               ...(root?.querySelectorAll(

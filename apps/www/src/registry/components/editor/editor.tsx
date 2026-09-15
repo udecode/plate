@@ -3,13 +3,13 @@
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
 import {
-  type PlateContentProps,
-  type PlateViewProps,
+  type EditorContentProps,
+  type EditorPreviewProps,
   NodeSelectionDrag,
   NodeSelectionHighlight,
-  PlateContainer,
-  PlateContent,
-  PlateView,
+  EditorContainer as EditorContainerPrimitive,
+  EditorContent,
+  EditorPreview,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -26,7 +26,7 @@ const editorContainerVariants = cva(
         comment: cn(
           'flex flex-wrap justify-between gap-1 px-1 py-0.5 text-sm',
           'rounded-md border-[1.5px] border-transparent bg-transparent',
-          'has-[[data-plite-editor]:focus]:border-brand/50 has-[[data-plite-editor]:focus]:ring-2 has-[[data-plite-editor]:focus]:ring-brand/30',
+          'has-[[data-editor]:focus]:border-brand/50 has-[[data-editor]:focus]:ring-2 has-[[data-editor]:focus]:ring-brand/30',
           'has-aria-disabled:border-input has-aria-disabled:bg-muted'
         ),
         default: 'h-full',
@@ -46,7 +46,7 @@ export function EditorContainer({
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof editorContainerVariants>) {
   return (
-    <PlateContainer
+    <EditorContainerPrimitive
       className={cn(
         'ignore-click-outside/toolbar',
         editorContainerVariants({ variant }),
@@ -62,7 +62,7 @@ const editorVariants = cva(
     'group/editor ignore-click-outside/toolbar',
     'relative w-full cursor-text select-text overflow-x-hidden whitespace-break-spaces break-words',
     'rounded-md ring-offset-background focus-visible:outline-none',
-    '**:data-plite-placeholder:!top-1/2 **:data-plite-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-plite-placeholder:text-muted-foreground/80 **:data-plite-placeholder:opacity-100! **:data-plite-drop-cursor:z-20 **:data-plite-drop-cursor:rounded-full **:data-plite-drop-cursor:bg-brand **:data-plite-inactive-selection:bg-brand/25 **:data-plite-inactive-selection-caret:z-20 **:data-plite-inactive-selection-caret:w-0.5 **:data-plite-inactive-selection-caret:bg-primary',
+    '**:data-editor-placeholder:!top-1/2 **:data-editor-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-editor-placeholder:text-muted-foreground/80 **:data-editor-placeholder:opacity-100! **:data-editor-drop-cursor:z-20 **:data-editor-drop-cursor:rounded-full **:data-editor-drop-cursor:bg-brand **:data-editor-inactive-selection:bg-brand/25 **:data-editor-inactive-selection-caret:z-20 **:data-editor-inactive-selection-caret:w-0.5 **:data-editor-inactive-selection-caret:bg-primary',
     '[&_strong]:font-bold'
   ),
   {
@@ -99,12 +99,12 @@ export function Editor({
   variant,
   ref,
   ...props
-}: (PlateContentProps & VariantProps<typeof editorVariants>) & {
+}: (EditorContentProps & VariantProps<typeof editorVariants>) & {
   ref?: React.Ref<HTMLDivElement>;
 }) {
   return (
     <>
-      <PlateContent
+      <EditorContent
         ref={ref}
         className={cn(
           editorVariants({
@@ -128,9 +128,9 @@ export function EditorView({
   className,
   variant,
   ...props
-}: PlateViewProps<unknown> & VariantProps<typeof editorVariants>) {
+}: EditorPreviewProps<unknown> & VariantProps<typeof editorVariants>) {
   return (
-    <PlateView
+    <EditorPreview
       {...props}
       className={cn(editorVariants({ variant }), className)}
     />

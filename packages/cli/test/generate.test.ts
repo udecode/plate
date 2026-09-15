@@ -113,10 +113,10 @@ const createFixture = (
 ) => {
   const directory = mkdtempSync(join(packageRoot, 'tmp-cli-test-'));
   const entryPath = join(directory, `editor.${tsx ? 'tsx' : 'ts'}`);
-  const entry = `import { defineBasePlugin } from 'platejs';
+  const entry = `import { definePlugin } from 'platejs';
 import { property, schema as s, target } from 'platejs';
 
-const CalloutPlugin = defineBasePlugin('calloutCapability', {
+const CalloutPlugin = definePlugin('calloutCapability', {
   schema: {
     element: {
       content: ${
@@ -139,7 +139,7 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {
   },
 });
 
-const AlignPlugin = defineBasePlugin('align', {
+const AlignPlugin = definePlugin('align', {
   schema: {
     properties: {
       align: s.elementProperty(
@@ -219,12 +219,12 @@ describe('plate generate', () => {
         "generate: () => { throw new Error('document generator ran'); }"
       )
       .replace(
-        'const CalloutPlugin = defineBasePlugin',
-        'let configured = 0;\nconst CalloutPlugin = defineBasePlugin'
+        'const CalloutPlugin = definePlugin',
+        'let configured = 0;\nconst CalloutPlugin = definePlugin'
       )
       .replace(
-        "defineBasePlugin('calloutCapability', {",
-        "defineBasePlugin('calloutCapability', {\n  activate() { throw new Error('plugin activation ran'); },"
+        "definePlugin('calloutCapability', {",
+        "definePlugin('calloutCapability', {\n  activate() { throw new Error('plugin activation ran'); },"
       )
       .replace(
         'export const EditorKit = [CalloutPlugin, AlignPlugin]',
@@ -246,19 +246,19 @@ describe('plate generate', () => {
     const { directory, entryPath } = createFixture();
     writeFileSync(
       entryPath,
-      `import { defineBasePlugin, property, schema, target } from 'platejs';
-export const Box = defineBasePlugin('box', {
+      `import { definePlugin, property, schema, target } from 'platejs';
+export const Box = definePlugin('box', {
   schema: { element: { type: 'box_node', content: schema.content.text(), properties: {
     payload: property.json({ validate: (value: unknown): value is { id: string } => typeof value === 'object' && value !== null, validationVersion: 1 }),
   } } },
 });
-export const Extra = defineBasePlugin('extra', {
+export const Extra = definePlugin('extra', {
   schema: { properties: {
     extra: schema.elementProperty(property.json({ validate: (value: unknown): value is { score: number } => typeof value === 'object' && value !== null, validationVersion: 1 }), { target: target.element(Box) }),
     textData: schema.textProperty(property.json({ validate: (value: unknown): value is { label: 'x' | 'y' } => typeof value === 'object' && value !== null, validationVersion: 1 })),
   } },
 });
-const Parent = defineBasePlugin('parent', { dependencies: [Box, Extra] });
+const Parent = definePlugin('parent', { dependencies: [Box, Extra] });
 export const EditorKit = [Parent] as const;
 `
     );
@@ -365,12 +365,12 @@ type MissingOwner = Owner<typeof EditorKit, 'missingOwner'>;
     const { entryPath } = createFixture();
     const source = readFileSync(entryPath, 'utf-8')
       .replace(
-        "const AlignPlugin = defineBasePlugin('align', {",
-        `const RootBlockPlugin = defineBasePlugin('rootBlock', {
+        "const AlignPlugin = definePlugin('align', {",
+        `const RootBlockPlugin = definePlugin('rootBlock', {
   schema: { element: s.element.textBlock() },
 });
 
-const AlignPlugin = defineBasePlugin('align', {`
+const AlignPlugin = definePlugin('align', {`
       )
       .replace(
         'export const EditorKit = [CalloutPlugin, AlignPlugin] as const;',
@@ -592,11 +592,11 @@ schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { defineBasePlugin } from 'platejs';",
-          "import { readFileSync } from 'node:fs';\nimport { dirname } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport { defineBasePlugin } from 'platejs';"
+          "import { definePlugin } from 'platejs';",
+          "import { readFileSync } from 'node:fs';\nimport { dirname } from 'node:path';\nimport { fileURLToPath } from 'node:url';\nimport { definePlugin } from 'platejs';"
         )
         .replace(
-          "const CalloutPlugin = defineBasePlugin('calloutCapability', {",
+          "const CalloutPlugin = definePlugin('calloutCapability', {",
           `const elementTypes = [
   readFileSync(new URL('./element-type.txt', import.meta.url), 'utf8'),
   readFileSync(\`\${import.meta.dirname}/element-type.txt\`, 'utf8'),
@@ -606,7 +606,7 @@ schema.properties.reviewFlags.key.prefix satisfies 'reviewFlag_';
 if (import.meta.resolve('node:fs') !== 'node:fs') throw new Error('builtin resolution changed');
 const elementType = [...new Set(elementTypes)].join(',');
 
-const CalloutPlugin = defineBasePlugin('calloutCapability', {`
+const CalloutPlugin = definePlugin('calloutCapability', {`
         )
         .replace("type: 'callout_node'", 'type: elementType')
     );
@@ -625,12 +625,12 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
       entryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "const CalloutPlugin = defineBasePlugin('calloutCapability', {",
+          "const CalloutPlugin = definePlugin('calloutCapability', {",
           `const evaluationGlobal = globalThis as typeof globalThis & { __plateEvaluationCount?: number };
 evaluationGlobal.__plateEvaluationCount = (evaluationGlobal.__plateEvaluationCount ?? 0) + 1;
 const evaluationCount = evaluationGlobal.__plateEvaluationCount;
 
-const CalloutPlugin = defineBasePlugin('calloutCapability', {`
+const CalloutPlugin = definePlugin('calloutCapability', {`
         )
         .replace(
           "type: 'callout_node'",
@@ -656,12 +656,12 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
       nestedEntryPath,
       readFileSync(entryPath, 'utf-8')
         .replace(
-          "import { defineBasePlugin } from 'platejs';",
-          "import { readFileSync } from 'node:fs';\nimport { defineBasePlugin } from 'platejs';"
+          "import { definePlugin } from 'platejs';",
+          "import { readFileSync } from 'node:fs';\nimport { definePlugin } from 'platejs';"
         )
         .replace(
-          "const CalloutPlugin = defineBasePlugin('calloutCapability', {",
-          "const elementType = readFileSync('element-type.txt', 'utf8');\n\nconst CalloutPlugin = defineBasePlugin('calloutCapability', {"
+          "const CalloutPlugin = definePlugin('calloutCapability', {",
+          "const elementType = readFileSync('element-type.txt', 'utf8');\n\nconst CalloutPlugin = definePlugin('calloutCapability', {"
         )
         .replace("type: 'callout_node'", 'type: elementType')
     );
@@ -786,8 +786,8 @@ const CalloutPlugin = defineBasePlugin('calloutCapability', {`
     const { directory, entryPath } = createFixture(false, false, false, false);
     const entry = readFileSync(entryPath, 'utf-8')
       .replace(
-        "const AlignPlugin = defineBasePlugin('align', {",
-        `const ImagePlugin = defineBasePlugin('image', { schema: { element: { void: 'block' } } });\n\nconst AlignPlugin = defineBasePlugin('align', {`
+        "const AlignPlugin = definePlugin('align', {",
+        `const ImagePlugin = definePlugin('image', { schema: { element: { void: 'block' } } });\n\nconst AlignPlugin = definePlugin('align', {`
       )
       .replace(
         'export const EditorKit = [CalloutPlugin, AlignPlugin] as const;',
@@ -846,17 +846,17 @@ void invalidProperties;
     const { entryPath } = createFixture();
     const entry = readFileSync(entryPath, 'utf-8')
       .replace(
-        "const AlignPlugin = defineBasePlugin('align', {",
-        `const HeadingPlugin = defineBasePlugin('heading', { schema: { element: s.element.textBlock() } });
-const NestedPlugin = defineBasePlugin('nested', {
+        "const AlignPlugin = definePlugin('align', {",
+        `const HeadingPlugin = definePlugin('heading', { schema: { element: s.element.textBlock() } });
+const NestedPlugin = definePlugin('nested', {
   schema: { element: { blockContent: false, content: s.content.text({ default: 'text', min: 1 }) } },
 });
-const QuotePlugin = defineBasePlugin('quote', {
+const QuotePlugin = definePlugin('quote', {
   schema: { element: s.element.textBlock() },
   update: () => ({ toggle: () => undefined }),
 });
 
-const AlignPlugin = defineBasePlugin('align', {`
+const AlignPlugin = definePlugin('align', {`
       )
       .replace(
         'export const EditorKit = [CalloutPlugin, AlignPlugin] as const;',

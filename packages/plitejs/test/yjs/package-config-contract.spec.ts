@@ -25,7 +25,7 @@ const rootPackagePath = '../../../../package.json';
 const platePackagePath = '../../../platejs/package.json';
 const plitePackagePath = '../../package.json';
 const publicYjsDocsPath =
-  '../../../../content/docs/plite/libraries/plite-yjs.mdx';
+  '../../../../content/docs/(plugins)/(collaboration)/yjs.mdx';
 const yjsCollaborationBenchmarkPath =
   '../../../../benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs';
 const benchmarkStatsPath =
@@ -46,7 +46,7 @@ const yjsSoakScriptAliases = [
 describe('plitejs/yjs package config contract', () => {
   it('keeps Yjs opt-in and supplied by its consumers', () => {
     const rootPackage = readJson<PackageManifest>(rootPackagePath);
-    assert.equal(rootPackage.devDependencies?.yjs, undefined);
+    assert.equal(rootPackage.devDependencies?.yjs, '13.6.30');
     for (const path of [plitePackagePath, platePackagePath]) {
       const manifest = readJson<PackageManifest>(path);
 
@@ -142,7 +142,7 @@ describe('plitejs/yjs package config contract', () => {
     }
   });
 
-  it('documents only executable Yjs proof owners', () => {
+  it('documents the provider boundary and keeps Yjs proof owners executable', () => {
     const docs = readFileSync(
       new URL(publicYjsDocsPath, import.meta.url),
       'utf-8'
@@ -171,8 +171,14 @@ describe('plitejs/yjs package config contract', () => {
       pliteApp.scripts?.['test:plite-browser:chromium'],
       'node scripts/run-plite-browser.mjs chromium'
     );
-    assert.match(docs, /pnpm --filter plitejs test:partition:yjs/);
-    assert.match(docs, /pnpm --filter plite test:plite-browser:chromium/);
+    assert.match(
+      docs,
+      /import \{ YjsPlugin \} from ['"]platejs\/yjs\/react['"]/
+    );
+    assert.match(docs, /editor\.api\.yjs\.admissionStatus\(\)/);
+    assert.match(docs, /editor\.api\.yjs\.retryImport\(\)/);
+    assert.match(docs, /Provider packages stay at the app boundary/);
+    assert.match(docs, /does not connect, disconnect, or destroy the provider/);
   });
 
   it('keeps fast checks free of long-running proof gates', () => {
@@ -212,20 +218,25 @@ describe('plitejs/yjs package config contract', () => {
 
     const source = readFileSync(benchmarkUrl, 'utf-8');
     const metrics = [
+      'yjs_collaboration_construction_p95_ms',
       'yjs_collaboration_worst_p95_ms',
-      'yjs_collaboration_worst_work_p95_ms',
-      'yjs_collaboration_worst_verification_p95_ms',
-      'yjs_large_doc_local_edit_p95_ms',
-      'yjs_large_doc_remote_apply_p95_ms',
-      'yjs_large_doc_remote_encode_p95_ms',
-      'yjs_large_doc_remote_sync_p95_ms',
+      'yjs_collaboration_worst_p99_ms',
+      'yjs_collaboration_worst_pair_excess_ms',
+      'yjs_collaboration_aa_worst_pair_excess_ms',
+      'yjs_presence_changed_p95_ms',
+      'yjs_presence_unchanged_p95_ms',
+      'yjs_edit_import_p95_ms',
+      'yjs_edit_cursor_remap_p95_ms',
+      'yjs_retry_admission_p95_ms',
       'yjs_correctness_failures',
     ];
 
     for (const metric of metrics) {
       assert.match(source, new RegExp(`\\b${metric}:`));
     }
-    assert.match(source, /phaseLanes:\s*\{/);
+    assert.match(source, /const operations = \[/);
+    assert.match(source, /kind === 'A\/A'/);
+    assert.match(source, /kind === 'A\/B'/);
     assert.match(source, /METRIC \$\{name\}=\$\{value\}/);
   });
 

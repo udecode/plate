@@ -406,6 +406,8 @@ const createCommitChanged = ({
   >();
   const selectionNodeKeys = new Map<RootKey, ReadonlySet<NodeKey>>();
   const nodeKeys = new Map<string, readonly NodeKey[]>();
+  const pathMembership = new Map<NodeKey, boolean>();
+  const presenceMembership = new Map<RootKey, ReadonlySet<NodeKey>>();
   const aggregateNodeKeys = new Map<
     EditorCommitRuntimeChangeKind,
     { ids: readonly NodeKey[]; membership: ReadonlySet<NodeKey> }
@@ -631,40 +633,48 @@ const createCommitChanged = ({
     const afterDocument = DocumentIndex.fromValue(afterRoot);
     const change = getInternalDocumentRootChange(changes, root);
     const touchedChangedNodeKeys = new Set<NodeKey>();
-    const pathNodeKeys = new Set<NodeKey>();
-    const presenceNodeKeys = new Set(getNodeKeys('presence', root));
-    let topLevelOrderChanged = beforeRoot.length !== afterRoot.length;
-    const collectChangedPaths = (
-      beforeNode: Descendant | undefined,
-      afterNode: Descendant,
-      path: Path
-    ) => {
-      if (beforeNode === afterNode) return;
-      const nodeKey = innerAfterIndex.keyAt(path);
-      const beforePath =
-        nodeKey && !presenceNodeKeys.has(nodeKey)
-          ? (innerBeforeIndex.pathOf(nodeKey) ?? undefined)
-          : undefined;
-      if (nodeKey && !samePath(beforePath, path)) {
-        pathNodeKeys.add(nodeKey);
-        if (path.length === 1) topLevelOrderChanged = true;
-      }
-      if (NodeApi.isElement(afterNode)) {
-        const beforeChildren = NodeApi.isElement(beforeNode)
-          ? beforeNode.children
-          : [];
-        afterNode.children.forEach((child, index) => {
-          if (beforeChildren[index] !== child) {
-            collectChangedPaths(beforeChildren[index], child, [...path, index]);
-          }
-        });
-      }
+    const presenceNodeKeys = getPresenceNodeKeys(root);
+    let pathNodeKeys: Set<NodeKey> | undefined;
+    let topLevelOrderChanged: boolean | undefined;
+    const getPathNodeKeys = () => {
+      if (pathNodeKeys) return pathNodeKeys;
+
+      const keys = new Set<NodeKey>();
+      const collectChangedPaths = (
+        beforeNode: Descendant | undefined,
+        afterNode: Descendant,
+        path: Path
+      ) => {
+        if (beforeNode === afterNode) return;
+        const nodeKey = innerAfterIndex.keyAt(path);
+        const beforePath =
+          nodeKey && !presenceNodeKeys.has(nodeKey)
+            ? (innerBeforeIndex.pathOf(nodeKey) ?? undefined)
+            : undefined;
+        if (nodeKey && !samePath(beforePath, path)) keys.add(nodeKey);
+        if (NodeApi.isElement(afterNode)) {
+          const beforeChildren = NodeApi.isElement(beforeNode)
+            ? beforeNode.children
+            : [];
+          afterNode.children.forEach((child, index) => {
+            if (beforeChildren[index] !== child) {
+              collectChangedPaths(beforeChildren[index], child, [
+                ...path,
+                index,
+              ]);
+            }
+          });
+        }
+      };
+      afterRoot.forEach((node, index) => {
+        if (beforeRoot[index] !== node) {
+          collectChangedPaths(beforeRoot[index], node, [index]);
+        }
+      });
+      pathNodeKeys = keys;
+
+      return keys;
     };
-    afterRoot.forEach((node, index) => {
-      if (beforeRoot[index] !== node) {
-        collectChangedPaths(beforeRoot[index], node, [index]);
-      }
-    });
 
     change?.iterChangedRanges((fromBefore, toBefore, fromAfter, toAfter) => {
       for (const entry of beforeDocument.nodeRangesTouching(
@@ -694,11 +704,6 @@ const createCommitChanged = ({
       )
     );
 
-    const structureChanged =
-      changes.createRoots.has(root) ||
-      changes.deleteRoots.has(root) ||
-      presenceNodeKeys.size > 0 ||
-      pathNodeKeys.size > 0;
     const textNodeKeys = new Set<NodeKey>();
     let propertiesChanged = false;
     let textChanged = false;
@@ -738,13 +743,30 @@ const createCommitChanged = ({
           (path) => Object.freeze([...path])
         )
       ),
-      pathNodeKeys,
+      get pathNodeKeys() {
+        return getPathNodeKeys();
+      },
       propertiesChanged,
-      structureChanged,
+      get structureChanged() {
+        return (
+          changes.createRoots.has(root) ||
+          changes.deleteRoots.has(root) ||
+          presenceNodeKeys.size > 0 ||
+          getPathNodeKeys().size > 0
+        );
+      },
       textChanged,
       textNodeKeys,
       touchedNodeKeys: touchedChangedNodeKeys,
-      topLevelOrderChanged,
+      get topLevelOrderChanged() {
+        return (topLevelOrderChanged ??=
+          beforeRoot.length !== afterRoot.length ||
+          afterRoot.some(
+            (node, index) =>
+              beforeRoot[index] !== node &&
+              innerBeforeIndex.keyAt([index]) !== innerAfterIndex.keyAt([index])
+          ));
+      },
     });
 
     rootDetails.set(root, details);
@@ -936,6 +958,17 @@ const createCommitChanged = ({
     return result;
   };
 
+  const getPresenceNodeKeys = (root: RootKey) => {
+    let keys = presenceMembership.get(root);
+
+    if (!keys) {
+      keys = new Set(getNodeKeys('presence', root));
+      presenceMembership.set(root, keys);
+    }
+
+    return keys;
+  };
+
   const allKnownRoots = () => {
     const result = new Set<RootKey>(roots);
 
@@ -950,6 +983,28 @@ const createCommitChanged = ({
     return result;
   };
   const knownRoots = [...allKnownRoots()];
+  const hasPathNodeKey = (nodeKey: NodeKey) => {
+    const cached = pathMembership.get(nodeKey);
+
+    if (cached !== undefined) return cached;
+    const changed = knownRoots.some((root) => {
+      if (!hasInRoot('document', root)) return false;
+      const presence = getPresenceNodeKeys(root);
+      const beforePath = getIndex('before', root).pathOf(nodeKey);
+
+      if (presence.has(nodeKey)) return beforePath === null;
+
+      return (
+        beforePath !== null &&
+        getIndex('after', root).keyAt(beforePath) !== nodeKey
+      );
+    });
+
+    pathMembership.set(nodeKey, changed);
+
+    return changed;
+  };
+
   const getAggregateNodeKeys = (kind: EditorCommitRuntimeChangeKind) => {
     const cached = aggregateNodeKeys.get(kind);
 
@@ -969,7 +1024,9 @@ const createCommitChanged = ({
     has: (kind, root) => hasInRoot(kind, toInternalRoot(root)),
     hasAny: (kind) => knownRoots.some((root) => hasInRoot(kind, root)),
     hasNodeKey: (nodeKey, kind) =>
-      getAggregateNodeKeys(kind).membership.has(nodeKey),
+      kind === 'path' && !aggregateNodeKeys.has(kind)
+        ? hasPathNodeKey(nodeKey)
+        : getAggregateNodeKeys(kind).membership.has(nodeKey),
     paths: (root) => getRootDetails(toInternalRoot(root)).paths,
     nodeKeys: (kind, root) => getNodeKeys(kind, toInternalRoot(root)),
     nodeKeysAll: (kind) => getAggregateNodeKeys(kind).ids,

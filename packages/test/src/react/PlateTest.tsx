@@ -1,35 +1,35 @@
 import {
   type Editor,
-  type PlateContentProps,
-  type PlateProps,
-  Plate,
-  PlateContent,
+  type EditorContentProps,
+  type EditorRootProps,
+  EditorRoot,
+  EditorContent,
 } from 'platejs/react';
 import React from 'react';
 
-export type PlateTestProps<E extends Editor = Editor> = Omit<
-  PlateProps<E>,
+export type EditorTestProps<E extends Editor = Editor> = Omit<
+  EditorRootProps<E>,
   'children' | 'editor'
 > & {
-  editableProps?: PlateContentProps;
+  editableProps?: EditorContentProps;
   editor: E;
   variant?: 'comment' | 'wordProcessor';
 };
 
-export function PlateTest<E extends Editor = Editor>({
+export function EditorTest<E extends Editor = Editor>({
   editableProps,
   editor,
   variant = 'wordProcessor',
   ...props
-}: PlateTestProps<E>) {
+}: EditorTestProps<E>) {
   return (
-    <Plate {...props} editor={editor}>
-      <PlateContent
+    <EditorRoot {...props} editor={editor}>
+      <EditorContent
         data-testid="plite-content-editable"
         data-variant={variant}
         autoFocus
         {...editableProps}
       />
-    </Plate>
+    </EditorRoot>
   );
 }

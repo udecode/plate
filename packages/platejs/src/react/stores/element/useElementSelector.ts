@@ -1,8 +1,5 @@
 import type { Element } from '../../../facade';
-import type {
-  PlateElementDescriptor,
-  PlateElementForDescriptor,
-} from './useElement';
+import type { ElementDescriptor, ElementForDescriptor } from './useElement';
 import { useElementStoreContext } from './useElementStore';
 import { useElementStoreSelector } from './useElementStoreSelector.internal';
 
@@ -22,16 +19,13 @@ export function useElementSelector<T>(
   options?: UseElementSelectorOptions<T>
 ): T;
 /** Derive a value from the plugin's scoped element with exact schema inference. */
-export function useElementSelector<
-  const TPlugin extends PlateElementDescriptor,
-  T,
->(
+export function useElementSelector<const TPlugin extends ElementDescriptor, T>(
   plugin: TPlugin,
-  selector: ElementSelector<PlateElementForDescriptor<TPlugin>, T>,
+  selector: ElementSelector<ElementForDescriptor<TPlugin>, T>,
   options?: Omit<UseElementSelectorOptions<T>, 'scope'>
 ): T;
 export function useElementSelector<T>(
-  pluginOrSelector: PlateElementDescriptor | ElementSelector<Element, T>,
+  pluginOrSelector: ElementDescriptor | ElementSelector<Element, T>,
   selectorOrOptions?:
     | ElementSelector<Element, T>
     | UseElementSelectorOptions<T>,

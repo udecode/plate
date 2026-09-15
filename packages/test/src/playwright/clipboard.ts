@@ -1,16 +1,18 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { statSync, unlinkSync, writeFileSync } from 'node:fs';
 
 import type { Locator } from '@playwright/test';
 
-import { PLITE_BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY } from './constants';
 import type { SurfaceTarget } from './surface';
 import type { ClipboardPayloadSnapshot } from './types';
 
-const CLIPBOARD_LOCK_PATH = `${process.cwd()}/.plite-browser-clipboard.lock`;
+const CLIPBOARD_LOCK_PATH = `${process.cwd()}/.editor-browser-clipboard.lock`;
 const CLIPBOARD_LOCK_RETRY_MS = 50;
 const CLIPBOARD_LOCK_TIMEOUT_MS = Number(
   process.env.PLITE_BROWSER_CLIPBOARD_LOCK_TIMEOUT_MS ?? 30_000
 );
+const clipboardLockContext = new AsyncLocalStorage<boolean>();
 
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => {
@@ -21,6 +23,10 @@ const sleep = (ms: number) =>
 export const withExclusiveClipboardAccess = async <T>(
   work: () => Promise<T> | T
 ) => {
+  if (clipboardLockContext.getStore()) {
+    return work();
+  }
+
   let acquired = false;
   const startedAt = Date.now();
 
@@ -59,7 +65,7 @@ export const withExclusiveClipboardAccess = async <T>(
   }
 
   try {
-    return await work();
+    return await clipboardLockContext.run(true, work);
   } finally {
     try {
       unlinkSync(CLIPBOARD_LOCK_PATH);
@@ -176,7 +182,7 @@ export const copyPayloadThroughEvent = async (
     return {
       html: data.getData('text/html') || null,
       markdown: data.getData('text/markdown') || null,
-      pliteFragment: data.getData('application/x-plite-fragment') || null,
+      fragment: data.getData('application/x-editor-fragment') || null,
       text: data.getData('text/plain'),
       types: Array.from(data.types),
     };
@@ -201,7 +207,7 @@ export const cutPayloadThroughEvent = async (
     return {
       html: data.getData('text/html') || null,
       markdown: data.getData('text/markdown') || null,
-      pliteFragment: data.getData('application/x-plite-fragment') || null,
+      fragment: data.getData('application/x-editor-fragment') || null,
       text: data.getData('text/plain'),
       types: Array.from(data.types),
     };
@@ -240,15 +246,14 @@ const captureNativeClipboardPayload = async (
           ? {
               html: data.getData('text/html') || null,
               markdown: data.getData('text/markdown') || null,
-              pliteFragment:
-                data.getData('application/x-plite-fragment') || null,
+              fragment: data.getData('application/x-editor-fragment') || null,
               text: data.getData('text/plain'),
               types: Array.from(data.types),
             }
           : {
               html: null,
               markdown: null,
-              pliteFragment: null,
+              fragment: null,
               text: '',
               types: [],
             };
@@ -325,7 +330,7 @@ export const cutPayloadThroughNativeEvent = async (root: Locator) =>
 
 export const pastePayloadThroughEvent = async (
   root: Locator,
-  payload: { html?: string | null; pliteFragment?: string | null; text: string }
+  payload: { html?: string | null; fragment?: string | null; text: string }
 ) =>
   root.evaluate(
     async (
@@ -333,7 +338,7 @@ export const pastePayloadThroughEvent = async (
       nextPayload: {
         html?: string | null;
         key: string;
-        pliteFragment?: string | null;
+        fragment?: string | null;
         text: string;
       }
     ) => {
@@ -346,8 +351,8 @@ export const pastePayloadThroughEvent = async (
       if (nextPayload.html) {
         data.setData('text/html', nextPayload.html);
       }
-      if (nextPayload.pliteFragment) {
-        data.setData('application/x-plite-fragment', nextPayload.pliteFragment);
+      if (nextPayload.fragment) {
+        data.setData('application/x-editor-fragment', nextPayload.fragment);
       }
       data.setData('text/plain', nextPayload.text);
 
@@ -379,17 +384,17 @@ export const pastePayloadThroughEvent = async (
 
         handle.insertData({
           html: nextPayload.html ?? undefined,
-          pliteFragment: nextPayload.pliteFragment ?? undefined,
+          pliteFragment: nextPayload.fragment ?? undefined,
           text: nextPayload.text,
         });
       }
     },
-    { ...payload, key: PLITE_BROWSER_HANDLE_KEY }
+    { ...payload, key: BROWSER_HANDLE_KEY }
   );
 
 export const insertDataThroughHandle = async (
   root: Locator,
-  payload: { html?: string | null; pliteFragment?: string | null; text: string }
+  payload: { html?: string | null; fragment?: string | null; text: string }
 ) =>
   root.evaluate(
     (
@@ -397,7 +402,7 @@ export const insertDataThroughHandle = async (
       nextPayload: {
         html?: string | null;
         key: string;
-        pliteFragment?: string | null;
+        fragment?: string | null;
         text: string;
       }
     ) => {
@@ -409,9 +414,9 @@ export const insertDataThroughHandle = async (
 
       handle.insertData({
         html: nextPayload.html ?? undefined,
-        pliteFragment: nextPayload.pliteFragment ?? undefined,
+        pliteFragment: nextPayload.fragment ?? undefined,
         text: nextPayload.text,
       });
     },
-    { ...payload, key: PLITE_BROWSER_HANDLE_KEY }
+    { ...payload, key: BROWSER_HANDLE_KEY }
   );

@@ -19,6 +19,7 @@ import {
 } from '../../dom/internal';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { readPliteViewSelection } from '../view-selection';
 import {
   getMountedEditableDOMRuntime,
   hasMountedEditableCompositionOwner,
@@ -42,7 +43,7 @@ import {
 import type { Editor } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { writeRuntimeMarks } from './runtime-mutation-state';
-import { readCommittedSelectionRange } from './runtime-selection-state';
+import { readRuntimeSelectionRange } from './runtime-selection-state';
 import {
   armModelOwnedTextInputGuard,
   setEditableModelSelectionPreference,
@@ -117,18 +118,28 @@ const isCompositionEventHandled = ({
   return event.isDefaultPrevented() || event.isPropagationStopped();
 };
 
-const preventReadOnlyEditableComposition = ({
+const preventNoneditableComposition = ({
   editor,
   event,
   inputController,
+  readOnly,
   setComposing,
 }: {
   editor: ReactRuntimeEditor;
   event: CompositionEvent<HTMLDivElement>;
   inputController?: EditableInputController;
+  readOnly: boolean;
   setComposing?: EditableCompositionStateSetter;
 }) => {
-  if (!ReactEditor.hasEditableTarget(editor, event.target)) {
+  if (
+    !(
+      readOnly ||
+      readPliteViewSelection(editor)?.segments.parts.some(
+        (part) => part.fragment
+      )
+    ) ||
+    !ReactEditor.hasEditableTarget(editor, event.target)
+  ) {
     return false;
   }
 
@@ -646,11 +657,11 @@ const removeUnmanagedCompositionTextNodes = ({
   }
 
   rootElement
-    .querySelectorAll<HTMLElement>('[data-plite-node="text"]')
+    .querySelectorAll<HTMLElement>('[data-editor-node="text"]')
     .forEach((textElement) => {
       const textNodes: globalThis.Text[] = [];
       const path = textElement
-        .getAttribute('data-plite-path')
+        .getAttribute('data-editor-path')
         ?.split(',')
         .map((segment) => Number.parseInt(segment, 10));
       const modelText = path?.every(Number.isInteger)
@@ -675,7 +686,7 @@ const removeUnmanagedCompositionTextNodes = ({
         const textNode = current as globalThis.Text;
         const textContent = textNode.textContent ?? '';
         const pliteString = textNode.parentElement?.closest(
-          '[data-plite-string="true"]'
+          '[data-editor-string="true"]'
         );
 
         if (pliteString && modelText != null && textContent.includes(text)) {
@@ -746,11 +757,11 @@ export const applyEditableCompositionEnd = ({
     return;
   }
   if (
-    readOnly &&
-    preventReadOnlyEditableComposition({
+    preventNoneditableComposition({
       editor,
       event,
       inputController,
+      readOnly,
       setComposing,
     })
   ) {
@@ -812,7 +823,7 @@ export const applyEditableCompositionEnd = ({
       getCompositionEventText(event) ??
       inputController.state.compositionSession?.text;
     const mergeHistory = shouldMergeEditableCompositionHistory(inputController);
-    const target = readCommittedSelectionRange(editor);
+    const target = readRuntimeSelectionRange(editor);
     const targetAnchor =
       target &&
       editor.anchor(target, {
@@ -927,11 +938,11 @@ export const applyEditableCompositionStart = ({
     return;
   }
   if (
-    readOnly &&
-    preventReadOnlyEditableComposition({
+    preventNoneditableComposition({
       editor,
       event,
       inputController,
+      readOnly,
       setComposing,
     })
   ) {
@@ -958,7 +969,7 @@ export const applyEditableCompositionStart = ({
     }
 
     const marks = editor.read((state) => state.marks());
-    const selection = readCommittedSelectionRange(editor);
+    const selection = readRuntimeSelectionRange(editor);
 
     if (inputController) {
       beginEditableCompositionSession(inputController, {
@@ -1001,11 +1012,11 @@ export const applyEditableCompositionUpdate = ({
     return;
   }
   if (
-    readOnly &&
-    preventReadOnlyEditableComposition({
+    preventNoneditableComposition({
       editor,
       event,
       inputController,
+      readOnly,
       setComposing,
     })
   ) {
@@ -1053,7 +1064,7 @@ export const usePendingInsertionMarksEffect = ({
       () => {
         if (ReactEditor.isComposing(editor as ReactRuntimeEditor)) return;
 
-        const selection = readCommittedSelectionRange(editor);
+        const selection = readRuntimeSelectionRange(editor);
         if (selection) {
           const { anchor } = selection;
           const text = readRuntimeText(editor, anchor.path);

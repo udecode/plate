@@ -1,10 +1,10 @@
 'use client';
 
 import {
-  type PlateElementProps,
-  definePlatePlugin,
-  Plate,
-  PlateElement,
+  type EditorElementProps,
+  definePlugin,
+  EditorRoot,
+  EditorElement,
   useCreateEditor,
 } from 'platejs/react';
 import * as React from 'react';
@@ -16,14 +16,14 @@ import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { editableVoidsValue } from '@/registry/examples/values/editable-voids-value';
 
-export const EditableVoidPlugin = definePlatePlugin('editableVoid', {
+export const EditableVoidPlugin = definePlugin('editableVoid', {
   schema: { element: { void: 'block' } },
 });
 
 export function EditableVoidElement({
   children,
   ...props
-}: PlateElementProps<typeof EditableVoidPlugin>) {
+}: EditorElementProps<typeof EditableVoidPlugin>) {
   const [inputValue, setInputValue] = React.useState('');
 
   const editor = useCreateEditor({
@@ -32,7 +32,7 @@ export function EditableVoidElement({
 
   return (
     // Need contentEditable=false or Firefox has issues with certain input types.
-    <PlateElement
+    <EditorElement
       {...props}
       attributes={{ ...props.attributes, contentEditable: false }}
     >
@@ -68,18 +68,18 @@ export function EditableVoidElement({
             Tell us about yourself:
           </Label>
 
-          <Plate
+          <EditorRoot
             editor={editor}
             // initialValue={basicBlocksValue}
           >
             <EditorContainer>
               <Editor />
             </EditorContainer>
-          </Plate>
+          </EditorRoot>
         </div>
       </div>
       {children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 
@@ -93,10 +93,10 @@ export default function EditableVoidsDemo() {
   });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

@@ -2,7 +2,7 @@ import {
   BaseParagraphPlugin,
   createEditor,
   type BasePluginInput,
-  defineBasePlugin,
+  definePlugin,
   defineDocumentMigrations,
   migrateDocument,
 } from 'platejs';
@@ -17,7 +17,7 @@ import {
   BaseVideoPlugin,
 } from '../features/media';
 import { BaseTableCellPlugin, BaseTablePlugin } from '../features/table';
-import { migratePlateV54 } from './index';
+import { migrateV54 } from './index';
 import {
   V53_ELEMENT_TYPE_OWNERS,
   V53_FIRST_PARTY_IDENTITIES,
@@ -26,12 +26,12 @@ import {
 
 const MigrationSchema = { id: 'plate', version: 54 } as const;
 const migrationPlan = defineDocumentMigrations(MigrationSchema, {
-  steps: { 54: migratePlateV54 },
+  steps: { 54: migrateV54 },
   unversioned: 53,
 });
 
 const elementPlugin = (name: string) =>
-  defineBasePlugin(name, {
+  definePlugin(name, {
     schema: { element: schema.element.textBlock() },
   });
 
@@ -43,7 +43,7 @@ const migrationPlugins: BasePluginInput[] = [
   ),
 ].map(elementPlugin);
 migrationPlugins.push(
-  defineBasePlugin('script', {
+  definePlugin('script', {
     schema: { mark: property.enum(['sub', 'sup'] as const) },
   })
 );
@@ -142,14 +142,14 @@ describe('migratePlateV54 profile', () => {
   });
 
   it('preserves legacy-looking properties owned by the current schema', () => {
-    const CurrentElementPlugin = defineBasePlugin('currentElement', {
+    const CurrentElementPlugin = definePlugin('currentElement', {
       schema: {
         element: schema.element.textBlock({
           properties: { align: property.string() },
         }),
       },
     });
-    const CurrentSubscriptPlugin = defineBasePlugin('currentSubscript', {
+    const CurrentSubscriptPlugin = definePlugin('currentSubscript', {
       schema: {
         mark: {
           key: 'subscript',
@@ -185,7 +185,7 @@ describe('migratePlateV54 profile', () => {
   });
 
   it('does not reinterpret properties on custom element types', () => {
-    const CustomChartPlugin = defineBasePlugin('chart', {
+    const CustomChartPlugin = definePlugin('chart', {
       schema: { element: schema.element.textBlock() },
     });
     const editor = createEditor({
@@ -212,7 +212,7 @@ describe('migratePlateV54 profile', () => {
   });
 
   it('preserves canonical-looking list properties on custom elements', () => {
-    const CustomStepPlugin = defineBasePlugin('step', {
+    const CustomStepPlugin = definePlugin('step', {
       schema: {
         element: schema.element.textBlock({
           properties: {
@@ -257,7 +257,7 @@ describe('migratePlateV54 profile', () => {
   });
 
   it('does not reinterpret a legacy alias claimed by the current schema', () => {
-    const CustomLegacyPlugin = defineBasePlugin('customLegacy', {
+    const CustomLegacyPlugin = definePlugin('customLegacy', {
       schema: {
         element: {
           ...schema.element.textBlock(),
@@ -534,7 +534,7 @@ describe('migratePlateV54 profile', () => {
   });
 
   it('keeps one non-heading list sequence across element types', () => {
-    const QuotePlugin = defineBasePlugin('blockquote', {
+    const QuotePlugin = definePlugin('blockquote', {
       schema: { element: schema.element.textBlock() },
     });
     const editor = createEditor({
@@ -621,7 +621,7 @@ describe('migratePlateV54 profile', () => {
   });
 
   it('preserves schema-owned cell size without skipping border migration', () => {
-    const CellSizePlugin = defineBasePlugin('cellSize', {
+    const CellSizePlugin = definePlugin('cellSize', {
       schema: ({ targetElementTypes }) => ({
         properties: {
           size: schema.elementProperty(property.number(), {
@@ -866,7 +866,7 @@ describe('migratePlateV54 profile', () => {
   });
 
   it('normalizes derived starts across configured page traversal', () => {
-    const PagePlugin = defineBasePlugin('page', {
+    const PagePlugin = definePlugin('page', {
       schema: ({ plugins }) => ({
         element: {
           content: plugins.blockContent({
@@ -934,7 +934,7 @@ describe('migratePlateV54 profile', () => {
   });
 
   it('preserves boundaries when custom page traversal does not continue', () => {
-    const PagePlugin = defineBasePlugin('page', {
+    const PagePlugin = definePlugin('page', {
       schema: ({ plugins }) => ({
         element: {
           content: plugins.blockContent({

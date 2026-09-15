@@ -2,13 +2,13 @@ import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderPlaceholderProps,
-  Plite,
+  EditorRoot,
   useEditor,
 } from 'plitejs/react';
 
 const PlainTextExample = () => {
   const editor = useEditor({
-    extensions: [history()],
+    plugins: [history()],
     initialValue: [
       {
         type: 'paragraph',
@@ -18,7 +18,7 @@ const PlainTextExample = () => {
   });
 
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable
         placeholder="Type something"
         renderPlaceholder={({
@@ -34,7 +34,7 @@ const PlainTextExample = () => {
           </div>
         )}
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 

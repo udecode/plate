@@ -1,6 +1,5 @@
 export {
-  DOM_CLIPBOARD_HANDLERS,
-  dispatchDOMClipboardHandlers,
+  domCommands,
   getDOMClipboardFormatKey,
   readDOMFragmentData,
   setDOMClipboardFormatKey,
@@ -14,7 +13,6 @@ export type {
   DOMCoverageCopyPolicy,
   DOMCoverageDOMPointResult,
   DOMCoverageDOMRangeResult,
-  DOMCoverageFindPolicy,
   DOMCoverageMaterializeHandler,
   DOMCoverageMaterializeRangeRole,
   DOMCoverageMaterializeReason,
@@ -24,7 +22,7 @@ export type {
   DOMCoverageRuntimeRange,
   DOMCoverageSelectionPolicy,
   DOMCoverageSession,
-  DOMCoveragePlitePointResult,
+  DOMCoveragePointResult,
 } from '../plugin/dom-coverage';
 export { DOMCoverage } from '../plugin/dom-coverage';
 export type { DOMEditorInterface } from '../plugin/dom-editor';
@@ -45,6 +43,7 @@ export {
   getPliteStringLength,
   getPliteStringLineEdgeTextOffset,
   getPliteStringPlacementDOMPoint,
+  getPliteTextHostBounds,
   getPliteTextHostStrings,
   hasUsableDOMRect,
 } from '../plugin/dom-geometry';

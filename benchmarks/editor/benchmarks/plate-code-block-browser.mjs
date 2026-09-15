@@ -239,9 +239,9 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
         expectedLines,
         mode,
       }) => {
-        const root = document.querySelector('.plite-editor');
+        const root = document.querySelector('.editor-editor');
         const handle = root?.__pliteBrowserHandle;
-        const block = document.querySelector('.plite-codeBlock');
+        const block = document.querySelector('.editor-codeBlock');
         const text = handle?.getBlockText(targetBlockIndex);
 
         if (
@@ -274,7 +274,7 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
         return Boolean(
           code &&
           code.textContent === text &&
-          block.querySelector('[data-plite-node="text"]') &&
+          block.querySelector('[data-editor-node="text"]') &&
           block.querySelector('[class*="hljs-"]') &&
           !block.querySelector('[data-code-block-codemirror]')
         );
@@ -292,9 +292,9 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
     const navigationToQueryableMs = performance.now() - navigationStartedAt;
     const before = await page.evaluate(
       async ({ blockIndex: targetBlockIndex, mode }) => {
-        const root = document.querySelector('.plite-editor');
+        const root = document.querySelector('.editor-editor');
         const handle = root.__pliteBrowserHandle;
-        const block = document.querySelector('.plite-codeBlock');
+        const block = document.querySelector('.editor-codeBlock');
         const code = block.querySelector('pre code');
         const host = block.querySelector('[data-code-block-codemirror]');
         const measuredRoot = mode === 'codemirror' ? host : block;
@@ -329,7 +329,7 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
           modelHash,
           modelLineCount: (text.match(/\n/g)?.length ?? 0) + 1,
           modelTextLength: text.length,
-          nativeTextHosts: block.querySelectorAll('[data-plite-node="text"]')
+          nativeTextHosts: block.querySelectorAll('[data-editor-node="text"]')
             .length,
           renderedLines:
             mode === 'codemirror'
@@ -344,12 +344,12 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
     const input =
       renderMode === 'codemirror'
         ? page.locator('[data-code-block-codemirror-input]').first()
-        : page.locator('.plite-editor').first();
+        : page.locator('.editor-editor').first();
 
     await input.focus();
     await page.waitForFunction(
       ({ blockIndex: targetBlockIndex, expectedOffset, mode }) => {
-        const root = document.querySelector('.plite-editor');
+        const root = document.querySelector('.editor-editor');
         const handle = root?.__pliteBrowserHandle;
         const selection = handle?.getSelection();
         const active = document.activeElement;
@@ -376,7 +376,7 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
       const target =
         mode === 'codemirror'
           ? document.querySelector('[data-code-block-codemirror-input]')
-          : document.querySelector('.plite-editor');
+          : document.querySelector('.editor-editor');
 
       globalThis.__plateCodeBlockBenchmarkInputStartedAt = null;
       target.addEventListener(
@@ -393,9 +393,9 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
 
     const timing = await page.evaluate(
       async ({ blockIndex: targetBlockIndex, expectedSuffix, mode }) => {
-        const root = document.querySelector('.plite-editor');
+        const root = document.querySelector('.editor-editor');
         const handle = root.__pliteBrowserHandle;
-        const block = document.querySelector('.plite-codeBlock');
+        const block = document.querySelector('.editor-codeBlock');
         const startedAt =
           globalThis.__plateCodeBlockBenchmarkInputStartedAt ??
           performance.now();
@@ -461,9 +461,9 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
 
     const after = await page.evaluate(
       ({ blockIndex: targetBlockIndex, expectedSuffix, mode }) => {
-        const root = document.querySelector('.plite-editor');
+        const root = document.querySelector('.editor-editor');
         const handle = root.__pliteBrowserHandle;
-        const block = document.querySelector('.plite-codeBlock');
+        const block = document.querySelector('.editor-codeBlock');
         const code = block.querySelector('pre code');
         const host = block.querySelector('[data-code-block-codemirror]');
         const measuredRoot = mode === 'codemirror' ? host : block;
@@ -485,7 +485,7 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
           modelEndsWithProbe: text.endsWith(expectedSuffix),
           modelLineCount: (text.match(/\n/g)?.length ?? 0) + 1,
           modelTextLength: text.length,
-          nativeTextHosts: block.querySelectorAll('[data-plite-node="text"]')
+          nativeTextHosts: block.querySelectorAll('[data-editor-node="text"]')
             .length,
           renderedLines:
             mode === 'codemirror'

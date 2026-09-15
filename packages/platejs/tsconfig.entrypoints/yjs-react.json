@@ -29,9 +29,6 @@
     },
     {
       "path": "./react-core.json"
-    },
-    {
-      "path": "./yjs.json"
     }
   ]
 }

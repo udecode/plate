@@ -1,7 +1,5 @@
 import type { EditorSchemaDeclaration } from '../interfaces/schema';
 
-declare const EDITOR_SCHEMA_SOURCE: unique symbol;
-
 /**
  * Deferred exact schema declaration witness carried by host descriptors.
  *
@@ -11,7 +9,7 @@ export interface EditorSchemaSourceProvider<
   TDeclarationFactory extends () => EditorSchemaDeclaration =
     () => EditorSchemaDeclaration,
 > {
-  readonly [EDITOR_SCHEMA_SOURCE]: TDeclarationFactory;
+  readonly '~schema.source': TDeclarationFactory;
 }
 
 /**

@@ -609,9 +609,9 @@ export function createAndroidInputManager({
       : isDOMElement(domNode)
         ? domNode
         : null;
-    const textHost = element?.closest('[data-plite-node="text"]');
+    const textHost = element?.closest('[data-editor-node="text"]');
 
-    return textHost?.getAttribute('data-plite-dom-sync') === 'true';
+    return textHost?.getAttribute('data-editor-dom-sync') === 'true';
   };
 
   const scheduleAction = (
@@ -701,13 +701,9 @@ export function createAndroidInputManager({
     let nativeTargetRange: StaticRange | globalThis.Selection | undefined =
       preferLiveDOMSelection ? undefined : getInputEventTargetRanges(event)[0];
     if (!innerTargetRange2 && nativeTargetRange) {
-      innerTargetRange2 = ReactEditor.resolvePliteRange(
-        editor,
-        nativeTargetRange,
-        {
-          exactMatch: false,
-        }
-      );
+      innerTargetRange2 = ReactEditor.resolveRange(editor, nativeTargetRange, {
+        exactMatch: false,
+      });
     }
 
     // COMPAT: SelectionChange event is fired after the action is performed, so we
@@ -716,7 +712,7 @@ export function createAndroidInputManager({
     const domSelection = window.getSelection();
     if ((preferLiveDOMSelection || !innerTargetRange2) && domSelection) {
       nativeTargetRange = domSelection;
-      innerTargetRange2 = ReactEditor.resolvePliteRange(editor, domSelection, {
+      innerTargetRange2 = ReactEditor.resolveRange(editor, domSelection, {
         exactMatch: false,
       });
     }

@@ -17,7 +17,7 @@ docs:
 - **Insert and chat review modes** with localized insert previews plus undo-safe batching through `editor.update.ai`.
 - **Block selection aware transforms** to replace or append entire sections using `editor.update.aiChat.replaceSelection` and `editor.update.aiChat.insertBelow`.
 - **Direct integration with `@ai-sdk/react`** so `editor.plugin(AIChatPlugin).api.submit` can stream responses from Vercel AI SDK helpers.
-- **Suggestion and comment utilities** that diff AI edits, accept/reject changes, and map AI feedback back to document ranges.
+- **Native authored review** that streams one amendable AI proposal, decides it atomically, and keeps application comments on stable change IDs.
 
 </PackageInfo>
 
@@ -52,10 +52,10 @@ const editor = createEditor({
 
 ### Render the editor
 
-`AIKit` connects one chat session to each editor object. Render the editor inside `Plate`; the kit owns transport and streaming cleanup independently of menu visibility.
+`AIKit` connects one chat session to each editor object. Render the editor inside `EditorRoot`; the kit owns transport and streaming cleanup independently of menu visibility.
 
 ```tsx
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import { AIKit } from '@/components/editor/ai';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -63,16 +63,16 @@ export function AIEditor() {
   const editor = useCreateEditor({ plugins: AIKit });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
 
-Views of the same editor share that session. A writable mounted view can continue streaming when a sibling detaches. The last view detaching aborts pending work. Put controlled `readOnly` state on each `Plate` boundary and its `Editor`.
+Views of the same editor share that session. A writable mounted view can continue streaming when a sibling detaches. The last view detaching aborts pending work. Put controlled `readOnly` state on each `EditorRoot` boundary and its `Editor`.
 
 ### Add API route
 
@@ -171,7 +171,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- `ctx.children` and `ctx.selection` are rehydrated into a Plite editor so you can build rich prompts (see [Prompt Templates](#prompt-templates)).
+- `ctx.children` and `ctx.selection` are rehydrated into a Plate editor so you can build rich prompts (see [Prompt Templates](#prompt-templates)).
 - Forward provider settings (model, apiKey, temperature, gateway flags, etc.) through `chatOptions.body`; everything you add is passed verbatim in the JSON payload and can be read before calling `createGateway`.
 - Always read secrets from the server. The client should only send opaque identifiers or short-lived tokens.
 - Return a streaming response so the kit can apply chunks incrementally.
@@ -273,6 +273,14 @@ The installed plugin keeps complex layouts intact while responses arrive:
 
 Call `aiChat.api.stop()` when streaming finishes.
 
+## Tracked AI edits
+
+`AIChatPlugin` installs the native authored plugin. In chat edit mode, the first streamed chunk creates one proposal and later chunks amend the same change ID. `acceptSuggestions` and `rejectSuggestions` call `update.authored.decide(...)`; they return the native `AuthoredResult` when a decision is attempted.
+
+Resetting a tracked response rejects only that AI change. An independent accepted edit remains intact. If another pending change depends on the AI proposal, reset returns `blocked` and leaves both changes available for explicit review.
+
+Copilot ghost text remains transient until the user accepts it. It does not create a durable authored change while merely displayed.
+
 ## Streaming example
 
 <ComponentPreview name="markdown-streaming-demo" />
@@ -304,7 +312,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>Pattern that must match the character before the trigger. Defaults to `/^\s?$/`.</APIItem>
     <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>Return `false` to cancel opening in specific contexts.</APIItem>
     <APIItem name="chat" type="AIChatAdapter" optional>Current messages, status, and controls published by `useAIChat` (managed internally).</APIItem>
-    <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>Node snapshots paired with editor-scoped node keys for diff edit suggestions (managed internally).</APIItem>
+    <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>Node snapshots paired with editor-scoped node keys for native authored replacements (managed internally).</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">Controls whether responses stream directly into the document or open a review panel. Defaults to `'insert'`.</APIItem>
     <APIItem name="open" type="boolean" optional>Whether the AI menu is visible. Defaults to `false`.</APIItem>
@@ -376,7 +384,7 @@ Closes the AI menu, optionally undoing the last AI batch and refocusing the edit
 
 ### `editor.update.aiChat.accept()`
 
-Accepts the latest response. In insert mode it removes AI marks and places the caret at the end of the streamed content. In chat mode it applies the pending suggestions.
+Accepts the latest response. In insert mode it removes AI marks and places the caret at the end of the streamed content. In chat mode it accepts the current native authored change.
 
 ### `editor.update.aiChat.insertBelow(options?)`
 
@@ -547,7 +555,7 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
 });
 ```
 
-It returns a Plite `Range` or `null`.
+It returns a Plate `Range` or `null`.
 
 ## Customization
 
@@ -582,7 +590,7 @@ export const aiChatItems = {
 
 ```tsx
 import { AIChatPlugin } from 'platejs/ai/react';
-import { PLUGINS } from 'platejs';
+import { BaseHeadingPlugin } from 'platejs';
 import { BookIcon } from 'lucide-react';
 
 export const aiChatItems = {
@@ -591,11 +599,8 @@ export const aiChatItems = {
     label: 'Generate table of contents',
     value: 'generateTOC',
     onSelect: ({ editor }) => {
-      const headingTypes = [PLUGINS.heading, PLUGINS.heading, PLUGINS.heading]
-        .map((name) => editor.plugin(name))
-        .flatMap((plugin) =>
-          plugin.installed ? [plugin.schema.type] : []
-        );
+      const heading = editor.plugin(BaseHeadingPlugin);
+      const headingTypes = heading.installed ? [heading.schema.type] : [];
       const headings = editor.read.nodes.toArray({
         at: [],
         type: headingTypes,
@@ -626,6 +631,5 @@ The menu automatically switches between command and suggestion states:
 - `cursorSuggestion` / `selectionSuggestion`: A response exists, so actions like Accept, Try Again, or Insert Below are shown.
 
 Use `toolName` (`'generate' | 'edit' | 'comment'`) to control how streaming
-hooks process the response. For example, `'edit'` enables diff-based
-suggestions, while `'comment'` can map feedback through
+hooks process the response. For example, `'edit'` streams one native authored proposal, while `'comment'` can map feedback through
 `aiChat.read.commentRange`.

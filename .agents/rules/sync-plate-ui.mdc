@@ -1,5 +1,5 @@
 ---
-description: Sync Plate UI registry components into downstream apps with fork-aware status, planning, review, dashboards, apply, and changelog tracking.
+description: Sync Plate registry UI into downstream apps with fork-aware comparison, scoped apply and changelog tracking.
 ---
 
 # Sync Plate UI

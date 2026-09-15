@@ -53,10 +53,10 @@ const editor = createEditor({
 
 ### 渲染编辑器
 
-`AIKit` 为每个编辑器对象连接一个聊天会话。在 `Plate` 内渲染编辑器即可；工具包负责传输和流式处理的清理，与菜单是否显示无关。
+`AIKit` 为每个编辑器对象连接一个聊天会话。在 `EditorRoot` 内渲染编辑器即可；工具包负责传输和流式处理的清理，与菜单是否显示无关。
 
 ```tsx
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import { AIKit } from '@/components/editor/ai';
 import { Editor, EditorContainer } from '@/components/editor/editor';
 
@@ -64,16 +64,16 @@ export function AIEditor() {
   const editor = useCreateEditor({ plugins: AIKit });
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 ```
 
-同一编辑器的多个视图共享会话。一个视图卸载后，仍挂载的可写视图可以继续处理流。最后一个视图卸载时，会话会中止待处理任务。受控的 `readOnly` 状态应同时传给每个 `Plate` 和对应的 `Editor`。
+同一编辑器的多个视图共享会话。一个视图卸载后，仍挂载的可写视图可以继续处理流。最后一个视图卸载时，会话会中止待处理任务。受控的 `readOnly` 状态应同时传给每个 `EditorRoot` 和对应的 `Editor`。
 
 ### 添加 API 路由
 
@@ -172,7 +172,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- `ctx.children` 和 `ctx.selection` 被重新水合到 Plite 编辑器中，以便您可以构建丰富的提示（参见[提示模板](#提示模板)）。
+- `ctx.children` 和 `ctx.selection` 被重新水合到 Plate 编辑器中，以便您可以构建丰富的提示（参见[提示模板](#提示模板)）。
 - 通过 `chatOptions.body` 转发提供商设置（model、apiKey、temperature、gateway 标志等）；您添加的所有内容都会在 JSON 有效载荷中原样传递，可以在调用 `createGateway` 之前读取。
 - 始终从服务器读取密钥。客户端应仅发送不透明标识符或短期令牌。
 - 返回流式响应，以便 `useAIChat` 可以增量处理令牌。
@@ -301,6 +301,14 @@ Markdown，因此插入和替换命令不依赖预览组件是否挂载。
 替换 transport、卸载最后一个视图或将编辑器设为只读都会取消当前请求。
 复制的 `use-chat` 组件负责接口地址、请求体和评论持久化；文档演示的模拟响应由应用服务器提供。
 
+## 追踪 AI 编辑
+
+`AIChatPlugin` 安装原生 authored 扩展。在 chat edit 模式中，第一个流式 chunk 创建一个 proposal，后续 chunk 修订同一个 change ID。`acceptSuggestions` 和 `rejectSuggestions` 调用 `update.authored.decide(...)`，并返回原生 `AuthoredResult`。
+
+重置已追踪响应只会拒绝该 AI change。独立的已接受编辑保持不变。如果另一个 pending change 依赖该 AI proposal，reset 返回 `blocked`，并保留两个 change 供显式审阅。
+
+Copilot ghost text 在用户接受前保持临时状态。仅显示 ghost text 不会创建持久 authored change。
+
 ## AI Chat 能力
 
 通过已安装插件访问 AI Chat 服务、快照读取和更新：
@@ -318,7 +326,7 @@ aiChat.update.insertChunk(chunk, { autoScroll: true });
 | `aiChat.api` | `deserializeChunk`, `deserializeInlineChunk`, `hide`, `reload`, `reset`, `show`, `stop`, `submit` |
 | `aiChat.read` | `commentRange`, `insertStart`, `markdown`, `node`, `prompt`, `resolvePlaceholders`, `serializeChunk` |
 | `aiChat.store.get` | `lastAssistantMessage` |
-| `aiChat.update` | `accept`, `acceptSuggestions`, `applySuggestions`, `applyTableCellSuggestion`, `insert`, `insertBelow`, `insertChunk`, `rejectSuggestions`, `remove`, `replaceSelection`, `set` |
+| `aiChat.update` | `accept`, `acceptSuggestions`, `applySuggestions`, `applyTableCellSuggestion`, `insert`, `insertBelow`, `insertChunk`, `rejectSuggestions`, `remove`, `replaceSelection`, `set`（其中 suggestion 操作使用原生 authored change） |
 
 ### `ai.api.findTextRangeInBlock`
 
@@ -331,7 +339,7 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
 });
 ```
 
-返回 Plite `Range` 或 `null`。
+返回 Plate `Range` 或 `null`。
 
 ## 插件
 
@@ -557,7 +565,7 @@ export const aiChatItems = {
 
 ```tsx
 import { AIChatPlugin } from 'platejs/ai/react';
-import { PLUGINS } from 'platejs';
+import { BaseHeadingPlugin } from 'platejs';
 import { BookIcon } from 'lucide-react';
 
 export const aiChatItems = {
@@ -566,11 +574,8 @@ export const aiChatItems = {
     label: 'Generate table of contents',
     value: 'generateTOC',
     onSelect: ({ editor }) => {
-      const headingTypes = [PLUGINS.heading, PLUGINS.heading, PLUGINS.heading]
-        .map((name) => editor.plugin(name))
-        .flatMap((plugin) =>
-          plugin.installed ? [plugin.schema.type] : []
-        );
+      const heading = editor.plugin(BaseHeadingPlugin);
+      const headingTypes = heading.installed ? [heading.schema.type] : [];
       const headings = editor.read.nodes.toArray({
         at: [],
         type: headingTypes,

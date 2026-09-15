@@ -6,8 +6,8 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import {
   createEditor,
   Editable,
-  Plite,
-  type PliteDecorationSource,
+  EditorRoot,
+  type DecorationSource,
   type RenderLeafProps,
 } from '../../src/react';
 import { ImperativeTextFlowContext } from '../../src/react/components/editable-text-flow';
@@ -33,7 +33,7 @@ const createStatefulLeafFixture = ({
   text?: string;
 } = {}) => {
   const editor = createEditor({
-    extensions: [history()],
+    plugins: [history()],
     initialValue: [paragraph(text)],
   });
   const anchors = ranges.map(({ end, key, source, start }) => ({
@@ -55,7 +55,7 @@ const createStatefulLeafFixture = ({
       setLocal: (value: number) => void;
     }
   >();
-  const sources: Array<PliteDecorationSource<typeof editor>> = [
+  const sources: Array<DecorationSource<typeof editor>> = [
     ...new Set(anchors.map(({ source }) => source)),
   ].map((id) => ({
     id,
@@ -115,15 +115,14 @@ const createStatefulLeafFixture = ({
   const editable = (label: string) => (
     <Editable
       aria-label={label}
-      domStrategy="full"
       renderLeaf={(props) => <StatefulLeaf {...props} />}
     />
   );
   const View = ({ second = false }: { second?: boolean }) => (
-    <Plite decorations={sources} editor={editor}>
+    <EditorRoot decorations={sources} editor={editor}>
       {editable('First identity editor')}
       {second ? editable('Second identity editor') : null}
-    </Plite>
+    </EditorRoot>
   );
 
   return {
@@ -237,13 +236,12 @@ test('rerenders an undecorated custom leaf without replacing its owner', async (
     );
   };
   const rendered = render(
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable
         aria-label="Undecorated identity editor"
-        domStrategy="full"
         renderLeaf={(props) => <StatefulLeaf {...props} />}
       />
-    </Plite>
+    </EditorRoot>
   );
   const editable = rendered.getByLabelText('Undecorated identity editor');
   const leaf = readLeafHosts(editable)[0];
@@ -336,7 +334,7 @@ test('keeps retained-flow DOM identity attached to its decoration source', async
   const source = (
     id: 'one' | 'two',
     swapped: boolean
-  ): PliteDecorationSource<typeof editor> => ({
+  ): DecorationSource<typeof editor> => ({
     id,
     read: ({ entry: [node, path] }) => {
       if (!TextApi.isText(node)) return [];
@@ -355,19 +353,19 @@ test('keeps retained-flow DOM identity attached to its decoration source', async
     },
   });
   const View = ({ swapped }: { swapped: boolean }) => (
-    <Plite
+    <EditorRoot
       decorations={[source('one', swapped), source('two', swapped)]}
       editor={editor}
     >
       <Editable aria-label="Retained identity editor" />
-    </Plite>
+    </EditorRoot>
   );
   const rendered = render(<View swapped={false} />);
   const editable = rendered.getByLabelText('Retained identity editor');
   const one = editable.querySelector('[data-source="one"]');
   const two = editable.querySelector('[data-source="two"]');
 
-  expect(editable.querySelector('[data-plite-text-flow]')).not.toBeNull();
+  expect(editable.querySelector('[data-editor-text-flow]')).not.toBeNull();
   expect(one?.textContent).toBe('abcde');
   expect(two?.textContent).toBe('fghij');
 
@@ -395,13 +393,13 @@ test('remounts a leaf when an empty text commit cannot stay imperative', async (
   const editor = createEditor({ initialValue: [paragraph('abc')] });
   const rendered = render(
     <ImperativeTextFlowContext.Provider value={false}>
-      <Plite editor={editor}>
-        <Editable aria-label="Repair editor" domStrategy="full" />
-      </Plite>
+      <EditorRoot editor={editor}>
+        <Editable aria-label="Repair editor" />
+      </EditorRoot>
     </ImperativeTextFlowContext.Provider>
   );
   const editable = rendered.getByLabelText('Repair editor');
-  const leaf = editable.querySelector('[data-plite-leaf]');
+  const leaf = editable.querySelector('[data-editor-leaf]');
 
   expect(leaf).not.toBeNull();
 
@@ -418,8 +416,8 @@ test('remounts a leaf when an empty text commit cannot stay imperative', async (
   });
 
   await waitFor(() =>
-    expect(editable.querySelector('[data-plite-zero-width]')).not.toBeNull()
+    expect(editable.querySelector('[data-editor-zero-width]')).not.toBeNull()
   );
-  expect(editable.querySelector('[data-plite-leaf]')).not.toBe(leaf);
+  expect(editable.querySelector('[data-editor-leaf]')).not.toBe(leaf);
   expect(editor.read((state) => state.text.string([0]))).toBe('');
 });

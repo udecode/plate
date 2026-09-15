@@ -1,0 +1,272 @@
+---
+title: "DOM API"
+description: "Read and update the mounted editor view, selection, focus, and clipboard."
+---
+
+`createEditor` creates an editor with React, DOM, and clipboard host APIs
+installed. Use `useCreateEditor` to retain an editor in a React component.
+
+## Minimal usage
+
+```typescript
+import { createEditor } from "platejs/react";
+
+const editor = createEditor();
+
+editor.api.dom.focus();
+```
+
+## Checks
+
+#### `editor.api.react.isComposing(): boolean`
+
+Check if the user is currently composing inside the editor.
+
+#### `editor.api.react.isFocused(): boolean`
+
+Check if the editor is focused.
+
+#### `editor.api.react.isReadOnly(): boolean`
+
+Check if the editor is in read-only mode.
+
+#### `editor.api.dom.isComposing(): boolean`
+
+Check if the user is currently composing inside the editor from the DOM bridge.
+
+#### `editor.api.dom.isFocused(): boolean`
+
+Check if the DOM editor is focused.
+
+#### `editor.api.dom.isReadOnly(): boolean`
+
+Check if the DOM editor is in read-only mode.
+
+## Focus and selection
+
+#### `editor.api.dom.blur(): void`
+
+Blur the editor.
+
+#### `editor.api.dom.focus(options?: { retries?: number }): void`
+
+Focus the editor.
+
+#### `editor.api.dom.deselect(): void`
+
+Clear the native DOM selection and the editor selection.
+
+## DOM scope
+
+#### `editor.api.dom.root(): HTMLElement | null`
+
+Return the mounted editor root element.
+
+#### `editor.api.dom.editable(root?: RootKey): HTMLElement | null`
+
+Return the mounted editable element for a document root.
+
+#### `editor.api.dom.scroll(): HTMLElement | null`
+
+Return the element used as the editor scroll container. It falls back to the
+editor root when no custom scroll element is registered.
+
+## DOM translation
+
+#### `editor.api.dom.findKey(node: Descendant): Key`
+
+Find a key for an editor node.
+
+#### `editor.api.dom.resolvePath(node: Node): Path | null`
+
+Resolve the current path of an editor node. Returns `null` when the node is not
+mounted in the current editor value.
+
+#### `editor.api.dom.assertPath(node: Node): Path`
+
+Assert the current path of an editor node.
+
+#### `editor.api.dom.hasDOMNode(target: DOMNode, options?: { editable?: boolean }): boolean`
+
+Check if a DOM node is within the editor.
+
+#### `editor.api.dom.hasEditableTarget(target: EventTarget | null): target is DOMNode`
+
+Check if the target is editable and in the editor.
+
+#### `editor.api.dom.hasSelectableTarget(target: EventTarget | null): boolean`
+
+Check if the target can be selected by the editor.
+
+#### `editor.api.dom.hasTarget(target: EventTarget | null): target is DOMNode`
+
+Check if the target is in the editor.
+
+#### `editor.api.dom.assertDOMNode(node: Node): HTMLElement`
+
+Assert the native DOM element for an editor node.
+
+#### `editor.api.dom.resolveDOMNode(nodeOrKey: Node | NodeKey): HTMLElement | null`
+
+Resolve the native DOM element for an editor node or its live `NodeKey`. Returns
+`null` when the node is not mounted or the key is removed or belongs to another
+editor.
+
+#### `editor.api.dom.assertDOMPoint(point: Point): DOMPoint`
+
+Assert a native DOM selection point from an editor point.
+
+#### `editor.api.dom.resolveDOMPoint(point: Point): DOMPoint | null`
+
+Resolve a native DOM selection point from an editor point. Returns `null` when the
+editor point is not currently mappable.
+
+#### `editor.api.dom.assertDOMRange(range: Range): DOMRange`
+
+Assert a native DOM range from an editor range.
+
+#### `editor.api.dom.resolveDOMRange(range: Range): DOMRange | null`
+
+Resolve a native DOM range from an editor range. Returns `null` when the editor
+range is not currently mappable.
+
+#### `editor.api.dom.resolveRangeRect(range: Range): DOMRect | null`
+
+Resolve the bounding rect for an editor range. Returns `null` when the range is
+not currently mappable to mounted DOM.
+
+#### `editor.api.dom.resolveVisualPoint(point: Point, options: { affinity?: SelectionAssociation; direction: 'left' | 'right'; unit: 'character' | 'word' }): DOMVisualPoint | null`
+
+Resolve one physical horizontal caret step through the mounted browser layout.
+The result carries both the next model point and its affinity. Returns `null`
+when the point is not mounted or the browser cannot resolve the step.
+
+#### `editor.api.dom.scrollIntoView(target: Path | Point | Range | DOMRange, options?: ScrollIntoViewOptions): () => void`
+
+Schedule scrolling to an editor path, point, range, or native DOM range in the
+mounted view. Range targets use their bounding rectangle, so caret scrolling
+follows the actual position inside a text leaf. The returned function cancels
+pending work for this request; return it from an effect to cancel scrolling
+when its target changes or the component unmounts.
+
+#### `editor.api.dom.assertEventRange(event: unknown): Range`
+
+Assert the target range from a DOM event.
+
+#### `editor.api.dom.resolveEventRange(event: unknown): Range | null`
+
+Resolve the target range from a DOM event. Returns `null` when the event target
+cannot be mapped into the editor.
+
+#### `editor.api.dom.assertNode(domNode: DOMNode): Node`
+
+Assert an editor node from a native DOM node.
+
+#### `editor.api.dom.resolveNode(domNode: DOMNode): Node | null`
+
+Resolve an editor node from a native DOM node. Returns `null` when the DOM node is
+not owned by the editor.
+
+#### `editor.api.dom.assertPoint(domPoint: DOMPoint, options: { exactMatch: boolean; searchDirection?: 'backward' | 'forward' }): Point`
+
+Assert an editor point from a DOM point.
+
+#### `editor.api.dom.resolvePoint(domPoint: DOMPoint, options: { exactMatch: boolean; searchDirection?: 'backward' | 'forward' }): Point | null`
+
+Resolve an editor point from a DOM point. Returns `null` when the DOM point is not
+currently mappable.
+
+#### `editor.api.dom.assertRange(domRange: DOMRange | DOMStaticRange | DOMSelection, options: { exactMatch: boolean }): Range`
+
+Assert an editor range from a DOM range or selection.
+
+#### `editor.api.dom.resolveRange(domRange: DOMRange | DOMStaticRange | DOMSelection, options: { exactMatch: boolean }): Range | null`
+
+Resolve an editor range from a DOM range or selection. Returns `null` when the DOM
+range is not currently mappable.
+
+## DOM environment
+
+#### `editor.api.dom.findDocumentOrShadowRoot(): Document | ShadowRoot`
+
+Return the document or shadow root that owns the editor.
+
+#### `editor.api.dom.getWindow(): Window`
+
+Return the window that owns the editor.
+
+#### `editor.api.dom.hasRange(range: Range): boolean`
+
+Check whether an editor range can currently be mapped to DOM.
+
+#### `editor.api.dom.isTargetInsideNonReadonlyVoid(target: EventTarget | null): boolean`
+
+Check whether a DOM event target is inside a non-read-only void element.
+
+## DataTransfer
+
+#### `editor.api.dom.clipboard.insertData(data: DataTransfer): boolean`
+
+Insert data from a `DataTransfer` into the editor. Returns `true` when Plate or
+a plugin inserts content. The DOM adapter dispatches `domCommands.insertData`;
+typed plugin command interceptors can claim the payload, transform it, or return
+`next()` to continue. The accepted command spec commits through one transaction.
+
+The default command path reads the editor fragment format, then configured host
+codecs, then plain text.
+
+#### `editor.api.dom.clipboard.insertFragmentData(data: DataTransfer): boolean`
+
+Insert editor fragment data from a `DataTransfer`. Returns `true` when fragment
+content was inserted.
+
+#### `editor.api.dom.clipboard.insertTextData(data: DataTransfer): boolean`
+
+Insert plain text data from a `DataTransfer`. Returns `true` when text content
+was inserted.
+
+#### `editor.api.dom.clipboard.readSlice(data: Pick<DataTransfer, 'getData' | 'types'>): ClipboardSliceRead`
+
+Read one exact editor slice. The result distinguishes absent data, invalid MIME
+or HTML data, and a valid `ContentSlice`.
+
+#### `editor.api.dom.clipboard.writeSelection(data: Pick<DataTransfer, 'getData' | 'setData'>): void`
+
+Write the current selection to a `DataTransfer`.
+
+#### `editor.api.dom.clipboard.writeSlice(data: Pick<DataTransfer, 'getData' | 'setData'>, payload: ClipboardSliceWrite): void`
+
+Write one exact `ContentSlice` plus optional host MIME formats.
+
+Plate writes plain text, HTML, and an internal editor fragment payload. The
+fragment payload uses `application/${clipboardFormatKey}` and the HTML fallback
+is tagged with the same key, so differently configured editors do not blindly
+import each other's internal JSON.
+Use [Clipboard](/docs/clipboard) for copy, paste, drop, host codec ordering, and fitted slice replacement.
+
+## Resolution failures
+
+`resolve*` methods return `null` when a model position has no current mounted DOM
+representation. The corresponding `assert*` methods throw `DOMResolutionError`.
+Import the error from `platejs/dom` when a boundary needs to handle it.
+
+The document can contain hidden, external, or virtualized content. Configure
+[content boundaries](/docs/dom-coverage), [external text](/docs/external-text),
+or [virtualization](/docs/virtualized-rendering) on their owning components.
+A successful model lookup does not prove that its DOM is mounted.
+
+## Host utilities
+
+`platejs/dom` exports `isHotkey` for platform-aware keyboard matching and
+`domCommands`, `hostCodecs`, `parseDOMClipboardHtml`, and
+`writeHostFragmentData` for host-format integration. Most application formats
+belong in the owning plugin's [codecs](/docs/plugin-methods#declare-product-codecs).
+
+Its public types describe DOM primitives (`DOMNode`, `DOMElement`, `DOMText`,
+`DOMPoint`, `DOMRange`, `DOMStaticRange`, `DOMSelection`), mounted editor services
+(`DOMApi`, `DOMClipboardApi`), clipboard slices, host codecs,
+keyboard matching, visual caret movement, and scrolling.
+
+See [Selection](/docs/selection) for the interaction between model selection and
+the browser, and [Editor Components](/docs/api/core/plate-components) for mounting
+the view.

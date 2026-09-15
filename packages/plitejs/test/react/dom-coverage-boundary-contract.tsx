@@ -7,14 +7,26 @@ import {
   replace as editorReplace,
   string as editorString,
 } from '../../src/internal';
-import { createEditor, Editable, PliteElement, Plite } from '../../src/react';
+import {
+  createEditor,
+  Editable,
+  EditorElement,
+  EditorRoot,
+} from '../../src/react';
 import {
   DOMCoverageBoundaryRange,
   DOMCoverageSelfBoundary,
 } from '../../src/react/components/dom-coverage-boundary';
 import { isPliteReactDevelopmentEnvironment } from '../../src/react/components/editable-text-blocks';
-import { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
+import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { createLargeBoundarySurface } from './render-probes/dom-coverage-render-probe';
+
+const getMountedEditableDOMRuntime = (_editor: unknown, root?: Node) => {
+  const mountedRoot =
+    root ?? document.querySelector<HTMLElement>('[data-editor="true"]');
+
+  return mountedRoot ? findMountedEditableDOMRuntime(mountedRoot) : null;
+};
 
 const createNestedChildren = (): Value => [
   {
@@ -85,14 +97,14 @@ describe('DOM coverage private boundary harness', () => {
           renderElement={({ children, element }) => {
             if (element.type !== 'section') {
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {children}
-                </PliteElement>
+                </EditorElement>
               );
             }
             const nodes = React.Children.toArray(children);
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {nodes[0]}
                 <DOMCoverageBoundaryRange
                   boundaryId="local-body"
@@ -102,16 +114,16 @@ describe('DOM coverage private boundary harness', () => {
                 >
                   Collapsed body
                 </DOMCoverageBoundaryRange>
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
       );
       const rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           {view('left')}
           {view('right')}
-        </Plite>
+        </EditorRoot>
       );
       const left = getMountedEditableDOMRuntime(
         editor,
@@ -141,14 +153,16 @@ describe('DOM coverage private boundary harness', () => {
         }
         const sibling = runtime === left ? right : left;
         const placeholder = sibling.rootElement!.querySelector(
-          '[data-plite-dom-coverage-boundary]'
+          '[data-editor-dom-coverage-boundary]'
         )!;
         expect(
-          runtime.domCoverage.resolvePlitePointFromBoundary([placeholder, 0])
+          runtime.domCoverage.resolvePointFromBoundary([placeholder, 0])
         ).toBeNull();
       }
       const remaining = removed === 'left' ? 'right' : 'left';
-      rendered.rerender(<Plite editor={editor}>{view(remaining)}</Plite>);
+      rendered.rerender(
+        <EditorRoot editor={editor}>{view(remaining)}</EditorRoot>
+      );
       expect(
         (removed === 'left' ? left : right).domCoverage.getBoundaries()
       ).toEqual([]);
@@ -198,7 +212,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-boundary-range"
           renderElement={({ children, element }) => {
@@ -206,7 +220,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -215,18 +229,18 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </PliteElement>
+                </EditorElement>
               );
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -271,7 +285,7 @@ describe('DOM coverage private boundary harness', () => {
 
     try {
       render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable
             id="dom-coverage-boundary-range-lifecycle"
             renderElement={({ children, element }) => {
@@ -279,7 +293,7 @@ describe('DOM coverage private boundary harness', () => {
                 const childNodes = React.Children.toArray(children);
 
                 return (
-                  <PliteElement style={{ position: 'relative' }}>
+                  <EditorElement style={{ position: 'relative' }}>
                     {childNodes[0]}
                     <DOMCoverageBoundaryRange
                       boundaryId="section-body"
@@ -288,18 +302,18 @@ describe('DOM coverage private boundary harness', () => {
                     >
                       Collapsed body
                     </DOMCoverageBoundaryRange>
-                  </PliteElement>
+                  </EditorElement>
                 );
               }
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {children}
-                </PliteElement>
+                </EditorElement>
               );
             }}
           />
-        </Plite>
+        </EditorRoot>
       );
 
       await waitFor(() => {
@@ -333,7 +347,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     const Surface = ({ hidden }: { hidden: boolean }) => (
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-boundary-range-toggle"
           renderElement={({ children, element }) => {
@@ -341,7 +355,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -351,18 +365,18 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </PliteElement>
+                </EditorElement>
               );
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     const rendered = render(<Surface hidden />);
@@ -396,7 +410,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-self-boundary"
           renderElement={({ children, element }) => {
@@ -423,13 +437,13 @@ describe('DOM coverage private boundary harness', () => {
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -456,21 +470,22 @@ describe('DOM coverage private boundary harness', () => {
     expect(rendered.container.textContent).not.toContain('Hidden footer');
 
     const headerPlaceholder = rendered.container.querySelector(
-      '[data-plite-dom-coverage-boundary="hidden-header"]'
+      '[data-editor-dom-coverage-boundary="hidden-header"]'
     );
     const footerPlaceholder = rendered.container.querySelector(
-      '[data-plite-dom-coverage-boundary="hidden-footer"]'
+      '[data-editor-dom-coverage-boundary="hidden-footer"]'
     );
 
     expect(headerPlaceholder).toBeTruthy();
     expect(footerPlaceholder).toBeTruthy();
+    const mountedEditor = getMountedEditableDOMRuntime(editor)!.editor;
     expect(
-      editor.api.dom.assertPlitePoint([headerPlaceholder!, 0], {
+      mountedEditor.api.dom.assertPoint([headerPlaceholder!, 0], {
         exactMatch: false,
       })
     ).toEqual({ offset: 0, path: [0, 0] });
     expect(
-      editor.api.dom.assertPlitePoint([footerPlaceholder!, 0], {
+      mountedEditor.api.dom.assertPoint([footerPlaceholder!, 0], {
         exactMatch: false,
       })
     ).toEqual({ offset: 0, path: [2, 0] });
@@ -486,7 +501,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-content-boundary-slot"
           renderElement={({ children, element, slots }) => {
@@ -507,13 +522,13 @@ describe('DOM coverage private boundary harness', () => {
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     let boundaryId = '';
@@ -561,7 +576,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-content-boundary-slot"
           renderElement={({ children, element, slots }) => {
@@ -590,13 +605,13 @@ describe('DOM coverage private boundary harness', () => {
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -642,7 +657,7 @@ describe('DOM coverage private boundary harness', () => {
 
       if (element.type === 'section') {
         return (
-          <PliteElement style={{ position: 'relative' }}>
+          <EditorElement style={{ position: 'relative' }}>
             {slots.contentBoundary({
               boundaryId: 'context-section-body',
               mounted,
@@ -652,22 +667,24 @@ describe('DOM coverage private boundary harness', () => {
                 type: 'children',
               },
             })}
-          </PliteElement>
+          </EditorElement>
         );
       }
 
       return (
-        <PliteElement style={{ position: 'relative' }}>{children}</PliteElement>
+        <EditorElement style={{ position: 'relative' }}>
+          {children}
+        </EditorElement>
       );
     };
     const Surface = ({ mounted }: { mounted: boolean }) => (
       <BoundaryVisibilityContext value={mounted}>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable
             id="dom-coverage-context-boundary-toggle"
             renderElement={RenderElement}
           />
-        </Plite>
+        </EditorRoot>
       </BoundaryVisibilityContext>
     );
     const rendered = render(<Surface mounted={false} />);
@@ -702,7 +719,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-content-boundary-slot-range"
           renderElement={({ children, element, slots }) => {
@@ -710,7 +727,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <slots.contentBoundary
                     boundaryId="slot-section-body"
@@ -719,18 +736,18 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Body hidden by slot
                   </slots.contentBoundary>
-                </PliteElement>
+                </EditorElement>
               );
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -769,13 +786,13 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-lazy-child-range-slot"
           renderElement={(props) => {
             if (props.element.type === 'section') {
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   <props.slots.contentBoundary
                     boundaryId="lazy-child-range-before"
                     mounted={false}
@@ -789,7 +806,7 @@ describe('DOM coverage private boundary harness', () => {
                     renderPlaceholder={() => null}
                     scope={{ from: 252, to: 499, type: 'children' }}
                   />
-                </PliteElement>
+                </EditorElement>
               );
             }
 
@@ -798,13 +815,13 @@ describe('DOM coverage private boundary harness', () => {
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {props.children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(renderedItemCount).toBe(2);
@@ -824,7 +841,7 @@ describe('DOM coverage private boundary harness', () => {
 
     const Surface = () => (
       <React.StrictMode>
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable
             id="dom-coverage-boundary-strict-mode"
             renderElement={({ children, element }) => {
@@ -832,7 +849,7 @@ describe('DOM coverage private boundary harness', () => {
                 const childNodes = React.Children.toArray(children);
 
                 return (
-                  <PliteElement style={{ position: 'relative' }}>
+                  <EditorElement style={{ position: 'relative' }}>
                     {childNodes[0]}
                     <DOMCoverageBoundaryRange
                       boundaryId="section-body"
@@ -841,18 +858,18 @@ describe('DOM coverage private boundary harness', () => {
                     >
                       Collapsed body
                     </DOMCoverageBoundaryRange>
-                  </PliteElement>
+                  </EditorElement>
                 );
               }
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {children}
-                </PliteElement>
+                </EditorElement>
               );
             }}
           />
-        </Plite>
+        </EditorRoot>
       </React.StrictMode>
     );
 
@@ -895,7 +912,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     const Surface = ({ boundaryId }: { boundaryId: string }) => (
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-boundary-id-stability"
           renderElement={({ children, element }) => {
@@ -903,7 +920,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId={boundaryId}
@@ -912,18 +929,18 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </PliteElement>
+                </EditorElement>
               );
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     const rendered = render(<Surface boundaryId="section-body" />);
@@ -970,7 +987,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-boundary-structural-insert"
           renderElement={({ children, element }) => {
@@ -978,7 +995,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -987,18 +1004,18 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </PliteElement>
+                </EditorElement>
               );
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -1054,7 +1071,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-boundary-structural-move"
           renderElement={({ children, element }) => {
@@ -1062,7 +1079,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -1071,18 +1088,18 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </PliteElement>
+                </EditorElement>
               );
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -1132,7 +1149,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-boundary-structural-remove"
           renderElement={({ children, element }) => {
@@ -1140,7 +1157,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -1149,18 +1166,18 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </PliteElement>
+                </EditorElement>
               );
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -1256,7 +1273,7 @@ describe('DOM coverage private boundary harness', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           id="dom-coverage-hidden-update-dirtiness"
           renderElement={({ children, element }) => {
@@ -1274,7 +1291,7 @@ describe('DOM coverage private boundary harness', () => {
               const childNodes = React.Children.toArray(children);
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   {childNodes[0]}
                   <DOMCoverageBoundaryRange
                     boundaryId="section-body"
@@ -1283,18 +1300,18 @@ describe('DOM coverage private boundary harness', () => {
                   >
                     Collapsed body
                   </DOMCoverageBoundaryRange>
-                </PliteElement>
+                </EditorElement>
               );
             }
 
             return (
-              <PliteElement style={{ position: 'relative' }}>
+              <EditorElement style={{ position: 'relative' }}>
                 {children}
-              </PliteElement>
+              </EditorElement>
             );
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     await waitFor(() => {
@@ -1341,26 +1358,26 @@ describe('DOM coverage private boundary harness', () => {
 
     try {
       render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable
             id="dom-coverage-boundary-dev-safety"
             renderElement={({ element }) => {
               if (element.type === 'section') {
                 return (
-                  <PliteElement style={{ position: 'relative' }}>
+                  <EditorElement style={{ position: 'relative' }}>
                     Section shell only
-                  </PliteElement>
+                  </EditorElement>
                 );
               }
 
               return (
-                <PliteElement style={{ position: 'relative' }}>
+                <EditorElement style={{ position: 'relative' }}>
                   Leaf shell only
-                </PliteElement>
+                </EditorElement>
               );
             }}
           />
-        </Plite>
+        </EditorRoot>
       );
 
       await waitFor(() => {

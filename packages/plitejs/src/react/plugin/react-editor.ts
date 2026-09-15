@@ -9,9 +9,9 @@ import type { ReactApi } from './with-react';
 
 export interface ReactRuntimeEditor<
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = any,
-> extends DOMEditor<V, TExtensions> {
-  api: DOMEditor<V, TExtensions>['api'] & {
+  TPlugins extends readonly unknown[] = any,
+> extends DOMEditor<V, TPlugins> {
+  api: DOMEditor<V, TPlugins>['api'] & {
     dom: DOMApi & { clipboard: DOMClipboardApi };
     react: ReactApi;
   };
@@ -23,8 +23,7 @@ export const ReactEditor: ReactEditorInterface = DOMEditor;
 
 export const toReactRuntimeEditor = <
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = any,
+  TPlugins extends readonly unknown[] = any,
 >(
-  editor: DOMEditor<V, TExtensions>
-): ReactRuntimeEditor<V, TExtensions> =>
-  editor as ReactRuntimeEditor<V, TExtensions>;
+  editor: DOMEditor<V, TPlugins>
+): ReactRuntimeEditor<V, TPlugins> => editor as ReactRuntimeEditor<V, TPlugins>;

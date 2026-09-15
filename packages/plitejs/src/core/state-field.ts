@@ -5,7 +5,7 @@ import type {
 } from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
 import { cloneFrozen } from './clone';
-import { compileEditorExtension } from './editor-extension';
+import { compilePlugin } from './plugin';
 import { defineEffect } from './transaction-values';
 import {
   decodeVersionedValue,
@@ -16,7 +16,7 @@ import {
 /**
  * Creates an editor-scoped state field from a keyed descriptor.
  *
- * State fields register when their extension is installed and are read through
+ * State fields register when their plugin is installed and are read through
  * the editor state API.
  */
 export const defineStateField = <TValue>(
@@ -73,6 +73,36 @@ export const defineStateField = <TValue>(
           ),
           value: getDefined(normalizedDescriptor.persist).encode(value),
         }),
+        ...(normalizedDescriptor.persist.previousVersions
+          ? {
+              previousVersions: Object.fromEntries(
+                Object.entries(
+                  normalizedDescriptor.persist.previousVersions
+                ).map(([version, decode]) => [
+                  version,
+                  (value: unknown) => {
+                    if (
+                      typeof value !== 'object' ||
+                      value === null ||
+                      !Object.hasOwn(value, 'previousValue') ||
+                      !Object.hasOwn(value, 'value')
+                    ) {
+                      throw new Error(
+                        `Invalid state field "${descriptor.key}" transition.`
+                      );
+                    }
+
+                    return Object.freeze({
+                      previousValue: decode(
+                        (value as Record<string, unknown>).previousValue
+                      ),
+                      value: decode((value as Record<string, unknown>).value),
+                    });
+                  },
+                ])
+              ),
+            }
+          : {}),
         version: normalizedDescriptor.persist.version,
       })
     : undefined;
@@ -147,9 +177,7 @@ export const defineStateField = <TValue>(
 
   field = definition;
   definition.stateFields = Object.freeze([field]);
-  field = compileEditorExtension(
-    definition
-  ) as unknown as EditorStateField<TValue>;
+  field = compilePlugin(definition) as unknown as EditorStateField<TValue>;
 
   return field;
 };

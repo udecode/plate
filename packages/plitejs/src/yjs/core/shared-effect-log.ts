@@ -1,19 +1,30 @@
 import * as Y from 'yjs';
 
-import { assertEditorJsonValue } from '../../core/value-codec';
+import {
+  bindAuthoredRange,
+  getAuthoredCommitProjection,
+  getAuthoredCommitView,
+  readAuthoredView,
+} from '../../core/authored-runtime';
+import {
+  assertEditorJsonValue,
+  supportsEditorValueCodecVersion,
+} from '../../core/value-codec';
 import {
   decodeEditorEffect,
   encodeEditorEffect,
+  type EditorCommit,
   type EditorEffect,
   type EditorEffectCollabReplay,
   type EditorEffectType,
   type SerializedEditorEffect,
 } from '../../index';
+import type { YjsEditor } from './editor-types';
 import {
-  plitePointToYjsRelativePosition,
-  pliteRangeToYjsRelativeRange,
-  yjsRelativePositionToPlitePoint,
-  yjsRelativeRangeToPliteRange,
+  pointToYjsRelativePosition,
+  rangeToYjsRelativeRange,
+  yjsRelativePositionToPoint,
+  yjsRelativeRangeToRange,
 } from './selection';
 
 const SHARED_EFFECT_EVENT_FORMAT = 1;
@@ -62,6 +73,7 @@ type YjsSharedEffectAuthority = Readonly<{
 }>;
 
 type YjsSharedEffectLogOptions = Readonly<{
+  editor?: YjsEditor;
   authorityId?: string;
   captureSnapshotEffects: () => readonly EditorEffect[];
   onCheckpoint: () => void;
@@ -69,8 +81,10 @@ type YjsSharedEffectLogOptions = Readonly<{
   threshold?: number;
 }>;
 
+export type PendingYjsEffect = EditorEffect | (() => EditorEffect | undefined);
+
 export type PendingYjsSharedEffects = Readonly<{
-  effects: readonly EditorEffect[];
+  effects: readonly PendingYjsEffect[];
   eventIds: readonly string[];
 }>;
 
@@ -347,6 +361,7 @@ const readSharedEffectEvent = (
  * distinct. One explicit authority atomically checkpoints a safe prefix.
  */
 export class YjsSharedEffectLog {
+  private readonly editor: YjsEditor | undefined;
   private readonly acknowledgements: Y.Map<unknown>;
   private active = false;
   private readonly authorityId: string | undefined;
@@ -397,6 +412,7 @@ export class YjsSharedEffectLog {
     resolveEffectType: (key: string) => EditorEffectType | undefined,
     options: YjsSharedEffectLogOptions
   ) {
+    this.editor = options.editor;
     this.doc = doc;
     this.effects = doc.getArray(`${rootName}:shared-effect-events`);
     this.acknowledgements = doc.getMap(`${rootName}:shared-effect-acks`);
@@ -446,6 +462,12 @@ export class YjsSharedEffectLog {
       );
       this.enqueue(event);
     }
+  }
+
+  empty(): boolean {
+    return (
+      this.effects.length === 0 && !this.checkpointStore.has(CHECKPOINT_KEY)
+    );
   }
 
   activate(): void {
@@ -512,7 +534,10 @@ export class YjsSharedEffectLog {
     return transaction.origin === this.compactionOrigin;
   }
 
-  prepare(effects: readonly EditorEffect[]): PreparedYjsSharedEffects {
+  prepare(
+    effects: readonly EditorEffect[],
+    commit?: EditorCommit
+  ): PreparedYjsSharedEffects {
     return effects.map((effect) => {
       if (this.resolveEffectType(effect.type.key) !== effect.type) {
         throw new Error(
@@ -530,7 +555,10 @@ export class YjsSharedEffectLog {
 
       if (!transport) return encoded;
 
-      const value = transport.encode(effect.value, this.collabEncodeContext());
+      const value = transport.encode(
+        effect.value,
+        this.collabEncodeContext(commit)
+      );
 
       assertEditorJsonValue(
         value,
@@ -596,20 +624,16 @@ export class YjsSharedEffectLog {
 
   pending(): PendingYjsSharedEffects {
     const blockedSources = new Set<string>();
-    const effects: EditorEffect[] = [];
+    const effects: PendingYjsEffect[] = [];
     const eventIds: string[] = [];
     const nextSequenceBySource = new Map<string, number>();
     const checkpoint = this.pendingCheckpoint;
 
     if (checkpoint && !this.hasConsumedCheckpoint(checkpoint)) {
-      try {
-        for (const serialized of checkpoint.effects) {
-          const effect = this.decodeEffect(serialized, 'latest');
+      for (const serialized of checkpoint.effects) {
+        const effect = this.decodeEffect(serialized, 'latest');
 
-          if (effect) effects.push(effect);
-        }
-      } catch {
-        return Object.freeze({ effects: [], eventIds: [] });
+        if (effect) effects.push(effect);
       }
 
       eventIds.push(getCheckpointEventId(checkpoint.id));
@@ -638,32 +662,18 @@ export class YjsSharedEffectLog {
 
         if (this.hasConsumed(event)) {
           if (event.replay === 'latest') {
-            try {
-              const effect = this.decodeEffect(event.effect, event.replay);
-
-              if (effect) effects.push(effect);
-              this.pendingEvents.delete(event.id);
-            } catch {
-              blockedSources.add(event.source);
-
-              continue;
-            }
-          } else {
-            this.pendingEvents.delete(event.id);
-          }
-        } else if (!this.shouldDeliver(event)) {
-          eventIds.push(event.id);
-        } else {
-          try {
             const effect = this.decodeEffect(event.effect, event.replay);
 
             if (effect) effects.push(effect);
-            eventIds.push(event.id);
-          } catch {
-            blockedSources.add(event.source);
-
-            continue;
           }
+          this.pendingEvents.delete(event.id);
+        } else if (!this.shouldDeliver(event)) {
+          eventIds.push(event.id);
+        } else {
+          const effect = this.decodeEffect(event.effect, event.replay);
+
+          if (effect) effects.push(effect);
+          eventIds.push(event.id);
         }
 
         nextSequenceBySource.set(event.source, event.sequence + 1);
@@ -686,15 +696,9 @@ export class YjsSharedEffectLog {
       if (blockedSources.has(event.source)) continue;
       if (this.hasConsumed(event)) {
         if (event.replay === 'latest') {
-          try {
-            const effect = this.decodeEffect(event.effect, event.replay);
+          const effect = this.decodeEffect(event.effect, event.replay);
 
-            if (effect) effects.push(effect);
-          } catch {
-            blockedSources.add(event.source);
-
-            continue;
-          }
+          if (effect) effects.push(effect);
         }
         this.pendingEvents.delete(event.id);
 
@@ -718,16 +722,11 @@ export class YjsSharedEffectLog {
         continue;
       }
 
-      try {
-        const effect = this.decodeEffect(event.effect, event.replay);
+      const effect = this.decodeEffect(event.effect, event.replay);
 
-        if (effect) effects.push(effect);
-        eventIds.push(event.id);
-        nextSequenceBySource.set(event.source, event.sequence + 1);
-      } catch {
-        // Keep the event pending so a peer with the matching codec can retry it.
-        blockedSources.add(event.source);
-      }
+      if (effect) effects.push(effect);
+      eventIds.push(event.id);
+      nextSequenceBySource.set(event.source, event.sequence + 1);
     }
 
     this.trimPendingOrder();
@@ -813,7 +812,7 @@ export class YjsSharedEffectLog {
   private decodeEffect(
     serialized: SerializedEditorEffect,
     replay: EditorEffectCollabReplay
-  ): EditorEffect | undefined {
+  ): PendingYjsEffect | undefined {
     const type = this.resolveEffectType(serialized.key);
 
     if (!type || type.collab !== 'shared') {
@@ -828,23 +827,30 @@ export class YjsSharedEffectLog {
     const transport = type.collabTransport;
 
     if (!transport) return decodeEditorEffect(type, serialized);
-    if (serialized.version !== type.codec?.version) {
+    if (
+      !type.codec ||
+      !supportsEditorValueCodecVersion(type.codec, serialized.version)
+    ) {
       throw new Error(
-        `Unsupported Yjs shared effect "${type.key}" version ${String(serialized.version)}.`
+        `Unsupported Yjs shared effect "${type.key}" version ${String(
+          serialized.version
+        )}.`
       );
     }
 
-    const value = transport.decode(
-      serialized.value,
-      this.collabDecodeContext()
-    );
-
-    return value === undefined
-      ? undefined
-      : decodeEditorEffect(
-          type,
-          encodeEditorEffect(Object.freeze({ type, value }))
-        );
+    const decode = () => {
+      const value = transport.decode(
+        serialized.value,
+        this.collabDecodeContext()
+      );
+      return value === undefined
+        ? undefined
+        : decodeEditorEffect(
+            type,
+            encodeEditorEffect(Object.freeze({ type, value }))
+          );
+    };
+    return this.editor && readAuthoredView(this.editor) ? decode : decode();
   }
 
   private assertAuthorityAvailable(): void {
@@ -942,12 +948,44 @@ export class YjsSharedEffectLog {
   }
 
   private collabDecodeContext() {
+    const { editor } = this;
+    if (editor && readAuthoredView(editor)) {
+      const range = (value: unknown) => {
+        if (
+          !isRecord(value) ||
+          !isRecord(value.authored) ||
+          typeof value.authored.root !== 'string' ||
+          (value.projection !== 'accepted' && value.projection !== 'proposed')
+        ) {
+          return null;
+        }
+        try {
+          return (
+            bindAuthoredRange(editor, {
+              saved: value.authored,
+              projection: value.projection,
+              options: {
+                root: value.authored.root,
+                association: 'forward',
+                deletion: 'drop',
+              },
+            })?.resolve() ?? null
+          );
+        } catch {
+          return null;
+        }
+      };
+      return Object.freeze({
+        range,
+        point: (value: unknown) => range(value)?.anchor ?? null,
+      });
+    }
     return Object.freeze({
       point: (value: unknown) => {
         if (!isRecord(value)) return null;
 
         try {
-          return yjsRelativePositionToPlitePoint(
+          return yjsRelativePositionToPoint(
             this.root,
             Y.createRelativePositionFromJSON(value)
           );
@@ -965,7 +1003,7 @@ export class YjsSharedEffectLog {
         }
 
         try {
-          return yjsRelativeRangeToPliteRange(this.root, {
+          return yjsRelativeRangeToRange(this.root, {
             anchor: Y.createRelativePositionFromJSON(value.anchor),
             focus: Y.createRelativePositionFromJSON(value.focus),
           });
@@ -976,14 +1014,36 @@ export class YjsSharedEffectLog {
     });
   }
 
-  private collabEncodeContext() {
+  private collabEncodeContext(commit?: EditorCommit) {
+    const { editor } = this;
+    if (editor && readAuthoredView(editor)) {
+      const view = commit ? getAuthoredCommitView(editor, commit) : editor;
+      const projection =
+        (commit && getAuthoredCommitProjection(editor, commit)) || 'accepted';
+      const range = (value: Parameters<typeof rangeToYjsRelativeRange>[1]) => {
+        const binding = bindAuthoredRange(view, {
+          range: value,
+          projection,
+          options: {
+            root: value.anchor.root ?? view.read.view.root() ?? 'main',
+            association: 'forward',
+            deletion: 'drop',
+          },
+        });
+        if (!binding) throw new Error('Missing authored position owner.');
+        return Object.freeze({ authored: binding.serialize(), projection });
+      };
+      return Object.freeze({
+        range,
+        point: (point: Parameters<typeof pointToYjsRelativePosition>[1]) =>
+          range({ anchor: point, focus: point }),
+      });
+    }
     return Object.freeze({
-      point: (point: Parameters<typeof plitePointToYjsRelativePosition>[1]) =>
-        serializeRelativePosition(
-          plitePointToYjsRelativePosition(this.root, point)
-        ),
-      range: (range: Parameters<typeof pliteRangeToYjsRelativeRange>[1]) => {
-        const relative = pliteRangeToYjsRelativeRange(this.root, range);
+      point: (point: Parameters<typeof pointToYjsRelativePosition>[1]) =>
+        serializeRelativePosition(pointToYjsRelativePosition(this.root, point)),
+      range: (range: Parameters<typeof rangeToYjsRelativeRange>[1]) => {
+        const relative = rangeToYjsRelativeRange(this.root, range);
 
         return Object.freeze({
           anchor: serializeRelativePosition(relative.anchor),

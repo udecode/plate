@@ -222,8 +222,13 @@ const editor = createEditor({
 工具栏组件直接调用 descriptor-scoped update：
 
 ```tsx
-const { update } = useEditorPlugin(IndentPlugin);
+import { IndentPlugin, useEditor } from 'platejs/react';
 
-<ToolbarButton onClick={() => update.increase()}>Indent</ToolbarButton>
-<ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
+const editor = useEditor();
+const { update } = editor.plugin(IndentPlugin);
+
+<>
+  <ToolbarButton onClick={() => update.increase()}>Indent</ToolbarButton>
+  <ToolbarButton onClick={() => update.decrease()}>Outdent</ToolbarButton>
+</>
 ```

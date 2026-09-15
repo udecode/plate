@@ -3,7 +3,7 @@ title: 选择
 description: 在 Plate 中读取、更新、聚焦并渲染文本选择和节点选择。
 ---
 
-Plate 将选择保存在编辑器模型中，并由已挂载的编辑器把文本选择投射到浏览器。本文介绍 Plate 中常用的选择读取、更新、聚焦和渲染；底层 DOM 覆盖与浏览器修复规则参见 [Selection And DOM](/docs/plite/concepts/16-selection-and-dom)。
+Plate 将选择保存在编辑器模型中，并由已挂载的编辑器把文本选择投射到浏览器。本文介绍 Plate 中常用的选择读取、更新、聚焦和渲染；底层 DOM 覆盖与浏览器修复规则参见 [Selection And DOM](/docs/selection)。
 
 ## 所有权
 
@@ -11,8 +11,8 @@ Plate 将选择保存在编辑器模型中，并由已挂载的编辑器把文�
 
 | 工作 | 所有者 |
 | --- | --- |
-| 选择状态、映射、校验、读取和更新 | Plite 核心，由 `platejs` 重新导出 |
-| 浏览器原生选择、焦点同步和非活动绘制 | Plite React，由 `PlateContent` 继承 |
+| 选择状态、映射、校验、读取和更新 | Plate 核心，由 `platejs` 重新导出 |
+| 浏览器原生选择、焦点同步和非活动绘制 | Plate React，由 `EditorContent` 继承 |
 | 精确节点选择的高亮和指针拖选 | `platejs/react` 的 `NodeSelectionHighlight` 和 `NodeSelectionDrag` |
 | 焦点标记、颜色、边框和层叠 | 复制的注册表 UI |
 
@@ -45,7 +45,7 @@ editor.update.selection.set(null);
 | 无选择 | `null` | 空数组 | 无 |
 
 React 中如何取得编辑器参见[编辑器方法](/docs/editor-methods)，完整查询和校验
-契约参见 [Selection API](/docs/plite/api/locations/selection)。
+契约参见 [Selection API](/docs/api/selection)。
 
 ## 焦点与原生选择
 
@@ -65,16 +65,16 @@ editor.api.dom.focus();
 
 <ComponentPreview name="inactive-selection-demo" />
 
-当焦点移到带标记的控件时，Plite `Editable` 会绘制非活动选择。此行为内置
+当焦点移到带标记的控件时，Plate `Editable` 会绘制非活动选择。此行为内置
 于 `Editable`，不需要属性、插件、套件或复制的选择状态。
 
 ### 标记焦点目标
 
 在可聚焦控件或其任意组合树祖先上添加
-`data-plite-keep-selection-visible`：
+`data-editor-keep-selection-visible`：
 
 ```tsx
-<div data-plite-keep-selection-visible="">
+<div data-editor-keep-selection-visible="">
   <button type="button">编辑链接</button>
 </div>
 ```
@@ -84,14 +84,14 @@ editor.api.dom.focus();
 
 ### 设置绘制样式
 
-Plite 提供中性的输出标记，产品 CSS 决定外观：
+Plate 提供中性的输出标记，产品 CSS 决定外观：
 
 ```css
-[data-plite-inactive-selection] {
+[data-editor-inactive-selection] {
   background: color-mix(in oklab, var(--primary) 25%, transparent);
 }
 
-[data-plite-inactive-selection-caret] {
+[data-editor-inactive-selection-caret] {
   width: 2px;
   background: var(--primary);
 }
@@ -113,7 +113,7 @@ Plite 提供中性的输出标记，产品 CSS 决定外观：
 ## 节点选择渲染
 
 精确节点选择是模型状态，不是浏览器原生范围。复制的 `Editor` 在
-`PlateContent` 后组合 `NodeSelectionHighlight` 和 `NodeSelectionDrag`，
+`EditorContent` 后组合 `NodeSelectionHighlight` 和 `NodeSelectionDrag`，
 用于绘制已选区块并支持空白区域指针拖选。
 
 DOM 契约参见[节点选择组件](/docs/api/core/plate-components#node-selection)，
@@ -135,9 +135,9 @@ Menu 等功能 UI 读取同一份精确节点成员，不维护第二份已选�
 
 ## API 参考
 
-- [Selection API](/docs/plite/api/locations/selection)
-- [选择方法](/docs/plite/api/transforms#selection-methods)
-- [Selection And DOM](/docs/plite/concepts/16-selection-and-dom)
+- [Selection API](/docs/api/selection)
+- [选择方法](/docs/api/editor-transforms#selection-methods)
+- [Selection And DOM](/docs/selection)
 - [节点选择组件](/docs/api/core/plate-components#node-selection)
 
 完成。Plate 代码写入模型选择；已挂载的编辑器负责浏览器投射和显示。

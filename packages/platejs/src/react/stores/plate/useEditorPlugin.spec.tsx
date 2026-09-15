@@ -1,16 +1,15 @@
 import { act, render, renderHook } from '@testing-library/react';
 import React from 'react';
 
-import { TestPlate as Plate } from '../../__tests__/TestPlate';
-import { PlateContent } from '../../components/PlateContent';
+import { TestPlate as EditorRoot } from '../../__tests__/TestPlate';
+import { EditorContent } from '../../components/PlateContent';
 import { createEditor } from '../../editor';
-import { definePlatePlugin } from '../../plugin';
+import { definePlugin } from '../../plugin';
 import { useEditor } from './useEditor';
-import { useEditorPlugin } from './useEditorPlugin';
 
-describe('useEditorPlugin', () => {
+describe('useEditor plugin portal', () => {
   it('binds staged APIs to the mounted editor while keeping the plugin store shared', () => {
-    const OwnerPlugin = definePlatePlugin('mountedOwner', {
+    const OwnerPlugin = definePlugin('mountedOwner', {
       initialState: { count: 0 },
       api: ({ editor, store }) => ({
         owner: () => editor,
@@ -22,26 +21,25 @@ describe('useEditorPlugin', () => {
     });
     const editor = createEditor({ plugins: [OwnerPlugin] });
     const owners: Array<ReturnType<typeof useEditor>> = [];
-    const portals: Array<
-      ReturnType<typeof useEditorPlugin<typeof OwnerPlugin>>
-    > = [];
+    const portals: Array<ReturnType<typeof editor.plugin<typeof OwnerPlugin>>> =
+      [];
     function Capture({ index }: { index: number }) {
       const view = useEditor();
-      const portal = useEditorPlugin(OwnerPlugin);
+      const portal = view.plugin(OwnerPlugin);
       React.useLayoutEffect(() => {
         owners[index] = view;
         portals[index] = portal;
       }, [index, portal, view]);
-      return <PlateContent aria-label={`owner-${index}`} />;
+      return <EditorContent aria-label={`owner-${index}`} />;
     }
     const rendered = render(
       <>
-        <Plate editor={editor}>
+        <EditorRoot editor={editor}>
           <Capture index={0} />
-        </Plate>
-        <Plate editor={editor}>
+        </EditorRoot>
+        <EditorRoot editor={editor}>
           <Capture index={1} />
-        </Plate>
+        </EditorRoot>
       </>
     );
 
@@ -63,14 +61,14 @@ describe('useEditorPlugin', () => {
 
   it('infers plugin-owned updates from the descriptor', () => {
     const duplicate = vi.fn();
-    const BlockPlugin = definePlatePlugin('block', {
+    const BlockPlugin = definePlugin('block', {
       update: () => ({ duplicate }),
     });
     const editor = createEditor({ plugins: [BlockPlugin] });
     const Wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>{children}</Plate>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
-    const { result } = renderHook(() => useEditorPlugin(BlockPlugin), {
+    const { result } = renderHook(() => useEditor().plugin(BlockPlugin), {
       wrapper: Wrapper,
     });
 
@@ -80,7 +78,7 @@ describe('useEditorPlugin', () => {
   });
 
   it('returns the flat plugin portal with a stable store-backed reference', () => {
-    const CounterPlugin = definePlatePlugin('counter', {
+    const CounterPlugin = definePlugin('counter', {
       initialState: {
         value: 1,
       },
@@ -89,11 +87,11 @@ describe('useEditorPlugin', () => {
       plugins: [CounterPlugin],
     });
     const Wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>{children}</Plate>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
 
     const { result, rerender } = renderHook(
-      () => useEditorPlugin(CounterPlugin),
+      () => useEditor().plugin(CounterPlugin),
       {
         wrapper: Wrapper,
       }
@@ -118,18 +116,21 @@ describe('useEditorPlugin', () => {
     expect(result.current.store.get()).toEqual({ value: 2 });
   });
 
-  it('accepts runtime names without weakening missing-plugin errors', () => {
-    const CounterPlugin = definePlatePlugin('counter', {});
+  it('reports an absent nominal descriptor without weakening capability errors', () => {
+    const CounterPlugin = definePlugin('counter', {});
+    const MissingPlugin = definePlugin('missing', {});
     const editor = createEditor({ plugins: [CounterPlugin] });
     const Wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>{children}</Plate>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
-    const { result: installed } = renderHook(() => useEditorPlugin('counter'), {
-      wrapper: Wrapper,
-    });
-    const { result: missing } = renderHook(() => useEditorPlugin('missing'), {
-      wrapper: Wrapper,
-    });
+    const { result: installed } = renderHook(
+      () => useEditor().plugin(CounterPlugin),
+      { wrapper: Wrapper }
+    );
+    const { result: missing } = renderHook(
+      () => useEditor().plugin(MissingPlugin),
+      { wrapper: Wrapper }
+    );
 
     expect(installed.current.installed).toBe(true);
     expect(installed.current.name).toBe('counter');
@@ -137,12 +138,5 @@ describe('useEditorPlugin', () => {
     expect(() => missing.current.name).toThrow(
       'Plate plugin "missing" is not installed.'
     );
-
-    const weakNameReference = { name: 'counter' } as const;
-    const useAssertWeakNameObjectRejected = () => {
-      // @ts-expect-error Weak name objects are not public hook inputs.
-      useEditorPlugin(weakNameReference);
-    };
-    void useAssertWeakNameObjectRejected;
   });
 });

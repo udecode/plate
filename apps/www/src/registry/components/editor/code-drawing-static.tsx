@@ -1,5 +1,5 @@
 import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -7,11 +7,11 @@ import { cn } from '@/lib/utils';
 export function CodeDrawingElementStatic({
   children,
   ...props
-}: PliteElementProps<typeof BaseCodeDrawingPlugin>) {
+}: EditorElementProps<typeof BaseCodeDrawingPlugin>) {
   const { code, language, view } = props.element;
 
   return (
-    <PliteElement className="my-4 flex w-full items-stretch" {...props}>
+    <EditorElement className="my-4 flex w-full items-stretch" {...props}>
       <div
         className={cn(
           'flex w-full flex-col',
@@ -42,7 +42,7 @@ export function CodeDrawingElementStatic({
         )}
       </div>
       {children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 

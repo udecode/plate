@@ -2,10 +2,12 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import {
-  PliteElement,
-  PliteLeaf,
-  PlitePlaceholder,
-  PliteText,
+  createEditor,
+  EditorRoot,
+  EditorElement,
+  EditorLeaf,
+  EditorPlaceholder,
+  EditorText,
 } from '../../src/react';
 import { EditableText } from '../../src/react/components/editable-text';
 import { PliteSpacer } from '../../src/react/components/plite-spacer';
@@ -17,7 +19,7 @@ describe('plite-react primitives contract', () => {
     const rendered = render(<ZeroWidthString isLineBreak />);
 
     const zeroWidth = rendered.container.querySelector(
-      '[data-plite-zero-width="n"]'
+      '[data-editor-zero-width="n"]'
     );
 
     expect(zeroWidth).toBeTruthy();
@@ -29,17 +31,19 @@ describe('plite-react primitives contract', () => {
     const rendered = render(<ZeroWidthString length={4} />);
 
     const zeroWidth = rendered.container.querySelector(
-      '[data-plite-zero-width="z"]'
+      '[data-editor-zero-width="z"]'
     );
 
-    expect(zeroWidth?.getAttribute('data-plite-length')).toBe('4');
+    expect(zeroWidth?.getAttribute('data-editor-length')).toBe('4');
     expect(zeroWidth?.querySelector('br')).toBeNull();
     expect(zeroWidth?.textContent).toBe('\uFEFF');
   });
 
   test('TextString renders from React state when text changes', () => {
     const rendered = render(<TextString text="alpha" />);
-    const textElement = rendered.container.querySelector('[data-plite-string]');
+    const textElement = rendered.container.querySelector(
+      '[data-editor-string]'
+    );
 
     expect(textElement?.textContent).toBe('alpha');
 
@@ -49,33 +53,42 @@ describe('plite-react primitives contract', () => {
   });
 
   test('EditableText preserves leaf DOM identity when text length changes', () => {
-    const rendered = render(<EditableText text="alpha" />);
-    const leaf = rendered.container.querySelector('[data-plite-leaf="true"]');
-    const text = rendered.container.querySelector('[data-plite-string]');
+    const editor = createEditor();
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <EditableText text="alpha" />
+      </EditorRoot>
+    );
+    const leaf = rendered.container.querySelector('[data-editor-leaf="true"]');
+    const text = rendered.container.querySelector('[data-editor-string]');
 
-    rendered.rerender(<EditableText text="Zalpha" />);
+    rendered.rerender(
+      <EditorRoot editor={editor}>
+        <EditableText text="Zalpha" />
+      </EditorRoot>
+    );
 
-    expect(rendered.container.querySelector('[data-plite-leaf="true"]')).toBe(
+    expect(rendered.container.querySelector('[data-editor-leaf="true"]')).toBe(
       leaf
     );
-    expect(rendered.container.querySelector('[data-plite-string]')).toBe(text);
+    expect(rendered.container.querySelector('[data-editor-string]')).toBe(text);
     expect(text?.textContent).toBe('Zalpha');
   });
 
   test('PliteText and PliteLeaf own the text-node shape', () => {
     const ref = React.createRef<HTMLSpanElement>();
     const rendered = render(
-      <PliteText ref={ref}>
-        <PliteLeaf>
+      <EditorText ref={ref}>
+        <EditorLeaf>
           <TextString text="alpha" />
-        </PliteLeaf>
-      </PliteText>
+        </EditorLeaf>
+      </EditorText>
     );
 
     const textNode = rendered.container.querySelector(
-      '[data-plite-node="text"]'
+      '[data-editor-node="text"]'
     );
-    const leaf = rendered.container.querySelector('[data-plite-leaf="true"]');
+    const leaf = rendered.container.querySelector('[data-editor-leaf="true"]');
 
     expect(textNode).toBe(ref.current);
     expect(leaf).toBeTruthy();
@@ -84,43 +97,46 @@ describe('plite-react primitives contract', () => {
 
   test('PlitePlaceholder supports non-void intrinsic tags through as', () => {
     const rendered = render(
-      <PlitePlaceholder as="label" style={{ opacity: '0.5' }}>
+      <EditorPlaceholder as="label" style={{ opacity: '0.5' }}>
         <span>placeholder</span>
-      </PlitePlaceholder>
+      </EditorPlaceholder>
     );
 
     const placeholder = rendered.container.querySelector('label');
 
     expect(placeholder?.getAttribute('aria-hidden')).toBe('true');
-    expect(placeholder?.getAttribute('data-plite-placeholder')).toBe('true');
+    expect(placeholder?.getAttribute('data-editor-placeholder')).toBe('true');
   });
 
   test('PlitePlaceholder defaults to an inline-safe span', () => {
-    const rendered = render(<PlitePlaceholder>placeholder</PlitePlaceholder>);
+    const rendered = render(<EditorPlaceholder>placeholder</EditorPlaceholder>);
     const placeholder = rendered.container.querySelector(
-      '[data-plite-placeholder="true"]'
+      '[data-editor-placeholder="true"]'
     );
 
     expect(placeholder?.tagName).toBe('SPAN');
   });
 
   test('EditableText passes only structural defaults to placeholder renderers', () => {
+    const editor = createEditor();
     const rendered = render(
-      <EditableText
-        placeholder="Type something"
-        renderPlaceholder={({ attributes, children }) => (
-          <div {...attributes}>
-            <p>{children}</p>
-            <pre>custom placeholder</pre>
-          </div>
-        )}
-        text=""
-        zeroWidth={{ isLineBreak: true }}
-      />
+      <EditorRoot editor={editor}>
+        <EditableText
+          placeholder="Type something"
+          renderPlaceholder={({ attributes, children }) => (
+            <div {...attributes}>
+              <p>{children}</p>
+              <pre>custom placeholder</pre>
+            </div>
+          )}
+          text=""
+          zeroWidth={{ isLineBreak: true }}
+        />
+      </EditorRoot>
     );
 
     const placeholder = rendered.container.querySelector(
-      '[data-plite-placeholder="true"]'
+      '[data-editor-placeholder="true"]'
     ) as HTMLElement | null;
 
     expect(placeholder).toBeTruthy();
@@ -134,24 +150,24 @@ describe('plite-react primitives contract', () => {
 
   test('PliteElement and PliteSpacer own the element and spacer shape', () => {
     const rendered = render(
-      <PliteElement isVoid style={{ position: 'relative' }}>
+      <EditorElement isVoid style={{ position: 'relative' }}>
         <span contentEditable={false}>void</span>
         <PliteSpacer>
-          <PliteText>
-            <PliteLeaf>
+          <EditorText>
+            <EditorLeaf>
               <ZeroWidthString length={4} />
-            </PliteLeaf>
-          </PliteText>
+            </EditorLeaf>
+          </EditorText>
         </PliteSpacer>
-      </PliteElement>
+      </EditorElement>
     );
 
     const element = rendered.container.querySelector(
-      '[data-plite-node="element"]'
+      '[data-editor-node="element"]'
     );
-    const spacer = rendered.container.querySelector('[data-plite-spacer]');
+    const spacer = rendered.container.querySelector('[data-editor-spacer]');
 
-    expect(element?.getAttribute('data-plite-void')).toBe('true');
+    expect(element?.getAttribute('data-editor-void')).toBe('true');
     expect(spacer).toHaveStyle({ caretColor: 'transparent' });
     expect(spacer?.textContent).toBe('\uFEFF');
   });

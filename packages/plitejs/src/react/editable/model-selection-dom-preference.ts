@@ -1,4 +1,4 @@
-import type { Range as PliteRange, Value } from '../..';
+import type { Range as ModelRange, Value } from '../..';
 import type { DOMRange } from '../../dom';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -13,10 +13,10 @@ export type ModelSelectionDOMPoint = {
 
 export const writeCollapsedModelSelectionDOMPreference = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: ReactRuntimeEditor<V, TExtensions>,
-  selection: PliteRange,
+  editor: ReactRuntimeEditor<V, TPlugins>,
+  selection: ModelRange,
   point: ModelSelectionDOMPoint | null
 ) => {
   const runtime = point
@@ -28,15 +28,15 @@ export const writeCollapsedModelSelectionDOMPreference = <
 
 export const readModelSelectionDOMPreference = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >({
   editor,
   editorElement,
   selection,
 }: {
-  editor: ReactRuntimeEditor<V, TExtensions>;
+  editor: ReactRuntimeEditor<V, TPlugins>;
   editorElement: HTMLElement;
-  selection: PliteRange;
+  selection: ModelRange;
 }): DOMRange | null =>
   (
     findMountedEditableDOMRuntime(editorElement) ??

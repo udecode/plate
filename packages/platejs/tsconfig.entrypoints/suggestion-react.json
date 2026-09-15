@@ -25,6 +25,9 @@
       "path": "./core.json"
     },
     {
+      "path": "./proxies.json"
+    },
+    {
       "path": "./react-core.json"
     },
     {

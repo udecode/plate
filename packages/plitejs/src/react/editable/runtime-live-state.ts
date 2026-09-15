@@ -3,7 +3,7 @@ import {
   type Path,
   type NodeKey,
   NodeApi as PliteNode,
-  type Text as PliteText,
+  type Text as EditorText,
   TextApi,
 } from '../..';
 import {
@@ -29,7 +29,7 @@ export const readRuntimeNode = (editor: Editor, path: Path): Node | null =>
 export const readRuntimeText = (
   editor: Editor,
   path: Path
-): PliteText | null => {
+): EditorText | null => {
   const text = getEditorLiveText(editor, path);
 
   if (text) {
@@ -85,7 +85,7 @@ export const readNodeByKey = (
 export const readTextByKey = (
   editor: Editor,
   nodeKey: NodeKey | null
-): RuntimeNodeBinding & { text: PliteText | null } => {
+): RuntimeNodeBinding & { text: EditorText | null } => {
   const binding = readNodeByKey(editor, nodeKey);
 
   return {

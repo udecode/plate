@@ -34,7 +34,7 @@ const collapseDOMSelectionToTextEnd = async (
 ) => {
   await text.evaluate((element: HTMLElement, nextSelection) => {
     const root = element.closest(
-      '[data-plite-editor="true"]'
+      '[data-editor="true"]'
     ) as HTMLElement | null;
     const walker = element.ownerDocument.createTreeWalker(
       element,
@@ -103,7 +103,7 @@ test.describe('dom coverage boundaries example', () => {
     });
 
     const placeholders = editor.root.locator(
-      '[data-plite-dom-coverage-boundary]'
+      '[data-editor-dom-coverage-boundary]'
     );
 
     await expect(placeholders).toHaveCount(3);
@@ -111,11 +111,11 @@ test.describe('dom coverage boundaries example', () => {
     await expect(placeholders.nth(1)).toContainText('Outer body collapsed');
     await expect(placeholders.nth(2)).toContainText('Footer hidden');
     await expect(placeholders.nth(0)).toHaveAttribute(
-      'data-plite-dom-coverage-edge',
+      'data-editor-dom-coverage-edge',
       'owner'
     );
     await expect(placeholders.nth(1)).toHaveAttribute(
-      'data-plite-dom-coverage-edge',
+      'data-editor-dom-coverage-edge',
       'anchor'
     );
     await expect(placeholders.nth(0)).toHaveAttribute(

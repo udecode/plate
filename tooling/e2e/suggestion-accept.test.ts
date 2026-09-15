@@ -1,14 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+import { recordBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 test('accepts the seeded removal suggestion without crashing', async ({
   page,
 }) => {
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
-  const editor = page.locator(
-    '[data-plite-editor="true"][contenteditable="true"]'
-  );
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  const editor = page.locator('[data-editor="true"][contenteditable="true"]');
 
   try {
     await page.goto('/');
@@ -42,7 +40,7 @@ test('accepts the seeded removal suggestion without crashing', async ({
     await expect(dialog.getByText('Delete:', { exact: true })).toHaveCount(0);
     await expect(editor).toHaveCount(1);
 
-    const heading = editor.locator('[data-plite-string="true"]', {
+    const heading = editor.locator('[data-editor-string="true"]', {
       hasText: 'Collaborative Editing',
     });
 
@@ -59,10 +57,8 @@ test('accepts the seeded removal suggestion without crashing', async ({
 test('opens the seeded suggestion list from the count trigger', async ({
   page,
 }) => {
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
-  const editor = page.locator(
-    '[data-plite-editor="true"][contenteditable="true"]'
-  );
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  const editor = page.locator('[data-editor="true"][contenteditable="true"]');
 
   try {
     await page.goto('/');

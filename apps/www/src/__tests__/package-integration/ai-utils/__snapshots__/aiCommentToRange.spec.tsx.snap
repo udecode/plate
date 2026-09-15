@@ -43,10 +43,10 @@ exports[`AIChatPlugin read.commentRange apply the AI review to the editor 1`] = 
       ],
     },
     "focus": {
-      "offset": 13,
+      "offset": 42,
       "path": [
         3,
-        9,
+        0,
       ],
     },
   },

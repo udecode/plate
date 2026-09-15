@@ -1,6 +1,6 @@
 import {
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   DocumentChange,
   schema,
   type Selection,
@@ -503,7 +503,7 @@ describe('BaseFootnotePlugin updates', () => {
   });
 
   it('preserves block fragments as definition children', () => {
-    const TestFootnoteBlockPlugin = defineBasePlugin('testFootnoteBlock', {
+    const TestFootnoteBlockPlugin = definePlugin('testFootnoteBlock', {
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),

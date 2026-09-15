@@ -53,6 +53,33 @@ export const discoverResourcePairs = (workspaceRoot) => {
 };
 
 export const resourcePairs = discoverResourcePairs(root);
+export const discoverOrphanedGeneratedResources = (workspaceRoot) => {
+  const sources = join(workspaceRoot, '.agents/rules');
+  if (!existsSync(sources)) return [];
+  const expected = new Set(
+    discoverResourcePairs(workspaceRoot).map(([, generatedPath]) => generatedPath)
+  );
+
+  return readdirSync(sources)
+    .filter((file) => file.endsWith('.mdc'))
+    .sort()
+    .flatMap((file) => {
+      const name = file.slice(0, -4);
+
+      return agentRoots.flatMap((agentRoot) => {
+        const directory = join(workspaceRoot, agentRoot, name);
+        if (!existsSync(directory)) return [];
+
+        return resourceFiles(directory).flatMap((path) => {
+          const tail = path.slice(directory.length + 1);
+          if (tail === 'SKILL.md') return [];
+          const generatedPath = `${agentRoot}/${name}/${tail}`;
+
+          return expected.has(generatedPath) ? [] : [generatedPath];
+        });
+      });
+    });
+};
 export const checkSkillMirrors = (workspaceRoot) => {
   const sources = join(workspaceRoot, '.agents/rules');
   if (!existsSync(sources)) return [];
@@ -113,6 +140,16 @@ export const syncResources = (workspaceRoot, { check = false } = {}) => {
 
     mkdirSync(dirname(generated), { recursive: true });
     copyFileSync(source, generated);
+  }
+
+  for (const generatedPath of discoverOrphanedGeneratedResources(workspaceRoot)) {
+    if (check) {
+      stale.push(generatedPath);
+
+      continue;
+    }
+
+    rmSync(join(workspaceRoot, generatedPath), { force: true });
   }
 
   for (const generatedPath of retiredGeneratedPaths) {

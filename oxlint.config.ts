@@ -53,6 +53,9 @@ const forbiddenUdecodeImport = {
 };
 
 const platePliteBridgePatterns = [
+  'packages/platejs/src/authored/PlateAuthoredPlugin.ts',
+  'packages/platejs/src/authored/authored.api.spec.ts',
+  'packages/platejs/src/authored/index.ts',
   'packages/platejs/src/core.tsx',
   'packages/platejs/src/diff/index.ts',
   'packages/platejs/src/diff/plite-diff.internal.ts',
@@ -63,14 +66,23 @@ const platePliteBridgePatterns = [
   'packages/platejs/src/history/index.ts',
   'packages/platejs/src/history/plite-history.internal.ts',
   'packages/platejs/src/hyperscript/index.ts',
+  'packages/platejs/src/internal/plugin/resolvePlugins.ts',
+  'packages/platejs/src/internal/utils/mergePlugins.ts',
+  'packages/platejs/src/lib/editor/withPlite.ts',
+  'packages/platejs/src/lib/plugin/createPluginContext.internal.ts',
+  'packages/platejs/src/lib/plugin/definePlugin.ts',
   'packages/platejs/src/pagination/index.ts',
   'packages/platejs/src/pagination/react/index.ts',
+  'packages/platejs/src/react/internal/plate-content-editable.internal.ts',
   'packages/platejs/src/react/internal/plite-components.ts',
   'packages/platejs/src/react/internal/plite-types.ts',
   'packages/platejs/src/react/plite-react.ts',
+  'packages/platejs/src/react/virtualized.tsx',
   'packages/platejs/src/static/internal/plite-react.ts',
+  'packages/platejs/src/static/internal/writeStaticSelectionClipboardData.ts',
   'packages/platejs/src/testing/index.ts',
-  'packages/platejs/src/yjs/core.ts',
+  'packages/platejs/src/yjs/index.tsx',
+  'packages/platejs/src/yjs/react/YjsPlugin.tsx',
   'packages/platejs/src/yjs/react/index.tsx',
 ];
 

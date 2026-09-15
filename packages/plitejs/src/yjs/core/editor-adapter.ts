@@ -1,9 +1,9 @@
+import { isAuthoredOperationEffect } from '../../core/authored-runtime';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import type {
   Descendant,
   DocumentChange,
   EditorDocumentValue,
-  EditorEffect,
   EditorSelection,
   EditorUpdatePolicy,
   Element,
@@ -13,11 +13,13 @@ import type {
 } from '../../index';
 import { NodeApi, RangeApi, SelectionApi, runTrustedUpdate } from '../../index';
 import type { YjsEditor } from './editor-types';
+import type { PendingYjsEffect } from './shared-effect-log';
 
 export type YjsEditorAdapter = {
   readonly applyRemote: (input: {
+    readonly replacement?: EditorDocumentValue;
     readonly change?: DocumentChange;
-    readonly effects: readonly EditorEffect[];
+    readonly effects: readonly PendingYjsEffect[];
     readonly selection?: Range | Selection;
   }) => void;
   readonly canonicalize: (
@@ -137,12 +139,14 @@ export const createYjsEditorAdapter = (
   };
 
   const applyRemote: YjsEditorAdapter['applyRemote'] = ({
+    replacement,
     change,
     effects,
     selection,
   }) => {
     const currentValue = editor.read.value();
-    const nextValue = change ? change.apply(currentValue) : currentValue;
+    const nextValue =
+      replacement ?? (change ? change.apply(currentValue) : currentValue);
     const editorRoot =
       selection === undefined ||
       selection === null ||
@@ -164,6 +168,7 @@ export const createYjsEditorAdapter = (
       runTrustedUpdate(
         editor,
         (tx) => {
+          if (replacement) tx.value.replace(replacement);
           if (change && !change.empty) {
             tx.changes.apply(change);
           }
@@ -172,7 +177,22 @@ export const createYjsEditorAdapter = (
           }
 
           for (const effect of effects) {
-            tx.effects.emit(effect.type, effect.value);
+            if (
+              typeof effect !== 'function' &&
+              isAuthoredOperationEffect(editor, effect)
+            ) {
+              tx.effects.emit(effect.type, effect.value);
+            }
+          }
+          for (const pending of effects) {
+            if (
+              typeof pending !== 'function' &&
+              isAuthoredOperationEffect(editor, pending)
+            ) {
+              continue;
+            }
+            const effect = typeof pending === 'function' ? pending() : pending;
+            if (effect) tx.effects.emit(effect.type, effect.value);
           }
         },
         { tags: YjsUpdatePolicy.remote.tags }

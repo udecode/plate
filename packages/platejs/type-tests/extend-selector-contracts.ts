@@ -1,6 +1,6 @@
-import { defineBasePlugin } from '../src/lib/plugin/defineBasePlugin';
+import { definePlugin } from '../src/lib/plugin/definePlugin';
 
-const SelectorPlugin = defineBasePlugin('selectorPlugin', {
+const SelectorPlugin = definePlugin('selectorPlugin', {
   initialState: { value: 2 },
 }).extend(({ store }) => ({
   selectors: {

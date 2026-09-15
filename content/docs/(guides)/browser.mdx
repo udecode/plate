@@ -72,7 +72,7 @@ Browser proof should usually assert more than model state:
 | Visual evidence matters          | screenshot or JSON artifact                                              |
 | The editor still works afterward | follow-up typing after navigation, paste, undo, selection, or DOM repair |
 
-Feature contracts group browser behavior families by the owning Plite feature
+Feature contracts group browser behavior families by the owning Plate feature
 area. Use them to keep example coverage honest without turning one manual route
 check into a fake global guarantee.
 
@@ -84,17 +84,17 @@ browser-handle method names do not become public API.
 
 ```ts
 import {
-  getPliteBrowserEditable,
-  locatePliteBrowserBlock,
-  locatePliteBrowserText,
+  getBrowserEditable,
+  locateBrowserBlock,
+  locateBrowserText,
 } from "@platejs/test/playwright";
 ```
 
 | Helper                    | Use                                                            |
 | ------------------------- | -------------------------------------------------------------- |
-| `getPliteBrowserEditable` | Locate the first editor root in a page, frame, or scoped area. |
-| `locatePliteBrowserBlock` | Locate a rendered block by Plite path.                         |
-| `locatePliteBrowserText`  | Locate a rendered text node by Plite path.                     |
+| `getBrowserEditable` | Locate the first editor root in a page, frame, or scoped area. |
+| `locateBrowserBlock` | Locate a rendered block by Plate path.                         |
+| `locateBrowserText`  | Locate a rendered text node by Plate path.                     |
 
 Prefer the harness methods when they already express the behavior. They keep
 model, DOM, native-selection, and screenshot proof in one place instead of
@@ -115,32 +115,3 @@ claims require a real device runner and an artifact that records the resolved
 device, OS, and capability scope. Proxy browser lanes remain useful evidence,
 but they do not claim native mobile clipboard, human soft-keyboard, glide
 typing, or voice input.
-
-## Mobile input lab
-
-The Plite app exposes `/mobile-lab` for LAN-accessible browser capture:
-
-```text
-pnpm --filter plite dev:lan
-```
-
-Open the printed LAN URL on the target browser, append `/mobile-lab`, reproduce
-the input, take a snapshot, and export the replay JSON. The artifact records
-browser events, model and DOM state, model and native selections, commit and
-kernel traces, viewport facts, user agent, language, and touch metadata.
-
-The route is an evidence collector. Its JSON explicitly does not certify a
-raw-device claim. A raw-device or broad release-ready claim needs the
-real-device runner, device/OS receipts, and evidence bound to the exact source
-commit.
-
-## Commands
-
-```text
-pnpm --filter plite test:plite-browser
-pnpm --filter plite test:plite-browser:chromium
-pnpm --filter @platejs/test test
-```
-
-Use focused Playwright specs for behavior routes and generated stress replay for
-portable editing failures.

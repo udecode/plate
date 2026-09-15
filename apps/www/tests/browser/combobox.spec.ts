@@ -1,10 +1,10 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
-const EDITOR_ROOT = '[data-plite-editor="true"][contenteditable="true"]';
+const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 
 for (const combobox of [
   {
@@ -30,17 +30,13 @@ for (const combobox of [
 ] as const) {
   test(combobox.caseId, async ({ page }, testInfo) => {
     expect(testInfo.retry).toBe(0);
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       await page.goto(combobox.route, { waitUntil: 'commit' });
 
       const root = page.locator(EDITOR_ROOT).first();
-      const editor = createPliteBrowserEditorHarness(
-        page,
-        combobox.caseId,
-        root
-      );
+      const editor = createBrowserEditorHarness(page, combobox.caseId, root);
 
       await editor.ready({ editor: 'visible', text: combobox.text });
       await editor.selection.collapse({ offset: 0, path: [0, 0] });

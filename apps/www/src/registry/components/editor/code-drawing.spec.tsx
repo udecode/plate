@@ -22,7 +22,7 @@ mock.module('platejs/code-drawing/react', () => ({
   CodeDrawingPlugin: { configure: () => ({}) },
 }));
 mock.module('platejs/react', () => ({
-  PlateElement: ({ children }: React.PropsWithChildren) => (
+  EditorElement: ({ children }: React.PropsWithChildren) => (
     <div>{children}</div>
   ),
   useEditor: () => ({}),

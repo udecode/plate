@@ -3,7 +3,7 @@ title: Static Rendering
 description: A minimal, memoized, read-only version of Plate with RSC/SSR support.
 ---
 
-`<PlateStatic>` is a **fast, read-only** React component for rendering Plate content, optimized for **server-side** or **React Server Component** (RSC) environments. It avoids client-side editing logic and memoizes node renders for better performance compared to using [`<Plate>`](/docs/api/core/plate-components) in read-only mode.
+`<EditorStatic>` is a **fast, read-only** React component for rendering Plate content, optimized for **server-side** or **React Server Component** (RSC) environments. It avoids client-side editing logic and memoizes node renders for better performance compared to using [`<EditorRoot>`](/docs/api/core/plate-components) in read-only mode.
 
 It is the rendering path behind `renderStaticHtml` and fits server or RSC
 surfaces that need a non-interactive Plate view.
@@ -16,7 +16,7 @@ surfaces that need a non-interactive Plate view.
 -   **Partial Re-Renders:** Changes in one part of the document don't force a full re-render.
 -   **Lightweight:** Smaller bundle size as it omits interactive editor code.
 
-## When to use `<PlateStatic>`
+## When to use `<EditorStatic>`
 
 -   Generating HTML with [HTML Serialization](/docs/html).
 -   Displaying server-rendered previews in Next.js (especially with RSC).
@@ -25,7 +25,7 @@ surfaces that need a non-interactive Plate view.
 -   Rendering AI-streaming content.
 
 <Callout type="info" title="Interactive vs. Static">
-  For interactive read-only features (like comment popovers or selections), use the standard `<Plate>` component in the browser. For purely server-rendered, non-interactive content, `<PlateStatic>` is the recommended choice.
+  For interactive read-only features (like comment popovers or selections), use the standard `<EditorRoot>` component in the browser. For purely server-rendered, non-interactive content, `<EditorStatic>` is the recommended choice.
 </Callout>
 
 ## Kit usage
@@ -42,7 +42,7 @@ surfaces that need a non-interactive Plate view.
 
 ```tsx
 import { createEditor } from 'platejs';
-import { PlateStatic } from 'platejs/static';
+import { EditorStatic } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 const editor = createEditor({
@@ -55,7 +55,7 @@ const editor = createEditor({
 
 // Render statically
 export default function MyStaticPage() {
-  return <PlateStatic editor={editor} />;
+  return <EditorStatic editor={editor} />;
 }
 ```
 
@@ -63,7 +63,7 @@ export default function MyStaticPage() {
 
 See a complete server-side static rendering example:
 
-<ComponentSource name="plate-to-html" />
+<ComponentSource name="html-export" />
 
 </Steps>
 
@@ -71,9 +71,9 @@ See a complete server-side static rendering example:
 
 <Steps>
 
-### Create a Plite editor
+### Create a Plate editor
 
-Initialize a Plite editor instance using `createEditor` with component-bound plugins. This is analogous to using `useCreateEditor` for the interactive `<Plate>` component.
+Initialize a Plate editor instance using `createEditor` with component-bound plugins. This is analogous to using `useCreateEditor` for the interactive `<EditorRoot>` component.
 
 ```tsx title="lib/plate-static-editor.ts"
 import { createEditor } from 'platejs';
@@ -102,15 +102,15 @@ If your interactive editor uses client-side components (e.g., with `use client` 
 ```tsx title="components/editor/paragraph-static.tsx"
 import React from 'react';
 import type { BaseParagraphPlugin } from 'platejs';
-import { PliteElement, type PliteElementProps } from 'platejs/static';
+import { EditorElement, type EditorElementProps } from 'platejs/static';
 
 export function ParagraphElementStatic(
-  props: PliteElementProps<typeof BaseParagraphPlugin>
+  props: EditorElementProps<typeof BaseParagraphPlugin>
 ) {
   return (
-    <PliteElement {...props}>
+    <EditorElement {...props}>
       {props.children}
-    </PliteElement>
+    </EditorElement>
   );
 }
 ```
@@ -131,13 +131,13 @@ export const StaticEditorKit = [
 ];
 ```
 
-### Render `<PlateStatic>`
+### Render `<EditorStatic>`
 
-Use `<PlateStatic>` with an editor whose plugin descriptors own their static components.
+Use `<EditorStatic>` with an editor whose plugin descriptors own their static components.
 
 ```tsx title="app/my-static-page/page.tsx (RSC Example)"
 import { createEditor } from 'platejs';
-import { PlateStatic } from 'platejs/static';
+import { EditorStatic } from 'platejs/static';
 import { StaticEditorKit } from '@/components/static-editor-kit';
 
 export default async function MyStaticPage() {
@@ -153,7 +153,7 @@ export default async function MyStaticPage() {
   });
 
   return (
-    <PlateStatic
+    <EditorStatic
       editor={editor}
       style={{ padding: 16 }}
       className="my-plate-static-content"
@@ -164,20 +164,20 @@ export default async function MyStaticPage() {
 
 ### Memoization details
 
-`<PlateStatic>` enhances performance through memoization:
+`<EditorStatic>` enhances performance through memoization:
 -   Static element and leaf rendering uses `React.memo`.
 -   **Reference Equality:** Unchanged node references prevent re-renders.
 
 </Steps>
 
-## Client-side alternative: `PlateView`
+## Client-side alternative: `EditorPreview`
 
-For cases where you need **minimal interactivity** with static content, use `<PlateView>`. This component wraps `<PlateStatic>` and adds client-side event handlers for user interactions while maintaining the performance benefits of static rendering.
+For cases where you need **minimal interactivity** with static content, use `<EditorPreview>`. This component wraps `<EditorStatic>` and adds client-side event handlers for user interactions while maintaining the performance benefits of static rendering.
 
 ### Example: server component with both static views
 
 ```tsx title="app/document/page.tsx"
-import { createStaticEditor, PlateStatic } from 'platejs/static';
+import { createStaticEditor, EditorStatic } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 import { InteractiveViewer } from './interactive-viewer';
 
@@ -194,7 +194,7 @@ export default async function DocumentPage() {
       {/* Pure static rendering - no interactivity */}
       <div>
         <h2>Static View (Server Rendered)</h2>
-        <PlateStatic editor={editor} />
+        <EditorStatic editor={editor} />
       </div>
 
       {/* Interactive view - rendered on client */}
@@ -207,12 +207,12 @@ export default async function DocumentPage() {
 }
 ```
 
-### Example: client component with PlateView
+### Example: client component with EditorPreview
 
 ```tsx title="app/document/interactive-viewer.tsx"
 'use client';
 
-import { PlateView, useStaticEditor } from 'platejs/react';
+import { EditorPreview, useStaticEditor } from 'platejs/react';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 export function InteractiveViewer({ value }) {
@@ -221,25 +221,27 @@ export function InteractiveViewer({ value }) {
     initialValue: value,
   });
 
-  return <PlateView editor={editor} />;
+  return <EditorPreview editor={editor} />;
 }
 ```
 
-### Key features of `PlateView`
+### Key features of `EditorPreview`
 
 - **Client-side only**: Requires `'use client'` directive
 - **Adds interactivity**: Enables user interactions with the content (e.g., text selection, copying, future interactions like tooltips, highlights, etc.)
-- **Minimal overhead**: Still uses `PlateStatic` internally for rendering
+- **Minimal overhead**: Still uses `EditorStatic` internally for rendering
 - **Use with `useStaticEditor`**: Creates a static editor optimized for view-only React components
-- **ViewPlugin included**: The static editor automatically includes `ViewPlugin` which provides event handling capabilities
+- **Exact copy payloads**: `EditorPreview` resolves selection against its own
+  static host and writes the same model slice, HTML, and plain-text payloads as
+  a mounted editor
 
 <Callout type="warning" title="Server Component Compatibility">
-  `PlateView` cannot be used in Server Components. If you're passing an editor from a server component to a client component, you'll encounter serialization errors. Use `PlateStatic` on the server side, or create the editor client-side with `useStaticEditor`.
+  `EditorPreview` cannot be used in Server Components. If you're passing an editor from a server component to a client component, you'll encounter serialization errors. Use `EditorStatic` on the server side, or create the editor client-side with `useStaticEditor`.
 </Callout>
 
-## `PlateStatic` vs. `PlateView` vs. `Plate` + `readOnly`
+## `EditorStatic` vs. `EditorPreview` vs. `EditorRoot` + `readOnly`
 
-| Aspect                | `<PlateStatic>`                                       | `<PlateView>`                                          | `<Plate>` + `readOnly`                                 |
+| Aspect                | `<EditorStatic>`                                       | `<EditorPreview>`                                          | `<EditorRoot>` + `readOnly`                                 |
 | --------------------- | ----------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------ |
 | **Environment**       | Server/Client (SSR/RSC safe)                          | Client-only                                            | Client-only                                            |
 | **Interactivity**     | None                                                  | Minimal (selection, copy, toolbar, etc.)     | Full interactive features (browser-only)               |
@@ -251,11 +253,11 @@ export function InteractiveViewer({ value }) {
 
 ## RSC/SSR example
 
-In a Next.js App Router (or similar RSC environment), `<PlateStatic>` can be used directly in Server Components:
+In a Next.js App Router (or similar RSC environment), `<EditorStatic>` can be used directly in Server Components:
 
 ```tsx title="app/preview/page.tsx (RSC)"
 import { createEditor } from 'platejs';
-import { PlateStatic } from 'platejs/static';
+import { EditorStatic } from 'platejs/static';
 import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 
 export default async function Page() {
@@ -271,19 +273,19 @@ export default async function Page() {
   });
 
   return (
-    <PlateStatic
+    <EditorStatic
       editor={editor}
       className="my-static-preview-container"
     />
   );
 }
 ```
-This renders the content to HTML on the server without needing a client-side JavaScript bundle for `PlateStatic` itself.
+This renders the content to HTML on the server without needing a client-side JavaScript bundle for `EditorStatic` itself.
 
 ## Pairing with `renderStaticHtml`
 
 For server-rendering the static Plate tree to an HTML string, use
-`renderStaticHtml`. It renders `<PlateStatic>` through React DOM Server; it is
+`renderStaticHtml`. It renders `<EditorStatic>` through React DOM Server; it is
 not a semantic HTML codec.
 
 ```ts title="lib/html-serializer.ts"
@@ -298,7 +300,7 @@ async function getDocumentAsHtml(value: any[]) {
   });
 
   const html = await renderStaticHtml(editor, {
-    // editorComponent: PlateStatic, // Optional: Defaults to PlateStatic
+    // editorComponent: EditorStatic, // Optional: Defaults to EditorStatic
     props: { className: 'prose max-w-none' }, // Example: Pass props to the root div
   });
 
@@ -313,13 +315,13 @@ For more details, see the [HTML Serialization guide](/docs/html).
 
 ## API Reference
 
-### `<PlateStatic>` props
+### `<EditorStatic>` props
 
 ```ts
 import type React from 'react';
 import type { Editor } from 'platejs';
 
-interface PlateStaticProps<E = Editor>
+interface EditorStaticProps<E = Editor>
   extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * The Plate editor instance, created via `createEditor`.

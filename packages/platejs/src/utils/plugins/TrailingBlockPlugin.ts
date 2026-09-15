@@ -5,7 +5,7 @@ import {
   type NodeMatch,
   PathApi,
 } from '../../facade';
-import { defineBasePlugin } from '../../lib/plugin/defineBasePlugin';
+import { definePlugin } from '../../lib/plugin/definePlugin';
 import type { DefinitionOf } from '../../lib/plugin/PluginDefinition';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { PLUGINS } from '../plate-keys';
@@ -21,7 +21,7 @@ export type TrailingBlockPluginState = {
   type: string;
 };
 
-export const TrailingBlockPlugin = defineBasePlugin(PLUGINS.trailingBlock, {
+export const TrailingBlockPlugin = definePlugin(PLUGINS.trailingBlock, {
   initialState: ({ editor }): TrailingBlockPluginState => ({
     insert: null,
     level: 0,

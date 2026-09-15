@@ -1,17 +1,17 @@
 import type {
   OffsetExpectation,
   SelectionSnapshotExpectation,
-  PliteBrowserNormalizedScenarioMetadata,
-  PliteBrowserScenarioMetadata,
-  PliteBrowserScenarioReductionCandidate,
-  PliteBrowserScenarioReductionCandidateSummary,
-  PliteBrowserScenarioReplay,
-  PliteBrowserScenarioReplayStep,
-  PliteBrowserScenarioStep,
-  PliteBrowserTransportClaim,
+  BrowserNormalizedScenarioMetadata,
+  BrowserScenarioMetadata,
+  BrowserScenarioReductionCandidate,
+  BrowserScenarioReductionCandidateSummary,
+  BrowserScenarioReplay,
+  BrowserScenarioReplayStep,
+  BrowserScenarioStep,
+  BrowserTransportClaim,
 } from './types';
 
-type ScenarioStepKind = PliteBrowserScenarioStep['kind'];
+type ScenarioStepKind = BrowserScenarioStep['kind'];
 type ValueValidator = (value: unknown) => boolean;
 type ScenarioStepShape = {
   optional?: Record<string, ValueValidator>;
@@ -306,7 +306,7 @@ const isKernelSelectionPolicy: ValueValidator = (value) =>
         'export-model',
         'import-dom',
         'none',
-        'partial-dom',
+        'viewport',
         'preserve-model'
       ),
       reason: isOneOf(
@@ -314,7 +314,7 @@ const isKernelSelectionPolicy: ValueValidator = (value) =>
         'model-owned',
         'native-selection',
         'not-requested',
-        'partial-dom-backed',
+        'viewport-backed',
         'selection-clear',
         'unknown-selection'
       ),
@@ -416,7 +416,7 @@ const isKernelTraceExpectation: ValueValidator = (value) =>
         'dom-current',
         'internal-control',
         'model-owned',
-        'partial-dom-backed',
+        'viewport-backed',
         'unknown'
       ),
       stateAfter: isOneOf(
@@ -428,7 +428,7 @@ const isKernelTraceExpectation: ValueValidator = (value) =>
         'idle',
         'internal-control',
         'model-owned',
-        'partial-dom-backed',
+        'viewport-backed',
         'repairing'
       ),
       stateBefore: isOneOf(
@@ -440,7 +440,7 @@ const isKernelTraceExpectation: ValueValidator = (value) =>
         'idle',
         'internal-control',
         'model-owned',
-        'partial-dom-backed',
+        'viewport-backed',
         'repairing'
       ),
       targetOwner: isOneOf(
@@ -448,7 +448,7 @@ const isKernelTraceExpectation: ValueValidator = (value) =>
         'editor',
         'internal-control',
         'outside-editor',
-        'partial-dom',
+        'viewport',
         'unknown'
       ),
       transition: isKernelTransition,
@@ -655,7 +655,7 @@ const scenarioStepShapes = {
 const decodeScenarioStep = (
   value: unknown,
   path: string
-): PliteBrowserScenarioStep => {
+): BrowserScenarioStep => {
   if (!isJsonRecord(value)) {
     throw new TypeError(`${path} must be a JSON object.`);
   }
@@ -692,11 +692,11 @@ const decodeScenarioStep = (
     throw new TypeError(`${path} does not contain a meaningful assertion.`);
   }
 
-  return value as PliteBrowserScenarioStep;
+  return value as BrowserScenarioStep;
 };
 
 const omitAbsentScenarioStepFields = (
-  step: PliteBrowserScenarioStep
+  step: BrowserScenarioStep
 ): Record<string, unknown> => {
   if (
     !isRecord(step) ||
@@ -722,9 +722,9 @@ const omitAbsentScenarioStepFields = (
 
 /** Create candidate reduced scenarios from a failing scenario result. */
 export const createScenarioReductionCandidates = (
-  steps: readonly PliteBrowserScenarioStep[]
-): PliteBrowserScenarioReductionCandidate[] => {
-  const candidates: PliteBrowserScenarioReductionCandidate[] = [];
+  steps: readonly BrowserScenarioStep[]
+): BrowserScenarioReductionCandidate[] => {
+  const candidates: BrowserScenarioReductionCandidate[] = [];
   let warmRange: {
     end: number;
     iteration: number;
@@ -808,7 +808,7 @@ export const createScenarioReductionCandidates = (
   return candidates.filter((candidate) => candidate.steps.length > 0);
 };
 
-const getScenarioStepLabel = (step: PliteBrowserScenarioStep, index: number) =>
+const getScenarioStepLabel = (step: BrowserScenarioStep, index: number) =>
   step.label ?? `${index}:${step.kind}`;
 
 const summarizeTextPayload = (text: string) => {
@@ -832,7 +832,7 @@ const summarizeSelectionPayload = (selection: SelectionSnapshotExpectation) =>
 
 /** Summarize a scenario step for logs and reduction output. */
 export const summarizeScenarioStep = (
-  step: PliteBrowserScenarioStep,
+  step: BrowserScenarioStep,
   index: number
 ) => {
   const label = getScenarioStepLabel(step, index);
@@ -973,9 +973,9 @@ const toReplayValue = (
 
 /** Serialize a scenario step into a replayable description. */
 export const serializeScenarioStepForReplay = (
-  step: PliteBrowserScenarioStep,
+  step: BrowserScenarioStep,
   index: number
-): PliteBrowserScenarioReplayStep => {
+): BrowserScenarioReplayStep => {
   const { value, replayable } = toReplayValue(
     omitAbsentScenarioStepFields(step)
   );
@@ -1002,7 +1002,7 @@ export const serializeScenarioStepForReplay = (
 const decodeScenarioReplayStep = (
   value: unknown,
   index: number
-): PliteBrowserScenarioReplayStep => {
+): BrowserScenarioReplayStep => {
   const path = `replay.steps[${index}]`;
 
   if (!isJsonRecord(value)) {
@@ -1062,9 +1062,7 @@ const decodeScenarioReplayStep = (
 };
 
 /** Decode and validate a canonical JSON scenario replay artifact. */
-export const decodeScenarioReplay = (
-  value: unknown
-): PliteBrowserScenarioReplay => {
+export const decodeScenarioReplay = (value: unknown): BrowserScenarioReplay => {
   if (!isJsonRecord(value)) {
     throw new TypeError('Scenario replay must be a JSON object.');
   }
@@ -1084,8 +1082,8 @@ export const decodeScenarioReplay = (
 
 /** Create a replay artifact from scenario metadata and steps. */
 export const createScenarioReplay = (
-  steps: readonly PliteBrowserScenarioStep[]
-): PliteBrowserScenarioReplay => {
+  steps: readonly BrowserScenarioStep[]
+): BrowserScenarioReplay => {
   const replaySteps = steps.map(serializeScenarioStepForReplay);
 
   return {
@@ -1101,7 +1099,7 @@ export const summarizeScenarioReductionCandidate = ({
   removedSteps,
   removedRange,
   steps,
-}: PliteBrowserScenarioReductionCandidate): PliteBrowserScenarioReductionCandidateSummary => ({
+}: BrowserScenarioReductionCandidate): BrowserScenarioReductionCandidateSummary => ({
   kind,
   label,
   removedStepLabels: removedSteps.map(getScenarioStepLabel),
@@ -1114,8 +1112,8 @@ export const summarizeScenarioReductionCandidate = ({
 
 /** Normalize scenario metadata with defaults for transport and labels. */
 export const normalizeScenarioMetadata = (
-  metadata: PliteBrowserScenarioMetadata = {}
-): PliteBrowserNormalizedScenarioMetadata => ({
+  metadata: BrowserScenarioMetadata = {}
+): BrowserNormalizedScenarioMetadata => ({
   capabilities: Array.from(new Set(metadata.capabilities)).sort(),
   claim: classifyScenarioTransportClaim(metadata),
   platform: metadata.platform ?? null,
@@ -1126,7 +1124,7 @@ export const normalizeScenarioMetadata = (
 export const classifyScenarioTransportClaim = ({
   platform,
   transport,
-}: PliteBrowserScenarioMetadata): PliteBrowserTransportClaim => {
+}: BrowserScenarioMetadata): BrowserTransportClaim => {
   if (!transport) {
     return platform === 'mobile' ? 'playwright-mobile-viewport' : 'unspecified';
   }

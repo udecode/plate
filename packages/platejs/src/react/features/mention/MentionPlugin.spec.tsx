@@ -3,8 +3,8 @@
 import { act, render, waitFor } from '@testing-library/react';
 import React from 'react';
 
-import { Plate } from '../../components/Plate';
-import { PlateContent } from '../../components/PlateContent';
+import { EditorRoot } from '../../components/Plate';
+import { EditorContent } from '../../components/PlateContent';
 import { createEditor } from '../../editor';
 import { ParagraphPlugin } from '../../plugins/paragraph/ParagraphPlugin';
 import { MentionInputPlugin, MentionPlugin } from './MentionPlugin';
@@ -28,16 +28,16 @@ describe('MentionPlugin', () => {
       initialValue: [{ children: [{ text: 'Mention' }], type: 'paragraph' }],
     });
     const rendered = render(
-      <Plate editor={editor}>
-        <PlateContent />
-      </Plate>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
     );
 
     const editable = rendered.container.querySelector<HTMLElement>(
       '[contenteditable="true"]'
     );
     const text = rendered.container.querySelector(
-      '[data-plite-string]'
+      '[data-editor-string]'
     )?.firstChild;
 
     expect(editable).not.toBeNull();

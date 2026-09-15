@@ -5,7 +5,7 @@ import {
   SingleLinePlugin,
   TrailingBlockPlugin,
 } from 'platejs';
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -43,7 +43,7 @@ export default function SingleBlockDemo() {
 
   return (
     <div className="space-y-4">
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <div className="flex items-center space-x-2 p-2">
           <Checkbox
             id="single-block-mode"
@@ -60,7 +60,7 @@ export default function SingleBlockDemo() {
         <EditorContainer variant="demo">
           <Editor />
         </EditorContainer>
-      </Plate>
+      </EditorRoot>
     </div>
   );
 }

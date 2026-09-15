@@ -1,8 +1,8 @@
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   defineEditorSchema,
-  defineExtensionSlot,
+  definePluginSlot,
   type Descendant,
   NodeApi,
   property,
@@ -292,7 +292,7 @@ const recursiveValue: SchemaValue<typeof RelationshipSchema> = [
   },
 ];
 
-const relationshipEditor = createEditor({ extensions: [RelationshipSchema] });
+const relationshipEditor = createEditor({ plugins: [RelationshipSchema] });
 const tableHandle = schema.handle.element(RelationshipSchema, 'table');
 const cellHandle = schema.handle.element(RelationshipSchema, 'cell');
 const createdTable = relationshipEditor.read.schema.create(tableHandle, {
@@ -676,7 +676,7 @@ const invalidPropertyId: SchemaPropertyIds<typeof ArticleSchema> =
   'element:comment_*@hash';
 
 const editor = createEditor({
-  extensions: [ArticleSchema],
+  plugins: [ArticleSchema],
   initialValue: [
     { align: 'start', children: [{ text: 'paragraph' }], type: 'paragraph' },
   ],
@@ -741,7 +741,7 @@ const factoryOptions = {
   nested: { enabled: true },
   types: ['callout'],
 } as const;
-const FactoryContribution = defineExtension(
+const FactoryContribution = definePlugin(
   'schema-inference-factory-contribution',
   {
     schema(context) {
@@ -783,7 +783,7 @@ const FactoryContribution = defineExtension(
   }
 );
 const composedEditor = createEditor({
-  extensions: [ArticleSchema, FactoryContribution] as const,
+  plugins: [ArticleSchema, FactoryContribution] as const,
   initialValue: [
     { children: [{ text: 'typed contribution' }], type: 'callout' },
   ],
@@ -888,7 +888,7 @@ void possibleDynamicDocument;
 void unsupportedDepthParagraph;
 
 const slottedEditor = createEditor({
-  extensions: [defineExtensionSlot('article-schema').of(ArticleSchema)],
+  plugins: [definePluginSlot('article-schema').of(ArticleSchema)],
   initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
 });
 const slottedChildren = slottedEditor.read.children();
@@ -919,11 +919,11 @@ type WiderValue = Array<
   | { children: Array<{ legacy: true; text: string }>; type: 'legacy' }
 >;
 
-const articleExtensions = [ArticleSchema] as const;
+const articlePlugins = [ArticleSchema] as const;
 
 const assertWiderValueType = () => {
-  const widerEditor = createEditor<WiderValue, typeof articleExtensions>({
-    extensions: articleExtensions,
+  const widerEditor = createEditor<WiderValue, typeof articlePlugins>({
+    plugins: articlePlugins,
     initialValue: [{ children: [{ legacy: true, text: '' }], type: 'legacy' }],
   });
   const widerValue: ReadonlyArray<WiderValue[number]> =

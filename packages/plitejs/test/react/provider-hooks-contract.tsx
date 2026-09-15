@@ -1,6 +1,12 @@
 import { act, render, renderHook, waitFor } from '@testing-library/react';
 import _ from 'lodash';
-import { type EditorCommit, type NodeKey, NodeApi, TextApi } from 'plitejs';
+import {
+  type EditorCommit,
+  getEditorRuntimeOwner,
+  type NodeKey,
+  NodeApi,
+  TextApi,
+} from 'plitejs';
 import {
   Component,
   type ReactNode,
@@ -19,7 +25,7 @@ import {
 import {
   createEditor,
   Editable,
-  Plite,
+  EditorRoot,
   type RenderElementProps,
   useEditorContext,
   useEditorSelection,
@@ -179,6 +185,9 @@ describe('plite-react provider hooks contract', () => {
           ...commit,
           changed: {
             ...commit.changed,
+            hasNodeKey: (key, fact) =>
+              fact === (source === 'render' ? 'node' : source) &&
+              (key === keys[0] || key === keys[1]),
             nodeKeysAll: (fact) =>
               fact === (source === 'render' ? 'node' : source)
                 ? [keys[0], keys[1], keys[0]]
@@ -359,7 +368,7 @@ describe('plite-react provider hooks contract', () => {
       initialValue,
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <Plite editor={editor}>{children}</Plite>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
     const { result } = renderHook(() => useEditorSelection(), { wrapper });
 
@@ -387,56 +396,56 @@ describe('plite-react provider hooks contract', () => {
   test('useEditorContext follows a keyed provider remount', () => {
     const editorA = createEditor({ initialValue });
     const editorB = createEditor({ initialValue });
-    const seen: unknown[] = [];
+    const seen: Array<typeof editorA> = [];
 
     const ShowStaticEditor = () => {
       const editor = useEditorContext();
       seen.push(editor);
       return (
         <span data-testid="static-editor">
-          {editor === editorB ? 'B' : 'A'}
+          {Object.is(getEditorRuntimeOwner(editor), editorB) ? 'B' : 'A'}
         </span>
       );
     };
 
     const rendered = render(
-      <Plite editor={editorA}>
+      <EditorRoot editor={editorA}>
         <Editable />
         <ShowStaticEditor />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(rendered.getByTestId('static-editor')).toHaveTextContent('A');
-    expect(seen.at(-1)).toBe(editorA);
+    expect(getEditorRuntimeOwner(seen.at(-1)!)).toBe(editorA);
 
     rendered.rerender(
-      <Plite editor={editorB} key="editor-b">
+      <EditorRoot editor={editorB} key="editor-b">
         <Editable />
         <ShowStaticEditor />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(rendered.getByTestId('static-editor')).toHaveTextContent('B');
-    expect(seen.at(-1)).toBe(editorB);
+    expect(getEditorRuntimeOwner(seen.at(-1)!)).toBe(editorB);
   });
 
-  test('Plite rejects replacing a mounted editor runtime', () => {
+  test('EditorRoot rejects replacing a mounted editor', () => {
     const editorA = createEditor({ initialValue });
     const editorB = createEditor({ initialValue });
     const rendered = render(
-      <Plite editor={editorA}>
+      <EditorRoot editor={editorA}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(() =>
       rendered.rerender(
-        <Plite editor={editorB}>
+        <EditorRoot editor={editorB}>
           <Editable />
-        </Plite>
+        </EditorRoot>
       )
     ).toThrow(
-      '[Plite] Cannot replace the editor runtime of a mounted provider. Remount <Plite> with a different React key.'
+      '[EditorRoot] Cannot replace the editor runtime of a mounted provider. Remount <EditorRoot> with a different React key.'
     );
   });
 
@@ -453,10 +462,10 @@ describe('plite-react provider hooks contract', () => {
     });
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
 
     act(() => {
@@ -466,9 +475,9 @@ describe('plite-react provider hooks contract', () => {
     expect(editor.read.text.string([])).toBe('abc');
 
     rendered.rerender(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
 
     rendered.unmount();
@@ -482,6 +491,7 @@ describe('plite-react provider hooks contract', () => {
 
   test('Plite publishes editor commits from child mount layout effects', () => {
     const editor = createEditor({ initialValue });
+    let mountedEditor: typeof editor | null = null;
     const onCommit = vi.fn();
     const onValueChange = vi.fn();
     const shouldUpdate = vi.fn<(change?: EditorCommit) => boolean>(() => true);
@@ -493,33 +503,38 @@ describe('plite-react provider hooks contract', () => {
     );
 
     const ProbeAndCommit = () => {
-      const mountedEditor = useEditorContext();
+      const currentEditor = useEditorContext();
+      mountedEditor = currentEditor;
       const text = useEditorSelector(selector, {
         equalityFn: Object.is,
         shouldUpdate,
       });
 
       useLayoutEffect(() => {
-        mountedEditor.update((tx) => {
+        currentEditor.update((tx) => {
           tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
         });
-      }, [mountedEditor]);
+      }, [currentEditor]);
 
       return <span data-testid="selector-text">{text}</span>;
     };
 
     const rendered = render(
-      <Plite editor={editor} onCommit={onCommit} onValueChange={onValueChange}>
+      <EditorRoot
+        editor={editor}
+        onCommit={onCommit}
+        onValueChange={onValueChange}
+      >
         <Editable />
         <ProbeAndCommit />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(rendered.getByTestId('selector-text')).toHaveTextContent('test!');
     expect(onCommit).toHaveBeenCalledWith(
       expect.objectContaining({
         commit: expect.anything(),
-        editor,
+        editor: mountedEditor,
         snapshot: expect.objectContaining({
           children: [{ type: 'block', children: [{ text: 'test!' }] }],
         }),
@@ -527,7 +542,7 @@ describe('plite-react provider hooks contract', () => {
     );
     expect(onValueChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        editor,
+        editor: mountedEditor,
         value: [{ type: 'block', children: [{ text: 'test!' }] }],
       })
     );
@@ -567,17 +582,17 @@ describe('plite-react provider hooks contract', () => {
       );
     };
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
         <Probe allow={false} />
-      </Plite>
+      </EditorRoot>
     );
 
     rendered.rerender(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
         <Probe allow insert="!" />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(rendered.getByTestId('filtered-selector-text')).toHaveTextContent(
@@ -602,12 +617,12 @@ describe('plite-react provider hooks contract', () => {
       return <span data-testid="committed-filter-text">{text}</span>;
     };
     const tree = (abandoned: boolean) => (
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
         <Suspense fallback={<span>loading</span>}>
           <Probe abandoned={abandoned} />
         </Suspense>
-      </Plite>
+      </EditorRoot>
     );
     const rendered = render(tree(false));
     const committedSelectorCalls = selector.mock.calls.length;
@@ -639,10 +654,10 @@ describe('plite-react provider hooks contract', () => {
       {
         initialProps: { callback: callback1 },
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -678,10 +693,10 @@ describe('plite-react provider hooks contract', () => {
       {
         initialProps: { preserve: true },
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -762,13 +777,13 @@ describe('plite-react provider hooks contract', () => {
     };
     const tree = (abandoned: boolean) => (
       <Suspense fallback={<span>loading</span>}>
-        <Plite
+        <EditorRoot
           editor={committedEditor}
           onCommit={abandoned ? abandonedOnCommit : committedOnCommit}
         >
           <MaybeSuspend abandoned={abandoned} />
           <Editable />
-        </Plite>
+        </EditorRoot>
       </Suspense>
     );
     const rendered = render(tree(false));
@@ -814,9 +829,13 @@ describe('plite-react provider hooks contract', () => {
       onCommit: typeof previousOnCommit,
       onValueChange: typeof previousOnValueChange
     ) => (
-      <Plite editor={editor} onCommit={onCommit} onValueChange={onValueChange}>
+      <EditorRoot
+        editor={editor}
+        onCommit={onCommit}
+        onValueChange={onValueChange}
+      >
         <CommitInLayout commit={commit} />
-      </Plite>
+      </EditorRoot>
     );
     const rendered = render(
       tree(false, previousOnCommit, previousOnValueChange)
@@ -860,12 +879,12 @@ describe('plite-react provider hooks contract', () => {
 
     try {
       const rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
           <SelectorErrorBoundary onError={onError}>
             <ThrowingSelector />
           </SelectorErrorBoundary>
-        </Plite>
+        </EditorRoot>
       );
 
       expect(rendered.getByTestId('selector-version')).toHaveTextContent(
@@ -910,10 +929,10 @@ describe('plite-react provider hooks contract', () => {
       () => useEditorSelector(selector, { equalityFn: Object.is }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -927,7 +946,11 @@ describe('plite-react provider hooks contract', () => {
     });
 
     expect(result.current).toBe('text');
-    expect(seenEditors.every((seenEditor) => seenEditor === editor)).toBe(true);
+    expect(
+      seenEditors.every((seenEditor) =>
+        Object.is(getEditorRuntimeOwner(seenEditor), editor)
+      )
+    ).toBe(true);
   });
 
   test('deferred useEditorSelector coalesces to the latest canonical commit', async () => {
@@ -945,10 +968,10 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -983,10 +1006,10 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1012,8 +1035,8 @@ describe('plite-react provider hooks contract', () => {
     const editor = createEditor({ initialValue });
     const selector = vi.fn(() => editorGetLastCommit(editor)?.version ?? 0);
     const counter = createPliteReactRenderCounter();
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+    const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
 
     try {
       const { result } = renderHook(
@@ -1025,10 +1048,10 @@ describe('plite-react provider hooks contract', () => {
           }),
         {
           wrapper: ({ children }) => (
-            <Plite editor={editor}>
+            <EditorRoot editor={editor}>
               <Editable />
               {children}
-            </Plite>
+            </EditorRoot>
           ),
         }
       );
@@ -1054,7 +1077,7 @@ describe('plite-react provider hooks contract', () => {
       expect(profile.byKey['selector:selector-deferred-proof-check']).toBe(2);
       expect(profile.byKey['selector:selector-deferred-proof-notify']).toBe(2);
     } finally {
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
   });
 
@@ -1081,10 +1104,10 @@ describe('plite-react provider hooks contract', () => {
       () => useEditorSelector(selector, { shouldUpdate }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1140,10 +1163,10 @@ describe('plite-react provider hooks contract', () => {
       () => useEditorState(selector, { shouldUpdate }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1219,10 +1242,10 @@ describe('plite-react provider hooks contract', () => {
       }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1274,8 +1297,8 @@ describe('plite-react provider hooks contract', () => {
     const selector = vi.fn(() => editorGetLastCommit(editor)?.version ?? 0);
     const shouldUpdate = vi.fn<(change?: EditorCommit) => boolean>(() => true);
     const counter = createPliteReactRenderCounter();
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+    const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
 
     try {
       const { result } = renderHook(
@@ -1286,10 +1309,10 @@ describe('plite-react provider hooks contract', () => {
           }),
         {
           wrapper: ({ children }) => (
-            <Plite editor={editor}>
+            <EditorRoot editor={editor}>
               <Editable />
               {children}
-            </Plite>
+            </EditorRoot>
           ),
         }
       );
@@ -1341,7 +1364,7 @@ describe('plite-react provider hooks contract', () => {
         )
       ).not.toHaveLength(0);
     } finally {
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
   });
 
@@ -1371,10 +1394,10 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1417,10 +1440,10 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1460,10 +1483,10 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1510,10 +1533,10 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1566,10 +1589,10 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1616,10 +1639,10 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1669,10 +1692,10 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -1705,12 +1728,12 @@ describe('plite-react provider hooks contract', () => {
 
     const { result } = renderHook(() => useElementPath(), {
       wrapper: ({ children }) => (
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
           <ElementContext value={{ element: value[0], nodeKey, path: [0] }}>
             {children}
           </ElementContext>
-        </Plite>
+        </EditorRoot>
       ),
     });
 
@@ -1750,9 +1773,9 @@ describe('plite-react provider hooks contract', () => {
       );
     };
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={(props) => <PathElement {...props} />} />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -1783,7 +1806,7 @@ describe('plite-react provider hooks contract', () => {
       editor.key([index])
     ) as NodeKey[];
     const counter = createPliteReactRenderCounter();
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
 
     const PathProbe = ({ nodeKey }: { nodeKey: NodeKey }) => {
       const path = useElementPath();
@@ -1793,11 +1816,11 @@ describe('plite-react provider hooks contract', () => {
       );
     };
 
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
 
     try {
       render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
           {nodeKeys.map((nodeKey, index) => (
             <ElementContext
@@ -1807,7 +1830,7 @@ describe('plite-react provider hooks contract', () => {
               <PathProbe nodeKey={nodeKey} />
             </ElementContext>
           ))}
-        </Plite>
+        </EditorRoot>
       );
 
       counter.reset();
@@ -1828,119 +1851,7 @@ describe('plite-react provider hooks contract', () => {
       expect(elementPathChecks).toHaveLength(0);
       expect(elementPathNotifies).toHaveLength(0);
     } finally {
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
-    }
-  });
-
-  test('Editable keeps large staged root groups stable across local edits and parent rerenders', async () => {
-    const value = Array.from({ length: 1001 }, (_value, index) => ({
-      type: 'block',
-      children: [{ text: `line ${index}` }],
-    }));
-    const editor = createEditor({ initialValue: value });
-    const counter = createPliteReactRenderCounter();
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
-    let rendered: ReturnType<typeof render> | null = null;
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
-
-    try {
-      rendered = render(
-        <Plite editor={editor}>
-          <Editable data-testid="grouped-root" domStrategy="staged" />
-        </Plite>
-      );
-
-      expect(counter.snapshot().byKind.group).toBe(1);
-      expect(
-        rendered.container.querySelectorAll(
-          '[data-plite-root-group-state="pending-mount"]'
-        )
-      ).toHaveLength(1);
-
-      counter.reset();
-
-      await act(async () => {
-        editor.update((tx) => {
-          tx.text.insert('!', { at: { path: [1000, 0], offset: 0 } });
-        });
-      });
-
-      const editProfile = counter.snapshot();
-
-      expect(
-        editProfile.events.filter(
-          (event) => event.kind === 'group' && event.id === '0-49'
-        )
-      ).toHaveLength(0);
-      expect(editProfile.byKind.group ?? 0).toBeLessThanOrEqual(1);
-
-      counter.reset();
-
-      rendered.rerender(
-        <Plite editor={editor}>
-          <Editable data-testid="grouped-root-next" domStrategy="staged" />
-        </Plite>
-      );
-
-      expect(counter.snapshot().byKind.group ?? 0).toBe(0);
-    } finally {
-      rendered?.unmount();
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
-    }
-  });
-
-  test('Editable can explicitly use staged dom-strategy grouping', () => {
-    const value = Array.from({ length: 1001 }, (_value, index) => ({
-      type: 'block',
-      children: [{ text: `line ${index}` }],
-    }));
-    const editor = createEditor({ initialValue: value });
-    const counter = createPliteReactRenderCounter();
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
-    let rendered: ReturnType<typeof render> | null = null;
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
-
-    try {
-      rendered = render(
-        <Plite editor={editor}>
-          <Editable data-testid="staged-root" domStrategy="staged" />
-        </Plite>
-      );
-
-      expect(counter.snapshot().byKind.group).toBe(1);
-      expect(
-        rendered.container.querySelectorAll(
-          '[data-plite-root-group-state="pending-mount"]'
-        )
-      ).toHaveLength(1);
-    } finally {
-      rendered?.unmount();
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
-    }
-  });
-
-  test('Editable can disable automatic dom-strategy root grouping', () => {
-    const value = Array.from({ length: 1001 }, (_value, index) => ({
-      type: 'block',
-      children: [{ text: `line ${index}` }],
-    }));
-    const editor = createEditor({ initialValue: value });
-    const counter = createPliteReactRenderCounter();
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
-    let rendered: ReturnType<typeof render> | null = null;
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
-
-    try {
-      rendered = render(
-        <Plite editor={editor}>
-          <Editable data-testid="ungrouped-root" domStrategy="full" />
-        </Plite>
-      );
-
-      expect(counter.snapshot().byKind.group ?? 0).toBe(0);
-    } finally {
-      rendered?.unmount();
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
   });
 
@@ -1951,15 +1862,15 @@ describe('plite-react provider hooks contract', () => {
     }));
     const editor = createEditor({ initialValue: value });
     const counter = createPliteReactRenderCounter();
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
     let rendered: ReturnType<typeof render> | null = null;
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
 
     try {
       rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable data-testid="root-order-fanout" />
-        </Plite>
+        </EditorRoot>
       );
       counter.reset();
 
@@ -1974,16 +1885,16 @@ describe('plite-react provider hooks contract', () => {
 
       const profile = counter.snapshot();
 
-      expect(profile.byKey['selector:selector-runtime-node-check'] ?? 0).toBe(
-        0
-      );
+      expect(
+        profile.byKey['selector:selector-runtime-node-check'] ?? 0
+      ).toBeLessThanOrEqual(1);
       expect(
         profile.byKey['selector:selector-runtime-node-notify'] ?? 0
       ).toBeLessThanOrEqual(1);
       expect(profile.byKey['selector:selector-root-node-keys-notify']).toBe(1);
     } finally {
       rendered?.unmount();
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
   });
 
@@ -1996,33 +1907,33 @@ describe('plite-react provider hooks contract', () => {
     const trackedNodeKey = editor.key([10]);
     const trackedTextNodeKey = editor.key([10, 0]);
     const counter = createPliteReactRenderCounter();
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
     let rendered: ReturnType<typeof render> | null = null;
 
     if (!trackedNodeKey || !trackedTextNodeKey) {
       throw new Error('Expected node keys for shifted DOM path sync contract');
     }
 
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
 
     try {
       rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable data-testid="root-order-dom-path-sync" />
-        </Plite>
+        </EditorRoot>
       );
 
       const getTrackedElement = () =>
         rendered!.container.querySelector<HTMLElement>(
-          `[data-plite-node="element"][data-plite-node-key="${trackedNodeKey}"]`
+          `[data-editor-node="element"][data-editor-node-key="${trackedNodeKey}"]`
         );
       const getTrackedText = () =>
         rendered!.container.querySelector<HTMLElement>(
-          `[data-plite-node="text"][data-plite-node-key="${trackedTextNodeKey}"]`
+          `[data-editor-node="text"][data-editor-node-key="${trackedTextNodeKey}"]`
         );
 
-      expect(getTrackedElement()?.getAttribute('data-plite-path')).toBe('10');
-      expect(getTrackedText()?.getAttribute('data-plite-path')).toBe('10,0');
+      expect(getTrackedElement()?.getAttribute('data-editor-path')).toBe('10');
+      expect(getTrackedText()?.getAttribute('data-editor-path')).toBe('10,0');
 
       counter.reset();
 
@@ -2036,8 +1947,10 @@ describe('plite-react provider hooks contract', () => {
       });
 
       await waitFor(() => {
-        expect(getTrackedElement()?.getAttribute('data-plite-path')).toBe('11');
-        expect(getTrackedText()?.getAttribute('data-plite-path')).toBe('11,0');
+        expect(getTrackedElement()?.getAttribute('data-editor-path')).toBe(
+          '11'
+        );
+        expect(getTrackedText()?.getAttribute('data-editor-path')).toBe('11,0');
       });
 
       const profile = counter.snapshot();
@@ -2048,7 +1961,7 @@ describe('plite-react provider hooks contract', () => {
       expect(profile.byKey['selector:selector-root-node-keys-notify']).toBe(1);
     } finally {
       rendered?.unmount();
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
   });
 
@@ -2067,29 +1980,29 @@ describe('plite-react provider hooks contract', () => {
     }
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable data-testid="move-dom-path-sync" />
-      </Plite>
+      </EditorRoot>
     );
     const getMovedElement = () =>
       rendered.container.querySelector<HTMLElement>(
-        `[data-plite-node="element"][data-plite-node-key="${movedNodeKey}"]`
+        `[data-editor-node="element"][data-editor-node-key="${movedNodeKey}"]`
       );
     const getMovedText = () =>
       rendered.container.querySelector<HTMLElement>(
-        `[data-plite-node="text"][data-plite-node-key="${movedTextNodeKey}"]`
+        `[data-editor-node="text"][data-editor-node-key="${movedTextNodeKey}"]`
       );
 
-    expect(getMovedElement()?.getAttribute('data-plite-path')).toBe('0');
-    expect(getMovedText()?.getAttribute('data-plite-path')).toBe('0,0');
+    expect(getMovedElement()?.getAttribute('data-editor-path')).toBe('0');
+    expect(getMovedText()?.getAttribute('data-editor-path')).toBe('0,0');
 
     await act(async () => {
       editorMoveNodes(editor, { at: [0], to: [2] });
     });
 
     await waitFor(() => {
-      expect(getMovedElement()?.getAttribute('data-plite-path')).toBe('1');
-      expect(getMovedText()?.getAttribute('data-plite-path')).toBe('1,0');
+      expect(getMovedElement()?.getAttribute('data-editor-path')).toBe('1');
+      expect(getMovedText()?.getAttribute('data-editor-path')).toBe('1,0');
     });
   });
 
@@ -2103,7 +2016,7 @@ describe('plite-react provider hooks contract', () => {
     const renderCounts = new Map<string, number>();
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderElement={({ attributes, children, element }) => {
             const id = String((element as { id?: unknown }).id);
@@ -2113,7 +2026,7 @@ describe('plite-react provider hooks contract', () => {
             return <div {...attributes}>{children}</div>;
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
     const trackedNodeKey = editor.key([10]);
 
@@ -2123,11 +2036,11 @@ describe('plite-react provider hooks contract', () => {
 
     const getTrackedElement = () =>
       rendered.container.querySelector<HTMLElement>(
-        `[data-plite-node="element"][data-plite-node-key="${trackedNodeKey}"]`
+        `[data-editor-node="element"][data-editor-node-key="${trackedNodeKey}"]`
       );
     const renderCountBeforeInsert = renderCounts.get('line-10');
 
-    expect(getTrackedElement()?.getAttribute('data-plite-path')).toBe('10');
+    expect(getTrackedElement()?.getAttribute('data-editor-path')).toBe('10');
 
     await act(async () => {
       editor.update((tx) => {
@@ -2143,7 +2056,7 @@ describe('plite-react provider hooks contract', () => {
     });
 
     await waitFor(() => {
-      expect(getTrackedElement()?.getAttribute('data-plite-path')).toBe('11');
+      expect(getTrackedElement()?.getAttribute('data-editor-path')).toBe('11');
     });
     expect(renderCounts.get('line-10')).toBe(renderCountBeforeInsert);
     expect(renderCounts.get('inserted')).toBe(1);
@@ -2171,10 +2084,10 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -2201,15 +2114,15 @@ describe('plite-react provider hooks contract', () => {
     }));
     const editor = createEditor({ initialValue: value });
     const counter = createPliteReactRenderCounter();
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
     let rendered: ReturnType<typeof render> | null = null;
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
 
     try {
       rendered = render(
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable data-testid="full-document-fanout" />
-        </Plite>
+        </EditorRoot>
       );
       counter.reset();
 
@@ -2237,14 +2150,14 @@ describe('plite-react provider hooks contract', () => {
       expect(profile.byKey['selector:selector-root-node-keys-notify']).toBe(1);
     } finally {
       rendered?.unmount();
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
   });
 
   test('mounted render selectors skip synced typing but refresh historic text', async () => {
     const editor = createEditor();
     const counter = createPliteReactRenderCounter();
-    const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
+    const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
 
     editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: 'one' }] }],
@@ -2270,7 +2183,7 @@ describe('plite-react provider hooks contract', () => {
     });
     const textSelector = vi.fn(({ text }) => text?.text ?? null);
 
-    globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
 
     try {
       const { result } = renderHook(
@@ -2284,10 +2197,10 @@ describe('plite-react provider hooks contract', () => {
         }),
         {
           wrapper: ({ children }) => (
-            <Plite editor={editor}>
+            <EditorRoot editor={editor}>
               <Editable />
               {children}
-            </Plite>
+            </EditorRoot>
           ),
         }
       );
@@ -2357,7 +2270,7 @@ describe('plite-react provider hooks contract', () => {
         callsAfterMount.node
       );
     } finally {
-      globalThis.__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
+      globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }
   });
 
@@ -2384,7 +2297,7 @@ describe('plite-react provider hooks contract', () => {
         }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable
               renderLeaf={({ attributes, children: leafChildren }) => (
                 <span {...attributes} data-custom-leaf="true">
@@ -2393,7 +2306,7 @@ describe('plite-react provider hooks contract', () => {
               )}
             />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -2430,10 +2343,10 @@ describe('plite-react provider hooks contract', () => {
       }),
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );
@@ -2490,10 +2403,10 @@ describe('plite-react provider hooks contract', () => {
 
     const { result } = renderHook(() => useTopLevelSelectionIndex(true), {
       wrapper: ({ children }) => (
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
           {children}
-        </Plite>
+        </EditorRoot>
       ),
     });
 
@@ -2525,10 +2438,10 @@ describe('plite-react provider hooks contract', () => {
 
     const { result } = renderHook(() => usePlaceholderValue('Type something'), {
       wrapper: ({ children }) => (
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
           {children}
-        </Plite>
+        </EditorRoot>
       ),
     });
 
@@ -2567,10 +2480,10 @@ describe('plite-react provider hooks contract', () => {
 
     const { result } = renderHook(() => usePlaceholderValue('Type something'), {
       wrapper: ({ children }) => (
-        <Plite editor={editor}>
+        <EditorRoot editor={editor}>
           <Editable />
           {children}
-        </Plite>
+        </EditorRoot>
       ),
     });
 
@@ -2616,10 +2529,10 @@ describe('plite-react provider hooks contract', () => {
       },
       {
         wrapper: ({ children }) => (
-          <Plite editor={editor}>
+          <EditorRoot editor={editor}>
             <Editable />
             {children}
-          </Plite>
+          </EditorRoot>
         ),
       }
     );

@@ -2,13 +2,13 @@
 export function getPluginNodeClass(type: string): string;
 export function getPluginNodeClass(type?: string): string | undefined;
 export function getPluginNodeClass(type?: string) {
-  return type ? `plite-${type}` : undefined;
+  return type ? `editor-${type}` : undefined;
 }
 
 /** Return true when the element carries the plugin node class. */
 export const isPluginNodeClass = (element: HTMLElement, type: string) =>
   element.classList.contains(getPluginNodeClass(type));
 
-/** Return true when a Plite element boundary carries the plugin node class. */
+/** Return true when an editor element boundary carries the plugin node class. */
 export const isPluginElementClass = (element: HTMLElement, type: string) =>
-  element.dataset.pliteNode === 'element' && isPluginNodeClass(element, type);
+  element.dataset.editorNode === 'element' && isPluginNodeClass(element, type);

@@ -4,7 +4,8 @@
 import type { TestEditor } from '#platejs-test-internal';
 import { jsxt } from '#platejs-test-internal';
 
-import { ContentSlice, defineExtension, editorReads } from '../../../core';
+import { ContentSlice, editorReads } from '../../../core';
+import { defineRuntimePlugin } from '../../../facade';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -355,7 +356,7 @@ describe('table clipboard', () => {
         expect(values.get('text/tsv')).toBe('11\t12\n21\t22\n');
         expect(values.get('text/plain')).toBe('11\t12\n21\t22\n');
         expect(values.get('text/html')).toContain(
-          'data-plite-fragment-format="x-plite-fragment"'
+          'data-editor-fragment-format="x-editor-fragment"'
         );
         expect(values.get('text/html')).toContain('<table');
         expect(values.get('text/html')).toContain('11');
@@ -363,7 +364,7 @@ describe('table clipboard', () => {
         expect(values.get('text/html')).toContain('21');
         expect(values.get('text/html')).toContain('22');
 
-        const encoded = values.get('application/x-plite-fragment');
+        const encoded = values.get('application/x-editor-fragment');
 
         expect(encoded).toBeTruthy();
 
@@ -429,7 +430,7 @@ describe('table clipboard', () => {
         const editor = createTableEditor(input);
 
         editor.install(
-          defineExtension('table-clipboard-export-projection', {
+          defineRuntimePlugin('table-clipboard-export-projection', {
             readMiddleware: ({ around }) => [
               around(editorReads.slice.export, ({ next }) => {
                 const slice = next();
@@ -450,7 +451,7 @@ describe('table clipboard', () => {
           editor.plugin(BaseTablePlugin).api.writeSelection(clipboard)
         ).toBe(true);
 
-        const encoded = values.get('application/x-plite-fragment');
+        const encoded = values.get('application/x-editor-fragment');
         const envelope = JSON.parse(decodeURIComponent(atob(encoded!))) as {
           slice: {
             content: Array<{ clipboardProjection?: boolean }>;

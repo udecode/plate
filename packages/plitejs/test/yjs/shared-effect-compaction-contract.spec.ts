@@ -5,13 +5,13 @@ import * as Y from 'yjs';
 
 import {
   createEditor,
-  defineExtension,
+  definePlugin,
   defineEffect,
   defineStateField,
   defineValueCodec,
   valueCodecs,
 } from '../../src/index';
-import { yjs } from '../../src/yjs/core/extension';
+import { yjs } from '../../src/yjs/core/plugin';
 import { paragraph, runEditorYjsUpdate } from './support/collaboration';
 
 const ROOT_NAME = 'shared-effect-compaction';
@@ -21,6 +21,15 @@ const sync = (source: Y.Doc, target: Y.Doc): void => {
     target,
     Y.encodeStateAsUpdate(source, Y.encodeStateVector(target))
   );
+};
+
+const claimRoom = (doc: Y.Doc, rootName: string): void => {
+  const editor = createEditor({ initialValue: [paragraph('body')] });
+  const cleanup = editor.install(
+    yjs({ doc, initialReady: true, rootName, seed: true })
+  );
+
+  cleanup();
 };
 
 describe('plitejs/yjs shared effect compaction', () => {
@@ -37,14 +46,14 @@ describe('plitejs/yjs shared effect compaction', () => {
       collabReplay: 'live',
       key: 'compaction.announce',
     });
-    const effects = defineExtension('compaction-effects', {
+    const effects = definePlugin('compaction-effects', {
       effectTypes: [announce],
       stateFields: [title],
     });
     const createPeer = (doc: Y.Doc, authority = false) => {
       const received: string[] = [];
       let remoteCommits = 0;
-      const recorder = defineExtension(
+      const recorder = definePlugin(
         `compaction-recorder-${String(doc.clientID)}`,
         {
           on: {
@@ -60,11 +69,13 @@ describe('plitejs/yjs shared effect compaction', () => {
         }
       );
       const editor = createEditor({
-        extensions: [effects, recorder] as const,
+        plugins: [effects, recorder] as const,
         initialValue: [paragraph('body')],
       });
       const cleanup = editor.install(
         yjs({
+          initialReady: true,
+          seed: true,
           doc,
           rootName: ROOT_NAME,
           ...(authority
@@ -201,17 +212,19 @@ describe('plitejs/yjs shared effect compaction', () => {
       reduce: (value, effect) =>
         effect.type === mirror ? effect.value : value,
     });
-    const effects = defineExtension('custom-latest-effects', {
+    const effects = definePlugin('custom-latest-effects', {
       effectTypes: [mirror],
       stateFields: [title, received],
     });
     const createPeer = (doc: Y.Doc, authority = false) => {
       const editor = createEditor({
-        extensions: [effects] as const,
+        plugins: [effects] as const,
         initialValue: [paragraph('body')],
       });
       const cleanup = editor.install(
         yjs({
+          initialReady: true,
+          seed: true,
           doc,
           rootName,
           ...(authority
@@ -269,15 +282,17 @@ describe('plitejs/yjs shared effect compaction', () => {
       key: 'late-authority.title',
       persist: valueCodecs.string,
     });
-    const state = defineExtension('late-authority-state', {
+    const state = definePlugin('late-authority-state', {
       stateFields: [title],
     });
     const sourceDoc = new Y.Doc();
     const source = createEditor({
-      extensions: [state] as const,
+      plugins: [state] as const,
       initialValue: [paragraph('body')],
     });
-    const cleanupSource = source.install(yjs({ doc: sourceDoc, rootName }));
+    const cleanupSource = source.install(
+      yjs({ initialReady: true, seed: true, doc: sourceDoc, rootName })
+    );
 
     source.update((tx) => {
       tx.setField(title, 'B');
@@ -291,15 +306,28 @@ describe('plitejs/yjs shared effect compaction', () => {
     sync(sourceDoc, authorityDoc);
     assert.equal(
       authorityDoc.getArray(`${rootName}:shared-effect-events`).length,
-      2
+      3
+    );
+    assert.deepEqual(
+      authorityDoc
+        .getArray(`${rootName}:shared-effect-events`)
+        .toArray()
+        .map((event) => event.effect.value),
+      [
+        { previousValue: 'A', value: 'A' },
+        { previousValue: 'A', value: 'B' },
+        { previousValue: 'B', value: 'C' },
+      ]
     );
 
     const authority = createEditor({
-      extensions: [state] as const,
+      plugins: [state] as const,
       initialValue: [paragraph('body')],
     });
     const cleanupAuthority = authority.install(
       yjs({
+        initialReady: true,
+        seed: true,
         doc: authorityDoc,
         rootName,
         sharedEffectCompaction: {
@@ -330,15 +358,17 @@ describe('plitejs/yjs shared effect compaction', () => {
       key: 'latest-controller-recreation.title',
       persist: valueCodecs.string,
     });
-    const state = defineExtension('latest-controller-recreation-state', {
+    const state = definePlugin('latest-controller-recreation-state', {
       stateFields: [title],
     });
     const doc = new Y.Doc();
     const source = createEditor({
-      extensions: [state] as const,
+      plugins: [state] as const,
       initialValue: [paragraph('body')],
     });
-    const cleanupSource = source.install(yjs({ doc, rootName }));
+    const cleanupSource = source.install(
+      yjs({ initialReady: true, seed: true, doc, rootName })
+    );
 
     source.update((tx) => {
       tx.setField(title, 'B');
@@ -346,10 +376,12 @@ describe('plitejs/yjs shared effect compaction', () => {
     cleanupSource();
 
     const restored = createEditor({
-      extensions: [state] as const,
+      plugins: [state] as const,
       initialValue: [paragraph('body')],
     });
-    const cleanupRestored = restored.install(yjs({ doc, rootName }));
+    const cleanupRestored = restored.install(
+      yjs({ initialReady: true, seed: true, doc, rootName })
+    );
 
     assert.equal(restored.read.getField(title), 'B');
 
@@ -364,12 +396,12 @@ describe('plitejs/yjs shared effect compaction', () => {
       key: 'authority.title',
       persist: valueCodecs.string,
     });
-    const state = defineExtension('single-authority-state', {
+    const state = definePlugin('single-authority-state', {
       stateFields: [title],
     });
     const createAuthority = () => {
       const editor = createEditor({
-        extensions: [state] as const,
+        plugins: [state] as const,
         initialValue: [paragraph('body')],
       });
 
@@ -378,6 +410,8 @@ describe('plitejs/yjs shared effect compaction', () => {
         install: () =>
           editor.install(
             yjs({
+              initialReady: true,
+              seed: true,
               doc,
               rootName: 'single-authority',
               sharedEffectCompaction: {
@@ -396,7 +430,7 @@ describe('plitejs/yjs shared effect compaction', () => {
 
     const second = createAuthority();
 
-    assert.throws(() => second.install(), /already has a local authority/);
+    assert.throws(() => second.install(), /already has an independent binding/);
     assert.equal(acknowledgements.size, 1);
 
     first.editor.update((tx) => {
@@ -425,13 +459,13 @@ describe('plitejs/yjs shared effect compaction', () => {
       collabReplay: 'live',
       key: 'stable-authority-restart.announce',
     });
-    const effects = defineExtension('stable-authority-restart-effects', {
+    const effects = definePlugin('stable-authority-restart-effects', {
       effectTypes: [announce],
       stateFields: [title],
     });
     const createAuthority = (doc: Y.Doc, threshold: number) => {
       const received: string[] = [];
-      const recorder = defineExtension(
+      const recorder = definePlugin(
         `stable-authority-restart-recorder-${String(doc.clientID)}`,
         {
           on: {
@@ -444,11 +478,13 @@ describe('plitejs/yjs shared effect compaction', () => {
         }
       );
       const editor = createEditor({
-        extensions: [effects, recorder] as const,
+        plugins: [effects, recorder] as const,
         initialValue: [paragraph('body')],
       });
       const cleanup = editor.install(
         yjs({
+          initialReady: true,
+          seed: true,
           doc,
           rootName,
           sharedEffectCompaction: { authorityId, threshold },
@@ -467,7 +503,18 @@ describe('plitejs/yjs shared effect compaction', () => {
     assert.deepEqual(first.received, ['once']);
     assert.equal(
       first.doc.getArray(`${rootName}:shared-effect-events`).length,
-      2
+      3
+    );
+    assert.deepEqual(
+      first.doc
+        .getArray(`${rootName}:shared-effect-events`)
+        .toArray()
+        .map((event) => event.effect.value),
+      [
+        { previousValue: 'A', value: 'A' },
+        'once',
+        { previousValue: 'A', value: 'B' },
+      ]
     );
 
     const restartedDoc = new Y.Doc();
@@ -499,7 +546,7 @@ describe('plitejs/yjs shared effect compaction', () => {
     sync(restarted.doc, wrongDoc);
 
     const wrongEditor = createEditor({
-      extensions: [effects] as const,
+      plugins: [effects] as const,
       initialValue: [paragraph('body')],
     });
 
@@ -507,6 +554,8 @@ describe('plitejs/yjs shared effect compaction', () => {
       () =>
         wrongEditor.install(
           yjs({
+            initialReady: true,
+            seed: true,
             doc: wrongDoc,
             rootName,
             sharedEffectCompaction: {
@@ -554,6 +603,8 @@ describe('plitejs/yjs shared effect compaction', () => {
       const editor = createEditor({ initialValue: [paragraph('body')] });
       const cleanup = editor.install(
         yjs({
+          initialReady: true,
+          seed: true,
           doc,
           rootName,
           sharedEffectCompaction: { authorityId: rootName, threshold: 1 },
@@ -577,15 +628,17 @@ describe('plitejs/yjs shared effect compaction', () => {
       collabReplay: 'live',
       key: 'live-recipient-lifecycle.announce',
     });
-    const effects = defineExtension('live-recipient-lifecycle-effects', {
+    const effects = definePlugin('live-recipient-lifecycle-effects', {
       effectTypes: [announce],
     });
     const sourceDoc = new Y.Doc();
     const source = createEditor({
-      extensions: [effects] as const,
+      plugins: [effects] as const,
       initialValue: [paragraph('body')],
     });
-    const cleanupSource = source.install(yjs({ doc: sourceDoc, rootName }));
+    const cleanupSource = source.install(
+      yjs({ initialReady: true, seed: true, doc: sourceDoc, rootName })
+    );
 
     source.update((tx) => {
       tx.effects.emit(announce, 'before-join');
@@ -594,9 +647,9 @@ describe('plitejs/yjs shared effect compaction', () => {
     const postActivationDoc = new Y.Doc();
     const postActivationReceived: string[] = [];
     const postActivation = createEditor({
-      extensions: [
+      plugins: [
         effects,
-        defineExtension('live-recipient-post-activation-recorder', {
+        definePlugin('live-recipient-post-activation-recorder', {
           on: {
             commit({ commit }) {
               for (const effect of commit.effects) {
@@ -611,7 +664,7 @@ describe('plitejs/yjs shared effect compaction', () => {
       initialValue: [paragraph('body')],
     });
     const cleanupPostActivation = postActivation.install(
-      yjs({ doc: postActivationDoc, rootName })
+      yjs({ initialReady: true, seed: true, doc: postActivationDoc, rootName })
     );
 
     sync(sourceDoc, postActivationDoc);
@@ -625,7 +678,7 @@ describe('plitejs/yjs shared effect compaction', () => {
     const received: string[] = [];
     const target = createEditor({ initialValue: [paragraph('body')] });
     const cleanupRecorder = target.install(
-      defineExtension('live-recipient-lifecycle-recorder', {
+      definePlugin('live-recipient-lifecycle-recorder', {
         on: {
           commit({ commit }) {
             for (const effect of commit.effects) {
@@ -637,7 +690,9 @@ describe('plitejs/yjs shared effect compaction', () => {
         },
       })
     );
-    const cleanupTarget = target.install(yjs({ doc: targetDoc, rootName }));
+    const cleanupTarget = target.install(
+      yjs({ initialReady: true, seed: true, doc: targetDoc, rootName })
+    );
 
     assert.deepEqual(received, []);
 
@@ -664,7 +719,9 @@ describe('plitejs/yjs shared effect compaction', () => {
     });
     sync(sourceDoc, targetDoc);
 
-    const cleanupReconnect = target.install(yjs({ doc: targetDoc, rootName }));
+    const cleanupReconnect = target.install(
+      yjs({ initialReady: true, seed: true, doc: targetDoc, rootName })
+    );
 
     assert.deepEqual(received, []);
 
@@ -686,12 +743,12 @@ describe('plitejs/yjs shared effect compaction', () => {
       collabReplay: 'live',
       key: 'retired-live-recipient.announce',
     });
-    const effects = defineExtension('retired-live-recipient-effects', {
+    const effects = definePlugin('retired-live-recipient-effects', {
       effectTypes: [announce],
     });
     const createPeer = (doc: Y.Doc, authority = false) => {
       const received: string[] = [];
-      const recorder = defineExtension(
+      const recorder = definePlugin(
         `retired-live-recipient-recorder-${String(doc.clientID)}`,
         {
           on: {
@@ -704,11 +761,13 @@ describe('plitejs/yjs shared effect compaction', () => {
         }
       );
       const editor = createEditor({
-        extensions: [effects, recorder] as const,
+        plugins: [effects, recorder] as const,
         initialValue: [paragraph('body')],
       });
       const cleanup = editor.install(
         yjs({
+          initialReady: true,
+          seed: true,
           doc,
           rootName,
           ...(authority
@@ -796,11 +855,12 @@ describe('plitejs/yjs shared effect compaction', () => {
       key: 'unsafe-watermarks.title',
       persist: valueCodecs.string,
     });
-    const state = defineExtension('unsafe-watermarks-state', {
+    const state = definePlugin('unsafe-watermarks-state', {
       stateFields: [title],
     });
     const through = Object.fromEntries([['__proto__', 1]]);
 
+    claimRoom(doc, rootName);
     doc.getMap(`${rootName}:shared-effect-checkpoint`).set('current', {
       effects: [
         {
@@ -815,10 +875,12 @@ describe('plitejs/yjs shared effect compaction', () => {
     });
 
     const editor = createEditor({
-      extensions: [state] as const,
+      plugins: [state] as const,
       initialValue: [paragraph('body')],
     });
-    const cleanup = editor.install(yjs({ doc, rootName }));
+    const cleanup = editor.install(
+      yjs({ initialReady: true, seed: true, doc, rootName })
+    );
 
     assert.equal(editor.read.getField(title), 'A');
 
@@ -837,6 +899,7 @@ describe('plitejs/yjs shared effect compaction', () => {
     });
     const events = doc.getArray(`${rootName}:shared-effect-events`);
 
+    claimRoom(doc, rootName);
     events.push([
       {
         effect: {
@@ -854,8 +917,8 @@ describe('plitejs/yjs shared effect compaction', () => {
     ]);
 
     const editor = createEditor({
-      extensions: [
-        defineExtension('non-contiguous-effect-sequence-effects', {
+      plugins: [
+        definePlugin('non-contiguous-effect-sequence-effects', {
           effectTypes: [announce],
         }),
       ],
@@ -863,6 +926,8 @@ describe('plitejs/yjs shared effect compaction', () => {
     });
     const cleanup = editor.install(
       yjs({
+        initialReady: true,
+        seed: true,
         doc,
         rootName,
         sharedEffectCompaction: {
@@ -889,6 +954,7 @@ describe('plitejs/yjs shared effect compaction', () => {
     const input = { nested: { value: 'original' } };
     const events = doc.getArray(`${rootName}:shared-effect-events`);
 
+    claimRoom(doc, rootName);
     events.push([
       {
         effect: {
@@ -908,7 +974,7 @@ describe('plitejs/yjs shared effect compaction', () => {
     const received: Payload[] = [];
     const editor = createEditor({ initialValue: [paragraph('body')] });
     const cleanupRecorder = editor.install(
-      defineExtension('immutable-pending-event-recorder', {
+      definePlugin('immutable-pending-event-recorder', {
         on: {
           commit({ commit }) {
             for (const effect of commit.effects) {
@@ -920,7 +986,8 @@ describe('plitejs/yjs shared effect compaction', () => {
         },
       })
     );
-    const cleanupYjs = editor.install(yjs({ doc, rootName }));
+    const binding = yjs({ doc, initialReady: true, rootName, seed: true });
+    const cleanupYjs = editor.install(binding);
 
     const storedEvent = events.get(0) as {
       effect: { value: Payload };
@@ -939,10 +1006,12 @@ describe('plitejs/yjs shared effect compaction', () => {
       key: 'immutable-pending-event.effect',
     });
     const cleanupEffect = editor.install(
-      defineExtension('immutable-pending-event-effect', {
+      definePlugin('immutable-pending-event-effect', {
         effectTypes: [effect],
       })
     );
+
+    editor.plugin(binding).api.retryImport();
 
     assert.deepEqual(received, [{ nested: { value: 'original' } }]);
     assert.equal(Object.isFrozen(received[0]), true);
@@ -953,7 +1022,7 @@ describe('plitejs/yjs shared effect compaction', () => {
     cleanupRecorder();
   });
 
-  it('restores a checkpoint atomically before delivering its tail', () => {
+  it('restores a checkpoint without admitting a live tail received while blocked', () => {
     const rootName = 'atomic-checkpoint';
     const title = defineStateField({
       collab: 'shared',
@@ -967,19 +1036,21 @@ describe('plitejs/yjs shared effect compaction', () => {
       collabReplay: 'live',
       key: 'atomic-checkpoint.announce',
     });
-    const state = defineExtension('atomic-checkpoint-state', {
+    const state = definePlugin('atomic-checkpoint-state', {
       stateFields: [title],
     });
-    const effects = defineExtension('atomic-checkpoint-effects', {
+    const effects = definePlugin('atomic-checkpoint-effects', {
       effectTypes: [announce],
     });
     const createFullPeer = (doc: Y.Doc, authority = false) => {
       const editor = createEditor({
-        extensions: [state, effects] as const,
+        plugins: [state, effects] as const,
         initialValue: [paragraph('body')],
       });
       const cleanup = editor.install(
         yjs({
+          initialReady: true,
+          seed: true,
           doc,
           rootName,
           ...(authority
@@ -1015,11 +1086,11 @@ describe('plitejs/yjs shared effect compaction', () => {
 
     const received: string[] = [];
     const late = createEditor({
-      extensions: [effects] as const,
+      plugins: [effects] as const,
       initialValue: [paragraph('body')],
     });
     const cleanupRecorder = late.install(
-      defineExtension('atomic-checkpoint-recorder', {
+      definePlugin('atomic-checkpoint-recorder', {
         on: {
           commit({ commit }) {
             if (!commit.tags.includes('remote-yjs-import')) return;
@@ -1031,7 +1102,13 @@ describe('plitejs/yjs shared effect compaction', () => {
         },
       })
     );
-    const cleanupLate = late.install(yjs({ doc: lateDoc, rootName }));
+    const lateBinding = yjs({
+      doc: lateDoc,
+      initialReady: true,
+      rootName,
+      seed: true,
+    });
+    const cleanupLate = late.install(lateBinding);
 
     sync(lateDoc, source.doc);
     source.editor.update((tx) => {
@@ -1051,8 +1128,10 @@ describe('plitejs/yjs shared effect compaction', () => {
 
     const cleanupTitle = late.install(state);
 
+    late.plugin(lateBinding).api.retryImport();
+
     assert.equal(late.read.getField(title), 'B');
-    assert.deepEqual(received, ['tail']);
+    assert.deepEqual(received, []);
 
     source.cleanup();
     witness.cleanup();

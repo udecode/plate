@@ -13,7 +13,7 @@ import {
   type Text,
   type TextInsertFragmentOptions,
   createRuleFactory,
-  defineBasePlugin,
+  definePlugin,
   editorCommands,
   isDefined,
   isUrl as defaultIsUrl,
@@ -21,6 +21,7 @@ import {
   sanitizeUrl,
   schema,
 } from '../../../core';
+import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 
 const BARE_AUTOLINK_LITERAL_RE = /^https?:\/\//i;
 
@@ -163,7 +164,7 @@ const initialState: BaseLinkPluginState = {
 };
 
 /** Enables support for hyperlinks. */
-export const BaseLinkPlugin = defineBasePlugin('link', {
+export const BaseLinkPlugin = definePlugin('link', {
   api: ({ store }): BaseLinkApi => ({
     getAttributes: (link) => {
       const {
@@ -643,7 +644,7 @@ export const BaseLinkPlugin = defineBasePlugin('link', {
         }
 
         const prefix = state.transaction((tx) => {
-          tx.plugin(plugin).exitEnd();
+          tx.plugin(plugin.name).exitEnd();
         });
 
         return next.after(prefix);
@@ -699,15 +700,18 @@ const pasteAutolinkRule = createLinkRule<
     const selection = context.editor.read.selection();
     let shouldLink = false;
 
-    const codeBlock = context.editor.plugin(PLUGINS.codeBlock);
+    const codeBlockDescriptor = getCompiledPlatePlugin(
+      context.editor,
+      PLUGINS.codeBlock
+    );
 
     if (
       selection &&
       context.editor.read.selection.nodes().length === 0 &&
-      (!codeBlock.installed ||
+      (!codeBlockDescriptor ||
         !context.editor.read.nodes.above({
           at: selection,
-          type: codeBlock.schema.type,
+          type: context.editor.plugin(codeBlockDescriptor).schema.type,
         }))
     ) {
       shouldLink =
@@ -780,13 +784,19 @@ export const LinkRules = {
         if (!selection || !editor.read.selection.isCollapsed()) {
           return undefined;
         }
-        const codeBlock = editor.plugin(PLUGINS.codeBlock);
+        const codeBlockDescriptor = getCompiledPlatePlugin(
+          editor,
+          PLUGINS.codeBlock
+        );
+        const codeBlockType = codeBlockDescriptor
+          ? editor.plugin(codeBlockDescriptor).schema.type
+          : undefined;
 
         if (
           editor.read.nodes.above({
             at: selection,
-            type: codeBlock.installed
-              ? [codeBlock.schema.type, BaseLinkPlugin]
+            type: codeBlockType
+              ? [codeBlockType, BaseLinkPlugin]
               : BaseLinkPlugin,
           })
         ) {

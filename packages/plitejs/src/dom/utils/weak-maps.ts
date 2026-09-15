@@ -12,7 +12,7 @@ import type {
 import type { TextDiff } from './diff-text';
 import type { Key } from './key';
 
-type AnyExtensionEditor = Editor<any, any>;
+type AnyPluginEditor = Editor<any, any>;
 
 export type Action = { at?: Point | Range; run: () => void };
 
@@ -20,7 +20,7 @@ export type Action = { at?: Point | Range; run: () => void };
  * Two weak maps that allow us rebuild a path given a node. They are populated
  * at render time such that after a render occurs we can always backtrack.
  */
-export const IS_NODE_MAP_DIRTY = new WeakMap<AnyExtensionEditor, boolean>();
+export const IS_NODE_MAP_DIRTY = new WeakMap<AnyPluginEditor, boolean>();
 export const NODE_TO_INDEX = new WeakMap<Node, number>();
 export const NODE_TO_PARENT = new WeakMap<Node, Ancestor>();
 export const NODE_TO_RUNTIME_ID = new WeakMap<Node, NodeKey>();
@@ -29,14 +29,11 @@ export const NODE_TO_RUNTIME_ID = new WeakMap<Node, NodeKey>();
  * Weak maps that allow us to go between Plite nodes and DOM nodes. These
  * are used to resolve DOM event-related logic into Plite actions.
  */
-export const EDITOR_TO_WINDOW = new WeakMap<AnyExtensionEditor, Window>();
-export const EDITOR_TO_ELEMENT = new WeakMap<AnyExtensionEditor, HTMLElement>();
-export const EDITOR_TO_DOM_ROOT = new WeakMap<
-  AnyExtensionEditor,
-  HTMLElement
->();
+export const EDITOR_TO_WINDOW = new WeakMap<AnyPluginEditor, Window>();
+export const EDITOR_TO_ELEMENT = new WeakMap<AnyPluginEditor, HTMLElement>();
+export const EDITOR_TO_DOM_ROOT = new WeakMap<AnyPluginEditor, HTMLElement>();
 export const EDITOR_TO_DOM_EDITABLE = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   Map<RootKey, HTMLElement>
 >();
 export const EDITOR_TO_DOM_SCROLL = new WeakMap<object, HTMLElement>();
@@ -44,20 +41,25 @@ export const EDITOR_TO_DOM_SCOPE_LISTENERS = new WeakMap<
   object,
   Set<() => void>
 >();
-export const EDITOR_TO_PLACEHOLDER = new WeakMap<AnyExtensionEditor, string>();
+export const EDITOR_TO_PLACEHOLDER = new WeakMap<AnyPluginEditor, string>();
 export const EDITOR_TO_PLACEHOLDER_ELEMENT = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   HTMLElement
 >();
 export const ELEMENT_TO_NODE = new WeakMap<HTMLElement, Node>();
+export const ELEMENT_TO_EDITOR = new WeakMap<HTMLElement, AnyPluginEditor>();
 export const NODE_TO_ELEMENT = new WeakMap<Node, HTMLElement>();
 export const NODE_TO_KEY = new WeakMap<Node, Key>();
 export const EDITOR_TO_RUNTIME_ID_TO_KEY = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   Map<NodeKey, Key>
 >();
+export const EDITOR_TO_RUNTIME_ID_TO_ELEMENTS = new WeakMap<
+  object,
+  Map<NodeKey, Set<HTMLElement>>
+>();
 export const EDITOR_TO_KEY_TO_ELEMENT = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   WeakMap<Key, HTMLElement>
 >();
 
@@ -65,12 +67,12 @@ export const EDITOR_TO_KEY_TO_ELEMENT = new WeakMap<
  * Weak maps for storing editor-related state.
  */
 
-export const IS_READ_ONLY = new WeakMap<AnyExtensionEditor, boolean>();
-export const IS_FOCUSED = new WeakMap<AnyExtensionEditor, boolean>();
-export const IS_COMPOSING = new WeakMap<AnyExtensionEditor, boolean>();
+export const IS_READ_ONLY = new WeakMap<AnyPluginEditor, boolean>();
+export const IS_FOCUSED = new WeakMap<AnyPluginEditor, boolean>();
+export const IS_COMPOSING = new WeakMap<AnyPluginEditor, boolean>();
 
 export const EDITOR_TO_USER_SELECTION = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   Anchor<Range> | null
 >();
 
@@ -79,17 +81,17 @@ export const EDITOR_TO_USER_SELECTION = new WeakMap<
  */
 
 export const EDITOR_TO_SCHEDULE_FLUSH = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   () => void
 >();
 
 export const EDITOR_TO_PENDING_INSERTION_MARKS = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   Partial<Text> | null
 >();
 
 export const EDITOR_TO_USER_MARKS = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   Partial<Text> | null
 >();
 
@@ -98,27 +100,27 @@ export const EDITOR_TO_USER_MARKS = new WeakMap<
  */
 
 export const EDITOR_TO_PENDING_DIFFS = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   TextDiff[]
 >();
 
 export const EDITOR_TO_ROOT_VIEW_EDITORS = new WeakMap<
   object,
-  Set<AnyExtensionEditor>
+  Set<AnyPluginEditor>
 >();
 
 export const EDITOR_TO_PENDING_ACTION = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   Action | null
 >();
 
 export const EDITOR_TO_PENDING_SELECTION = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   Range | null
 >();
 
 export const EDITOR_TO_FORCE_RENDER = new WeakMap<
-  AnyExtensionEditor,
+  AnyPluginEditor,
   () => void
 >();
 

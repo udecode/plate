@@ -121,17 +121,17 @@ const editor = createEditor({
 ### 滚动容器设置
 
 使用 [EditorContainer](/docs/components/editor) 作为编辑器的滚动区域。
-对于自定义布局，在 `<Plate>` 内渲染 `PlateContainer` 并为其添加滚动样式。
-`PlateContainer` 会将该区域注册到编辑器。
+对于自定义布局，在 `<EditorRoot>` 内渲染 `EditorContainer` 并为其添加滚动样式。
+`EditorContainer` 会将该区域注册到编辑器。
 
 ```tsx
-import { PlateContainer, PlateContent } from 'platejs/react';
+import { EditorContainer, EditorContent } from 'platejs/react';
 
 function Layout() {
   return (
-    <PlateContainer className="h-[600px] overflow-y-auto">
-      <PlateContent />
-    </PlateContainer>
+    <EditorContainer className="h-[600px] overflow-y-auto">
+      <EditorContent />
+    </EditorContainer>
   );
 }
 ```

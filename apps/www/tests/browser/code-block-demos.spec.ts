@@ -1,10 +1,10 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
-const EDITOR = '.plite-editor';
+const EDITOR = '.editor-editor';
 const EDITABLE_EDITOR = `${EDITOR}[contenteditable="true"]`;
 const HUGE_CODE_BLOCK_INDEX = 2;
 const LAST_HUGE_LINE = 'const result10000 = transform(source[9999]);';
@@ -14,13 +14,13 @@ test.setTimeout(90_000);
 test('code-block docs: native preview stays small while CodeMirror scrolls the full document', async ({
   page,
 }, testInfo) => {
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
   const cdp = await page.context().newCDPSession(page);
 
   try {
     await page.setViewportSize({ width: 1422, height: 800 });
     await page.goto('/docs/code-block', { waitUntil: 'commit' });
-    const native = page.locator('#code-block-huge-demo .plite-editor');
+    const native = page.locator('#code-block-huge-demo .editor-editor');
     const scroller = page.locator('#code-block-codemirror-demo .cm-scroller');
 
     await expect(native).toContainText(
@@ -103,29 +103,25 @@ test('code-block demos: default keeps the small main-style value', async ({
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/code-block-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITABLE_EDITOR).first();
-    const editor = createPliteBrowserEditorHarness(
-      page,
-      'code-block:default',
-      root
-    );
+    const editor = createBrowserEditorHarness(page, 'code-block:default', root);
 
     await editor.ready({ editor: 'visible', text: 'JavaScript example' });
-    await expect(page.locator('.plite-codeBlock')).toHaveCount(3);
+    await expect(page.locator('.editor-codeBlock')).toHaveCount(3);
     await expect(
       page.locator('[data-code-block-codemirror-input]')
     ).toHaveCount(0);
     await expect(page.getByText(LAST_HUGE_LINE, { exact: false })).toHaveCount(
       0
     );
-    const firstBlock = page.locator('.plite-codeBlock').first();
+    const firstBlock = page.locator('.editor-codeBlock').first();
     const originalPath = Number(
-      await firstBlock.getAttribute('data-plite-path')
+      await firstBlock.getAttribute('data-editor-path')
     );
     const originalCode = await firstBlock.locator('pre').textContent();
 
@@ -133,7 +129,7 @@ test('code-block demos: default keeps the small main-style value', async ({
     await editor.focus();
     await page.keyboard.press('Enter');
     await expect(firstBlock).toHaveAttribute(
-      'data-plite-path',
+      'data-editor-path',
       String(originalPath + 1)
     );
     await firstBlock.getByRole('button', { name: 'Copy', exact: true }).click();
@@ -151,13 +147,13 @@ test('code-block demos: native Plate owns and edits the exact 10k-line value', a
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     await page.goto('/blocks/code-block-huge-demo', { waitUntil: 'commit' });
 
     const root = page.locator(EDITABLE_EDITOR).first();
-    const editor = createPliteBrowserEditorHarness(
+    const editor = createBrowserEditorHarness(
       page,
       'code-block:native-huge',
       root
@@ -165,14 +161,14 @@ test('code-block demos: native Plate owns and edits the exact 10k-line value', a
 
     await editor.ready({ editor: 'visible', text: 'Huge Code Block' });
 
-    const block = page.locator('.plite-codeBlock').first();
+    const block = page.locator('.editor-codeBlock').first();
     const initialText = await editor.get.modelBlockText(HUGE_CODE_BLOCK_INDEX);
 
     expect(initialText).not.toBeNull();
     expect(initialText?.split('\n')).toHaveLength(10_000);
     expect(initialText).toContain(LAST_HUGE_LINE);
     await expect(block.locator('[data-code-block-codemirror]')).toHaveCount(0);
-    await expect(block.locator('[data-plite-node="text"]')).not.toHaveCount(0);
+    await expect(block.locator('[data-editor-node="text"]')).not.toHaveCount(0);
     await expect(block.locator('[class*="hljs-"]').first()).toBeAttached();
 
     await block.getByRole('button', { name: 'Copy', exact: true }).click();
@@ -217,7 +213,7 @@ test('code-block demos: native Plate owns and edits the exact 10k-line value', a
 
     for (const index of [1, 3]) {
       const paragraph = root.locator(
-        `[data-plite-node="element"][data-plite-path="${index}"]`
+        `[data-editor-node="element"][data-editor-path="${index}"]`
       );
       const before = await editor.get.modelBlockText(index);
       await paragraph.scrollIntoViewIfNeeded();

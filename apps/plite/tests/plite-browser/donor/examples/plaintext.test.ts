@@ -1,11 +1,11 @@
 import { expect, type Locator, test } from '@playwright/test';
 import {
-  assertPliteBrowserSelectionContract,
+  assertBrowserSelectionContract,
   openExample,
-  recordPliteBrowserRuntimeErrors,
-  startPliteBrowserNativeEventTrace,
-  stopPliteBrowserNativeEventTrace,
-  takePliteBrowserNativeEventTrace,
+  recordBrowserRuntimeErrors,
+  startBrowserNativeEventTrace,
+  stopBrowserNativeEventTrace,
+  takeBrowserNativeEventTrace,
 } from '@platejs/test/playwright';
 
 const getBrowserUndoHotkey = async (root: Locator) =>
@@ -74,7 +74,7 @@ test.describe('plaintext example', () => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop native input proof');
 
     const insertedText = ' trace';
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
     const editor = await openExample(page, 'plite/plaintext', {
       ready: {
         editor: 'visible',
@@ -84,14 +84,14 @@ test.describe('plaintext example', () => {
     try {
       await editor.click();
       await editor.press('End');
-      await startPliteBrowserNativeEventTrace(editor.root, {
+      await startBrowserNativeEventTrace(editor.root, {
         events: ['beforeinput', 'input'],
       });
       await page.keyboard.insertText(insertedText);
 
       await expect.poll(() => editor.get.text()).toContain(insertedText);
 
-      const trace = await takePliteBrowserNativeEventTrace(editor.root);
+      const trace = await takeBrowserNativeEventTrace(editor.root);
       const beforeinput = trace.entries.find(
         (entry) => entry.type === 'beforeinput'
       );
@@ -121,7 +121,7 @@ test.describe('plaintext example', () => {
       }
       runtimeErrors.assertNone();
     } finally {
-      await stopPliteBrowserNativeEventTrace(editor.root).catch(() => {});
+      await stopBrowserNativeEventTrace(editor.root).catch(() => {});
       runtimeErrors.stop();
     }
   });
@@ -201,7 +201,7 @@ test.describe('plaintext example', () => {
       'Desktop modifier/click proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/plaintext', {
@@ -246,7 +246,7 @@ test.describe('plaintext example', () => {
       'Desktop CSS user-select pointer proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/plaintext', {
@@ -318,7 +318,7 @@ test.describe('plaintext example', () => {
       'Desktop modifier/click proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/plaintext', {
@@ -448,7 +448,7 @@ test.describe('plaintext example', () => {
       'Desktop double-click drag selection proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/plaintext', {
@@ -495,7 +495,7 @@ test.describe('plaintext example', () => {
       'Desktop selected-text drag/drop stability proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/plaintext', {
@@ -614,7 +614,7 @@ test.describe('plaintext example', () => {
         }
       );
 
-      expect(payload.types).toContain('application/x-plite-fragment');
+      expect(payload.types).toContain('application/x-editor-fragment');
       expect(payload.text).toBe('editable');
 
       await editor.selection.collapse({
@@ -783,7 +783,7 @@ test.describe('plaintext example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop Enter key proof');
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/plaintext', {
@@ -826,7 +826,7 @@ test.describe('plaintext example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop selection proof');
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/plaintext', {
@@ -877,7 +877,7 @@ test.describe('plaintext example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop modifier-key proof');
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/plaintext', {
@@ -903,7 +903,7 @@ test.describe('plaintext example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop text input proof');
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/plaintext', {
@@ -1194,7 +1194,7 @@ test.describe('plaintext example', () => {
           'Desktop native line navigation proof'
         );
 
-        const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+        const runtimeErrors = recordBrowserRuntimeErrors(page);
 
         try {
           const editor = await openExample(page, 'plite/plaintext', {
@@ -1584,7 +1584,7 @@ test.describe('plaintext example', () => {
       'Desktop WebKit hard-line-delete proof'
     );
 
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'plite/plaintext', {
@@ -2405,7 +2405,7 @@ test.describe('plaintext example', () => {
     await page.keyboard.press(await getBrowserUndoHotkey(editor.root));
 
     await editor.assert.text(originalText);
-    await assertPliteBrowserSelectionContract(editor, {
+    await assertBrowserSelectionContract(editor, {
       domSelection: {
         anchorNodeText: originalText,
         anchorOffset: selectionStart,

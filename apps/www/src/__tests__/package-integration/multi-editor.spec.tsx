@@ -4,11 +4,11 @@ import { schema } from 'platejs';
 import {
   BoldPlugin,
   FontSizePlugin,
-  Plate,
-  PlateContent,
-  PlateController,
+  EditorRoot,
+  EditorContent,
+  EditorController,
   createEditor,
-  definePlatePlugin,
+  definePlugin,
   useEditor,
   useEditorReadOnly,
   useEditorSelector,
@@ -28,10 +28,10 @@ import {
 } from '@/registry/components/editor/history-toolbar-button';
 import { MarkToolbarButton } from '@/registry/components/editor/mark-toolbar-button';
 
-const CounterPlugin = definePlatePlugin('toolbarCounter', {
+const CounterPlugin = definePlugin('toolbarCounter', {
   initialState: { count: 3 },
 });
-const HolderPlugin = definePlatePlugin('toolbarRootHolder', {
+const HolderPlugin = definePlugin('toolbarRootHolder', {
   schema: {
     element: {
       blockContent: true,
@@ -92,7 +92,7 @@ for (const base of ['base', 'radix'] as const) {
         </output>
       );
     }
-    const ProbePlugin = definePlatePlugin('toolbarProbe', {
+    const ProbePlugin = definePlugin('toolbarProbe', {
       slots: { afterEditable: ViewProbe },
     });
     const editor = createEditor({
@@ -130,14 +130,14 @@ for (const base of ['base', 'radix'] as const) {
     }) {
       return (
         <SiteRegistryProvider base={base}>
-          <PlateController>
-            <Plate editor={editor} suppressInstanceWarning>
-              {showA && <PlateContent aria-label="a" root="note" />}
-              <PlateContent aria-label="b" root="note" readOnly={readOnlyB} />
-              <PlateContent aria-label="main" />
-            </Plate>
+          <EditorController>
+            <EditorRoot editor={editor} suppressInstanceWarning>
+              {showA && <EditorContent aria-label="a" root="note" />}
+              <EditorContent aria-label="b" root="note" readOnly={readOnlyB} />
+              <EditorContent aria-label="main" />
+            </EditorRoot>
             <Shared />
-          </PlateController>
+          </EditorController>
         </SiteRegistryProvider>
       );
     }
@@ -242,23 +242,23 @@ for (const base of ['base', 'radix'] as const) {
     }) {
       return (
         <SiteRegistryProvider base={base}>
-          <PlateController>
+          <EditorController>
             {showA && (
-              <Plate
+              <EditorRoot
                 editor={replacement}
                 readOnly={locked}
                 suppressInstanceWarning
               >
-                <PlateContent aria-label="a" />
+                <EditorContent aria-label="a" />
                 <Local name="a" />
-              </Plate>
+              </EditorRoot>
             )}
-            <Plate editor={b} suppressInstanceWarning>
-              <PlateContent aria-label="b" />
+            <EditorRoot editor={b} suppressInstanceWarning>
+              <EditorContent aria-label="b" />
               <Local name="b" />
-            </Plate>
+            </EditorRoot>
             <Shared />
-          </PlateController>
+          </EditorController>
         </SiteRegistryProvider>
       );
     }
@@ -311,15 +311,15 @@ for (const base of ['base', 'radix'] as const) {
     }
     const result = render(
       <SiteRegistryProvider base={base}>
-        <PlateController>
-          <Plate editor={a} suppressInstanceWarning>
-            <PlateContent aria-label="a" />
-          </Plate>
-          <Plate editor={b} suppressInstanceWarning>
-            <PlateContent aria-label="b" />
-          </Plate>
+        <EditorController>
+          <EditorRoot editor={a} suppressInstanceWarning>
+            <EditorContent aria-label="a" />
+          </EditorRoot>
+          <EditorRoot editor={b} suppressInstanceWarning>
+            <EditorContent aria-label="b" />
+          </EditorRoot>
           <Shared />
-        </PlateController>
+        </EditorController>
       </SiteRegistryProvider>
     );
     act(() => {
@@ -355,12 +355,12 @@ for (const base of ['base', 'radix'] as const) {
     const result = render(
       <SiteRegistryProvider base={base}>
         <Tooltip.Provider>
-          <PlateController>
-            <Plate editor={editor}>
-              <PlateContent aria-label="editor" />
-            </Plate>
+          <EditorController>
+            <EditorRoot editor={editor}>
+              <EditorContent aria-label="editor" />
+            </EditorRoot>
             <Shared />
-          </PlateController>
+          </EditorController>
         </Tooltip.Provider>
       </SiteRegistryProvider>
     );
@@ -392,21 +392,21 @@ test('a shared mark control tolerates empty and heterogeneous controllers', () =
   const b = createEditor({ id: 'same' });
   function App({ show = false }: { show?: boolean }) {
     return (
-      <PlateController>
+      <EditorController>
         {show && (
           <>
-            <Plate editor={a} suppressInstanceWarning>
-              <PlateContent aria-label="a" />
-            </Plate>
-            <Plate editor={b} suppressInstanceWarning>
-              <PlateContent aria-label="b" />
-            </Plate>
+            <EditorRoot editor={a} suppressInstanceWarning>
+              <EditorContent aria-label="a" />
+            </EditorRoot>
+            <EditorRoot editor={b} suppressInstanceWarning>
+              <EditorContent aria-label="b" />
+            </EditorRoot>
           </>
         )}
         <Toolbar>
           <MarkToolbarButton plugin={BoldPlugin}>Bold</MarkToolbarButton>
         </Toolbar>
-      </PlateController>
+      </EditorController>
     );
   }
   const result = render(<App />);
@@ -453,16 +453,16 @@ test('shared undo and redo use the selected model history and restore the exact 
   }
   const result = render(
     <Tooltip.Provider>
-      <PlateController>
-        <Plate editor={a} suppressInstanceWarning>
-          <PlateContent aria-label="a" root="note" />
-          <PlateContent aria-label="a-copy" root="note" />
-        </Plate>
-        <Plate editor={b} suppressInstanceWarning>
-          <PlateContent aria-label="b" />
-        </Plate>
+      <EditorController>
+        <EditorRoot editor={a} suppressInstanceWarning>
+          <EditorContent aria-label="a" root="note" />
+          <EditorContent aria-label="a-copy" root="note" />
+        </EditorRoot>
+        <EditorRoot editor={b} suppressInstanceWarning>
+          <EditorContent aria-label="b" />
+        </EditorRoot>
         <Shared />
-      </PlateController>
+      </EditorController>
     </Tooltip.Provider>
   );
   await act(async () => {

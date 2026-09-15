@@ -1,9 +1,9 @@
 import { parseAsBoolean, parseAsStringLiteral, useQueryStates } from 'nuqs';
 import {
-  defineExtension,
+  definePlugin,
   NodeApi,
   schema,
-  type Element as PliteElementNode,
+  type Element as ElementNode,
 } from 'plitejs';
 import type {
   DOMCoverageCopyPolicy,
@@ -11,13 +11,19 @@ import type {
 } from 'plitejs/dom';
 import {
   Editable,
-  type EditableDOMStrategyMetrics,
-  PliteElement,
+  EditorElement,
   type RenderElementProps,
-  Plite,
+  EditorRoot,
   useEditor,
+  useEditorContext,
 } from 'plitejs/react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   Accordion,
@@ -64,9 +70,7 @@ const selectionPolicyOptions = [
 ] as const satisfies readonly DOMCoverageSelectionPolicy[];
 const copyPolicyOptions = [
   'model',
-  'summary',
   'exclude',
-  'materialize',
 ] as const satisfies readonly DOMCoverageCopyPolicy[];
 
 const hiddenContentQueryParsers = {
@@ -101,7 +105,7 @@ const HiddenBlocksContext = React.createContext<HiddenBlocksState>({
 const HiddenContentChromeLabel = ({ label }: { label: string }) => (
   <span
     aria-hidden="true"
-    className="plite-hidden-content-chrome-label"
+    className="editor-hidden-content-chrome-label"
     data-label={label}
   />
 );
@@ -141,57 +145,8 @@ const PolicyControls = <T extends string>({
   </div>
 );
 
-const HiddenContentBlocksExample = () => {
-  const editor = useEditor({
-    extensions: [hiddenContentBlocks()],
-    initialValue: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'Intro visible before hidden blocks.' }],
-      },
-      {
-        type: 'accordion-block',
-        children: [
-          {
-            type: 'paragraph',
-            children: [{ text: 'Accordion secret alpha' }],
-          },
-          {
-            type: 'paragraph',
-            children: [{ text: 'Accordion secret beta' }],
-          },
-        ],
-      },
-      {
-        type: 'tabs-block',
-        children: [
-          {
-            tab: 'overview',
-            type: 'tab-panel',
-            children: [{ text: 'Overview tab visible text' }],
-          },
-          {
-            tab: 'details',
-            type: 'tab-panel',
-            children: [{ text: 'Details tab hidden text' }],
-          },
-        ],
-      },
-      {
-        type: 'collapsible-block',
-        children: [
-          {
-            type: 'paragraph',
-            children: [{ text: 'Collapsible hidden note' }],
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Outro visible after hidden blocks.' }],
-      },
-    ] as PliteElementNode[],
-  });
+const HiddenContentBlocksContent = () => {
+  const editor = useEditorContext();
   const [
     { accordionOpen, activeTab, collapsibleOpen, copyPolicy, selectionPolicy },
     setHiddenContentControls,
@@ -200,9 +155,8 @@ const HiddenContentBlocksExample = () => {
     urlKeys: hiddenContentUrlKeys,
   });
   const [copyPreview, setCopyPreview] = useState('');
-  const [metrics, setMetrics] = useState<EditableDOMStrategyMetrics | null>(
-    null
-  );
+  const editableRef = useRef<HTMLDivElement>(null);
+  const [boundaryCount, setBoundaryCount] = useState(0);
   const setAccordionOpen = useCallback(
     (value: boolean) => {
       void setHiddenContentControls((current) => ({
@@ -270,6 +224,14 @@ const HiddenContentBlocksExample = () => {
       selectionPolicy,
     ]
   );
+
+  useLayoutEffect(() => {
+    setBoundaryCount(
+      editableRef.current?.querySelectorAll(
+        '[data-editor-dom-coverage-boundary]'
+      ).length ?? 0
+    );
+  }, [accordionOpen, activeTab, collapsibleOpen]);
 
   const selectAndCopy = useCallback(
     (path: number[]) => {
@@ -376,17 +338,15 @@ const HiddenContentBlocksExample = () => {
           </CardContent>
         </Card>
 
-        <Plite editor={editor}>
-          <Editable
-            aria-label="Hidden content blocks editor"
-            className="min-h-[220px] rounded-lg border border-border bg-background p-3"
-            id="hidden-content-blocks-editor"
-            onDOMStrategyMetrics={setMetrics}
-            placeholder="Write around hidden blocks..."
-            renderElement={Element}
-            spellCheck
-          />
-        </Plite>
+        <Editable
+          aria-label="Hidden content blocks editor"
+          className="min-h-[220px] rounded-lg border border-border bg-background p-3"
+          id="hidden-content-blocks-editor"
+          placeholder="Write around hidden blocks..."
+          ref={editableRef}
+          renderElement={Element}
+          spellCheck
+        />
 
         <div
           className="flex flex-wrap items-center gap-2"
@@ -400,15 +360,13 @@ const HiddenContentBlocksExample = () => {
           <Badge variant="secondary">
             boundaries:{' '}
             <output data-test-id="hidden-content-boundary-count">
-              {metrics?.domCoverageBoundaryElementCount ?? 0}
+              {boundaryCount}
             </output>
           </Badge>
           <Badge variant="secondary">
             native:{' '}
             <output data-test-id="hidden-content-native-surface">
-              {(metrics?.domCoverageBoundaryElementCount ?? 0) > 0
-                ? 'degraded'
-                : 'complete'}
+              {boundaryCount > 0 ? 'degraded' : 'complete'}
             </output>
           </Badge>
           <Badge variant="outline">
@@ -429,8 +387,67 @@ const HiddenContentBlocksExample = () => {
   );
 };
 
+const HiddenContentBlocksExample = () => {
+  const editor = useEditor({
+    plugins: [hiddenContentBlocks()],
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Intro visible before hidden blocks.' }],
+      },
+      {
+        type: 'accordion-block',
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'Accordion secret alpha' }],
+          },
+          {
+            type: 'paragraph',
+            children: [{ text: 'Accordion secret beta' }],
+          },
+        ],
+      },
+      {
+        type: 'tabs-block',
+        children: [
+          {
+            tab: 'overview',
+            type: 'tab-panel',
+            children: [{ text: 'Overview tab visible text' }],
+          },
+          {
+            tab: 'details',
+            type: 'tab-panel',
+            children: [{ text: 'Details tab hidden text' }],
+          },
+        ],
+      },
+      {
+        type: 'collapsible-block',
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'Collapsible hidden note' }],
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'Outro visible after hidden blocks.' }],
+      },
+    ] as ElementNode[],
+  });
+
+  return (
+    <EditorRoot editor={editor}>
+      <HiddenContentBlocksContent />
+    </EditorRoot>
+  );
+};
+
 const hiddenContentBlocks = () =>
-  defineExtension('hidden-content-blocks', {
+  definePlugin('hidden-content-blocks', {
     schema: {
       elements: {
         'accordion-block': {
@@ -469,7 +486,7 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
   switch (element.type) {
     case 'accordion-block': {
       return (
-        <PliteElement style={{ position: 'relative' }}>
+        <EditorElement style={{ position: 'relative' }}>
           <Accordion
             collapsible
             onValueChange={(value) => {
@@ -506,12 +523,12 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-        </PliteElement>
+        </EditorElement>
       );
     }
     case 'collapsible-block': {
       return (
-        <PliteElement style={{ position: 'relative' }}>
+        <EditorElement style={{ position: 'relative' }}>
           <Collapsible onOpenChange={setCollapsibleOpen} open={collapsibleOpen}>
             <div contentEditable={false}>
               <CollapsibleTrigger asChild>
@@ -542,12 +559,12 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
               />
             </CollapsibleContent>
           </Collapsible>
-        </PliteElement>
+        </EditorElement>
       );
     }
     case 'tabs-block': {
       return (
-        <PliteElement style={{ position: 'relative' }}>
+        <EditorElement style={{ position: 'relative' }}>
           <Tabs
             onValueChange={(value) => {
               setActiveTab(value as HiddenBlocksState['activeTab']);
@@ -610,17 +627,21 @@ const Element = ({ children, element, slots }: RenderElementProps) => {
               );
             })}
           </Tabs>
-        </PliteElement>
+        </EditorElement>
       );
     }
     case 'tab-panel': {
       return (
-        <PliteElement style={{ position: 'relative' }}>{children}</PliteElement>
+        <EditorElement style={{ position: 'relative' }}>
+          {children}
+        </EditorElement>
       );
     }
     default: {
       return (
-        <PliteElement style={{ position: 'relative' }}>{children}</PliteElement>
+        <EditorElement style={{ position: 'relative' }}>
+          {children}
+        </EditorElement>
       );
     }
   }

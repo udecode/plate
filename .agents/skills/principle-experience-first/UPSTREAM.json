@@ -9,13 +9,14 @@
       "upstream": "skills/principle-experience-first/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "f8d643ddf2f6aa91d9607d1bb340fd2baf227d702e9738848b85312a312bb971",
-      "destinationSha256": "0e2641eebaf47d70852623ad701116d40639b5e08ac34c547be5a57ea93030bd",
+      "destinationSha256": "114610dae53286cbaf6dd60a8b7eafdc45f873d8b3ceef01ee0f2e99fd402b36",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-experience-first/SKILL.md\n+++ skills/principle-experience-first/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-experience-first\n description: \"Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Experience First\n \n"
+      "unifiedDiff": "--- skills/principle-experience-first/SKILL.md\n+++ skills/principle-experience-first/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-experience-first\n-description: \"Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones.\"\n-disable-model-invocation: true\n+description: \"Resolve a product tradeoff where implementation convenience competes with the user’s experience.\"\n ---\n \n # Experience First\n"
     }
   ],
   "ownedFiles": [

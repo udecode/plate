@@ -1,17 +1,17 @@
 import type { BaseVideoPlugin } from 'platejs/media';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 import { CaptionStatic, getMediaTextAlign } from './caption-static';
 
 export function VideoElementStatic(
-  props: PliteElementProps<typeof BaseVideoPlugin>
+  props: EditorElementProps<typeof BaseVideoPlugin>
 ) {
   const { url, width } = props.element;
   const textAlign = getMediaTextAlign(props.element);
 
   return (
-    <PliteElement className="py-2.5" {...props}>
+    <EditorElement className="py-2.5" {...props}>
       <div style={{ textAlign }}>
         <figure
           className="group relative m-0 inline-block cursor-default"
@@ -30,6 +30,6 @@ export function VideoElementStatic(
           </CaptionStatic>
         </figure>
       </div>
-    </PliteElement>
+    </EditorElement>
   );
 }

@@ -50,16 +50,16 @@ const MyComponent = () => {
 
 ### Plate组件外部
 
-要在`Plate`组件外部访问编辑器或处理多个编辑器，使用`PlateController`组件：
+要在`EditorRoot`组件外部访问编辑器或处理多个编辑器，使用`EditorController`组件：
 
 ```ts
-import { PlateController, useOptionalEditor } from 'platejs/react';
+import { EditorController, useOptionalEditor } from 'platejs/react';
 
 const App = () => (
-  <PlateController>
+  <EditorController>
     <Toolbar />
     <MyEditor />
-  </PlateController>
+  </EditorController>
 );
 
 const Toolbar = () => {
@@ -70,8 +70,8 @@ const Toolbar = () => {
 };
 ```
 
-`PlateController`管理活动编辑器：
-- 默认第一个挂载的编辑器为活动状态（可通过`Plate`上的`primary={false}`覆盖）。
+`EditorController`管理活动编辑器：
+- 默认第一个挂载的编辑器为活动状态（可通过`EditorRoot`上的`primary={false}`覆盖）。
 - 焦点改变会切换活动编辑器。
 - 编辑器保持活动状态直到另一个编辑器获得焦点或自身卸载。
 
@@ -156,7 +156,9 @@ const component = codeBlockPlugin.component;
 获取插件身份：
 
 ```ts
-const paragraphType = editor.plugin(PLUGINS.paragraph).schema.type;
+import { BaseParagraphPlugin } from 'platejs';
+
+const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
 ```
 
 ## 插件 Store

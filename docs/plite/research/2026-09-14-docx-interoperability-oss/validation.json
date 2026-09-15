@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "scope": "documents",
+  "date": "2026-09-14",
+  "tsvRows": {
+    "query-ledger.tsv": 6,
+    "rejected-ledger.tsv": 6,
+    "promoted-ledger.tsv": 9,
+    "repo-registry.tsv": 7,
+    "lead-ledger.tsv": 10,
+    "read-log.tsv": 77,
+    "corpus-ledger.tsv": 7
+  },
+  "selectedExternalFilesVerified": 67,
+  "mainLocalReadHashesVerified": 10,
+  "localMarkdownLinksChecked": 169,
+  "corpora": 7,
+  "errors": [],
+  "limits": "Validates recorded sources, ledger structure and links; not unrecorded semantic coverage, native behavior or performance."
+}

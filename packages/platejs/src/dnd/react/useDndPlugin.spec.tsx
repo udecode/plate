@@ -3,7 +3,7 @@ import { expect, test } from 'bun:test';
 import { act, render } from '@testing-library/react';
 import React from 'react';
 
-import { createEditor, Plate } from '../../react/core';
+import { createEditor, EditorRoot } from '../../react/core';
 import { DndPlugin } from './DndPlugin';
 import { useDndPlugin } from './useDndPlugin';
 
@@ -24,14 +24,14 @@ test('each mounted view listens on its supplied document and removes only its ow
   const firstElement = document.createElement('div');
   document.body.append(firstElement);
   const one = render(
-    <Plate editor={first}>
+    <EditorRoot editor={first}>
       <Cleanup element={firstElement} />
-    </Plate>
+    </EditorRoot>
   );
   const two = render(
-    <Plate editor={second}>
+    <EditorRoot editor={second}>
       <Cleanup element={foreignElement} />
-    </Plate>
+    </EditorRoot>
   );
   try {
     act(() => {
@@ -46,9 +46,9 @@ test('each mounted view listens on its supplied document and removes only its ow
     });
     expect(second.plugin(DndPlugin).store.get('_isOver')).toBe(false);
     one.rerender(
-      <Plate editor={first}>
+      <EditorRoot editor={first}>
         <Cleanup element={null} />
-      </Plate>
+      </EditorRoot>
     );
     act(() => {
       first.plugin(DndPlugin).store.set({ _isOver: true });

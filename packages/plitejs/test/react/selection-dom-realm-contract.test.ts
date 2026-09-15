@@ -220,7 +220,7 @@ test('WebKit shadow beforeinput uses the shadow root realm', async () => {
 
   vi.spyOn(event, 'preventDefault');
   vi.spyOn(event, 'stopImmediatePropagation');
-  vi.spyOn(ReactEditor, 'resolvePliteRange').mockImplementation(
+  vi.spyOn(ReactEditor, 'resolveRange').mockImplementation(
     (_editor, domRange) => {
       expect(domRange).toBeInstanceOf(frameWindow.Range);
       return pliteRange;

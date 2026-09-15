@@ -2,7 +2,7 @@ import type {
   EditorNodeChangeContext,
   EditorTextChangeContext,
 } from '../../facade';
-import { defineExtension } from '../../facade';
+import { defineRuntimePlugin } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { failInvariant } from '../failInvariant';
@@ -60,8 +60,8 @@ export const subscribePlateChangeCallbacks = <E extends Editor>(
 const getPlateChangeCallbacks = (editor: Editor) =>
   PLATE_CHANGE_CALLBACKS.get(editor);
 
-export const createPlateChangeHandlersExtension = (editor: Editor) =>
-  defineExtension('plate:change-handlers', {
+export const createPlateChangeHandlersPlugin = (editor: Editor) =>
+  defineRuntimePlugin('plate:change-handlers', {
     on: {
       nodeChange(context) {
         const callbacks = getPlateChangeCallbacks(editor);

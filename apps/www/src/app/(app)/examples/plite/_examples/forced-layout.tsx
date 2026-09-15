@@ -1,13 +1,9 @@
-import {
-  defineExtension,
-  NodeApi,
-  type Element as PliteElement,
-} from 'plitejs';
+import { definePlugin, NodeApi, type Element as EditorElement } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
-  Plite,
+  EditorRoot,
   useEditor,
 } from 'plitejs/react';
 
@@ -29,10 +25,10 @@ const createParagraph = (): ParagraphElement => ({
 });
 
 const setType = (type: CustomElementType) =>
-  ({ type }) satisfies Partial<PliteElement>;
+  ({ type }) satisfies Partial<EditorElement>;
 
 const forcedLayout = () =>
-  defineExtension('forced-layout', {
+  definePlugin('forced-layout', {
     corrections: [
       {
         event: 'children',
@@ -91,7 +87,7 @@ const renderElement = (props: RenderElementProps<CustomElement>) => {
 
 const ForcedLayoutExample = () => {
   const editor = useEditor({
-    extensions: [history(), forcedLayout()],
+    plugins: [history(), forcedLayout()],
     initialValue: [
       {
         type: 'title',
@@ -108,14 +104,14 @@ const ForcedLayoutExample = () => {
     ],
   });
   return (
-    <Plite editor={editor}>
+    <EditorRoot editor={editor}>
       <Editable
         autoFocus
         placeholder="Enter a title…"
         renderElement={renderElement}
         spellCheck
       />
-    </Plite>
+    </EditorRoot>
   );
 };
 

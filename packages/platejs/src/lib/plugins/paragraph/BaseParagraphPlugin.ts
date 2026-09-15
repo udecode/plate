@@ -1,7 +1,7 @@
 import { schema } from '../../../facade';
-import { defineBasePlugin, type DefinitionOf } from '../../plugin';
+import { definePlugin, type DefinitionOf } from '../../plugin';
 
-export const BaseParagraphPlugin = defineBasePlugin('paragraph', {
+export const BaseParagraphPlugin = definePlugin('paragraph', {
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {

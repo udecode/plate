@@ -5,7 +5,7 @@ description: Render Plate plugin nodes with React components.
 
 Plugin components are the React rendering layer for Plate node plugins. Use
 Plate UI components first when the registry already has the node you need, then
-customize with `PlateElement` or `PlateLeaf` and bind it through
+customize with `EditorElement` or `EditorLeaf` and bind it through
 `.configure({ component })`. This page shows the one component binding path.
 
 ## Start with Plate UI
@@ -24,16 +24,16 @@ styles.
 
 ## Component primitives
 
-Use `PlateElement` for element nodes and `PlateLeaf` for mark or leaf nodes.
-Both components merge Plite attributes, Plate node props, `className`, and
+Use `EditorElement` for element nodes and `EditorLeaf` for mark or leaf nodes.
+Both components merge editor attributes and node props, `className`, and
 `style` onto the rendered DOM element.
 
 <Callout type="info" title="Render children">
-  Always render `children`. Plite needs the children in the DOM even when the
+  Always render `children`. Plate needs the children in the DOM even when the
   element is void or the visible UI comes from surrounding controls.
 </Callout>
 
-### PlateElement
+### EditorElement
 
 Element components render block, inline, and void element nodes.
 
@@ -41,28 +41,28 @@ Element components render block, inline, and void element nodes.
 'use client';
 
 import type { BlockquotePlugin } from 'platejs/react';
-import { type PlateElementProps, PlateElement } from 'platejs/react';
+import { type EditorElementProps, EditorElement } from 'platejs/react';
 
 export function BlockquoteElement({
   children,
   ...props
-}: PlateElementProps<typeof BlockquotePlugin>) {
+}: EditorElementProps<typeof BlockquotePlugin>) {
   return (
-    <PlateElement
+    <EditorElement
       as="blockquote"
       className="my-1 border-l-2 pl-6 italic"
       {...props}
     >
       {children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 ```
 
-`PlateElement` renders a `div` by default. Pass `as` when the node should render
+`EditorElement` renders a `div` by default. Pass `as` when the node should render
 as a specific HTML element.
 
-### PlateLeaf
+### EditorLeaf
 
 Leaf components render marked and decorated text ranges.
 
@@ -70,25 +70,25 @@ Leaf components render marked and decorated text ranges.
 'use client';
 
 import type { CodePlugin } from 'platejs/react';
-import { type PlateLeafProps, PlateLeaf } from 'platejs/react';
+import { type EditorLeafProps, EditorLeaf } from 'platejs/react';
 
 export function CodeLeaf({
   children,
   ...props
-}: PlateLeafProps<typeof CodePlugin>) {
+}: EditorLeafProps<typeof CodePlugin>) {
   return (
-    <PlateLeaf
+    <EditorLeaf
       as="code"
       className="whitespace-pre-wrap rounded-md bg-muted px-[0.3em] py-[0.2em] font-mono text-sm"
       {...props}
     >
       {children}
-    </PlateLeaf>
+    </EditorLeaf>
   );
 }
 ```
 
-`PlateLeaf` renders a `span` by default. Use it for plugins that declare
+`EditorLeaf` renders a `span` by default. Use it for plugins that declare
 `schema.mark`.
 
 ## Register components
@@ -137,14 +137,14 @@ export const plugins = [
 
 ## Intrinsic components
 
-Bind an HTML tag directly when the default `PlateElement` or `PlateLeaf`
+Bind an HTML tag directly when the default `EditorElement` or `EditorLeaf`
 behavior is enough.
 
 ```ts title="quote-plugin.ts" showLineNumbers
 import { schema } from 'platejs';
-import { definePlatePlugin } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-export const QuotePlugin = definePlatePlugin('quote', {
+export const QuotePlugin = definePlugin('quote', {
   component: 'blockquote',
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
@@ -157,16 +157,16 @@ toolbars, resize handles, or plugin state inside the render tree.
 
 ## Styling
 
-Prefer component-local styles. Plate also adds a `plite-<node-type>` class while
+Prefer component-local styles. Plate also adds a `editor-<node-type>` class while
 rendering plugin nodes, so global CSS can target stable node types when you need
 editor-wide styling.
 
 ```css title="app/globals.css"
-.plite-paragraph {
+.editor-paragraph {
   margin-block: 0.25rem;
 }
 
-.plite-code {
+.editor-code {
   border-radius: 0.375rem;
   font-family: var(--font-mono);
 }
@@ -179,8 +179,8 @@ replace from the registry.
 
 | API | Use for | Notes |
 | --- | --- | --- |
-| `PlateElement` | Element nodes. | Defaults to `div`; accepts `as`, `className`, `style`, and Plate render props. |
-| `PlateLeaf` | Marked and decorated text. | Defaults to `span`; use with plugins that declare `schema.mark`. |
+| `EditorElement` | Element nodes. | Defaults to `div`; accepts `as`, `className`, `style`, and Plate render props. |
+| `EditorLeaf` | Marked and decorated text. | Defaults to `span`; use with plugins that declare `schema.mark`. |
 | `plugin.configure({ component: Component })` | Ordinary node component binding. | Include the component and every consumer override in the same terminal call. |
 | `plugin.configure({ component: 'tag' })` | Default wrapper with an intrinsic tag. | Accepts an HTML tag such as `'blockquote'`, `'strong'`, or `'code'`. |
 

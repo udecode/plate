@@ -1,6 +1,6 @@
 import { expect, type Locator, test } from '@playwright/test';
 
-import { recordPliteBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
+import { recordBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 const readSelection = async (target: Locator) =>
   target.evaluate((element) => {
@@ -22,10 +22,8 @@ const readSelection = async (target: Locator) =>
 test('Tab and Shift+Tab place one caret in the destination table cell (#5065)', async ({
   page,
 }) => {
-  const runtimeErrors = recordPliteBrowserRuntimeErrors(page, { strict: true });
-  const editor = page.locator(
-    '[data-plite-editor="true"][contenteditable="true"]'
-  );
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  const editor = page.locator('[data-editor="true"][contenteditable="true"]');
   const suggestions = editor.getByText('Suggestions', { exact: true });
   const row = suggestions.locator('xpath=ancestor::tr[1]');
   const checkmark = row.getByText('✅', { exact: true });

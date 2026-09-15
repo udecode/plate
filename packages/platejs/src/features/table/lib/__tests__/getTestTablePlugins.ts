@@ -52,7 +52,7 @@ export const createTestBaseTableEditor = (
 
 export const createTestTableEditor = (
   options: Omit<
-    CreateEditorOptions<Value, readonly [], readonly BasePluginInput[]>,
+    CreateEditorOptions<Value, readonly BasePluginInput[]>,
     'editor' | 'initialValue'
   > & {
     initialValue?: InitialValue<Value>;

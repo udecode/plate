@@ -1,131 +1,196 @@
-import { useCallback, useSyncExternalStore } from 'react';
+import {
+  useCallback,
+  useMemo,
+  useSyncExternalStore,
+  type RefObject,
+} from 'react';
 
-import type { Editor as PliteEditor, Value } from '../../index';
 import { getEditorRuntimeOwner } from '../../index';
 import {
-  type PliteWidgetGeometry,
-  type UsePliteWidgetGeometryOptions,
-  usePliteWidgetGeometry,
-} from '../../react';
-import type { YjsProviderStatus, YjsRemoteCursor } from '../core';
-import {
-  type EditorYjsCursorDataFor,
-  type EditorYjsStateFor,
-  getEditorYjsState,
-} from '../core/editor-yjs';
-import {
-  getYjsCursorCache,
-  getYjsCursorWidgetStore,
-} from './cursor-widget-store';
+  createRangeGeometryOwner,
+  type RangeGeometry,
+  type RangeGeometryOwner,
+  useRangeGeometryOwner,
+} from '../../react/range-geometry';
+import type { YjsAwarenessAdapter } from '../core/awareness-adapter';
+import { getActiveYjsController } from '../core/controller-registry';
+import type {
+  YjsAdmissionStatus,
+  YjsBaseApi,
+  YjsPresenceApi,
+  YjsRemoteCursor,
+  YjsRemoteCursorData,
+} from '../core/types';
 
-export type UseYjsRemoteCursorGeometryOptions = UsePliteWidgetGeometryOptions;
+type YjsCursorDataForApi<TApi> =
+  TApi extends YjsPresenceApi<infer TCursorData>
+    ? TCursorData
+    : YjsRemoteCursorData;
 
-type YjsCursorDataForEditor<
-  V extends Value,
-  TExtensions extends readonly unknown[],
-> = EditorYjsCursorDataFor<V, TExtensions>;
+type YjsEditorRuntimeCarrier = Readonly<{
+  id: string;
+  read: object;
+  update: object;
+}>;
 
-type YjsStateForEditor<
-  V extends Value,
-  TExtensions extends readonly unknown[],
-> = EditorYjsStateFor<V, TExtensions>;
+type YjsEditorWithApi<TApi> = YjsEditorRuntimeCarrier &
+  Readonly<{ api: { yjs: TApi } }>;
 
-type YjsReadEditor<V extends Value, TExtensions extends readonly unknown[]> =
-  | PliteEditor<V, TExtensions>
-  | Parameters<typeof getEditorRuntimeOwner>[0];
+type YjsPresenceReadApi = YjsBaseApi &
+  Pick<
+    YjsPresenceApi,
+    'remoteCursor' | 'remoteCursors' | 'subscribeRemoteCursors'
+  >;
 
-const readYjsState = <
-  T,
-  V extends Value,
-  TExtensions extends readonly unknown[],
+export const getYjsCursorCache = <
+  TCursorData extends Readonly<Record<string, unknown>>,
 >(
-  editor: YjsReadEditor<V, TExtensions>,
-  selector: (state: YjsStateForEditor<V, TExtensions>) => T
-): T =>
-  getEditorRuntimeOwner(editor).read((state) =>
-    selector(getEditorYjsState(state) as YjsStateForEditor<V, TExtensions>)
-  );
+  editor: YjsEditorRuntimeCarrier
+): YjsAwarenessAdapter<TCursorData> => {
+  const owner = getEditorRuntimeOwner(editor);
+  const controller = getActiveYjsController<TCursorData>(owner);
 
-const useYjsProviderValue = <
-  T,
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(
-  editor: YjsReadEditor<V, TExtensions>,
-  selector: (state: YjsStateForEditor<V, TExtensions>) => T
-): T => {
-  const subscribe = useCallback(
-    (listener: () => void) =>
-      readYjsState(editor, (state) => state.subscribeProvider(listener)),
-    [editor]
-  );
-  const readSnapshot = () => readYjsState(editor, selector);
+  if (!controller) {
+    throw new Error('Yjs plugin is not active on this editor.');
+  }
 
-  return useSyncExternalStore(subscribe, readSnapshot, readSnapshot);
+  return controller.cursorCache(owner);
 };
 
-export function useYjsProviderStatus<
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(editor: YjsReadEditor<V, TExtensions>): YjsProviderStatus | null {
-  return useYjsProviderValue(editor, (state) => state.providerStatus());
-}
-
-export function useYjsProviderSynced<
-  V extends Value,
-  TExtensions extends readonly unknown[],
->(editor: YjsReadEditor<V, TExtensions>): boolean | null {
-  return useYjsProviderValue(editor, (state) => state.providerSynced());
-}
-
-export function useYjsRemoteCursor<
-  V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+export const createYjsRemoteCursorGeometryOwner = <
+  TCursorData extends Readonly<Record<string, unknown>>,
 >(
-  editor: YjsReadEditor<V, TExtensions>,
-  clientId: number
-): YjsRemoteCursor<YjsCursorDataForEditor<V, TExtensions>> | null {
-  const cache = getYjsCursorCache<YjsCursorDataForEditor<V, TExtensions>>(
+  editor: YjsEditorRuntimeCarrier,
+  cache: YjsAwarenessAdapter<TCursorData>,
+  clientId: number,
+  editableRef: RefObject<HTMLElement | null>
+): RangeGeometryOwner => {
+  const controller = getActiveYjsController<TCursorData>(
     getEditorRuntimeOwner(editor)
   );
-  const subscribe = useCallback(
-    (listener: () => void) => cache.subscribeCursor(clientId, listener),
-    [cache, clientId]
+
+  if (!controller) {
+    throw new Error('Yjs plugin is not active on this editor.');
+  }
+
+  const api = controller.baseApi();
+
+  return createRangeGeometryOwner(
+    getEditorRuntimeOwner(editor),
+    {
+      read: (view) =>
+        api.admissionStatus().state === 'ready'
+          ? (cache.forView(view).remoteCursor(clientId)?.selection ?? null)
+          : null,
+      subscribe: (_view, listener) => {
+        const unsubscribeCursor = cache.subscribeCursor(clientId, listener);
+        const unsubscribeAdmission = api.subscribeAdmissionStatus(listener);
+        let active = true;
+
+        return () => {
+          if (!active) return;
+
+          active = false;
+          unsubscribeCursor();
+          unsubscribeAdmission();
+        };
+      },
+    },
+    editableRef
   );
+};
+
+export function useYjsAdmissionStatus<TApi extends YjsBaseApi>(
+  editor: YjsEditorWithApi<TApi>
+): YjsAdmissionStatus {
+  const api = editor.api.yjs;
+
+  return useSyncExternalStore(
+    api.subscribeAdmissionStatus,
+    api.admissionStatus,
+    api.admissionStatus
+  );
+}
+
+export function useYjsRemoteCursor<TApi extends YjsPresenceReadApi>(
+  editor: YjsEditorWithApi<TApi>,
+  clientId: number
+): YjsRemoteCursor<YjsCursorDataForApi<TApi>> | null {
+  const api = editor.api.yjs;
+  const cache = getYjsCursorCache<YjsCursorDataForApi<TApi>>(editor);
   const getSnapshot = useCallback(
-    () => cache.remoteCursor(clientId),
-    [cache, clientId]
+    () =>
+      api.admissionStatus().state === 'ready'
+        ? cache.remoteCursor(clientId)
+        : null,
+    [api, cache, clientId]
+  );
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      const unsubscribeCursor = cache.subscribeCursor(clientId, listener);
+      const unsubscribeAdmission = api.subscribeAdmissionStatus(listener);
+      let active = true;
+
+      return () => {
+        if (!active) return;
+
+        active = false;
+        unsubscribeCursor();
+        unsubscribeAdmission();
+      };
+    },
+    [api, cache, clientId]
   );
 
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
-export function useYjsRemoteCursorIds<
-  V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
->(editor: YjsReadEditor<V, TExtensions>): readonly number[] {
-  const cache = getYjsCursorCache<YjsCursorDataForEditor<V, TExtensions>>(
-    getEditorRuntimeOwner(editor)
+export function useYjsRemoteCursorIds<TApi extends YjsPresenceReadApi>(
+  editor: YjsEditorWithApi<TApi>
+): readonly number[] {
+  const api = editor.api.yjs;
+  const cache = getYjsCursorCache<YjsCursorDataForApi<TApi>>(editor);
+  const getSnapshot = useCallback(
+    () =>
+      api.admissionStatus().state === 'ready'
+        ? cache.remoteCursorIds()
+        : EMPTY_REMOTE_CURSOR_IDS,
+    [api, cache]
   );
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      const unsubscribeIds = cache.subscribeIds(listener);
+      const unsubscribeAdmission = api.subscribeAdmissionStatus(listener);
+      let active = true;
 
-  return useSyncExternalStore(
-    cache.subscribeIds,
-    cache.remoteCursorIds,
-    cache.remoteCursorIds
+      return () => {
+        if (!active) return;
+
+        active = false;
+        unsubscribeIds();
+        unsubscribeAdmission();
+      };
+    },
+    [api, cache]
   );
+  const cursors = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+  return cursors;
 }
 
-export function useYjsRemoteCursorGeometry<
-  V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
->(
-  editor: YjsReadEditor<V, TExtensions>,
+export function useYjsRemoteCursorGeometry<TApi extends YjsPresenceReadApi>(
+  editor: YjsEditorWithApi<TApi>,
   clientId: number,
-  options: UseYjsRemoteCursorGeometryOptions
-): PliteWidgetGeometry | null {
-  const store = getYjsCursorWidgetStore<YjsCursorDataForEditor<V, TExtensions>>(
-    getEditorRuntimeOwner(editor)
+  { editableRef }: Readonly<{ editableRef: RefObject<HTMLElement | null> }>
+): RangeGeometry | null {
+  const cache = getYjsCursorCache<YjsCursorDataForApi<TApi>>(editor);
+  const owner = useMemo(
+    () =>
+      createYjsRemoteCursorGeometryOwner(editor, cache, clientId, editableRef),
+    [cache, clientId, editableRef, editor]
   );
 
-  return usePliteWidgetGeometry(store, String(clientId), options);
+  return useRangeGeometryOwner(owner);
 }
+
+const EMPTY_REMOTE_CURSOR_IDS = Object.freeze([]) as readonly number[];

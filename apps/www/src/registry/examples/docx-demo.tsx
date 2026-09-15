@@ -1,8 +1,9 @@
 'use client';
 
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { DocxKit } from '@/registry/components/editor/docx';
+import { DocxSourceProvider } from '@/registry/components/editor/docx-source';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { ExportToolbarButton } from '@/registry/components/editor/export-toolbar-button';
 import {
@@ -49,10 +50,12 @@ export default function DocxDemo() {
   });
 
   return (
-    <Plate editor={editor}>
-      <EditorContainer variant="demo">
-        <Editor />
-      </EditorContainer>
-    </Plate>
+    <DocxSourceProvider>
+      <EditorRoot editor={editor}>
+        <EditorContainer variant="demo">
+          <Editor />
+        </EditorContainer>
+      </EditorRoot>
+    </DocxSourceProvider>
   );
 }

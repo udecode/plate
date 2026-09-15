@@ -1,26 +1,55 @@
 ---
 title: 版本历史
+description: 按作者保留已接受 change，并选择性 revert 一个贡献。
 ---
 
+此示例安装原生 authored changes，并启用 `retainHistory: true`。以 Alice 或 Bob 身份编辑，然后 revert 一个已接受贡献，同时保留另一位作者的独立工作。
 
 ## 示例
 
-### Plate UI 组件
-
 <ComponentPreview name="version-history-demo" />
 
-### Potion 应用
+## 源码
 
-- 完整的版本历史功能：
-  - 保存文档快照
-  - 查看所有文档版本
-  - 比较任意两个版本
-  - 恢复历史版本
-- 可视化差异对比：
-  - 新增内容显示为绿色
-  - 删除内容显示为红色
-- 精心设计的用户界面
+<ComponentSource name="version-history-demo" />
 
-立即体验。登录后点击右上角时钟图标：
+## Runtime 结构
 
-<ComponentPreview name="potion-iframe-demo" />
+| 部分 | 所有者 | 用途 |
+| --- | --- | --- |
+| `authored({ retainHistory: true })` | `platejs/authored` | 用稳定的作者和 change identity 捕获已接受编辑，并保留其编辑内容。 |
+| `authorId` callback | 应用 | 每个 transaction 解析一次当前选择的已认证作者。 |
+| `read.authored.changes(...)` | 原生 authored read | 以分页 `AuthoredChange` record 返回已接受历史。 |
+| `update.authored.revert(...)` | 原生 authored update | 为选中的 retained change 创建补偿贡献。 |
+| `BasicMarksKit` | 复制的 Plate UI | 为可编辑文档提供普通富文本 mark。 |
+
+## Retained history 流程
+
+1. Editor 安装 `authored`，并启用 `retainHistory: true`。
+2. 作者选择器修改后续 transaction 使用的身份。
+3. 普通 accepted edit 创建带作者身份的 record。
+4. 历史列表按稳定 ID 和 revision 读取 accepted change。
+5. **Revert** 捕获绑定快照的 selection，并调用 `update.authored.revert(...)`。
+6. 新的补偿 change 归属于当前作者；原 record 保持不变。
+
+后续依赖工作可能让 revert 返回 `blocked`；所需保留内容过期时返回 `unavailable`。本地 undo 和 redo 仍属于独立的交互历史。接受或拒绝 pending review proposal 时使用原生 `decide(...)`。
+
+## 持久化历史
+
+把 `editor.read.value()` 作为一个文档保存。Authored envelope 包含 accepted content、causal record、decision，以及 retention policy 选择保留的内容。
+
+```tsx
+const saved = editor.read.value();
+
+const reloaded = createEditor({
+  plugins: [
+    authored({
+      authorId: () => session.user.id,
+      retainHistory: true,
+    }),
+  ],
+  initialValue: saved,
+});
+```
+
+Review view、decision result、协作和 format projection 请参阅 [Authored Changes](/docs/authored-changes)。

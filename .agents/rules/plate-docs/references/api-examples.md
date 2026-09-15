@@ -27,28 +27,21 @@ private keyed store, provider, publisher, source IDs, or precedence machinery.
   `platejs/<feature>` paths explicitly.
 - Use `// ...otherPlugins,` only when the omission is obvious.
 - No placeholder comments (`// your logic here`, `// Your validation logic`).
-- In Plite schema examples, never repeat derived structural membership:
-  non-inline elements belong to `block`, while inline elements do not. In Plate
-  examples, use `blockContent: false` for structural internals and
+- Use `blockContent: false` for structural internals and
   `plugins.blockContent()` for normal-flow container content.
 - Use direct `root`/named-root content, omitted closed defaults,
   `schema.element.textBlock()` for ordinary editable blocks,
   validator-backed narrow `property.json()`, placement-owned
   `role: "metadata"`, app-owned schema `id`/`version`, and runtime
   `create`/`assertDocument`/`assertFragment`/`isMarkableVoid`. Plate callers
-  pass plugin descriptors directly to schema APIs; only raw Plite schemas use
-  `schema.handle.*`.
+  pass plugin descriptors directly to schema APIs.
 - In Plate examples, use plugin `name` only for capability identity. Read final
   persisted identity from an exact element portal's `plugin.schema.type` or an
   exact primary-mark portal's `plugin.schema.key`. Behavior and
   aggregate-property portals omit `schema`; normal consumers use semantic
   plugin methods or typed nodes. Never teach universal plugin `.type` / `.key`,
   consumer `schema.properties`, optional identity access, or name fallbacks.
-- In Plite examples, transient inline paint uses one
-  `PliteDecorationSource` passed to `<Plite decorations>`. The source returns
-  keyed ranges with render-safe attributes; `Editable` needs no paint callback.
-  Annotation readers use `PliteAnnotationProvider`. In Plate examples, put the
-  same inline paint on the owning plugin's
+- Put transient inline paint on the owning plugin's
   `decorate: { read, observe?, attributes? }` descriptor. Put sparse whole-element
   attributes in `render.useViewElementAttributes`; it receives the mounted
   `view` and returns `{ key, attributes }[]`. Keep per-node render and injection

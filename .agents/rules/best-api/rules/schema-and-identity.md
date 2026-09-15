@@ -32,8 +32,9 @@ standard:
   Dynamic string-keyed object patches are the explicit runtime-schema escape
   hatch. Put prefix-family and cross-node behavior behind semantic owner
   operations. Never add scalar `set(key, value)`, `tx.properties`, or another
-  property-mutation namespace. `tx.plugin(Plugin)` selects an installed
-  plugin's flat transaction capability group; it is not a property portal.
+  property-mutation namespace. `tx.plugin(pluginOrName)` selects an installed
+  plugin's flat active-transaction capability group; it is not a property
+  portal or a nested update.
 - Keep raw plugin capabilities shallow. Exact recursive application `Value`,
   final schema bindings, mutation maps, and fingerprints may belong to
   committed opt-in generated artifacts, never every
@@ -133,11 +134,11 @@ Reject migration plugins, per-node versions, feature-local public release
 steps, AST sniffing, a generic migration registry, and CLI-only runtime policy.
 One complete document crosses one application schema boundary.
 
-Install extensions with `editor.install(...)` and construct a DOM/React view
+Install plugins with `editor.install(...)` and construct a DOM/React view
 with `createEditorView(editor, options)`. Do not reintroduce an editor runtime
 wrapper or `editor.extend(...)`. Root-level standalone utilities are limited to
 genuinely editor-independent value operations such as `NodeApi`, `PathApi`, and
-`isEditor`; editor behavior lives on `read`, `update`, or an installed extension.
+`isEditor`; editor behavior lives on `read`, `update`, or an installed plugin.
 
 ### Node Identity
 
@@ -163,8 +164,13 @@ ownership is private and must not derive from caller-configurable `editor.id`.
 The key's string representation is opaque. It never enters schema, JSON,
 clipboard, history serialization, collaboration payloads, Markdown, HTML, or
 databases. Paths remain structural addresses; anchors remain live positions.
-Pure detached transaction-spec builders may consume an existing key as a node
-target but do not publish `key` or allocate transaction-live identity.
+Pure detached transaction-spec builders may consume an existing live key as a
+node target. They may also assign a private prepared key to a fresh detached
+node when later operations or accepted local callbacks need stable identity in
+the same spec. A prepared key is opaque and spec-local: only the draft
+transaction resolves it, continuation preserves it, acceptance adopts that
+exact key as live identity, and discard consumes no live allocation or index
+entry. It never appears in the frozen public spec or any serialized payload.
 
 Name every feature field that stores this value `key` or `keys`: for example
 `selectedKeys`, `draggingKey`, `cellKeys`, and `openKeys`. Reserve `id` for an
@@ -252,6 +258,23 @@ Concrete inferred editors project plugin capabilities to
 capabilities through `editor.plugin(Plugin)`. Selectors remain store-owned and
 are evaluated through the scoped store.
 
+When factory input supplies an independent capability, the returned descriptor
+must reflect that capability in its inferred API. Omitting the input removes
+the corresponding methods from typed editors and portals; erased runtime
+boundaries still reject unavailable calls. Preserve this narrowing through
+copied factories, builder stages, explicit-editor hooks and declaration emit
+instead of publishing an always-present method family that fails for ordinary
+typed callers.
+
+Externally owned runtime resources stay in host factory arguments. A plugin may
+observe them and bind editor behavior to them, but it does not mirror their
+connect, disconnect, replacement or destruction lifecycle. If imported state
+must be accepted before document publication, model readiness as a supplied
+input and successful admission as a latched plugin fact for that resource
+generation. Reject document work before publication and history while waiting
+or failed, retain rejected input for a bounded retry, and keep an admitted
+offline resource editable. Transport connectivity is not admission.
+
 Every element plugin receives descriptor-bound `insert`, `set`, and `remove`
 on `editor.plugin(Plugin).update`. Default-constructible, schema-compatible
 text-block plugins also receive `toggle`; text blocks with required
@@ -291,7 +314,11 @@ The scoped update portal is callable with the same transaction policy as the
 root update: `editor.plugin(Plugin).update(policy).method()`. It delegates to
 exactly one root transaction, preserves rollback and history tags, and returns
 the same inferred scoped methods. A later method inside an active plugin update
-stage reuses `tx.plugin(Plugin).method()`. Generated closed editors may also
-expose the direct `tx.pluginName.method()` group. Never use computed
-`tx[plugin.name]`, `tx.extension(...)`, or a portal one-shot update inside the
-transaction.
+stage reuses the same group through `tx.plugin(Plugin).method()` when it owns
+the descriptor or `tx.plugin(pluginName).method()` when importing that
+descriptor would create the wrong package dependency. Descriptor input keeps
+nominal validation and exact inference; name input is the explicitly erased
+decoupled path and fails at runtime when the plugin or group is absent.
+Generated closed editors may also expose `tx.pluginName.method()`. Do not index
+the transaction object with a runtime plugin name or open an editor portal
+one-shot inside the transaction.

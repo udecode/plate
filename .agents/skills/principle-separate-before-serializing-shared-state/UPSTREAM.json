@@ -9,13 +9,14 @@
       "upstream": "skills/principle-separate-before-serializing-shared-state/SKILL.md",
       "destination": "SKILL.md",
       "upstreamSha256": "5b14fd656441580061f760968c828f3f4ba034242d8fa06b544763efb25e89ee",
-      "destinationSha256": "42971f9160b7c36547d74cbcfcb4b1c76ae5b6896337e460fcb66a3c53d6c941",
+      "destinationSha256": "30f733795bad07277aaf477d4eebd7bc21b27340dab609035b83ac786cfe7725",
       "status": "adapted",
       "reasons": [
-        "Normalize the skill name and unsupported Cursor frontmatter for Codex; add the required runtime-adapter dependency. The upstream body is retained except the precise substitutions shown in this diff."
+        "Maintain a concise specific discovery description instead of broad automatic triggers; preserve explicit invocation and the complete useful method.",
+        "Adapt only applicable execution, continuity, authority and proof instructions to current task ownership; exact changes follow."
       ],
       "removedHeadings": [],
-      "unifiedDiff": "--- skills/principle-separate-before-serializing-shared-state/SKILL.md\n+++ skills/principle-separate-before-serializing-shared-state/SKILL.md\n@@ -1,8 +1,9 @@\n ---\n name: principle-separate-before-serializing-shared-state\n description: \"Apply when concurrent actors might write to the same file, branch, key, or state object. Eliminate the sharing first; serialize structurally only when one shared writer is a real invariant.\"\n-disable-model-invocation: true\n ---\n+\n+Read the [Codex runtime adapter](../poteto-mode/references/codex-runtime.md) before applying this skill. It maps platform tools and authority; the complete engineering method below remains in force.\n \n # Separate Before Serializing Shared State\n \n"
+      "unifiedDiff": "--- skills/principle-separate-before-serializing-shared-state/SKILL.md\n+++ skills/principle-separate-before-serializing-shared-state/SKILL.md\n@@ -1,7 +1,6 @@\n ---\n name: principle-separate-before-serializing-shared-state\n-description: \"Apply when concurrent actors might write to the same file, branch, key, or state object. Eliminate the sharing first; serialize structurally only when one shared writer is a real invariant.\"\n-disable-model-invocation: true\n+description: \"Resolve concurrent writes by separating independent state or enforcing one shared writer.\"\n ---\n \n # Separate Before Serializing Shared State\n"
     }
   ],
   "ownedFiles": [

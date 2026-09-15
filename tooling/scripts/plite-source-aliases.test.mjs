@@ -363,7 +363,9 @@ test('Plate type-test fixtures resolve Plate and Plite from source', () => {
   assert.deepEqual(config.compilerOptions.paths['plitejs/react'], [
     '../../packages/plitejs/src/react/index.ts',
   ]);
-  assert.equal(config.compilerOptions.paths['plitejs/internal'], undefined);
+  assert.deepEqual(config.compilerOptions.paths['plitejs/internal'], [
+    '../../packages/plitejs/src/internal/index.ts',
+  ]);
   assert.equal(
     config.compilerOptions.paths['plitejs/react/internal'],
     undefined

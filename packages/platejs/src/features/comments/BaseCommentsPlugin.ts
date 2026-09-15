@@ -1,5 +1,5 @@
 import {
-  defineBasePlugin,
+  definePlugin,
   nanoid,
   NodeApi,
   RangeApi,
@@ -11,9 +11,9 @@ import {
 } from '../../core';
 import { isImmutablePluginData } from '../../internal/utils/mergePlugins';
 import {
-  createPliteAnnotationStore,
-  type PliteAnnotationAnchor,
-  type PliteAnnotationChange,
+  createAnnotationStore,
+  type AnnotationAnchor,
+  type AnnotationChange,
 } from './plite-comments.internal';
 
 export type CommentUser = Readonly<{
@@ -33,7 +33,7 @@ export type CommentMessage = Readonly<{
 /** Ranges address the saved primary document; null is detached. */
 export type CommentTarget =
   | Readonly<{ range: Range | null; type: 'range' }>
-  | Readonly<{ id: string; type: 'suggestion' }>;
+  | Readonly<{ id: string; type: 'change' }>;
 
 /** JSON-compatible thread data. Timestamps use ISO 8601 strings. */
 export type CommentThread = Readonly<{
@@ -90,21 +90,21 @@ const freezeComment = <T>(value: T): T => {
  * Load fetched records in initialThreads; save api.getThreads() with the same
  * document value. Independent editors bind their own ranges from those records.
  */
-export const BaseCommentsPlugin = defineBasePlugin('comments', {
+export const BaseCommentsPlugin = definePlugin('comments', {
   initialState,
 }).extend(({ editor, store }) => {
   let threads = new Map<string, CommentThread>();
-  let anchors = new Map<string, PliteAnnotationAnchor>();
-  let source: ReadonlyArray<{ id: string; anchor: PliteAnnotationAnchor }> = [];
+  let anchors = new Map<string, AnnotationAnchor>();
+  let source: ReadonlyArray<{ id: string; anchor: AnnotationAnchor }> = [];
   let sourceOrder = new Map<string, number>();
-  let pendingAnchor: PliteAnnotationAnchor | null = null;
+  let pendingAnchor: AnnotationAnchor | null = null;
   let snapshot: CommentsSnapshot = Object.freeze({
     draftThreadIds: Object.freeze([]),
     pending: null,
     threadIds: Object.freeze([]),
     visibleThreadIds: Object.freeze([]),
   });
-  let annotations: ReturnType<typeof createPliteAnnotationStore> | null = null;
+  let annotations: ReturnType<typeof createAnnotationStore> | null = null;
   let initialized = false;
   let published = false;
   let initializationError: unknown;
@@ -114,7 +114,7 @@ export const BaseCommentsPlugin = defineBasePlugin('comments', {
   const draftListeners = new Set<() => void>();
   const pendingListeners = new Set<() => void>();
   const dataListeners = new Set<(change: CommentsChange) => void>();
-  const rangeListeners = new Set<(change: PliteAnnotationChange) => void>();
+  const rangeListeners = new Set<(change: AnnotationChange) => void>();
   const refreshers = new Set<
     (input: { nodeKeys: readonly NodeKey[] }) => void
   >();
@@ -259,8 +259,8 @@ export const BaseCommentsPlugin = defineBasePlugin('comments', {
     if (destroyed) return;
     const records = [...nextThreads.values()];
     const value = editor.read.value();
-    const nextAnchors = new Map<string, PliteAnnotationAnchor>();
-    const allocated: PliteAnnotationAnchor[] = [];
+    const nextAnchors = new Map<string, AnnotationAnchor>();
+    const allocated: AnnotationAnchor[] = [];
     try {
       for (const thread of nextThreads.values()) {
         if (thread.target.type !== 'range' || !thread.target.range) continue;
@@ -359,7 +359,7 @@ export const BaseCommentsPlugin = defineBasePlugin('comments', {
     try {
       if (initialThreads) replaceThreads(initialThreads);
       initialThreads = null;
-      annotations = createPliteAnnotationStore(editor, () => source, {
+      annotations = createAnnotationStore(editor, () => source, {
         id: 'comments',
       });
       annotations.subscribeChanges((change) => {
@@ -484,7 +484,7 @@ export const BaseCommentsPlugin = defineBasePlugin('comments', {
       target: CommentTarget;
       userId?: string;
     },
-    pending?: PliteAnnotationAnchor
+    pending?: AnnotationAnchor
   ) => {
     initialize();
     const id = input.id ?? nanoid();
@@ -632,7 +632,7 @@ export const BaseCommentsPlugin = defineBasePlugin('comments', {
             )
           : null;
       },
-      /** Create at an explicit range or suggestion ID; null means no thread. */
+      /** Create at an explicit range or authored change ID; null means no thread. */
       createThread: (
         input: Parameters<typeof addThread>[0]
       ): string | null | Promise<string | null> => addThread(input),
@@ -845,7 +845,7 @@ export const BaseCommentsPlugin = defineBasePlugin('comments', {
       },
       setActive,
       /** Observe the same range projection used by decoration and persistence. */
-      subscribe: (listener: (change: PliteAnnotationChange) => void) => {
+      subscribe: (listener: (change: AnnotationChange) => void) => {
         initialize();
         rangeListeners.add(listener);
         return () => {
@@ -886,7 +886,7 @@ export const BaseCommentsPlugin = defineBasePlugin('comments', {
                         ? ''
                         : undefined,
                       'data-comment-id': id,
-                      className: 'plite-comments',
+                      className: 'editor-comments',
                     },
                     key: `${id}:${key}`,
                     range: intersection,

@@ -395,6 +395,7 @@ const fixture = ({
   failedRows,
   inputDigest = digest,
   missingBaseEvidence = false,
+  missingBrowserSourceAttestation = false,
   missingLatestReporterDelta = false,
   missingAffectedCase = false,
   missingAffectedBaseline = false,
@@ -614,7 +615,13 @@ Proof-host readiness:
     exactRoute
       ? `node test host; exact-route: ${exactRouteValue}`
       : "deterministic Node host"
-  } | current fixture bytes and receipt digest | source validator and generated mirror boundary | ${
+  } | ${
+    browserCommand || exactChrome || exactRoute
+      ? missingBrowserSourceAttestation
+        ? "current fixture bytes only"
+        : "browser-source-attestation: fresh host restart with current fixture digest"
+      : "current fixture bytes and receipt digest"
+  } | source validator and generated mirror boundary | ${
     preImplementation ? "planned: host validation before behavior proof" : "pass: current proof host"
   } |
 
@@ -638,6 +645,18 @@ ${
 }
 `;
 };
+
+test('browser proof rejects an unattested running source host', () => {
+  const errors = validateRegressionPlan(
+    fixture({ browserCommand: true, missingBrowserSourceAttestation: true }),
+    { complete: true, rootDir: root }
+  );
+
+  assert.match(
+    errors.join('\n'),
+    /requires browser-source-attestation: <fresh host restart or served-input digest>/
+  );
+});
 
 test("package dependency changes reject source-only proof", () => {
   const plan = fixture().replace("validate one complete plan", "package-dependency-change: reuse a React selector helper");
@@ -1631,6 +1650,71 @@ test("a positive layout reference requires executable reference geometry", () =>
   assert.deepEqual(
     validateRegressionPlan(resolved, { complete: true, rootDir: root }),
     []
+  );
+});
+
+test("click caret paint cannot borrow pixels captured after keyboard navigation", () => {
+  const clickClaim = fixture({ exactChrome: true, focusFirstClick: true }).replace(
+    "one click opens the popup immediately",
+    "one click opens the popup immediately and paints the caret"
+  );
+  const missingPaintErrors = validateRegressionPlan(clickClaim, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(
+    missingPaintErrors,
+    /click caret paint requires oracle anchor geometry-paint@after-action/
+  );
+  assert.match(
+    missingPaintErrors,
+    /click caret paint requires applicable oracle geometry-paint@after-action/
+  );
+
+  const resolved = clickClaim
+    .replace(
+      "popup@after-action, follow-up-input@follow-up |",
+      "popup@after-action, follow-up-input@follow-up, geometry-paint@after-action |"
+    )
+    .replace(
+      /^\| case-complete \| geometry-paint \| during-action \|.*$/m,
+      `| case-complete | geometry-paint | after-action | yes | paint-trigger: click; exactly one caret paints before any next input | missing or duplicate caret paint after the click | exact-chrome pixel classifier | test: ${semanticTestPath}#${semanticTestTitle} | pass: positive-control: pass; negative-control: pass; duplicate-control: pass; paint-input-trace: click > pixel-capture |`
+    );
+
+  assert.deepEqual(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }),
+    []
+  );
+
+  for (const trace of [
+    "click > ArrowLeft > ArrowRight > pixel-capture",
+    "click > focus > pixel-capture",
+    "click > selection-write > pixel-capture",
+    "pixel-capture > click",
+    "click > pixel-capture > ArrowLeft > pixel-capture",
+    "",
+  ]) {
+    const errors = validateRegressionPlan(
+      resolved.replace("paint-input-trace: click > pixel-capture", trace
+        ? `paint-input-trace: ${trace}`
+        : "pixels captured after navigation"),
+      { complete: true, rootDir: root }
+    ).join("\n");
+
+    assert.match(
+      errors,
+      /click caret paint requires paint-input-trace: click > pixel-capture before any next input/,
+      trace
+    );
+  }
+
+  assert.match(
+    validateRegressionPlan(
+      resolved.replace("paint-trigger: click", "paint-trigger: keyboard"),
+      { complete: true, rootDir: root }
+    ).join("\n"),
+    /click caret paint requires paint-trigger: click/
   );
 });
 

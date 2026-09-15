@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
@@ -14,11 +14,11 @@ for (const viewport of [
     test('TOC flashes the destination, repeats, expires and preserves editing', async ({
       page,
     }, testInfo) => {
-      const errors = recordPliteBrowserRuntimeErrors(page);
+      const errors = recordBrowserRuntimeErrors(page);
       try {
         await page.goto('/blocks/toc-demo', { waitUntil: 'commit' });
-        const editor = page.locator('[data-plite-editor="true"]').first();
-        const harness = createPliteBrowserEditorHarness(
+        const editor = page.locator('[data-editor="true"]').first();
+        const harness = createBrowserEditorHarness(
           page,
           testInfo.title,
           editor
@@ -61,7 +61,7 @@ for (const viewport of [
         });
         await expect(heading).not.toHaveClass(/bg-\(--color-highlight\)/);
 
-        const headingText = heading.locator('[data-plite-string="true"]');
+        const headingText = heading.locator('[data-editor-string="true"]');
         const headingBox = await headingText.boundingBox();
         expect(headingBox).not.toBeNull();
         await headingText.click({
@@ -111,11 +111,11 @@ for (const viewport of [
     test('footnote navigation keeps exact selection, focus, final scroll and follow-up history', async ({
       page,
     }, testInfo) => {
-      const errors = recordPliteBrowserRuntimeErrors(page);
+      const errors = recordBrowserRuntimeErrors(page);
       try {
         await page.goto('/blocks/footnote-demo', { waitUntil: 'commit' });
-        const editor = page.locator('[data-plite-editor="true"]').first();
-        const harness = createPliteBrowserEditorHarness(
+        const editor = page.locator('[data-editor="true"]').first();
+        const harness = createBrowserEditorHarness(
           page,
           testInfo.title,
           editor
@@ -123,9 +123,9 @@ for (const viewport of [
         await harness.ready({ editor: 'visible', text: 'Footnotes' });
         await expect(editor).toHaveAttribute('contenteditable', 'true');
         const initial = await harness.get.modelBlockTexts();
-        const definition = editor.locator('.plite-footnoteDefinition').first();
+        const definition = editor.locator('.editor-footnoteDefinition').first();
         const definitionBody = definition
-          .locator('[data-plite-string="true"]')
+          .locator('[data-editor-string="true"]')
           .first();
 
         await editor
@@ -218,7 +218,7 @@ for (const viewport of [
           .getByRole('button', { name: '[3]', exact: true })
           .click({ modifiers: ['ControlOrMeta'] });
         const thirdDefinition = editor
-          .locator('.plite-footnoteDefinition')
+          .locator('.editor-footnoteDefinition')
           .nth(1);
         await expect(thirdDefinition).toHaveAttribute(
           'data-nav-target',

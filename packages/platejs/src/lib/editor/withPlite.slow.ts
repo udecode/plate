@@ -12,12 +12,12 @@ import {
 import { NavigationFeedbackPlugin, ParagraphPlugin } from '../../react';
 import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins.internal';
 import { createEditor as createReactEditor } from '../../react/editor/withPlate';
-import { definePlatePlugin } from '../../react/plugin/definePlatePlugin';
+import { definePlugin } from '../../react/plugin/definePlugin';
 import {
   AffinityPlugin,
   type Editor,
   BaseParagraphPlugin,
-  defineBasePlugin,
+  definePlugin as defineHeadlessPlugin,
   createEditor as createHeadlessEditor,
   DebugPlugin,
   DOMPlugin,
@@ -44,7 +44,7 @@ const coreNames = [
   NavigationFeedbackPlugin.name,
 ];
 
-const TestBoldPlugin = defineBasePlugin('bold', {
+const TestBoldPlugin = defineHeadlessPlugin('bold', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -56,7 +56,7 @@ const TestBoldPlugin = defineBasePlugin('bold', {
     }),
 });
 
-const TestItalicPlugin = defineBasePlugin('italic', {
+const TestItalicPlugin = defineHeadlessPlugin('italic', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
@@ -67,7 +67,7 @@ const TextBlockElement = {
 describe('createReactEditor', () => {
   describe('application schema', () => {
     it('constructs an application-owned structural root', () => {
-      const SectionPlugin = defineBasePlugin('applicationSection', {
+      const SectionPlugin = defineHeadlessPlugin('applicationSection', {
         schema: {
           element: {
             content: schema.content.element(BaseParagraphPlugin, { min: 1 }),
@@ -122,7 +122,7 @@ describe('createReactEditor', () => {
     });
 
     it('lowers a multi-element root default through persisted type overrides', () => {
-      const CardPlugin = defineBasePlugin('applicationRootCard', {
+      const CardPlugin = defineHeadlessPlugin('applicationRootCard', {
         schema: {
           element: {
             ...TextBlockElement,
@@ -194,13 +194,16 @@ describe('createReactEditor', () => {
     });
 
     it('rejects invalid application root descriptors', () => {
-      const InstalledPlugin = defineBasePlugin('applicationRootFamily', {
+      const InstalledPlugin = defineHeadlessPlugin('applicationRootFamily', {
         schema: { element: TextBlockElement },
       });
-      const ForeignPlugin = defineBasePlugin('applicationRootFamily', {
+      const ForeignPlugin = defineHeadlessPlugin('applicationRootFamily', {
         schema: { element: TextBlockElement },
       });
-      const BehaviorPlugin = defineBasePlugin('applicationRootBehavior', {});
+      const BehaviorPlugin = defineHeadlessPlugin(
+        'applicationRootBehavior',
+        {}
+      );
 
       expect(() =>
         createHeadlessEditor({
@@ -226,7 +229,7 @@ describe('createReactEditor', () => {
     });
 
     it('publishes declared schema lineage', () => {
-      const CalloutPlugin = defineBasePlugin('generatedCallout', {
+      const CalloutPlugin = defineHeadlessPlugin('generatedCallout', {
         schema: { element: schema.element.textBlock() },
       });
       const editor = createHeadlessEditor({
@@ -250,7 +253,7 @@ describe('createReactEditor', () => {
     });
 
     it('applies closed editor schema overrides before generation and publication', () => {
-      const CardPlugin = defineBasePlugin('applicationCard', {
+      const CardPlugin = defineHeadlessPlugin('applicationCard', {
         schema: {
           element: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -258,7 +261,7 @@ describe('createReactEditor', () => {
           },
         },
       });
-      const MetadataPlugin = defineBasePlugin('applicationMetadata', {
+      const MetadataPlugin = defineHeadlessPlugin('applicationMetadata', {
         schema: {
           properties: {
             tone: schema.elementProperty(
@@ -306,12 +309,12 @@ describe('createReactEditor', () => {
     });
 
     it('lowers multi-element application targets to persisted schema types', () => {
-      const CardPlugin = defineBasePlugin('applicationTargetCard', {
+      const CardPlugin = defineHeadlessPlugin('applicationTargetCard', {
         schema: {
           element: { ...TextBlockElement, type: 'application_target_card' },
         },
       });
-      const PanelPlugin = defineBasePlugin('applicationTargetPanel', {
+      const PanelPlugin = defineHeadlessPlugin('applicationTargetPanel', {
         schema: {
           element: { ...TextBlockElement, type: 'application_target_panel' },
         },
@@ -345,10 +348,10 @@ describe('createReactEditor', () => {
     });
 
     it('rejects different same-name descriptor families in application schema', () => {
-      const InstalledPlugin = defineBasePlugin('applicationFamily', {
+      const InstalledPlugin = defineHeadlessPlugin('applicationFamily', {
         schema: { element: TextBlockElement },
       });
-      const ForeignPlugin = defineBasePlugin('applicationFamily', {
+      const ForeignPlugin = defineHeadlessPlugin('applicationFamily', {
         schema: { element: TextBlockElement },
       });
       expect(() =>
@@ -498,7 +501,7 @@ describe('createReactEditor', () => {
     });
 
     it('executes tx-backed plugin commands through update on the current editor runtime', () => {
-      const TxPlugin = defineBasePlugin('txPlugin', {
+      const TxPlugin = definePlugin('txPlugin', {
         update: ({ tx }) => ({
           bold: () => tx.marks.add('bold', true),
         }),
@@ -529,7 +532,7 @@ describe('createReactEditor', () => {
       ).not.toThrow();
 
       editor.update((tx) => tx.plugin(TxPlugin).bold());
-      editor.update((tx) => tx.plugin('txPlugin').bold());
+      editor.update((tx) => tx.txPlugin.bold());
       editor.update((tx) => tx.txPlugin.bold());
 
       expect(editor.read.children()[0].children[0]).toMatchObject({
@@ -538,29 +541,25 @@ describe('createReactEditor', () => {
       });
     });
 
-    it('validates transaction plugin descriptor identity and installation', () => {
-      const TxPlugin = defineBasePlugin('txPlugin', {
+    it('rejects transaction groups that are not installed', () => {
+      const TxPlugin = definePlugin('txPlugin', {
         update: () => ({ run: () => undefined }),
       });
-      const WrongFamily = defineBasePlugin('txPlugin', {
-        update: () => ({ run: () => undefined }),
-      });
-      const MissingPlugin = defineBasePlugin('missingPlugin', {
+      const MissingPlugin = definePlugin('missingPlugin', {
         update: () => ({ run: () => undefined }),
       });
       const editor = createHeadlessEditor({ plugins: [TxPlugin] });
 
-      expect(() => editor.update((tx) => tx.plugin(WrongFamily).run())).toThrow(
-        'Plate plugin "txPlugin" resolves to a different descriptor family.'
-      );
       expect(() =>
         editor.update((tx) => tx.plugin(MissingPlugin).run())
-      ).toThrow('Plate plugin "missingPlugin" is not installed.');
+      ).toThrow(
+        'Editor plugin "missingPlugin" is not installed on this editor.'
+      );
     });
 
-    it('keeps the plugin capability name available through the transaction portal', () => {
+    it('exposes plugin updates as direct transaction groups', () => {
       let calls = 0;
-      const Plugin = defineBasePlugin('plugin', {
+      const Plugin = definePlugin('plugin', {
         update: () => ({ run: () => (calls += 1) - 1 }),
       });
       const editor = createHeadlessEditor({ plugins: [Plugin] });
@@ -574,8 +573,8 @@ describe('createReactEditor', () => {
     });
 
     it('installs plugin dependencies before their dependent', () => {
-      const DependencyPlugin = defineBasePlugin('dependency', {});
-      const DependentPlugin = defineBasePlugin('dependent', {
+      const DependencyPlugin = definePlugin('dependency', {});
+      const DependentPlugin = definePlugin('dependent', {
         dependencies: [DependencyPlugin],
       });
       const editor = createReactEditor({
@@ -592,9 +591,9 @@ describe('createReactEditor', () => {
       expect(names.filter((name) => name === 'dependency')).toHaveLength(1);
     });
 
-    it('runs shared dependency factories once and keeps distinct extensions', () => {
+    it('runs shared dependency factories once and keeps distinct plugins', () => {
       const calls = { api: 0, distinct: 0, selectors: 0, tx: 0 };
-      const DependencyPlugin = defineBasePlugin('dependency', {})
+      const DependencyPlugin = definePlugin('dependency', {})
         .extend(() => {
           calls.api += 1;
 
@@ -615,7 +614,7 @@ describe('createReactEditor', () => {
 
         return { api: () => ({ distinct: () => true }) };
       });
-      const DependentPlugin = defineBasePlugin('dependent', {
+      const DependentPlugin = definePlugin('dependent', {
         dependencies: [DependencyPlugin],
       });
 
@@ -652,7 +651,7 @@ describe('createReactEditor', () => {
     });
 
     it('installs schema.element behavior before tx groups insert inline nodes', () => {
-      const InlineTxPlugin = defineBasePlugin('mention', {
+      const InlineTxPlugin = definePlugin('mention', {
         schema: {
           element: {
             void: 'inline',
@@ -698,7 +697,7 @@ describe('createReactEditor', () => {
     });
 
     it('installs schema.element selection behavior through the schema adapter', () => {
-      const NonSelectableVoidPlugin = defineBasePlugin('badge', {
+      const NonSelectableVoidPlugin = definePlugin('badge', {
         schema: {
           element: {
             selectable: false,
@@ -719,12 +718,12 @@ describe('createReactEditor', () => {
     });
 
     it('reports compiled Plate block-content semantics', () => {
-      const FlowBlockPlugin = defineBasePlugin('flowBlock', {
+      const FlowBlockPlugin = definePlugin('flowBlock', {
         schema: {
           element: TextBlockElement,
         },
       });
-      const NonSelectableBlockPlugin = defineBasePlugin('nonSelectableBlock', {
+      const NonSelectableBlockPlugin = definePlugin('nonSelectableBlock', {
         schema: {
           element: {
             ...TextBlockElement,
@@ -732,7 +731,7 @@ describe('createReactEditor', () => {
           },
         },
       });
-      const StructuralPlugin = defineBasePlugin('structural', {
+      const StructuralPlugin = definePlugin('structural', {
         schema: {
           element: {
             ...TextBlockElement,
@@ -740,7 +739,7 @@ describe('createReactEditor', () => {
           },
         },
       });
-      const InlinePlugin = defineBasePlugin('inline', {
+      const InlinePlugin = definePlugin('inline', {
         schema: {
           element: {
             void: 'inline',
@@ -794,12 +793,12 @@ describe('createReactEditor', () => {
     });
 
     it('compiles boolean marks, parameterized marks, and element grammar', () => {
-      const CellPlugin = defineBasePlugin('cell', {
+      const CellPlugin = definePlugin('cell', {
         schema: {
           element: { ...TextBlockElement, type: 'configured-cell' },
         },
       });
-      const RowPlugin = defineBasePlugin('row', {
+      const RowPlugin = definePlugin('row', {
         schema: {
           element: {
             content: schema.content.element(CellPlugin, { min: 1 }),
@@ -808,7 +807,7 @@ describe('createReactEditor', () => {
           },
         },
       });
-      const TonePlugin = defineBasePlugin('tone', {
+      const TonePlugin = definePlugin('tone', {
         schema: () => ({
           mark: {
             split: 'drop',
@@ -880,7 +879,7 @@ describe('createReactEditor', () => {
 
     it('decodes and transforms HTML before fitting its root content', () => {
       let transformedInput: ReturnType<Editor['read']['value']> | undefined;
-      const TransformHtmlPlugin = defineBasePlugin('transformHtml', {
+      const TransformHtmlPlugin = definePlugin('transformHtml', {
         prepareDocument: ({ document }) => {
           transformedInput = document;
 
@@ -920,7 +919,7 @@ describe('createReactEditor', () => {
     });
 
     it('initializes and transforms one full multi-root document', () => {
-      const FigurePlugin = defineBasePlugin('figure', {
+      const FigurePlugin = definePlugin('figure', {
         schema: {
           element: {
             contentRoots: {
@@ -937,7 +936,7 @@ describe('createReactEditor', () => {
           },
         },
       });
-      const TransformDocumentPlugin = defineBasePlugin('transformDocument', {
+      const TransformDocumentPlugin = definePlugin('transformDocument', {
         schema: {
           properties: {
             transformed: schema.elementProperty(property.boolean(), {
@@ -1021,10 +1020,10 @@ describe('createReactEditor', () => {
     });
 
     it('keeps schema fingerprints independent of plugin order', () => {
-      const QuotePlugin = defineBasePlugin('quote', {
+      const QuotePlugin = definePlugin('quote', {
         schema: { element: { ...TextBlockElement } },
       });
-      const TonePlugin = defineBasePlugin('tone', {
+      const TonePlugin = definePlugin('tone', {
         schema: { mark: { property: property.string() } },
       });
       const options = {
@@ -1049,7 +1048,7 @@ describe('createReactEditor', () => {
     });
 
     it('uses configured pure schema targets without global property leakage', () => {
-      const BadgePlugin = defineBasePlugin('badge', {
+      const BadgePlugin = definePlugin('badge', {
         schema: {
           element: {
             ...TextBlockElement,
@@ -1058,7 +1057,7 @@ describe('createReactEditor', () => {
           },
         },
       });
-      const IdentityPlugin = defineBasePlugin('identity', {
+      const IdentityPlugin = definePlugin('identity', {
         schema: ({ targetElementTypes }) => ({
           properties: {
             identity: schema.elementProperty(property.string(), {
@@ -1095,7 +1094,7 @@ describe('createReactEditor', () => {
     });
 
     it('derives container types from compiled schema grammar', () => {
-      const ContainerPlugin = defineBasePlugin('container', {
+      const ContainerPlugin = definePlugin('container', {
         schema: {
           element: {
             content: schema.content.group('block'),
@@ -1118,7 +1117,7 @@ describe('createReactEditor', () => {
       const identityBefore = editor.read.schema.identity();
       const valueBefore = editor.read.value();
       const duplicatePropertyPlugin = (name: string) =>
-        defineBasePlugin(name, {
+        definePlugin(name, {
           schema: {
             properties: {
               duplicate: schema.elementProperty(property.string(), {
@@ -1143,7 +1142,7 @@ describe('createReactEditor', () => {
 
   describe('when plugins is an array', () => {
     it('add custom plugins to core plugins', () => {
-      const customPlugin = defineBasePlugin('custom', {});
+      const customPlugin = definePlugin('custom', {});
       const editor = createReactEditor({
         editor: createPliteEditor(),
         plugins: [customPlugin],
@@ -1152,7 +1151,7 @@ describe('createReactEditor', () => {
       expect(
         getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
       ).toEqual([...coreNames, 'custom']);
-      expect(editor.plugin('custom')).toBeDefined();
+      expect(editor.plugin(customPlugin)).toBeDefined();
     });
   });
 
@@ -1172,7 +1171,7 @@ describe('createReactEditor', () => {
   describe('when using override', () => {
     it('publishes components declared by Base plugins to live Plate editors', () => {
       const Component = () => null;
-      const Plugin = defineBasePlugin('baseComponent', {
+      const Plugin = definePlugin('baseComponent', {
         component: Component,
       });
       const editor = createReactEditor({
@@ -1184,7 +1183,7 @@ describe('createReactEditor', () => {
     });
 
     it('applies flat weak component overrides', () => {
-      const HeadingPlugin = definePlatePlugin('h1', {});
+      const HeadingPlugin = definePlugin('h1', {});
       const customComponent = () => null;
 
       const editor = createReactEditor({
@@ -1195,14 +1194,14 @@ describe('createReactEditor', () => {
         plugins: [HeadingPlugin],
       });
 
-      const h1Plugin = editor.plugin('h1');
+      const h1Plugin = editor.plugin(HeadingPlugin);
       expect(h1Plugin.component).toBe(customComponent);
     });
 
     it('lets terminal target configuration override a weak component override', () => {
       const originalComponent = () => null;
       const overrideComponent = () => null;
-      const HeadingPlugin = definePlatePlugin('h1', {
+      const HeadingPlugin = definePlugin('h1', {
         component: originalComponent,
       });
 
@@ -1229,7 +1228,7 @@ describe('createReactEditor', () => {
 
   describe('when replacing core plugins', () => {
     it('replace core plugins with custom plugins, maintain order, and add additional plugins', () => {
-      const additionalPlugin = defineBasePlugin('additional', {});
+      const additionalPlugin = definePlugin('additional', {});
       const [ReactDOMPlugin] = getPlateCorePlugins();
 
       const editor = createReactEditor({
@@ -1276,8 +1275,8 @@ describe('createReactEditor', () => {
     it('does not duplicate core plugins', () => {
       const existingEditor = createPliteEditor() as any;
       existingEditor.plugins = [
-        defineBasePlugin('dom', {}),
-        defineBasePlugin('history', {}),
+        definePlugin('dom', {}),
+        definePlugin('history', {}),
       ];
 
       const editor = createReactEditor({ editor: existingEditor });
@@ -1292,8 +1291,8 @@ describe('createReactEditor', () => {
     it('add missing core plugins', () => {
       const existingEditor = createPliteEditor() as any;
       existingEditor.pluginList = [
-        defineBasePlugin('dom', {}),
-        defineBasePlugin('history', {}),
+        definePlugin('dom', {}),
+        definePlugin('history', {}),
       ];
 
       const editor = createReactEditor({ editor: existingEditor });
@@ -1307,11 +1306,11 @@ describe('createReactEditor', () => {
     });
 
     it('does not preserve custom plugins', () => {
-      const customPlugin = defineBasePlugin('custom', {});
+      const customPlugin = definePlugin('custom', {});
       const existingEditor = createPliteEditor() as any;
       existingEditor.plugins = [
-        defineBasePlugin('dom', {}),
-        defineBasePlugin('history', {}),
+        definePlugin('dom', {}),
+        definePlugin('history', {}),
         customPlugin,
       ];
 
@@ -1363,10 +1362,10 @@ describe('createReactEditor', () => {
   });
 
   it('syncs a constructor-declared Plate element type into Plite block toggles', () => {
-    const BlockquotePlugin = defineBasePlugin('blockquote', {
+    const BlockquotePlugin = definePlugin('blockquote', {
       schema: { element: { ...TextBlockElement } },
     });
-    const CustomParagraphPlugin = defineBasePlugin('customParagraph', {
+    const CustomParagraphPlugin = definePlugin('customParagraph', {
       schema: {
         element: { ...TextBlockElement, type: 'custom-paragraph' },
       },
@@ -1389,13 +1388,13 @@ describe('createReactEditor', () => {
   });
 
   it('preserves Plate marks allowed by the destination block schema', () => {
-    const HeadingPlugin = defineBasePlugin('heading', {
+    const HeadingPlugin = definePlugin('heading', {
       schema: { element: { ...TextBlockElement } },
     });
-    const TonePlugin = defineBasePlugin('tone', {
+    const TonePlugin = definePlugin('tone', {
       schema: { mark: { property: property.string() } },
     });
-    const EphemeralPlugin = defineBasePlugin('ephemeral', {
+    const EphemeralPlugin = definePlugin('ephemeral', {
       schema: { mark: { typeChange: 'drop', property: property.boolean() } },
     });
     const editor = createHeadlessEditor({
@@ -1521,7 +1520,7 @@ describe('createReactEditor', () => {
         children: node.children.map(wrapCellText),
       };
     };
-    const WrapTextPlugin = defineBasePlugin('wrapText', {
+    const WrapTextPlugin = definePlugin('wrapText', {
       prepareDocument: ({ document }) => ({
         ...document,
         children: document.children.map(wrapCellText) as Value,
@@ -1533,7 +1532,7 @@ describe('createReactEditor', () => {
         ),
       }),
     });
-    const TablePlugin = defineBasePlugin('table', {
+    const TablePlugin = definePlugin('table', {
       schema: {
         element: {
           content: schema.content.type('tableRow', {
@@ -1543,7 +1542,7 @@ describe('createReactEditor', () => {
         },
       },
     });
-    const TableRowPlugin = defineBasePlugin('tableRow', {
+    const TableRowPlugin = definePlugin('tableRow', {
       schema: {
         element: {
           content: schema.content.type('tableCell', {
@@ -1553,7 +1552,7 @@ describe('createReactEditor', () => {
         },
       },
     });
-    const TableCellPlugin = defineBasePlugin('tableCell', {
+    const TableCellPlugin = definePlugin('tableCell', {
       schema: {
         element: {
           content: schema.content.group('block', {

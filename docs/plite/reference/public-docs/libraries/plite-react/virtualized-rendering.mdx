@@ -1,0 +1,92 @@
+---
+title: "Virtualized Rendering"
+description: "Explicitly omit offscreen top-level blocks from a large editor's DOM."
+---
+
+`VirtualizedEditable` mounts a measured window of top-level blocks. Use it when
+a complete document DOM exceeds the product's tested interaction or memory
+budget. Ordinary `Editable` always mounts the complete document.
+
+## Usage
+
+Install the virtualizer with React:
+
+```bash
+npm install plitejs @tanstack/react-virtual react react-dom
+```
+
+Render `VirtualizedEditable` from its dedicated entrypoint. Give it a bounded
+scroll surface, either on the editable itself or on an ancestor.
+
+```tsx
+import { Plite, useEditor } from "plitejs/react";
+import { VirtualizedEditable } from "plitejs/react/virtualized";
+
+const editor = useEditor({ initialValue });
+
+return (
+  <Plite editor={editor}>
+    <VirtualizedEditable
+      estimatedBlockSize={32}
+      overscan={4}
+      style={{ height: 480, overflowY: "auto" }}
+    />
+  </Plite>
+);
+```
+
+`estimatedBlockSize` defaults to `32` CSS pixels and must be a positive finite
+number. `overscan` defaults to `2` and must be a nonnegative integer. Plite owns
+the item keys, range extraction, measurement, and scroll targeting.
+
+Plate applications use the matching facade:
+
+```bash
+npm install platejs @tanstack/react-virtual react react-dom
+```
+
+```tsx
+import { VirtualizedPlateContent } from "platejs/react/virtualized";
+
+<VirtualizedPlateContent estimatedBlockSize={32} overscan={4} />;
+```
+
+## Initial rendering
+
+Before Plite can measure a scroll owner, the virtualized surface renders the
+first eight top-level blocks plus selected or requested targets. The same rule
+applies to server rendering, detached roots, hidden roots, and zero-size roots,
+so the first client render agrees with the server markup.
+
+Measured viewport changes and option changes retain mounted rows by node key.
+Switching between `Editable` and `VirtualizedEditable` creates a different
+mounted view. Remount deliberately and restore any app-owned view state when a
+product changes that choice.
+
+## DOM omission
+
+Unmounted content remains in the Plite value, history, and collaboration state,
+but it has no native DOM. Model selection and clipboard serialization can cross
+an omitted range. Selected endpoints stay mounted, and Plite mounts a requested
+target before scrolling or editing it.
+
+## Native behavior limits
+
+| Area             | Behavior                                                                               |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| Browser find     | Native find sees mounted blocks only.                                                  |
+| Screen readers   | Assistive technology traverses mounted blocks only.                                    |
+| Print and export | DOM-based output includes mounted blocks only.                                         |
+| Copy             | Plite serializes selected model content to plain text, HTML, and its fragment format. |
+
+Use `Editable` when the product requires complete native find, accessibility
+traversal, print output, or third-party DOM access. Virtualized mobile selection
+and IME behavior need browser and device proof for the product's supported
+matrix.
+
+For paginated editors, use `PagedEditable virtualize`. Pagination keeps page
+surfaces, layout fragments, selection projection, and canvas coordinates under
+one owner without importing TanStack Virtual.
+
+See [DOM Coverage Boundaries](./dom-coverage-boundaries) for selection, copy,
+materialization, and native find limits at unmounted ranges.

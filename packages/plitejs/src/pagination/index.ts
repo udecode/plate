@@ -23,13 +23,17 @@ import {
   type Text,
   type Value,
 } from '..';
-import { failInvariant, toInternalRoot } from '../internal';
+import { toInternalRoot } from '../core/public-root';
 import {
   isLayoutRuntimeConnectionDeferred,
   registerLayoutRuntimeLifecycle,
 } from './layout-runtime-lifecycle';
 
 const MAIN_ROOT_KEY: RootKey = 'main';
+
+const failInvariant = (message: string): never => {
+  throw new Error(message);
+};
 
 const assertPublicRootKey = (root: RootKey | undefined) => {
   if (root === MAIN_ROOT_KEY) {
@@ -40,9 +44,9 @@ const assertPublicRootKey = (root: RootKey | undefined) => {
 const _toPublicRootOption = (root: RootKey): RootKey | undefined =>
   root === MAIN_ROOT_KEY ? undefined : root;
 
-export type PlitePagePreset = 'a4' | 'letter';
+export type PagePreset = 'a4' | 'letter';
 
-export type PlitePageMargins =
+export type PageMargins =
   | number
   | {
       bottom: number;
@@ -51,16 +55,16 @@ export type PlitePageMargins =
       top: number;
     };
 
-/** Page size and margins used by Plite page-layout readers. */
-export type PlitePageSettings = {
-  margins: PlitePageMargins;
-  preset: PlitePagePreset;
+/** Page size and margins used by editor page-layout readers. */
+export type PageSettings = {
+  margins: PageMargins;
+  preset: PagePreset;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const decodePageMargins = (value: unknown): PlitePageMargins => {
+const decodePageMargins = (value: unknown): PageMargins => {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (!isRecord(value)) throw new Error('Invalid Plite page margins.');
 
@@ -82,7 +86,7 @@ const decodePageMargins = (value: unknown): PlitePageMargins => {
   };
 };
 
-const decodePageSettings = (value: unknown): PlitePageSettings => {
+const decodePageSettings = (value: unknown): PageSettings => {
   if (
     !isRecord(value) ||
     (value.preset !== 'a4' && value.preset !== 'letter')
@@ -96,57 +100,57 @@ const decodePageSettings = (value: unknown): PlitePageSettings => {
   };
 };
 
-/** Versioned persistence codec for Plite page settings. */
-export const plitePageSettingsCodec = defineValueCodec<PlitePageSettings>({
+/** Versioned persistence codec for editor page settings. */
+export const pageSettingsCodec = defineValueCodec<PageSettings>({
   decode: decodePageSettings,
   encode: decodePageSettings,
   version: 1,
 });
 
 /** Rectangle in layout coordinates. */
-export type PlitePageRect = {
+export type PageRect = {
   height: number;
   left: number;
   top: number;
   width: number;
 };
 
-export type PlitePageLayoutPage = {
-  content: PlitePageRect;
+export type PageLayoutPage = {
+  content: PageRect;
   height: number;
   index: number;
   width: number;
 };
 
-export type PlitePageLayoutMode = 'single' | 'spread';
+export type PageLayoutMode = 'single' | 'spread';
 
-export type PlitePageLayoutPlacement = {
+export type PageLayoutPlacement = {
   left: number;
   top: number;
 };
 
-export type PlitePageLayoutGeometry = {
+export type PageLayoutGeometry = {
   height: number;
-  pagePlacements: readonly PlitePageLayoutPlacement[];
+  pagePlacements: readonly PageLayoutPlacement[];
   width: number;
 };
 
-export type PlitePageLayoutGeometryOptions = {
+export type PageLayoutGeometryOptions = {
   pageGap?: number;
-  pageLayoutMode?: PlitePageLayoutMode;
+  pageLayoutMode?: PageLayoutMode;
 };
 
-export type PlitePageLayoutTextStyle = {
+export type PageLayoutTextStyle = {
   font: string;
   letterSpacing?: number;
 };
 
-export type PlitePageLayoutBlockStyle = {
+export type PageLayoutBlockStyle = {
   blockSpacing?: number;
   lineHeight: number;
 };
 
-export type PlitePageLayoutRun = {
+export type PageLayoutRun = {
   id: string;
   path: Path;
   range: {
@@ -154,10 +158,10 @@ export type PlitePageLayoutRun = {
     start: number;
   };
   text: string;
-  textStyle: PlitePageLayoutTextStyle;
+  textStyle: PageLayoutTextStyle;
 };
 
-export type PlitePageLayoutPlacedRun = PlitePageLayoutRun & {
+export type PageLayoutPlacedRun = PageLayoutRun & {
   leafRange: {
     end: number;
     start: number;
@@ -166,7 +170,7 @@ export type PlitePageLayoutPlacedRun = PlitePageLayoutRun & {
   width: number;
 };
 
-export type PlitePageLayoutBoxKind =
+export type PageLayoutBoxKind =
   | 'block'
   | 'code-line'
   | 'image'
@@ -174,140 +178,137 @@ export type PlitePageLayoutBoxKind =
   | 'table-cell'
   | 'thematic-break';
 
-export type PlitePageLayoutBoxSplit = 'avoid' | 'line' | 'page' | 'row';
+export type PageLayoutBoxSplit = 'avoid' | 'line' | 'page' | 'row';
 
-export type PlitePageLayoutBox = {
-  kind: PlitePageLayoutBoxKind;
+export type PageLayoutBox = {
+  kind: PageLayoutBoxKind;
   path: Path;
-  rect: PlitePageRect;
-  split?: PlitePageLayoutBoxSplit;
+  rect: PageRect;
+  split?: PageLayoutBoxSplit;
 };
 
-export type PlitePageLayoutUnitSplit = 'avoid' | 'page';
+export type PageLayoutUnitSplit = 'avoid' | 'page';
 
-export type PlitePageLayoutUnit = {
+export type PageLayoutUnit = {
   key: string;
   kind?: string;
   path: Path;
-  rect: PlitePageRect;
-  split?: PlitePageLayoutUnitSplit;
+  rect: PageRect;
+  split?: PageLayoutUnitSplit;
 };
 
-export type PliteNodeLayoutDefaults = {
-  block: PlitePageLayoutBlockStyle;
-  boxes: readonly PlitePageLayoutBox[];
-  text: PlitePageLayoutTextStyle;
+export type NodeLayoutDefaults = {
+  block: PageLayoutBlockStyle;
+  boxes: readonly PageLayoutBox[];
+  text: PageLayoutTextStyle;
 };
 
-export type PliteNodeLayoutContext = {
-  defaults: PliteNodeLayoutDefaults;
+export type NodeLayoutContext = {
+  defaults: NodeLayoutDefaults;
   element: Element;
-  measurementProfile: PlitePageLayoutMeasurementProfile;
-  pageSettings: PlitePageSettings;
+  measurementProfile: PageLayoutMeasurementProfile;
+  pageSettings: PageSettings;
   path: Path;
 };
 
-export type PliteNodeLayoutPlan =
+export type NodeLayoutPlan =
   | {
-      boxes?: readonly PlitePageLayoutBox[];
+      boxes?: readonly PageLayoutBox[];
       type: 'text';
     }
   | {
-      box: PlitePageLayoutBox;
+      box: PageLayoutBox;
       type: 'box';
     }
   | {
-      boxes?: readonly PlitePageLayoutBox[];
+      boxes?: readonly PageLayoutBox[];
       type: 'units';
-      units: readonly PlitePageLayoutUnit[];
+      units: readonly PageLayoutUnit[];
     };
 
-export type PliteNodeLayoutProvider = (
-  context: PliteNodeLayoutContext
-) => PliteNodeLayoutPlan | null | undefined;
+export type NodeLayoutProvider = (
+  context: NodeLayoutContext
+) => NodeLayoutPlan | null | undefined;
 
-export type PlitePageLayoutTypography = {
-  block?: (context: {
-    element: Element;
-    path: Path;
-  }) => PlitePageLayoutBlockStyle;
+export type PageLayoutTypography = {
+  block?: (context: { element: Element; path: Path }) => PageLayoutBlockStyle;
   text?: (context: {
     element: Element;
     leaf: Text;
     path: Path;
-  }) => PlitePageLayoutTextStyle;
+  }) => PageLayoutTextStyle;
 };
 
-export type PlitePageLayoutBlock = {
+export type PageLayoutBlock = {
   element: Element;
-  boxes?: readonly PlitePageLayoutBox[];
+  boxes?: readonly PageLayoutBox[];
   lineHeight: number;
   path: Path;
-  runs?: readonly PlitePageLayoutRun[];
+  runs?: readonly PageLayoutRun[];
   spacingAfter: number;
   text: string;
-  textStyle: PlitePageLayoutTextStyle;
-  units?: readonly PlitePageLayoutUnit[];
+  textStyle: PageLayoutTextStyle;
+  units?: readonly PageLayoutUnit[];
 };
 
-export type PlitePageLayoutMeasuredLine = {
+export type PageLayoutMeasuredLine = {
   end: number;
   height: number;
-  runs?: readonly PlitePageLayoutPlacedRun[];
+  runs?: readonly PageLayoutPlacedRun[];
   start: number;
   text: string;
   width: number;
 };
 
-export type PlitePageLayoutLine = PlitePageLayoutMeasuredLine & {
+export type PageLayoutLine = PageLayoutMeasuredLine & {
   top: number;
 };
 
-export type PlitePageLayoutFragment = {
+export type PageLayoutFragment = {
   blockIndex: number;
   height: number;
   id: string;
   lineCount: number;
-  lines: readonly PlitePageLayoutLine[];
+  lines: readonly PageLayoutLine[];
   pageIndex: number;
   path: Path;
   text: string;
   top: number;
-  units?: readonly PlitePageLayoutUnit[];
+  units?: readonly PageLayoutUnit[];
 };
 
-export type PlitePageLayoutProjectedBlock = PlitePageRect & {
+export type PageLayoutProjectedBlock = PageRect & {
   blockIndex: number;
   path: Path;
 };
 
-export type PlitePageLayoutProjectedLine = PlitePageLayoutMeasuredLine & {
+export type PageLayoutProjectedLine = PageLayoutMeasuredLine & {
   blockIndex: number;
   fragmentId: string;
-  hitRect: PlitePageRect;
+  hitRect: PageRect;
   left: number;
   lineIndex: number;
   pageIndex: number;
   path: Path;
-  textRect: PlitePageRect;
+  textRect: PageRect;
   top: number;
 };
 
-export type PlitePageLayoutProjectedUnit = PlitePageLayoutUnit & {
+export type PageLayoutProjectedUnit = PageLayoutUnit & {
   blockIndex: number;
   fragmentId: string;
   pageIndex: number;
 };
 
-export type PlitePageLayoutProjection = {
-  blocks: readonly PlitePageLayoutProjectedBlock[];
-  geometry: PlitePageLayoutGeometry;
-  lines: readonly PlitePageLayoutProjectedLine[];
+export type PageLayoutProjection = {
+  blocks: readonly PageLayoutProjectedBlock[];
+  geometry: PageLayoutGeometry;
+  lines: readonly PageLayoutProjectedLine[];
   root: RootKey;
-  units: readonly PlitePageLayoutProjectedUnit[];
+  units: readonly PageLayoutProjectedUnit[];
 };
 
-export type PlitePageLayoutHitTestingOptions = {
+export type PageLayoutHitTestingOptions = {
   blockGap?:
     | false
     | {
@@ -317,131 +318,128 @@ export type PlitePageLayoutHitTestingOptions = {
   inlineInset?: number;
 };
 
-export type PlitePageLayoutProjectionOptions =
-  PlitePageLayoutGeometryOptions & {
-    geometry?: PlitePageLayoutGeometry;
-    hitTesting?: false | PlitePageLayoutHitTestingOptions;
-  };
+export type PageLayoutProjectionOptions = PageLayoutGeometryOptions & {
+  geometry?: PageLayoutGeometry;
+  hitTesting?: false | PageLayoutHitTestingOptions;
+};
 
-export type PlitePageLayoutDecoration<TData = unknown> = {
+export type PageLayoutDecoration<TData = unknown> = {
   data?: TData;
   key: string;
   range: Range;
 };
 
-export type PlitePageLayoutDecorationRects = {
-  hitRect: PlitePageRect;
-  textRect: PlitePageRect;
+export type PageLayoutDecorationRects = {
+  hitRect: PageRect;
+  textRect: PageRect;
 };
 
-export type PlitePageLayoutDecorationRectSpace = 'block' | 'page';
+export type PageLayoutDecorationRectSpace = 'block' | 'page';
 
-export type PlitePageLayoutDecorationContext = {
-  block?: PlitePageLayoutProjectedBlock;
-  line: PlitePageLayoutProjectedLine;
-  rects: PlitePageLayoutDecorationRects;
-  run: PlitePageLayoutPlacedRun;
+export type PageLayoutDecorationContext = {
+  block?: PageLayoutProjectedBlock;
+  line: PageLayoutProjectedLine;
+  rects: PageLayoutDecorationRects;
+  run: PageLayoutPlacedRun;
 };
 
-export type PlitePageLayoutDecorationOptions<TData> = {
-  data?: (context: PlitePageLayoutDecorationContext) => TData | undefined;
+export type PageLayoutDecorationOptions<TData> = {
+  data?: (context: PageLayoutDecorationContext) => TData | undefined;
   /**
-   * Return false to skip creating a Plite decoration for this projected run.
+   * Return false to skip creating an editor decoration for this projected run.
    */
-  filter?: (context: PlitePageLayoutDecorationContext) => boolean;
-  key?: (context: PlitePageLayoutDecorationContext) => string;
-  rects?: PlitePageLayoutDecorationRectSpace;
+  filter?: (context: PageLayoutDecorationContext) => boolean;
+  key?: (context: PageLayoutDecorationContext) => string;
+  rects?: PageLayoutDecorationRectSpace;
 };
 
-export type PlitePageLayoutSnapshot = {
-  blocks: readonly PlitePageLayoutBlock[];
-  fragments: readonly PlitePageLayoutFragment[];
-  measurementProfile: PlitePageLayoutMeasurementProfile;
-  page: PlitePageLayoutPage;
-  pageBreaks: PlitePageBreakSnapshot | null;
-  pageBreaksStatus: PlitePageBreakSnapshotStatus;
-  pages: readonly PlitePageLayoutPage[];
+export type PageLayoutSnapshot = {
+  blocks: readonly PageLayoutBlock[];
+  fragments: readonly PageLayoutFragment[];
+  measurementProfile: PageLayoutMeasurementProfile;
+  page: PageLayoutPage;
+  pageBreaks: PageBreakSnapshot | null;
+  pageBreaksStatus: PageBreakSnapshotStatus;
+  pages: readonly PageLayoutPage[];
   root: RootKey;
-  settings: PlitePageSettings;
+  settings: PageSettings;
   version: number;
 };
 
-export type PlitePageLayoutMetrics = {
+export type PageLayoutMetrics = {
   blockCount: number;
   composeCount: number;
   lastDurationMs: number;
   pageCount: number;
 };
 
-export type PlitePageLayoutRefreshReason =
+export type PageLayoutRefreshReason =
   | 'editor'
   | 'font'
   | 'settings'
   | 'viewport';
 
-export type PlitePageLayoutError = Readonly<{
+export type PageLayoutError = Readonly<{
   cause: unknown;
   phase: 'notify' | 'page-break-write';
-  reason: PlitePageLayoutRefreshReason;
+  reason: PageLayoutRefreshReason;
 }>;
 
-export type PlitePageLayoutErrorSink = (error: PlitePageLayoutError) => void;
+export type PageLayoutErrorSink = (error: PageLayoutError) => void;
 
-export type PlitePageLayoutEngineInput = {
-  blocks: readonly PlitePageLayoutBlock[];
-  page: PlitePageLayoutPage;
-  settings: PlitePageSettings;
+export type PageLayoutEngineInput = {
+  blocks: readonly PageLayoutBlock[];
+  page: PageLayoutPage;
+  settings: PageSettings;
   version: number;
 };
 
-export type PlitePageLayoutEngineOutput = Pick<
-  PlitePageLayoutSnapshot,
+export type PageLayoutEngineOutput = Pick<
+  PageLayoutSnapshot,
   'fragments' | 'pages'
 >;
 
-export type PlitePageLayoutMeasuredBlock = PlitePageLayoutBlock & {
+export type PageLayoutMeasuredBlock = PageLayoutBlock & {
   blockIndex: number;
   lineCount: number;
-  lines?: readonly PlitePageLayoutMeasuredLine[];
+  lines?: readonly PageLayoutMeasuredLine[];
 };
 
-export type PlitePageLayoutEngine = {
-  compose: (input: PlitePageLayoutEngineInput) => PlitePageLayoutEngineOutput;
+export type PageLayoutEngine = {
+  compose: (input: PageLayoutEngineInput) => PageLayoutEngineOutput;
   id?: string;
   measurementProfile?: unknown;
 };
 
-export type PlitePageLayoutMeasurementProfile = {
+export type PageLayoutMeasurementProfile = {
   engine: {
     id: string;
     profile?: unknown;
   };
-  page: PlitePageSettings;
+  page: PageSettings;
   root: RootKey;
   schemaVersion: 1;
   typography: 'custom' | 'default';
 };
 
-export type PlitePageBreak = {
+export type PageBreak = {
   blockIndex: number;
   fragmentId: string;
   pageIndex: number;
   path: Path;
 };
 
-export type PlitePageBreakSnapshot = {
-  breaks: readonly PlitePageBreak[];
+export type PageBreakSnapshot = {
+  breaks: readonly PageBreak[];
   documentKey: string;
   documentVersion: number;
-  measurementProfile: PlitePageLayoutMeasurementProfile;
+  measurementProfile: PageLayoutMeasurementProfile;
   root: RootKey;
   schemaVersion: 1;
   writerId?: string;
 };
 
-const decodePageBreakSnapshot = (
-  value: unknown
-): PlitePageBreakSnapshot | null => {
+const decodePageBreakSnapshot = (value: unknown): PageBreakSnapshot | null => {
   if (value === null) return null;
   if (
     !isRecord(value) ||
@@ -521,14 +519,14 @@ const decodePageBreakSnapshot = (
 };
 
 /** Versioned persistence codec for authoritative page-break snapshots. */
-export const plitePageBreakSnapshotCodec =
-  defineValueCodec<PlitePageBreakSnapshot | null>({
+export const pageBreakSnapshotCodec =
+  defineValueCodec<PageBreakSnapshot | null>({
     decode: decodePageBreakSnapshot,
     encode: decodePageBreakSnapshot,
     version: 1,
   });
 
-export type PlitePageBreakSnapshotStatus =
+export type PageBreakSnapshotStatus =
   | 'accepted'
   | 'none'
   | 'stale-document'
@@ -536,106 +534,102 @@ export type PlitePageBreakSnapshotStatus =
   | 'stale-root'
   | 'written';
 
-export type PlitePageBreakSnapshotSource =
-  | EditorStateField<PlitePageBreakSnapshot | null>
-  | PlitePageBreakSnapshot
+export type PageBreakSnapshotSource =
+  | EditorStateField<PageBreakSnapshot | null>
+  | PageBreakSnapshot
   | null;
 
-export type PlitePageBreaksOptions =
+export type PageBreaksOptions =
   | {
       mode: 'read';
-      source: PlitePageBreakSnapshotSource;
+      source: PageBreakSnapshotSource;
     }
   | {
       mode: 'write';
-      source: EditorStateField<PlitePageBreakSnapshot | null>;
+      source: EditorStateField<PageBreakSnapshot | null>;
       writerId: string;
     };
 
 export type PretextPageLayoutEngineOptions = {
   estimateBlock?: (context: {
-    block: PlitePageLayoutBlock;
+    block: PageLayoutBlock;
     blockIndex: number;
-    page: PlitePageLayoutPage;
-    settings: PlitePageSettings;
+    page: PageLayoutPage;
+    settings: PageSettings;
   }) => boolean;
   maxPreparedEntries?: number;
   whiteSpace?: 'normal' | 'pre-wrap';
   wordBreak?: 'normal' | 'keep-all';
 };
 
-export type PlitePageSettingsSource<
-  TSettings extends PlitePageSettings = PlitePageSettings,
-> = EditorStateField<TSettings> | TSettings;
+export type PageSettingsSource<TSettings extends PageSettings = PageSettings> =
+  | EditorStateField<TSettings>
+  | TSettings;
 
 /** Layout options with a built-in engine or caller-owned measurement. */
-export type PliteLayoutOptions<
-  TSettings extends PlitePageSettings = PlitePageSettings,
-> = {
-  engine?: PlitePageLayoutEngine;
-  nodeLayout?: PliteNodeLayoutProvider;
+export type LayoutOptions<TSettings extends PageSettings = PageSettings> = {
+  engine?: PageLayoutEngine;
+  nodeLayout?: NodeLayoutProvider;
   /** Receives isolated subscriber and page-break persistence failures. */
-  onError?: PlitePageLayoutErrorSink;
-  page: PlitePageSettingsSource<TSettings>;
-  pageBreaks?: PlitePageBreaksOptions | null;
+  onError?: PageLayoutErrorSink;
+  page: PageSettingsSource<TSettings>;
+  pageBreaks?: PageBreaksOptions | null;
   root?: RootKey;
-  textChangeRefresh?: PlitePageLayoutTextChangeRefresh;
-  typography?: PlitePageLayoutTypography;
+  textChangeRefresh?: PageLayoutTextChangeRefresh;
+  typography?: PageLayoutTypography;
 };
 
-export type PlitePageLayoutDeferredTextChangeRefresh = {
+export type PageLayoutDeferredTextChangeRefresh = {
   delayMs?: number;
   maxDelayMs?: number;
   mode: 'deferred';
 };
 
-export type PlitePageLayoutTextChangeRefresh =
+export type PageLayoutTextChangeRefresh =
   | 'sync'
   | 'deferred'
-  | PlitePageLayoutDeferredTextChangeRefresh;
+  | PageLayoutDeferredTextChangeRefresh;
 
-export type PlitePageLayoutProjectRangeOptions =
-  PlitePageLayoutGeometryOptions & {
-    root?: RootKey;
-  };
+export type PageLayoutProjectRangeOptions = PageLayoutGeometryOptions & {
+  root?: RootKey;
+};
 
 /** Live derived layout reader. It owns subscriptions, not document content. */
-export type PlitePageLayout<TOptions = PliteLayoutOptions> = {
+export type PageLayout<TOptions = LayoutOptions> = {
   destroy: () => void;
-  getFragments: (path: Path) => readonly PlitePageLayoutFragment[];
-  getMetrics: () => PlitePageLayoutMetrics;
-  getSnapshot: () => PlitePageLayoutSnapshot;
+  getFragments: (path: Path) => readonly PageLayoutFragment[];
+  getMetrics: () => PageLayoutMetrics;
+  getSnapshot: () => PageLayoutSnapshot;
   projectRange: (
     range: Range,
-    options?: PlitePageLayoutProjectRangeOptions
-  ) => readonly PlitePageRect[];
-  refresh: (reason?: PlitePageLayoutRefreshReason) => void;
+    options?: PageLayoutProjectRangeOptions
+  ) => readonly PageRect[];
+  refresh: (reason?: PageLayoutRefreshReason) => void;
   reconfigure: (options: TOptions) => void;
   subscribe: (listener: () => void) => () => void;
 };
 
-const PAGE_PRESETS: Record<PlitePagePreset, { height: number; width: number }> =
-  {
-    a4: { height: 1123, width: 794 },
-    letter: { height: 1056, width: 816 },
-  };
+const PAGE_PRESETS: Record<PagePreset, { height: number; width: number }> = {
+  a4: { height: 1123, width: 794 },
+  letter: { height: 1056, width: 816 },
+};
 
-const DEFAULT_SETTINGS: PlitePageSettings = {
+const DEFAULT_SETTINGS: PageSettings = {
   margins: 96,
   preset: 'a4',
 };
 
-const DEFAULT_TEXT_STYLE: PlitePageLayoutTextStyle = {
+const DEFAULT_TEXT_STYLE: PageLayoutTextStyle = {
   font: '400 16px Inter',
   letterSpacing: 0,
 };
 
-const DEFAULT_BLOCK_STYLE: PlitePageLayoutBlockStyle = {
+const DEFAULT_BLOCK_STYLE: PageLayoutBlockStyle = {
   blockSpacing: 12,
   lineHeight: 24,
 };
 
-const DEFAULT_MEASUREMENT_PROFILE: PlitePageLayoutMeasurementProfile = {
+const DEFAULT_MEASUREMENT_PROFILE: PageLayoutMeasurementProfile = {
   engine: { id: 'none' },
   page: DEFAULT_SETTINGS,
   root: MAIN_ROOT_KEY,
@@ -652,7 +646,7 @@ const normalizeRefreshDelay = (value: number | undefined, fallback: number) =>
     : fallback;
 
 const getTextChangeRefreshOptions = (
-  refresh: PlitePageLayoutTextChangeRefresh | undefined
+  refresh: PageLayoutTextChangeRefresh | undefined
 ):
   | {
       delayMs: number;
@@ -696,7 +690,7 @@ const getNow = () =>
 const profileLayoutDuration = <T>(id: string, callback: () => T): T => {
   const profiler = (
     globalThis as typeof globalThis & {
-      __PLITE_REACT_RENDER_PROFILER__?: {
+      __EDITOR_REACT_RENDER_PROFILER__?: {
         record?: (event: {
           duration: number;
           id: string;
@@ -704,7 +698,7 @@ const profileLayoutDuration = <T>(id: string, callback: () => T): T => {
         }) => void;
       };
     }
-  ).__PLITE_REACT_RENDER_PROFILER__;
+  ).__EDITOR_REACT_RENDER_PROFILER__;
 
   if (!profiler) {
     return callback();
@@ -733,22 +727,22 @@ const createPlitePageLayoutMeasurementProfile = ({
   settings,
   typography,
 }: {
-  engine: PlitePageLayoutEngine;
+  engine: PageLayoutEngine;
   root: RootKey;
-  settings: PlitePageSettings;
-  typography?: PlitePageLayoutTypography;
-}): PlitePageLayoutMeasurementProfile => ({
+  settings: PageSettings;
+  typography?: PageLayoutTypography;
+}): PageLayoutMeasurementProfile => ({
   engine: {
     id: engine.id ?? 'anonymous',
     profile: engine.measurementProfile,
   },
-  page: normalizePlitePageSettings(settings),
+  page: normalizePageSettings(settings),
   root,
   schemaVersion: 1,
   typography: typography ? 'custom' : 'default',
 });
 
-export const createPlitePageBreakSnapshot = ({
+export const createPageBreakSnapshot = ({
   documentKey,
   fragments,
   measurementProfile,
@@ -757,13 +751,13 @@ export const createPlitePageBreakSnapshot = ({
   writerId,
 }: {
   documentKey: string;
-  fragments: readonly PlitePageLayoutFragment[];
-  measurementProfile: PlitePageLayoutMeasurementProfile;
+  fragments: readonly PageLayoutFragment[];
+  measurementProfile: PageLayoutMeasurementProfile;
   root: RootKey;
   version: number;
   writerId?: string;
-}): PlitePageBreakSnapshot => {
-  const breaksByPageIndex = new Map<number, PlitePageBreak>();
+}): PageBreakSnapshot => {
+  const breaksByPageIndex = new Map<number, PageBreak>();
 
   for (const fragment of fragments) {
     if (fragment.pageIndex === 0 || breaksByPageIndex.has(fragment.pageIndex)) {
@@ -793,10 +787,10 @@ export const createPlitePageBreakSnapshot = ({
 
 const readPlitePageBreakSnapshot = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: EditorType<V, TExtensions>,
-  source: PlitePageBreakSnapshotSource
+  editor: EditorType<V, TPlugins>,
+  source: PageBreakSnapshotSource
 ) => {
   if (!source) {
     return null;
@@ -817,11 +811,11 @@ const getPlitePageBreakSnapshotStatus = ({
   version,
 }: {
   documentKey: string;
-  measurementProfile: PlitePageLayoutMeasurementProfile;
+  measurementProfile: PageLayoutMeasurementProfile;
   root: RootKey;
-  snapshot: PlitePageBreakSnapshot | null;
+  snapshot: PageBreakSnapshot | null;
   version: number;
-}): PlitePageBreakSnapshotStatus => {
+}): PageBreakSnapshotStatus => {
   if (!snapshot) {
     return 'none';
   }
@@ -848,8 +842,8 @@ const getPlitePageBreakSnapshotStatus = ({
 };
 
 const samePlitePageBreakSnapshot = (
-  left: PlitePageBreakSnapshot | null,
-  right: PlitePageBreakSnapshot
+  left: PageBreakSnapshot | null,
+  right: PageBreakSnapshot
 ) => Boolean(left && getStableProfileKey(left) === getStableProfileKey(right));
 
 const getStableHashKey = (value: unknown): string => {
@@ -865,7 +859,7 @@ const getStableHashKey = (value: unknown): string => {
 };
 
 const getPliteLayoutDocumentKey = (
-  blocks: readonly PlitePageLayoutBlock[]
+  blocks: readonly PageLayoutBlock[]
 ): string =>
   getStableHashKey(
     blocks.map((block) => ({
@@ -911,7 +905,7 @@ const canUseCanvasTextMeasurement = () => {
   }
 };
 
-const normalizeMargins = (margins: PlitePageMargins) =>
+const normalizeMargins = (margins: PageMargins) =>
   typeof margins === 'number'
     ? {
         bottom: margins,
@@ -921,23 +915,22 @@ const normalizeMargins = (margins: PlitePageMargins) =>
       }
     : margins;
 
-export const getPlitePagePresetSize = (preset: PlitePagePreset) =>
-  PAGE_PRESETS[preset];
+export const getPagePresetSize = (preset: PagePreset) => PAGE_PRESETS[preset];
 
 /** Normalize page settings without resolving shorthand margins. */
-export const normalizePlitePageSettings = (
-  settings: PlitePageSettings
-): PlitePageSettings => ({
+export const normalizePageSettings = (
+  settings: PageSettings
+): PageSettings => ({
   margins: settings.margins,
   preset: settings.preset,
 });
 
 /** Create one page rectangle and its content box from settings. */
-export const createPlitePage = (
-  settings: PlitePageSettings,
+export const createPage = (
+  settings: PageSettings,
   index = 0
-): PlitePageLayoutPage => {
-  const size = getPlitePagePresetSize(settings.preset);
+): PageLayoutPage => {
+  const size = getPagePresetSize(settings.preset);
   const margins = normalizeMargins(settings.margins);
 
   return {
@@ -954,13 +947,10 @@ export const createPlitePage = (
 };
 
 /** Compute page placements for single-page or spread rendering. */
-export const getPlitePageLayoutGeometry = (
-  pages: readonly PlitePageLayoutPage[],
-  {
-    pageGap = 24,
-    pageLayoutMode = 'single',
-  }: PlitePageLayoutGeometryOptions = {}
-): PlitePageLayoutGeometry => {
+export const getPageLayoutGeometry = (
+  pages: readonly PageLayoutPage[],
+  { pageGap = 24, pageLayoutMode = 'single' }: PageLayoutGeometryOptions = {}
+): PageLayoutGeometry => {
   if (pages.length === 0) {
     return { height: 0, pagePlacements: [], width: 0 };
   }
@@ -1000,7 +990,7 @@ export const getPlitePageLayoutGeometry = (
     };
   }
 
-  const pagePlacements: PlitePageLayoutPlacement[] = [];
+  const pagePlacements: PageLayoutPlacement[] = [];
   let height = 0;
   let width = 0;
 
@@ -1013,8 +1003,8 @@ export const getPlitePageLayoutGeometry = (
   return { height, pagePlacements, width };
 };
 
-/** Stable key for layout maps keyed by Plite path. */
-export const getPlitePageLayoutPathKey = (path: Path) => path.join('.');
+/** Stable key for layout maps keyed by editor path. */
+export const getPageLayoutPathKey = (path: Path) => path.join('.');
 
 const getRunId = (path: Path, start: number, end: number) =>
   `${path.join('.')}:${start}-${end}`;
@@ -1057,21 +1047,20 @@ const getLayoutRangeEdges = (range: Range): [Point, Point] =>
 const clamp = (value: number, min: number, max: number) =>
   Math.max(min, Math.min(max, value));
 
-export const getPlitePageLayoutProjection = (
-  snapshot: PlitePageLayoutSnapshot,
-  options: PlitePageLayoutProjectionOptions = {}
-): PlitePageLayoutProjection => {
+export const getPageLayoutProjection = (
+  snapshot: PageLayoutSnapshot,
+  options: PageLayoutProjectionOptions = {}
+): PageLayoutProjection => {
   const {
     geometry: providedGeometry,
     hitTesting = {},
     ...geometryOptions
   } = options;
   const geometry =
-    providedGeometry ??
-    getPlitePageLayoutGeometry(snapshot.pages, geometryOptions);
-  const blockBoxes = new Map<string, PlitePageLayoutProjectedBlock>();
-  const lines: PlitePageLayoutProjectedLine[] = [];
-  const units: PlitePageLayoutProjectedUnit[] = [];
+    providedGeometry ?? getPageLayoutGeometry(snapshot.pages, geometryOptions);
+  const blockBoxes = new Map<string, PageLayoutProjectedBlock>();
+  const lines: PageLayoutProjectedLine[] = [];
+  const units: PageLayoutProjectedUnit[] = [];
   const inlineInset = hitTesting === false ? 0 : (hitTesting.inlineInset ?? 0);
 
   snapshot.fragments.forEach((fragment) => {
@@ -1106,7 +1095,7 @@ export const getPlitePageLayoutProjection = (
         top,
       });
 
-      const pathKey = getPlitePageLayoutPathKey(fragment.path);
+      const pathKey = getPageLayoutPathKey(fragment.path);
       const existing = blockBoxes.get(pathKey);
 
       if (!existing) {
@@ -1154,7 +1143,7 @@ export const getPlitePageLayoutProjection = (
         },
       });
 
-      const pathKey = getPlitePageLayoutPathKey(fragment.path);
+      const pathKey = getPageLayoutPathKey(fragment.path);
       const existing = blockBoxes.get(pathKey);
 
       if (!existing) {
@@ -1235,15 +1224,12 @@ export const getPlitePageLayoutProjection = (
   };
 };
 
-/** Convert projected line runs into Plite decorations keyed by path. */
-export const getPlitePageLayoutDecorations = <TData = unknown>(
-  projection: PlitePageLayoutProjection,
-  options: PlitePageLayoutDecorationOptions<TData> = {}
-): Map<string, Array<PlitePageLayoutDecoration<TData>>> => {
-  const decorations = new Map<
-    string,
-    Array<PlitePageLayoutDecoration<TData>>
-  >();
+/** Convert projected line runs into editor decorations keyed by path. */
+export const getPageLayoutDecorations = <TData = unknown>(
+  projection: PageLayoutProjection,
+  options: PageLayoutDecorationOptions<TData> = {}
+): Map<string, Array<PageLayoutDecoration<TData>>> => {
+  const decorations = new Map<string, Array<PageLayoutDecoration<TData>>>();
   const blockByIndex = new Map(
     projection.blocks.map((block) => [block.blockIndex, block])
   );
@@ -1254,7 +1240,7 @@ export const getPlitePageLayoutDecorations = <TData = unknown>(
     const block = blockByIndex.get(line.blockIndex);
 
     line.runs?.forEach((run) => {
-      const pathKey = getPlitePageLayoutPathKey(run.path);
+      const pathKey = getPageLayoutPathKey(run.path);
       const rects = getDecorationRects(line, block, run, rectSpace);
       const context = { block, line, rects, run };
 
@@ -1262,7 +1248,7 @@ export const getPlitePageLayoutDecorations = <TData = unknown>(
         return;
       }
 
-      const decoration: PlitePageLayoutDecoration<TData> = {
+      const decoration: PageLayoutDecoration<TData> = {
         key:
           options.key?.(context) ??
           `plite-layout:${line.fragmentId}:${line.lineIndex}:${pathKey}:${run.leafRange.start}-${run.leafRange.end}`,
@@ -1295,11 +1281,11 @@ export const getPlitePageLayoutDecorations = <TData = unknown>(
 };
 
 const getDecorationRects = (
-  line: PlitePageLayoutProjectedLine,
-  block: PlitePageLayoutProjectedBlock | undefined,
-  run: PlitePageLayoutPlacedRun,
-  rectSpace: PlitePageLayoutDecorationRectSpace
-): PlitePageLayoutDecorationRects => {
+  line: PageLayoutProjectedLine,
+  block: PageLayoutProjectedBlock | undefined,
+  run: PageLayoutPlacedRun,
+  rectSpace: PageLayoutDecorationRectSpace
+): PageLayoutDecorationRects => {
   const textRect = {
     height: line.textRect.height,
     left: line.textRect.left + run.left,
@@ -1333,19 +1319,16 @@ const getDecorationRects = (
 };
 
 const getRectRelativeToBlock = (
-  rect: PlitePageRect,
-  block: PlitePageLayoutProjectedBlock
-): PlitePageRect => ({
+  rect: PageRect,
+  block: PageLayoutProjectedBlock
+): PageRect => ({
   height: rect.height,
   left: rect.left - block.left,
   top: rect.top - block.top,
   width: rect.width,
 });
 
-const getRunWidthAtOffset = (
-  run: PlitePageLayoutPlacedRun,
-  blockOffset: number
-) => {
+const getRunWidthAtOffset = (run: PageLayoutPlacedRun, blockOffset: number) => {
   const rangeLength = run.range.end - run.range.start;
 
   if (rangeLength <= 0) {
@@ -1356,7 +1339,7 @@ const getRunWidthAtOffset = (
 };
 
 const getProjectedPointBlockOffset = (
-  projection: PlitePageLayoutProjection,
+  projection: PageLayoutProjection,
   point: Point
 ) => {
   const topLevelIndex = point.path[0];
@@ -1369,7 +1352,7 @@ const getProjectedPointBlockOffset = (
     return point.offset;
   }
 
-  const matchingRuns: PlitePageLayoutPlacedRun[] = [];
+  const matchingRuns: PageLayoutPlacedRun[] = [];
 
   for (const line of projection.lines) {
     if (line.path[0] !== topLevelIndex) {
@@ -1414,9 +1397,9 @@ const getProjectedPointBlockOffset = (
 };
 
 const getProjectedCaretRect = (
-  projection: PlitePageLayoutProjection,
+  projection: PageLayoutProjection,
   point: Point
-): PlitePageRect[] => {
+): PageRect[] => {
   const blockIndex = point.path[0];
   const blockOffset = getProjectedPointBlockOffset(projection, point);
 
@@ -1468,9 +1451,9 @@ const getProjectedCaretRect = (
 };
 
 const projectRangeThroughRuns = (
-  projection: PlitePageLayoutProjection,
+  projection: PageLayoutProjection,
   range: Range
-): PlitePageRect[] => {
+): PageRect[] => {
   const [startPoint, endPoint] = getLayoutRangeEdges(range);
 
   if (compareLayoutPoints(startPoint, endPoint) === 0) {
@@ -1491,7 +1474,7 @@ const projectRangeThroughRuns = (
     return [];
   }
 
-  const rects: PlitePageRect[] = [];
+  const rects: PageRect[] = [];
 
   for (const line of projection.lines) {
     const lineBlockIndex = line.path[0];
@@ -1557,7 +1540,7 @@ const getFirstLeaf = (element: Element): Text => {
 };
 
 const getBlockStyle = (
-  typography: PlitePageLayoutTypography | undefined,
+  typography: PageLayoutTypography | undefined,
   element: Element,
   path: Path
 ) => ({
@@ -1566,7 +1549,7 @@ const getBlockStyle = (
 });
 
 const getTextStyle = (
-  typography: PlitePageLayoutTypography | undefined,
+  typography: PageLayoutTypography | undefined,
   element: Element,
   path: Path,
   leaf: Text = getFirstLeaf(element)
@@ -1582,9 +1565,9 @@ const getTextStyle = (
 const extractLayoutRuns = (
   element: Element,
   path: Path,
-  typography: PlitePageLayoutTypography | undefined
-): PlitePageLayoutRun[] => {
-  const runs: PlitePageLayoutRun[] = [];
+  typography: PageLayoutTypography | undefined
+): PageLayoutRun[] => {
+  const runs: PageLayoutRun[] = [];
   let offset = 0;
 
   for (const [leaf, leafPath] of NodeApi.texts(element)) {
@@ -1629,13 +1612,13 @@ const createBox = ({
   width = 0,
 }: {
   height: number;
-  kind: PlitePageLayoutBoxKind;
+  kind: PageLayoutBoxKind;
   left?: number;
   path: Path;
-  split?: PlitePageLayoutBoxSplit;
+  split?: PageLayoutBoxSplit;
   top?: number;
   width?: number;
-}): PlitePageLayoutBox => ({
+}): PageLayoutBox => ({
   kind,
   path,
   rect: { height, left, top, width },
@@ -1651,7 +1634,7 @@ const createLayoutBoxes = (
   element: Element,
   path: Path,
   lineHeight: number
-): PlitePageLayoutBox[] => {
+): PageLayoutBox[] => {
   switch (element.type) {
     case 'code-block': {
       const lines = Math.max(1, NodeApi.string(element).split('\n').length);
@@ -1706,7 +1689,7 @@ const createLayoutBoxes = (
 const createTableLayoutBoxes = (
   element: Element,
   path: Path
-): PlitePageLayoutBox[] => {
+): PageLayoutBox[] => {
   const rows = getElementChildrenOfType(element, 'table-row');
   const width = rows.reduce(
     (max, row) =>
@@ -1743,12 +1726,12 @@ const createTableLayoutBoxes = (
 };
 
 const resolveNodeLayoutPlan = (
-  plan: PliteNodeLayoutPlan | null | undefined,
-  getDefaultBoxes: () => readonly PlitePageLayoutBox[]
+  plan: NodeLayoutPlan | null | undefined,
+  getDefaultBoxes: () => readonly PageLayoutBox[]
 ): {
-  boxes: readonly PlitePageLayoutBox[];
+  boxes: readonly PageLayoutBox[];
   mode: 'text' | 'units';
-  units?: readonly PlitePageLayoutUnit[];
+  units?: readonly PageLayoutUnit[];
 } => {
   if (!plan || plan.type === 'text') {
     return {
@@ -1763,7 +1746,7 @@ const resolveNodeLayoutPlan = (
       mode: 'units',
       units: [
         {
-          key: `${getPlitePageLayoutPathKey(plan.box.path)}:${plan.box.kind}`,
+          key: `${getPageLayoutPathKey(plan.box.path)}:${plan.box.kind}`,
           kind: plan.box.kind,
           path: [...plan.box.path],
           rect: plan.box.rect,
@@ -1782,15 +1765,15 @@ const resolveNodeLayoutPlan = (
 
 const extractLayoutBlocks = <
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: EditorType<V, TExtensions>,
+  editor: EditorType<V, TPlugins>,
   root: RootKey,
-  settings: PlitePageSettings,
-  measurementProfile: PlitePageLayoutMeasurementProfile,
-  typography: PlitePageLayoutTypography | undefined,
-  nodeLayout: PliteNodeLayoutProvider | undefined
-): PlitePageLayoutBlock[] => {
+  settings: PageSettings,
+  measurementProfile: PageLayoutMeasurementProfile,
+  typography: PageLayoutTypography | undefined,
+  nodeLayout: NodeLayoutProvider | undefined
+): PageLayoutBlock[] => {
   const children = editor.read((state) =>
     root === MAIN_ROOT_KEY ? state.children() : state.root(root)
   );
@@ -1802,8 +1785,8 @@ const extractLayoutBlocks = <
 
     const path = [index];
     const blockStyle = getBlockStyle(typography, node, path);
-    let defaultBoxes: readonly PlitePageLayoutBox[] | null = null;
-    let defaultTextStyle: PlitePageLayoutTextStyle | null = null;
+    let defaultBoxes: readonly PageLayoutBox[] | null = null;
+    let defaultTextStyle: PageLayoutTextStyle | null = null;
     const getDefaultBoxes = () => {
       defaultBoxes ??= createLayoutBoxes(node, path, blockStyle.lineHeight);
 
@@ -1851,37 +1834,35 @@ const extractLayoutBlocks = <
   });
 };
 
-const isPlitePageSettings = <TSettings extends PlitePageSettings>(
-  source: PlitePageSettingsSource<TSettings>
+const isPlitePageSettings = <TSettings extends PageSettings>(
+  source: PageSettingsSource<TSettings>
 ): source is TSettings => 'margins' in source && 'preset' in source;
 
 const readLayoutSettings = <
-  TSettings extends PlitePageSettings,
+  TSettings extends PageSettings,
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: EditorType<V, TExtensions>,
-  source: PlitePageSettingsSource<TSettings> | null | undefined
-): PlitePageSettings => {
+  editor: EditorType<V, TPlugins>,
+  source: PageSettingsSource<TSettings> | null | undefined
+): PageSettings => {
   if (!source) {
     return DEFAULT_SETTINGS;
   }
 
   if (isPlitePageSettings(source)) {
-    return normalizePlitePageSettings(source);
+    return normalizePageSettings(source);
   }
 
-  return normalizePlitePageSettings(
-    editor.read((state) => state.getField(source))
-  );
+  return normalizePageSettings(editor.read((state) => state.getField(source)));
 };
 
 const createEmptyLayoutSnapshot = (
-  settings: PlitePageSettings,
+  settings: PageSettings,
   version: number,
   root: RootKey = MAIN_ROOT_KEY
-): PlitePageLayoutSnapshot => {
-  const page = createPlitePage(settings);
+): PageLayoutSnapshot => {
+  const page = createPage(settings);
 
   return {
     blocks: [],
@@ -1902,18 +1883,18 @@ const createEmptyLayoutSnapshot = (
 };
 
 type PlitePageLayoutFragmentUnitMatch = {
-  fragment: PlitePageLayoutFragment;
-  unit: PlitePageLayoutUnit;
+  fragment: PageLayoutFragment;
+  unit: PageLayoutUnit;
 };
 
 type PlitePageLayoutFragmentIndex = {
-  exactFragments: Map<string, readonly PlitePageLayoutFragment[]>;
+  exactFragments: Map<string, readonly PageLayoutFragment[]>;
   unitsByAncestorPath: Map<string, readonly PlitePageLayoutFragmentUnitMatch[]>;
   unitsByPath: Map<string, readonly PlitePageLayoutFragmentUnitMatch[]>;
 };
 
 const SNAPSHOT_FRAGMENT_INDEX = new WeakMap<
-  PlitePageLayoutSnapshot,
+  PageLayoutSnapshot,
   PlitePageLayoutFragmentIndex
 >();
 
@@ -1932,7 +1913,7 @@ const appendFragmentIndexValue = <T>(
 };
 
 const getPlitePageLayoutFragmentIndex = (
-  snapshot: PlitePageLayoutSnapshot
+  snapshot: PageLayoutSnapshot
 ): PlitePageLayoutFragmentIndex => {
   const cached = SNAPSHOT_FRAGMENT_INDEX.get(snapshot);
 
@@ -1940,7 +1921,7 @@ const getPlitePageLayoutFragmentIndex = (
     return cached;
   }
 
-  const exactFragments = new Map<string, PlitePageLayoutFragment[]>();
+  const exactFragments = new Map<string, PageLayoutFragment[]>();
   const unitsByAncestorPath = new Map<
     string,
     PlitePageLayoutFragmentUnitMatch[]
@@ -1950,20 +1931,20 @@ const getPlitePageLayoutFragmentIndex = (
   for (const fragment of snapshot.fragments) {
     appendFragmentIndexValue(
       exactFragments,
-      getPlitePageLayoutPathKey(fragment.path),
+      getPageLayoutPathKey(fragment.path),
       fragment
     );
 
     for (const unit of fragment.units ?? []) {
       const match = { fragment, unit };
-      const unitPathKey = getPlitePageLayoutPathKey(unit.path);
+      const unitPathKey = getPageLayoutPathKey(unit.path);
 
       appendFragmentIndexValue(unitsByPath, unitPathKey, match);
 
       for (let index = 0; index <= unit.path.length; index++) {
         appendFragmentIndexValue(
           unitsByAncestorPath,
-          getPlitePageLayoutPathKey(unit.path.slice(0, index)),
+          getPageLayoutPathKey(unit.path.slice(0, index)),
           match
         );
       }
@@ -1997,18 +1978,18 @@ const getAncestorPathKeys = (path: Path) => {
   const keys: string[] = [];
 
   for (let index = path.length; index >= 0; index--) {
-    keys.push(getPlitePageLayoutPathKey(path.slice(0, index)));
+    keys.push(getPageLayoutPathKey(path.slice(0, index)));
   }
 
   return keys;
 };
 
-export const getPlitePageLayoutFragments = (
-  snapshot: PlitePageLayoutSnapshot,
+export const getPageLayoutFragments = (
+  snapshot: PageLayoutSnapshot,
   path: Path
-): readonly PlitePageLayoutFragment[] => {
+): readonly PageLayoutFragment[] => {
   const index = getPlitePageLayoutFragmentIndex(snapshot);
-  const pathKey = getPlitePageLayoutPathKey(path);
+  const pathKey = getPageLayoutPathKey(path);
   const exactFragments = index.exactFragments.get(pathKey);
 
   if (exactFragments) {
@@ -2029,8 +2010,8 @@ export const getPlitePageLayoutFragments = (
     return [];
   }
 
-  const unitsByFragment = new Map<string, PlitePageLayoutUnit[]>();
-  const fragmentsById = new Map<string, PlitePageLayoutFragment>();
+  const unitsByFragment = new Map<string, PageLayoutUnit[]>();
+  const fragmentsById = new Map<string, PageLayoutFragment>();
 
   for (const { fragment, unit } of matchedUnits.values()) {
     fragmentsById.set(fragment.id, fragment);
@@ -2044,12 +2025,12 @@ export const getPlitePageLayoutFragments = (
 };
 
 const readLayoutRoot = <
-  TSettings extends PlitePageSettings,
+  TSettings extends PageSettings,
   V extends Value,
-  TExtensions extends readonly unknown[],
+  TPlugins extends readonly unknown[],
 >(
-  editor: EditorType<V, TExtensions>,
-  options: PliteLayoutOptions<TSettings>
+  editor: EditorType<V, TPlugins>,
+  options: LayoutOptions<TSettings>
 ): RootKey => {
   assertPublicRootKey(options.root);
 
@@ -2061,7 +2042,7 @@ const readLayoutRoot = <
 const resolveProjectionRoot = (
   range: Range,
   layoutRoot: RootKey,
-  options: PlitePageLayoutProjectRangeOptions | undefined
+  options: PageLayoutProjectRangeOptions | undefined
 ): RootKey | null => {
   assertPublicRootKey(options?.root);
   assertPublicRootKey(range.anchor.root);
@@ -2083,8 +2064,8 @@ const resolveProjectionRoot = (
 };
 
 const createEstimatedLines = (
-  block: PlitePageLayoutMeasuredBlock
-): PlitePageLayoutMeasuredLine[] => {
+  block: PageLayoutMeasuredBlock
+): PageLayoutMeasuredLine[] => {
   if (block.lines && block.lines.length > 0) {
     return block.lines.map((line) => {
       const runs =
@@ -2102,7 +2083,7 @@ const createEstimatedLines = (
     1,
     Math.ceil(block.text.length / lineCount)
   );
-  const lines: PlitePageLayoutMeasuredLine[] = [];
+  const lines: PageLayoutMeasuredLine[] = [];
 
   for (let index = 0; index < lineCount; index++) {
     const start = Math.min(block.text.length, index * charactersPerLine);
@@ -2125,10 +2106,10 @@ const createEstimatedLines = (
 };
 
 const createEstimatedLineRuns = (
-  block: PlitePageLayoutBlock,
+  block: PageLayoutBlock,
   lineStart: number,
   lineEnd: number
-): PlitePageLayoutPlacedRun[] =>
+): PageLayoutPlacedRun[] =>
   (block.runs ?? []).flatMap((run) => {
     const start = Math.max(lineStart, run.range.start);
     const end = Math.min(lineEnd, run.range.end);
@@ -2158,11 +2139,11 @@ const createEstimatedLineRuns = (
 const estimateTextWidth = (text: string) => text.length * 8;
 
 const createEstimatedBlockLines = (
-  block: PlitePageLayoutBlock,
-  page: PlitePageLayoutPage
-): PlitePageLayoutMeasuredLine[] => {
+  block: PageLayoutBlock,
+  page: PageLayoutPage
+): PageLayoutMeasuredLine[] => {
   const charactersPerLine = Math.max(18, Math.floor(page.content.width / 8));
-  const lines: PlitePageLayoutMeasuredLine[] = [];
+  const lines: PageLayoutMeasuredLine[] = [];
   const hardLines = block.text.split('\n');
   let offset = 0;
 
@@ -2222,10 +2203,10 @@ const createEstimatedBlockLines = (
 };
 
 const estimatePlitePageLayoutMeasuredBlock = (
-  block: PlitePageLayoutBlock,
+  block: PageLayoutBlock,
   blockIndex: number,
-  page: PlitePageLayoutPage
-): PlitePageLayoutMeasuredBlock => {
+  page: PageLayoutPage
+): PageLayoutMeasuredBlock => {
   const lines = createEstimatedBlockLines(block, page);
 
   return {
@@ -2237,16 +2218,16 @@ const estimatePlitePageLayoutMeasuredBlock = (
 };
 
 const createUnitPlitePageLayoutMeasuredBlock = (
-  block: PlitePageLayoutBlock,
+  block: PageLayoutBlock,
   blockIndex: number
-): PlitePageLayoutMeasuredBlock => ({
+): PageLayoutMeasuredBlock => ({
   ...block,
   blockIndex,
   lineCount: 0,
   lines: [],
 });
 
-export const createEstimatedPageLayoutEngine = (): PlitePageLayoutEngine => ({
+export const createEstimatedPageLayoutEngine = (): PageLayoutEngine => ({
   id: 'estimated',
   measurementProfile: { strategy: 'estimated' },
   compose(input) {
@@ -2256,7 +2237,7 @@ export const createEstimatedPageLayoutEngine = (): PlitePageLayoutEngine => ({
         : estimatePlitePageLayoutMeasuredBlock(block, blockIndex, input.page)
     );
 
-    return paginatePlitePageLayoutBlocks({
+    return paginatePageLayoutBlocks({
       measuredBlocks,
       page: input.page,
       settings: input.settings,
@@ -2274,7 +2255,7 @@ const getPretextPreparedKey = (
 ) => `${font}\0${letterSpacing ?? 0}\0${whiteSpace}\0${wordBreak}\0${text}`;
 
 const getPretextMeasuredBlockCacheKey = (
-  block: PlitePageLayoutBlock,
+  block: PageLayoutBlock,
   pageContentWidth: number,
   getTextKey: (text: string) => string = getStableHashKey
 ) =>
@@ -2302,10 +2283,10 @@ const getPretextMeasuredBlockCacheKey = (
   });
 
 const remapPretextMeasuredRun = (
-  run: PlitePageLayoutPlacedRun,
-  block: PlitePageLayoutBlock,
-  measuredBlock: PlitePageLayoutMeasuredBlock
-): PlitePageLayoutPlacedRun => {
+  run: PageLayoutPlacedRun,
+  block: PageLayoutBlock,
+  measuredBlock: PageLayoutMeasuredBlock
+): PageLayoutPlacedRun => {
   const runPath = run.path;
   const matchingRun = block.runs?.find(
     (blockRun) =>
@@ -2333,10 +2314,10 @@ const remapPretextMeasuredBlock = ({
   blockIndex,
   measuredBlock,
 }: {
-  block: PlitePageLayoutBlock;
+  block: PageLayoutBlock;
   blockIndex: number;
-  measuredBlock: PlitePageLayoutMeasuredBlock;
-}): PlitePageLayoutMeasuredBlock => ({
+  measuredBlock: PageLayoutMeasuredBlock;
+}): PageLayoutMeasuredBlock => ({
   ...block,
   blockIndex,
   lineCount: measuredBlock.lineCount,
@@ -2363,7 +2344,7 @@ export const pretextPageLayoutEngine = ({
   maxPreparedEntries = 5000,
   whiteSpace = 'pre-wrap',
   wordBreak = 'normal',
-}: PretextPageLayoutEngineOptions = {}): PlitePageLayoutEngine => {
+}: PretextPageLayoutEngineOptions = {}): PageLayoutEngine => {
   const preparedCache = new Map<
     string,
     ReturnType<typeof prepareWithSegments>
@@ -2371,7 +2352,7 @@ export const pretextPageLayoutEngine = ({
   const measuredBlockCache = new Map<
     string,
     {
-      measuredBlock: PlitePageLayoutMeasuredBlock;
+      measuredBlock: PageLayoutMeasuredBlock;
       text: string;
     }
   >();
@@ -2441,11 +2422,11 @@ export const pretextPageLayoutEngine = ({
   ) => measureNaturalWidth(getPrepared(text, font, letterSpacing));
 
   const createLineRuns = (
-    block: PlitePageLayoutBlock,
+    block: PageLayoutBlock,
     lineStart: number,
     lineEnd: number
-  ): PlitePageLayoutPlacedRun[] => {
-    const lineRuns: PlitePageLayoutPlacedRun[] = [];
+  ): PageLayoutPlacedRun[] => {
+    const lineRuns: PageLayoutPlacedRun[] = [];
     let left = 0;
 
     for (const run of block.runs ?? []) {
@@ -2483,9 +2464,9 @@ export const pretextPageLayoutEngine = ({
   };
 
   const createRichInlineLines = (
-    block: PlitePageLayoutBlock,
+    block: PageLayoutBlock,
     maxWidth: number
-  ): PlitePageLayoutMeasuredLine[] | null => {
+  ): PageLayoutMeasuredLine[] | null => {
     if (
       whiteSpace !== 'normal' ||
       wordBreak !== 'normal' ||
@@ -2520,11 +2501,11 @@ export const pretextPageLayoutEngine = ({
         text: run.text,
       }))
     );
-    const lines: PlitePageLayoutMeasuredLine[] = [];
+    const lines: PageLayoutMeasuredLine[] = [];
 
     walkRichInlineLineRanges(prepared, maxWidth, (range) => {
       const line = materializeRichInlineLineRange(prepared, range);
-      const runs: PlitePageLayoutPlacedRun[] = [];
+      const runs: PageLayoutPlacedRun[] = [];
       let left = 0;
 
       for (const fragment of line.fragments) {
@@ -2641,9 +2622,9 @@ export const pretextPageLayoutEngine = ({
   };
 
   const withMeasuredRuns = (
-    block: PlitePageLayoutBlock,
-    line: Omit<PlitePageLayoutMeasuredLine, 'runs'>
-  ): PlitePageLayoutMeasuredLine => {
+    block: PageLayoutBlock,
+    line: Omit<PageLayoutMeasuredLine, 'runs'>
+  ): PageLayoutMeasuredLine => {
     if (block.runs?.length === 1) {
       const run = block.runs[0];
       const lineEnd =
@@ -2723,9 +2704,9 @@ export const pretextPageLayoutEngine = ({
         profileLayoutDuration(id, () => {});
       };
       const measureBlock = (
-        block: PlitePageLayoutBlock,
+        block: PageLayoutBlock,
         blockIndex: number
-      ): PlitePageLayoutMeasuredBlock => {
+      ): PageLayoutMeasuredBlock => {
         const richInlineLines = createRichInlineLines(
           block,
           input.page.content.width
@@ -2839,7 +2820,7 @@ export const pretextPageLayoutEngine = ({
       );
 
       return profileLayoutDuration('pretext-paginate-blocks', () =>
-        paginatePlitePageLayoutBlocks({
+        paginatePageLayoutBlocks({
           measuredBlocks,
           page: input.page,
           settings: input.settings,
@@ -2868,19 +2849,19 @@ const getPretextPreparedTextOffset = (
   );
 };
 
-export const paginatePlitePageLayoutBlocks = ({
+export const paginatePageLayoutBlocks = ({
   measuredBlocks,
   page,
   settings,
   version,
 }: {
-  measuredBlocks: readonly PlitePageLayoutMeasuredBlock[];
-  page: PlitePageLayoutPage;
-  settings: PlitePageSettings;
+  measuredBlocks: readonly PageLayoutMeasuredBlock[];
+  page: PageLayoutPage;
+  settings: PageSettings;
   version: number;
-}): PlitePageLayoutEngineOutput => {
-  const pages: PlitePageLayoutPage[] = [page];
-  const fragments: PlitePageLayoutFragment[] = [];
+}): PageLayoutEngineOutput => {
+  const pages: PageLayoutPage[] = [page];
+  const fragments: PageLayoutFragment[] = [];
   let pageIndex = 0;
   let cursorTop = page.content.top;
 
@@ -2893,7 +2874,7 @@ export const paginatePlitePageLayoutBlocks = ({
         const innerPage = pages[pageIndex];
         const pageBottom = innerPage.content.top + innerPage.content.height;
         const fragmentTop = cursorTop;
-        const fragmentUnits: PlitePageLayoutUnit[] = [];
+        const fragmentUnits: PageLayoutUnit[] = [];
         let fragmentHeight = 0;
 
         while (consumedUnits < block.units.length) {
@@ -2925,7 +2906,7 @@ export const paginatePlitePageLayoutBlocks = ({
 
         if (fragmentUnits.length === 0) {
           pageIndex += 1;
-          pages[pageIndex] = createPlitePage(settings, pageIndex);
+          pages[pageIndex] = createPage(settings, pageIndex);
           cursorTop = pages[pageIndex].content.top;
           continue;
         }
@@ -2951,7 +2932,7 @@ export const paginatePlitePageLayoutBlocks = ({
 
         if (consumedUnits < block.units.length) {
           pageIndex += 1;
-          pages[pageIndex] = createPlitePage(settings, pageIndex);
+          pages[pageIndex] = createPage(settings, pageIndex);
           cursorTop = pages[pageIndex].content.top;
         }
       }
@@ -2973,8 +2954,7 @@ export const paginatePlitePageLayoutBlocks = ({
       block.boxes?.some(
         (box) =>
           box.split === 'avoid' &&
-          getPlitePageLayoutPathKey(box.path) ===
-            getPlitePageLayoutPathKey(block.path)
+          getPageLayoutPathKey(box.path) === getPageLayoutPathKey(block.path)
       );
 
     if (avoidsSplit && cursorTop !== innerPage.content.top) {
@@ -2983,7 +2963,7 @@ export const paginatePlitePageLayoutBlocks = ({
 
       if (avoidSplitHeight > remainingPageHeight) {
         pageIndex += 1;
-        pages[pageIndex] = createPlitePage(settings, pageIndex);
+        pages[pageIndex] = createPage(settings, pageIndex);
         cursorTop = pages[pageIndex].content.top;
       }
     }
@@ -3006,7 +2986,7 @@ export const paginatePlitePageLayoutBlocks = ({
 
       if (availableLines <= 0) {
         pageIndex += 1;
-        pages[pageIndex] = createPlitePage(settings, pageIndex);
+        pages[pageIndex] = createPage(settings, pageIndex);
         cursorTop = pages[pageIndex].content.top;
         continue;
       }
@@ -3041,7 +3021,7 @@ export const paginatePlitePageLayoutBlocks = ({
 
       if (remainingLines > 0) {
         pageIndex += 1;
-        pages[pageIndex] = createPlitePage(settings, pageIndex);
+        pages[pageIndex] = createPage(settings, pageIndex);
         cursorTop = pages[pageIndex].content.top;
       }
     }
@@ -3051,17 +3031,17 @@ export const paginatePlitePageLayoutBlocks = ({
 };
 
 /** Create a layout reader with built-in or caller-owned measurement. */
-export const createPliteLayout = <
-  TSettings extends PlitePageSettings = PlitePageSettings,
+export const createLayout = <
+  TSettings extends PageSettings = PageSettings,
   V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
+  TPlugins extends readonly unknown[] = readonly [],
 >(
-  editor: EditorType<V, TExtensions>,
-  initialOptions: PliteLayoutOptions<TSettings>
-): PlitePageLayout<PliteLayoutOptions<TSettings>> => {
+  editor: EditorType<V, TPlugins>,
+  initialOptions: LayoutOptions<TSettings>
+): PageLayout<LayoutOptions<TSettings>> => {
   const connectionDeferred = isLayoutRuntimeConnectionDeferred(initialOptions);
-  let fallbackEngine: PlitePageLayoutEngine | undefined;
-  const resolveOptions = (nextOptions: PliteLayoutOptions<TSettings>) => ({
+  let fallbackEngine: PageLayoutEngine | undefined;
+  const resolveOptions = (nextOptions: LayoutOptions<TSettings>) => ({
     ...nextOptions,
     engine:
       nextOptions.engine ??
@@ -3071,7 +3051,7 @@ export const createPliteLayout = <
   });
   let options = resolveOptions(initialOptions);
   let snapshot = createEmptyLayoutSnapshot(DEFAULT_SETTINGS, 0);
-  let metrics: PlitePageLayoutMetrics = {
+  let metrics: PageLayoutMetrics = {
     blockCount: 0,
     composeCount: 0,
     lastDurationMs: 0,
@@ -3082,10 +3062,10 @@ export const createPliteLayout = <
   let destroyed = false;
   let unsubscribeEditor: (() => void) | null = null;
   let pendingPageBreakWrite: {
-    options: PliteLayoutOptions<TSettings>;
-    reason: PlitePageLayoutRefreshReason;
-    snapshot: PlitePageBreakSnapshot;
-    source: EditorStateField<PlitePageBreakSnapshot | null>;
+    options: LayoutOptions<TSettings>;
+    reason: PageLayoutRefreshReason;
+    snapshot: PageBreakSnapshot;
+    source: EditorStateField<PageBreakSnapshot | null>;
   } | null = null;
   let scheduledRefresh: {
     animationFrame: number | null;
@@ -3094,9 +3074,9 @@ export const createPliteLayout = <
   } | null = null;
 
   const reportError = (
-    currentOptions: PliteLayoutOptions<TSettings>,
-    phase: PlitePageLayoutError['phase'],
-    reason: PlitePageLayoutRefreshReason,
+    currentOptions: LayoutOptions<TSettings>,
+    phase: PageLayoutError['phase'],
+    reason: PageLayoutRefreshReason,
     cause: unknown
   ) => {
     const error = Object.freeze({ cause, phase, reason });
@@ -3131,8 +3111,8 @@ export const createPliteLayout = <
   };
 
   const notify = (
-    currentOptions: PliteLayoutOptions<TSettings>,
-    reason: PlitePageLayoutRefreshReason
+    currentOptions: LayoutOptions<TSettings>,
+    reason: PageLayoutRefreshReason
   ) => {
     for (const listener of listeners) {
       try {
@@ -3163,7 +3143,7 @@ export const createPliteLayout = <
   };
 
   const refresh = (
-    reason: PlitePageLayoutRefreshReason = 'editor',
+    reason: PageLayoutRefreshReason = 'editor',
     nextOptions = options
   ) => {
     cancelScheduledRefresh();
@@ -3176,7 +3156,7 @@ export const createPliteLayout = <
     const settings = profileLayoutDuration('read-settings', () =>
       readLayoutSettings(editor, currentOptions.page)
     );
-    const page = createPlitePage(settings);
+    const page = createPage(settings);
     const version = profileLayoutDuration('read-version', () =>
       editor.read(
         (state) =>
@@ -3212,10 +3192,10 @@ export const createPliteLayout = <
       })
     );
     const pageBreakResult = profileLayoutDuration('page-breaks', () => {
-      let pageBreaks: PlitePageBreakSnapshot | null = null;
-      let pageBreaksStatus: PlitePageBreakSnapshotStatus = 'none';
-      let pageBreakSnapshotToWrite: PlitePageBreakSnapshot | null = null;
-      let pageBreakSnapshotWriteSource: EditorStateField<PlitePageBreakSnapshot | null> | null =
+      let pageBreaks: PageBreakSnapshot | null = null;
+      let pageBreaksStatus: PageBreakSnapshotStatus = 'none';
+      let pageBreakSnapshotToWrite: PageBreakSnapshot | null = null;
+      let pageBreakSnapshotWriteSource: EditorStateField<PageBreakSnapshot | null> | null =
         null;
       const pageBreakOptions = currentOptions.pageBreaks;
 
@@ -3235,7 +3215,7 @@ export const createPliteLayout = <
         pageBreaks = pageBreaksStatus === 'accepted' ? readSnapshot : null;
       } else if (pageBreakOptions?.mode === 'write') {
         const documentKey = getPliteLayoutDocumentKey(blocks);
-        const computedPageBreakSnapshot = createPlitePageBreakSnapshot({
+        const computedPageBreakSnapshot = createPageBreakSnapshot({
           documentKey,
           fragments: output.fragments,
           measurementProfile,
@@ -3268,7 +3248,7 @@ export const createPliteLayout = <
       };
     });
 
-    const nextSnapshot: PlitePageLayoutSnapshot = {
+    const nextSnapshot: PageLayoutSnapshot = {
       blocks,
       fragments: output.fragments,
       measurementProfile,
@@ -3280,7 +3260,7 @@ export const createPliteLayout = <
       settings,
       version,
     };
-    const nextMetrics: PlitePageLayoutMetrics = {
+    const nextMetrics: PageLayoutMetrics = {
       blockCount: blocks.length,
       composeCount: metrics.composeCount + 1,
       lastDurationMs: getNow() - startedAt,
@@ -3314,7 +3294,7 @@ export const createPliteLayout = <
   };
 
   const scheduleRefreshAfterTextInput = (
-    reason: PlitePageLayoutRefreshReason,
+    reason: PageLayoutRefreshReason,
     refreshOptions: {
       delayMs: number;
       maxDelayMs: number;
@@ -3430,7 +3410,7 @@ export const createPliteLayout = <
     };
   };
 
-  const runtime: PlitePageLayout<PliteLayoutOptions<TSettings>> = {
+  const runtime: PageLayout<LayoutOptions<TSettings>> = {
     destroy() {
       if (destroyed) return;
 
@@ -3443,7 +3423,7 @@ export const createPliteLayout = <
       listeners.clear();
     },
     getFragments(path) {
-      return getPlitePageLayoutFragments(snapshot, path);
+      return getPageLayoutFragments(snapshot, path);
     },
     getMetrics() {
       return metrics;
@@ -3462,8 +3442,8 @@ export const createPliteLayout = <
         return [];
       }
 
-      const geometry = getPlitePageLayoutGeometry(snapshot.pages, innerOptions);
-      const projection = getPlitePageLayoutProjection(snapshot, {
+      const geometry = getPageLayoutGeometry(snapshot.pages, innerOptions);
+      const projection = getPageLayoutProjection(snapshot, {
         geometry,
         hitTesting: false,
       });

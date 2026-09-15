@@ -5,7 +5,7 @@ import { BaseHeadingPlugin } from '../features/basic-nodes/lib';
 import {
   BaseParagraphPlugin,
   type RenderElementProps,
-  defineBasePlugin,
+  definePlugin,
 } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import { pluginRenderElementStatic } from './pluginRenderElementStatic.internal';
@@ -25,7 +25,7 @@ describe('pluginRenderElementStatic', () => {
         editor,
         editor.plugin(HeadingPlugin)
       )({
-        attributes: { 'data-plite-node': 'element' },
+        attributes: { 'data-editor-node': 'element' },
         children: 'Heading',
         element: {
           children: [{ text: 'Heading' }],
@@ -49,21 +49,21 @@ describe('pluginRenderElementStatic', () => {
     const ParagraphPlugin = BaseParagraphPlugin.configure({
       component: 'article',
     });
-    const AbovePlugin = defineBasePlugin('above', {
+    const AbovePlugin = definePlugin('above', {
       slots: {
         wrapNode:
           () =>
           ({ children }) => <section data-role="above">{children}</section>,
       },
     });
-    const BelowPlugin = defineBasePlugin('below', {
+    const BelowPlugin = definePlugin('below', {
       slots: {
         wrapNodeChildren:
           () =>
           ({ children }) => <div data-role="below">{children}</div>,
       },
     });
-    const RootPlugin = defineBasePlugin('rootExtra', {
+    const RootPlugin = definePlugin('rootExtra', {
       slots: {
         afterNodeChildren: ({ element }) => (
           <aside data-id={element.id} data-role="root" />
@@ -78,7 +78,7 @@ describe('pluginRenderElementStatic', () => {
         editor,
         editor.plugin(ParagraphPlugin)
       )({
-        attributes: { 'data-plite-node': 'element' },
+        attributes: { 'data-editor-node': 'element' },
         children: 'Body',
         element: {
           children: [{ text: 'Body' }],
@@ -98,6 +98,6 @@ describe('pluginRenderElementStatic', () => {
     expect(markup).toContain('data-role="root"');
     expect(markup).toContain('data-id="block-1"');
     expect(markup).not.toContain('data-block-id');
-    expect(markup).toContain('class="plite-paragraph"');
+    expect(markup).toContain('class="editor-paragraph"');
   });
 });

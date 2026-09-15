@@ -3,7 +3,8 @@
 Handle $ARGUMENTS through [the Plate workflow](./workflow.md).
 Task owns scope, plan, authority, timing, proof and review. Task autonomous mode selects and
 reconciles checkpoints for an explicitly autonomous request. Use one current
-Task plan and Show Me Your Work's decision trail.
+Task plan. Use Show Me Your Work only when requested or when competing
+experiments need a separate decision history; link it from that plan.
 
 ## Route first
 
@@ -62,7 +63,7 @@ ordinary routing uses the table above.
 | Source layout and ownership friction | Architecture Cleanup; source-backed cut/merge/inline decision |
 | External editor evidence | Plite Research, Editor Test Harvester or Issue Harvester; provenance and local proof target |
 | General prose | Technical Writing |
-| Plate public docs | [Plate Docs](../../plate-docs/SKILL.md) |
+| Plate public docs | [Plate Docs](../../../skills/plate-docs/SKILL.md) |
 | Workflow failure or slowdown | Owning rule/helper through Task; concrete failing action and rerun |
 
 Use `slate-ar status`, `quality`, `stabilize` or `gate` only for a checkpoint
@@ -83,7 +84,7 @@ in the plan. Sync Vision owns accepted reusable product decisions.
 ## Handoff
 
 Report changes, proof, unfinished or quarantined work, stop reason and the next
-owner. Link the current plan and decision trail. Include measured performance,
+owner. Link the current plan and any applicable decision trail. Include measured performance,
 elapsed time and queued user decisions only when relevant. State exact local
 versus published status. Apply Task's standing Autogoal request for long-running
 work; autonomous mode adds no review panel or scheduler.

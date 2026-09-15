@@ -1,13 +1,13 @@
 import {
   createEditor,
-  defineBasePlugin,
+  definePlugin,
   property,
   schema,
   PLUGINS,
 } from '../../../core';
 import { BaseTocPlugin } from './BaseTocPlugin';
 
-const TestParagraphPlugin = defineBasePlugin(PLUGINS.paragraph, {
+const TestParagraphPlugin = definePlugin(PLUGINS.paragraph, {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -16,7 +16,7 @@ const TestParagraphPlugin = defineBasePlugin(PLUGINS.paragraph, {
 });
 
 const TestHeadingPlugins = [
-  defineBasePlugin(PLUGINS.heading, {
+  definePlugin(PLUGINS.heading, {
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),

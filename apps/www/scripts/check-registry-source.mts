@@ -743,18 +743,19 @@ const editorAi = itemsByName.get('editor-ai');
 assert(
   editorAi?.files?.some(
     (file) =>
-      file.path === 'blocks/editor-ai/components/editor/plate-editor.tsx' &&
-      file.target === '@components/editor/plate-editor.tsx'
+      file.path === 'blocks/editor-ai/components/editor/rich-text-editor.tsx' &&
+      file.target === '@components/editor/rich-text-editor.tsx'
   ),
-  'Expected editor-ai plate-editor to install under the configured components editor directory'
+  'Expected editor-ai rich-text-editor to install under the configured components editor directory'
 );
 assert(
   editorBasic?.files?.some(
     (file) =>
-      file.path === 'blocks/editor-basic/components/editor/plate-editor.tsx' &&
-      file.target === '@components/editor/plate-editor.tsx'
+      file.path ===
+        'blocks/editor-basic/components/editor/rich-text-editor.tsx' &&
+      file.target === '@components/editor/rich-text-editor.tsx'
   ),
-  'Expected editor-basic plate-editor to install under the configured components editor directory'
+  'Expected editor-basic rich-text-editor to install under the configured components editor directory'
 );
 
 const excalidraw = itemsByName.get('excalidraw');

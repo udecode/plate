@@ -40,7 +40,7 @@ test('keeps one runtime per mount without render fan-out and tears it down', () 
   const mounted = renderHook(
     ({ readOnly }) =>
       useEditableRootRuntimeState({
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         editor,
         readOnly,
       }),
@@ -80,7 +80,7 @@ test('keeps one runtime per mount without render fan-out and tears it down', () 
   const remounted = renderHook(
     () =>
       useEditableRootRuntimeState({
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         editor,
         readOnly: false,
       }),
@@ -101,7 +101,7 @@ test('replaces the mounted runtime when editor ownership changes', () => {
   const mounted = renderHook(
     ({ editor }) =>
       useEditableRootRuntimeState({
-        domStrategyRuntime: null,
+        viewportRuntime: null,
         editor,
         readOnly: false,
       }),
@@ -786,14 +786,14 @@ test('DOM sync mutation ownership expires with its mounted root runtime', () => 
   const target = document.createElement('span');
   const observer = new MutationObserver(() => {});
   observer.observe(target, { attributes: true });
-  target.setAttribute('data-plite-path', '0');
+  target.setAttribute('data-editor-path', '0');
   const mutation = observer.takeRecords()[0];
   observer.disconnect();
 
   root.append(target);
   runtime.setRoot(root);
   runtime.connect();
-  markDOMSyncMutationTarget(target, 'attributes', 'data-plite-path');
+  markDOMSyncMutationTarget(target, 'attributes', 'data-editor-path');
 
   expect(isDOMSyncMutation(mutation)).toBe(true);
   expect(runtime.domPhaseScheduler.pending()).toBe(1);

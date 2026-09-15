@@ -1,7 +1,8 @@
 import type { Text } from '..';
-import type { PliteDecorationSlice } from './decoration-source';
+import type { DecorationSlice } from './decoration-source';
 
 export type DOMTextSyncOptOutReason =
+  | 'retained-content'
   | 'empty-text'
   | 'decoration'
   | 'custom-leaf'
@@ -80,7 +81,7 @@ export const getDOMTextSyncCapability = ({
   renderLeaf,
   renderText,
 }: {
-  decorations: readonly PliteDecorationSlice[];
+  decorations: readonly DecorationSlice[];
   hasText: boolean;
   marks?: Omit<Text, 'text'>;
   renderLeaf?: unknown;

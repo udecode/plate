@@ -120,25 +120,25 @@ export const finalizeSchemaContributionRegistry = (
 
 export const registerSchemaContribution = (
   registry: EditorSchemaContributionRegistry,
-  extensionName: string,
+  pluginName: string,
   contribution: EditorSchemaDeclaration
 ) => {
-  if (registry.records.has(extensionName)) {
+  if (registry.records.has(pluginName)) {
     throw new Error(
-      `Editor extension "${extensionName}" cannot register schema twice.`
+      `Editor plugin "${pluginName}" cannot register schema twice.`
     );
   }
 
   const registration = Object.freeze({
     contribution,
-    extensionName,
+    pluginName,
   });
 
-  registry.records.set(extensionName, registration);
+  registry.records.set(pluginName, registration);
 
   return () => {
-    if (registry.records.get(extensionName) === registration) {
-      registry.records.delete(extensionName);
+    if (registry.records.get(pluginName) === registration) {
+      registry.records.delete(pluginName);
     }
   };
 };
@@ -155,14 +155,14 @@ export const mergeSchemaContributionRegistries = (
     ...configured.records.values(),
     ...base.records.values(),
   ]) {
-    const known = records.get(registration.extensionName);
+    const known = records.get(registration.pluginName);
 
     if (known) {
       throw new Error(
-        `Configured schema contribution from "${registration.extensionName}" conflicts with a built-in contribution.`
+        `Configured schema contribution from "${registration.pluginName}" conflicts with a built-in contribution.`
       );
     }
-    records.set(registration.extensionName, registration);
+    records.set(registration.pluginName, registration);
   }
 
   const declarationKey = getEditorSchemaDeclarationKey([...records.values()]);

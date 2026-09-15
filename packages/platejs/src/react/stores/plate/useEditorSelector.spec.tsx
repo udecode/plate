@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 
-import { TestPlate as Plate } from '../../__tests__/TestPlate';
+import { TestPlate as EditorRoot } from '../../__tests__/TestPlate';
 import { createEditor } from '../../editor';
 import { useEditorSelector } from './useEditorSelector';
 
@@ -13,7 +13,7 @@ describe('useEditorSelector', () => {
     const renderValues: number[] = [];
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Plate editor={editor}>{children}</Plate>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
 
     const { result } = renderHook(

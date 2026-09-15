@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import {
   type Descendant,
-  defineExtension,
+  definePlugin,
   defineStateField,
   valueCodecs,
 } from 'plitejs';
@@ -11,7 +11,7 @@ import type { ReactNode } from 'react';
 import { getLastCommit as editorGetLastCommit } from '../../src/internal';
 import {
   createEditor,
-  Plite,
+  EditorRoot,
   useSetStateField,
   useStateFieldValue,
 } from '../../src/react';
@@ -32,8 +32,8 @@ const documentTitle = defineStateField({
 describe('plite-react state field selector contract', () => {
   test('useStateFieldValue subscribes to one field and ignores body commits', async () => {
     const editor = createEditor({
-      extensions: [
-        defineExtension('document-title', { stateFields: [documentTitle] }),
+      plugins: [
+        definePlugin('document-title', { stateFields: [documentTitle] }),
       ],
       initialValue: {
         children: [paragraph('body')],
@@ -42,7 +42,7 @@ describe('plite-react state field selector contract', () => {
     });
     const values: string[] = [];
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <Plite editor={editor}>{children}</Plite>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
 
     const { result } = renderHook(
@@ -85,9 +85,9 @@ describe('plite-react state field selector contract', () => {
 
   test('useStateFieldValue updates after state-field history undo', async () => {
     const editor = createEditor({
-      extensions: [
+      plugins: [
         history(),
-        defineExtension('document-title-history', {
+        definePlugin('document-title-history', {
           stateFields: [documentTitle],
         }),
       ],
@@ -97,7 +97,7 @@ describe('plite-react state field selector contract', () => {
       },
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <Plite editor={editor}>{children}</Plite>
+      <EditorRoot editor={editor}>{children}</EditorRoot>
     );
     const { result } = renderHook(
       () => ({

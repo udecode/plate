@@ -1,17 +1,13 @@
 import type { ChatTransport, UIMessage } from 'ai';
 import type React from 'react';
 
-import {
-  definePlatePlugin,
-  useEditorPlugin,
-  usePluginStore,
-} from '../../react/core';
+import { definePlugin, useEditor, usePluginStore } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
 import { useAIChat } from './useAIChat';
 
 const Component = () => null;
 
-const AIChatKitPlugin = definePlatePlugin('typedAIChatKit', {
+const AIChatKitPlugin = definePlugin('typedAIChatKit', {
   dependencies: [AIChatPlugin],
   initialState: {
     chatOptions: {
@@ -23,7 +19,7 @@ const AIChatKitPlugin = definePlatePlugin('typedAIChatKit', {
 });
 
 function AIChatControls() {
-  const { api } = useEditorPlugin(AIChatPlugin);
+  const { api } = useEditor().plugin(AIChatPlugin);
   const open: boolean = usePluginStore(AIChatPlugin, 'open');
   const chatOptions = usePluginStore(AIChatKitPlugin, 'chatOptions');
   const endpoint: string = chatOptions.api;

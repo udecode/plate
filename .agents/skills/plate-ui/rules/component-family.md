@@ -82,7 +82,7 @@ use<Family>.ts[x]      optional single semantic controller
   `foo` and `foo-static`, so client installs never own the server boundary.
 - `editor.tsx` / `editor-static.tsx` own presentation;
   `plugins.ts` / `plugins-static.ts` own application composition. A complete
-  block may add `plate-editor.tsx`, but that file remains block-owned. Optional
+  block may add `rich-text-editor.tsx`, but that file remains block-owned. Optional
   generated contracts follow the composition owner as `plugins.generated.ts`
   and `plugins.schema.json`.
 - Primitive variants live only in registry author source. Radix, Base UI, and

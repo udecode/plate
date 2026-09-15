@@ -161,7 +161,7 @@
     {
       "name": "editor-basic",
       "files": [
-        "apps/www/src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
+        "apps/www/src/registry/blocks/editor-basic/components/editor/rich-text-editor.tsx",
         "apps/www/src/registry/blocks/editor-basic/page.tsx"
       ],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],

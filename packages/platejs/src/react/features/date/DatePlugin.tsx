@@ -1,4 +1,4 @@
 import { BaseDatePlugin } from '../../../features/date/lib';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
-export const DatePlugin = toPlatePlugin(BaseDatePlugin);
+export const DatePlugin = toReactPlugin(BaseDatePlugin);

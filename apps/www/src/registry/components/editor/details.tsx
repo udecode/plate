@@ -4,10 +4,9 @@ import { ChevronRightIcon } from 'lucide-react';
 import { BaseDetailsPlugin } from 'platejs/details';
 import { DetailsPlugin, DetailsSummaryPlugin } from 'platejs/details/react';
 import {
-  type PlateElementProps,
-  PlateElement,
+  type EditorElementProps,
+  EditorElement,
   useEditor,
-  useEditorPlugin,
   usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
@@ -15,17 +14,19 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export function DetailsElement(props: PlateElementProps<typeof DetailsPlugin>) {
+export function DetailsElement(
+  props: EditorElementProps<typeof DetailsPlugin>
+) {
   const { element, slots } = props;
   const editor = useEditor();
   const detailsKey = editor.key(element);
   const openKeys = usePluginStore(BaseDetailsPlugin, 'openKeys');
-  const { api } = useEditorPlugin(BaseDetailsPlugin);
+  const { api } = useEditor().plugin(BaseDetailsPlugin);
   const open = detailsKey !== undefined && openKeys.has(detailsKey);
   const bodyId = detailsKey === undefined ? undefined : `details-${detailsKey}`;
 
   return (
-    <PlateElement {...props} className="relative my-1 pl-6">
+    <EditorElement {...props} className="relative my-1 pl-6">
       <Button
         aria-controls={bodyId}
         aria-expanded={open}
@@ -74,17 +75,17 @@ export function DetailsElement(props: PlateElementProps<typeof DetailsPlugin>) {
             })
           : null}
       </div>
-    </PlateElement>
+    </EditorElement>
   );
 }
 
 export function DetailsSummaryElement(
-  props: PlateElementProps<typeof DetailsSummaryPlugin>
+  props: EditorElementProps<typeof DetailsSummaryPlugin>
 ) {
   return (
-    <PlateElement {...props} className="min-h-6 font-medium">
+    <EditorElement {...props} className="min-h-6 font-medium">
       {props.children}
-    </PlateElement>
+    </EditorElement>
   );
 }
 

@@ -5,12 +5,12 @@ import { property } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { jsxt } from '../../testing';
 import { createEditor } from '../editor';
-import { definePlatePlugin } from '../plugin';
+import { definePlugin } from '../plugin';
 import { pipeHandler } from './pipeHandler.internal';
 
 jsxt;
 
-const BoldPlugin = definePlatePlugin('bold', {
+const BoldPlugin = definePlugin('bold', {
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
@@ -58,7 +58,7 @@ it('uses custom hotkey handler for bold', () => {
 
 describe('extend method with shortcuts', () => {
   it('publishes one frozen shortcut table in deterministic order', () => {
-    const firstPlugin = definePlatePlugin('first', {
+    const firstPlugin = definePlugin('first', {
       shortcuts: {
         first: {
           keys: 'ctrl+1',
@@ -72,7 +72,7 @@ describe('extend method with shortcuts', () => {
         },
       },
     });
-    const secondPlugin = definePlatePlugin('second', {
+    const secondPlugin = definePlugin('second', {
       shortcuts: {
         first: {
           keys: 'ctrl+3',
@@ -98,7 +98,7 @@ describe('extend method with shortcuts', () => {
   });
 
   it('add new shortcuts to a plugin', () => {
-    const testPlugin = definePlatePlugin('testPlugin', {
+    const testPlugin = definePlugin('testPlugin', {
       shortcuts: {
         bold: {
           keys: 'mod+b',
@@ -128,7 +128,7 @@ describe('extend method with shortcuts', () => {
     const originalCallback = mock();
     const newCallback = mock();
 
-    const testPlugin = definePlatePlugin('testPlugin', {
+    const testPlugin = definePlugin('testPlugin', {
       shortcuts: {
         bold: {
           keys: 'mod+b',
@@ -162,7 +162,7 @@ describe('extend method with shortcuts', () => {
     const originalCallback = mock();
     const _newCallback = mock();
 
-    const testPlugin = definePlatePlugin('testPlugin', {
+    const testPlugin = definePlugin('testPlugin', {
       shortcuts: {
         bold: {
           keys: 'mod+b',
@@ -188,7 +188,7 @@ describe('extend method with shortcuts', () => {
   });
 
   it('allow removing shortcuts by setting them to null', () => {
-    const testPlugin = definePlatePlugin('testPlugin', {
+    const testPlugin = definePlugin('testPlugin', {
       shortcuts: {
         bold: {
           keys: 'mod+b',

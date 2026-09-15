@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/highlight.tsx",
-      "content": "'use client';\n\nimport {\n  type HighlightPlugin,\n  type PlateLeafProps,\n  PlateLeaf,\n} from 'platejs/react';\nimport * as React from 'react';\n\nexport function HighlightLeaf(props: PlateLeafProps<typeof HighlightPlugin>) {\n  return (\n    <PlateLeaf {...props} as=\"mark\" className=\"bg-highlight/30 text-inherit\">\n      {props.children}\n    </PlateLeaf>\n  );\n}\n",
+      "content": "'use client';\n\nimport {\n  type HighlightPlugin,\n  type EditorLeafProps,\n  EditorLeaf,\n} from 'platejs/react';\nimport * as React from 'react';\n\nexport function HighlightLeaf(props: EditorLeafProps<typeof HighlightPlugin>) {\n  return (\n    <EditorLeaf {...props} as=\"mark\" className=\"bg-highlight/30 text-inherit\">\n      {props.children}\n    </EditorLeaf>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/highlight.tsx"
     }

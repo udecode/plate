@@ -3,32 +3,32 @@ import { useMemo } from 'react';
 import type { Element, NamedRootKey } from '../..';
 import { useEditorContext } from './use-editor-context';
 import { useOptionalElement } from './use-element';
-import { usePliteChildRoot } from './use-plite-child-root';
+import { useChildRoot } from './use-plite-child-root';
 import {
-  type PliteRootChromeController,
-  type UsePliteRootChromeOptions,
-  usePliteRootChrome,
+  type RootChromeController,
+  type UseRootChromeOptions,
+  useRootChrome,
 } from './use-plite-root-chrome';
 
 /** Options for resolving a schema-owned child content root. */
-export type UsePliteContentRootOptions = UsePliteRootChromeOptions & {
+export type UseContentRootOptions = UseRootChromeOptions & {
   /** Select one schema `contentRoots` slot. Optional for single-slot elements. */
   slot?: string;
 };
 
 /** Resolved child root and chrome controller for nested editable content. */
-export type PliteContentRootController = {
-  chrome: PliteRootChromeController;
+export type ContentRootController = {
+  chrome: RootChromeController;
   root: NamedRootKey;
 };
 
 /**
  * Resolve a schema-owned child content root and its root chrome controller.
  */
-export function usePliteContentRoot(
+export function useContentRoot(
   element?: Element | null,
-  options: UsePliteContentRootOptions = {}
-): PliteContentRootController {
+  options: UseContentRootOptions = {}
+): ContentRootController {
   const editor = useEditorContext();
   const contextElement = useOptionalElement();
   const targetElement = element ?? contextElement;
@@ -48,8 +48,8 @@ export function usePliteContentRoot(
       '`usePliteContentRoot` needs a declared contentRoots slot; pass options.slot when the element declares more than one.'
     );
   }
-  const root = usePliteChildRoot(targetElement, slot);
-  const chrome = usePliteRootChrome(root, chromeOptions);
+  const root = useChildRoot(targetElement, slot);
+  const chrome = useRootChrome(root, chromeOptions);
 
   return useMemo(() => ({ chrome, root }), [chrome, root]);
 }

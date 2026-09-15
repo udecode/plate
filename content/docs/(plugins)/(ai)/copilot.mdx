@@ -10,6 +10,8 @@ docs:
 
 <ComponentPreview name="copilot-demo" />
 
+Copilot ghost text is transient UI. It becomes ordinary accepted content when the user accepts it; displaying a completion does not create a durable authored change.
+
 <PackageInfo>
 
 ## Features
@@ -280,14 +282,14 @@ For more AI providers and models, see the [Vercel AI SDK documentation](https://
 Control when suggestions are automatically triggered:
 
 ```tsx
-import { PLUGINS } from 'platejs';
+import { BaseParagraphPlugin } from 'platejs';
 
 CopilotPlugin.configure({
   initialState: {
     triggerQuery: ({ editor }) => {
       // Only trigger in paragraph blocks
       const block = editor.read.nodes.block();
-      const paragraph = editor.plugin(PLUGINS.paragraph);
+      const paragraph = editor.plugin(BaseParagraphPlugin);
       if (!block || block[0].type !== paragraph.schema.type) return false;
 
       // Standard checks

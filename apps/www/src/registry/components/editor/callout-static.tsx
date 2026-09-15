@@ -1,5 +1,5 @@
 import { BaseCalloutPlugin } from 'platejs/callout';
-import { type PliteElementProps, PliteElement } from 'platejs/static';
+import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -7,9 +7,9 @@ import { cn } from '@/lib/utils';
 export function CalloutElementStatic({
   children,
   ...props
-}: PliteElementProps<typeof BaseCalloutPlugin>) {
+}: EditorElementProps<typeof BaseCalloutPlugin>) {
   return (
-    <PliteElement
+    <EditorElement
       className={cn('my-1 flex rounded-sm bg-muted p-4 pl-3')}
       style={{
         backgroundColor: props.element.backgroundColor,
@@ -24,13 +24,13 @@ export function CalloutElementStatic({
               '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',
           }}
         >
-          <span data-plate-prevent-deserialization>
+          <span data-editor-prevent-deserialization>
             {props.element.icon || '💡'}
           </span>
         </div>
         <div className="w-full">{children}</div>
       </div>
-    </PliteElement>
+    </EditorElement>
   );
 }
 
@@ -40,12 +40,12 @@ export function CalloutElementStatic({
 export function CalloutElementDocx({
   children,
   ...props
-}: PliteElementProps<typeof BaseCalloutPlugin>) {
+}: EditorElementProps<typeof BaseCalloutPlugin>) {
   const backgroundColor = props.element.backgroundColor || '#f4f4f5';
   const icon = props.element.icon || '💡';
 
   return (
-    <PliteElement {...props}>
+    <EditorElement {...props}>
       <table
         style={{
           width: '100%',
@@ -70,7 +70,7 @@ export function CalloutElementDocx({
                   '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',
               }}
             >
-              <span data-plate-prevent-deserialization>{icon}</span>
+              <span data-editor-prevent-deserialization>{icon}</span>
             </td>
             <td
               style={{
@@ -84,7 +84,7 @@ export function CalloutElementDocx({
           </tr>
         </tbody>
       </table>
-    </PliteElement>
+    </EditorElement>
   );
 }
 

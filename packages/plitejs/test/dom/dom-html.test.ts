@@ -28,7 +28,7 @@ describe('clipboard HTML', () => {
     const restore = setTrustedTypes({
       createPolicy: (name: string) => {
         policies += 1;
-        expect(name).toBe('plite-dom');
+        expect(name).toBe('editor-dom');
 
         return {
           createHTML: (html: string) => {

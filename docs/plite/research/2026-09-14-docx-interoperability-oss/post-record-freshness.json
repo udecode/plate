@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-09-14T18:30:54.610831+00:00",
+  "record": "2026-09-14-documents-oss-fidelity-review",
+  "recordFreshness": "stale",
+  "reason": "Concurrent shared-documentation changes after immutable recording; original source identities retained.",
+  "changedInputs": [
+    {
+      "path": "content/docs/(guides)/authored-changes.mdx",
+      "recordedHash": "eabbfdc984379ef8e16f2665b102f04138be98734c30de899c1856ad579e3421",
+      "observedHash": "33ac05d4cbd7a91dcd8d81564a09eb8e3937173ea58e0357dec3309ad2bd4e77"
+    },
+    {
+      "path": "docs/vision/plate.md",
+      "recordedHash": "94c4895e046d8ce95ee2132649801047b3fb22e1399aa7b29c10d32bb9b9b4e3",
+      "observedHash": "f419fcfef3b32b00f3a283c8912c34f3fb1194bb36607a318f290b8c8e752c6d"
+    }
+  ],
+  "docxImplementation": "All captured DOCX files and the ten main local code/runner read hashes still match.",
+  "reread": "Authored guide lines 235-290 and Plate serialization doctrine lines 738-745. Projection/export contracts and format-versus-presentation ownership still agree with the review. Updated authored setup teaching does not repair the DOCX conversion defects.",
+  "disposition": "Keep the original bounded review and proof snapshot. No retroactive freshness promotion, duplicate test replay or overwrite of the immutable record. Recheck shared guidance at Task design intake."
+}

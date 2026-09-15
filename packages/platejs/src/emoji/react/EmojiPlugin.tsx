@@ -1,8 +1,8 @@
-import { toPlatePlugin } from '../../react/core';
+import { toReactPlugin } from '../../react/core';
 import { BaseEmojiInputPlugin, BaseEmojiPlugin } from '../lib';
 
-export const EmojiInputPlugin = toPlatePlugin(BaseEmojiInputPlugin);
+export const EmojiInputPlugin = toReactPlugin(BaseEmojiInputPlugin);
 
-export const EmojiPlugin = toPlatePlugin(BaseEmojiPlugin, {
+export const EmojiPlugin = toReactPlugin(BaseEmojiPlugin, {
   dependencies: [EmojiInputPlugin],
 });

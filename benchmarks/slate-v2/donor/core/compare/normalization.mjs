@@ -159,9 +159,9 @@ const createParagraph = () => ({
   children: [{ text: '' }],
 });
 
-const createBenchmarkEditor = (extensions = isPlite ? [currentSchema] : []) => {
+const createBenchmarkEditor = (plugins = isPlite ? [currentSchema] : []) => {
   const initialValue = [createParagraph()];
-  if (isPlite) return createEditor({ extensions, initialValue });
+  if (isPlite) return createEditor({ plugins, initialValue });
   const editor = createEditor();
   editor.children = initialValue;
   return editor;
@@ -223,7 +223,7 @@ const nodeString = (node) => {
 
 const installNoopNormalizer = (editor) => {
   if (isPlite) {
-    editor.install(Slate.defineExtension('benchmark-noop-normalizer', {
+    editor.install(Slate.definePlugin('benchmark-noop-normalizer', {
       corrections: [
         {
           event: 'content',
@@ -244,7 +244,7 @@ const installNoopNormalizer = (editor) => {
 
 const installForcedLayoutNormalizer = (editor) => {
   if (isPlite) {
-    editor.install(Slate.defineExtension('benchmark-forced-layout-normalizer', {
+    editor.install(Slate.definePlugin('benchmark-forced-layout-normalizer', {
       corrections: [
         {
           event: 'children',

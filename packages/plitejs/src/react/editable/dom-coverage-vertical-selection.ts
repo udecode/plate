@@ -17,14 +17,12 @@ import {
   getSelectionDOMRange,
 } from './runtime-editor-api';
 
-type VerticalExtensionEvent = Pick<
+type VerticalPluginEvent = Pick<
   KeyboardEvent,
   'altKey' | 'ctrlKey' | 'key' | 'metaKey' | 'shiftKey'
 >;
 
-export const getPlainVerticalExtensionReverse = (
-  event: VerticalExtensionEvent
-) => {
+export const getPlainVerticalPluginReverse = (event: VerticalPluginEvent) => {
   if (event.altKey || event.ctrlKey || event.metaKey || !event.shiftKey) {
     return null;
   }
@@ -40,7 +38,7 @@ export const getPlainVerticalExtensionReverse = (
   return null;
 };
 
-type PlainVerticalDOMCoverageExtension = {
+type PlainVerticalDOMCoveragePlugin = {
   reverse: boolean;
   target: Point;
 };
@@ -49,9 +47,9 @@ type RectLike = DOMGeometryRect;
 type ResolvedDOMPoint = DOMGeometryPoint;
 
 const VERTICAL_LINE_EDGE_TOLERANCE = 2;
-const LARGE_DOCUMENT_PLAIN_VERTICAL_EXTENSION_THRESHOLD = 1000;
+const LARGE_DOCUMENT_PLAIN_VERTICAL_PLUGIN_THRESHOLD = 1000;
 
-type DOMStrategyRuntimeLike = {
+type ViewportRuntimeLike = {
   mountedTopLevelRanges?: ReadonlyArray<{
     endIndex: number;
     startIndex: number;
@@ -262,7 +260,7 @@ const isDirectionalPlainVerticalTarget = ({
     ? PointApi.isBefore(target, source)
     : PointApi.isAfter(target, source);
 
-const createPlainVerticalLargeDocumentExtension = ({
+const createPlainVerticalLargeDocumentPlugin = ({
   reverse,
   selection,
   target,
@@ -270,7 +268,7 @@ const createPlainVerticalLargeDocumentExtension = ({
   reverse: boolean;
   selection: Range;
   target: Point;
-}): PlainVerticalDOMCoverageExtension | null => {
+}): PlainVerticalDOMCoveragePlugin | null => {
   if (
     !isDirectionalPlainVerticalTarget({
       reverse,
@@ -378,7 +376,7 @@ const resolveVisualLineTargetPoint = ({
       return null;
     }
 
-    const targetPoint = editor.api.dom.resolvePlitePoint(
+    const targetPoint = editor.api.dom.resolvePoint(
       [targetDOMPoint[0], targetDOMPoint[1]],
       { exactMatch: false }
     );
@@ -416,58 +414,52 @@ const getUnselectedMaterializeBoundariesForRange = ({
       !selectedBoundaryIds.has(boundary.boundaryId)
   );
 
-const isDOMStrategyRuntime = (
-  domStrategyRuntime: unknown
-): domStrategyRuntime is DOMStrategyRuntimeLike =>
-  typeof domStrategyRuntime === 'object' &&
-  domStrategyRuntime !== null &&
-  ((domStrategyRuntime as DOMStrategyRuntimeLike).type === 'partial-dom' ||
-    (domStrategyRuntime as DOMStrategyRuntimeLike).type === 'staged' ||
-    (domStrategyRuntime as DOMStrategyRuntimeLike).type === 'virtualized');
+const isViewportRuntime = (
+  viewportRuntime: unknown
+): viewportRuntime is ViewportRuntimeLike =>
+  typeof viewportRuntime === 'object' &&
+  viewportRuntime !== null &&
+  (viewportRuntime as ViewportRuntimeLike).type === 'virtualized';
 
 const isPlainVerticalLargeDocumentSelection = ({
-  domStrategyRuntime,
+  viewportRuntime,
   editor,
   event,
   selection = getSelectionDOMRange(editor, getEditorSelection(editor)),
 }: {
-  domStrategyRuntime: unknown;
+  viewportRuntime: unknown;
   editor: ReactRuntimeEditor;
-  event: VerticalExtensionEvent;
+  event: VerticalPluginEvent;
   selection?: Range | null;
 }) => {
   if (
-    getPlainVerticalExtensionReverse(event) === null ||
+    getPlainVerticalPluginReverse(event) === null ||
     !selection ||
-    !isDOMStrategyRuntime(domStrategyRuntime)
+    !isViewportRuntime(viewportRuntime)
   ) {
     return false;
   }
 
   const topLevelCount = editor.read((state) => state.nodes.children().length);
 
-  return topLevelCount >= LARGE_DOCUMENT_PLAIN_VERTICAL_EXTENSION_THRESHOLD;
+  return topLevelCount >= LARGE_DOCUMENT_PLAIN_VERTICAL_PLUGIN_THRESHOLD;
 };
 
 export const isMountedPlainVerticalLargeDocumentMovement = ({
-  domStrategyRuntime,
+  viewportRuntime,
   editor,
   event,
   selection,
 }: {
-  domStrategyRuntime: unknown;
+  viewportRuntime: unknown;
   editor?: ReactRuntimeEditor;
-  event: VerticalExtensionEvent;
+  event: VerticalPluginEvent;
   selection?: Range | null;
 }) => {
-  const reverse = getPlainVerticalExtensionReverse(event);
-  const runtime = domStrategyRuntime as DOMStrategyRuntimeLike | null;
+  const reverse = getPlainVerticalPluginReverse(event);
+  const runtime = viewportRuntime as ViewportRuntimeLike | null;
 
-  if (
-    reverse === null ||
-    !selection ||
-    (runtime?.type !== 'staged' && runtime?.type !== 'virtualized')
-  ) {
+  if (reverse === null || !selection || runtime?.type !== 'virtualized') {
     return false;
   }
 
@@ -731,37 +723,36 @@ const resolveAdjacentBlockVisualLineTargetPoint = ({
         : null;
     }
 
-    return editor.api.dom.resolvePlitePoint(
-      [targetDOMPoint[0], targetDOMPoint[1]],
-      { exactMatch: false }
-    );
+    return editor.api.dom.resolvePoint([targetDOMPoint[0], targetDOMPoint[1]], {
+      exactMatch: false,
+    });
   } catch {
     return null;
   }
 };
 
-export const getPlainVerticalLargeDocumentExtension = ({
-  domStrategyRuntime,
+export const getPlainVerticalLargeDocumentPlugin = ({
+  viewportRuntime,
   editor,
   event,
   forceModelMovement = false,
   preferredX,
   selection = getSelectionDOMRange(editor, getEditorSelection(editor)),
 }: {
-  domStrategyRuntime: unknown;
+  viewportRuntime: unknown;
   editor: ReactRuntimeEditor;
-  event: VerticalExtensionEvent;
+  event: VerticalPluginEvent;
   forceModelMovement?: boolean;
   preferredX?: number;
   selection?: Range | null;
-}): PlainVerticalDOMCoverageExtension | null => {
-  const reverse = getPlainVerticalExtensionReverse(event);
+}): PlainVerticalDOMCoveragePlugin | null => {
+  const reverse = getPlainVerticalPluginReverse(event);
 
   if (
     reverse === null ||
     !selection ||
     !isPlainVerticalLargeDocumentSelection({
-      domStrategyRuntime,
+      viewportRuntime,
       editor,
       event,
       selection,
@@ -776,7 +767,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
     return null;
   }
 
-  const getAdjacentBlockExtension = () => {
+  const getAdjacentBlockPlugin = () => {
     const target = getSingleTextPointInTopLevelBlock({
       blockIndex: reverse ? focusBlockIndex - 1 : focusBlockIndex + 1,
       editor,
@@ -784,7 +775,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
     });
 
     return target
-      ? createPlainVerticalLargeDocumentExtension({
+      ? createPlainVerticalLargeDocumentPlugin({
           reverse,
           selection,
           target,
@@ -792,7 +783,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
       : null;
   };
   const mountedRangeEdge =
-    (domStrategyRuntime as DOMStrategyRuntimeLike).mountedTopLevelRanges?.some(
+    (viewportRuntime as ViewportRuntimeLike).mountedTopLevelRanges?.some(
       (range) =>
         range.startIndex <= focusBlockIndex &&
         range.endIndex >= focusBlockIndex &&
@@ -835,7 +826,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
     visualTarget.path[0] === focusBlockIndex;
 
   if (visualTargetIsDirectional && !leavingRenderedLine) {
-    return createPlainVerticalLargeDocumentExtension({
+    return createPlainVerticalLargeDocumentPlugin({
       reverse,
       selection,
       target: visualTarget,
@@ -865,7 +856,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
       target: adjacentVisualTarget,
     })
   ) {
-    return createPlainVerticalLargeDocumentExtension({
+    return createPlainVerticalLargeDocumentPlugin({
       reverse,
       selection,
       target: adjacentVisualTarget,
@@ -876,7 +867,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
     visualTargetIsDirectional &&
     (!leavingRenderedLine || !visualTargetStaysInFocusBlock)
   ) {
-    return createPlainVerticalLargeDocumentExtension({
+    return createPlainVerticalLargeDocumentPlugin({
       reverse,
       selection,
       target: visualTarget,
@@ -894,10 +885,10 @@ export const getPlainVerticalLargeDocumentExtension = ({
     PathApi.equals(currentFocus.path, selection.focus.path) &&
     leavingRenderedLine
   ) {
-    const adjacentBlockExtension = getAdjacentBlockExtension();
+    const adjacentBlockPlugin = getAdjacentBlockPlugin();
 
-    if (adjacentBlockExtension) {
-      return adjacentBlockExtension;
+    if (adjacentBlockPlugin) {
+      return adjacentBlockPlugin;
     }
   }
 
@@ -919,7 +910,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
 
   if (modelLineTargetIsDirectional) {
     if (forceModelMovement) {
-      return createPlainVerticalLargeDocumentExtension({
+      return createPlainVerticalLargeDocumentPlugin({
         reverse,
         selection,
         target: modelLineTarget,
@@ -937,7 +928,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
           sourcePoint: selection.focus,
         });
 
-      return createPlainVerticalLargeDocumentExtension({
+      return createPlainVerticalLargeDocumentPlugin({
         reverse,
         selection,
         target: innerAdjacentVisualTarget ?? modelLineTarget,
@@ -945,17 +936,17 @@ export const getPlainVerticalLargeDocumentExtension = ({
     }
 
     if (leavingRenderedLine && modelLineTarget.path[0] === focusBlockIndex) {
-      return getAdjacentBlockExtension();
+      return getAdjacentBlockPlugin();
     }
 
-    return createPlainVerticalLargeDocumentExtension({
+    return createPlainVerticalLargeDocumentPlugin({
       reverse,
       selection,
       target: modelLineTarget,
     });
   }
 
-  const getModelLineExtension = () => {
+  const getModelLinePlugin = () => {
     if (
       typeof modelLineTarget?.path[0] === 'number' &&
       modelLineTarget.path[0] !== focusBlockIndex
@@ -964,7 +955,7 @@ export const getPlainVerticalLargeDocumentExtension = ({
     }
 
     return modelLineTarget
-      ? createPlainVerticalLargeDocumentExtension({
+      ? createPlainVerticalLargeDocumentPlugin({
           reverse,
           selection,
           target: modelLineTarget,
@@ -976,17 +967,17 @@ export const getPlainVerticalLargeDocumentExtension = ({
     !currentFocus ||
     !PathApi.equals(currentFocus.path, selection.focus.path)
   ) {
-    return getModelLineExtension();
+    return getModelLinePlugin();
   }
 
   if (leavingRenderedLine) {
-    return getAdjacentBlockExtension() ?? getModelLineExtension();
+    return getAdjacentBlockPlugin() ?? getModelLinePlugin();
   }
 
-  return getModelLineExtension() ?? getAdjacentBlockExtension();
+  return getModelLinePlugin() ?? getAdjacentBlockPlugin();
 };
 
-export const getPlainVerticalDOMCoverageExtension = ({
+export const getPlainVerticalDOMCoveragePlugin = ({
   coverage,
   editor,
   event,
@@ -994,10 +985,10 @@ export const getPlainVerticalDOMCoverageExtension = ({
 }: {
   coverage: DOMCoverageSession | undefined;
   editor: ReactRuntimeEditor;
-  event: VerticalExtensionEvent;
+  event: VerticalPluginEvent;
   selection?: Range | null;
-}): PlainVerticalDOMCoverageExtension | null => {
-  const reverse = getPlainVerticalExtensionReverse(event);
+}): PlainVerticalDOMCoveragePlugin | null => {
+  const reverse = getPlainVerticalPluginReverse(event);
 
   if (reverse === null || !selection) {
     return null;
@@ -1060,7 +1051,7 @@ export const getPlainVerticalDOMCoverageExtension = ({
     : null;
 };
 
-export const shouldModelOwnPlainVerticalDOMCoverageExtension = ({
+export const shouldModelOwnPlainVerticalDOMCoveragePlugin = ({
   coverage,
   editor,
   event,
@@ -1068,29 +1059,29 @@ export const shouldModelOwnPlainVerticalDOMCoverageExtension = ({
 }: {
   coverage: DOMCoverageSession | undefined;
   editor: ReactRuntimeEditor;
-  event: VerticalExtensionEvent;
+  event: VerticalPluginEvent;
   selection?: Range | null;
 }) =>
-  getPlainVerticalDOMCoverageExtension({
+  getPlainVerticalDOMCoveragePlugin({
     coverage,
     editor,
     event,
     selection,
   }) !== null;
 
-export const shouldModelOwnPlainVerticalLargeDocumentExtension = ({
-  domStrategyRuntime,
+export const shouldModelOwnPlainVerticalLargeDocumentPlugin = ({
+  viewportRuntime,
   editor,
   event,
   selection,
 }: {
-  domStrategyRuntime: unknown;
+  viewportRuntime: unknown;
   editor: ReactRuntimeEditor;
-  event: VerticalExtensionEvent;
+  event: VerticalPluginEvent;
   selection?: Range | null;
 }) =>
   isPlainVerticalLargeDocumentSelection({
-    domStrategyRuntime,
+    viewportRuntime,
     editor,
     event,
     selection,

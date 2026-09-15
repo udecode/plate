@@ -1,17 +1,10 @@
-import {
-  BaseParagraphPlugin,
-  defineBasePlugin,
-  schema,
-  PLUGINS,
-} from '../../core';
-import { SUGGESTION_TRANSIENT_KEY } from '../../features/suggestion';
+import { BaseParagraphPlugin, definePlugin, PLUGINS, schema } from '../../core';
 import { MarkdownPlugin } from '../../markdown';
 import { createEditor } from '../../react/core';
-import { SuggestionPlugin } from '../../react/features/suggestion';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
 
-const TableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
+const TableCellPlugin = definePlugin(PLUGINS.tableCell, {
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -21,14 +14,14 @@ const TableCellPlugin = defineBasePlugin(PLUGINS.tableCell, {
     },
   }),
 });
-const TableRowPlugin = defineBasePlugin(PLUGINS.tableRow, {
+const TableRowPlugin = definePlugin(PLUGINS.tableRow, {
   schema: {
     element: {
       content: schema.content.element(TableCellPlugin, { min: 1 }),
     },
   },
 });
-const TablePlugin = defineBasePlugin(PLUGINS.table, {
+const TablePlugin = definePlugin(PLUGINS.table, {
   schema: {
     element: {
       content: schema.content.element(TableRowPlugin, { min: 1 }),
@@ -36,34 +29,30 @@ const TablePlugin = defineBasePlugin(PLUGINS.table, {
   },
 });
 
-const createSuggestionEditor = (type: 'insert' | 'remove') => {
-  const suggestionKey = 'suggestion_s1';
-
-  return createEditor({
-    plugins: [
-      BaseParagraphPlugin,
-      SuggestionPlugin.configure({ initialState: { currentUserId: 'u1' } }),
-      AIChatPlugin,
-    ],
-    initialValue: [
-      {
-        children: [
-          {
-            [suggestionKey]: {
-              createdAt: Date.parse('2024-01-01T00:00:00.000Z'),
-              id: 's1',
-              type,
-              userId: 'u1',
-            },
-            suggestion: true,
-            [SUGGESTION_TRANSIENT_KEY]: true,
-            text: 'suggested',
-          },
-        ],
-        type: 'paragraph',
-      },
-    ],
+const createSuggestionEditor = () => {
+  const editor = createEditor({
+    plugins: [BaseParagraphPlugin, AIChatPlugin],
+    userId: 'u1',
+    selection: {
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    },
+    initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
   });
+  const node = editor.read.children()[0];
+
+  editor.api.authored.setView({
+    intent: 'propose',
+    projection: 'markup',
+  });
+  editor.plugin(AIChatPlugin).store.set({
+    chatNodes: [{ node, nodeKey: editor.key(node) }],
+    mode: 'chat',
+  });
+  editor.plugin(AIChatPlugin).update.applySuggestions('suggested');
+
+  return editor;
 };
 
 describe('ai chat action utils', () => {
@@ -73,12 +62,12 @@ describe('ai chat action utils', () => {
         BaseParagraphPlugin,
         BaseAIPlugin,
         MarkdownPlugin,
-        SuggestionPlugin.configure({ initialState: { currentUserId: 'u1' } }),
         AIChatPlugin,
         TablePlugin,
         TableRowPlugin,
         TableCellPlugin,
       ],
+      userId: 'u1',
       initialValue: [
         {
           children: [
@@ -102,40 +91,56 @@ describe('ai chat action utils', () => {
     editor.plugin(AIChatPlugin).store.set({
       _tableCellRefs: { c1: { key: cellNodeKey } },
     });
+    editor.api.authored.setView({
+      intent: 'propose',
+      projection: 'markup',
+    });
 
     editor
       .plugin(AIChatPlugin)
       .update.applyTableCellSuggestion({ content: 'ai', ref: 'c1' });
 
     expect(
-      editor.read.nodes.some({
-        at: [],
-        match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
-      })
-    ).toBe(true);
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(1);
+    expect(editor.read.value().children).toEqual([
+      {
+        children: [
+          {
+            children: [
+              {
+                children: [{ children: [{ text: 'old' }], type: 'paragraph' }],
+                type: 'tableCell',
+              },
+            ],
+            type: 'tableRow',
+          },
+        ],
+        type: 'table',
+      },
+    ]);
     expect(editor.read.text.string([])).toContain('ai');
     expect(editor.read.history.undos()).toHaveLength(1);
   });
 
-  it('accepts transient insert suggestions and clears their metadata', () => {
-    const editor = createSuggestionEditor('insert');
+  it('accepts the tracked AI proposal through native authored decisions', () => {
+    const editor = createSuggestionEditor();
 
-    editor.plugin(AIChatPlugin).update.acceptSuggestions();
+    const result = editor.plugin(AIChatPlugin).update.acceptSuggestions();
 
+    expect(result?.status).toBe('applied');
     expect(editor.read.text.string([])).toBe('suggested');
-    expect(
-      editor.read.nodes.some({
-        at: [],
-        match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
-      })
-    ).toBe(false);
+    expect(editor.read.authored.changes({ status: 'pending' }).items).toEqual(
+      []
+    );
   });
 
-  it('rejects transient insert suggestions and clears their content', () => {
-    const editor = createSuggestionEditor('insert');
+  it('rejects the tracked AI proposal through native authored decisions', () => {
+    const editor = createSuggestionEditor();
 
-    editor.plugin(AIChatPlugin).update.rejectSuggestions();
+    const result = editor.plugin(AIChatPlugin).update.rejectSuggestions();
 
+    expect(result?.status).toBe('applied');
     expect(editor.read.text.string([])).toBe('');
   });
 
@@ -144,6 +149,7 @@ describe('ai chat action utils', () => {
     const clear = mock();
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'u1',
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const chat = {
@@ -192,6 +198,7 @@ describe('ai chat action utils', () => {
   it('discards preview bookkeeping when reset skips undo', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'u1',
     });
 
     editor.plugin(BaseAIPlugin).update.beginPreview();

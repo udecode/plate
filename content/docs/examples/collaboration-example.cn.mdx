@@ -9,25 +9,28 @@ title: 协作演示
 
 ## 源码
 
-示例创建两个 provider 端点、两个编辑器 `Y.Doc` 实例和一个房间文档。这个
-provider 不需要凭证，只用于开发环境。
+示例创建两个 provider 端点、两个编辑器 `Y.Doc` 实例和一个中央房间文档。房间在任一
+端点接入前只初始化一次文档，因此两个编辑器绑定都省略 `seed`。这个 provider
+不需要凭证，只用于开发环境。
 
 <ComponentSource name="collaboration-demo" />
 
 ## 运行时形状
 
-| 部分 | 所有者 | 说明 |
-| --- | --- | --- |
-| `yjs` | `platejs/yjs` | 把共享 `Y.Doc` 和 provider 包装器接入 Plite 操作。 |
-| Provider 包装器 | 应用基础设施 | 将 Hocuspocus、WebRTC、IndexedDB 或自定义传输包装成 `YjsProviderLike`。 |
-| 本地房间 | Registry 示例 | 在两个独立 peer 之间交换文档和 awareness 更新。 |
-| 生产房间状态 | 应用 | 房间 id、认证令牌、持久化和 provider URL 不属于 Plate 包。 |
-| 连接命令 | `tx.yjs` | 连接、断开、重连、发布选择和清空选择。 |
-| 连接读取 | `state.yjs` | 通过 `editor.read` 读取连接、同步和 provider 状态。 |
-| 撤销和重做 | `platejs/history` | 通过同一 Yjs bridge 重放标准编辑器更改。 |
+| 部分                  | 所有者                              | 说明                                                                      |
+| --------------------- | ----------------------------------- | ------------------------------------------------------------------------- |
+| `CollaborationPlugin` | 复制的 `remote-cursor-overlay` 文件 | 绑定显式文档和就绪源，再添加选区、光标和标签。                            |
+| Provider 端点         | 应用基础设施                        | 在编辑器插件外负责连接状态、传输、持久化和清理。                          |
+| 本地房间              | Registry 示例                       | 预先初始化一个中央文档，再在两个独立 peer 之间交换文档和 Awareness 更新。 |
+| 生产房间状态          | 应用                                | 房间 id、认证令牌、持久化和 provider URL 不属于 Plate 包。                |
+| Provider 控制         | 应用                                | 先清空选择再断开 provider；直接重连后再同步选择。                         |
+| Admission 状态        | `editor.api.yjs`                    | 独立于 provider 状态，用 waiting、ready 或 error 控制编辑。               |
+| 撤销和重做            | `platejs/history`                   | 通过同一 Yjs bridge 重放标准编辑器更改。                                  |
 
 真实 provider 接入请看 [Yjs 指南](/docs/yjs)。
 
-在任一编辑器中输入即可看到远程文档和光标更新。断开一个 peer 可以排队本地
-更改，重新连接后再用标准历史记录控件仅撤销或重做该 peer 的本地更改。Schema
-控件会展示不兼容加入被拒绝，以及兼容端点在不替换现有编辑器的情况下恢复。
+从复制的文件调用 `CollaborationPlugin.create()`，传入应用自有 provider 的 `doc`、
+`initialReady` 和 Awareness。任一编辑器中的输入都会产生远程文档和光标更新。
+每张卡片分别显示 provider 与 admission 状态。断开一个 peer 可以排队本地更改，
+重新连接后再用标准历史记录控件仅撤销或重做该 peer 的本地更改。Schema 控件会展示
+不兼容加入被拒绝，以及兼容端点在不替换现有编辑器的情况下恢复。

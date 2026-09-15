@@ -13,12 +13,13 @@ import {
   createEditor,
   Editable,
   type EditableProps,
-  Plite,
-  type PliteCommitContext,
-  type PliteSelectionChangeContext,
-  type PliteValueChangeContext,
+  EditorRoot,
+  type CommitContext,
+  type SelectionChangeContext,
+  type ValueChangeContext,
   type RenderElementProps,
   type RenderVoidProps,
+  useEditorContext,
 } from '../../src/react';
 import { createElementSelectedHistoryRenderElement } from './render-probes/element-selected-render-probes';
 
@@ -76,14 +77,9 @@ type RenderVoidDoesNotExposePath = ExpectFalse<RenderVoidHasPath>;
 type EditableDOMBeforeInputProps = ComponentProps<
   typeof Editable
 >['onDOMBeforeInput'];
-type EditableHasDOMStrategy = 'domStrategy' extends keyof EditableProps
-  ? true
-  : false;
 type EditableHasLayout = 'layout' extends keyof EditableProps ? true : false;
 type EditableHasRenderingStrategy =
   'renderingStrategy' extends keyof EditableProps ? true : false;
-type EditableHasOnDOMStrategyMetrics =
-  'onDOMStrategyMetrics' extends keyof EditableProps ? true : false;
 type EditableHasOnRenderingStrategyMetrics =
   'onRenderingStrategyMetrics' extends keyof EditableProps ? true : false;
 type EditableHasOnCommand = 'onCommand' extends keyof ComponentProps<
@@ -92,35 +88,34 @@ type EditableHasOnCommand = 'onCommand' extends keyof ComponentProps<
   ? true
   : false;
 type PliteHasWidgetStore = 'widgetStore' extends keyof ComponentProps<
-  typeof Plite
+  typeof EditorRoot
 >
   ? true
   : false;
-type PliteHasOnCommit = 'onCommit' extends keyof ComponentProps<typeof Plite>
+type PliteHasOnCommit = 'onCommit' extends keyof ComponentProps<
+  typeof EditorRoot
+>
   ? true
   : false;
-type PliteHasOnChange = 'onChange' extends keyof ComponentProps<typeof Plite>
+type PliteHasOnChange = 'onChange' extends keyof ComponentProps<
+  typeof EditorRoot
+>
   ? true
   : false;
-type PliteCommitHasCommit = 'commit' extends keyof PliteCommitContext
+type PliteCommitHasCommit = 'commit' extends keyof CommitContext ? true : false;
+type PliteCommitHasSnapshot = 'snapshot' extends keyof CommitContext
   ? true
   : false;
-type PliteCommitHasSnapshot = 'snapshot' extends keyof PliteCommitContext
-  ? true
-  : false;
-type PliteValueChangeHasValue = 'value' extends keyof PliteValueChangeContext
+type PliteValueChangeHasValue = 'value' extends keyof ValueChangeContext
   ? true
   : false;
 type PliteSelectionChangeHasSelection =
-  'selection' extends keyof PliteSelectionChangeContext ? true : false;
+  'selection' extends keyof SelectionChangeContext ? true : false;
 type EditableAutoCompleteAcceptsBoolean =
   boolean extends NonNullable<EditableProps['autoComplete']> ? true : false;
-type EditableExposesDOMStrategy = ExpectTrue<EditableHasDOMStrategy>;
 type EditableDoesNotExposeLayout = ExpectFalse<EditableHasLayout>;
 type EditableDoesNotExposeRenderingStrategy =
   ExpectFalse<EditableHasRenderingStrategy>;
-type EditableExposesOnDOMStrategyMetrics =
-  ExpectTrue<EditableHasOnDOMStrategyMetrics>;
 type EditableDoesNotExposeOnRenderingStrategyMetrics =
   ExpectFalse<EditableHasOnRenderingStrategyMetrics>;
 type EditableDoesNotExposeOnCommand = ExpectFalse<EditableHasOnCommand>;
@@ -139,10 +134,8 @@ void (null as unknown as RenderElementDoesNotExposePath);
 void (null as unknown as RenderElementDoesNotExposeIndex);
 void (null as unknown as RenderVoidDoesNotExposePath);
 void (null as unknown as EditableDOMBeforeInputProps);
-void (null as unknown as EditableExposesDOMStrategy);
 void (null as unknown as EditableDoesNotExposeLayout);
 void (null as unknown as EditableDoesNotExposeRenderingStrategy);
-void (null as unknown as EditableExposesOnDOMStrategyMetrics);
 void (null as unknown as EditableDoesNotExposeOnRenderingStrategyMetrics);
 void (null as unknown as EditableDoesNotExposeOnCommand);
 void (null as unknown as PliteDoesNotExposeWidgetStore);
@@ -166,19 +159,17 @@ const readPackageJson = () =>
 const expectedPliteReactRuntimeRootExports = [
   'Editable',
   'EditorReadOnlyProvider',
-  'Plite',
-  'PliteAnnotationProvider',
-  'PliteElement',
-  'PliteLeaf',
-  'PlitePlaceholder',
-  'PliteReactUpdatePolicy',
-  'PliteRuntime',
-  'PliteText',
+  'EditorRoot',
+  'AnnotationProvider',
+  'EditorElement',
+  'EditorLeaf',
+  'EditorPlaceholder',
+  'ReactUpdatePolicy',
+  'EditorText',
   'createEditor',
   'react',
   'setDOMTextSyncRendererCapability',
   'useClaimEditableDOMCommit',
-  'useDOMStrategyVirtualOffset',
   'useEditorContext',
   'useEditorComposing',
   'useEditorEditableElement',
@@ -200,27 +191,21 @@ const expectedPliteReactRuntimeRootExports = [
   'useNodeSelector',
   'useOptionalEditorContext',
   'useSetStateField',
-  'usePliteActiveEditor',
-  'usePliteActiveRoot',
-  'usePliteAnnotation',
-  'usePliteAnnotationStore',
-  'usePliteAnnotations',
-  'usePliteChildRoot',
-  'usePliteCommand',
-  'usePliteContentRoot',
+  'useActiveEditor',
+  'useActiveRoot',
+  'useAnnotation',
+  'useAnnotationStore',
+  'useAnnotations',
+  'useChildRoot',
+  'useCommand',
+  'useContentRoot',
   'useEditor',
-  'usePliteHistory',
-  'usePliteRootChrome',
-  'usePliteRootEditor',
-  'usePliteRootEffect',
-  'usePliteRootState',
-  'usePliteRuntime',
-  'usePliteRuntimeState',
-  'usePliteWidget',
-  'usePliteWidgetGeometry',
-  'usePliteWidgetIds',
-  'usePliteWidgetStore',
-  'usePliteWidgets',
+  'useEditorHistory',
+  'useRootChrome',
+  'useRootEditor',
+  'useRootEffect',
+  'useRootState',
+  'useRuntimeState',
   'useSelectionGeometry',
   'useStateFieldValue',
   'useTextSelector',
@@ -247,7 +232,7 @@ describe('plitejs/react surface contract', () => {
       | null = null;
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           onDOMBeforeInput={(event, context) => {
             event.preventDefault();
@@ -256,7 +241,7 @@ describe('plitejs/react surface contract', () => {
             return true;
           }}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(beforeInputContext).toBe(null);
@@ -473,26 +458,26 @@ describe('plitejs/react surface contract', () => {
     const editor = createEditor({ initialValue });
 
     const defaultRender = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(
       defaultRender.container
-        .querySelector('[data-plite-editor]')
+        .querySelector('[data-editor]')
         ?.getAttribute('translate')
     ).toBe('no');
 
     defaultRender.rerender(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable translate="yes" />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(
       defaultRender.container
-        .querySelector('[data-plite-editor]')
+        .querySelector('[data-editor]')
         ?.getAttribute('translate')
     ).toBe('yes');
   });
@@ -515,7 +500,7 @@ describe('plitejs/react surface contract', () => {
     editor.install(blockVoidSchema);
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderElement={({ attributes, children }) => (
             <pre {...attributes} data-renderer="code">
@@ -540,7 +525,7 @@ describe('plitejs/react surface contract', () => {
             />
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(
@@ -569,9 +554,9 @@ describe('plitejs/react surface contract', () => {
     };
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={RenderElement} />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -597,9 +582,9 @@ describe('plitejs/react surface contract', () => {
     };
 
     render(
-      <Plite editor={mergeEditor}>
+      <EditorRoot editor={mergeEditor}>
         <Editable renderElement={MergeRenderElement} />
-      </Plite>
+      </EditorRoot>
     );
 
     await act(async () => {
@@ -640,9 +625,9 @@ describe('plitejs/react surface contract', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={RenderElement} />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(childMounts).toHaveBeenCalledTimes(1);
@@ -682,9 +667,9 @@ describe('plitejs/react surface contract', () => {
     });
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={RenderElement} />
-      </Plite>
+      </EditorRoot>
     );
 
     Object.values(elementSelectedRenders).forEach((selectedRenders) => {
@@ -759,9 +744,9 @@ describe('plitejs/react surface contract', () => {
     };
 
     render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={renderElement} />
-      </Plite>
+      </EditorRoot>
     );
 
     expect(readTargetPath()).toEqual([1]);
@@ -807,15 +792,15 @@ describe('plitejs/react surface contract', () => {
     };
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={renderElement} renderVoid={renderVoid} />
-      </Plite>
+      </EditorRoot>
     );
 
     const voidElement = rendered.container.querySelector(
-      '[data-plite-node="element"][data-plite-void="true"]'
+      '[data-editor-node="element"][data-editor-void="true"]'
     );
-    const spacer = rendered.container.querySelector('[data-plite-spacer]');
+    const spacer = rendered.container.querySelector('[data-editor-spacer]');
     const image = rendered.container.querySelector('img');
 
     expect(renderElement).not.toHaveBeenCalled();
@@ -832,9 +817,9 @@ describe('plitejs/react surface contract', () => {
     expect(voidElement?.getAttribute('draggable')).toBe('true');
     expect(image).toBeTruthy();
     expect(image?.parentElement?.getAttribute('contenteditable')).toBe('false');
-    const zeroWidth = spacer?.querySelector('[data-plite-zero-width]');
+    const zeroWidth = spacer?.querySelector('[data-editor-zero-width]');
 
-    expect(zeroWidth).toHaveAttribute('data-plite-zero-width', 'z');
+    expect(zeroWidth).toHaveAttribute('data-editor-zero-width', 'z');
     expect(zeroWidth?.querySelector('br')).toBeNull();
   });
 
@@ -855,24 +840,24 @@ describe('plitejs/react surface contract', () => {
     editor.install(blockVoidSchema);
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={renderElement} />
-      </Plite>
+      </EditorRoot>
     );
 
     const image = rendered.container.querySelector('[data-renderer="image"]');
-    const spacer = image?.querySelector('[data-plite-spacer]');
+    const spacer = image?.querySelector('[data-editor-spacer]');
 
     expect(renderElement).toHaveBeenCalledTimes(1);
-    expect(image).toHaveAttribute('data-plite-node', 'element');
-    expect(image).toHaveAttribute('data-plite-void', 'true');
+    expect(image).toHaveAttribute('data-editor-node', 'element');
+    expect(image).toHaveAttribute('data-editor-void', 'true');
     expect(spacer).toHaveStyle({
       height: '0px',
       position: 'absolute',
     });
-    const zeroWidth = spacer?.querySelector('[data-plite-zero-width]');
+    const zeroWidth = spacer?.querySelector('[data-editor-zero-width]');
 
-    expect(zeroWidth).toHaveAttribute('data-plite-zero-width', 'z');
+    expect(zeroWidth).toHaveAttribute('data-editor-zero-width', 'z');
     expect(zeroWidth?.querySelector('br')).toBeNull();
   });
 
@@ -889,7 +874,7 @@ describe('plitejs/react surface contract', () => {
     editor.install(formCardSchema);
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable
           renderVoid={() => (
             <div data-renderer="editable-card">
@@ -898,33 +883,33 @@ describe('plitejs/react surface contract', () => {
             </div>
           )}
         />
-      </Plite>
+      </EditorRoot>
     );
 
     const card = rendered.container.querySelector(
       '[data-renderer="editable-card"]'
     );
-    const spacer = rendered.container.querySelector('[data-plite-spacer]');
+    const spacer = rendered.container.querySelector('[data-editor-spacer]');
 
     expect(card?.parentElement?.getAttribute('contenteditable')).toBe('false');
     expect(
       card
-        ?.closest('[data-plite-node="element"][data-plite-void="true"]')
+        ?.closest('[data-editor-node="element"][data-editor-void="true"]')
         ?.getAttribute('draggable')
     ).toBe('true');
     expect(card?.querySelector('[contenteditable="false"]')?.textContent).toBe(
       'Controls'
     );
     expect(card?.querySelector('[contenteditable="true"]')).toBeTruthy();
-    const zeroWidth = spacer?.querySelector('[data-plite-zero-width]');
+    const zeroWidth = spacer?.querySelector('[data-editor-zero-width]');
 
-    expect(zeroWidth).toHaveAttribute('data-plite-zero-width', 'z');
+    expect(zeroWidth).toHaveAttribute('data-editor-zero-width', 'z');
     expect(zeroWidth?.querySelector('br')).toBeNull();
   });
 
   test('renderVoid receives content-only props and runtime owns inline void anchor', () => {
     const editor = createEditor({
-      extensions: [inlineVoidSchema],
+      plugins: [inlineVoidSchema],
       initialValue: [
         {
           type: 'paragraph',
@@ -955,13 +940,13 @@ describe('plitejs/react surface contract', () => {
     };
 
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
         <Editable renderElement={renderElement} renderVoid={renderVoid} />
-      </Plite>
+      </EditorRoot>
     );
 
     const mention = rendered.container.querySelector(
-      '[data-plite-inline="true"][data-plite-void="true"]'
+      '[data-editor-inline="true"][data-editor-void="true"]'
     );
 
     expect(renderElement).toHaveBeenCalledTimes(1);
@@ -976,12 +961,12 @@ describe('plitejs/react surface contract', () => {
     expect('attributes' in (renderVoidProps.current as object)).toBe(false);
     expect(mention?.hasAttribute('draggable')).toBe(false);
     expect(mention?.querySelector('[data-cy="visible-mention"]')).toBeTruthy();
-    expect(mention?.querySelector('[data-plite-zero-width]')).toBeTruthy();
+    expect(mention?.querySelector('[data-editor-zero-width]')).toBeTruthy();
   });
 
   test('nested wrappers preserve inline void anchor DOM point round trips', () => {
     const editor = createEditor({
-      extensions: [inlineVoidSchema],
+      plugins: [inlineVoidSchema],
       initialValue: [
         {
           type: 'paragraph',
@@ -997,8 +982,15 @@ describe('plitejs/react surface contract', () => {
         },
       ],
     });
+    let mountedEditor!: ReturnType<typeof useEditorContext>;
+    const CaptureEditor = () => {
+      mountedEditor = useEditorContext();
+
+      return null;
+    };
     const rendered = render(
-      <Plite editor={editor}>
+      <EditorRoot editor={editor}>
+        <CaptureEditor />
         <Editable
           renderElement={({ attributes, children }) => (
             <article data-wrapper="outer">
@@ -1009,15 +1001,15 @@ describe('plitejs/react surface contract', () => {
           )}
           renderVoid={() => <span data-visible-mention>@R2-D2</span>}
         />
-      </Plite>
+      </EditorRoot>
     );
     const outer = rendered.container.querySelector('[data-wrapper="outer"]');
     const inner = rendered.container.querySelector('[data-wrapper="inner"]');
     const paragraph = rendered.container.querySelector(
-      '[data-plite-node="element"][data-plite-path="0"]'
+      '[data-editor-node="element"][data-editor-path="0"]'
     );
     const zeroWidth = rendered.container.querySelector(
-      '[data-plite-node="element"][data-plite-path="0,1"] [data-plite-zero-width="z"]'
+      '[data-editor-node="element"][data-editor-path="0,1"] [data-editor-zero-width="z"]'
     );
     const zeroWidthText = zeroWidth?.firstChild;
 
@@ -1028,17 +1020,17 @@ describe('plitejs/react surface contract', () => {
     }
 
     const voidPoint = { path: [0, 1, 0], offset: 0 };
-    const domPoint = editor.api.dom.assertDOMPoint(voidPoint);
+    const domPoint = mountedEditor.api.dom.assertDOMPoint(voidPoint);
 
     expect(domPoint).toEqual([zeroWidthText, 0]);
     expect(
-      editor.api.dom.assertPlitePoint(domPoint, { exactMatch: false })
+      mountedEditor.api.dom.assertPoint(domPoint, { exactMatch: false })
     ).toEqual(voidPoint);
     expect(
-      editor.api.dom.assertPlitePoint([outer!, 0], { exactMatch: false })
+      mountedEditor.api.dom.assertPoint([outer!, 0], { exactMatch: false })
     ).toEqual({ path: [0, 0], offset: 0 });
     expect(
-      editor.api.dom.assertPlitePoint([inner!, inner!.childNodes.length], {
+      mountedEditor.api.dom.assertPoint([inner!, inner!.childNodes.length], {
         exactMatch: false,
       })
     ).toEqual({ path: [0, 2], offset: 1 });

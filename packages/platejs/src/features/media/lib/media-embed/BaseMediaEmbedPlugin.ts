@@ -1,6 +1,6 @@
 import {
   sanitizeUrl,
-  defineBasePlugin,
+  definePlugin,
   type DefinitionOf,
   type ElementOf,
   PLUGINS,
@@ -19,8 +19,8 @@ import {
   parseVideoUrl,
 } from '../media/parseMediaUrl';
 
-const MEDIA_EMBED_URL_ATTRIBUTE = 'data-plate-media-url';
-const MEDIA_EMBED_WIDTH_ATTRIBUTE = 'data-plate-media-width';
+const MEDIA_EMBED_URL_ATTRIBUTE = 'data-editor-media-url';
+const MEDIA_EMBED_WIDTH_ATTRIBUTE = 'data-editor-media-width';
 
 const sanitizeMediaEmbedUrl = (url: string | null | undefined) =>
   sanitizeUrl(url ?? undefined, {
@@ -53,7 +53,7 @@ const initialState: MediaEmbedPluginState = {
  * Enables support for embeddable media such as YouTube or Vimeo videos,
  * Instagram posts and tweets or Google Maps.
  */
-export const BaseMediaEmbedPlugin = defineBasePlugin(PLUGINS.mediaEmbed, {
+export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
   schema: {
     element: schema.element.textBlock({
       isolating: true,
@@ -108,7 +108,7 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(PLUGINS.mediaEmbed, {
 
             return {
               attributes: {
-                class: 'plate-media-embed',
+                class: 'editor-media-embed',
                 [MEDIA_EMBED_URL_ATTRIBUTE]: url,
                 [MEDIA_EMBED_WIDTH_ATTRIBUTE]: width,
               },
@@ -128,12 +128,12 @@ export const BaseMediaEmbedPlugin = defineBasePlugin(PLUGINS.mediaEmbed, {
               tag: 'figure',
             };
           },
-          match: [{ className: 'plate-media-embed', tag: 'figure' }],
+          match: [{ className: 'editor-media-embed', tag: 'figure' }],
           priority: 10,
         },
         {
           decode: ({ element }) => {
-            if (element.parentElement?.matches('figure.plate-media-embed')) {
+            if (element.parentElement?.matches('figure.editor-media-embed')) {
               return undefined;
             }
 

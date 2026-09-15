@@ -36,7 +36,7 @@ const getExplicitChildRoot = (
  * of persisted document data. The node-key fallback is useful for ephemeral
  * island roots, but it is intentionally not a persistence contract.
  */
-export function usePliteChildRoot(
+export function useChildRoot(
   element?: Element | null,
   slot: string = DEFAULT_CHILD_ROOT_SLOT
 ): NamedRootKey {

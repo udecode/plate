@@ -1,13 +1,11 @@
 import type { Anchor, createEditor, Path, Point, Range, Value } from 'plitejs';
 import {
-  Plite,
-  PliteAnnotationProvider,
+  EditorRoot,
+  AnnotationProvider,
   useEditorSelector,
-  usePliteAnnotationStore,
-  usePliteAnnotations,
+  useAnnotationStore,
+  useAnnotations,
   useEditor,
-  usePliteWidgetStore,
-  usePliteWidgets,
 } from 'plitejs/react';
 import { useMemo, useState } from 'react';
 
@@ -166,7 +164,7 @@ const ProjectionRow = ({
   row: BlockRowDescriptor;
   slot: 'left' | 'right';
 }) => {
-  const snapshot = usePliteAnnotations<{
+  const snapshot = useAnnotations<{
     kind: string;
     label: string;
     tone?: string;
@@ -198,15 +196,15 @@ const ProjectionRow = ({
           .join('|') || 'none';
 
   return (
-    <div className="plite-persistent-annotation-anchors-row">
+    <div className="editor-persistent-annotation-anchors-row">
       <span
-        className="plite-persistent-annotation-anchors-code"
+        className="editor-persistent-annotation-anchors-code"
         id={`${slot}-text`}
       >
         {row.text}
       </span>
       <span
-        className="plite-persistent-annotation-anchors-code"
+        className="editor-persistent-annotation-anchors-code"
         id={`${slot}-projection`}
       >
         {projectionText}
@@ -221,10 +219,10 @@ const Outline = () => {
   );
 
   return (
-    <div className="plite-persistent-annotation-anchors-row">
+    <div className="editor-persistent-annotation-anchors-row">
       <strong>Document outline</strong>
       <span
-        className="plite-persistent-annotation-anchors-code"
+        className="editor-persistent-annotation-anchors-code"
         id="document-outline"
       >
         {outline}
@@ -255,7 +253,7 @@ const formatAnnotationRange = (
     : 'none';
 
 const AnnotationSidebar = () => {
-  const snapshot = usePliteAnnotations<{
+  const snapshot = useAnnotations<{
     kind: string;
     label: string;
     tone?: string;
@@ -265,10 +263,10 @@ const AnnotationSidebar = () => {
   );
 
   return (
-    <div className="plite-persistent-annotation-anchors-row">
+    <div className="editor-persistent-annotation-anchors-row">
       <strong>Annotation sidebar</strong>
       <span
-        className="plite-persistent-annotation-anchors-code"
+        className="editor-persistent-annotation-anchors-code"
         id="annotation-sidebar"
       >
         {snapshot.allIds.length === 0
@@ -289,70 +287,14 @@ const AnnotationSidebar = () => {
   );
 };
 
-const WidgetPanel = ({
-  store,
-}: {
-  store: ReturnType<
-    typeof usePliteWidgetStore<
-      {
-        label: string;
-      },
-      {
-        kind: string;
-        label: string;
-        tone?: string;
-      }
-    >
-  >;
-}) => {
-  const snapshot = usePliteWidgets(store);
-
-  return (
-    <div className="plite-persistent-annotation-anchors-row">
-      <strong>Widget panel</strong>
-      <span
-        className="plite-persistent-annotation-anchors-code"
-        id="widget-panel"
-      >
-        {snapshot.allIds.length === 0
-          ? 'none'
-          : snapshot.allIds
-              .map((id) => {
-                const widget =
-                  snapshot.byId.get(id) ??
-                  failInvariant('Expected value to be defined');
-
-                return `${widget.id}:${widget.target.type}:${
-                  widget.available ? 'visible' : 'hidden'
-                }:${widget.data?.label ?? 'none'}`;
-              })
-              .join('|')}
-      </span>
-    </div>
-  );
-};
-
 const AnchoredProjectionContent = ({
   annotation,
   editor,
   setAnnotation,
-  widgetStore,
 }: {
   annotation: Anchor<Range> | null;
   editor: ReturnType<typeof createEditor>;
   setAnnotation: React.Dispatch<React.SetStateAction<Anchor<Range> | null>>;
-  widgetStore: ReturnType<
-    typeof usePliteWidgetStore<
-      {
-        label: string;
-      },
-      {
-        kind: string;
-        label: string;
-        tone?: string;
-      }
-    >
-  >;
 }) => {
   const alphaRow = useEditorSelector(
     (innerEditor) =>
@@ -383,13 +325,16 @@ const AnchoredProjectionContent = ({
   );
 
   return (
-    <div className="plite-persistent-annotation-anchors-panel" id="editor-root">
+    <div
+      className="editor-persistent-annotation-anchors-panel"
+      id="editor-root"
+    >
       <Instruction>
         Persistent anchors keep the annotation slice attached to the same
         logical text even when the document shape changes.
       </Instruction>
 
-      <div className="plite-persistent-annotation-anchors-controls">
+      <div className="editor-persistent-annotation-anchors-controls">
         <Button
           disabled={!!annotation}
           id="add-anchor"
@@ -492,7 +437,6 @@ const AnchoredProjectionContent = ({
       {alphaRow ? <ProjectionRow row={alphaRow} slot="left" /> : null}
       {betaRow ? <ProjectionRow row={betaRow} slot="right" /> : null}
       <AnnotationSidebar />
-      <WidgetPanel store={widgetStore} />
     </div>
   );
 };
@@ -517,40 +461,17 @@ const PersistentAnnotationAnchorsExample = () => {
         : [],
     [annotation]
   );
-  const annotationStore = usePliteAnnotationStore(editor, annotations);
-  const widgets = useMemo(
-    () =>
-      annotation
-        ? [
-            {
-              target: {
-                annotationId: 'comment-anchor',
-                type: 'annotation' as const,
-              },
-              data: {
-                label: 'Comment widget',
-              },
-              id: 'comment-widget',
-            },
-          ]
-        : [],
-    [annotation]
-  );
-  const widgetStore = usePliteWidgetStore(editor, widgets, {
-    annotationStore,
-  });
-
+  const annotationStore = useAnnotationStore(editor, annotations);
   return (
-    <Plite editor={editor}>
-      <PliteAnnotationProvider store={annotationStore}>
+    <EditorRoot editor={editor}>
+      <AnnotationProvider store={annotationStore}>
         <AnchoredProjectionContent
           annotation={annotation}
           editor={editor}
           setAnnotation={setAnnotation}
-          widgetStore={widgetStore}
         />
-      </PliteAnnotationProvider>
-    </Plite>
+      </AnnotationProvider>
+    </EditorRoot>
   );
 };
 

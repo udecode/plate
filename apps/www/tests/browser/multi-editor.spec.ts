@@ -1,4 +1,4 @@
-import { recordPliteBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
 for (const base of ['Base UI', 'Radix']) {
@@ -7,7 +7,7 @@ for (const base of ['Base UI', 'Radix']) {
       page,
     }, testInfo) => {
       await page.setViewportSize({ width, height: 844 });
-      const errors = recordPliteBrowserRuntimeErrors(page, { strict: true });
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
       await page.goto('/dev/multi-editor');
       await page.getByRole('button', { name: base, exact: true }).click();
       const a = page.getByRole('textbox', { name: 'A', exact: true });

@@ -8,17 +8,16 @@ import {
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { RenderLeafProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
-import { type PlateNodeProps, PlateLeaf } from '../components/plate-nodes';
+import { type EditorNodeProps, EditorLeaf } from '../components/plate-nodes';
 import type { Editor } from '../editor/Editor';
+import { useOptionalEditorContext } from '../internal/plite-components';
 import { useEditorReadOnly } from '../plite-react';
-import type { AnyResolvedPlatePlugin } from '../plugin/PlatePlugin';
+import type { AnyResolvedPlugin } from '../plugin/PlatePlugin';
 import { getRenderNodeProps } from './getRenderNodeProps.internal';
 
-type PlateLeafRenderProps = PlateNodeProps & RenderLeafProps;
+type LeafRenderProps = EditorNodeProps & RenderLeafProps;
 
-export type RenderLeaf = (
-  props: PlateLeafRenderProps
-) => React.ReactElement<any>;
+export type RenderLeaf = (props: LeafRenderProps) => React.ReactElement<any>;
 
 const HARD_AFFINITY_SPACE = String.fromCodePoint(160);
 const HARD_AFFINITY_SPACER_STYLE = {
@@ -55,7 +54,7 @@ const isActiveHardAffinityBoundary = (
 };
 
 const getSimpleLeafAttributes = (
-  props: PlateLeafRenderProps,
+  props: LeafRenderProps,
   className?: string
 ) => {
   const attributes = props.attributes ?? {};
@@ -71,11 +70,12 @@ const getSimpleLeafAttributes = (
  * Get an `Editable.renderLeaf` handler for one plugin-owned property key.
  */
 export const pluginRenderLeaf = (
-  editor: Editor,
-  plugin: AnyResolvedPlatePlugin,
+  modelEditor: Editor,
+  plugin: AnyResolvedPlugin,
   options: { assumeActive?: boolean } = {}
 ): RenderLeaf =>
   function RenderLeaf(props) {
+    const editor = useOptionalEditorContext() ?? modelEditor;
     const readOnly = useEditorReadOnly();
     const { component: pluginComponent } = plugin;
     const { mark } = plugin.render;
@@ -138,7 +138,7 @@ export const pluginRenderLeaf = (
         );
       }
 
-      const Leaf = Component ?? PlateLeaf;
+      const Leaf = Component ?? EditorLeaf;
 
       const ctxProps = getRenderNodeProps({
         editor,

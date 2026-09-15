@@ -1,20 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 
-import { getExtensionRegistry } from '../../../plitejs/src/core/extension-registry';
+import { getPluginRegistry } from '../../../plitejs/src/core/plugin-registry';
 import { createEditorSchemaContract } from '../../../plitejs/src/core/schema-compiler';
-import type { EditorExtensionContributionInput } from '../../../plitejs/src/interfaces/editor';
+import type { RuntimePluginContributionInput } from '../../../plitejs/src/interfaces/editor';
 import { hostCodecs } from '../dom';
-import {
-  defineBasePlugin,
-  property,
-  schema,
-  target,
-  type Editor,
-} from '../index';
+import { definePlugin, property, schema, target, type Editor } from '../index';
 import { getPlateModelPublication } from '../internal/plugin/compilePlateModel';
 import { getPlateRuntimeCandidate } from '../internal/plugin/plateRuntime';
 import { getPluginStore } from '../internal/plugin/pluginStore';
-import { getPlateRuntimeExtensionBindings } from '../internal/plugin/resolvePlugins';
 import { createEditor } from '../lib/editor/withPlite';
 import { compileEditor } from './compileEditor';
 
@@ -38,7 +31,7 @@ describe('compileEditor', () => {
   it('shares runtime lowering while detaching frozen facts and skipping activation and defaults', () => {
     const calls: string[] = [];
     let host: Editor | undefined;
-    const Box = defineBasePlugin('compilerBox', {
+    const Box = definePlugin('compilerBox', {
       activate() {
         calls.push('activate');
       },
@@ -88,11 +81,9 @@ describe('compileEditor', () => {
     expect(host!.read.value().children).toEqual([]);
     expect(getPlateModelPublication(host!)).toBeUndefined();
     expect(getPlateRuntimeCandidate(host!)).toBeUndefined();
-    expect(getPlateRuntimeExtensionBindings(host!)).toBeUndefined();
     expect(getPluginStore(host!, Box)).toBeUndefined();
     const runtime = createEditor(input);
-    const committed =
-      getExtensionRegistry(runtime).schemaContributions.compiled;
+    const committed = getPluginRegistry(runtime).schemaContributions.compiled;
     expect(result.schema).toEqual(createEditorSchemaContract(committed));
     expect(result.schema.identity).not.toBe(committed.identity);
     expect(calls).toContain('activate');
@@ -103,13 +94,13 @@ describe('compileEditor', () => {
   it('keeps exact dependency families and cleans up failed validation', () => {
     let host: Editor | undefined;
     let reject = true;
-    const Box = defineBasePlugin('nominalBox', {
+    const Box = definePlugin('nominalBox', {
       schema: { element: { content: schema.content.text(), type: 'box' } },
     });
-    const ForeignBox = defineBasePlugin('nominalBox', {
+    const ForeignBox = definePlugin('nominalBox', {
       schema: { element: { content: schema.content.text(), type: 'box' } },
     });
-    const Parent = defineBasePlugin('compilerParent', {
+    const Parent = definePlugin('compilerParent', {
       api: ({ editor }) => {
         host = editor;
         return {};
@@ -124,7 +115,6 @@ describe('compileEditor', () => {
     );
     expect(getPlateModelPublication(host!)).toBeUndefined();
     expect(getPlateRuntimeCandidate(host!)).toBeUndefined();
-    expect(getPlateRuntimeExtensionBindings(host!)).toBeUndefined();
     expect(getPluginStore(host!, Parent)).toBeUndefined();
     reject = false;
     expect(
@@ -160,13 +150,13 @@ describe('compileEditor', () => {
         owns: [{ kind: 'element', type: 'missing_element' }],
       },
     ]);
-    const Plugin = defineBasePlugin('compilerCodec', {
+    const Plugin = definePlugin('compilerCodec', {
       api: ({ editor }) => {
         host = editor;
         return {};
       },
       contributions:
-        codecs.contributions as readonly EditorExtensionContributionInput[],
+        codecs.contributions as readonly RuntimePluginContributionInput[],
       initialState: { ready: true },
     });
 
@@ -175,7 +165,6 @@ describe('compileEditor', () => {
     );
     expect(getPlateModelPublication(host!)).toBeUndefined();
     expect(getPlateRuntimeCandidate(host!)).toBeUndefined();
-    expect(getPlateRuntimeExtensionBindings(host!)).toBeUndefined();
     expect(getPluginStore(host!, Plugin)).toBeUndefined();
   });
 });

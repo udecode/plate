@@ -1,0 +1,69 @@
+---
+title: Pagination
+description: Derive page geometry and line fragments from a Plate document.
+---
+
+Use `platejs/pagination` to derive page geometry from the editor value. Layout is a read model; the editor's document, history, and collaboration state remain the source of content.
+
+## Installation
+
+```bash
+npm install platejs @chenglou/pretext
+```
+
+## Create a layout
+
+```ts
+import { createLayout } from 'platejs/pagination';
+
+const layout = createLayout(editor, {
+  page: { margins: 72, preset: 'letter' },
+});
+
+layout.reconfigure({
+  page: { margins: 48, preset: 'a4' },
+});
+```
+
+`reconfigure` replaces the complete configuration in one refresh. Store product page settings in application state or a document state field. Do not write derived fragments into the document unless the product explicitly owns authoritative page breaks.
+
+## React
+
+Use `useLayout` when React owns the layout lifetime. Render the editor with `EditorContent`; derive previews and page chrome from the layout separately.
+
+```tsx title="document-editor.tsx" showLineNumbers
+import { EditorContent, EditorRoot, useCreateEditor } from 'platejs/react';
+import { useLayout, useLayoutSnapshot } from 'platejs/pagination/react';
+
+export function DocumentEditor() {
+  const editor = useCreateEditor({
+    initialValue: [{ type: 'paragraph', children: [{ text: 'Document' }] }],
+  });
+  const layout = useLayout(editor, {
+    page: { margins: 72, preset: 'letter' },
+  });
+
+  const snapshot = useLayoutSnapshot(layout);
+
+  return (
+    <EditorRoot editor={editor}>
+      <output>{snapshot.pages.length} pages</output>
+      <EditorContent />
+    </EditorRoot>
+  );
+}
+```
+
+The layout reader supplies geometry; it does not turn this editable into a paged surface. Use its snapshots in the app's preview or layout consumer. `useLayout` publishes option changes after React commits.
+
+Pass `engine` to `createLayout` or `useLayout` for custom measurement. `pretextPageLayoutEngine()` configures the built-in text measurement engine.
+
+## Layout contracts
+
+Tables, images, and embeds own layout units through the selected engine. Paginating a table's row units does not require splitting the table node in the document.
+
+Headless measurement can fall back to estimates when browser canvas measurement is unavailable. Such geometry is useful for previews and export planning, but it is not an authoritative PDF or shared page-break source.
+
+The built-in engine uses browser font metrics. Operating systems, font availability, and browser profiles can produce different line breaks. Exact collaborative or exported pagination needs a shared measurement profile or authoritative page-break source.
+
+For large editable documents, [Virtualized Rendering](/docs/virtualized-rendering) provides the Plate component that omits offscreen blocks. DOM omission changes browser find, accessibility traversal, and DOM-based printing; use a complete model-based export for the full document.

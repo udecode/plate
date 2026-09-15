@@ -1,10 +1,10 @@
 import { ElementApi, property, schema, target } from '../../core';
-import { createEditor, defineBasePlugin } from '../../lib';
+import { createEditor, definePlugin } from '../../lib';
 import { getRenderNodeStaticProps } from './getRenderNodeStaticProps.internal';
 
 describe('getRenderNodeStaticProps', () => {
   it('merges plugin props, allowed attrs, Plite classes, and injected node props', () => {
-    const ParagraphPlugin = defineBasePlugin('staticParagraph', {
+    const ParagraphPlugin = definePlugin('staticParagraph', {
       schema: {
         element: {
           content: schema.content.open({ default: 'text', min: 1 }),
@@ -29,7 +29,7 @@ describe('getRenderNodeStaticProps', () => {
         },
       },
     });
-    const AlignPlugin = defineBasePlugin('align', {
+    const AlignPlugin = definePlugin('align', {
       targetPlugins: [ParagraphPlugin],
       schema: () => ({
         properties: {
@@ -66,7 +66,7 @@ describe('getRenderNodeStaticProps', () => {
       editor,
       plugin: editor.plugin(ParagraphPlugin),
       props: {
-        attributes: { 'data-plite-align': 'center' },
+        attributes: { 'data-editor-align': 'center' },
         children: null,
         className: 'user-class',
         element,
@@ -75,16 +75,16 @@ describe('getRenderNodeStaticProps', () => {
 
     expect(result.attributes).toMatchObject({
       'data-has-editor': 'yes',
-      'data-plite-align': 'center',
+      'data-editor-align': 'center',
       style: { textAlign: 'center' },
       target: '_blank',
     });
     expect(result.attributes?.ignored).toBeUndefined();
     expect(result.attributes?.title).toBeUndefined();
-    expect(result.attributes?.className).toContain('plite-staticParagraph');
+    expect(result.attributes?.className).toContain('editor-staticParagraph');
     expect(result.attributes?.className).toContain('plugin-class');
     expect(result.attributes?.className).toContain('user-class');
-    expect(result.attributes?.className).toContain('plite-align-center');
+    expect(result.attributes?.className).toContain('editor-align-center');
   });
 
   it('falls back to editor context and removes empty top-level style objects', () => {

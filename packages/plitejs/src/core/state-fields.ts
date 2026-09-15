@@ -3,13 +3,13 @@ import type {
   EditorStateField,
   StateFieldValueInput,
 } from '../interfaces/editor';
-import { getExtensionRegistry } from './extension-registry';
+import { getPluginRegistry } from './plugin-registry';
 
 const HYDRATED_STATE_FIELDS = new WeakMap<Editor, Set<string>>();
 
 export const getStateFieldMap = (editor: Editor) =>
   new Map(
-    [...getExtensionRegistry(editor).stateFields].map(([key, registration]) => [
+    [...getPluginRegistry(editor).stateFields].map(([key, registration]) => [
       key,
       registration.field,
     ])
@@ -22,13 +22,13 @@ export const getStateFieldMap = (editor: Editor) =>
  * values, without becoming readable or participating in effects.
  */
 export const getStateFieldIdentityMap = (editor: Editor) =>
-  new Map(getExtensionRegistry(editor).stateFieldIdentities);
+  new Map(getPluginRegistry(editor).stateFieldIdentities);
 
 export const getInstalledStateField = <TValue>(
   editor: Editor,
   field: EditorStateField<TValue>
 ): EditorStateField<TValue> => {
-  const installed = getExtensionRegistry(editor).stateFields.get(field.key);
+  const installed = getPluginRegistry(editor).stateFields.get(field.key);
 
   if (!installed) {
     throw new Error(`State field "${field.key}" is not installed.`);

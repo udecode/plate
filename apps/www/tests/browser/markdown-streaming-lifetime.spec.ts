@@ -1,6 +1,6 @@
 import {
-  createPliteBrowserEditorHarness,
-  recordPliteBrowserRuntimeErrors,
+  createBrowserEditorHarness,
+  recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
@@ -13,7 +13,7 @@ for (const mode of ['editable', 'static'] as const) {
     'mode',
   ] as const) {
     test(`${mode} streaming stops after ${action}`, async ({ page }) => {
-      const errors = recordPliteBrowserRuntimeErrors(page);
+      const errors = recordBrowserRuntimeErrors(page);
       await page.goto('/blocks/markdown-streaming-demo', {
         waitUntil: 'commit',
       });
@@ -21,10 +21,10 @@ for (const mode of ['editable', 'static'] as const) {
         name: /^Transformed Chunks/,
       });
       await expect(heading).toBeVisible({ timeout: 20_000 });
-      await createPliteBrowserEditorHarness(
+      await createBrowserEditorHarness(
         page,
         'markdown-streaming-demo',
-        page.locator('[data-plite-editor="true"]').first()
+        page.locator('[data-editor="true"]').first()
       ).ready({ editor: 'visible' });
       await page.getByRole('combobox').first().selectOption('lists');
       await expect(heading).toHaveText('Transformed Chunks (0/3)');

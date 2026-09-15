@@ -1,6 +1,6 @@
 'use client';
 
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -27,11 +27,11 @@ export default function ControlledEditorDemo() {
 
   return (
     <div>
-      <Plate editor={editor}>
+      <EditorRoot editor={editor}>
         <EditorContainer>
           <Editor className="px-0" />
         </EditorContainer>
-      </Plate>
+      </EditorRoot>
 
       <div className="mt-4 flex flex-col gap-2">
         <Button
@@ -101,10 +101,10 @@ function AsyncControlledEditorDemo() {
   if (loading) return <div>Loading…</div>;
 
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer>
         <Editor className="px-0" />
       </EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }

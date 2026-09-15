@@ -6,7 +6,7 @@ import {
   NodeApi,
   type Path,
   PathApi,
-  type Element as PliteElement,
+  type Element as EditorElement,
   type Text,
 } from '../interfaces';
 import type { AnyEditor as Editor } from '../interfaces/editor';
@@ -259,7 +259,7 @@ export const getTopLevelCleanupRange = (
 export const restorePreservedEmptyStartBlock = (
   editor: Editor,
   preservePath: Path | null | undefined,
-  preservedBlock: PliteElement | null | undefined
+  preservedBlock: EditorElement | null | undefined
 ) => {
   if (!preservePath || !preservedBlock) {
     return;

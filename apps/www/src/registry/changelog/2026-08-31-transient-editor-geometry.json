@@ -80,9 +80,15 @@
     },
     {
       "name": "use-widget-floating",
-      "files": ["apps/www/src/registry/hooks/use-widget-floating.ts"],
-      "definitionFiles": ["apps/www/src/registry/registry-hooks.ts"],
-      "diagnostics": []
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for use-widget-floating."
+        }
+      ]
     },
     {
       "name": "floating-toolbar",

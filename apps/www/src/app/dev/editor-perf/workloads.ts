@@ -1,6 +1,6 @@
 import {
   BaseHeadingPlugin,
-  defineBasePlugin,
+  definePlugin,
   migrateElementIds,
   property,
   schema,
@@ -11,7 +11,7 @@ import { createHugeDocumentValue } from '@/registry/examples/values/huge-documen
 
 import type { EditorPerfPluginSetId } from './plugin-census';
 
-const BenchmarkHeadingSchema = defineBasePlugin('benchmarkHeadingSchema', {
+const BenchmarkHeadingSchema = definePlugin('benchmarkHeadingSchema', {
   schema: {
     element: {
       ...BaseHeadingPlugin.schema.element,
@@ -20,22 +20,19 @@ const BenchmarkHeadingSchema = defineBasePlugin('benchmarkHeadingSchema', {
   },
 });
 
-const BenchmarkBlockquoteSchema = defineBasePlugin(
-  'benchmarkBlockquoteSchema',
-  {
-    schema: { element: { ...schema.element.textBlock(), type: 'blockquote' } },
-  }
-);
+const BenchmarkBlockquoteSchema = definePlugin('benchmarkBlockquoteSchema', {
+  schema: { element: { ...schema.element.textBlock(), type: 'blockquote' } },
+});
 
-const BenchmarkFallbackSchema = defineBasePlugin('benchmarkFallbackSchema', {
+const BenchmarkFallbackSchema = definePlugin('benchmarkFallbackSchema', {
   schema: { element: { ...schema.element.textBlock(), type: 'quote' } },
 });
 
-const BenchmarkCodeSchema = defineBasePlugin('benchmarkCodeSchema', {
+const BenchmarkCodeSchema = definePlugin('benchmarkCodeSchema', {
   schema: { properties: { code: schema.textProperty(property.boolean()) } },
 });
 
-const BenchmarkDenseInlinePropsSchema = defineBasePlugin(
+const BenchmarkDenseInlinePropsSchema = definePlugin(
   'benchmarkDenseInlineProps',
   {
     schema: {

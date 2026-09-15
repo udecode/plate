@@ -567,6 +567,14 @@ describe('state query contract', () => {
     );
   });
 
+  it('returns no edge points when a root has no text node', () => {
+    const editor = createEditor();
+
+    assert.equal(editor.read.points.get([]), undefined);
+    assert.equal(editor.read.points.start([]), undefined);
+    assert.equal(editor.read.points.end([]), undefined);
+  });
+
   it('does not hide query callback failures behind safe collection results', () => {
     const editor = createEditor({
       initialValue: [paragraph('one')],

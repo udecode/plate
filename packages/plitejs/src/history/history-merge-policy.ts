@@ -1,12 +1,14 @@
 import { type EditorCommit, RangeApi, type RootKey, type Selection } from '..';
 import {
-  failInvariant,
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRootKeys,
-  MAIN_ROOT_KEY,
-  toPublicRoot,
-} from '../internal';
+} from '../core/change/document-change';
+import { MAIN_ROOT_KEY, toPublicRoot } from '../core/public-root';
 import type { Batch } from './history';
+
+const failInvariant = (message: string): never => {
+  throw new Error(message);
+};
 
 type HistoryTarget = Readonly<{
   path: string;
@@ -34,17 +36,23 @@ type TextHistoryGroup = Readonly<{
   toBefore: number;
 }>;
 
-export type HistoryBatchGroup =
-  | Readonly<{
-      kind: 'document';
-      root: RootKey;
-    }>
-  | Readonly<{
-      kind: 'properties';
-      root: RootKey;
-      target: HistoryTarget;
-    }>
-  | TextHistoryGroup;
+export type HistoryBatchGroup = Readonly<{ scope?: object }> &
+  (
+    | Readonly<{
+        kind: 'effects';
+        root: undefined;
+      }>
+    | Readonly<{
+        kind: 'document';
+        root: RootKey;
+      }>
+    | Readonly<{
+        kind: 'properties';
+        root: RootKey;
+        target: HistoryTarget;
+      }>
+    | TextHistoryGroup
+  );
 
 const pathKey = (path: readonly number[]) => path.join('.');
 
@@ -320,13 +328,24 @@ export const shouldMergeBatch = (
   currentBatch: Batch,
   current: HistoryBatchGroup | null,
   previousBatch: Batch,
-  previous: HistoryBatchGroup | null
+  previous: HistoryBatchGroup | null,
+  effectsCompatible = false
 ): boolean => {
-  if (currentBatch.effects.length > 0 || previousBatch.effects.length > 0) {
+  if (
+    !effectsCompatible &&
+    (currentBatch.effects.length > 0 || previousBatch.effects.length > 0)
+  ) {
     return false;
   }
 
-  if (!current || !previous || current.root !== previous.root) return false;
+  if (
+    !current ||
+    !previous ||
+    current.root !== previous.root ||
+    current.scope !== previous.scope
+  ) {
+    return false;
+  }
 
   if (current.kind === 'text' && previous.kind === 'text') {
     return shouldMergeText(current, previous);
@@ -344,13 +363,29 @@ export const shouldMergeExplicitBatch = (
   current: HistoryBatchGroup | null,
   previousBatch: Batch,
   previous: HistoryBatchGroup | null,
-  isNativeTextInput: boolean
+  isNativeTextInput: boolean,
+  effectsCompatible = false
 ): boolean => {
-  if (shouldMergeBatch(currentBatch, current, previousBatch, previous)) {
+  if (
+    shouldMergeBatch(
+      currentBatch,
+      current,
+      previousBatch,
+      previous,
+      effectsCompatible
+    )
+  ) {
     return true;
   }
 
-  if (!current || !previous || current.root !== previous.root) return false;
+  if (
+    !current ||
+    !previous ||
+    current.root !== previous.root ||
+    current.scope !== previous.scope
+  ) {
+    return false;
+  }
   if (!isNativeTextInput) return true;
 
   return (

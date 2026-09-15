@@ -1,5 +1,5 @@
 ---
-description: Sync root VISION.md and docs/vision detail files from changed human and agent inputs. Use when the user invokes sync-vision, asks to evolve vision/taste from recent plans/docs/skills, wants vision docs updated from accumulated human answers, or wants only changed inputs since the last recorded commit analyzed.
+description: Update Plate’s root and scoped Vision from changed attributable inputs while preserving baseline accounting.
 argument-hint: '[status | preview | sync | advance] [scope]'
 disable-model-invocation: true
 ---

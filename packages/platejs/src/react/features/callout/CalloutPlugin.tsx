@@ -1,4 +1,4 @@
 import { BaseCalloutPlugin } from '../../../features/callout/lib';
-import { toPlatePlugin } from '../../core';
+import { toReactPlugin } from '../../core';
 
-export const CalloutPlugin = toPlatePlugin(BaseCalloutPlugin);
+export const CalloutPlugin = toReactPlugin(BaseCalloutPlugin);
