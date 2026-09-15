@@ -5,6 +5,7 @@ import {
 } from 'react';
 
 import { SelectionApi } from '../..';
+import { readDOMFragmentEditor } from '../../dom/plugin/dom-fragment-view';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   isPliteViewSelectionCollapsed,
@@ -223,10 +224,16 @@ export const useRuntimeClipboardEvents = ({
     const document = root.ownerDocument;
     const route = (event: globalThis.ClipboardEvent) => {
       const projected = readPliteViewSelection(editor);
+      const { target } = event;
+      const targetNode = target instanceof Node ? target : null;
+      const targetUsesRootHandler =
+        targetNode &&
+        root.contains(targetNode) &&
+        !readDOMFragmentEditor(targetNode);
       if (
         event.defaultPrevented ||
         document.activeElement !== root ||
-        (event.target !== null && root.contains(event.target as Node)) ||
+        targetUsesRootHandler ||
         (!SelectionApi.isNode(readRuntimeSelection(editor)) &&
           (!projected || isPliteViewSelectionCollapsed(projected)))
       ) {
