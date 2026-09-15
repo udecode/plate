@@ -156,14 +156,14 @@ const createFixture = () => {
   writeFile(
     path.join(
       fixtureRoot,
-      'docs/plans/artifacts/native-authored-changes/browser-typing-contract.json'
+      'benchmarks/editor/benchmarks/data/native-authored-changes/browser-typing-contract.json'
     ),
     '{"samples":100}\n'
   );
   writeFile(
     path.join(
       fixtureRoot,
-      'docs/plans/artifacts/native-authored-changes/browser-mounted-contract.json'
+      'benchmarks/editor/benchmarks/data/native-authored-changes/browser-mounted-contract.json'
     ),
     '{"samples":50}\n'
   );
@@ -336,7 +336,7 @@ test(
     writeFile(
       path.join(
         fixture.fixtureRoot,
-        'docs/plans/artifacts/native-authored-changes/browser-typing-contract.json'
+        'benchmarks/editor/benchmarks/data/native-authored-changes/browser-typing-contract.json'
       ),
       '{"samples":200}\n'
     );

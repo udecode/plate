@@ -14,7 +14,7 @@ import type { RecordTree } from '../../../../packages/plitejs/src/authored/recor
 import type { PliteBrowserHandle } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 
 const contractPath =
-  '../../docs/plans/artifacts/native-authored-changes/browser-typing-contract.json';
+  '../../benchmarks/editor/benchmarks/data/native-authored-changes/browser-typing-contract.json';
 const contractSource = readFileSync(contractPath, 'utf-8');
 const contract = JSON.parse(contractSource) as {
   budget: {

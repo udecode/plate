@@ -14,7 +14,7 @@ import { runBoundedProcess } from '../../../tooling/scripts/run-bounded-process.
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const contractPath =
-  'docs/plans/artifacts/native-authored-changes/browser-typing-contract.json';
+  'benchmarks/editor/benchmarks/data/native-authored-changes/browser-typing-contract.json';
 const contractSource = readFileSync(contractPath, 'utf-8');
 const contract = JSON.parse(contractSource) as {
   cohorts: Array<{ id: string }>;

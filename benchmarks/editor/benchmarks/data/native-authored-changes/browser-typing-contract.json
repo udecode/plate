@@ -1,0 +1,42 @@
+{
+  "version": 3,
+  "frozenBeforeMeasurement": true,
+  "owner": "F30 in docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",
+  "route": "/examples/plite/authored-changes",
+  "runner": "pnpm --filter plite test:plite-browser:chromium authored-performance.spec.ts",
+  "enabledBy": "PLITE_AUTHORED_PERFORMANCE=1",
+  "cohorts": [
+    {
+      "id": "normal",
+      "blocks": 100,
+      "pendingDeletions": 100,
+      "mountedSharedViews": 2
+    },
+    {
+      "id": "large",
+      "blocks": 1000,
+      "pendingDeletions": 1000,
+      "mountedSharedViews": 2
+    }
+  ],
+  "order": "Run normal first. A failure requires diagnosis before opening large. PLITE_AUTHORED_PERFORMANCE_COHORT selects exactly one cohort.",
+  "fixture": "Fresh actual authored-changes page for each pass. Seed N paragraph blocks containing Seed. through the accepted browser handle; propose deletion of the first e in each block. Show markup in the proposed view and retain accepted content in the other mounted view. Keep the route's existing first-50 review list and independent document mounted. The accepted seed is one retained accepted-history record, in addition to N pending deletions; assert both statuses independently.",
+  "action": "Collapse to the start of the first proposed text, type 20 warmup characters, then measure 100 trusted printable keys through measurePliteTrustedTyping. Native capture, exact model and DOM text, selection and render readiness participate. Setup, full value reads and final assertions are outside the timed operation.",
+  "sampling": {
+    "passes": 3,
+    "warmupsPerPass": 20,
+    "samplesPerPass": 100,
+    "percentile": "nearest-rank",
+    "retries": 0
+  },
+  "environment": "Production static export with verified build manifest/source digest, one Chromium worker, default desktop viewport, unthrottled local host. Preserve every pass, raw key rows, long tasks, source and browser identity.",
+  "budget": {
+    "keydownToPaintBoundaryP95Ms": 50,
+    "keydownToPaintBoundaryP99Ms": 100
+  },
+  "noise": "No unchanged retries after a timing failure. Preserve the result and use an owner-isolating diagnostic or a predeclared matched intervention. This absolute gate does not establish a regression or speedup.",
+  "correctness": "Every measured key and beforeinput is trusted; data, native target range, runtime target, model selection, DOM insertion and model insertion match. Accepted content remains exact, every original pending record remains pending, final proposed text and independent document are exact, runtime errors are empty. Every mounted paragraph retains its exact deleted e. Record mounted paths, retained fragment count and placeholder count. Normal mounts all 100 paragraphs. Large uses the route's existing default staged DOM strategy and its mounted subset; all 1000 proposals are checked in the native savepoint, not by equating retained records with mounted DOM elements.",
+  "coverageCorrection": "Before any valid large timing sample, the large setup exposed a native placeholder width defect and then an incorrect all-1000-DOM-elements assertion. The fixture always used the actual route and its default staged DOM strategy. Preserve its layout/actionability failures and the eight-mounted-fragment observation; measure that actual strategy with exact mounted-fragment and complete saved-record guards. A fully mounted 1000-fragment surface is a separate required F30 rendering cohort, not a claim from this packet. The document, proposal, view, warmup, sample counts and latency budgets are unchanged.",
+  "limits": "The double-requestAnimationFrame timestamp is an upper bound on the first opportunity to present the verified DOM, not a compositor presentation timestamp. Fixture load is not cold mount. Two shared views and one independent editor are actual mounted surfaces; no 1/8-view, physical IME, heap, history-size, zero-review overhead, bulk-decision, save/load or complete F30 claim follows. No matched legacy implementation exists for editable native markup, so no baseline speedup is calculated.",
+  "measurementCorrection": "The initial burst advanced on text readiness while the DOM caret could remain stale, including after three frames. Native trace and the exact mounted repair test identify the retained-text readiness defect. Each key now requires exact model, DOM text, focus and native caret through its paint boundary before the next key. The warmup caret must settle too. Budgets and sample counts are unchanged; earlier invalid rows remain in execution/browser-authored-typing-normal-2-pass-*.json and are not latency passes."
+}

@@ -39,7 +39,7 @@
       "docs": {
         "sources": [
           "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",
-          "docs/plans/artifacts/native-authored-changes/browser-typing-contract.json"
+          "benchmarks/editor/benchmarks/data/native-authored-changes/browser-typing-contract.json"
         ]
       },
       "thresholds": {
@@ -74,7 +74,7 @@
       "docs": {
         "sources": [
           "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",
-          "docs/plans/artifacts/native-authored-changes/browser-mounted-contract.json"
+          "benchmarks/editor/benchmarks/data/native-authored-changes/browser-mounted-contract.json"
         ]
       },
       "thresholds": {

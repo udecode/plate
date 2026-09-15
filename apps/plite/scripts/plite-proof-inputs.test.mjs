@@ -189,7 +189,7 @@ test('browser discovery fingerprint covers its executable owner', () => {
   assert.ok(entries.has('apps/plite/scripts/plite-proof-inputs.mjs'));
   assert.ok(
     entries.has(
-      'docs/plans/artifacts/native-authored-changes/browser-typing-contract.json'
+      'benchmarks/editor/benchmarks/data/native-authored-changes/browser-typing-contract.json'
     )
   );
 });
