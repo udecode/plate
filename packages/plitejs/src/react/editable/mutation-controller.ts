@@ -1014,6 +1014,13 @@ export const executeEditableRepairPolicy = ({
 
 export const focusEditableRepairTarget = (editor: ReactRuntimeEditor) => {
   try {
+    const viewSelection = readPliteViewSelection(editor);
+
+    if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
+      ReactEditor.assertDOMNode(editor, editor).focus({ preventScroll: true });
+      return true;
+    }
+
     ReactEditor.focus(editor);
     return true;
   } catch {

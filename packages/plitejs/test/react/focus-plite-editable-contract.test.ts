@@ -17,6 +17,7 @@ import {
   readModelSelectionDOMPreference,
   writeCollapsedModelSelectionDOMPreference,
 } from '../../src/react/editable/model-selection-dom-preference';
+import { focusEditableRepairTarget } from '../../src/react/editable/mutation-controller';
 import {
   focusPliteEditable,
   focusPliteEditableAfterEventFrame,
@@ -182,6 +183,16 @@ describe('focusPliteEditable', () => {
 
     focusPliteEditable(editor);
 
+    expect(focus).not.toHaveBeenCalled();
+    expect(element.ownerDocument.activeElement).toBe(element);
+  });
+
+  it('does not export a model selection when repair focus preserves an active projected view selection', () => {
+    const { editor, element, focus } = createFocusableEditor();
+
+    writePliteViewSelection(editor, createProjectedSelection());
+
+    expect(focusEditableRepairTarget(editor)).toBe(true);
     expect(focus).not.toHaveBeenCalled();
     expect(element.ownerDocument.activeElement).toBe(element);
   });

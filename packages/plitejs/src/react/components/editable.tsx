@@ -24,11 +24,9 @@ import {
 import { ComposingContext } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { ReadOnlyContext } from '../hooks/use-editor-read-only';
-import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
-import { readPliteViewSelection } from '../view-selection';
 import { usePliteViewSelectionPresence } from '../view-selection-decoration';
 import type { MountedTopLevelRange } from '../viewport-commands';
 import { EditableDOMCommitFence } from './editable-dom-commit-fence';
@@ -319,53 +317,13 @@ export const EditableDOMRoot = (
     scrollSelectionIntoView,
   });
   const {
-    domPhaseScheduler,
     editableEventBindings,
     isComposing,
-    rootRef,
     rootInteractionSelectionBridge,
     readOnly,
     runtime,
     viewportBackedSelection,
   } = rootRuntime;
-  useIsomorphicLayoutEffect(() => {
-    if (!hasViewSelection) return undefined;
-    const ownerDocument = rootRef.current?.ownerDocument;
-    if (!ownerDocument) return undefined;
-    const clearNativeSelection = () => {
-      if (!readPliteViewSelection(editor)) return;
-      const rootElement = rootRef.current;
-      const nativeSelection = ownerDocument.getSelection();
-
-      if (
-        rootElement &&
-        nativeSelection?.anchorNode &&
-        rootElement.contains(nativeSelection.anchorNode)
-      ) {
-        nativeSelection.removeAllRanges();
-      }
-    };
-
-    ownerDocument.addEventListener('selectionchange', clearNativeSelection);
-    clearNativeSelection();
-    const cancelScheduledClear = domPhaseScheduler.schedule(
-      'selection-repair',
-      'clear-native-selection-for-view-selection',
-      clearNativeSelection,
-      {
-        key: 'clear-native-selection-for-view-selection',
-        timing: 'microtask',
-      }
-    );
-
-    return () => {
-      cancelScheduledClear();
-      ownerDocument.removeEventListener(
-        'selectionchange',
-        clearNativeSelection
-      );
-    };
-  }, [domPhaseScheduler, editor, hasViewSelection, rootRef]);
   const supportsBeforeInput = useSyncExternalStore(
     runtime.subscribeHostFacts,
     () => runtime.supportsBeforeInput,
