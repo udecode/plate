@@ -582,7 +582,7 @@ test.describe("code highlighting", () => {
       },
     });
     const originalText =
-      "If you are using TypeScript, create the editor from the final value shape and pass extension factories at creation time. The example below includes the custom types required for the rest of this example.";
+      "If you are using TypeScript, create the editor from the final value shape and pass plugin factories at creation time. The example below includes the custom types required for the rest of this example.";
     const selectedText = "using";
     const selectionStart = originalText.indexOf(selectedText);
     const selectionEnd = selectionStart + selectedText.length;
