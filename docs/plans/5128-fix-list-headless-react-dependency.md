@@ -82,10 +82,10 @@ Blocked condition:
 Task state:
 - task_type: bug fix in a published package
 - task_complexity: normal, non-heavyweight, measurable
-- current_phase: verification
-- current_phase_status: in_progress
-- next_phase: autoreview and repository check
-- goal_status: active
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: final response
+- goal_status: complete
 
 Current verdict:
 - verdict: valid
@@ -235,15 +235,15 @@ Completion Gates:
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: all owning checks run normally |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Local structured Codex autoreview exited 0 with zero findings |
 | PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | PR #5129 created after full `pnpm check` passed |
-| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | This dedicated plan identifies https://github.com/udecode/plate/pull/5129; plan-record commit will be pushed before final readback |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
+| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | PR #5129 head matched local `6137dffea1...`; the plan at that head identifies the exact PR and the body contains exactly one plan line |
+| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | `gh pr view 5129 --json ...` read back the auto-release block, issue/plan/confidence lines, exact table header, and all four required sections; no self-link |
 | PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: no browser proof or image |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
+| Tracker sync-back | yes | Post concise issue/Linear sync after PR exists, or record N/A/blocker | Posted https://github.com/udecode/plate/issues/5128#issuecomment-5705495171 with PR and verification summary |
+| Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | PR, issue, confidence, flow, browser N/A, outcome, caveat, design, and verification fields filled below |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `pnpm lint:fix` passed; full `pnpm check` lint also passed with one pre-existing warning and zero errors |
 | Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | One usage audit accidentally matched generated release-index content and was truncated; recorded above, then all searches were narrowed and long check output was captured to temp logs with bounded tails |
 | Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5128-fix-list-headless-react-dependency.md` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5128-fix-list-headless-react-dependency.md` | Final mechanical checker passed from `/Users/zbeyens/git/plate` before goal completion |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | Root barrel still exports `BaseListPlugin`; React barrel still exports `ListPlugin`; built root graph contains no React import; `/react` retains both React imports |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published `@platejs/list` runtime/package-entry fix |
 | Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | One patch changeset for `@platejs/list`; no core-package minor |
@@ -258,8 +258,8 @@ Phase / pass table:
 | Intake and source read | complete | issue/comment read; published failure reproduced; source and patterns audited | implementation |
 | Implementation | complete | renderer moved unchanged to React entry; base file renamed `.ts`; tests split by owner; patch changeset added | verification |
 | Verification | complete | focused/package tests, build, typecheck, lint, build-graph audit, packed import, clean autoreview, and full `pnpm check` pass | PR/tracker sync |
-| PR / tracker sync | in_progress | pre-PR `pnpm check` passed | create PR, record exact PR, sync issue |
-| Closeout | pending | | final response |
+| PR / tracker sync | complete | PR #5129 opened, head/body read back, issue #5128 commented | closeout |
+| Closeout | complete | all plan gates resolved; final checker passes before goal completion | final response |
 
 Findings:
 - Fresh `@platejs/list@53.1.3` import without peers fails exactly with `ERR_MODULE_NOT_FOUND` for `react` from the emitted shared chunk.
@@ -316,7 +316,7 @@ Final handoff contract:
   - Why not quick patch: optional peers or build externals would retain the wrong source ownership
   - Why not broader change: exports, peer policy, list model, and React markup remain correct
 - Verified: package artifact/import graph, tests, typecheck, build, barrels, lint, autoreview, and root check
-- PR body verified: pending
+- PR body verified: yes; `gh pr view 5129 --json body` confirmed the exact task-style format and one task-plan line
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -342,8 +342,8 @@ Task-style PR body contract:
 
 Final handoff / sync:
 - PR: https://github.com/udecode/plate/pull/5129
-- Task plan at exact PR head: push this PR ownership update, then confirm through GitHub readback
-- Issue / tracker: #5128 comment pending final PR-head verification
+- Task plan at exact PR head: confirmed by matching GitHub `headRefOid` to local pushed head and reading this plan from that commit; final plan-only closure commit will be pushed before handoff
+- Issue / tracker: https://github.com/udecode/plate/issues/5128#issuecomment-5705495171
 - Browser proof: N/A; Node package import surface
 - Caveats: headless base plugin has no default renderer; full check emits one pre-existing eslint warning but exits 0
 
@@ -355,16 +355,16 @@ Timeline:
 - 2026-09-17 Built and packed artifact verified in a fresh React-free npm project; package build/test/typecheck/lint/barrel checks pass.
 - 2026-09-17 Structured Codex autoreview completed clean with zero findings.
 - 2026-09-17 First root check exposed one unrelated transient timing threshold; exact retry and complete `pnpm check` rerun passed.
+- 2026-09-17 PR #5129 opened with required task body; remote head/body and exact plan ownership read back successfully; issue #5128 synced.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | All local verification is complete; creating the required PR and syncing issue #5128 |
-| Where am I going? | Commit/push, open the task-style PR, record its exact URL in this plan, verify body/head, and comment on the issue |
+| Where am I? | Closeout complete; final plan commit/push and handoff remain |
+| Where am I going? | Push this final plan state, re-read PR head/body, complete the goal, and hand off |
 | What is the goal? | Make the `@platejs/list` root entry importable without React while preserving `/react` rendering |
 | What have I learned? | The only React edge is the base plugin's JSX wrapper |
 | What have I done? | Reproduced, fixed, and proved the headless/React split through source, tests, build graph, and packed install |
 
 Open risks:
-- Build chunking could retain React in the root graph even after the source move; the built import graph and React-absent import must be tested directly.
-- Moving render ownership could accidentally change wrapper markup; preserve it with a React-entry rendering regression test.
+- None open. The two identified risks are closed by built-graph/packed-import proof and React-entry wrapper tests.
