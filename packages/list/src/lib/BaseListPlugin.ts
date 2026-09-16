@@ -1,11 +1,6 @@
-import React from 'react';
-
-import type { SlateRenderElementProps } from 'platejs/static';
-
 import {
   type PluginConfig,
   type TElement,
-  type TListElement,
   createTSlatePlugin,
   isDefined,
   isHtmlBlockElement,
@@ -17,7 +12,6 @@ import {
 import type { GetSiblingListOptions } from './queries/getSiblingList';
 import type { ListStyleType } from './types';
 
-import { isOrderedList } from './queries';
 import { withList } from './withList';
 
 /**
@@ -199,13 +193,6 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
       },
     },
   },
-  render: {
-    belowNodes: (props) => {
-      if (!props.element.listStyleType) return;
-
-      return (props) => <List {...(props as SlateRenderElementProps)} />;
-    },
-  },
   rules: {
     break: {
       empty: 'reset',
@@ -220,17 +207,3 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
     match: ({ node }) => isDefined(node[KEYS.listType]),
   },
 }).overrideEditor(withList);
-
-function List(props: SlateRenderElementProps) {
-  const { listStart, listStyleType } = props.element as TListElement;
-  const List = isOrderedList(props.element) ? 'ol' : 'ul';
-
-  return (
-    <List
-      style={{ listStyleType, margin: 0, padding: 0, position: 'relative' }}
-      start={listStart}
-    >
-      <li>{props.children}</li>
-    </List>
-  );
-}
