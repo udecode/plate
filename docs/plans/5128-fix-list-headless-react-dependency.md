@@ -185,9 +185,9 @@ Work Checklist:
       new branch needed, or N/A with reason.
 - [x] Every PR has its own `task` invocation and dedicated plan; this plan is
       not aggregate evidence for another PR.
-- [ ] If a PR exists, its body has exactly one
+- [x] If a PR exists, its body has exactly one
       `🧭 Task plan: docs/plans/<plan>.md` line, this file exists at the exact PR
-      head, and this plan records that exact PR number or URL.
+      head, and this plan records that exact PR number or URL. PR #5129 owns this plan; final head/body readback follows the plan-record commit.
 - [x] Local-env-rot retry policy recorded for any surprising repo-wide failure:
       reinstall/rerun evidence or N/A with reason. N/A so far: no corruption-shaped failure.
 - [x] Workspace authority recorded: every proof command names the cwd/tool that
@@ -234,8 +234,8 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent/tooling changes |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: all owning checks run normally |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Local structured Codex autoreview exited 0 with zero findings |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Per-PR task ownership | pending | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | pending |
+| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | PR #5129 created after full `pnpm check` passed |
+| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | This dedicated plan identifies https://github.com/udecode/plate/pull/5129; plan-record commit will be pushed before final readback |
 | Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
 | PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: no browser proof or image |
 | Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
@@ -302,20 +302,20 @@ Verification evidence:
 - `/Users/zbeyens/git/plate`: full `pnpm check` rerun exited 0; lint, all package builds/typechecks, fast tests, slow tests, and slowest gate passed.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: https://github.com/udecode/plate/pull/5129
+- Issue / tracker line: fixes #5128; concise issue comment after final PR head verification
+- Confidence line: 95-100%; public repro, packed artifact, full checks, and clean review agree
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: fresh published-package import failed on missing React and the ownership regression was red; browser N/A
+  - Verified: packed React-free import, 113 package tests, package build/typecheck, full `pnpm check`, clean autoreview; browser N/A
+- Browser check: N/A; plain Node ESM/package graph surface
+- Outcome: root `@platejs/list` entry no longer reaches React; `/react` keeps unchanged wrapper behavior
+- Caveat: the base plugin intentionally has no default React renderer; static callers configure one explicitly, as the existing `BaseListKit` does
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
+  - Chosen boundary: move only `render.belowNodes` and JSX into `ListPlugin`
+  - Why not quick patch: optional peers or build externals would retain the wrong source ownership
+  - Why not broader change: exports, peer policy, list model, and React markup remain correct
+- Verified: package artifact/import graph, tests, typecheck, build, barrels, lint, autoreview, and root check
 - PR body verified: pending
 
 Task-style PR body contract:
@@ -341,11 +341,11 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Task plan at exact PR head: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: https://github.com/udecode/plate/pull/5129
+- Task plan at exact PR head: push this PR ownership update, then confirm through GitHub readback
+- Issue / tracker: #5128 comment pending final PR-head verification
+- Browser proof: N/A; Node package import surface
+- Caveats: headless base plugin has no default renderer; full check emits one pre-existing eslint warning but exits 0
 
 Timeline:
 - 2026-09-16T22:16:42.969Z Task goal plan created.
