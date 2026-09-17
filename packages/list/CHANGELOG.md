@@ -1,5 +1,11 @@
 # @platejs/list
 
+## 53.3.13
+
+### Patch Changes
+
+- [#5129](https://github.com/udecode/plate/pull/5129) by [@zbeyens](https://github.com/zbeyens) – Fix the headless entry requiring React at runtime
+
 ## 53.1.3
 
 ### Patch Changes
