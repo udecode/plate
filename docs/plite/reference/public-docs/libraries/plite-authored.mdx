@@ -57,7 +57,26 @@ const result = editor.update.authored.decide({
 });
 ```
 
-Pass `{ changeId: id }` to `tx.authored.propose(...)` to amend an owned logical change. Decisions are atomic and snapshot-bound. Use `read.authored.preview(...)` before presenting a bulk decision and handle every `AuthoredResult` status.
+Pass `{ changeId: id }` to `tx.authored.propose(...)` to assign a new change identity or amend an owned pending change. Decisions are atomic and snapshot-bound. Use `read.authored.preview(...)` before presenting a bulk decision and handle every `AuthoredResult` status.
+
+## Import a comparison
+
+```tsx
+import { proposeAuthoredComparison } from 'plitejs/authored';
+import { compare } from 'plitejs/diff';
+
+const incomingDraft = [
+  { type: 'paragraph', children: [{ text: 'Revised sentence.' }] },
+];
+const comparison = await compare({
+  before: editor.read.value(),
+  after: incomingDraft,
+  schema: editor.read.schema,
+});
+const result = proposeAuthoredComparison(editor, { comparison });
+```
+
+Import validates the accepted baseline, schema, authored frontier, and selected groups before creating one native pending proposal. Pass `groupIds` to select a dependency-closed subset. The result maps comparison groups to the authored change ID. A resolved three-way result uses the same import path when its baseline matches the live accepted document.
 
 ## Query changes
 

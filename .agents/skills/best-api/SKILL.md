@@ -362,6 +362,8 @@ may record N/A with that source evidence.
 
 ### Canonical Read And Projection Gate
 
+For saved revisions and imported drafts, a structural comparison is an immutable read over schema-valid documents. It may report correspondence, grouped effects, canonical changes, uncertainty, and explicit three-way conflicts; it never owns another document, review record, or position store. Publishing a comparison is an explicit native authored write that validates the exact schema, live baseline, and authored frontier before any mutation. Prefer one comparison and one native import path over annotated-node diff tags, feature-local review managers, or re-running a matcher during conflict resolution.
+
 Match invalidation queries to the consumer's dependency. Entity presence,
 payload, position, and geometry are different questions. Reuse the canonical
 change owner for a missing precise query; do not make an existence check build

@@ -335,6 +335,29 @@ export type SchemaElementSlicePolicy = Readonly<{
   replaceWhenCovered?: boolean;
 }>;
 
+/** Declarative logical structure interpreted by document comparison. */
+export type SchemaElementStructure =
+  | Readonly<{
+      kind: 'grid';
+      /** Cell column-span property. Only valid for the `cell` role. */
+      columnSpan?: string;
+      role: 'cell' | 'grid' | 'row';
+      /** Cell row-span property. Only valid for the `cell` role. */
+      rowSpan?: string;
+    }>
+  | Readonly<{
+      /** Element property containing the logical nesting depth. */
+      depth: string;
+      kind: 'list';
+      /** Optional element property identifying one logical list. */
+      membership?: string;
+    }>
+  | Readonly<{
+      kind: 'outline';
+      /** Element property containing the outline level. */
+      level: string;
+    }>;
+
 export type SchemaElementInput = Readonly<{
   atom?: boolean;
   content?: SchemaContent;
@@ -350,6 +373,7 @@ export type SchemaElementInput = Readonly<{
   readOnly?: boolean;
   selectable?: boolean;
   slice?: SchemaElementSlicePolicy;
+  structure?: SchemaElementStructure;
   void?: 'block' | 'inline' | 'markable-inline';
 }>;
 
@@ -378,6 +402,31 @@ export type EditorSchemaContentRoot = Readonly<{
   ownership: SchemaContentRootOwnership;
 }>;
 
+/** One compiled property identity used by a logical structure facet. */
+export type EditorSchemaStructureProperty = SchemaPropertyHandle<
+  string,
+  unknown,
+  'element'
+>;
+
+/** Immutable logical structure facts compiled for one element type. */
+export type EditorSchemaElementStructure =
+  | Readonly<{
+      columnSpan: EditorSchemaStructureProperty | null;
+      kind: 'grid';
+      role: 'cell' | 'grid' | 'row';
+      rowSpan: EditorSchemaStructureProperty | null;
+    }>
+  | Readonly<{
+      depth: EditorSchemaStructureProperty;
+      kind: 'list';
+      membership: EditorSchemaStructureProperty | null;
+    }>
+  | Readonly<{
+      kind: 'outline';
+      level: EditorSchemaStructureProperty;
+    }>;
+
 /** Immutable compiled element facts for one declared element type. */
 export type EditorSchemaElement = Readonly<{
   behavior: Readonly<{
@@ -399,6 +448,7 @@ export type EditorSchemaElement = Readonly<{
     preserveContext: boolean;
     replaceWhenCovered: boolean;
   }>;
+  structure: EditorSchemaElementStructure | null;
   type: string;
 }>;
 

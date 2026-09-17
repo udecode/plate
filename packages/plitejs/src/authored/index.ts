@@ -1,4 +1,8 @@
 export { authored, type AuthoredPlugin } from './authored';
+export {
+  proposeAuthoredComparison,
+  type AuthoredComparisonImportResult,
+} from './comparison';
 export { projectAuthoredRange } from '../core/authored-runtime';
 export {
   createAuthoredImportedRevisionChange,

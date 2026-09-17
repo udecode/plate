@@ -48,6 +48,19 @@ export const Index: Record<string, any> = {
     component: null,
     meta: undefined,
   },
+  "diff": {
+    name: "diff",
+    description: "Structural document comparison with evidence, diagnostics, filtering, navigation, and text granularity.",
+    type: "registry:component",
+    registryDependencies: ["button"],
+    files: [{
+      path: "src/registry/components/editor/diff.tsx",
+      type: "registry:component",
+      target: "@components/editor/diff.tsx"
+    }],
+    component: null,
+    meta: {"examples":["version-history-demo"]},
+  },
   "ai-menu": {
     name: "ai-menu",
     description: "A menu for AI-powered content generation and insertion.",
@@ -2438,7 +2451,7 @@ export const Index: Record<string, any> = {
     name: "version-history-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["button","https://platejs.org/r/basic-marks.json"],
+    registryDependencies: ["button","https://platejs.org/r/basic-marks.json","https://platejs.org/r/diff.json"],
     files: [{
       path: "src/registry/examples/version-history-demo.tsx",
       type: "registry:example",

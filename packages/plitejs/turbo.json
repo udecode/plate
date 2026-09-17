@@ -263,6 +263,7 @@
       "dependsOn": [
         "typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:diff",
         "typecheck:partition:history"
       ],
       "inputs": [
@@ -569,7 +570,7 @@
     },
     "typecheck:partition:authored": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
+      "dependsOn": ["typecheck:partition:core", "typecheck:partition:diff"],
       "inputs": [
         "src/authored/**",
         "!src/**/*.spec.*",

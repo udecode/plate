@@ -631,6 +631,7 @@ export const createEditorSchema = <V extends Value = Value>(
       groups: Object.freeze([...element.groups].sort()),
       propertyIds: Object.freeze([...element.propertyIds].sort()),
       slice: element.slice,
+      structure: element.structure,
       type,
     });
 

@@ -273,7 +273,7 @@ describe('schema declaration builders', () => {
       typeChange: 'preserve-if-allowed',
     });
     const Suggestions = schema.textProperty(
-      schema.key.prefix('suggestion_'),
+      schema.key.prefix('metadata_'),
       property.json()
     );
 
@@ -298,7 +298,7 @@ describe('schema declaration builders', () => {
     assert.equal(Indent.target.kind, 'group');
     assert.deepEqual(Suggestions.key, {
       kind: 'prefix',
-      prefix: 'suggestion_',
+      prefix: 'metadata_',
     });
     assert.equal(Object.isFrozen(Suggestions.key), true);
     assert.equal(

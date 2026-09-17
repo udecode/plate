@@ -1,9 +1,9 @@
 ---
 title: 版本历史
-description: 按作者保留已接受 change，并选择性 revert 一个贡献。
+description: 保留作者历史，并比较保存的文档版本。
 ---
 
-此示例安装原生 authored changes，并启用 `retainHistory: true`。以 Alice 或 Bob 身份编辑，然后 revert 一个已接受贡献，同时保留另一位作者的独立工作。
+此示例安装原生 authored changes，并启用 `retainHistory: true`。以 Alice 或 Bob 身份编辑、revert 一个已接受贡献，或保存两个版本以查看结构比较。
 
 ## 示例
 
@@ -21,6 +21,8 @@ description: 按作者保留已接受 change，并选择性 revert 一个贡献�
 | `authorId` callback | 应用 | 每个 transaction 解析一次当前选择的已认证作者。 |
 | `read.authored.changes(...)` | 原生 authored read | 以分页 `AuthoredChange` record 返回已接受历史。 |
 | `update.authored.revert(...)` | 原生 authored update | 为选中的 retained change 创建补偿贡献。 |
+| `compare(...)` | `platejs/diff` | 比较两个不可变的已保存版本，不修改 editor。 |
+| `Diff` | 复制的 Plate UI | 显示比较分组、效果、筛选和导航。 |
 | `BasicMarksKit` | 复制的 Plate UI | 为可编辑文档提供普通富文本 mark。 |
 
 ## Retained history 流程
@@ -33,6 +35,10 @@ description: 按作者保留已接受 change，并选择性 revert 一个贡献�
 6. 新的补偿 change 归属于当前作者；原 record 保持不变。
 
 后续依赖工作可能让 revert 返回 `blocked`；所需保留内容过期时返回 `unavailable`。本地 undo 和 redo 仍属于独立的交互历史。接受或拒绝 pending review proposal 时使用原生 `decide(...)`。
+
+## 比较保存的版本
+
+演示会先捕获初始快照。编辑文档后点击 **Save revision**，即可比较最近两个快照。再次保存会开始新的比较，并取消过时的比较。比较结果只供读取。如需将通过校验的比较结果转成待审 proposal，使用 [`proposeAuthoredComparison(...)`](/docs/authored-changes)。
 
 ## 持久化历史
 

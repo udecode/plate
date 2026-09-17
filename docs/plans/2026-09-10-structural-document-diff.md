@@ -1,12 +1,12 @@
 # Structural document comparison after native authored changes
 
-**Final implementation specification.** The design and bounded planning probes are complete. Implementation follows the prerequisite and S0-S6 below; production acceptance requires all 43 families. This handoff does not mark any implementation slice complete.
+**Execution in progress.** The design and bounded planning probes are complete. The native authored prerequisite is implemented on `next`; Structural Diff implementation follows S0-S6 below. Production acceptance still requires all 43 families. The current source and proof status is recorded below, rather than inferred from the planning probes.
 
 ## Execution contract
 
 Build one structural comparison engine for saved revisions, imported drafts, Suggestions and three-way review. Preserve exact document content, meaningful continuity and every branch contribution. The accepted target is ordinary schema-valid JSON plus immutable comparison results, composable effects, canonical DocumentChange operations and the existing native authored/position owners.
 
-The first dependency is [native authored changes and Suggestions](2026-09-10-native-authored-changes-and-suggestions.md). Its current status is a completed plan with product implementation not started. Complete its S1-S8 and all 32 production families before this plan's S0. A planning checklist, prototype receipt or plan-checker pass cannot satisfy that prerequisite. If execution begins after another task completes it, verify the final source and production receipts instead of repeating its implementation.
+The first dependency is [native authored changes and Suggestions](2026-09-10-native-authored-changes-and-suggestions.md). Its S1-S8 implementation exists on the current `next` base. S0 must verify that source and its production receipts against the final integration instead of repeating its implementation. A planning checklist, prototype receipt or plan-checker pass cannot satisfy the prerequisite.
 
 The implementation boundaries are fixed:
 
@@ -15,7 +15,20 @@ The implementation boundaries are fixed:
 - Plate owns comparison/review presentation and the existing Suggestions, AI, version-history and Discussion consumers. Comments retains conversations and durable anchors.
 - Delete the annotated-node diff protocol and redundant managers. Comparison never becomes a second document store, review engine, position system or required service.
 
-No product or Git publication is performed by this planning handoff. Once execution is authorized, work in the current checkout through the complete local implementation and proof sequence. Record source fingerprints and actual evidence at every slice exit. A failed native invariant reopens its owning decision; no compatibility layer or suppressed proof may substitute for the required behavior.
+The planning handoff itself did not authorize publication; subsequent task work authorized implementation and Git delivery. Record source fingerprints and actual evidence at every slice exit. A failed native invariant reopens its owning decision; no compatibility layer or suppressed proof may substitute for the required behavior.
+
+## Current implementation checkpoint
+
+| Slice | Current source and proof | Remaining closure |
+| --- | --- | --- |
+| S0-S1 | The native authored prerequisite is present; its focused partition reports 373 passing tests. Schema structure facets and immutable comparison snapshots typecheck. | Rebind prerequisite receipts to the final pushed source. |
+| S2 | `plitejs/diff` compares schema-valid revisions and publishes canonical changes, correspondence, effects and diagnostics. The diff partition reports 49 passing tests. The registered production comparison benchmark meets its frozen headless budgets. | Keep the final source and benchmark fingerprints aligned. |
+| S3 | `proposeAuthoredComparison` creates a native pending proposal from an accepted-baseline comparison. Five focused tests cover subset selection, stale state, idempotence after reload, accepted decisions and resolved three-way import. | Prove durable source/evidence attribution, proposed-baseline import, direct AI/import and transport cases required by F20-F26 and F34. |
+| S4 | Copied `Diff` UI, saved-revision example and docs are wired. Five component tests and the exact `/blocks/version-history-demo` Chromium save-and-compare interaction pass. | Close the remaining format, Comments/Discussion, IME/focus, memory and full 14-scenario presentation rows. |
+| S5 | Pure three-way comparison and resolution tests pass in the diff partition. | Close every native baseline, branch conflict, grid, peer and metamorphic family in F31-F43. |
+| S6 | `computeDiff`, fragment exclusion and the old Plate diff adapter are removed; registry, barrels and doctrine v199 are regenerated. | Run final broad gates and reconcile every required family before marking the plan complete. |
+
+This checkpoint does not mark S3-S6 or the 43-family acceptance matrix complete. The historical design and planning evidence below remain unchanged.
 
 Objective:
 
@@ -488,7 +501,7 @@ Results belong to their requesting consumer. No cache outlives its endpoints wit
 
 ## Execution sequence
 
-These gates belong to implementation. Current execution status: the prerequisite and S0-S6 are not complete. Each slice must carry its passing source-bound exit evidence before the next dependent slice starts. Foundation and matcher stages prove their owned behavior; UI/native consumer families close only after those consumers exist. The acceptance matrix assigns every family a completion slice, so later browser work cannot block an earlier matcher stage.
+These gates belong to implementation. Current execution status is in the checkpoint above. Each slice must carry its passing source-bound exit evidence before the next dependent slice starts. Foundation and matcher stages prove their owned behavior; UI/native consumer families close only after those consumers exist. The acceptance matrix assigns every family a completion slice, so later browser work cannot block an earlier matcher stage.
 
 | Slice | Owner | Entry | Work and exit |
 | --- | --- | --- | --- |

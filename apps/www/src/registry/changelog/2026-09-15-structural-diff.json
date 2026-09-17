@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-15-structural-diff",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-15-structural-diff.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-15",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Compare saved revisions structurally",
+  "targets": [
+    {
+      "name": "diff",
+      "files": ["apps/www/src/registry/components/editor/diff.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "version-history-demo",
+      "files": ["apps/www/src/registry/examples/version-history-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-15-diff-structural-document-comparison-53abcaef",
+      "kind": "new",
+      "summary": "Inspect two-way and three-way comparisons with grouped effects, evidence, conflict choices, filters, and navigation.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["diff"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-15",
+          "entry": "2026-09-15-structural-diff",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-15-structural-diff-2",
+      "kind": "behavior",
+      "summary": "Save document revisions and compare the two latest snapshots.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["version-history-demo"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-15",
+          "entry": "2026-09-15-structural-diff",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -2721,6 +2721,62 @@ export class RootChange {
     return new RootChange(sections, data);
   }
 
+  /** Invert a change that only inserts tokens without reading the document. */
+  invertInsertions() {
+    const sections: number[] = [];
+    const data: SectionData[] = [];
+
+    for (let index = 0; index < this.sections.length; index += 2) {
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
+
+      if (inserted === -1) {
+        addSection(sections, data, length, -1, null);
+        continue;
+      }
+      if (inserted < 0 || length !== 0) return null;
+      addSection(sections, data, inserted, 0, PreparedTokenSlice.empty);
+    }
+
+    return new RootChange(sections, data);
+  }
+
+  /** Resize only the unchanged trailing document region. */
+  resizeTrailingDocument(length: number) {
+    if (!Number.isSafeInteger(length) || length < 0) return null;
+    if (length === this.length) return this;
+    if (length > this.length) return this.embed(length, 0);
+    const sections: number[] = [];
+    const data: SectionData[] = [];
+    let position = 0;
+
+    for (let index = 0, dataIndex = 0; index < this.sections.length;) {
+      const sectionLength = this.sections[index];
+      const inserted = this.sections[index + 1];
+      const value = this.data[dataIndex];
+
+      index += 2;
+      dataIndex += 1;
+      if (inserted !== -1) {
+        if (position > length || position + sectionLength > length) {
+          return null;
+        }
+        addSection(sections, data, sectionLength, inserted, value);
+      } else if (position < length) {
+        addSection(
+          sections,
+          data,
+          Math.min(sectionLength, length - position),
+          -1,
+          null
+        );
+      }
+      position += sectionLength;
+    }
+
+    return new RootChange(sections, data);
+  }
+
   invert(document: DocumentIndex) {
     if (document.length !== this.length) {
       throw new Error('Cannot invert against a mismatched document.');

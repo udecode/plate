@@ -199,6 +199,13 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   directly; opening a document never rebuilds them by reducing retained
   operations or replaying pending edits. Checksum-bound retained operation
   bodies stay cold until a decision or history read needs their content.
+- Structural comparison reads fixed, schema-valid revisions without installing
+  editor state. It returns immutable span correspondence, grouped effects,
+  diagnostics, and a canonical `DocumentChange`; three-way resolution keeps
+  every branch contribution and requires explicit choices for conflicts.
+  Comparison presentation stays read-only. An explicit authored import checks
+  the exact live baseline and frontier before publishing one native proposal,
+  so comparison does not become another review or position system.
 - `NodeSelection` stores canonical exact membership as `paths`, directional
   `anchorPath` and `focusPath`, and an optional explicit root. Mapping,
   persistence, history, marks, slices, and collaboration preserve that state.

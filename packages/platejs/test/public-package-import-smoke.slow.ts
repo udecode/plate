@@ -121,6 +121,7 @@ const exactPublicPackageRuntimeExportExpectations = {
     'createAuthoredReviewDocument',
     'deserializeAuthoredJson',
     'projectAuthoredRange',
+    'proposeAuthoredComparison',
     'readAuthoredFormatSnapshot',
     'serializeAuthoredJson',
   ],
@@ -283,14 +284,7 @@ const exactPublicPackageRuntimeExportExpectations = {
     'writeHostFragmentData',
   ],
   'plitejs/history': ['History', 'history'],
-  'plitejs/diff': [
-    'computeDiff',
-    'defaultGetDeleteProps',
-    'defaultGetInsertProps',
-    'defaultGetUpdateProps',
-    'excludeDiffFragment',
-    'excludeDiffFromFragment',
-  ],
+  'plitejs/diff': ['compare', 'resolveComparison'],
   'plitejs/hyperscript': [
     'createEditor',
     'createEditorFixture',

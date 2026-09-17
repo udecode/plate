@@ -50,6 +50,7 @@ export const EDITOR_AI_OPTIONAL_PEER_NAMES = [
   '@excalidraw/excalidraw',
   '@types/papaparse',
   'ai',
+  'diff-match-patch-ts',
   'fastest-levenshtein',
   'flowchart.js',
   'juice',
@@ -74,7 +75,9 @@ export const EDITOR_BASIC_PACKAGE_ENTRYPOINTS = [
   'platejs/react',
 ] as const;
 
-export const EDITOR_BASIC_OPTIONAL_PEER_NAMES = [] as const;
+export const EDITOR_BASIC_OPTIONAL_PEER_NAMES = [
+  'diff-match-patch-ts',
+] as const;
 
 const optionalPeerVersions: Record<string, string> = {
   ...platejsPackage.peerDependencies,

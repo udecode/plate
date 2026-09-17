@@ -57,7 +57,26 @@ const result = editor.update.authored.decide({
 });
 ```
 
-向 `tx.authored.propose(...)` 传入 `{ changeId: id }`，可以修订当前作者拥有的逻辑 change。决定是原子化且绑定快照的。展示批量决定前调用 `read.authored.preview(...)`，并处理每种 `AuthoredResult` 状态。
+向 `tx.authored.propose(...)` 传入 `{ changeId: id }`，可以指定新 change 的 identity，或修订当前作者拥有的 pending change。决定是原子化且绑定快照的。展示批量决定前调用 `read.authored.preview(...)`，并处理每种 `AuthoredResult` 状态。
+
+## 导入比较结果
+
+```tsx
+import { proposeAuthoredComparison } from 'plitejs/authored';
+import { compare } from 'plitejs/diff';
+
+const incomingDraft = [
+  { type: 'paragraph', children: [{ text: '修订后的句子。' }] },
+];
+const comparison = await compare({
+  before: editor.read.value(),
+  after: incomingDraft,
+  schema: editor.read.schema,
+});
+const result = proposeAuthoredComparison(editor, { comparison });
+```
+
+导入前会检查已接受基线、schema、authored frontier 和选中的分组，再创建一个原生 pending proposal。传入 `groupIds` 可选择依赖闭合的子集。结果把比较分组映射到 authored change ID。若三方比较的决议基线与当前已接受文档一致，也可以用同一路径导入。
 
 ## 查询 change
 

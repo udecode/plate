@@ -867,7 +867,10 @@
             "isUrl": "/docs/api/utils",
             "sanitizeUrl": "/docs/api/utils",
             "setDebugValueScrubber": "/docs/debugging#scrubbing-values",
-            "BlockInsertOptions": "/docs/api/core#plateblockinsertoptions"
+            "BlockInsertOptions": "/docs/api/core#plateblockinsertoptions",
+            "EditorSchemaElementStructure": "/docs/api/core",
+            "EditorSchemaStructureProperty": "/docs/api/core",
+            "SchemaElementStructure": "/docs/api/core"
           }
         },
         "./callout": {

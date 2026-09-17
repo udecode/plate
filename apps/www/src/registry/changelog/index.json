@@ -2,6 +2,42 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-15-structural-diff",
+      "href": "/registry/changelog/2026-09-15-structural-diff.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Compare saved revisions structurally",
+      "change": {
+        "type": "source",
+        "date": "2026-09-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["diff", "version-history-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-14-collaboration-plugin-factory",
+      "href": "/registry/changelog/2026-09-14-collaboration-plugin-factory.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Create provider-bound collaboration descriptors through one reusable plugin factory",
+      "change": {
+        "type": "source",
+        "date": "2026-09-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["remote-cursor-overlay", "collaboration-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-14-fix-comments-selection-visibility",
       "href": "/registry/changelog/2026-09-14-fix-comments-selection-visibility.json",
       "status": "draft",
@@ -16,6 +52,161 @@
         "status": "unresolved"
       },
       "targets": ["discussion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-14-suggestion-author-colors",
+      "href": "/registry/changelog/2026-09-14-suggestion-author-colors.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Distinguish suggestion authors by color",
+      "change": {
+        "type": "source",
+        "date": "2026-09-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["suggestion", "suggestion-style"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-14-suggestion-content-attributes",
+      "href": "/registry/changelog/2026-09-14-suggestion-content-attributes.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Keep suggestion styling with its optional kit",
+      "change": {
+        "type": "source",
+        "date": "2026-09-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["suggestion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-13-rename-html-export-files",
+      "href": "/registry/changelog/2026-09-13-rename-html-export-files.json",
+      "status": "draft",
+      "kind": "rename",
+      "summary": "Use semantic HTML export and API component filenames",
+      "change": {
+        "type": "source",
+        "date": "2026-09-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["html-export", "fumadocs"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-13-rename-rich-text-editor",
+      "href": "/registry/changelog/2026-09-13-rename-rich-text-editor.json",
+      "status": "draft",
+      "kind": "rename",
+      "summary": "Use the rich text editor filename for complete editor blocks",
+      "change": {
+        "type": "source",
+        "date": "2026-09-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor-ai", "editor-basic"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-13-suggestion-examples",
+      "href": "/registry/changelog/2026-09-13-suggestion-examples.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Explore formatting, projections, and saved proposals in the Suggestions examples",
+      "change": {
+        "type": "source",
+        "date": "2026-09-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "suggestion-format-demo",
+        "suggestion-view-demo",
+        "suggestion-persistence-demo",
+        "suggestion",
+        "editor-ai"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-13-suggestion-package-behavior",
+      "href": "/registry/changelog/2026-09-13-suggestion-package-behavior.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Compose suggestion controls and review cards from reusable suggestion APIs",
+      "change": {
+        "type": "source",
+        "date": "2026-09-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "suggestion",
+        "discussion",
+        "mode-toolbar-button",
+        "suggestion-toolbar-button"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-12-suggestions-docs-demo",
+      "href": "/registry/changelog/2026-09-12-suggestions-docs-demo.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Review proposed insertions and deletions in the Suggestions demo",
+      "change": {
+        "type": "source",
+        "date": "2026-09-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["suggestion-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-11-codemirror-selection",
+      "href": "/registry/changelog/2026-09-11-codemirror-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep CodeMirror keyboard selection aligned with text edits",
+      "change": {
+        "type": "source",
+        "date": "2026-09-11",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block-codemirror"],
       "entries": 1,
       "diagnostics": []
     },

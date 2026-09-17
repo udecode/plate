@@ -82,7 +82,28 @@ editor.update((tx) => {
 });
 ```
 
-传入 `{ changeId }` 可以修订当前作者拥有的待处理贡献。当前作者必须拥有该 change 的最新 head。
+传入 `{ changeId }` 可以为新 proposal 指定身份，或修订当前作者拥有的待处理贡献。若该 change 已存在，当前作者必须拥有其最新 head。
+
+## 导入比较后的版本
+
+先将固定草稿与已接受文档比较，再把规范变更发布为一个原生 proposal：
+
+```tsx
+import { proposeAuthoredComparison } from "platejs/authored";
+import { compare } from "platejs/diff";
+
+const incomingDraft = [
+  { type: "paragraph", children: [{ text: "修订后的句子。" }] },
+];
+const comparison = await compare({
+  before: editor.read.value(),
+  after: incomingDraft,
+  schema: editor.read.schema,
+});
+const imported = proposeAuthoredComparison(editor, { comparison });
+```
+
+`groupIds` 可选择比较分组，并自动包含必要依赖。结果把选中的分组 ID 映射到原生 change ID。导入前会检查 schema、已接受内容和 authored frontier；遇到 `stale`、`blocked`、`invalid` 或 `unavailable` 时，不要当作已发布。三方比较完成决议后，只要选中的基线就是当前已接受文档，也可使用同一调用。
 
 在常用产品流程中，让 `SuggestionPlugin` 将 `'editing'` 映射到 accepted editing，将 `'suggesting'` 映射到 markup proposing：
 
@@ -301,7 +322,7 @@ Yjs adapter 在一个 remote transaction 中应用 authored operation 和决定�
 
 | 接口                                      | 用途                                                               |
 | ----------------------------------------- | ------------------------------------------------------------------ |
-| `tx.authored.propose(options?)`           | 开始 proposal，或传入 `{ changeId }` 修订当前作者的待处理 change。 |
+| `tx.authored.propose(options?)`           | 开始 proposal、为新 proposal 指定 `{ changeId }`，或修订当前作者的待处理 change。 |
 | `authored.read.view()`                    | 读取当前 view 的 intent 和 projection。                            |
 | `authored.read.change(id)`                | 读取一个逻辑 change；不存在时返回 `null`。                         |
 | `authored.read.details(id)`               | 读取一条 change 的语义 part 和决定历史；不存在时返回 `null`。      |

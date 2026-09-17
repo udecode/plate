@@ -82,7 +82,28 @@ editor.update((tx) => {
 });
 ```
 
-Pass `{ changeId }` to amend a pending contribution owned by the current author. The current author must own its latest head.
+Pass `{ changeId }` to assign an identity to a new proposal or amend a pending contribution owned by the current author. The current author must own an existing change's latest head.
+
+## Import a compared revision
+
+Compare a fixed draft with the accepted document, then publish its canonical change as one native proposal:
+
+```tsx
+import { proposeAuthoredComparison } from "platejs/authored";
+import { compare } from "platejs/diff";
+
+const incomingDraft = [
+  { type: "paragraph", children: [{ text: "Revised sentence." }] },
+];
+const comparison = await compare({
+  before: editor.read.value(),
+  after: incomingDraft,
+  schema: editor.read.schema,
+});
+const imported = proposeAuthoredComparison(editor, { comparison });
+```
+
+`groupIds` selects comparison groups and includes their required dependencies. The result maps selected group IDs to the native change ID. Import checks the schema, accepted content, and authored frontier before writing; handle `stale`, `blocked`, `invalid`, and `unavailable` without treating them as applied proposals. A resolved three-way comparison can use the same call when its selected baseline is the live accepted document.
 
 ## Configure a view
 
@@ -328,7 +349,7 @@ After `const authored = editor.plugin(DefaultAuthoredPlugin)`, use these methods
 
 | Surface                                   | Purpose                                                                            |
 | ----------------------------------------- | ---------------------------------------------------------------------------------- |
-| `tx.authored.propose(options?)`           | Start a proposal or pass `{ changeId }` to amend an owned pending change.          |
+| `tx.authored.propose(options?)`           | Start a proposal, assign a new `{ changeId }`, or amend an owned pending change.   |
 | `authored.read.view()`                    | Read this view's intent and projection.                                            |
 | `authored.read.change(id)`                | Read one logical change, or `null`.                                                |
 | `authored.read.details(id)`               | Read one change with semantic parts and decision history, or `null`.               |

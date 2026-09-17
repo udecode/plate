@@ -3075,9 +3075,8 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
               identity
             );
             if (
-              !change ||
-              change.status !== 'pending' ||
-              change.authorId !== authorId
+              change &&
+              (change.status !== 'pending' || change.authorId !== authorId)
             ) {
               throw new Error(
                 'Only the original author may amend a pending change.'

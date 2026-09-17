@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 198,
+  "latestVersion": 199,
   "versions": [
     {
       "version": 0,
@@ -2303,6 +2303,17 @@
         "Keep retained source bytes and correspondence outside editor documents, plugin state and generic persistence; make retention opt-in and conditionally typed.",
         "Acquire an immutable source lease before asynchronous conversion, expose idempotent disposal, and pass the artifact explicitly to its consuming operation.",
         "Require exact schema and semantic equality for byte reuse; regenerate owned output after edits, preserve only safe independently reachable source units, and diagnose every deliberate fallback."
+      ]
+    },
+    {
+      "version": 199,
+      "date": "2026-09-17",
+      "doctrineFingerprint": "sha256:0c6f8a8bbb889e8da4e1788265dcb2de45044b2bb1956c54e29e397a787f7e01",
+      "summary": "Structural comparison remains an immutable read; native authored changes alone publish validated review proposals.",
+      "migrationChecks": [
+        "Replace annotated-node diff protocols with immutable schema-valid comparison results and canonical DocumentChange output.",
+        "Resolve three-way conflicts from one comparison without rematching the original revisions or creating another review store.",
+        "Validate the live schema, accepted baseline, and authored frontier before importing selected comparison groups as one native proposal."
       ]
     }
   ],

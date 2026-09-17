@@ -368,7 +368,7 @@ export const examples: Registry['items'] = [
       },
     ],
     name: 'version-history-demo',
-    registryDependencies: ['button', '@plate/basic-marks'],
+    registryDependencies: ['button', '@plate/basic-marks', '@plate/diff'],
     type: 'registry:example',
   },
   {

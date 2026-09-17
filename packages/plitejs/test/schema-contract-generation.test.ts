@@ -23,8 +23,10 @@ describe('generated editor schema contract', () => {
       paragraph: {
         content: schema.content.text({ default: 'text', min: 1 }),
         properties: {
+          level: property.number(),
           token: property.string({ generate: () => 'token' }),
         },
+        structure: { kind: 'outline', level: 'level' },
       },
       section: {
         content: schema.content.type('paragraph', {
@@ -55,6 +57,7 @@ describe('generated editor schema contract', () => {
     const restored = restoreEditorSchemaContract(parsed, records);
 
     assert.equal(contract.fingerprint, compiled.identity.fingerprint);
+    assert.equal(contract.elements.byType[0]?.structure?.kind, 'outline');
     assert.deepEqual(createEditorSchemaContract(restored), contract);
     assert.equal(JSON.stringify(createEditorSchemaContract(restored)), json);
   });

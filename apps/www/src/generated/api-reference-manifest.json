@@ -3158,7 +3158,7 @@
           "name": "EditorSchemaContractElement",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaContractElement = Readonly<{\n  behavior: CompiledSchemaElementBehavior;\n  content: EditorSchemaContractContentProgram | null;\n  contentRoots: ReadonlyArray<EditorSchemaContractEntry<EditorSchemaContractContentRoot>>;\n  construction: Readonly<{\n    materializedPropertyIds: readonly string[];\n    propertyIds: readonly string[];\n  }>;\n  groups: readonly string[];\n  propertyIds: readonly string[];\n  slice: CompiledSchemaElement['slice'];\n  type: string;\n}>;",
+          "signature": "type EditorSchemaContractElement = Readonly<{\n  behavior: CompiledSchemaElementBehavior;\n  content: EditorSchemaContractContentProgram | null;\n  contentRoots: ReadonlyArray<EditorSchemaContractEntry<EditorSchemaContractContentRoot>>;\n  construction: Readonly<{\n    materializedPropertyIds: readonly string[];\n    propertyIds: readonly string[];\n  }>;\n  groups: readonly string[];\n  propertyIds: readonly string[];\n  slice: CompiledSchemaElement['slice'];\n  structure?: EditorSchemaElementStructure;\n  type: string;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -3261,7 +3261,7 @@
           "name": "EditorSchemaElement",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaElement = Readonly<{\n  behavior: Readonly<{\n    atom: boolean;\n    inline: boolean;\n    isolating: boolean;\n    keyboardSelectable: boolean;\n    markableVoid: boolean;\n    readOnly: boolean;\n    selectable: boolean;\n    void: boolean;\n    voidKind: SchemaElement['void'] | null;\n  }>;\n  content: EditorSchemaContent | null;\n  contentRoots: Readonly<Record<string, EditorSchemaContentRoot>>;\n  groups: readonly string[];\n  propertyIds: readonly string[];\n  slice: Readonly<{\n    preserveContext: boolean;\n    replaceWhenCovered: boolean;\n  }>;\n  type: string;\n}>;",
+          "signature": "type EditorSchemaElement = Readonly<{\n  behavior: Readonly<{\n    atom: boolean;\n    inline: boolean;\n    isolating: boolean;\n    keyboardSelectable: boolean;\n    markableVoid: boolean;\n    readOnly: boolean;\n    selectable: boolean;\n    void: boolean;\n    voidKind: SchemaElement['void'] | null;\n  }>;\n  content: EditorSchemaContent | null;\n  contentRoots: Readonly<Record<string, EditorSchemaContentRoot>>;\n  groups: readonly string[];\n  propertyIds: readonly string[];\n  slice: Readonly<{\n    preserveContext: boolean;\n    replaceWhenCovered: boolean;\n  }>;\n  structure: EditorSchemaElementStructure | null;\n  type: string;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -3286,6 +3286,18 @@
           "route": null,
           "runtime": false,
           "signature": "type EditorSchemaElementOverrideInput = Readonly<{\n  content?: SchemaContent;\n  groups?: readonly string[];\n  type?: string;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:EditorSchemaElementStructure": {
+          "aliases": [],
+          "documentation": "Immutable logical structure facts compiled for one element type.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorSchemaElementStructure",
+          "route": "/docs/api/core",
+          "runtime": false,
+          "signature": "type EditorSchemaElementStructure = Readonly<{\n  columnSpan: EditorSchemaStructureProperty | null;\n  kind: 'grid';\n  role: 'cell' | 'grid' | 'row';\n  rowSpan: EditorSchemaStructureProperty | null;\n}> | Readonly<{\n  depth: EditorSchemaStructureProperty;\n  kind: 'list';\n  membership: EditorSchemaStructureProperty | null;\n}> | Readonly<{\n  kind: 'outline';\n  level: EditorSchemaStructureProperty;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -3485,6 +3497,18 @@
           "typeParameters": [
             "TDeclarationFactory extends () => EditorSchemaDeclaration = () => EditorSchemaDeclaration"
           ]
+        },
+        "platejs:EditorSchemaStructureProperty": {
+          "aliases": [],
+          "documentation": "One compiled property identity used by a logical structure facet.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorSchemaStructureProperty",
+          "route": "/docs/api/core",
+          "runtime": false,
+          "signature": "type EditorSchemaStructureProperty = SchemaPropertyHandle<string, unknown, 'element'>;",
+          "source": null,
+          "typeParameters": []
         },
         "platejs:EditorSchemaUnknownPolicy": {
           "aliases": [],
@@ -9280,7 +9304,7 @@
           "name": "SchemaElementInput",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaElementInput = Readonly<{\n  atom?: boolean;\n  content?: SchemaContent;\n  /** Projected named-root grammars keyed by the element's `childRoots` slot. */\n  contentRoots?: Readonly<Record<string, SchemaContentRootInput>>;\n  /** Explicit product groups. Structural groups are compiler-derived. */\n  groups?: readonly string[];\n  inline?: boolean;\n  isolating?: boolean;\n  keyboardSelectable?: boolean;\n  markableVoid?: boolean;\n  properties?: SchemaElementProperties;\n  readOnly?: boolean;\n  selectable?: boolean;\n  slice?: SchemaElementSlicePolicy;\n  void?: 'block' | 'inline' | 'markable-inline';\n}>;",
+          "signature": "type SchemaElementInput = Readonly<{\n  atom?: boolean;\n  content?: SchemaContent;\n  /** Projected named-root grammars keyed by the element's `childRoots` slot. */\n  contentRoots?: Readonly<Record<string, SchemaContentRootInput>>;\n  /** Explicit product groups. Structural groups are compiler-derived. */\n  groups?: readonly string[];\n  inline?: boolean;\n  isolating?: boolean;\n  keyboardSelectable?: boolean;\n  markableVoid?: boolean;\n  properties?: SchemaElementProperties;\n  readOnly?: boolean;\n  selectable?: boolean;\n  slice?: SchemaElementSlicePolicy;\n  structure?: SchemaElementStructure;\n  void?: 'block' | 'inline' | 'markable-inline';\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -9409,6 +9433,18 @@
           "route": null,
           "runtime": false,
           "signature": "type SchemaElementSlicePolicy = Readonly<{\n  preserveContext?: boolean;\n  replaceWhenCovered?: boolean;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:SchemaElementStructure": {
+          "aliases": [],
+          "documentation": "Declarative logical structure interpreted by document comparison.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "SchemaElementStructure",
+          "route": "/docs/api/core",
+          "runtime": false,
+          "signature": "type SchemaElementStructure = Readonly<{\n  kind: 'grid';\n  /** Cell column-span property. Only valid for the `cell` role. */\n  columnSpan?: string;\n  role: 'cell' | 'grid' | 'row';\n  /** Cell row-span property. Only valid for the `cell` role. */\n  rowSpan?: string;\n}> | Readonly<{\n  /** Element property containing the logical nesting depth. */\n  depth: string;\n  kind: 'list';\n  /** Optional element property identifying one logical list. */\n  membership?: string;\n}> | Readonly<{\n  kind: 'outline';\n  /** Element property containing the outline level. */\n  level: string;\n}>;",
           "source": null,
           "typeParameters": []
         },

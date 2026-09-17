@@ -1,8 +1,38 @@
 {
   "schemaVersion": 1,
   "components": {
+    "diff": ["2026-09-15-structural-diff"],
+    "version-history-demo": [
+      "2026-09-15-structural-diff",
+      "2026-08-31-inline-component-props",
+      "2026-08-20-format-version-history-values",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-12-canonical-node-props",
+      "2025-11-20-biome-ultracite"
+    ],
+    "remote-cursor-overlay": [
+      "2026-09-14-collaboration-plugin-factory",
+      "2026-09-04-yjs-cursor-presentation",
+      "2026-09-01-plugin-decoration-highlights",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-24-collaboration-runtime",
+      "2025-11-20-biome-ultracite"
+    ],
+    "collaboration-demo": [
+      "2026-09-14-collaboration-plugin-factory",
+      "2026-09-04-yjs-cursor-presentation",
+      "2026-09-01-plugin-decoration-highlights",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-transient-editor-geometry",
+      "2026-07-26-plugin-store-state",
+      "2026-07-24-collaboration-runtime",
+      "2025-11-20-biome-ultracite"
+    ],
     "discussion": [
       "2026-09-14-fix-comments-selection-visibility",
+      "2026-09-13-suggestion-package-behavior",
       "2026-09-10-discussion-focus-touch",
       "2026-09-08-keyboard-dismissal",
       "2026-09-08-suggestion-reviews",
@@ -10,6 +40,72 @@
       "2026-09-03-fix-comment-anchor-history",
       "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry"
+    ],
+    "suggestion": [
+      "2026-09-14-suggestion-author-colors",
+      "2026-09-14-suggestion-content-attributes",
+      "2026-09-13-suggestion-examples",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-02-comments-ownership",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-30-fix-annotation-hover-scroll",
+      "2026-08-17-flat-editor-registry",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions"
+    ],
+    "suggestion-style": [
+      "2026-09-14-suggestion-author-colors",
+      "2026-08-25-base-first-registry"
+    ],
+    "html-export": ["2026-09-13-rename-html-export-files"],
+    "fumadocs": [
+      "2026-09-13-rename-html-export-files",
+      "2026-08-25-base-first-registry"
+    ],
+    "editor-ai": [
+      "2026-09-13-rename-rich-text-editor",
+      "2026-09-13-suggestion-examples",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-09-02-comments-ownership",
+      "2026-08-28-rename-plate-editor",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-14-author-editor-runtime",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-13-use-runtime-keys-for-toc-docx",
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-24-decouple-suggestion-trailing-block",
+      "2026-03-28-render-url-videos-media-node"
+    ],
+    "editor-basic": [
+      "2026-09-13-rename-rich-text-editor",
+      "2026-08-28-rename-plate-editor",
+      "2026-08-25-base-first-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-03-28-render-url-videos-media-node"
+    ],
+    "suggestion-format-demo": ["2026-09-13-suggestion-examples"],
+    "suggestion-view-demo": ["2026-09-13-suggestion-examples"],
+    "suggestion-persistence-demo": ["2026-09-13-suggestion-examples"],
+    "mode-toolbar-button": [
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-08-toolbar-control-values",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
+    "suggestion-toolbar-button": [
+      "2026-09-13-suggestion-package-behavior",
+      "2026-08-17-flat-editor-registry",
+      "2026-07-26-plugin-store-state"
+    ],
+    "suggestion-demo": ["2026-09-12-suggestions-docs-demo"],
+    "code-block-codemirror": [
+      "2026-09-11-codemirror-selection",
+      "2026-09-08-codemirror-adapter",
+      "2026-09-04-code-block-editing-and-syntax",
+      "2026-09-03-huge-code-block-demo"
     ],
     "ai-menu": [
       "2026-09-10-ai-menu-focus",
@@ -149,11 +245,6 @@
       "2026-04-23-redesign-blockquotes-container-blocks",
       "2026-01-28-add-code-drawing-node",
       "2025-11-20-biome-ultracite"
-    ],
-    "code-block-codemirror": [
-      "2026-09-08-codemirror-adapter",
-      "2026-09-04-code-block-editing-and-syntax",
-      "2026-09-03-huge-code-block-demo"
     ],
     "dnd": [
       "2026-09-08-drag-preparation",
@@ -316,25 +407,9 @@
       "2026-09-08-multi-editor-toolbar",
       "2026-08-17-flat-editor-registry"
     ],
-    "suggestion": [
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-02-comments-ownership",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-30-fix-annotation-hover-scroll",
-      "2026-08-17-flat-editor-registry",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions"
-    ],
     "suggestion-static": [
       "2026-09-08-suggestion-reviews",
       "2026-08-17-flat-editor-registry"
-    ],
-    "mode-toolbar-button": [
-      "2026-09-08-toolbar-control-values",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
     ],
     "docx": ["2026-09-07-docx-bookmarks", "2026-08-17-flat-editor-registry"],
     "docx-export": [
@@ -464,18 +539,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-26-plugin-store-state"
     ],
-    "editor-ai": [
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-09-02-comments-ownership",
-      "2026-08-28-rename-plate-editor",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-14-author-editor-runtime",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-13-use-runtime-keys-for-toc-docx",
-      "2026-07-24-compose-markdown-footnotes",
-      "2026-07-24-decouple-suggestion-trailing-block",
-      "2026-03-28-render-url-videos-media-node"
-    ],
     "editor-plugins": [
       "2026-09-05-editor-feature-lifetimes",
       "2026-08-31-transient-editor-geometry",
@@ -496,24 +559,6 @@
     ],
     "code-block-codemirror-demo": ["2026-09-04-code-block-editing-and-syntax"],
     "code-block-views-demo": ["2026-09-04-code-block-editing-and-syntax"],
-    "remote-cursor-overlay": [
-      "2026-09-04-yjs-cursor-presentation",
-      "2026-09-01-plugin-decoration-highlights",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-24-collaboration-runtime",
-      "2025-11-20-biome-ultracite"
-    ],
-    "collaboration-demo": [
-      "2026-09-04-yjs-cursor-presentation",
-      "2026-09-01-plugin-decoration-highlights",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-transient-editor-geometry",
-      "2026-07-26-plugin-store-state",
-      "2026-07-24-collaboration-runtime",
-      "2025-11-20-biome-ultracite"
-    ],
     "code-block-static": [
       "2026-09-03-code-block-text-flow",
       "2026-09-02-comments-ownership",
@@ -593,13 +638,6 @@
       "2025-11-20-biome-ultracite"
     ],
     "select-command": ["2026-08-31-inline-component-props"],
-    "version-history-demo": [
-      "2026-08-31-inline-component-props",
-      "2026-08-20-format-version-history-values",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-12-canonical-node-props",
-      "2025-11-20-biome-ultracite"
-    ],
     "caption": [
       "2026-08-31-stabilize-hidden-media-captions",
       "2026-08-17-flat-editor-registry",
@@ -645,12 +683,6 @@
       "2025-11-20-biome-ultracite"
     ],
     "expect-defined": ["2026-08-28-inline-required-value-checks"],
-    "editor-basic": [
-      "2026-08-28-rename-plate-editor",
-      "2026-08-25-base-first-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-03-28-render-url-videos-media-node"
-    ],
     "column": [
       "2026-08-27-self-contained-editor-utilities",
       "2026-08-24-react-compiler-owned-editor-state",
@@ -698,8 +730,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-01-28-add-code-drawing-node"
     ],
-    "fumadocs": ["2026-08-25-base-first-registry"],
-    "suggestion-style": ["2026-08-25-base-first-registry"],
     "tag": [
       "2026-08-24-fix-tag-link-install",
       "2026-08-17-flat-editor-registry"
@@ -861,10 +891,6 @@
     "toggle-toolbar-button": [
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
-    ],
-    "suggestion-toolbar-button": [
-      "2026-08-17-flat-editor-registry",
-      "2026-07-26-plugin-store-state"
     ],
     "blockquote": ["2026-08-17-flat-editor-registry"],
     "blockquote-static": ["2026-08-17-flat-editor-registry"],

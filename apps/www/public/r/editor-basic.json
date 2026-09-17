@@ -2,7 +2,9 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "editor-basic",
   "description": "A basic editor",
-  "dependencies": [],
+  "dependencies": [
+    "diff-match-patch-ts@^0.6.0"
+  ],
   "registryDependencies": [
     "https://platejs.org/r/plate-ui.json",
     "https://platejs.org/r/editor.json",

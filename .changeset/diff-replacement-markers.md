@@ -2,25 +2,6 @@
 'plitejs': major
 ---
 
-Keep inserted and deleted replacement markers on their exact text ranges. Preserve exact formatting boundaries and JSON-compatible property removals in derived diff spans.
+Compare schema-valid document revisions with `compare`, then resolve three-way conflicts with `resolveComparison`. Results keep exact canonical changes, content correspondence, grouped effects, and explicit diagnostics. Use `proposeAuthoredComparison` to publish a validated result as one native pending proposal.
 
-Use `excludeDiffFromFragment` for direct fragment cleanup. `BaseDiffPlugin` registers copied-fragment cleanup through its root `readMiddleware`.
-
-Install `diff-match-patch-ts` when importing `plitejs/diff` or `platejs/diff`.
-
-Install the behavior through the plugin:
-
-```tsx
-definePlugin('diff', {
-  readMiddleware: ({ around }) => [
-    around(editorReads.slice.export, ({ next }) => {
-      const slice = next();
-
-      return {
-        ...slice,
-        content: excludeDiffFromFragment(slice.content),
-      };
-    }),
-  ],
-});
-```
+Install `diff-match-patch-ts` when importing `plitejs/diff`.

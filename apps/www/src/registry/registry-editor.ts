@@ -42,6 +42,19 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: ['platejs/diff'],
+    description:
+      'Structural document comparison with evidence, diagnostics, filtering, navigation, and text granularity.',
+    files: [{ path: 'components/editor/diff.tsx', type: 'registry:component' }],
+    meta: {
+      examples: ['version-history-demo'],
+    },
+    name: 'diff',
+    registryDependencies: ['button'],
+    title: 'Diff',
+    type: 'registry:component',
+  },
+  {
     dependencies: ['platejs', 'cmdk'],
     description: 'A menu for AI-powered content generation and insertion.',
     files: [

@@ -82,6 +82,38 @@
       }
     },
     {
+      "id": "plite-structural-compare",
+      "question": "Does immutable structural comparison preserve canonical results within the frozen normal, large, stress, duplicate-heavy, and three-way budgets?",
+      "owner": "plitejs/diff",
+      "family": "core-diff",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_STRUCTURAL_COMPARE_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-structural-compare-benchmark.ts --output=tmp/plite-structural-compare-benchmark.json",
+      "metrics": {
+        "primary": "plite_structural_compare_passed",
+        "direction": "higher",
+        "unit": "boolean",
+        "printsMetric": true,
+        "upgrade": "One warmup and seven samples per frozen two-way cohort, with three three-way samples. Public compare max must stay within 100/300/1500/1500 ms; three-way compare and clean resolve within 500/1500/6000/6000 ms. Candidate edges must not exceed 100000."
+      },
+      "correctness": {
+        "command": "pnpm --filter plitejs test:partition:diff && bun test packages/plitejs/test/authored-comparison-import.test.ts",
+        "policy": "Every comparison reconstructs and inverts exact document content; selected native imports remain atomic and snapshot-bound. This headless target does not prove browser event-to-paint latency."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-structural-compare-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-09-10-structural-document-diff.md"]
+      },
+      "thresholds": {
+        "promotion": "plite_structural_compare_passed=1"
+      }
+    },
+    {
       "id": "plite-authored-scale",
       "question": "Does installed native proposal amendment and current-card reading meet the frozen zero, normal, large, stress, overlap and read-fanout budgets?",
       "owner": "plite",

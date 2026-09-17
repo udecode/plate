@@ -297,6 +297,120 @@ describe('schema compiler', () => {
     );
   });
 
+  it('compiles logical structure through exact element property identities', () => {
+    const Article = defineEditorSchema('schema:logical-structure', {
+      elements: {
+        cell: {
+          content: schema.content.text(),
+          properties: {
+            columnSpan: property.number(),
+            rowSpan: property.number(),
+          },
+          structure: {
+            columnSpan: 'columnSpan',
+            kind: 'grid',
+            role: 'cell',
+            rowSpan: 'rowSpan',
+          },
+        },
+        heading: {
+          content: schema.content.text(),
+          properties: { level: property.number() },
+          structure: { kind: 'outline', level: 'level' },
+        },
+        item: {
+          content: schema.content.text(),
+          properties: {
+            depth: property.number(),
+            listId: property.string(),
+          },
+          structure: {
+            depth: 'depth',
+            kind: 'list',
+            membership: 'listId',
+          },
+        },
+      },
+      root: schema.content.types(['cell', 'heading', 'item']),
+      unknown: 'reject',
+    });
+    const editor = createEditor({ plugins: [Article] });
+    const heading = editor.read.schema.element('heading');
+    const item = editor.read.schema.element('item');
+    const cell = editor.read.schema.element('cell');
+
+    assert.deepEqual(heading?.structure, {
+      kind: 'outline',
+      level: {
+        id: heading?.propertyIds[0],
+        key: 'level',
+        kind: 'schema-property',
+        placement: 'element',
+      },
+    });
+    assert.equal(item?.structure?.kind, 'list');
+    assert.equal(
+      item?.structure?.kind === 'list' && item.structure.depth.key,
+      'depth'
+    );
+    assert.equal(
+      item?.structure?.kind === 'list' && item.structure.membership?.key,
+      'listId'
+    );
+    assert.equal(cell?.structure?.kind, 'grid');
+    assert.equal(
+      cell?.structure?.kind === 'grid' && cell.structure.columnSpan?.key,
+      'columnSpan'
+    );
+
+    const withoutStructure = defineEditorSchema('schema:no-structure', {
+      elements: {
+        heading: {
+          content: schema.content.text(),
+          properties: { level: property.number() },
+        },
+      },
+      root: schema.content.type('heading'),
+      unknown: 'reject',
+    });
+    const plain = createEditor({ plugins: [withoutStructure] });
+
+    assert.notEqual(
+      plain.read.schema.identity().fingerprint,
+      editor.read.schema.identity().fingerprint
+    );
+  });
+
+  it('rejects invalid logical structure property declarations', () => {
+    const compile = (structure: unknown) =>
+      compileEditorSchemaContributions([
+        record('article', {
+          elements: {
+            paragraph: {
+              content: schema.content.text(),
+              properties: { level: property.string() },
+              structure,
+            },
+          },
+          root: schema.content.type('paragraph'),
+          unknown: 'reject',
+        } as never),
+      ]);
+
+    assert.throws(
+      () => compile({ kind: 'outline', level: 'missing' }),
+      /must reference exactly one property allowed on that element/
+    );
+    assert.throws(
+      () => compile({ kind: 'outline', level: 'level' }),
+      /must reference a number property/
+    );
+    assert.throws(
+      () => compile({ columnSpan: 'level', kind: 'grid', role: 'row' }),
+      /grid spans only for the "cell" role/
+    );
+  });
+
   it('fingerprints content-root ownership and rejects overlapping slot owners', () => {
     const compile = (ownership: 'exclusive' | 'shared') =>
       compileEditorSchemaContributions([

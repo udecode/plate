@@ -1,9 +1,9 @@
 ---
 title: Version History
-description: Retain accepted changes by author and selectively revert one contribution.
+description: Retain author history and compare saved document revisions.
 ---
 
-This example installs native authored changes with `retainHistory: true`. Edit as Alice or Bob, then revert one accepted contribution without erasing independent work by the other author.
+This example installs native authored changes with `retainHistory: true`. Edit as Alice or Bob, revert an accepted contribution, or save two revisions to inspect their structural comparison.
 
 ## Demo
 
@@ -13,7 +13,7 @@ This example installs native authored changes with `retainHistory: true`. Edit a
 
 <ComponentSource name="version-history-demo" />
 
-## Runtime shape
+## Usage
 
 | Piece | Owner | Role |
 | --- | --- | --- |
@@ -21,6 +21,8 @@ This example installs native authored changes with `retainHistory: true`. Edit a
 | `authorId` callback | application | Resolves the selected authenticated author once per transaction. |
 | `read.authored.changes(...)` | native authored reads | Returns accepted history as cursor-paged `AuthoredChange` records. |
 | `update.authored.revert(...)` | native authored updates | Creates a compensating contribution for the selected retained change. |
+| `compare(...)` | `platejs/diff` | Compares two immutable saved revisions without changing the editor. |
+| `Diff` | copied Plate UI | Shows comparison groups, effects, filters, and navigation. |
 | `BasicMarksKit` | copied Plate UI | Provides normal rich-text marks for the editable document. |
 
 ## Retained history flow
@@ -33,6 +35,10 @@ This example installs native authored changes with `retainHistory: true`. Edit a
 6. The new compensating change belongs to the current author; the original record remains intact.
 
 A revert can be blocked by dependent work or become unavailable when the required retained content has expired. Local undo and redo remain separate interaction history. Use native `decide(...)` to accept or reject pending review proposals.
+
+## Compare saved revisions
+
+The demo captures an initial snapshot. Edit the document and select **Save revision** to compare the two latest snapshots. Saving another revision starts a new comparison; an obsolete comparison is cancelled. The comparison is read-only. To turn a validated comparison into a pending proposal, use [`proposeAuthoredComparison(...)`](/docs/authored-changes#import-a-compared-revision).
 
 ## Persist the history
 

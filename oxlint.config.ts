@@ -58,7 +58,6 @@ const platePliteBridgePatterns = [
   'packages/platejs/src/authored/index.ts',
   'packages/platejs/src/core.tsx',
   'packages/platejs/src/diff/index.ts',
-  'packages/platejs/src/diff/plite-diff.internal.ts',
   'packages/platejs/src/dom/index.ts',
   'packages/platejs/src/dom/plite-dom.internal.ts',
   'packages/platejs/src/facade.ts',

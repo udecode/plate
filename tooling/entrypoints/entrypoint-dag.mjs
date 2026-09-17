@@ -517,7 +517,7 @@ export const entrypointDags = {
   plitejs: {
     entrypoints: {
       annotations: headless(directory('annotations', ['root'])),
-      authored: headless(directory('authored', ['root'])),
+      authored: headless(directory('authored', ['root', 'diff'])),
       diff: headless(
         directory('diff', ['root'], [], {
           peerDependencies: ['diff-match-patch-ts'],

@@ -387,12 +387,12 @@ for (const entryPath of commentEntryPaths) {
   }, testInfo) => {
     expect(testInfo.retry).toBe(0);
     await page.setViewportSize({ height: 800, width: 946 });
-    const runtimeErrors = recordPliteBrowserRuntimeErrors(page);
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
       await openDemo(page);
       const { editor, popover, primary } = getDemo(page);
-      const harness = createPliteBrowserEditorHarness(
+      const harness = createBrowserEditorHarness(
         page,
         'issue-5127:comment-composer-selection-paint',
         editor

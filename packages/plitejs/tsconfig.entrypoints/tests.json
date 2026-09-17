@@ -6,8 +6,11 @@
   "exclude": [],
   "extends": "../tsconfig.json",
   "files": [
-    "../src/diff/lib/computeDiff.spec.ts",
-    "../src/diff/lib/excludeDiffFragment.spec.ts",
+    "../src/diff/lib/compare.spec.ts",
+    "../src/diff/lib/comparison-quality.spec.ts",
+    "../src/diff/lib/comparison-work.spec.ts",
+    "../src/diff/lib/structural-compare.spec.ts",
+    "../src/diff/lib/three-way.spec.ts",
     "../src/yjs/react/useYjs.types.spec.ts",
     "../../../tooling/config/global.d.ts"
   ],

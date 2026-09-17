@@ -4,6 +4,7 @@ import type {
   EditorSchemaDeclaration,
   EditorSchemaDelta,
   EditorSchemaIdentity,
+  EditorSchemaElementStructure,
   EditorSchemaUnknownPolicy,
   PropertyJsonValue,
   PropertyValueDescriptor,
@@ -331,6 +332,7 @@ export type CompiledSchemaElement = Readonly<{
     preserveContext: boolean;
     replaceWhenCovered: boolean;
   }>;
+  structure: EditorSchemaElementStructure | null;
   type: string;
 }>;
 
@@ -994,6 +996,7 @@ const collectSchemaKeyDiagnostics = (
           'readOnly',
           'selectable',
           'slice',
+          'structure',
           'void',
         ],
         pluginName,
@@ -1035,6 +1038,31 @@ const collectSchemaKeyDiagnostics = (
           pluginName,
           `${path}.slice`
         );
+      }
+      if (element.structure !== undefined) {
+        const structure = object(
+          element.structure,
+          pluginName,
+          `${path}.structure`
+        );
+        const keys =
+          structure?.kind === 'outline'
+            ? ['kind', 'level']
+            : structure?.kind === 'list'
+              ? ['depth', 'kind', 'membership']
+              : structure?.kind === 'grid'
+                ? ['columnSpan', 'kind', 'role', 'rowSpan']
+                : [
+                    'columnSpan',
+                    'depth',
+                    'kind',
+                    'level',
+                    'membership',
+                    'role',
+                    'rowSpan',
+                  ];
+
+        check(element.structure, keys, pluginName, `${path}.structure`);
       }
     }
     const groups =
@@ -4145,6 +4173,164 @@ const compileEditorSchemaInternal = (
 
   const compiledElements = new Map<string, CompiledSchemaElement>();
 
+  const compileStructureProperty = (
+    element: MutableElement,
+    propertyIds: ReadonlySet<string>,
+    key: unknown,
+    field: string,
+    numeric: boolean
+  ) => {
+    const path = `${element.source.path}.structure.${field}`;
+
+    if (typeof key !== 'string' || key.length === 0) {
+      compileFailure(
+        'invalid-structure-property',
+        `Schema element "${element.type}" structure field "${field}" must reference a non-empty element property key.`,
+        [element.source],
+        path
+      );
+    }
+    const propertyKey = key as string;
+    const candidates = [...propertyIds].flatMap((id) => {
+      const property = byId.get(id);
+
+      return property?.placement === 'element' && property.key === propertyKey
+        ? [property]
+        : [];
+    });
+
+    if (candidates.length !== 1) {
+      compileFailure(
+        'invalid-structure-property',
+        `Schema element "${element.type}" structure field "${field}" must reference exactly one property allowed on that element.`,
+        [element.source],
+        path
+      );
+    }
+    const [property] = candidates;
+
+    if (numeric && property.descriptor.kind !== 'number') {
+      compileFailure(
+        'invalid-structure-property',
+        `Schema element "${element.type}" structure field "${field}" must reference a number property.`,
+        [element.source],
+        path
+      );
+    }
+
+    return Object.freeze({
+      id: property.id,
+      key: propertyKey,
+      kind: 'schema-property' as const,
+      placement: 'element' as const,
+    });
+  };
+
+  const compileElementStructure = (
+    element: MutableElement,
+    propertyIds: ReadonlySet<string>
+  ): EditorSchemaElementStructure | null => {
+    const { structure } = element.input;
+
+    if (!structure) return null;
+
+    switch (structure.kind) {
+      case 'outline': {
+        return Object.freeze({
+          kind: 'outline',
+          level: compileStructureProperty(
+            element,
+            propertyIds,
+            structure.level,
+            'level',
+            true
+          ),
+        });
+      }
+      case 'list': {
+        return Object.freeze({
+          depth: compileStructureProperty(
+            element,
+            propertyIds,
+            structure.depth,
+            'depth',
+            true
+          ),
+          kind: 'list',
+          membership:
+            structure.membership === undefined
+              ? null
+              : compileStructureProperty(
+                  element,
+                  propertyIds,
+                  structure.membership,
+                  'membership',
+                  false
+                ),
+        });
+      }
+      case 'grid': {
+        if (
+          structure.role !== 'cell' &&
+          (structure.columnSpan !== undefined ||
+            structure.rowSpan !== undefined)
+        ) {
+          compileFailure(
+            'invalid-structure-grid',
+            `Schema element "${element.type}" can declare grid spans only for the "cell" role.`,
+            [element.source],
+            `${element.source.path}.structure`
+          );
+        }
+        if (
+          structure.role !== 'cell' &&
+          structure.role !== 'grid' &&
+          structure.role !== 'row'
+        ) {
+          compileFailure(
+            'invalid-structure-grid',
+            `Schema element "${element.type}" has an invalid grid role.`,
+            [element.source],
+            `${element.source.path}.structure.role`
+          );
+        }
+
+        return Object.freeze({
+          columnSpan:
+            structure.columnSpan === undefined
+              ? null
+              : compileStructureProperty(
+                  element,
+                  propertyIds,
+                  structure.columnSpan,
+                  'columnSpan',
+                  true
+                ),
+          kind: 'grid',
+          role: structure.role,
+          rowSpan:
+            structure.rowSpan === undefined
+              ? null
+              : compileStructureProperty(
+                  element,
+                  propertyIds,
+                  structure.rowSpan,
+                  'rowSpan',
+                  true
+                ),
+        });
+      }
+      default: {
+        return compileFailure(
+          'invalid-structure-kind',
+          `Schema element "${element.type}" has an unknown logical structure kind.`,
+          [element.source],
+          `${element.source.path}.structure.kind`
+        );
+      }
+    }
+  };
+
   for (const [type, element] of [...mutableElements].sort(([left], [right]) =>
     left.localeCompare(right)
   )) {
@@ -4210,6 +4396,7 @@ const compileEditorSchemaInternal = (
           replaceWhenCovered:
             element.input.slice?.replaceWhenCovered ?? !preserveContext,
         }),
+        structure: compileElementStructure(element, propertyIds),
         type,
       })
     );
@@ -4303,6 +4490,7 @@ const compileEditorSchemaInternal = (
       },
       groups: sortedStrings(element.groups),
       slice: element.slice,
+      ...(element.structure ? { structure: element.structure } : {}),
       type,
     })),
     groups: [...mutableGroups]
@@ -4715,6 +4903,7 @@ export type EditorSchemaContractElement = Readonly<{
   groups: readonly string[];
   propertyIds: readonly string[];
   slice: CompiledSchemaElement['slice'];
+  structure?: EditorSchemaElementStructure;
   type: string;
 }>;
 
@@ -4868,6 +5057,7 @@ const contractElement = (
     groups: freezeSortedStrings(element.groups),
     propertyIds: freezeSortedStrings(element.propertyIds),
     slice: element.slice,
+    ...(element.structure ? { structure: element.structure } : {}),
     type: element.type,
   });
 
@@ -5024,6 +5214,43 @@ const isContractElementBehavior = (value: unknown) =>
     value.voidKind === 'block' ||
     value.voidKind === 'inline');
 
+const isContractStructureProperty = (value: unknown) =>
+  isRecord(value) &&
+  typeof value.id === 'string' &&
+  typeof value.key === 'string' &&
+  value.kind === 'schema-property' &&
+  value.placement === 'element';
+
+const isContractElementStructure = (value: unknown) => {
+  if (!isRecord(value)) return false;
+
+  switch (value.kind) {
+    case 'outline': {
+      return isContractStructureProperty(value.level);
+    }
+    case 'list': {
+      return (
+        isContractStructureProperty(value.depth) &&
+        (value.membership === null ||
+          isContractStructureProperty(value.membership))
+      );
+    }
+    case 'grid': {
+      return (
+        (value.role === 'cell' ||
+          value.role === 'grid' ||
+          value.role === 'row') &&
+        (value.columnSpan === null ||
+          isContractStructureProperty(value.columnSpan)) &&
+        (value.rowSpan === null || isContractStructureProperty(value.rowSpan))
+      );
+    }
+    default: {
+      return false;
+    }
+  }
+};
+
 const isContractElement = (value: unknown) =>
   isRecord(value) &&
   typeof value.type === 'string' &&
@@ -5037,7 +5264,9 @@ const isContractElement = (value: unknown) =>
   isStringArray(value.propertyIds) &&
   isRecord(value.slice) &&
   typeof value.slice.preserveContext === 'boolean' &&
-  typeof value.slice.replaceWhenCovered === 'boolean';
+  typeof value.slice.replaceWhenCovered === 'boolean' &&
+  (value.structure === undefined ||
+    isContractElementStructure(value.structure));
 
 const isContractRoot = (value: unknown) =>
   isRecord(value) &&
@@ -5285,6 +5514,7 @@ const editorSchemaContractFingerprint = (contract: EditorSchemaContract) => {
         },
         groups: sortedStrings(element.groups),
         slice: element.slice,
+        ...(element.structure ? { structure: element.structure } : {}),
         type: element.type,
       })),
     groups: [...contract.elements.groups]
@@ -5778,6 +6008,7 @@ const restoreElement = (
     }),
     groups: freezeSet(element.groups),
     propertyIds: freezeSet(element.propertyIds),
+    structure: element.structure ?? null,
   });
 
 /** Restore a generated structural contract and bind current live validators. */
@@ -5919,6 +6150,7 @@ const canonicalCompiledElement = (element: CompiledSchemaElement | null) =>
         groups: sortedStrings(element.groups),
         propertyIds: sortedStrings(element.propertyIds),
         slice: element.slice,
+        ...(element.structure ? { structure: element.structure } : {}),
       }
     : null;
 

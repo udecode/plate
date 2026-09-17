@@ -1,11 +1,12 @@
 'use client';
 
-import type { Value } from 'platejs';
+import type { EditorStateSchemaApi, Value } from 'platejs';
 import {
   type AuthoredChange,
   type AuthoredPlugin,
   authored,
 } from 'platejs/authored';
+import { compare, type TwoWayComparison } from 'platejs/diff';
 import {
   type Editor,
   EditorRoot,
@@ -18,6 +19,7 @@ import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
+import { Diff } from '@/registry/components/editor/diff';
 
 type VersionHistoryEditor = Editor<Value, readonly [AuthoredPlugin]>;
 
@@ -108,6 +110,104 @@ function AuthorHistory({ onResult }: { onResult: (value: string) => void }) {
   );
 }
 
+export function VersionDiff({
+  after,
+  before,
+  schema,
+}: {
+  after: unknown;
+  before: unknown;
+  schema: EditorStateSchemaApi;
+}) {
+  const [result, setResult] = React.useState<{
+    after: unknown;
+    comparison: TwoWayComparison | null;
+    error: string | null;
+  } | null>(null);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+
+    void compare({ after, before, schema, signal: controller.signal }).then(
+      (comparison) => {
+        if (!controller.signal.aborted) {
+          setResult({ after, comparison, error: null });
+        }
+      },
+      (error: unknown) => {
+        if (
+          !controller.signal.aborted &&
+          !(error instanceof Error && error.name === 'AbortError')
+        ) {
+          setResult({
+            after,
+            comparison: null,
+            error:
+              error instanceof Error ? error.message : 'Comparison failed.',
+          });
+        }
+      }
+    );
+
+    return () => controller.abort();
+  }, [after, before, schema]);
+
+  if (result && result.after === after && result.error) {
+    return (
+      <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-950">
+        {result.error}
+      </p>
+    );
+  }
+  if (!result || result.after !== after || !result.comparison) {
+    return (
+      <p aria-live="polite" className="rounded-md border p-3 text-sm">
+        Comparing revisions…
+      </p>
+    );
+  }
+
+  return <Diff comparison={result.comparison} />;
+}
+
+function RevisionHistory() {
+  const editor = useEditor() as VersionHistoryEditor;
+  const [revisions, setRevisions] = React.useState<readonly unknown[]>(() => [
+    structuredClone(editor.read.value()),
+  ]);
+
+  return (
+    <section className="space-y-2">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-medium">Saved revisions</h2>
+        <Button
+          onClick={() =>
+            setRevisions((current) => [
+              ...current,
+              structuredClone(editor.read.value()),
+            ])
+          }
+          size="sm"
+          variant="outline"
+        >
+          Save revision
+        </Button>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Edit the document and save a revision to compare it with the previous
+        snapshot.
+      </p>
+      {revisions.length > 1 && (
+        <VersionDiff
+          after={revisions.at(-1)}
+          before={revisions.at(-2)}
+          schema={editor.read.schema}
+        />
+      )}
+    </section>
+  );
+}
+
 export default function VersionHistoryDemo() {
   const [authorId, setAuthorId] = React.useState('alice');
   const [result, setResult] = React.useState('');
@@ -151,6 +251,7 @@ export default function VersionHistoryDemo() {
             </p>
           )}
         </section>
+        <RevisionHistory />
       </EditorRoot>
     </div>
   );
