@@ -41,7 +41,7 @@ PR base or `origin/main`. Clean main has no implicit review target.
 
 Registered nested linked checkouts from the same repository are outside the
 current review scope. Their presence or edits do not make the parent dirty;
-ordinary adjacent files remain included and scanned. Worktree boundaries are
+ordinary adjacent files remain included in the review. Worktree boundaries are
 revalidated without changing Git ignore rules.
 
 For a complete PR candidate **including dirty rewrites**, use local mode with
@@ -61,6 +61,12 @@ repository configuration is not changed. Source paths and text retain literal
 whitespace. An empty present
 source uses line 1, column 1, and an empty excerpt; empty physical lines also
 use an empty excerpt at column 1. Source identity remains mandatory.
+
+Local selection honors `core.autocrlf` from external operator Git configuration,
+with repository-local values and attributes retaining precedence. Only its
+validated scalar value reaches diff/status; other global and system Git
+configuration stays disabled. Repository-owned or relative global-config
+overrides are not imported, and reviewed source bytes are not rewritten.
 
 ## Context and severity
 
@@ -88,6 +94,21 @@ switch because a review is slow or rate-limited.
 Use `--engine`, `--model`, and `--thinking` to override the defaults.
 `--codex-speed fast` selects priority service when supported. Only Claude accepts
 `--fallback-model`. Per-engine environment overrides use `AUTOREVIEW_<ENGINE>_*`.
+
+For GPT-6 Astra, select it explicitly on a Codex account with access:
+
+```bash
+"$AUTOREVIEW" --mode local --model gpt-6-astra --thinking high
+```
+
+Use `low`, `medium`, `high`, `xhigh`, or `max`; Astra does not support `none`
+or `minimal`. AutoReview defaults to `high` and does not fall back from an
+explicit Astra selection. Codex's `ultra` mode uses automatic
+delegation and is outside this helper's supported effort levels. Use `max`
+for its deepest supported review. For EU data residency, use
+`--codex-speed default`; Astra fast mode is unavailable there.
+See the [Astra migration guide](https://developers.openai.com/api/docs/guides/latest-model?model=gpt-6-astra)
+and [Codex reasoning modes](https://learn.chatgpt.com/docs/models#know-when-to-use-max-or-ultra).
 
 By default, Codex preserves only authentication settings from user configuration;
 provider, profile, context and catalogue settings remain ignored. To project a
@@ -137,11 +158,18 @@ split context overrides are unsupported when projection is selected.
 
 The helper owns reviewer isolation, sanitized authentication, process cleanup,
 Git scope, and structured result validation. Keep those controls enabled.
-TruffleHog must scan the complete frozen input for partitioned reviews and each
-exact outgoing pack before it is sent; missing or failed scanning stops the run.
-Source-controlled ignore tags cannot suppress this gate. Scanner refusals never
-echo input headings or finding payloads; remove credentials locally and rerun.
-Never reproduce credentials in findings or work around an isolation failure.
+Every reviewer pass must inspect its bundle for real credentials and report
+suspected credentials as P0 findings without reproducing their values. Harmless
+placeholders and test fixtures are not credentials. Autoreview does not require
+or invoke an external secret scanner. Never work around an isolation failure.
+
+### Intentional scanner-free policy
+
+Keep approved secret scanning outside autoreview; reviewer findings happen after
+transmission. Reintroducing a scanner requires an explicit maintainer decision.
+See [#240](https://github.com/openclaw/agent-skills/pull/240) for rationale and history.
+
+### Reviewer isolation
 
 On macOS, reviewer tools cannot access the shared `/tmp` and `/var/tmp` trees
 (including their `/private` aliases). Codex preflight rejects those temporary
@@ -186,7 +214,16 @@ fails or returns an invalid report reports `reviewer_unavailable` with exit 1.
 A failed later pass never publishes a partial review report.
 
 ```json
-{"schema_version":1,"status":"reviewer_unavailable","exit_code":1,"engine":"codex","report_produced":false,"reason":"engine_failed","reviewer_exit_code":124,"timed_out":true}
+{
+  "schema_version": 1,
+  "status": "reviewer_unavailable",
+  "exit_code": 1,
+  "engine": "codex",
+  "report_produced": false,
+  "reason": "engine_failed",
+  "reviewer_exit_code": 124,
+  "timed_out": true
+}
 ```
 
 `reason` is `engine_failed`, `invalid_report`, or `runtime_validation_failed`
@@ -205,7 +242,7 @@ The sidecar contains no provider logs, prompts, findings, or model identifiers.
 Existing bounded, display-safe diagnostics remain on stderr; command-auth
 diagnostic suppression remains in force. Use a fresh status path per invocation:
 after argument and output-path validation, a previous sidecar is removed before
-target selection. Dry runs, preflight/scan refusals, pre-launch isolation failures, source mutations,
+target selection. Dry runs, preflight refusals, pre-launch isolation failures, source mutations,
 interruptions, and output failures produce no new status. Absence means no
 outcome was published, never a clean review. No retry policy is added.
 
