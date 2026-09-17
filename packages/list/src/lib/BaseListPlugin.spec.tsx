@@ -1,9 +1,11 @@
-import ReactDOMServer from 'react-dom/server';
-
 import { createSlateEditor, KEYS } from 'platejs';
 import { BaseListPlugin } from './BaseListPlugin';
 
 describe('BaseListPlugin', () => {
+  it('keeps React rendering out of the headless plugin', () => {
+    expect(BaseListPlugin.render.belowNodes).toBeUndefined();
+  });
+
   it('flattens nested lists, block children, and derives indent metadata from html', () => {
     const transformData = (BaseListPlugin as any).inject.plugins[KEYS.html]
       .parser.transformData;
@@ -40,7 +42,7 @@ describe('BaseListPlugin', () => {
     expect(item.dataset.listStyleType).toBe('square');
   });
 
-  it('parses list metadata and renders list wrappers for list items', () => {
+  it('parses list metadata', () => {
     const editor = createSlateEditor({
       plugins: [
         BaseListPlugin.configure({
@@ -52,39 +54,7 @@ describe('BaseListPlugin', () => {
     });
     const plugin = editor.getPlugin(BaseListPlugin);
     const parse = plugin.parsers.html!.deserializer!.parse! as any;
-    const renderBelow = plugin.render.belowNodes as any;
     const element = document.createElement('li');
-    const orderedElement = {
-      children: [{ text: 'Item' }],
-      listStart: 4,
-      listStyleType: 'decimal',
-      type: editor.getType(KEYS.p),
-    } as any;
-    const unorderedElement = {
-      children: [{ text: 'Bullet' }],
-      listStyleType: 'disc',
-      type: editor.getType(KEYS.p),
-    } as any;
-    const wrapper = renderBelow({
-      children: 'Item',
-      element: orderedElement,
-    } as any)!;
-    const markup = ReactDOMServer.renderToStaticMarkup(
-      wrapper({
-        children: 'Item',
-        element: orderedElement,
-      } as any)
-    );
-    const unorderedWrapper = renderBelow({
-      children: 'Bullet',
-      element: unorderedElement,
-    } as any)!;
-    const unorderedMarkup = ReactDOMServer.renderToStaticMarkup(
-      unorderedWrapper({
-        children: 'Bullet',
-        element: unorderedElement,
-      } as any)
-    );
 
     element.setAttribute('aria-level', '2');
 
@@ -99,16 +69,5 @@ describe('BaseListPlugin', () => {
       listStyleType: 'circle',
       type: editor.getType(KEYS.p),
     });
-    expect(markup).toContain('<ol');
-    expect(markup).toContain('start="4"');
-    expect(markup).toContain('<li>Item</li>');
-    expect(unorderedMarkup).toContain('<ul');
-    expect(unorderedMarkup).toContain('<li>Bullet</li>');
-    expect(
-      renderBelow({
-        children: 'Item',
-        element: { children: [{ text: 'Item' }], type: editor.getType(KEYS.p) },
-      } as any)
-    ).toBeUndefined();
   });
 });
