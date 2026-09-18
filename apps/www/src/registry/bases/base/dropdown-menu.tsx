@@ -60,7 +60,7 @@ type FinalFocus = false | (() => void);
 type BaseUIEvent = React.MouseEvent<HTMLElement> & {
   preventBaseUIHandler?: () => void;
 };
-type FinalFocusRef = React.MutableRefObject<FinalFocus | undefined>;
+type FinalFocusRef = React.RefObject<FinalFocus | undefined>;
 
 const FinalFocusContext = React.createContext<FinalFocusRef | null>(null);
 

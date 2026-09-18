@@ -1140,7 +1140,7 @@ const renderGeneratedTypes = (
         failInvariant('Expected value to be defined');
       const construction = renderProperties(mutation.construction, '      ');
       const persisted = renderProperties(mutation.persisted, '      ');
-      const block = `\n    readonly block: ${element.behavior.inline === false};`;
+      const block = `\n    readonly block: ${!element.behavior.inline};`;
       const toggle =
         element.groups.includes('textBlock') &&
         allowedElementTypeSet.has(binding.type) &&

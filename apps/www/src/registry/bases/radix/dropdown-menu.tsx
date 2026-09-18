@@ -24,7 +24,7 @@ export {
 } from '@/components/ui/dropdown-menu';
 
 type FinalFocus = false | (() => void);
-type FinalFocusRef = React.MutableRefObject<FinalFocus | undefined>;
+type FinalFocusRef = React.RefObject<FinalFocus | undefined>;
 
 const FinalFocusContext = React.createContext<FinalFocusRef | null>(null);
 
