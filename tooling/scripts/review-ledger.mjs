@@ -537,13 +537,13 @@ function localPath(root, path, requireExists = true) {
   }
 }
 
-const workKinds = [
+const workKinds = new Set([
   'design',
   'implementation',
   'research',
   'workflow',
   'verification',
-];
+]);
 const belongsTo = (record, scope) =>
   record.kind === 'execution'
     ? record.scopes.includes(scope)
@@ -570,9 +570,9 @@ export function documentMetadata(text) {
     );
     if (!match) continue;
     const value = match[1].trim();
-    if (['work_kind', 'current_review'].includes(key))
+    if (['work_kind', 'current_review'].includes(key)) {
       result[key] = unquote(value);
-    else if (value.startsWith('[') && value.endsWith(']')) {
+    } else if (value.startsWith('[') && value.endsWith(']')) {
       result[key] = value.slice(1, -1).trim()
         ? value.slice(1, -1).split(',').map(unquote)
         : [];
@@ -581,25 +581,31 @@ export function documentMetadata(text) {
         .split('\n')
         .filter((line) => line.trim())
         .map((line) => unquote(line.replace(/^\s*-\s*/, '')));
-    } else result[key] = null;
+    } else {
+      result[key] = null;
+    }
   }
   return result;
 }
 
 function lifecycle(value) {
   const status = value.trim().toLowerCase().replaceAll('**', '');
-  if (/^(?:complete[d]?|done|closed|implemented|finished)\b/.test(status))
+  if (/^(?:complete[d]?|done|closed|implemented|finished)\b/.test(status)) {
     return 'completed';
-  if (/^(?:in[ -]progress|active|running|executing|designing)\b/.test(status))
+  }
+  if (/^(?:in[ -]progress|active|running|executing|designing)\b/.test(status)) {
     return 'in-progress';
+  }
   if (
     /^(?:pause[d]?|blocked|gated|deferred|superseded|abandoned|cancelled|canceled)\b/.test(
       status
     )
-  )
+  ) {
     return status.match(/^\w+/)[0];
-  if (/^(?:plan[ned]?|draft|ready|approved|accepted|proposed)\b/.test(status))
+  }
+  if (/^(?:plan[ned]?|draft|ready|approved|accepted|proposed)\b/.test(status)) {
     return 'planned';
+  }
   return 'unknown';
 }
 
@@ -616,8 +622,9 @@ export function planState(root, path) {
   }));
   for (const match of contents.matchAll(
     /^(?:Status|status):[ \t]*\r?\n[ \t]*-[ \t]+([^\n]+)$/gm
-  ))
+  )) {
     labels.push({ text: match[1], status: lifecycle(match[1]) });
+  }
   const states = [...new Set(labels.map((label) => label.status))];
   return {
     path,
@@ -700,9 +707,10 @@ function recordSummary(root, record, live) {
 }
 
 export function changedInputs(root, record, live) {
-  if (!record?.source)
+  if (!record?.source) {
     return { status: 'unknown', files: [], directories: [], features: [] };
-  const source = record.source;
+  }
+  const { source } = record;
   return {
     status: freshness(root, record, live),
     files: Object.entries(source.files ?? {})
@@ -737,8 +745,9 @@ export function executionFreshness(root, record, live = []) {
         !existsSync(join(root, path)) ||
         hash(readFileSync(join(root, path))) !== sha256
     )
-  )
+  ) {
     return 'stale';
+  }
   return freshness(root, record, live);
 }
 
@@ -792,7 +801,7 @@ export function draftExecution(root, index, path) {
           files: Object.fromEntries(
             Object.entries(
               Object.assign({}, ...sources.map((source) => source.files))
-            ).filter(([path]) => !excluded.has(path))
+            ).filter(([sourcePath]) => !excluded.has(sourcePath))
           ),
           directories: Object.assign(
             {},
@@ -841,7 +850,7 @@ function validateExecution(root, record, index, prior, recording) {
     Array.isArray(record.reviewBasis),
     'Execution requires reviewBasis'
   );
-  for (const id of record.reviewBasis)
+  for (const id of record.reviewBasis) {
     assert.ok(
       prior.some(
         (item) =>
@@ -851,7 +860,8 @@ function validateExecution(root, record, index, prior, recording) {
       ),
       `Unknown governing review: ${id}`
     );
-  assert.ok(workKinds.includes(record.workKind), 'Execution requires workKind');
+  }
+  assert.ok(workKinds.has(record.workKind), 'Execution requires workKind');
   assert.ok(
     ['current', 'historical-unbound'].includes(record.binding),
     'Execution requires explicit binding'
@@ -882,12 +892,13 @@ function validateExecution(root, record, index, prior, recording) {
       /^[a-f0-9]{64}$/.test(entry.sha256),
       'Execution requires plan and proof fingerprints'
     );
-    if (recording)
+    if (recording) {
       assert.equal(
         hash(readFileSync(join(root, entry.path))),
         entry.sha256,
         `Execution input changed: ${entry.path}`
       );
+    }
   }
   assert.ok(
     record.proof.evidence.every((entry) => entry.claim?.trim()),
@@ -932,12 +943,13 @@ function validateExecution(root, record, index, prior, recording) {
         'A completed plan alone does not verify execution'
       );
     }
-    if (recording)
+    if (recording) {
       assert.equal(
         executionFreshness(root, record, discover(root, index)),
         'matching',
         'Execution source changed before recording'
       );
+    }
     if (recording) {
       for (const id of record.scopes) {
         const scope = index.scopes.find((item) => item.id === id);
@@ -953,18 +965,19 @@ function validateExecution(root, record, index, prior, recording) {
           ...scope.proof,
           ...(scope.evidenceInputs ?? []),
         ].filter(
-          (path) =>
+          (evidencePath) =>
             !executionSummaryInputs(
               index,
               record.scopes,
               record.plan.path,
               record.workKind
-            ).has(path)
-        ))
+            ).has(evidencePath)
+        )) {
           assert.ok(
             record.source.files?.[path] || record.source.directories?.[path],
             `Execution must capture declared evidence: ${path}`
           );
+        }
       }
     }
   }
@@ -992,12 +1005,13 @@ function validateExecution(root, record, index, prior, recording) {
       plan.status !== 'conflict',
       'Resolve conflicting plan lifecycle statuses before recording'
     );
-    if (record.outcome === 'completed')
+    if (record.outcome === 'completed') {
       assert.equal(
         plan.status,
         'completed',
         'Completed execution requires the plan lifecycle to be complete'
       );
+    }
   }
 }
 
@@ -1018,28 +1032,31 @@ export function scopeHistory(
       ? documentMetadata(read(root, scope.decision))
       : {};
   const gaps = [];
-  if (latest && (!scope.decision || !decision.current_review))
+  if (latest && (!scope.decision || !decision.current_review)) {
     gaps.push({
       kind: 'missing-current-decision',
       review: latest.id,
       path: scope.decision ?? null,
     });
-  else if (latest && decision.current_review !== latest.id)
+  } else if (latest && decision.current_review !== latest.id) {
     gaps.push({
       kind: 'decision-review-mismatch',
       expected: latest.id,
       actual: decision.current_review,
       path: scope.decision,
     });
+  }
   for (const plan of plans) {
-    if (plan.status === 'conflict')
+    if (plan.status === 'conflict') {
       gaps.push({
         kind: 'conflicting-plan-status',
         path: plan.path,
         labels: plan.statusLabels,
       });
-    if (!plan.reviewBasis.length)
+    }
+    if (!plan.reviewBasis.length) {
       gaps.push({ kind: 'unbound-plan', path: plan.path });
+    }
     const outcomes = executions.filter(
       (record) => record.plan.path === plan.path
     );
@@ -1049,31 +1066,35 @@ export function scopeHistory(
         (record) =>
           record.outcome === 'completed' && record.plan.sha256 === plan.sha256
       )
-    )
+    ) {
       gaps.push({
         kind: 'completed-plan-without-current-outcome',
         path: plan.path,
       });
+    }
     if (
       plan.metadataPresent &&
       (!Array.isArray(plan.review_scopes) ||
         !Array.isArray(plan.review_basis) ||
-        !workKinds.includes(plan.work_kind))
-    )
+        !workKinds.has(plan.work_kind))
+    ) {
       gaps.push({ kind: 'incomplete-plan-metadata', path: plan.path });
+    }
   }
   for (const execution of executions) {
     if (
       execution.outcome === 'completed' &&
       !(decision.reconciled_executions ?? []).includes(execution.id)
-    )
+    ) {
       gaps.push({
         kind: 'unreconciled-execution',
         record: execution.id,
         decision: scope.decision ?? null,
       });
-    if (executionFreshness(root, execution, live) === 'stale')
+    }
+    if (executionFreshness(root, execution, live) === 'stale') {
       gaps.push({ kind: 'stale-execution-proof', record: execution.id });
+    }
   }
   const latestExecution = executions.at(-1);
   const retainsOutcome = (review, visited = new Set()) => {
@@ -1097,12 +1118,13 @@ export function scopeHistory(
   };
   const governsCurrentReview =
     latestExecution?.binding === 'current' && retainsOutcome(latest);
-  if (latestExecution?.binding === 'current' && !governsCurrentReview)
+  if (latestExecution?.binding === 'current' && !governsCurrentReview) {
     gaps.push({
       kind: 'decision-changed',
       record: latestExecution.id,
       decision: scope.decision ?? null,
     });
+  }
   const historicalOutcome = [...executions]
     .reverse()
     .find((record) => record.binding === 'current');
@@ -1350,7 +1372,7 @@ export function validateRecord(
         ),
         'Reconcile the previous conclusion and subsequent execution before review'
       );
-      if (previous?.verdict && previous.verdict !== record.verdict)
+      if (previous?.verdict && previous.verdict !== record.verdict) {
         assert.ok(
           record.reconciliation.some(
             (entry) =>
@@ -1358,6 +1380,7 @@ export function validateRecord(
           ),
           'A changed verdict must explicitly reopen or supersede its prior conclusion'
         );
+      }
     }
     for (const [path, digest] of Object.entries(record.source.files ?? {})) {
       if (recording) {
@@ -1538,7 +1561,7 @@ export function validate(root, index, { current = true } = {}) {
         ),
       `Invalid document scopes: ${document.path}`
     );
-    for (const id of document.reviewBasis ?? [])
+    for (const id of document.reviewBasis ?? []) {
       assert.ok(
         all.some(
           (record) =>
@@ -1548,11 +1571,13 @@ export function validate(root, index, { current = true } = {}) {
         ),
         `Unknown document review basis: ${id}`
       );
-    if (document.workKind)
+    }
+    if (document.workKind) {
       assert.ok(
-        workKinds.includes(document.workKind),
+        workKinds.has(document.workKind),
         `Invalid document work kind: ${document.path}`
       );
+    }
   }
   unique(
     (index.rejectedCandidates ?? []).map((item) => item.path),
@@ -1579,35 +1604,39 @@ export function validate(root, index, { current = true } = {}) {
     );
   }
   const context = historyContext(root, index, live);
-  for (const plan of context.plans.filter((plan) => plan.metadataPresent)) {
+  for (const historyPlan of context.plans.filter(
+    (candidatePlan) => candidatePlan.metadataPresent
+  )) {
     assert.ok(
-      Array.isArray(plan.review_scopes) &&
-        Array.isArray(plan.review_basis) &&
-        (plan.review_scopes.length || !plan.review_basis.length) &&
-        workKinds.includes(plan.work_kind),
-      `Incomplete plan metadata: ${plan.path}`
+      Array.isArray(historyPlan.review_scopes) &&
+        Array.isArray(historyPlan.review_basis) &&
+        (historyPlan.review_scopes.length ||
+          !historyPlan.review_basis.length) &&
+        workKinds.has(historyPlan.work_kind),
+      `Incomplete plan metadata: ${historyPlan.path}`
     );
     assert.equal(
-      plan.statusLabels.length,
+      historyPlan.statusLabels.length,
       1,
-      `Plan metadata requires one lifecycle Status: ${plan.path}`
+      `Plan metadata requires one lifecycle Status: ${historyPlan.path}`
     );
     assert.ok(
-      plan.review_scopes.every((id) =>
+      historyPlan.review_scopes.every((id) =>
         index.scopes.some((scope) => scope.id === id)
       ),
-      `Unknown plan scope: ${plan.path}`
+      `Unknown plan scope: ${historyPlan.path}`
     );
-    for (const id of plan.review_basis)
+    for (const id of historyPlan.review_basis) {
       assert.ok(
         all.some(
           (record) =>
             record.id === id &&
             record.kind === 'review' &&
-            plan.review_scopes.includes(record.scope)
+            historyPlan.review_scopes.includes(record.scope)
         ),
         `Unknown plan review basis: ${id}`
       );
+    }
   }
   for (const scope of index.scopes) {
     const latest = latestRecord(all, scope.id);
@@ -1999,32 +2028,36 @@ export function renderFeature(
     '',
     `Execution: **${state.progress.state}**. Proof: **${state.progress.proof}**. ${state.progress.limits}`,
   ];
-  if (state.progress.record)
+  if (state.progress.record) {
     lines.push(
       '',
       `Outcome: ${link(`docs/research/review-records/${state.progress.record}.json`, state.progress.record)}. Governing reviews: ${state.progress.reviewBasis.map((id) => link(`docs/research/review-records/${id}.json`, id)).join(', ')}. Work kind: ${state.progress.workKind}. Reconciled with current review: ${state.progress.governsCurrentReview ? 'yes' : 'no; evidence belongs to the named governing review'}.`
     );
-  if (scope.adoption || scope.proofState)
+  }
+  if (scope.adoption || scope.proofState) {
     lines.push(
       '',
       `Imported scope flags (unbound historical claims): adoption ${scope.adoption ?? 'unknown'}, proof ${scope.proofState ?? 'unknown'}. These flags do not establish current progress.`
     );
+  }
   lines.push(
     '',
     '## Changes and tracking gaps',
     '',
     `Changed files: ${changes.files.map((item) => link(item)).join(', ') || 'none identified'}. Changed directories: ${changes.directories.map((item) => link(item)).join(', ') || 'none identified'}. Changed source groups: ${changes.features.join(', ') || 'none identified'}.`
   );
-  if (!state.gaps.length)
+  if (!state.gaps.length) {
     lines.push(
       '',
       'No structural tracking gap detected. This does not certify the architectural conclusion.'
     );
-  for (const gap of state.gaps)
+  }
+  for (const gap of state.gaps) {
     lines.push(
       '',
       `- **${gap.kind}**: ${gap.path ? link(gap.path) : gap.record ? link(`docs/research/review-records/${gap.record}.json`, gap.record) : (gap.review ?? '')}${gap.expected ? `; expected ${gap.expected}, recorded ${gap.actual ?? 'unknown'}` : ''}.`
     );
+  }
   lines.push(
     '',
     '## Plans and execution',
@@ -2034,12 +2067,14 @@ export function renderFeature(
     '| Plan | Lifecycle | Work kind | Governing review |',
     '| --- | --- | --- | --- |'
   );
-  for (const plan of state.plans)
+  for (const plan of state.plans) {
     lines.push(
       `| ${link(plan.path)} | ${plan.status} | ${plan.workKind ?? 'unknown'} | ${plan.reviewBasis.map((id) => link(`docs/research/review-records/${id}.json`, id)).join(', ') || 'unbound'} |`
     );
-  if (!state.plans.length)
+  }
+  if (!state.plans.length) {
     lines.push('| No associated plan | unknown | unknown | unbound |');
+  }
   lines.push(
     '',
     '### Outcomes recorded after the latest review',
@@ -2047,26 +2082,30 @@ export function renderFeature(
     'Record order is observation order. Historical imports do not establish when execution happened.',
     ''
   );
-  if (!state.afterReview.length)
+  if (!state.afterReview.length) {
     lines.push(
       'No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.'
     );
-  for (const record of state.afterReview)
+  }
+  for (const record of state.afterReview) {
     lines.push(
       `- ${link(`docs/research/review-records/${record.id}.json`, record.id)}: ${record.outcome}; binding **${record.binding}**; ${record.summary} Proof: ${executionFreshness(root, record, context.live)} / ${record.proof.state}. ${record.proof.limits}`
     );
+  }
   lines.push('', '## Inspected documents', '');
   const documents = (index.documents ?? []).filter(
     (doc) => doc.scopes.includes(scope.id) && doc.disposition !== 'candidate'
   );
-  if (!documents.length)
+  if (!documents.length) {
     lines.push(
       'No additional classified document. Linked legacy plans and immutable references remain available.'
     );
-  for (const document of documents)
+  }
+  for (const document of documents) {
     lines.push(
       `- ${link(document.path)} — ${document.kind}, ${document.disposition}. ${excerptText(document.rationale)}`
     );
+  }
   lines.push(
     '',
     '## Chronological history and alternatives',
@@ -2089,12 +2128,14 @@ export function renderFeature(
       ''
     );
     if (record.question) lines.push(`Question: ${record.question}`, '');
-    for (const alternative of record.alternatives ?? [])
+    for (const alternative of record.alternatives ?? []) {
       lines.push(`- ${alternative}`);
-    for (const entry of record.reconciliation ?? [])
+    }
+    for (const entry of record.reconciliation ?? []) {
       lines.push(
         `- ${entry.action} ${link(`docs/research/review-records/${entry.record}.json`, entry.record)} (${entry.question}): ${entry.reason}`
       );
+    }
     lines.push(
       '',
       `Proof limits: ${record.proofLimits ?? record.proof.limits}`,
@@ -2109,15 +2150,17 @@ export function renderFeature(
     `${candidates.unresolved.length} unclassified candidates. Filename matches are discovery leads, not adopted decisions.`,
     ''
   );
-  for (const candidate of candidates.unresolved)
+  for (const candidate of candidates.unresolved) {
     lines.push(`- ${link(candidate)}`);
+  }
   lines.push(
     '',
     `${candidates.rejected.length} rejected retrieval matches retained to prevent rediscovery.`,
     ''
   );
-  for (const rejected of candidates.rejected)
+  for (const rejected of candidates.rejected) {
     lines.push(`- ${link(rejected.path)}: ${rejected.reason}`);
+  }
   lines.push(
     '',
     '## Owners and evidence entrypoints',
@@ -2155,11 +2198,12 @@ export function render(root, index, context = historyContext(root, index)) {
     '| Order | Review | Payoff | Questions | Reviewed | Pending |',
     '| --- | --- | ---: | ---: | ---: | ---: |',
   ];
-  for (const [position, unit] of queue.entries())
+  for (const [position, unit] of queue.entries()) {
     lines.push(
       `| ${position + 1} | [${unit.title}](#${unit.id}) | ${unit.opportunity.score} | ${unit.scopes.length} | ${unit.reviewed} | ${unit.pending} |`
     );
-  for (const group of index.reviewGroups ?? [])
+  }
+  for (const group of index.reviewGroups ?? []) {
     lines.push(
       '',
       `<a id="${group.id}"></a>`,
@@ -2170,6 +2214,7 @@ export function render(root, index, context = historyContext(root, index)) {
       '',
       ...group.scopes.map((id) => `- [${id}](features/${id}.md)`)
     );
+  }
   lines.push(
     '',
     '## Feature progress',
@@ -2211,8 +2256,9 @@ export function main(root, args) {
   if (command === 'research') return searchResearch(root, argument);
   if (command === 'queue') return reviewQueue(index);
   if (command === 'draft') return draftReview(root, index, argument);
-  if (command === 'draft-execution')
+  if (command === 'draft-execution') {
     return draftExecution(root, index, argument);
+  }
   if (command === 'lookup') {
     assert.ok(argument, 'Supply a scope, feature or search term');
     const group = (index.reviewGroups ?? []).find(
@@ -2330,11 +2376,12 @@ export function main(root, args) {
       render(root, index, context)
     );
     mkdirSync(join(root, 'docs/research/features'), { recursive: true });
-    for (const scope of index.scopes)
+    for (const scope of index.scopes) {
       writeFileSync(
         join(root, `docs/research/features/${scope.id}.md`),
         renderFeature(root, index, scope, context)
       );
+    }
     return `Rendered docs/research/reviews.md and ${index.scopes.length} feature hubs`;
   }
   if (command === 'check') {
@@ -2345,12 +2392,13 @@ export function main(root, args) {
       'Generated view is stale; run render'
     );
     const context = historyContext(root, index, live);
-    for (const scope of index.scopes)
+    for (const scope of index.scopes) {
       assert.equal(
         read(root, `docs/research/features/${scope.id}.md`),
         renderFeature(root, index, scope, context),
         `Generated feature hub is stale: ${scope.id}; run render`
       );
+    }
     assert.deepEqual(
       files(root, 'docs/research/features')
         .filter((path) => path.endsWith('.md'))
