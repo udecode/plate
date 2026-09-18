@@ -840,14 +840,14 @@ test('execution after a review is discoverable, bound to evidence, and never rep
 test('proof, plan and source changes independently invalidate an execution without rewriting it', (t) => {
   const { root, put, index, execution, persist } = executionFixture(t);
   const path = recordReview(root, index, execution);
-  const original = readFileSync(join(root, path), 'utf8');
+  const original = readFileSync(join(root, path), 'utf-8');
   persist();
   for (const input of [
     'docs/proof-result.json',
     execution.plan.path,
     'packages/platejs/src/features/comments/owner.ts',
   ]) {
-    const before = readFileSync(join(root, input), 'utf8');
+    const before = readFileSync(join(root, input), 'utf-8');
     put(input, `${before}\nchanged`);
     assert.equal(
       executionFreshness(root, execution, discover(root, index)),
@@ -859,7 +859,7 @@ test('proof, plan and source changes independently invalidate an execution witho
         (gap) => gap.kind === 'stale-execution-proof'
       )
     );
-    assert.equal(readFileSync(join(root, path), 'utf8'), original);
+    assert.equal(readFileSync(join(root, path), 'utf-8'), original);
     put(input, before);
   }
   assert.equal(
@@ -1012,12 +1012,13 @@ test('missing associations and historical completion remain visible without inve
 
 test('compact lookup omits full source fingerprints and full history remains explicitly available', (t) => {
   const { root, put, index } = fixture(t);
-  for (let i = 0; i < 12; i++)
+  for (let i = 0; i < 12; i++) {
     recordReview(
       root,
       index,
       completed(root, index, { id: `2026-09-11-comments-review-${i}` })
     );
+  }
   put('docs/research/review-index.json', JSON.stringify(index));
   const [compact] = main(root, ['lookup', 'comments']);
   const [detail] = main(root, ['lookup', 'comments', '--detail']);
@@ -1069,12 +1070,12 @@ test('candidate classification preserves rejections and removes inspected leads 
   main(root, ['render']);
   assert.equal(main(root, ['check']).hubs, 2);
   assert.match(
-    readFileSync(join(root, 'docs/research/features/comments.md'), 'utf8'),
+    readFileSync(join(root, 'docs/research/features/comments.md'), 'utf-8'),
     /PR comments are unrelated/
   );
   const hub = readFileSync(
     join(root, 'docs/research/features/comments.md'),
-    'utf8'
+    'utf-8'
   );
   assert.ok(hub.includes('Contains the earlier mapped-range contract.'));
   assert.ok(!hub.includes('](evidence.md)'));
@@ -1090,7 +1091,7 @@ test('metadata and legacy lifecycle labels preserve ambiguity instead of choosin
   const active = planState(root, path);
   assert.equal(active.status, 'in-progress');
   assert.deepEqual(active.review_scopes, ['comments', 'link']);
-  put(path, `${readFileSync(join(root, path), 'utf8')}\nStatus: Complete\n`);
+  put(path, `${readFileSync(join(root, path), 'utf-8')}\nStatus: Complete\n`);
   assert.equal(planState(root, path).status, 'conflict');
   assert.deepEqual(documentMetadata('---\nreview_scopes: comments\n---\n'), {
     review_scopes: null,
@@ -1120,7 +1121,7 @@ test('recording rejects stale execution inputs, conflicting lifecycle, and plan-
     },
   };
   assert.throws(() => recordReview(root, index, invalid), /plan alone/);
-  const before = readFileSync(join(root, plan), 'utf8');
+  const before = readFileSync(join(root, plan), 'utf-8');
   put(plan, `${before}\nChanged plan.\n`);
   assert.throws(() => recordReview(root, index, execution), /input changed/);
   put(plan, `${before}\n- goal_status: active\n`);
@@ -1137,7 +1138,7 @@ test('recording rejects stale execution inputs, conflicting lifecycle, and plan-
 test('generated hubs must match current decisions and leave immutable records untouched', (t) => {
   const { root, put, index, reviews, execution, persist } = executionFixture(t);
   const recordPath = recordReview(root, index, execution);
-  const original = readFileSync(join(root, recordPath), 'utf8');
+  const original = readFileSync(join(root, recordPath), 'utf-8');
   index.scopes[0].decision = 'docs/decision.md';
   put(
     'docs/decision.md',
@@ -1156,7 +1157,7 @@ test('generated hubs must match current decisions and leave immutable records un
   put('docs/research/features/comments.md', 'Stale hand-edited feature status');
   assert.throws(() => main(root, ['check']), /feature hub is stale/);
   main(root, ['render']);
-  assert.equal(readFileSync(join(root, recordPath), 'utf8'), original);
+  assert.equal(readFileSync(join(root, recordPath), 'utf-8'), original);
 });
 
 test('a newer decision without retained execution invalidates current progress while preserving the prior outcome', (t) => {
