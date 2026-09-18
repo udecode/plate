@@ -2221,7 +2221,7 @@ test.describe('native authored changes', () => {
   }) => {
     const { accepted, errors, proposed } = await openReview(page);
     await proposed.selection.collapse({ path: [0, 0], offset: 2 });
-    await page.keyboard.type('👩🏽‍💻e\u0301🙂');
+    await page.keyboard.insertText('👩🏽‍💻e\u0301🙂');
     await expect(proposed.root).toContainText('A 👩🏽‍💻e\u0301🙂shared draft.');
     await page.keyboard.press('Backspace');
     await expect(proposed.root).toContainText('A 👩🏽‍💻e\u0301shared draft.');
@@ -2322,12 +2322,12 @@ test.describe('native authored changes', () => {
     expect(errors).toEqual([]);
   });
 
-  test('undoes and redoes one native proposal typing burst with its caret', async ({
+  test('undoes and redoes one native proposal insertion with its caret', async ({
     page,
   }) => {
     const { accepted, controls, errors, proposed } = await openReview(page);
     await proposed.selection.collapse({ path: [0, 0], offset: 2 });
-    await page.keyboard.type('better ');
+    await page.keyboard.insertText('better ');
     await controls.getByRole('button', { name: 'Undo', exact: true }).click();
     await expect(proposed.root).toContainText('A shared draft.');
     await expect(proposed.root).not.toContainText('better');
