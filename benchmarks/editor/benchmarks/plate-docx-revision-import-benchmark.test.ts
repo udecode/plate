@@ -33,7 +33,6 @@ type Cohort = Readonly<{
   baselineMedianMs: number;
   maxMs: number;
   name: 'large' | 'normal' | 'pathological' | 'stress';
-  packets: number;
   paragraphs: number;
   revisions: number;
   samples: number;
@@ -52,7 +51,6 @@ const cohorts: readonly Cohort[] = [
     baselineMedianMs: 27.326,
     maxMs: 250,
     name: 'normal',
-    packets: 0,
     paragraphs: 4,
     revisions: 4,
     samples: 20,
@@ -61,7 +59,6 @@ const cohorts: readonly Cohort[] = [
     baselineMedianMs: 139.885,
     maxMs: 500,
     name: 'large',
-    packets: 0,
     paragraphs: 24,
     revisions: 16,
     samples: 20,
@@ -70,19 +67,17 @@ const cohorts: readonly Cohort[] = [
     baselineMedianMs: 777.777,
     maxMs: 1000,
     name: 'stress',
-    packets: 5,
     paragraphs: 96,
     revisions: 48,
-    samples: 3,
+    samples: 20,
   },
   {
     baselineMedianMs: 3681.535,
     maxMs: 2000,
     name: 'pathological',
-    packets: 5,
     paragraphs: 256,
     revisions: 96,
-    samples: 1,
+    samples: 20,
   },
 ];
 
@@ -452,15 +447,8 @@ test('DOCX revision import keeps heavy work constant and sparse', async () => {
       for (let index = 0; index < cohort.samples; index++) {
         samples.push(await runMeasured(fixture, spies));
       }
-      const packetSamples = [];
-
-      for (let packet = 0; packet < cohort.packets; packet++) {
-        for (let sample = 0; sample < 20; sample++) {
-          packetSamples.push(await runMeasured(fixture, spies));
-        }
-      }
       const durations = samples.map(({ durationMs }) => durationMs);
-      const distribution = [...samples, ...packetSamples];
+      const distribution = samples;
       const medianMs = percentile(durations, 0.5);
       const p95Ms = percentile(
         distribution.map(({ durationMs }) => durationMs),
@@ -494,7 +482,6 @@ test('DOCX revision import keeps heavy work constant and sparse', async () => {
         p95Ms,
         p95RssDelta,
         samples,
-        packetSamples,
       });
     }
   } finally {
