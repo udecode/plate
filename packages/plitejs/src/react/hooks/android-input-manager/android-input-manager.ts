@@ -979,6 +979,8 @@ export function createAndroidInputManager({
       case 'insertFromYank':
       case 'insertReplacementText':
       case 'insertText': {
+        let preventedTextInput = false;
+
         if (isDataTransfer(data)) {
           scheduleCommand(
             { data, kind: 'insert-data' },
@@ -1036,6 +1038,7 @@ export function createAndroidInputManager({
           canStoreDiff &&= canStoreDOMTextDiffAtRange(innerTargetRange2);
           if (!canStoreDiff && event.cancelable) {
             event.preventDefault();
+            preventedTextInput = true;
           }
 
           const [start, end] = RangeApi.edges(innerTargetRange2);
@@ -1160,6 +1163,9 @@ export function createAndroidInputManager({
             inputType: type,
           }
         );
+        if (preventedTextInput) {
+          flush();
+        }
       }
     }
   };
