@@ -101,7 +101,10 @@ export const shouldSyncModelSelectionAfterCommit = (
     inputController &&
     isTextInputSelectionHandledByCaretRepair(inputController, commit)
   ) {
-    return false;
+    return (
+      inputController.state.modelSelectionPreference?.reason ===
+      'repair-induced'
+    );
   }
 
   if (isSyncedTextOnlySelectionCommit(commit, inputController)) {

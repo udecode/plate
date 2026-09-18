@@ -675,9 +675,7 @@ export const createDOMRepairQueue = ({
         inputController.state.pendingNativeTextInputRepairPathKey != null &&
         inputController.state.pendingNativeTextInputRepairOffset != null;
       const frameId =
-        kind === 'repair-caret-after-text-insert' && hasPendingTextInsertRepair
-          ? null
-          : currentFrameId;
+        kind === 'repair-caret-after-text-insert' ? null : currentFrameId;
 
       if (frameId !== null) {
         beginDOMRepairFrame(frameState, frameId);

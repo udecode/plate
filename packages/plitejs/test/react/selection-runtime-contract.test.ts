@@ -189,6 +189,27 @@ describe('selection runtime', () => {
     ).toBe(true);
   });
 
+  test('exports repair-induced text selection after the DOM commit', () => {
+    const inputController = createInputController();
+    inputController.state.activeIntent = 'text-insert';
+    inputController.state.selectionSource = 'model-owned';
+    inputController.state.modelSelectionPreference = {
+      preferModelSelection: true,
+      reason: 'repair-induced',
+      selectionSource: 'model-owned',
+    };
+
+    expect(
+      shouldSyncModelSelectionAfterCommit(
+        createChange({
+          childrenChanged: true,
+          selectionChanged: true,
+        }),
+        inputController
+      )
+    ).toBe(true);
+  });
+
   test('composition text input still exports model selection normally', () => {
     const inputController = createInputController();
     inputController.state.activeIntent = 'text-insert';

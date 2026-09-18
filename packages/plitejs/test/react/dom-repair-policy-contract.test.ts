@@ -1911,6 +1911,90 @@ test('text insert caret repair waits until rendered text matches the model', () 
   }
 });
 
+test('text insert caret repair survives a later event frame while rendering settles', () => {
+  const editor = createEditor();
+  const root = mountEditorRoot(editor);
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: true },
+    state: createEditableInputControllerState(),
+  });
+  const modelText = 'after shifted image';
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('');
+  const range = document.createRange();
+  const selection = window.getSelection();
+  let repairAnimationFrame: (() => void) | undefined;
+  const domPhaseScheduler = createDOMPhaseScheduler({
+    getWindow: () => ({
+      cancelAnimationFrame: vi.fn(),
+      clearTimeout: vi.fn(),
+      queueMicrotask: vi.fn(),
+      requestAnimationFrame: vi.fn((callback: () => void) => {
+        repairAnimationFrame = callback;
+        return 1;
+      }),
+      setTimeout: vi.fn(() => 1),
+    }),
+  });
+
+  testSchedulers.add(domPhaseScheduler);
+  inputController.state.selectionSource = 'model-owned';
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: modelText }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: modelText.length },
+      focus: { path: [0, 0], offset: modelText.length },
+    },
+  });
+
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+  range.setStart(text, 0);
+  range.collapse(true);
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+
+  beginEditableEventFrame(editor, {
+    eventFamily: 'beforeinput',
+    focusOwner: 'editor',
+    inputIntent: 'text-insert',
+    modelSelectionBefore: editor.read(
+      (state) => state.runtime.snapshot().selection
+    ),
+    selectionSource: 'model-owned',
+    targetOwner: 'editor',
+  });
+  const queue = createRuntimeDOMRepairQueue({
+    domPhaseScheduler,
+    editor,
+    inputController,
+    scrollSelectionIntoView: () => {},
+    syncDOMSelectionToEditor: () => {},
+  });
+
+  try {
+    queue.repairCaretAfterModelTextInsert();
+    queue.cancelBefore(2);
+    text.data = modelText;
+    repairAnimationFrame?.();
+
+    expect(selection?.anchorOffset).toBe(modelText.length);
+  } finally {
+    root.remove();
+  }
+});
+
 test('deferred native input repair still fixes a stale caret after text already synced', () => {
   const editor = createEditor();
   const root = mountEditorRoot(editor);
