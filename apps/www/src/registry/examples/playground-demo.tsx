@@ -199,7 +199,7 @@ export default function PlaygroundDemo({
     <EditorRoot
       editor={editor}
       key={editor.id}
-      authored={{ intent: 'propose', projection: 'markup' }}
+      authored={{ intent: 'edit', projection: 'markup' }}
     >
       <PlaygroundDemoContent className={className} />
     </EditorRoot>

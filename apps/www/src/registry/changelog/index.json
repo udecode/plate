@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-18-default-playground-editing",
+      "href": "/registry/changelog/2026-09-18-default-playground-editing.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Start the Playground in Editing mode while keeping seeded suggestions visible",
+      "change": {
+        "type": "source",
+        "date": "2026-09-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["playground-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-18-fix-comment-popover-scroll",
       "href": "/registry/changelog/2026-09-18-fix-comment-popover-scroll.json",
       "status": "draft",

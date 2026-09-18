@@ -6,6 +6,7 @@ import { expect, type Locator, type Page, test } from '@playwright/test';
 
 const ROUTE = '/blocks/suggestion-demo';
 const THIRD_PARAGRAPH = 'Try typing your own suggestion here.';
+const PLAYGROUND_TITLE = 'Welcome to the Plate Playground!';
 
 type SuggestionPaintSnapshot = {
   input: number;
@@ -200,10 +201,13 @@ test('loads the homepage playground with its original suggestion set', async ({
 
   await expect(
     editor.getByRole('heading', {
-      name: 'Welcome to the Plate Playground!',
+      name: PLAYGROUND_TITLE,
       exact: true,
     })
   ).toBeVisible({ timeout: 20_000 });
+  await expect(
+    page.getByRole('button', { name: 'Editing', exact: true })
+  ).toBeVisible();
   await expect(
     editor
       .locator('[data-editor-authored-kind="insert"]')
@@ -265,8 +269,36 @@ test('keeps pending suggestions visible through both homepage mode controls', as
   );
   await editor.ready({
     editor: 'visible',
-    text: 'Welcome to the Plate Playground!',
+    text: PLAYGROUND_TITLE,
   });
+
+  await expect(
+    page.getByRole('button', { name: 'Editing', exact: true })
+  ).toBeVisible();
+  const heading = root.getByRole('heading', { level: 1 });
+  const authoredCount = await root
+    .locator('[data-editor-authored-change]')
+    .count();
+
+  await editor.selection.collapse({
+    path: [0, 0],
+    offset: PLAYGROUND_TITLE.length,
+  });
+  await page.keyboard.type('!');
+  await expect(heading).toHaveText(`${PLAYGROUND_TITLE}!`);
+  expect(await root.locator('[data-editor-authored-change]').count()).toBe(
+    authoredCount
+  );
+  await page.keyboard.press('ControlOrMeta+z');
+  await expect(heading).toHaveText(PLAYGROUND_TITLE);
+
+  await page.getByRole('button', { name: 'Editing', exact: true }).click();
+  await page
+    .getByRole('menuitemradio', { name: 'Suggestion', exact: true })
+    .click();
+  await expect(
+    page.getByRole('button', { name: 'Suggestion', exact: true })
+  ).toBeVisible();
 
   await editor.selection.select({
     anchor: { path: [0, 0], offset: 0 },

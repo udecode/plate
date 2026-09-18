@@ -42,7 +42,7 @@
       "migrationNotes": [],
       "targets": ["discussion", "floating-popover"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-09-18",

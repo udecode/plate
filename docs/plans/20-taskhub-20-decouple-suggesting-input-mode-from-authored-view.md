@@ -4,7 +4,9 @@ Objective:
 From the latest `next`, make Suggesting control only future input intent while
 the mounted authored view continues to show and review existing Add, Delete and
 replacement suggestions. Preserve explicit accepted-only projection, authored
-identity/data, view-local state and Plate/Plite ownership.
+identity/data, view-local state and Plate/Plite ownership. The 2026-09-18 user
+correction additionally requires the homepage Playground to start in Editing,
+not Suggesting, while retaining the seeded suggestion markup.
 
 Task source:
 TaskHub #20.
@@ -24,8 +26,8 @@ Completion threshold:
 AC1-AC8 are resolved with current source, focused package checks and fresh
 Playground browser proof on the final local code state. Public API/docs and
 generated registry output agree, the plan checker passes, and TaskHub #20 is
-returned to `review`. Commit, push, PR, release and deployment are outside this
-local-only threshold.
+returned to `review`. The correction is complete only after the default Editing
+case passes from a clean pushed ref and `origin/next` is read back at that SHA.
 
 Verification surface:
 Plite authored-view contracts and source-first typechecks; Plate suggestion
@@ -44,16 +46,23 @@ Boundaries:
 Allowed changes are the owning Plite authored view/input API and runtime, the
 Plate suggestion-mode adapter, affected toolbar/browser contracts, public docs,
 Vision/rules, changesets and generated registry output. Non-goals are changing
-the Playground's default Suggesting value, broad Notion parity, Diff redesign,
-unrelated repairs, publication, deployment or external messages.
+other demos' explicit authored policies, broad Notion parity, Diff redesign,
+unrelated repairs, deployment or external messages. The latest user correction
+supersedes the earlier default-value non-goal for the homepage Playground only.
 
 Delivery:
-Local-only. The current checkout is not committed or pushed, and no PR, release
-or deployment is authorized.
+The earlier same-thread instruction authorizes committing and pushing the
+corrected checkout to `origin/next`. No PR, release or deployment is authorized.
 
 Blocked condition:
 None. The required package, docs, registry and browser surfaces were available
 and the selected semantics follow the existing authored owner.
+
+Correction state:
+- current_phase: publication
+- next: commit and push the verified correction, then replay the homepage proof
+  from the clean pushed ref and read back TaskHub #20.
+- status: active
 
 Work Checklist:
 - [x] AC1: Existing Add/Delete/replacement suggestions, applicable marks, review
@@ -100,18 +109,18 @@ Work Checklist:
 - [x] Final browser proof starts a fresh Next process after registry generation;
       the test opens fresh pages and rechecks model value, history, toolbar,
       markers, review entry, accept, undo and strict runtime errors.
-- [x] Clean pushed-ref proof is N/A for this authorized local-only candidate.
-      Base `HEAD` and `origin/next` are both
-      `8748befe14b00cc9ab554fecba467075d207ad12`; issue-owned changes are
-      intentionally uncommitted and are not presented as published proof.
+- [x] The original package packet was published and replayed from
+      `b80290d0f6288c6bd4539b5ae4f4368247967f5e`; the homepage correction has its
+      own final clean pushed-ref gate below.
 - [x] Five-run native paint/focus stability is N/A: no native selection paint,
       DnD, compositor or React lifecycle defect is claimed. The focused browser
       replay completed retry-free on the fresh process.
 - [x] The public package delta is `EditorViewOptions.authored` accepting
       `edit + markup`, plus Plate's mode mapping. Existing branch changesets for
       `plitejs` and `platejs` contain the user-visible release lines.
-- [x] `registry-changelog` is N/A because this is package behavior/API work,
-      not a registry-only component change. Registry JSON is generated output.
+- [x] The original package behavior/API packet did not require a registry-only
+      entry. The homepage correction adds the required `playground-demo`
+      registry changelog source and generator-owned JSON.
 - [x] Compatibility is intentionally widened at the Plite API and behavior is
       changed at Plate's adapter; `propose + accepted` and `edit + proposed`
       remain rejected.
@@ -125,6 +134,18 @@ Work Checklist:
       source parity pass.
 - [x] TaskHub #20 is conditionally moved from `in_progress` to `review` and read
       back after all technical evidence closes.
+- [x] AC9: a fresh homepage Playground opens with the fixed mode control showing
+      Editing while all seeded Add/Delete/replacement markup and review entry
+      points remain visible.
+- [x] AC10: input before any toggle edits accepted content directly without a
+      new pending suggestion; after explicitly choosing Suggestion, equivalent
+      input creates a proposal. Mode switching remains view-local.
+- [x] Record the correction RED on pushed ref `b80290d0f6`, add the smallest
+      browser regression, and keep the durable owner at the homepage's explicit
+      mounted authored policy rather than changing global plugin defaults.
+- [x] Run focused browser, app type/lint and required root publication proof.
+- [ ] Commit/push the complete checkout, replay from the final pushed ref, read
+      back `origin/next`, and return TaskHub #20 to `review`.
 
 Decisions and tradeoffs:
 The hard-cut result is to keep one `AuthoredView` owner and permit
@@ -188,11 +209,38 @@ Verification evidence:
   `39d267ea4b6b302c248aa387476939162a56bdcb46a6eb4d135ed0da473aaad9`.
 - TaskHub receipt: conditional `in_progress -> review` update succeeded; final
   readback is #20, project `plate`, status `review`, `archived: false`.
+- Correction RED: on pushed ref `b80290d0f6`, the new homepage assertion found
+  no visible Editing control because `playground-demo.tsx` explicitly mounted
+  `propose + markup`.
+- Regression intake: this is not a failed-fix interrupt. TaskHub #20's original
+  body explicitly excluded the homepage default, so the latest user message is
+  a new scope delta that supersedes that non-goal. The ordinary one-case Patch
+  path remains the correct owner; no Regression workflow repair is warranted.
+- Correction GREEN: a fresh Next process on port 3298 and installed Google
+  Chrome pass the two exact homepage cases 2/2 retry-free in 7.1 seconds. The
+  proof checks initial Editing, seeded markup visibility, direct input without
+  a new authored marker, explicit Suggestion input, review, accept and undo.
+- Correction registry/app proof: `build:registry`, full `www typecheck`, focused
+  Ultracite and registry changelog `--check` pass. Generator-owned output
+  includes the new Playground event and the already-required discussion payload.
+- Correction publication gate: root `pnpm check` passes lint, type-aware lint,
+  package typechecks, fast tests and slow tests with zero failures. Benchmark
+  receipt files rewritten by the suite were restored to their clean baseline.
+- Correction fingerprints: homepage owner
+  `c1d9c023f94b37202facd8784498d7532797e88a52b7534d096f733e888dd814`, seeded
+  value `ac864c96cb624d5a82c735b3e34cdde0d607ff0412bb7cd3224d22885b3ff5e4`,
+  browser contract
+  `42d04797a17da7f1a10c18e317c038f3fa0b05d1f6d79c385fcadba25c864c54`,
+  Playwright harness
+  `f9254fd0decdfa706134c110b239238f8efe205b0a3f8bb97782ac689b476991`, and
+  registry changelog source
+  `43afd72978efaafecf2cd75c1d0f0f5a83104a8e52b0fe44dcbcca4a6a3359d6`.
 
 Open risks:
-None within the authorized local scope. Commit/push/PR/CI/release and a clean
-published-ref replay remain deliberately unclaimed until separately authorized.
+No unresolved technical risk remains inside the corrected homepage scope. The
+remaining acceptance boundary is publication and clean pushed-ref replay.
 
 Next action:
-Await maintainer review. Any commit, push, PR, CI or release action requires a
-separate user instruction.
+Commit and push the complete verified correction, replay the exact homepage
+cases from the final pushed ref, read back `origin/next`, and return TaskHub #20
+to `review`.

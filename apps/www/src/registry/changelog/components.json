@@ -1,6 +1,13 @@
 {
   "schemaVersion": 1,
   "components": {
+    "playground-demo": [
+      "2026-09-18-default-playground-editing",
+      "2026-09-10-playground-comments",
+      "2026-09-07-playground-details",
+      "2026-08-14-author-editor-runtime",
+      "2026-07-23-explicit-editor-kit-composition"
+    ],
     "discussion": [
       "2026-09-18-fix-comment-popover-scroll",
       "2026-09-14-fix-comments-selection-visibility",
@@ -166,12 +173,6 @@
       "2026-08-25-base-first-registry",
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
-    ],
-    "playground-demo": [
-      "2026-09-10-playground-comments",
-      "2026-09-07-playground-details",
-      "2026-08-14-author-editor-runtime",
-      "2026-07-23-explicit-editor-kit-composition"
     ],
     "table": [
       "2026-09-10-table-selection-rendering",
