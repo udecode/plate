@@ -10,15 +10,17 @@ Question: Which command discovery and insertion policy belongs to the slash menu
 
 [2026-09-18-slash-command-composition-ownership](../review-records/2026-09-18-slash-command-composition-ownership.json) — **pursue**. Pursue shrinking the 676-line copied slash component by adopting typed matching-empty insertion and deleting 17 repeated matcher/insert recipes plus redundant availability/read-only guards where the combobox session already proves eligibility. Keep the 21-item catalog, labels, icons, keywords, groups, AI membership, trigger policy and JSX in copied source. Retain BaseSlashPlugin and BaseComboboxPlugin; reject a public slash item factory, command registry or whole-component package promotion. Five bounded units reviewed, zero excluded and zero unresolved.
 
-Compiled decision: [slash-command-ownership.md](../decisions/slash-command-ownership.md). Source observation: matching. Source matching is not behavior proof.
+Compiled decision: [slash-command-ownership.md](../decisions/slash-command-ownership.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **unbound**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
+Execution: **completed**. Proof: **stale**. The bounded Plate, CLI, registry, adapter, and Chromium claims are verified. The full www compiler remains red only at scripts/registry-package-dependencies.mts:343, tests/browser/table-selection.spec.ts:543, and packages/platejs/src/lib/plugins/HistoryPlugin.ts:23; those current-checkout failures are outside this plan.
+
+Outcome: [2026-09-18-slash-ui-actions-execution](../review-records/2026-09-18-slash-ui-actions-execution.json). Governing reviews: [2026-09-18-ui-menu-focus-and-block-insertion-ownership](../review-records/2026-09-18-ui-menu-focus-and-block-insertion-ownership.json), [2026-09-18-slash-command-composition-ownership](../review-records/2026-09-18-slash-command-composition-ownership.json). Work kind: implementation. Reconciled with current review: yes.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof not-replayed. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [slash.tsx](../../../apps/www/src/registry/components/editor/slash.tsx), [insert-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/insert-toolbar-button.tsx), `apps/www/src/registry/components/editor/transforms.ts` (historical input unavailable), `apps/www/src/registry/components/editor/transforms.spec.ts` (historical input unavailable), `apps/www/src/registry/components/editor/transforms-combobox.spec.ts` (historical input unavailable), [pluginRuntimeTypes.ts](../../../packages/platejs/src/lib/editor/pluginRuntimeTypes.ts), [resolvePlugins.ts](../../../packages/platejs/src/internal/plugin/resolvePlugins.ts), [block-insertion.spec.ts](../../../packages/platejs/src/lib/plugin/block-insertion.spec.ts), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [plate.md](../../vision/plate.md), [plite.md](../../vision/plite.md). Changed directories: none identified. Changed source groups: ui/slash.
 
 - **unbound-plan**: [2026-08-29-combobox-trigger-regressions.md](../../plans/2026-08-29-combobox-trigger-regressions.md).
 
@@ -27,6 +29,10 @@ Changed files: none identified. Changed directories: none identified. Changed so
 - **unbound-plan**: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
 
 - **unbound-plan**: [2026-09-16-slash-ai-suggested-paragraph.md](../../plans/2026-09-16-slash-ai-suggested-paragraph.md).
+
+- **completed-plan-without-current-outcome**: [2026-09-18-slash-ui-actions-design.md](../../plans/2026-09-18-slash-ui-actions-design.md).
+
+- **stale-execution-proof**: [2026-09-18-slash-ui-actions-execution](../review-records/2026-09-18-slash-ui-actions-execution.json).
 
 ## Plans and execution
 
@@ -38,12 +44,14 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-08-30-fix-combobox-popup-y-position.md](../../plans/2026-08-30-fix-combobox-popup-y-position.md) | completed | implementation | unbound |
 | [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md) | completed | implementation | unbound |
 | [2026-09-16-slash-ai-suggested-paragraph.md](../../plans/2026-09-16-slash-ai-suggested-paragraph.md) | completed | implementation | unbound |
+| [2026-09-18-slash-ui-actions-design.md](../../plans/2026-09-18-slash-ui-actions-design.md) | completed | design | [2026-09-18-ui-menu-focus-and-block-insertion-ownership](../review-records/2026-09-18-ui-menu-focus-and-block-insertion-ownership.json), [2026-09-18-slash-command-composition-ownership](../review-records/2026-09-18-slash-command-composition-ownership.json) |
+| [2026-09-18-slash-ui-actions-implementation.md](../../plans/2026-09-18-slash-ui-actions-implementation.md) | completed | implementation | [2026-09-18-ui-menu-focus-and-block-insertion-ownership](../review-records/2026-09-18-ui-menu-focus-and-block-insertion-ownership.json), [2026-09-18-slash-command-composition-ownership](../review-records/2026-09-18-slash-command-composition-ownership.json) |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
+- [2026-09-18-slash-ui-actions-execution](../review-records/2026-09-18-slash-ui-actions-execution.json): completed; binding **current**; Added typed semantic block insert/upsert ownership, moved copied dropdown focus intent to selected items for Base and Radix, migrated Insert and Slash to direct plugin actions, deleted the registry transforms helper, regenerated contracts and registry output, and proved both provider families. Proof: stale / verified. The bounded Plate, CLI, registry, adapter, and Chromium claims are verified. The full www compiler remains red only at scripts/registry-package-dependencies.mts:343, tests/browser/table-selection.spec.ts:543, and packages/platejs/src/lib/plugins/HistoryPlugin.ts:23; those current-checkout failures are outside this plan.
 
 ## Inspected documents
 
@@ -92,7 +100,7 @@ References: [2026-09-16-slash-ai-suggested-paragraph.md](../../plans/2026-09-16-
 
 ### 2026-09-18: 2026-09-18-slash-command-composition-ownership
 
-[Immutable record](../review-records/2026-09-18-slash-command-composition-ownership.json) — review; pursue; observation matching.
+[Immutable record](../review-records/2026-09-18-slash-command-composition-ownership.json) — review; pursue; observation stale.
 
 Pursue shrinking the 676-line copied slash component by adopting typed matching-empty insertion and deleting 17 repeated matcher/insert recipes plus redundant availability/read-only guards where the combobox session already proves eligibility. Keep the 21-item catalog, labels, icons, keywords, groups, AI membership, trigger policy and JSX in copied source. Retain BaseSlashPlugin and BaseComboboxPlugin; reject a public slash item factory, command registry or whole-component package promotion. Five bounded units reviewed, zero excluded and zero unresolved.
 
@@ -110,7 +118,18 @@ Question: Which command discovery and insertion policy belongs to the slash menu
 
 Proof limits: Read-only source review. Existing package and registry tests establish trigger defaults, transient input schema, stale/read-only rejection, atomic commit, one-step undo and current empty-block behavior. No proposed typed insertion API or lexical item factory was implemented or typechecked. No native keyboard/pointer selection, IME, focus, async AI action, generated provider installation, or complete slash catalog behavior was replayed.
 
-References: [slash-command-ownership.md](../decisions/slash-command-ownership.md), [registry-ui-ownership.md](../decisions/registry-ui-ownership.md), [slash.tsx](../../../apps/www/src/registry/components/editor/slash.tsx), [inline-combobox.tsx](../../../apps/www/src/registry/components/editor/inline-combobox.tsx), [insert-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/insert-toolbar-button.tsx), [transforms.ts](../../../apps/www/src/registry/components/editor/transforms.ts), [transforms-combobox.spec.ts](../../../apps/www/src/registry/components/editor/transforms-combobox.spec.ts), [BaseSlashPlugin.spec.ts](../../../packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.spec.ts), [BaseComboboxPlugin.spec.ts](../../../packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.spec.ts).
+References: [slash-command-ownership.md](../decisions/slash-command-ownership.md), [registry-ui-ownership.md](../decisions/registry-ui-ownership.md), [slash.tsx](../../../apps/www/src/registry/components/editor/slash.tsx), [inline-combobox.tsx](../../../apps/www/src/registry/components/editor/inline-combobox.tsx), [insert-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/insert-toolbar-button.tsx), `apps/www/src/registry/components/editor/transforms.ts` (historical input unavailable), `apps/www/src/registry/components/editor/transforms-combobox.spec.ts` (historical input unavailable), [BaseSlashPlugin.spec.ts](../../../packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.spec.ts), [BaseComboboxPlugin.spec.ts](../../../packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.spec.ts).
+
+### 2026-09-18: 2026-09-18-slash-ui-actions-execution
+
+[Immutable record](../review-records/2026-09-18-slash-ui-actions-execution.json) — execution; completed; observation stale.
+
+Added typed semantic block insert/upsert ownership, moved copied dropdown focus intent to selected items for Base and Radix, migrated Insert and Slash to direct plugin actions, deleted the registry transforms helper, regenerated contracts and registry output, and proved both provider families.
+
+
+Proof limits: The bounded Plate, CLI, registry, adapter, and Chromium claims are verified. The full www compiler remains red only at scripts/registry-package-dependencies.mts:343, tests/browser/table-selection.spec.ts:543, and packages/platejs/src/lib/plugins/HistoryPlugin.ts:23; those current-checkout failures are outside this plan.
+
+References: [2026-09-18-slash-ui-actions-implementation.md](../../plans/2026-09-18-slash-ui-actions-implementation.md).
 
 ## Retrieval boundaries
 

@@ -1689,6 +1689,63 @@ describe('plite transforms contract', () => {
     assert.deepEqual(after.selection, disjointNodeSelection());
   });
 
+  it('block formatting targets the lowest blocks inside selected containers', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:node-selection-container-blocks', {
+          elements: {
+            cell: {
+              content: schema.content.types(['heading', 'paragraph'], {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+            },
+            heading: { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.type('cell', {
+            default: { type: 'cell' },
+            min: 1,
+          }),
+        }),
+      ],
+      initialValue: [
+        { type: 'cell', children: [paragraph('one')] },
+        { type: 'cell', children: [paragraph('two')] },
+      ],
+    });
+
+    editor.update.selection.setNodes([[0], [1]]);
+
+    assert.deepEqual(
+      editor.read.nodes.blocks({ mode: 'lowest' }).map(([, path]) => path),
+      [
+        [0, 0],
+        [1, 0],
+      ]
+    );
+
+    editor.update.blocks.toggle({ type: 'heading' });
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'cell',
+        children: [{ type: 'heading', children: [{ text: 'one' }] }],
+      },
+      {
+        type: 'cell',
+        children: [{ type: 'heading', children: [{ text: 'two' }] }],
+      },
+    ]);
+
+    editor.update.blocks.toggle({ type: 'heading' });
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'cell', children: [paragraph('one')] },
+      { type: 'cell', children: [paragraph('two')] },
+    ]);
+  });
+
   it('blocks.reset uses the editor view root default', () => {
     const editor = createEditor({
       plugins: [

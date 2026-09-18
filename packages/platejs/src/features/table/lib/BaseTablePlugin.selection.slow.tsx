@@ -18,6 +18,11 @@ import {
   type NodeSelection,
   type Selection,
 } from '../../../core';
+import {
+  BaseLineHeightPlugin,
+  BaseTextAlignPlugin,
+} from '../../basic-styles/lib/BaseStylePlugins';
+import { BaseListPlugin, ListType } from '../../list/lib/BaseListPlugin';
 import { createTestTableEditor } from './__tests__/getTestTablePlugins';
 import type { TableDefinition } from './BaseTablePlugin';
 import {
@@ -509,6 +514,125 @@ describe('table selection slow contracts', () => {
               </editor>
             ).children
           );
+        });
+      });
+
+      describe('block formatting', () => {
+        it('formats the blocks inside selected cells', () => {
+          const input = (
+            <editor>
+              <htable>
+                <htr>
+                  <htd>
+                    <hp>
+                      <anchor />
+                      one
+                    </hp>
+                  </htd>
+                  <htd>
+                    <hp>
+                      two
+                      <focus />
+                    </hp>
+                  </htd>
+                </htr>
+              </htable>
+            </editor>
+          ) as TestEditor;
+          const editor = createTestTableEditor({
+            plugins: [
+              BaseTablePlugin.configure({
+                initialState: { allowCellSpanEditing: false },
+              }),
+              BaseLineHeightPlugin,
+              BaseListPlugin,
+              BaseTextAlignPlugin,
+            ],
+            selection: input.selection,
+            initialValue: input.children,
+          });
+          const selection = editor.read.selection();
+          const view =
+            selection &&
+            editor.plugin(BaseTablePlugin).read.selection({ at: selection });
+
+          assert.ok(view && view.cells.length > 1);
+          editor.update.selection.setNodes(
+            view.cells.map(([, path]) => path),
+            {
+              anchor: editor.read.nodes.path(view.anchor)!,
+              focus: editor.read.nodes.path(view.focus)!,
+            }
+          );
+
+          editor.update.list.toggle({ type: ListType.Bulleted });
+
+          expect(editor.read.children()).toEqual(
+            (
+              <editor>
+                <htable>
+                  <htr>
+                    <htd>
+                      <hp indent={1} listType="bulleted">
+                        one
+                      </hp>
+                    </htd>
+                    <htd>
+                      <hp indent={1} listType="bulleted">
+                        two
+                      </hp>
+                    </htd>
+                  </htr>
+                </htable>
+              </editor>
+            ).children
+          );
+          assertNodeSelection(getEditorLiveSelection(editor));
+
+          editor.update.list.toggle({ type: ListType.Bulleted });
+
+          expect(editor.read.children()).toEqual(
+            (
+              <editor>
+                <htable>
+                  <htr>
+                    <htd>
+                      <hp>one</hp>
+                    </htd>
+                    <htd>
+                      <hp>two</hp>
+                    </htd>
+                  </htr>
+                </htable>
+              </editor>
+            ).children
+          );
+          assertNodeSelection(getEditorLiveSelection(editor));
+
+          editor.plugin(BaseLineHeightPlugin).update.set(2);
+          editor.plugin(BaseTextAlignPlugin).update.set('center');
+
+          expect(editor.read.children()).toEqual(
+            (
+              <editor>
+                <htable>
+                  <htr>
+                    <htd>
+                      <hp lineHeight={2} textAlign="center">
+                        one
+                      </hp>
+                    </htd>
+                    <htd>
+                      <hp lineHeight={2} textAlign="center">
+                        two
+                      </hp>
+                    </htd>
+                  </htr>
+                </htable>
+              </editor>
+            ).children
+          );
+          assertNodeSelection(getEditorLiveSelection(editor));
         });
       });
 

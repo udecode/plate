@@ -335,6 +335,7 @@ export type Schema = Readonly<{
 }>;
 export type Mutations = Readonly<{
   readonly audio: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
@@ -348,6 +349,7 @@ export type Mutations = Readonly<{
     readonly type: "audio";
   }>;
   readonly blockquote: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly checked?: boolean;
       readonly indent?: number;
@@ -367,6 +369,7 @@ export type Mutations = Readonly<{
     readonly type: "blockquote";
   }>;
   readonly callout: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly backgroundColor?: string;
       readonly icon?: string;
@@ -381,6 +384,7 @@ export type Mutations = Readonly<{
     readonly type: "callout";
   }>;
   readonly codeBlock: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly checked?: boolean;
       readonly indent?: number;
@@ -402,6 +406,7 @@ export type Mutations = Readonly<{
     readonly type: "codeBlock";
   }>;
   readonly column: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly width?: string;
     }>;
@@ -411,11 +416,13 @@ export type Mutations = Readonly<{
     readonly type: "column";
   }>;
   readonly columnGroup: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<Record<PropertyKey, never>>;
     readonly properties: Readonly<Record<PropertyKey, never>>;
     readonly type: "columnGroup";
   }>;
   readonly date: Readonly<{
+    readonly block: false;
     readonly construction: Readonly<{
       readonly value: string;
     }>;
@@ -425,6 +432,7 @@ export type Mutations = Readonly<{
     readonly type: "date";
   }>;
   readonly details: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly checked?: boolean;
       readonly indent?: number;
@@ -444,6 +452,7 @@ export type Mutations = Readonly<{
     readonly type: "details";
   }>;
   readonly emojiInput: Readonly<{
+    readonly block: false;
     readonly construction: Readonly<{
       readonly trigger?: string;
       readonly userId?: string;
@@ -457,6 +466,7 @@ export type Mutations = Readonly<{
     readonly type: "emojiInput";
   }>;
   readonly equation: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly latex?: string;
     }>;
@@ -466,6 +476,7 @@ export type Mutations = Readonly<{
     readonly type: "equation";
   }>;
   readonly file: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly name?: string;
       readonly url: string;
@@ -479,6 +490,7 @@ export type Mutations = Readonly<{
     readonly type: "file";
   }>;
   readonly footnoteDefinition: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly ref: string;
     }>;
@@ -488,6 +500,7 @@ export type Mutations = Readonly<{
     readonly type: "footnoteDefinition";
   }>;
   readonly footnoteInput: Readonly<{
+    readonly block: false;
     readonly construction: Readonly<{
       readonly trigger?: string;
       readonly userId?: string;
@@ -501,6 +514,7 @@ export type Mutations = Readonly<{
     readonly type: "footnoteInput";
   }>;
   readonly footnote: Readonly<{
+    readonly block: false;
     readonly construction: Readonly<{
       readonly ref: string;
     }>;
@@ -510,6 +524,7 @@ export type Mutations = Readonly<{
     readonly type: "footnoteReference";
   }>;
   readonly heading: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly checked?: boolean;
       readonly indent?: number;
@@ -535,11 +550,13 @@ export type Mutations = Readonly<{
     readonly type: "heading";
   }>;
   readonly horizontalRule: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<Record<PropertyKey, never>>;
     readonly properties: Readonly<Record<PropertyKey, never>>;
     readonly type: "horizontalRule";
   }>;
   readonly image: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly alt?: string;
       readonly checked?: boolean;
@@ -573,6 +590,7 @@ export type Mutations = Readonly<{
     readonly type: "image";
   }>;
   readonly inlineEquation: Readonly<{
+    readonly block: false;
     readonly construction: Readonly<{
       readonly latex?: string;
     }>;
@@ -582,6 +600,7 @@ export type Mutations = Readonly<{
     readonly type: "inlineEquation";
   }>;
   readonly link: Readonly<{
+    readonly block: false;
     readonly construction: Readonly<{
       readonly target?: string;
       readonly url: string;
@@ -593,6 +612,7 @@ export type Mutations = Readonly<{
     readonly type: "link";
   }>;
   readonly mediaEmbed: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly provider?: string;
       readonly sourceUrl?: string;
@@ -610,6 +630,7 @@ export type Mutations = Readonly<{
     readonly type: "mediaEmbed";
   }>;
   readonly mention: Readonly<{
+    readonly block: false;
     readonly construction: Readonly<{
       readonly label?: string;
       readonly ref: string;
@@ -621,6 +642,7 @@ export type Mutations = Readonly<{
     readonly type: "mention";
   }>;
   readonly mentionInput: Readonly<{
+    readonly block: false;
     readonly construction: Readonly<{
       readonly trigger?: string;
       readonly userId?: string;
@@ -634,6 +656,7 @@ export type Mutations = Readonly<{
     readonly type: "mentionInput";
   }>;
   readonly paragraph: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly checked?: boolean;
       readonly indent?: number;
@@ -658,6 +681,7 @@ export type Mutations = Readonly<{
     readonly type: "paragraph";
   }>;
   readonly placeholder: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly mediaType: string;
     }>;
@@ -667,6 +691,7 @@ export type Mutations = Readonly<{
     readonly type: "placeholder";
   }>;
   readonly slashInput: Readonly<{
+    readonly block: false;
     readonly construction: Readonly<{
       readonly trigger?: string;
       readonly userId?: string;
@@ -680,12 +705,14 @@ export type Mutations = Readonly<{
     readonly type: "slashInput";
   }>;
   readonly detailsSummary: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<Record<PropertyKey, never>>;
     readonly properties: Readonly<Record<PropertyKey, never>>;
     readonly toggle: true;
     readonly type: "summary";
   }>;
   readonly table: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly columnWidths?: readonly (null | number)[];
       readonly marginLeft?: number;
@@ -697,6 +724,7 @@ export type Mutations = Readonly<{
     readonly type: "table";
   }>;
   readonly tableCell: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly backgroundColor?: string;
       readonly borders?: unknown;
@@ -714,6 +742,7 @@ export type Mutations = Readonly<{
     readonly type: "tableCell";
   }>;
   readonly tableRow: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly height?: number;
     }>;
@@ -723,11 +752,13 @@ export type Mutations = Readonly<{
     readonly type: "tableRow";
   }>;
   readonly toc: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<Record<PropertyKey, never>>;
     readonly properties: Readonly<Record<PropertyKey, never>>;
     readonly type: "toc";
   }>;
   readonly video: Readonly<{
+    readonly block: true;
     readonly construction: Readonly<{
       readonly provider?: string;
       readonly sourceUrl?: string;

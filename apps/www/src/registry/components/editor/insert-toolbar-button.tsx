@@ -57,7 +57,6 @@ import {
   ToolbarButton,
   ToolbarMenuGroup,
 } from '@/registry/components/editor/toolbar';
-import { insertBlock } from '@/registry/components/editor/transforms';
 
 import { linkPlugin } from './link';
 
@@ -129,13 +128,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseParagraphPlugin).insert({}, options);
-            },
-          });
+          tx.plugin(BaseParagraphPlugin).insert({}, { select: true });
         });
       },
     });
@@ -159,15 +152,7 @@ function getGroups(editor: Editor): Group[] {
           if (!current.installed || editor.read.view.isReadOnly()) return;
 
           editor.update((tx) => {
-            insertBlock(tx, {
-              matches: (block) =>
-                !block.listType &&
-                block.type === current.schema.type &&
-                block.level === level,
-              insert: (options) => {
-                tx.plugin(BaseHeadingPlugin).insert({ level }, options);
-              },
-            });
+            tx.plugin(BaseHeadingPlugin).insert({ level }, { select: true });
           });
         },
       });
@@ -185,13 +170,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseTablePlugin).insert({}, options);
-            },
-          });
+          tx.plugin(BaseTablePlugin).insert({}, { select: true });
         });
       },
     });
@@ -208,13 +187,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseCodeBlockPlugin).insert({}, options);
-            },
-          });
+          tx.plugin(BaseCodeBlockPlugin).insert({}, { select: true });
         });
       },
     });
@@ -231,13 +204,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseBlockquotePlugin).insert({}, options);
-            },
-          });
+          tx.plugin(BaseBlockquotePlugin).insert({}, { select: true });
         });
       },
     });
@@ -254,13 +221,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseHorizontalRulePlugin).insert({}, options);
-            },
-          });
+          tx.plugin(BaseHorizontalRulePlugin).insert({}, { select: true });
         });
       },
     });
@@ -292,12 +253,7 @@ function getGroups(editor: Editor): Group[] {
           }
 
           editor.update((tx) => {
-            insertBlock(tx, {
-              matches: (block) => block.listType === type,
-              insert: (options) => {
-                tx.plugin(BaseListPlugin).insert({ type }, options);
-              },
-            });
+            tx.plugin(BaseListPlugin).insert({ type }, { select: true });
           });
         },
       });
@@ -315,13 +271,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseDetailsPlugin).insert({}, options);
-            },
-          });
+          tx.plugin(BaseDetailsPlugin).insert({}, { select: true });
         });
       },
     });
@@ -338,10 +288,6 @@ function getGroups(editor: Editor): Group[] {
 
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
-        const block = editor.read.nodes.block();
-
-        if (!block) return;
-
         const editable = editor.api.dom.editable();
         const ownerDocument = editable?.ownerDocument;
         const activeElement = ownerDocument?.activeElement;
@@ -350,11 +296,7 @@ function getGroups(editor: Editor): Group[] {
           .insertUrl(
             // oxlint-disable-next-line no-alert -- This copied menu owns its URL input policy.
             () => window.prompt('Enter the URL of the image'),
-            {
-              replaceEmpty:
-                !!block[0].listType || block[0].type !== current.schema.type,
-              select: true,
-            }
+            { select: true }
           )
           .then((inserted) => {
             if (
@@ -382,10 +324,6 @@ function getGroups(editor: Editor): Group[] {
 
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
-        const block = editor.read.nodes.block();
-
-        if (!block) return;
-
         const editable = editor.api.dom.editable();
         const ownerDocument = editable?.ownerDocument;
         const activeElement = ownerDocument?.activeElement;
@@ -394,11 +332,7 @@ function getGroups(editor: Editor): Group[] {
           .insertUrl(
             // oxlint-disable-next-line no-alert -- This copied menu owns its URL input policy.
             () => window.prompt('Enter the URL of the embed'),
-            {
-              replaceEmpty:
-                !!block[0].listType || block[0].type !== current.schema.type,
-              select: true,
-            }
+            { select: true }
           )
           .then((inserted) => {
             if (
@@ -426,13 +360,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseTocPlugin).insert({}, options);
-            },
-          });
+          tx.plugin(BaseTocPlugin).insert({}, { select: true });
         });
       },
     });
@@ -449,13 +377,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseColumnPlugin).insert({ columns: 3 }, options);
-            },
-          });
+          tx.plugin(BaseColumnPlugin).insert({ columns: 3 }, { select: true });
         });
       },
     });
@@ -473,13 +395,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseEquationPlugin).insert({}, options);
-            },
-          });
+          tx.plugin(BaseEquationPlugin).insert({}, { select: true });
         });
       },
     });
@@ -496,13 +412,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseExcalidrawPlugin).insert({}, options);
-            },
-          });
+          tx.plugin(BaseExcalidrawPlugin).insert({}, { select: true });
         });
       },
     });
@@ -519,13 +429,7 @@ function getGroups(editor: Editor): Group[] {
         if (!current.installed || editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
-          insertBlock(tx, {
-            matches: (block) =>
-              !block.listType && block.type === current.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseCodeDrawingPlugin).insert({}, options);
-            },
-          });
+          tx.plugin(BaseCodeDrawingPlugin).insert({}, { select: true });
         });
       },
     });
@@ -626,18 +530,10 @@ export function InsertToolbarButton() {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const [open, setOpen] = React.useState(false);
-  const focusEditorRef = React.useRef<boolean | null>(null);
   const groups = getGroups(editor);
 
   return (
-    <DropdownMenu
-      open={open}
-      onOpenChange={(nextOpen) => {
-        if (nextOpen) focusEditorRef.current = null;
-        setOpen(nextOpen);
-      }}
-      modal={false}
-    >
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
         <ToolbarButton
           disabled={readOnly || groups.length === 0}
@@ -651,18 +547,6 @@ export function InsertToolbarButton() {
 
       <DropdownMenuContent
         className="flex max-h-[500px] min-w-0 flex-col overflow-y-auto"
-        onFinalFocus={(event) => {
-          const focusEditor = focusEditorRef.current;
-          focusEditorRef.current = null;
-
-          if (focusEditor === null) return;
-
-          event.preventDefault();
-
-          if (focusEditor && !editor.read.view.isReadOnly()) {
-            editor.api.dom.focus();
-          }
-        }}
         align="start"
       >
         {groups.map(({ group, items }) => (
@@ -672,10 +556,16 @@ export function InsertToolbarButton() {
                 <DropdownMenuItem
                   key={value}
                   className="min-w-[180px]"
-                  onSelect={() => {
-                    focusEditorRef.current = focusEditor;
-                    onSelect();
-                  }}
+                  finalFocus={
+                    focusEditor
+                      ? () => {
+                          if (!editor.read.view.isReadOnly()) {
+                            editor.api.dom.focus();
+                          }
+                        }
+                      : false
+                  }
+                  onSelect={onSelect}
                 >
                   {icon}
                   {label}

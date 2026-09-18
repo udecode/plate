@@ -8,9 +8,9 @@ Question: Who owns an upload after a placeholder moves, disappears, is undone or
 
 ## Current decision
 
-Unassessed. No review conclusion is recorded.
+[2026-09-19-uploads-node-model-correction](../review-records/2026-09-19-uploads-node-model-correction.json) — **pursue**. Pursue the upload protocol redesign, but supersede the recommendation to delete the dedicated draft asset node. Reserved position, restored unbound content and retry are document jobs distinct from completed media. Per-media pending nodes would make required media URLs optional across four schemas, spread draft rendering and codec branches, and still need one shared upload owner. Keep one editor-owned upload capability, one validated batch path, root-aware NodeKey authority, application transport, view-owned preview URLs and Plite history. Nine units reviewed, none excluded or without a verdict; the exact draft-slot schema remains Task design.
 
-Compiled decision: not associated. Source observation: unknown. Source matching is not behavior proof.
+Compiled decision: [uploads-ownership.md](../decisions/uploads-ownership.md). Source observation: matching. Source matching is not behavior proof.
 
 Execution: **unbound**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
 
@@ -23,8 +23,6 @@ Changed files: none identified. Changed directories: none identified. Changed so
 - **unbound-plan**: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
 
 - **unbound-plan**: [4803-update-upload-history.md](../../plans/4803-update-upload-history.md).
-
-- **unreconciled-execution**: [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json).
 
 ## Plans and execution
 
@@ -39,7 +37,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-- [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json): completed; binding **historical-unbound**; Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review. Proof: unknown / unknown. Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof.
+No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
 
 ## Inspected documents
 
@@ -62,6 +60,50 @@ Proof limits: Historical execution claim only. Complete original source/fixture/
 
 References: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
 
+### 2026-09-18: 2026-09-18-uploads-lifecycle-ownership
+
+[Immutable record](../review-records/2026-09-18-uploads-lifecycle-ownership.json) — review; pursue; observation matching.
+
+Pursue replacing the separate persisted placeholder type, mediaType routing and type-changing completion with pending media owned by the intended media schemas. Keep one editor-owned upload capability, application transport, view-owned preview URLs and Plite history. One validated submission must preserve exact node/root authority from admission through completion. Nine units reviewed, none excluded or without a verdict. Seven executable observations establish five defects and two lifetime/restoration gaps; the replacement API and runtime remain design work.
+
+Question: Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?
+
+- Keep/configure: rejected as the final direction; configuration cannot fix pre-validation document mutation, discarded root identity, schema-name confusion or split batch admission.
+- Repair current placeholder APIs locally: viable adoption step, but retains two representations of one intended asset, duplicated media routing and a type-changing completion protocol. It loses to merging the pending state into the intended media owner.
+- Merge into pending image/file/audio/video nodes: strongest direction. Delete placeholder/mediaType/replaceMedia while keeping one upload capability and local task resources. Design absent-source schema, caption/selection, serialization/collaboration and restoration laws before acceptance.
+- Remove all pending document content and wait for completion or use a view overlay: rejected because reserved position, movement, authored empty slots and undo remain current jobs. Moving their ownership to views recreates placement and history coordination.
+- Move requests to React or duplicate controllers per media plugin: rejected because remount/headless lifetime and shared batch admission require a common editor owner; keep copied presentation and preview URLs in views.
+- Promote a general asynchronous job/session framework to Plite: rejected. Plite already owns NodeKey/root operations, skipped-commit history mapping, plugin cleanup and publicly observable document-replacement annotations. Fix the upload consumer; settle supported typed annotation access without adding another runtime signal.
+- Keep application transport and server policy: selected. UploadThing-specific state is already outside the package, and a new provider abstraction would not remove demonstrated upload ownership failures.
+- reopens [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain editor-owned transport, post-commit File delivery, application transport and view object-URL ownership. Reopen completeness of ingress, exact-target completion, document lifetime/restoration and the persisted placeholder representation because current source and seven executable observations contradict completeness. Do not reopen unrelated UI extractions or inherit historical performance/browser proof.
+
+Proof limits: Audit only: no product implementation or public doctrine changed, and the pending-media API/runtime has not been accepted or measured. Existing package/view tests and seven observed-behavior probes were run locally; browser cases were inspected, not rerun. No live UploadThing, native-device, performance, release or replacement-runtime claim. Design must settle absent-source grammar/rendering/export/collaboration, readonly/root lifetime, cancellation/editor exit, full-document replacement and partial-batch undo/redo restoration. Artifact files are excluded by the repository formatter/linter; their executable probe passed and ledger/whitespace checks are the applicable artifact checks.
+
+References: [uploads-ownership.md](../decisions/uploads-ownership.md), [observations.test.ts](../../plans/artifacts/2026-09-18-uploads-review/observations.test.ts), [observations.txt](../../plans/artifacts/2026-09-18-uploads-review/observations.txt), [BasePlaceholderPlugin.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.ts), [BasePlaceholderPlugin.upload.spec.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.upload.spec.ts), [BaseMediaPlugin.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts), [PlaceholderPlugin.tsx](../../../packages/platejs/src/react/features/media/placeholder/PlaceholderPlugin.tsx), [media-placeholder.tsx](../../../apps/www/src/registry/components/editor/media-placeholder.tsx), [media.tsx](../../../apps/www/src/registry/components/editor/media.tsx), [dnd.tsx](../../../apps/www/src/registry/components/editor/dnd.tsx), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [commit.ts](../../../packages/plitejs/src/core/commit.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [plugin.ts](../../../packages/plitejs/src/core/plugin.ts), [history-plugin.ts](../../../packages/plitejs/src/history/history-plugin.ts), [history-state.ts](../../../packages/plitejs/src/history/history-state.ts), [uploadthing.ts](../../../apps/www/src/registry/lib/uploadthing.ts), [clipboard-upload.spec.ts](../../../apps/www/tests/browser/clipboard-upload.spec.ts), [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md), [2026-09-07-plate-ui-execution.md](../../editor-audits/reports/2026-09-07-plate-ui-execution.md), [4803-update-upload-history.md](../../plans/4803-update-upload-history.md), [clipboard-content-fitting.md](../decisions/clipboard-content-fitting.md).
+
+### 2026-09-19: 2026-09-19-uploads-node-model-correction
+
+[Immutable record](../review-records/2026-09-19-uploads-node-model-correction.json) — review; pursue; observation matching.
+
+Pursue the upload protocol redesign, but supersede the recommendation to delete the dedicated draft asset node. Reserved position, restored unbound content and retry are document jobs distinct from completed media. Per-media pending nodes would make required media URLs optional across four schemas, spread draft rendering and codec branches, and still need one shared upload owner. Keep one editor-owned upload capability, one validated batch path, root-aware NodeKey authority, application transport, view-owned preview URLs and Plite history. Nine units reviewed, none excluded or without a verdict; the exact draft-slot schema remains Task design.
+
+Question: Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?
+
+- Keep/configure: rejected as the final direction; configuration cannot fix pre-validation document mutation, discarded root identity, schema-name confusion or split batch admission.
+- Keep a dedicated draft asset slot and redesign its contract: strongest direction. The slot honestly represents reserved, restored-unbound and retryable content while completed media keep required URLs. Replace generic placeholder naming, ambiguous capability-versus-schema identity and caller-visible conversion plumbing; completion must preserve the root-aware NodeKey.
+- Merge pending state into image/file/audio/video nodes: rejected as the default target. It makes currently required URLs optional in four schemas, spreads source-absent rendering and codec branches, and still needs one shared upload owner. It moves the draft-state branch rather than deleting it.
+- Collapse all media and pending state into one generic asset union: rejected. It cuts more nouns but erases independent image, file, audio and video rendering/codec jobs without evidence that the shared union is the better product model.
+- Remove all pending document content and wait for completion or use a view overlay: rejected because reserved position, movement, authored empty slots and undo remain current jobs. Moving their ownership to views recreates placement and history coordination.
+- Move requests to React or duplicate controllers per media plugin: rejected because remount/headless lifetime and shared batch admission require a common editor owner; keep copied presentation and preview URLs in views.
+- Promote a general asynchronous job/session framework to Plite: rejected. Plite already owns NodeKey/root operations, skipped-commit history mapping, plugin cleanup and publicly observable document-replacement annotations. Fix the upload consumer; settle supported typed annotation access without adding another runtime signal.
+- Keep application transport and server policy: selected. UploadThing-specific state is already outside the package, and a new provider abstraction would not remove demonstrated upload ownership failures.
+- supersedes [2026-09-18-uploads-lifecycle-ownership](../review-records/2026-09-18-uploads-lifecycle-ownership.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain the Pursue verdict, one editor-owned upload capability, one atomic batch path, root-aware identity, Plite history, application transport and view-owned previews. Supersede placeholder deletion: the seven observations demonstrate protocol defects but do not implicate the separate node model, while current schemas show that per-media pending nodes would spread optional-source state across four completed-media owners.
+- reopens [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json) (Who owns an upload after a placeholder moves, disappears, is undone or outlives its editor, and can provider-specific state be removed?): Retain editor-owned transport, post-commit File delivery, application transport and view object-URL ownership. Reopen completeness of ingress, exact-target completion, document lifetime/restoration and the persisted placeholder representation because current source and seven executable observations contradict completeness. Do not reopen unrelated UI extractions or inherit historical performance/browser proof.
+
+Proof limits: Audit correction only: no product implementation or public doctrine changed, and neither the redesigned draft-slot contract nor the per-media pending alternative has been prototyped or measured. Existing package/view results and seven observed-behavior probes were reused against matching product fingerprints; browser cases were inspected, not rerun. No live UploadThing, native-device, performance, release or replacement-runtime claim. Design must settle draft target identity, rendering, export/collaboration, readonly/root lifetime, cancellation/editor exit, full-document replacement and partial-batch undo/redo restoration. The dedicated slot is the evidence-backed leading model, not an accepted API.
+
+References: [uploads-ownership.md](../decisions/uploads-ownership.md), [observations.test.ts](../../plans/artifacts/2026-09-18-uploads-review/observations.test.ts), [observations.txt](../../plans/artifacts/2026-09-18-uploads-review/observations.txt), [BasePlaceholderPlugin.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.ts), [BasePlaceholderPlugin.upload.spec.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.upload.spec.ts), [BaseMediaPlugin.ts](../../../packages/platejs/src/features/media/lib/BaseMediaPlugin.ts), [PlaceholderPlugin.tsx](../../../packages/platejs/src/react/features/media/placeholder/PlaceholderPlugin.tsx), [media-placeholder.tsx](../../../apps/www/src/registry/components/editor/media-placeholder.tsx), [media.tsx](../../../apps/www/src/registry/components/editor/media.tsx), [dnd.tsx](../../../apps/www/src/registry/components/editor/dnd.tsx), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [commit.ts](../../../packages/plitejs/src/core/commit.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [plugin.ts](../../../packages/plitejs/src/core/plugin.ts), [history-plugin.ts](../../../packages/plitejs/src/history/history-plugin.ts), [history-state.ts](../../../packages/plitejs/src/history/history-state.ts), [uploadthing.ts](../../../apps/www/src/registry/lib/uploadthing.ts), [clipboard-upload.spec.ts](../../../apps/www/tests/browser/clipboard-upload.spec.ts), [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md), [2026-09-07-plate-ui-execution.md](../../editor-audits/reports/2026-09-07-plate-ui-execution.md), [4803-update-upload-history.md](../../plans/4803-update-upload-history.md), [clipboard-content-fitting.md](../decisions/clipboard-content-fitting.md).
+
 ## Retrieval boundaries
 
 0 unclassified candidates. Filename matches are discovery leads, not adopted decisions.
@@ -78,8 +120,8 @@ Consumers: [media-placeholder.tsx](../../../apps/www/src/registry/components/edi
 
 Proof entrypoints: [BasePlaceholderPlugin.upload.spec.ts](../../../packages/platejs/src/features/media/lib/placeholder/BasePlaceholderPlugin.upload.spec.ts), [media-placeholder.spec.tsx](../../../apps/www/src/registry/components/editor/media-placeholder.spec.tsx). These links alone are not proof of a passing run.
 
-Inspection: Selected implementation and materially different consumers inspected while reconciling this queue; full feature and assertion review not executed.
+Inspection: Nine semantic upload units inspected across headless and transaction entrypoints, copied pickers, paste, DnD, transport, progress views, history and document identity. Seven executable observations reproduce current defects and lifetime/restoration gaps. A second review corrected the unsupported placeholder-deletion conclusion while retaining the protocol redesign verdict.
 
-Limits: Behavior, native/device coverage, performance and adoption require a scoped review and matching execution evidence.
+Limits: The exact draft-slot schema and its per-media pending alternative, renderer behavior, codecs, collaboration, native ingress and scale proof belong to design/adoption; current focused tests and observations do not certify either replacement or the live provider.
 
 Related questions: [media](media.md), [history](history.md), [persistence](persistence.md), [clipboard](clipboard.md).

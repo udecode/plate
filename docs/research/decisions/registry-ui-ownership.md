@@ -1,7 +1,7 @@
 ---
 title: Registry composition, installation and command ownership
 type: decision
-status: proposed
+status: adopted
 updated: 2026-09-18
 review_scope: ui
 current_review: 2026-09-18-ui-menu-focus-and-block-insertion-ownership
@@ -12,11 +12,12 @@ source_refs:
   - ../../../apps/www/src/registry/components/editor/plugins.ts
   - ../../../apps/www/src/registry/components/editor/plugins-static.ts
   - ../../../apps/www/src/registry/components/editor/fixed-toolbar.tsx
-  - ../../../apps/www/src/registry/components/editor/transforms.ts
   - ../../../apps/www/src/registry/components/editor/insert-toolbar-button.tsx
   - ../../../apps/www/src/registry/components/editor/slash.tsx
   - ../../../apps/www/src/registry/bases/base/dropdown-menu.tsx
   - ../../../apps/www/src/registry/bases/radix/dropdown-menu.tsx
+  - ../../../packages/platejs/src/internal/plugin/blockInsertion.ts
+  - ../../../packages/platejs/src/lib/editor/pluginRuntimeTypes.ts
   - ../../../apps/www/src/registry/registry.test.ts
   - ../../../apps/www/src/lib/registry-response.ts
 related:
@@ -25,6 +26,7 @@ related:
   - plite-core-ownership.md
   - plite-view-ownership.md
 reconciled_executions:
+  - 2026-09-18-slash-ui-actions-execution
   - 2026-09-18-ui-provider-menu-adapter-completion
   - 2026-09-18-ui-composition-installation-adoption
   - 2026-09-18-ui-composition-installation-design-last-pass
@@ -45,33 +47,24 @@ determine.** Keep copied feature composition, explicit install intent and
 renderer-specific lifetimes. No universal runtime feature or command catalog
 earns its cost here.
 
-## Current follow-up
+## Current state
 
-The provider-menu adoption stopped one layer too early. Six copied controls
-coordinate item selection with menu close through mutable `focusEditorRef`
-state, including two copies in the list toolbar and a tri-state variant in the
-Insert menu. That state exists only because the adapter exposes final focus at
-the content boundary while the decision is made by the selected item. Extend
-the copied provider-neutral menu adapter with item-scoped post-close focus
-intent. A close caused by Escape, outside interaction, or an item that opens a
-different surface must keep provider-default focus behavior. Keep the current
-content-level `onFinalFocus` as the low-level escape hatch. Plate and Plite do
-not own menu lifecycle.
+The copied Base and Radix menu adapters expose item-scoped `finalFocus` intent.
+Only a successful closing selection arms that intent; prevented selections do
+not, `false` suppresses restoration, and content-level `onFinalFocus` remains
+the provider fallback. More, Mode, List, Align, Line Height, and Insert no
+longer coordinate close focus through mutable refs.
 
-The bounded `transforms.ts` helper also no longer earns a registry owner. Its
-two production consumers repeat 30 calls that combine a target predicate with
-the owning plugin's typed insertion. Plite already owns structural insertion
-and empty-source replacement; Plate's plugin portal owns semantic element
-identity and typed construction. Move the remaining "reuse a matching empty
-block, otherwise replace a different empty block or insert after content" law
-into the typed Plate insertion path, then delete the raw-transaction callback
-helper. The exact `insert`/`upsert` public split remains a Task design question;
-the callback recipe is not the target API.
+Plate's typed plugin portal owns semantic block construction and empty-source
+replacement. `insert` always creates the requested block action, while
+`upsert` reuses a matching empty source and otherwise replaces a different
+empty source or inserts after content. Insert uses `insert`; Slash uses `upsert`
+for block actions and keeps `insert` for inline actions. The registry
+`transforms.ts` transaction recipe is deleted.
 
-This follow-up retains copied labels, icons, grouping, feature membership and
-direct typed operations. It supersedes only the prior conclusion that the
-bounded insertion helper and completed provider adapter were durable final
-owners.
+Copied labels, icons, grouping, feature membership, and asynchronous surface
+policy remain local. Plate and Plite do not own menu lifecycle or a product
+command catalog.
 
 The user job is to install working source, choose features, customize controls,
 and render the same supported content in live and static contexts. The hard
@@ -101,8 +94,8 @@ every feature algorithm, locale fixture, or external example.
 | Neutral feature policy | **Adopted:** one server-safe Align kit and one LineHeight kit; duplicate static counterparts are deleted. Keep distinct renderer bindings. | Source checks, generated installs and the server-rendered docs route prove the shared policy remains safe. |
 | Fixed toolbar placement | **Stop** requiring deletion of `FixedToolbarPlugin` and `FixedToolbarKit`. Keep optional kit-based placement and ordinary JSX for custom layouts. | The descriptor supplies only `beforeContainer`, but installation with the copied preset is a real product job. DOCX customization does not justify forcing repeated mounting into every aggregate consumer. No new placement API. |
 | Floating toolbar and block menu | **Keep** exact mounted-view placement and copied provider adapters. Their command context, focus semantics and exact Editable input are real requirements. | Generated Base and Radix apps prove native menu behavior; the site fixture proves shared editor targeting. |
-| Insert, conversion and shared dispatch | **Pursue:** keep typed feature operations and the deleted string fallback, but absorb matching-empty insertion into the typed Plate operation and delete the registry `transforms.ts` callback recipe. | Existing transaction tests preserve the required atomicity and undo laws; the target public shape and adoption still need design and proof. |
-| Existing presentation controls | **Pursue** removing item-to-content focus refs through the existing provider adapter. **Stop** inventing a shared command catalog or moving copied labels/layout into packages. Keep overlay capture, More, Mode, import UI and app settings under their current jobs. | Six current controls reproduce the same close-focus handshake; provider-native interaction proof is required after adoption. |
+| Insert, conversion and shared dispatch | **Adopted:** typed plugin `insert`/`upsert` own semantic block construction and matching-empty reuse; the registry transaction helper is deleted. | Model, owner, inference, generator, copied-control, and Chromium proof pass. |
+| Existing presentation controls | **Adopted:** item-scoped final-focus intent replaces item-to-content refs in both copied providers. **Stop** inventing a shared command catalog or moving copied labels/layout into packages. | Adapter tests cover callback, suppression, fallback, prevented selection, checkbox, and radio behavior; Base and Radix browser proof passes. |
 | Raw Plite hovering toolbar | **Stop** the hook migration and retain the manual production geometry. | The frozen candidate passed correctness but failed 2 of 12 p95 cohorts; the production source was restored byte-for-byte. |
 | Installation catalog and dependency facts | **Adopted:** required item/provider packages and optional peers are derived from selected source plus the package DAG. Authored item names, targets, CSS and intentional bundles remain explicit. | Dependency/publication tests, source analysis and ten generated installs pass. |
 | Provider/style delivery | **Adopted:** one environment-neutral compiler emits complete `r` and `rd` baselines, neutral sparse overlays, an authoritative manifest and a generation marker together. | Atomic generation, response closure and generated Base/Radix installs pass. |
@@ -122,16 +115,12 @@ that root's selected target; neither permanently binds the toolbar to its
 adjacent Editable. Floating and block-menu slots instead render inside the
 exact mounted-view boundary and receive its Editable.
 
-`applyBlockAction(editor, action: string)` recognizes columns, code blocks,
-details, lists, headings and quotes. Its remaining branch sets paragraph type.
-The Turn Into and block menus offer Code Drawing, so that offered value takes
-the paragraph branch. Insert separately declares `focusEditor` but its handler
-always calls `editor.api.dom.focus()`. These are concrete consequences of
-keeping presentation values and execution policy in separate unchecked maps.
-The target is typed operations at the copied call sites, with shared
-transaction/selection behavior retained where genuinely shared. A new global
-command registration layer would create another owner without resolving this
-particular drift.
+The earlier string action path let presentation values and execution policy
+drift: unsupported values could fall through to paragraph conversion, while
+Insert declared focus policy separately from its handler. Copied call sites now
+invoke typed plugin operations directly, and the shared insertion law lives in
+the plugin portal. A global command registration layer would add another owner
+without improving this contract.
 
 Alignment and line-height are safe candidates for shared neutral policy;
 Font is not an automatic third case. Live Font sets a black default that its
@@ -180,11 +169,11 @@ AI/DnD timing and broader-check gaps remain outside this review's acceptance.
 
 ## Adoption evidence and limits
 
-The earlier implementation adopted its accepted command, neutral-kit,
-dependency and delivery slices. Direct feature calls replaced string dispatch;
-unsupported Code Drawing conversion was removed; and structural actions expose
-explicit eligibility. The current review reopens completion only for the
-registry insertion helper and item-to-content menu focus handshake.
+The implementation adopts the remaining insertion and focus slices. Typed
+plugin operations replace the registry transaction recipe, and item-scoped
+focus intent replaces the copied mutable handshakes. Generated contracts carry
+exact block/inline mutation kinds, so inline plugins cannot expose block
+`upsert` and authored insertion owners keep explicit control.
 
 Registry tooling derives package facts, validates versions and traverses the
 item/package DAG deterministically. One locked staged build publishes `r`, `rd`,
@@ -192,7 +181,14 @@ sparse overlays, manifest and hashes as one generation. The final generation
 `74dd191cc866ed05d3daf26b4df2faab3b87d5e8ba5f3da33a0fb3af48125e94`
 contains 318 canonical payloads.
 
-Evidence includes 44 focused command tests, 33 dependency/publication tests,
+The final slice adds 184 focused model, owner, adapter and copied-control tests,
+89 CLI generator tests, 86 Plate typecheck tasks, 75 Plate lint tasks, and nine
+Base/Radix multi-editor Chromium cases. Registry, API reference, barrels,
+changelog, Plate Next v216, and source/mirror freshness checks pass. The
+app-wide compiler reaches all changed Slash/dropdown source, then fails only on
+three recorded current-checkout issues outside this adoption.
+
+Earlier evidence includes 44 focused command tests, 33 dependency/publication tests,
 nine response tests, seven multi-editor Chromium cases, and ten isolated
 Base/Nova and Radix/Luma installs. Both generated complete editor apps execute
 Insert, Turn Into, Slash, Block Menu and the older More-formatting `onSelect`

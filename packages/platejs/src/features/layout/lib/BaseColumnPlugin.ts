@@ -11,11 +11,13 @@ import {
   type NodeTarget,
   PathApi,
   type BlockInsertOptions,
+  type BlockUpsertOptions,
   PLUGINS,
   property,
   RangeApi,
   schema,
 } from '../../../core';
+import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 
 export type MoveMiddleColumnOptions = {
   direction: 'left' | 'right';
@@ -284,35 +286,51 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
         tx.nodes.set({ width }, { at: path.concat([index]) });
       });
     };
+    const insertColumnGroup = (
+      { columns = 2 }: { columns?: number } = {},
+      { select, ...options }: BlockInsertOptions = {}
+    ) => {
+      const width = 100 / columns;
+
+      const element = {
+        children: Array.from({ length: columns }, () => ({
+          children: [{ children: [{ text: '' }], type: paragraphType }],
+          type: columnType,
+          width: `${width}%`,
+        })),
+        type,
+      };
+      if (options.at === undefined || options.after !== undefined) {
+        tx.blocks.insertAfter(element, { ...options, at: options.after });
+      } else {
+        tx.nodes.insert(element, options);
+      }
+
+      if (!select) return;
+
+      const path = tx.nodes.path(element);
+      const point = path && tx.points.start(path.concat(0));
+
+      if (point) tx.selection.set(point);
+    };
+    const applyColumnInsertion = (
+      mode: 'insert' | 'upsert',
+      input: { columns?: number } = {},
+      options: BlockInsertOptions | BlockUpsertOptions = {}
+    ) =>
+      applyBlockInsertion({
+        insert: (insertOptions) => insertColumnGroup(input, insertOptions),
+        matches: (block) => block.type === type,
+        mode,
+        options,
+        tx,
+      });
 
     return {
       insert: (
-        { columns = 2 }: { columns?: number } = {},
-        { select, ...options }: BlockInsertOptions = {}
-      ) => {
-        const width = 100 / columns;
-
-        const element = {
-          children: Array.from({ length: columns }, () => ({
-            children: [{ children: [{ text: '' }], type: paragraphType }],
-            type: columnType,
-            width: `${width}%`,
-          })),
-          type,
-        };
-        if (options.at === undefined || options.after !== undefined) {
-          tx.blocks.insertAfter(element, { ...options, at: options.after });
-        } else {
-          tx.nodes.insert(element, options);
-        }
-
-        if (!select) return;
-
-        const path = tx.nodes.path(element);
-        const point = path && tx.points.start(path.concat(0));
-
-        if (point) tx.selection.set(point);
-      },
+        input: { columns?: number } = {},
+        options: BlockInsertOptions = {}
+      ) => applyColumnInsertion('insert', input, options),
       setColumns,
       toggle: ({ at, columns = 2, widths }: ToggleColumnGroupOptions = {}) => {
         const entry = tx.nodes.block({ at });
@@ -361,6 +379,10 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
 
         if (point) tx.selection.set(point);
       },
+      upsert: (
+        input: { columns?: number } = {},
+        options: BlockUpsertOptions = {}
+      ) => applyColumnInsertion('upsert', input, options),
     };
   },
 }));

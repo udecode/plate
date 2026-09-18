@@ -1,4 +1,4 @@
-import { ElementApi, type Element } from '../../core';
+import { createEditorView, ElementApi, type Element } from '../../core';
 import { BaseListPlugin } from '../../features/list/lib/BaseListPlugin';
 import { createEditor } from '../../react/core';
 import { DndPlugin } from './DndPlugin';
@@ -104,6 +104,30 @@ describe('DnD preparation', () => {
       expect(editor.read.selection.nodes().length).toBe(2);
     } finally {
       resolve.mockRestore();
+    }
+  });
+
+  it('prepares previews with the mounted editor view', () => {
+    const { editor, nodes } = createFixture();
+    const view = createEditorView(editor);
+    const source = document.createElement('div');
+    const rootResolve = spyOn(editor.api.dom, 'resolveDOMNode').mockReturnValue(
+      null
+    );
+    const viewResolve = spyOn(view.api.dom, 'resolveDOMNode').mockReturnValue(
+      source
+    );
+
+    try {
+      const previews = view.plugin(DndPlugin).api.prepareDrag(nodes[0]);
+
+      expect(previews).toHaveLength(1);
+      expect(previews[0]?.domNode).toBe(source);
+      expect(viewResolve).toHaveBeenCalled();
+      expect(rootResolve).not.toHaveBeenCalled();
+    } finally {
+      rootResolve.mockRestore();
+      viewResolve.mockRestore();
     }
   });
 

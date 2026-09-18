@@ -94,8 +94,8 @@ export const DndStorePlugin = definePlugin(PLUGINS.dnd, {
       },
     }),
   }))
-  .extend(({ editor, read, store }) => ({
-    api: () => ({
+  .extend(() => ({
+    api: ({ editor, read, store }) => ({
       /** Select the drag payload and return inert clones for its mounted views. */
       prepareDrag: (element: Element) => {
         if (editor.read.view.isReadOnly()) return [];

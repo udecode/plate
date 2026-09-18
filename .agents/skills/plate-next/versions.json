@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 215,
+  "latestVersion": 216,
   "versions": [
     {
       "version": 0,
@@ -2491,6 +2491,19 @@
         "Use exact current-view coverage as the sole authority for inline comment paint, block counts and navigation; remove remembered coordinates and neighbor-only relocation.",
         "Keep published conversations with unavailable targets in bounded copied discovery UI, resolving attachment only for the mounted page and labeling absence neutrally.",
         "Prove exact document undo restores retained target identity while unrelated later typing does not inherit it, without adding a Comments location store or mandatory Suggestion dependency."
+      ]
+    },
+    {
+      "version": 216,
+      "date": "2026-09-18",
+      "doctrineFingerprint": "sha256:7c63b5d99b69bb2804251e1b45f957cce4bef0424d76eec4696e0f7a756df3c9",
+      "summary": "Block element portals own semantic insert and typed upsert; selected dropdown items own final focus intent.",
+      "migrationChecks": [
+        "Expose upsert only for block elements; suppress a synthesized upsert when an authored insert owner has not implemented the matching domain operation.",
+        "Regenerate editor contracts so every emitted element mutation carries its exact block kind; inline elements must not acquire upsert through a widened generated type.",
+        "Use the shared block policy: reuse a matching empty block for upsert, create a sibling for matching insert, replace a different empty editable block, preserve content and structure, and keep explicit insert overrides exact.",
+        "Move copied dropdown focus intent onto the selected item, preserve content-level fallback behavior, and honor selection cancellation and explicit focus suppression.",
+        "Migrate copied block actions to typed insert or upsert portals and delete local replacement-policy helpers."
       ]
     }
   ],

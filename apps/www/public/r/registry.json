@@ -730,8 +730,7 @@
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/link.json",
-        "https://platejs.org/r/toolbar.json",
-        "https://platejs.org/r/transforms.json"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -3693,8 +3692,7 @@
         "viz.js@^2.1.2"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/inline-combobox.json",
-        "https://platejs.org/r/transforms.json"
+        "https://platejs.org/r/inline-combobox.json"
       ],
       "files": [
         {
@@ -4032,21 +4030,6 @@
           "path": "src/registry/components/editor/use-chat.ts",
           "type": "registry:component",
           "target": "@components/editor/use-chat.ts"
-        }
-      ],
-      "type": "registry:component"
-    },
-    {
-      "name": "transforms",
-      "dependencies": [
-        "platejs"
-      ],
-      "registryDependencies": [],
-      "files": [
-        {
-          "path": "src/registry/components/editor/transforms.ts",
-          "type": "registry:component",
-          "target": "@components/editor/transforms.ts"
         }
       ],
       "type": "registry:component"

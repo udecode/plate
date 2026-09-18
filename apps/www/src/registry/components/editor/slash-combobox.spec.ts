@@ -6,7 +6,6 @@ import { createEditor } from 'platejs/react';
 import { BaseSlashPlugin } from 'platejs/slash-command';
 
 import { BaseBasicBlocksKit } from './basic-blocks-static';
-import { insertBlock } from './transforms';
 
 const createSlashEditor = () =>
   createEditor({
@@ -31,21 +30,7 @@ describe('slash insertion transaction', () => {
 
     expect(
       editor.plugin(BaseComboboxPlugin).api.commit(input, (tx) => {
-        const heading = editor.plugin(BaseHeadingPlugin);
-
-        insertBlock(
-          tx,
-          {
-            matches: (block) =>
-              !block.listType &&
-              block.type === heading.schema.type &&
-              block.level === 2,
-            insert: (options) => {
-              tx.plugin(BaseHeadingPlugin).insert({ level: 2 }, options);
-            },
-          },
-          { upsert: true }
-        );
+        tx.plugin(BaseHeadingPlugin).upsert({ level: 2 }, { select: true });
       })
     ).toBe(true);
     expect(editor.read.children()[0]).toMatchObject({
@@ -70,19 +55,7 @@ describe('slash insertion transaction', () => {
 
     expect(
       editor.plugin(BaseComboboxPlugin).api.commit(input, (tx) => {
-        const paragraph = editor.plugin(BaseParagraphPlugin);
-
-        insertBlock(
-          tx,
-          {
-            matches: (block) =>
-              !block.listType && block.type === paragraph.schema.type,
-            insert: (options) => {
-              tx.plugin(BaseParagraphPlugin).insert({}, options);
-            },
-          },
-          { upsert: true }
-        );
+        tx.plugin(BaseParagraphPlugin).upsert({}, { select: true });
       })
     ).toBe(true);
     expect(editor.read.children()).toEqual([

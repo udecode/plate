@@ -765,7 +765,7 @@ describe('isCodeBlockEmpty', () => {
       expect(editor.read.children()).toEqual(output.children);
     });
 
-    it('converts the inserted block when targeting an explicit block', () => {
+    it('keeps an explicit at as the exact insertion path', () => {
       const input = (
         <editor>
           <hp>
@@ -776,10 +776,13 @@ describe('isCodeBlockEmpty', () => {
       ) as TestEditor;
       const output = (
         <editor>
-          <hp>test</hp>
           <hcodeblock>
-            <cursor />
+            <htext />
           </hcodeblock>
+          <hp>
+            test
+            <cursor />
+          </hp>
         </editor>
       ) as TestEditor;
       const editor = createTestEditor({ input });
@@ -787,6 +790,27 @@ describe('isCodeBlockEmpty', () => {
       editor.update.codeBlock.insert({}, { at: [0], select: false });
 
       expect(editor.read.children()).toEqual(output.children);
+    });
+
+    it('creates a sibling for insert and reuses a matching empty block for upsert', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <cursor />
+          </hcodeblock>
+        </editor>
+      ) as TestEditor;
+      const insertEditor = createTestEditor({ input });
+
+      insertEditor.update.codeBlock.insert();
+      expect(insertEditor.read.children()).toHaveLength(2);
+
+      const upsertEditor = createTestEditor({ input });
+      const key = upsertEditor.key(upsertEditor.read.children()[0]);
+
+      upsertEditor.update.codeBlock.upsert({}, { select: true });
+      expect(upsertEditor.read.children()).toHaveLength(1);
+      expect(upsertEditor.key(upsertEditor.read.children()[0])).toBe(key);
     });
 
     it('inserts an empty code block below an expanded selection', () => {

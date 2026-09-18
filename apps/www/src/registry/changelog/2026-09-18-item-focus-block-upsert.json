@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-18-item-focus-block-upsert",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-18-item-focus-block-upsert.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Own selected-item focus and typed block actions",
+  "targets": [
+    {
+      "name": "editor-dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "more-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/more-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/list-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "align-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/align-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "line-height-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/line-height-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-18-editor-dropdown-menu-own-focus-block-insertion-44dc2ce2",
+      "kind": "behavior",
+      "summary": "Run final focus from the selected menu item and call typed block `insert` or `upsert` operations directly.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "editor-dropdown-menu",
+        "more-toolbar-button",
+        "mode-toolbar-button",
+        "list-toolbar-button",
+        "align-toolbar-button",
+        "line-height-toolbar-button",
+        "insert-toolbar-button",
+        "slash"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-18",
+          "entry": "2026-09-18-item-focus-block-upsert",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

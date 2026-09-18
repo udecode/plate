@@ -1139,7 +1139,7 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'slash',
-    registryDependencies: ['@plate/inline-combobox', '@plate/transforms'],
+    registryDependencies: ['@plate/inline-combobox'],
     type: 'registry:component',
     description: 'A command input component for inserting various elements.',
     title: 'Slash Command',

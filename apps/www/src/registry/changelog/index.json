@@ -2,6 +2,36 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-09-18-comment-discovery",
+      "href": "/registry/changelog/2026-09-18-comment-discovery.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep conversations discoverable when their document target is unavailable",
+      "change": {
+        "type": "source",
+        "date": "2026-09-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "comment-toolbar-button",
+        "comment",
+        "discussion",
+        "fixed-toolbar",
+        "comment-demo",
+        "comment-overlap-demo",
+        "comment-persistence-demo",
+        "comment-review-demo",
+        "suggestion-demo",
+        "suggestion-format-demo",
+        "suggestion-persistence-demo"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-18-default-playground-editing",
       "href": "/registry/changelog/2026-09-18-default-playground-editing.json",
       "status": "draft",
@@ -34,6 +64,141 @@
         "status": "unresolved"
       },
       "targets": ["discussion", "floating-popover"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-18-item-focus-block-upsert",
+      "href": "/registry/changelog/2026-09-18-item-focus-block-upsert.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Own selected-item focus and typed block actions",
+      "change": {
+        "type": "source",
+        "date": "2026-09-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "editor-dropdown-menu",
+        "more-toolbar-button",
+        "mode-toolbar-button",
+        "list-toolbar-button",
+        "align-toolbar-button",
+        "line-height-toolbar-button",
+        "insert-toolbar-button",
+        "slash"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-18-ui-commands-and-installation",
+      "href": "/registry/changelog/2026-09-18-ui-commands-and-installation.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Use direct editor actions and complete generated installs",
+      "change": {
+        "type": "source",
+        "date": "2026-09-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "insert-toolbar-button",
+        "slash",
+        "turn-into-toolbar-button",
+        "block-menu",
+        "align",
+        "line-height",
+        "editor-plugins-static",
+        "plate",
+        "plate-ui"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-17-ai-comment-recovery",
+      "href": "/registry/changelog/2026-09-17-ai-comment-recovery.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "AI Comment selection and recovery",
+      "change": {
+        "type": "source",
+        "date": "2026-09-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai-menu", "ai-api"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-17-comment-persistence-actions",
+      "href": "/registry/changelog/2026-09-17-comment-persistence-actions.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Save comment attachments with document revisions and preserve input when comment actions fail",
+      "change": {
+        "type": "source",
+        "date": "2026-09-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "comment",
+        "discussion",
+        "use-chat",
+        "comment-persistence-demo",
+        "suggestion-persistence-demo",
+        "editor-ai",
+        "discussion-demo"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-16-fixed-toolbar-caret-scroll",
+      "href": "/registry/changelog/2026-09-16-fixed-toolbar-caret-scroll.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep keyboard navigation visible below fixed toolbars",
+      "change": {
+        "type": "source",
+        "date": "2026-09-16",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["fixed-toolbar"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-09-15-history-actions",
+      "href": "/registry/changelog/2026-09-15-history-actions.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Use explicit editor services for complete history and AI actions",
+      "change": {
+        "type": "source",
+        "date": "2026-09-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["history-toolbar-button", "ai-menu", "use-chat"],
       "entries": 1,
       "diagnostics": []
     },

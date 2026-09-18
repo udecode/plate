@@ -48,7 +48,7 @@
       "migrationNotes": [],
       "targets": ["ai-menu"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-09-17",
@@ -65,7 +65,7 @@
       "migrationNotes": [],
       "targets": ["ai-api"],
       "source": {
-        "line": 13,
+        "line": 15,
         "row": 2,
         "legacyRelease": {
           "date": "2026-09-17",

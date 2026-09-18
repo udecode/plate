@@ -17,28 +17,23 @@ import * as React from 'react';
 import { BaseBasicBlocksKit } from './basic-blocks-static';
 import { linkPlugin } from './link';
 
-let onFinalFocus: ((event: Event) => void) | undefined;
-
 mock.module('@/registry/components/editor/dropdown-menu', () => ({
   DropdownMenu: ({ children }: React.PropsWithChildren) => <>{children}</>,
-  DropdownMenuContent: ({
-    children,
-    onFinalFocus: nextOnFinalFocus,
-  }: React.PropsWithChildren<{
-    onFinalFocus?: (event: Event) => void;
-  }>) => {
-    onFinalFocus = nextOnFinalFocus;
-
-    return <div>{children}</div>;
-  },
+  DropdownMenuContent: ({ children }: React.PropsWithChildren) => (
+    <div>{children}</div>
+  ),
   DropdownMenuItem: ({
     children,
+    finalFocus,
     onSelect,
-  }: React.PropsWithChildren<{ onSelect?: () => void }>) => (
+  }: React.PropsWithChildren<{
+    finalFocus?: false | (() => void);
+    onSelect?: () => void;
+  }>) => (
     <button
       onClick={() => {
         onSelect?.();
-        onFinalFocus?.(new Event('closeAutoFocus', { cancelable: true }));
+        if (finalFocus) finalFocus();
       }}
       type="button"
     >
@@ -97,7 +92,6 @@ async function renderInsertMenu<E>(editor: E) {
 }
 
 beforeEach(() => {
-  onFinalFocus = undefined;
   currentEditor = createTestEditor();
 });
 

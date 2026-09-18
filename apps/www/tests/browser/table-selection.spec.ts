@@ -15,6 +15,10 @@ const CLIPBOARD_RECTANGLE_CASE_ID =
   'table:paste-copied-cell-rectangle-into-selected-cells';
 const CLIPBOARD_CARET_CASE_ID =
   'table:paste-copied-cell-rectangle-at-caret-in-authored-playground';
+const MARK_SHORTCUT_CASE_ID =
+  'table:apply-mark-shortcut-to-drag-selected-cells';
+const BLOCK_FORMAT_CASE_ID =
+  'table:apply-block-toolbar-actions-to-drag-selected-cells';
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 
 const isTransparent = (color: string) =>
@@ -497,6 +501,271 @@ test(CLIPBOARD_CARET_CASE_ID, async ({ context, page }, testInfo) => {
     await cells.nth(35).click();
     await page.keyboard.type('edge');
     await expect(cells.nth(35)).toContainText('edge');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test(MARK_SHORTCUT_CASE_ID, async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.goto('/blocks/playground', { waitUntil: 'commit' });
+
+    const root = page.locator(EDITOR_ROOT).first();
+    const editor = createBrowserEditorHarness(
+      page,
+      MARK_SHORTCUT_CASE_ID,
+      root
+    );
+    await editor.ready({ editor: 'visible', text: 'How Plate Compares' });
+
+    const table = root.locator('table').filter({ hasText: 'Feature' }).first();
+    const cells = table.locator(
+      'td[data-editor-node-key], th[data-editor-node-key]'
+    );
+    const modelSelection = () =>
+      root.evaluate((element) =>
+        (
+          element as HTMLElement & {
+            __pliteBrowserHandle?: { getModelSelection: () => unknown };
+          }
+        ).__pliteBrowserHandle?.getModelSelection()
+      );
+    const selectedRowLeaves = async () => {
+      const value = (await editor.get.modelValue()) as {
+        children: Array<{
+          children?: Array<{
+            children?: Array<{
+              children?: Array<{
+                children?: Array<{ bold?: boolean; text?: string }>;
+              }>;
+            }>;
+          }>;
+        }>;
+      };
+
+      return value.children[15]?.children?.[2]?.children?.map(
+        (cell) => cell.children?.[0]?.children?.[0]
+      );
+    };
+
+    await expect(cells).toHaveCount(24);
+    await cells.nth(6).scrollIntoViewIfNeeded();
+
+    const start = await cells.nth(6).boundingBox();
+    const end = await cells.nth(8).boundingBox();
+
+    expect(start).not.toBeNull();
+    expect(end).not.toBeNull();
+
+    await page.mouse.move(start!.x + 30, start!.y + start!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(end!.x + 30, end!.y + end!.height / 2, {
+      steps: 8,
+    });
+    await page.mouse.up();
+
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+      paths: [
+        [15, 2, 0],
+        [15, 2, 1],
+        [15, 2, 2],
+      ],
+    });
+
+    await page.keyboard.press('ControlOrMeta+b');
+
+    await expect.poll(selectedRowLeaves).toEqual([
+      { bold: true, text: 'Comments' },
+      { bold: true, text: '✅' },
+      { bold: true, text: 'Paid Extension' },
+    ]);
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+    });
+    await expect(cells.nth(6).locator('strong')).toHaveText('Comments');
+    await expect(cells.nth(8).locator('strong')).toHaveText('Paid Extension');
+    await testInfo.attach('table-cell-selection-bold-shortcut', {
+      body: await page.screenshot({ animations: 'disabled', caret: 'hide' }),
+      contentType: 'image/png',
+    });
+
+    await page.keyboard.press('ControlOrMeta+b');
+
+    await expect
+      .poll(selectedRowLeaves)
+      .toEqual([
+        { text: 'Comments' },
+        { text: '✅' },
+        { text: 'Paid Extension' },
+      ]);
+    await expect.poll(modelSelection).toMatchObject({ kind: 'node' });
+    await expect(cells.nth(6).locator('strong')).toHaveCount(0);
+    await expect(cells.nth(8).locator('strong')).toHaveCount(0);
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test(BLOCK_FORMAT_CASE_ID, async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.goto('/blocks/playground', { waitUntil: 'commit' });
+
+    const root = page.locator(EDITOR_ROOT).first();
+    const editor = createBrowserEditorHarness(page, BLOCK_FORMAT_CASE_ID, root);
+    await editor.ready({ editor: 'visible', text: 'How Plate Compares' });
+
+    const table = root.locator('table').filter({ hasText: 'Feature' }).first();
+    const cells = table.locator(
+      'td[data-editor-node-key], th[data-editor-node-key]'
+    );
+    const modelSelection = () =>
+      root.evaluate((element) =>
+        (
+          element as HTMLElement & {
+            __pliteBrowserHandle?: { getModelSelection: () => unknown };
+          }
+        ).__pliteBrowserHandle?.getModelSelection()
+      );
+    const selectedRowBlocks = async () => {
+      const value = (await editor.get.modelValue()) as {
+        children: Array<{
+          children?: Array<{
+            children?: Array<{
+              children?: Array<{
+                children?: Array<{ text?: string }>;
+                indent?: number;
+                level?: number;
+                listStyle?: string;
+                listType?: string;
+                type?: string;
+              }>;
+            }>;
+          }>;
+        }>;
+      };
+
+      return value.children[15]?.children?.[2]?.children?.map((cell) => {
+        const block = cell.children?.[0];
+
+        return {
+          indent: block?.indent,
+          level: block?.level,
+          listStyle: block?.listStyle,
+          listType: block?.listType,
+          text: block?.children?.map((leaf) => leaf.text ?? '').join(''),
+          type: block?.type,
+        };
+      });
+    };
+    const selectedPaths = [
+      [15, 2, 0],
+      [15, 2, 1],
+      [15, 2, 2],
+    ];
+
+    await expect(cells).toHaveCount(24);
+    await cells.nth(6).scrollIntoViewIfNeeded();
+
+    const start = await cells.nth(6).boundingBox();
+    const end = await cells.nth(8).boundingBox();
+
+    expect(start).not.toBeNull();
+    expect(end).not.toBeNull();
+
+    await page.mouse.move(start!.x + 30, start!.y + start!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(end!.x + 30, end!.y + end!.height / 2, {
+      steps: 8,
+    });
+    await page.mouse.up();
+
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+      paths: selectedPaths,
+    });
+
+    await page.getByRole('button', { exact: true, name: 'Text' }).click();
+    await page
+      .getByRole('menuitemradio', { exact: true, name: 'Bulleted list' })
+      .click();
+
+    await expect.poll(selectedRowBlocks).toEqual([
+      {
+        indent: 1,
+        level: undefined,
+        listStyle: undefined,
+        listType: 'bulleted',
+        text: 'Comments',
+        type: 'paragraph',
+      },
+      {
+        indent: 1,
+        level: undefined,
+        listStyle: undefined,
+        listType: 'bulleted',
+        text: '✅',
+        type: 'paragraph',
+      },
+      {
+        indent: 1,
+        level: undefined,
+        listStyle: undefined,
+        listType: 'bulleted',
+        text: 'Paid Extension',
+        type: 'paragraph',
+      },
+    ]);
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+      paths: selectedPaths,
+    });
+    await testInfo.attach('table-cell-selection-block-toolbar-actions', {
+      body: await page.screenshot({ animations: 'disabled', caret: 'hide' }),
+      contentType: 'image/png',
+    });
+
+    await root.press('ControlOrMeta+z');
+    await expect.poll(selectedRowBlocks).toEqual([
+      {
+        indent: undefined,
+        level: undefined,
+        listStyle: undefined,
+        listType: undefined,
+        text: 'Comments',
+        type: 'paragraph',
+      },
+      {
+        indent: undefined,
+        level: undefined,
+        listStyle: undefined,
+        listType: undefined,
+        text: '✅',
+        type: 'paragraph',
+      },
+      {
+        indent: undefined,
+        level: undefined,
+        listStyle: undefined,
+        listType: undefined,
+        text: 'Paid Extension',
+        type: 'paragraph',
+      },
+    ]);
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+      paths: selectedPaths,
+    });
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

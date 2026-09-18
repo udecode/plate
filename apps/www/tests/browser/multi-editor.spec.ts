@@ -40,114 +40,106 @@ test('shared fixed toolbar renders before focus and survives editor switches', a
 });
 
 for (const base of ['Base UI', 'Radix']) {
-  if (base === 'Radix') {
-    test(`${base}: copied toolbar menus keep native target and focus`, async ({
-      page,
-    }) => {
-      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  test(`${base}: copied toolbar menus keep native target and focus`, async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
 
-      try {
-        await page.goto('/dev/multi-editor');
-        await page.getByRole('button', { name: base, exact: true }).click();
-        const editor = page.getByRole('textbox', { name: 'A', exact: true });
-        const undo = page.getByRole('button', { name: 'Undo', exact: true });
-        const insert = page.getByTestId('insert-control').getByRole('button');
-        const turnInto = page
-          .getByTestId('turn-into-control')
-          .getByRole('button');
+    try {
+      await page.goto('/dev/multi-editor');
+      await page.getByRole('button', { name: base, exact: true }).click();
+      const editor = page.getByRole('textbox', { name: 'A', exact: true });
+      const undo = page.getByRole('button', { name: 'Undo', exact: true });
+      const insert = page.getByTestId('insert-control').getByRole('button');
+      const turnInto = page
+        .getByTestId('turn-into-control')
+        .getByRole('button');
 
-        await editor.click();
-        await editor.press('ControlOrMeta+A');
-        await insert.click();
-        await page
-          .getByRole('menuitem', { name: 'Heading 2', exact: true })
-          .click();
-        await expect
-          .poll(() => readNoteBlocks(page))
-          .toMatchObject([
-            { type: 'paragraph' },
-            { level: 2, type: 'heading' },
-          ]);
-        await expect(editor).toBeFocused();
+      await editor.click();
+      await editor.press('ControlOrMeta+A');
+      await insert.click();
+      await page
+        .getByRole('menuitem', { name: 'Heading 2', exact: true })
+        .click();
+      await expect
+        .poll(() => readNoteBlocks(page))
+        .toMatchObject([{ type: 'paragraph' }, { level: 2, type: 'heading' }]);
+      await expect(editor).toBeFocused();
 
-        await undo.click();
-        await expect
-          .poll(() => readNoteBlocks(page))
-          .toMatchObject([{ type: 'paragraph' }]);
-        await editor.click();
-        await editor.press('ControlOrMeta+A');
-        await turnInto.focus();
-        await turnInto.press('Enter');
-        const heading = page.getByRole('menuitemradio', {
-          name: 'Heading 2',
-          exact: true,
-        });
-        await heading.focus();
-        await heading.press('Enter');
-        await expect
-          .poll(() => readNoteBlocks(page))
-          .toMatchObject([{ level: 2, type: 'heading' }]);
-        await expect(editor).toBeFocused();
-        errors.assertNone();
-      } finally {
-        errors.stop();
-      }
-    });
+      await undo.click();
+      await expect
+        .poll(() => readNoteBlocks(page))
+        .toMatchObject([{ type: 'paragraph' }]);
+      await editor.click();
+      await editor.press('ControlOrMeta+A');
+      await turnInto.focus();
+      await turnInto.press('Enter');
+      const heading = page.getByRole('menuitemradio', {
+        name: 'Heading 2',
+        exact: true,
+      });
+      await heading.focus();
+      await heading.press('Enter');
+      await expect
+        .poll(() => readNoteBlocks(page))
+        .toMatchObject([{ level: 2, type: 'heading' }]);
+      await expect(editor).toBeFocused();
+      errors.assertNone();
+    } finally {
+      errors.stop();
+    }
+  });
 
-    test(`${base}: slash and read-only commands fail closed`, async ({
-      page,
-    }) => {
-      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+  test(`${base}: slash and read-only commands fail closed`, async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
 
-      try {
-        await page.goto('/dev/multi-editor');
-        await page.getByRole('button', { name: base, exact: true }).click();
-        const editor = page.getByRole('textbox', {
-          name: 'Commands',
-          exact: true,
-        });
-        const insert = page.getByTestId('insert-control').getByRole('button');
-        const turnInto = page
-          .getByTestId('turn-into-control')
-          .getByRole('button');
+    try {
+      await page.goto('/dev/multi-editor');
+      await page.getByRole('button', { name: base, exact: true }).click();
+      const editor = page.getByRole('textbox', {
+        name: 'Commands',
+        exact: true,
+      });
+      const insert = page.getByTestId('insert-control').getByRole('button');
+      const turnInto = page
+        .getByTestId('turn-into-control')
+        .getByRole('button');
 
-        await editor.click();
-        await editor.press('End');
-        await editor.press('Enter');
-        await editor.pressSequentially('/');
-        const slashHeading = page.getByRole('option', {
-          name: 'Heading 2',
-          exact: true,
-        });
-        await expect(slashHeading).toBeVisible();
-        await page.keyboard.type('heading 2');
-        await slashHeading.focus();
-        await slashHeading.press('Enter');
-        await expect
-          .poll(() => readMainBlocks(page))
-          .toMatchObject([
-            { type: 'paragraph' },
-            { level: 2, type: 'heading' },
-          ]);
-        await expect(editor).toBeFocused();
+      await editor.click();
+      await editor.press('End');
+      await editor.press('Enter');
+      await editor.pressSequentially('/');
+      const slashHeading = page.getByRole('option', {
+        name: 'Heading 2',
+        exact: true,
+      });
+      await expect(slashHeading).toBeVisible();
+      await page.keyboard.type('heading 2');
+      await slashHeading.focus();
+      await slashHeading.press('Enter');
+      await expect
+        .poll(() => readMainBlocks(page))
+        .toMatchObject([{ type: 'paragraph' }, { level: 2, type: 'heading' }]);
+      await expect(editor).toBeFocused();
 
-        const noteEditor = page.getByRole('textbox', {
-          name: 'A',
-          exact: true,
-        });
-        await noteEditor.click();
-        await page
-          .getByRole('button', { name: 'Toggle A read-only', exact: true })
-          .click();
-        await expect(noteEditor).toHaveAttribute('aria-readonly', 'true');
-        await expect(insert).toBeDisabled();
-        await expect(turnInto).toBeDisabled();
-        errors.assertNone();
-      } finally {
-        errors.stop();
-      }
-    });
-  }
+      const noteEditor = page.getByRole('textbox', {
+        name: 'A',
+        exact: true,
+      });
+      await noteEditor.click();
+      await page
+        .getByRole('button', { name: 'Toggle A read-only', exact: true })
+        .click();
+      await expect(noteEditor).toHaveAttribute('aria-readonly', 'true');
+      await expect(insert).toBeDisabled();
+      await expect(turnInto).toBeDisabled();
+      errors.assertNone();
+    } finally {
+      errors.stop();
+    }
+  });
 
   for (const width of [1280, 390]) {
     test(`${base}: exact mounted targets at ${width}px`, async ({

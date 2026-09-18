@@ -21,17 +21,9 @@ import { ToolbarButton } from '@/registry/components/editor/toolbar';
 export function MoreToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
-  const focusEditorRef = React.useRef(false);
 
   return (
-    <DropdownMenu
-      open={open}
-      onOpenChange={(nextOpen) => {
-        if (nextOpen) focusEditorRef.current = false;
-        setOpen(nextOpen);
-      }}
-      modal={false}
-    >
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
         <ToolbarButton
           aria-label="More formatting"
@@ -45,18 +37,11 @@ export function MoreToolbarButton() {
       <DropdownMenuContent
         className="ignore-click-outside/toolbar flex max-h-[500px] min-w-[180px] flex-col overflow-y-auto"
         align="start"
-        onFinalFocus={(event) => {
-          if (!focusEditorRef.current) return;
-
-          focusEditorRef.current = false;
-          event.preventDefault();
-          editor.api.dom.focus();
-        }}
       >
         <DropdownMenuGroup>
           <DropdownMenuItem
+            finalFocus={() => editor.api.dom.focus()}
             onSelect={() => {
-              focusEditorRef.current = true;
               editor.update((tx) => {
                 tx.plugin(KbdPlugin).toggle();
                 tx.selection.collapse({ edge: 'end' });
@@ -68,8 +53,8 @@ export function MoreToolbarButton() {
           </DropdownMenuItem>
 
           <DropdownMenuItem
+            finalFocus={() => editor.api.dom.focus()}
             onSelect={() => {
-              focusEditorRef.current = true;
               editor.plugin(ScriptPlugin).update.toggle('sup');
             }}
           >
@@ -78,8 +63,8 @@ export function MoreToolbarButton() {
             {/* (⌘+,) */}
           </DropdownMenuItem>
           <DropdownMenuItem
+            finalFocus={() => editor.api.dom.focus()}
             onSelect={() => {
-              focusEditorRef.current = true;
               editor.plugin(ScriptPlugin).update.toggle('sub');
             }}
           >

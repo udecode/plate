@@ -12,6 +12,7 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { SelectionApi, type Selection, type Value } from 'platejs';
 import { BaseColumnPlugin } from 'platejs/layout';
 import { CodeBlockPlugin, createEditor, EditorRoot } from 'platejs/react';
+import { BaseTablePlugin } from 'platejs/table';
 import * as React from 'react';
 
 import { BaseBasicBlocksKit } from './basic-blocks-static';
@@ -142,6 +143,18 @@ async function renderTurnInto() {
   );
 }
 
+async function renderDetailsToolbar() {
+  const { DetailsToolbarButton } = await import(
+    `./details-toolbar-button?test=${Math.random().toString(36).slice(2)}`
+  );
+
+  return render(
+    <EditorRoot editor={currentEditor}>
+      <DetailsToolbarButton />
+    </EditorRoot>
+  );
+}
+
 afterEach(cleanup);
 
 afterAll(() => {
@@ -224,6 +237,122 @@ describe('turn into menu behavior', () => {
     expect(currentEditor.read.children()[0]).not.toHaveProperty('listType');
     expect(currentEditor.read.children()[0]).not.toHaveProperty('checked');
     expect(currentEditor.read.children()[2]).not.toHaveProperty('indent');
+  });
+
+  it('formats selected table-cell content and disables invalid wrappers', async () => {
+    const initialValue: Value = [
+      {
+        children: [
+          {
+            children: [
+              {
+                children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+                type: 'tableCell',
+              },
+              {
+                children: [{ children: [{ text: 'two' }], type: 'paragraph' }],
+                type: 'tableCell',
+              },
+            ],
+            type: 'tableRow',
+          },
+        ],
+        type: 'table',
+      },
+    ];
+
+    currentEditor = createEditor({
+      plugins: [
+        ...BaseBasicBlocksKit,
+        ...BaseListKit,
+        ...BaseDetailsKit,
+        CodeBlockPlugin,
+        BaseColumnPlugin,
+        BaseTablePlugin,
+      ],
+      initialValue,
+      selection: SelectionApi.nodes([
+        [0, 0, 0],
+        [0, 0, 1],
+      ]),
+    });
+    expect(
+      currentEditor.read.nodes
+        .blocks({ mode: 'highest' })
+        .map(([, path]) => path)
+    ).toEqual([[0]]);
+    expect(
+      currentEditor.read.nodes
+        .blocks({ mode: 'lowest' })
+        .map(([, path]) => path)
+    ).toEqual([
+      [0, 0, 0, 0],
+      [0, 0, 1, 0],
+    ]);
+    const view = await renderTurnInto();
+
+    act(() => {
+      currentEditor.update.selection.setNodes([
+        [0, 0, 0],
+        [0, 0, 1],
+      ]);
+    });
+    expect(
+      currentEditor.read.selection.nodes().map(([, path]) => path)
+    ).toEqual([
+      [0, 0, 0],
+      [0, 0, 1],
+    ]);
+
+    expect(
+      (
+        view.getByRole('menuitemcheckbox', {
+          name: 'Details',
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true);
+    expect(
+      (
+        view.getByRole('menuitemcheckbox', {
+          name: '3 columns',
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true);
+    const detailsView = await renderDetailsToolbar();
+    const detailsButton = detailsView.container.querySelector('button');
+
+    expect(detailsButton?.disabled).toBe(true);
+
+    fireEvent.click(view.getByRole('radio', { name: 'Heading 2' }));
+
+    expect(currentEditor.read.nodes.get([0, 0, 0, 0])?.[0]).toMatchObject({
+      children: [{ text: 'one' }],
+      level: 2,
+      type: 'heading',
+    });
+    expect(currentEditor.read.nodes.get([0, 0, 1, 0])?.[0]).toMatchObject({
+      children: [{ text: 'two' }],
+      level: 2,
+      type: 'heading',
+    });
+
+    act(() => {
+      currentEditor.api.history.undo();
+    });
+    fireEvent.click(view.getByRole('radio', { name: 'Bulleted list' }));
+
+    expect(currentEditor.read.nodes.get([0, 0, 0, 0])?.[0]).toMatchObject({
+      children: [{ text: 'one' }],
+      indent: 1,
+      listType: 'bulleted',
+      type: 'paragraph',
+    });
+    expect(currentEditor.read.nodes.get([0, 0, 1, 0])?.[0]).toMatchObject({
+      children: [{ text: 'two' }],
+      indent: 1,
+      listType: 'bulleted',
+      type: 'paragraph',
+    });
   });
 
   it('keeps an already-active leaf radio action as a no-op', async () => {

@@ -5,6 +5,7 @@ import {
 import { expect, test } from '@playwright/test';
 
 const CASE_ID = 'dnd:drag-handle-excluded-from-native-selection';
+const PREVIEW_CASE_ID = 'dnd:block-preview-origin';
 
 test(CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
@@ -59,6 +60,111 @@ test(CASE_ID, async ({ page }, testInfo) => {
     expect(
       await handle.evaluate((element) => getComputedStyle(element).userSelect)
     ).toBe('none');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test(PREVIEW_CASE_ID, async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  await page.addInitScript(() => {
+    const nativeSetDragImage = DataTransfer.prototype.setDragImage;
+
+    DataTransfer.prototype.setDragImage = function setDragImage(image, x, y) {
+      const rect = image.getBoundingClientRect();
+
+      Reflect.set(window, '__plateDragImageProbe', {
+        childCount: image.childElementCount,
+        height: rect.height,
+        text: image.textContent,
+        top: rect.top,
+        width: rect.width,
+        x,
+        y,
+      });
+
+      return nativeSetDragImage.call(this, image, x, y);
+    };
+  });
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.goto('/blocks/playground', { waitUntil: 'commit' });
+    const editor = page.locator('.editor-editor');
+    const harness = createBrowserEditorHarness(page, PREVIEW_CASE_ID, editor);
+    const text =
+      'Plate offers many features out-of-the-box as free, open-source plugins.';
+
+    await harness.ready({ editor: 'visible', text });
+
+    const block = editor.locator('.editor-blockWrapper').filter({
+      hasText: text,
+    });
+
+    await block.scrollIntoViewIfNeeded();
+    await block.hover();
+
+    const handle = block
+      .locator('xpath=..')
+      .getByRole('button', { name: 'Drag block' });
+
+    await handle.hover();
+
+    const handleBox = await handle.boundingBox();
+    const blockBox = await block.boundingBox();
+
+    expect(handleBox).not.toBeNull();
+    expect(blockBox).not.toBeNull();
+
+    await page.mouse.move(
+      handleBox!.x + handleBox!.width / 2,
+      handleBox!.y + handleBox!.height / 2
+    );
+    await page.mouse.down();
+    await page.mouse.move(handleBox!.x + 80, handleBox!.y + 20, { steps: 8 });
+
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            Reflect.get(window, '__plateDragImageProbe') as
+              | {
+                  childCount: number;
+                  height: number;
+                  text: string | null;
+                  top: number;
+                  width: number;
+                  x: number;
+                  y: number;
+                }
+              | undefined
+        )
+      )
+      .toMatchObject({
+        childCount: 1,
+        text: expect.stringContaining(text),
+      });
+    const preview = await page.evaluate(
+      () =>
+        Reflect.get(window, '__plateDragImageProbe') as {
+          childCount: number;
+          height: number;
+          text: string | null;
+          top: number;
+          width: number;
+          x: number;
+          y: number;
+        }
+    );
+
+    expect(preview.height).toBeGreaterThan(0);
+    expect(preview.width).toBeGreaterThan(0);
+    expect(Math.abs(preview.top - blockBox!.y)).toBeLessThan(16);
+
+    await page.mouse.up();
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

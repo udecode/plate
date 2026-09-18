@@ -462,7 +462,6 @@ export const editorComponents: Registry['items'] = [
       '@plate/editor-dropdown-menu',
       '@plate/link',
       '@plate/toolbar',
-      '@plate/transforms',
     ],
     title: 'Insert Toolbar Button',
     type: 'registry:component',

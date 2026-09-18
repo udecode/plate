@@ -292,6 +292,17 @@ property-mutation portal. `tx.plugin(pluginOrName)` selects the installed
 plugin's flat active-transaction capability group; it is not a property portal
 or a nested update.
 
+Element portals expose `insert(input?, nodeOptions?)`. Block portals also
+expose `upsert(input?, nodeOptions?)`: reuse a matching empty editable block,
+replace a different empty editable block, and insert after content or
+structure. `insert` uses the same source policy but creates a sibling for a
+matching empty block. Explicit `at` remains an exact `insert` location and
+explicit `replaceEmpty` overrides its semantic choice; `upsert` exposes
+neither override. A plugin that authors structural or domain-specific
+`insert` must author `upsert` through the same owner rather than accepting a
+generic constructor that loses nested structure, selection, registration, or
+identity semantics.
+
 State and native plugin mechanics:
 
 - Give every state-owning production plugin a named `*PluginState`. Export the

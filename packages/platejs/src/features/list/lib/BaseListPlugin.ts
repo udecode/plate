@@ -24,7 +24,9 @@ import {
   type NodeKey,
   type NodeSelection,
   type BlockInsertOptions,
+  type BlockUpsertOptions,
 } from '../../../core';
+import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import { BaseIndentPlugin } from '../../indent';
 
@@ -1021,251 +1023,279 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
         targetPlugins: plugin.targetPlugins,
       },
     },
-    update: ({ tx }) => ({
-      indent: ({
-        type = ListType.Bulleted,
-        ...options
-      }: IndentListOptions = {}) => {
-        const listStyle = normalizeListStyle(type, options.listStyle);
-        const { at } = options;
-
-        tx.indent.change({
-          nodes: {
-            at,
-          },
-          offset: 1,
-          setNodeProps: () => ({
-            ...(listStyle === undefined ? {} : { listStyle }),
-            listType: type,
-          }),
-        });
-
-        const match = getInjectMatch(editor, plugin);
-        const entries = tx.nodes.blocks({
-          at,
-          match,
-          mode: 'lowest',
-        });
-
-        entries.forEach(([node, path]) => {
-          if (type === ListType.Task) {
-            tx.nodes.set(
-              {
-                checked:
-                  typeof node.checked === 'boolean' ? node.checked : false,
-              },
-              { at: path }
-            );
-            tx.nodes.unset(['listRestart', 'listStart', 'listStyle'], {
-              at: path,
-            });
-            return;
-          }
-
-          if (Object.hasOwn(node, 'checked')) {
-            tx.nodes.unset('checked', { at: path });
-          }
-          if (listStyle === undefined && Object.hasOwn(node, 'listStyle')) {
-            tx.nodes.unset('listStyle', { at: path });
-          }
-          if (type === ListType.Bulleted) {
-            tx.nodes.unset(['listRestart', 'listStart'], { at: path });
-          }
-        });
-      },
-      outdent: (options: OutdentListOptions = {}) => {
-        tx.indent.change({
-          nodes: {
-            at: options.at,
-          },
-          offset: -1,
-          unsetNodeProps: [
-            'checked',
-            'listRestart',
-            'listStart',
-            'listStyle',
-            'listType',
-          ],
-        });
-      },
-      clear: ({ at }: { at?: Location | NodeSelection } = {}) => {
-        for (const [node, path] of tx.nodes.blocks({
-          at,
-          match: getInjectMatch(editor, plugin),
-          mode: 'lowest',
-        })) {
-          if (!isListItem(node)) continue;
-          tx.nodes.unset(
-            [
-              'checked',
-              'indent',
-              'listRestart',
-              'listStart',
-              'listStyle',
-              'listType',
-            ],
-            { at: path }
-          );
-        }
-      },
-      insert: (
+    update: ({ tx }) => {
+      const insertList = (
         { type }: { type: ListType },
-        options: BlockInsertOptions = {}
+        options: BlockInsertOptions
       ) => {
         const element = tx.schema.create(
           editor.plugin(BaseParagraphPlugin).schema.type,
           { indent: 1, listType: type }
         );
+
         if (options.at === undefined || options.after !== undefined) {
           tx.blocks.insertAfter(element, { ...options, at: options.after });
         } else {
           tx.nodes.insert(element, options);
         }
-      },
-      toggle: ({
-        at,
-        getSiblingListOptions,
-        listRestart,
-        listStart,
-        listStyle,
-        type,
-      }: ToggleListOptions) => {
-        if (
-          (at === undefined && !tx.selection()) ||
-          (PathApi.isPath(at) && at.length === 0)
-        ) {
-          return;
-        }
-        if (listStart !== undefined && listRestart !== undefined) {
-          throw new Error(
-            'List toggle accepts either listStart or listRestart, not both.'
-          );
-        }
-
-        const match = getInjectMatch(editor, plugin);
-        const entries = tx.nodes.blocks({
-          at,
-          match,
-          mode: 'lowest',
+      };
+      const applyListInsertion = (
+        mode: 'insert' | 'upsert',
+        input: { type: ListType },
+        options: BlockInsertOptions | BlockUpsertOptions = {}
+      ) =>
+        applyBlockInsertion({
+          insert: (insertOptions) => insertList(input, insertOptions),
+          matches: (block) => block.listType === input.type,
+          mode,
+          options,
+          tx,
         });
 
-        if (entries.length === 0) return;
+      return {
+        indent: ({
+          type = ListType.Bulleted,
+          ...options
+        }: IndentListOptions = {}) => {
+          const listStyle = normalizeListStyle(type, options.listStyle);
+          const { at } = options;
 
-        const normalizedListStyle = normalizeListStyle(type, listStyle);
-        const isSameList = ([node]: NodeEntry<Element>) =>
-          node.listType === type &&
-          (listStyle === undefined ||
-            getElementListStyle(node) === normalizedListStyle);
-        const unsetList =
-          listStart === undefined &&
-          listRestart === undefined &&
-          entries.every(isSameList);
+          tx.indent.change({
+            nodes: {
+              at,
+            },
+            offset: 1,
+            setNodeProps: () => ({
+              ...(listStyle === undefined ? {} : { listStyle }),
+              listType: type,
+            }),
+          });
 
-        if (unsetList) {
+          const match = getInjectMatch(editor, plugin);
+          const entries = tx.nodes.blocks({
+            at,
+            match,
+            mode: 'lowest',
+          });
+
           entries.forEach(([node, path]) => {
-            const indent = Number(node.indent ?? 0);
+            if (type === ListType.Task) {
+              tx.nodes.set(
+                {
+                  checked:
+                    typeof node.checked === 'boolean' ? node.checked : false,
+                },
+                { at: path }
+              );
+              tx.nodes.unset(['listRestart', 'listStart', 'listStyle'], {
+                at: path,
+              });
+              return;
+            }
 
+            if (Object.hasOwn(node, 'checked')) {
+              tx.nodes.unset('checked', { at: path });
+            }
+            if (listStyle === undefined && Object.hasOwn(node, 'listStyle')) {
+              tx.nodes.unset('listStyle', { at: path });
+            }
+            if (type === ListType.Bulleted) {
+              tx.nodes.unset(['listRestart', 'listStart'], { at: path });
+            }
+          });
+        },
+        outdent: (options: OutdentListOptions = {}) => {
+          tx.indent.change({
+            nodes: {
+              at: options.at,
+            },
+            offset: -1,
+            unsetNodeProps: [
+              'checked',
+              'listRestart',
+              'listStart',
+              'listStyle',
+              'listType',
+            ],
+          });
+        },
+        clear: ({ at }: { at?: Location | NodeSelection } = {}) => {
+          for (const [node, path] of tx.nodes.blocks({
+            at,
+            match: getInjectMatch(editor, plugin),
+            mode: 'lowest',
+          })) {
+            if (!isListItem(node)) continue;
             tx.nodes.unset(
-              ['checked', 'listRestart', 'listStart', 'listStyle', 'listType'],
+              [
+                'checked',
+                'indent',
+                'listRestart',
+                'listStart',
+                'listStyle',
+                'listType',
+              ],
+              { at: path }
+            );
+          }
+        },
+        insert: (input: { type: ListType }, options: BlockInsertOptions = {}) =>
+          applyListInsertion('insert', input, options),
+        toggle: ({
+          at,
+          getSiblingListOptions,
+          listRestart,
+          listStart,
+          listStyle,
+          type,
+        }: ToggleListOptions) => {
+          if (
+            (at === undefined && !tx.selection()) ||
+            (PathApi.isPath(at) && at.length === 0)
+          ) {
+            return;
+          }
+          if (listStart !== undefined && listRestart !== undefined) {
+            throw new Error(
+              'List toggle accepts either listStart or listRestart, not both.'
+            );
+          }
+
+          const match = getInjectMatch(editor, plugin);
+          const entries = tx.nodes.blocks({
+            at,
+            match,
+            mode: 'lowest',
+          });
+
+          if (entries.length === 0) return;
+
+          const normalizedListStyle = normalizeListStyle(type, listStyle);
+          const isSameList = ([node]: NodeEntry<Element>) =>
+            node.listType === type &&
+            (listStyle === undefined ||
+              getElementListStyle(node) === normalizedListStyle);
+          const unsetList =
+            listStart === undefined &&
+            listRestart === undefined &&
+            entries.every(isSameList);
+
+          if (unsetList) {
+            entries.forEach(([node, path]) => {
+              const indent = Number(node.indent ?? 0);
+
+              tx.nodes.unset(
+                [
+                  'checked',
+                  'listRestart',
+                  'listStart',
+                  'listStyle',
+                  'listType',
+                ],
+                { at: path }
+              );
+
+              if (indent > 1) {
+                tx.nodes.set({ indent: indent - 1 }, { at: path });
+              } else {
+                tx.nodes.unset('indent', { at: path });
+              }
+            });
+            return;
+          }
+
+          const targets = [...entries];
+          const boundaryPath = entries[0][1];
+          if (entries.length === 1 && isListItem(entries[0][0])) {
+            const headingDescriptor = getCompiledPlatePlugin(
+              editor,
+              PLUGINS.heading
+            );
+            const siblingOptions = getSequenceSiblingOptions(
+              {
+                ...store.get().getSiblingListOptions,
+                ...getSiblingListOptions,
+              },
+              headingDescriptor
+                ? editor.plugin(headingDescriptor).schema.type
+                : undefined
+            );
+            let sibling = Object.hasOwn(entries[0][0], 'listRestart')
+              ? undefined
+              : tx.list.getPrevious(entries[0], siblingOptions);
+
+            while (sibling) {
+              targets.unshift(sibling);
+              if (Object.hasOwn(sibling[0], 'listRestart')) break;
+              sibling = tx.list.getPrevious(sibling, siblingOptions);
+            }
+
+            sibling = tx.list.getNext(entries[0], siblingOptions);
+            while (sibling) {
+              if (Object.hasOwn(sibling[0], 'listRestart')) break;
+              targets.push(sibling);
+              sibling = tx.list.getNext(sibling, siblingOptions);
+            }
+          }
+
+          targets.forEach(([node, path]) => {
+            const currentIndent = Number(node.indent ?? 0);
+            const indent = isListItem(node)
+              ? Math.max(1, currentIndent || 1)
+              : currentIndent + 1;
+            const isBoundary = PathApi.equals(path, boundaryPath);
+
+            tx.nodes.set(
+              {
+                indent,
+                listType: type,
+                ...(type === ListType.Task
+                  ? {
+                      checked:
+                        typeof node.checked === 'boolean'
+                          ? node.checked
+                          : false,
+                    }
+                  : {}),
+                ...(normalizedListStyle === undefined
+                  ? {}
+                  : { listStyle: normalizedListStyle }),
+                ...(type === ListType.Numbered &&
+                listRestart !== undefined &&
+                isBoundary
+                  ? { listRestart }
+                  : {}),
+                ...(type === ListType.Numbered &&
+                listStart !== undefined &&
+                isBoundary
+                  ? { listStart }
+                  : {}),
+              },
               { at: path }
             );
 
-            if (indent > 1) {
-              tx.nodes.set({ indent: indent - 1 }, { at: path });
-            } else {
-              tx.nodes.unset('indent', { at: path });
+            if (type !== ListType.Task && Object.hasOwn(node, 'checked')) {
+              tx.nodes.unset('checked', { at: path });
+            }
+            if (
+              normalizedListStyle === undefined &&
+              Object.hasOwn(node, 'listStyle')
+            ) {
+              tx.nodes.unset('listStyle', { at: path });
+            }
+            if (type !== ListType.Numbered) {
+              tx.nodes.unset(['listRestart', 'listStart'], { at: path });
+            } else if (isBoundary && listRestart !== undefined) {
+              tx.nodes.unset('listStart', { at: path });
+            } else if (isBoundary && listStart !== undefined) {
+              tx.nodes.unset('listRestart', { at: path });
             }
           });
-          return;
-        }
-
-        const targets = [...entries];
-        const boundaryPath = entries[0][1];
-        if (entries.length === 1 && isListItem(entries[0][0])) {
-          const headingDescriptor = getCompiledPlatePlugin(
-            editor,
-            PLUGINS.heading
-          );
-          const siblingOptions = getSequenceSiblingOptions(
-            {
-              ...store.get().getSiblingListOptions,
-              ...getSiblingListOptions,
-            },
-            headingDescriptor
-              ? editor.plugin(headingDescriptor).schema.type
-              : undefined
-          );
-          let sibling = Object.hasOwn(entries[0][0], 'listRestart')
-            ? undefined
-            : tx.list.getPrevious(entries[0], siblingOptions);
-
-          while (sibling) {
-            targets.unshift(sibling);
-            if (Object.hasOwn(sibling[0], 'listRestart')) break;
-            sibling = tx.list.getPrevious(sibling, siblingOptions);
-          }
-
-          sibling = tx.list.getNext(entries[0], siblingOptions);
-          while (sibling) {
-            if (Object.hasOwn(sibling[0], 'listRestart')) break;
-            targets.push(sibling);
-            sibling = tx.list.getNext(sibling, siblingOptions);
-          }
-        }
-
-        targets.forEach(([node, path]) => {
-          const currentIndent = Number(node.indent ?? 0);
-          const indent = isListItem(node)
-            ? Math.max(1, currentIndent || 1)
-            : currentIndent + 1;
-          const isBoundary = PathApi.equals(path, boundaryPath);
-
-          tx.nodes.set(
-            {
-              indent,
-              listType: type,
-              ...(type === ListType.Task
-                ? {
-                    checked:
-                      typeof node.checked === 'boolean' ? node.checked : false,
-                  }
-                : {}),
-              ...(normalizedListStyle === undefined
-                ? {}
-                : { listStyle: normalizedListStyle }),
-              ...(type === ListType.Numbered &&
-              listRestart !== undefined &&
-              isBoundary
-                ? { listRestart }
-                : {}),
-              ...(type === ListType.Numbered &&
-              listStart !== undefined &&
-              isBoundary
-                ? { listStart }
-                : {}),
-            },
-            { at: path }
-          );
-
-          if (type !== ListType.Task && Object.hasOwn(node, 'checked')) {
-            tx.nodes.unset('checked', { at: path });
-          }
-          if (
-            normalizedListStyle === undefined &&
-            Object.hasOwn(node, 'listStyle')
-          ) {
-            tx.nodes.unset('listStyle', { at: path });
-          }
-          if (type !== ListType.Numbered) {
-            tx.nodes.unset(['listRestart', 'listStart'], { at: path });
-          } else if (isBoundary && listRestart !== undefined) {
-            tx.nodes.unset('listStart', { at: path });
-          } else if (isBoundary && listStart !== undefined) {
-            tx.nodes.unset('listRestart', { at: path });
-          }
-        });
-      },
-    }),
+        },
+        upsert: (input: { type: ListType }, options: BlockUpsertOptions = {}) =>
+          applyListInsertion('upsert', input, options),
+      };
+    },
   }))
   .extend((context) => ({
     commands: ({ around, handle }) => {

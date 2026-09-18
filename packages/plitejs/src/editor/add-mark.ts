@@ -1,7 +1,10 @@
 import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
-import { runEditorTransaction } from '../core/public-state';
+import {
+  runEditorTransaction,
+  withTransactionSpecDraftRead,
+} from '../core/public-state';
 import type { EditorStaticApi } from '../interfaces/editor';
 import { parent as editorParent } from '../interfaces/editor';
 import { type Node, NodeApi } from '../interfaces/node';
@@ -42,7 +45,11 @@ export const applyAddMark: EditorStaticApi['addMark'] = (
       );
     };
     if (SelectionApi.isNode(selection)) {
-      for (const range of editor.read.selection.ranges()) {
+      const ranges = withTransactionSpecDraftRead(editor, () =>
+        editor.read.selection.ranges()
+      );
+
+      for (const range of ranges) {
         setNodes(
           editor,
           { [key]: value },

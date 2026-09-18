@@ -1,5 +1,5 @@
 {
-  "generation": "0db5e317ddf430edb6d5d4bc9c7d77ea94462da398a23c3589482f09d994af98",
+  "generation": "ac4c4a459ea0140fbadedc96ac6f624fd4dd5922c601c599610816d442681a75",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -743,8 +743,7 @@
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/link",
-            "@plate/toolbar",
-            "@plate/transforms"
+            "@plate/toolbar"
           ],
           "title": "Insert Toolbar Button",
           "type": "registry:component"
@@ -3700,8 +3699,7 @@
           ],
           "name": "slash",
           "registryDependencies": [
-            "@plate/inline-combobox",
-            "@plate/transforms"
+            "@plate/inline-combobox"
           ],
           "type": "registry:component",
           "description": "A command input component for inserting various elements.",
@@ -4036,21 +4034,6 @@
           "registryDependencies": [
             "@plate/comment"
           ],
-          "type": "registry:component"
-        },
-        {
-          "dependencies": [
-            "platejs"
-          ],
-          "files": [
-            {
-              "path": "components/editor/transforms.ts",
-              "type": "registry:component",
-              "target": "@components/editor/transforms.ts"
-            }
-          ],
-          "name": "transforms",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -7389,8 +7372,7 @@
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/link",
-            "@plate/toolbar",
-            "@plate/transforms"
+            "@plate/toolbar"
           ],
           "title": "Insert Toolbar Button",
           "type": "registry:component"
@@ -10340,8 +10322,7 @@
           ],
           "name": "slash",
           "registryDependencies": [
-            "@plate/inline-combobox",
-            "@plate/transforms"
+            "@plate/inline-combobox"
           ],
           "type": "registry:component",
           "description": "A command input component for inserting various elements.",
@@ -10676,21 +10657,6 @@
           "registryDependencies": [
             "@plate/comment"
           ],
-          "type": "registry:component"
-        },
-        {
-          "dependencies": [
-            "platejs"
-          ],
-          "files": [
-            {
-              "path": "components/editor/transforms.ts",
-              "type": "registry:component",
-              "target": "@components/editor/transforms.ts"
-            }
-          ],
-          "name": "transforms",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {

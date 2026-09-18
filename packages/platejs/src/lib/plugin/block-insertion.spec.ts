@@ -6,13 +6,19 @@ import {
   BaseHeadingPlugin,
   BaseHorizontalRulePlugin,
 } from '../../features/basic-nodes';
+import {
+  BaseLineHeightPlugin,
+  BaseTextAlignPlugin,
+} from '../../features/basic-styles';
 import { BaseCalloutPlugin } from '../../features/callout';
 import { BaseDetailsPlugin } from '../../features/details';
 import { BaseColumnPlugin } from '../../features/layout';
+import { BaseListPlugin } from '../../features/list';
 import { BaseImagePlugin, BasePlaceholderPlugin } from '../../features/media';
 import { BaseTablePlugin } from '../../features/table';
 import { BaseTocPlugin } from '../../features/toc';
 import { BaseEquationPlugin } from '../../math';
+import { BaseParagraphPlugin } from '../plugins/paragraph';
 
 const plugins = [
   BaseBlockquotePlugin,
@@ -33,42 +39,36 @@ const cases: Array<{ type: string; insert: (editor: Editor) => void }> = [
     insert: (editor) =>
       editor
         .plugin(BaseHeadingPlugin)
-        .update.insert({ level: 2 }, { replaceEmpty: true, select: true }),
+        .update.insert({ level: 2 }, { select: true }),
   },
   {
     type: 'blockquote',
     insert: (editor) =>
-      editor
-        .plugin(BaseBlockquotePlugin)
-        .update.insert({}, { replaceEmpty: true, select: true }),
+      editor.plugin(BaseBlockquotePlugin).update.insert({}, { select: true }),
   },
   {
     type: 'horizontalRule',
     insert: (editor) =>
       editor
         .plugin(BaseHorizontalRulePlugin)
-        .update.insert({}, { replaceEmpty: true, select: true }),
+        .update.insert({}, { select: true }),
   },
   {
     type: 'callout',
     insert: (editor) =>
-      editor
-        .plugin(BaseCalloutPlugin)
-        .update.insert({}, { replaceEmpty: true, select: true }),
+      editor.plugin(BaseCalloutPlugin).update.insert({}, { select: true }),
   },
   {
     type: 'details',
     insert: (editor) =>
-      editor
-        .plugin(BaseDetailsPlugin)
-        .update.insert({}, { replaceEmpty: true, select: true }),
+      editor.plugin(BaseDetailsPlugin).update.insert({}, { select: true }),
   },
   {
     type: 'columnGroup',
     insert: (editor) =>
       editor
         .plugin(BaseColumnPlugin)
-        .update.insert({ columns: 3 }, { replaceEmpty: true, select: true }),
+        .update.insert({ columns: 3 }, { select: true }),
   },
   {
     type: 'image',
@@ -77,7 +77,7 @@ const cases: Array<{ type: string; insert: (editor: Editor) => void }> = [
         .plugin(BaseImagePlugin)
         .update.insert(
           { url: 'https://example.com/image.png' },
-          { replaceEmpty: true, select: true }
+          { select: true }
         ),
   },
   {
@@ -85,31 +85,22 @@ const cases: Array<{ type: string; insert: (editor: Editor) => void }> = [
     insert: (editor) =>
       editor
         .plugin(BasePlaceholderPlugin)
-        .update.insert(
-          { mediaType: 'video' },
-          { replaceEmpty: true, select: true }
-        ),
+        .update.insert({ mediaType: 'video' }, { select: true }),
   },
   {
     type: 'table',
     insert: (editor) =>
-      editor
-        .plugin(BaseTablePlugin)
-        .update.insert({}, { replaceEmpty: true, select: true }),
+      editor.plugin(BaseTablePlugin).update.insert({}, { select: true }),
   },
   {
     type: 'toc',
     insert: (editor) =>
-      editor
-        .plugin(BaseTocPlugin)
-        .update.insert({}, { replaceEmpty: true, select: true }),
+      editor.plugin(BaseTocPlugin).update.insert({}, { select: true }),
   },
   {
     type: 'equation',
     insert: (editor) =>
-      editor
-        .plugin(BaseEquationPlugin)
-        .update.insert({}, { replaceEmpty: true, select: true }),
+      editor.plugin(BaseEquationPlugin).update.insert({}, { select: true }),
   },
 ];
 
@@ -204,12 +195,125 @@ it('inserts a table beside the current table, with its first cell selected', () 
       focus: { path: [0, 0], offset: 0 },
     },
   });
-  editor
-    .plugin(BaseTablePlugin)
-    .update.insert({}, { replaceEmpty: true, select: true });
-  editor
-    .plugin(BaseTablePlugin)
-    .update.insert({}, { replaceEmpty: true, select: true });
+  editor.plugin(BaseTablePlugin).update.insert({}, { select: true });
+  editor.plugin(BaseTablePlugin).update.insert({}, { select: true });
   expect(editor.read.children().map((n) => n.type)).toEqual(['table', 'table']);
   expect(editor.read.selection()?.anchor.path).toEqual([1, 0, 0, 0, 0]);
+});
+
+it('creates a sibling for insert and reuses a matching empty block for upsert', () => {
+  const createHeadingEditor = () =>
+    createEditor({
+      plugins,
+      initialValue: [{ type: 'heading', level: 2, children: [{ text: '' }] }],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+    });
+  const insertEditor = createHeadingEditor();
+
+  insertEditor
+    .plugin(BaseHeadingPlugin)
+    .update.insert({ level: 2 }, { select: true });
+  expect(insertEditor.read.children()).toHaveLength(2);
+
+  const upsertEditor = createHeadingEditor();
+  const block = upsertEditor.read.children()[0];
+  const key = upsertEditor.key(block);
+
+  upsertEditor
+    .plugin(BaseHeadingPlugin)
+    .update.upsert({ level: 2 }, { select: true });
+  expect(upsertEditor.read.children()).toHaveLength(1);
+  expect(upsertEditor.key(upsertEditor.read.children()[0])).toBe(key);
+});
+
+it('uses list identity for authored insert and upsert', () => {
+  const createListEditor = () =>
+    createEditor({
+      plugins: [BaseParagraphPlugin, BaseListPlugin],
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: '' }],
+          indent: 1,
+          listType: 'bulleted',
+        },
+      ],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+    });
+  const insertEditor = createListEditor();
+
+  insertEditor
+    .plugin(BaseListPlugin)
+    .update.insert({ type: 'bulleted' }, { select: true });
+  expect(insertEditor.read.children()).toHaveLength(2);
+
+  const upsertEditor = createListEditor();
+  const key = upsertEditor.key(upsertEditor.read.children()[0]);
+
+  upsertEditor
+    .plugin(BaseListPlugin)
+    .update.upsert({ type: 'bulleted' }, { select: true });
+  expect(upsertEditor.read.children()).toHaveLength(1);
+  expect(upsertEditor.key(upsertEditor.read.children()[0])).toBe(key);
+});
+
+it('preserves presentation properties when upserting a matching paragraph', () => {
+  const editor = createEditor({
+    plugins: [BaseParagraphPlugin, BaseTextAlignPlugin, BaseLineHeightPlugin],
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [{ text: '' }],
+        lineHeight: 2,
+        textAlign: 'center',
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    },
+  });
+  const key = editor.key(editor.read.children()[0]);
+
+  editor.plugin(BaseParagraphPlugin).update.upsert({}, { select: true });
+
+  expect(editor.read.children()[0]).toMatchObject({
+    lineHeight: 2,
+    textAlign: 'center',
+  });
+  expect(editor.key(editor.read.children()[0])).toBe(key);
+});
+
+it('replaces list semantics when upserting a plain paragraph', () => {
+  const editor = createEditor({
+    plugins: [BaseParagraphPlugin, BaseListPlugin],
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [{ text: '' }],
+        indent: 1,
+        listType: 'bulleted',
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    },
+  });
+
+  editor.plugin(BaseParagraphPlugin).update.upsert({}, { select: true });
+
+  expect(editor.read.children()).toEqual([
+    { type: 'paragraph', children: [{ text: '' }] },
+  ]);
 });

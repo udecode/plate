@@ -564,10 +564,17 @@ Current priorities:
   and complete navigation policy; generic element renderers receive neutral
   attributes without feature subscriptions.
 - Every element plugin gets descriptor-bound `insert`, `set`, and `remove` on
-  `editor.plugin(Plugin).update`. Default-constructible, schema-compatible text
-  blocks also get `toggle`; text blocks with required construction properties
-  and structural plugins author `toggle` only for real domain, wrap,
-  conversion, or child semantics. An opt-in generated `Editor` type may
+  `editor.plugin(Plugin).update`. Block elements also get `upsert`: it reuses a
+  matching empty editable block, replaces a different empty editable block,
+  and inserts after content or structure. `insert` follows the same source
+  policy but creates a sibling for a matching empty block. Explicit `at` is an
+  exact insertion location, while explicit `replaceEmpty` overrides semantic
+  replacement for `insert`. An authored `insert` must author `upsert` too when
+  generic construction cannot preserve its structure or domain identity.
+  Default-constructible, schema-compatible text blocks also get `toggle`; text
+  blocks with required construction properties and structural plugins author
+  `toggle` only for real domain, wrap, conversion, or child semantics. An
+  opt-in generated `Editor` type may
   additionally expose eligible methods under the capability name on root and
   transaction updates. Raw
   tuples keep authored root/transaction methods exact without materializing a
@@ -582,10 +589,13 @@ Current priorities:
 - Application schema overrides are a compiler boundary. Ordinary runtime
   tuples do not expose descriptor-generic mutations whose eligibility depends
   on the final grammar; opt-in generated types may own that exact surface.
-- Custom element insertion is `insert(input?, nodeOptions?)`: domain data
-  first, generic placement and selection second. Do not merge `at`, `select`,
-  or other node options into feature input, and do not export compiler-ferry
-  `Insert*Options` types. Schema-default CRUD uses the synthesized insert.
+- Custom element insertion is `insert(input?, nodeOptions?)` and block reuse is
+  `upsert(input?, nodeOptions?)`: domain data first, generic placement and
+  selection second. `upsert` intentionally omits exact `at` and
+  `replaceEmpty`; callers use `insert` for those overrides. Do not merge `at`,
+  `select`, or other node options into feature input, and do not export
+  compiler-ferry `Insert*Options` types. Schema-default CRUD uses the
+  synthesized operations.
 - The scoped portal accepts root transaction policy without changing its
   inferred methods: `editor.plugin(Plugin).update(policy).method()`. It opens
   exactly one root transaction and preserves rollback and history tags. Code

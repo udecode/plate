@@ -85,7 +85,7 @@ Owners: [insert-text.ts](../../../packages/plitejs/src/editor/insert-text.ts).
 
 Consumers: [basic-nodes](../../../packages/platejs/src/features/basic-nodes).
 
-Proof entrypoints: [content-slice-laws.test.ts](../../../packages/plitejs/test/content-slice-laws.test.ts), [transforms.spec.ts](../../../apps/www/src/registry/components/editor/transforms.spec.ts), [autoformat.spec.ts](../../../apps/www/tests/browser/autoformat.spec.ts). These links alone are not proof of a passing run.
+Proof entrypoints: [content-slice-laws.test.ts](../../../packages/plitejs/test/content-slice-laws.test.ts), [block-insertion.spec.ts](../../../packages/platejs/src/lib/plugin/block-insertion.spec.ts), [autoformat.spec.ts](../../../apps/www/tests/browser/autoformat.spec.ts). These links alone are not proof of a passing run.
 
 Inspection: Current owner, consumer and proof entrypoints located; this queue is not a completed feature review.
 

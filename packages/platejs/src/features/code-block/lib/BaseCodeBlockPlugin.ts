@@ -13,7 +13,8 @@ import {
   type NodeEntry,
   type NodeSelection,
   PathApi,
-  type NodeInsertOptions,
+  type BlockInsertOptions,
+  type BlockUpsertOptions,
   PLUGINS,
   property,
   type Range,
@@ -21,6 +22,7 @@ import {
   schema,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
+import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 
 const CODE_LANGUAGE_CLASS_RE = /(?:^|\s)language-([^\s]+)/;
 const NON_WHITESPACE = /\S/;
@@ -369,29 +371,52 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             if (mappedSelection) tx.selection.set(mappedSelection);
           }
         };
-        const insertBlock = (
-          options: Omit<NodeInsertOptions, 'split'> = {}
+        const insertCodeBlock = (
+          {
+            defaultType = editor.plugin(BaseParagraphPlugin).schema.type,
+          }: { defaultType?: string } = {},
+          options: BlockInsertOptions = {}
         ) => {
-          const selection = tx.selection();
+          if (
+            !tx.selection() &&
+            options.at === undefined &&
+            options.after === undefined
+          ) {
+            return;
+          }
 
-          if (!selection || tx.selection.isExpanded()) return;
-
-          if (tx.nodes.some({ type: plugin })) return;
-          if (!tx.selection.isAtBlockStart()) tx.break.insert();
-
-          const mutationOptions = {
-            at: options.at,
-            mode: options.mode,
-            voids: options.voids,
+          const element = tx.schema.create(defaultType);
+          const insertOptions = {
+            ...options,
+            select: options.select ?? true,
           };
 
-          tx.nodes.set(
-            {
-              type,
-            },
-            mutationOptions
-          );
+          if (options.at === undefined || options.after !== undefined) {
+            tx.blocks.insertAfter(element, {
+              ...insertOptions,
+              at: options.after,
+            });
+          } else {
+            tx.nodes.insert(element, insertOptions);
+          }
+
+          const path = tx.nodes.path(element);
+
+          if (path) tx.nodes.set({ type }, { at: path });
         };
+        const applyCodeBlockInsertion = (
+          mode: 'insert' | 'upsert',
+          input: { defaultType?: string } = {},
+          options: BlockInsertOptions | BlockUpsertOptions = {}
+        ) =>
+          applyBlockInsertion({
+            insert: (insertOptions) => insertCodeBlock(input, insertOptions),
+            matches: (block) =>
+              block.type === type && block.listType === undefined,
+            mode,
+            options,
+            tx,
+          });
         const setContent = ({
           code,
           element,
@@ -496,39 +521,9 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             });
           },
           insert: (
-            {
-              defaultType = editor.plugin(BaseParagraphPlugin).schema.type,
-            }: { defaultType?: string } = {},
-            options: Omit<NodeInsertOptions, 'split'> = {}
-          ) => {
-            const selection = tx.selection();
-
-            if (!selection) return;
-
-            const block = tx.selection.isCollapsed()
-              ? tx.nodes.block({ at: selection })
-              : undefined;
-            const shouldInsertNextBlock =
-              tx.selection.isExpanded() ||
-              !block ||
-              !tx.nodes.isEmpty(block[0]);
-            let codeBlockOptions = options;
-
-            if (shouldInsertNextBlock) {
-              const { at: _at, ...remainingOptions } = options;
-
-              tx.blocks.insertAfter(
-                { children: [{ text: '' }], type: defaultType },
-                {
-                  ...options,
-                  select: true,
-                }
-              );
-              codeBlockOptions = remainingOptions;
-            }
-
-            insertBlock(codeBlockOptions);
-          },
+            input: { defaultType?: string } = {},
+            options: BlockInsertOptions = {}
+          ) => applyCodeBlockInsertion('insert', input, options),
           resetBlock: () => {
             if (!tx.nodes.block({ type: plugin })) return false;
 
@@ -651,6 +646,10 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             }
           },
           untab: () => tab(true),
+          upsert: (
+            input: { defaultType?: string } = {},
+            options: BlockUpsertOptions = {}
+          ) => applyCodeBlockInsertion('upsert', input, options),
         };
       },
     };

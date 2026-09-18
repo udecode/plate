@@ -931,7 +931,7 @@ export function TableCellElement(
       className={cn(
         'relative h-full overflow-visible border-none bg-background p-0',
         element.backgroundColor ? 'bg-(--cellBackground)' : 'bg-background',
-        isHeader && 'text-left *:m-0',
+        isHeader && 'text-left font-normal *:m-0',
         'before:size-full',
         'data-[table-cell-selected=true]:before:z-10',
         'data-[table-cell-selected=true]:before:bg-brand/5',

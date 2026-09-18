@@ -3852,21 +3852,40 @@ const getStateView = <
           target.root ?? MAIN_ROOT_KEY,
           () => {
             const entries: Array<NodeEntry<Element>> = [];
+            const {
+              at: _at,
+              reverse: _reverse,
+              ...queryOptions
+            } = inputOptions;
 
             for (const path of target.paths) {
-              const exact = readNodeEntry<PliteNode>(editor, path);
-              const block =
-                exact && matchesBlock(exact[0], exact[1])
-                  ? (exact as NodeEntry<Element>)
-                  : readBlock({ at: path, match: matchesBlock });
+              const selectedBlocks = Array.from(
+                getNodes(editor as unknown as Editor, {
+                  ...queryOptions,
+                  at: path,
+                  match: matchesBlock,
+                  mode: queryOptions.mode ?? 'lowest',
+                })
+              ) as Array<NodeEntry<Element>>;
+              const fallbackBlock =
+                selectedBlocks.length === 0
+                  ? readBlock({ at: path, match: matchesBlock })
+                  : undefined;
+              const blocks =
+                selectedBlocks.length > 0
+                  ? selectedBlocks
+                  : fallbackBlock
+                    ? [fallbackBlock as NodeEntry<Element>]
+                    : [];
 
-              if (
-                block &&
-                !entries.some(([, candidate]) =>
-                  PathApi.equals(candidate, block[1])
-                )
-              ) {
-                entries.push(block);
+              for (const block of blocks) {
+                if (
+                  !entries.some(([, candidate]) =>
+                    PathApi.equals(candidate, block[1])
+                  )
+                ) {
+                  entries.push(block);
+                }
               }
             }
 

@@ -10,11 +10,13 @@ import {
   type NodeSelection,
   PathApi,
   type BlockInsertOptions,
+  type BlockUpsertOptions,
   PLUGINS,
   RangeApi,
   schema,
   SelectionApi,
 } from '../../../core';
+import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 
 export type BaseDetailsPluginState = {
   openKeys: Set<NodeKey>;
@@ -246,8 +248,8 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
     selectors: {
       isOpen: (state, key: NodeKey) => state.openKeys.has(key),
     },
-    update: ({ tx }) => ({
-      insert: (
+    update: ({ tx }) => {
+      const insertDetails = (
         data: Record<string, never> = {},
         { select, ...options }: BlockInsertOptions = {}
       ) => {
@@ -283,82 +285,106 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
 
           if (point) tx.selection.set(point);
         }
-      },
-      unwrap: ({ at }: { at?: Location | NodeSelection } = {}) => {
-        const detailsEntries = [
-          ...tx.nodes.toArray({ at, mode: 'highest', type: plugin }),
-        ].reverse();
-        const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
-
-        detailsEntries.forEach(([, path]) => {
-          tx.nodes.set({ type: paragraphType }, { at: path.concat(0) });
-          tx.nodes.unwrap({ at: path, type: plugin });
+      };
+      const applyDetailsInsertion = (
+        mode: 'insert' | 'upsert',
+        data: Record<string, never> = {},
+        options: BlockInsertOptions | BlockUpsertOptions = {}
+      ) =>
+        applyBlockInsertion({
+          insert: (insertOptions) => insertDetails(data, insertOptions),
+          matches: (block) => block.type === type,
+          mode,
+          options,
+          tx,
         });
-      },
-      wrap: ({ at }: { at?: Location | NodeSelection } = {}) => {
-        const blocks = tx.nodes.blocks({ at, mode: 'highest' });
-        const first = blocks[0];
 
-        if (!first) return;
+      return {
+        insert: (
+          data: Record<string, never> = {},
+          options: BlockInsertOptions = {}
+        ) => applyDetailsInsertion('insert', data, options),
+        unwrap: ({ at }: { at?: Location | NodeSelection } = {}) => {
+          const detailsEntries = [
+            ...tx.nodes.toArray({ at, mode: 'highest', type: plugin }),
+          ].reverse();
+          const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
 
-        const parentPath = PathApi.parent(first[1]);
+          detailsEntries.forEach(([, path]) => {
+            tx.nodes.set({ type: paragraphType }, { at: path.concat(0) });
+            tx.nodes.unwrap({ at: path, type: plugin });
+          });
+        },
+        wrap: ({ at }: { at?: Location | NodeSelection } = {}) => {
+          const blocks = tx.nodes.blocks({ at, mode: 'highest' });
+          const first = blocks[0];
 
-        if (
-          blocks.some(
-            ([, path]) => !PathApi.equals(PathApi.parent(path), parentPath)
-          )
-        ) {
-          return;
-        }
+          if (!first) return;
 
-        const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
-        const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema.type;
-        const firstIsTextBlock = editor.read.schema.isElementTypeInGroup(
-          first[0].type,
-          'textBlock'
-        );
-        let paths = blocks.map(([, path]) => path);
+          const parentPath = PathApi.parent(first[1]);
 
-        if (firstIsTextBlock) {
-          tx.nodes.set({ type: summaryType }, { at: first[1] });
-
-          if (blocks.length === 1) {
-            tx.nodes.insert(
-              { children: [{ text: '' }], type: paragraphType },
-              { at: PathApi.next(first[1]) }
-            );
-            paths = [first[1], PathApi.next(first[1])];
+          if (
+            blocks.some(
+              ([, path]) => !PathApi.equals(PathApi.parent(path), parentPath)
+            )
+          ) {
+            return;
           }
-        } else {
-          tx.nodes.insert(
-            { children: [{ text: '' }], type: summaryType },
-            { at: first[1] }
+
+          const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
+          const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema
+            .type;
+          const firstIsTextBlock = editor.read.schema.isElementTypeInGroup(
+            first[0].type,
+            'textBlock'
           );
-          paths = [first[1], ...paths.map((path) => PathApi.next(path))];
-        }
+          let paths = blocks.map(([, path]) => path);
 
-        const entries = paths.flatMap((path) => {
-          const entry = tx.nodes.get(path);
+          if (firstIsTextBlock) {
+            tx.nodes.set({ type: summaryType }, { at: first[1] });
 
-          return entry ? [entry] : [];
-        });
-        const range = tx.ranges.fromEntries(entries);
+            if (blocks.length === 1) {
+              tx.nodes.insert(
+                { children: [{ text: '' }], type: paragraphType },
+                { at: PathApi.next(first[1]) }
+              );
+              paths = [first[1], PathApi.next(first[1])];
+            }
+          } else {
+            tx.nodes.insert(
+              { children: [{ text: '' }], type: summaryType },
+              { at: first[1] }
+            );
+            paths = [first[1], ...paths.map((path) => PathApi.next(path))];
+          }
 
-        if (!range) return;
+          const entries = paths.flatMap((path) => {
+            const entry = tx.nodes.get(path);
 
-        tx.nodes.wrap({ children: [], type }, { at: range, mode: 'highest' });
+            return entry ? [entry] : [];
+          });
+          const range = tx.ranges.fromEntries(entries);
 
-        const detailsEntry = tx.nodes.get(first[1], { type: plugin });
+          if (!range) return;
 
-        if (!detailsEntry) return;
+          tx.nodes.wrap({ children: [], type }, { at: range, mode: 'highest' });
 
-        const key = tx.key(detailsEntry[0]);
+          const detailsEntry = tx.nodes.get(first[1], { type: plugin });
 
-        store.set((draft) => {
-          draft.openKeys = new Set(draft.openKeys).add(key);
-        });
-      },
-    }),
+          if (!detailsEntry) return;
+
+          const key = tx.key(detailsEntry[0]);
+
+          store.set((draft) => {
+            draft.openKeys = new Set(draft.openKeys).add(key);
+          });
+        },
+        upsert: (
+          data: Record<string, never> = {},
+          options: BlockUpsertOptions = {}
+        ) => applyDetailsInsertion('upsert', data, options),
+      };
+    },
   }))
   .extend(({ editor, plugin, store }) => ({
     commands: ({ around, handle }) => [

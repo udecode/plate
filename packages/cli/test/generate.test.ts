@@ -223,12 +223,16 @@ describe('plate generate', () => {
         'let configured = 0;\nconst CalloutPlugin = definePlugin'
       )
       .replace(
+        "const AlignPlugin = definePlugin('align', {",
+        "const InlinePlugin = definePlugin('inline', { schema: { element: { void: 'inline' } } });\n\nconst AlignPlugin = definePlugin('align', {"
+      )
+      .replace(
         "definePlugin('calloutCapability', {",
         "definePlugin('calloutCapability', {\n  activate() { throw new Error('plugin activation ran'); },"
       )
       .replace(
         'export const EditorKit = [CalloutPlugin, AlignPlugin]',
-        "export const EditorKit = [CalloutPlugin.extend(() => { if (++configured !== 1) throw new Error('configured twice'); return {}; }), AlignPlugin]"
+        "export const EditorKit = [CalloutPlugin.extend(() => { if (++configured !== 1) throw new Error('configured twice'); return {}; }), InlinePlugin, AlignPlugin]"
       );
 
     writeFileSync(entryPath, source);
@@ -238,6 +242,8 @@ describe('plate generate', () => {
     expect(types).toContain(
       "import type { GeneratedEditorTypeProvider } from 'platejs/compiler';"
     );
+    expect(types).toContain('readonly block: true;');
+    expect(types).toContain('readonly block: false;');
     expect(types).toContain('readonly token: string');
     expect(types).toContain('readonly payload?: { readonly id: string;');
   });

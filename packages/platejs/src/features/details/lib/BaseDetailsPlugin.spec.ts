@@ -175,7 +175,6 @@ describe('BaseDetailsPlugin', () => {
     editor.plugin(BaseDetailsPlugin).update.insert({}, { select: true });
 
     expect(editor.read.children()).toMatchObject([
-      { children: [{ text: '' }], type: 'paragraph' },
       {
         children: [
           { children: [{ text: '' }], type: 'summary' },
@@ -185,11 +184,11 @@ describe('BaseDetailsPlugin', () => {
       },
     ]);
     expect(
-      editor.plugin(BaseDetailsPlugin).store.get('isOpen', editor.key([1])!)
+      editor.plugin(BaseDetailsPlugin).store.get('isOpen', editor.key([0])!)
     ).toBe(true);
     expect(editor.read.selection()).toMatchObject({
-      anchor: { path: [1, 0, 0] },
-      focus: { path: [1, 0, 0] },
+      anchor: { path: [0, 0, 0] },
+      focus: { path: [0, 0, 0] },
     });
   });
 

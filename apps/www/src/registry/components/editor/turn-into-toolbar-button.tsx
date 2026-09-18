@@ -148,7 +148,12 @@ const hasWrapper = (
 
 const getStructuralState = (editor: Editor): StructuralState => {
   const entries = readBlocks(editor, 'highest');
+  const leafEntries = readBlocks(editor, 'lowest');
+  const selectedEntries = editor.read.selection.nodes();
   const hasSelection = entries.length > 0;
+  const hasContainerNodeSelection = selectedEntries.some(([, selectedPath]) =>
+    leafEntries.some(([, path]) => PathApi.isAncestor(selectedPath, path))
+  );
   const quote = editor.plugin(BaseBlockquotePlugin);
   const details = editor.plugin(BaseDetailsPlugin);
   const code = editor.plugin(BaseCodeBlockPlugin);
@@ -183,14 +188,17 @@ const getStructuralState = (editor: Editor): StructuralState => {
     },
     columns: {
       active: columnActive,
-      eligible: columns.installed && entries.length === 1,
+      eligible:
+        columns.installed &&
+        (columnActive || (!hasContainerNodeSelection && entries.length === 1)),
     },
     details: {
       active: detailsActive,
       eligible:
         details.installed &&
         !detailsMixed &&
-        (detailsActive || isContiguousSiblingRun(entries)),
+        (detailsActive ||
+          (!hasContainerNodeSelection && isContiguousSiblingRun(entries))),
     },
     quote: {
       active: quoteActive,

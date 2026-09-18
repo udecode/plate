@@ -25,9 +25,12 @@ import {
   schema,
   SelectionApi,
   TextApi,
+  type BlockInsertOptions,
+  type BlockUpsertOptions,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { fitSlicePlacements } from '../../../facade';
+import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import {
   getColSpan,
   getImportedTableCellColSpan,
@@ -1393,53 +1396,71 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           return changed;
         };
 
+        const insertTable = (
+          { columns = 2, header, rows = 2 }: TableCreateOptions = {},
+          placement: BlockInsertOptions = {}
+        ): boolean => {
+          if (
+            !Number.isSafeInteger(columns) ||
+            columns <= 0 ||
+            !Number.isSafeInteger(rows) ||
+            rows <= 0
+          ) {
+            throw new TypeError(
+              'Table insertion requires positive safe integer rows and columns.'
+            );
+          }
+          if (placement.at !== undefined && placement.after !== undefined) {
+            throw new TypeError(
+              'Table insertion accepts either at or after, never both.'
+            );
+          }
+          if (tx.view.isReadOnly()) return false;
+
+          const table = createTable(editor, type, { columns, header, rows });
+
+          if (placement.at !== undefined) {
+            tx.nodes.insert(table, placement);
+          } else {
+            const currentTable = tx.nodes.above({
+              at: placement.after,
+              type,
+            });
+            tx.blocks.insertAfter(table, {
+              ...placement,
+              at: currentTable?.[1] ?? placement.after,
+            });
+          }
+
+          if (placement.select) {
+            const tablePath = tx.nodes.path(table);
+            const point =
+              tablePath && tx.points.start(tablePath.concat([0, 0]));
+
+            if (point) tx.selection.set(point);
+          }
+
+          return true;
+        };
+        const applyTableInsertion = (
+          mode: 'insert' | 'upsert',
+          input: TableCreateOptions = {},
+          options: BlockInsertOptions | BlockUpsertOptions = {}
+        ) =>
+          applyBlockInsertion({
+            insert: (insertOptions) => insertTable(input, insertOptions),
+            matches: (block) => block.type === type,
+            mode,
+            onReuse: () => true,
+            options,
+            tx,
+          }) ?? false;
+
         return {
           insert: (
-            { columns = 2, header, rows = 2 }: TableCreateOptions = {},
+            input: TableCreateOptions = {},
             placement: TableInsertPlacement = {}
-          ): boolean => {
-            if (
-              !Number.isSafeInteger(columns) ||
-              columns <= 0 ||
-              !Number.isSafeInteger(rows) ||
-              rows <= 0
-            ) {
-              throw new TypeError(
-                'Table insertion requires positive safe integer rows and columns.'
-              );
-            }
-            if (placement.at !== undefined && placement.after !== undefined) {
-              throw new TypeError(
-                'Table insertion accepts either at or after, never both.'
-              );
-            }
-            if (tx.view.isReadOnly()) return false;
-
-            const table = createTable(editor, type, { columns, header, rows });
-
-            if (placement.at !== undefined) {
-              tx.nodes.insert(table, placement);
-            } else {
-              const currentTable = tx.nodes.above({
-                at: placement.after,
-                type,
-              });
-              tx.blocks.insertAfter(table, {
-                ...placement,
-                at: currentTable?.[1] ?? placement.after,
-              });
-            }
-
-            if (placement.select) {
-              const tablePath = tx.nodes.path(table);
-              const point =
-                tablePath && tx.points.start(tablePath.concat([0, 0]));
-
-              if (point) tx.selection.set(point);
-            }
-
-            return true;
-          },
+          ): boolean => applyTableInsertion('insert', input, placement),
           insertColumn: (options: TableAxisInsertOptions = {}): boolean => {
             if (tx.view.isReadOnly()) return false;
             const view = selectionView(options);
@@ -1494,6 +1515,10 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
               select: options.select,
             });
           },
+          upsert: (
+            input: TableCreateOptions = {},
+            options: BlockUpsertOptions = {}
+          ): boolean => applyTableInsertion('upsert', input, options),
           removeColumn: (options: TableTargetOptions = {}): boolean => {
             if (tx.view.isReadOnly()) return false;
             const view = selectionView(options);

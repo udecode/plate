@@ -126,16 +126,4 @@ export const registryComponents: Registry['items'] = [
     registryDependencies: ['@plate/comment'],
     type: 'registry:component',
   },
-  {
-    dependencies: ['platejs'],
-    files: [
-      {
-        path: 'components/editor/transforms.ts',
-        type: 'registry:component',
-      },
-    ],
-    name: 'transforms',
-    registryDependencies: [],
-    type: 'registry:component',
-  },
 ];

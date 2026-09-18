@@ -56,23 +56,70 @@ export {
 } from '@/components/ui/dropdown-menu';
 
 type SelectEventHandler = (event: Event) => void;
+type FinalFocus = false | (() => void);
 type BaseUIEvent = React.MouseEvent<HTMLElement> & {
   preventBaseUIHandler?: () => void;
 };
+type FinalFocusRef = React.MutableRefObject<FinalFocus | undefined>;
+
+const FinalFocusContext = React.createContext<FinalFocusRef | null>(null);
 
 function dispatchSelect(
   onSelect: SelectEventHandler | undefined,
   event: BaseUIEvent
 ) {
-  if (!onSelect) return;
+  if (!onSelect) return true;
 
   const selectEvent = new Event('select', { cancelable: true });
   onSelect(selectEvent);
 
   if (selectEvent.defaultPrevented) event.preventBaseUIHandler?.();
+
+  return !selectEvent.defaultPrevented;
+}
+
+function handleItemClick(
+  event: BaseUIEvent,
+  {
+    closeOnClick,
+    finalFocus,
+    onClick,
+    onSelect,
+  }: {
+    closeOnClick: boolean;
+    finalFocus: FinalFocus | undefined;
+    onClick: BaseMenuPrimitive.Item.Props['onClick'];
+    onSelect: SelectEventHandler | undefined;
+  },
+  finalFocusRef: FinalFocusRef | null
+) {
+  let baseHandlerPrevented = false;
+  const { preventBaseUIHandler } = event;
+
+  if (preventBaseUIHandler) {
+    event.preventBaseUIHandler = () => {
+      baseHandlerPrevented = true;
+      preventBaseUIHandler();
+    };
+  }
+
+  const selectAllowed = dispatchSelect(onSelect, event);
+  onClick?.(event as never);
+
+  if (
+    closeOnClick &&
+    selectAllowed &&
+    !baseHandlerPrevented &&
+    !event.defaultPrevented &&
+    finalFocusRef
+  ) {
+    finalFocusRef.current = finalFocus;
+  }
 }
 
 export function DropdownMenuItem({
+  closeOnClick = true,
+  finalFocus,
   onClick,
   onSelect,
   ...props
@@ -80,15 +127,22 @@ export function DropdownMenuItem({
   React.ComponentProps<typeof ShadcnDropdownMenuItem>,
   'onClick' | 'onSelect'
 > &
-  Pick<BaseMenuPrimitive.Item.Props, 'onClick'> & {
+  Pick<BaseMenuPrimitive.Item.Props, 'closeOnClick' | 'onClick'> & {
+    finalFocus?: FinalFocus;
     onSelect?: SelectEventHandler;
   }) {
+  const finalFocusRef = React.useContext(FinalFocusContext);
+
   return (
     <BaseDropdownMenuItem
       {...props}
+      closeOnClick={closeOnClick}
       onClick={(event) => {
-        dispatchSelect(onSelect, event);
-        onClick?.(event);
+        handleItemClick(
+          event,
+          { closeOnClick, finalFocus, onClick, onSelect },
+          finalFocusRef
+        );
       }}
     />
   );
@@ -96,6 +150,7 @@ export function DropdownMenuItem({
 
 export function DropdownMenuCheckboxItem({
   closeOnClick = true,
+  finalFocus,
   onClick,
   onSelect,
   ...props
@@ -107,15 +162,21 @@ export function DropdownMenuCheckboxItem({
     BaseMenuPrimitive.CheckboxItem.Props,
     'checked' | 'closeOnClick' | 'onClick'
   > & {
+    finalFocus?: FinalFocus;
     onSelect?: SelectEventHandler;
   }) {
+  const finalFocusRef = React.useContext(FinalFocusContext);
+
   return (
     <BaseDropdownMenuCheckboxItem
       {...props}
       closeOnClick={closeOnClick}
       onClick={(event) => {
-        dispatchSelect(onSelect, event);
-        onClick?.(event);
+        handleItemClick(
+          event,
+          { closeOnClick, finalFocus, onClick, onSelect },
+          finalFocusRef
+        );
       }}
     />
   );
@@ -123,6 +184,7 @@ export function DropdownMenuCheckboxItem({
 
 export function DropdownMenuRadioItem({
   closeOnClick = true,
+  finalFocus,
   onClick,
   onSelect,
   ...props
@@ -131,15 +193,21 @@ export function DropdownMenuRadioItem({
   'closeOnClick' | 'onClick' | 'onSelect'
 > &
   Pick<BaseMenuPrimitive.RadioItem.Props, 'closeOnClick' | 'onClick'> & {
+    finalFocus?: FinalFocus;
     onSelect?: SelectEventHandler;
   }) {
+  const finalFocusRef = React.useContext(FinalFocusContext);
+
   return (
     <BaseDropdownMenuRadioItem
       {...props}
       closeOnClick={closeOnClick}
       onClick={(event) => {
-        dispatchSelect(onSelect, event);
-        onClick?.(event);
+        handleItemClick(
+          event,
+          { closeOnClick, finalFocus, onClick, onSelect },
+          finalFocusRef
+        );
       }}
     />
   );
@@ -155,20 +223,33 @@ export function DropdownMenuContent({
   side?: 'bottom' | 'left' | 'right' | 'top';
   sideOffset?: number;
 }) {
-  return (
-    <BaseDropdownMenuContent
-      {...props}
-      finalFocus={
-        onFinalFocus
-          ? () => {
-              const event = new Event('closeAutoFocus', { cancelable: true });
-              onFinalFocus(event);
+  const finalFocusRef = React.useRef<FinalFocus | undefined>(undefined);
 
-              return !event.defaultPrevented;
-            }
-          : undefined
-      }
-    />
+  return (
+    <FinalFocusContext.Provider value={finalFocusRef}>
+      <BaseDropdownMenuContent
+        {...props}
+        finalFocus={() => {
+          const finalFocus = finalFocusRef.current;
+
+          finalFocusRef.current = undefined;
+
+          if (finalFocus === false) return false;
+          if (finalFocus) {
+            finalFocus();
+
+            return false;
+          }
+          if (onFinalFocus) {
+            const event = new Event('closeAutoFocus', { cancelable: true });
+            onFinalFocus(event);
+
+            return !event.defaultPrevented;
+          }
+          return true;
+        }}
+      />
+    </FinalFocusContext.Provider>
   );
 }
 

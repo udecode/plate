@@ -106,7 +106,7 @@ Owners: [diff](../../../packages/plitejs/src/diff).
 
 Consumers: [diff](../../../packages/platejs/src/diff), [version-history-demo.tsx](../../../apps/www/src/registry/examples/version-history-demo.tsx).
 
-Proof entrypoints: [computeDiff.spec.ts](../../../packages/plitejs/src/diff/lib/computeDiff.spec.ts). These links alone are not proof of a passing run.
+Proof entrypoints: [compare.spec.ts](../../../packages/plitejs/src/diff/lib/compare.spec.ts). These links alone are not proof of a passing run.
 
 Inspection: Selected implementation and materially different consumers inspected while reconciling this queue; full feature and assertion review not executed.
 

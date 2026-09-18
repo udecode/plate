@@ -1,7 +1,10 @@
 import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
-import { runEditorTransaction } from '../core/public-state';
+import {
+  runEditorTransaction,
+  withTransactionSpecDraftRead,
+} from '../core/public-state';
 import type {
   AnyEditor as Editor,
   EditorStaticApi,
@@ -28,24 +31,23 @@ export const applyToggleMark = (
     if (SelectionApi.isNode(selection)) {
       const schema = getEditorSchema(editor);
       const root = selection.root ?? 'main';
-      const entries = editor.read.selection
-        .ranges()
-        .flatMap((range) =>
+      const entries = withTransactionSpecDraftRead(editor, () =>
+        editor.read.selection.ranges().flatMap((range) =>
           editor.read.nodes.toArray({
             at: range,
             match: NodeApi.isText,
             voids: true,
           })
         )
-        .filter(([, path]) => {
-          const [parentNode] = editorParent(editor, path);
+      ).filter(([, path]) => {
+        const [parentNode] = editorParent(editor, path);
 
-          return (
-            NodeApi.isElement(parentNode) &&
-            schema.isTextPropertyAllowedAt(key, path, root) &&
-            (!schema.isVoid(parentNode) || schema.isMarkableVoid(parentNode))
-          );
-        });
+        return (
+          NodeApi.isElement(parentNode) &&
+          schema.isTextPropertyAllowedAt(key, path, root) &&
+          (!schema.isVoid(parentNode) || schema.isMarkableVoid(parentNode))
+        );
+      });
       const isActive =
         entries.length > 0 &&
         entries.every(([node, path]) =>

@@ -11,6 +11,7 @@ import {
   type ValueOf,
 } from '../src/core';
 import type { GeneratedEditorTypeProvider } from '../src/internal/editor/generatedEditorTypes';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from '../src/math';
 import type { InferEditorPlugins } from '../src/react/editor/Editor';
 
 type LayoutVariant = 'compact' | 'full';
@@ -147,12 +148,14 @@ type GeneratedEditorPlugins = typeof EditorPlugins &
     element: BodyElement;
     mutations: {
       paragraph: {
+        block: true;
         construction: { align: 'left' | 'right' };
         properties: { align: 'left' | 'right' };
         toggle: true;
         type: 'paragraph';
       };
       quote: {
+        block: true;
         construction: {};
         properties: { citation?: string };
         toggle: true;
@@ -242,8 +245,10 @@ exactEditor.update((tx) => {
   });
 });
 exactEditor.update.paragraph.insert({ align: 'left' });
+exactEditor.update.paragraph.upsert({ align: 'left' });
 exactEditor.update.paragraph.toggle();
 exactEditor.update.quote.insert();
+exactEditor.update.quote.upsert();
 exactEditor.update.quote.insert(
   {},
   {
@@ -258,6 +263,28 @@ exactEditor.update.quote.insert(
   }
 );
 exactEditor.update.quote.toggle({ at: [0] });
+
+const mathEditor = createEditor({
+  plugins: [BaseEquationPlugin, BaseInlineEquationPlugin],
+});
+const GeneratedInlinePlugin = definePlugin('generatedInline', {
+  schema: { element: { void: 'inline' } },
+});
+const generatedInlineEditor = createEditor({
+  plugins: [GeneratedInlinePlugin],
+});
+
+mathEditor.update((tx) => {
+  tx.plugin(BaseEquationPlugin).upsert();
+  // @ts-expect-error block upsert intentionally omits exact insertion overrides
+  tx.plugin(BaseEquationPlugin).upsert({}, { at: [0] });
+  // @ts-expect-error inline element portals do not expose block upsert
+  tx.plugin(BaseInlineEquationPlugin).upsert();
+});
+generatedInlineEditor.update((tx) => {
+  // @ts-expect-error generated inline element portals do not expose block upsert
+  tx.plugin(GeneratedInlinePlugin).upsert();
+});
 exactEditor.plugin(QuotePlugin).update.set({});
 exactEditor.plugin(QuotePlugin).update.toggle();
 exactEditor.update.nodes.set(
@@ -361,6 +388,7 @@ type OverriddenGeneratedPlugins = typeof overriddenPlugins &
     element: Element;
     mutations: {
       overriddenTextBlock: {
+        block: true;
         construction: {};
         properties: {};
         type: 'overriddenTextBlock';

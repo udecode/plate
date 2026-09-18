@@ -7,6 +7,7 @@ export type { EditorApplicationSchema } from './lib/editor/editorApplicationSche
 export type {
   BasePluginInput,
   BlockInsertOptions,
+  BlockUpsertOptions,
   NodeInsertOptions,
   PluginOwnUpdate,
   PluginReadState,

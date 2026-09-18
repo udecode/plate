@@ -13,6 +13,7 @@ import {
   type ElementWith,
   PathApi,
   type BlockInsertOptions,
+  type BlockUpsertOptions,
   type PluginTransaction,
   PLUGINS,
   property,
@@ -20,6 +21,7 @@ import {
   type SchemaElement,
   type SchemaElementProperties,
 } from '../../../core';
+import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 
 export const mediaElementProperties = {
   url: property.string({ required: true }),
@@ -95,6 +97,10 @@ type MediaPluginUpdate<C extends MediaElementPluginDefinition> = {
     options?: BlockInsertOptions
   ) => boolean;
   setUrl: (input: { element: Element; url: string }) => boolean;
+  upsert: (
+    input: MediaInsertInputForPlugin<C['name']>,
+    options?: BlockUpsertOptions
+  ) => boolean;
 };
 
 type MediaPluginApi = {
@@ -129,6 +135,7 @@ type MediaPluginStage = {
   ) => {
     insert: (input: MediaInsertInput, options?: BlockInsertOptions) => boolean;
     setUrl: (input: { element: Element; url: string }) => boolean;
+    upsert: (input: MediaInsertInput, options?: BlockUpsertOptions) => boolean;
   };
 };
 
@@ -249,12 +256,18 @@ export function defineMediaPlugin(
           });
         }),
       ],
-      update: ({ tx }) => ({
-        insert(input, options) {
+      update: ({ tx }) => {
+        const applyMediaInsertion = (
+          mode: 'insert' | 'upsert',
+          input: MediaInsertInput,
+          options: BlockInsertOptions | BlockUpsertOptions = {}
+        ) => {
+          const resolvedOptions = options as BlockInsertOptions;
+
           if (
             !tx.selection() &&
-            options?.at === undefined &&
-            options?.after === undefined
+            resolvedOptions.at === undefined &&
+            resolvedOptions.after === undefined
           ) {
             return false;
           }
@@ -272,35 +285,63 @@ export function defineMediaPlugin(
                   : [{ text: '' }],
             type,
           };
+          const insert = (insertOptions: BlockInsertOptions) => {
+            if (
+              insertOptions.at === undefined ||
+              insertOptions.after !== undefined
+            ) {
+              return !!tx.blocks.insertAfter(element, {
+                ...insertOptions,
+                at: insertOptions.after,
+              });
+            }
 
-          if (options?.at === undefined || options?.after !== undefined) {
-            return !!tx.blocks.insertAfter(element, {
-              ...options,
-              at: options?.after,
-            });
-          }
+            tx.nodes.insert(element, insertOptions);
+            return !!tx.nodes.path(element);
+          };
 
-          tx.nodes.insert(element, options);
-          return !!tx.nodes.path(element);
-        },
-        setUrl({ element, url }) {
-          const properties = normalizeUrl(url);
-          const at = tx.nodes.path(element);
-
-          if (!properties || !at) return false;
-
-          tx.nodes.set(
-            {
-              provider: properties.provider,
-              sourceUrl: properties.sourceUrl,
-              url: properties.url,
-            },
-            { at }
+          return (
+            applyBlockInsertion({
+              insert,
+              matches: (block) =>
+                block.type === type &&
+                block.url === element.url &&
+                block.provider === element.provider &&
+                block.sourceUrl === element.sourceUrl,
+              mode,
+              onReuse: () => true,
+              options,
+              tx,
+            }) ?? true
           );
+        };
 
-          return true;
-        },
-      }),
+        return {
+          insert(input, options) {
+            return applyMediaInsertion('insert', input, options);
+          },
+          setUrl({ element, url }) {
+            const properties = normalizeUrl(url);
+            const at = tx.nodes.path(element);
+
+            if (!properties || !at) return false;
+
+            tx.nodes.set(
+              {
+                provider: properties.provider,
+                sourceUrl: properties.sourceUrl,
+                url: properties.url,
+              },
+              { at }
+            );
+
+            return true;
+          },
+          upsert(input, options) {
+            return applyMediaInsertion('upsert', input, options);
+          },
+        };
+      },
     };
   };
 

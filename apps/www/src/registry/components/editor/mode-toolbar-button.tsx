@@ -60,20 +60,12 @@ function ModeToolbarButtonContent({
   const editor = useEditor();
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const [open, setOpen] = React.useState(false);
-  const focusEditorRef = React.useRef(false);
   const suggestionsInstalled = suggestionMode !== null;
   const isSuggesting = suggestionMode === 'suggesting';
   const value = readOnly ? 'viewing' : isSuggesting ? 'suggestion' : 'editing';
 
   return (
-    <DropdownMenu
-      open={open}
-      onOpenChange={(nextOpen) => {
-        if (nextOpen) focusEditorRef.current = false;
-        setOpen(nextOpen);
-      }}
-      modal={false}
-    >
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
         <ToolbarButton pressed={open} tooltip="Editing mode" isDropdown>
           {MODE_ITEMS[value].icon}
@@ -81,17 +73,7 @@ function ModeToolbarButtonContent({
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        align="start"
-        className="min-w-[180px]"
-        onFinalFocus={(event) => {
-          if (!focusEditorRef.current) return;
-
-          focusEditorRef.current = false;
-          event.preventDefault();
-          editor.api.dom.focus();
-        }}
-      >
+      <DropdownMenuContent align="start" className="min-w-[180px]">
         <DropdownMenuRadioGroup
           onValueChange={(newValue) => {
             if (newValue === 'viewing') {
@@ -109,15 +91,12 @@ function ModeToolbarButtonContent({
             if (suggestionsInstalled) {
               editor.plugin(SuggestionPlugin).api.setMode('editing');
             }
-
-            if (newValue === 'editing') {
-              focusEditorRef.current = true;
-            }
           }}
           value={value}
         >
           <DropdownMenuRadioItem
             className="pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"
+            finalFocus={() => editor.api.dom.focus()}
             value="editing"
           >
             {MODE_ITEMS.editing.icon}

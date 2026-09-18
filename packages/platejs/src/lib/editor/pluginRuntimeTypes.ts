@@ -148,7 +148,9 @@ type ExactName<D extends AnyBasePluginDefinition> =
       : D['name'];
 
 type InstalledCapabilityApi<TCapability> =
-  TCapability extends Readonly<{ api: infer TApi extends object }>
+  TCapability extends Readonly<{
+    api: infer TApi extends object;
+  }>
     ? Readonly<{ api: TApi }>
     : {};
 
@@ -160,12 +162,16 @@ type InstalledCapabilityEnabled<TCapability> =
     : {};
 
 type InstalledCapabilityMarkValue<TCapability> =
-  TCapability extends Readonly<{ markValue: infer TMarkValue }>
+  TCapability extends Readonly<{
+    markValue: infer TMarkValue;
+  }>
     ? Readonly<{ markValue: TMarkValue }>
     : {};
 
 type InstalledCapabilityRead<TCapability> =
-  TCapability extends Readonly<{ read: infer TRead extends object }>
+  TCapability extends Readonly<{
+    read: infer TRead extends object;
+  }>
     ? Readonly<{ read: TRead }>
     : {};
 
@@ -209,12 +215,16 @@ type InstalledCapabilityTargets<TCapability> =
     : {};
 
 type InstalledCapabilityType<TCapability> =
-  TCapability extends Readonly<{ type: infer TType extends string }>
+  TCapability extends Readonly<{
+    type: infer TType extends string;
+  }>
     ? Readonly<{ type: TType }>
     : {};
 
 type InstalledCapabilityUpdate<TCapability> =
-  TCapability extends Readonly<{ update: infer TUpdate extends object }>
+  TCapability extends Readonly<{
+    update: infer TUpdate extends object;
+  }>
     ? Readonly<{ update: TUpdate }>
     : {};
 
@@ -729,6 +739,7 @@ type InstalledSchemaDefinitionsOf<D> =
     : D;
 
 type EditorElementMutation = Readonly<{
+  block: boolean;
   construction: object;
   properties: object;
   toggle?: boolean;
@@ -771,6 +782,7 @@ type ElementInsertOptions<
     };
   };
 
+/** Inserts a new element, replacing a different empty block by default. */
 type ElementInsert<
   TConstruction extends object,
   TSchema,
@@ -788,6 +800,13 @@ type ElementInsert<
         ]
   ) => void
 >;
+
+/** Reuses a matching empty block, or inserts with the standard block policy. */
+type ElementUpsert<TConstruction extends object> = (
+  ...args: {} extends TConstruction
+    ? [properties?: TConstruction, options?: BlockUpsertOptions]
+    : [properties: TConstruction, options?: BlockUpsertOptions]
+) => void;
 
 type GeneratedElementUpdate<
   TMutations,
@@ -808,6 +827,11 @@ type GeneratedElementUpdate<
           options?: Omit<NodeSetNodesOptions<Element>, 'match' | 'type'>
         ) => void;
       }> &
+        (TMutation extends Readonly<{ block: false }>
+          ? {}
+          : Readonly<{
+              upsert: ElementUpsert<TMutation['construction']>;
+            }>) &
         (TMutation extends Readonly<{ toggle: true }>
           ? ElementToggleUpdate
           : {})
@@ -862,6 +886,18 @@ type DefaultElementUpdate<
                 options?: Omit<NodeSetNodesOptions<Element>, 'match' | 'type'>
               ) => void;
             }> &
+              (EditorDefinitionElementSupportsBlockInsertion<TPlugin> extends true
+                ? Readonly<{
+                    upsert: ElementUpsert<
+                      SchemaElementConstructionPropertiesFor<
+                        SchemaSourceForInstalledDefinitions<
+                          InstalledSchemaDefinitionsOf<TSchemaDefinitions>
+                        >,
+                        TType
+                      >
+                    >;
+                  }>
+                : {}) &
               ('toggle' extends keyof InferUpdate<TPlugin>
                 ? {}
                 : {} extends SchemaElementConstructionPropertiesFor<
@@ -882,6 +918,11 @@ type DefaultElementUpdate<
           : {}
         : {};
 
+type AuthoredUpdateKeys<
+  D extends AnyBasePluginDefinition,
+  TUpdate = InferUpdate<D>,
+> = keyof TUpdate | ('insert' extends keyof TUpdate ? 'upsert' : never);
+
 type PluginUpdateGroup<
   TSchemaDefinitions,
   D extends AnyBasePluginDefinition,
@@ -893,7 +934,7 @@ type PluginUpdateGroup<
       : SchemaPluginDefinitionForRuntimePlugin<TSchemaDefinitions, D>
   > &
     DefaultMarkUpdate<D>,
-  keyof InferUpdate<D>
+  AuthoredUpdateKeys<D>
 > &
   InferUpdate<D>;
 
@@ -985,6 +1026,16 @@ type SchemaElementSupportsToggle<TElement> =
             ? true
             : false;
 
+type SchemaElementSupportsBlockInsertion<TElement> = [TElement] extends [never]
+  ? true
+  : TElement extends Readonly<{ inline: true }>
+    ? false
+    : TElement extends Readonly<{
+          void: 'inline' | 'markable-inline';
+        }>
+      ? false
+      : true;
+
 type DirectPluginSchemaElement<D extends AnyBasePluginDefinition> =
   D extends Readonly<{ schema: infer TSchema }>
     ? TSchema extends (...args: never[]) => unknown
@@ -998,6 +1049,10 @@ type DirectPluginSchemaElement<D extends AnyBasePluginDefinition> =
 
 type EditorDefinitionElementSupportsToggle<D extends AnyBasePluginDefinition> =
   SchemaElementSupportsToggle<DirectPluginSchemaElement<D>>;
+
+type EditorDefinitionElementSupportsBlockInsertion<
+  D extends AnyBasePluginDefinition,
+> = SchemaElementSupportsBlockInsertion<DirectPluginSchemaElement<D>>;
 
 type InstalledPluginElementType<C extends AnyBasePluginDefinition> =
   C extends Readonly<{ elementType: infer TElementType extends string }>
@@ -1385,6 +1440,7 @@ type EditorDefinitionElementMutation<D extends AnyBasePluginDefinition> = [
   : InstalledPluginElementType<D> extends infer TType extends string
     ? TType extends SchemaElementTypes<SchemaSourceForInstalledDefinitions<D>>
       ? Readonly<{
+          block: EditorDefinitionElementSupportsBlockInsertion<D>;
           construction: SchemaElementConstructionPropertiesFor<
             SchemaSourceForInstalledDefinitions<D>,
             TType
@@ -1566,13 +1622,30 @@ export type NodeInsertOptions = Omit<
   };
 };
 
-/** Placement options for feature commands that insert whole blocks. */
+/**
+ * Placement options for feature commands that insert whole blocks.
+ *
+ * Without `at`, insertion uses `after` or the current block as its source. A
+ * different empty editable block is replaced, a matching empty block gets a
+ * sibling, and content or structural blocks are preserved before the new
+ * block. `at` is an exact insertion location. `replaceEmpty` explicitly
+ * overrides the semantic empty-block choice for `insert`.
+ */
 export type BlockInsertOptions = NodeInsertOptions & {
   /** Insert after this block target; omit `at` when using `after`. */
   after?: NodeTarget;
   /** Replace an empty editable source when inserting after a block. */
   replaceEmpty?: boolean;
 };
+
+/**
+ * Placement options for a block upsert. A matching empty editable block is
+ * reused; every other source follows the standard semantic insertion policy.
+ */
+export type BlockUpsertOptions = Omit<
+  BlockInsertOptions,
+  'at' | 'replaceEmpty'
+>;
 
 type ElementForSelector<TSchema, TSelector> =
   TSelector extends ReadonlyArray<infer TItem>

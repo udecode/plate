@@ -3,25 +3,100 @@
 import * as React from 'react';
 
 import {
+  DropdownMenuCheckboxItem as ShadcnDropdownMenuCheckboxItem,
   DropdownMenuContent as ShadcnDropdownMenuContent,
+  DropdownMenuItem as ShadcnDropdownMenuItem,
+  DropdownMenuRadioItem as ShadcnDropdownMenuRadioItem,
   DropdownMenuTrigger as ShadcnDropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
 export {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuPortal,
   DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
+
+type FinalFocus = false | (() => void);
+type FinalFocusRef = React.MutableRefObject<FinalFocus | undefined>;
+
+const FinalFocusContext = React.createContext<FinalFocusRef | null>(null);
+
+function armFinalFocus(
+  event: Event,
+  finalFocus: FinalFocus | undefined,
+  finalFocusRef: FinalFocusRef | null
+) {
+  if (!event.defaultPrevented && finalFocusRef) {
+    finalFocusRef.current = finalFocus;
+  }
+}
+
+export function DropdownMenuItem({
+  finalFocus,
+  onSelect,
+  ...props
+}: React.ComponentProps<typeof ShadcnDropdownMenuItem> & {
+  finalFocus?: FinalFocus;
+}) {
+  const finalFocusRef = React.useContext(FinalFocusContext);
+
+  return (
+    <ShadcnDropdownMenuItem
+      {...props}
+      onSelect={(event) => {
+        onSelect?.(event);
+        armFinalFocus(event, finalFocus, finalFocusRef);
+      }}
+    />
+  );
+}
+
+export function DropdownMenuCheckboxItem({
+  finalFocus,
+  onSelect,
+  ...props
+}: React.ComponentProps<typeof ShadcnDropdownMenuCheckboxItem> & {
+  finalFocus?: FinalFocus;
+}) {
+  const finalFocusRef = React.useContext(FinalFocusContext);
+
+  return (
+    <ShadcnDropdownMenuCheckboxItem
+      {...props}
+      onSelect={(event) => {
+        onSelect?.(event);
+        armFinalFocus(event, finalFocus, finalFocusRef);
+      }}
+    />
+  );
+}
+
+export function DropdownMenuRadioItem({
+  finalFocus,
+  onSelect,
+  ...props
+}: React.ComponentProps<typeof ShadcnDropdownMenuRadioItem> & {
+  finalFocus?: FinalFocus;
+}) {
+  const finalFocusRef = React.useContext(FinalFocusContext);
+
+  return (
+    <ShadcnDropdownMenuRadioItem
+      {...props}
+      onSelect={(event) => {
+        onSelect?.(event);
+        armFinalFocus(event, finalFocus, finalFocusRef);
+      }}
+    />
+  );
+}
 
 export function DropdownMenuContent({
   onFinalFocus,
@@ -33,8 +108,32 @@ export function DropdownMenuContent({
   side?: 'bottom' | 'left' | 'right' | 'top';
   sideOffset?: number;
 }) {
+  const finalFocusRef = React.useRef<FinalFocus | undefined>(undefined);
+
   return (
-    <ShadcnDropdownMenuContent {...props} onCloseAutoFocus={onFinalFocus} />
+    <FinalFocusContext.Provider value={finalFocusRef}>
+      <ShadcnDropdownMenuContent
+        {...props}
+        onCloseAutoFocus={(event) => {
+          const finalFocus = finalFocusRef.current;
+
+          finalFocusRef.current = undefined;
+
+          if (finalFocus === false) {
+            event.preventDefault();
+
+            return;
+          }
+          if (finalFocus) {
+            event.preventDefault();
+            finalFocus();
+
+            return;
+          }
+          onFinalFocus?.(event);
+        }}
+      />
+    </FinalFocusContext.Provider>
   );
 }
 

@@ -47,6 +47,7 @@ import {
   type EditableInputController,
   executeEditableSelectionExport,
   isEditableOutsideFocusBoundarySettling,
+  isEditableModelSelectionPreferred,
   isInteractiveInternalTarget,
   isNativeDraggableTarget,
   isSelectionInEditorView,
@@ -318,7 +319,13 @@ export const applyEditableClick = ({
     return;
   }
 
+  // A mouseup handler can replace a native drag range with a structural
+  // selection before the browser emits its trailing click.
+  const modelSelectionOwnsClick =
+    SelectionApi.isNode(readRuntimeSelection(editor)) &&
+    isEditableModelSelectionPreferred(inputController);
   const modelTargetOwnsSelection =
+    modelSelectionOwnsClick ||
     preferModelSelectionForKeyboardSelectableTarget({
       editor,
       inputController,

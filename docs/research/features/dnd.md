@@ -24,6 +24,10 @@ Changed files: none identified. Changed directories: none identified. Changed so
 
 - **unbound-plan**: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
 
+- **unbound-plan**: [2026-09-18-dnd-preview-origin-regression.md](../../plans/2026-09-18-dnd-preview-origin-regression.md).
+
+- **completed-plan-without-current-outcome**: [2026-09-18-dnd-preview-origin-regression.md](../../plans/2026-09-18-dnd-preview-origin-regression.md).
+
 - **unreconciled-execution**: [2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit](../review-records/2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit.json).
 
 ## Plans and execution
@@ -34,6 +38,7 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | --- | --- | --- | --- |
 | [2026-09-07-ai-dnd-root-slots.md](../../plans/2026-09-07-ai-dnd-root-slots.md) | unknown | implementation | unbound |
 | [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md) | completed | implementation | unbound |
+| [2026-09-18-dnd-preview-origin-regression.md](../../plans/2026-09-18-dnd-preview-origin-regression.md) | completed | implementation | unbound |
 
 ### Outcomes recorded after the latest review
 

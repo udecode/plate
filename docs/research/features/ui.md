@@ -10,15 +10,17 @@ Question: What is the smallest copied composition contract that keeps kit member
 
 [2026-09-18-ui-menu-focus-and-block-insertion-ownership](../review-records/2026-09-18-ui-menu-focus-and-block-insertion-ownership.json) — **pursue**. Pursue deleting six caller-owned mutable-ref close-focus handshakes through an item-scoped post-close focus contract in the copied provider adapter. Supersede survival of registry transforms.ts: Plite already owns structural empty replacement and Plate typed plugin operations own semantic targets, so the raw transaction matcher/callback recipe should disappear into the typed insertion path. Keep copied presentation and direct feature operations; do not add a Plate/Plite menu-focus API or universal command catalog. Two bounded units reviewed, zero excluded and zero unresolved.
 
-Compiled decision: [registry-ui-ownership.md](../decisions/registry-ui-ownership.md). Source observation: matching. Source matching is not behavior proof.
+Compiled decision: [registry-ui-ownership.md](../decisions/registry-ui-ownership.md). Source observation: stale. Source matching is not behavior proof.
 
-Execution: **decision-changed**. Proof: **unknown**. No reconciled source-bound execution outcome establishes current adoption or proof.
+Execution: **completed**. Proof: **stale**. The bounded Plate, CLI, registry, adapter, and Chromium claims are verified. The full www compiler remains red only at scripts/registry-package-dependencies.mts:343, tests/browser/table-selection.spec.ts:543, and packages/platejs/src/lib/plugins/HistoryPlugin.ts:23; those current-checkout failures are outside this plan.
+
+Outcome: [2026-09-18-slash-ui-actions-execution](../review-records/2026-09-18-slash-ui-actions-execution.json). Governing reviews: [2026-09-18-ui-menu-focus-and-block-insertion-ownership](../review-records/2026-09-18-ui-menu-focus-and-block-insertion-ownership.json), [2026-09-18-slash-command-composition-ownership](../review-records/2026-09-18-slash-command-composition-ownership.json). Work kind: implementation. Reconciled with current review: yes.
 
 Imported scope flags (unbound historical claims): adoption not-assessed, proof partial. These flags do not establish current progress.
 
 ## Changes and tracking gaps
 
-Changed files: none identified. Changed directories: none identified. Changed source groups: none identified.
+Changed files: [registry-features.ts](../../../apps/www/src/registry/registry-features.ts), [plate.md](../../vision/plate.md), `apps/www/src/registry/components/editor/transforms.ts` (historical input unavailable), [build-registry.mts](../../../apps/www/scripts/build-registry.mts), [registry-response.test.ts](../../../apps/www/src/lib/registry-response.test.ts), [link.json](../../../apps/www/src/__registry__/overlays/base-luma/link.json), [link.json](../../../apps/www/public/rd/link.json), [more-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/more-toolbar-button.tsx), [mode-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/mode-toolbar-button.tsx), [list-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/list-toolbar-button.tsx), [align-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/align-toolbar-button.tsx), [line-height-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/line-height-toolbar-button.tsx), [insert-toolbar-button.tsx](../../../apps/www/src/registry/components/editor/insert-toolbar-button.tsx), [insert-toolbar-button.spec.tsx](../../../apps/www/src/registry/components/editor/insert-toolbar-button.spec.tsx), [slash.tsx](../../../apps/www/src/registry/components/editor/slash.tsx), `apps/www/src/registry/components/editor/transforms.spec.ts` (historical input unavailable), `apps/www/src/registry/components/editor/transforms-combobox.spec.ts` (historical input unavailable), [dropdown-menu.tsx](../../../apps/www/src/registry/bases/base/dropdown-menu.tsx), [dropdown-menu.tsx](../../../apps/www/src/registry/bases/radix/dropdown-menu.tsx), [pluginRuntimeTypes.ts](../../../packages/platejs/src/lib/editor/pluginRuntimeTypes.ts), [resolvePlugins.ts](../../../packages/platejs/src/internal/plugin/resolvePlugins.ts), [block-insertion.spec.ts](../../../packages/platejs/src/lib/plugin/block-insertion.spec.ts), [editor.ts](../../../packages/plitejs/src/interfaces/editor.ts), [public-state.ts](../../../packages/plitejs/src/core/public-state.ts), [plite.md](../../vision/plite.md). Changed directories: none identified. Changed source groups: registry/bases, registry/registry-components.ts, registry/registry-editor.ts, registry/registry-examples.ts, registry/registry-features.ts, ui/block-menu, ui/insert-toolbar-button, ui/mode-toolbar-button, ui/more-toolbar-button, ui/plugins.generated, ui/turn-into-toolbar-button.
 
 - **unbound-plan**: [2026-07-24-decouple-live-and-base-registry-kits.md](../../plans/2026-07-24-decouple-live-and-base-registry-kits.md).
 
@@ -36,6 +38,8 @@ Changed files: none identified. Changed directories: none identified. Changed so
 
 - **unbound-plan**: [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md).
 
+- **completed-plan-without-current-outcome**: [2026-09-18-slash-ui-actions-design.md](../../plans/2026-09-18-slash-ui-actions-design.md).
+
 - **stale-execution-proof**: [2026-09-18-ui-composition-installation-design](../review-records/2026-09-18-ui-composition-installation-design.json).
 
 - **stale-execution-proof**: [2026-09-18-ui-composition-installation-design-final](../review-records/2026-09-18-ui-composition-installation-design-final.json).
@@ -46,7 +50,7 @@ Changed files: none identified. Changed directories: none identified. Changed so
 
 - **stale-execution-proof**: [2026-09-18-ui-provider-menu-adapter-completion](../review-records/2026-09-18-ui-provider-menu-adapter-completion.json).
 
-- **decision-changed**: [2026-09-18-ui-provider-menu-adapter-completion](../review-records/2026-09-18-ui-provider-menu-adapter-completion.json).
+- **stale-execution-proof**: [2026-09-18-slash-ui-actions-execution](../review-records/2026-09-18-slash-ui-actions-execution.json).
 
 ## Plans and execution
 
@@ -62,13 +66,15 @@ The plan owns its lifecycle. Design completion is not implementation adoption. U
 | [2026-09-06-kit-owned-ai-and-dnd-lifetimes.md](../../plans/2026-09-06-kit-owned-ai-and-dnd-lifetimes.md) | unknown | implementation | unbound |
 | [2026-09-07-ai-dnd-root-slots.md](../../plans/2026-09-07-ai-dnd-root-slots.md) | unknown | implementation | unbound |
 | [2026-09-07-full-plate-ui-extraction-audit.md](../../plans/2026-09-07-full-plate-ui-extraction-audit.md) | completed | implementation | unbound |
+| [2026-09-18-slash-ui-actions-design.md](../../plans/2026-09-18-slash-ui-actions-design.md) | completed | design | [2026-09-18-ui-menu-focus-and-block-insertion-ownership](../review-records/2026-09-18-ui-menu-focus-and-block-insertion-ownership.json), [2026-09-18-slash-command-composition-ownership](../review-records/2026-09-18-slash-command-composition-ownership.json) |
+| [2026-09-18-slash-ui-actions-implementation.md](../../plans/2026-09-18-slash-ui-actions-implementation.md) | completed | implementation | [2026-09-18-ui-menu-focus-and-block-insertion-ownership](../review-records/2026-09-18-ui-menu-focus-and-block-insertion-ownership.json), [2026-09-18-slash-command-composition-ownership](../review-records/2026-09-18-slash-command-composition-ownership.json) |
 | [2026-09-18-ui-composition-installation-design.md](../../plans/2026-09-18-ui-composition-installation-design.md) | completed | implementation | [2026-09-17-ui-source-and-command-ownership](../review-records/2026-09-17-ui-source-and-command-ownership.json) |
 
 ### Outcomes recorded after the latest review
 
 Record order is observation order. Historical imports do not establish when execution happened.
 
-No subsequent execution outcome recorded. Completed plans without outcomes remain gaps above.
+- [2026-09-18-slash-ui-actions-execution](../review-records/2026-09-18-slash-ui-actions-execution.json): completed; binding **current**; Added typed semantic block insert/upsert ownership, moved copied dropdown focus intent to selected items for Base and Radix, migrated Insert and Slash to direct plugin actions, deleted the registry transforms helper, regenerated contracts and registry output, and proved both provider families. Proof: stale / verified. The bounded Plate, CLI, registry, adapter, and Chromium claims are verified. The full www compiler remains red only at scripts/registry-package-dependencies.mts:343, tests/browser/table-selection.spec.ts:543, and packages/platejs/src/lib/plugins/HistoryPlugin.ts:23; those current-checkout failures are outside this plan.
 
 ## Inspected documents
 
@@ -107,7 +113,7 @@ Question: What is the smallest copied composition contract that keeps kit member
 
 Proof limits: 20 existing tests passed across four registry/composition/shell files with 1646 assertions; direct createRegistryResponse against current generated artifacts reproduced three production dependency URLs for a development style request. Command and geometry findings are source/existing-test inspections. No product change, both-build-order replay, complete CLI installation, native/browser interaction, timing comparison or release certification. Scope proof is partial and adoption remains not-assessed. Proposed contracts and downstream proof remain Task design work.
 
-References: [registry-ui-ownership.md](../decisions/registry-ui-ownership.md), [coverage.json](../../plans/artifacts/2026-09-17-ui-review/coverage.json), [proof.json](../../plans/artifacts/2026-09-17-ui-review/proof.json), [2026-08-13-cut-editor-kit-facades.md](../../plans/2026-08-13-cut-editor-kit-facades.md), [2026-07-24-decouple-live-and-base-registry-kits.md](../../plans/2026-07-24-decouple-live-and-base-registry-kits.md), [2026-07-24-unify-markdown-registry-kit.md](../../plans/2026-07-24-unify-markdown-registry-kit.md), [2026-08-13-audit-registry-dependency-metadata.md](../../plans/2026-08-13-audit-registry-dependency-metadata.md), [2026-09-06-kit-owned-ai-and-dnd-lifetimes.md](../../plans/2026-09-06-kit-owned-ai-and-dnd-lifetimes.md), [transforms.ts](../../../apps/www/src/registry/components/editor/transforms.ts), [registry-response.ts](../../../apps/www/src/lib/registry-response.ts).
+References: [registry-ui-ownership.md](../decisions/registry-ui-ownership.md), [coverage.json](../../plans/artifacts/2026-09-17-ui-review/coverage.json), [proof.json](../../plans/artifacts/2026-09-17-ui-review/proof.json), [2026-08-13-cut-editor-kit-facades.md](../../plans/2026-08-13-cut-editor-kit-facades.md), [2026-07-24-decouple-live-and-base-registry-kits.md](../../plans/2026-07-24-decouple-live-and-base-registry-kits.md), [2026-07-24-unify-markdown-registry-kit.md](../../plans/2026-07-24-unify-markdown-registry-kit.md), [2026-08-13-audit-registry-dependency-metadata.md](../../plans/2026-08-13-audit-registry-dependency-metadata.md), [2026-09-06-kit-owned-ai-and-dnd-lifetimes.md](../../plans/2026-09-06-kit-owned-ai-and-dnd-lifetimes.md), `apps/www/src/registry/components/editor/transforms.ts` (historical input unavailable), [registry-response.ts](../../../apps/www/src/lib/registry-response.ts).
 
 ### 2026-09-18: 2026-09-18-recovered-2026-07-24-decouple-live-and-base-registry-kits
 
@@ -210,7 +216,7 @@ References: [2026-09-18-ui-composition-installation-design.md](../../plans/2026-
 
 ### 2026-09-18: 2026-09-18-ui-menu-focus-and-block-insertion-ownership
 
-[Immutable record](../review-records/2026-09-18-ui-menu-focus-and-block-insertion-ownership.json) — review; pursue; observation matching.
+[Immutable record](../review-records/2026-09-18-ui-menu-focus-and-block-insertion-ownership.json) — review; pursue; observation stale.
 
 Pursue deleting six caller-owned mutable-ref close-focus handshakes through an item-scoped post-close focus contract in the copied provider adapter. Supersede survival of registry transforms.ts: Plite already owns structural empty replacement and Plate typed plugin operations own semantic targets, so the raw transaction matcher/callback recipe should disappear into the typed insertion path. Keep copied presentation and direct feature operations; do not add a Plate/Plite menu-focus API or universal command catalog. Two bounded units reviewed, zero excluded and zero unresolved.
 
@@ -232,7 +238,18 @@ Question: What is the smallest copied composition contract that keeps kit member
 
 Proof limits: Read-only source review. The census covers six production focus-ref files with 43 matching lines and two production transforms.ts consumers with 30 calls; tests/docs are not counted as production owners. Existing tests establish current atomic insertion, undo and selected focus cases only. No target API was implemented or typechecked, and no native Base/Radix keyboard, pointer, Escape, outside-close, nested-menu, async-action or generated-install proof was run.
 
-References: [registry-ui-ownership.md](../decisions/registry-ui-ownership.md), [slash-command-ownership.md](../decisions/slash-command-ownership.md), [2026-09-17-ui-source-and-command-ownership.json](../review-records/2026-09-17-ui-source-and-command-ownership.json), [transforms.ts](../../../apps/www/src/registry/components/editor/transforms.ts), [transforms.spec.ts](../../../apps/www/src/registry/components/editor/transforms.spec.ts), [transforms-combobox.spec.ts](../../../apps/www/src/registry/components/editor/transforms-combobox.spec.ts), [insert-toolbar-button.spec.tsx](../../../apps/www/src/registry/components/editor/insert-toolbar-button.spec.tsx), [block-insertion.spec.ts](../../../packages/platejs/src/lib/plugin/block-insertion.spec.ts).
+References: [registry-ui-ownership.md](../decisions/registry-ui-ownership.md), [slash-command-ownership.md](../decisions/slash-command-ownership.md), [2026-09-17-ui-source-and-command-ownership.json](../review-records/2026-09-17-ui-source-and-command-ownership.json), `apps/www/src/registry/components/editor/transforms.ts` (historical input unavailable), `apps/www/src/registry/components/editor/transforms.spec.ts` (historical input unavailable), `apps/www/src/registry/components/editor/transforms-combobox.spec.ts` (historical input unavailable), [insert-toolbar-button.spec.tsx](../../../apps/www/src/registry/components/editor/insert-toolbar-button.spec.tsx), [block-insertion.spec.ts](../../../packages/platejs/src/lib/plugin/block-insertion.spec.ts).
+
+### 2026-09-18: 2026-09-18-slash-ui-actions-execution
+
+[Immutable record](../review-records/2026-09-18-slash-ui-actions-execution.json) — execution; completed; observation stale.
+
+Added typed semantic block insert/upsert ownership, moved copied dropdown focus intent to selected items for Base and Radix, migrated Insert and Slash to direct plugin actions, deleted the registry transforms helper, regenerated contracts and registry output, and proved both provider families.
+
+
+Proof limits: The bounded Plate, CLI, registry, adapter, and Chromium claims are verified. The full www compiler remains red only at scripts/registry-package-dependencies.mts:343, tests/browser/table-selection.spec.ts:543, and packages/platejs/src/lib/plugins/HistoryPlugin.ts:23; those current-checkout failures are outside this plan.
+
+References: [2026-09-18-slash-ui-actions-implementation.md](../../plans/2026-09-18-slash-ui-actions-implementation.md).
 
 ## Retrieval boundaries
 

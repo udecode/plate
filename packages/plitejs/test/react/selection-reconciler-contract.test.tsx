@@ -23,6 +23,7 @@ import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtim
 import {
   createEditableInputController,
   createEditableInputControllerState,
+  setEditableModelSelectionPreference,
 } from '../../src/react/editable/input-controller';
 import {
   applyEditableClick,
@@ -2059,5 +2060,56 @@ test('read-only triple-click stays native and does not update model selection', 
     runtime.destroy();
     target.remove();
     update.mockRestore();
+  }
+});
+
+test('trailing click preserves an authoritative node selection', () => {
+  const editor = createEditor<Value>();
+  const runtime = new EditableDOMRuntime({ editor });
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
+  });
+  const selection = SelectionApi.nodes([[0], [1]]);
+
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection,
+  });
+  setEditableModelSelectionPreference({
+    inputController,
+    preferModelSelection: true,
+    reason: 'model-command',
+    selectionSource: 'model-owned',
+  });
+
+  const target = document.createElement('span');
+  document.body.append(target);
+
+  try {
+    applyEditableClick({
+      domPhaseScheduler: runtime.domPhaseScheduler,
+      editor,
+      event: {
+        defaultPrevented: false,
+        detail: 1,
+        isDefaultPrevented: () => false,
+        isPropagationStopped: () => false,
+        target,
+      } as any,
+      inputController,
+      onClick: () => true,
+      readOnly: false,
+    });
+
+    expect(editorGetSelection(editor)).toEqual(selection);
+    expect(inputController.preferModelSelectionForInputRef.current).toBe(true);
+    expect(inputController.state.selectionSource).toBe('model-owned');
+  } finally {
+    runtime.destroy();
+    target.remove();
   }
 });

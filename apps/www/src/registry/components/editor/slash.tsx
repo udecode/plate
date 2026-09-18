@@ -50,8 +50,6 @@ import { BaseTablePlugin } from 'platejs/table';
 import { BaseTocPlugin } from 'platejs/toc';
 import * as React from 'react';
 
-import { insertBlock } from '@/registry/components/editor/transforms';
-
 import {
   InlineCombobox,
   InlineComboboxContent,
@@ -107,22 +105,8 @@ const groups: Group[] = [
         keywords: ['paragraph'],
         label: 'Text',
         value: PLUGINS.paragraph,
-        onSelect: (editor, tx) => {
-          const paragraph = editor.plugin(BaseParagraphPlugin);
-
-          if (!paragraph.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === paragraph.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseParagraphPlugin).insert({}, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseParagraphPlugin).upsert({}, { select: true });
         },
       },
       {
@@ -131,24 +115,8 @@ const groups: Group[] = [
         keywords: ['title', 'h1'],
         label: 'Heading 1',
         value: 'heading-1',
-        onSelect: (editor, tx) => {
-          const heading = editor.plugin(BaseHeadingPlugin);
-
-          if (!heading.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType &&
-                block.type === heading.schema.type &&
-                block.level === 1,
-              insert: (options) => {
-                tx.plugin(BaseHeadingPlugin).insert({ level: 1 }, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseHeadingPlugin).upsert({ level: 1 }, { select: true });
         },
       },
       {
@@ -157,24 +125,8 @@ const groups: Group[] = [
         keywords: ['subtitle', 'h2'],
         label: 'Heading 2',
         value: 'heading-2',
-        onSelect: (editor, tx) => {
-          const heading = editor.plugin(BaseHeadingPlugin);
-
-          if (!heading.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType &&
-                block.type === heading.schema.type &&
-                block.level === 2,
-              insert: (options) => {
-                tx.plugin(BaseHeadingPlugin).insert({ level: 2 }, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseHeadingPlugin).upsert({ level: 2 }, { select: true });
         },
       },
       {
@@ -183,24 +135,8 @@ const groups: Group[] = [
         keywords: ['subtitle', 'h3'],
         label: 'Heading 3',
         value: 'heading-3',
-        onSelect: (editor, tx) => {
-          const heading = editor.plugin(BaseHeadingPlugin);
-
-          if (!heading.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType &&
-                block.type === heading.schema.type &&
-                block.level === 3,
-              insert: (options) => {
-                tx.plugin(BaseHeadingPlugin).insert({ level: 3 }, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseHeadingPlugin).upsert({ level: 3 }, { select: true });
         },
       },
       {
@@ -209,23 +145,10 @@ const groups: Group[] = [
         keywords: ['unordered', 'ul', '-'],
         label: 'Bulleted list',
         value: 'disc',
-        onSelect: (editor, tx) => {
-          if (
-            !editor.plugin(BaseListPlugin).installed ||
-            editor.read.view.isReadOnly()
-          ) {
-            return;
-          }
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) => block.listType === 'bulleted',
-              insert: (options) => {
-                tx.plugin(BaseListPlugin).insert({ type: 'bulleted' }, options);
-              },
-            },
-            { upsert: true }
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseListPlugin).upsert(
+            { type: 'bulleted' },
+            { select: true }
           );
         },
       },
@@ -235,23 +158,10 @@ const groups: Group[] = [
         keywords: ['ordered', 'ol', '1'],
         label: 'Numbered list',
         value: 'decimal',
-        onSelect: (editor, tx) => {
-          if (
-            !editor.plugin(BaseListPlugin).installed ||
-            editor.read.view.isReadOnly()
-          ) {
-            return;
-          }
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) => block.listType === 'numbered',
-              insert: (options) => {
-                tx.plugin(BaseListPlugin).insert({ type: 'numbered' }, options);
-              },
-            },
-            { upsert: true }
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseListPlugin).upsert(
+            { type: 'numbered' },
+            { select: true }
           );
         },
       },
@@ -261,24 +171,8 @@ const groups: Group[] = [
         keywords: ['checklist', 'task', 'checkbox', '[]'],
         label: 'To-do list',
         value: 'todo',
-        onSelect: (editor, tx) => {
-          if (
-            !editor.plugin(BaseListPlugin).installed ||
-            editor.read.view.isReadOnly()
-          ) {
-            return;
-          }
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) => block.listType === 'task',
-              insert: (options) => {
-                tx.plugin(BaseListPlugin).insert({ type: 'task' }, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseListPlugin).upsert({ type: 'task' }, { select: true });
         },
       },
       {
@@ -287,22 +181,8 @@ const groups: Group[] = [
         keywords: ['collapsible', 'expandable'],
         label: 'Details',
         value: PLUGINS.details,
-        onSelect: (editor, tx) => {
-          const details = editor.plugin(BaseDetailsPlugin);
-
-          if (!details.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === details.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseDetailsPlugin).insert({}, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseDetailsPlugin).upsert({}, { select: true });
         },
       },
       {
@@ -311,22 +191,8 @@ const groups: Group[] = [
         keywords: ['```'],
         label: 'Code Block',
         value: PLUGINS.codeBlock,
-        onSelect: (editor, tx) => {
-          const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-
-          if (!codeBlock.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === codeBlock.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseCodeBlockPlugin).insert({}, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseCodeBlockPlugin).upsert({}, { select: true });
         },
       },
       {
@@ -334,22 +200,8 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseTablePlugin).installed,
         label: 'Table',
         value: PLUGINS.table,
-        onSelect: (editor, tx) => {
-          const table = editor.plugin(BaseTablePlugin);
-
-          if (!table.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === table.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseTablePlugin).insert({}, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseTablePlugin).upsert({}, { select: true });
         },
       },
       {
@@ -358,22 +210,8 @@ const groups: Group[] = [
         keywords: ['citation', 'blockquote', 'quote', '>'],
         label: 'Blockquote',
         value: PLUGINS.blockquote,
-        onSelect: (editor, tx) => {
-          const blockquote = editor.plugin(BaseBlockquotePlugin);
-
-          if (!blockquote.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === blockquote.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseBlockquotePlugin).insert({}, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseBlockquotePlugin).upsert({}, { select: true });
         },
       },
       {
@@ -382,22 +220,8 @@ const groups: Group[] = [
         keywords: ['note'],
         label: 'Callout',
         value: PLUGINS.callout,
-        onSelect: (editor, tx) => {
-          const callout = editor.plugin(BaseCalloutPlugin);
-
-          if (!callout.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === callout.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseCalloutPlugin).insert({}, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseCalloutPlugin).upsert({}, { select: true });
         },
       },
     ],
@@ -411,22 +235,8 @@ const groups: Group[] = [
         keywords: ['toc'],
         label: 'Table of contents',
         value: PLUGINS.toc,
-        onSelect: (editor, tx) => {
-          const toc = editor.plugin(BaseTocPlugin);
-
-          if (!toc.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === toc.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseTocPlugin).insert({}, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseTocPlugin).upsert({}, { select: true });
         },
       },
       {
@@ -434,22 +244,8 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseColumnPlugin).installed,
         label: '3 columns',
         value: 'action_three_columns',
-        onSelect: (editor, tx) => {
-          const column = editor.plugin(BaseColumnPlugin);
-
-          if (!column.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === column.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseColumnPlugin).insert({ columns: 3 }, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseColumnPlugin).upsert({ columns: 3 }, { select: true });
         },
       },
       {
@@ -458,22 +254,8 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseEquationPlugin).installed,
         label: 'Equation',
         value: PLUGINS.equation,
-        onSelect: (editor, tx) => {
-          const equation = editor.plugin(BaseEquationPlugin);
-
-          if (!equation.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === equation.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseEquationPlugin).insert({}, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseEquationPlugin).upsert({}, { select: true });
         },
       },
       {
@@ -482,22 +264,8 @@ const groups: Group[] = [
         keywords: ['excalidraw'],
         label: 'Excalidraw',
         value: PLUGINS.excalidraw,
-        onSelect: (editor, tx) => {
-          const excalidraw = editor.plugin(BaseExcalidrawPlugin);
-
-          if (!excalidraw.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === excalidraw.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseExcalidrawPlugin).insert({}, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseExcalidrawPlugin).upsert({}, { select: true });
         },
       },
       {
@@ -513,22 +281,8 @@ const groups: Group[] = [
         ],
         label: 'Code Drawing',
         value: PLUGINS.codeDrawing,
-        onSelect: (editor, tx) => {
-          const codeDrawing = editor.plugin(BaseCodeDrawingPlugin);
-
-          if (!codeDrawing.installed || editor.read.view.isReadOnly()) return;
-
-          insertBlock(
-            tx,
-            {
-              matches: (block) =>
-                !block.listType && block.type === codeDrawing.schema.type,
-              insert: (options) => {
-                tx.plugin(BaseCodeDrawingPlugin).insert({}, options);
-              },
-            },
-            { upsert: true }
-          );
+        onSelect: (_editor, tx) => {
+          tx.plugin(BaseCodeDrawingPlugin).upsert({}, { select: true });
         },
       },
     ],

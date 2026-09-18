@@ -1140,6 +1140,7 @@ const renderGeneratedTypes = (
         failInvariant('Expected value to be defined');
       const construction = renderProperties(mutation.construction, '      ');
       const persisted = renderProperties(mutation.persisted, '      ');
+      const block = `\n    readonly block: ${element.behavior.inline === false};`;
       const toggle =
         element.groups.includes('textBlock') &&
         allowedElementTypeSet.has(binding.type) &&
@@ -1150,7 +1151,7 @@ const renderGeneratedTypes = (
           ? '\n    readonly toggle: true;'
           : '';
 
-      return `  readonly ${propertyName(binding.name)}: Readonly<{\n    readonly construction: ${renderExactReadonlyRecord(construction, '    ')};\n    readonly properties: ${renderExactReadonlyRecord(persisted, '    ')};${toggle}\n    readonly type: ${JSON.stringify(binding.type)};\n  }>;`;
+      return `  readonly ${propertyName(binding.name)}: Readonly<{${block}\n    readonly construction: ${renderExactReadonlyRecord(construction, '    ')};\n    readonly properties: ${renderExactReadonlyRecord(persisted, '    ')};${toggle}\n    readonly type: ${JSON.stringify(binding.type)};\n  }>;`;
     })
     .join('\n');
   const textFields = renderProperties(resolvedTextProperties, '  ');

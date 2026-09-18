@@ -22,7 +22,10 @@ import type {
   Editor,
 } from '../../lib';
 import type { EditorSchemaIdentity } from '../../lib/editor/editorApplicationSchema';
-import type { BlockInsertOptions } from '../../lib/editor/pluginRuntimeTypes';
+import type {
+  BlockInsertOptions,
+  BlockUpsertOptions,
+} from '../../lib/editor/pluginRuntimeTypes';
 import { createZustandStore } from '../../lib/libs/zustand';
 import {
   createPlatePluginPortal,
@@ -58,6 +61,10 @@ import {
   setPluginDescriptorMetadata,
 } from '../utils/mergePlugins';
 import { snapshotApiValue } from '../utils/snapshotApiValue';
+import {
+  applyBlockInsertion,
+  matchesGeneratedBlockInsertion,
+} from './blockInsertion';
 import type {
   CompiledPlateModel,
   PlateModelPublication,
@@ -1310,10 +1317,72 @@ export const createPlateRuntimePlugins = (
                     ) as Record<string, unknown>);
               const hasAuthoredToggle =
                 typeof authoredUpdate.toggle === 'function';
+              const hasAuthoredInsert =
+                typeof authoredUpdate.insert === 'function';
               const hasGenericToggle =
                 getPlateModelPublication(
                   editor
                 )?.genericElementToggles.includes(plugin.name) === true;
+
+              const applyGeneratedInsert = (
+                mode: 'insert' | 'upsert',
+                properties: Readonly<Record<string, unknown>> = {},
+                insertOptions: BlockInsertOptions | BlockUpsertOptions = {}
+              ) => {
+                if (
+                  !context.tx.selection() &&
+                  insertOptions.after === undefined &&
+                  !('at' in insertOptions && insertOptions.at !== undefined)
+                ) {
+                  return;
+                }
+
+                const element = context.tx.schema.create(
+                  elementType ?? failInvariant('Expected value to be defined'),
+                  properties
+                );
+                const insert = (blockOptions: BlockInsertOptions) => {
+                  if (
+                    context.tx.schema.isBlock(element) &&
+                    (blockOptions.at === undefined ||
+                      blockOptions.after !== undefined)
+                  ) {
+                    context.tx.blocks.insertAfter(element, {
+                      ...blockOptions,
+                      at: blockOptions.after,
+                    });
+                    return;
+                  }
+
+                  context.tx.nodes.insert(element, blockOptions as never);
+                };
+
+                if (!context.tx.schema.isBlock(element)) {
+                  insert(insertOptions as BlockInsertOptions);
+                  return;
+                }
+
+                applyBlockInsertion({
+                  insert,
+                  matches: (source) =>
+                    matchesGeneratedBlockInsertion({
+                      editor,
+                      pluginName: plugin.name,
+                      properties,
+                      source,
+                      target: element,
+                      tx: context.tx,
+                    }),
+                  mode,
+                  options: insertOptions,
+                  tx: context.tx,
+                });
+              };
+
+              const isBlockElement =
+                typeof elementType === 'string' &&
+                context.tx.schema.element(elementType)?.behavior.inline ===
+                  false;
 
               const defaultUpdate = {
                 ...(elementType
@@ -1325,33 +1394,27 @@ export const createPlateRuntimePlugins = (
                             BlockInsertOptions,
                             'at' | 'after' | 'replaceEmpty'
                           >
-                      ) => {
-                        if (
-                          !context.tx.selection() &&
-                          insertOptions?.at === undefined &&
-                          insertOptions?.after === undefined
-                        ) {
-                          return;
-                        }
-                        const element = context.tx.schema.create(
-                          elementType,
-                          properties
-                        );
-
-                        if (
-                          context.tx.schema.isBlock(element) &&
-                          (insertOptions?.at === undefined ||
-                            insertOptions?.after !== undefined)
-                        ) {
-                          context.tx.blocks.insertAfter(element, {
-                            ...insertOptions,
-                            at: insertOptions?.after,
-                          });
-                          return;
-                        }
-
-                        context.tx.nodes.insert(element, insertOptions);
-                      },
+                      ) =>
+                        applyGeneratedInsert(
+                          'insert',
+                          properties,
+                          insertOptions
+                        ),
+                      ...(!hasAuthoredInsert && isBlockElement
+                        ? {
+                            upsert: (
+                              properties: Readonly<
+                                Record<string, unknown>
+                              > = {},
+                              insertOptions?: BlockUpsertOptions
+                            ) =>
+                              applyGeneratedInsert(
+                                'upsert',
+                                properties,
+                                insertOptions
+                              ),
+                          }
+                        : {}),
                       remove: (
                         removeOptions?: Readonly<Record<string, unknown>>
                       ) => {
