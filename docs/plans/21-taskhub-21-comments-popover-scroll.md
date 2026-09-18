@@ -59,9 +59,9 @@ the original source video/browser surface is unavailable and no deterministic
 equivalent can prove the named focus and geometry fields.
 
 Task state:
-- current_phase: verification
-- next: reconcile remote next, commit/push, then replay exact Chrome at pushed SHA
-- status: active
+- current_phase: complete
+- next: none
+- status: complete
 
 Work Checklist:
 - [x] AC1: opening New Comment from outer `scrollY ~= 500` preserves outer and
@@ -88,14 +88,14 @@ Work Checklist:
 - [x] Browser errors and relevant network failures are checked.
 - [x] Paint classifier is N/A unless the final claim depends on exact pixels;
       scroll coordinates, geometry and focus are the acceptance oracle.
-- [ ] Start a fresh process and exact Chrome session at the final pushed SHA,
+- [x] Start a fresh process and exact Chrome session at the final pushed SHA,
       prove zero issue-owned runtime-input differences, and pass 5/5 retry-free.
 - [x] Record final SHA-256 fingerprints for production, test, fixture and harness.
 - [x] Registry-only release artifact handling is resolved through the project
       registry-changelog owner; package changeset is N/A unless a package changes.
 - [x] Autoreview is N/A because publication is directly from `next`.
-- [ ] Reconcile the complete original TaskHub checklist with no omitted outcome.
-- [ ] Commit the complete checkout, push to `origin/next`, read back remote SHA,
+- [x] Reconcile the complete original TaskHub checklist with no omitted outcome.
+- [x] Commit the complete checkout, push to `origin/next`, read back remote SHA,
       then conditionally move TaskHub #21 `in_progress -> review` and read back.
 
 Decisions and tradeoffs:
@@ -109,12 +109,12 @@ Completion Gates:
 
 | Gate | Applies | Required action | Evidence |
 | --- | --- | --- | --- |
-| Exact red/green case | yes | Real homepage Chrome replay | pre-commit exact Chrome 5/5; pushed-SHA pending |
-| Focus and geometry stability | yes | 5/5 exact Chrome final-SHA runs | pre-commit 5/5 green; final-SHA pending |
+| Exact red/green case | yes | Real homepage Chrome replay | exact Chrome 5/5 at pushed production SHA `2d0df9315b` |
+| Focus and geometry stability | yes | 5/5 exact Chrome final-SHA runs | 5/5 retry-free; selection/actions 4/4 |
 | Registry artifact | yes | Registry changelog/build if registry source changes | 173-event changelog check and registry build pass |
 | Root publication check | yes | `pnpm check` | pass: lint, type-aware lint, package typechecks, fast and slow tests |
-| Git delivery | yes | Commit/push/readback `origin/next` | pending |
-| TaskHub lifecycle | yes | Conditional review transition/readback | claimed `in_progress`; closure pending |
+| Git delivery | yes | Commit/push/readback `origin/next` | `2d0df9315b` pushed and read back before plan closeout |
+| TaskHub lifecycle | yes | Conditional review transition/readback | #21 is `review`, project `plate`, not archived |
 
 Verification evidence:
 - `HEAD` and freshly fetched `origin/next` both start at
@@ -153,6 +153,13 @@ Verification evidence:
   `40d625ae18bfa249fc4cf56d2bfc00e587f6233dd3b54b3bed99e30f149e8989`,
   and browser harness
   `f9254fd0decdfa706134c110b239238f8efe205b0a3f8bb97782ac689b476991`.
+- Complete-checkout commit `2d0df9315ba530fca9d25eadf745bd5ce07f0f1d`
+  was pushed to and read back from `origin/next` with a clean worktree. A fresh
+  Next process at that SHA passed the exact installed-Chrome scroll/geometry
+  case 5/5, all three Issue 5127 selection entry paths and the comment action
+  case 4/4, with retry 0 and no runtime errors.
+- TaskHub #21 conditionally transitioned from `in_progress` to `review`; final
+  readback confirms project `plate`, `archived: false`.
 
 Findings and remaining work:
 - `NewComment` previously autofocused while Radix still held the content at its
@@ -161,14 +168,19 @@ Findings and remaining work:
 - The virtual anchor previously snapshotted `editor.api.dom.root()` during
   render. It now subscribes to the mounted root and gives Floating UI the
   correct editor-scroll ancestry without polling.
-- Remaining work is the final complete-checkout commit and push, clean
-  pushed-ref Chrome replay, remote readback and TaskHub review.
+- No acceptance work remains within the authorized scope.
 
 Final handoff:
-- Outcome and owning fix: pending.
-- Proof and limits: pending.
-- Local / integrated / published state: pending.
-- Next action or completion: reproduce exact Chrome case.
+- Outcome and owning fix: floating popovers expose provider-neutral placement
+  readiness; the discussion composer autofocuses only after placement, and its
+  virtual anchor subscribes to the mounted editor root for internal scroll.
+- Proof and limits: exact Chrome 5/5 plus selection/actions 4/4, focused
+  components, `www` typecheck, registry/changelog checks and root `pnpm check`
+  pass. Deployment and release are not claimed.
+- Local / integrated / published state: complete checkout is published to
+  `origin/next`; TaskHub #21 is in review.
+- Next action or completion: complete; maintainer review is the next external
+  lifecycle step.
 
 Timeline:
 - 2026-09-18: TaskHub #21 claimed; current `next` and remote SHA matched; plan created.
@@ -179,8 +191,10 @@ Timeline:
 - 2026-09-18: focused components, three inactive-selection entry paths, exact
   scroll/actions 5/5, `www` typecheck, registry generation and root `pnpm check`
   passed before publication.
+- 2026-09-18: complete checkout pushed as `2d0df9315b`; fresh pushed-ref exact
+  Chrome replay passed 5/5 plus 4/4 companion cases; TaskHub #21 moved to review.
 
 Open risks:
-- Shared selection scrolling affects caret visibility outside comments.
-- A virtual-anchor fix must survive first open, close/reopen and anchor changes
-  without adding a permanent polling loop.
+- None within the accepted local and `origin/next` delivery scope. CI,
+  deployment, release and non-Radix browser integration were not requested and
+  are not claimed.
