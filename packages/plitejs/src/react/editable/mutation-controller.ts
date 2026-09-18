@@ -1103,6 +1103,17 @@ export const applyModelOwnedTextInput = ({
       }
 
       const insertAtSelection = (target: Range) => {
+        if (RangeApi.isCollapsed(target)) {
+          editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
+            if (nativeInput) {
+              tx.annotations.set(nativeGroupingInput, nativeInput);
+            }
+            tx.selection.set(target);
+            tx.command(editorCommands.insertText, { text: data });
+          });
+          return;
+        }
+
         if (nativeInput) {
           editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
             tx.annotations.set(nativeGroupingInput, nativeInput);

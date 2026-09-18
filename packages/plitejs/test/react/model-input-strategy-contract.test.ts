@@ -170,6 +170,36 @@ describe('model input strategy', () => {
     });
   });
 
+  it('advances a synced DOM selection when the model selection is stale', () => {
+    const editor = createTextEditor('abcd', 0);
+    const selection = {
+      kind: 'text' as const,
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 2 },
+    };
+
+    applyModelOwnedBeforeInputMutation({
+      command: {
+        inputType: 'insertText',
+        kind: 'insert-text',
+        text: '!',
+      },
+      data: '!',
+      editor: editor as ReactEditor,
+      inputType: 'insertText',
+      native: false,
+      selection,
+      setComposing: () => {},
+    });
+
+    expect(editorString(editor, [])).toBe('ab!cd');
+    expect(editorGetSelection(editor)).toEqual({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+  });
+
   it('uses the direct collapsed insert path for empty marks', () => {
     const editor = createTextEditor('abcd', 2);
     const events: Array<{ id?: string | null; kind: string }> = [];

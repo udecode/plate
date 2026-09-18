@@ -1924,36 +1924,64 @@ test('model-command text input forces model ownership', () => {
   ).toBe(true);
 });
 
-test('browser-handle and repair-induced text input can keep the native fast path', () => {
-  for (const reason of ['browser-handle', 'repair-induced'] as const) {
-    const inputController = createEditableInputController({
-      preferModelSelectionForInputRef: { current: true },
-      state: Object.assign(createEditableInputControllerState(), {
-        activeIntent: null,
-        isComposing: false,
-        isDraggingInternally: false,
-        isUpdatingSelection: false,
-        latestElement: null,
-        pendingDOMSelectionImport: false,
-        selectionChangeOrigin: null,
-        selectionSource: 'model-owned',
-      }),
-    });
-
-    setEditableModelSelectionPreference({
-      inputController,
-      preferModelSelection: true,
-      reason,
+test('browser-handle text input can keep the native fast path', () => {
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: true },
+    state: Object.assign(createEditableInputControllerState(), {
+      activeIntent: null,
+      isComposing: false,
+      isDraggingInternally: false,
+      isUpdatingSelection: false,
+      latestElement: null,
+      pendingDOMSelectionImport: false,
+      selectionChangeOrigin: null,
       selectionSource: 'model-owned',
-    });
+    }),
+  });
 
-    expect(
-      shouldForceModelOwnedTextInput({
-        inputController,
-        inputType: 'insertText',
-      })
-    ).toBe(false);
-  }
+  setEditableModelSelectionPreference({
+    inputController,
+    preferModelSelection: true,
+    reason: 'browser-handle',
+    selectionSource: 'model-owned',
+  });
+
+  expect(
+    shouldForceModelOwnedTextInput({
+      inputController,
+      inputType: 'insertText',
+    })
+  ).toBe(false);
+});
+
+test('repair-induced text input remains model-owned after its guard settles', () => {
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: true },
+    state: Object.assign(createEditableInputControllerState(), {
+      activeIntent: null,
+      isComposing: false,
+      isDraggingInternally: false,
+      isUpdatingSelection: false,
+      latestElement: null,
+      pendingDOMSelectionImport: false,
+      selectionChangeOrigin: null,
+      selectionSource: 'model-owned',
+    }),
+  });
+
+  setEditableModelSelectionPreference({
+    inputController,
+    preferModelSelection: true,
+    reason: 'repair-induced',
+    selectionSource: 'model-owned',
+  });
+
+  expect(
+    shouldForceModelOwnedTextInput({
+      inputController,
+      inputType: 'insertText',
+    })
+  ).toBe(true);
 });
 
 test('browser-handle and repair-induced selection preferences clear stale model-owned text guards', () => {
@@ -2000,6 +2028,6 @@ test('browser-handle and repair-induced selection preferences clear stale model-
         inputController,
         inputType: 'insertText',
       })
-    ).toBe(false);
+    ).toBe(reason === 'repair-induced');
   }
 });

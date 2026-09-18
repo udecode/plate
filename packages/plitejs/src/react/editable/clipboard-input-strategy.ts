@@ -16,6 +16,7 @@ import {
 } from '../../dom';
 import {
   type DOMCoverageSession,
+  domCommands,
   getPliteStringCoordinatePlacement,
   getPliteStringDocumentOffset,
   getPliteStringEdgeOffset,
@@ -851,7 +852,7 @@ export const applyEditableDrop = ({
       inserted =
         (internalSlice?.kind === 'slice'
           ? tx.slice.replace(internalSlice.slice)
-          : applyEditableCommand({ command, editor })) ?? false;
+          : tx.command(domCommands.insertData, data)) ?? false;
 
       if (inserted && movesDraggedRange && isBlockDrag) {
         const selectionRange = tx.selection();

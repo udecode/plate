@@ -707,9 +707,12 @@ export const shouldForceModelOwnedTextInput = ({
     return false;
   }
 
+  const preference = inputController.state.modelSelectionPreference;
+
   return (
     isEditableModelSelectionPreferred(inputController) &&
-    (inputController.state.modelOwnedTextInputGuard ?? 0) > 0
+    ((inputController.state.modelOwnedTextInputGuard ?? 0) > 0 ||
+      preference?.reason === 'repair-induced')
   );
 };
 
