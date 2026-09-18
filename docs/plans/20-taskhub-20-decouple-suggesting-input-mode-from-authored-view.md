@@ -59,10 +59,9 @@ None. The required package, docs, registry and browser surfaces were available
 and the selected semantics follow the existing authored owner.
 
 Correction state:
-- current_phase: publication
-- next: commit and push the verified correction, then replay the homepage proof
-  from the clean pushed ref and read back TaskHub #20.
-- status: active
+- current_phase: complete
+- next: none inside the authorized scope; maintainer review owns any follow-up.
+- status: complete
 
 Work Checklist:
 - [x] AC1: Existing Add/Delete/replacement suggestions, applicable marks, review
@@ -144,7 +143,7 @@ Work Checklist:
       browser regression, and keep the durable owner at the homepage's explicit
       mounted authored policy rather than changing global plugin defaults.
 - [x] Run focused browser, app type/lint and required root publication proof.
-- [ ] Commit/push the complete checkout, replay from the final pushed ref, read
+- [x] Commit/push the complete checkout, replay from the final pushed ref, read
       back `origin/next`, and return TaskHub #20 to `review`.
 
 Decisions and tradeoffs:
@@ -226,6 +225,17 @@ Verification evidence:
 - Correction publication gate: root `pnpm check` passes lint, type-aware lint,
   package typechecks, fast tests and slow tests with zero failures. Benchmark
   receipt files rewritten by the suite were restored to their clean baseline.
+- Correction branch sync: `next` advanced during verification from
+  `b80290d0f6` to `1abc74f160`; the remote delta changed only Regression
+  workflow files. The correction restored without conflict, and the registry
+  changelog check plus full root `pnpm check` passed again on the latest base.
+- Correction pushed-ref proof: production commit
+  `7ec2b4bbc6fc6ee13b3107f4748ee371cd871f40` is the exact `origin/next`
+  readback. A fresh Next process at `http://localhost:3298` on that clean ref
+  passes both installed-Google-Chrome homepage cases 2/2 retry-free in 7.6
+  seconds.
+- Correction TaskHub receipt: conditional `in_progress -> review` succeeded;
+  readback is #20, project `plate`, status `review`, `archived: false`.
 - Correction fingerprints: homepage owner
   `c1d9c023f94b37202facd8784498d7532797e88a52b7534d096f733e888dd814`, seeded
   value `ac864c96cb624d5a82c735b3e34cdde0d607ff0412bb7cd3224d22885b3ff5e4`,
@@ -237,10 +247,8 @@ Verification evidence:
   `43afd72978efaafecf2cd75c1d0f0f5a83104a8e52b0fe44dcbcca4a6a3359d6`.
 
 Open risks:
-No unresolved technical risk remains inside the corrected homepage scope. The
-remaining acceptance boundary is publication and clean pushed-ref replay.
+None inside the corrected homepage scope. No PR, release or deployment was
+authorized or claimed.
 
 Next action:
-Commit and push the complete verified correction, replay the exact homepage
-cases from the final pushed ref, read back `origin/next`, and return TaskHub #20
-to `review`.
+Maintainer review. Any PR, release or deployment requires separate authority.
