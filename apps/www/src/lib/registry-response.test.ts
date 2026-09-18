@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { createHash } from 'node:crypto';
 import {
   cp,
   mkdir,
@@ -21,6 +22,14 @@ const SUPPORTED_STYLES = PLATE_REGISTRY_BASES.flatMap((base) =>
   PLATE_REGISTRY_STYLE_NAMES.map((style) => `${base}-${style}`)
 );
 const ROUTE_STYLES = [...SUPPORTED_STYLES, 'new-york', 'new-york-v4'];
+const REPRESENTATIVE_PAYLOADS = [
+  'registry.json',
+  'registry-docs.json',
+  'toolbar.json',
+];
+
+const sha256 = (value: string) =>
+  createHash('sha256').update(value).digest('hex');
 
 async function createGeneratedFixture() {
   const root = await mkdtemp(path.join(tmpdir(), 'plate-registry-response-'));
@@ -43,6 +52,41 @@ async function createGeneratedFixture() {
     cp(
       'src/__registry__/registry-metadata.json',
       path.join(root, 'src/__registry__/registry-metadata.json')
+    ),
+  ]);
+
+  const manifestPath = path.join(
+    root,
+    'src/__registry__/overlays/manifest.json'
+  );
+  const generationPath = path.join(root, 'src/__registry__/generation.json');
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf-8')) as {
+    payloads: Record<string, string>;
+  };
+
+  await mkdir(path.join(root, 'public/rd'), { recursive: true });
+  for (const fileName of REPRESENTATIVE_PAYLOADS) {
+    const source = await readFile(path.join('public/r', fileName), 'utf-8');
+
+    await writeFile(path.join(root, 'public/rd', fileName), source);
+    manifest.payloads[`rd/${fileName}`] = sha256(source);
+  }
+
+  const manifestSource = `${JSON.stringify(manifest, null, 2)}\n`;
+  const generation = JSON.parse(await readFile(generationPath, 'utf-8')) as {
+    generation: string;
+    manifestSha256: string;
+  };
+
+  await Promise.all([
+    writeFile(manifestPath, manifestSource),
+    writeFile(
+      generationPath,
+      `${JSON.stringify(
+        { ...generation, manifestSha256: sha256(manifestSource) },
+        null,
+        2
+      )}\n`
     ),
   ]);
 
@@ -192,6 +236,7 @@ describe('registry style responses', () => {
   });
 
   it('keeps the canonical index complete and serves all 36 routes', async () => {
+    const root = await createGeneratedFixture();
     const directoryEntries = await readdir('public/r');
     const fileNames = directoryEntries.filter((fileName) =>
       fileName.endsWith('.json')
@@ -209,27 +254,28 @@ describe('registry style responses', () => {
       ].toSorted()
     );
 
-    for (const directory of ['r', 'rd'] as const) {
-      for (const style of ROUTE_STYLES) {
-        for (const fileName of [
-          'registry.json',
-          'registry-docs.json',
-          'toolbar.json',
-        ]) {
-          expect(
-            await createRegistryResponse({
-              directory,
-              fileName,
-              origin:
-                directory === 'r'
-                  ? 'https://platejs.org'
-                  : 'http://localhost:3000',
-              style,
-            }),
-            `${directory}/${style}/${fileName}`
-          ).not.toBeNull();
+    try {
+      for (const directory of ['r', 'rd'] as const) {
+        for (const style of ROUTE_STYLES) {
+          for (const fileName of REPRESENTATIVE_PAYLOADS) {
+            expect(
+              await createRegistryResponse({
+                directory,
+                fileName,
+                origin:
+                  directory === 'r'
+                    ? 'https://platejs.org'
+                    : 'http://localhost:3000',
+                root,
+                style,
+              }),
+              `${directory}/${style}/${fileName}`
+            ).not.toBeNull();
+          }
         }
       }
+    } finally {
+      await rm(root, { force: true, recursive: true });
     }
   });
 
