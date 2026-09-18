@@ -204,7 +204,7 @@ test.describe('multi-root document example', () => {
       const shifted = body.root.locator(`[data-editor-node-key="${key}"]`);
       await expect(shifted).toHaveAttribute('data-editor-path', '2');
       await body.selection.collapse({ path: [2, 0], offset: secondText.length });
-      await page.keyboard.type(' Follow-up');
+      await page.keyboard.insertText(' Follow-up');
       await body.assert.blockTexts(['', firstText, `${secondText} Follow-up`]);
       await body.assert.collapsedModelDOMSelection({
         path: [2, 0],
