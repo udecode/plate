@@ -143,6 +143,7 @@ mock.module('@/components/ui/dropdown-menu', () => ({
   ),
   DropdownMenuItem({
     children,
+    finalFocus,
     onClick,
     onSelect,
     ref,
@@ -150,6 +151,7 @@ mock.module('@/components/ui/dropdown-menu', () => ({
     ...props
   }: React.PropsWithChildren<
     React.ComponentProps<'button'> & {
+      finalFocus?: false | (() => void);
       onSelect?: React.MouseEventHandler<HTMLButtonElement>;
     }
   >) {
@@ -165,6 +167,14 @@ mock.module('@/components/ui/dropdown-menu', () => ({
         onClick={(event) => {
           onClick?.(event);
           onSelect?.(event);
+          if (finalFocus) {
+            dropdownOnFinalFocus = (focusEvent) => {
+              focusEvent.preventDefault();
+              finalFocus();
+            };
+          } else if (finalFocus === false) {
+            dropdownOnFinalFocus = undefined;
+          }
         }}
         ref={ref}
         style={style}
