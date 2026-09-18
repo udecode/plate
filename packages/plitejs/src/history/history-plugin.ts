@@ -30,6 +30,7 @@ import {
   captureAuthoredHistory,
   getAuthoredHistoryConflicts,
 } from '../core/authored-runtime';
+import { getEditorCommitStartedAt } from '../core/commit';
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
@@ -638,6 +639,7 @@ const createHistoryPlugin = <
     const preparedBatch = prepared.batch;
     const lastEntry = peekHistoryEntry(editor, 'undos');
     const currentTime = globalThis.performance.now();
+    const currentStartedAt = getEditorCommitStartedAt(commit);
     const previousAutomaticGroupTime =
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
     const explicitMerge = commit.tags.includes('history-merge');
@@ -656,7 +658,7 @@ const createHistoryPlugin = <
       );
     const withinAutomaticWindow =
       previousAutomaticGroupTime !== undefined &&
-      currentTime - previousAutomaticGroupTime <=
+      Math.max(0, currentStartedAt - previousAutomaticGroupTime) <=
         getHistoryNewBatchDelay(options);
     const nativeMerge = canMergeNativeHistory(
       prepared.group?.native,

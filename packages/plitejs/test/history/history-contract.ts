@@ -1388,6 +1388,47 @@ describe('plite-history contract', () => {
     assert.deepEqual(getVisibleState(editor), before);
   });
 
+  it('does not count transaction work as idle time between undo batches', () => {
+    let clock = 0;
+    const nowDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis.performance,
+      'now'
+    );
+
+    Object.defineProperty(globalThis.performance, 'now', {
+      configurable: true,
+      value: () => clock,
+    });
+
+    try {
+      const editor = createEditor({
+        plugins: [history({ newBatchDelay: 500 })],
+        initialValue: [paragraph('')],
+      });
+      const before = getVisibleState(editor);
+
+      write(editor, (tx) => {
+        tx.text.insert('a', { at: { path: [0, 0], offset: 0 } });
+      });
+      write(editor, (tx) => {
+        clock = 600;
+        tx.text.insert('b', { at: { path: [0, 0], offset: 1 } });
+      });
+
+      assert.equal(getHistory(editor).undos.length, 1);
+
+      undo(editor);
+
+      assert.deepEqual(getVisibleState(editor), before);
+    } finally {
+      if (nowDescriptor) {
+        Object.defineProperty(globalThis.performance, 'now', nowDescriptor);
+      } else {
+        delete (globalThis.performance as { now?: () => number }).now;
+      }
+    }
+  });
+
   it('merges typing after selected text replacement into one undo unit', () => {
     const editor = historyTestEditor();
 

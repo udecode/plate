@@ -8875,6 +8875,8 @@ export const runEditorTransaction = (
   let transactionError: Readonly<{ value: unknown }> | null = null;
 
   assertCanStartEditorWrite(editor, options.authority);
+  const transactionStartedAt =
+    globalThis.performance?.now?.() ?? Date.now();
   const draftContext = createEditorUpdateDraftContext(editor);
   incrementEditorTransactionDepth(editor, depth);
 
@@ -9137,6 +9139,7 @@ export const runEditorTransaction = (
                 },
                 {
                   previousVersion: snapshot.previousVersion,
+                  startedAt: transactionStartedAt,
                   version: snapshot.previousVersion + 1,
                 }
               )

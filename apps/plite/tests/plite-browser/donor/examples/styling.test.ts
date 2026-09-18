@@ -111,7 +111,7 @@ test.describe('styling example', () => {
     expect(styles.whiteSpace).toBe('pre-wrap');
   });
 
-  test('mouse drag undo restores native selected text replacement', async ({
+  test('mouse drag undo restores typed selected text replacement', async ({
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop native drag proof');
@@ -136,7 +136,7 @@ test.describe('styling example', () => {
       .poll(() => page.evaluate(() => window.getSelection()?.toString() ?? ''))
       .toBe(selectedText);
 
-    await page.keyboard.insertText('changed');
+    await page.keyboard.type('changed');
     await editor.assert.text('This editor is styled changed the style prop.');
 
     await page.keyboard.press(

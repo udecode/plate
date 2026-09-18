@@ -89,6 +89,7 @@ const EDITOR_COMMIT_SNAPSHOT_SOURCES = new WeakMap<
   EditorCommit,
   EditorCommitSnapshotSource
 >();
+const EDITOR_COMMIT_STARTED_AT = new WeakMap<EditorCommit, number>();
 const EDITOR_COMMIT_ROOT_SNAPSHOTS = new WeakMap<
   EditorCommit,
   { after: Map<RootKey, EditorSnapshot>; before: Map<RootKey, EditorSnapshot> }
@@ -153,6 +154,11 @@ export const getEditorCommitSnapshot = <V extends Value>(
 
   return frozen;
 };
+
+/** @internal */
+export const getEditorCommitStartedAt = (commit: EditorCommit): number =>
+  EDITOR_COMMIT_STARTED_AT.get(commit) ??
+  (globalThis.performance?.now?.() ?? Date.now());
 
 const valueRoot = (value: JsonEditorValue, root: RootKey) =>
   root === 'main' ? value.children : (value.roots?.[root] ?? []);
@@ -1036,7 +1042,11 @@ const createCommitChanged = ({
 
 export const createEditorCommit = <V extends Value>(
   input: CommitInput<V>,
-  versions: { previousVersion: number; version: number }
+  versions: {
+    previousVersion: number;
+    startedAt?: number;
+    version: number;
+  }
 ): EditorCommit<V> => {
   const {
     afterValue,
@@ -1098,6 +1108,10 @@ export const createEditorCommit = <V extends Value>(
     editor,
     value: afterValue,
   });
+  EDITOR_COMMIT_STARTED_AT.set(
+    commit,
+    versions.startedAt ?? (globalThis.performance?.now?.() ?? Date.now())
+  );
 
   return Object.freeze(commit);
 };
