@@ -1,7 +1,7 @@
 import { existsSync, statSync } from 'node:fs';
 import { dirname, resolve, sep } from 'node:path';
 
-import chokidar from 'chokidar';
+import chokidar, { type FSWatcher } from 'chokidar';
 
 import {
   acquireEditorWatchOwnership,
@@ -29,11 +29,21 @@ const sourceRevision = (path: string) => {
   }
 };
 
+export type EditorWatcher = FSWatcher &
+  Readonly<{
+    onChecked: (
+      listener: (entryPaths: readonly string[]) => void
+    ) => () => boolean;
+    onGenerated: (
+      listener: (entryPaths: readonly string[]) => void
+    ) => () => boolean;
+  }>;
+
 export const watchEditors = async (
   entries: readonly string[],
   cwd = process.cwd(),
   signal?: AbortSignal
-) => {
+): Promise<EditorWatcher> => {
   const entryPaths = resolveEditorEntryPaths(entries, cwd);
   const artifactPaths = new Set(entryPaths.flatMap(editorArtifactPaths));
   const privateStateRoots = editorPrivateStateRoots(entryPaths);
@@ -452,5 +462,7 @@ export const watchEditors = async (
   });
 };
 
-export const watchEditor = async (entry: string, cwd = process.cwd()) =>
-  watchEditors([entry], cwd);
+export const watchEditor = async (
+  entry: string,
+  cwd = process.cwd()
+): Promise<EditorWatcher> => watchEditors([entry], cwd);

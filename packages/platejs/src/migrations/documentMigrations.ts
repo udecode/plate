@@ -7,7 +7,6 @@ import {
   type EditorSchemaIdentity,
   type EditorStateField,
   type EditorStateSchemaApi,
-  type Element,
   ElementApi,
   mapDetachedSelectionThroughChange,
   type NativeAuthoredDocumentCapability,
@@ -335,7 +334,7 @@ const historicalSelectionGeometry = (
   }
   const { marks: _marks, ...geometry } = selection;
 
-  return geometry as Exclude<Selection, null>;
+  return geometry;
 };
 
 const assertHistoricalSelection = (
@@ -395,8 +394,8 @@ const edgePoint = (
           path: Object.freeze(path),
         });
       }
-      if (ElementApi.isElement(node as unknown as Element)) {
-        const point = visit(node.children as readonly unknown[], path);
+      if (ElementApi.isElement(node)) {
+        const point = visit(node.children, path);
 
         if (point) return point;
       }
@@ -455,11 +454,10 @@ const completeDocument = (
     authored
       ? (values, value) => {
           if (!Object.hasOwn(values, 'authored')) return values;
-          const normalized = authored.normalize(
-            value,
-            values.authored as never,
-            { assertTarget, schema: authority.schema }
-          );
+          const normalized = authored.normalize(value, values.authored, {
+            assertTarget,
+            schema: authority.schema,
+          });
 
           return Object.freeze({ ...values, authored: normalized.state });
         }
@@ -693,10 +691,7 @@ export const migrateDocument = <const TInput>(
     if (options.source === undefined) {
       throw new Error('Raw document input requires explicit source intent.');
     }
-    source =
-      options.source === 'current'
-        ? current.version
-        : (options.source as number);
+    source = options.source === 'current' ? current.version : options.source;
     assertVersion(source, 'Raw document source version');
     if (source > current.version) {
       throw new Error(

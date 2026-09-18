@@ -1674,16 +1674,12 @@ const createPluginShortcuts = (
 
           resolvedHotkey.priority ??= 0;
 
-          shortcuts[namespacedKey] = resolvedHotkey as NonNullable<
-            BasePlugin['shortcuts'][string]
-          >;
+          shortcuts[namespacedKey] = resolvedHotkey;
           compilerInputs.push({
             declarationIndex,
             id: namespacedKey,
             pluginIndex,
-            shortcut: resolvedHotkey as NonNullable<
-              BasePlugin['shortcuts'][string]
-            >,
+            shortcut: resolvedHotkey,
           });
         }
       }

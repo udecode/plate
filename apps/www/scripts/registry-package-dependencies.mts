@@ -263,8 +263,7 @@ export function deriveRegistryPackageDependencies(
   registry: Registry,
   options: DeriveRegistryPackageDependenciesOptions
 ): Registry {
-  const dags =
-    options.entrypointDags ?? (defaultEntrypointDags as EntrypointDags);
+  const dags = options.entrypointDags ?? defaultEntrypointDags;
   const packageManifests =
     options.packageManifests ?? getDefaultPackageManifests();
   const hostProvidedAliases = new Set(

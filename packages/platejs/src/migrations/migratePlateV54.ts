@@ -81,14 +81,8 @@ export type PlateV54Migration = (
 /** Upgrade the frozen first-party Plate v53 document profile to v54. */
 export const migrateV54: PlateV54Migration = (context, options = {}) => {
   const schema = context.target.schema as InternalEditorSchemaApi;
-  const legacy = migratePlateV54Suggestions(
-    context.document as EditorDocumentValue
-  );
-  const shapedSource = shapeDocument(
-    context,
-    context.document as EditorDocumentValue,
-    options
-  );
+  const legacy = migratePlateV54Suggestions(context.document);
+  const shapedSource = shapeDocument(context, context.document, options);
 
   if (!legacy) {
     const mapSelection: NonNullable<
@@ -97,7 +91,7 @@ export const migrateV54: PlateV54Migration = (context, options = {}) => {
       const profileSelection = mapBetween(
         schema,
         selection,
-        context.document as EditorDocumentValue,
+        context.document,
         shapedSource.profile
       );
       const astSelection = mapBetween(
@@ -152,7 +146,7 @@ export const migrateV54: PlateV54Migration = (context, options = {}) => {
       const profileSelection = mapBetween(
         schema,
         selection,
-        context.document as EditorDocumentValue,
+        context.document,
         shapedSource.profile
       );
       const astSelection = mapBetween(

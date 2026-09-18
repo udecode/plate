@@ -163,7 +163,7 @@ describe('measurePages', () => {
       measurePages(editor, {
         engine: createEstimatedPageLayoutEngine(),
         page: defaultPage,
-        root: 'main' as never,
+        root: 'main',
       })
     ).toThrow(/Omit root to target the primary document/);
   });
@@ -481,7 +481,7 @@ describe('custom PageLayoutEngine validation', () => {
         const output = base.compose(input);
         return {
           ...output,
-          fragments: [change(output.fragments[0]!)],
+          fragments: [change(output.fragments[0])],
         };
       },
     };

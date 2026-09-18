@@ -10,7 +10,7 @@ import { registerDepsCommand } from './deps';
 import { generateEditors } from './generate';
 import { createEditorMigration } from './migrate';
 import { runEditorMigrationInput, runEditorMigrations } from './run-migration';
-import { watchEditors } from './watch';
+import { type EditorWatcher, watchEditors } from './watch';
 
 const DEFAULT_ENTRY = 'src/editor.ts';
 const packageJson = createRequire(import.meta.url)('../package.json') as {
@@ -73,7 +73,7 @@ program
         void signal.then(() => {
           controller.abort(new Error('Plate watch stopped during startup.'));
         });
-        let watcher: Awaited<ReturnType<typeof watchEditors>> | undefined;
+        let watcher: EditorWatcher | undefined;
 
         try {
           watcher = await watchEditors(

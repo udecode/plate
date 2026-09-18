@@ -99,7 +99,7 @@ it('paints a row selected from the mounted editor view', async () => {
   });
 
   await act(async () => {
-    fireEvent.click(rowControls[1]!);
+    fireEvent.click(rowControls[1]);
     await new Promise<void>((resolve) => {
       setTimeout(resolve, 0);
     });

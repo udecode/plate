@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import { act, render } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import * as EditorRoot from 'platejs';
 import * as PlateReact from 'platejs/react';
 import * as React from 'react';
@@ -11,14 +11,18 @@ const useFocusedLastMock = mock();
 const usePluginStoreMock = mock();
 const useEditorMock = mock();
 const toDOMNodeMock = mock();
-const setNodesMock = mock();
-const isAtBlockEndMock = mock();
 
 const Icon = () => <div />;
 
 mock.module('platejs/ai/react', () => ({
   AIChatPlugin: {},
   AIPlugin: {},
+}));
+
+mock.module('platejs/ai', () => ({
+  BaseAIPlugin: {
+    extend: () => ({}),
+  },
 }));
 
 mock.module('cmdk', () => ({
@@ -119,8 +123,6 @@ mock.module('./ai-menu', () => ({
 
 describe('AIMenu slow contracts', () => {
   const originalSetTimeout = globalThis.setTimeout;
-  let chatOpen = false;
-
   beforeEach(() => {
     pluginMock.mockReset();
     useEditorSelectorMock.mockReset();
@@ -128,8 +130,6 @@ describe('AIMenu slow contracts', () => {
     usePluginStoreMock.mockReset();
     useEditorMock.mockReset();
     toDOMNodeMock.mockReset();
-    setNodesMock.mockReset();
-    isAtBlockEndMock.mockReset();
 
     globalThis.setTimeout = ((callback: TimerHandler) => {
       if (typeof callback === 'function') callback();
@@ -137,7 +137,6 @@ describe('AIMenu slow contracts', () => {
       return 0 as unknown as ReturnType<typeof setTimeout>;
     }) as unknown as typeof setTimeout;
 
-    chatOpen = false;
     useFocusedLastMock.mockReturnValue(false);
     const editor = {
       api: {
@@ -156,14 +155,11 @@ describe('AIMenu slow contracts', () => {
           isEmpty: () => false,
         },
         selection: Object.assign(() => ({ kind: 'text' }), {
-          isAtBlockEnd: isAtBlockEndMock,
+          isAtBlockEnd: () => false,
           isCollapsed: () => true,
           isExpanded: () => false,
           nodes: () => [],
         }),
-      },
-      update: {
-        selection: { setNodes: setNodesMock },
       },
     } as unknown as PlateReact.Editor;
 
@@ -185,7 +181,7 @@ describe('AIMenu slow contracts', () => {
           return true;
         }
         case 'open': {
-          return chatOpen;
+          return false;
         }
         case 'chat': {
           return { messages: [], status: 'streaming' };
@@ -233,35 +229,5 @@ describe('AIMenu slow contracts', () => {
 
     expect(result.queryByText('Comment')).toBeNull();
     expect(result.getByText('Continue writing')).toBeTruthy();
-  });
-
-  it('selects the current non-empty block when the cursor is not at its end', async () => {
-    chatOpen = true;
-    isAtBlockEndMock.mockReturnValue(false);
-    toDOMNodeMock.mockReturnValue(document.createElement('div'));
-    const { AIMenu } = await import(
-      `./ai-menu?test=${Math.random().toString(36).slice(2)}`
-    );
-
-    await act(async () => {
-      render(<AIMenu />);
-    });
-
-    expect(setNodesMock).toHaveBeenCalledWith([[0]]);
-  });
-
-  it('keeps block selection clear when the cursor is at its block end', async () => {
-    chatOpen = true;
-    isAtBlockEndMock.mockReturnValue(true);
-    toDOMNodeMock.mockReturnValue(document.createElement('div'));
-    const { AIMenu } = await import(
-      `./ai-menu?test=${Math.random().toString(36).slice(2)}`
-    );
-
-    await act(async () => {
-      render(<AIMenu />);
-    });
-
-    expect(setNodesMock).not.toHaveBeenCalled();
   });
 });

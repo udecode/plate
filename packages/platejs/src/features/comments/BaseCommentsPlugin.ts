@@ -308,7 +308,7 @@ const decodeComments = (value: unknown): CommentsJSON => {
     version: 1,
     threads: Object.freeze(threads),
     ranges: input.ranges,
-  }) as CommentsJSON;
+  });
 };
 
 const freezeComment = <T>(value: T): T => {

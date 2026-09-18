@@ -42,7 +42,7 @@ export default function CommentPersistenceDemo() {
   );
   const [persistence] = React.useState(() => {
     let rejectNextAction = true;
-    const mutate: CommentsPluginState['mutate'] = async (request) => {
+    const mutate: CommentsPluginState['mutate'] = (request) => {
       if (
         (request.operation === 'reply' || request.operation === 'reopen') &&
         rejectNextAction

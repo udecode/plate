@@ -1,5 +1,5 @@
 ---
-"platejs": major
+'platejs': major
 ---
 
 Require React and React DOM 19.2 or newer.
@@ -46,9 +46,9 @@ import {
   defineDocumentMigrations,
   migrateDocument,
   migrateV54,
-} from "platejs/migrations";
+} from 'platejs/migrations';
 
-import { fingerprint as v53Fingerprint } from "./migrations/v54/from";
+import { fingerprint as v53Fingerprint } from './migrations/v54/from';
 
 const migrations = defineDocumentMigrations({
   plugins: EditorKit,

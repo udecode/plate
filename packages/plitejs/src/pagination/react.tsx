@@ -772,7 +772,7 @@ const measurePagedEditable = <TElement extends Element>(
 ) =>
   // React context erases the schema generic; PagedEditableProps preserves it
   // across the fragmentation, typography, and renderer callbacks.
-  measurePages(editor, options as unknown as MeasurePagesOptions<Element>);
+  measurePages(editor, options as unknown as MeasurePagesOptions);
 
 const PagedEditableInner = <TElement extends Element = Element>({
   engine: suppliedEngine,
@@ -883,7 +883,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
   useLayoutEffect(() => decorationStore.mount(), [decorationStore]);
   useEffect(() => () => decorationStore.destroy(), [decorationStore]);
   useLayoutEffect(() => {
-    if (!editableHost) return;
+    if (!editableHost) return undefined;
     return bindLayoutHost(editableHost, publishedStore);
   }, [editableHost, publishedStore]);
   useLayoutEffect(() => {
@@ -892,7 +892,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
   useEffect(() => {
     const fonts = editableHost?.ownerDocument.fonts;
 
-    if (!fonts) return;
+    if (!fonts) return undefined;
     return attachFontView(fonts, {
       engine,
       invalidate: () => setFontEpoch((value) => value + 1),
@@ -922,8 +922,8 @@ const PagedEditableInner = <TElement extends Element = Element>({
     viewportStore.configure(rootRef.current, geometry?.height ?? 0);
   }, [geometry?.height, viewportStore]);
   const viewportState = useSyncExternalStore(
-    viewportStore.subscribe,
-    viewportStore.getSnapshot,
+    (listener) => viewportStore.subscribe(listener),
+    () => viewportStore.getSnapshot(),
     () => INACTIVE_VIEWPORT
   );
   const visibleItems = useMemo(
@@ -942,7 +942,6 @@ const PagedEditableInner = <TElement extends Element = Element>({
     [gap, pageMountPlan, snapshot?.pages, viewportState, virtualize]
   );
   // Promoting a requested path changes which page content is mounted.
-  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
   const [promotedPath, setPromotedPath] = useState<Path | null>(null);
   const windowedItems = useMemo(() => {
     const requiredItemIndexes = new Set(visibleItems.map((item) => item.index));

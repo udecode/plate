@@ -24,16 +24,15 @@ export const input = (
     </block>
   </editor>
 );
-// Current policy: with voids enabled, text fragments split the void inline and
-// land at the surrounding block text level.
 export const output = (
   <editor>
     <block>
       <text />
-      <inline void>wo</inline>
-      fragment
-      <cursor />
-      <inline void>rd</inline>
+      <inline void>
+        wofragment
+        <cursor />
+        rd
+      </inline>
       <text />
     </block>
   </editor>

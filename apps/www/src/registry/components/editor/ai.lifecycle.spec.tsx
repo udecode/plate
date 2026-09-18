@@ -44,7 +44,11 @@ test('Generate MDX sample submits and renders streamed MDX chunks', async () => 
     await flush();
 
     expect(http.requests).toHaveLength(1);
-    expect(String(http.requests[0].body)).toContain('Generate a mdx sample');
+    const requestBody = http.requests[0].body;
+
+    expect(typeof requestBody === 'string' ? requestBody : '').toContain(
+      'Generate a mdx sample'
+    );
 
     act(() => {
       http.requests[0].send({ type: 'start', messageId: 'assistant' });

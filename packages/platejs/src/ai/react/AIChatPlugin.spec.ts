@@ -41,6 +41,43 @@ describe('AIChatPlugin', () => {
     );
   });
 
+  it('selects a non-empty block when opening before its end', () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'alice',
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      },
+    });
+
+    editor.plugin(AIChatPlugin).api.show();
+
+    expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+      [0],
+    ]);
+  });
+
+  it('keeps the caret when opening at the end of a block', () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      userId: 'alice',
+      initialValue: [{ children: [{ text: 'text' }], type: 'paragraph' }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 4 },
+        focus: { path: [0, 0], offset: 4 },
+      },
+    });
+    const selection = editor.read.selection();
+
+    editor.plugin(AIChatPlugin).api.show();
+
+    expect(editor.read.selection()).toEqual(selection);
+  });
+
   it('dismisses an unaccepted draft without changing content or history', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],

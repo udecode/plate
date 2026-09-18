@@ -11,7 +11,11 @@ import {
   resolve,
 } from 'node:path';
 
-import { readTsconfig, resolvePathAlias } from 'get-tsconfig';
+import {
+  readTsconfig,
+  resolvePathAlias,
+  type TsconfigResult,
+} from 'get-tsconfig';
 import {
   isArrayTypeNode,
   isIndexSignatureDeclaration,
@@ -74,10 +78,7 @@ export type NativeTypeMaterialization = Readonly<{
   sourceFiles: readonly string[];
 }>;
 
-export type EditorTsconfigCache = Map<
-  string,
-  ReturnType<typeof readTsconfig> | undefined
->;
+export type EditorTsconfigCache = Map<string, TsconfigResult>;
 
 const NODE_MODULES_PATH_PATTERN = /(^|[\\/])node_modules([\\/]|$)/;
 const DECLARATION_FILE_PATTERN = /\.d\.[cm]?ts$/;

@@ -884,7 +884,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
   const elementLayout = elementLayouts?.get(path.join('.'));
   const elementRef: React.RefCallback<HTMLElement> =
     elementLayout === undefined
-      ? (bindNodeRef as React.RefCallback<HTMLElement>)
+      ? bindNodeRef
       : (element) => {
           (bindNodeRef as React.RefCallback<HTMLElement>)(element);
           if (element) applyEditableElementLayout(element, elementLayout);

@@ -45,26 +45,30 @@ CommentsPlugin.configure({
 
 CommentsPlugin.extend(({ api, store }) => {
   api.begin(range) satisfies boolean;
-  api.create(body) satisfies Promise<CommentMutationResult<string>>;
-  api.createThread({
+  void (api.create(body) satisfies Promise<CommentMutationResult<string>>);
+  void (api.createThread({
     body,
     target: { type: 'range', range },
-  }) satisfies Promise<CommentMutationResult<string>>;
+  }) satisfies Promise<CommentMutationResult<string>>);
   api.createDraft({
     body,
     target: { type: 'change', id: 'suggestion' },
   }) satisfies string | null;
   api.discardDraft('draft') satisfies boolean;
-  api.reply('thread', body) satisfies Promise<CommentMutationResult>;
-  api.edit('thread', 'message', body) satisfies Promise<CommentMutationResult>;
-  api.resolve('thread') satisfies Promise<CommentMutationResult>;
-  api.reopen('thread') satisfies Promise<CommentMutationResult>;
-  api.removeMessage(
+  void (api.reply('thread', body) satisfies Promise<CommentMutationResult>);
+  void (api.edit(
+    'thread',
+    'message',
+    body
+  ) satisfies Promise<CommentMutationResult>);
+  void (api.resolve('thread') satisfies Promise<CommentMutationResult>);
+  void (api.reopen('thread') satisfies Promise<CommentMutationResult>);
+  void (api.removeMessage(
     'thread',
     'message'
-  ) satisfies Promise<CommentMutationResult>;
-  api.removeThread('thread') satisfies Promise<CommentMutationResult>;
-  api.publishDraft('draft') satisfies Promise<CommentMutationResult>;
+  ) satisfies Promise<CommentMutationResult>);
+  void (api.removeThread('thread') satisfies Promise<CommentMutationResult>);
+  void (api.publishDraft('draft') satisfies Promise<CommentMutationResult>);
   api.getThread('thread') satisfies CommentThread | undefined;
   api.getThreads() satisfies readonly CommentThread[];
   api.toJSON() satisfies CommentsJSON;

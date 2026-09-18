@@ -1,5 +1,5 @@
 ---
-"platejs": major
+'platejs': major
 ---
 
 Use the table API through `editor.plugin(TablePlugin)` with explicit targets, nullable reads, and boolean update results.

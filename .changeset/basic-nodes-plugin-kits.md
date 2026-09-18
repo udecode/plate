@@ -1,5 +1,5 @@
 ---
-"platejs": major
+'platejs': major
 ---
 
 Require React and React DOM 19.2 or newer.
@@ -9,7 +9,7 @@ Remove the Heading, Basic Blocks, and Basic Marks grouping descriptors and packa
 **Migration:** List the package plugins your editor supports, or install the matching app-owned Plate registry kit.
 
 ```tsx
-import { H1Plugin, H2Plugin } from "platejs/react";
+import { H1Plugin, H2Plugin } from 'platejs/react';
 
 const plugins = [H1Plugin, H2Plugin];
 ```
@@ -23,9 +23,9 @@ import {
   defineDocumentMigrations,
   migrateDocument,
   migrateV54,
-} from "platejs/migrations";
+} from 'platejs/migrations';
 
-import { fingerprint as v53Fingerprint } from "./migrations/v54/from";
+import { fingerprint as v53Fingerprint } from './migrations/v54/from';
 
 const migrations = defineDocumentMigrations({
   plugins: EditorKit,

@@ -123,15 +123,17 @@ function buildShadcn(registryFile: string, outputDir: string) {
     );
     child.once('error', reject);
     child.once('exit', (code, signal) => {
-      if (code === 0) return resolve();
-
-      reject(
-        new Error(
-          signal
-            ? `Registry build exited with signal ${signal}`
-            : `Registry build exited with code ${code}`
-        )
-      );
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(
+          new Error(
+            signal
+              ? `Registry build exited with signal ${signal}`
+              : `Registry build exited with code ${code}`
+          )
+        );
+      }
     });
   });
 }

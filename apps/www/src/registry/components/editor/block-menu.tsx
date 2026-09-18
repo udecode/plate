@@ -77,7 +77,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
     (current) => readBlocks(current).length > 0
   );
   const leafValue = useSelectionFragmentProp({
-    defaultValue: 'text' as LeafFormat,
+    defaultValue: 'text',
     getProp: (node) =>
       ElementApi.isElement(node) ? getLeafFormat(editor, node) : undefined,
   }) as LeafFormat | undefined;

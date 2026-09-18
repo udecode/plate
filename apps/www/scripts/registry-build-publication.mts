@@ -212,8 +212,8 @@ export async function publishRegistryGeneration({
   }
 
   await Promise.all(
-    published.map(({ backup, hadDestination }) =>
-      hadDestination ? rm(backup, { force: true, recursive: true }) : undefined
-    )
+    published
+      .filter(({ hadDestination }) => hadDestination)
+      .map(({ backup }) => rm(backup, { force: true, recursive: true }))
   );
 }

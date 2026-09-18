@@ -68,11 +68,20 @@ it('opens a saved historical preview and reloads the paired snapshot', () => {
     expect(
       preview.querySelectorAll('[data-comment-id]').length
     ).toBeGreaterThan(0);
+    const historicalAllCommentsButton = view
+      .getAllByRole('button', { name: 'All comments' })
+      .at(-1);
+
+    if (!historicalAllCommentsButton) {
+      throw new Error('Expected historical comments discovery control.');
+    }
+    fireEvent.click(historicalAllCommentsButton);
     expect(
       view.getByText(
         'Comments are a great way to provide feedback and discuss changes.'
       )
     ).not.toBeNull();
+    fireEvent.click(view.getByRole('button', { name: 'Close' }));
     fireEvent.click(view.getByRole('button', { name: 'Reload snapshot' }));
     expect(
       view.queryByRole('textbox', { name: 'Historical comments document' })

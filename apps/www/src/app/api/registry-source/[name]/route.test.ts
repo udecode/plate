@@ -27,8 +27,10 @@ mock.module('@/lib/rehype-utils', () => ({
   }),
 }));
 
-mock.module('@/registry/registry', () => ({
-  registry: { items: [{ name: 'basic-marks-demo' }] },
+mock.module('@/lib/registry-metadata', () => ({
+  getRegistryMetadata: () => ({
+    items: [{ name: 'basic-marks-demo' }],
+  }),
 }));
 
 const { GET, generateStaticParams } = await import('./route');

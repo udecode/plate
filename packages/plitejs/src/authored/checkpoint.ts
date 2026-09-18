@@ -304,7 +304,7 @@ export const normalizeAuthoredReviewDocument = (
         meta: { ...owned.meta, authored: authoredState.serialize(state) },
       },
       'Authored document checkpoint'
-    ) as EditorDocumentValue,
+    ),
     positions: Object.freeze({
       accepted: acceptedPositions,
       proposed: proposedPositions,
@@ -424,7 +424,7 @@ export const createAuthoredReviewCheckpoint = (
 
     state = reduceAuthoredOperation(state, operation);
     ({ positions } = captured);
-    proposed = after as JsonEditorValue;
+    proposed = after;
   }
 
   state = snapshotEditorJsonValue(

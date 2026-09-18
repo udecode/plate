@@ -118,7 +118,7 @@ export const getTableSelectionCellRef = (
     sourceRef,
   };
   const bindHost: React.RefCallback<HTMLElement> = (element) => {
-    if (!element) return;
+    if (!element) return undefined;
 
     binding.element = element;
     controller.bindings.set(key, binding);

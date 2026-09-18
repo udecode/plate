@@ -987,13 +987,13 @@ function validateExecution(root, record, index, prior, recording) {
     );
     assert.ok(plan, 'Execution plan is not discoverable');
     assert.deepEqual(
-      [...record.scopes].sort(),
-      [...plan.scopes].sort(),
+      [...record.scopes].sort((left, right) => left.localeCompare(right)),
+      [...plan.scopes].sort((left, right) => left.localeCompare(right)),
       'Execution scopes disagree with plan association'
     );
     assert.deepEqual(
-      [...record.reviewBasis].sort(),
-      [...plan.reviewBasis].sort(),
+      [...record.reviewBasis].sort((left, right) => left.localeCompare(right)),
+      [...plan.reviewBasis].sort((left, right) => left.localeCompare(right)),
       'Execution governing reviews disagree with plan association'
     );
     assert.equal(

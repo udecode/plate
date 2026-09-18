@@ -169,7 +169,12 @@ test('failed Comment requests expose retry without rolling back completed commen
     fireEvent.click(view.getByRole('button', { name: 'Try again' }));
     await flush();
     expect(http.requests).toHaveLength(2);
-    const body = JSON.parse(String(http.requests[1].body));
+    const requestBody = http.requests[1].body;
+
+    if (typeof requestBody !== 'string') {
+      throw new Error('Expected the retry request body to be JSON text.');
+    }
+    const body = JSON.parse(requestBody);
     await act(async () => {
       http.requests[1].open();
       http.requests[1].send({

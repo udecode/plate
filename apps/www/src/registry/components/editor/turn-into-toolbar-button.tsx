@@ -25,7 +25,6 @@ import {
   PathApi,
   SelectionApi,
   type Element,
-  type HeadingLevel,
   type Path,
 } from 'platejs';
 import { BaseDetailsPlugin } from 'platejs/details';
@@ -323,7 +322,7 @@ export function TurnIntoToolbarButton() {
   const readOnly = useEditorReadOnly();
   const [open, setOpen] = React.useState(false);
   const leafValue = useSelectionFragmentProp({
-    defaultValue: 'text' as LeafFormat,
+    defaultValue: 'text',
     getProp: (node) =>
       ElementApi.isElement(node) ? getLeafFormat(editor, node) : undefined,
   }) as LeafFormat | undefined;
@@ -393,7 +392,7 @@ export function TurnIntoToolbarButton() {
               tx.plugin(BaseListPlugin).clear();
             }
             tx.blocks.set({
-              level: level as HeadingLevel,
+              level,
               type: current.schema.type,
             });
           });

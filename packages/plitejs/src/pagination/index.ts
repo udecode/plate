@@ -317,9 +317,7 @@ const createRange = (
   end: number,
   root: NamedRootKey | undefined
 ): Range => {
-  const sourcePath = Object.isFrozen(path)
-    ? path
-    : (Object.freeze([...path]) as Path);
+  const sourcePath = Object.isFrozen(path) ? path : Object.freeze([...path]);
 
   return {
     anchor: { offset: start, path: sourcePath, ...rangeRoot(root) },
@@ -1671,7 +1669,7 @@ export const measurePages = <
 
     return {
       children: root === MAIN_ROOT_KEY ? state.children() : state.root(root),
-      publicRoot: root === MAIN_ROOT_KEY ? undefined : (root as NamedRootKey),
+      publicRoot: root === MAIN_ROOT_KEY ? undefined : root,
       settings,
       version: state.lastCommit()?.version ?? state.runtime.snapshot().version,
     };

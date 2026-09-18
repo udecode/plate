@@ -150,8 +150,7 @@ describe('pure command transaction specs', () => {
     ]);
 
     assert.equal(
-      dispatchCommand(handled, editorCommands.insertText, { text: 'x' }) ===
-        false,
+      !dispatchCommand(handled, editorCommands.insertText, { text: 'x' }),
       false
     );
     assert.equal(handledDownstream, 1);

@@ -738,7 +738,7 @@ const useElementSize = <T extends HTMLElement>(): [
 
   useEffect(() => {
     const element = ref.current;
-    if (!element) return;
+    if (!element) return undefined;
     const update = () => {
       const rect = element.getBoundingClientRect();
       setSize({ height: rect.height, width: rect.width });

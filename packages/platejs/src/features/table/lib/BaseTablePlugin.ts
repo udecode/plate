@@ -1298,9 +1298,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           direction: BorderDirection
         ) => {
           const physical = resolvePhysicalEdge(view, anchor, direction);
-          const borders = physical?.entry[0].borders as
-            | TableCellBorders
-            | undefined;
+          const borders = physical?.entry[0].borders;
 
           return (borders?.[physical?.direction ?? direction]?.width ?? 1) > 0;
         };
@@ -1355,8 +1353,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
             const [cell, path] = physical.entry;
             const key = path.join(',');
             const borders: MutableBorders = {
-              ...(updates.get(key)?.borders ??
-                (cell.borders as TableCellBorders | undefined)),
+              ...(updates.get(key)?.borders ?? cell.borders),
             };
 
             if (value === null) {
@@ -1378,7 +1375,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           for (const { borders, path } of updates.values()) {
             const current = tx.nodes.get(path, {
               match: (node) => isTableCell(editor, node),
-            })?.[0] as TableCellElement | undefined;
+            })?.[0];
 
             if (
               current &&

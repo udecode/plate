@@ -3363,6 +3363,7 @@ describe('transactional plugin configuration', () => {
               onCleanup(() => {
                 beforePublishCleanups += 1;
               });
+              // oxlint-disable-next-line typescript/no-misused-promises -- This negative test exercises the runtime guard against async lifecycle callbacks.
               beforePublish(() => Promise.resolve());
               afterPublish(() => {
                 assert.fail('Failed preparation must not publish');

@@ -270,17 +270,13 @@ type DirectAuthoredMappingInput = Omit<
 };
 
 const mapDirectAuthoredChange = (input: DirectAuthoredMappingInput) => {
-  const { target, ...mapping } = input;
-  switch (target) {
-    case 'accepted':
-    case 'proposed': {
-      return mapAuthoredChange({
-        ...mapping,
-        acceptedEdit: true,
-        direction: 'forward',
-      });
-    }
-  }
+  const { target: _target, ...mapping } = input;
+
+  return mapAuthoredChange({
+    ...mapping,
+    acceptedEdit: true,
+    direction: 'forward',
+  });
 };
 
 const RUNTIMES = new WeakMap<Editor, AuthoredRuntime>();

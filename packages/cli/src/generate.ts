@@ -147,7 +147,7 @@ const SOURCE_RESOLUTION_EXTENSIONS = [
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const bundleEditor = async (
+const bundleEditor = (
   entryPath: string,
   dependencies: Set<string>,
   silent = false,

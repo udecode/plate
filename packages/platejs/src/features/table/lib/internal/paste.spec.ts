@@ -319,34 +319,25 @@ describe('PreparedTablePaste Wordgard oracle', () => {
     ]);
   });
 
-  it('8. rejects a merged cell crossing a selection border', () => {
+  it('8. splits a merged cell crossing a selection border', () => {
     const target = table([
       row([cell('a'), cell('b'), cell('c')]),
       row([cell('d', { colSpan: 2 }), cell('e')]),
       row([cell('f'), cell('g'), cell('h')]),
     ]);
-    const prepared = prepare(table([row([cell('x')])]));
-
-    if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
-    const result = planPreparedTablePaste(
-      createDetachedTableContext(target, [0]),
-      prepared,
-      {
-        createCell,
-        createRow,
-        fillBounds: { maxCol: 1, maxRow: 2, minCol: 1, minRow: 0 },
-        startCol: 0,
-        startRow: 0,
-      }
-    );
-
-    expect(result).toEqual({
-      kind: 'invalid-target',
-      reason: 'shape-mismatch',
+    const { output } = paste(target, table([row([cell('x')])]), {
+      fillBounds: { maxCol: 1, maxRow: 2, minCol: 1, minRow: 0 },
     });
+
+    expect(logicalText(output)).toEqual([
+      ['a', 'x', 'c'],
+      ['d', 'x', 'e'],
+      ['f', 'x', 'h'],
+    ]);
+    expect(compileTableGrid(output).problems).toEqual([]);
   });
 
-  it('9. rejects a partial source tile', () => {
+  it('9. clips and repeats a partial source tile', () => {
     const target = table([
       row([cell('a'), cell('b')]),
       row([cell('c'), cell('d')]),
@@ -356,25 +347,15 @@ describe('PreparedTablePaste Wordgard oracle', () => {
       row([cell('x'), cell('y')]),
       row([cell('z'), cell('q')]),
     ]);
-    const prepared = prepare(source);
-
-    if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
-    const result = planPreparedTablePaste(
-      createDetachedTableContext(target, [0]),
-      prepared,
-      {
-        createCell,
-        createRow,
-        fillBounds: { maxCol: 1, maxRow: 2, minCol: 1, minRow: 0 },
-        startCol: 0,
-        startRow: 0,
-      }
-    );
-
-    expect(result).toEqual({
-      kind: 'invalid-target',
-      reason: 'shape-mismatch',
+    const { output } = paste(target, source, {
+      fillBounds: { maxCol: 1, maxRow: 2, minCol: 1, minRow: 0 },
     });
+
+    expect(logicalText(output)).toEqual([
+      ['a', 'x'],
+      ['c', 'z'],
+      ['e', 'x'],
+    ]);
   });
 
   it('13. rectangularizes non-rectangular input before planning', () => {
@@ -574,12 +555,10 @@ describe('PreparedTablePaste planning contracts', () => {
     );
   });
 
-  it('rejects arbitrary spans crossing all four destination boundaries', () => {
+  it('splits arbitrary spans crossing all four destination boundaries', () => {
     const selection = { maxCol: 3, maxRow: 3, minCol: 2, minRow: 2 };
-    const prepared = prepare(table([row([cell('x')])]));
     let cases = 0;
 
-    if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
     for (let minRow = 0; minRow < selection.minRow; minRow++) {
       for (let maxRow = selection.maxRow + 1; maxRow < 6; maxRow++) {
         for (let minCol = 0; minCol < selection.minCol; minCol++) {
@@ -590,22 +569,25 @@ describe('PreparedTablePaste planning contracts', () => {
               minCol,
               minRow,
             });
-            const result = planPreparedTablePaste(
-              createDetachedTableContext(target, [0]),
-              prepared,
-              {
-                createCell,
-                createRow,
-                fillBounds: selection,
-                startCol: 0,
-                startRow: 0,
-              }
-            );
-
-            expect(result).toEqual({
-              kind: 'invalid-target',
-              reason: 'shape-mismatch',
+            const { output } = paste(target, table([row([cell('x')])]), {
+              fillBounds: selection,
             });
+            const grid = compileTableGrid(output);
+
+            expect(grid.problems).toEqual([]);
+            expect(grid.height).toBe(6);
+            expect(grid.width).toBe(6);
+            expect(
+              grid.slots
+                .slice(selection.minRow, selection.maxRow + 1)
+                .flatMap((slots) =>
+                  slots
+                    .slice(selection.minCol, selection.maxCol + 1)
+                    .map((anchor) =>
+                      anchor ? NodeApi.string(anchor.cell) : null
+                    )
+                )
+            ).toEqual(['x', 'x', 'x', 'x']);
             cases += 1;
           }
         }

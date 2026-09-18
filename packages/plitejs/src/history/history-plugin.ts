@@ -534,7 +534,7 @@ const createHistoryPlugin = <
       PENDING_HISTORY_SCHEMA_ACTIVATION.has(editor)
     ) {
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
-      return;
+      return undefined;
     }
 
     const { changes } = commit;
@@ -578,7 +578,7 @@ const createHistoryPlugin = <
         );
       }
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
-      return;
+      return undefined;
     }
 
     if (action) {
@@ -623,7 +623,7 @@ const createHistoryPlugin = <
 
         queueHistoryMapping(editor, changes, before);
       }
-      return;
+      return undefined;
     }
 
     const prepared = prepareHistoryBatch(
@@ -633,7 +633,7 @@ const createHistoryPlugin = <
       authoredCapture?.grouping
     );
 
-    if (!prepared) return;
+    if (!prepared) return undefined;
 
     const preparedBatch = prepared.batch;
     const lastEntry = peekHistoryEntry(editor, 'undos');
@@ -761,6 +761,8 @@ const createHistoryPlugin = <
     } else {
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.set(editor, currentTime);
     }
+
+    return undefined;
   };
   return definePlugin('history', {
     api({ editor }) {
@@ -880,7 +882,7 @@ const createHistoryPlugin = <
       );
       context.onCleanup(
         registerEditorTransactionGuard(editor, ({ after, commit, schema }) => {
-          if (HISTORY_ACTIVATION.get(editor) !== activation) return;
+          if (HISTORY_ACTIVATION.get(editor) !== activation) return undefined;
 
           const beforeTime = LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
           const restoreTime = (time: number | undefined) => {

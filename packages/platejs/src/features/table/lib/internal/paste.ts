@@ -487,17 +487,6 @@ export const planPreparedTablePaste = (
   );
 
   if (
-    options.fillBounds &&
-    ((endRow - startRow) % prepared.height !== 0 ||
-      (endCol - startCol) % prepared.width !== 0)
-  ) {
-    return Object.freeze({
-      kind: 'invalid-target',
-      reason: 'shape-mismatch',
-    });
-  }
-
-  if (
     options.disableExpand &&
     (endRow > context.grid.height || endCol > context.grid.width)
   ) {
@@ -547,21 +536,6 @@ export const planPreparedTablePaste = (
 
       if (anchor) intersecting.add(anchor);
     }
-  }
-
-  if (
-    [...intersecting].some(
-      (anchor) =>
-        anchor.row < startRow ||
-        anchor.col < startCol ||
-        anchor.row + anchor.rowSpan > endRow ||
-        anchor.col + anchor.colSpan > endCol
-    )
-  ) {
-    return Object.freeze({
-      kind: 'invalid-target',
-      reason: 'shape-mismatch',
-    });
   }
 
   const rowsToRebuild = new Set<number>();
