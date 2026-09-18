@@ -35,7 +35,7 @@ const TABLE_GRID_BUDGETS = {
 const TABLE_GRID_COHORTS = [
   { name: 'normal', samples: 20, size: 32 },
   { name: 'large', samples: 15, size: 64 },
-  { name: 'stress', samples: 10, size: 128 },
+  { name: 'stress', samples: 20, size: 128 },
   { name: 'pathological', samples: 5, size: 256 },
 ] as const;
 

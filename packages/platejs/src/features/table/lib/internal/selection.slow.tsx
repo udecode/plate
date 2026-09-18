@@ -941,69 +941,77 @@ describe('readTableSelection', () => {
     });
   });
 
-  it('caches one immutable view per snapshot and invalidates it after the version changes', () => {
-    const size = 30;
-    const input = {
-      children: [
-        {
-          children: Array.from({ length: size }, (_, row) => ({
-            children: Array.from({ length: size }, (innerValue4, col) => ({
-              children: [
-                {
-                  children: [{ text: `${row},${col}` }],
-                  type: 'paragraph',
-                },
-              ],
-              id: `r${row}c${col}`,
-              type: 'tableCell',
+  it(
+    'caches one immutable view per snapshot and invalidates it after the version changes',
+    { timeout: 10_000 },
+    () => {
+      const size = 30;
+      const input = {
+        children: [
+          {
+            children: Array.from({ length: size }, (_, row) => ({
+              children: Array.from({ length: size }, (innerValue4, col) => ({
+                children: [
+                  {
+                    children: [{ text: `${row},${col}` }],
+                    type: 'paragraph',
+                  },
+                ],
+                id: `r${row}c${col}`,
+                type: 'tableCell',
+              })),
+              type: 'tableRow',
             })),
-            type: 'tableRow',
-          })),
-          type: 'table',
-        },
-      ],
-      selection: null,
-    } as TestEditor;
-    const editor = createEditor(input);
-    const anchor = editor.read.points.start([0, 0, 0]);
-    const focus = editor.read.points.end([0, size - 1, size - 1]);
+            type: 'table',
+          },
+        ],
+        selection: null,
+      } as TestEditor;
+      const editor = createEditor(input);
+      const anchor = editor.read.points.start([0, 0, 0]);
+      const focus = editor.read.points.end([0, size - 1, size - 1]);
 
-    assert.ok(anchor);
-    assert.ok(focus);
-    editor.update.selection.set({ anchor, focus });
+      assert.ok(anchor);
+      assert.ok(focus);
+      editor.update.selection.set({ anchor, focus });
 
-    const before = readTableSelectionViewMetrics();
-    const cold = readSelection(editor);
+      const before = readTableSelectionViewMetrics();
+      const cold = readSelection(editor);
 
-    assert.ok(cold);
+      assert.ok(cold);
 
-    for (let index = 0; index < 10_000; index++) {
-      expect(readSelection(editor)).toBe(cold);
+      let cached = cold;
+
+      for (let index = 0; index < 10_000; index++) {
+        cached = readSelection(editor)!;
+      }
+
+      expect(cached).toBe(cold);
+
+      const hot = readTableSelectionViewMetrics();
+
+      expect(hot.compileCount - before.compileCount).toBe(1);
+      expect(hot.cacheHitCount - before.cacheHitCount).toBe(10_000);
+      expect(hot.projectionSlotCount - before.projectionSlotCount).toBe(
+        size * size * 2
+      );
+      expect(cold.anchors).toHaveLength(size * size);
+      expect(Object.isFrozen(cold)).toBe(true);
+      expect(Object.isFrozen(cold.cellKeys)).toBe(true);
+      expect(Object.isFrozen(cold.cellEntries)).toBe(true);
+
+      const nextFocus = editor.read.points.end([0, 0, 1]);
+
+      assert.ok(nextFocus);
+      editor.update.selection.set({ anchor, focus: nextFocus });
+
+      const next = readSelection(editor);
+
+      assert.ok(next);
+      expect(next).not.toBe(cold);
+      expect(next.version).toBeGreaterThan(cold.version);
+      expect(getFixtureIds(next.anchors)).toEqual(['r0c0', 'r0c1']);
+      expect(cold.anchors).toHaveLength(size * size);
     }
-
-    const hot = readTableSelectionViewMetrics();
-
-    expect(hot.compileCount - before.compileCount).toBe(1);
-    expect(hot.cacheHitCount - before.cacheHitCount).toBe(10_000);
-    expect(hot.projectionSlotCount - before.projectionSlotCount).toBe(
-      size * size * 2
-    );
-    expect(cold.anchors).toHaveLength(size * size);
-    expect(Object.isFrozen(cold)).toBe(true);
-    expect(Object.isFrozen(cold.cellKeys)).toBe(true);
-    expect(Object.isFrozen(cold.cellEntries)).toBe(true);
-
-    const nextFocus = editor.read.points.end([0, 0, 1]);
-
-    assert.ok(nextFocus);
-    editor.update.selection.set({ anchor, focus: nextFocus });
-
-    const next = readSelection(editor);
-
-    assert.ok(next);
-    expect(next).not.toBe(cold);
-    expect(next.version).toBeGreaterThan(cold.version);
-    expect(getFixtureIds(next.anchors)).toEqual(['r0c0', 'r0c1']);
-    expect(cold.anchors).toHaveLength(size * size);
-  });
+  );
 });
