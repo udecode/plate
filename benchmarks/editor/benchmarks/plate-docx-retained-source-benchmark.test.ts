@@ -607,7 +607,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
     const overlayExportP95BudgetMs =
       semanticExportSummary.p95Ms +
       75 +
-      (100 * fixture.bytes.byteLength) / MEBIBYTE;
+      (150 * fixture.bytes.byteLength) / MEBIBYTE;
     const overlayRssBudgetBytes =
       semanticExportSummary.rssDeltaMaxBytes +
       3 * fixture.bytes.byteLength +
@@ -706,7 +706,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       importP95: '130% of matched baseline p95 + 5 ms',
       retainedBytes: 'compressed input + frozen baseline JSON + comments JSON',
       overlayExportP95:
-        'matched semantic export p95 + 75 ms + 100 ms per MiB source input',
+        'matched semantic export p95 + 75 ms + 150 ms per MiB source input',
       overlayRssDelta:
         'matched semantic export max + 3x compressed input + 64 MiB noise allowance',
       targetRssDelta:

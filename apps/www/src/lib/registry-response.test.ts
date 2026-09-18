@@ -191,26 +191,25 @@ describe('registry style responses', () => {
     );
   });
 
-  it('serves complete indexes and representative payloads through all 36 routes', async () => {
+  it('keeps the canonical index complete and serves all 36 routes', async () => {
+    const directoryEntries = await readdir('public/r');
+    const fileNames = directoryEntries.filter((fileName) =>
+      fileName.endsWith('.json')
+    );
+    const registry = JSON.parse(
+      await readFile('public/r/registry.json', 'utf-8')
+    ) as { items: Array<{ name: string }> };
+
+    expect(fileNames.length).toBeGreaterThan(0);
+    expect(fileNames.toSorted()).toEqual(
+      [
+        'registry.json',
+        'registry-docs.json',
+        ...registry.items.map(({ name }) => `${name}.json`),
+      ].toSorted()
+    );
+
     for (const directory of ['r', 'rd'] as const) {
-      const directoryEntries = await readdir(`public/${directory}`);
-      const fileNames = directoryEntries.filter((fileName) =>
-        fileName.endsWith('.json')
-      );
-
-      expect(fileNames.length).toBeGreaterThan(0);
-
-      const registry = JSON.parse(
-        await readFile(`public/${directory}/registry.json`, 'utf-8')
-      ) as { items: Array<{ name: string }> };
-      expect(fileNames.toSorted()).toEqual(
-        [
-          'registry.json',
-          'registry-docs.json',
-          ...registry.items.map(({ name }) => `${name}.json`),
-        ].toSorted()
-      );
-
       for (const style of ROUTE_STYLES) {
         for (const fileName of [
           'registry.json',

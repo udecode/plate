@@ -469,6 +469,10 @@ test('DOCX revision import keeps heavy work constant and sparse', async () => {
       const maximumRssDelta = Math.max(
         ...distribution.map(({ rssDeltaBytes }) => rssDeltaBytes)
       );
+      const p95HeapDelta = percentile(
+        distribution.map(({ heapDeltaBytes }) => heapDeltaBytes),
+        0.95
+      );
       const p95RssDelta = percentile(
         distribution.map(({ rssDeltaBytes }) => rssDeltaBytes),
         0.95
@@ -476,8 +480,8 @@ test('DOCX revision import keeps heavy work constant and sparse', async () => {
 
       expect(Math.max(...durations)).toBeLessThanOrEqual(cohort.maxMs);
       expect(p95Ms).toBeLessThanOrEqual(cohort.maxMs);
-      expect(p95RssDelta).toBeLessThanOrEqual(
-        32 * MEBIBYTE + 4 * fixture.documentXmlBytes
+      expect(p95HeapDelta).toBeLessThanOrEqual(
+        16 * MEBIBYTE + 4 * fixture.documentXmlBytes
       );
       rows.push({
         ...cohort,
@@ -486,6 +490,7 @@ test('DOCX revision import keeps heavy work constant and sparse', async () => {
         expandedDocumentXmlBytes: fixture.documentXmlBytes,
         maximumRssDelta,
         medianMs,
+        p95HeapDelta,
         p95Ms,
         p95RssDelta,
         samples,
