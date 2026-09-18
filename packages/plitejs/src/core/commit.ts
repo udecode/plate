@@ -158,7 +158,8 @@ export const getEditorCommitSnapshot = <V extends Value>(
 /** @internal */
 export const getEditorCommitStartedAt = (commit: EditorCommit): number =>
   EDITOR_COMMIT_STARTED_AT.get(commit) ??
-  (globalThis.performance?.now?.() ?? Date.now());
+  globalThis.performance?.now?.() ??
+  Date.now();
 
 const valueRoot = (value: JsonEditorValue, root: RootKey) =>
   root === 'main' ? value.children : (value.roots?.[root] ?? []);
@@ -1110,7 +1111,7 @@ export const createEditorCommit = <V extends Value>(
   });
   EDITOR_COMMIT_STARTED_AT.set(
     commit,
-    versions.startedAt ?? (globalThis.performance?.now?.() ?? Date.now())
+    versions.startedAt ?? globalThis.performance?.now?.() ?? Date.now()
   );
 
   return Object.freeze(commit);
