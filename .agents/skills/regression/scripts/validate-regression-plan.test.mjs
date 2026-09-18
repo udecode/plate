@@ -1034,6 +1034,74 @@ test("focus-first click plans require the complete first gesture", () => {
   assert.match(completionErrors, /requires first-click-popup: pass/);
 });
 
+test("popup first-key reports reject a focus wait before native input", () => {
+  const firstKeyReport = fixture({ focusFirstClick: true }).replace(
+    "initial-focus: editor-text-caret-before-date; one click opens the popup immediately",
+    "initial-focus: editor-text-caret-before-date; one click opens the popup and the first native key immediately after trigger release must land without waiting for focus"
+  );
+  const errors = validateRegressionPlan(firstKeyReport, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /first-key-boundary: trigger-release -> native-key without focus wait/);
+  assert.match(errors, /first-key-before-focus-wait: required/);
+  assert.match(errors, /first-key-caret: popup-input/);
+  assert.match(
+    errors,
+    /first-key-caret-competitors: clear-before-focus \+ clear-after-focus/
+  );
+  assert.match(
+    errors,
+    /focus-lifecycle-modes: writable-mount \+ transient-read-only \+ read-only-transition \+ remount/
+  );
+  assert.match(errors, /first-key-target: popup-input/);
+  assert.match(errors, /first-key-routing: pass/);
+  assert.match(errors, /first-key-caret: pass/);
+  assert.match(errors, /clear-before-focus: pass/);
+  assert.match(errors, /clear-after-focus: pass/);
+  assert.match(errors, /writable-mount: pass/);
+  assert.match(errors, /transient-read-only: pass/);
+  assert.match(errors, /read-only-transition: pass/);
+  assert.match(errors, /remount: pass/);
+  assert.match(errors, /first-key-input: pass/);
+
+  const resolved = firstKeyReport
+    .replace(
+      "runtime-modes:",
+      "first-key-boundary: trigger-release -> native-key without focus wait; focus-lifecycle-modes: writable-mount + transient-read-only + read-only-transition + remount; runtime-modes:"
+    )
+    .replace(
+      "focus-stability: settled + follow-up-key",
+      "focus-stability: settled + follow-up-key; first-key-before-focus-wait: required; focus-lifecycle-modes: writable-mount + transient-read-only + read-only-transition + remount"
+    )
+    .replace(
+      "event-order: pointerdown>mousedown>focus>click from one gesture",
+      "event-order: pointerdown>mousedown>focus>click from one gesture; first-key-caret: popup-input; first-key-caret-competitors: clear-before-focus + clear-after-focus"
+    )
+    .replace(
+      "the opened popup accepts the next input",
+      "first-key-target: popup-input; the opened popup accepts the next input"
+    )
+    .replace(
+      "follow-up-key: pass",
+      "follow-up-key: pass; first-key-routing: pass; writable-mount: pass; transient-read-only: pass; read-only-transition: pass; remount: pass"
+    )
+    .replace(
+      "event-order: pass",
+      "event-order: pass; first-key-caret: pass; clear-before-focus: pass; clear-after-focus: pass"
+    )
+    .replace(
+      "pass: follow-up input",
+      "pass: follow-up input; first-key-input: pass"
+    );
+
+  assert.deepEqual(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }),
+    []
+  );
+});
+
 test("reporter-video hit paths reject locator and programmatic-selection proof", () => {
   const valid = fixture({
     failedCount: 1,
@@ -1567,6 +1635,51 @@ test("shortcut-opened popup focus requires a native keyboard trigger", () => {
   }).join("\n");
 
   assert.doesNotMatch(resolvedErrors, /native keyboard trigger/);
+});
+
+test("named popup entry paths require executable settled-focus coverage", () => {
+  const multiEntry = fixture({
+    browserCommand: true,
+    popupLifecycle: true,
+  })
+    .replace(
+      "type @ in the mounted editor",
+      "open through both fixed-toolbar and shortcut entry paths"
+    )
+    .replace(
+      /^\| case-complete \| focus \| after-action \|.*$/m,
+      `| case-complete | focus | after-action | yes | focus-stability: settled + follow-up-key; trigger-path: pre-focused-surface + native-keyboard keeps the popup input focused | the editor root steals focus | Browser mounted focus lifecycle | test: ${semanticTestPath}#${semanticTestTitle} | pass: settled-focus: pass; follow-up-key: pass; native-trigger-key: pass |`
+    );
+  const errors = validateRegressionPlan(multiEntry, {
+    complete: true,
+    rootDir: root,
+  }).join("\n");
+
+  assert.match(errors, /multiple entry paths require Exact environment entry-paths/);
+  assert.match(errors, /focus oracle with entry-paths/);
+
+  const resolved = multiEntry
+    .replace(
+      "browser: current-source Chromium route; runtime-modes:",
+      "browser: current-source Chromium route; entry-paths: fixed-toolbar + shortcut; runtime-modes:"
+    )
+    .replace(
+      "focus-stability: settled + follow-up-key; trigger-path:",
+      "entry-paths: fixed-toolbar + shortcut; focus-stability: settled + follow-up-key; trigger-path:"
+    )
+    .replace(
+      "pass: settled-focus: pass; follow-up-key: pass; native-trigger-key: pass",
+      "pass: settled-focus: pass; follow-up-key: pass; native-trigger-key: pass; entry-path-coverage: pass; entry-path:fixed-toolbar: pass; entry-path:shortcut: pass"
+    )
+    .replace(
+      "pass: mounted command dispatched",
+      "pass: mounted command dispatched; runtime-owner: pass; mutation-owner: pass"
+    );
+
+  assert.deepEqual(
+    validateRegressionPlan(resolved, { complete: true, rootDir: root }),
+    []
+  );
 });
 
 test("a caret-visible report requires native, focus, and follow-up oracles", () => {

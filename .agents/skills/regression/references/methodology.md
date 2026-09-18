@@ -357,11 +357,45 @@ without a click or programmatic focus. Completion records
 `settled-focus: pass` and `follow-up-key: pass`. A locator helper that restores
 focus to its command target, an immediate `toBeFocused`, or an early green from
 another runner cannot overrule later exact-route focus loss.
+When reporter evidence shows the first key after opening a popup is lost, do
+not poll or assert focus before sending that key. Record
+`first-key-boundary: trigger-release -> native-key without focus wait` in Exact
+environment, `first-key-before-focus-wait: required` in the after-action focus
+oracle, `first-key-caret: popup-input` in the after-action DOM/native oracle,
+and `first-key-target: popup-input` in the follow-up-input oracle. Drive the
+trigger through the reporter's real input boundary, send the native key
+immediately after trigger release, and only then inspect focus or popup state.
+The DOM/native oracle also records
+`first-key-caret-competitors: clear-before-focus + clear-after-focus`; proof
+must survive a queued selection clear on both sides of the focus write while
+the target remains active.
+When the popup input can change read-only state or remount, Exact environment
+and the focus oracle also record
+`focus-lifecycle-modes: writable-mount + transient-read-only + read-only-transition + remount`.
+The transient row covers a writable target whose mounted view initially reports
+read-only before readiness; it must not consume the pending autofocus request.
+Completion records `first-key-caret: pass`, `first-key-routing: pass`, and
+`first-key-input: pass`, plus `writable-mount: pass`,
+`transient-read-only: pass`, `read-only-transition: pass`, and `remount: pass`
+when applicable.
+It also records `clear-before-focus: pass` and `clear-after-focus: pass`.
+`activeElement` without a native caret/selection in the target, a mount-only
+fixture that skips the popup's real lifecycle, waiting for `toBeFocused()`,
+using a locator-owned key method, or sending a programmatic text insertion
+before the first-key assertion is a false green.
 For a shortcut- or hotkey-opened popup, add
 `trigger-path: pre-focused-surface + native-keyboard` to the positive assertion.
 Focus the owning surface first, then deliver the shortcut through the browser
 keyboard rather than a locator-owned `press()` that may introduce its own focus
 step. Completion records `native-trigger-key: pass`.
+
+When the reporter or acceptance criteria name multiple entry paths to the same
+popup, such as a toolbar control and a shortcut, a green path cannot stand in
+for the others. Record `entry-paths: path-a + path-b` in Exact environment and
+the applicable focus oracle. The anchored executable test must contain and
+drive every named path with its real input boundary. Completion records
+`entry-path-coverage: pass` plus `entry-path:<path>: pass` for every path. A
+test that names both paths in prose but executes only one is invalid.
 
 A subscription-backed keyed collection requires an applicable
 `subscription-lifecycle` row. Run add, update, remove, and teardown through the

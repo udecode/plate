@@ -297,10 +297,36 @@ Work Checklist:
       after the named layout/render settling boundary, and completes with
       `settled-focus: pass` plus `follow-up-key: pass`. Immediate focus samples
       and locator-side refocus are support-only.
+- [ ] When reporter evidence shows the first popup key is lost, Exact
+      environment records
+      `first-key-boundary: trigger-release -> native-key without focus wait`;
+      the focus oracle records `first-key-before-focus-wait: required`, the
+      DOM/native oracle records `first-key-caret: popup-input`, the follow-up-
+      input oracle records `first-key-target: popup-input`, and the native key
+      follows the real trigger before any focus poll or assertion. Completion
+      records `first-key-caret: pass`, `first-key-routing: pass`, and
+      `first-key-input: pass`. The DOM/native oracle also records
+      `first-key-caret-competitors: clear-before-focus + clear-after-focus`,
+      and completion records `clear-before-focus: pass` plus
+      `clear-after-focus: pass`. If the input changes read-only state or remounts,
+      Exact environment and the focus oracle record
+      `focus-lifecycle-modes: writable-mount + transient-read-only + read-only-transition + remount`,
+      and completion records `writable-mount: pass`,
+      `transient-read-only: pass`, `read-only-transition: pass`, and
+      `remount: pass`. The transient row proves that a writable target's
+      not-yet-ready read-only view does not consume autofocus. `activeElement` alone,
+      mount-only fixtures, locator-owned keys, and pre-key `toBeFocused()`
+      waits are invalid.
 - [ ] Every shortcut- or hotkey-opened popup focus oracle records
       `trigger-path: pre-focused-surface + native-keyboard`, delivers the key
       through the browser keyboard instead of locator-owned `press()`, and
       completes with `native-trigger-key: pass`.
+- [ ] When reporter evidence or acceptance criteria name multiple entry paths
+      to one popup, Exact environment and the applicable focus oracle record
+      `entry-paths: path-a + path-b`. The executable test drives every named
+      real input path, and completion records `entry-path-coverage: pass` plus
+      `entry-path:<path>: pass` for each path. One green path cannot certify the
+      others.
 - [ ] Every applicable popup close oracle at `after-action` or `after-release`
       accounts for `dom-native` and `focus` at the same phase; later follow-up
       input never substitutes for close-time selection/caret preservation.

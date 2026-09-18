@@ -58,6 +58,9 @@ const BROWSER_COMMAND_PATTERN =
   /\b(?:command|keyboard|shortcut|text input|trigger|type|typing)\b/i;
 const SHORTCUT_TRIGGER_PATTERN =
   /\b(?:hotkey|shortcut|cmd\+|command\+|ctrl\+|control\+|meta\+)\b/i;
+const MULTI_ENTRY_PATH_PATTERN =
+  /\b(?:both|all)\b[\s\S]{0,120}\b(?:toolbar|button)\b[\s\S]{0,120}\b(?:shortcut|hotkey)\b|\b(?:shortcut|hotkey)\b[\s\S]{0,120}\b(?:toolbar|button)\b[\s\S]{0,120}\bentry paths?\b/i;
+const ENTRY_PATHS_PATTERN = /\bentry-paths:\s*([^;|]+)/i;
 const FOCUS_SCHEDULER_PATTERN =
   /\b(?:requestAnimationFrame|setTimeout|timer|animation[- ]frame|scheduled focus|focus scheduler)\b/i;
 const FOCUS_TRANSFER_PATTERN =
@@ -72,6 +75,8 @@ const CARET_VISIBILITY_PATTERN =
   /\bcaret(?:-accessible)?\b|\binsertion point\b|\beditable\s+(?:blank\s+)?(?:line|row)\b|\btext cursor\b/i;
 const FOCUS_FIRST_CLICK_PATTERN =
   /\binitial-focus\s*:|\b(?:first|single|double)[-\s]?click\b[\s\S]{0,100}\b(?:focus|caret|selection)\b|\b(?:focus|caret|selection)\b[\s\S]{0,100}\bclick\b|第一次点击[\s\S]{0,80}(?:焦点|光标|选中)|(?:焦点|光标|选中)[\s\S]{0,80}(?:单击|双击)/i;
+const FIRST_KEY_AFTER_TRIGGER_PATTERN =
+  /\bfirst\s+(?:native\s+)?key\b[\s\S]{0,160}\b(?:immediately|without\s+waiting|before\s+(?:any\s+)?focus\s+wait)\b|首键[\s\S]{0,120}(?:立即|等待焦点前|不等待焦点)/i;
 const PHYSICAL_HIT_PATH_PATTERN = /\bphysical-hit-path:\s*\S/i;
 const CAPTURE_ROUTING_PATH_PATTERN = /\bcapture-routing-path:\s*\S/i;
 const INTERACTION_INTERCEPTOR_PATH_PATTERN =
@@ -103,6 +108,16 @@ const getInitialFocusState = (value) => {
   }
 
   return state.toLowerCase();
+};
+const getEntryPaths = (value) => {
+  const raw = String(value).match(ENTRY_PATHS_PATTERN)?.[1];
+
+  if (!raw) return [];
+
+  return raw
+    .split("+")
+    .map((path) => path.trim().toLowerCase())
+    .filter((path) => /^[a-z0-9-]+$/.test(path));
 };
 const POSITIVE_REFERENCE_ROLE_PATTERN =
   /\b(?:positive(?:[-\s]+(?:authority|reference))|correct(?:[-\s]+reference))\b/i;
@@ -1365,6 +1380,89 @@ export const validateRegressionPlan = (
         }
       }
     }
+
+    const entryPathText = [
+      selected?.source_reference,
+      selected?.setup_action,
+      selected?.expected_outcome,
+      ...(evidenceByCase.get(caseId) ?? []).flatMap((row) => [
+        row.source_reference,
+        row.claim,
+      ]),
+    ].join(" ");
+    const requiresEntryPathCoverage =
+      MULTI_ENTRY_PATH_PATTERN.test(entryPathText) ||
+      ENTRY_PATHS_PATTERN.test(selected?.exact_environment ?? "");
+
+    if (requiresEntryPathCoverage) {
+      const entryPaths = getEntryPaths(selected?.exact_environment);
+
+      if (entryPaths.length < 2) {
+        errors.push(
+          `${caseId} multiple entry paths require Exact environment entry-paths: path-a + path-b`
+        );
+      }
+
+      const focusRows = Array.from(rows?.values() ?? []).filter(
+        (row) =>
+          row.observation?.toLowerCase() === "focus" &&
+          row.applies?.toLowerCase() === "yes"
+      );
+      const coverageRow = focusRows.find(
+        (row) => getEntryPaths(row.positive_assertion).length > 1
+      );
+
+      if (!coverageRow) {
+        errors.push(
+          `${caseId} multiple entry paths require an applicable focus oracle with entry-paths: path-a + path-b`
+        );
+      } else {
+        const oraclePaths = getEntryPaths(coverageRow.positive_assertion);
+        const missingOraclePaths = entryPaths.filter(
+          (path) => !oraclePaths.includes(path)
+        );
+
+        if (missingOraclePaths.length > 0) {
+          errors.push(
+            `${caseId} focus oracle is missing entry paths ${missingOraclePaths.join(", ")}`
+          );
+        }
+
+        const anchor = parseTestAnchor(coverageRow.executable_anchor);
+        if (anchor) {
+          const testSource = readFileSync(resolve(rootDir, anchor.path), "utf8");
+          const missingTestPaths = entryPaths.filter(
+            (path) => !testSource.includes(path)
+          );
+
+          if (missingTestPaths.length > 0) {
+            errors.push(
+              `${caseId} executable test is missing entry paths ${missingTestPaths.join(", ")}`
+            );
+          }
+        }
+
+        if (complete) {
+          if (
+            !/\bentry-path-coverage:\s*pass\b/i.test(
+              coverageRow.result ?? ""
+            )
+          ) {
+            errors.push(
+              `${caseId} multiple entry paths require entry-path-coverage: pass`
+            );
+          }
+          const result = coverageRow.result?.toLowerCase() ?? "";
+          for (const path of entryPaths) {
+            if (!result.includes(`entry-path:${path}: pass`)) {
+              errors.push(
+                `${caseId} entry path ${path} requires entry-path:${path}: pass`
+              );
+            }
+          }
+        }
+      }
+    }
   }
 
   for (const [caseId, evidenceRows] of evidenceByCase) {
@@ -1762,6 +1860,148 @@ export const validateRegressionPlan = (
                 `${caseId} physical hit path requires selection-origin: pass in focus@${phase}`
               );
             }
+          }
+        }
+      }
+
+      if (
+        row.disposition?.toLowerCase() === "required" &&
+        FIRST_KEY_AFTER_TRIGGER_PATTERN.test(
+          [row.source_reference, row.claim].join(" ")
+        )
+      ) {
+        const selected = cases.get(caseId);
+        const domOracle = caseOracles?.get("dom-native@after-action");
+        const focusOracle = caseOracles?.get("focus@after-action");
+        const inputOracle = caseOracles?.get("follow-up-input@follow-up");
+
+        if (
+          !/\bfirst-key-boundary:\s*trigger-release\s*->\s*native-key\s+without\s+focus\s+wait\b/i.test(
+            selected?.exact_environment ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} immediate first key requires first-key-boundary: trigger-release -> native-key without focus wait in Exact environment`
+          );
+        }
+        if (
+          !/\bfocus-lifecycle-modes:\s*writable-mount\s*\+\s*transient-read-only\s*\+\s*read-only-transition\s*\+\s*remount\b/i.test(
+            selected?.exact_environment ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} immediate first key requires focus-lifecycle-modes: writable-mount + transient-read-only + read-only-transition + remount in Exact environment`
+          );
+        }
+        for (const anchor of [
+          "focus@after-action",
+          "follow-up-input@follow-up",
+        ]) {
+          if (!splitOracleAnchors(row.oracle_anchors).includes(anchor)) {
+            errors.push(
+              `reporter evidence ${caseId} immediate first key requires oracle anchor ${anchor}`
+            );
+          }
+        }
+        if (
+          !domOracle ||
+          domOracle.applies?.toLowerCase() !== "yes" ||
+          !/\bfirst-key-caret:\s*popup-input\b/i.test(
+            domOracle.positive_assertion ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} immediate first key requires first-key-caret: popup-input in dom-native@after-action`
+          );
+        }
+        if (
+          !/\bfirst-key-caret-competitors:\s*clear-before-focus\s*\+\s*clear-after-focus\b/i.test(
+            domOracle?.positive_assertion ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} immediate first key requires first-key-caret-competitors: clear-before-focus + clear-after-focus in dom-native@after-action`
+          );
+        }
+        if (
+          !focusOracle ||
+          focusOracle.applies?.toLowerCase() !== "yes" ||
+          !/\bfirst-key-before-focus-wait:\s*required\b/i.test(
+            focusOracle.positive_assertion ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} immediate first key requires first-key-before-focus-wait: required in focus@after-action`
+          );
+        }
+        if (
+          !/\bfocus-lifecycle-modes:\s*writable-mount\s*\+\s*transient-read-only\s*\+\s*read-only-transition\s*\+\s*remount\b/i.test(
+            focusOracle?.positive_assertion ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} immediate first key requires focus-lifecycle-modes: writable-mount + transient-read-only + read-only-transition + remount in focus@after-action`
+          );
+        }
+        if (
+          !inputOracle ||
+          inputOracle.applies?.toLowerCase() !== "yes" ||
+          !/\bfirst-key-target:\s*popup-input\b/i.test(
+            inputOracle.positive_assertion ?? ""
+          )
+        ) {
+          errors.push(
+            `${caseId} immediate first key requires first-key-target: popup-input in follow-up-input@follow-up`
+          );
+        }
+        if (complete) {
+          if (
+            !/\bfirst-key-caret:\s*pass\b/i.test(domOracle?.result ?? "")
+          ) {
+            errors.push(
+              `${caseId} immediate first key requires first-key-caret: pass in dom-native@after-action`
+            );
+          }
+          for (const marker of ["clear-before-focus", "clear-after-focus"]) {
+            if (
+              !new RegExp(`\\b${marker}:\\s*pass\\b`, "i").test(
+                domOracle?.result ?? ""
+              )
+            ) {
+              errors.push(
+                `${caseId} immediate first key requires ${marker}: pass in dom-native@after-action`
+              );
+            }
+          }
+          if (
+            !/\bfirst-key-routing:\s*pass\b/i.test(focusOracle?.result ?? "")
+          ) {
+            errors.push(
+              `${caseId} immediate first key requires first-key-routing: pass in focus@after-action`
+            );
+          }
+          for (const marker of [
+            "writable-mount",
+            "transient-read-only",
+            "read-only-transition",
+            "remount",
+          ]) {
+            if (
+              !new RegExp(`\\b${marker}:\\s*pass\\b`, "i").test(
+                focusOracle?.result ?? ""
+              )
+            ) {
+              errors.push(
+                `${caseId} immediate first key requires ${marker}: pass in focus@after-action`
+              );
+            }
+          }
+          if (
+            !/\bfirst-key-input:\s*pass\b/i.test(inputOracle?.result ?? "")
+          ) {
+            errors.push(
+              `${caseId} immediate first key requires first-key-input: pass in follow-up-input@follow-up`
+            );
           }
         }
       }
