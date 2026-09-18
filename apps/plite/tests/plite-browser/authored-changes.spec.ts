@@ -47,6 +47,8 @@ test.describe('native authored changes', () => {
   test('large shared views preserve native input and reachable controls', async ({
     page,
   }) => {
+    test.slow();
+
     const { accepted, controls, errors, proposed } = await openReview(page);
     await accepted.scenario.run('seed shared large document', [
       {

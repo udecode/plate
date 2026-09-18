@@ -5,7 +5,7 @@ import {
   isDOMElement,
   isDOMText,
 } from '../../dom';
-import { type DOMPhaseScheduler, isGeckoDOMHost } from '../../dom/internal';
+import type { DOMPhaseScheduler } from '../../dom/internal';
 import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
 import {
   getPliteTextHostBounds,
@@ -928,13 +928,7 @@ export const createDOMRepairQueue = ({
               inputController.state.pendingNativeTextInputRepairPathKey = null;
               textInsertRepairCompleted = true;
             }
-            if (
-              shouldScrollTextHost &&
-              (kind !== 'repair-caret-after-text-insert' ||
-                !selectionMatches ||
-                isGeckoDOMHost(textHost)) &&
-              !shouldSkipSelectionScroll(editor)
-            ) {
+            if (shouldScrollTextHost && !shouldSkipSelectionScroll(editor)) {
               profileDOMRepairDuration('scroll-text-host', () => {
                 scrollSelectionIntoView(editor, domRange);
               });
