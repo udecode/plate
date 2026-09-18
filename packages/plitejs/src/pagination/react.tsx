@@ -464,6 +464,18 @@ const createViewportStore = () => {
       observer?.disconnect();
     };
   };
+  const getSnapshot = () => snapshot;
+  const subscribe = (listener: () => void) => {
+    listeners.add(listener);
+    if (listeners.size === 1) restart();
+    return () => {
+      listeners.delete(listener);
+      if (listeners.size === 0) {
+        cleanup();
+        cleanup = () => {};
+      }
+    };
+  };
 
   return {
     configure(nextRoot: HTMLDivElement | null, nextHeight: number) {
@@ -472,18 +484,8 @@ const createViewportStore = () => {
       restart();
     },
     getLastScrollAt: () => lastScrollAt,
-    getSnapshot: () => snapshot,
-    subscribe(listener: () => void) {
-      listeners.add(listener);
-      if (listeners.size === 1) restart();
-      return () => {
-        listeners.delete(listener);
-        if (listeners.size === 0) {
-          cleanup();
-          cleanup = () => {};
-        }
-      };
-    },
+    getSnapshot,
+    subscribe,
   };
 };
 
@@ -922,8 +924,8 @@ const PagedEditableInner = <TElement extends Element = Element>({
     viewportStore.configure(rootRef.current, geometry?.height ?? 0);
   }, [geometry?.height, viewportStore]);
   const viewportState = useSyncExternalStore(
-    (listener) => viewportStore.subscribe(listener),
-    () => viewportStore.getSnapshot(),
+    viewportStore.subscribe,
+    viewportStore.getSnapshot,
     () => INACTIVE_VIEWPORT
   );
   const visibleItems = useMemo(

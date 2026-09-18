@@ -42,6 +42,7 @@ type CommentThread = {
   body: string;
   id: string;
   label: string;
+  mirrorAnchor: Anchor<Range>;
   status: CommentStatus;
   tone: CommentTone;
 };
@@ -120,9 +121,17 @@ const commentToneBadgeVariants = cva('editor-comment-mode-tone-badge', {
   },
 });
 
-const createCommentAnnotations = (comments: readonly CommentThread[]) =>
+const commentAnchorOptions = {
+  association: 'inward',
+  deletion: 'drop',
+} as const;
+
+const createCommentAnnotations = (
+  comments: readonly CommentThread[],
+  getAnchor: (comment: CommentThread) => Anchor<Range>
+) =>
   comments.map((comment) => ({
-    anchor: comment.anchor,
+    anchor: getAnchor(comment),
     data: {
       body: comment.body,
       label: comment.label,
@@ -316,11 +325,13 @@ const WriterPane = ({ editor }: { editor: CommentEditor }) => {
 };
 
 const CommentModePane = ({
+  commentEditor,
   comments,
   onCommentWrite,
   setComments,
   writerEditor,
 }: {
+  commentEditor: CommentEditor;
   comments: readonly CommentThread[];
   onCommentWrite: () => void;
   setComments: Dispatch<SetStateAction<CommentThread[]>>;
@@ -339,6 +350,7 @@ const CommentModePane = ({
     () => () => {
       commentsRef.current.forEach((comment) => {
         comment.anchor.release();
+        comment.mirrorAnchor.release();
       });
     },
     []
@@ -351,10 +363,8 @@ const CommentModePane = ({
     const snippet =
       writerEditor.read.text.string(range).replace(/\s+/g, ' ').trim() ||
       'selection';
-    const anchor = writerEditor.anchor(range, {
-      association: 'inward',
-      deletion: 'drop',
-    });
+    const anchor = writerEditor.anchor(range, commentAnchorOptions);
+    const mirrorAnchor = commentEditor.anchor(range, commentAnchorOptions);
 
     nextCommentId.current += 1;
     onCommentWrite();
@@ -365,6 +375,7 @@ const CommentModePane = ({
         body: `Discuss: ${snippet.slice(0, 56)}`,
         id,
         label: `Comment ${current.length + 1}`,
+        mirrorAnchor,
         status: 'open',
         tone,
       },
@@ -392,6 +403,7 @@ const CommentModePane = ({
       const target = current.find((comment) => comment.id === id);
 
       target?.anchor.release();
+      target?.mirrorAnchor.release();
 
       return current.filter((comment) => comment.id !== id);
     });
@@ -402,6 +414,7 @@ const CommentModePane = ({
     setComments((current) => {
       current.forEach((comment) => {
         comment.anchor.release();
+        comment.mirrorAnchor.release();
       });
 
       return [];
@@ -613,17 +626,21 @@ const CommentModeExample = () => {
   const [comments, setComments] = useState<CommentThread[]>([]);
   const [documentWrites, setDocumentWrites] = useState(0);
   const [commentWrites, setCommentWrites] = useState(0);
-  const annotations = useMemo(
-    () => createCommentAnnotations(comments),
+  const writerAnnotations = useMemo(
+    () => createCommentAnnotations(comments, (comment) => comment.anchor),
+    [comments]
+  );
+  const commentAnnotations = useMemo(
+    () => createCommentAnnotations(comments, (comment) => comment.mirrorAnchor),
     [comments]
   );
   const writerAnnotationStore = useAnnotationStore<CommentData>(
     writerEditor,
-    annotations
+    writerAnnotations
   );
   const commentAnnotationStore = useAnnotationStore<CommentData>(
     commentEditor,
-    annotations
+    commentAnnotations
   );
   const writerDecorations = useMemo(
     () => createCommentDecorationSource(writerAnnotationStore),
@@ -644,6 +661,22 @@ const CommentModeExample = () => {
   const handleWriterValueChange = (value: Value) => {
     setDocumentWrites((count) => count + 1);
     syncCommentModeFromDocument(value);
+    setComments((current) =>
+      current.flatMap((comment) => {
+        const range = comment.anchor.resolve();
+
+        comment.mirrorAnchor.release();
+
+        return range
+          ? [
+              {
+                ...comment,
+                mirrorAnchor: commentEditor.anchor(range, commentAnchorOptions),
+              },
+            ]
+          : [];
+      })
+    );
   };
 
   return (
@@ -689,6 +722,7 @@ const CommentModeExample = () => {
         <EditorRoot decorations={[commentDecorations]} editor={commentEditor}>
           <AnnotationProvider store={commentAnnotationStore}>
             <CommentModePane
+              commentEditor={commentEditor}
               comments={comments}
               onCommentWrite={() => {
                 setCommentWrites((count) => count + 1);
