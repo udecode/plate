@@ -14,7 +14,7 @@ docs:
 
 <ComponentPreview name="suggestion-demo" height="360px" />
 
-The demo starts in Suggestion mode with a proposed insertion and deletion. Open a paragraph's discussion button to accept or reject its change, then try undo and redo. Switch to Editing to see accepted content, or type in Suggestion mode to propose an edit.
+The demo starts in Suggestion mode with a proposed insertion and deletion. Open a paragraph's discussion button to accept or reject its change, then try undo and redo. Switch to Editing to make direct edits while the existing suggestions and review controls remain visible.
 
 You can type, paste, or press Enter inside your own pending deletion. These edits remain part of that deletion. Backspace preserves the original deleted characters and removes text you added inside it. Reject restores the original content; Accept removes the entire deletion, including your additions.
 
@@ -143,9 +143,13 @@ The two modes map to authored views:
 | Suggestion mode | Authored view |
 | --- | --- |
 | `'suggesting'` | `{ intent: 'propose', projection: 'markup' }` |
-| `'editing'` | `{ intent: 'edit', projection: 'accepted' }` |
+| `'editing'` | `{ intent: 'edit', projection: 'markup' }` |
 
 Mode belongs to the exact mounted view. Two views over one document can use different modes without changing each other.
+
+Changing the mode affects only subsequent input. It does not accept, reject, delete, or hide pending changes, and it does not add an undo step. In Editing mode, input that maps exactly to accepted content edits that content directly. Pending insertions, retained deletions, and selections that cross accepted and pending content stay review-only; switch to Suggestion mode to amend them.
+
+To show accepted content without pending proposals, set `{ intent: 'edit', projection: 'accepted' }` directly on the authored view.
 
 For proposed content without retained review fragments, set an advanced authored view directly:
 
@@ -305,7 +309,7 @@ Import from `platejs/suggestion/react`. It extends `BaseSuggestionPlugin` with e
 
 ### `suggestion.api.setMode(mode)`
 
-Set the exact view to `'suggesting'` or `'editing'` through `editor.plugin(SuggestionPlugin)` or `editor.plugin(BaseSuggestionPlugin)`.
+Set whether subsequent input proposes or directly edits through `editor.plugin(SuggestionPlugin)` or `editor.plugin(BaseSuggestionPlugin)`. Both modes retain the markup projection and its pending review UI.
 
 ### `suggestion.read.mode()`
 

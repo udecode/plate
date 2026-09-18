@@ -2,6 +2,10 @@ import { createEditorAnchorApi } from './core/anchor';
 import {
   configureAuthoredView,
   getAuthoredViewCommit,
+  isAuthoredInputSelectionAllowed,
+  projectAuthoredInputPath,
+  projectAuthoredInputRange,
+  readAuthoredView,
   subscribeAuthoredFragment,
   withAuthoredUpdateView,
   withAuthoredViewRead,
@@ -77,8 +81,9 @@ import type {
   Value,
 } from './interfaces/editor';
 import type { ElementIn, ElementOrTextIn } from './interfaces/element';
-import type { Location } from './interfaces/location';
+import { LocationApi, type Location } from './interfaces/location';
 import type { Ancestor, NodeEntry } from './interfaces/node';
+import { PathApi } from './interfaces/path';
 import { type Range, RangeApi } from './interfaces/range';
 import type { SchemaPropertyHandle } from './interfaces/schema';
 import type { NodeSelection } from './interfaces/selection';
@@ -567,21 +572,79 @@ const withViewTransaction = <V extends Value>(
     transaction,
     viewState
   );
-  const hasExplicitTarget = (options: { at?: unknown } | undefined) =>
-    options?.at !== undefined;
-  const runSelectionMutation = <T>(fn: () => T): T | undefined =>
-    runWithViewSelection(editor, viewState, () =>
+  const inputView = () => getViewEditor?.() ?? viewState.editor;
+  const projectInputTarget = (target: NodeSelection | NodeTarget) => {
+    const view = inputView();
+    const policy = view ? readAuthoredView(view) : undefined;
+    if (!view || policy?.intent !== 'edit' || policy.projection !== 'markup') {
+      return target;
+    }
+    if (SelectionApi.isNode(target)) {
+      const root = target.root ?? viewState.root;
+      const paths = target.paths.map((path) =>
+        projectAuthoredInputPath(view, path, root)
+      );
+      if (paths.some((path) => !path)) return null;
+      const projected = paths.map((path) => getDefined(path));
+      const anchorIndex = target.paths.findIndex((path) =>
+        PathApi.equals(path, target.anchorPath)
+      );
+      const focusIndex = target.paths.findIndex((path) =>
+        PathApi.equals(path, target.focusPath)
+      );
+
+      return SelectionApi.nodes([projected[0], ...projected.slice(1)], {
+        anchorPath: projected[anchorIndex],
+        focusPath: projected[focusIndex],
+        ...(root === MAIN_ROOT_KEY ? {} : { root }),
+      });
+    }
+    if (RangeApi.isRange(target)) {
+      return projectAuthoredInputRange(view, target) ?? null;
+    }
+    if (LocationApi.isLocation(target)) {
+      if (LocationApi.isPoint(target)) {
+        const range = projectAuthoredInputRange(view, {
+          anchor: target,
+          focus: target,
+        });
+        return range?.anchor ?? null;
+      }
+      if (LocationApi.isPath(target)) {
+        return projectAuthoredInputPath(view, target, viewState.root);
+      }
+    }
+    const path = state.nodes.path(target);
+    return path
+      ? (projectAuthoredInputPath(view, path, viewState.root) ?? null)
+      : null;
+  };
+  const projectInputOptions = <TOptions extends { at?: unknown }>(
+    options: TOptions
+  ): TOptions | null => {
+    if (options.at === undefined) return options;
+    const at = projectInputTarget(options.at as NodeSelection | NodeTarget);
+    return at ? { ...options, at } : null;
+  };
+  const runSelectionMutation = <T>(fn: () => T): T | undefined => {
+    const view = inputView();
+    if (view && !isAuthoredInputSelectionAllowed(view)) return undefined;
+
+    return runWithViewSelection(editor, viewState, () =>
       runRootTransform(editor, viewState, fn)
     );
-  const runImplicitSelectionMutation = <T>(
-    options: { at?: unknown } | undefined,
-    fn: () => T
+  };
+  const runImplicitSelectionMutation = <T, TOptions extends { at?: unknown }>(
+    options: TOptions | undefined,
+    fn: (options: TOptions | undefined) => T
   ): T | undefined => {
-    if (hasExplicitTarget(options)) {
-      return runRootTransform(editor, viewState, fn);
+    if (options?.at !== undefined) {
+      const projected = projectInputOptions(options);
+      if (!projected) return undefined;
+      return runRootTransform(editor, viewState, () => fn(projected));
     }
 
-    return runSelectionMutation(fn);
+    return runSelectionMutation(() => fn(options));
   };
   const replaceValue = (input: SnapshotInput<V>) => {
     if (isPersistedDocumentEnvelope(input)) {
@@ -661,12 +724,12 @@ const withViewTransaction = <V extends Value>(
     props: Parameters<ViewBlocksApi['set']>[0],
     options?: Parameters<ViewBlocksApi['set']>[1]
   ) =>
-    runImplicitSelectionMutation(options, () => {
-      transaction.blocks.set(props, options);
+    runImplicitSelectionMutation(options, (projected) => {
+      transaction.blocks.set(props, projected);
     });
   const toggleViewBlocks: ViewBlocksApi['toggle'] = (props, options) =>
-    runImplicitSelectionMutation(options, () => {
-      transaction.blocks.toggle(props, options);
+    runImplicitSelectionMutation(options, (projected) => {
+      transaction.blocks.toggle(props, projected);
     });
 
   const viewTransaction = Object.freeze<EditorUpdateTransaction<V, any>>({
@@ -694,16 +757,16 @@ const withViewTransaction = <V extends Value>(
       ),
     blocks: Object.freeze<EditorUpdateTransaction<V, any>['blocks']>({
       duplicate: ((options?: { at?: NodeSelection | NodeTarget }) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.blocks.duplicate(options as never);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.blocks.duplicate(projected as never);
         })) as EditorUpdateTransaction<V, any>['blocks']['duplicate'],
       insertAfter: (nodes, options) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.blocks.insertAfter(nodes, options)
+        runImplicitSelectionMutation(options, (projected) =>
+          transaction.blocks.insertAfter(nodes, projected)
         ),
       reset: (options) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.blocks.reset(options);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.blocks.reset(projected);
         }),
       set: setViewBlocks,
       toggle: toggleViewBlocks,
@@ -718,15 +781,15 @@ const withViewTransaction = <V extends Value>(
         (...args: Parameters<typeof state.fragment>) => state.fragment(...args),
         {
           delete: (options = {}) =>
-            runImplicitSelectionMutation(options, () => {
-              transaction.fragment.delete(options);
+            runImplicitSelectionMutation(options, (projected) => {
+              transaction.fragment.delete(projected);
             }),
           replace: (
             content: Parameters<typeof transaction.fragment.replace>[0],
             options?: Parameters<typeof transaction.fragment.replace>[1]
           ) =>
-            runImplicitSelectionMutation(options, () =>
-              transaction.fragment.replace(content, options)
+            runImplicitSelectionMutation(options, (projected) =>
+              transaction.fragment.replace(content, projected)
             ) ?? false,
         }
       )
@@ -757,63 +820,69 @@ const withViewTransaction = <V extends Value>(
         nodes: ElementOrTextIn<V> | ReadonlyArray<ElementOrTextIn<V>>,
         options?: { at?: NodeTarget }
       ) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.nodes.insert(nodes, options as never);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.nodes.insert(nodes, projected as never);
         }),
       lift: (options?: { at?: NodeSelection | NodeTarget }) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.nodes.lift(options as never);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.nodes.lift(projected as never);
         }),
       merge: (options?: { at?: NodeSelection | NodeTarget }) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.nodes.merge(options as never);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.nodes.merge(projected as never);
         }),
       move: (options: { at?: NodeSelection | NodeTarget }) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.nodes.move(options as never);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.nodes.move(projected as never);
         }),
       remove: (options?: { at?: NodeSelection | NodeTarget }) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.nodes.remove(options as never);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.nodes.remove(projected as never);
         }),
       replace: (nodes, options) =>
-        runImplicitSelectionMutation({ at: options.at }, () => {
-          transaction.nodes.replace(nodes, options);
+        runImplicitSelectionMutation({ at: options.at }, (projected) => {
+          transaction.nodes.replace(nodes, {
+            ...options,
+            at: getDefined(projected).at,
+          });
         }),
       replaceChildren: (children, options) =>
-        runImplicitSelectionMutation({ at: options.at }, () => {
-          transaction.nodes.replaceChildren(children, options);
+        runImplicitSelectionMutation({ at: options.at }, (projected) => {
+          transaction.nodes.replaceChildren(children, {
+            ...options,
+            at: getDefined(projected).at,
+          });
         }),
       set: ((...args: Parameters<typeof transaction.nodes.set>) =>
-        runImplicitSelectionMutation(args[1], () => {
-          transaction.nodes.set(...args);
+        runImplicitSelectionMutation(args[1], (projected) => {
+          transaction.nodes.set(args[0], projected as never);
         })) as typeof transaction.nodes.set,
       split: (options?: { at?: NodeTarget }) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.nodes.split(options as never);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.nodes.split(projected as never);
         }),
       unset: ((
         props: string | readonly string[] | SchemaPropertyHandle,
         options?: NodeUnsetNodesOptions
       ) =>
-        runImplicitSelectionMutation(options, () => {
+        runImplicitSelectionMutation(options, (projected) => {
           (
             transaction.nodes.unset as (
               property: string | readonly string[] | SchemaPropertyHandle,
               options?: NodeUnsetNodesOptions
             ) => void
-          )(props, options);
+          )(props, projected as NodeUnsetNodesOptions);
         })) as typeof transaction.nodes.unset,
       unwrap: (options?: { at?: NodeSelection | NodeTarget }) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.nodes.unwrap(options as never);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.nodes.unwrap(projected as never);
         }),
       wrap: (
         element: ElementIn<V>,
         options?: { at?: NodeSelection | NodeTarget }
       ) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.nodes.wrap(element, options as never);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.nodes.wrap(element, projected as never);
         }),
     }),
     selection: Object.freeze(
@@ -877,15 +946,15 @@ const withViewTransaction = <V extends Value>(
         slice: Parameters<typeof transaction.slice.replace>[0],
         options?: Parameters<typeof transaction.slice.replace>[1]
       ) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.slice.replace(slice, options)
+        runImplicitSelectionMutation(options, (projected) =>
+          transaction.slice.replace(slice, projected)
         ) ?? false,
     }),
     text: Object.freeze({
       ...state.text,
       delete: (options = {}) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.text.delete(options);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.text.delete(projected);
         }),
       deleteBackward: (options = {}) =>
         runSelectionMutation(() => {
@@ -899,8 +968,8 @@ const withViewTransaction = <V extends Value>(
         text: string,
         options: Parameters<typeof transaction.text.insert>[1] = {}
       ) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.text.insert(text, options);
+        runImplicitSelectionMutation(options, (projected) => {
+          transaction.text.insert(text, projected);
         }),
     }),
     value: Object.freeze(

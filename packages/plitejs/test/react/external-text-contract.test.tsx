@@ -336,7 +336,7 @@ describe('external text views', () => {
     await act(async () => {
       await mountedView.api.authored.setView({
         intent: 'edit',
-        projection: 'accepted',
+        projection: 'markup',
       });
     });
     expect(mountedView.read.authored.view()).toEqual(proposal);
@@ -354,10 +354,10 @@ describe('external text views', () => {
     await act(async () => external.actions.composition('end'));
     expect(mountedView.read.authored.view()).toEqual({
       intent: 'edit',
-      projection: 'accepted',
+      projection: 'markup',
     });
     expect(mountedView.read.view.isComposing()).toBe(false);
-    expect(external.state.text).toBe('AB');
+    expect(external.state.text).toBe('AあB');
     expect(document.activeElement).toBe(input);
     expect(
       rendered.getByRole('textbox', { name: 'Proposed code' }).textContent

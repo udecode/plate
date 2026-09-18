@@ -29,6 +29,7 @@ import {
   type RenderNodeWrapperDescriptor,
   type RenderNodeWrapperProps,
   useEditor,
+  useEditorRootElement,
   useEditorSelector,
   usePluginStore,
 } from 'platejs/react';
@@ -852,14 +853,17 @@ function SuggestionDiscussionCard({
   );
 }
 
-function NewComment({ editableRef }: EditableSiblingProps) {
+function NewComment({
+  autoFocus,
+  editableRef,
+}: EditableSiblingProps & { autoFocus: boolean }) {
   const editor = useEditor();
   const { api: comments } = useEditor().plugin(CommentsPlugin);
 
   return (
     <CommentComposer
       ariaLabel="New comment"
-      autoFocus
+      autoFocus={autoFocus}
       onCancel={() => {
         comments.cancel();
         editableRef.current?.focus();
@@ -1009,6 +1013,7 @@ function DiscussionPopover({
   snapshot: DiscussionSnapshot;
 }) {
   const editor = useEditor();
+  const rootElement = useEditorRootElement(editor);
   const store = useDiscussionStore();
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const pending = usePendingComment();
@@ -1075,39 +1080,48 @@ function DiscussionPopover({
   );
   const anchorRange =
     pendingRange ?? commentRange ?? activeSuggestionRange ?? null;
+  const anchorRangeJson = anchorRange ? JSON.stringify(anchorRange) : null;
   const anchorBlockKey = anchorRange
     ? editor.key([RangeApi.start(anchorRange).path[0] ?? 0])
     : null;
-  const virtualAnchor = {
-    contextElement: editor.api.dom.root() ?? undefined,
-    getBoundingClientRect: () => {
-      const blockRect = anchorBlockKey
-        ? store.getBlockTrigger(anchorBlockKey)?.getBoundingClientRect()
-        : null;
-      const domRange = anchorRange
-        ? editor.api.dom.resolveDOMRange(anchorRange)
-        : null;
+  const virtualAnchor = React.useMemo(() => {
+    const currentAnchorRange = anchorRangeJson
+      ? (JSON.parse(anchorRangeJson) as Range)
+      : null;
 
-      if (!domRange) return blockRect ?? new DOMRect();
+    return {
+      contextElement: rootElement ?? undefined,
+      getBoundingClientRect: () => {
+        const blockRect = anchorBlockKey
+          ? store.getBlockTrigger(anchorBlockKey)?.getBoundingClientRect()
+          : null;
+        const domRange = currentAnchorRange
+          ? editor.api.dom.resolveDOMRange(currentAnchorRange)
+          : null;
 
-      const clientRect = Array.from(domRange.getClientRects()).findLast(
-        ({ height, width }) => height > 0 || width > 0
-      );
+        if (!domRange) return blockRect ?? new DOMRect();
 
-      if (clientRect) return clientRect;
+        const clientRect = Array.from(domRange.getClientRects()).findLast(
+          ({ height, width }) => height > 0 || width > 0
+        );
 
-      const rangeRect = domRange.getBoundingClientRect();
+        if (clientRect) return clientRect;
 
-      return rangeRect.height > 0 || rangeRect.width > 0
-        ? rangeRect
-        : (blockRect ?? rangeRect);
-    },
-  };
+        const rangeRect = domRange.getBoundingClientRect();
+
+        return rangeRect.height > 0 || rangeRect.width > 0
+          ? rangeRect
+          : (blockRect ?? rangeRect);
+      },
+    };
+  }, [anchorBlockKey, anchorRangeJson, editor, rootElement, store]);
   const anchorElement = target?.anchor ?? (anchorRange ? virtualAnchor : null);
   const open = Boolean(
     anchorElement && (pending || activeItems.length > 0 || targetGroup)
   );
   const openRef = React.useRef(open);
+  const [placedPending, setPlacedPending] =
+    React.useState<typeof pending>(null);
 
   React.useLayoutEffect(() => {
     openRef.current = open;
@@ -1152,11 +1166,17 @@ function DiscussionPopover({
             if (!openRef.current) editableRef.current?.focus();
           }}
           onInitialFocus={(event) => event.preventDefault()}
+          onPlaced={() => {
+            if (pending) setPlacedPending(pending);
+          }}
           side="bottom"
         >
           {pending ? (
             <div className="p-4">
-              <NewComment editableRef={editableRef} />
+              <NewComment
+                autoFocus={placedPending === pending}
+                editableRef={editableRef}
+              />
             </div>
           ) : (
             <>

@@ -1,6 +1,25 @@
 {
   "schemaVersion": 1,
   "components": {
+    "discussion": [
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-14-fix-comments-selection-visibility",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-03-fix-comment-anchor-history",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "floating-popover": [
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-07-provider-lifetimes",
+      "2026-09-05-fix-ref-cleanup",
+      "2026-08-31-inline-component-props",
+      "2026-08-25-base-first-registry"
+    ],
     "diff": ["2026-09-15-structural-diff"],
     "version-history-demo": [
       "2026-09-15-structural-diff",
@@ -29,17 +48,6 @@
       "2026-07-26-plugin-store-state",
       "2026-07-24-collaboration-runtime",
       "2025-11-20-biome-ultracite"
-    ],
-    "discussion": [
-      "2026-09-14-fix-comments-selection-visibility",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-03-fix-comment-anchor-history",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry"
     ],
     "suggestion": [
       "2026-09-14-suggestion-author-colors",
@@ -473,12 +481,6 @@
       "2026-07-24-feature-toolbar-plugin-portals",
       "2026-07-23-rich-media-caption-children",
       "2025-11-20-biome-ultracite"
-    ],
-    "floating-popover": [
-      "2026-09-07-provider-lifetimes",
-      "2026-09-05-fix-ref-cleanup",
-      "2026-08-31-inline-component-props",
-      "2026-08-25-base-first-registry"
     ],
     "select-editor": [
       "2026-09-07-select-command-bridge",

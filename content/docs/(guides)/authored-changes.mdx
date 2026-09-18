@@ -132,7 +132,7 @@ export function SuggestionEditor() {
 
 The editor must install an authored plugin, either directly or through `SuggestionPlugin`. Changing the `intent` or `projection` prop updates this view. Rerendering with equivalent values preserves subsequent mode changes made through the mounted view's portal.
 
-For an interactive mode control, let `SuggestionPlugin` map `'editing'` to accepted editing and `'suggesting'` to markup proposing:
+For an interactive mode control, let `SuggestionPlugin` keep the markup projection while it switches subsequent input between direct editing and proposing:
 
 ```tsx
 import { SuggestionPlugin } from "platejs/suggestion/react";
@@ -157,7 +157,9 @@ authored.api.setView({
 | `proposed` | The proposed result without retained review fragments       |
 | `markup`   | Proposed content with retained deletions and move fragments |
 
-Intent and projection belong to the exact view. Selection, clipboard input, commands, and anchors use that view's coordinates. Two mounted views over one document can use different policies.
+The supported combinations are `edit + accepted`, `edit + markup`, `propose + proposed`, and `propose + markup`. `edit + markup` keeps pending review content visible while exact accepted targets receive direct edits. Pending-only targets, retained deletions, and mixed accepted/pending selections remain read-only.
+
+Intent and projection belong to the exact view. Reads use that view's coordinates. Authored input maps writable targets to the document owned by the intent and rejects targets that cannot map without changing a pending proposal. Two mounted views over one document can use different policies.
 
 ## Review changes
 

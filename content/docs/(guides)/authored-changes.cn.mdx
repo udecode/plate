@@ -105,7 +105,7 @@ const imported = proposeAuthoredComparison(editor, { comparison });
 
 `groupIds` 可选择比较分组，并自动包含必要依赖。结果把选中的分组 ID 映射到原生 change ID。导入前会检查 schema、已接受内容和 authored frontier；遇到 `stale`、`blocked`、`invalid` 或 `unavailable` 时，不要当作已发布。三方比较完成决议后，只要选中的基线就是当前已接受文档，也可使用同一调用。
 
-在常用产品流程中，让 `SuggestionPlugin` 将 `'editing'` 映射到 accepted editing，将 `'suggesting'` 映射到 markup proposing：
+在常用产品流程中，让 `SuggestionPlugin` 保留 markup projection，并在直接编辑和 proposal 输入之间切换后续输入：
 
 ```tsx
 import { SuggestionPlugin } from "platejs/suggestion/react";
@@ -130,7 +130,9 @@ authored.api.setView({
 | `proposed` | 拟议结果，不含保留的审阅片段       |
 | `markup`   | 拟议内容，以及保留的删除和移动片段 |
 
-Intent 和 projection 属于精确 view。Selection、clipboard input、command 和 anchor 使用该 view 的坐标。同一个文档的两个已挂载 view 可以使用不同 policy。
+支持的组合是 `edit + accepted`、`edit + markup`、`propose + proposed` 和 `propose + markup`。`edit + markup` 保持待处理审阅内容可见，并把可精确映射的目标直接写入 accepted 内容。仅属于 pending 的目标、保留删除，以及跨 accepted 和 pending 内容的 selection 保持只读。
+
+Intent 和 projection 属于精确 view。读取使用该 view 的坐标。Authored input 会把可写目标映射到 intent 所属的文档；如果映射会改变 pending proposal，则拒绝该目标。同一个文档的两个已挂载 view 可以使用不同 policy。
 
 ## 审阅 change
 

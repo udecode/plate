@@ -146,6 +146,7 @@ const assertAuthoredInference = () => {
   const viewChildren: ReturnType<typeof editor.read.children> =
     view.read.children();
   view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+  view.api.authored.setView({ intent: 'edit', projection: 'markup' });
   view.update((tx) => {
     const policy: AuthoredView = tx.authored.view();
     tx.authored.propose({ changeId: 'retained' });

@@ -91,7 +91,7 @@ it('initializes independent authored views and preserves their mode across paren
   await act(async () => mounted.rerender(tree('markup')));
   expect(views.get('proposal')).toBe(first);
   expect(first.plugin(SuggestionPlugin).read.mode()).toBe('editing');
-  expect(mounted.getByTestId('proposal').textContent).toBe('Base');
+  expect(mounted.getByTestId('proposal')).toHaveTextContent('Base proposal');
 
   await act(async () => mounted.rerender(tree('proposed')));
   expect(views.get('proposal')).toBe(first);

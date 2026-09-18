@@ -116,6 +116,7 @@ export function FloatingPopoverContent({
   onEscapeKeyDown,
   onKeyDown,
   onInitialFocus,
+  onPlaced,
   side = 'bottom',
   sideOffset = 4,
   style,
@@ -126,10 +127,24 @@ export function FloatingPopoverContent({
   onFinalFocus?: (event: Event) => void;
   onEscapeKeyDown?: (event: KeyboardEvent) => void;
   onInitialFocus?: (event: Event) => void;
+  /** Called after the content has been positioned against its anchor. */
+  onPlaced?: () => void;
   side?: 'bottom' | 'left' | 'right' | 'top';
   sideOffset?: number;
 }) {
   const { anchor, open } = useFloatingPopoverContext();
+  const placedAnchor = React.useRef<typeof anchor>(null);
+
+  React.useEffect(() => {
+    if (!anchor || !open) {
+      placedAnchor.current = null;
+      return;
+    }
+    if (placedAnchor.current === anchor) return;
+
+    placedAnchor.current = anchor;
+    onPlaced?.();
+  }, [anchor, onPlaced, open]);
 
   return (
     <PopoverPrimitive.Portal>

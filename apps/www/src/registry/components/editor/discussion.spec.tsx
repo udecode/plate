@@ -23,6 +23,7 @@ import { SuggestionKit } from './suggestion';
 let floatingAnchor:
   | Element
   | {
+      contextElement?: Element;
       getBoundingClientRect: () => DOMRect | DOMRectReadOnly;
     }
   | null = null;
@@ -207,7 +208,10 @@ describe('DiscussionSlots', () => {
         <>
           <button
             onClick={() =>
-              editor.plugin(SuggestionPlugin).api.setMode('editing')
+              editor.plugin(DefaultAuthoredPlugin).api.setView({
+                intent: 'edit',
+                projection: 'accepted',
+              })
             }
             type="button"
           >
@@ -215,7 +219,10 @@ describe('DiscussionSlots', () => {
           </button>
           <button
             onClick={() =>
-              editor.plugin(SuggestionPlugin).api.setMode('suggesting')
+              editor.plugin(DefaultAuthoredPlugin).api.setView({
+                intent: 'propose',
+                projection: 'markup',
+              })
             }
             type="button"
           >
@@ -477,6 +484,63 @@ describe('DiscussionSlots', () => {
         ).getBoundingClientRect()
       ).toEqual(triggerRect);
     });
+  });
+
+  it('binds a virtual anchor to the editor root registered after render', async () => {
+    floatingAnchor = null;
+    const { DiscussionSlots } = await import(
+      `./discussion?test=${Math.random().toString(36).slice(2)}`
+    );
+    const commentsPlugin = CommentsPlugin.configure({
+      initialState: {
+        currentUserId: 'alice',
+        users: { alice: { id: 'alice', name: 'Alice' } },
+      },
+      decorate: { attributes: commentDecorationAttributes },
+      slots: DiscussionSlots,
+    });
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Anchor lifecycle' }],
+          type: 'paragraph',
+        },
+      ],
+      plugins: [commentsPlugin],
+    });
+    const id = (await editor.plugin(commentsPlugin).api.createThread({
+      body: createCommentValue('Mounted comment'),
+      id: 'mounted-comment',
+      target: {
+        range: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 6, path: [0, 0] },
+        },
+        type: 'range',
+      },
+    }))!;
+
+    editor.plugin(commentsPlugin).api.setActive([id]);
+    const view = render(
+      <EditorRoot editor={editor}>
+        <EditorContainer>
+          <EditorContent aria-label="Anchor lifecycle editor" />
+        </EditorContainer>
+      </EditorRoot>
+    );
+    const root = await view.findByLabelText('Anchor lifecycle editor');
+
+    await waitFor(() => {
+      expect(floatingAnchor).not.toBeNull();
+      expect(
+        (
+          floatingAnchor as {
+            contextElement?: Element;
+          }
+        ).contextElement
+      ).toBe(root);
+    });
+    view.unmount();
   });
 });
 

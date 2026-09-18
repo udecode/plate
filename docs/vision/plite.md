@@ -193,7 +193,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   needed for pending review and selected history. Accepted, proposed, and
   markup projections belong to exact editor views; their input intent and
   rendered children never become another saved document or global mode. Review
-  decisions are atomic document writes. Local undo remains local interaction
+  markup is a review surface for both direct accepted input and proposal input.
+  Changing input intent never decides or hides pending changes. Direct input
+  maps only exact accepted targets; pending-only, retained, and mixed targets
+  remain review-only. Review decisions are atomic document writes. Local undo remains local interaction
   history, and retained author history produces new compensating changes.
   Persistence checkpoints current authored facts and exact projections
   directly; opening a document never rebuilds them by reducing retained

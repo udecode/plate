@@ -60,6 +60,7 @@ import type {
   Value,
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
+import { PathApi, type Path } from '../interfaces/path';
 import { RangeApi, type Range } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
@@ -92,6 +93,7 @@ import {
   inheritAuthoredFragmentProjection,
   readAuthoredMarkupFragments,
 } from './markup';
+import { authoredOriginSpans, authoredPositionSpans } from './positions';
 import {
   readAuthoredChange,
   readAuthoredChangeDetails,
@@ -198,6 +200,7 @@ type AuthoredTransaction = {
   hydratedChanges: Set<string>;
   receiving: AuthoredState | null;
   insertions: Map<DocumentChange, AuthoredInsertion>;
+  inputSelectionAllowed: boolean;
   rangeLifetime: { aborted: boolean };
   ranges: Array<{ release: () => void; settle: () => void }>;
   rangeProjection?: { change: DocumentChange; projection: AuthoredProjection };
@@ -599,6 +602,161 @@ const readViewSelection = (view: Editor, live: AuthoredRuntime) => {
   };
 };
 
+const rangeUsesOnlyAcceptedContent = (
+  live: AuthoredRuntime,
+  view: Editor,
+  range: Range
+) => {
+  if (RangeApi.isCollapsed(range)) return true;
+  const root = range.anchor.root ?? 'main';
+  if ((range.focus.root ?? 'main') !== root) return false;
+  const projectedView = readAuthoredViewProjection(live, view, 'proposed');
+  const acceptedView = readAuthoredViewProjection(live, view, 'accepted');
+  const projected = readRecord(projectedView.positions, root);
+  const accepted = readRecord(acceptedView.positions, root);
+  if (!projected?.present || !accepted?.present) return false;
+  const document = DocumentIndex.fromValue(
+    authoredRootNodes(projectedView.value, root)
+  );
+  const offsets = [
+    document.positionAt(range.anchor),
+    document.positionAt(range.focus),
+  ];
+  const from = Math.min(...offsets);
+  const to = Math.max(...offsets);
+
+  return [...authoredPositionSpans(projected.positions, from, to)].every(
+    ({ from: spanFrom, span, to: spanTo }) => {
+      const selectedFrom = Math.max(from, spanFrom);
+      const selectedTo = Math.min(to, spanTo);
+      const originFrom = span.offset + selectedFrom - spanFrom;
+      const originTo = span.offset + selectedTo - spanFrom;
+      let coveredTo = originFrom;
+      for (const currentSpan of authoredOriginSpans(
+        accepted.positions,
+        span.origin,
+        { from: originFrom, to: originTo }
+      )
+        .map(({ span: acceptedSpan }) => ({
+          from: Math.max(originFrom, acceptedSpan.offset),
+          to: Math.min(originTo, acceptedSpan.offset + acceptedSpan.length),
+        }))
+        .sort((left, right) => left.from - right.from)) {
+        if (currentSpan.from > coveredTo) return false;
+        coveredTo = Math.max(coveredTo, currentSpan.to);
+      }
+      return coveredTo >= originTo;
+    }
+  );
+};
+
+const projectAcceptedRange = (
+  live: AuthoredRuntime,
+  view: Editor,
+  range: Range
+) => {
+  if (!rangeUsesOnlyAcceptedContent(live, view, range)) return null;
+  const options = {
+    association: 'inward' as const,
+    deletion: 'drop' as const,
+    ...(range.anchor.root && range.anchor.root !== 'main'
+      ? { root: range.anchor.root }
+      : {}),
+  };
+  let projection = readAuthoredViewProjection(live, view, 'proposed');
+  const source = bindAuthoredDocumentRange(
+    { range },
+    options,
+    () => projection,
+    () => false
+  );
+  projection = readAuthoredViewProjection(live, view, 'accepted');
+  const accepted = source.resolve();
+  if (!accepted) return null;
+  const target = bindAuthoredDocumentRange(
+    { range: accepted },
+    options,
+    () => projection,
+    () => false
+  );
+  projection = readAuthoredViewProjection(live, view, 'proposed');
+
+  return RangeApi.equals(target.resolve(), range) ? accepted : null;
+};
+
+const projectAcceptedPath = (
+  live: AuthoredRuntime,
+  view: Editor,
+  path: Path,
+  root: string
+) => {
+  const options = {
+    association: 'forward' as const,
+    deletion: 'drop' as const,
+    ...(root === 'main' ? {} : { root }),
+  };
+  let projection = readAuthoredViewProjection(live, view, 'proposed');
+  const source = bindAuthoredDocumentPath(
+    path,
+    options,
+    () => projection,
+    () => false
+  );
+  projection = readAuthoredViewProjection(live, view, 'accepted');
+  const accepted = source.resolve();
+  if (!accepted) return null;
+  const target = bindAuthoredDocumentPath(
+    accepted,
+    options,
+    () => projection,
+    () => false
+  );
+  projection = readAuthoredViewProjection(live, view, 'proposed');
+
+  return PathApi.equals(target.resolve() ?? [], path) ? accepted : null;
+};
+
+const projectAcceptedSelection = (
+  live: AuthoredRuntime,
+  view: Editor,
+  selection: Selection
+): Selection => {
+  if (!selection) return null;
+  if (RangeApi.isRange(selection)) {
+    const range = projectAcceptedRange(live, view, selection);
+    return range ? Object.freeze({ ...selection, ...range }) : null;
+  }
+  const root = selection.root ?? 'main';
+  const paths = selection.paths.map((path) =>
+    projectAcceptedPath(live, view, path, root)
+  );
+  if (paths.some((path) => !path)) return null;
+  const accepted = paths.map((path) => getDefined(path));
+  const anchorIndex = selection.paths.findIndex((path) =>
+    PathApi.equals(path, selection.anchorPath)
+  );
+  const focusIndex = selection.paths.findIndex((path) =>
+    PathApi.equals(path, selection.focusPath)
+  );
+
+  return SelectionApi.nodes([getDefined(accepted[0]), ...accepted.slice(1)], {
+    anchorPath: getDefined(accepted[anchorIndex]),
+    focusPath: getDefined(accepted[focusIndex]),
+    ...(root === 'main' ? {} : { root }),
+  });
+};
+
+const readAcceptedViewSelection = (view: Editor, live: AuthoredRuntime) => {
+  const visible = readViewSelection(view, live);
+  const selection = projectAcceptedSelection(live, view, visible.selection);
+  if (visible.selection && !selection) return null;
+
+  return {
+    selection,
+    root: selection ? (SelectionApi.root(selection) ?? 'main') : visible.root,
+  };
+};
+
 const setAuthoredView = (editor: Editor, value: AuthoredView) => {
   if (FRAGMENT_VIEWS.has(getEditorRuntime(editor))) {
     throw new Error('Retained content follows its parent markup view.');
@@ -608,10 +766,11 @@ const setAuthoredView = (editor: Editor, value: AuthoredView) => {
     !value ||
     (value.intent !== 'edit' && value.intent !== 'propose') ||
     !['accepted', 'proposed', 'markup'].includes(value.projection) ||
-    (value.intent === 'propose') === (value.projection === 'accepted')
+    (value.projection === 'accepted' && value.intent !== 'edit') ||
+    (value.projection === 'proposed' && value.intent !== 'propose')
   ) {
     throw new Error(
-      'Authored input requires edit/accepted or propose/proposed/markup.'
+      'Authored input requires edit/accepted/markup or propose/proposed/markup.'
     );
   }
   if (live.active) {
@@ -1452,7 +1611,8 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
           if (
             !binding ||
             binding.fragment.kind !== 'delete' ||
-            binding.parent.read.view.isReadOnly()
+            binding.parent.read.view.isReadOnly() ||
+            authoredView(binding.parent).intent !== 'propose'
           ) {
             return null;
           }
@@ -1691,6 +1851,41 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
         inputView: (commit) => projections.get(commit)?.view ?? null,
         inputProjection: (commit) =>
           projections.get(commit)?.proposed ? 'proposed' : 'accepted',
+        inputPath(view, path, root) {
+          const policy = authoredView(view);
+          const projected =
+            policy.intent === 'edit' && policy.projection === 'markup'
+              ? projectAcceptedPath(live, view, path, root)
+              : path;
+          if (projected && live.active?.view === view) {
+            live.active.inputSelectionAllowed = true;
+          }
+
+          return projected;
+        },
+        inputRange(view, range) {
+          const policy = authoredView(view);
+          const projected =
+            policy.intent === 'edit' && policy.projection === 'markup'
+              ? projectAcceptedRange(live, view, range)
+              : range;
+          if (projected && live.active?.view === view) {
+            live.active.inputSelectionAllowed = true;
+          }
+
+          return projected;
+        },
+        inputSelectionAllowed(view) {
+          const policy = authoredView(view);
+          if (policy.intent !== 'edit' || policy.projection !== 'markup') {
+            return true;
+          }
+          if (live.active?.view === view) {
+            return live.active.inputSelectionAllowed;
+          }
+
+          return readAcceptedViewSelection(view, live) !== null;
+        },
         projectedChange: (commit) =>
           projections.get(commit)?.change ?? commit.changes,
         beforeValue(commit) {
@@ -1767,11 +1962,20 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
             throw new Error('Cannot update retained content.');
           }
           const active = getDefined(live.active);
+          let inputSelection: ReturnType<typeof readViewSelection> | null =
+            null;
           if (VIEW_SELECTIONS.has(getEditorRuntime(view))) {
             active.view = view;
             active.viewSelection =
               VIEW_SELECTIONS.get(getEditorRuntime(view)) ?? null;
             const selection = readViewSelection(view, live);
+            const acceptedSelection =
+              authoredView(view).intent === 'edit' &&
+              authoredView(view).projection !== 'accepted'
+                ? readAcceptedViewSelection(view, live)
+                : selection;
+            active.inputSelectionAllowed = acceptedSelection !== null;
+            inputSelection = acceptedSelection;
             active.viewSelectionBefore = selection.selection;
             active.viewSelectionRoot = selection.root;
           }
@@ -1780,11 +1984,11 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
             active.proposed = true;
             active.automatic = true;
           }
-          if (active.view) {
+          if (active.view && inputSelection) {
             setTransactionViewSelection(
               source,
-              active.viewSelectionBefore,
-              active.viewSelectionRoot
+              inputSelection.selection,
+              inputSelection.root
             );
           }
         },
@@ -2143,6 +2347,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
             hydratedChanges: new Set(),
             receiving: null,
             insertions: new Map(),
+            inputSelectionAllowed: true,
             rangeLifetime: { aborted: false },
             ranges: [],
             view: null,
@@ -2691,6 +2896,11 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
         if (live.active?.receiving) {
           throw new Error(
             'Received authored operations cannot mix with ordinary writes.'
+          );
+        }
+        if (live.active && !live.active.inputSelectionAllowed) {
+          throw new Error(
+            'Editing cannot change pending authored content. Switch to Suggesting to modify the proposal.'
           );
         }
         actor(live);

@@ -616,6 +616,13 @@ view selection, public schedulers or geometry stores, virtual-element adapters,
 and app presentation policy. Copied UI owns Floating UI middleware, styling,
 labels, focus policy, and feature composition.
 
+A copied positioning primitive owns the moment its content has real anchor
+geometry. Expose one provider-neutral `onPlaced` callback only when a current
+composition must sequence work such as autofocus after that boundary. Keep
+coordinates and readiness state private, make every supported provider honor
+the same lifecycle, and reject timers, polling, or global selection-scroll
+suppression as substitutes for the owner signal.
+
 When a consumer already owns a semantic target, use the canonical DOM operation
 instead of querying its presentation markers. If that operation schedules work,
 return its existing request cancellation handle so callers can end their own

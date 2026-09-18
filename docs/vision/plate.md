@@ -726,6 +726,12 @@ Current priorities:
   registry UI owns visual styles, labels and product composition. The editor
   feature owns document constraints and persistence; generic DOM primitives
   remain editor-independent. Internal providers, stores, and prop hooks stay private.
+- A copied positioning primitive owns placement readiness across every
+  supported provider. It may publish one `onPlaced` callback when a current
+  composition must sequence autofocus or another write after real anchor
+  geometry exists. The composition keeps readiness private; timers, polling,
+  duplicate geometry state, and global selection-scroll suppression do not
+  replace the lifecycle signal.
 - Recurring editor-state projections belong to the existing semantic React
   owner. Presence-only controls use `useEditorHasSelection`; range consumers
   use `useEditorSelection`. Keep commit invalidation private and reuse the

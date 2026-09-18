@@ -405,7 +405,7 @@ for (const entryPath of commentEntryPaths) {
       const initialValue = await harness.get.modelValue();
 
       if (entryPath === 'selection-toolbar') {
-        const blocks = editor.locator('[data-plite-node="element"]');
+        const blocks = editor.locator('[data-editor-node="element"]');
 
         await physicallySelectAcrossText(
           page,
@@ -454,7 +454,7 @@ for (const entryPath of commentEntryPaths) {
 
       await expect(composer).toBeFocused();
       const inactiveSelection = editor.locator(
-        '[data-plite-inactive-selection]'
+        '[data-editor-inactive-selection]'
       );
       await expect
         .poll(() => inactiveSelection.allTextContents())
@@ -532,10 +532,10 @@ for (const entryPath of commentEntryPaths) {
           style.textContent = [
             '[data-discussion-popover] { opacity: 0 !important; }',
             nextState === 'absent'
-              ? '[data-plite-inactive-selection] { background: transparent !important; }'
+              ? '[data-editor-inactive-selection] { background: transparent !important; }'
               : '',
             nextState === 'duplicate'
-              ? '[data-plite-inactive-selection] { background: color-mix(in srgb, var(--brand) 43.75%, transparent) !important; }'
+              ? '[data-editor-inactive-selection] { background: color-mix(in srgb, var(--brand) 43.75%, transparent) !important; }'
               : '',
           ].join('\n');
           document.head.append(style);
@@ -617,6 +617,205 @@ for (const entryPath of commentEntryPaths) {
     }
   });
 }
+
+test('keeps comment autofocus and anchor geometry stable through page and editor scrolling', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+  await page.setViewportSize({ height: 900, width: 1440 });
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.goto('/', { waitUntil: 'commit' });
+    const editor = page.locator(EDITOR).first();
+    const scrollContainer = editor.locator('xpath=..');
+    const target = editor
+      .locator('[data-editor-node="element"]')
+      .filter({ hasText: 'Boost your productivity with integrated' })
+      .first();
+
+    await expect(target).toBeVisible({ timeout: 20_000 });
+    await scrollContainer.evaluate((element) => {
+      element.scrollTop = 0;
+    });
+    await page.evaluate(() => scrollTo(0, 500));
+    await afterPaint(page);
+    await expect.poll(() => page.evaluate(() => scrollY)).toBe(500);
+    await physicallySelectText(page, target, 6, 23);
+
+    const scrollBeforeOpen = await scrollContainer.evaluate((element) => ({
+      editor: element.scrollTop,
+      page: scrollY,
+    }));
+
+    await page.keyboard.press(commentHotkey);
+    const popover = page.locator('[data-discussion-popover]');
+    const composer = popover.getByRole('textbox', { name: 'New comment' });
+
+    await expect(composer).toBeFocused();
+    await page.keyboard.insertText('x');
+    await expect(composer).toContainText('x');
+    const scrollAfterOpen = await scrollContainer.evaluate((element) => ({
+      editor: element.scrollTop,
+      page: scrollY,
+    }));
+
+    expect
+      .soft(
+        Math.abs(scrollAfterOpen.page - scrollBeforeOpen.page),
+        'opening the positioned composer preserves page scroll'
+      )
+      .toBeLessThanOrEqual(1);
+    expect
+      .soft(
+        Math.abs(scrollAfterOpen.editor - scrollBeforeOpen.editor),
+        'opening the positioned composer preserves editor scroll'
+      )
+      .toBeLessThanOrEqual(1);
+
+    await page.evaluate(() => scrollTo(0, 500));
+    await afterPaint(page);
+    const readGeometry = async () => {
+      const [popup, anchor] = await Promise.all([
+        popover.boundingBox(),
+        target.evaluate((element) => {
+          const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT
+          );
+          const range = document.createRange();
+          let consumed = 0;
+          let current = walker.nextNode();
+          let startSet = false;
+
+          while (current) {
+            const text = current as Text;
+            const nextConsumed = consumed + text.length;
+
+            if (!startSet && nextConsumed >= 6) {
+              range.setStart(text, 6 - consumed);
+              startSet = true;
+            }
+            if (nextConsumed >= 23) {
+              range.setEnd(text, 23 - consumed);
+              break;
+            }
+
+            consumed = nextConsumed;
+            current = walker.nextNode();
+          }
+
+          const rect = Array.from(range.getClientRects()).at(-1);
+
+          if (!rect) throw new Error('Missing comment anchor geometry.');
+
+          return { bottom: rect.bottom, top: rect.top };
+        }),
+      ]);
+
+      if (!popup) throw new Error('Missing discussion popover geometry.');
+
+      return { anchor, popup };
+    };
+    const beforeEditorScroll = await readGeometry();
+
+    await scrollContainer.evaluate((element) => {
+      element.scrollTop = 160;
+    });
+    await expect
+      .poll(async () => {
+        const after = await readGeometry();
+        const anchorDelta = after.anchor.top - beforeEditorScroll.anchor.top;
+        const popupDelta = after.popup.y - beforeEditorScroll.popup.y;
+
+        return Math.abs(anchorDelta - popupDelta);
+      })
+      .toBeLessThanOrEqual(5);
+    const afterEditorScroll = await readGeometry();
+
+    await scrollContainer.evaluate((element) => {
+      element.scrollTop = 0;
+    });
+    await expect
+      .poll(async () => {
+        const after = await readGeometry();
+        const anchorDelta = after.anchor.top - afterEditorScroll.anchor.top;
+        const popupDelta = after.popup.y - afterEditorScroll.popup.y;
+
+        return Math.abs(anchorDelta - popupDelta);
+      })
+      .toBeLessThanOrEqual(5);
+
+    const beforePageScroll = await readGeometry();
+
+    await page.evaluate(() => scrollBy(0, 40));
+    await expect
+      .poll(async () => {
+        const after = await readGeometry();
+        const anchorDelta = after.anchor.top - beforePageScroll.anchor.top;
+        const popupDelta = after.popup.y - beforePageScroll.popup.y;
+
+        return Math.abs(anchorDelta - popupDelta);
+      })
+      .toBeLessThanOrEqual(5);
+    await page.setViewportSize({ height: 900, width: 1380 });
+    await afterPaint(page);
+    const resized = await readGeometry();
+
+    expect(resized.popup.x).toBeGreaterThanOrEqual(0);
+    expect(resized.popup.x + resized.popup.width).toBeLessThanOrEqual(1380);
+    await page.setViewportSize({ height: 900, width: 1440 });
+    await page.evaluate(() => scrollTo(0, 500));
+    await afterPaint(page);
+
+    await page.keyboard.press('Escape');
+    await expect(popover).toHaveCount(0);
+    await expect(editor).toBeFocused();
+    const scrollBeforeReopen = await page.evaluate(() => scrollY);
+
+    await page.keyboard.press(commentHotkey);
+    await expect(
+      page
+        .locator('[data-discussion-popover]')
+        .getByRole('textbox', { name: 'New comment' })
+    ).toBeFocused();
+    expect(
+      Math.abs((await page.evaluate(() => scrollY)) - scrollBeforeReopen)
+    ).toBeLessThanOrEqual(1);
+    const firstAnchorPopup = await popover.boundingBox();
+
+    await page.keyboard.press('Escape');
+    await expect(popover).toHaveCount(0);
+    await physicallySelectText(page, target, 25, 38);
+    await page.keyboard.press(commentHotkey);
+    await expect(
+      page
+        .locator('[data-discussion-popover]')
+        .getByRole('textbox', { name: 'New comment' })
+    ).toBeFocused();
+    const secondAnchorPopup = await popover.boundingBox();
+
+    expect(firstAnchorPopup).not.toBeNull();
+    expect(secondAnchorPopup).not.toBeNull();
+    expect(
+      Math.abs(secondAnchorPopup!.x - firstAnchorPopup!.x),
+      'changing the selected anchor repositions the popover'
+    ).toBeGreaterThan(5);
+
+    await testInfo.attach('taskhub-21-scroll-geometry', {
+      body: JSON.stringify({
+        afterEditorScroll,
+        beforeEditorScroll,
+        scrollAfterOpen,
+        scrollBeforeOpen,
+      }),
+      contentType: 'application/json',
+    });
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
 
 test('overlapping comments open together in Floating Discussion', async ({
   page,

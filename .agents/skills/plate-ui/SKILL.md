@@ -417,6 +417,13 @@ Floating UI middleware and virtual-reference adaptation in copied UI, import
 the positioning library directly, and never recover geometry from the global
 DOM selection or an implicit active editor.
 
+When copied content must autofocus only after its floating surface has real
+anchor geometry, let the provider-neutral positioning primitive publish a
+one-shot `onPlaced` lifecycle callback. Keep the readiness state in the
+consuming composition and require equivalent Base and Radix behavior. Do not
+guess placement with timers or polling, and do not disable editor selection
+scrolling globally to hide an unpositioned focus write.
+
 For scrolling to a known match or selection, pass its semantic range to the
 exact view's `editor.api.dom.scrollIntoView` and return its cancellation function
 from the effect. Do not query decoration markers or wrap the DOM API in another

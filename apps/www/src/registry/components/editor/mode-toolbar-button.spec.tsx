@@ -89,6 +89,18 @@ it('tracks authored view policy changes without a document commit', async () => 
     initialValue: [{ type: 'paragraph', children: [{ text: 'Keep' }] }],
   });
   let mountedEditor: Editor | undefined;
+  editor.plugin(SuggestionPlugin).api.setMode('suggesting');
+  editor.update.text.insert(' draft', { at: { path: [0, 0], offset: 4 } });
+  const before = JSON.stringify(editor.read.value());
+  const pending = editor.read.authored.changes().items.map((change) => ({
+    authorId: change.authorId,
+    id: change.id,
+    status: change.status,
+  }));
+  const documentCommits: boolean[] = [];
+  const stop = editor.subscribeCommit((commit) =>
+    documentCommits.push(commit.changed.has('document'))
+  );
   const view = render(
     <TooltipProvider>
       <EditorRoot editor={editor}>
@@ -102,10 +114,32 @@ it('tracks authored view policy changes without a document commit', async () => 
   );
 
   expect(mountedEditor).toBeDefined();
-  act(() => mountedEditor!.plugin(SuggestionPlugin).api.setMode('suggesting'));
-
   await waitFor(() =>
     expect(view.getByRole('button', { name: 'Suggestion' })).toBeTruthy()
   );
+  expect(view.getByRole('textbox')).toHaveTextContent('Keep draft');
+  documentCommits.length = 0;
+  fireEvent.keyDown(view.getByRole('button', { name: 'Suggestion' }), {
+    key: 'Enter',
+  });
+  fireEvent.click(await view.findByRole('menuitemradio', { name: 'Editing' }));
+  await waitFor(() =>
+    expect(view.getByRole('button', { name: 'Editing' })).toBeTruthy()
+  );
+  expect(mountedEditor!.plugin(DefaultAuthoredPlugin).read.view()).toEqual({
+    intent: 'edit',
+    projection: 'markup',
+  });
+  expect(view.getByRole('textbox')).toHaveTextContent('Keep draft');
+  expect(JSON.stringify(editor.read.value())).toBe(before);
+  expect(
+    editor.read.authored.changes().items.map((change) => ({
+      authorId: change.authorId,
+      id: change.id,
+      status: change.status,
+    }))
+  ).toEqual(pending);
+  expect(documentCommits).not.toContain(true);
+  stop();
   view.unmount();
 });

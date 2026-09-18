@@ -37,8 +37,12 @@ describe('BaseSuggestionPlugin', () => {
     suggestion.api.setMode('editing');
     expect(editor.plugin(DefaultAuthoredPlugin).read.view()).toEqual({
       intent: 'edit',
-      projection: 'accepted',
+      projection: 'markup',
     });
+    expect(editor.read.text.string([])).toBe('Accepted proposed');
+    expect(editor.plugin(DefaultAuthoredPlugin).read.changes().items).toEqual([
+      expect.objectContaining({ authorId: 'alice', status: 'pending' }),
+    ]);
   });
 
   it('publishes immutable affected change and text identities', () => {

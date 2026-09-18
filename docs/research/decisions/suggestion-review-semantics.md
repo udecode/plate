@@ -2,7 +2,7 @@
 title: Suggestion review semantics
 type: decision
 status: provisional
-updated: 2026-09-14
+updated: 2026-09-17
 review_scope: suggestions
 current_review: 2026-09-14-suggestions-view-initialization-api
 review_history:
@@ -22,6 +22,14 @@ related:
 ---
 
 # Suggestion review semantics
+
+## Input mode and review projection
+
+Suggestion mode controls the intent of subsequent input, not the visibility or status of existing changes. Both Editing and Suggesting use the markup projection. Closing Suggesting therefore keeps pending insertions, retained deletions, replacements, review cards, and linked comments visible.
+
+Editing writes only targets that map exactly to accepted content. Pending insertions, retained deletion fragments, and selections that mix accepted and pending content are review-only until the user switches to Suggesting. The mode control never accepts, rejects, deletes, or serializes a change, and it creates no undo step. Applications that need a clean accepted-only view set `{ intent: 'edit', projection: 'accepted' }` explicitly.
+
+This keeps one native authored view owner. It does not add a mode store, a second document, or suggestion-specific paint state. Each mounted view retains its own intent and selection, while accepted content, authored records, IDs, authors, and comments remain shared document facts.
 
 ## Document initialization
 

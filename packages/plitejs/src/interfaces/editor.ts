@@ -1758,9 +1758,13 @@ export type EditorUpdatePolicyFor<TEditor extends BaseEditor<any, any>> =
     : never;
 
 export type EditorViewOptions<TRoot extends RootKey = RootKey> = {
-  /** Native authored input and rendering policy for this view. */
+  /**
+   * Native authored input and rendering policy for this view. `edit + markup`
+   * keeps pending review content visible while exact accepted targets receive
+   * direct edits; pending-only and mixed targets remain read-only.
+   */
   authored?: Readonly<
-    | { intent: 'edit'; projection: 'accepted' }
+    | { intent: 'edit'; projection: 'accepted' | 'markup' }
     | { intent: 'propose'; projection: 'markup' | 'proposed' }
   >;
   readOnly?: boolean;

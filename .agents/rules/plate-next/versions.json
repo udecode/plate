@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 199,
+  "latestVersion": 201,
   "versions": [
     {
       "version": 0,
@@ -2314,6 +2314,28 @@
         "Replace annotated-node diff protocols with immutable schema-valid comparison results and canonical DocumentChange output.",
         "Resolve three-way conflicts from one comparison without rematching the original revisions or creating another review store.",
         "Validate the live schema, accepted baseline, and authored frontier before importing selected comparison groups as one native proposal."
+      ]
+    },
+    {
+      "version": 200,
+      "date": "2026-09-17",
+      "doctrineFingerprint": "sha256:c5c42d0b6ec342b4035ae006928b7b94b0426d86efad468d5928be5cf1b85b23",
+      "summary": "Suggestion input intent changes independently from the markup review projection.",
+      "migrationChecks": [
+        "Keep pending insertions, retained deletions, replacements and review entry points visible when suggestion controls switch subsequent input to direct editing.",
+        "Map direct markup-view input only to exact accepted targets; keep pending-only, retained and mixed accepted/pending targets review-only without changing authored identities or decisions.",
+        "Prove both mode controls create no document or history mutation, two mounted views remain independent, and composition finishes under its starting intent before later input uses the new intent."
+      ]
+    },
+    {
+      "version": 201,
+      "date": "2026-09-18",
+      "doctrineFingerprint": "sha256:474bfad913f1d99726a1151f33a30824d1f5c7336ebe85a7e0fb92988babbd7b",
+      "summary": "Copied positioning primitives own provider-neutral placement readiness for geometry-dependent composition work.",
+      "migrationChecks": [
+        "Route geometry-dependent autofocus and other post-placement writes through the copied positioning primitive's onPlaced lifecycle instead of timers, polling, or unpositioned effects.",
+        "Keep placement coordinates and readiness state private to the positioning primitive and consuming composition; do not add a store, provider, scheduler, or editor-global flag.",
+        "Require every supported primitive provider to honor the same callback contract and prove the affected composition with exact browser geometry, focus, and scroll checks."
       ]
     }
   ],

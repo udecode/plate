@@ -4,7 +4,7 @@ import { PLUGINS } from '../../utils';
 import { observeSuggestionChanges } from './suggestion.internal';
 
 const viewByMode = {
-  editing: { intent: 'edit', projection: 'accepted' },
+  editing: { intent: 'edit', projection: 'markup' },
   suggesting: { intent: 'propose', projection: 'markup' },
 } as const satisfies Record<'editing' | 'suggesting', AuthoredView>;
 const suggestionModes = {

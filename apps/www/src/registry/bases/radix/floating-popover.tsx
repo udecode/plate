@@ -14,6 +14,13 @@ type FloatingAnchor =
     }
   | null;
 
+const PopoverContentWithPlaced =
+  PopoverPrimitive.Content as React.ForwardRefExoticComponent<
+    React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> & {
+      onPlaced?: () => void;
+    }
+  >;
+
 export function FloatingPopover({
   onOpenChange,
   onOpenChangeComplete,
@@ -67,6 +74,7 @@ export function FloatingPopoverContent({
   onFinalFocus,
   onEscapeKeyDown,
   onInitialFocus,
+  onPlaced,
   side,
   sideOffset = 4,
   style,
@@ -77,12 +85,14 @@ export function FloatingPopoverContent({
   onFinalFocus?: (event: Event) => void;
   onEscapeKeyDown?: (event: KeyboardEvent) => void;
   onInitialFocus?: (event: Event) => void;
+  /** Called after the content has been positioned against its anchor. */
+  onPlaced?: () => void;
   side?: 'bottom' | 'left' | 'right' | 'top';
   sideOffset?: number;
 }) {
   return (
     <PopoverPrimitive.Portal>
-      <PopoverPrimitive.Content
+      <PopoverContentWithPlaced
         {...props}
         align={align}
         alignOffset={alignOffset}
@@ -93,6 +103,7 @@ export function FloatingPopoverContent({
         onCloseAutoFocus={onFinalFocus}
         onEscapeKeyDown={onEscapeKeyDown}
         onOpenAutoFocus={onInitialFocus}
+        onPlaced={onPlaced}
         side={side}
         sideOffset={sideOffset}
         style={

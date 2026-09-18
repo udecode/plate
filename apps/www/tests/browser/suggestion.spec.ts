@@ -169,12 +169,15 @@ test('preserves the selected mode when saving and initializes it when reloading 
   await page
     .getByRole('menuitemradio', { name: 'Editing', exact: true })
     .click();
-  await expect(root).not.toContainText('the update');
+  await expect(root).toContainText('the update');
+  await expect(root.locator('[data-editor-retained="delete"]')).toContainText(
+    'extra'
+  );
   await page.getByRole('button', { name: 'Save snapshot' }).click();
   await expect(
     page.getByRole('button', { name: 'Editing', exact: true })
   ).toBeVisible();
-  await expect(root).not.toContainText('the update');
+  await expect(root).toContainText('the update');
   await page.getByRole('button', { name: 'Reload snapshot' }).click();
   await expect(
     page.getByRole('button', { name: 'Suggestion', exact: true })
@@ -246,6 +249,124 @@ test('loads the homepage playground with its original suggestion set', async ({
   await expect(
     editor.locator('[data-discussion-block-trigger]')
   ).toHaveAccessibleName('Open 5 discussion items for this block');
+  runtimeErrors.assertNone();
+});
+
+test('keeps pending suggestions visible through both homepage mode controls', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  await page.goto('/', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'homepage suggestion modes',
+    root
+  );
+  await editor.ready({
+    editor: 'visible',
+    text: 'Welcome to the Plate Playground!',
+  });
+
+  await editor.selection.select({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 7 },
+  });
+  await page.keyboard.type('Hello');
+  const replacementInsert = root
+    .getByRole('heading', { level: 1 })
+    .filter({ hasText: 'Hello' });
+  const replacementDelete = root
+    .getByRole('heading', { level: 1 })
+    .locator('span')
+    .filter({ hasText: 'Welcom' })
+    .last();
+  const seededInsert = root
+    .locator('[data-editor-authored-kind="insert"]')
+    .filter({ hasText: 'suggestions' });
+  const seededDelete = root
+    .locator('[data-editor-retained="delete"]')
+    .filter({ hasText: 'mark text for removal' });
+  await expect(replacementInsert).toBeVisible();
+  await expect(replacementDelete).toBeVisible();
+  const replacementDeleteIsMarked = () =>
+    replacementDelete.evaluate((element) => {
+      let current: Element | null = element;
+      while (current && current.tagName !== 'H1') {
+        if (getComputedStyle(current).textDecorationLine === 'line-through') {
+          return true;
+        }
+        current = current.parentElement;
+      }
+      return false;
+    });
+  expect(await replacementDeleteIsMarked()).toBe(true);
+
+  const valueBefore = await editor.get.modelValue();
+  const historyBefore = await editor.get.history();
+  await page.getByRole('button', { name: 'Suggestion', exact: true }).click();
+  await page
+    .getByRole('menuitemradio', { name: 'Editing', exact: true })
+    .click();
+  await expect(
+    page.getByRole('button', { name: 'Editing', exact: true })
+  ).toBeVisible();
+  for (const suggestion of [
+    replacementInsert,
+    replacementDelete,
+    seededInsert,
+    seededDelete,
+  ]) {
+    await expect(suggestion).toBeVisible();
+  }
+  expect(await replacementDeleteIsMarked()).toBe(true);
+  expect(await editor.get.modelValue()).toEqual(valueBefore);
+  expect(await editor.get.history()).toEqual(historyBefore);
+
+  await editor.selection.select({
+    anchor: { path: [1, 0], offset: 0 },
+    focus: { path: [1, 0], offset: 4 },
+  });
+  const floatingToggle = page
+    .locator('[role="toolbar"]')
+    .last()
+    .locator('button:has(svg.lucide-pencil-line)');
+  await expect(floatingToggle).toBeVisible();
+  await floatingToggle.click();
+  await expect(
+    page.getByRole('button', { name: 'Suggestion', exact: true })
+  ).toBeVisible();
+  await expect(replacementInsert).toBeVisible();
+  await expect(replacementDelete).toBeVisible();
+
+  await editor.selection.select({
+    anchor: { path: [1, 0], offset: 0 },
+    focus: { path: [1, 0], offset: 4 },
+  });
+  await expect(floatingToggle).toBeVisible();
+  await floatingToggle.click();
+  await expect(
+    page.getByRole('button', { name: 'Editing', exact: true })
+  ).toBeVisible();
+  expect(await editor.get.modelValue()).toEqual(valueBefore);
+  expect(await editor.get.history()).toEqual(historyBefore);
+  const discussion = root.getByRole('button', {
+    name: 'Open 5 discussion items for this block',
+    exact: true,
+  });
+  await expect(discussion).toBeVisible();
+  await discussion.click();
+  const review = page
+    .locator('[data-suggestion-review]')
+    .filter({ hasText: 'suggestions like this added text' });
+  await expect(review).toHaveCount(1);
+  await review.hover();
+  await review.getByRole('button', { name: 'Accept suggestion' }).click();
+  await expect(review).toHaveCount(0);
+  await root.focus();
+  await page.keyboard.press('ControlOrMeta+z');
+  await expect(review).toHaveCount(1);
+  await expect(seededInsert).toBeVisible();
   runtimeErrors.assertNone();
 });
 

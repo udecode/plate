@@ -149,6 +149,9 @@ type NativeAuthoredRuntime = {
   beforeValue: (commit: EditorCommit) => EditorDocumentValue | undefined;
   inputView: (commit: EditorCommit) => Editor | null;
   inputProjection: (commit: EditorCommit) => 'accepted' | 'proposed';
+  inputPath: (view: Editor, path: Path, root: string) => Path | null;
+  inputRange: (view: Editor, range: Range) => Range | null;
+  inputSelectionAllowed: (view: Editor) => boolean;
   projectedChange: (commit: EditorCommit) => DocumentChange;
   readView: <T>(view: Editor, read: () => T) => T;
   replace: <T>(apply: () => T) => T;
@@ -180,6 +183,22 @@ export const isAuthoredHistoryEffect = (effect: EditorEffect) =>
 const UPDATE_VIEWS = new WeakMap<Editor, Editor>();
 export const readAuthoredView = (view: Editor) =>
   AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.view(view);
+export const projectAuthoredInputPath = (
+  view: Editor,
+  path: Path,
+  root: string
+) =>
+  AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.inputPath(
+    view,
+    path,
+    root
+  );
+export const projectAuthoredInputRange = (view: Editor, range: Range) =>
+  AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.inputRange(view, range);
+export const isAuthoredInputSelectionAllowed = (view: Editor) =>
+  AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.inputSelectionAllowed(
+    view
+  ) ?? true;
 export const getAuthoredCommitBefore = (editor: Editor, commit: EditorCommit) =>
   AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(editor))?.beforeValue(commit);
 export const getAuthoredCommitView = (editor: Editor, commit: EditorCommit) =>

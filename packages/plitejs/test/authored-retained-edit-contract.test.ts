@@ -69,6 +69,21 @@ it('amends a deletion at its retained caret without changing either document pro
   );
 });
 
+it('keeps retained deletions review-only while the parent markup view is editing', () => {
+  const { source, view, retained } = setup();
+  const before = JSON.stringify(source.read.value());
+  view.api.authored.setView({ intent: 'edit', projection: 'markup' });
+  const result = retainedRuntime.updateAuthoredFragment(retained, (tx) => {
+    tx.selection.set(point(2));
+    tx.text.insert('X');
+  });
+
+  assert.equal(result, null);
+  assert.equal(retained.read.text.string([]), 'bravo');
+  assert.equal(JSON.stringify(source.read.value()), before);
+  assert.equal(view.read.authored.changes().items[0].status, 'pending');
+});
+
 it('evaluates installed semantic commands in retained coordinates', () => {
   const { source, retained } = setup();
   const result = retainedRuntime.updateAuthoredFragment(retained, (tx) => {

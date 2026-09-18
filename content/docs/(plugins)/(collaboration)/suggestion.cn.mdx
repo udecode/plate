@@ -14,7 +14,7 @@ docs:
 
 <ComponentPreview name="suggestion-demo" height="360px" />
 
-示例默认使用建议模式，并包含一条插入建议和一条删除建议。打开段落旁的讨论按钮来接受或拒绝修改，再尝试撤销和重做。切换到编辑模式可查看已接受内容；在建议模式下输入可提议修改。
+示例默认使用建议模式，并包含一条插入建议和一条删除建议。打开段落旁的讨论按钮来接受或拒绝修改，再尝试撤销和重做。切换到编辑模式后，已有建议和审阅控件仍然可见，后续输入会直接修改已接受内容。
 
 <PackageInfo>
 
@@ -84,7 +84,10 @@ export function SuggestionEditor() {
   });
 
   return (
-    <EditorRoot editor={editor}>
+    <EditorRoot
+      editor={editor}
+      authored={{ intent: 'propose', projection: 'markup' }}
+    >
       <EditorContainer>
         <Toolbar>
           <UndoToolbarButton />
@@ -131,14 +134,18 @@ export function SuggestionModeButton() {
 }
 ```
 
-两个模式固定映射到 authored view：
+两个模式映射到以下 authored view：
 
 | 建议模式 | Authored view |
 | --- | --- |
 | `'suggesting'` | `{ intent: 'propose', projection: 'markup' }` |
-| `'editing'` | `{ intent: 'edit', projection: 'accepted' }` |
+| `'editing'` | `{ intent: 'edit', projection: 'markup' }` |
 
 模式属于精确的已挂载 view。同一个文档的两个 view 可以使用不同模式，互不影响。
+
+改变模式只影响后续输入。它不会接受、拒绝、删除或隐藏待处理 change，也不会新增撤销步骤。编辑模式只直接修改能够精确映射到 accepted 内容的输入目标。待处理插入、保留删除，以及跨 accepted 和 pending 内容的 selection 保持只读；要修订这些内容，请切换到建议模式。
+
+如需只显示已接受内容，请直接为 authored view 设置 `{ intent: 'edit', projection: 'accepted' }`。
 
 如需显示不含保留审阅片段的 proposed 内容，请直接设置高级 authored view：
 
@@ -296,7 +303,7 @@ Comments 将 thread record 与文档分开保存。接受或拒绝 change 会隐
 
 ### `suggestion.api.setMode(mode)`
 
-通过 `editor.plugin(SuggestionPlugin)` 或 `editor.plugin(BaseSuggestionPlugin)` 将精确 view 设置为 `'suggesting'` 或 `'editing'`。
+通过 `editor.plugin(SuggestionPlugin)` 或 `editor.plugin(BaseSuggestionPlugin)` 设置后续输入是 proposal 还是直接编辑。两个模式都保留 markup projection 及其待处理审阅 UI。
 
 ### `suggestion.read.mode()`
 

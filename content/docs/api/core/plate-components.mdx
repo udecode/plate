@@ -52,6 +52,7 @@ For an editor with [authored changes](/docs/authored-changes), pass `authored` t
 | `authored` value | Behavior |
 | --- | --- |
 | `{ intent: 'edit', projection: 'accepted' }` | Edit accepted content. |
+| `{ intent: 'edit', projection: 'markup' }` | Edit accepted content while pending review content remains visible. Pending-only and mixed targets are read-only. |
 | `{ intent: 'propose', projection: 'markup' }` | Propose edits and display retained review content. |
 | `{ intent: 'propose', projection: 'proposed' }` | Propose edits and display the proposed result. |
 
