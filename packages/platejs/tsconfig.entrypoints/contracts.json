@@ -32,6 +32,9 @@
       "path": "./markdown.json"
     },
     {
+      "path": "./math.json"
+    },
+    {
       "path": "./mention.json"
     },
     {

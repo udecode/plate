@@ -1740,6 +1740,8 @@
         "typecheck:partition:react-core",
         "typecheck:partition:root",
         "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-basic-styles",
+        "typecheck:partition:standard-list",
         "typecheck:partition:table",
         "typecheck:partition:testing",
         "typecheck:partition:toc"
@@ -3138,6 +3140,7 @@
         "typecheck:partition:docx-import",
         "typecheck:partition:footnote-react",
         "typecheck:partition:markdown",
+        "typecheck:partition:math",
         "typecheck:partition:mention",
         "typecheck:partition:migrations",
         "typecheck:partition:proxies",
