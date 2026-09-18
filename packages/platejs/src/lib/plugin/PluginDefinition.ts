@@ -80,7 +80,6 @@ export type BasePluginDefinition = Readonly<{
   shortcuts?: true;
   stateFields?: true;
   targetPlugins?: ReadonlyArray<PluginReference | string>;
-  prepareDocument?: true;
   update?: object;
   validate?: true;
 }>;
@@ -299,8 +298,6 @@ export type PluginBase<
    *       always be active.
    *   - `inject` (for `inject.nodeProps`): Edit-only by default (true if not
    *       specified). Set to `false` to always be active.
-   *   - `prepareDocument`: NOT edit-only by default (false if not specified).
-   *       Set to `true` to make it edit-only.
    */
   editOnly?: EditOnlyConfig | boolean;
   /**
@@ -561,7 +558,7 @@ export type DeleteRules = {
    * ```
    */
   start?: 'default' | 'lift' | 'reset';
-  /** Action when Backspace is pressed and the block is empty. */
+  /** Action when a deletion starts from or leaves the block empty. */
   empty?: 'default' | 'reset';
 };
 
@@ -606,13 +603,6 @@ export type EditOnlyConfig = {
    * @default true (when `editOnly` is an object or `true` boolean)
    */
   inject?: boolean;
-  /**
-   * If true, `prepareDocument` is only called when the editor is not
-   * read-only.
-   *
-   * @default false (This is an exception. It's not edit-only by default, even if `editOnly` is true or an object, unless explicitly set to true here).
-   */
-  prepareDocument?: boolean;
   /**
    * If true, `render` functions are only active when the editor is not
    * read-only.

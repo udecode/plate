@@ -22,17 +22,22 @@ import {
 import { createEditor } from '../../src/react/plugin/with-react';
 
 const testSchedulers = new Set<ReturnType<typeof createDOMPhaseScheduler>>();
+type BrowserHandleOptions = Parameters<typeof attachRuntimeBrowserHandle>[0];
 const attachPliteBrowserHandle = (
-  options: Omit<
-    Parameters<typeof attachRuntimeBrowserHandle>[0],
-    'domPhaseScheduler'
-  >
+  options: Omit<BrowserHandleOptions, 'domPhaseScheduler' | 'replayHistory'> &
+    Partial<Pick<BrowserHandleOptions, 'replayHistory'>>
 ) => {
   const domPhaseScheduler = createDOMPhaseScheduler();
 
   testSchedulers.add(domPhaseScheduler);
 
-  return attachRuntimeBrowserHandle({ ...options, domPhaseScheduler });
+  return attachRuntimeBrowserHandle({
+    ...options,
+    domPhaseScheduler,
+    replayHistory:
+      options.replayHistory ??
+      (() => ({ reason: 'unmounted', status: 'unavailable' })),
+  });
 };
 
 afterEach(() => {
@@ -199,6 +204,7 @@ test('browser handle leaves text-only multi-root history to direct DOM sync', ()
     forceRender,
     inputController: createInputController(),
     isViewportBackedSelection: () => false,
+    replayHistory: (direction) => editor.api.history[direction](),
     setExplicitViewportBackedSelection: vi.fn(),
   });
 

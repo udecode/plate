@@ -132,7 +132,7 @@ export function SuggestionEditor() {
 
 The editor must install an authored plugin, either directly or through `SuggestionPlugin`. Changing the `intent` or `projection` prop updates this view. Rerendering with equivalent values preserves subsequent mode changes made through the mounted view's portal.
 
-For an interactive mode control, let `SuggestionPlugin` keep the markup projection while it switches subsequent input between direct editing and proposing:
+For an interactive mode control, let `SuggestionPlugin` change the intent while preserving the current projection:
 
 ```tsx
 import { SuggestionPlugin } from "platejs/suggestion/react";
@@ -157,9 +157,9 @@ authored.api.setView({
 | `proposed` | The proposed result without retained review fragments       |
 | `markup`   | Proposed content with retained deletions and move fragments |
 
-The supported combinations are `edit + accepted`, `edit + markup`, `propose + proposed`, and `propose + markup`. `edit + markup` keeps pending review content visible while exact accepted targets receive direct edits. Pending-only targets, retained deletions, and mixed accepted/pending selections remain read-only.
+Use `intent: 'edit'` with any projection. An editing markup or proposed view keeps pending content visible while edits to independent accepted content publish directly. An edit that depends on pending content remains a proposal with the current author. Use `intent: 'propose'` with `proposed` or `markup` when ordinary input must create proposals.
 
-Intent and projection belong to the exact view. Reads use that view's coordinates. Authored input maps writable targets to the document owned by the intent and rejects targets that cannot map without changing a pending proposal. Two mounted views over one document can use different policies.
+Intent and projection belong to the exact view. Selection, clipboard input, commands, and anchors use that view's coordinates. Two mounted views over one document can use different policies.
 
 ## Review changes
 
@@ -236,7 +236,7 @@ const result = retainedAuthored.update.revert({ selection });
 
 The original records keep their authors. The compensation belongs to the current author. A revert can return `blocked` when later dependent work prevents compensation, or `unavailable` when the required content is absent.
 
-Plate History reverses local interaction batches with `editor.update.history.undo()` and `redo()`. Local undo also restores mapped selection. Selective revert records another authored contribution. The [Version History example](/docs/examples/version-history) lets you edit as two authors and revert one retained contribution.
+Plate History reverses local interaction batches with `editor.api.history.undo()` and `redo()`. Local undo also restores mapped selection. Selective revert records another authored contribution. The [Version History example](/docs/examples/version-history) lets you edit as two authors and revert one retained contribution.
 
 ## Save the document
 
@@ -252,9 +252,11 @@ const restored = createEditor({
 });
 ```
 
-Use the same content plugins and schema when loading. To replace an existing editor's document, call `editor.update.value.replace(savedDocument)`. Loading validates the authored records and document schema before publishing the value. Treat `meta.authored` as codec-owned data.
+Use the same content plugins and schema when loading a revision into a fresh editor. Loading validates the authored records and document schema before publishing the value. Treat `meta.authored` as codec-owned data. Local undo starts empty.
 
-If you install [Comments](/docs/comment), save `editor.plugin(CommentsPlugin).api.getThreads()` alongside the document. Thread records have a separate persistence lifecycle and can reference authored change IDs.
+If you install [Comments](/docs/comment), save `editor.plugin(CommentsPlugin).api.toJSON()` atomically with the document and its application revision and conversation generation. Verify that association, then pass the saved `CommentsJSON` to `CommentsPlugin.configure({ initialState: { initialComments } })` in the fresh editor. Live thread targets contain semantic identities; `attachment(id)` reads their placement. Accepting, rejecting, and undoing a suggestion decision preserve its discussion. Resolving or reopening a thread stays outside document undo.
+
+Historical previews and restores retain current conversations and use only the selected revision's proven targets. See [Comments and versions](/docs/comment#document-history-and-versions).
 
 ## Export explicit projections
 

@@ -14,16 +14,11 @@ import { registryHooks } from './registry-hooks';
 import { registryLib } from './registry-lib';
 import { registryStyles } from './registry-styles';
 import {
-  EDITOR_REGISTRY_VARIANT_PACKAGE_NAMES,
   EDITOR_REGISTRY_VARIANTS,
   getEditorRegistryVariantSourcePath,
 } from './registry-variants';
 
-const url =
-  process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000'
-    : 'https://platejs.org';
-
+const REGISTRY_HOMEPAGE = 'https://platejs.org';
 const EDITOR_COMPONENT_PATH_SEGMENT = 'components/editor/';
 const EDITOR_COMPONENT_TARGET_PREFIX = '@components/editor/';
 
@@ -65,7 +60,6 @@ function withEditorBase(
   base: PlateRegistryBase
 ): Registry['items'] {
   return items.map((item) => {
-    const variantPackages = new Set<string>();
     const files = item.files?.map((file) => {
       const { target } = file;
 
@@ -74,9 +68,6 @@ function withEditorBase(
       const variant = EDITOR_REGISTRY_VARIANTS.get(target);
 
       if (!variant) return file;
-      for (const packageName of variant.packages[base]) {
-        variantPackages.add(packageName);
-      }
 
       return {
         ...file,
@@ -84,18 +75,7 @@ function withEditorBase(
       };
     });
 
-    if (variantPackages.size === 0) return { ...item, files };
-
-    return {
-      ...item,
-      dependencies: [
-        ...(item.dependencies ?? []).filter(
-          (dependency) => !EDITOR_REGISTRY_VARIANT_PACKAGE_NAMES.has(dependency)
-        ),
-        ...variantPackages,
-      ],
-      files,
-    };
+    return { ...item, files };
   });
 }
 
@@ -156,7 +136,7 @@ export function createPlateRegistryItems({
 }
 
 export function createPlateRegistry(
-  homepage = url,
+  homepage = REGISTRY_HOMEPAGE,
   options?: { base?: PlateRegistryBase }
 ): Registry {
   return {
@@ -165,5 +145,3 @@ export function createPlateRegistry(
     name: 'plate',
   };
 }
-
-export const registry = createPlateRegistry();

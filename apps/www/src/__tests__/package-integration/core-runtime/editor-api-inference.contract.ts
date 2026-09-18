@@ -17,6 +17,7 @@ type ExpectedEditorApiKeys =
   | 'elementState'
   | 'file'
   | 'footnote'
+  | 'history'
   | 'html'
   | 'image'
   | 'link'
@@ -41,7 +42,9 @@ type _SerializedLinkTypeIsNotAnApiKey = AssertNever<
   Extract<'a', EditorApiKeys>
 >;
 type _TableApiKeepsItsMethods = Assert<
-  'getColumnCount' extends keyof Editor['api']['table'] ? true : false
+  'columnWidths' | 'createResize' extends keyof Editor['api']['table']
+    ? true
+    : false
 >;
 type _DndApiKeepsItsMethods = Assert<
   'prepareDrag' extends keyof Editor['api']['dnd'] ? true : false
@@ -51,6 +54,9 @@ type _ComboboxApiKeepsItsMethods = Assert<
 >;
 type _LinkApiKeepsItsMethods = Assert<
   'validateUrl' extends keyof Editor['api']['link'] ? true : false
+>;
+type _HistoryApiKeepsItsMethods = Assert<
+  'redo' | 'undo' extends keyof Editor['api']['history'] ? true : false
 >;
 type _CsvApiKeepsItsMethods = Assert<
   'deserialize' extends keyof Editor['api']['csv'] ? true : false

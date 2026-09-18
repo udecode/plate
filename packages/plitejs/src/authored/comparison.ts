@@ -172,8 +172,7 @@ export const proposeAuthoredComparison = <V extends Value>(
     });
   } catch (error) {
     return error instanceof Error &&
-      error.message ===
-        'An authenticated author is required for authored writes.'
+      error.message === 'An author ID is required for authored writes.'
       ? { reason: 'actor', status: 'unavailable' }
       : { reason: 'dependency', status: 'blocked' };
   }

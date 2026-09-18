@@ -236,7 +236,6 @@ const createMutablePlatePluginCache = (): MutablePlatePluginCache => ({
     wrapRoot: [],
   },
   rules: { match: [] },
-  prepareDocument: [],
   useViewElementAttributes: [],
 });
 
@@ -902,9 +901,6 @@ export const createPlateModelPublication = (
       pluginCache.slots.afterNodeChildren.push(plugin.name);
     }
     if (plugin.rules?.match) pluginCache.rules.match.push(plugin.name);
-    if (plugin.prepareDocument) {
-      pluginCache.prepareDocument.push(plugin.name);
-    }
     if (plugin.decorate) pluginCache.decorate.push(plugin.name);
     if (plugin.render.useViewElementAttributes) {
       pluginCache.useViewElementAttributes.push(plugin.name);
@@ -953,12 +949,10 @@ export const createPlateModelPublication = (
       wrapRoot: freezeList(pluginCache.slots.wrapRoot),
     }),
     rules: Object.freeze({ match: freezeList(pluginCache.rules.match) }),
-    prepareDocument: freezeList(pluginCache.prepareDocument),
     useViewElementAttributes: freezeList(pluginCache.useViewElementAttributes),
   });
   const shortcutRuntime = snapshotApiValue(
     createPluginShortcuts(
-      editor,
       publishedPluginList,
       shortcutApiByPlugin,
       publishedUpdateMethods
@@ -1553,7 +1547,6 @@ export const createPlateRuntimePlugins = (
 };
 
 const createPluginShortcuts = (
-  editor: Editor,
   pluginList: readonly AnyBasePlugin[],
   shortcutApiByPlugin?: Readonly<Record<string, ShortcutApiOwner | undefined>>,
   updateMethods?: Readonly<Record<string, readonly string[] | undefined>>
@@ -1583,7 +1576,7 @@ const createPluginShortcuts = (
             string,
             unknown
           > & {
-            handler?: (...args: never[]) => unknown;
+            handler?: NonNullable<BasePlugin['shortcuts'][string]>['handler'];
             priority?: number;
           };
 
@@ -1642,9 +1635,9 @@ const createPluginShortcuts = (
             })();
 
             if (route === 'update') {
-              resolvedHotkey.handler = () => {
+              resolvedHotkey.handler = ({ editor: commandEditor }) => {
                 const updateGroup = (
-                  editor.update as unknown as Record<string, unknown>
+                  commandEditor.update as unknown as Record<string, unknown>
                 )[plugin.name];
                 const command =
                   updateGroup && typeof updateGroup === 'object'
@@ -1662,12 +1655,20 @@ const createPluginShortcuts = (
                 return result === false ? false : undefined;
               };
             } else {
-              resolvedHotkey.handler = () =>
-                Reflect.apply(
-                  apiCommand as (...args: never[]) => unknown,
-                  apiOwner,
-                  []
-                );
+              resolvedHotkey.handler = ({ editor: commandEditor }) => {
+                const commandApi = Reflect.get(commandEditor.api, plugin.name);
+                const command = isApiRecord(commandApi)
+                  ? commandApi[originalKey]
+                  : undefined;
+
+                if (typeof command !== 'function') {
+                  throw new Error(
+                    `Plate shortcut "${namespacedKey}" lost its compiled API command.`
+                  );
+                }
+
+                return Reflect.apply(command, commandApi, []);
+              };
             }
           }
 

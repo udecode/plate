@@ -1,0 +1,91 @@
+{
+  "id": "2026-09-16-ai-preview-ownership",
+  "scope": "ai",
+  "kind": "review",
+  "date": "2026-09-16",
+  "question": "How should AI edits and streaming reuse authored commands, selection and application policy?",
+  "model": "GPT-6",
+  "method": "best-api-review/history-v2",
+  "trigger": "Repeated reporter contradiction: ordinary AI output is green, the streaming indicator is missing, and generation changes Editing to Suggestion. Explicit Patch and Best API Review request.",
+  "requirements": [
+    "AI generation and review preserve the user-selected input intent; only an explicit choice enables Suggestion.",
+    "Inline rich Markdown/MDX output has AI presentation and a visible streaming end; native focus and caret are verified separately for streaming, review and follow-up input.",
+    "Temporary AI output neither exposes unrelated proposals nor overwrites later explicit mode choices when the session finishes.",
+    "Apply uses canonical editor commands and native history/authored ownership; discard cannot undo unrelated edits or restore a whole-document snapshot."
+  ],
+  "evidenceReuse": "Fresh source trace of both AI proposal publication paths, stream adapter, copied AI/Suggestion rendering, detached preview/application and Plite input routing. Reused the prior recovery text/history proof only within its original bounds. Chrome profile Ziad on localhost:3000/docs/components/ai-menu reproduced the new mode/color failure and missing dedicated stream indicator. Compared local main cce36d378b2f1e5c775dafe1a67c2215165c982c ai-node.tsx through git show; no main runtime replay.",
+  "summary": "Pursue consolidating temporary AI output on one draft and applying it through normal commands. Cut the AI save/switch/restore mode protocol and proposal-versus-detached application split. The draft runtime and inline placement are provisional pending measured design and native proof. This reverses the recovery plan assumption that temporary AI review may enter propose/markup; it preserves the native authored engine for actual tracked suggestions and accepted writes.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "alternatives": [
+    "Keep/configure: restoring AI text marks or overriding green styles fixes only paint and leaves the input-policy defect.",
+    "Change existing API: edit/markup could decouple presentation from intent, but current Plite transactions choose coordinate space from intent, pending-text input requires a defined mapping law, and all pending changes would still appear. Removing validation alone is unsound.",
+    "Add a primitive: a filtered transient authored branch could isolate output, but adds projection/lifetime machinery and retains per-stream authored work; it needs an executable advantage over reuse of the existing draft.",
+    "Delete/merge/move ownership: consolidate previewValue, AIChatEditor and detached application under the existing AI feature lifecycle; delete AI mode snapshot/restore and dual proposal application. Reuse the canonical authored/history engine when the user applies the draft.",
+    "Replace architecture: a full-document fork, a private AI mutation engine or a public preview manager is not earned by this job. First test existing detached rich preview and node-wrapper placement; add neutral substrate only for a demonstrated gap."
+  ],
+  "proofLimits": "This is a bounded AI preview-ownership review, not an exhaustive AI/Copilot audit. Native red observed Editing becoming Suggestion, green authored spans and no AILeaf streaming indicator. A native caret was visible in some phases; universal caret absence is not established. Existing content/history tests omit mode and streaming paint, and were not rerun as proof of those missing assertions. No product code changed, no target benchmark ran, no fixed-state proof is claimed. Repair remains open in the existing plan.",
+  "references": [
+    "docs/research/decisions/ai-preview-ownership.md",
+    "docs/plans/2026-09-16-ai-continuation-render-recovery.md",
+    "docs/plans/2026-09-10-ai-streaming-and-markdown-demo-architecture.md",
+    "docs/research/decisions/authored-change-ownership.md",
+    "packages/platejs/src/ai/react/AIChatPlugin.ts",
+    "packages/platejs/src/ai/react/useAIChat.ts",
+    "apps/www/src/registry/components/editor/ai.tsx",
+    "apps/www/src/registry/components/editor/suggestion.tsx",
+    "packages/plitejs/src/authored/authored.ts",
+    "apps/www/tests/browser/ai-session.spec.ts"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/ai.tsx": "dc805918f7985f45eeb2ad9b297e2696ed5c2e36a2ade40d04d284cf82b20a38",
+      "apps/www/src/registry/components/editor/use-chat.ts": "94576490ae9e7ecce7477d2b28e4e5e6c457c29bb07c2c4b0da845a0d020af2c",
+      "apps/www/src/app/api/ai/command/route.ts": "a90b127393227a1c85accb26df23ac8f3a21cde85ac244e8a14e20fcc2f99c88",
+      "apps/www/src/app/api/ai/copilot/route.ts": "742d8bfccba19cf23a693618ebd97d23fda85ebb591aa2a4cf5bce0d57d8cd60",
+      "packages/platejs/src/ai/lib/AIChatRequestContext.spec.ts": "f60e3fef8446df84ab36bddcaa4727fe90d634bc476931739b0ce0196c25d743",
+      "apps/www/tests/browser/ai-session.spec.ts": "62ea90630b4515dece2d806e7eea906fb54e5d5611fcf8c38c9c34e94c619cc4",
+      "packages/platejs/src/ai/react/AIChatPlugin.focus.spec.tsx": "37d07ac03a2048dbfa1b1f893676007e296a510b9aaece9628006f447e58e1f5",
+      "apps/www/src/registry/components/editor/ai-menu.tsx": "5c6367123b973cf51a751e44b83418dd20d4fdaf252e35b8cc36100121ce16e1",
+      "apps/www/src/registry/components/editor/suggestion.tsx": "114cc9b97f95944a5162a7de6ff125885db5a286ae6195101e01cbd96891d0ff",
+      "packages/plitejs/src/authored/authored.ts": "223f55a6e453b3183f114a2397af23473dcda4088a9d5efe9d1ff2954daaa7f5",
+      "packages/plitejs/src/interfaces/editor.ts": "e1dd7c4b2916391944d641c106cffa2066aadbc022c773ef658ac3425302d97f",
+      "packages/platejs/src/react/plugin/PlatePlugin.ts": "4803763b2739df0e016424b21aa73969a05ea872d13a1a31a34adfe909a410fc",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "docs/vision/plate.md": "95bb1f8075ba5f94e9685cffb651d945b2f0308a056a41b3d1eff09796420fe9",
+      "docs/vision/plite.md": "d715e726d6bc6dd5afa60ed4818e2642274d484866cba49e10ebfd0bf1754d91",
+      "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
+      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
+    },
+    "directories": {
+      "packages/platejs/src/ai": "6c9ec66c670cff7fb20d0fd6130032eba16865d4bf64c46a7b6882f8779e80f1"
+    },
+    "features": {
+      "application/ai": "44feca3b9992583ce2825c235a1dfd2784f577384256dfc0e37e31cd7bee3229",
+      "application/ai-command": "e791e2b11c50b707252d77f648d18c242313107e6d43b70013cd010690f46a31",
+      "application/ai-copilot": "5c60b7b6ffad2bed4106d1bc8a7d32f93f479e3bf72195e1da4eb7ffb804dfea",
+      "browser/ai-session": "3a10fb96f59e074859e87629d3a3c7f4ae545bbf551569b891355590117c60c0",
+      "browser/editor-ai-layout": "ab0db643541566752fb4b5c9f50c3e465c265010c6ed7a3abe132611ebaaddfb",
+      "capability/ai": "17375a01a846e58982da6a9a3c730be31cbbf8dcb1642d7835122bad870fe56f",
+      "capability/aiChat": "90eb831b5e7ce3369140e15b690630a0a76e8d0718d27328e993b816f815a311",
+      "capability/copilot": "bb353073560efbee76d69edc3c64cff65fedec5d444923b1f6d59a531559965b",
+      "example/registry/copilot-demo": "4971ff5f773d4f965efbfc37f6373663f55b76ea44926d58a73dc21d23b28efc",
+      "example/value/ai-value": "a7b97f84b579913f4c5b546d9f3e359314714f4cddd3d0fb09c1bf3a1b8c7a97",
+      "example/value/copilot-value": "9b55145ed2a5e097991f020fec2e86ca8664d611dad525c5a5884f3f01c3ef0f",
+      "export/platejs/./ai": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "export/platejs/./ai/react": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "platejs/ai": "6c9ec66c670cff7fb20d0fd6130032eba16865d4bf64c46a7b6882f8779e80f1",
+      "ui/ai": "57c7b022cd871cbe5dc31e1c5571785516d02ef4d1ececc223209db0a1560ec7",
+      "ui/ai-menu": "a862f4bdd8db49fa08ebc1820153ce2304c636cfe95890a3e52dd7d4c998db91",
+      "ui/ai-toolbar-button": "fa8d3a38d55bae2724eaefdf5402de76ab8a84aece0550173c0caa4935f439a0",
+      "ui/copilot": "f465f0708bd873c376d9c70224785af0a40ac84caebcacd690ab65eb42a4bd16",
+      "ui/use-chat": "bb1f20f61aece773a0b64a77ded7b3cddd76096a1ad911c29669055a8c3b9172"
+    },
+    "upstreams": []
+  }
+}

@@ -426,7 +426,7 @@ const RichTextPlugin = definePlugin('richtext', {
         }
       }
 
-      return false;
+      return next();
     }),
   ],
   schema: RichTextSchema.schema,

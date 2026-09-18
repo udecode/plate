@@ -7,13 +7,20 @@ import {
   createEditor,
   createEditorView,
   type Descendant,
+  defineEffect,
+  definePlugin,
+  definePluginSlot,
   type Editor,
   type Range,
   TextApi,
 } from 'plitejs';
 
 import { history } from '../../src/history';
-import { observeAnchorStateWork } from '../../src/internal';
+import {
+  getLastCommit as editorGetLastCommit,
+  observeAnchorStateWork,
+  string as editorString,
+} from '../../src/internal';
 
 const paragraph = (text: string) =>
   ({
@@ -22,15 +29,11 @@ const paragraph = (text: string) =>
   }) satisfies Descendant;
 
 const undo = (editor: Editor) => {
-  editor.update((tx) => {
-    tx.history.undo();
-  });
+  editor.api.history.undo();
 };
 
 const redo = (editor: Editor) => {
-  editor.update((tx) => {
-    tx.history.redo();
-  });
+  editor.api.history.redo();
 };
 
 describe('persistent anchor history contract', () => {
@@ -101,7 +104,7 @@ describe('persistent anchor history contract', () => {
     });
 
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       1
     );
     assert.deepEqual(anchor.resolve(), {
@@ -536,7 +539,7 @@ describe('persistent anchor history contract', () => {
     });
 
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       1
     );
     assert.deepEqual(anchor.resolve(), {
@@ -606,7 +609,7 @@ describe('persistent anchor history contract', () => {
     stop();
   });
 
-  it('does not leak staged recovery from an aborted history action', () => {
+  it('does not stage recovery when replay is requested from an active update', () => {
     const editor = createEditor({
       plugins: [history()],
       initialValue: { children: [paragraph('This')] },
@@ -628,11 +631,10 @@ describe('persistent anchor history contract', () => {
       tx.text.delete({ at: { ...before, kind: 'text' } });
     });
     assert.throws(() => {
-      editor.update((tx) => {
-        tx.history.undo();
-        throw new Error('abort');
+      editor.update(() => {
+        editor.api.history.undo();
       });
-    }, /abort/);
+    });
 
     editor.update({ history: 'skip' }, (tx) => {
       tx.text.insert('>', { at: { path: [0, 0], offset: 3 } });
@@ -666,7 +668,7 @@ describe('persistent anchor history contract', () => {
     });
 
     assert.equal(
-      editor.read((state) => state.history.redos().length),
+      editor.read((state) => state.history().redos.length),
       0
     );
     undo(editor);
@@ -769,6 +771,219 @@ describe('persistent anchor history contract', () => {
       });
     }, /abort compact recovery/);
     assert.deepEqual(anchor.resolve(), before);
+  });
+
+  it('rolls the document, history, and anchors back when history preparation fails', () => {
+    const failingEffect = defineEffect<null>({
+      history: 'push',
+      invert() {
+        throw new Error('cannot invert history effect');
+      },
+      key: 'history.failing-anchor-effect',
+    });
+    const editor = createEditor({
+      plugins: [
+        history(),
+        definePlugin('failing-anchor-effect', {
+          effectTypes: [failingEffect],
+        }),
+      ],
+      initialValue: { children: [paragraph('This')] },
+    });
+    const before = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 1 },
+    } as const;
+    const anchor = editor.anchor(before, {
+      association: 'inward',
+      deletion: 'nearest',
+    });
+    let commits = 0;
+
+    editor.subscribeCommit(() => {
+      commits += 1;
+    });
+
+    assert.throws(() => {
+      editor.update({ history: 'new-batch' }, (tx) => {
+        tx.text.delete({ at: { ...before, kind: 'text' } });
+        tx.effects.emit(failingEffect, null);
+      });
+    }, /cannot invert history effect/);
+
+    assert.equal(editorString(editor, []), 'This');
+    assert.deepEqual(anchor.resolve(), before);
+    assert.equal(editor.read.history.hasUndo(), false);
+    assert.equal(editor.read.history.hasRedo(), false);
+    assert.equal(editorGetLastCommit(editor), null);
+    assert.equal(commits, 0);
+  });
+
+  it('keeps public reads on the published document while history effects prepare', () => {
+    let observed: string | null = null;
+    let editor!: Editor;
+    const failingEffect = defineEffect<null>({
+      history: 'push',
+      invert() {
+        throw new Error('cannot invert later history effect');
+      },
+      key: 'history.later-failing-effect',
+    });
+    const observingEffect = defineEffect<null>({
+      history: 'push',
+      invert(value) {
+        observed = editor.read.text.string([]);
+        return value;
+      },
+      key: 'history.observing-effect',
+    });
+
+    editor = createEditor({
+      plugins: [
+        history(),
+        definePlugin('history-effect-public-read', {
+          effectTypes: [failingEffect, observingEffect],
+        }),
+      ],
+      initialValue: { children: [paragraph('a')] },
+    });
+
+    assert.throws(() => {
+      editor.update({ history: 'new-batch' }, (tx) => {
+        tx.text.insert('b', { at: { path: [0, 0], offset: 1 } });
+        tx.effects.emit(failingEffect, null);
+        tx.effects.emit(observingEffect, null);
+      });
+    }, /cannot invert later history effect/);
+
+    assert.equal(observed, 'a');
+    assert.equal(editor.read.text.string([]), 'a');
+    assert.equal(editor.read.history.hasUndo(), false);
+  });
+
+  it('keeps public history reads on the published state during reconfiguration', () => {
+    const slot = definePluginSlot('history-public-read-reconfiguration');
+    let observed: { hasUndo: boolean; revision: number } | null = null;
+    let editor!: Editor;
+    const failingEffect = defineEffect<null>({
+      history: 'push',
+      invert() {
+        throw new Error('reject history reconfiguration');
+      },
+      key: 'history.reconfiguration-failing-effect',
+    });
+    const observingEffect = defineEffect<null>({
+      history: 'push',
+      invert(value) {
+        observed = {
+          hasUndo: editor.read.history.hasUndo(),
+          revision: editor.read.history().revision,
+        };
+        return value;
+      },
+      key: 'history.reconfiguration-observing-effect',
+    });
+
+    editor = createEditor({
+      plugins: [
+        slot.of(history({ maxDepth: 100 })),
+        definePlugin('history-reconfiguration-public-read', {
+          effectTypes: [failingEffect, observingEffect],
+        }),
+      ],
+      initialValue: { children: [paragraph('a')] },
+    });
+
+    assert.throws(() => {
+      editor.update({ history: 'new-batch' }, (tx) => {
+        tx.plugins.reconfigure(slot, history({ maxDepth: 101 }));
+        tx.text.insert('b', { at: { path: [0, 0], offset: 1 } });
+        tx.effects.emit(failingEffect, null);
+        tx.effects.emit(observingEffect, null);
+      });
+    }, /reject history reconfiguration/);
+
+    assert.deepEqual(observed, { hasUndo: false, revision: 0 });
+    assert.equal(editor.read.history().revision, 0);
+    assert.equal(editor.read.text.string([]), 'a');
+  });
+
+  it('keeps candidate history APIs private until a transaction is accepted', () => {
+    const slot = definePluginSlot('history-api-publication');
+    let observed = false;
+    let editor!: Editor;
+    const failingEffect = defineEffect<null>({
+      history: 'push',
+      invert() {
+        throw new Error('reject history API publication');
+      },
+      key: 'history.api-publication-failing-effect',
+    });
+    const observingEffect = defineEffect<null>({
+      history: 'push',
+      invert(value) {
+        observed = Boolean(
+          (editor.api as unknown as Record<string, unknown>).history
+        );
+        return value;
+      },
+      key: 'history.api-publication-observing-effect',
+    });
+
+    editor = createEditor({
+      plugins: [
+        slot.of([]),
+        definePlugin('history-api-publication-public-read', {
+          effectTypes: [failingEffect, observingEffect],
+        }),
+      ],
+      initialValue: { children: [paragraph('a')] },
+    });
+
+    assert.throws(() => {
+      editor.update((tx) => {
+        tx.plugins.reconfigure(slot, history());
+        tx.text.insert('b', { at: { path: [0, 0], offset: 1 } });
+        tx.effects.emit(failingEffect, null);
+        tx.effects.emit(observingEffect, null);
+      });
+    }, /reject history API publication/);
+
+    assert.equal(observed, false);
+    assert.equal(
+      Boolean((editor.api as unknown as Record<string, unknown>).history),
+      false
+    );
+    assert.equal(editor.read.text.string([]), 'a');
+  });
+
+  it('keeps anchor recovery when history is reconfigured with an edit', () => {
+    const slot = definePluginSlot('history-anchor-reconfiguration');
+    const editor = createEditor({
+      plugins: [slot.of(history({ maxDepth: 100 }))],
+      initialValue: { children: [paragraph('abc')] },
+    });
+    const before = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 2 },
+    } as const;
+    const anchor = editor.anchor(before, {
+      association: 'inward',
+      deletion: 'nearest',
+    });
+
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.plugins.reconfigure(slot, history({ maxDepth: 101 }));
+      tx.text.delete({ at: { ...before, kind: 'text' } });
+    });
+
+    assert.deepEqual(anchor.resolve(), {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    });
+    assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(anchor.resolve(), before);
+    assert.equal(editor.read.text.string([]), 'abc');
   });
 
   it('materializes unresolved recovery before a structural branch', () => {
@@ -1189,13 +1404,13 @@ describe('persistent anchor history contract', () => {
 
             if (operation.kind === 3) {
               if (
-                eagerEditor.read((state) => state.history.undos().length) > 0
+                eagerEditor.read((state) => state.history().undos.length) > 0
               ) {
                 forBoth(undo);
               }
             } else if (operation.kind === 4) {
               if (
-                eagerEditor.read((state) => state.history.redos().length) > 0
+                eagerEditor.read((state) => state.history().redos.length) > 0
               ) {
                 forBoth(redo);
               }

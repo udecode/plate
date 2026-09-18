@@ -4,7 +4,8 @@
   "title": "Suggestions",
   "description": "Suggestion mode, semantic authored-change attributes, and view-local review state.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [],
   "files": [

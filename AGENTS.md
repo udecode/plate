@@ -34,11 +34,13 @@ branch-sync request.
 - Use native subagents for useful bounded independent work. Give each mutable resource one writer and consume worker results before closing their acceptance. Delegation does not require a panel, duplicate proof or broader authority; existing model defaults remain unchanged.
 - Exact human assignments remain reserved. Read-only mapping and review are allowed; broader cleanup or full execution cannot absorb someone else’s work. Ignore unrelated tasks and diffs.
 - Continue authorized repairs and verification without repeated permission. Name an actual missing decision, tool or access requirement. A goal, skill or internal handoff does not finish the user’s outcome.
+- **Pokayoke (mistake-proofing):** repair the violated invariant and the mechanism that let it escape. Prefer one canonical owner, an impossible invalid state, or a reusable assertion over caller workarounds and more instructions. Patch owns the focused repair; Verify Plate owns evidence. A recurring invariant failure or growing workaround chain triggers Best API Review before another patch. A green proxy never closes a failing or unexecuted reporter interaction. Preserve that gap and continue authorized diagnosis. This reduces repeat defects; it does not promise bug-free software.
 - For substantive work, read Task’s workflow (`.agents/rules/task/references/workflow.md`) once, then only the applicable method. Select Poteto/playbooks/principles for an unresolved decision or explicit request and read the selected method completely. No automatic method chain, separate decision log or repeated review.
 
 | Decision or work | Owner |
 | --- | --- |
 | Durable architecture and product law | `VISION.md`, scoped `docs/vision/`, Task source-authority reference |
+| Editor behavior law and coverage evidence | `docs/editor-behavior/**` through Task's law-stack reconciliation route |
 | Whether an API or architecture proposal earns further work | `best-api-review`; `.agents/rules/task/references/best-api-review.md` owns Plate routing |
 | Public call shape and reusable API debt | Best API |
 | Accepted adoption and proof plan | Plate Plan or Plite Plan for the owning layer |
@@ -49,8 +51,7 @@ branch-sync request.
 | Migration/adoption audit and versioned doctrine | Plate Next |
 | Read-only architecture score, owner/lifetime/reachability evidence | Plate Review |
 | Code shape, hard cuts or external editor comparison | Architecture Cleanup, Hard Cut or Editor Audit |
-| One exact local behavior repair | Patch |
-| Explicit corpus/rewrite closure, proof receipts and failed-fix method repair | Regression |
+| Local behavior repair or diagnosis; explicit corpus/rewrite closure and failed-fix recovery | Patch, with conditional diagnosis/corpus/recovery methods |
 | Performance inventory, measurement, causal diagnosis and rerun | Benchmark; Benchmark review supplies the lens |
 | Actual package, browser, native editor, CLI and artifact proof | Verify Plate; Testing supplies test value and runner mechanics |
 | Public GitHub issue, PR or security queue | Maintainer; one Slate issue uses its full slate-issue mode |
@@ -59,14 +60,17 @@ branch-sync request.
 | Upstream UI adoption | Sync Shadcn for upstream; Sync Plate UI for downstream forks |
 | Incremental durable-law accounting | Sync Vision |
 
-An audit remains read-only unless its request authorizes repairs. Ordinary local bugs use Patch through Task; explicit corpus work uses Regression. Regression and Benchmark retain their executable schemas. Use an issue-prefixed plan for issue-backed work and a dated plan otherwise; choose only the applicable template and packs.
+An audit remains read-only unless its request authorizes repairs. Local bugs use Patch through Task; explicit corpus work loads Patch's corpus method. Patch and Benchmark retain their executable schemas. Workflow maintenance uses Maintain Workflow, including when a request is phrased as a Patch workflow repair. Use an issue-prefixed plan for issue-backed work and a dated plan otherwise; choose only the applicable template and packs.
 
 Feature and architecture reviews use `docs/research/reviews.md` and
 `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` by default.
-Every repeated request reconsiders the design and reconciles prior findings;
-no reassessment flag is required. Best API Review's Task adapter owns review
-recording. Research Wiki and Plite Research reuse the same history and keep
-review, adoption, proof and source freshness independent. AI is last in the
+Every repeated request first reconciles prior decisions and subsequent execution,
+then challenges the strongest deletion/replacement alternative. Keep unchanged
+questions settled when the challenge adds no value; no reassessment flag is
+required. Best API Review's Task adapter owns review recording. Task owns
+decision-bound execution outcomes and plan closure; generated feature hubs
+derive progress without a second status. Research Wiki and Plite Research reuse
+the same history and keep review, adoption, proof and source freshness independent. AI is last in the
 global queue; the user's directly selected feature still takes precedence.
 
 Technical Writing owns substantial prose and preservation; Plate Docs owns public docs style, examples, MDX and navigation. Tiny copy edits need direct text/link checks. Show Me explains visually; Show Me Your Work applies when requested or when competing experiments need a separate history. Otherwise decisions stay in the current plan. Walkthrough presents existing final evidence.

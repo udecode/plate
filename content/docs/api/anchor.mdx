@@ -36,14 +36,27 @@ to a named document root.
 Persistent anchors remain active across commits and history actions until
 `release()` is called.
 
+#### `anchor.resolve(view?: Editor): TValue | null`
+
+Omit `view` to resolve in the view that captured the anchor. Pass another view
+of the same editor model and document root to read its current projection.
+A foreign model or different root throws. One retained target can resolve to
+different locations, or be unavailable, across projected views; resolving it
+does not create another anchor or change either view's projection.
+
 ```typescript
 const current = target.resolve();
+const inOtherView = target.resolve(otherView);
 const finalValue = target.release();
 ```
 
-`resolve()` returns the current mapped value without ending tracking.
-`release()` returns the current value and permanently detaches the anchor.
-Both return `null` after a dropped target or release.
+Here, `otherView` is another view of the same model and root. `resolve` reads
+the mapped value without ending tracking. An anchor captured in an aborted
+transaction is unavailable. A released anchor returns `null` in every view.
+
+`release()` returns the current value in the capture view and permanently
+detaches the shared target. Releasing an anchor does not merely detach one
+projected view. Both methods return `null` for a dropped target or after release.
 
 Use persistent anchors for application-owned runtime state such as local
 annotations. Release them when their owner is removed.

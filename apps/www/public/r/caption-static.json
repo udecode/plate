@@ -1,7 +1,9 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "caption-static",
-  "dependencies": [],
+  "dependencies": [
+    "platejs"
+  ],
   "registryDependencies": [],
   "files": [
     {

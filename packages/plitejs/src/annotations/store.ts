@@ -7,7 +7,8 @@ import {
   type Range,
   type Value,
 } from '..';
-import { subscribeCommit as editorSubscribeCommit } from '../core/listener-state';
+import { readAuthoredView } from '../core/authored-runtime';
+import { subscribeEditorViewState } from '../core/public-state';
 import { projectRange as editorProjectRange } from '../editor/project-range';
 import {
   areMappedViewDataEqual,
@@ -20,12 +21,7 @@ import type {
   ViewSourceStatus,
 } from '../internal/view/view-source';
 
-export interface AnnotationAnchor extends Pick<
-  Anchor<Range>,
-  'release' | 'resolve'
-> {
-  resolve: () => Range | null;
-}
+export type AnnotationAnchor = Pick<Anchor<Range>, 'release' | 'resolve'>;
 
 export interface Annotation<TData = unknown> {
   anchor: AnnotationAnchor;
@@ -165,7 +161,7 @@ const createPliteAnnotationStoreInternal = <TData>(
       isOutputEqual: Object.is,
       map: (annotation) => {
         mappedResolveCount += 1;
-        const resolvedRange = annotation.anchor.resolve();
+        const resolvedRange = annotation.anchor.resolve(editor);
         const mappedRange = resolvedRange
           ? projectAnnotationRange(editor, resolvedRange)
           : null;
@@ -222,6 +218,11 @@ const createPliteAnnotationStoreInternal = <TData>(
   });
   let activated = !dormant;
   let destroyed = false;
+  let subscriberCount = 0;
+  let lastSnapshot = dormant ? null : editor.read.runtime.snapshot();
+  let lastProjection = dormant
+    ? undefined
+    : readAuthoredView(editor)?.projection;
 
   const refreshCandidates = (
     candidateIds: readonly string[] | null = null,
@@ -246,8 +247,13 @@ const createPliteAnnotationStoreInternal = <TData>(
     if (!mappedResult.ok) return;
 
     currentAnnotations = annotationsResult.value;
+    lastSnapshot = editor.read.runtime.snapshot();
+    lastProjection = readAuthoredView(editor)?.projection;
     const changedIds = mappedResult.value.changedEntityIds;
-    const changed = changedIds.length > 0 || mappedResult.value.orderChanged;
+    const changed =
+      changedIds.length > 0 ||
+      mappedResult.value.orderChanged ||
+      mappedResult.value.affectedOutputKeys.length > 0;
     const subscriberWakeCount = changed
       ? annotationsStore.subscriberCount() +
         changeListeners.size +
@@ -282,9 +288,25 @@ const createPliteAnnotationStoreInternal = <TData>(
     }
   };
 
-  const subscribeToEditor = () =>
-    editorSubscribeCommit(editor, (change) => {
+  const ensureFresh = () => {
+    if (!activated || destroyed) return;
+
+    const snapshot = editor.read.runtime.snapshot();
+    if (
+      snapshot.children !== lastSnapshot?.children ||
+      snapshot.index !== lastSnapshot?.index ||
+      readAuthoredView(editor)?.projection !== lastProjection
+    ) {
+      refreshCandidates(null, true, 'editor');
+    }
+  };
+  const subscribeToEditor = () => {
+    const unsubscribeCommit = editor.subscribeCommit((change) => {
       if (destroyed || !shouldRefreshForEditorChange(change)) return;
+      if (readAuthoredView(editor)?.projection !== lastProjection) {
+        refreshCandidates(null, true, 'editor');
+        return;
+      }
 
       const candidateIds = change
         ? Array.from(
@@ -299,15 +321,52 @@ const createPliteAnnotationStoreInternal = <TData>(
           )
         : null;
 
-      if (candidateIds && candidateIds.length === 0) return;
+      if (candidateIds && candidateIds.length === 0) {
+        lastSnapshot = editor.read.runtime.snapshot();
+        lastProjection = readAuthoredView(editor)?.projection;
+        return;
+      }
 
       refreshCandidates(candidateIds, candidateIds === null, 'editor');
     });
-  let unsubscribeEditor = activated ? subscribeToEditor() : null;
+    const unsubscribeView = subscribeEditorViewState(editor, (change) => {
+      if (destroyed || change !== 'authored') return;
+
+      ensureFresh();
+    });
+
+    return () => {
+      unsubscribeCommit();
+      unsubscribeView();
+    };
+  };
+  let unsubscribeEditor: (() => void) | null = null;
+  const observe = (subscribe: () => () => void) => {
+    if (destroyed) return () => {};
+
+    ensureFresh();
+    const unsubscribe = subscribe();
+    subscriberCount += 1;
+    if (activated && subscriberCount === 1) {
+      unsubscribeEditor = subscribeToEditor();
+    }
+    let subscribed = true;
+    return () => {
+      if (!subscribed) return;
+      subscribed = false;
+      unsubscribe();
+      subscriberCount -= 1;
+      if (subscriberCount === 0) {
+        unsubscribeEditor?.();
+        unsubscribeEditor = null;
+      }
+    };
+  };
 
   const refresh = (refreshOptions: AnnotationRefreshOptions = {}) => {
     if (!activated || destroyed || refreshOptions.ids?.length === 0) return;
 
+    ensureFresh();
     refreshCandidates(
       refreshOptions.ids ?? null,
       refreshOptions.ids === undefined,
@@ -320,26 +379,35 @@ const createPliteAnnotationStoreInternal = <TData>(
 
       activated = true;
       refreshCandidates(null, true);
-      unsubscribeEditor = subscribeToEditor();
+      if (subscriberCount > 0) unsubscribeEditor = subscribeToEditor();
     },
     destroy() {
       if (destroyed) return;
 
       destroyed = true;
       unsubscribeEditor?.();
+      unsubscribeEditor = null;
       changeListeners.clear();
       annotationsStore.destroy();
     },
-    getAnnotation: (id) => annotationsStore.getSnapshot().byId.get(id) ?? null,
-    getAnnotationsAt: (nodeKey) =>
-      Object.freeze(
+    getAnnotation: (id) => {
+      ensureFresh();
+      return annotationsStore.getSnapshot().byId.get(id) ?? null;
+    },
+    getAnnotationsAt: (nodeKey) => {
+      ensureFresh();
+      return Object.freeze(
         mappedSource
           .getIdsForOutputKeys([nodeKey])
           .flatMap((id) => annotationsStore.getSnapshot().byId.get(id) ?? [])
-      ),
+      );
+    },
     getMetrics: () => metrics,
     getSourceStatus: () => faultBoundary.getStatus(),
-    getSnapshot: () => annotationsStore.getSnapshot(),
+    getSnapshot: () => {
+      ensureFresh();
+      return annotationsStore.getSnapshot();
+    },
     refresh,
     retry() {
       if (!activated || destroyed) return;
@@ -347,24 +415,23 @@ const createPliteAnnotationStoreInternal = <TData>(
       faultBoundary.activate();
       refreshCandidates(null, true);
     },
-    subscribe: (listener) => annotationsStore.subscribe(listener),
+    subscribe: (listener) =>
+      observe(() => annotationsStore.subscribe(listener)),
     subscribeAnnotation: (id, listener) =>
-      annotationsStore.subscribeKey(id, listener),
-    subscribeChanges(listener) {
-      if (destroyed) return () => {};
-
-      changeListeners.add(listener);
-
-      return () => {
-        changeListeners.delete(listener);
-      };
-    },
+      observe(() => annotationsStore.subscribeKey(id, listener)),
+    subscribeChanges: (listener) =>
+      observe(() => {
+        changeListeners.add(listener);
+        return () => {
+          changeListeners.delete(listener);
+        };
+      }),
   };
 
   return publicStore;
 };
 
-/** Create an annotation store owned by a non-component framework lifetime. */
+/** Read a lazy view index; editor observation lasts only while subscribed. */
 export const createAnnotationStore = <
   TData = unknown,
   V extends Value = Value,

@@ -104,7 +104,7 @@ export const retiredGeneratedPaths = [
     'major-task', 'autoclosure', 'vision', 'review-sweep', 'clawpatch',
     'resolve-slate-issue', 'promote-beta', 'sync-main-to-next',
     'potion-yjs-browser-test', 'agent-browser-issue', 'docs-creator',
-    'auto', 'performance', 'testing-review',
+    'auto', 'performance', 'testing-review', 'regression',
   ].map((name) => `${agentRoot}/${name}`)),
   ...agentRoots.flatMap((agentRoot) => [
     `${agentRoot}/auto/references/quality-loop.md`,

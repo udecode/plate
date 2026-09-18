@@ -26,7 +26,6 @@ import {
   BaseTableRowPlugin,
 } from './BaseTablePlugin';
 import {
-  createTableNodeSelection,
   readTableSelection,
   readTableSelectionViewMetrics,
 } from './internal/selection';
@@ -63,7 +62,7 @@ describe('table selection slow contracts', () => {
       }),
       BaseTablePlugin.configure({
         initialState: {
-          disableMerge: true,
+          allowCellSpanEditing: false,
           ...options,
         },
       }),
@@ -80,10 +79,17 @@ describe('table selection slow contracts', () => {
       });
       const selection = editor.read.selection();
       const view =
-        selection && editor.plugin(BaseTablePlugin).read.selection(selection);
-      const tableSelection = view && createTableNodeSelection(view);
-
-      if (tableSelection) editor.update.selection.set(tableSelection);
+        selection &&
+        editor.plugin(BaseTablePlugin).read.selection({ at: selection });
+      if (view && view.cells.length > 1) {
+        editor.update.selection.setNodes(
+          view.cells.map(([, path]) => path),
+          {
+            anchor: editor.read.nodes.path(view.anchor)!,
+            focus: editor.read.nodes.path(view.focus)!,
+          }
+        );
+      }
 
       return editor;
     };
@@ -541,7 +547,7 @@ describe('table selection slow contracts', () => {
           const view = editor.plugin(BaseTablePlugin).read.selection();
 
           assert.ok(view);
-          expect(view.cellKeys).toStrictEqual(
+          expect(view.cells.map(([cell]) => editor.key(cell))).toStrictEqual(
             [
               [0, 0, 0],
               [0, 0, 1],
@@ -549,14 +555,25 @@ describe('table selection slow contracts', () => {
               [0, 1, 1],
             ].map((path) => editor.key(path)!)
           );
+          expect(view.cells.map(([cell]) => getFixtureId(cell))).toStrictEqual([
+            'c11',
+            'c12',
+            'c21',
+            'c22',
+          ]);
+          expect(view.table[0].type).toBe('table');
+          expect(view.cells).toHaveLength(4);
           expect(
-            view.anchors.map(({ cell }) => getFixtureId(cell))
-          ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
-          expect(view.table.type).toBe('table');
-          expect(view.anchors).toHaveLength(4);
-          expect(view.hasCellKey(editor.key([0, 0, 1])!)).toBe(true);
+            view.cells
+              .map(([cell]) => editor.key(cell))
+              .includes(editor.key([0, 0, 1])!)
+          ).toBe(true);
           expect(
-            getFixtureId(view.grid.byKey.get(editor.key([0, 1, 0])!)!.cell)
+            getFixtureId(
+              editor.read.nodes.get([0, 1, 0], {
+                type: BaseTableCellPlugin,
+              })![0]
+            )
           ).toBe('c21');
         });
 
@@ -590,10 +607,16 @@ describe('table selection slow contracts', () => {
           const view = editor.plugin(BaseTablePlugin).read.selection();
 
           assert.ok(view);
-          expect(view.cellKeys).toEqual([editor.key([0, 0, 0])!]);
-          expect(view.anchors).toHaveLength(1);
-          expect(view.table.type).toBe('table');
-          expect(view.hasCellKey(editor.key([0, 0, 0])!)).toBe(true);
+          expect(view.cells.map(([cell]) => editor.key(cell))).toEqual([
+            editor.key([0, 0, 0])!,
+          ]);
+          expect(view.cells).toHaveLength(1);
+          expect(view.table[0].type).toBe('table');
+          expect(
+            view.cells
+              .map(([cell]) => editor.key(cell))
+              .includes(editor.key([0, 0, 0])!)
+          ).toBe(true);
         });
 
         it('reads the latest selected cell nodes after the table changes', () => {
@@ -627,15 +650,14 @@ describe('table selection slow contracts', () => {
           const view = editor.plugin(BaseTablePlugin).read.selection();
 
           assert.ok(view);
-          expect(
-            view.grid.byKey.get(editor.key([0, 0, 0])!)?.cell
-          ).toMatchObject({
+          expect(editor.read.nodes.get([0, 0, 0])?.[0]).toMatchObject({
             backgroundColor: 'red',
             id: 'c11',
           });
-          expect(
-            view.anchors.map(({ cell }) => getFixtureId(cell))
-          ).toStrictEqual(['c11', 'c12']);
+          expect(view.cells.map(([cell]) => getFixtureId(cell))).toStrictEqual([
+            'c11',
+            'c12',
+          ]);
         });
 
         it('updates selected cell ids when the Slate selection changes', () => {
@@ -666,7 +688,10 @@ describe('table selection slow contracts', () => {
           });
 
           expect(
-            editor.plugin(BaseTablePlugin).read.selection()?.cellKeys
+            editor
+              .plugin(BaseTablePlugin)
+              .read.selection()
+              ?.cells.map(([cell]) => editor.key(cell))
           ).toStrictEqual(
             [
               [0, 0, 0],
@@ -677,7 +702,10 @@ describe('table selection slow contracts', () => {
           editor.update.selection.set(editor.read.points.start([0, 0, 0])!);
 
           expect(
-            editor.plugin(BaseTablePlugin).read.selection()?.cellKeys
+            editor
+              .plugin(BaseTablePlugin)
+              .read.selection()
+              ?.cells.map(([cell]) => editor.key(cell))
           ).toEqual([editor.key([0, 0, 0])!]);
         });
 
@@ -708,7 +736,9 @@ describe('table selection slow contracts', () => {
             </editor>
           ) as TestEditor;
 
-          const editor = createTableEditor(input, { disableMerge: false });
+          const editor = createTableEditor(input, {
+            allowCellSpanEditing: true,
+          });
 
           editor.update.selection.set({
             kind: 'text',
@@ -717,7 +747,10 @@ describe('table selection slow contracts', () => {
           });
 
           expect(
-            editor.plugin(BaseTablePlugin).read.selection()?.cellKeys
+            editor
+              .plugin(BaseTablePlugin)
+              .read.selection()
+              ?.cells.map(([cell]) => editor.key(cell))
           ).toStrictEqual(
             [
               [0, 0, 0],
@@ -738,7 +771,7 @@ describe('table selection slow contracts', () => {
       createTestTableEditor({
         plugins: [
           BaseTablePlugin.configure({
-            initialState: { disableMerge: true },
+            initialState: { allowCellSpanEditing: true },
           }),
         ],
         selection: input.selection,
@@ -780,23 +813,29 @@ describe('table selection slow contracts', () => {
         const view = editor.plugin(BaseTablePlugin).read.selection();
 
         assert.ok(view);
-        expect(view.cellEntries).toHaveLength(2);
-        expect(view.anchors.map(({ cell }) => getFixtureId(cell))).toEqual([
+        expect(view.cells).toHaveLength(2);
+        expect(view.cells.map(([cell]) => getFixtureId(cell))).toEqual([
           'c11',
           'c21',
         ]);
-        expect(view.cellKeys).toEqual(
+        expect(view.cells.map(([cell]) => editor.key(cell))).toEqual(
           [
             [0, 0, 0],
             [0, 1, 0],
           ].map((path) => editor.key(path)!)
         );
         expect(view.tableKey).toBe(editor.key([0])!);
-        expect(view.table.type).toBe('table');
+        expect(view.table[0].type).toBe('table');
         expect(
-          getFixtureId(view.grid.byKey.get(editor.key([0, 1, 0])!)!.cell)
+          getFixtureId(
+            editor.read.nodes.get([0, 1, 0], { type: BaseTableCellPlugin })![0]
+          )
         ).toBe('c21');
-        expect(view.hasCellKey(editor.key([0, 0, 0])!)).toBe(true);
+        expect(
+          view.cells
+            .map(([cell]) => editor.key(cell))
+            .includes(editor.key([0, 0, 0])!)
+        ).toBe(true);
       });
 
       it('returns one-cell geometry and updates after selection changes', () => {
@@ -821,7 +860,7 @@ describe('table selection slow contracts', () => {
         const editor = createTableEditor(input);
 
         expect(
-          editor.plugin(BaseTablePlugin).read.selection()?.anchors
+          editor.plugin(BaseTablePlugin).read.selection()?.cells
         ).toHaveLength(1);
 
         editor.update.selection.set({
@@ -831,7 +870,7 @@ describe('table selection slow contracts', () => {
         });
 
         expect(
-          editor.plugin(BaseTablePlugin).read.selection()?.anchors
+          editor.plugin(BaseTablePlugin).read.selection()?.cells
         ).toHaveLength(2);
       });
 
@@ -855,8 +894,10 @@ describe('table selection slow contracts', () => {
         const view = editor.plugin(BaseTablePlugin).read.selection();
 
         assert.ok(view);
-        expect(view.cellEntries).toHaveLength(1);
-        expect(view.cellKeys).toEqual([editor.key([0, 0, 0])!]);
+        expect(view.cells).toHaveLength(1);
+        expect(view.cells.map(([cell]) => editor.key(cell))).toEqual([
+          editor.key([0, 0, 0])!,
+        ]);
         expect(view.tableKey).toBe(editor.key([0])!);
       });
     });
@@ -902,6 +943,107 @@ describe('table selection slow contracts', () => {
     ) => ({
       cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
       tableType: editor.plugin(BaseTablePlugin).schema.type,
+    });
+
+    it('exports reachable selected roots and prunes roots owned by unselected cells', () => {
+      const rootHolder = (body: string) => ({
+        childRoots: { body },
+        children: [{ text: '' }],
+        type: 'rootHolder',
+      });
+      const table = createTable('main');
+      const selectedRoot = createTable('selected');
+      const editor = createTestTableEditor({
+        plugins: [BaseTablePlugin, RootHolderPlugin],
+        initialValue: {
+          children: [
+            {
+              ...table,
+              children: table.children.map((row, rowIndex) => ({
+                ...row,
+                children: row.children.map((cell, colIndex) => ({
+                  ...cell,
+                  children:
+                    rowIndex === 0
+                      ? [
+                          ...cell.children,
+                          rootHolder(
+                            colIndex === 0 ? 'selected' : 'unselected'
+                          ),
+                        ]
+                      : cell.children,
+                })),
+              })),
+            },
+          ],
+          roots: {
+            selected: [
+              {
+                ...selectedRoot,
+                children: selectedRoot.children.map((row, rowIndex) => ({
+                  ...row,
+                  children: row.children.map((cell, colIndex) => ({
+                    ...cell,
+                    children:
+                      rowIndex === 0 && colIndex === 0
+                        ? [...cell.children, rootHolder('selected-descendant')]
+                        : cell.children,
+                  })),
+                })),
+              },
+            ],
+            'selected-descendant': [createTable('descendant')],
+            unselected: [createTable('unselected')],
+          },
+        },
+      });
+      editor.update.selection.setNodes([
+        [0, 0, 0],
+        [0, 1, 0],
+      ]);
+      const before = editor.read.value();
+      const exportedRoots = JSON.parse(
+        JSON.stringify(before.roots, (key, value) =>
+          key === 'id' ? undefined : value
+        )
+      );
+
+      const slice = editor.read.slice.export();
+
+      expect(Object.keys(before.roots ?? {}).sort()).toEqual([
+        'selected',
+        'selected-descendant',
+        'unselected',
+      ]);
+      expect(slice.openStart).toBe(0);
+      expect(slice.openEnd).toBe(0);
+      expect(Object.keys(slice.roots ?? {}).sort()).toEqual([
+        'selected',
+        'selected-descendant',
+      ]);
+      expect(slice.roots?.selected).toEqual(exportedRoots.selected);
+      expect(slice.roots?.['selected-descendant']).toEqual(
+        exportedRoots['selected-descendant']
+      );
+      expect(slice.content).toMatchObject([
+        {
+          type: 'table',
+          children: [
+            {
+              children: [
+                {
+                  children: [
+                    { children: [{ text: 'main-00' }] },
+                    { childRoots: { body: 'selected' } },
+                  ],
+                },
+              ],
+            },
+            { children: [{ children: [{ children: [{ text: 'main-10' }] }] }] },
+          ],
+        },
+      ]);
+      expect(editor.read.value()).toEqual(before);
     });
 
     it('isolates cached selection views by root snapshot index', () => {
@@ -999,11 +1141,15 @@ describe('table selection slow contracts', () => {
 
         const view = editor
           .plugin(BaseTablePlugin)
-          .read.selection({ anchor, focus });
-        const tableSelection = view && createTableNodeSelection(view);
-
-        assert.ok(tableSelection);
-        editor.update.selection.set(tableSelection);
+          .read.selection({ at: { anchor, focus } });
+        assert.ok(view);
+        editor.update.selection.setNodes(
+          view.cells.map(([, path]) => path),
+          {
+            anchor: editor.read.nodes.path(view.anchor)!,
+            focus: editor.read.nodes.path(view.focus)!,
+          }
+        );
         editor.update((tx) => {
           tx.nodes.remove({ at: [0, 0, removedIndex] });
         });
@@ -1017,7 +1163,10 @@ describe('table selection slow contracts', () => {
           expectedIds.length
         );
         expect(
-          editor.plugin(BaseTablePlugin).read.selection()?.cellKeys
+          editor
+            .plugin(BaseTablePlugin)
+            .read.selection()
+            ?.cells.map(([cell]) => editor.key(cell))
         ).toEqual(expectedIds.map((_, index) => editor.key([0, 0, index])!));
         expect([...selection.paths]).toEqual(
           expectedIds.map((_, index) => [0, 0, index])
@@ -1090,43 +1239,18 @@ describe('table selection slow contracts', () => {
       assert.ok(upperLeftPoint);
       assert.ok(upperRightPoint);
       assert.ok(lowerRightPoint);
-      expect(
-        editor
-          .plugin(BaseTablePlugin)
-          .read.getAdjacentCell({ at: lowerRightPoint, deltaCol: -1 })
-      ).toEqual([expect.objectContaining({ id: 'root-10' }), [0, 1, 0]]);
-      expect(
-        editor
-          .plugin(BaseTablePlugin)
-          .read.getAdjacentCell({ at: lowerRightPoint, deltaRow: -1 })
-      ).toEqual([expect.objectContaining({ id: 'root-01' }), [0, 0, 1]]);
-      expect(
-        editor.plugin(BaseTablePlugin).read.getCellInNextRow(upperLeftPoint)
-      ).toEqual([expect.objectContaining({ id: 'root-10' }), [0, 1, 0]]);
-      expect(
-        editor
-          .plugin(BaseTablePlugin)
-          .read.getCellInPreviousRow(lowerRightPoint)
-      ).toEqual([expect.objectContaining({ id: 'root-01' }), [0, 0, 1]]);
-      expect(
-        editor
-          .plugin(BaseTablePlugin)
-          .read.getNextCell(upperLeft, upperLeftPoint, upperRow)
-      ).toEqual([expect.objectContaining({ id: 'root-01' }), [0, 0, 1]]);
-      expect(
-        editor
-          .plugin(BaseTablePlugin)
-          .read.getPreviousCell(upperRight, upperRightPoint, upperRow)
-      ).toEqual([expect.objectContaining({ id: 'root-00' }), [0, 0, 0]]);
 
       const selectionView = editor
         .plugin(BaseTablePlugin)
-        .read.selection(rootRange);
-      const tableSelection =
-        selectionView && createTableNodeSelection(selectionView);
-
-      assert.ok(tableSelection);
-      rootEditor.update.selection.set(tableSelection);
+        .read.selection({ at: rootRange });
+      assert.ok(selectionView);
+      rootEditor.update.selection.setNodes(
+        selectionView.cells.map(([, path]) => path),
+        {
+          anchor: rootEditor.read.nodes.path(selectionView.anchor)!,
+          focus: rootEditor.read.nodes.path(selectionView.focus)!,
+        }
+      );
 
       const assertMappedSelection = (tableIndex: number) => {
         const selection = getEditorLiveSelection(rootEditor);
@@ -1202,27 +1326,6 @@ describe('table selection slow contracts', () => {
         );
       });
       assertMappedSelection(0);
-
-      const lastCell = rootEditor.read.points.end([0, 1, 1]);
-
-      assert.ok(lastCell);
-      rootEditor.update.selection.set(lastCell);
-
-      expect(
-        editor.plugin(BaseTablePlugin).update.moveSelection({ at: lastCell })
-      ).toBe(true);
-      expect(rootEditor.read.selection()).toMatchObject({
-        anchor: {
-          offset: 0,
-          path: [1, 0, 0, 0, 0],
-          root,
-        },
-        focus: {
-          offset: 0,
-          path: [1, 0, 0, 0, 0],
-          root,
-        },
-      });
     });
   });
 });

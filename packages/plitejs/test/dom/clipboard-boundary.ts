@@ -214,9 +214,7 @@ const getHistory = (editor: Editor) =>
   editor.read((state: any) => state.history());
 
 const undo = (editor: Editor) => {
-  editor.update((tx) => {
-    tx.history.undo();
-  });
+  editor.api.history.undo();
 };
 
 const seedNodeMaps = (editor: Editor, children: Descendant[]) => {

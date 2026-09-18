@@ -3,6 +3,7 @@
 import { forceParsing } from '@codemirror/language';
 import {
   Annotation,
+  ChangeSet,
   Compartment,
   EditorSelection,
   EditorState,
@@ -17,19 +18,25 @@ import {
   type DecorationSet,
   EditorView,
   keymap,
-  type ViewUpdate,
 } from '@codemirror/view';
 
 import type {
   ExternalTextActions,
   ExternalTextAdapter,
+  ExternalTextChange,
   ExternalTextDecoration,
   ExternalTextSelection,
   ExternalTextSelectionState,
+  ExternalTextState,
 } from '../../react/core';
 
 type CodeBlockCodeMirrorConfig = Readonly<{
   language?: string;
+}>;
+
+type CodeMirrorExternalTextUpdate = Readonly<{
+  changes: readonly ExternalTextChange[] | null;
+  state: ExternalTextState<CodeBlockCodeMirrorConfig>;
 }>;
 
 const INITIAL_PARSE_BUDGET_MS = 100;
@@ -98,6 +105,7 @@ const writeSelection = (view: EditorView, selection: ExternalTextSelection) => {
   }
   view.dispatch({
     annotations: appliedByAdapter.of(true),
+    filter: false,
     selection: EditorSelection.single(selection.anchor, selection.focus),
   });
 
@@ -163,13 +171,15 @@ const contentAttributes = (host: HTMLElement) =>
 
 /** Project a code block through CodeMirror while the editor owns text and history.
  * Keep this adapter stable across renders. Supply theme, search and editing
- * commands as extensions; do not install CodeMirror history.
+ * commands as extensions; do not install CodeMirror history. Update listeners
+ * observe local transactions before synchronous canonical feedback and must not
+ * synchronously dispatch CodeMirror or canonical editor edits.
  */
 export function createCodeMirrorAdapter({
   extensions = [],
   loadLanguage: resolveLanguage,
 }: {
-  /** View presentation and native commands. History stays with the editor. */
+  /** Presentation, filters, observers and native commands. History stays with the editor. */
   extensions?: Extension;
   /** Resolve one language; stale loads and disposed views are ignored. */
   loadLanguage?: (language: string) => Extension | Promise<Extension>;
@@ -182,12 +192,60 @@ export function createCodeMirrorAdapter({
       let current = state;
       let destroyed = false;
       let composing = false;
-      let dispatchingToPlite = false;
-      let pendingReset = false;
+      let applyingCodeMirror = false;
       let languageGeneration = 0;
       let compositionGeneration = 0;
       let pendingCompositionEnd = false;
       let view: EditorView;
+
+      const assertIdle = () => {
+        if (!applyingCodeMirror) return;
+
+        throw new Error(
+          'CodeMirror update listeners must not synchronously mutate CodeMirror or Plite; use a transaction filter or an editing command.'
+        );
+      };
+
+      const canAcceptInFlightFocusRefresh = ({
+        changes,
+        state: next,
+      }: CodeMirrorExternalTextUpdate) => {
+        if (changes === null || changes.length > 0) return false;
+        if (
+          next.version !== current.version + 1 ||
+          next.text !== view.state.doc.toString() ||
+          next.config !== current.config ||
+          next.decorations !== current.decorations ||
+          next.readOnly !== current.readOnly ||
+          host.getAttribute('aria-label') !==
+            view.contentDOM.getAttribute('aria-label')
+        ) {
+          return false;
+        }
+        const currentPaint =
+          current.selection?.mode === 'model' &&
+          current.selection.anchor !== current.selection.focus
+            ? current.selection
+            : null;
+        const nextPaint =
+          next.selection?.mode === 'model' &&
+          next.selection.anchor !== next.selection.focus
+            ? next.selection
+            : null;
+        if (
+          currentPaint?.anchor !== nextPaint?.anchor ||
+          currentPaint?.focus !== nextPaint?.focus
+        ) {
+          return false;
+        }
+        if (!next.selection) return true;
+        const selection = view.state.selection.main;
+
+        return (
+          next.selection.anchor === selection.anchor &&
+          next.selection.focus === selection.head
+        );
+      };
 
       const loadLanguage = (name?: string) => {
         languageGeneration += 1;
@@ -200,6 +258,7 @@ export function createCodeMirrorAdapter({
           view.dispatch({
             annotations: appliedByAdapter.of(true),
             effects: language.reconfigure(extension),
+            filter: false,
           });
           // Bound initial parse work for deep first edits.
           forceParsing(view, view.state.doc.length, INITIAL_PARSE_BUDGET_MS);
@@ -217,7 +276,6 @@ export function createCodeMirrorAdapter({
       };
 
       const resetFromPlite = () => {
-        pendingReset = false;
         if (destroyed) return;
         const specification: TransactionSpec = {
           annotations: appliedByAdapter.of(true),
@@ -238,6 +296,7 @@ export function createCodeMirrorAdapter({
               modelSelectionDecoration(current.selection)
             ),
           ],
+          filter: false,
         };
 
         if (current.selection?.mode === 'native') {
@@ -248,11 +307,6 @@ export function createCodeMirrorAdapter({
         }
         view.dispatch(specification);
       };
-      const scheduleReset = () => {
-        if (pendingReset) return;
-        pendingReset = true;
-        queueMicrotask(resetFromPlite);
-      };
       const syncSelection = () => {
         const selection = view.state.selection.main;
         const result = actions.select({
@@ -260,44 +314,7 @@ export function createCodeMirrorAdapter({
           selection: { anchor: selection.anchor, focus: selection.head },
         });
 
-        if (result.status === 'stale') scheduleReset();
-      };
-      const dispatchUpdate = (update: ViewUpdate) => {
-        if (
-          update.transactions.some((transaction) =>
-            transaction.annotation(appliedByAdapter)
-          )
-        ) {
-          return;
-        }
-        const selection = update.state.selection.main;
-
-        if (!update.docChanged) {
-          if (update.selectionSet) syncSelection();
-
-          return;
-        }
-        const changes: Array<{ from: number; insert: string; to: number }> = [];
-
-        update.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
-          changes.push({ from: fromA, insert: inserted.toString(), to: toA });
-        });
-        dispatchingToPlite = true;
-        try {
-          const result = actions.dispatch({
-            baseVersion: current.version,
-            changes,
-            intent: getIntent(
-              update.transactions,
-              composing || update.view.composing
-            ),
-            selection: { anchor: selection.anchor, focus: selection.head },
-          });
-
-          if (result.status !== 'applied') scheduleReset();
-        } finally {
-          dispatchingToPlite = false;
-        }
+        if (result.status === 'stale') resetFromPlite();
       };
       const handleBoundaryKey = (event: KeyboardEvent) => {
         if (
@@ -342,7 +359,7 @@ export function createCodeMirrorAdapter({
             direction,
           });
 
-          if (result.status === 'stale') scheduleReset();
+          if (result.status === 'stale') resetFromPlite();
 
           return true;
         }
@@ -356,12 +373,60 @@ export function createCodeMirrorAdapter({
           x: view.coordsAtPos(selection.head)?.left,
         });
 
-        if (result.status === 'stale') scheduleReset();
+        if (result.status === 'stale') resetFromPlite();
 
         return true;
       };
 
       view = new EditorView({
+        dispatchTransactions(transactions, target) {
+          assertIdle();
+          let changes = ChangeSet.empty(target.state.doc.length);
+
+          for (const transaction of transactions) {
+            changes = changes.compose(transaction.changes);
+          }
+          const finalState = transactions.at(-1)?.state ?? target.state;
+
+          applyingCodeMirror = true;
+          try {
+            target.update(transactions);
+          } finally {
+            applyingCodeMirror = false;
+          }
+          if (
+            transactions.some((transaction) =>
+              transaction.annotation(appliedByAdapter)
+            )
+          ) {
+            return;
+          }
+          if (changes.empty) {
+            if (transactions.some((transaction) => transaction.selection)) {
+              syncSelection();
+            }
+
+            return;
+          }
+          const patches: Array<{
+            from: number;
+            insert: string;
+            to: number;
+          }> = [];
+
+          changes.iterChanges((from, to, _fromAfter, _toAfter, inserted) => {
+            patches.push({ from, insert: inserted.toString(), to });
+          });
+          const selection = finalState.selection.main;
+          const result = actions.dispatch({
+            baseVersion: current.version,
+            changes: patches,
+            intent: getIntent(transactions, composing || target.composing),
+            selection: { anchor: selection.anchor, focus: selection.head },
+          });
+
+          if (result.status !== 'applied') resetFromPlite();
+        },
         doc: state.text,
         extensions: [
           language.of([]),
@@ -453,7 +518,6 @@ export function createCodeMirrorAdapter({
               },
             },
           ]),
-          EditorView.updateListener.of(dispatchUpdate),
           extensions,
         ],
         parent: host,
@@ -465,6 +529,103 @@ export function createCodeMirrorAdapter({
               )
             : undefined,
       });
+      const applyUpdate = ({
+        changes,
+        state: next,
+      }: CodeMirrorExternalTextUpdate) => {
+        if (destroyed) return;
+        const previous = current;
+        current = next;
+        const effects: Array<StateEffect<unknown>> = [];
+        if (next.config.language !== previous.config.language) {
+          effects.push(language.reconfigure([]));
+        }
+
+        const previousPaint =
+          previous.selection?.mode === 'model' &&
+          previous.selection.anchor !== previous.selection.focus
+            ? previous.selection
+            : null;
+        const nextPaint =
+          next.selection?.mode === 'model' &&
+          next.selection.anchor !== next.selection.focus
+            ? next.selection
+            : null;
+        if (
+          changes === null ||
+          nextPaint?.anchor !== previousPaint?.anchor ||
+          nextPaint?.focus !== previousPaint?.focus
+        ) {
+          effects.push(
+            replaceModelSelection.of(modelSelectionDecoration(next.selection))
+          );
+        }
+        if (next.decorations !== previous.decorations) {
+          effects.push(
+            replaceDecorations.of(
+              toCodeMirrorDecorations(
+                host.ownerDocument,
+                next.decorations,
+                next.text.length
+              )
+            )
+          );
+        }
+        if (next.readOnly !== previous.readOnly) {
+          effects.push(readOnly.reconfigure(readOnlyExtensions(next.readOnly)));
+        }
+        if (
+          next.config.language !== previous.config.language ||
+          host.getAttribute('aria-label') !==
+            view.contentDOM.getAttribute('aria-label')
+        ) {
+          effects.push(attributes.reconfigure(contentAttributes(host)));
+          host.dataset.language = next.config.language ?? '';
+        }
+        const specification: TransactionSpec = {
+          annotations: appliedByAdapter.of(true),
+          ...(effects.length > 0 ? { effects } : {}),
+          filter: false,
+        };
+
+        if (changes === null) {
+          specification.changes = {
+            from: 0,
+            insert: next.text,
+            to: view.state.doc.length,
+          };
+        } else if (changes.length > 0) {
+          specification.changes = changes.map(({ from, insert, to }) => ({
+            from,
+            insert,
+            to,
+          }));
+        }
+        if (next.selection?.mode === 'native') {
+          const selection = view.state.selection.main;
+
+          if (
+            selection.anchor !== next.selection.anchor ||
+            selection.head !== next.selection.focus
+          ) {
+            specification.selection = EditorSelection.single(
+              next.selection.anchor,
+              next.selection.focus
+            );
+          }
+        }
+        if (
+          !specification.changes &&
+          !specification.selection &&
+          effects.length === 0
+        ) {
+          return;
+        }
+        view.dispatch(specification);
+        if (next.config.language !== previous.config.language) {
+          loadLanguage(next.config.language);
+        }
+      };
       host.dataset.codeBlockCodemirror = '';
       host.dataset.language = state.config.language ?? '';
       loadLanguage(state.config.language);
@@ -472,7 +633,6 @@ export function createCodeMirrorAdapter({
       return {
         destroy() {
           destroyed = true;
-          pendingReset = false;
           if (composing || pendingCompositionEnd) actions.composition('end');
           view.destroy();
           delete host.dataset.codeBlockCodemirror;
@@ -495,105 +655,14 @@ export function createCodeMirrorAdapter({
           }
           view.focus();
         },
-        update({ changes, state: next }) {
-          const previous = current;
-          current = next;
-          const effects: Array<StateEffect<unknown>> = [];
-          if (next.config.language !== previous.config.language) {
-            effects.push(language.reconfigure([]));
-          }
+        update(input) {
+          if (applyingCodeMirror) {
+            if (!canAcceptInFlightFocusRefresh(input)) assertIdle();
+            current = input.state;
 
-          const previousPaint =
-            previous.selection?.mode === 'model' &&
-            previous.selection.anchor !== previous.selection.focus
-              ? previous.selection
-              : null;
-          const nextPaint =
-            next.selection?.mode === 'model' &&
-            next.selection.anchor !== next.selection.focus
-              ? next.selection
-              : null;
-          if (
-            changes === null ||
-            nextPaint?.anchor !== previousPaint?.anchor ||
-            nextPaint?.focus !== previousPaint?.focus
-          ) {
-            effects.push(
-              replaceModelSelection.of(modelSelectionDecoration(next.selection))
-            );
-          }
-          if (next.decorations !== previous.decorations) {
-            effects.push(
-              replaceDecorations.of(
-                toCodeMirrorDecorations(
-                  host.ownerDocument,
-                  next.decorations,
-                  next.text.length
-                )
-              )
-            );
-          }
-          if (next.readOnly !== previous.readOnly) {
-            effects.push(
-              readOnly.reconfigure(readOnlyExtensions(next.readOnly))
-            );
-          }
-          if (
-            next.config.language !== previous.config.language ||
-            host.getAttribute('aria-label') !==
-              view.contentDOM.getAttribute('aria-label')
-          ) {
-            effects.push(attributes.reconfigure(contentAttributes(host)));
-            host.dataset.language = next.config.language ?? '';
-          }
-          const specification: TransactionSpec = {
-            annotations: appliedByAdapter.of(true),
-            ...(effects.length > 0 ? { effects } : {}),
-          };
-
-          if (changes === null) {
-            specification.changes = {
-              from: 0,
-              insert: next.text,
-              to: view.state.doc.length,
-            };
-          } else if (changes.length > 0) {
-            specification.changes = changes.map(({ from, insert, to }) => ({
-              from,
-              insert,
-              to,
-            }));
-          }
-          if (next.selection?.mode === 'native') {
-            const selection = view.state.selection.main;
-
-            if (
-              selection.anchor !== next.selection.anchor ||
-              selection.head !== next.selection.focus
-            ) {
-              specification.selection = EditorSelection.single(
-                next.selection.anchor,
-                next.selection.focus
-              );
-            }
-          }
-          if (
-            !specification.changes &&
-            !specification.selection &&
-            effects.length === 0
-          ) {
             return;
           }
-          const apply = () => {
-            if (destroyed || current !== next) return;
-            view.dispatch(specification);
-            if (next.config.language !== previous.config.language) {
-              loadLanguage(next.config.language);
-            }
-          };
-
-          if (dispatchingToPlite) queueMicrotask(apply);
-          else apply();
+          applyUpdate(input);
         },
       };
     },

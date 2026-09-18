@@ -16,9 +16,12 @@ import {
 
 jsxt;
 
-const createTableSelectionEditor = (input: TestEditor, disableMerge: boolean) =>
+const createTableSelectionEditor = (
+  input: TestEditor,
+  allowCellSpanEditing: boolean
+) =>
   createTestTableEditor({
-    plugins: getTestTablePlugins({ disableMerge }),
+    plugins: getTestTablePlugins({ allowCellSpanEditing }),
     selection: input.selection,
     initialValue: input.children,
   });
@@ -135,9 +138,12 @@ describe('BaseTablePlugin deletion', () => {
   // https://github.com/udecode/editor-protocol/issues/21
   // https://github.com/udecode/editor-protocol/issues/25
   describe('Delete when selecting cells', () => {
-    describe.each([{ disableMerge: true }, { disableMerge: false }])(
-      'with disableMerge: $disableMerge',
-      ({ disableMerge }) => {
+    describe.each([
+      { allowCellSpanEditing: false },
+      { allowCellSpanEditing: true },
+    ])(
+      'with allowCellSpanEditing: $allowCellSpanEditing',
+      ({ allowCellSpanEditing }) => {
         let editor: ReturnType<typeof createTableSelectionEditor>;
         let output: TestEditor;
 
@@ -200,7 +206,7 @@ describe('BaseTablePlugin deletion', () => {
             </editor>
           ) as TestEditor;
 
-          editor = createTableSelectionEditor(input, disableMerge);
+          editor = createTableSelectionEditor(input, allowCellSpanEditing);
 
           editor.update.fragment.delete();
         });

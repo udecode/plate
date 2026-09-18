@@ -2,9 +2,9 @@
 title: Suggestion review semantics
 type: decision
 status: provisional
-updated: 2026-09-17
+updated: 2026-09-18
 review_scope: suggestions
-current_review: 2026-09-14-suggestions-view-initialization-api
+current_review: 2026-09-17-suggestions-authored-editing-final
 review_history:
   - ../review-records/2026-09-13-suggestions-google-docs-audit.json
   - ../review-records/2026-09-13-suggestions-omission-audit.json
@@ -12,6 +12,9 @@ review_history:
   - ../review-records/2026-09-14-suggestions-content-attributes.json
   - ../review-records/2026-09-14-suggestions-initialization.json
   - ../review-records/2026-09-14-suggestions-view-initialization-api.json
+  - ../review-records/2026-09-17-suggestions-editing-visibility.json
+  - ../review-records/2026-09-17-suggestions-authored-editing-final-plan.json
+  - ../review-records/2026-09-17-suggestions-authored-editing-final.json
 source_refs:
   - ../../plans/artifacts/google-docs-suggestion-audit/audit.md
   - ../../plans/artifacts/google-docs-suggestion-audit/coverage-crosswalk.json
@@ -19,17 +22,81 @@ source_refs:
 related:
   - authored-change-ownership.md
   - ../reviews.md#suggestions
+reconciled_executions:
+  - 2026-09-18-recovered-2026-07-24-fix-optional-suggestion-trailing-block-kit-composition
+  - 2026-09-18-recovered-2026-09-04-decouple-link-floating-ui
+  - 2026-09-18-recovered-2026-09-10-native-authored-changes-and-suggestions
+  - 2026-09-18-recovered-2026-09-12-plite-view-design
+  - 2026-09-18-recovered-2026-09-12-suggestions-docs-demo
+  - 2026-09-18-recovered-2026-09-13-complete-suggestion-semantics
+  - 2026-09-18-recovered-2026-09-13-suggestion-deleted-pointer-selection
+  - 2026-09-18-recovered-2026-09-13-suggestion-retained-caret
+  - 2026-09-18-recovered-2026-09-13-suggestion-self-edit-regression
+  - 2026-09-18-recovered-2026-09-13-suggestions-docs-coverage
+  - 2026-09-18-recovered-2026-09-14-suggestion-restoration-resolver
+  - 2026-09-18-recovered-2026-09-16-slash-ai-suggested-paragraph
+  - 2026-09-18-recovered-2026-09-17-authored-direct-editing-with-visible-suggestions
 ---
 
 # Suggestion review semantics
 
-## Input mode and review projection
+## Editing while showing pending changes
 
-Suggestion mode controls the intent of subsequent input, not the visibility or status of existing changes. Both Editing and Suggesting use the markup projection. Closing Suggesting therefore keeps pending insertions, retained deletions, replacements, review cards, and linked comments visible.
+**Keep separate authored write intent and displayed content.** The
+September 17 screenshot contradicts the claim that removing the playground's
+`propose/markup` override preserves visible suggestions. It selects
+`edit/accepted`, which hides pending insertions. The user requires direct
+editing by default while existing suggestions remain visible and reviewable.
 
-Editing writes only targets that map exactly to accepted content. Pending insertions, retained deletion fragments, and selections that mix accepted and pending content are review-only until the user switches to Suggesting. The mode control never accepts, rejects, deletes, or serializes a change, and it creates no undo step. Applications that need a clean accepted-only view set `{ intent: 'edit', projection: 'accepted' }` explicitly.
+The September 17 review located the coupling in the native view and
+transaction owner, with Plate's mode controls reinforcing it. The completed
+execution plan reports adoption of separate input coordinates, requested intent
+and resolved publication; widening a union alone was not the selected repair.
 
-This keeps one native authored view owner. It does not add a mode store, a second document, or suggestion-specific paint state. Each mounted view retains its own intent and selection, while accepted content, authored records, IDs, authors, and comments remain shared document facts.
+The selected call site for the playground and AI editor is
+`<EditorRoot editor={editor} authored={{ intent: 'edit', projection: 'markup' }}>`.
+The execution plan reports this combination implemented. Keep the exact mounted view as
+the owner, with native authored content, positions, attribution and decisions.
+Plate's mode controls should change write intent without implicitly hiding
+pending changes. Accepted-only views remain an explicit useful projection;
+the product requirement does not justify changing every raw Plite default.
+
+Reject toggling between the two existing presets, accepting proposals merely
+to display them, CSS-only restoration, parallel suggestion stores and
+save/switch/restore input handlers. None preserves both required behaviors.
+Deleting SuggestionPlugin would leave the native restriction intact and move
+its current review/decorations job into callers. Replacing authored storage
+has no demonstrated benefit for this bounded defect; first repair the existing
+native view and transaction ownership.
+
+The plan records direct editing before, inside and across
+pending insertions, deletions, formatting and structural changes. Preserve
+author identities and dependency decisions; ordinary typing must not silently
+accept pending work. Its evidence includes caret mapping, paste, undo/redo,
+save/reload, independent views and cost comparisons. The earlier heading-only typing test omitted pending
+visibility, and separate suggestion tests entered proposing mode first.
+
+This supersedes the earlier contract's sufficiency claim while reaffirming
+`EditorRoot` initialization and native authored ownership. It is a bounded
+source review with supplied screenshot evidence; that immutable review is not
+an execution receipt. The later plan reports closure of the earlier hydration
+and first-paint failures through the joint product interaction.
+
+The [authored editing plan](../../plans/2026-09-17-authored-direct-editing-with-visible-suggestions.md)
+settles the five valid view combinations, projection-preserving mode controls,
+native input/publication ownership, and adoption. Its bounded mapper probe
+passes; its final status is Complete and records native, Plate and product
+adoption, 26 product browser cases and 55 native browser cases. Pending live
+content stays editable, while gestures that depend on it remain reviewable and
+preserve the actual writer's attribution. The transaction privately separates
+input projection, requested intent, and resolved publication. Its mapping owner
+is direction-aware rather than assigning undocumented reverse semantics to
+the earlier `acceptedEdit` flag. These are recovered execution claims, not a
+fresh replay in the September 18 history migration. Full original source and
+browser receipt binding is not recovered here; current proof remains explicitly
+unknown rather than inheriting the ledger's old verified flag. The plan also
+retains package/typecheck limitations. Preserve those limits independently from
+the selected architecture and the reported implementation completion.
 
 ## Document initialization
 
@@ -201,3 +268,14 @@ This is a Pursue verdict, not implementation acceptance. No product source,
 runtime representation, package export, or test suite changed in this review.
 See the [audit and source index](../../plans/artifacts/google-docs-suggestion-audit/audit.md)
 for all dispositions, alternatives, sources, and unresolved Google behavior.
+
+## Recovered execution history
+
+The [feature hub](../features/suggestions.md) links the recovered plan outcomes,
+including completed work and rejected experiments. These imports preserve
+reported completion with **unknown current proof**: their full original
+source/runner/result binding is not recovered. Their recovery date does not
+assert that every historical plan ran after the latest review. The plan owns
+its lifecycle; these accounts do not reopen unrelated architectural decisions
+or authorize repeating completed work. Current review and proof limits above
+remain question-specific.

@@ -106,7 +106,7 @@ describe('table resize pointer lifecycle', () => {
         f.editor.update.text.insert('!', {
           at: { path: [0, 0, 0, 0, 0], offset: 3 },
         });
-        if (undo) f.editor.update.history.undo();
+        if (undo) f.editor.api.history.undo();
       });
       const before = f.editor.read.children();
 
@@ -119,7 +119,7 @@ describe('table resize pointer lifecycle', () => {
         columnWidths: [160, 140],
       });
       expect(f.ended).toHaveBeenCalledTimes(1);
-      f.editor.update.history.undo();
+      f.editor.api.history.undo();
       expect(f.editor.read.children()).toEqual(before);
       f.mounted.unmount();
     }
@@ -137,11 +137,11 @@ describe('table resize pointer lifecycle', () => {
     expect(f.editor.read.children()[0]).toMatchObject({
       columnWidths: [170, 130],
     });
-    expect(f.editor.read.history.undos()).toHaveLength(1);
+    expect(f.editor.read.history().undos).toHaveLength(1);
     expect(f.ended).toHaveBeenCalledTimes(1);
     pointer(window, 'pointermove', 160);
     expect(f.previews).toHaveLength(2);
-    f.editor.update.history.undo();
+    f.editor.api.history.undo();
     expect(f.editor.read.children()).toEqual([f.element]);
     f.mounted.unmount();
   });
@@ -160,7 +160,7 @@ describe('table resize pointer lifecycle', () => {
     expect(f.previews).toHaveLength(1);
     expect(f.ended).toHaveBeenCalledTimes(1);
     expect(f.editor.read.children()).toEqual([f.element]);
-    expect(f.editor.read.history.undos()).toHaveLength(0);
+    expect(f.editor.read.history().undos).toHaveLength(0);
     f.mounted.unmount();
   });
 
@@ -214,7 +214,7 @@ describe('table resize pointer lifecycle', () => {
         else {
           f.editor
             .plugin(TablePlugin)
-            .update.setColumnWidth({ colIndex: 0, width: 200 }, { at: [0] });
+            .update.setColumnWidth({ at: [0], colIndex: 0, width: 200 });
         }
       });
       const current = f.editor.read.children();

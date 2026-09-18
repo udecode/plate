@@ -1,5 +1,14 @@
-import type { Value } from 'platejs';
-import type { CommentThread, CommentUser } from 'platejs/comments';
+import {
+  BaseHeadingPlugin,
+  BaseLinkPlugin,
+  createEditor,
+  type Value,
+} from 'platejs';
+import type {
+  CommentsJSON,
+  CommentThread,
+  CommentUser,
+} from 'platejs/comments';
 
 import { createCommentValue } from '@/registry/components/editor/comment';
 
@@ -40,21 +49,15 @@ export const commentValue: Value = [
   },
 ];
 
-export const commentThreads: CommentThread[] = [
+const commentThreads: CommentThread[] = [
   {
     id: 'discussion1',
     createdAt: '2026-09-10T10:00:00.000Z',
-    resolved: false,
+    resolution: null,
     status: 'published',
     excerpt: 'comments on many text segments',
     userId: 'charlie',
-    target: {
-      type: 'range',
-      range: {
-        anchor: { path: [1, 1, 0], offset: 0 },
-        focus: { path: [1, 2], offset: trailingText.indexOf('.') },
-      },
-    },
+    target: { type: 'range' },
     messages: [
       {
         id: 'discussion1-comment',
@@ -77,20 +80,11 @@ export const commentThreads: CommentThread[] = [
   {
     id: 'discussion2',
     createdAt: '2026-09-10T10:05:00.000Z',
-    resolved: false,
+    resolution: null,
     status: 'published',
     excerpt: 'overlapping',
     userId: 'bob',
-    target: {
-      type: 'range',
-      range: {
-        anchor: { path: [1, 2], offset: trailingText.indexOf('overlapping') },
-        focus: {
-          path: [1, 2],
-          offset: trailingText.indexOf('overlapping') + 'overlapping'.length,
-        },
-      },
-    },
+    target: { type: 'range' },
     messages: [
       {
         id: 'discussion2-comment',
@@ -111,3 +105,44 @@ export const commentThreads: CommentThread[] = [
     ],
   },
 ];
+
+export const createCommentSnapshot = (document = commentValue) => {
+  const fixture = createEditor({
+    plugins: [BaseHeadingPlugin, BaseLinkPlugin],
+    initialValue: document,
+  });
+  const ranges = [
+    {
+      threadId: 'discussion1',
+      range: {
+        anchor: { path: [1, 1, 0], offset: 0 },
+        focus: { path: [1, 2], offset: trailingText.indexOf('.') },
+      },
+    },
+    {
+      threadId: 'discussion2',
+      range: {
+        anchor: { path: [1, 2], offset: trailingText.indexOf('overlapping') },
+        focus: {
+          path: [1, 2],
+          offset: trailingText.indexOf('overlapping') + 'overlapping'.length,
+        },
+      },
+    },
+  ];
+  const comments: CommentsJSON = {
+    kind: 'plate-comments',
+    version: 1,
+    threads: commentThreads,
+    ranges: ranges.map(({ threadId, range }) => {
+      const anchor = fixture.anchor(range, {
+        association: 'inward',
+        deletion: 'nearest',
+      });
+      const saved = fixture.anchor.save(anchor);
+      anchor.release();
+      return { threadId, range: saved };
+    }),
+  };
+  return { document: fixture.read.value(), comments };
+};

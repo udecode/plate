@@ -2,7 +2,9 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "media-file-static",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [
     "https://platejs.org/r/caption-static.json"

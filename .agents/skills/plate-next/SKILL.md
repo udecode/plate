@@ -22,7 +22,7 @@ selection. Reuse valid accepted decisions rather than restarting each audit.
 
 ## Doctrine Version
 
-Current doctrine version: `201`.
+Current doctrine version: `215`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and

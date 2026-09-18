@@ -770,8 +770,8 @@ function createPliteRuntimeIdentityConsumerSource() {
     'releaseIdentityEqual(releaseRoot.definePlugin, releaseReact.definePlugin);',
     'releaseIdentityEqual(releaseRoot.schema, releaseReact.schema);',
     'releaseIdentityEqual(',
-    '  releaseLayout.createLayout,',
-    '  releaseLayoutReact.createLayout',
+    '  releaseLayout.measurePages,',
+    '  releaseLayoutReact.measurePages',
     ');',
     'const releaseDOMPlugin = createReleaseDOMPlugin();',
     'const releaseReactPlugin = releaseReact.react({',
@@ -886,8 +886,8 @@ function createPlateRuntimeIdentityConsumerSource() {
     'releasePlateIdentityEqual(releasePlateRoot.definePlugin === releasePlateReact.definePlugin, false);',
     'releasePlateIdentityEqual(releasePlateHistory.history, releasePliteHistory.history);',
     'releasePlateIdentityEqual(',
-    '  releasePlateLayout.createLayout,',
-    '  releasePliteLayout.createLayout',
+    '  releasePlateLayout.measurePages,',
+    '  releasePliteLayout.measurePages',
     ');',
   ].join('\n');
 }

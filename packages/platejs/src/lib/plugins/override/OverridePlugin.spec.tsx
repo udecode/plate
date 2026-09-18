@@ -5,6 +5,7 @@ import {
   property,
   type Value,
 } from '../../../facade';
+import { BaseHeadingPlugin } from '../../../features/basic-nodes/lib/BaseHeadingPlugins';
 import { deleteBackward, deleteForward, insertBreak } from '../../../testing';
 import { createEditor } from '../../editor';
 import { createEditorWithEditor } from '../../editor/withPlite';
@@ -110,6 +111,47 @@ describe('OverridePlugin', () => {
     });
   });
 
+  it('applies the empty delete rule when a forward line deletion empties a heading', () => {
+    const editor = createEditor({
+      plugins: [BaseHeadingPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [
+        {
+          children: [{ text: 'Heading' }],
+          level: 2,
+          type: 'heading',
+        },
+        { children: [{ text: 'After' }], type: 'paragraph' },
+      ],
+    });
+
+    deleteForward(editor, { unit: 'line' });
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '' }], type: 'paragraph' },
+      { children: [{ text: 'After' }], type: 'paragraph' },
+    ]);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+
+    editor.api.history.undo();
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ text: 'Heading' }],
+        level: 2,
+        type: 'heading',
+      },
+      { children: [{ text: 'After' }], type: 'paragraph' },
+    ]);
+  });
+
   it('handles deleteExit through OverridePlugin command policy', () => {
     const CalloutPlugin = definePlugin('callout', {
       schema: {
@@ -194,7 +236,7 @@ describe('OverridePlugin', () => {
       focus: { offset: 0, path: [1, 0, 0] },
     });
 
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
 
     expect(editor.read.children()).toEqual(initialValue);
   });

@@ -2,18 +2,31 @@
 title: Clipboard interchange and content fitting
 type: decision
 status: proposed
-updated: 2026-09-13
+updated: 2026-09-18
 review_scope: clipboard
 current_review: 2026-09-13-clipboard-transfer-convergence
 review_history:
   - ../review-records/2026-09-13-clipboard-transfer-convergence.json
+reconciled_executions:
+  - 2026-09-18-table-edge-paste-regression
+  - 2026-09-18-recovered-2026-09-13-clipboard-transfer-policy
 ---
 
 # Clipboard interchange and content fitting
 
-Status: Review complete — Pursue. Design is ready; planned adoption is in
+Status: Review complete — Pursue. The selected design and reported adoption are in
 the [clipboard transfer plan](../../plans/2026-09-13-clipboard-transfer-policy.md).
-Product adoption and production proof remain incomplete.
+That plan is Complete and reports every clipboard-owned proof gate closed.
+The September 18 history migration recovers this later execution claim but
+does not replay it or recover a complete original source/receipt binding.
+Current proof is explicitly unknown; the old proposed/planned summary is not
+a reason to execute the same adoption again.
+
+The `2026-09-18-table-edge-paste-regression` execution verifies one current
+Plate format-policy consumer: a closed table slice pasted at the bottom-right
+edge grows both dimensions, retains all four cells and updates the table's
+column-width metadata atomically. The neutral Plite clipboard and fitting
+contracts remain unchanged; the repair stays in the Plate table paste owner.
 
 Question: What does transfer preserve across schemas and editor instances, and
 can one content-fitting owner replace feature-specific paste repair?
@@ -74,15 +87,16 @@ The design invocation was:
 $task design plan clipboard: unify transfer policy and preserve complete slices
 ```
 
-The next owner is Task execution of the ready plan. This planning request does
-not authorize product implementation or
-publication.
+The linked plan owns the execution outcome and its limits. Reconcile current
+source and retained proof before proposing further work; a historical review's
+Pursue verdict does not imply its implementation is still pending. Publication
+requires its own authority.
 
 The compiled fitter already owns fitting. Replacing it or merging every
 feature's paste policy into it has no demonstrated value. Table placement,
 format interpretation and visible selection each have independent jobs.
 
-## Findings
+## Findings at the September 13 review
 
 ### Cut independent projected paste interpretation
 
@@ -231,3 +245,14 @@ repeated destination copies, cut failure and undo/redo.
 
 The downstream task must apply public API doctrine repair if contracts change.
 This read-only review does not change doctrine or product code.
+
+## Recovered execution history
+
+The [feature hub](../features/clipboard.md) links the recovered plan outcomes,
+including completed work and rejected experiments. These imports preserve
+reported completion with **unknown current proof**: their full original
+source/runner/result binding is not recovered. Their recovery date does not
+assert that every historical plan ran after the latest review. The plan owns
+its lifecycle; these accounts do not reopen unrelated architectural decisions
+or authorize repeating completed work. Current review and proof limits above
+remain question-specific.

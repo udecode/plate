@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-18-ui-commands-and-installation",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-18-ui-commands-and-installation.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Use direct editor actions and complete generated installs",
+  "targets": [
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "align",
+      "files": ["apps/www/src/registry/components/editor/align.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "line-height",
+      "files": ["apps/www/src/registry/components/editor/line-height.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-plugins-static",
+      "files": ["apps/www/src/registry/components/editor/plugins-static.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "plate",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for plate."
+        }
+      ]
+    },
+    {
+      "name": "plate-ui",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for plate-ui."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-18-insert-toolbar-direct-editor-actions-complete-43b3222d",
+      "kind": "behavior",
+      "summary": "Call installed feature operations directly, preserve exact block selections, and disable unsupported structural actions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "insert-toolbar-button",
+        "slash",
+        "turn-into-toolbar-button",
+        "block-menu"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-18",
+          "entry": "2026-09-18-ui-commands-and-installation",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-18-neutral-formatting-kits",
+      "kind": "wiring",
+      "summary": "Share the same server-safe formatting kits between editable and static editor compositions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["align", "line-height", "editor-plugins-static"],
+      "source": {
+        "line": 14,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-18",
+          "entry": "2026-09-18-ui-commands-and-installation",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-18-source-derived-registry-installs",
+      "kind": "fix",
+      "summary": "Install package requirements derived from copied source and serve production and development payloads from one generated registry state.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["plate", "plate-ui"],
+      "source": {
+        "line": 16,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-09-18",
+          "entry": "2026-09-18-ui-commands-and-installation",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -12,7 +12,7 @@ Require React and React DOM 19.2 or newer.
 - Export pure schema and plugin builders from `platejs`, React components and hooks from `platejs/react`, and `renderStaticHtml` from `platejs/static`
 - Initialize editors synchronously through `initialValue` or `({ editor }) => Value`, observe edits through `onCommit`, use strict `useEditor`, and use nullable `useOptionalEditor`
 - Accept a primary-root value or complete `EditorDocumentValue`, emit the complete document through Plate `onValueChange`, and render typed interactive or static content-root slots
-- Defer initialization with `skipInitialization: true`, then publish the loaded document with one `editor.update.value.replace(...)` call; application migrations run before installed-plugin preparation and schema fitting
+- Defer initialization with `skipInitialization: true`, then publish current-schema input with one `editor.update.value.replace(...)` call; convert historical persisted data before editor creation or replacement
 - Delete `@platejs/autoformat`; declare input rules on the feature plugins that own the resulting behavior
 - Delete `@platejs/caption`; non-void media elements own direct inline caption children, while Plate UI media components render caption and asset-focus states
 - Compose required plugin capabilities through `dependencies`; include optional capabilities and presets directly in consumer plugin arrays
@@ -26,30 +26,31 @@ Replace `KEYS`, `NODES`, and `STYLE_KEYS` plugin references with `PLUGINS`. Reso
 Persist schema identity beside each durable document. Configure the v54 release step through the application schema migration chain:
 
 ```tsx
-import { defineDocumentMigrations, migratePlateV54 } from 'platejs/migrations';
+import { defineDocumentMigrations, migrateV54 } from 'platejs/migrations';
 import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
 
-const migrations = defineDocumentMigrations(EditorSchema, {
+const migrations = defineDocumentMigrations({
+  plugins: EditorKit,
+  schema: EditorSchema,
   sourceFingerprints: { 53: v53Fingerprint },
-  steps: { 54: migratePlateV54 },
-  unversioned: 53,
+  steps: { 54: migrateV54 },
 });
 ```
 
-Replace plugin `transformInitialValue` with `prepareDocument` only for permanent installed-plugin invariants.
+Convert stored input explicitly with `migrateDocument` and pass the returned current envelope to the editor. Raw historical input requires an explicit `source` at that import boundary.
 
 For deferred loading:
 
 ```tsx
 const editor = createPlateEditor({
-  migrations,
   plugins,
   schema: EditorSchema,
   skipInitialization: true,
 });
 const persisted = await loadDocument();
+const current = migrateDocument(persisted, { migrations }).output;
 
-editor.update.value.replace(persisted);
+editor.update.value.replace(current);
 ```
 
 Migrate frozen Plate v53 documents through the complete v54 AST contract.

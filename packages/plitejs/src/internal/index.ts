@@ -140,12 +140,21 @@ export {
   mapInternalDocumentChangePosition,
 } from '../core/change/document-change';
 export {
+  assertDetachedSelectionSupported,
+  mapDetachedSelectionThroughChange,
+} from '../core/selection-protocol';
+export {
+  completePersistedDocumentFields,
+  type PersistedDocumentFieldValues,
+} from '../core/persisted-document';
+export {
   getDocumentChangeRelocations,
   getExactDocumentChangeRelocation,
   getExactDocumentChangeRelocations,
   type DocumentChangeRelocation,
 } from '../core/change/mapping';
 export {
+  compileEditorSchemaCapabilityEntries,
   compileEditorSchemaContractEntries,
   type PluginsFromOptions,
   type EditorValueFromOptions,
@@ -194,7 +203,12 @@ export {
   toInternalRoot,
   toPublicRoot,
 } from '../core/public-root';
-export { getCompiledEditorSchemaFromApi } from '../core/editor-schema';
+export {
+  createDetachedEditorSchema,
+  getCompiledEditorSchemaFromApi,
+} from '../core/editor-schema';
+export type { InternalEditorSchemaApi } from '../core/editor-schema';
+export type { NativeAuthoredDocumentCapability } from '../core/authored-document-capability';
 export type {
   EditorSchemaSource,
   EditorSchemaSourceProvider,
@@ -271,6 +285,7 @@ export { createEditorEffect } from '../core/transaction-values';
 export {
   areEditorJsonValuesEqual,
   assertEditorJsonValue,
+  snapshotEditorJsonValue,
   decodeEditorEffect,
   decodeVersionedValue,
   encodeEditorEffect,

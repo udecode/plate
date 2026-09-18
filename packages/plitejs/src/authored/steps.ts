@@ -272,16 +272,21 @@ export const createAuthoredPositionRoots = (
   return roots;
 };
 
-export const authoredEditOwner = (
+export const authoredEditTarget = (
   change: DocumentChange,
   roots: AuthoredPositionRoots,
   state: AuthoredState,
-  authorId: string,
-  amendDeletions = true
+  options: Readonly<{
+    adjacentDeletions: boolean;
+    amendDeletions: boolean;
+    authorId: string;
+  }>
 ): string | null => {
   if (change.createRoots.size || change.deleteRoots.size) return null;
-  let owner: string | null = null;
+  let adjacentTarget: string | null = null;
+  let containedTarget: string | null = null;
   let mixed = false;
+  let uncovered = false;
   for (const [root, sections] of rootSections(change.toJSON())) {
     const index = readRecord(roots, root)?.positions;
     if (!index) return null;
@@ -309,31 +314,32 @@ export const authoredEditOwner = (
                   (identity): identity is string => identity !== null
                 )
               : [span.placement ?? span.birth];
+          let covered = false;
 
           for (const identity of identities) {
             if (!identity) continue;
             const proposal = readRecord(state.changes, identity);
             if (proposal?.status !== 'pending') continue;
-            if (proposal.authorId !== authorId) {
-              mixed = true;
-              continue;
-            }
-            if (owner && identity !== owner) mixed = true;
-            owner ??= identity;
+            if (containedTarget && identity !== containedTarget) mixed = true;
+            containedTarget ??= identity;
+            covered = true;
           }
-          if (!insertion && span.placement && span.placement !== owner) {
+          if (!insertion && !covered) uncovered = true;
+          if (
+            !insertion &&
+            span.placement &&
+            span.placement !== containedTarget
+          ) {
             mixed = true;
           }
         }
         if (section.replacement) {
           const editFrom = position;
           const editTo = insertion ? position : position + section.length;
-          const existingOwner: string | null = owner;
-          let adjacentDeletionOwner: string | null = null;
           for (const deletionPosition of insertion
             ? [editFrom]
             : [editFrom, editTo]) {
-            for (const { operation, target } of authoredDeletionsAt(
+            for (const { operation, target: deletion } of authoredDeletionsAt(
               state,
               root,
               authoredPositionAt(index, deletionPosition)
@@ -341,12 +347,12 @@ export const authoredEditOwner = (
               const proposal = readRecord(state.changes, operation.changeId);
               if (
                 proposal?.status !== 'pending' ||
-                proposal.authorId !== authorId
+                proposal.authorId !== options.authorId
               ) {
                 continue;
               }
               if (
-                !amendDeletions &&
+                !options.amendDeletions &&
                 !restoredAuthoredSpans({
                   state,
                   roots,
@@ -362,13 +368,13 @@ export const authoredEditOwner = (
               }
               const deletedFrom = resolveAuthoredPosition(
                 index,
-                target.from,
+                deletion.from,
                 'left',
                 'collapse'
               );
               const deletedTo = resolveAuthoredPosition(
                 index,
-                target.to,
+                deletion.to,
                 'right',
                 'collapse'
               );
@@ -380,17 +386,19 @@ export const authoredEditOwner = (
               ) {
                 continue;
               }
-              if (existingOwner && existingOwner !== proposal.id) mixed = true;
-              adjacentDeletionOwner ??= proposal.id;
+              if (containedTarget && containedTarget !== proposal.id) {
+                mixed = true;
+              }
+              adjacentTarget ??= proposal.id;
             }
           }
-          owner ??= adjacentDeletionOwner;
         }
       }
       position += section.length;
     }
   }
-  return mixed ? null : owner;
+  if (mixed || (containedTarget && uncovered)) return null;
+  return containedTarget ?? (options.adjacentDeletions ? adjacentTarget : null);
 };
 
 const rootSections = (
@@ -850,6 +858,7 @@ const captureAuthoredStep = (input: {
   associations?: ReadonlyArray<AuthoredTarget['association']>;
   insertion?: AuthoredInsertion;
   afterPositions?: AuthoredPositionRoots;
+  restoreIdentity?: boolean;
   change: DocumentChange;
   changeId: string;
   operationId: string;
@@ -862,10 +871,22 @@ const captureAuthoredStep = (input: {
     const crossMovement = crossRootMovement(input.change, input.value);
     let roots = input.positions;
     const dependencies = new Set<string>();
+    const publicationDependencies = new Set<string>();
     const targets: AuthoredTarget[] = [];
     const rootTargets: AuthoredRootTarget[] = [];
     const depend = (identity: string | null) => {
-      if (identity && identity !== input.changeId) dependencies.add(identity);
+      if (identity && identity !== input.changeId) {
+        dependencies.add(identity);
+        publicationDependencies.add(identity);
+      }
+    };
+    const dependOnTarget = (
+      targetDependencies: Set<string>,
+      identity: string | null
+    ) => {
+      if (identity && identity !== input.changeId) {
+        targetDependencies.add(identity);
+      }
     };
     for (const root of [
       ...input.change.createRoots,
@@ -940,6 +961,8 @@ const captureAuthoredStep = (input: {
           afterToOffset: number;
           beforeFromOffset: number;
           beforeToOffset: number;
+          dependencies: readonly string[];
+          publicationDependencies: readonly string[];
           retainedKind: 'delete' | 'move' | 'properties';
         }
       > = [];
@@ -950,6 +973,12 @@ const captureAuthoredStep = (input: {
         );
         const outputLength = replacementLength ?? section.length;
         if (section.replacement || section.properties) {
+          const targetDependencies = new Set<string>();
+          const targetPublicationDependencies = new Set<string>();
+          const dependOnPublication = (identity: string | null) => {
+            dependOnTarget(targetDependencies, identity);
+            dependOnTarget(targetPublicationDependencies, identity);
+          };
           const removed = removedSpans(
             before,
             fromBefore,
@@ -963,25 +992,27 @@ const captureAuthoredStep = (input: {
               ? removedSpans(before, propertyNode.from + 1, propertyNode.to - 1)
               : [];
           for (const span of [...removed, ...propertyContent]) {
-            depend(span.birth);
-            depend(span.placement);
+            dependOnPublication(span.birth);
+            dependOnPublication(span.placement);
             for (const writer of section.properties
               ? authoredPropertyDependencies(
                   span.properties,
                   section.properties.operations
                 )
               : Object.values(span.properties)) {
-              depend(writer);
+              dependOnPublication(writer);
             }
           }
+          // Structural context orders replay. It does not make an edit to
+          // accepted content reviewable merely because an ancestor is pending.
           for (const position of ancestorsAt(native, fromBefore)) {
             for (const { span } of authoredPositionSpans(
               before,
               position,
               position + 1
             )) {
-              depend(span.birth);
-              depend(span.placement);
+              dependOnTarget(targetDependencies, span.birth);
+              dependOnTarget(targetDependencies, span.placement);
             }
           }
           if (
@@ -997,12 +1028,12 @@ const captureAuthoredStep = (input: {
             ][0];
             if (left && right) {
               if (left.span.birth && right.span.birth) {
-                depend(left.span.birth);
-                depend(right.span.birth);
+                dependOnPublication(left.span.birth);
+                dependOnPublication(right.span.birth);
               }
               if (left.span.placement && right.span.placement) {
-                depend(left.span.placement);
-                depend(right.span.placement);
+                dependOnPublication(left.span.placement);
+                dependOnPublication(right.span.placement);
               }
             }
           }
@@ -1016,6 +1047,14 @@ const captureAuthoredStep = (input: {
                     ),
                   fromAfter,
                   fromAfter + outputLength
+                ).map((span) =>
+                  input.restoreIdentity
+                    ? {
+                        ...span,
+                        birth: input.changeId,
+                        placement: null,
+                      }
+                    : span
                 )
               : section.properties
                 ? removed.map((span) => ({
@@ -1074,6 +1113,8 @@ const captureAuthoredStep = (input: {
             afterToOffset: fromAfter + outputLength,
             beforeFromOffset: fromBefore,
             beforeToOffset: fromBefore + section.length,
+            dependencies: [...targetDependencies],
+            publicationDependencies: [...targetPublicationDependencies],
             retainedKind: section.properties
               ? 'properties'
               : movement || crossMovement
@@ -1104,6 +1145,8 @@ const captureAuthoredStep = (input: {
           afterToOffset,
           beforeFromOffset,
           beforeToOffset,
+          dependencies: targetDependencies,
+          publicationDependencies: targetPublicationDependencies,
           retainedKind,
           ...saved
         } = target;
@@ -1124,6 +1167,20 @@ const captureAuthoredStep = (input: {
           },
           'Authored target'
         );
+        targetDependencies.forEach((dependency) =>
+          dependencies.add(dependency)
+        );
+        if (
+          !readAuthoredTextBoundary(
+            captured,
+            getDefined(sections[captured.section])
+          )
+        ) {
+          // Canonical text-boundary cleanup is causal bookkeeping, not intent.
+          targetPublicationDependencies.forEach((dependency) =>
+            publicationDependencies.add(dependency)
+          );
+        }
         if (
           input.afterPositions === undefined &&
           captured.retained?.kind === 'properties' &&
@@ -1197,6 +1254,7 @@ const captureAuthoredStep = (input: {
     }
     return {
       dependencies: [...dependencies].sort(),
+      publicationDependencies: [...publicationDependencies].sort(),
       positions:
         input.afterPositions === undefined ? roots : input.afterPositions,
       rootTargets: snapshotEditorJsonValue(
@@ -2114,6 +2172,8 @@ export const captureAuthoredChange = (input: {
   state?: AuthoredState;
   associations?: ReadonlyArray<ReadonlyArray<AuthoredTarget['association']>>;
   insertions?: ReadonlyMap<DocumentChange, AuthoredInsertion>;
+  afterPositions?: AuthoredPositionRoots;
+  restoreIdentity?: boolean;
   change?: DocumentChange;
   changeId: string;
   operationId: string;
@@ -2127,6 +2187,7 @@ export const captureAuthoredChange = (input: {
   const draft = changes.length > 1 ? new ChangeDraft(input.value) : undefined;
   const offsets = new Map<string, number>();
   const dependencies = new Set<string>();
+  const publicationDependencies = new Set<string>();
   const steps: AuthoredStep[] = [];
   let { positions } = input;
   for (const [stepIndex, change] of changes.entries()) {
@@ -2147,6 +2208,9 @@ export const captureAuthoredChange = (input: {
     for (const dependency of captured.dependencies) {
       dependencies.add(dependency);
     }
+    for (const dependency of captured.publicationDependencies) {
+      publicationDependencies.add(dependency);
+    }
     ({ positions } = captured);
     draft?.apply(change, { classify: false });
   }
@@ -2156,6 +2220,7 @@ export const captureAuthoredChange = (input: {
   }
   return {
     dependencies: [...dependencies].sort(),
+    publicationDependencies: [...publicationDependencies].sort(),
     change,
     positions,
     steps: snapshotEditorJsonValue(steps, 'Authored steps'),

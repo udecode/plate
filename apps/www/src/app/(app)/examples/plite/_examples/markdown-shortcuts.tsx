@@ -176,7 +176,7 @@ const markdownShortcuts = () =>
           }
         }
 
-        return false;
+        return next();
       }),
       handle(editorCommands.insertText, ({ input, state }) => {
         const { text } = input;

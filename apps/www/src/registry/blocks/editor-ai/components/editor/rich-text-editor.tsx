@@ -5,12 +5,16 @@ import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { SettingsDialog } from '@/registry/components/editor/settings-dialog';
 
 import {
-  richTextEditorThreads,
+  richTextEditorComments,
   richTextEditorValue,
 } from './rich-text-editor-value';
 
@@ -39,7 +43,7 @@ export function RichTextEditor() {
               avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
             },
           },
-          initialThreads: richTextEditorThreads,
+          initialComments: richTextEditorComments,
         },
       }),
     ],
@@ -51,11 +55,13 @@ export function RichTextEditor() {
     <TooltipProvider>
       <EditorRoot
         editor={editor}
-        authored={{ intent: 'propose', projection: 'markup' }}
+        authored={{ intent: 'edit', projection: 'markup' }}
       >
-        <EditorContainer className="grid grid-cols-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
-          <Editor className="min-w-0" variant="demo" />
-        </EditorContainer>
+        <EditorFrame>
+          <EditorContainer>
+            <Editor className="min-w-0" variant="demo" />
+          </EditorContainer>
+        </EditorFrame>
         <SettingsDialog />
       </EditorRoot>
     </TooltipProvider>

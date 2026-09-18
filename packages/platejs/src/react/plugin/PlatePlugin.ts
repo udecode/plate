@@ -2,7 +2,6 @@ import type React from 'react';
 
 import type {
   DefinitionOf as RuntimeDefinitionOf,
-  EditorDocumentValue,
   EditorCommitContext,
   RuntimePluginReference,
   EditorNodeChangeContext,
@@ -188,15 +187,11 @@ type AnyPluginSlots = Omit<
     | null;
 };
 
-type AnyPluginRuntime = Omit<
-  AnyBasePlugin,
-  'editOnly' | 'render' | 'slots' | 'prepareDocument'
-> &
+type AnyPluginRuntime = Omit<AnyBasePlugin, 'editOnly' | 'render' | 'slots'> &
   PluginRuntimeWitness & {
     editOnly?: EditOnlyConfig | boolean;
     render: AnyPluginRender;
     slots: AnyPluginSlots;
-    prepareDocument?: ErasedCallback<EditorDocumentValue> | null;
   } & PluginReference;
 
 export type AnyPlugin = AnyPluginRuntime;
@@ -332,12 +327,6 @@ export type TextNodeProps<
       props: EditorNodeProps<C> & RenderLeafProps<Text, Text>
     ) => AnyObject | undefined)
   | AnyObject;
-
-export type PrepareDocument<
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = (
-  context: PluginContext<C> & { document: EditorDocumentValue }
-) => EditorDocumentValue;
 
 export type UseViewElementAttributes<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
@@ -522,7 +511,6 @@ type PluginAuthorFields<C extends AnyBasePluginDefinition> = Omit<
   | 'render'
   | 'slots'
   | 'shortcuts'
-  | 'prepareDocument'
   | 'update'
 > & {
   api?: (context: PluginContext<C>) => InferApi<C>;
@@ -545,7 +533,6 @@ type PluginAuthorFields<C extends AnyBasePluginDefinition> = Omit<
   render?: PluginAuthorRender<C>;
   slots?: PluginSlots<C>;
   shortcuts?: Shortcuts;
-  prepareDocument?: PrepareDocument<WithAnyName<C>>;
   update?: (
     context: PluginContext<C> & {
       context: EditorUpdateContext;
@@ -700,14 +687,7 @@ type WithValidatedShortcuts<
 
 export type PluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   BasePluginConfiguration<C>,
-  | 'component'
-  | 'decorate'
-  | 'inject'
-  | 'on'
-  | 'render'
-  | 'slots'
-  | 'shortcuts'
-  | 'prepareDocument'
+  'component' | 'decorate' | 'inject' | 'on' | 'render' | 'slots' | 'shortcuts'
 > & {
   component?: NodeComponent;
   decorate?: DecorateInput<C> | null;
@@ -716,7 +696,6 @@ export type PluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   render?: PluginAuthorRender<C>;
   slots?: PluginSlots<C>;
   shortcuts?: Shortcuts;
-  prepareDocument?: PrepareDocument<WithAnyName<C>> | null;
 };
 
 type PluginContextualFields<C extends AnyBasePluginDefinition> = {
@@ -725,7 +704,6 @@ type PluginContextualFields<C extends AnyBasePluginDefinition> = {
   on: PluginOn<C>;
   render: PluginRender<C>;
   slots: PluginSlots<C>;
-  prepareDocument?: PrepareDocument<WithAnyName<C>>;
 };
 
 type ProjectPluginContextualFields<C extends AnyBasePluginDefinition> =
@@ -747,14 +725,7 @@ type PluginDescriptor<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = Omit<
   BasePlugin<C>,
-  | 'configure'
-  | 'decorate'
-  | 'extend'
-  | 'inject'
-  | 'on'
-  | 'render'
-  | 'slots'
-  | 'prepareDocument'
+  'configure' | 'decorate' | 'extend' | 'inject' | 'on' | 'render' | 'slots'
 > &
   PluginRuntimeWitness &
   PluginRuntimeShell &

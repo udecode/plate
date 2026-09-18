@@ -3,7 +3,11 @@
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 import { TablePlugin } from 'platejs/table/react';
 
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { createValue } from '@/registry/examples/values/demo-values';
 
@@ -13,7 +17,7 @@ export default function TableNoMergeDemo() {
       ...EditorKit,
       TablePlugin.configure({
         initialState: {
-          disableMerge: true,
+          allowCellSpanEditing: false,
         },
       }),
     ],
@@ -22,9 +26,11 @@ export default function TableNoMergeDemo() {
 
   return (
     <EditorRoot editor={editor}>
-      <EditorContainer variant="demo">
-        <Editor />
-      </EditorContainer>
+      <EditorFrame className="h-[650px]">
+        <EditorContainer>
+          <Editor />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }

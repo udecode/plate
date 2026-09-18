@@ -22,6 +22,9 @@ for (const variant of variants) {
 
   rmSync(fixtureRoot, { force: true, recursive: true });
   mkdirSync(path.join(sourceRoot, 'components/editor'), { recursive: true });
+  mkdirSync(path.join(sourceRoot, 'registry/components/editor'), {
+    recursive: true,
+  });
   mkdirSync(path.join(sourceRoot, 'lib'), { recursive: true });
 
   const toolbarSource = path.join(
@@ -32,6 +35,10 @@ for (const variant of variants) {
   copyFileSync(
     toolbarSource,
     path.join(sourceRoot, 'components/editor/toolbar.tsx')
+  );
+  copyFileSync(
+    path.join(appRoot, 'src/registry/components/editor/toolbar-overlay.tsx'),
+    path.join(sourceRoot, 'registry/components/editor/toolbar-overlay.tsx')
   );
   copyFileSync(
     path.join(appRoot, 'src/lib/utils.ts'),

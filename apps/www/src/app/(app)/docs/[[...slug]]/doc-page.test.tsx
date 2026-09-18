@@ -1,10 +1,12 @@
 import { expect, test } from 'bun:test';
 
-import { registry } from '@/registry/registry';
+import { getRegistryMetadata } from '@/lib/registry-metadata';
 import { registryExamples } from '@/registry/registry-examples';
 import { source } from '@/lib/source';
 
 import { generateDocMetadata, generateDocStaticParams } from './doc-page';
+
+const registry = getRegistryMetadata();
 
 test('every registry-backed component and example resolves through the docs route', async () => {
   const routes = [

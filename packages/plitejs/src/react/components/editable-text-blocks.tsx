@@ -46,7 +46,11 @@ import {
   PliteContentRootOwnerContext,
   PliteEditableRootContext,
 } from '../context';
-import { useRegisterPliteDecorationSource } from '../decoration-context';
+import {
+  DecorationContext,
+  type PliteDecorationStore,
+  useRegisterPliteDecorationSource,
+} from '../decoration-context';
 import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
 import { readContentRootRenderSegments } from '../editable/content-root-owners';
 import { assertExternalTextElement } from '../editable/external-text-binding';
@@ -217,6 +221,30 @@ export type EditableElementSlots = {
     slot: string,
     options?: EditableContentRootSlotOptions
   ) => ReactNode;
+};
+
+/** @internal */
+export type EditableElementLayout = Readonly<{
+  height: number;
+  left: number;
+  top: number;
+  width: number;
+}>;
+
+const EditableElementLayoutsContext = React.createContext<ReadonlyMap<
+  string,
+  EditableElementLayout | null
+> | null>(null);
+
+const applyEditableElementLayout = (
+  element: HTMLElement,
+  layout: EditableElementLayout | null
+) => {
+  element.style.height = layout ? `${layout.height}px` : '';
+  element.style.left = layout ? `${layout.left}px` : '';
+  element.style.position = layout ? 'absolute' : '';
+  element.style.top = layout ? `${layout.top}px` : '';
+  element.style.width = layout ? `${layout.width}px` : '';
 };
 
 const createContentBoundaryId = (
@@ -713,6 +741,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
   textRange?: Readonly<{ end: number; start: number }>;
 }) => {
   const editor = useEditorContext();
+  const elementLayouts = React.useContext(EditableElementLayoutsContext);
   const fragment = React.useContext(AuthoredFragmentRootsContext);
   const editableRuntime = useEditableDOMRuntime();
   const coverage = editableRuntime?.domCoverage;
@@ -852,13 +881,21 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     );
   }
 
+  const elementLayout = elementLayouts?.get(path.join('.'));
+  const elementRef: React.RefCallback<HTMLElement> =
+    elementLayout === undefined
+      ? (bindNodeRef as React.RefCallback<HTMLElement>)
+      : (element) => {
+          (bindNodeRef as React.RefCallback<HTMLElement>)(element);
+          if (element) applyEditableElementLayout(element, elementLayout);
+        };
   const attributes = {
     'data-editor-inline': inline ? (true as const) : undefined,
     'data-editor-node': 'element' as const,
     'data-editor-path': path.join(','),
     'data-editor-node-key': nodeKeyDOMValue,
     'data-editor-void': voidNode ? (true as const) : undefined,
-    ref: bindNodeRef as React.RefCallback<HTMLElement>,
+    ref: elementRef,
   };
   const renderDirectTextChild = (
     childNodeKey: NodeKey,
@@ -1694,11 +1731,31 @@ const EditableInner = <TElement extends ElementNode>({
 export const EditableViewportSurface = <
   TElement extends ElementNode = ElementNode,
 >({
+  decorationStore,
+  elementLayouts,
   viewportPlan,
   ...props
 }: EditableProps<TElement> & {
+  decorationStore?: PliteDecorationStore | null;
+  elementLayouts?: ReadonlyMap<string, EditableElementLayout | null>;
   viewportPlan: EditableViewportPlan | null;
-}) => <EditableInner {...props} viewportPlan={viewportPlan} />;
+}) => {
+  const inheritedDecorationStore = React.useContext(DecorationContext);
+  const editable = <EditableInner {...props} viewportPlan={viewportPlan} />;
+  const content = elementLayouts ? (
+    <EditableElementLayoutsContext value={elementLayouts}>
+      {editable}
+    </EditableElementLayoutsContext>
+  ) : (
+    editable
+  );
+
+  return decorationStore && decorationStore !== inheritedDecorationStore ? (
+    <DecorationContext value={decorationStore}>{content}</DecorationContext>
+  ) : (
+    content
+  );
+};
 const PliteInactiveSelectionCaret = ({
   editableRef,
   store,

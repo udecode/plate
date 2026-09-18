@@ -7,7 +7,10 @@ import {
   type Point,
   TextApi,
 } from '../interfaces';
-import type { AnyEditor as Editor } from '../interfaces/editor';
+import type {
+  AnyEditor as Editor,
+  EditorDocumentValue,
+} from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
 import { inheritNodeKey } from '../utils/node-keys';
 import {
@@ -29,17 +32,21 @@ import { profileCoreDuration } from './profiling';
 import { areEditorJsonValuesEqual } from './value-codec';
 
 type RepresentationSchema = ReturnType<typeof getEditorSchema>;
+type RepresentationContext = Editor &
+  Partial<Readonly<{ getSchema: () => RepresentationSchema }>>;
+const resolveRepresentationSchema = (context: RepresentationContext) =>
+  context.getSchema?.() ?? getEditorSchema(context);
 
 const isInline = (
   editor: Editor,
   node: Descendant,
-  schema: RepresentationSchema = getEditorSchema(editor)
+  schema: RepresentationSchema = resolveRepresentationSchema(editor)
 ) => ElementApi.isElement(node) && schema.isInline(node);
 
 const collectInlineContent = (
   editor: Editor,
   node: Descendant,
-  schema: RepresentationSchema = getEditorSchema(editor)
+  schema: RepresentationSchema = resolveRepresentationSchema(editor)
 ): Descendant[] => {
   if (TextApi.isText(node) || isInline(editor, node, schema)) return [node];
 
@@ -74,6 +81,7 @@ const textPropertiesEqual = (
 };
 
 type CanonicalizeOptions = Readonly<{
+  document?: import('../interfaces/editor').EditorDocumentValue;
   preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
   schema?: RepresentationSchema;
 }>;
@@ -82,7 +90,7 @@ const hasInlineContent = (
   editor: Editor,
   parent: Editor | Element,
   children: readonly Descendant[],
-  schema: RepresentationSchema = getEditorSchema(editor)
+  schema: RepresentationSchema = resolveRepresentationSchema(editor)
 ) => {
   if (!ElementApi.isElement(parent)) return false;
 
@@ -102,7 +110,7 @@ const canonicalizeInlineChildren = (
     after,
     before,
     preserveInlineSpacersAdjacentTo,
-    schema = getEditorSchema(editor),
+    schema = resolveRepresentationSchema(editor),
   }: Readonly<{
     after?: Descendant;
     before?: Descendant;
@@ -193,10 +201,10 @@ const canonicalizeDirectChildren = (
   root = 'main',
   options: CanonicalizeOptions = {}
 ) => {
-  const schema = options.schema ?? getEditorSchema(editor);
+  const schema = options.schema ?? resolveRepresentationSchema(editor);
   const contentSpec = ElementApi.isElement(parent)
     ? schema.getElementContent(parent.type)
-    : schema.getRootContent(root);
+    : schema.getRootContent(root, options.document);
   let children =
     ElementApi.isElement(parent) || contentSpec?.allowsText
       ? source
@@ -361,7 +369,7 @@ export const getProtectedInlineSpacerEntries = (
   editor: Editor,
   children: readonly Descendant[],
   points: readonly Point[],
-  schema: RepresentationSchema = getEditorSchema(editor)
+  schema: RepresentationSchema = resolveRepresentationSchema(editor)
 ): ReadonlyArray<Readonly<{ node: Descendant; path: Path }>> => {
   const entries = new Map<Descendant, Path>();
 
@@ -440,7 +448,7 @@ const getTextOffsetWithin = (
         continue;
       }
 
-      if (getEditorSchema(editor).isVoid(node)) continue;
+      if (resolveRepresentationSchema(editor).isVoid(node)) continue;
       if (visit(node.children, nodePath)) return true;
     }
 
@@ -488,7 +496,7 @@ const getPointAtTextOffset = (
         continue;
       }
 
-      if (getEditorSchema(editor).isVoid(node)) continue;
+      if (resolveRepresentationSchema(editor).isVoid(node)) continue;
       const nested = visit(node.children, nodePath);
 
       if (nested) return nested;
@@ -524,7 +532,7 @@ export const mapCanonicalRepresentationPoint = (
     if (
       !ancestor ||
       !ElementApi.isElement(ancestor) ||
-      getEditorSchema(editor).isInline(ancestor)
+      resolveRepresentationSchema(editor).isInline(ancestor)
     ) {
       continue;
     }
@@ -636,7 +644,9 @@ export const prepareCanonicalFitSlice = (
   schema: object | null,
   slice: ContentSlice,
   currentSchema: () => object | null,
-  representationSchema: RepresentationSchema = getEditorSchema(editor)
+  representationSchema: RepresentationSchema = resolveRepresentationSchema(
+    editor
+  )
 ) => {
   if (getContentSliceCanonicalAuthority(slice) === representationSchema) {
     const preparation = Object.freeze({}) as CanonicalFitPreparation;
@@ -841,12 +851,13 @@ const replaceCanonicalChildWindow = (
   options: CanonicalizeOptions = {}
 ) => {
   const rootChildren = draft.document.value as readonly Descendant[];
-  const node = path.length === 0 ? editor : getDescendant(rootChildren, path);
+  const rootData = { children: rootChildren } as unknown as Editor;
+  const node = path.length === 0 ? rootData : getDescendant(rootChildren, path);
 
   if (!node || TextApi.isText(node as Descendant)) return;
 
   const source = path.length === 0 ? rootChildren : (node as Element).children;
-  const parent = ElementApi.isElement(node) ? node : editor;
+  const parent = ElementApi.isElement(node) ? node : rootData;
   const contentSpec = ElementApi.isElement(parent)
     ? schema.getElementContent(parent.type)
     : rootContent;
@@ -1039,7 +1050,7 @@ export const constructCanonicalDocumentChange = (
     schema?: RepresentationSchema;
   }> = {}
 ): DocumentChange => {
-  const schema = options.schema ?? getEditorSchema(editor);
+  const schema = options.schema ?? resolveRepresentationSchema(editor);
   const changes = new Map<string, RootChange>();
   const fitPreparation = options.fitPreparation
     ? CANONICAL_FIT_PREPARATIONS.get(options.fitPreparation)
@@ -1170,7 +1181,11 @@ export const constructCanonicalDocumentChange = (
         propertyCanonical,
         null,
         root,
-        { preserveInlineSpacersAdjacentTo, schema }
+        {
+          document: after as EditorDocumentValue,
+          preserveInlineSpacersAdjacentTo,
+          schema,
+        }
       );
       const canonical = schema.canonicalizeChildren(
         representationCanonical,
@@ -1283,6 +1298,7 @@ export const constructCanonicalDocumentChange = (
           window,
           beforeDocument,
           {
+            document: after as EditorDocumentValue,
             preserveInlineSpacersAdjacentTo: protectedInlineSpacersFor(root),
           }
         );

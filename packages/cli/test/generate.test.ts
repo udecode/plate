@@ -2566,6 +2566,7 @@ ${readFileSync(entryPath, 'utf-8').replace(
     expect(migration).toContain('FromValue');
     expect(migration).toContain('ToValue');
     expect(migration).toContain('DocumentMigration<');
+    expect(migration).toContain("from 'platejs/migrations'");
     expect(migration).toContain('FromDocument');
     expect(migration).toContain('ToDocument');
     expect(migration).toContain('({ document })');

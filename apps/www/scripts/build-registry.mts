@@ -1,131 +1,116 @@
 import { spawn } from 'node:child_process';
-import { promises as fs } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { constants } from 'node:fs';
+import {
+  access,
+  mkdir,
+  readFile,
+  readdir,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 
-import { rimraf } from 'rimraf';
 import {
+  type Registry,
   type RegistryItem,
   registrySchema,
-  type Registry,
 } from 'shadcn/schema';
 
 import {
-  createPlateRegistry,
   PLATE_REGISTRY_BASES,
+  PLATE_REGISTRY_STYLE_NAMES,
   type PlateRegistryBase,
-} from '@/registry/registry';
+} from '@/lib/plate-registry-styles';
+import {
+  type RegistryPayload,
+  serializeRegistryPayload,
+} from '@/lib/registry-payload';
+import { createRegistryResponse } from '@/lib/registry-response';
+import { createPlateRegistry } from '@/registry/registry';
 import { PLATE_REGISTRY_VARIANT_ITEM_NAMES } from '@/registry/registry-variants';
 
+import { createDocsRegistry } from './build-docs-registry.mts';
 import {
-  createDocsRegistry,
-  createPublicDocsRegistry,
-} from './build-docs-registry.mts';
+  acquireRegistryBuildLock,
+  createRegistryGeneration,
+  fingerprintRegistryDirectory,
+  publishRegistryGeneration,
+  recoverRegistryBuildLock,
+  releaseRegistryBuildLock,
+} from './registry-build-publication.mts';
 import {
   getRegistryBuildTargets,
-  getRegistryOutputTarget,
+  getRegistryStageTargets,
   REGISTRY_HOMEPAGE,
+  REGISTRY_PUBLIC_TARGETS,
 } from './registry-build-targets.mts';
-import { toPublicRegistryDependencySpecifier } from './registry-dependencies.mts';
 import { createRegistryIndexSource } from './registry-index.mts';
+import { deriveRegistryPackageDependencies } from './registry-package-dependencies.mts';
 import { materializeRegistryStyles } from './registry-style-materializer.mts';
-import { loadRegistryStyleMaps } from './registry-style-transform.mts';
+import {
+  loadRegistryStyleMaps,
+  SHADCN_STYLE_SOURCE_COMMIT,
+} from './registry-style-transform.mts';
 
-const BASE_URL = 'src/';
+const REGISTRY_SOURCE_PREFIX = 'src/';
+const root = process.cwd();
+const buildRoot = path.join(root, '.registry-build');
+const sourceRoot = path.join(root, 'src/registry');
 
-const isDev = process.env.NODE_ENV === 'development';
-function withPublicRegistryDependencies(
-  item: RegistryItem,
-  registryBaseUrl: string
-): RegistryItem {
-  return {
-    ...item,
-    registryDependencies: item.registryDependencies?.map((dependency) =>
-      toPublicRegistryDependencySpecifier(dependency, registryBaseUrl)
-    ),
-  };
+const sha256 = (value: string) =>
+  createHash('sha256').update(value).digest('hex');
+
+async function exists(filePath: string) {
+  try {
+    await access(filePath, constants.F_OK);
+
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-function createBuildRegistry(
-  base: PlateRegistryBase,
-  registryBaseUrl: string,
-  overlay = false
-): Registry {
-  const sourceRegistry = createPlateRegistry(REGISTRY_HOMEPAGE, {
-    base,
-  });
-
-  return registrySchema.parse({
-    ...sourceRegistry,
-    items: sourceRegistry.items
-      .filter(
-        (item) => !overlay || PLATE_REGISTRY_VARIANT_ITEM_NAMES.has(item.name)
-      )
-      .map((item) => withPublicRegistryDependencies(item, registryBaseUrl)),
-  });
-}
-
-async function buildRegistryIndex(registry: Registry) {
-  // Write style index.
-  rimraf.sync(path.join(process.cwd(), `${BASE_URL}__registry__/index.tsx`));
-  await fs.writeFile(
-    path.join(process.cwd(), `${BASE_URL}__registry__/index.tsx`),
-    createRegistryIndexSource(registry)
-  );
+async function writeJson(filePath: string, value: unknown) {
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function sanitizeRegistry(registry: Registry): Registry {
   return {
     ...registry,
     items: registry.items
-      // Filter internal examples.
       .filter((item) => item.meta?.registry !== false)
-      .map((item) => {
-        const files = item.files?.map((file) => ({
+      .map((item) => ({
+        ...item,
+        files: item.files?.map((file) => ({
           ...file,
-          path: `${BASE_URL}registry/${file.path}`,
-        }));
-
-        return {
-          ...item,
-          files,
-        };
-      }),
+          path: `${REGISTRY_SOURCE_PREFIX}registry/${file.path}`,
+        })),
+      })),
   };
 }
 
-async function buildRegistryJsonFile(
+function createRawRegistry(
   registry: Registry,
-  target: string,
-  registryBaseUrl: string,
-  items: RegistryItem[] = []
+  kind: 'canonical' | 'provider-overlay',
+  docsItems: RegistryItem[]
 ) {
-  // 1. Fix the path for registry items.
-  const fixedRegistry = sanitizeRegistry(registry);
+  const sourceItems =
+    kind === 'canonical'
+      ? registry.items
+      : registry.items.filter((item) =>
+          PLATE_REGISTRY_VARIANT_ITEM_NAMES.has(item.name)
+        );
+  const sanitized = sanitizeRegistry({ ...registry, items: sourceItems });
 
-  // 3. Write the content of the registry to `registry.json` and public folder
-  let registryJson = fixedRegistry;
-
-  registryJson = {
-    ...fixedRegistry,
-    items: [
-      ...fixedRegistry.items,
-      ...items.map((item) =>
-        withPublicRegistryDependencies(item, registryBaseUrl)
-      ),
-    ],
-  };
-
-  // Create directories if they don't exist
-  const publicTargetDir = path.dirname(path.join(process.cwd(), target));
-
-  await fs.mkdir(publicTargetDir, { recursive: true });
-  await fs.writeFile(
-    path.join(process.cwd(), target),
-    JSON.stringify(registryJson, null, 2)
-  );
+  return registrySchema.parse({
+    ...sanitized,
+    items: [...sanitized.items, ...docsItems],
+  });
 }
 
-async function buildRegistry(registryFile: string, outputDir: string) {
+function buildShadcn(registryFile: string, outputDir: string) {
   return new Promise<void>((resolve, reject) => {
     const child = spawn(
       'pnpm',
@@ -136,97 +121,350 @@ async function buildRegistry(registryFile: string, outputDir: string) {
     console.info(
       `pnpm exec shadcn build ${registryFile} --output ${outputDir}`
     );
-
     child.once('error', reject);
     child.once('exit', (code, signal) => {
-      if (code === 0) {
-        resolve(undefined);
-      } else {
-        reject(
-          new Error(
-            signal
-              ? `Process exited with signal ${signal}`
-              : `Process exited with code ${code}`
-          )
-        );
-      }
+      if (code === 0) return resolve();
+
+      reject(
+        new Error(
+          signal
+            ? `Registry build exited with signal ${signal}`
+            : `Registry build exited with code ${code}`
+        )
+      );
     });
   });
 }
 
-try {
-  const buildTargets = getRegistryBuildTargets({
-    dev: isDev,
-  });
-  const outputTarget = getRegistryOutputTarget({ dev: isDev });
-  const defaultTarget = buildTargets[0];
-  const defaultRegistry = createBuildRegistry(
-    defaultTarget.base,
-    defaultTarget.registryBaseUrl
-  );
+async function serializeCanonicalDirectory({
+  sourceDir,
+  targetBaseUrl,
+  targetDir,
+}: {
+  sourceDir: string;
+  targetBaseUrl: string;
+  targetDir: string;
+}) {
+  const directoryEntries = await readdir(sourceDir);
+  const fileNames = directoryEntries
+    .filter((fileName) => fileName.endsWith('.json'))
+    .sort();
 
-  if (!isDev) {
-    console.info('🗂️ Building registry/__index__.tsx...');
-    await buildRegistryIndex(defaultRegistry);
+  await mkdir(targetDir, { recursive: true });
+  for (const fileName of fileNames) {
+    const payload = JSON.parse(
+      await readFile(path.join(sourceDir, fileName), 'utf-8')
+    ) as RegistryPayload;
+    await writeJson(
+      path.join(targetDir, fileName),
+      serializeRegistryPayload(payload, targetBaseUrl)
+    );
   }
+}
 
-  // Clean up generated registry payloads before rebuilding either owner.
-  rimraf.sync(path.join(process.cwd(), outputTarget.canonicalDir));
-  for (const base of PLATE_REGISTRY_BASES) {
-    rimraf.sync(path.join(process.cwd(), `${BASE_URL}__registry__/${base}`));
-  }
-  rimraf.sync(path.join(process.cwd(), outputTarget.overlayDir));
-  rimraf.sync(path.join(process.cwd(), '.registry-build'));
+async function getPayloadHashes(stageDir: string) {
+  const stage = getRegistryStageTargets(stageDir);
+  const entries: Array<[string, string]> = [];
 
-  console.info('📖 Building registry-docs.json...');
-  const docsRegistry = await createDocsRegistry();
-
-  for (const target of buildTargets) {
-    const { base, kind, outputDir, registryBaseUrl, registryFile } = target;
-    const registry = createBuildRegistry(
-      base,
-      registryBaseUrl,
-      kind === 'provider-overlay'
+  for (const { directory } of REGISTRY_PUBLIC_TARGETS) {
+    const hashes = await fingerprintRegistryDirectory(
+      stage.publicDirectories[directory]
     );
 
-    console.info(`💅 Building ${registryFile}...`);
-    if (kind === 'canonical') {
-      console.info('🔄 Merging docs into registry.json');
-      await buildRegistryJsonFile(
-        registry,
-        registryFile,
-        registryBaseUrl,
-        docsRegistry.items
-      );
-    } else {
-      await buildRegistryJsonFile(registry, registryFile, registryBaseUrl);
+    for (const [fileName, hash] of Object.entries(hashes)) {
+      entries.push([`${directory}/${fileName}`, hash]);
     }
+  }
 
-    console.info(`🏗️ Building ${outputDir}...`);
-    await buildRegistry(registryFile, outputDir);
-    if (kind === 'canonical') {
-      await fs.writeFile(
-        path.join(process.cwd(), outputDir, 'registry-docs.json'),
-        JSON.stringify(createPublicDocsRegistry(docsRegistry, registryBaseUrl))
+  const overlayHashes = await fingerprintRegistryDirectory(stage.overlayDir);
+  for (const [fileName, hash] of Object.entries(overlayHashes)) {
+    if (fileName === 'manifest.json') continue;
+    entries.push([`overlays/${fileName}`, hash]);
+  }
+
+  return Object.fromEntries(
+    entries.sort(([left], [right]) => left.localeCompare(right, 'en'))
+  );
+}
+
+async function validateStagedGeneration(stageDir: string) {
+  const stage = getRegistryStageTargets(stageDir);
+  const publicFileSets = await Promise.all(
+    REGISTRY_PUBLIC_TARGETS.map(async ({ directory }) => {
+      const directoryEntries = await readdir(
+        stage.publicDirectories[directory]
+      );
+
+      return directoryEntries
+        .filter((fileName) => fileName.endsWith('.json'))
+        .sort();
+    })
+  );
+
+  if (JSON.stringify(publicFileSets[0]) !== JSON.stringify(publicFileSets[1])) {
+    throw new Error('Registry public roots contain different payload sets.');
+  }
+
+  const registry = JSON.parse(
+    await readFile(
+      path.join(stage.publicDirectories.r, 'registry.json'),
+      'utf-8'
+    )
+  ) as RegistryPayload;
+  const expectedFiles = [
+    'registry-docs.json',
+    'registry.json',
+    ...(registry.items ?? []).map((item) => `${item.name}.json`),
+  ].sort();
+
+  if (JSON.stringify(publicFileSets[0]) !== JSON.stringify(expectedFiles)) {
+    throw new Error('Registry public root is missing an indexed payload.');
+  }
+
+  const manifest = JSON.parse(
+    await readFile(path.join(stage.overlayDir, 'manifest.json'), 'utf-8')
+  ) as {
+    combinations: Array<{ files: string[]; style: string }>;
+    payloads: Record<string, string>;
+  };
+  const expectedStyles = PLATE_REGISTRY_BASES.flatMap((base) =>
+    PLATE_REGISTRY_STYLE_NAMES.map((style) => `${base}-${style}`)
+  ).filter((style) => style !== 'base-nova');
+
+  if (
+    JSON.stringify(manifest.combinations.map(({ style }) => style).sort()) !==
+    JSON.stringify(expectedStyles.sort())
+  ) {
+    throw new Error('Registry manifest does not contain every style.');
+  }
+
+  for (const combination of manifest.combinations) {
+    for (const fileName of combination.files) {
+      if (!manifest.payloads[`overlays/${combination.style}/${fileName}`]) {
+        throw new Error(
+          `Registry manifest has no hash for ${combination.style}/${fileName}.`
+        );
+      }
+    }
+  }
+
+  const routeStyles = [
+    ...PLATE_REGISTRY_BASES.flatMap((base) =>
+      PLATE_REGISTRY_STYLE_NAMES.map((style) => `${base}-${style}`)
+    ),
+    'new-york',
+    'new-york-v4',
+  ];
+  for (const { directory } of REGISTRY_PUBLIC_TARGETS) {
+    for (const style of routeStyles) {
+      const response = await createRegistryResponse({
+        directory,
+        fileName: 'registry.json',
+        origin:
+          directory === 'r' ? 'https://platejs.org' : 'http://localhost:3000',
+        root: stageDir,
+        style,
+      });
+
+      if (!response) {
+        throw new Error(
+          `Registry response validation failed: ${directory}/${style}`
+        );
+      }
+    }
+  }
+}
+
+async function pathsEqual(staged: string, destination: string) {
+  if (!(await exists(destination))) return false;
+  const [stagedStat, destinationStat] = await Promise.all([
+    stat(staged),
+    stat(destination),
+  ]);
+
+  if (stagedStat.isDirectory() !== destinationStat.isDirectory()) return false;
+  if (stagedStat.isDirectory()) {
+    const [stagedHash, destinationHash] = await Promise.all([
+      fingerprintRegistryDirectory(staged),
+      fingerprintRegistryDirectory(destination),
+    ]);
+
+    return JSON.stringify(stagedHash) === JSON.stringify(destinationHash);
+  }
+
+  const [stagedSource, destinationSource] = await Promise.all([
+    readFile(staged),
+    readFile(destination),
+  ]);
+
+  return stagedSource.equals(destinationSource);
+}
+
+async function assertFresh(
+  targets: Array<{ destination: string; staged: string }>
+) {
+  const stale: string[] = [];
+
+  for (const target of targets) {
+    if (!(await pathsEqual(target.staged, target.destination))) {
+      stale.push(path.relative(root, target.destination));
+    }
+  }
+
+  if (stale.length > 0) {
+    throw new Error(
+      `Generated registry output is stale:\n${stale
+        .map((filePath) => `- ${filePath}`)
+        .join('\n')}\nRun pnpm --filter www build:registry.`
+    );
+  }
+}
+
+function getRecoverToken() {
+  const argument = process.argv.find((value) =>
+    value.startsWith('--recover-lock=')
+  );
+
+  if (argument) return argument.slice('--recover-lock='.length);
+  const index = process.argv.indexOf('--recover-lock');
+
+  return index === -1 ? null : (process.argv[index + 1] ?? '');
+}
+
+const recoverToken = getRecoverToken();
+if (recoverToken !== null) {
+  if (!recoverToken) throw new Error('--recover-lock requires an owner token.');
+  await recoverRegistryBuildLock({ buildRoot, token: recoverToken });
+  console.info(`Recovered registry build lock ${recoverToken}.`);
+  process.exit(0);
+}
+
+const checkOnly = process.argv.includes('--check');
+const docsRegistry = await createDocsRegistry();
+const derivedRegistries = Object.fromEntries(
+  PLATE_REGISTRY_BASES.map((base) => [
+    base,
+    deriveRegistryPackageDependencies(
+      createPlateRegistry(REGISTRY_HOMEPAGE, { base }),
+      { sourceRoot }
+    ),
+  ])
+) as Record<PlateRegistryBase, Registry>;
+const sourceIdentity = sha256(
+  JSON.stringify({
+    docsRegistry,
+    registries: derivedRegistries,
+    shadcnStyleCommit: SHADCN_STYLE_SOURCE_COMMIT,
+  })
+);
+const build = await acquireRegistryBuildLock({ buildRoot, sourceIdentity });
+
+try {
+  const buildTargets = getRegistryBuildTargets(build.stageDir);
+  const stage = getRegistryStageTargets(build.stageDir);
+
+  for (const target of buildTargets) {
+    const rawRegistry = createRawRegistry(
+      derivedRegistries[target.base],
+      target.kind,
+      target.kind === 'canonical' ? docsRegistry.items : []
+    );
+
+    console.info(`Building neutral ${target.base} registry source...`);
+    await writeJson(target.registryFile, rawRegistry);
+    await buildShadcn(target.registryFile, target.outputDir);
+    if (target.kind === 'canonical') {
+      await writeJson(
+        path.join(target.outputDir, 'registry-docs.json'),
+        docsRegistry
       );
     }
   }
 
-  console.info('🎨 Materializing Base/Nova and sparse style overlays...');
-  const styleMaps = await loadRegistryStyleMaps();
+  console.info('Materializing neutral provider and style overlays...');
   const { canonical, combinations } = await materializeRegistryStyles({
-    baseRawDir: path.join(process.cwd(), buildTargets[0].outputDir),
-    canonicalDir: path.join(process.cwd(), outputTarget.canonicalDir),
-    overlayDir: path.join(process.cwd(), outputTarget.overlayDir),
-    providerRawDir: path.join(process.cwd(), buildTargets[1].outputDir),
-    styleMaps,
+    baseRawDir: buildTargets[0].outputDir,
+    canonicalDir: stage.canonicalDir,
+    overlayDir: stage.overlayDir,
+    providerRawDir: buildTargets[1].outputDir,
+    styleMaps: await loadRegistryStyleMaps(),
   });
-  console.info(
-    `✅ Materialized ${canonical.size} canonical payloads and ${combinations.length} sparse overlays`
+
+  for (const target of REGISTRY_PUBLIC_TARGETS) {
+    await serializeCanonicalDirectory({
+      sourceDir: stage.canonicalDir,
+      targetBaseUrl: target.baseUrl,
+      targetDir: stage.publicDirectories[target.directory],
+    });
+  }
+
+  const payloads = await getPayloadHashes(build.stageDir);
+  const generation = createRegistryGeneration(payloads, sourceIdentity);
+  await writeJson(stage.metadataFile, {
+    generation,
+    registries: derivedRegistries,
+  });
+  await mkdir(path.dirname(stage.previewIndexFile), { recursive: true });
+  await writeFile(
+    stage.previewIndexFile,
+    createRegistryIndexSource(derivedRegistries.base, generation)
   );
 
-  rimraf.sync(path.join(process.cwd(), '.registry-build'));
-} catch (error) {
-  console.error(error);
-  process.exit(1);
+  const manifestPath = path.join(stage.overlayDir, 'manifest.json');
+  await writeJson(manifestPath, {
+    canonical: 'base-nova',
+    combinations,
+    generation,
+    itemCount: canonical.size - 1,
+    payloads,
+    shadcnStyleCommit: SHADCN_STYLE_SOURCE_COMMIT,
+  });
+  const markerFile = path.join(
+    build.stageDir,
+    'src/__registry__/generation.json'
+  );
+  await writeJson(markerFile, {
+    generation,
+    manifestSha256: sha256(await readFile(manifestPath, 'utf-8')),
+  });
+  await validateStagedGeneration(build.stageDir);
+
+  const targets = [
+    ...REGISTRY_PUBLIC_TARGETS.map(({ directory }) => ({
+      destination: path.join(root, `public/${directory}`),
+      staged: stage.publicDirectories[directory],
+    })),
+    {
+      destination: path.join(root, 'src/__registry__/overlays'),
+      staged: stage.overlayDir,
+    },
+    {
+      destination: path.join(root, 'src/__registry__/registry-metadata.json'),
+      staged: stage.metadataFile,
+    },
+    {
+      destination: path.join(root, 'src/__registry__/index.tsx'),
+      staged: stage.previewIndexFile,
+    },
+  ];
+  const marker = {
+    destination: path.join(root, 'src/__registry__/generation.json'),
+    staged: markerFile,
+  };
+
+  if (checkOnly) {
+    await assertFresh([...targets, marker]);
+    console.info(`Registry generation ${generation} is fresh.`);
+  } else {
+    await publishRegistryGeneration({
+      marker,
+      targets,
+      token: build.lock.token,
+    });
+    console.info(
+      `Published registry generation ${generation} with ${canonical.size} canonical payloads.`
+    );
+  }
+} finally {
+  await releaseRegistryBuildLock(build);
 }

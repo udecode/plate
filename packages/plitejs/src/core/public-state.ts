@@ -144,9 +144,11 @@ import { normalizeNodeMatch } from '../utils/node-match';
 import { createAnchor } from './anchor';
 import {
   beginAnchorTransaction,
+  clearStagedAnchorHistory,
   commitAnchorTransaction,
   enterAnchorScope,
   notifyAnchorChanges,
+  prepareAnchorPublication,
   suspendAnchorScopes,
 } from './anchor-state';
 import {
@@ -455,7 +457,8 @@ export const inheritEditorProjectionIndexes = (
   editor: Editor,
   before: EditorDocumentValue,
   after: EditorDocumentValue,
-  change: DocumentChange
+  change: DocumentChange,
+  discardedNodeKeys: ReadonlySet<NodeKey> = new Set()
 ) => {
   const indexes = projectionIndexes(editor);
   const owner = getEditorRuntimeOwner(editor);
@@ -491,7 +494,10 @@ export const inheritEditorProjectionIndexes = (
           return false;
         }
       });
-    const pathStable = !classification.structure && !changesElementType;
+    const pathStable =
+      !classification.structure &&
+      !changesElementType &&
+      discardedNodeKeys.size === 0;
 
     indexes.set(
       next,
@@ -509,7 +515,8 @@ export const inheritEditorProjectionIndexes = (
             afterDocument,
             rootChange,
             index,
-            owner
+            owner,
+            discardedNodeKeys
           )
     );
   }
@@ -686,14 +693,79 @@ const TRANSACTION_SPEC_CONTEXTS = new WeakMap<
 const TRANSACTION_SPEC_DRAFT_READ_DEPTH = new WeakMap<Editor, number>();
 
 type EditorTransactionGuard = (context: {
+  readonly after: EditorDocumentValue;
+  readonly before: EditorDocumentValue;
   readonly change: DocumentChange;
   readonly effects: readonly EditorEffect[];
-}) => void;
+  readonly commit: EditorCommit;
+  readonly schema: EditorSchemaIdentity;
+}) => void | (() => void);
 
 const TRANSACTION_GUARDS = new WeakMap<Editor, Set<EditorTransactionGuard>>();
+const PREPARING_COMMIT = new WeakSet<Editor>();
+
+export type EditorHistoryReplayReceipt = Readonly<{
+  group: object;
+  version: number;
+}>;
+
+type EditorHistoryRuntime = Readonly<{
+  head: (direction: 'redo' | 'undo') => object | null;
+}>;
+
+const EDITOR_HISTORY_RUNTIMES = new WeakMap<Editor, EditorHistoryRuntime>();
+const EDITOR_HISTORY_REPLAY_RECEIPTS = new WeakMap<
+  object,
+  EditorHistoryReplayReceipt
+>();
+
+/** Register the private history identity bridge used by mounted editor views. */
+export const registerEditorHistoryRuntime = (
+  editor: Editor,
+  runtime: EditorHistoryRuntime
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const previous = EDITOR_HISTORY_RUNTIMES.get(owner);
+
+  EDITOR_HISTORY_RUNTIMES.set(owner, runtime);
+
+  return () => {
+    if (EDITOR_HISTORY_RUNTIMES.get(owner) !== runtime) return;
+    if (previous) EDITOR_HISTORY_RUNTIMES.set(owner, previous);
+    else EDITOR_HISTORY_RUNTIMES.delete(owner);
+  };
+};
+
+/** Read the private logical identity of the next replay batch. */
+export const readEditorHistoryHeadIdentity = (
+  editor: Editor,
+  direction: 'redo' | 'undo'
+) =>
+  EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.head(direction) ??
+  null;
+
+/** Attach private mounted-view metadata to an applied replay result. */
+export const recordEditorHistoryReplayReceipt = (
+  result: object,
+  receipt: EditorHistoryReplayReceipt
+) => {
+  EDITOR_HISTORY_REPLAY_RECEIPTS.set(result, receipt);
+};
+
+/** Read private mounted-view metadata from an applied replay result. */
+export const readEditorHistoryReplayReceipt = (result: object) =>
+  EDITOR_HISTORY_REPLAY_RECEIPTS.get(result);
 
 const getTransactionSpecContext = (editor: Editor) =>
   TRANSACTION_SPEC_CONTEXTS.get(editor)?.at(-1);
+
+const getReadProjection = (editor: Editor) => {
+  const owner = getEditorRuntimeOwner(editor);
+  // A finalized draft cannot be edited; reads can use its prepared view projection.
+  return !getTransactionSpecContext(owner) || PREPARING_COMMIT.has(owner)
+    ? READ_PROJECTIONS.get(owner)
+    : undefined;
+};
 
 export const markTransactionSelectionWritten = (editor: Editor) => {
   const context = getTransactionSpecContext(editor);
@@ -955,14 +1027,20 @@ export const assertEditorExternalMutationAllowed = (editor: Editor): void => {
 };
 
 const runEditorTransactionGuards = (
-  editor: Editor,
+  guards: readonly EditorTransactionGuard[],
+  before: EditorDocumentValue,
+  after: EditorDocumentValue,
   change: DocumentChange,
-  effects: readonly EditorEffect[]
+  effects: readonly EditorEffect[],
+  commit: EditorCommit,
+  schema: EditorSchemaIdentity
 ) => {
-  for (const guard of TRANSACTION_GUARDS.get(getEditorRuntimeOwner(editor)) ??
-    []) {
-    guard({ change, effects });
+  const publications: Array<() => void> = [];
+  for (const guard of guards) {
+    const publish = guard({ after, before, change, effects, commit, schema });
+    if (publish) publications.push(publish);
   }
+  return publications;
 };
 
 export const enterEditorRead = (editor: Editor) => {
@@ -1919,6 +1997,7 @@ const runWithMutationRoot = <T>(
   );
 
 const getCurrentRuntimeIndex = (editor: Editor): SnapshotIndex => {
+  if (getReadProjection(editor)) return getSnapshot(editor).index;
   const root = getCurrentChildrenRoot(editor);
   const transactionSnapshot = getTransactionSnapshot(editor);
 
@@ -2026,6 +2105,15 @@ const hasTransactionNetChanges = (
 };
 
 export const getChildren = <V extends Value>(editor: Editor<V>): V => {
+  const projection = getReadProjection(editor);
+  if (projection) {
+    const root = getCurrentChildrenRoot(editor);
+    return (
+      root === MAIN_ROOT_KEY
+        ? projection.children
+        : (projection.roots?.[root] ?? [])
+    ) as V;
+  }
   const context = getTransactionSpecContext(editor);
 
   if (context) {
@@ -2038,16 +2126,6 @@ export const getChildren = <V extends Value>(editor: Editor<V>): V => {
     return children as V;
   }
 
-  const projection = READ_PROJECTIONS.get(getEditorRuntimeOwner(editor));
-  if (projection) {
-    const root = getCurrentChildrenRoot(editor);
-    return (
-      root === MAIN_ROOT_KEY
-        ? projection.children
-        : (projection.roots?.[root] ?? [])
-    ) as V;
-  }
-
   const children = CHILDREN.get(editor);
 
   if (children) return children as V;
@@ -2058,6 +2136,10 @@ export const getChildren = <V extends Value>(editor: Editor<V>): V => {
 export const getEditorDocumentRoots = (
   editor: Editor
 ): Readonly<Record<string, readonly Descendant[]>> => {
+  const projection = getReadProjection(editor);
+  if (projection) {
+    return { [MAIN_ROOT_KEY]: projection.children, ...projection.roots };
+  }
   const context = getTransactionSpecContext(editor);
 
   if (context) {
@@ -2069,11 +2151,6 @@ export const getEditorDocumentRoots = (
         | Readonly<Record<string, readonly Descendant[]>>
         | undefined),
     };
-  }
-
-  const projection = READ_PROJECTIONS.get(getEditorRuntimeOwner(editor));
-  if (projection) {
-    return { [MAIN_ROOT_KEY]: projection.children, ...projection.roots };
   }
 
   const children = getChildren(editor);
@@ -2200,7 +2277,9 @@ export const getEditorNodeKeyForNode = (
 
   if (resolvesIn(index)) return getDefined(nodeKey);
   const currentRoot = getCurrentChildrenRoot(owner);
-  const transactionSnapshot = getTransactionSnapshot(owner);
+  const transactionSnapshot = getReadProjection(owner)
+    ? undefined
+    : getTransactionSnapshot(owner);
 
   for (const root of getEditorRuntimeRootKeys(owner)) {
     if (root === currentRoot) continue;
@@ -3033,29 +3112,88 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
   }
 
   const root = getCurrentChildrenRoot(editor);
-  const copied = placements.map((placement) =>
-    schema.copyChildren(placement.content, root)
-  );
   const source = ContentSlice.fromJSON<V>(sourceTile);
-  const copiedRoots = source.roots
-    ? Object.fromEntries(
-        Object.entries(source.roots).map(([name, children]) => [
-          name,
-          schema.copyChildren(children, name),
-        ])
-      )
-    : undefined;
-  const prepared = remapContentSliceRoots(
-    editor,
-    ContentSlice.fromJSON<V>({
-      content: copied.flat(),
-      openEnd: 0,
-      openStart: 0,
-      ...(copiedRoots && Object.keys(copiedRoots).length > 0
-        ? { roots: copiedRoots }
-        : {}),
-    })
+  const usedRoots = new Set(
+    Object.keys(
+      (getActiveDocumentChangeBuilder(editor).value as EditorDocumentValue)
+        .roots ?? {}
+    )
   );
+  const nextRootSuffix = new Map<string, number>();
+  const ownership = new Map<string, 'exclusive' | 'shared'>();
+  const sharedRoots = new Map<string, string>();
+  const copiedRoots = new Map<string, readonly Descendant[]>();
+  const prepareChildren = (
+    children: readonly Descendant[],
+    childrenRoot: string,
+    exclusiveRoots: Map<string, string>
+  ): readonly Descendant[] | null => {
+    const copied = ContentSlice.closed(
+      schema.copyChildren(children, childrenRoot)
+    ).content;
+    const collect = (nodes: readonly Descendant[]): boolean => {
+      for (const node of nodes) {
+        if (!NodeApi.isElement(node)) continue;
+
+        for (const owned of schema.getElementOwnedRoots(node)) {
+          const previousOwnership = ownership.get(owned.root);
+
+          if (previousOwnership && previousOwnership !== owned.ownership) {
+            return false;
+          }
+          ownership.set(owned.root, owned.ownership);
+          const remapped =
+            owned.ownership === 'shared' ? sharedRoots : exclusiveRoots;
+
+          if (remapped.has(owned.root)) continue;
+          const content =
+            source.roots && Object.hasOwn(source.roots, owned.root)
+              ? source.roots[owned.root]
+              : undefined;
+
+          if (!content) return false;
+          let suffix = nextRootSuffix.get(owned.root) ?? 1;
+          let name: string;
+
+          do {
+            name = `${owned.root}:copy${suffix === 1 ? '' : `:${suffix}`}`;
+            suffix += 1;
+          } while (usedRoots.has(name));
+          nextRootSuffix.set(owned.root, suffix);
+          usedRoots.add(name);
+          remapped.set(owned.root, name);
+
+          const prepared = prepareChildren(content, owned.root, exclusiveRoots);
+
+          if (!prepared) return false;
+          copiedRoots.set(name, prepared);
+        }
+        if (!collect(node.children)) return false;
+      }
+
+      return true;
+    };
+
+    if (!collect(copied)) return null;
+
+    return rewriteContentRootReferences(editor, copied, (name) =>
+      getDefined(sharedRoots.get(name) ?? exclusiveRoots.get(name))
+    );
+  };
+  const copied: Array<readonly Descendant[]> = [];
+
+  for (const placement of placements) {
+    const content = prepareChildren(placement.content, root, new Map());
+
+    if (!content) return false;
+    copied.push(content);
+  }
+  const prepared = ContentSlice.fromJSON<V>({
+    content: copied.flat(),
+    openEnd: 0,
+    openStart: 0,
+    ...(copiedRoots.size > 0 ? { roots: Object.fromEntries(copiedRoots) } : {}),
+  });
 
   materializeContentSliceRoots(editor, prepared);
 
@@ -4377,6 +4515,9 @@ const getUpdateContext = <
 };
 
 const assertActiveTransaction = (editor: Editor, token: TransactionToken) => {
+  if (PREPARING_COMMIT.has(getEditorRuntimeOwner(editor))) {
+    throw new Error('Cannot write through a finalized editor transaction.');
+  }
   if (
     !token.active ||
     getTransactionSnapshot(editor)?.token !== token ||
@@ -7232,8 +7373,8 @@ const getTransactionView = (editor: Editor): EditorTransaction => {
 };
 
 export const getSnapshot = (editor: Editor): EditorSnapshot => {
-  const projection = READ_PROJECTIONS.get(getEditorRuntimeOwner(editor));
-  if (projection && !getTransactionSnapshot(editor)) {
+  const projection = getReadProjection(editor);
+  if (projection) {
     const root = getCurrentChildrenRoot(editor);
     let snapshots = PROJECTION_SNAPSHOTS.get(projection);
     if (!snapshots) {
@@ -7366,12 +7507,13 @@ const shareSnapshotChildren = (
 
 const getSelectionOnlySnapshot = (
   editor: Editor,
-  previousSnapshot: EditorSnapshot
+  previousSnapshot: EditorSnapshot,
+  version = getVersion(editor)
 ): EditorSnapshot => {
   const snapshot = {
     children: previousSnapshot.children,
     selection: cloneFrozenEditorJsonValue(getCurrentSelection(editor)),
-    version: getVersion(editor),
+    version,
   };
 
   // Share the lazy index without retaining a getter chain through every selection.
@@ -7451,7 +7593,8 @@ const getCurrentRootSnapshot = (
   editor: Editor,
   root: string,
   previousSnapshot?: EditorSnapshot,
-  knownIndex?: SnapshotIndex
+  knownIndex?: SnapshotIndex,
+  version = getVersion(editor)
 ): EditorSnapshot => {
   const owner = getEditorRuntimeOwner(editor);
   const liveChildren = getEditorDocumentRoots(editor)[root] ?? [];
@@ -7471,9 +7614,8 @@ const getCurrentRootSnapshot = (
       selectionRoot,
       root
     ),
-    version: getVersion(editor),
+    version,
   };
-
   DocumentIndex.fromValue(children);
   Object.defineProperty(snapshot, 'index', {
     enumerable: true,
@@ -8687,6 +8829,9 @@ export const runEditorTransaction = (
     skipCorrections?: boolean;
   } = {}
 ) => {
+  if (PREPARING_COMMIT.has(getEditorRuntimeOwner(editor))) {
+    throw new Error('Cannot reenter a finalized editor transaction.');
+  }
   const depth = getEditorTransactionDepth(editor);
 
   if (depth > 0) {
@@ -8704,9 +8849,11 @@ export const runEditorTransaction = (
   let pluginPublication:
     | ReturnType<InternalEditorRuntime['preparePluginPublication']>
     | undefined;
+  let pluginSchemaIdentity: EditorSchemaIdentity | undefined;
   let committed: EditorCommit | null = null;
   let transactionFailed = false;
   let authoredTransaction: NativeAuthoredTransaction | undefined;
+  let transactionError: Readonly<{ value: unknown }> | null = null;
 
   assertCanStartEditorWrite(editor, options.authority);
   const draftContext = createEditorUpdateDraftContext(editor);
@@ -8805,6 +8952,7 @@ export const runEditorTransaction = (
         snapshot.pluginReconfigurations.clear();
         snapshot.dirtyStateKeys.delete('$configuration');
       } else {
+        pluginSchemaIdentity = pluginPublication.schemaContract().identity;
         pluginPublication.stage();
       }
 
@@ -8838,6 +8986,8 @@ export const runEditorTransaction = (
         );
       }
       authoredTransaction?.finish({
+        // Authored publication resets the draft before inheriting projection keys.
+        discardedNodeKeys: new Set(snapshot.discardedNodeKeys),
         after: snapshot.builder.value as EditorDocumentValue,
         before: getChangeValue(snapshot.roots) as EditorDocumentValue,
         change: snapshot.activeChange.change,
@@ -8846,47 +8996,47 @@ export const runEditorTransaction = (
           getTransactionSpecContext(editor)?.selectionWritten ?? false,
         tx: getActiveUpdateView(editor),
       });
-
-      if (draftContext.changed) {
-        runEditorTransactionGuards(
-          editor,
-          snapshot.activeChange.change,
-          snapshot.effects
-        );
-      }
     }
   } catch (error) {
     transactionFailed = true;
     pluginPublication?.rollback();
     pluginPublication = undefined;
-    throw error;
-  } finally {
-    decrementEditorTransactionDepth(editor);
-    try {
-      if (draftContext) {
-        const snapshot = requireCommittedTransactionSnapshot(
-          draftContext.snapshot
-        );
+    transactionError = { value: error };
+  }
 
-        if (transactionFailed) {
+  decrementEditorTransactionDepth(editor);
+  try {
+    if (draftContext) {
+      const snapshot = requireCommittedTransactionSnapshot(
+        draftContext.snapshot
+      );
+
+      if (transactionFailed) {
+        clearStagedAnchorHistory(editor);
+        for (const restore of snapshot.runtimeIndexRollbacks.values()) {
+          restore();
+        }
+        disposeTransactionSpecContext(editor, draftContext);
+      } else {
+        const changed =
+          draftContext.changed &&
+          profileCoreDuration('transaction-has-net-changes', () =>
+            hasTransactionNetChanges(editor, snapshot)
+          );
+
+        if (!changed) {
+          clearStagedAnchorHistory(editor);
+          pluginPublication?.rollback();
           for (const restore of snapshot.runtimeIndexRollbacks.values()) {
             restore();
           }
           disposeTransactionSpecContext(editor, draftContext);
         } else {
-          const changed =
-            draftContext.changed &&
-            profileCoreDuration('transaction-has-net-changes', () =>
-              hasTransactionNetChanges(editor, snapshot)
-            );
-
-          if (!changed) {
-            pluginPublication?.rollback();
-            for (const restore of snapshot.runtimeIndexRollbacks.values()) {
-              restore();
-            }
-            disposeTransactionSpecContext(editor, draftContext);
-          } else {
+          let prepared;
+          let anchorPublication;
+          PREPARING_COMMIT.add(getEditorRuntimeOwner(editor));
+          incrementEditorTransactionDepth(editor, depth);
+          try {
             const draftValue = snapshot.builder.value as EditorDocumentValue;
             const draftRoots = {
               [MAIN_ROOT_KEY]: draftValue.children,
@@ -8901,20 +9051,6 @@ export const runEditorTransaction = (
             const canonicalChanges = snapshot.activeChange.change;
             const canonicalIndexes =
               snapshot.builder.indexedAfter(canonicalChanges);
-
-            disposeTransactionSpecContext(editor, draftContext);
-
-            withPluginPublicationRollback(pluginPublication, () =>
-              pluginPublication?.commit()
-            );
-            withPluginPublicationRollback(pluginPublication, () => {
-              profileCoreDuration('transaction-publish-draft', () =>
-                publishTransactionDraft(editor, draftContext, draftRoots)
-              );
-            });
-            profileCoreDuration('set-version', () => {
-              setVersion(editor, snapshot.previousVersion + 1);
-            });
 
             const { previousSnapshot } = snapshot;
             const beforeSnapshot =
@@ -8936,45 +9072,15 @@ export const runEditorTransaction = (
                       editor,
                       MAIN_ROOT_KEY,
                       beforeSnapshot,
-                      snapshot.rootIndexes[MAIN_ROOT_KEY]
+                      snapshot.rootIndexes[MAIN_ROOT_KEY],
+                      snapshot.previousVersion + 1
                     )
-                  : getSelectionOnlySnapshot(editor, beforeSnapshot)
+                  : getSelectionOnlySnapshot(
+                      editor,
+                      beforeSnapshot,
+                      snapshot.previousVersion + 1
+                    )
             );
-
-            profileCoreDuration('transaction-commit-snapshot', () => {
-              setCachedSnapshot(editor, afterSnapshot, MAIN_ROOT_KEY);
-              const retainedRoots = new Set([
-                ...Object.keys(snapshot.baseSnapshots),
-                ...Object.keys(snapshot.rootIndexes),
-              ]);
-
-              for (const root of retainedRoots) {
-                if (
-                  root === MAIN_ROOT_KEY ||
-                  !Object.hasOwn(draftRoots, root)
-                ) {
-                  continue;
-                }
-                const previousRootSnapshot = snapshot.baseSnapshots[root];
-                const rootSnapshot = getCurrentRootSnapshot(
-                  editor,
-                  root,
-                  previousRootSnapshot,
-                  snapshot.rootIndexes[root] ?? previousRootSnapshot?.index
-                );
-
-                setCachedSnapshot(editor, rootSnapshot, root);
-              }
-              const committedRoots = {
-                ...getEditorDocumentRoots(editor),
-                [MAIN_ROOT_KEY]: afterSnapshot.children,
-              } as Record<string, readonly Descendant[]>;
-
-              ROOTS.set(editor, committedRoots);
-              if (getCurrentChildrenRoot(editor) === MAIN_ROOT_KEY) {
-                CHILDREN.set(editor, afterSnapshot.children);
-              }
-            });
 
             const selectionBefore = cloneValue(snapshot.selection);
             const selectionAfter = cloneValue(draftContext.selection);
@@ -9012,72 +9118,187 @@ export const runEditorTransaction = (
                 },
                 {
                   previousVersion: snapshot.previousVersion,
-                  version: getVersion(editor),
+                  version: snapshot.previousVersion + 1,
                 }
               )
             );
-            committed = change;
-            authoredTransaction?.publish?.(change);
-            pluginPublication?.finalize();
-            if (pluginPublication) {
-              for (const staged of snapshot.pluginReconfigurations.values()) {
-                staged.onPublished?.(pluginPublication.cleanup);
-              }
-            }
-            const afterCommitHandlers =
-              snapshot.afterCommitHandlers.length > 0
-                ? materializeAfterCommitHandlers(
-                    editor,
-                    change,
-                    snapshot.afterCommitHandlers
-                  )
-                : [];
 
-            profileCoreDuration('transaction-publish-anchors', () => {
-              beginAnchorTransaction(editor);
-              if (!canonicalChanges.empty) {
-                notifyAnchorChanges(
-                  editor,
-                  canonicalChanges,
-                  canonicalIndexes,
-                  {
-                    commit: change,
-                    replace: snapshot.reason === 'replace',
-                  }
-                );
-              }
-              commitAnchorTransaction(editor, undefined, change);
-            });
-
-            try {
-              if (hasPluginChangeListeners(editor)) {
-                profileCoreDuration('notify-plugin-change-listeners', () => {
-                  notifyEditorChangeListeners(
+            authoredTransaction?.prepare?.(change);
+            anchorPublication = prepareAnchorPublication(editor, change, () => {
+              profileCoreDuration('transaction-publish-anchors', () => {
+                beginAnchorTransaction(editor);
+                if (!canonicalChanges.empty) {
+                  notifyAnchorChanges(
                     editor,
-                    change,
-                    beforeValue,
-                    afterValue
+                    canonicalChanges,
+                    canonicalIndexes,
+                    {
+                      commit: change,
+                      replace: snapshot.reason === 'replace',
+                    }
                   );
-                });
-              }
-              profileCoreDuration('notify-listeners', () => {
-                notifyListeners(editor, change);
+                }
+                commitAnchorTransaction(editor, undefined, change);
               });
-              profileCoreDuration('run-after-commit-handlers', () => {
-                runAfterCommitHandlers(afterCommitHandlers);
-              });
-              profileCoreDuration('transaction-flush-post-commit', () => {
-                flushPostCommitNotificationQueue(editor);
-              });
-            } finally {
-              pluginPublication?.afterPublish();
+            });
+            const transactionGuards = [
+              ...(TRANSACTION_GUARDS.get(getEditorRuntimeOwner(editor)) ?? []),
+            ];
+            const publications = runEditorTransactionGuards(
+              transactionGuards,
+              beforeValue,
+              afterValue,
+              canonicalChanges,
+              snapshot.effects,
+              change,
+              pluginSchemaIdentity ?? getEditorSchema(editor).identity()
+            );
+            withPluginPublicationRollback(pluginPublication, () =>
+              pluginPublication?.commit()
+            );
+            if (pluginPublication) {
+              anchorPublication.initialize(
+                afterValue,
+                pluginPublication.beforePublish
+              );
             }
+            prepared = {
+              draftRoots,
+              beforeValue,
+              afterValue,
+              canonicalChanges,
+              canonicalIndexes,
+              beforeSnapshot,
+              afterSnapshot,
+              change,
+              publications,
+            };
+          } catch (error) {
+            transactionFailed = true;
+            anchorPublication?.rollback();
+            PREPARING_COMMIT.delete(getEditorRuntimeOwner(editor));
+            clearStagedAnchorHistory(editor);
+            decrementEditorTransactionDepth(editor);
+            pluginPublication?.rollback();
+            pluginPublication = undefined;
+            for (const restore of snapshot.runtimeIndexRollbacks.values()) {
+              restore();
+            }
+            disposeTransactionSpecContext(editor, draftContext);
+            throw error;
+          }
+          PREPARING_COMMIT.delete(getEditorRuntimeOwner(editor));
+          decrementEditorTransactionDepth(editor);
+          const {
+            draftRoots,
+            beforeValue,
+            afterValue,
+            afterSnapshot,
+            change,
+            publications,
+          } = prepared;
+          disposeTransactionSpecContext(editor, draftContext);
+
+          withPluginPublicationRollback(pluginPublication, () => {
+            profileCoreDuration('transaction-publish-draft', () =>
+              publishTransactionDraft(editor, draftContext, draftRoots)
+            );
+          });
+          profileCoreDuration('set-version', () => {
+            setVersion(editor, snapshot.previousVersion + 1);
+          });
+
+          profileCoreDuration('transaction-commit-snapshot', () => {
+            setCachedSnapshot(editor, afterSnapshot, MAIN_ROOT_KEY);
+            const retainedRoots = new Set([
+              ...Object.keys(snapshot.baseSnapshots),
+              ...Object.keys(snapshot.rootIndexes),
+            ]);
+
+            for (const root of retainedRoots) {
+              if (root === MAIN_ROOT_KEY || !Object.hasOwn(draftRoots, root)) {
+                continue;
+              }
+              const previousRootSnapshot = snapshot.baseSnapshots[root];
+              const rootSnapshot = getCurrentRootSnapshot(
+                editor,
+                root,
+                previousRootSnapshot,
+                snapshot.rootIndexes[root] ?? previousRootSnapshot?.index
+              );
+
+              setCachedSnapshot(editor, rootSnapshot, root);
+            }
+            const committedRoots = {
+              ...getEditorDocumentRoots(editor),
+              [MAIN_ROOT_KEY]: afterSnapshot.children,
+            } as Record<string, readonly Descendant[]>;
+
+            ROOTS.set(editor, committedRoots);
+            if (getCurrentChildrenRoot(editor) === MAIN_ROOT_KEY) {
+              CHILDREN.set(editor, afterSnapshot.children);
+            }
+          });
+
+          committed = change;
+          authoredTransaction?.publish?.(change);
+          anchorPublication?.publish();
+          for (const publishPrepared of publications) publishPrepared();
+          pluginPublication?.finalize();
+          if (pluginPublication) {
+            for (const staged of snapshot.pluginReconfigurations.values()) {
+              staged.onPublished?.(pluginPublication.cleanup);
+            }
+          }
+          const afterCommitHandlers =
+            snapshot.afterCommitHandlers.length > 0
+              ? materializeAfterCommitHandlers(
+                  editor,
+                  change,
+                  snapshot.afterCommitHandlers
+                )
+              : [];
+
+          anchorPublication?.notify();
+
+          let notificationError: Readonly<{ value: unknown }> | null = null;
+          try {
+            if (hasPluginChangeListeners(editor)) {
+              profileCoreDuration('notify-plugin-change-listeners', () => {
+                notifyEditorChangeListeners(
+                  editor,
+                  change,
+                  beforeValue,
+                  afterValue
+                );
+              });
+            }
+            profileCoreDuration('notify-listeners', () => {
+              notifyListeners(editor, change);
+            });
+            profileCoreDuration('run-after-commit-handlers', () => {
+              runAfterCommitHandlers(afterCommitHandlers);
+            });
+            profileCoreDuration('transaction-flush-post-commit', () => {
+              flushPostCommitNotificationQueue(editor);
+            });
+          } catch (error) {
+            notificationError = { value: error };
+          }
+          pluginPublication?.afterPublish();
+          if (notificationError) {
+            throw notificationError.value;
           }
         }
       }
-    } finally {
-      authoredTransaction?.close(committed, transactionFailed);
     }
+  } catch (error) {
+    transactionError = { value: error };
+  }
+
+  authoredTransaction?.close(committed, transactionFailed);
+  if (transactionError) {
+    throw transactionError.value;
   }
 
   return committed;

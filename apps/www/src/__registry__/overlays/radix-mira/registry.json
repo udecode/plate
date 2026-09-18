@@ -58,7 +58,11 @@
       "description": "A customizable toolbar component with various button styles and group",
       "dependencies": [
         "@radix-ui/react-toolbar",
-        "@radix-ui/react-tooltip"
+        "@radix-ui/react-tooltip",
+        "class-variance-authority",
+        "diff-match-patch-ts@^0.6.0",
+        "lucide-react",
+        "platejs"
       ],
       "registryDependencies": [],
       "files": [

@@ -1,10 +1,7 @@
-'use client';
-
-import { PLUGINS } from 'platejs';
-import { TextAlignPlugin } from 'platejs/react';
+import { BaseTextAlignPlugin, PLUGINS } from 'platejs';
 
 export const AlignKit = [
-  TextAlignPlugin.configure({
+  BaseTextAlignPlugin.configure({
     inject: {
       nodeProps: {
         defaultNodeValue: 'start',
@@ -21,4 +18,4 @@ export const AlignKit = [
       PLUGINS.video,
     ],
   }),
-];
+] as const;

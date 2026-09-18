@@ -1,6 +1,6 @@
 import { authored } from 'plitejs/authored';
 
-/** Native authored changes using the Plate editor's authenticated user ID. */
+/** Native authored changes using the Plate editor's current user ID. */
 export const DefaultAuthoredPlugin = authored({
   authorId: (editor) => {
     const runtime = Reflect.get(editor, 'runtime');

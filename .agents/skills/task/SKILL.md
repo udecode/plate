@@ -44,11 +44,13 @@ could not be observed.
 | --- | --- |
 | Architecture, migration, comparison, RFC or substantial proposal | [Full complex-work recipes](./references/complex-work.md) |
 | Already-applied work, post-merge or current-checkout coherence | [Closure](./references/closure.md) |
+| Editor behavior law and coverage evidence | [Source authority](./references/source-authority.md), reconciled by Task before closeout |
 | Explicit Clawpatch tool operation | [Full Clawpatch recipe](./references/clawpatch.md) |
 | Feedback whose objective rule may recur in the current diff | [Review pattern mining](./references/review-patterns.md) |
 | Durable Plate/Plite law and relevant detail | [Source authority](./references/source-authority.md), root VISION.md |
-| One local behavior defect | Patch |
-| Explicit corpus/rewrite-closure or failed-fix methodology | Regression |
+| Local behavior defect or diagnosis | Patch; diagnosis-only preserves its read-only boundary |
+| Explicit corpus/rewrite closure or a contradicted fix | Patch's conditional corpus or failed-fix method |
+| Workflow/rule/helper maintenance | Maintain Workflow |
 | Timing, profiling or performance comparison | Benchmark, with its performance-review method |
 | Public call shape | Best API; then Plate Plan or Plite Plan for accepted adoption |
 | Current architecture score, code shape or external editor comparison | Plate Review, Architecture Cleanup or Editor Audit |
@@ -100,6 +102,9 @@ Claim exact local, integrated and released states separately.
 ## Closeout
 
 Inspect the final result and report outcome, reason, proof and material limits.
+Before closing accepted editor behavior work, apply
+[Closure's behavior-law reconciliation](./references/closure.md#closure-loop).
+Best API Review may flag this duty but remains read-only.
 The Plate workflow owns the single explicit-review/PR-closeout budget and the
 ban on Autoreview on `next`. Do not add another closure panel or two-clean-pass
 ritual. Relevant package, registry, docs, doctrine and release safeguards stay

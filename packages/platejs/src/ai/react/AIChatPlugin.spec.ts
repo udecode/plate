@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 
-import { BaseParagraphPlugin, editorCommands, type Value } from '../../core';
+import { BaseParagraphPlugin, editorCommands } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createEditor } from '../../react/core';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
 describe('AIChatPlugin', () => {
-  it('installs its AI and Markdown dependencies once', () => {
+  it('installs its AI, history, and Markdown dependencies once', () => {
     const editor = createEditor({
       plugins: [AIChatPlugin],
       userId: 'alice',
@@ -19,10 +19,11 @@ describe('AIChatPlugin', () => {
     expect(names.indexOf('ai')).toBeLessThan(names.indexOf('aiChat'));
     expect(names.indexOf('markdown')).toBeLessThan(names.indexOf('aiChat'));
     expect(names.filter((name) => name === 'ai')).toHaveLength(1);
+    expect(names.filter((name) => name === 'history')).toHaveLength(1);
     expect(names.filter((name) => name === 'markdown')).toHaveLength(1);
   });
 
-  it('clears internal streaming state when stop is called', () => {
+  it('stops streaming while retaining the draft anchor', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       userId: 'alice',
@@ -30,51 +31,46 @@ describe('AIChatPlugin', () => {
     });
 
     editor.plugin(AIChatPlugin).store.set({ streaming: true });
-    editor.plugin(AIChatPlugin).store.set({ _blockChunks: 'abc' });
-    editor.plugin(AIChatPlugin).store.set({ _blockPath: [0] });
-    editor.plugin(AIChatPlugin).store.set({ _mdxName: 'foo' });
+    editor.plugin(AIChatPlugin).store.set({ _blockKey: editor.key([0])! });
 
     editor.plugin(AIChatPlugin).api.stop();
 
     expect(editor.plugin(AIChatPlugin).store.get('streaming')).toBe(false);
-    expect(editor.plugin(AIChatPlugin).store.get('_blockChunks')).toBe('');
-    expect(editor.plugin(AIChatPlugin).store.get('_blockPath')).toBeNull();
-    expect(editor.plugin(AIChatPlugin).store.get('_mdxName')).toBeNull();
+    expect(editor.plugin(AIChatPlugin).store.get('_blockKey')).toBe(
+      editor.key([0])
+    );
   });
 
-  it('removes its anchor without adding history', () => {
-    const initialValue: Value = [
-      { children: [{ text: '' }], type: 'paragraph' },
-      { children: [{ text: '' }], type: 'aiChat' },
-    ];
+  it('dismisses an unaccepted draft without changing content or history', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       userId: 'alice',
-      initialValue,
+      initialValue: [{ children: [{ text: 'draft' }], type: 'paragraph' }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 5 },
+      },
     });
+    const value = editor.read.value();
+    const history = editor.read.history().undos;
+    const ai = editor.plugin(AIChatPlugin);
+    ai.api.show();
+    ai.store.set({ _requestId: 'dismissed', streaming: true });
+    ai.api.setPreview('Unaccepted response', { requestId: 'dismissed' });
+    expect(ai.store.get('previewValue')).toHaveLength(1);
 
-    editor.plugin(AIChatPlugin).update({ history: 'skip' }).remove({ at: [] });
+    editor.plugin(AIChatPlugin).api.hide({ focus: false });
 
-    expect(editor.read.children()).toHaveLength(1);
-    expect(editor.read.children()[0]?.type).toBe('paragraph');
-    expect(editor.read.history.undos()).toHaveLength(0);
-  });
-
-  it('hides and removes its anchor without adding history', () => {
-    const editor = createEditor({
-      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      userId: 'alice',
-      initialValue: [
-        { children: [{ text: '' }], type: 'paragraph' },
-        { children: [{ text: '' }], type: 'aiChat' },
-      ],
-    });
-
-    editor.plugin(AIChatPlugin).api.hide({ focus: false, undo: false });
-
-    expect(editor.read.children()).toHaveLength(1);
-    expect(editor.read.children()[0]?.type).toBe('paragraph');
-    expect(editor.read.history.undos()).toHaveLength(0);
+    expect(editor.plugin(AIChatPlugin).store.get('open')).toBe(false);
+    expect(ai.store.get('previewValue')).toEqual([]);
+    expect(ai.store.get('streaming')).toBe(false);
+    expect(ai.store.get('_blockKey')).toBeNull();
+    expect(ai.store.get('_requestId')).toBeNull();
+    expect(editor.read.value()).toEqual(value);
+    expect(editor.read.history().undos).toEqual(history);
+    ai.api.setPreview('Late response', { requestId: 'dismissed' });
+    expect(ai.store.get('previewValue')).toEqual([]);
   });
 
   it('matches the selection updated earlier in the active transaction', () => {

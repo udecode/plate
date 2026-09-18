@@ -4,6 +4,7 @@ import { runInNewContext } from 'node:vm';
 
 import {
   createEditor,
+  createEditorView,
   defineCommand,
   definePlugin,
   defineEditorSchema,
@@ -17,12 +18,17 @@ import {
   editorCommands,
   property,
   schema,
+  type Anchor,
   type Editor,
   type PluginDefinitionInput,
   type PluginReference,
   type EditorSchemaIdentity,
+  type Range,
 } from 'plitejs';
+import { authored } from 'plitejs/authored';
+import { history } from 'plitejs/history';
 
+import { hasActiveAnchors } from '../src/core/anchor-state';
 import {
   getPluginContributions,
   preparePluginPublication,
@@ -2165,6 +2171,7 @@ describe('transactional plugin configuration', () => {
     assert.deepEqual(contexts, [
       [
         'afterPublish',
+        'beforePublish',
         'editor',
         'onCleanup',
         'pluginName',
@@ -2439,6 +2446,555 @@ describe('transactional plugin configuration', () => {
 
     assert.deepEqual(activationRevisions, [before + 1]);
     assert.deepEqual(observerRevisions, [before + 1]);
+  });
+
+  it('initializes saved authored ranges against the final initial snapshot', () => {
+    const source = createEditor({
+      initialValue: [paragraph('persisted')],
+      plugins: [authored({ authorId: 'alice' })],
+    });
+    const range = {
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 8 },
+    };
+    const original = source.anchor(range, { deletion: 'drop' });
+    const saved = JSON.parse(JSON.stringify(source.anchor.save(original)));
+    const snapshot = JSON.parse(JSON.stringify(source.read.value()));
+    original.release();
+    const editor = createEditor({ initialValue: [paragraph('')] });
+    const events: string[] = [];
+    let restored: Anchor<Range> | undefined;
+    initializePlugins(
+      editor,
+      [
+        authored({ authorId: 'alice' }),
+        definePlugin('final-snapshot-range', {
+          activate({ beforePublish, afterPublish, onCleanup }) {
+            onCleanup(() => {
+              restored?.release();
+            });
+            beforePublish(() => {
+              assert.equal(editor.read.text.string([]), 'persisted');
+              restored = editor.anchor.restore(saved);
+              assert.deepEqual(restored.resolve(), range);
+              events.push('ready');
+            });
+            afterPublish(() => {
+              events.push('published');
+            });
+          },
+        }),
+      ],
+      { initialValue: () => snapshot }
+    );
+    assert.deepEqual(events, ['ready', 'published']);
+    assert.deepEqual(restored?.resolve(), range);
+    restored?.release();
+    assert.equal(hasActiveAnchors(editor), false);
+  });
+
+  it('throws before construction returns and rolls back acquired resources', () => {
+    const events: string[] = [];
+    let candidate: Editor | undefined;
+    let acquired: Anchor<Range> | undefined;
+    const source = createEditor({ initialValue: [paragraph('long')] });
+    const original = source.anchor(
+      {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 4 },
+      },
+      { deletion: 'drop' }
+    );
+    const saved = source.anchor.save(original);
+    original.release();
+    assert.throws(
+      () =>
+        createEditor({
+          initialValue: [paragraph('x')],
+          lifecycleErrorSink() {
+            events.push('sink');
+          },
+          plugins: [
+            definePlugin('invalid-final-range', {
+              activate({
+                editor,
+                beforePublish,
+                afterPublish,
+                onCleanup,
+                signal,
+              }) {
+                candidate = editor;
+                signal.addEventListener('abort', () => {
+                  events.push('abort');
+                });
+                onCleanup(({ reason }) => {
+                  acquired?.release();
+                  events.push(reason);
+                });
+                beforePublish(() => {
+                  acquired = editor.anchor(
+                    {
+                      anchor: { path: [0, 0], offset: 0 },
+                      focus: { path: [0, 0], offset: 1 },
+                    },
+                    { deletion: 'drop' }
+                  );
+                  editor.anchor.restore(saved);
+                });
+                afterPublish(() => {
+                  events.push('published');
+                });
+              },
+            }),
+          ],
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof PluginPublicationError);
+        assert.equal(error.phase, 'beforePublish');
+        assert.match(error.message, /offset/i);
+        return true;
+      }
+    );
+    assert.deepEqual(events, ['abort', 'rollback']);
+    assert.ok(candidate);
+    assert.equal(hasActiveAnchors(candidate), false);
+    assert.equal(acquired?.resolve(), null);
+  });
+
+  for (const useAuthored of [false, true]) {
+    it(`binds a saved ${useAuthored ? 'authored' : 'ordinary'} range to the final dynamic draft before observers`, () => {
+      const slot = definePluginSlot('dynamic-final-range');
+      const editor = createEditor({
+        initialValue: [paragraph('text')],
+        plugins: [
+          history(),
+          ...(useAuthored ? [authored({ authorId: 'alice' })] : []),
+          slot.of([]),
+        ],
+      });
+      const range = {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 3 },
+      };
+      const original = editor.anchor(range, { deletion: 'drop' });
+      const saved = editor.anchor.save(original);
+      const expected = useAuthored
+        ? {
+            anchor: { path: [0, 0], offset: 2 },
+            focus: { path: [0, 0], offset: 4 },
+          }
+        : range;
+      const events: string[] = [];
+      let restored: Anchor<Range> | undefined;
+      let created: Anchor<Range> | undefined;
+      let path: Anchor<number[]> | undefined;
+      const plugin = definePlugin('dynamic-final-range-owner', {
+        activate({ beforePublish, afterPublish, onCleanup }) {
+          onCleanup(() => {
+            restored?.release();
+            created?.release();
+            path?.release();
+          });
+          beforePublish(() => {
+            assert.equal(editor.read.text.string([]), '!text');
+            restored = editor.anchor.restore(saved);
+            created = editor.anchor(expected, { deletion: 'drop' });
+            path = editor.anchor([0], { deletion: 'drop' });
+            assert.deepEqual(restored.resolve(), expected);
+            assert.deepEqual(created.resolve(), expected);
+            events.push('ready');
+          });
+          afterPublish(() => {
+            events.push('published');
+          });
+        },
+      });
+      const unsubscribe = editor.subscribeCommit(() => {
+        assert.deepEqual(restored?.resolve(), expected);
+        events.push('observer');
+      });
+      editor.update((tx) => {
+        tx.plugins.reconfigure(slot, plugin);
+        tx.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+      });
+      assert.deepEqual(events, ['ready', 'observer', 'published']);
+      assert.deepEqual(restored?.resolve(), expected);
+      assert.deepEqual(created?.resolve(), expected);
+      unsubscribe();
+      editor.update((tx) => {
+        tx.history.newBatch();
+        tx.text.insert('?', { at: { path: [0, 0], offset: 0 } });
+      });
+      assert.deepEqual(restored?.resolve(), {
+        anchor: { ...expected.anchor, offset: expected.anchor.offset + 1 },
+        focus: { ...expected.focus, offset: expected.focus.offset + 1 },
+      });
+      assert.deepEqual(created?.resolve(), restored?.resolve());
+      editor.api.history.undo();
+      assert.deepEqual(restored?.resolve(), expected);
+      assert.deepEqual(created?.resolve(), expected);
+      editor.update((tx) => {
+        tx.history.newBatch();
+        tx.nodes.insert(paragraph('before'), { at: [0] });
+      });
+      assert.deepEqual(path?.resolve(), [1]);
+      assert.deepEqual(created?.resolve(), {
+        anchor: { ...expected.anchor, path: [1, 0] },
+        focus: { ...expected.focus, path: [1, 0] },
+      });
+      editor.api.history.undo();
+      assert.deepEqual(path?.resolve(), [0]);
+      assert.deepEqual(created?.resolve(), expected);
+      restored?.release();
+      created?.release();
+      path?.release();
+      original.release();
+      assert.equal(hasActiveAnchors(editor), false);
+    });
+
+    it(`restores a saved ${useAuthored ? 'authored' : 'ordinary'} range while replacing the document and installing its owner`, () => {
+      const plugins = useAuthored ? [authored({ authorId: 'alice' })] : [];
+      const source = createEditor({
+        initialValue: [paragraph('replacement')],
+        plugins,
+      });
+      const expected = {
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 10 },
+      };
+      const original = source.anchor(expected, { deletion: 'drop' });
+      const saved = source.anchor.save(original);
+      original.release();
+      const slot = definePluginSlot('replacement-final-range');
+      const editor = createEditor({
+        initialValue: [paragraph('old')],
+        plugins: [history(), ...plugins, slot.of([])],
+      });
+      let restored: Anchor<Range> | undefined;
+      editor.update((tx) => {
+        tx.value.replace(source.read.value());
+        tx.plugins.reconfigure(
+          slot,
+          definePlugin('replacement-range-owner', {
+            activate({ beforePublish, onCleanup }) {
+              onCleanup(() => {
+                restored?.release();
+              });
+              beforePublish(() => {
+                restored = editor.anchor.restore(saved);
+                assert.deepEqual(restored.resolve(), expected);
+              });
+            },
+          })
+        );
+      });
+      assert.deepEqual(restored?.resolve(), expected);
+      editor.update((tx) => {
+        tx.history.newBatch();
+        tx.text.insert('?', { at: { path: [0, 0], offset: 0 } });
+      });
+      assert.deepEqual(restored?.resolve(), {
+        anchor: { ...expected.anchor, offset: expected.anchor.offset + 1 },
+        focus: { ...expected.focus, offset: expected.focus.offset + 1 },
+      });
+      editor.api.history.undo();
+      assert.deepEqual(restored?.resolve(), expected);
+      restored?.release();
+      assert.equal(hasActiveAnchors(editor), false);
+    });
+
+    it(`discards prepared ${useAuthored ? 'authored' : 'ordinary'} replacement ranges when a later initializer fails`, () => {
+      const plugins = useAuthored ? [authored({ authorId: 'alice' })] : [];
+      const source = createEditor({
+        initialValue: [paragraph('replacement')],
+        plugins,
+      });
+      const savedAnchor = source.anchor(
+        {
+          anchor: { path: [0, 0], offset: 2 },
+          focus: { path: [0, 0], offset: 10 },
+        },
+        { deletion: 'nearest' }
+      );
+      const saved = source.anchor.save(savedAnchor);
+      savedAnchor.release();
+      const slot = definePluginSlot('failed-replacement-range');
+      const editor = createEditor({
+        initialValue: [paragraph('old')],
+        plugins: [...plugins, slot.of([])],
+      });
+      const originalRange = {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 2 },
+      };
+      const original = editor.anchor(originalRange, { deletion: 'nearest' });
+      const value = editor.read.value();
+      const registry = getPluginRegistry(editor);
+      let restored: Anchor<Range> | undefined;
+      const events: string[] = [];
+      editor.subscribeCommit(() => {
+        events.push('observer');
+      });
+      assert.throws(
+        () =>
+          editor.update((tx) => {
+            tx.value.replace(source.read.value());
+            tx.plugins.reconfigure(
+              slot,
+              definePlugin('failed-replacement-range-owner', {
+                activate({ beforePublish, afterPublish, onCleanup }) {
+                  onCleanup(({ reason }) => {
+                    restored?.release();
+                    events.push(reason);
+                  });
+                  beforePublish(() => {
+                    restored = editor.anchor.restore(saved);
+                    assert.equal(restored.resolve()?.focus.offset, 10);
+                    events.push('ready');
+                  });
+                  beforePublish(() => {
+                    throw new Error('later initializer rejected replacement');
+                  });
+                  afterPublish(() => {
+                    events.push('published');
+                  });
+                },
+              })
+            );
+          }),
+        /later initializer rejected replacement/
+      );
+      assert.deepEqual(events, ['ready', 'rollback']);
+      assert.deepEqual(editor.read.value(), value);
+      assert.equal(getPluginRegistry(editor), registry);
+      assert.deepEqual(original.resolve(), originalRange);
+      assert.equal(restored?.resolve(), null);
+      editor.update.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+      assert.deepEqual(original.resolve(), {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 3 },
+      });
+      original.release();
+      assert.equal(hasActiveAnchors(editor), false);
+    });
+  }
+
+  it('binds final proposed coordinates without publishing proposal text into the accepted document', () => {
+    const slot = definePluginSlot('proposed-final-range');
+    const editor = createEditor({
+      initialValue: [paragraph('text')],
+      plugins: [authored({ authorId: 'alice' }), history(), slot.of([])],
+    });
+    const proposed = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'proposed' },
+    });
+    const expected = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 2 },
+    };
+    let range: Anchor<Range> | undefined;
+    proposed.update((tx) => {
+      tx.text.insert('!?', { at: { path: [0, 0], offset: 0 } });
+      tx.plugins.reconfigure(
+        slot,
+        definePlugin('proposed-final-range-owner', {
+          activate({ beforePublish, onCleanup }) {
+            onCleanup(() => {
+              range?.release();
+            });
+            beforePublish(() => {
+              assert.equal(editor.read.text.string([]), 'text');
+              assert.equal(proposed.read.text.string([]), '!?text');
+              range = proposed.anchor(expected, { deletion: 'drop' });
+            });
+          },
+        })
+      );
+    });
+    assert.deepEqual(range?.resolve(), expected);
+    assert.equal(editor.read.text.string([]), 'text');
+    proposed.update((tx) => {
+      tx.history.newBatch();
+      tx.text.insert('X', { at: { path: [0, 0], offset: 0 } });
+    });
+    assert.deepEqual(range?.resolve(), {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+    editor.api.history.undo();
+    assert.deepEqual(range?.resolve(), expected);
+    range?.release();
+    assert.equal(hasActiveAnchors(editor), false);
+  });
+
+  it('retains deletion recovery for an ordinary restored range alongside live anchors', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('text')],
+      plugins: [history()],
+    });
+    const range = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 3 },
+    };
+    const original = editor.anchor(range, { deletion: 'nearest' });
+    const saved = editor.anchor.save(original);
+    let restored: Anchor<Range> | undefined;
+    const cleanup = editor.install(
+      definePlugin('deletion-recovery-range', {
+        activate({ beforePublish, onCleanup }) {
+          onCleanup(() => {
+            restored?.release();
+          });
+          beforePublish(() => {
+            restored = editor.anchor.restore(saved);
+          });
+        },
+      })
+    );
+    assert.deepEqual(restored?.resolve(), original.resolve());
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.text.delete({ at: range });
+    });
+    assert.deepEqual(restored?.resolve(), original.resolve());
+    editor.api.history.undo();
+    assert.deepEqual(original.resolve(), range);
+    assert.deepEqual(restored?.resolve(), range);
+    cleanup();
+    original.release();
+    assert.equal(hasActiveAnchors(editor), false);
+  });
+
+  it('rolls back final-draft resources and preserves the previous plugin and authored document', () => {
+    const events: string[] = [];
+    const slot = definePluginSlot('rollback-final-range');
+    const previous = definePlugin('previous-final-range', {
+      api: () => ({ ready: true }),
+      activate({ onCleanup }) {
+        onCleanup(() => {
+          events.push('previous:cleanup');
+        });
+      },
+    });
+    const editor = createEditor({
+      initialValue: [paragraph('text')],
+      plugins: [authored({ authorId: 'alice' }), slot.of(previous)],
+      lifecycleErrorSink() {
+        events.push('sink');
+      },
+    });
+    const range = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 3 },
+    };
+    const original = editor.anchor(range, { deletion: 'drop' });
+    const saved = editor.anchor.save(original);
+    const snapshot = editor.read.value();
+    const { version } = editor.read.runtime.snapshot();
+    const registry = getPluginRegistry(editor);
+    let restored: Anchor<Range> | undefined;
+    let writeDraft = () => {};
+    const resource = definePlugin('rollback-final-resource', {
+      activate({ beforePublish, afterPublish, onCleanup }) {
+        onCleanup(({ reason }) => {
+          restored?.release();
+          events.push(`resource:${reason}`);
+        });
+        beforePublish(() => {
+          restored = editor.anchor.restore(saved);
+          assert.deepEqual(restored.resolve(), {
+            anchor: { path: [0, 0], offset: 2 },
+            focus: { path: [0, 0], offset: 4 },
+          });
+          assert.throws(writeDraft, /finalized editor transaction/);
+          assert.throws(
+            () => editor.update.text.insert('?'),
+            /nested|finalized/
+          );
+          events.push('resource:ready');
+        });
+        afterPublish(() => {
+          events.push('resource:published');
+        });
+      },
+    });
+    const rejection = new Error('reject final document');
+    const invalid = definePlugin('rollback-final-rejection', {
+      dependencies: [resource],
+      activate({ beforePublish, afterPublish, onCleanup }) {
+        onCleanup(({ reason }) => {
+          events.push(`rejection:${reason}`);
+        });
+        beforePublish(() => {
+          throw rejection;
+        });
+        afterPublish(() => {
+          events.push('rejection:published');
+        });
+      },
+    });
+    editor.subscribeCommit(() => {
+      events.push('observer');
+    });
+    assert.throws(
+      () =>
+        editor.update((tx) => {
+          tx.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+          tx.selection.set({
+            anchor: { path: [0, 0], offset: 2 },
+            focus: { path: [0, 0], offset: 2 },
+          });
+          tx.plugins.reconfigure(slot, invalid);
+          writeDraft = () => tx.text.insert('?');
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof PluginPublicationError);
+        assert.equal(error.cause, rejection);
+        assert.equal(error.pluginName, invalid.name);
+        assert.equal(error.phase, 'beforePublish');
+        return true;
+      }
+    );
+    assert.deepEqual(events, [
+      'resource:ready',
+      'rejection:rollback',
+      'resource:rollback',
+    ]);
+    assert.deepEqual(editor.read.value(), snapshot);
+    assert.equal(editor.read.selection(), null);
+    assert.equal(editor.read.runtime.snapshot().version, version);
+    assert.equal(getPluginRegistry(editor), registry);
+    assert.equal(editor.plugin(previous).api.ready, true);
+    assert.deepEqual(original.resolve(), range);
+    assert.equal(restored?.resolve(), null);
+    original.release();
+    assert.equal(hasActiveAnchors(editor), false);
+    editor.update.text.insert('?', { at: { path: [0, 0], offset: 4 } });
+    assert.equal(editor.read.text.string([]), 'text?');
+  });
+
+  it('rejects constructor writes during final-document initialization', () => {
+    let cleaned = false;
+    assert.throws(
+      () =>
+        createEditor({
+          initialValue: [paragraph('text')],
+          plugins: [
+            definePlugin('final-document-write', {
+              activate({ editor, beforePublish, onCleanup }) {
+                onCleanup(() => {
+                  cleaned = true;
+                });
+                beforePublish(() => {
+                  editor.update.text.insert('!');
+                });
+              },
+            }),
+          ],
+        }),
+      /plugin lifecycle publication/
+    );
+    assert.equal(cleaned, true);
   });
 
   it('runs after-publish work after commit observers and allows a new update', () => {
@@ -2797,6 +3353,26 @@ describe('transactional plugin configuration', () => {
         ),
       PluginPublicationError
     );
+
+    let beforePublishCleanups = 0;
+    assert.throws(
+      () =>
+        editor.install(
+          definePlugin('async-before-publication', {
+            activate({ beforePublish, afterPublish, onCleanup }) {
+              onCleanup(() => {
+                beforePublishCleanups += 1;
+              });
+              beforePublish(() => Promise.resolve());
+              afterPublish(() => {
+                assert.fail('Failed preparation must not publish');
+              });
+            },
+          })
+        ),
+      /before-publish callback must be synchronous/
+    );
+    assert.equal(beforePublishCleanups, 1);
 
     assert.deepEqual(errors, []);
     assert.deepEqual(getCompiledEditorConfiguration(editor).plugins, []);

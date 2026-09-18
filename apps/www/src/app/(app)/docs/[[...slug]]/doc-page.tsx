@@ -23,12 +23,12 @@ import {
   getCachedHighlightedFiles,
   getCachedRegistryItem,
 } from '@/lib/registry-cache';
+import { getRegistryMetadata } from '@/lib/registry-metadata';
 import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
 import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
 import { source } from '@/lib/source';
 import { getTableOfContents } from '@/lib/toc';
 import { hrefWithLocale } from '@/lib/withLocale';
-import { registry } from '@/registry/registry';
 import { registryExamples } from '@/registry/registry-examples';
 import { proExamples } from '@/registry/registry-pro';
 
@@ -54,6 +54,7 @@ export type DocPageProps = {
   }>;
 };
 
+const registry = getRegistryMetadata();
 const registryNames = new Set(registry.items.map((item) => item.name));
 const componentDocs = registry.items.filter(
   (item) => item.type === 'registry:component'

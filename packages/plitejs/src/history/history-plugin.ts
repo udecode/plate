@@ -1,15 +1,14 @@
 import {
   definePlugin,
-  defineCommand,
   defineUpdateAnnotation,
   type DocumentChange,
   type Editor,
   type EditorCommit,
   type EditorDocumentValue,
   type EditorEffect,
+  type EditorSchemaIdentity,
   type Plugin,
   type PluginTypeProvider,
-  type EditorStateView,
   type EditorUpdateTransaction,
   type Selection,
   SelectionApi,
@@ -29,19 +28,30 @@ import {
   isAuthoredHistoryEffect,
   canMergeAuthoredHistory,
   captureAuthoredHistory,
+  getAuthoredHistoryConflicts,
 } from '../core/authored-runtime';
-import { dispatchCommand } from '../core/command-registry';
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { MAIN_ROOT_KEY } from '../core/public-root';
-import { documentReplacement, getEditorUpdateRoot } from '../core/public-state';
+import {
+  documentReplacement,
+  getEditorUpdateRoot,
+  isBuildingTransactionSpec,
+  isInTransaction,
+  type EditorHistoryReplayReceipt,
+  recordEditorHistoryReplayReceipt,
+  registerEditorHistoryRuntime,
+  registerEditorTransactionGuard,
+} from '../core/public-state';
 import { type Batch, History, type HistoryJSON } from './history';
 import { decodeHistoryValue, encodeHistoryValue } from './history-codec';
 import {
   createHistoryBatchGroup,
   type HistoryBatchGroup,
+  type NativeHistoryGrouping,
   isSameHistoryPath,
   mergeHistoryBatchGroups,
   shouldMergeBatch,
+  shouldMergeCompositionBatch,
   shouldMergeExplicitBatch,
 } from './history-merge-policy';
 import {
@@ -52,18 +62,18 @@ import {
 } from './history-selection';
 import {
   captureHistoryState,
-  clearHistoryStack,
   clearHistoryState,
   completeHistoryAction,
   configureHistoryState,
   getHistory,
-  peekHistoryBatch,
+  getWorkingHistory,
   peekHistoryEntry,
   queueHistoryMapping,
   replaceHistoryHead,
   replaceHistoryState,
   restoreHistoryState,
-  synchronizeHistorySchema,
+  withHistoryStateDraft,
+  withPublishedHistoryState,
   writeHistory,
 } from './history-state';
 
@@ -72,29 +82,34 @@ const failInvariant = (message: string): never => {
 };
 
 export type HistoryStateApi<V extends Value = Value> = (() => History<V>) & {
-  /** Read the redo stack. */
-  redos: () => ReadonlyArray<Batch<V>>;
-  /** Read the undo stack. */
-  undos: () => ReadonlyArray<Batch<V>>;
+  /** Return whether the redo branch has a surviving mapped batch. */
+  hasRedo: () => boolean;
+  /** Return whether the undo branch has a surviving mapped batch. */
+  hasUndo: () => boolean;
+};
+
+export type HistoryResult =
+  | Readonly<{ status: 'applied' | 'empty' }>
+  | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>;
+
+export type HistoryApi = {
+  /** Replay the current redo batch as one complete editor update. */
+  redo: () => HistoryResult;
+  /** Replay the current undo batch as one complete editor update. */
+  undo: () => HistoryResult;
 };
 
 export type HistoryControlTx = TxOnlyMethod<() => void>;
 
 export type HistoryTxApi<V extends Value = Value> = {
-  /** Permanently discard the redo branch without changing the document. */
-  discardRedo: () => void;
   /** Merge this transaction into the previous compatible undo batch. */
   merge: HistoryControlTx;
   /** Make this transaction start a fresh undo batch. */
   newBatch: HistoryControlTx;
-  /** Redo the next history batch inside the current transaction. */
-  redo: () => void;
   /** Replace both history branches when the surrounding transaction commits. */
   restore: (history: History<V>) => void;
   /** Do not save this transaction to history. */
   skip: HistoryControlTx;
-  /** Undo the previous history batch inside the current transaction. */
-  undo: () => void;
 };
 
 export type HistoryOptions<TEnabled extends boolean | undefined = undefined> = {
@@ -107,6 +122,9 @@ export type HistoryOptions<TEnabled extends boolean | undefined = undefined> = {
 };
 
 export type HistoryPluginTypes<V extends Value = Value> = {
+  api: {
+    history: HistoryApi;
+  };
   read: {
     history: HistoryStateApi<V>;
   };
@@ -117,6 +135,7 @@ export type HistoryPluginTypes<V extends Value = Value> = {
 
 type HistoryPluginDefinition<TEnabled extends boolean | undefined> = {
   activate: true;
+  api: HistoryApi;
   enabled: TEnabled;
   name: 'history';
   on: true;
@@ -174,10 +193,21 @@ const historyAction = defineUpdateAnnotation<HistoryAction>({
   key: 'history.action',
 });
 
-const historyDiscardRedo = defineUpdateAnnotation<boolean>({
-  combine: (previous, next) => previous || next,
-  key: 'history.discard-redo',
+const historyReplayRequest = defineUpdateAnnotation<number>({
+  combine: (_previous, next) => next,
+  key: 'history.replay-request',
 });
+
+type PreparedHistoryReplay = Readonly<{
+  receipt: EditorHistoryReplayReceipt;
+  request: number;
+}>;
+
+const PREPARED_HISTORY_REPLAYS = new Map<number, EditorHistoryReplayReceipt>();
+let nextHistoryReplayRequest = 1;
+const EMPTY_HISTORY_RESULT = Object.freeze({
+  status: 'empty',
+}) satisfies HistoryResult;
 
 const historyRestore = defineUpdateAnnotation<HistoryJSON>({
   combine: (_previous, next) => next,
@@ -213,6 +243,7 @@ const runHistoricUpdate = <V extends Value>(
   const preserveSelection =
     stateOnly || shouldPreserveHistoricDOMSelection(root, batch);
 
+  tx.tags.add('semantic-command');
   tx.tags.add('history-skip');
   tx.tags.add('historic');
 
@@ -262,52 +293,33 @@ const consumeHistoryBatch = <V extends Value>(
 };
 
 const applyHistoryAction = <V extends Value>(
-  state: EditorStateView<V> & { history: HistoryStateApi<V> },
+  editor: Editor<V>,
   tx: HistoryTransaction<V>,
   direction: HistoryAction,
-  root: string
+  root: string,
+  request: number
 ) => {
-  const history = state.history();
-  const batch =
-    direction === 'undo' ? history.undos.at(-1) : history.redos.at(-1);
+  const entry = peekHistoryEntry(
+    editor,
+    direction === 'undo' ? 'undos' : 'redos'
+  );
 
-  if (!batch) return;
+  if (!entry) return false;
 
-  runHistoricUpdate(root, tx, batch, () => {
-    consumeHistoryBatch(tx, batch, direction, root);
+  stageAnchorHistoryRecovery(
+    getEditorRuntimeOwner(editor),
+    entry.recovery,
+    direction === 'undo' ? 'before' : 'after'
+  );
+
+  runHistoricUpdate(root, tx, entry.batch, () => {
+    consumeHistoryBatch(tx, entry.batch, direction, root);
   });
   tx.annotations.set(historyAction, direction);
+  tx.annotations.set(historyReplayRequest, request);
+
+  return true;
 };
-
-type HistoryRedoCommand = {
-  root: string;
-};
-
-type HistoryUndoCommand = {
-  root: string;
-};
-
-type HistoryEditor = Editor<Value, readonly [HistoryPlugin]>;
-
-const historyRedoCommand = defineCommand<HistoryRedoCommand, HistoryEditor>(
-  'history.redo',
-  {
-    build: ({ input, state }) =>
-      state.transaction((tx) => {
-        applyHistoryAction(state, tx, 'redo', input.root);
-      }),
-  }
-);
-
-const historyUndoCommand = defineCommand<HistoryUndoCommand, HistoryEditor>(
-  'history.undo',
-  {
-    build: ({ input, state }) =>
-      state.transaction((tx) => {
-        applyHistoryAction(state, tx, 'undo', input.root);
-      }),
-  }
-);
 
 const createCollapsedRangeAtTextInsert = (
   group: Extract<HistoryBatchGroup, { kind: 'text' }>,
@@ -371,6 +383,51 @@ const getTextBurstSelectionBefore = ({
   };
 };
 
+const readNativeHistoryGrouping = (
+  commit: EditorCommit
+): NativeHistoryGrouping | undefined => {
+  const value = commit.annotations['history.native-grouping-input'];
+
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    !Number.isSafeInteger(Reflect.get(value, 'origin'))
+  ) {
+    return undefined;
+  }
+  const composition = Reflect.get(value, 'composition');
+
+  if (composition !== undefined && !Number.isSafeInteger(composition)) {
+    return undefined;
+  }
+
+  return Object.freeze({
+    origin: Reflect.get(value, 'origin') as number,
+    ...(composition === undefined
+      ? {}
+      : { composition: composition as number }),
+  });
+};
+
+const canMergeNativeHistory = (
+  current: NativeHistoryGrouping | undefined,
+  previous: NativeHistoryGrouping | undefined,
+  withinAutomaticWindow: boolean
+) => {
+  if (!current && !previous) return withinAutomaticWindow;
+  if (!current || !previous || current.origin !== previous.origin) {
+    return false;
+  }
+  if (current.composition !== undefined || previous.composition !== undefined) {
+    return (
+      current.composition !== undefined &&
+      current.composition === previous.composition
+    );
+  }
+
+  return withinAutomaticWindow;
+};
+
 const prepareHistoryBatch = <V extends Value>(
   action: DocumentChange,
   commit: EditorCommit<V>,
@@ -381,12 +438,16 @@ const prepareHistoryBatch = <V extends Value>(
   group: HistoryBatchGroup | null;
 }> | null => {
   const baseGroup = createHistoryBatchGroup(grouping?.commit ?? commit);
+  const native = readNativeHistoryGrouping(commit);
   const group: HistoryBatchGroup | null = grouping
-    ? {
+    ? Object.freeze({
         ...(baseGroup ?? { kind: 'effects', root: undefined }),
+        ...(native ? { native } : {}),
         scope: grouping.scope,
-      }
-    : baseGroup;
+      })
+    : baseGroup
+      ? Object.freeze({ ...baseGroup, ...(native ? { native } : {}) })
+      : null;
   const resolveSelectionRoot = (
     selection: Selection,
     fallback?: string
@@ -454,35 +515,329 @@ const createHistoryPlugin = <
   const TEnabled extends boolean | undefined = undefined,
 >(
   options: HistoryOptions<TEnabled> = {}
-): HistoryPlugin<TEnabled> =>
-  definePlugin('history', {
+): HistoryPlugin<TEnabled> => {
+  const reduceHistory = ({
+    after,
+    commit,
+    editor,
+    schema,
+  }: {
+    after: EditorDocumentValue;
+    commit: EditorCommit;
+    editor: Editor;
+    schema: EditorSchemaIdentity;
+  }): PreparedHistoryReplay | undefined => {
+    const anchorCapture = consumeAnchorHistoryCapture(commit);
+
+    if (
+      configureHistoryState(editor, getHistoryMaxDepth(options), schema) ||
+      PENDING_HISTORY_SCHEMA_ACTIVATION.has(editor)
+    ) {
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      return;
+    }
+
+    const { changes } = commit;
+    const { inverseChanges } = commit;
+
+    const authoredCapture = captureAuthoredHistory(editor, commit);
+    const effects =
+      authoredCapture?.effects ??
+      commit.effects.filter((effect) => effect.type.history === 'push');
+    const action = commit.annotations[historyAction.key] as
+      | HistoryAction
+      | undefined;
+    const replayRequest = commit.annotations[historyReplayRequest.key] as
+      | number
+      | undefined;
+    const restoredHistoryJSON = commit.annotations[historyRestore.key] as
+      | HistoryJSON
+      | undefined;
+
+    if (restoredHistoryJSON) {
+      replaceHistoryState(
+        editor,
+        decodeHistoryValue(editor, restoredHistoryJSON, {
+          validateDocument: false,
+        }),
+        after
+      );
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+    }
+
+    if (commit.annotations[documentReplacement.key]) {
+      if (!restoredHistoryJSON) {
+        replaceHistoryState(
+          editor,
+          {
+            redos: [],
+            schema: getWorkingHistory(editor).schema,
+            undos: [],
+          },
+          after
+        );
+      }
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      return;
+    }
+
+    if (action) {
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      const source = action === 'undo' ? 'undos' : 'redos';
+      const destination = action === 'undo' ? 'redos' : 'undos';
+      const entry = peekHistoryEntry(editor, source);
+      const batch = entry?.batch;
+
+      if (!batch) {
+        throw new Error(`Missing history batch for ${action}.`);
+      }
+
+      completeHistoryAction(
+        editor,
+        source,
+        destination,
+        {
+          ...batch,
+          change: inverseChanges,
+          effects: effects.toReversed().map(invertEffect),
+        },
+        after
+      );
+      if (!replayRequest) {
+        throw new Error('History replay requires its owning service request.');
+      }
+      return Object.freeze({
+        receipt: Object.freeze({
+          group: entry.identity,
+          version: commit.version,
+        }),
+        request: replayRequest,
+      });
+    }
+
+    if (!shouldSaveCommit(commit, effects)) {
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+
+      if (!commit.tags.includes('historic') && !changes.empty) {
+        const before = inverseChanges.apply(toChangeValue(after));
+
+        queueHistoryMapping(editor, changes, before);
+      }
+      return;
+    }
+
+    const prepared = prepareHistoryBatch(
+      inverseChanges,
+      commit,
+      effects,
+      authoredCapture?.grouping
+    );
+
+    if (!prepared) return;
+
+    const preparedBatch = prepared.batch;
+    const lastEntry = peekHistoryEntry(editor, 'undos');
+    const currentTime = globalThis.performance.now();
+    const previousAutomaticGroupTime =
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
+    const explicitMerge = commit.tags.includes('history-merge');
+    const explicitPush = commit.tags.includes('history-push');
+    const textInput =
+      commit.tags.includes('native-text-input') ||
+      commit.tags.includes('dom-text-input');
+    const composition = commit.tags.includes('composition');
+    const authoredInput = authoredCapture !== undefined && textInput;
+    const effectsCompatible =
+      lastEntry != null &&
+      canMergeAuthoredHistory(
+        editor,
+        preparedBatch.effects,
+        lastEntry.batch.effects
+      );
+    const withinAutomaticWindow =
+      previousAutomaticGroupTime !== undefined &&
+      currentTime - previousAutomaticGroupTime <=
+        getHistoryNewBatchDelay(options);
+    const nativeMerge = canMergeNativeHistory(
+      prepared.group?.native,
+      lastEntry?.group?.native,
+      withinAutomaticWindow
+    );
+    const compositionMerge = Boolean(
+      prepared.group?.native?.composition !== undefined &&
+      prepared.group.native.origin === lastEntry?.group?.native?.origin &&
+      prepared.group.native.composition ===
+        lastEntry?.group?.native?.composition
+    );
+    const merge =
+      lastEntry != null &&
+      !explicitPush &&
+      (explicitMerge
+        ? (!authoredCapture || effectsCompatible) &&
+          (!authoredInput || composition || withinAutomaticWindow) &&
+          shouldMergeExplicitBatch(
+            preparedBatch,
+            prepared.group,
+            lastEntry.batch,
+            lastEntry.group,
+            textInput && !composition,
+            effectsCompatible
+          )
+        : nativeMerge &&
+          (preparedBatch.effects.length === 0 || authoredInput) &&
+          (compositionMerge
+            ? shouldMergeCompositionBatch(
+                preparedBatch,
+                prepared.group,
+                lastEntry.batch,
+                lastEntry.group,
+                effectsCompatible
+              )
+            : shouldMergeBatch(
+                preparedBatch,
+                prepared.group,
+                lastEntry.batch,
+                lastEntry.group,
+                effectsCompatible
+              )));
+
+    if (lastEntry && merge) {
+      const { selectionAfterRoot: _selectionAfterRoot, ...previousBatch } =
+        lastEntry.batch;
+      const mergedBatch = {
+        ...previousBatch,
+        change: preparedBatch.change.compose(
+          lastEntry.batch.change,
+          toChangeValue(after)
+        ),
+        effects: [...preparedBatch.effects, ...lastEntry.batch.effects],
+        selectionAfter: preparedBatch.selectionAfter,
+        ...(preparedBatch.selectionAfterRoot
+          ? { selectionAfterRoot: preparedBatch.selectionAfterRoot }
+          : {}),
+      };
+      const mergedGroup = mergeHistoryBatchGroups(
+        lastEntry.group,
+        prepared.group
+      );
+      const previousRecovery = mapAnchorHistoryRecovery(
+        lastEntry.recovery,
+        'after',
+        changes,
+        lastEntry.base,
+        after
+      );
+      const currentRecovery = anchorCapture?.recovery
+        ? mapAnchorHistoryRecovery(
+            anchorCapture.recovery,
+            'before',
+            lastEntry.batch.change,
+            lastEntry.base,
+            lastEntry.batch.change.apply(toChangeValue(lastEntry.base))
+          )
+        : null;
+      const mergedRecovery = mergeAnchorHistoryRecovery(
+        previousRecovery,
+        currentRecovery,
+        lastEntry.anchorCeiling
+      );
+
+      replaceHistoryHead(editor, 'undos', mergedBatch, after, {
+        anchorCeiling: lastEntry.anchorCeiling,
+        clearRedos: true,
+        group: mergedGroup,
+        recovery: mergedRecovery,
+      });
+    } else {
+      writeHistory(editor, 'undos', preparedBatch, after, {
+        anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
+        clearRedos: true,
+        group: prepared.group,
+        recovery: anchorCapture?.recovery ?? null,
+      });
+    }
+    if (explicitPush || (preparedBatch.effects.length > 0 && !authoredInput)) {
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+    } else {
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.set(editor, currentTime);
+    }
+  };
+  return definePlugin('history', {
+    api({ editor }) {
+      const replay = (direction: HistoryAction): HistoryResult => {
+        const owner = getEditorRuntimeOwner(editor);
+
+        if (isInTransaction(owner) || isBuildingTransactionSpec(owner)) {
+          throw new Error(
+            'History replay cannot run inside editor.update or a transaction spec.'
+          );
+        }
+        const request = nextHistoryReplayRequest;
+        nextHistoryReplayRequest += 1;
+        let hasEntry = false;
+
+        try {
+          editor.update((tx) => {
+            hasEntry = applyHistoryAction(
+              editor,
+              tx,
+              direction,
+              getEditorUpdateRoot(editor),
+              request
+            );
+          });
+        } catch (error) {
+          PREPARED_HISTORY_REPLAYS.delete(request);
+          const conflicts = getAuthoredHistoryConflicts(editor, error);
+
+          if (conflicts) {
+            return Object.freeze({
+              conflicts: Object.freeze([...conflicts]),
+              status: 'blocked',
+            });
+          }
+          throw error;
+        }
+
+        if (!hasEntry) return EMPTY_HISTORY_RESULT;
+
+        const receipt = PREPARED_HISTORY_REPLAYS.get(request);
+        PREPARED_HISTORY_REPLAYS.delete(request);
+        if (!receipt) {
+          throw new Error('History replay completed without a receipt.');
+        }
+        const result = Object.freeze({
+          status: 'applied',
+        }) satisfies HistoryResult;
+
+        recordEditorHistoryReplayReceipt(result, receipt);
+        return result;
+      };
+
+      return {
+        redo: () => replay('redo'),
+        undo: () => replay('undo'),
+      } satisfies HistoryApi;
+    },
     enabled: options.enabled as TEnabled,
     read({ editor }) {
       return Object.assign(() => getHistory(editor), {
-        redos: () => getHistory(editor).redos,
-        undos: () => getHistory(editor).undos,
+        hasRedo: () =>
+          withPublishedHistoryState(
+            editor,
+            () => peekHistoryEntry(editor, 'redos') !== undefined
+          ),
+        hasUndo: () =>
+          withPublishedHistoryState(
+            editor,
+            () => peekHistoryEntry(editor, 'undos') !== undefined
+          ),
       }) satisfies HistoryStateApi;
     },
     update({ editor, tx }) {
       return {
-        discardRedo() {
-          tx.annotations.set(historyDiscardRedo, true);
-        },
         merge: createHistoryControl(tx, 'merge'),
         newBatch: createHistoryControl(tx, 'push'),
-        redo() {
-          const entry = peekHistoryEntry(editor, 'redos');
-
-          if (!entry) return;
-          stageAnchorHistoryRecovery(
-            getEditorRuntimeOwner(editor),
-            entry.recovery,
-            'after'
-          );
-          dispatchCommand(editor, historyRedoCommand, {
-            root: getEditorUpdateRoot(editor),
-          });
-        },
         restore(value) {
           if (!History.isHistory(value)) {
             throw new Error('tx.history.restore requires decoded history.');
@@ -493,19 +848,6 @@ const createHistoryPlugin = <
           tx.annotations.set(historyRestore, encodeHistoryValue(editor, value));
         },
         skip: createHistoryControl(tx, 'skip'),
-        undo() {
-          const entry = peekHistoryEntry(editor, 'undos');
-
-          if (!entry) return;
-          stageAnchorHistoryRecovery(
-            getEditorRuntimeOwner(editor),
-            entry.recovery,
-            'before'
-          );
-          dispatchCommand(editor, historyUndoCommand, {
-            root: getEditorUpdateRoot(editor),
-          });
-        },
       } satisfies HistoryTxApi;
     },
     activate(context) {
@@ -517,9 +859,67 @@ const createHistoryPlugin = <
         LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
       const previousState = captureHistoryState(editor);
       const activation = {};
+      const configured = withHistoryStateDraft(editor, previousState, () =>
+        configureHistoryState(
+          editor,
+          getHistoryMaxDepth(options),
+          context.schema.identity()
+        )
+      );
+      const activationState = configured.state;
+      let activationPublished = false;
 
       HISTORY_ACTIVATION.set(editor, activation);
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      context.onCleanup(
+        registerEditorHistoryRuntime(editor, {
+          head: (direction) =>
+            peekHistoryEntry(editor, direction === 'undo' ? 'undos' : 'redos')
+              ?.identity ?? null,
+        })
+      );
+      context.onCleanup(
+        registerEditorTransactionGuard(editor, ({ after, commit, schema }) => {
+          if (HISTORY_ACTIVATION.get(editor) !== activation) return;
+
+          const beforeTime = LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
+          const restoreTime = (time: number | undefined) => {
+            if (time === undefined) {
+              LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+            } else {
+              LAST_AUTOMATIC_HISTORY_GROUP_TIME.set(editor, time);
+            }
+          };
+          let next;
+          let nextReplay: PreparedHistoryReplay | undefined;
+          let nextTime;
+          try {
+            const prepared = withHistoryStateDraft(
+              editor,
+              activationPublished
+                ? captureHistoryState(editor)
+                : activationState,
+              () => reduceHistory({ after, commit, editor, schema })
+            );
+            nextReplay = prepared.result;
+            next = prepared.state;
+            nextTime = LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
+          } finally {
+            restoreTime(beforeTime);
+          }
+          return () => {
+            restoreHistoryState(editor, next);
+            restoreTime(nextTime);
+            activationPublished = true;
+            if (nextReplay) {
+              PREPARED_HISTORY_REPLAYS.set(
+                nextReplay.request,
+                nextReplay.receipt
+              );
+            }
+          };
+        })
+      );
       context.onCleanup(({ reason }) => {
         if (PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor) === activation) {
           PENDING_HISTORY_SCHEMA_ACTIVATION.delete(editor);
@@ -552,230 +952,29 @@ const createHistoryPlugin = <
         LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
         HISTORY_ACTIVATION.delete(editor);
       });
-      if (configureHistoryState(editor, getHistoryMaxDepth(options))) {
+      if (configured.result) {
         PENDING_HISTORY_SCHEMA_ACTIVATION.set(editor, activation);
-        context.afterPublish(() => {
-          if (PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor) === activation) {
-            PENDING_HISTORY_SCHEMA_ACTIVATION.delete(editor);
-          }
-        });
       }
-    },
-    on: {
-      commit({ commit, editor }) {
-        const anchorCapture = consumeAnchorHistoryCapture(commit);
-
+      context.afterPublish(() => {
         if (
-          synchronizeHistorySchema(editor) ||
-          PENDING_HISTORY_SCHEMA_ACTIVATION.has(editor)
+          !activationPublished &&
+          HISTORY_ACTIVATION.get(editor) === activation
         ) {
-          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
-          return;
+          restoreHistoryState(editor, activationState);
+          activationPublished = true;
         }
-
-        const { changes } = commit;
-        const { inverseChanges } = commit;
-
-        const authoredCapture = captureAuthoredHistory(editor, commit);
-        const effects =
-          authoredCapture?.effects ??
-          commit.effects.filter((effect) => effect.type.history === 'push');
-        const action = commit.annotations[historyAction.key] as
-          | HistoryAction
-          | undefined;
-        const discardRedos = Boolean(
-          commit.annotations[historyDiscardRedo.key]
-        );
-        const restoredHistoryJSON = commit.annotations[historyRestore.key] as
-          | HistoryJSON
-          | undefined;
-
-        if (restoredHistoryJSON) {
-          replaceHistoryState(
-            editor,
-            decodeHistoryValue(editor, restoredHistoryJSON, {
-              validateDocument: false,
-            })
-          );
-          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+        if (PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor) === activation) {
+          PENDING_HISTORY_SCHEMA_ACTIVATION.delete(editor);
         }
-
-        if (commit.annotations[documentReplacement.key]) {
-          if (!restoredHistoryJSON) {
-            replaceHistoryState(editor, {
-              redos: [],
-              schema: getHistory(editor).schema,
-              undos: [],
-            });
-          }
-          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
-          return;
-        }
-
-        if (action) {
-          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
-          const source = action === 'undo' ? 'undos' : 'redos';
-          const destination = action === 'undo' ? 'redos' : 'undos';
-          const batch = peekHistoryBatch(editor, source);
-
-          if (!batch) {
-            throw new Error(`Missing history batch for ${action}.`);
-          }
-
-          completeHistoryAction(
-            editor,
-            source,
-            destination,
-            {
-              ...batch,
-              change: inverseChanges,
-              effects: effects.toReversed().map(invertEffect),
-            },
-            discardRedos
-          );
-          return;
-        }
-
-        if (!shouldSaveCommit(commit, effects)) {
-          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
-          if (discardRedos) clearHistoryStack(editor, 'redos');
-
-          if (!commit.tags.includes('historic') && !changes.empty) {
-            const after = editor.read.value();
-            const before = inverseChanges.apply(toChangeValue(after));
-
-            queueHistoryMapping(editor, changes, before);
-          }
-          return;
-        }
-
-        const prepared = prepareHistoryBatch(
-          inverseChanges,
-          commit,
-          effects,
-          authoredCapture?.grouping
-        );
-
-        if (!prepared) return;
-
-        const preparedBatch = prepared.batch;
-        const lastEntry = peekHistoryEntry(editor, 'undos');
-        const currentTime = globalThis.performance.now();
-        const previousAutomaticGroupTime =
-          LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
-        const explicitMerge = commit.tags.includes('history-merge');
-        const explicitPush = commit.tags.includes('history-push');
-        const textInput =
-          commit.tags.includes('native-text-input') ||
-          commit.tags.includes('dom-text-input');
-        const composition = commit.tags.includes('composition');
-        const authoredInput = authoredCapture !== undefined && textInput;
-        const effectsCompatible =
-          lastEntry != null &&
-          canMergeAuthoredHistory(
-            editor,
-            preparedBatch.effects,
-            lastEntry.batch.effects
-          );
-        const withinAutomaticWindow =
-          previousAutomaticGroupTime !== undefined &&
-          currentTime - previousAutomaticGroupTime <=
-            getHistoryNewBatchDelay(options);
-        const merge =
-          lastEntry != null &&
-          !explicitPush &&
-          (explicitMerge
-            ? (!authoredCapture || effectsCompatible) &&
-              (!authoredInput || composition || withinAutomaticWindow) &&
-              shouldMergeExplicitBatch(
-                preparedBatch,
-                prepared.group,
-                lastEntry.batch,
-                lastEntry.group,
-                textInput && !composition,
-                effectsCompatible
-              )
-            : withinAutomaticWindow &&
-              (preparedBatch.effects.length === 0 || authoredInput) &&
-              shouldMergeBatch(
-                preparedBatch,
-                prepared.group,
-                lastEntry.batch,
-                lastEntry.group,
-                effectsCompatible
-              ));
-
-        if (lastEntry && merge) {
-          const { selectionAfterRoot: _selectionAfterRoot, ...previousBatch } =
-            lastEntry.batch;
-          const mergedBatch = {
-            ...previousBatch,
-            change: preparedBatch.change.compose(
-              lastEntry.batch.change,
-              toChangeValue(editor.read.value())
-            ),
-            effects: [...preparedBatch.effects, ...lastEntry.batch.effects],
-            selectionAfter: preparedBatch.selectionAfter,
-            ...(preparedBatch.selectionAfterRoot
-              ? { selectionAfterRoot: preparedBatch.selectionAfterRoot }
-              : {}),
-          };
-          const mergedGroup = mergeHistoryBatchGroups(
-            lastEntry.group,
-            prepared.group
-          );
-          const after = editor.read.value();
-          const previousRecovery = mapAnchorHistoryRecovery(
-            lastEntry.recovery,
-            'after',
-            changes,
-            lastEntry.base,
-            after
-          );
-          const currentRecovery = anchorCapture?.recovery
-            ? mapAnchorHistoryRecovery(
-                anchorCapture.recovery,
-                'before',
-                lastEntry.batch.change,
-                lastEntry.base,
-                lastEntry.batch.change.apply(toChangeValue(lastEntry.base))
-              )
-            : null;
-          const mergedRecovery = mergeAnchorHistoryRecovery(
-            previousRecovery,
-            currentRecovery,
-            lastEntry.anchorCeiling
-          );
-
-          replaceHistoryHead(editor, 'undos', mergedBatch, {
-            anchorCeiling: lastEntry.anchorCeiling,
-            clearRedos: true,
-            group: mergedGroup,
-            recovery: mergedRecovery,
-          });
-        } else {
-          writeHistory(editor, 'undos', preparedBatch, {
-            anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
-            clearRedos: true,
-            group: prepared.group,
-            recovery: anchorCapture?.recovery ?? null,
-          });
-        }
-        if (
-          explicitPush ||
-          (preparedBatch.effects.length > 0 && !authoredInput)
-        ) {
-          LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
-        } else {
-          LAST_AUTOMATIC_HISTORY_GROUP_TIME.set(editor, currentTime);
-        }
-      },
+      });
     },
+    on: {},
     validate() {
       getHistoryMaxDepth(options);
       getHistoryNewBatchDelay(options);
     },
   }) as HistoryPlugin<TEnabled>;
+};
 
 /** Create the inverse-change history plugin. */
 export const history = <const TEnabled extends boolean | undefined = undefined>(

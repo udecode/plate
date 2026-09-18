@@ -10,7 +10,6 @@ import {
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
-import type { RecordTree } from '../../../../packages/plitejs/src/authored/record-tree';
 import type { PliteBrowserHandle } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 
 const contractPath =
@@ -48,12 +47,37 @@ type SavedAuthoredOperation = {
   proposal?: boolean;
 };
 
-const recordValues = <T>(tree: RecordTree<T>): T[] =>
-  tree.kind === 'leaf'
-    ? tree.entries.map(([, value]) => value)
-    : tree.children.flatMap(recordValues);
+const readSavedAuthoredOperations = (
+  value: unknown
+): SavedAuthoredOperation[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((entry) => {
+    if (!Array.isArray(entry)) return [];
+    if (entry[0] === 0) {
+      return typeof entry[2] === 'string' && typeof entry[8] === 'boolean'
+        ? [{ changeId: entry[2], kind: 'edit', proposal: entry[8] }]
+        : [];
+    }
+    if (entry[0] === 1 && entry[1] && typeof entry[1] === 'object') {
+      const operation = entry[1] as SavedAuthoredOperation;
+      return typeof operation.changeId === 'string' ? [operation] : [];
+    }
+    return [];
+  });
+};
+
+const operationsFrom = (value: unknown) =>
+  readSavedAuthoredOperations(
+    (
+      value as {
+        meta?: { authored?: { value?: { operations?: unknown } } };
+      }
+    ).meta?.authored?.value?.operations
+  );
 
 test.describe('native authored typing performance', () => {
+  test.describe.configure({ mode: 'serial', retries: 0 });
   test.skip(
     process.env.PLITE_AUTHORED_PERFORMANCE !== '1',
     'Run the frozen production typing contract explicitly.'
@@ -136,33 +160,14 @@ test.describe('native authored typing performance', () => {
         })
         .toBe(true);
       const initialMarkup = await mountedMarkup();
-      if (cohort.id === 'normal') {
-        expect(initialMarkup.paths).toHaveLength(cohort.blocks);
-      } else {
-        expect(initialMarkup.placeholders).toBeGreaterThan(0);
-      }
+      expect(initialMarkup.paths).toHaveLength(cohort.blocks);
+      expect(initialMarkup.placeholders).toBe(0);
       const initialValue = await accepted.get.modelValue();
       expect((initialValue as { children: unknown[] }).children).toHaveLength(
         cohort.blocks
       );
-      expect(initialValue).toMatchObject({
-        meta: {
-          authored: {
-            value: { operations: { count: cohort.pendingDeletions + 1 } },
-          },
-        },
-      });
-      const operations = recordValues(
-        (
-          initialValue as {
-            meta: {
-              authored: {
-                value: { operations: RecordTree<SavedAuthoredOperation> };
-              };
-            };
-          }
-        ).meta.authored.value.operations
-      );
+      const operations = operationsFrom(initialValue);
+      expect(operations).toHaveLength(cohort.pendingDeletions + 1);
       const originalProposalIds = new Set(
         operations
           .filter(
@@ -277,23 +282,14 @@ test.describe('native authored typing performance', () => {
       );
       expect(await independent.get.modelText()).toBe('A separate document.');
       expect(finalMarkup.invalid).toBe(0);
-      expect(finalMarkup.paths.length).toBeGreaterThan(0);
+      expect(finalMarkup.paths).toHaveLength(cohort.blocks);
+      expect(finalMarkup.placeholders).toBe(0);
       expect(finalMarkup.retained).toBe(finalMarkup.paths.length);
       const finalValue = await accepted.get.modelValue();
       expect((finalValue as { children: unknown[] }).children).toHaveLength(
         cohort.blocks
       );
-      const finalOperations = recordValues(
-        (
-          finalValue as {
-            meta: {
-              authored: {
-                value: { operations: RecordTree<SavedAuthoredOperation> };
-              };
-            };
-          }
-        ).meta.authored.value.operations
-      );
+      const finalOperations = operationsFrom(finalValue);
       const finalProposalIds = new Set(
         finalOperations
           .filter(

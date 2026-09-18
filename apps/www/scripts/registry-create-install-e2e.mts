@@ -6,6 +6,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { chromium, type Locator } from '@playwright/test';
+
 import { createRegistryResponse } from '../src/lib/registry-response';
 
 const appRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -40,6 +42,7 @@ for (const item of items) {
 if (!pnpmEntrypoint) {
   throw new Error('Run this gate through pnpm so it can resolve pnpm itself.');
 }
+const pnpmCommand = pnpmEntrypoint;
 
 process.chdir(appRoot);
 
@@ -68,6 +71,205 @@ async function run(
       else reject(new Error(`${command} exited ${code ?? signal}`));
     });
   });
+}
+
+async function getAvailablePort() {
+  const server = http.createServer();
+
+  await new Promise<void>((resolve) => {
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const serverAddress = server.address();
+
+  if (!serverAddress || typeof serverAddress === 'string') {
+    throw new Error('Could not allocate a browser-proof port');
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    server.close((error) => {
+      if (error) reject(error);
+      else resolve();
+    });
+  });
+
+  return serverAddress.port;
+}
+
+async function waitForCount(locator: Locator, expected: number) {
+  const deadline = Date.now() + 10_000;
+
+  while (Date.now() < deadline) {
+    if ((await locator.count()) === expected) return;
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 50);
+    });
+  }
+
+  throw new Error(
+    `Expected ${expected} matching elements, received ${await locator.count()}`
+  );
+}
+
+async function verifyInstalledEditorCommands(project: string) {
+  const port = await getAvailablePort();
+  const server = spawn(
+    process.execPath,
+    [pnpmCommand, '--dir', project, 'start', '--port', String(port)],
+    {
+      cwd: workspace,
+      env: process.env,
+      stdio: 'ignore',
+    }
+  );
+  const origin = `http://127.0.0.1:${port}`;
+  let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
+
+  try {
+    const deadline = Date.now() + 30_000;
+    let ready = false;
+
+    while (Date.now() < deadline) {
+      if (server.exitCode !== null) {
+        throw new Error(`Installed editor server exited ${server.exitCode}`);
+      }
+
+      try {
+        const response = await fetch(`${origin}/editor`);
+        if (response.ok) {
+          ready = true;
+          break;
+        }
+      } catch {
+        // The installed server has not started accepting requests yet.
+      }
+
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 100);
+      });
+    }
+
+    if (!ready) {
+      throw new Error('Installed editor server did not become ready');
+    }
+
+    browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+    const runtimeErrors: string[] = [];
+
+    page.on('pageerror', (error) => runtimeErrors.push(String(error)));
+    page.on('console', (message) => {
+      if (
+        message.type() === 'error' &&
+        !message.text().startsWith('Failed to load resource:')
+      ) {
+        runtimeErrors.push(message.text());
+      }
+    });
+    page.on('requestfailed', (request) => {
+      if (request.url().startsWith(origin)) {
+        runtimeErrors.push(
+          `${request.method()} ${request.url()}: ${request.failure()?.errorText ?? 'request failed'}`
+        );
+      }
+    });
+
+    await page.goto(`${origin}/editor`);
+    const editor = page.locator('[contenteditable="true"]').first();
+    const toolbar = page.locator('[data-slot="fixed-toolbar"]');
+    const menuTriggers = toolbar.locator('[data-slot="dropdown-menu-trigger"]');
+
+    await editor.waitFor();
+    await toolbar.waitFor();
+    await editor
+      .locator('[data-editor-node="element"][data-editor-path="1"]')
+      .click();
+
+    const headings = editor.locator('h2');
+    const initialHeadingCount = await headings.count();
+
+    await menuTriggers.first().click();
+    await page
+      .getByRole('menuitem', { name: 'Heading 2', exact: true })
+      .click();
+    await waitForCount(headings, initialHeadingCount + 1);
+    await page.waitForFunction(
+      () => document.activeElement?.getAttribute('contenteditable') === 'true'
+    );
+
+    const turnInto = menuTriggers.nth(1);
+    await turnInto.focus();
+    await turnInto.press('Enter');
+    const textItem = page.getByRole('menuitemradio', {
+      name: 'Text',
+      exact: true,
+    });
+    await textItem.focus();
+    await textItem.press('Enter');
+    await waitForCount(headings, initialHeadingCount);
+
+    await editor.pressSequentially('/');
+    const slashHeading = page.getByRole('option', {
+      name: 'Heading 2',
+      exact: true,
+    });
+    await slashHeading.waitFor();
+    await slashHeading.focus();
+    await slashHeading.press('Enter');
+    await waitForCount(headings, initialHeadingCount + 1);
+
+    const insertedHeading = headings.last();
+    await insertedHeading.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Indent', exact: true }).click();
+    await insertedHeading.waitFor();
+
+    if (
+      !(await insertedHeading.evaluate((element) =>
+        element.classList.contains('editor-indent-1')
+      ))
+    ) {
+      throw new Error(
+        'Installed Block Menu did not indent the selected heading'
+      );
+    }
+
+    const keyboardText = editor.locator('kbd');
+    const initialKeyboardTextCount = await keyboardText.count();
+
+    await insertedHeading.click();
+    await insertedHeading.press('End');
+    await toolbar.getByRole('button', { name: 'More formatting' }).click();
+    await page
+      .getByRole('menuitem', { name: 'Keyboard input', exact: true })
+      .click();
+    await page.waitForFunction(
+      () => document.activeElement?.getAttribute('contenteditable') === 'true'
+    );
+    await editor.pressSequentially('K');
+    await waitForCount(keyboardText, initialKeyboardTextCount + 1);
+
+    if (runtimeErrors.length > 0) {
+      throw new Error(
+        `Installed editor reported runtime errors:\n${runtimeErrors.join('\n')}`
+      );
+    }
+  } finally {
+    await browser?.close();
+
+    if (server.exitCode === null) {
+      await new Promise<void>((resolve) => {
+        const timeout = setTimeout(() => {
+          server.kill('SIGKILL');
+          resolve();
+        }, 5000);
+
+        server.once('exit', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+        server.kill('SIGTERM');
+      });
+    }
+  }
 }
 
 async function copyPackages(sourceRoot: string, targetRoot: string) {
@@ -363,7 +565,7 @@ try {
         path.join(proofDirectory, 'page.tsx'),
         `'use client';
 
-import { Plate, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import { ${kit} } from '@/components/editor/${testCase.item}';
 ${testCase.item === 'table' ? "import { DndKit } from '@/components/editor/dnd';\n" : ''}
 import { Editor, EditorContainer } from '@/components/editor/editor';
@@ -374,9 +576,9 @@ export default function KitProof() {
     initialValue: ${JSON.stringify(initialValue)},
   });
   return (
-    <Plate editor={editor}>
+    <EditorRoot editor={editor}>
       <EditorContainer><Editor /></EditorContainer>
-    </Plate>
+    </EditorRoot>
   );
 }
 `
@@ -475,10 +677,15 @@ ${configExport}`
       }
     );
 
+    if (testCase.item === 'editor-ai') {
+      await verifyInstalledEditorCommands(project);
+    }
+
     console.info(
       JSON.stringify({
         editorPath,
         item: testCase.item,
+        commandProof: testCase.item === 'editor-ai',
         kitProofRoute:
           testCase.item === 'ai' ||
           testCase.item === 'dnd' ||

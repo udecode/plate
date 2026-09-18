@@ -5,7 +5,8 @@
   "description": "An input component for emoji search and insertion.",
   "dependencies": [
     "platejs",
-    "@emoji-mart/data@1.2.1"
+    "@emoji-mart/data@1.2.1",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/inline-combobox.json",

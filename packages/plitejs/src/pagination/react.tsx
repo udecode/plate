@@ -1,6 +1,9 @@
 import React, {
   createContext,
+  type CSSProperties,
   type ReactNode,
+  type Ref,
+  type RefObject,
   useCallback,
   useContext,
   useEffect,
@@ -14,828 +17,1035 @@ import { flushSync } from 'react-dom';
 
 import {
   type Editor,
-  type EditorCommit,
+  type Element,
+  type NodeKey,
   type Path,
   PathApi,
+  reportEditorLifecycleError,
   SelectionApi,
-  type Value,
 } from '..';
-import { type EditableProps, useEditorState } from '../react';
+import {
+  EditorRoot,
+  type EditableProps,
+  useEditorContext,
+  useEditorReadOnly,
+  useEditorState,
+} from '../react';
 import { defaultScrollSelectionIntoView } from '../react/components/editable';
 import { WindowedEditable } from '../react/components/windowed-editable.internal';
 import {
-  createLayout,
-  getPageLayoutGeometry,
-  getPageLayoutProjection,
-  type LayoutOptions,
-  type PageLayout,
+  DecorationContext,
+  type PliteDecorationStore,
+} from '../react/decoration-context';
+import type { DecorationSlice } from '../react/decoration-source';
+import { useElementPath } from '../react/hooks/use-element-path';
+import {
+  createPretextPageLayoutEngine,
+  measurePages,
+  type MeasurePagesOptions,
+  type PageLayoutEngine,
   type PageLayoutFragment,
   type PageLayoutMode,
   type PageLayoutPage,
-  type PageLayoutProjectedLine,
-  type PageLayoutProjectedUnit,
-  type PageLayoutProjection,
   type PageLayoutSnapshot,
   type PageRect,
-  type PageSettings,
   type PageSettingsSource,
 } from './index';
 import {
-  connectLayoutRuntime,
-  deferLayoutRuntimeConnection,
-} from './layout-runtime-lifecycle';
+  createPageLayoutGeometry,
+  type PageLayoutGeometry,
+} from './page-geometry.internal';
+import { invalidatePageLayoutEngines } from './page-layout-engine-invalidation.internal';
 import {
   createPagedEditablePageMountPlan,
   getPagedEditableVisiblePageMountItems,
+  type PagedEditablePageMountPlan,
 } from './page-mount-plan';
 
 export * from './index';
 
-type PliteLayoutFragmentContextValue = {
-  layout: PageLayout;
-  projectedLinesByFragment: ReadonlyMap<
-    string,
-    readonly PageLayoutProjectedLine[]
-  >;
-  projectedUnitsByFragment: ReadonlyMap<
-    string,
-    ReadonlyMap<string, PageLayoutProjectedUnit>
-  >;
-  projection: PageLayoutProjection;
-  selectedPaths: readonly Path[];
-  snapshot: PageLayoutSnapshot;
-  tracksContentViewport: boolean;
-  visibleContentRange: PagedEditableViewport | null;
-  visiblePageIndexes: ReadonlySet<number> | null;
-};
+type PublishedLayoutStore = Readonly<{
+  getSnapshot: () => PageLayoutSnapshot | null;
+  setSnapshot: (snapshot: PageLayoutSnapshot | null) => void;
+  subscribe: (listener: () => void) => () => void;
+}>;
 
-const PliteLayoutFragmentContext =
-  createContext<PliteLayoutFragmentContextValue | null>(null);
-
-export type LayoutRenderedFragment = Pick<
-  PageLayoutFragment,
-  'blockIndex' | 'height' | 'id' | 'lineCount' | 'pageIndex' | 'path' | 'text'
-> & {
-  rect: PageRect;
-  units?: readonly PageLayoutProjectedUnit[];
-};
-
-const getRectBounds = (rects: readonly PageRect[]): PageRect => {
-  if (rects.length === 0) {
-    return { height: 0, left: 0, top: 0, width: 0 };
-  }
-
-  const left = Math.min(...rects.map((rect) => rect.left));
-  const top = Math.min(...rects.map((rect) => rect.top));
-  const right = Math.max(...rects.map((rect) => rect.left + rect.width));
-  const bottom = Math.max(...rects.map((rect) => rect.top + rect.height));
+const createPublishedLayoutStore = (): PublishedLayoutStore => {
+  const listeners = new Set<() => void>();
+  let snapshot: PageLayoutSnapshot | null = null;
 
   return {
-    height: bottom - top,
-    left,
-    top,
-    width: right - left,
+    getSnapshot: () => snapshot,
+    setSnapshot(next) {
+      if (snapshot === next) return;
+      snapshot = next;
+      listeners.forEach((listener) => listener());
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
   };
 };
 
-const getPageSourceDependency = <TSettings extends PageSettings = PageSettings>(
-  page: PageSettingsSource<TSettings> | null | undefined
-) => {
-  if (!page) {
-    return null;
-  }
+const LAYOUT_STORE_BY_HOST = new WeakMap<
+  HTMLDivElement,
+  PublishedLayoutStore
+>();
+const layoutHostListeners = new Set<() => void>();
 
-  if ('margins' in page && 'preset' in page) {
-    return `${page.preset}:${JSON.stringify(page.margins)}`;
-  }
+const bindLayoutHost = (host: HTMLDivElement, store: PublishedLayoutStore) => {
+  LAYOUT_STORE_BY_HOST.set(host, store);
+  layoutHostListeners.forEach((listener) => listener());
 
-  return page;
+  return () => {
+    if (LAYOUT_STORE_BY_HOST.get(host) === store) {
+      LAYOUT_STORE_BY_HOST.delete(host);
+      layoutHostListeners.forEach((listener) => listener());
+    }
+  };
 };
 
-export type UseLayoutOptions<TSettings extends PageSettings = PageSettings> =
-  LayoutOptions<TSettings>;
+export const usePageLayout = (
+  editableRef: RefObject<HTMLDivElement | null>
+): PageLayoutSnapshot | null => {
+  const subscribe = useCallback(
+    (listener: () => void) => {
+      let unsubscribeStore = () => {};
+      let currentStore: PublishedLayoutStore | undefined;
+      const bind = () => {
+        const nextStore = editableRef.current
+          ? LAYOUT_STORE_BY_HOST.get(editableRef.current)
+          : undefined;
 
-/** Create and subscribe a derived layout reader with built-in or caller-owned measurement. */
-export const useLayout = <
-  TSettings extends PageSettings = PageSettings,
-  V extends Value = Value,
-  TPlugins extends readonly unknown[] = readonly [],
->(
-  editor: Editor<V, TPlugins>,
-  options: UseLayoutOptions<TSettings>
-): PageLayout<LayoutOptions<TSettings>> => {
-  const layout = useMemo(
-    () =>
-      createLayout<TSettings, V, TPlugins>(
-        editor,
-        deferLayoutRuntimeConnection(options)
-      ),
-    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] Editor identity owns the layout; the committed reconfiguration effect applies option changes without replacing subscriptions.
-    [editor]
-  );
-  const committedConfigurationRef = useRef({ layout, options });
-  const pageDependency = getPageSourceDependency(options.page);
-  const pageBreakMode = options.pageBreaks?.mode;
-  const pageBreakSource = options.pageBreaks?.source;
-  const pageBreakWriterId =
-    pageBreakMode === 'write' ? options.pageBreaks?.writerId : null;
-  const { textChangeRefresh } = options;
-  const textChangeRefreshDelay =
-    typeof textChangeRefresh === 'object'
-      ? textChangeRefresh.delayMs
-      : textChangeRefresh;
-  const textChangeRefreshMaxDelay =
-    typeof textChangeRefresh === 'object' ? textChangeRefresh.maxDelayMs : null;
-  const textChangeRefreshMode =
-    typeof textChangeRefresh === 'object' ? textChangeRefresh.mode : null;
-
-  useEffect(() => connectLayoutRuntime(layout), [layout]);
-
-  useEffect(() => {
-    const committedConfiguration = committedConfigurationRef.current;
-
-    if (committedConfiguration.layout !== layout) {
-      committedConfigurationRef.current = { layout, options };
-      return;
-    }
-
-    if (committedConfiguration.options === options) return;
-
-    layout.reconfigure(options);
-    committedConfigurationRef.current = { layout, options };
-    // oxlint-disable-next-line react-hooks/exhaustive-deps -- [P0 behavior-boundary] The explicit dependency projection controls reconfiguration while the effect applies the latest complete options object.
-  }, [
-    layout,
-    options.engine,
-    options.nodeLayout,
-    options.onError,
-    pageBreakMode,
-    pageBreakSource,
-    pageBreakWriterId,
-    options.root,
-    textChangeRefreshDelay,
-    textChangeRefreshMaxDelay,
-    textChangeRefreshMode,
-    options.typography,
-    pageDependency,
-  ]);
-
-  return layout;
-};
-
-/** Read a `PageLayout` snapshot with React external-store semantics. */
-export const useLayoutSnapshot = (layout: PageLayout): PageLayoutSnapshot =>
-  useSyncExternalStore(
-    layout.subscribe,
-    layout.getSnapshot,
-    layout.getSnapshot
-  );
-
-/**
- * Reads rendered layout fragments for a known editor path.
- */
-export const useLayoutFragmentsAtPath = (
-  targetPath: Path | null | undefined
-): readonly LayoutRenderedFragment[] => {
-  const context = useContext(PliteLayoutFragmentContext);
-
-  return useMemo(() => {
-    if (!context || !targetPath) {
-      return [];
-    }
-
-    return context.layout.getFragments(targetPath).flatMap((fragment) => {
-      const isSelectedFragment = context.selectedPaths.some((path) =>
-        fragment.units?.length
-          ? fragment.units.some((unit) => pathsOverlap(unit.path, path))
-          : pathsOverlap(fragment.path, path)
-      );
-
-      if (
-        context.visiblePageIndexes &&
-        !context.visiblePageIndexes.has(fragment.pageIndex) &&
-        !isSelectedFragment
-      ) {
-        return [];
-      }
-
-      const projectedUnits = context.projectedUnitsByFragment.get(fragment.id);
-      const units = fragment.units
-        ?.map((unit) => projectedUnits?.get(unit.key))
-        .filter((unit): unit is PageLayoutProjectedUnit => Boolean(unit))
-        .filter((unit) => {
-          const selected = context.selectedPaths.some((path) =>
-            pathsOverlap(unit.path, path)
-          );
-
-          if (context.visibleContentRange) {
-            return (
-              isRectWithinVerticalRange(
-                unit.rect,
-                context.visibleContentRange
-              ) || selected
-            );
-          }
-
-          return !context.tracksContentViewport || selected;
-        });
-      const lines = context.projectedLinesByFragment.get(fragment.id) ?? [];
-      const rects = [
-        ...(units?.map((unit) => unit.rect) ?? []),
-        ...lines.map((line) => line.hitRect),
-      ];
-
-      return {
-        blockIndex: fragment.blockIndex,
-        height: fragment.height,
-        id: fragment.id,
-        lineCount: fragment.lineCount,
-        pageIndex: fragment.pageIndex,
-        path: fragment.path,
-        rect: getRectBounds(rects),
-        text: fragment.text,
-        units,
+        if (nextStore === currentStore) return;
+        unsubscribeStore();
+        currentStore = nextStore;
+        unsubscribeStore = nextStore?.subscribe(listener) ?? (() => {});
+        listener();
       };
+
+      layoutHostListeners.add(bind);
+      bind();
+
+      return () => {
+        layoutHostListeners.delete(bind);
+        unsubscribeStore();
+      };
+    },
+    [editableRef]
+  );
+  const getSnapshot = useCallback(
+    () =>
+      editableRef.current
+        ? (LAYOUT_STORE_BY_HOST.get(editableRef.current)?.getSnapshot() ?? null)
+        : null,
+    [editableRef]
+  );
+
+  return useSyncExternalStore(subscribe, getSnapshot, () => null);
+};
+
+type MountedFragment = Readonly<{ pageIndex: number; rect: PageRect }>;
+type FragmentContextValue = Readonly<{
+  placementsByPath: ReadonlyMap<string, readonly MountedFragment[]>;
+}>;
+
+const FragmentContext = createContext<FragmentContextValue | null>(null);
+const pathKey = (path: Path) => path.join('.');
+
+export const usePageLayoutFragments = (): readonly MountedFragment[] => {
+  const context = useContext(FragmentContext);
+  const path = useElementPath();
+
+  return useMemo(
+    () =>
+      context && path
+        ? (context.placementsByPath.get(pathKey(path)) ?? [])
+        : [],
+    [context, path]
+  );
+};
+
+const EMPTY_DECORATIONS = Object.freeze([]) as readonly DecorationSlice[];
+
+type SurfaceDecorationStore = PliteDecorationStore &
+  Readonly<{
+    destroy: () => void;
+    mount: () => () => void;
+    setLocalBuckets: (
+      buckets: ReadonlyMap<NodeKey, readonly DecorationSlice[]>
+    ) => void;
+  }>;
+
+const sameSlices = (
+  left: readonly DecorationSlice[],
+  right: readonly DecorationSlice[]
+) =>
+  left === right ||
+  (left.length === right.length &&
+    left.every(
+      (slice, index) =>
+        slice.key === right[index]?.key &&
+        slice.start === right[index]?.start &&
+        slice.end === right[index]?.end &&
+        JSON.stringify(slice.attributes) ===
+          JSON.stringify(right[index]?.attributes)
+    ));
+
+const createSurfaceDecorationStore = (
+  inherited: PliteDecorationStore | null
+): SurfaceDecorationStore => {
+  const listeners = new Set<(changedNodeKeys: readonly NodeKey[]) => void>();
+  const listenersByNodeKey = new Map<NodeKey, Set<() => void>>();
+  const merged = new Map<NodeKey, readonly DecorationSlice[]>();
+  let local = new Map<NodeKey, readonly DecorationSlice[]>();
+  let version = 0;
+  let unsubscribeInherited = () => {};
+
+  const publish = (keys: readonly NodeKey[]) => {
+    if (keys.length === 0) return;
+    version += 1;
+    keys.forEach((key) => {
+      merged.delete(key);
+      listenersByNodeKey.get(key)?.forEach((listener) => listener());
     });
-  }, [context, targetPath]);
+    listeners.forEach((listener) => listener(keys));
+  };
+  const store: SurfaceDecorationStore = {
+    destroy() {
+      unsubscribeInherited();
+      listeners.clear();
+      listenersByNodeKey.clear();
+      merged.clear();
+      local.clear();
+    },
+    getNodeSnapshot(nodeKey) {
+      const cached = merged.get(nodeKey);
+
+      if (cached) return cached;
+
+      const inheritedSlices =
+        inherited?.getNodeSnapshot(nodeKey) ?? EMPTY_DECORATIONS;
+      const localSlices = local.get(nodeKey) ?? EMPTY_DECORATIONS;
+      const next =
+        inheritedSlices.length === 0
+          ? localSlices
+          : localSlices.length === 0
+            ? inheritedSlices
+            : Object.freeze([...inheritedSlices, ...localSlices]);
+
+      merged.set(nodeKey, next);
+      return next;
+    },
+    getVersion: () => version,
+    hasSources: () => Boolean(inherited?.hasSources() || local.size > 0),
+    mount() {
+      unsubscribeInherited =
+        inherited?.subscribe((keys) => publish(keys)) ?? (() => {});
+
+      return () => {
+        unsubscribeInherited();
+        unsubscribeInherited = () => {};
+      };
+    },
+    setLocalBuckets(nextBuckets) {
+      const changed = new Set<NodeKey>([
+        ...local.keys(),
+        ...nextBuckets.keys(),
+      ]);
+      const next = new Map<NodeKey, readonly DecorationSlice[]>();
+
+      changed.forEach((key) => {
+        const previousBucket = local.get(key) ?? EMPTY_DECORATIONS;
+        const candidate = nextBuckets.get(key) ?? EMPTY_DECORATIONS;
+
+        if (candidate.length > 0) {
+          next.set(
+            key,
+            sameSlices(previousBucket, candidate) ? previousBucket : candidate
+          );
+        }
+        if (sameSlices(previousBucket, candidate)) changed.delete(key);
+      });
+      local = next;
+      publish([...changed]);
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    subscribeNodeKey(nodeKey, listener) {
+      const nodeListeners = listenersByNodeKey.get(nodeKey) ?? new Set();
+
+      nodeListeners.add(listener);
+      listenersByNodeKey.set(nodeKey, nodeListeners);
+
+      return () => {
+        nodeListeners.delete(listener);
+        if (nodeListeners.size === 0) listenersByNodeKey.delete(nodeKey);
+      };
+    },
+  };
+
+  return store;
+};
+
+type FontView = Readonly<{ engine: PageLayoutEngine; invalidate: () => void }>;
+type FontOwner = {
+  cleanup: () => void;
+  views: Set<FontView>;
+};
+
+const FONT_OWNERS = new WeakMap<object, FontOwner>();
+
+const attachFontView = (fonts: FontFaceSet, view: FontView): (() => void) => {
+  let owner = FONT_OWNERS.get(fonts);
+
+  if (!owner) {
+    const views = new Set<FontView>();
+    const invalidate = () => {
+      if (views.size === 0) return;
+      const engines = new Set([...views].map((entry) => entry.engine));
+
+      invalidatePageLayoutEngines(engines);
+      views.forEach((entry) => entry.invalidate());
+    };
+
+    fonts.addEventListener('loadingdone', invalidate);
+    fonts.addEventListener('loadingerror', invalidate);
+    void fonts.ready.then(invalidate);
+    owner = {
+      cleanup: () => {
+        fonts.removeEventListener('loadingdone', invalidate);
+        fonts.removeEventListener('loadingerror', invalidate);
+      },
+      views,
+    };
+    FONT_OWNERS.set(fonts, owner);
+  }
+
+  owner.views.add(view);
+
+  return () => {
+    owner?.views.delete(view);
+    if (owner?.views.size === 0) {
+      owner.cleanup();
+      FONT_OWNERS.delete(fonts);
+    }
+  };
 };
 
 const SCROLLABLE_OVERFLOW_PATTERN = /(auto|scroll|overlay)/;
 
 const parseCSSPixels = (value: string | null | undefined) => {
-  if (!value || value === 'auto' || value === 'none') {
-    return 0;
-  }
-
+  if (!value || value === 'auto' || value === 'none') return 0;
   const parsed = Number.parseFloat(value);
 
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const canUseElementAsPagedEditableScrollRoot = (
-  element: HTMLElement | null
-) => {
-  if (!element) {
-    return false;
-  }
-
+const canScroll = (element: HTMLElement | null) => {
+  if (!element) return false;
   const style = element.ownerDocument.defaultView?.getComputedStyle(element);
-  const overflow = `${style?.overflow ?? ''} ${style?.overflowY ?? ''}`;
-  const hasScrollableOverflow = SCROLLABLE_OVERFLOW_PATTERN.test(overflow);
-  const hasBoundedHeight =
-    element.clientHeight > 0 ||
-    parseCSSPixels(style?.height) > 0 ||
-    parseCSSPixels(style?.maxHeight) > 0;
 
-  return hasScrollableOverflow && hasBoundedHeight;
+  return (
+    SCROLLABLE_OVERFLOW_PATTERN.test(
+      `${style?.overflow ?? ''} ${style?.overflowY ?? ''}`
+    ) &&
+    (element.clientHeight > 0 ||
+      parseCSSPixels(style?.height) > 0 ||
+      parseCSSPixels(style?.maxHeight) > 0)
+  );
 };
 
-const getPagedEditableScrollRoot = (
-  element: HTMLElement | null
-): HTMLElement | null => {
-  const editableRoot =
+const getScrollRoot = (element: HTMLElement | null): HTMLElement | null => {
+  const editable =
     element?.querySelector<HTMLElement>('[data-editor="true"]') ?? null;
 
-  if (canUseElementAsPagedEditableScrollRoot(editableRoot)) {
-    return editableRoot;
-  }
+  if (canScroll(editable)) return editable;
 
   let current = element;
 
   while (current) {
-    if (canUseElementAsPagedEditableScrollRoot(current)) {
-      return current;
-    }
-
+    if (canScroll(current)) return current;
     current = current.parentElement;
   }
 
   return null;
 };
 
-type PagedEditableViewport = {
-  bottom: number;
-  top: number;
-};
-
-const CONTENT_VIEWPORT_OVERSCAN_RATIO = 0;
-
-const isRectWithinVerticalRange = (
-  rect: Pick<PageRect, 'height' | 'top'>,
-  range: PagedEditableViewport
-) => rect.top + rect.height >= range.top && rect.top <= range.bottom;
-
-const sameSelectedPaths = (
-  left: readonly Path[] | null,
-  right: readonly Path[] | null
-) =>
-  left === right ||
-  (left != null &&
-    right != null &&
-    left.length === right.length &&
-    left.every((path, index) => PathApi.equals(path, right[index])));
-
-const getSelectionPaths = (
-  selection: EditorCommit['selectionAfter']
-): readonly Path[] =>
-  SelectionApi.isNode(selection)
-    ? selection.paths
-    : selection
-      ? [selection.anchor.path, selection.focus.path]
-      : EMPTY_SELECTED_PATHS;
-
-const getSelectionPathsKey = (selection: EditorCommit['selectionAfter']) =>
-  selection
-    ? `${SelectionApi.root(selection) ?? 'main'}:${getSelectionPaths(selection)
-        .map((path) => path.join('.'))
-        .join(';')}`
-    : 'null';
-
-const shouldUpdatePagedEditableSelectedPaths = (change?: EditorCommit) =>
-  !change ||
-  change.changed.hasAny('structure') ||
-  change.changed.hasAny('root-order') ||
-  (change.selectionChanged &&
-    getSelectionPathsKey(change.selectionBefore) !==
-      getSelectionPathsKey(change.selectionAfter));
-
-const pathsOverlap = (left: Path, right: Path) => PathApi.isCommon(left, right);
-
-const EMPTY_SELECTED_PATHS = Object.freeze([]) as readonly Path[];
-const USER_SCROLL_SELECTION_SCROLL_SUPPRESSION_MS = 500;
-const VIEWPORT_SYNC_JUMP_RATIO = 0.75;
-
-const getNow = () =>
-  typeof performance === 'undefined' ? Date.now() : performance.now();
-
-const shouldSynchronizeViewportJump = (
-  previous: PagedEditableViewport | null,
-  next: PagedEditableViewport
-) => {
-  if (!previous) {
-    return true;
-  }
-
-  const previousHeight = Math.max(1, previous.bottom - previous.top);
-
-  return (
-    Math.abs(next.top - previous.top) >
-    previousHeight * VIEWPORT_SYNC_JUMP_RATIO
-  );
-};
-
-type PagedEditableViewportSnapshot = {
+type Viewport = { bottom: number; top: number };
+type ViewportSnapshot = {
   canTrackContentViewport: boolean;
-  viewport: PagedEditableViewport | null;
+  viewport: Viewport | null;
 };
 
-type PagedEditableViewportConfiguration = {
-  geometryHeight: number;
-  root: HTMLDivElement | null;
-  tracksContentViewport: boolean;
-  virtualizesPageSurfaces: boolean;
-};
-
-const INACTIVE_PAGED_EDITABLE_VIEWPORT: PagedEditableViewportSnapshot = {
+const INACTIVE_VIEWPORT: ViewportSnapshot = {
   canTrackContentViewport: false,
   viewport: null,
 };
+const EMPTY_PAGE_MOUNT_PLAN: PagedEditablePageMountPlan = {
+  itemIndexesByPath: new Map(),
+  itemIndexesByTopLevelIndex: new Map(),
+  items: [],
+};
 
-const getInactivePagedEditableViewport = () => INACTIVE_PAGED_EDITABLE_VIEWPORT;
-
-const createPagedEditableViewportStore = () => {
+const createViewportStore = () => {
   const listeners = new Set<() => void>();
-  let configuration: PagedEditableViewportConfiguration = {
-    geometryHeight: 0,
-    root: null,
-    tracksContentViewport: false,
-    virtualizesPageSurfaces: false,
-  };
-  let cleanup: (() => void) | null = null;
+  let root: HTMLDivElement | null = null;
+  let geometryHeight = 0;
+  let cleanup = () => {};
   let lastScrollAt = Number.NEGATIVE_INFINITY;
-  let snapshot = INACTIVE_PAGED_EDITABLE_VIEWPORT;
+  let snapshot = INACTIVE_VIEWPORT;
 
-  const getSnapshot = () => snapshot;
-  const publish = (
-    nextSnapshot: PagedEditableViewportSnapshot,
-    sync = false
-  ) => {
-    if (snapshot === nextSnapshot) return;
-
+  const publish = (next: ViewportSnapshot, sync = false) => {
     const commit = () => {
-      snapshot = nextSnapshot;
-      listeners.forEach((listener) => {
-        listener();
-      });
+      snapshot = next;
+      listeners.forEach((listener) => listener());
     };
 
-    if (sync) {
-      flushSync(commit);
-    } else {
-      commit();
-    }
+    if (sync) flushSync(commit);
+    else commit();
   };
-  const start = ({
-    geometryHeight,
-    root,
-    tracksContentViewport,
-    virtualizesPageSurfaces,
-  }: PagedEditableViewportConfiguration) => {
-    if (!tracksContentViewport) {
-      publish(INACTIVE_PAGED_EDITABLE_VIEWPORT);
-      return () => {};
+  const restart = () => {
+    cleanup();
+    if (listeners.size === 0 || !root) return;
+    const scrollRoot = getScrollRoot(root);
+
+    if (!scrollRoot) {
+      publish(INACTIVE_VIEWPORT);
+      return;
     }
-
-    const scrollRoot = getPagedEditableScrollRoot(root);
-
-    if (!root || !scrollRoot) {
-      publish(INACTIVE_PAGED_EDITABLE_VIEWPORT);
-      return () => {};
-    }
-
-    const update = ({ sync = false }: { sync?: boolean } = {}) => {
+    const update = (sync = false) => {
+      if (!root) return;
       const rootRect = root.getBoundingClientRect();
-      const scrollRootRect = scrollRoot.getBoundingClientRect();
-      const scrollRootIsInsideRoot =
-        scrollRoot === root || root.contains(scrollRoot);
-      const scrollOffset = scrollRootIsInsideRoot ? scrollRoot.scrollTop : 0;
+      const scrollRect = scrollRoot.getBoundingClientRect();
+      const offset = root.contains(scrollRoot) ? scrollRoot.scrollTop : 0;
       const scale =
         geometryHeight > 0 && rootRect.height > 0
           ? rootRect.height / geometryHeight
           : 1;
-      const top = Math.max(
-        0,
-        (scrollRootRect.top - rootRect.top + scrollOffset) / scale
-      );
-      const nextViewport = {
-        bottom: Math.max(
-          top,
-          (scrollRootRect.bottom - rootRect.top + scrollOffset) / scale
-        ),
-        top,
-      };
-      const previousViewport = snapshot.viewport;
-
-      if (
-        snapshot.canTrackContentViewport &&
-        previousViewport &&
-        Math.abs(previousViewport.top - nextViewport.top) < 1 &&
-        Math.abs(previousViewport.bottom - nextViewport.bottom) < 1
-      ) {
-        return;
-      }
+      const top = Math.max(0, (scrollRect.top - rootRect.top + offset) / scale);
 
       publish(
-        { canTrackContentViewport: true, viewport: nextViewport },
-        sync &&
-          virtualizesPageSurfaces &&
-          shouldSynchronizeViewportJump(previousViewport, nextViewport)
+        {
+          canTrackContentViewport: true,
+          viewport: {
+            bottom: Math.max(
+              top,
+              (scrollRect.bottom - rootRect.top + offset) / scale
+            ),
+            top,
+          },
+        },
+        sync
       );
     };
-    const updateAsync = () => {
-      update();
+    const onScroll = () => {
+      lastScrollAt = performance.now();
+      update(true);
     };
-    const updateOnScroll = () => {
-      lastScrollAt = getNow();
-      update({ sync: true });
-    };
+    const onResize = () => update();
 
-    updateAsync();
-    scrollRoot.addEventListener('scroll', updateOnScroll, { passive: true });
-    root.ownerDocument.defaultView?.addEventListener('resize', updateAsync);
-
+    update();
+    scrollRoot.addEventListener('scroll', onScroll, { passive: true });
+    root.ownerDocument.defaultView?.addEventListener('resize', onResize);
     const observer =
       typeof ResizeObserver === 'undefined'
         ? null
-        : new ResizeObserver(updateAsync);
+        : new ResizeObserver(onResize);
 
     observer?.observe(root);
     observer?.observe(scrollRoot);
-
-    return () => {
-      scrollRoot.removeEventListener('scroll', updateOnScroll);
-      root.ownerDocument.defaultView?.removeEventListener(
-        'resize',
-        updateAsync
-      );
+    cleanup = () => {
+      scrollRoot.removeEventListener('scroll', onScroll);
+      root?.ownerDocument.defaultView?.removeEventListener('resize', onResize);
       observer?.disconnect();
     };
   };
-  const restart = () => {
-    cleanup?.();
-    cleanup = listeners.size > 0 ? start(configuration) : null;
-  };
 
   return {
-    configure: (nextConfiguration: PagedEditableViewportConfiguration) => {
-      configuration = nextConfiguration;
+    configure(nextRoot: HTMLDivElement | null, nextHeight: number) {
+      root = nextRoot;
+      geometryHeight = nextHeight;
       restart();
     },
     getLastScrollAt: () => lastScrollAt,
-    getSnapshot,
-    subscribe: (listener: () => void) => {
+    getSnapshot: () => snapshot,
+    subscribe(listener: () => void) {
       listeners.add(listener);
-
       if (listeners.size === 1) restart();
-
       return () => {
         listeners.delete(listener);
-
-        if (listeners.size === 0) restart();
+        if (listeners.size === 0) {
+          cleanup();
+          cleanup = () => {};
+        }
       };
     },
   };
 };
 
-export type PagedEditableRenderPageProps = {
-  attributes: {
-    'data-editor-page': true;
-    'data-editor-page-index': number;
-  };
-  children: ReactNode | null;
-  page: PageLayoutPage;
+const sameSelectedPaths = (
+  left: readonly Path[] | null,
+  right: readonly Path[]
+) =>
+  left === right ||
+  (left !== null &&
+    left.length === right.length &&
+    left.every((path, index) => PathApi.equals(path, right[index])));
+
+const selectedPathsFor = (selection: unknown): readonly Path[] => {
+  if (SelectionApi.isNode(selection)) return selection.paths;
+  if (SelectionApi.isText(selection)) {
+    return [selection.anchor.path, selection.focus.path];
+  }
+
+  return [];
 };
 
-export type PagedEditablePageView = {
+const setRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
+  if (typeof ref === 'function') ref(value);
+  else if (ref) ref.current = value;
+};
+
+const toCanvasRect = (
+  rect: PageRect,
+  pageIndex: number,
+  geometry: PageLayoutGeometry
+): PageRect => {
+  const placement = geometry.pagePlacements[pageIndex] ?? { left: 0, top: 0 };
+
+  return {
+    ...rect,
+    left: placement.left + rect.left,
+    top: placement.top + rect.top,
+  };
+};
+
+const bounds = (rects: readonly PageRect[]): PageRect => {
+  if (rects.length === 0) return { height: 0, left: 0, top: 0, width: 0 };
+  const left = Math.min(...rects.map((rect) => rect.left));
+  const top = Math.min(...rects.map((rect) => rect.top));
+  const right = Math.max(...rects.map((rect) => rect.left + rect.width));
+  const bottom = Math.max(...rects.map((rect) => rect.top + rect.height));
+
+  return { height: bottom - top, left, top, width: right - left };
+};
+
+const createPlacementsByPath = (
+  fragments: readonly PageLayoutFragment[],
+  geometry: PageLayoutGeometry
+) => {
+  const placements = new Map<string, MountedFragment[]>();
+  const add = (path: Path, placement: MountedFragment) => {
+    const key = pathKey(path);
+    const values = placements.get(key) ?? [];
+
+    values.push(placement);
+    placements.set(key, values);
+  };
+
+  fragments.forEach((fragment) => {
+    add(fragment.path, {
+      pageIndex: fragment.pageIndex,
+      rect: toCanvasRect(fragment.rect, fragment.pageIndex, geometry),
+    });
+    if (fragment.type === 'direct-children') {
+      fragment.children.forEach((child) =>
+        add(child.path, {
+          pageIndex: fragment.pageIndex,
+          rect: toCanvasRect(child.rect, fragment.pageIndex, geometry),
+        })
+      );
+    }
+  });
+
+  return placements;
+};
+
+const createElementLayouts = (
+  fragments: readonly PageLayoutFragment[],
+  placementsByPath: ReadonlyMap<string, readonly MountedFragment[]>
+) => {
+  const paths = new Map<string, Path>();
+
+  fragments.forEach((fragment) => {
+    paths.set(pathKey(fragment.path), fragment.path);
+    if (fragment.type === 'direct-children') {
+      fragment.children.forEach((child) =>
+        paths.set(pathKey(child.path), child.path)
+      );
+    }
+  });
+  const canvasBounds = new Map<string, PageRect>();
+
+  placementsByPath.forEach((placements, key) => {
+    canvasBounds.set(
+      key,
+      bounds(placements.map((placement) => placement.rect))
+    );
+  });
+  const layouts = new Map<
+    string,
+    Readonly<{
+      height: number;
+      left: number;
+      top: number;
+      width: number;
+    }> | null
+  >();
+
+  paths.forEach((path, key) => {
+    const rect = canvasBounds.get(key);
+
+    if (!rect) {
+      layouts.set(key, null);
+      return;
+    }
+    let parent = path.slice(0, -1);
+    let parentRect: PageRect | undefined;
+
+    while (parent.length > 0 && !parentRect) {
+      parentRect = canvasBounds.get(pathKey(parent));
+      parent = parent.slice(0, -1);
+    }
+    layouts.set(key, {
+      height: rect.height,
+      left: rect.left - (parentRect?.left ?? 0),
+      top: rect.top - (parentRect?.top ?? 0),
+      width: rect.width,
+    });
+  });
+
+  return layouts;
+};
+
+const fragmentContainsPath = (fragment: PageLayoutFragment, path: Path) => {
+  if (PathApi.equals(fragment.path, path)) return true;
+  if (fragment.type === 'direct-children') {
+    return fragment.children.some((child) =>
+      PathApi.isCommon(child.path, path)
+    );
+  }
+
+  return PathApi.isCommon(fragment.path, path);
+};
+
+const createPaginationBuckets = (
+  editor: Editor,
+  fragments: readonly PageLayoutFragment[],
+  geometry: PageLayoutGeometry,
+  selectedPaths: readonly Path[]
+): ReadonlyMap<NodeKey, readonly DecorationSlice[]> => {
+  const buckets = new Map<NodeKey, DecorationSlice[]>();
+  const textFragmentsByPath = new Map<string, number>();
+
+  fragments.forEach((fragment) => {
+    if (fragment.type === 'text') {
+      const key = pathKey(fragment.path);
+      textFragmentsByPath.set(key, (textFragmentsByPath.get(key) ?? 0) + 1);
+    }
+  });
+  const blockBounds = new Map<string, PageRect>();
+
+  fragments.forEach((fragment) => {
+    if (fragment.type !== 'text') return;
+    const key = pathKey(fragment.path);
+    const rect = toCanvasRect(fragment.rect, fragment.pageIndex, geometry);
+    const previous = blockBounds.get(key);
+
+    blockBounds.set(key, previous ? bounds([previous, rect]) : rect);
+  });
+
+  editor.read((state) => {
+    const { index } = state.runtime.snapshot();
+
+    fragments.forEach((fragment) => {
+      if (fragment.type !== 'text') return;
+      const blockKey = pathKey(fragment.path);
+      const nativeFlow =
+        textFragmentsByPath.get(blockKey) === 1 &&
+        selectedPaths.some((path) => PathApi.isCommon(fragment.path, path));
+      const blockRect =
+        blockBounds.get(blockKey) ??
+        toCanvasRect(fragment.rect, fragment.pageIndex, geometry);
+
+      fragment.lines.forEach((line, lineIndex) => {
+        line.runs.forEach((run, runIndex) => {
+          const nodeKey = index.keyAt(run.source.anchor.path);
+
+          if (!nodeKey) return;
+          const rangeStart = Math.min(
+            run.source.anchor.offset,
+            run.source.focus.offset
+          );
+          const rangeEnd = Math.max(
+            run.source.anchor.offset,
+            run.source.focus.offset
+          );
+          const rect = toCanvasRect(run.rect, fragment.pageIndex, geometry);
+          const slice: DecorationSlice = Object.freeze({
+            attributes: Object.freeze(
+              nativeFlow
+                ? {
+                    'data-pagination-line': true,
+                    'data-pagination-native-flow-break':
+                      lineIndex < fragment.lines.length - 1 || undefined,
+                    style: Object.freeze({ whiteSpace: 'pre' }),
+                  }
+                : {
+                    'data-pagination-line': true,
+                    style: Object.freeze({
+                      color: '#111827',
+                      display: 'inline-block',
+                      height: rect.height,
+                      left: rect.left - blockRect.left,
+                      lineHeight: `${rect.height}px`,
+                      minWidth: rect.width === 0 ? 1 : undefined,
+                      pointerEvents: 'auto',
+                      position: 'absolute',
+                      top: rect.top - blockRect.top,
+                      whiteSpace: 'pre',
+                      width: rect.width,
+                    }),
+                  }
+            ),
+            end: rangeEnd,
+            key: `pagination:${fragment.pageIndex}:${blockKey}:${lineIndex}:${runIndex}`,
+            start: rangeStart,
+          });
+          const current = buckets.get(nodeKey) ?? [];
+
+          current.push(slice);
+          buckets.set(nodeKey, current);
+        });
+      });
+    });
+  });
+
+  return buckets;
+};
+
+export type PagedEditablePageAttributes = Readonly<{
+  'data-editor-page': true;
+  'data-editor-page-index': number;
+  style: CSSProperties;
+}>;
+
+export type PagedEditableRenderPageProps = Readonly<{
+  attributes: PagedEditablePageAttributes;
+  page: PageLayoutPage;
+}>;
+
+export type PagedEditablePageView = Readonly<{
   gap?: number;
   mode?: PageLayoutMode;
-};
+}>;
 
-export type PagedEditableProps = EditableProps & {
-  layout: PageLayout;
-  pageView?: PagedEditablePageView;
-  renderPage?: (props: PagedEditableRenderPageProps) => ReactNode;
-  /** Permit pagination to omit offscreen page surfaces and document roots. */
-  virtualize?: boolean;
-};
+export type PagedEditableProps<TElement extends Element = Element> =
+  EditableProps<TElement> &
+    Pick<
+      MeasurePagesOptions<TElement>,
+      'fragmentation' | 'page' | 'typography'
+    > &
+    Readonly<{
+      engine?: PageLayoutEngine;
+      pageView?: PagedEditablePageView;
+      renderPage?: (props: PagedEditableRenderPageProps) => ReactNode;
+      virtualize?: boolean;
+    }>;
 
-const defaultRenderPage = ({
-  attributes,
-  children,
-  page,
-}: PagedEditableRenderPageProps) => (
-  <div
-    {...attributes}
-    style={{
-      boxSizing: 'border-box',
-      height: page.height,
-      overflow: 'hidden',
-      pointerEvents: 'none',
-      position: 'relative',
-      width: page.width,
-    }}
-  >
-    {children}
-  </div>
+const defaultRenderPage = ({ attributes }: PagedEditableRenderPageProps) => (
+  <div {...attributes} />
 );
 
-/** Render an `Editable` through page surfaces derived by pagination. */
-export const PagedEditable = ({
+const pageDependency = (page: PageSettingsSource) =>
+  'margins' in page && 'preset' in page
+    ? `${page.preset}:${JSON.stringify(page.margins)}`
+    : page;
+
+const measurePagedEditable = <TElement extends Element>(
+  editor: Editor,
+  options: MeasurePagesOptions<TElement>
+) =>
+  // React context erases the schema generic; PagedEditableProps preserves it
+  // across the fragmentation, typography, and renderer callbacks.
+  measurePages(editor, options as unknown as MeasurePagesOptions<Element>);
+
+const PagedEditableInner = <TElement extends Element = Element>({
+  engine: suppliedEngine,
+  fragmentation,
   ignoreBlankEditableRootClicks = true,
-  layout,
+  page,
   pageView,
+  ref: forwardedRef,
   renderPage = defaultRenderPage,
   style,
+  typography,
   virtualize = false,
   ...editableProps
-}: PagedEditableProps) => {
+}: Omit<PagedEditableProps<TElement>, 'root'>) => {
+  const editor = useEditorContext();
+  const inheritedDecorations = useContext(DecorationContext);
+  const [fallbackEngine] = useState(() => createPretextPageLayoutEngine());
+  const engine = suppliedEngine ?? fallbackEngine;
+  const [fontEpoch, setFontEpoch] = useState(0);
+  const [editableHost, setEditableHost] = useState<HTMLDivElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const [promotedTopLevelIndex, setPromotedTopLevelIndex] = useState<
-    number | null
-  >(null);
-  const [viewportStore] = useState(() => createPagedEditableViewportStore());
+  const publishedStore = useMemo(createPublishedLayoutStore, []);
+  const decorationStore = useMemo(
+    () => createSurfaceDecorationStore(inheritedDecorations),
+    [inheritedDecorations]
+  );
+  const [viewportStore] = useState(createViewportStore);
   const selectedPaths = useEditorState(
-    (state) => {
-      const selectedNodes = state.selection.nodes();
-
-      if (selectedNodes.length > 0) {
-        return selectedNodes.map(([, path]) => path);
-      }
-
-      const selection = state.selection();
-
-      return selection
-        ? [selection.anchor.path, selection.focus.path]
-        : EMPTY_SELECTED_PATHS;
-    },
+    (state) => selectedPathsFor(state.selection()),
     {
       equalityFn: sameSelectedPaths,
-      shouldUpdate: shouldUpdatePagedEditableSelectedPaths,
+      shouldUpdate: (change) =>
+        !change ||
+        change.selectionChanged ||
+        change.changed.hasAny('structure'),
     }
   );
-  const snapshot = useLayoutSnapshot(layout);
-  // Preserve page-list identity because it feeds DOM subscription boundaries.
-  const pages = useMemo(
-    () => (snapshot.pages.length === 0 ? [snapshot.page] : snapshot.pages),
-    [snapshot.page, snapshot.pages]
+  const pageFieldKey = 'margins' in page && 'preset' in page ? null : page.key;
+  const documentVersion = useEditorState(
+    (state) => state.lastCommit()?.version ?? state.runtime.snapshot().version,
+    {
+      shouldUpdate: (change) =>
+        !change ||
+        change.changed.hasAny('document') ||
+        (pageFieldKey !== null && change.dirtyStateKeys.includes(pageFieldKey)),
+    }
   );
+  const dependency = pageDependency(page);
+  const previousSnapshot = useRef<PageLayoutSnapshot | null>(null);
+  const measurement = useMemo(() => {
+    try {
+      const snapshot = measurePagedEditable(editor, {
+        engine,
+        fragmentation,
+        page,
+        typography,
+      });
+      const currentVersion = editor.read(
+        (state) =>
+          state.lastCommit()?.version ?? state.runtime.snapshot().version
+      );
+
+      if (currentVersion !== snapshot.version) {
+        return { error: null, snapshot: null };
+      }
+
+      previousSnapshot.current = snapshot;
+      return { error: null, snapshot };
+    } catch (error) {
+      return { error, snapshot: previousSnapshot.current };
+    }
+    // The semantic page dependency prevents equivalent inline values from recomposing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    dependency,
+    documentVersion,
+    editor,
+    engine,
+    fontEpoch,
+    fragmentation,
+    typography,
+  ]);
+  const { snapshot } = measurement;
   const gap = pageView?.gap ?? 24;
   const mode = pageView?.mode ?? 'single';
   const geometry = useMemo(
     () =>
-      getPageLayoutGeometry(pages, {
-        pageGap: gap,
-        pageLayoutMode: mode,
-      }),
-    [gap, mode, pages]
+      snapshot
+        ? createPageLayoutGeometry({
+            fragments: snapshot.fragments,
+            gap,
+            mode,
+            pages: snapshot.pages,
+          })
+        : null,
+    [gap, mode, snapshot]
   );
+
+  useEffect(() => {
+    if (!measurement.error) return;
+    reportEditorLifecycleError({
+      cause: measurement.error,
+      editor,
+      phase: 'measure',
+      source: 'pagination',
+    });
+  }, [editor, measurement.error]);
+  useLayoutEffect(() => decorationStore.mount(), [decorationStore]);
+  useEffect(() => () => decorationStore.destroy(), [decorationStore]);
+  useLayoutEffect(() => {
+    if (!editableHost) return;
+    return bindLayoutHost(editableHost, publishedStore);
+  }, [editableHost, publishedStore]);
+  useLayoutEffect(() => {
+    publishedStore.setSnapshot(measurement.error ? null : snapshot);
+  }, [measurement.error, publishedStore, snapshot]);
+  useEffect(() => {
+    const fonts = editableHost?.ownerDocument.fonts;
+
+    if (!fonts) return;
+    return attachFontView(fonts, {
+      engine,
+      invalidate: () => setFontEpoch((value) => value + 1),
+    });
+  }, [editableHost, engine]);
+  const editableRef = useCallback(
+    (host: HTMLDivElement | null) => {
+      setEditableHost(host);
+      setRef(forwardedRef, host);
+    },
+    [forwardedRef]
+  );
+
   const pageMountPlan = useMemo(
     () =>
-      createPagedEditablePageMountPlan({
-        fragments: snapshot.fragments,
-        geometry,
-        mode,
-        pages,
-      }),
-    [geometry, mode, pages, snapshot.fragments]
+      snapshot && geometry
+        ? createPagedEditablePageMountPlan({
+            fragments: snapshot.fragments,
+            geometry,
+            mode,
+            pages: snapshot.pages,
+          })
+        : EMPTY_PAGE_MOUNT_PLAN,
+    [geometry, mode, snapshot]
   );
-  const pageRenderDataByIndex = useMemo(
-    () =>
-      new Map(
-        pages.map((page, index) => [
-          page.index,
-          {
-            page,
-            placement: geometry.pagePlacements[index] ?? { left: 0, top: 0 },
-          },
-        ])
-      ),
-    [geometry.pagePlacements, pages]
-  );
-  const tracksContentViewport = virtualize;
   useLayoutEffect(() => {
-    viewportStore.configure({
-      geometryHeight: geometry.height,
-      root: rootRef.current,
-      tracksContentViewport,
-      virtualizesPageSurfaces: virtualize,
-    });
-  }, [geometry.height, tracksContentViewport, viewportStore, virtualize]);
-  const { canTrackContentViewport, viewport } = useSyncExternalStore(
+    viewportStore.configure(rootRef.current, geometry?.height ?? 0);
+  }, [geometry?.height, viewportStore]);
+  const viewportState = useSyncExternalStore(
     viewportStore.subscribe,
     viewportStore.getSnapshot,
-    getInactivePagedEditableViewport
+    () => INACTIVE_VIEWPORT
   );
-  const filtersContentViewport =
-    tracksContentViewport && canTrackContentViewport;
-  const pageContentItems = useMemo(() => {
-    if (!virtualize) {
-      return null;
-    }
-
-    return getPagedEditableVisiblePageMountItems(pageMountPlan, {
-      gap,
-      overscan: 0,
-      pages,
-      virtualizes: true,
-      viewport: canTrackContentViewport ? viewport : null,
-    });
-  }, [
-    canTrackContentViewport,
-    gap,
-    pageMountPlan,
-    pages,
-    virtualize,
-    viewport,
-  ]);
-  const windowedPageItems = useMemo(() => {
-    if (!pageContentItems) return pageMountPlan.items;
-
-    const itemIndexes = new Set(pageContentItems.map((item) => item.index));
-    const requiredTopLevelIndexes = [
-      ...selectedPaths.map((path) => path[0]),
-      promotedTopLevelIndex,
-    ];
-
-    requiredTopLevelIndexes.forEach((topLevelIndex) => {
-      if (typeof topLevelIndex !== 'number') return;
-      pageMountPlan.itemIndexesByTopLevelIndex
-        .get(topLevelIndex)
-        ?.forEach((itemIndex) => itemIndexes.add(itemIndex));
-    });
-
-    return pageMountPlan.items.filter((item) => itemIndexes.has(item.index));
-  }, [pageContentItems, pageMountPlan, promotedTopLevelIndex, selectedPaths]);
-  const pageSurfaceItems = virtualize ? windowedPageItems : pageMountPlan.items;
-  const visibleContentRange = useMemo(() => {
-    if (!filtersContentViewport || !viewport) {
-      return null;
-    }
-
-    const viewportHeight = Math.max(0, viewport.bottom - viewport.top);
-    const overscanSize = viewportHeight * CONTENT_VIEWPORT_OVERSCAN_RATIO;
-
-    return {
-      bottom: viewport.bottom + overscanSize,
-      top: Math.max(0, viewport.top - overscanSize),
-    };
-  }, [filtersContentViewport, viewport]);
-  const visiblePageIndexes = useMemo(
+  const visibleItems = useMemo(
     () =>
       virtualize
-        ? new Set(windowedPageItems.flatMap((item) => item.pageIndexes))
-        : null,
-    [virtualize, windowedPageItems]
+        ? getPagedEditableVisiblePageMountItems(pageMountPlan, {
+            gap,
+            overscan: 0,
+            pages: snapshot?.pages ?? [],
+            virtualizes: true,
+            viewport: viewportState.canTrackContentViewport
+              ? viewportState.viewport
+              : null,
+          })
+        : pageMountPlan.items,
+    [gap, pageMountPlan, snapshot?.pages, viewportState, virtualize]
   );
-  const projectedFragments = useMemo(() => {
-    if (!visiblePageIndexes) {
-      return snapshot.fragments;
-    }
+  // Promoting a requested path changes which page content is mounted.
+  // oxlint-disable-next-line react-doctor/rerender-state-only-in-handlers
+  const [promotedPath, setPromotedPath] = useState<Path | null>(null);
+  const windowedItems = useMemo(() => {
+    const requiredItemIndexes = new Set(visibleItems.map((item) => item.index));
 
-    return snapshot.fragments.filter(
-      (fragment) =>
-        visiblePageIndexes.has(fragment.pageIndex) ||
-        selectedPaths.some((path) => pathsOverlap(fragment.path, path))
+    [...selectedPaths, promotedPath].forEach((path) => {
+      if (!path) return;
+      let ownerPath = path;
+      let itemIndexes: readonly number[] | undefined;
+
+      while (ownerPath.length > 0 && !itemIndexes) {
+        itemIndexes = pageMountPlan.itemIndexesByPath.get(pathKey(ownerPath));
+        ownerPath = ownerPath.slice(0, -1);
+      }
+      itemIndexes?.forEach((itemIndex) => requiredItemIndexes.add(itemIndex));
+    });
+
+    return pageMountPlan.items.filter((item) =>
+      requiredItemIndexes.has(item.index)
     );
-  }, [selectedPaths, snapshot.fragments, visiblePageIndexes]);
-  const projection = useMemo(
-    () =>
-      getPageLayoutProjection(
-        { ...snapshot, fragments: projectedFragments },
-        {
-          geometry,
-          hitTesting: false,
-        }
-      ),
-    [geometry, projectedFragments, snapshot]
+  }, [pageMountPlan, promotedPath, selectedPaths, visibleItems]);
+  const visiblePageIndexes = useMemo(
+    () => new Set(windowedItems.flatMap((item) => item.pageIndexes)),
+    [windowedItems]
   );
-  const projectedUnitsByFragment = useMemo(() => {
-    const byFragment = new Map<string, Map<string, PageLayoutProjectedUnit>>();
+  const projectedFragments = useMemo(
+    () =>
+      virtualize
+        ? (snapshot?.fragments ?? []).filter(
+            (fragment) =>
+              visiblePageIndexes.has(fragment.pageIndex) ||
+              selectedPaths.some((path) => fragmentContainsPath(fragment, path))
+          )
+        : (snapshot?.fragments ?? []),
+    [selectedPaths, snapshot?.fragments, virtualize, visiblePageIndexes]
+  );
+  const placementsByPath = useMemo(
+    () =>
+      geometry
+        ? createPlacementsByPath(projectedFragments, geometry)
+        : new Map<string, MountedFragment[]>(),
+    [geometry, projectedFragments]
+  );
+  const elementLayouts = useMemo(
+    () =>
+      geometry
+        ? createElementLayouts(snapshot?.fragments ?? [], placementsByPath)
+        : undefined,
+    [geometry, placementsByPath, snapshot?.fragments]
+  );
+  const localBuckets = useMemo(
+    () =>
+      geometry
+        ? createPaginationBuckets(
+            editor,
+            projectedFragments,
+            geometry,
+            selectedPaths
+          )
+        : new Map<NodeKey, readonly DecorationSlice[]>(),
+    [editor, geometry, projectedFragments, selectedPaths]
+  );
+  const fragmentContext = useMemo(
+    () => ({ placementsByPath }),
+    [placementsByPath]
+  );
 
-    projection.units.forEach((unit) => {
-      const units = byFragment.get(unit.fragmentId) ?? new Map();
-
-      units.set(unit.key, unit);
-      byFragment.set(unit.fragmentId, units);
-    });
-
-    return byFragment;
-  }, [projection.units]);
-  const projectedLinesByFragment = useMemo(() => {
-    const byFragment = new Map<string, PageLayoutProjectedLine[]>();
-
-    projection.lines.forEach((line) => {
-      const lines = byFragment.get(line.fragmentId) ?? [];
-
-      lines.push(line);
-      byFragment.set(line.fragmentId, lines);
-    });
-
-    return byFragment;
-  }, [projection.lines]);
+  useLayoutEffect(() => {
+    decorationStore.setLocalBuckets(localBuckets);
+  }, [decorationStore, localBuckets]);
   const scrollSelectionIntoView = useMemo(() => {
-    const scroll = editableProps.scrollSelectionIntoView;
+    const custom = editableProps.scrollSelectionIntoView;
 
-    return ((editor, domRange) => {
+    return ((innerEditor, domRange) => {
       if (
-        tracksContentViewport &&
-        getNow() - viewportStore.getLastScrollAt() <
-          USER_SCROLL_SELECTION_SCROLL_SUPPRESSION_MS
+        virtualize &&
+        performance.now() - viewportStore.getLastScrollAt() < 500
       ) {
         return;
       }
-
-      if (scroll) {
-        (scroll as (editor: Editor, domRange: globalThis.Range) => void)(
-          editor,
-          domRange
-        );
-        return;
+      if (custom) {
+        custom(innerEditor, domRange);
+      } else {
+        defaultScrollSelectionIntoView(editor, domRange);
       }
-
-      defaultScrollSelectionIntoView(
-        editor as Parameters<typeof defaultScrollSelectionIntoView>[0],
-        domRange
-      );
     }) satisfies NonNullable<EditableProps['scrollSelectionIntoView']>;
   }, [
     editableProps.scrollSelectionIntoView,
-    tracksContentViewport,
+    editor,
     viewportStore,
+    virtualize,
   ]);
-  const mountedTopLevelIndexes = useMemo(
-    () =>
-      [
-        ...new Set(windowedPageItems.flatMap((item) => item.topLevelIndexes)),
-      ].sort((left, right) => left - right),
-    [windowedPageItems]
-  );
-  const requestMount = useCallback((index: number) => {
-    setPromotedTopLevelIndex(index);
-  }, []);
   const scrollToPath = useCallback(
     (path: Path, align: 'auto' | 'center' | 'end' | 'start' = 'auto') => {
-      const topLevelIndex = path[0];
-
-      if (typeof topLevelIndex !== 'number') return false;
+      const index = path[0];
       const itemIndex =
-        pageMountPlan.itemIndexesByTopLevelIndex.get(topLevelIndex)?.[0];
+        typeof index === 'number'
+          ? pageMountPlan.itemIndexesByTopLevelIndex.get(index)?.[0]
+          : undefined;
       const item =
-        typeof itemIndex === 'number' ? pageMountPlan.items[itemIndex] : null;
-      const scrollRoot = getPagedEditableScrollRoot(rootRef.current);
+        itemIndex === undefined ? undefined : pageMountPlan.items[itemIndex];
+      const scrollRoot = getScrollRoot(rootRef.current);
 
       if (!item || !scrollRoot) return false;
-
       const viewportHeight = Math.max(
         1,
         scrollRoot.clientHeight || scrollRoot.getBoundingClientRect().height
@@ -852,55 +1062,35 @@ export const PagedEditable = ({
     },
     [pageMountPlan]
   );
-  const commonEditableProps = {
-    ...editableProps,
-    ignoreBlankEditableRootClicks,
-    scrollSelectionIntoView,
-    style: {
-      minHeight: geometry.height,
-      position: 'relative' as const,
-      width: geometry.width,
-      zIndex: 0,
-      ...style,
-    },
-  };
-  const editable = (
-    <WindowedEditable
-      {...commonEditableProps}
-      enabled={virtualize}
-      mountedTopLevelIndexes={mountedTopLevelIndexes}
-      onRequestMount={requestMount}
-      scrollToPath={scrollToPath}
-      totalSize={geometry.height}
-    />
+
+  if (!snapshot || !geometry) {
+    return (
+      <WindowedEditable
+        {...editableProps}
+        decorationStore={decorationStore}
+        enabled={false}
+        ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+        mountedTopLevelIndexes={[]}
+        ref={editableRef}
+        scrollToPath={() => false}
+        style={style}
+        totalSize={0}
+      />
+    );
+  }
+
+  const mountedTopLevelIndexes = [
+    ...new Set(windowedItems.flatMap((item) => item.topLevelIndexes)),
+  ].sort((left, right) => left - right);
+  const pageByIndex = new Map(
+    snapshot.pages.map((value) => [value.index, value])
   );
-  const fragmentContextValue = useMemo(
-    () => ({
-      layout,
-      projectedLinesByFragment,
-      projectedUnitsByFragment,
-      projection,
-      selectedPaths,
-      snapshot,
-      tracksContentViewport: filtersContentViewport,
-      visibleContentRange,
-      visiblePageIndexes,
-    }),
-    [
-      filtersContentViewport,
-      layout,
-      projectedLinesByFragment,
-      projectedUnitsByFragment,
-      projection,
-      selectedPaths,
-      snapshot,
-      visibleContentRange,
-      visiblePageIndexes,
-    ]
+  const pageArrayIndex = new Map(
+    snapshot.pages.map((value, index) => [value.index, index])
   );
 
   return (
-    <PliteLayoutFragmentContext value={fragmentContextValue}>
+    <FragmentContext value={fragmentContext}>
       <div
         data-editor-paged-editable
         data-editor-paged-editable-page-virtualization={
@@ -913,39 +1103,45 @@ export const PagedEditable = ({
           width: geometry.width,
         }}
       >
-        {pageSurfaceItems.flatMap((item) =>
+        {(virtualize ? windowedItems : pageMountPlan.items).flatMap((item) =>
           item.pageIndexes.map((pageIndex) => {
-            const renderData = pageRenderDataByIndex.get(pageIndex);
+            const layoutPage = pageByIndex.get(pageIndex);
+            const arrayIndex = pageArrayIndex.get(pageIndex);
 
-            if (!renderData) {
-              return null;
-            }
-
-            const { page, placement } = renderData;
+            if (!layoutPage || arrayIndex === undefined) return null;
+            const placement = geometry.pagePlacements[arrayIndex] ?? {
+              left: 0,
+              top: 0,
+            };
+            const occupied = geometry.occupiedSizes[arrayIndex] ?? layoutPage;
+            const attributes: PagedEditablePageAttributes = {
+              'data-editor-page': true,
+              'data-editor-page-index': layoutPage.index,
+              style: {
+                boxSizing: 'border-box',
+                height: layoutPage.height,
+                overflow: 'hidden',
+                pointerEvents: 'none',
+                position: 'relative',
+                width: layoutPage.width,
+              },
+            };
 
             return (
               <div
                 data-editor-page-mount-item-index={item.index}
                 data-editor-page-surface
-                key={page.index}
+                key={layoutPage.index}
                 style={{
-                  height: page.height,
+                  height: occupied.height,
                   left: placement.left,
                   pointerEvents: 'none',
                   position: 'absolute',
                   top: placement.top,
-                  width: page.width,
-                  zIndex: 0,
+                  width: occupied.width,
                 }}
               >
-                {renderPage({
-                  attributes: {
-                    'data-editor-page': true,
-                    'data-editor-page-index': page.index,
-                  },
-                  children: null,
-                  page,
-                })}
+                {renderPage({ attributes, page: layoutPage })}
               </div>
             );
           })
@@ -954,26 +1150,64 @@ export const PagedEditable = ({
           data-editor-paged-editable-editor-overlay
           style={{
             height: geometry.height,
-            left: 0,
+            inset: 0,
             pointerEvents: 'none',
             position: 'absolute',
-            top: 0,
             width: geometry.width,
             zIndex: 1,
           }}
         >
           <div
             data-editor-paged-editable-editor
-            style={{
-              inset: 0,
-              pointerEvents: 'auto',
-              position: 'absolute',
-            }}
+            style={{ inset: 0, pointerEvents: 'auto', position: 'absolute' }}
           >
-            {editable}
+            <WindowedEditable
+              {...editableProps}
+              decorationStore={decorationStore}
+              elementLayouts={elementLayouts}
+              enabled={virtualize}
+              ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+              mountedTopLevelIndexes={mountedTopLevelIndexes}
+              onRequestMount={(index, path) => setPromotedPath(path ?? [index])}
+              ref={editableRef}
+              scrollSelectionIntoView={scrollSelectionIntoView}
+              scrollToPath={scrollToPath}
+              style={{
+                minHeight: geometry.height,
+                position: 'relative',
+                width: geometry.width,
+                zIndex: 0,
+                ...style,
+              }}
+              totalSize={geometry.height}
+            />
           </div>
         </div>
       </div>
-    </PliteLayoutFragmentContext>
+    </FragmentContext>
+  );
+};
+
+export const PagedEditable = <TElement extends Element = Element>({
+  root,
+  ...props
+}: PagedEditableProps<TElement>) => {
+  if (root === 'main') {
+    throw new Error('[Plite] Omit root to render the primary document.');
+  }
+  const editor = useEditorContext();
+  const inheritedReadOnly = useEditorReadOnly();
+  const editable = <PagedEditableInner {...props} />;
+
+  return root === undefined ? (
+    editable
+  ) : (
+    <EditorRoot
+      editor={editor}
+      readOnly={props.readOnly || inheritedReadOnly}
+      root={root}
+    >
+      {editable}
+    </EditorRoot>
   );
 };

@@ -11,7 +11,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/registry/components/editor/dropdown-menu';
 import {
   ToolbarButton,
   ToolbarSplitButton,
@@ -22,6 +22,7 @@ import {
 export function BulletedListToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
+  const focusEditorRef = React.useRef(false);
 
   const pressed = useEditorSelector((innerEditor) =>
     innerEditor.plugin(ListPlugin).read.isActive({ type: ListType.Bulleted })
@@ -42,15 +43,33 @@ export function BulletedListToolbarButton() {
         <List className="size-4" />
       </ToolbarSplitButtonPrimary>
 
-      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-        <DropdownMenuTrigger asChild>
+      <DropdownMenu
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (nextOpen) focusEditorRef.current = false;
+          setOpen(nextOpen);
+        }}
+        modal={false}
+      >
+        <DropdownMenuTrigger>
           <ToolbarSplitButtonSecondary />
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="start" alignOffset={-32}>
+        <DropdownMenuContent
+          align="start"
+          alignOffset={-32}
+          onFinalFocus={(event) => {
+            if (!focusEditorRef.current) return;
+
+            focusEditorRef.current = false;
+            event.preventDefault();
+            editor.api.dom.focus();
+          }}
+        >
           <DropdownMenuGroup>
             <DropdownMenuItem
               onClick={() => {
+                focusEditorRef.current = true;
                 editor.plugin(ListPlugin).update.toggle({
                   type: ListType.Bulleted,
                 });
@@ -63,6 +82,7 @@ export function BulletedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
+                focusEditorRef.current = true;
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.Circle,
                   type: ListType.Bulleted,
@@ -76,6 +96,7 @@ export function BulletedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
+                focusEditorRef.current = true;
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.Square,
                   type: ListType.Bulleted,
@@ -97,6 +118,7 @@ export function BulletedListToolbarButton() {
 export function NumberedListToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
+  const focusEditorRef = React.useRef(false);
 
   const pressed = useEditorSelector((innerEditor2) =>
     innerEditor2.plugin(ListPlugin).read.isActive({ type: ListType.Numbered })
@@ -117,15 +139,33 @@ export function NumberedListToolbarButton() {
         <ListOrdered className="size-4" />
       </ToolbarSplitButtonPrimary>
 
-      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-        <DropdownMenuTrigger asChild>
+      <DropdownMenu
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (nextOpen) focusEditorRef.current = false;
+          setOpen(nextOpen);
+        }}
+        modal={false}
+      >
+        <DropdownMenuTrigger>
           <ToolbarSplitButtonSecondary />
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="start" alignOffset={-32}>
+        <DropdownMenuContent
+          align="start"
+          alignOffset={-32}
+          onFinalFocus={(event) => {
+            if (!focusEditorRef.current) return;
+
+            focusEditorRef.current = false;
+            event.preventDefault();
+            editor.api.dom.focus();
+          }}
+        >
           <DropdownMenuGroup>
             <DropdownMenuItem
               onSelect={() => {
+                focusEditorRef.current = true;
                 editor.plugin(ListPlugin).update.toggle({
                   type: ListType.Numbered,
                 });
@@ -135,6 +175,7 @@ export function NumberedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {
+                focusEditorRef.current = true;
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.LowerAlpha,
                   type: ListType.Numbered,
@@ -145,6 +186,7 @@ export function NumberedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {
+                focusEditorRef.current = true;
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.UpperAlpha,
                   type: ListType.Numbered,
@@ -155,6 +197,7 @@ export function NumberedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {
+                focusEditorRef.current = true;
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.LowerRoman,
                   type: ListType.Numbered,
@@ -165,6 +208,7 @@ export function NumberedListToolbarButton() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {
+                focusEditorRef.current = true;
                 editor.plugin(ListPlugin).update.toggle({
                   listStyle: ListStyle.UpperRoman,
                   type: ListType.Numbered,

@@ -4,7 +4,11 @@
   "title": "Media Image",
   "description": "Image element with lazy loading, resizing capabilities, and optional caption.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "raf@^3.4.1",
+    "react-dnd@>=14.0.0",
+    "react-dnd-html5-backend@>=14.0.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/media-toolbar.json",

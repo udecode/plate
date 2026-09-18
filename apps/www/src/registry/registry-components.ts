@@ -115,7 +115,7 @@ export const registryComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@ai-sdk/react@3', 'platejs', 'ai@6'],
+    dependencies: ['@ai-sdk/react@3', 'platejs', 'ai@6', 'sonner'],
     files: [
       {
         path: 'components/editor/use-chat.ts',
@@ -135,7 +135,7 @@ export const registryComponents: Registry['items'] = [
       },
     ],
     name: 'transforms',
-    registryDependencies: ['@plate/link'],
+    registryDependencies: [],
     type: 'registry:component',
   },
 ];

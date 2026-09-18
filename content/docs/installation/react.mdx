@@ -19,21 +19,29 @@ Start by adding the core [Editor](/docs/components/editor) component to your pro
 npx shadcn@latest add @plate/editor
 ```
 
-Next, create a basic editor in your main application file (e.g. `src/App.tsx`). This example sets up a simple editor within an `EditorContainer`.
+Next, create a basic editor in your main application file (e.g. `src/App.tsx`).
+This example includes `EditorFrame` for panel layout and `EditorContainer` for
+scrolling. **Both are optional.** A minimal, textarea-like editor can render
+`Editor` directly inside `EditorRoot`. Use `variant="none"` and your own padding
+and minimum height for that smaller surface. See
+[Editor layout](/docs/api/core/plate-components#editor-layout) for all three
+compositions and where to set a fixed height.
 
 ```tsx showLineNumbers title="src/App.tsx"
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/components/editor/editor';
+import { Editor, EditorContainer, EditorFrame } from '@/components/editor/editor';
 
 export default function App() {
   const editor = useCreateEditor();
 
   return (
     <EditorRoot editor={editor}>      {/* Provides editor context */}
-      <EditorContainer>         {/* Styles the editor area */}
-        <Editor placeholder="Type your amazing content here..." />
-      </EditorContainer>
+      <EditorFrame>
+        <EditorContainer>         {/* Styles the editor area */}
+          <Editor placeholder="Type your amazing content here..." />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }
@@ -60,7 +68,7 @@ npx shadcn@latest add @plate/basic-nodes @plate/fixed-toolbar @plate/mark-toolba
 Update your `src/App.tsx` to include these components and the basic mark plugins.
 This example adds bold, italic, and underline functionality.
 
-```tsx showLineNumbers title="src/App.tsx" {2,4-8,15-16,18-31,35-36,41-45}
+```tsx showLineNumbers title="src/App.tsx"
 import * as React from 'react';
 import type { Value } from 'platejs';
 
@@ -74,7 +82,7 @@ import {
   useCreateEditor,
 } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/components/editor/editor';
+import { Editor, EditorContainer, EditorFrame } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
@@ -101,14 +109,16 @@ export default function App() {
 
   return (
     <EditorRoot editor={editor}>
-      <FixedToolbar className="justify-start rounded-t-lg">
-        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
-      </FixedToolbar>
-      <EditorContainer>
-        <Editor placeholder="Type your amazing content here..." />
-      </EditorContainer>
+      <EditorFrame>
+        <FixedToolbar className="justify-start rounded-t-lg">
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+        </FixedToolbar>
+        <EditorContainer>
+          <Editor placeholder="Type your amazing content here..." />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }
@@ -120,7 +130,7 @@ export default function App() {
 
 Introduce block-level elements like headings and blockquotes with custom components.
 
-```tsx showLineNumbers title="src/App.tsx" {5,7-9,18,21,23,26-33,50-53,61-65}
+```tsx showLineNumbers title="src/App.tsx"
 import * as React from 'react';
 import type { Value } from 'platejs';
 
@@ -137,7 +147,7 @@ import {
 } from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/editor/blockquote';
-import { Editor, EditorContainer } from '@/components/editor/editor';
+import { Editor, EditorContainer, EditorFrame } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { HeadingElement } from '@/components/editor/heading';
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
@@ -181,20 +191,22 @@ export default function App() {
 
   return (
     <EditorRoot editor={editor}>
-      <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        {/* Element Toolbar Buttons */}
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
-        {/* Mark Toolbar Buttons */}
-        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
-      </FixedToolbar>
-      <EditorContainer>
-        <Editor placeholder="Type your amazing content here..." />
-      </EditorContainer>
+      <EditorFrame>
+        <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
+          {/* Element Toolbar Buttons */}
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
+          {/* Mark Toolbar Buttons */}
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+        </FixedToolbar>
+        <EditorContainer>
+          <Editor placeholder="Type your amazing content here..." />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }
@@ -216,7 +228,7 @@ export default function App() {
 
 To make the editor content persistent, let's integrate `localStorage` to save and load the editor's value.
 
-```tsx showLineNumbers title="src/App.tsx" {55-58,64-66,76-82}
+```tsx showLineNumbers title="src/App.tsx"
 import * as React from 'react';
 import type { Value } from 'platejs';
 
@@ -233,7 +245,7 @@ import {
 } from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/editor/blockquote';
-import { Editor, EditorContainer } from '@/components/editor/editor';
+import { Editor, EditorContainer, EditorFrame } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { HeadingElement } from '@/components/editor/heading';
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
@@ -285,29 +297,31 @@ export default function App() {
         localStorage.setItem('installation-react-demo', JSON.stringify(value));
       }}
     >
-      <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
-        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
-        <div className="flex-1" />
-        <ToolbarButton
-          className="px-2"
-          onClick={() => {
-            editor.update((tx) => {
-              tx.value.replace({ children: initialValue });
-            });
-          }}
-        >
-          Reset
-        </ToolbarButton>
-      </FixedToolbar>
-      <EditorContainer>
-        <Editor placeholder="Type your amazing content here..." />
-      </EditorContainer>
+      <EditorFrame>
+        <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+          <div className="flex-1" />
+          <ToolbarButton
+            className="px-2"
+            onClick={() => {
+              editor.update((tx) => {
+                tx.value.replace({ children: initialValue });
+              });
+            }}
+          >
+            Reset
+          </ToolbarButton>
+        </FixedToolbar>
+        <EditorContainer>
+          <Editor placeholder="Type your amazing content here..." />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }

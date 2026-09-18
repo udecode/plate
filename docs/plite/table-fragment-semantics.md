@@ -1,12 +1,19 @@
 ---
 date: 2026-06-13
 topic: plite-table-fragment-semantics
-status: deferred-spec
+status: superseded
 ---
 
 # Plite Table Fragment Semantics
 
-## Current Verdict
+## Historical proposal (June 13, 2026)
+
+The [June 15 policy outcome](../plans/2026-06-15-table-fragment-merge-policy.md)
+keeps core fragment insertion structural and grid-aware paste extension-owned.
+The proposal below for a Plite-native table-area owner is superseded; it is not
+an execution queue. The [Table feature hub](../research/features/table.md)
+locates later decisions and their evidence. Preserve this rejected design and
+its original proof limits as historical context.
 
 Table fragments are not current private-alpha runtime proof. Keep them deferred
 until the contract below is implemented and verified.
@@ -22,7 +29,7 @@ The target contract is rectangle algebra, not generic nested-block merging:
 - row/col spans crossing replacement boundaries are split or rejected by policy;
 - the post-paste selection is part of the contract.
 
-## Current Gap
+## Gap observed on June 13
 
 The current Plite checkout has three explicit skipped fixture owners:
 

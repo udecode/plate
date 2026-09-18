@@ -27,17 +27,19 @@ export type NativeAuthoredTransaction = {
       after: EditorDocumentValue;
       before: EditorDocumentValue;
       change: DocumentChange;
+      discardedNodeKeys: ReadonlySet<NodeKey>;
       steps: readonly DocumentChange[];
       selectionWritten: boolean;
       tx: EditorUpdateTransaction;
     }>
   ) => void;
+  prepare?: (commit: EditorCommit) => void;
   publish?: (commit: EditorCommit) => void;
   close: (commit: EditorCommit | null, failed: boolean) => void;
 };
 
 export type NativeAuthoredRangeBinding = {
-  resolve: () => Range | null;
+  resolve: (view?: Editor) => Range | null;
   serialize: () => unknown;
 };
 
@@ -130,7 +132,7 @@ type NativeAuthoredRuntime = {
     view: Editor,
     path: Path,
     options: AnchorOptions<Path>
-  ) => { resolve: () => Path | null } | undefined;
+  ) => { resolve: (view?: Editor) => Path | null } | undefined;
   range: (
     view: Editor,
     input: (
@@ -149,9 +151,6 @@ type NativeAuthoredRuntime = {
   beforeValue: (commit: EditorCommit) => EditorDocumentValue | undefined;
   inputView: (commit: EditorCommit) => Editor | null;
   inputProjection: (commit: EditorCommit) => 'accepted' | 'proposed';
-  inputPath: (view: Editor, path: Path, root: string) => Path | null;
-  inputRange: (view: Editor, range: Range) => Range | null;
-  inputSelectionAllowed: (view: Editor) => boolean;
   projectedChange: (commit: EditorCommit) => DocumentChange;
   readView: <T>(view: Editor, read: () => T) => T;
   replace: <T>(apply: () => T) => T;
@@ -169,6 +168,7 @@ type NativeAuthoredRuntime = {
         grouping: Readonly<{ commit: EditorCommit; scope: object }>;
       }>
     | undefined;
+  historyConflict: (error: unknown) => readonly string[] | null;
   mergeHistory: (
     current: readonly EditorEffect[],
     previous: readonly EditorEffect[]
@@ -183,22 +183,6 @@ export const isAuthoredHistoryEffect = (effect: EditorEffect) =>
 const UPDATE_VIEWS = new WeakMap<Editor, Editor>();
 export const readAuthoredView = (view: Editor) =>
   AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.view(view);
-export const projectAuthoredInputPath = (
-  view: Editor,
-  path: Path,
-  root: string
-) =>
-  AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.inputPath(
-    view,
-    path,
-    root
-  );
-export const projectAuthoredInputRange = (view: Editor, range: Range) =>
-  AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.inputRange(view, range);
-export const isAuthoredInputSelectionAllowed = (view: Editor) =>
-  AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.inputSelectionAllowed(
-    view
-  ) ?? true;
 export const getAuthoredCommitBefore = (editor: Editor, commit: EditorCommit) =>
   AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(editor))?.beforeValue(commit);
 export const getAuthoredCommitView = (editor: Editor, commit: EditorCommit) =>
@@ -464,6 +448,14 @@ export const shouldEmitAuthoredEffect = (
 
 export const captureAuthoredHistory = (editor: Editor, commit: EditorCommit) =>
   AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(editor))?.history(commit);
+
+export const getAuthoredHistoryConflicts = (
+  editor: Editor,
+  error: unknown
+): readonly string[] | null =>
+  AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(editor))?.historyConflict(
+    error
+  ) ?? null;
 
 export const canMergeAuthoredHistory = (
   editor: Editor,

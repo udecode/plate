@@ -1,5 +1,6 @@
 import { renderHook } from '@testing-library/react';
-import type { Anchor, Point, Range } from 'plitejs';
+import type { Anchor, Point, Range, Value } from 'plitejs';
+import { history } from 'plitejs/history';
 import { type CompositionEvent, type ReactNode, StrictMode } from 'react';
 
 import {
@@ -34,6 +35,67 @@ import { createEditor } from '../../src/react/plugin/with-react';
 const strictMode = ({ children }: { children: ReactNode }) => (
   <StrictMode>{children}</StrictMode>
 );
+
+test('owns mounted history replay and applies presentation only after success', () => {
+  const initialValue: Value = [
+    { type: 'paragraph', children: [{ text: 'a' }] },
+  ];
+  const editor = createEditor({
+    initialValue,
+    plugins: [history()],
+  });
+  const runtime = new EditableDOMRuntime({ editor });
+  const settle = vi.fn();
+  const focus = vi.fn();
+
+  runtime.setRoot(document.createElement('div'));
+  runtime.connect();
+  runtime.updateHistorySettleHandler(settle);
+  runtime.updateHistoryFocusHandler(focus);
+  editor.update((tx) => {
+    tx.text.insert('b', { at: { path: [0, 0], offset: 1 } });
+  });
+
+  expect(runtime.replayHistory('undo', 'restore-root')).toEqual({
+    status: 'applied',
+  });
+  expect(editorString(editor, [])).toBe('a');
+  expect(settle).toHaveBeenCalledTimes(1);
+  expect(focus).toHaveBeenCalledWith('restore-root');
+
+  focus.mockClear();
+  expect(runtime.replayHistory('undo')).toEqual({ status: 'empty' });
+  expect(focus).not.toHaveBeenCalled();
+  runtime.destroy();
+});
+
+test('rejects history replay before settlement while composing or unmounted', () => {
+  const initialValue: Value = [
+    { type: 'paragraph', children: [{ text: 'a' }] },
+  ];
+  const editor = createEditor({
+    initialValue,
+    plugins: [history()],
+  });
+  const runtime = new EditableDOMRuntime({ editor });
+  const settle = vi.fn();
+
+  runtime.updateHistorySettleHandler(settle);
+  expect(runtime.replayHistory('undo')).toEqual({
+    reason: 'unmounted',
+    status: 'unavailable',
+  });
+
+  runtime.setRoot(document.createElement('div'));
+  runtime.connect();
+  runtime.inputController.state.isComposing = true;
+  expect(runtime.replayHistory('undo')).toEqual({
+    reason: 'composing',
+    status: 'unavailable',
+  });
+  expect(settle).not.toHaveBeenCalled();
+  runtime.destroy();
+});
 
 test('keeps one runtime per mount without render fan-out and tears it down', () => {
   const editor = createEditor();

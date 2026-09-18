@@ -2,7 +2,9 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "tabbable",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "tabbable@^6.2.0"
   ],
   "files": [
     {

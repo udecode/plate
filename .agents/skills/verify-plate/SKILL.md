@@ -1,5 +1,5 @@
 ---
-description: Verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners.
+description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners.
 argument-hint: '[changed surface | package | route | cli | collaboration | browser-tool-issue]'
 name: verify-plate
 metadata:
@@ -10,9 +10,9 @@ metadata:
 # Verify Plate
 
 Apply [the Plate workflow](../task/references/workflow.md). This skill owns
-proof selection, runtime readiness, driving and evidence. Task owns repairs;
-Testing owns new-test value and runner mechanics. Regression retains exact-case
-oracles, receipt validation and failed-fix repair. Benchmark retains measurement.
+implementation acceptance, proof selection, runtime readiness, driving and evidence. Task owns repairs;
+Testing owns new-test value and runner mechanics. Patch retains repair,
+conditional corpus receipt validation and failed-fix recovery. Benchmark retains measurement.
 
 Reuse the caller's goal and plan; never create a second goal or close the caller's
 goal while its other work remains. Standalone long-running verification applies
@@ -21,9 +21,69 @@ unless they opt out. Small standalone checks do not create goals. The standalone
 the requested verification coverage and report, with failures preserved; audit
 completion is not a product pass or authority to repair. Plan-only stays plan-only.
 
-Use the full Create Verification Skill and Maintain Verification Skill methods
-when creating or maintaining this owner. Edit `.agents/rules/verify-plate.mdc`
+Use Create Verification Skill for creation and Maintain Verification Skill for
+maintenance, selecting its workflow-audit or feature-coverage scope from the
+request. Edit `.agents/rules/verify-plate.mdc`
 and its resources, then run `pnpm install`. Never edit installed mirrors.
+
+## Completion boundary
+
+State the reported setup, input, expected result and necessary follow-up before
+choosing proof. Keep them in the existing case or plan, not a separate registry.
+Select the smallest test boundary that can observe each required result. A
+model test can diagnose a browser defect without proving its native input,
+focus consumer, paint or event ordering.
+
+The exact reporter interaction remains open until those assertions execute and
+pass on the final source. A failure before the action is a host/setup failure;
+it proves neither a product failure nor a fix. Preserve the failing test and
+output, repair the diagnosed prerequisite within scope, and rerun. Do not delete,
+skip, weaken or replace required proof to obtain green. Correct a faulty oracle
+with source-backed evidence while preserving the user invariant and failed
+result. Change the expected behavior only under accepted product authority.
+
+Report local verification separately from publication. Accepted implementation
+review and current-checkout proof with known serving-source identity can close
+a local fix; Task's delivery rules
+own pushed-ref replay. A missing capability limits the claim, not unrelated
+authorized progress. Verification-only work reports defects; a fix request
+continues through diagnosis, repair and the affected proof without another ask.
+
+## Review the implementation
+
+For a changed implementation, review the final diff, its owning path and
+materially different consumers before accepting verification. Do this before
+expensive final replay; an existing review of the same candidate can satisfy it.
+Keep the review proportional: a direct local correction needs a direct source
+check, not an architecture exercise. Unchanged runtime checks and artifact-only
+verification do not create an implementation review.
+
+- Compare the fix with deleting, merging or moving the responsibility to its
+  canonical owner. For layout defects, compare structural layout and CSS before
+  measuring or synchronizing geometry. Fewer changed lines do not justify
+  leaving the wrong ownership in place.
+- Each added effect, observer, subscription, timer, mutable cache or save/restore
+  protocol must earn its place through a current requirement and correct
+  lifetime. Check who owns the mutated state or DOM, which real callers support
+  the assumption, and whether the cause can be removed instead. These mechanisms
+  are not inherently wrong; unexplained compensation is not an accepted fix.
+- Check that proof observes the user invariant. A mocked owner or assertion of
+  the new mechanism can hide the original design error; it cannot alone prove
+  valid ownership or supported composition. Retain meaningful behavior coverage
+  and inspect consumers that differ in placement, availability or lifetime.
+
+Record the conclusion and decisive source evidence in the existing case, plan
+or handoff. Verified ownership or unnecessary-complexity defects keep local
+completion open even when tests pass. Rework a clear local issue; use Best API
+Review when the correct owner or a compensation protocol remains contested,
+then continue under the caller's existing repair authority. Verification-only
+requests report the finding without editing product code. After a repair,
+review only the affected delta and rerun invalidated proof.
+
+This is the agent's source-based acceptance check, including on `next`, not an
+Autoreview invocation or a claim of independent review. Task retains its existing
+review budget and publication rules. A clean design does not replace runtime
+proof, and passing runtime proof does not accept a deficient design.
 
 ## Canonical inventory
 
@@ -55,13 +115,16 @@ gotchas from the source and existing proof. A file count is discovery only.
 | Public package behavior | Package exports and `tooling/entrypoints/entrypoint-dag.mjs`; `tooling/entrypoints/entrypoint-turbo.mjs` derives partition tests | Use each partition's type/test script for its public contract. The managed `/runtime-entrypoints` fixture proves client exports; `pnpm plite:release:packages` proves packed headless/SSR imports and declarations. Include exported assets such as `platejs/math/katex.css`. |
 | Optional schema CLI | `packages/cli/src/bin.ts`, `packages/cli/src/deps`, existing `packages/cli/test` fixtures | Run the built `plate` command in a disposable project; verify generated artifacts, subsequent check mode and untouched input. Ordinary editor setup never requires this CLI. |
 | Docs and registry outputs | `content/docs`, `apps/www/src/lib/source.ts`, docs app routes and `apps/www/package.json` scripts; Plate Docs | Derive source routes through `check-docs-source-parity.mts`, parse frontmatter titles, inspect rendered bodies and read back generated results. Record locale fallbacks and custom app-page overrides separately. |
-| Regression cases | Existing executable tests plus current source/report provenance | Use Regression's exact case, cumulative oracle and final receipt when a corpus or failed fix requires it. |
+| Regression cases | Existing executable tests plus current source/report provenance | Use Patch's corpus method for cumulative acceptance and final receipts; select applicable [interaction oracles](./references/regression-oracles.md). |
 | Performance | Benchmark's current target inventory and executable runners | Resolve the measured owner through Benchmark; preserve workload, source identity, correctness and baseline/candidate comparability. |
 
 Maintain Verification Skill defaults to this entire inventory, including each
 current entry within a selected canonical source, not one demonstration per
-table row. Only an explicitly scoped request narrows that denominator. Source
-inspection and one serial live pass are both required. Unreachable entries need
+table row, when the request is a product-coverage audit. An instruction-only
+workflow audit checks its changed commands and decision paths without claiming
+live product coverage. Only an explicitly scoped request narrows the selected
+product denominator. For product coverage, source inspection and one serial
+live pass are both required. Unreachable entries need
 the attempted route and concrete prerequisite. Product defects are reported,
 not rewritten out of the verifier.
 
@@ -229,16 +292,19 @@ never inside the artifact tree.
 Capture the action and resulting state, including follow-up input and side
 effects when the claim needs them. Internal setters or model-only assertions
 cannot replace the actual reporter path. A visual claim needs an inspected
-image; a native paint defect uses Regression's classified pixel controls.
+image; a native paint defect uses the classified controls in the applicable
+[interaction oracle](./references/regression-oracles.md). Load that reference's
+relevant domain sections for native input, focus, pointer, caret, paint,
+subscription or identity regressions; do not impose every domain on every check.
 Use the shared `recordBrowserRuntimeErrors` helper for browser errors.
 Pass `{ strict: true }` when the case requires every console/page error to fail;
 default capture retains the helper's targeted filters and approved ignores.
 Mock only an already isolated external boundary and label what it cannot prove.
 
-Ordinary scoped proof retains the logs and fingerprints above. For Regression
+Ordinary scoped proof retains the logs and fingerprints above. For Patch corpus
 exact-case closure, use the existing
-`.agents/skills/regression/scripts/capture-proof-receipt.mjs`; read its full
-methodology for host/input/route arguments. Never invent a second receipt
+`.agents/skills/patch/scripts/capture-proof-receipt.mjs`; read Patch's
+[corpus method](../patch/references/corpus.md) for host/input/route arguments. Never invent a second receipt
 format. For broad maintenance, retain one result per inventory entry. Reuse
 observations across profiles without dropping distinct assertions.
 
@@ -253,7 +319,7 @@ that deletes evidence invalidates the run.
 
 ## Helpers and maintenance
 
-Reuse the existing package runners, Regression receipt/validator, Benchmark
+Reuse the existing package runners, Patch receipt/validator, Benchmark
 target runner and `node .agents/rules/plate-next/scripts/sync-resources.mjs --check`.
 Their commands are above or in the linked full recipes; this skill does not
 wrap them with another controller.

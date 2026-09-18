@@ -135,11 +135,11 @@ describe('native retained counterparts', () => {
           'applied'
         );
         assert.deepEqual(view.read.children(), expected);
-        source.update.history.undo();
+        source.api.history.undo();
         assert.deepEqual(view.read.children(), [
           paragraph(offset ? 'AX' : 'XD'),
         ]);
-        source.update.history.redo();
+        source.api.history.redo();
         assert.deepEqual(view.read.children(), expected);
         const restored = createEditor({
           plugins: [plugin],
@@ -252,9 +252,9 @@ describe('native retained counterparts', () => {
       );
       assert.deepEqual(source.read.children(), accepted);
       assert.deepEqual(view.read.children(), accepted);
-      source.update.history.undo();
+      source.api.history.undo();
       assert.deepEqual(view.read.children(), proposed);
-      source.update.history.redo();
+      source.api.history.redo();
       assert.deepEqual(view.read.children(), accepted);
       const loaded = createEditor({
         plugins: [authored({ authorId: 'alice' })],
@@ -285,9 +285,9 @@ describe('native retained counterparts', () => {
         'applied'
       );
       assert.deepEqual(view.read.children(), fixture.value);
-      source.update.history.undo();
+      source.api.history.undo();
       assert.deepEqual(view.read.children(), proposed);
-      source.update.history.redo();
+      source.api.history.redo();
       assert.deepEqual(view.read.children(), fixture.value);
       const loaded = createEditor({
         plugins: [authored({ authorId: 'alice' })],
@@ -329,9 +329,9 @@ describe('native retained counterparts', () => {
       'applied'
     );
     assert.deepEqual(view.read.children(), accepted);
-    source.update.history.undo();
+    source.api.history.undo();
     assert.deepEqual(view.read.children(), [paragraph('Agh')]);
-    source.update.history.redo();
+    source.api.history.redo();
     assert.deepEqual(view.read.children(), accepted);
   });
 
@@ -370,9 +370,9 @@ describe('native retained counterparts', () => {
       'applied'
     );
     assert.deepEqual(view.read.children(), value);
-    view.update.history.undo();
+    view.api.history.undo();
     assert.deepEqual(view.read.children(), projected);
-    view.update.history.redo();
+    view.api.history.redo();
     assert.deepEqual(view.read.children(), value);
     const loaded = createEditor({
       plugins: [authored({ authorId: 'alice' })],
@@ -415,11 +415,11 @@ describe('native retained counterparts', () => {
         const expected = action === 'accept' ? [paragraph('AD')] : value;
         assert.deepEqual(editor.read.children(), expected);
         assert.deepEqual(view.read.children(), expected);
-        editor.update.history.undo();
+        editor.api.history.undo();
         assert.equal(editor.read.authored.change(id)?.status, 'pending');
         assert.deepEqual(editor.read.children(), value);
         assert.deepEqual(view.read.children(), [paragraph('AD')]);
-        editor.update.history.redo();
+        editor.api.history.redo();
         assert.deepEqual(view.read.children(), expected);
         const loaded = createEditor({
           plugins: [authored({ authorId: 'alice' })],
@@ -455,9 +455,9 @@ describe('native retained counterparts', () => {
       'applied'
     );
     assert.deepEqual(view.read.children(), accepted);
-    editor.update.history.undo();
+    editor.api.history.undo();
     assert.deepEqual(view.read.children(), [paragraph('Agh')]);
-    editor.update.history.redo();
+    editor.api.history.redo();
     assert.deepEqual(view.read.children(), accepted);
   });
 
@@ -494,9 +494,9 @@ describe('native retained counterparts', () => {
           }
         };
         check(view);
-        view.update.history.undo();
+        view.api.history.undo();
         assert.equal(view.read.text.string([]), 'AD');
-        view.update.history.redo();
+        view.api.history.redo();
         check(view);
         const loaded = createEditor({
           plugins: [authored({ authorId: 'alice' })],
@@ -527,16 +527,16 @@ describe('native retained counterparts', () => {
         });
       };
       check();
-      view.update.history.undo();
+      view.api.history.undo();
       assert.equal(view.read.text.string([]), 'A  draft.');
-      view.update.history.redo();
+      view.api.history.redo();
       check();
       view.update.text.insert('?');
       assert.deepEqual(readAuthoredViewFragments(view, id)[0].placement, {
         kind: 'text',
         point: point(affinity === 'backward' ? 4 : 2),
       });
-      view.update.history.undo();
+      view.api.history.undo();
       check();
       const saved = JSON.stringify(editor.read.value());
       for (const action of ['accept', 'reject'] as const) {
@@ -1007,9 +1007,9 @@ describe('native retained counterparts', () => {
     const { id } = editor.read.authored.changes().items[0];
     const fragments = readAuthoredViewFragments(view, id);
     assert.equal(fragments.length, 1);
-    view.update.history.undo();
+    view.api.history.undo();
     assert.deepEqual(readAuthoredViewFragments(view, id), []);
-    view.update.history.redo();
+    view.api.history.redo();
     assert.deepEqual(readAuthoredViewFragments(view, id), fragments);
   });
 
@@ -1187,8 +1187,8 @@ describe('native retained counterparts', () => {
     if (fragment.kind !== 'properties') assert.fail();
     assert.deepEqual(fragment.before, {});
     assert.deepEqual(fragment.after, { bold: true, italic: true });
-    view.update.history.undo();
-    view.update.history.undo();
+    view.api.history.undo();
+    view.api.history.undo();
     assert.deepEqual(readAuthoredViewFragments(view, id), []);
   });
 
@@ -1258,7 +1258,7 @@ describe('native retained counterparts', () => {
       tx.text.delete({ at: { anchor: point(1), focus: point(3) } });
     });
     assert.equal(readAuthoredViewFragments(view, id).length, 2);
-    view.update.history.undo();
+    view.api.history.undo();
     const fragments = readAuthoredViewFragments(view, id);
     assert.equal(fragments.length, 1);
     const [fragment] = fragments;
@@ -1493,7 +1493,7 @@ describe('native retained counterparts', () => {
     'length',
     'open context',
   ] as const) {
-    it(`rejects retained ${corruption} corruption before opening a saved document`, () => {
+    it(`rejects retained ${corruption} corruption when its body is materialized`, () => {
       const editor = createEditor({
         plugins: [authored({ authorId: 'alice' })],
         initialValue: [paragraph('Original wording')],
@@ -1515,12 +1515,18 @@ describe('native retained counterparts', () => {
       else retained.from = 0;
       operation[15] = JSON.stringify(steps);
       operation[14] = checksumAuthoredPayload(operation[15]);
+      const restored = createEditor({
+        plugins: [authored({ authorId: 'reader' })],
+        initialValue: changed,
+      });
+      const deferred = [
+        ...records(restored.read.getField(authoredState).operations),
+      ]
+        .map(([, value]) => value)
+        .find((value) => value.kind === 'edit' && 'content' in value);
+      assert.ok(deferred);
       assert.throws(
-        () =>
-          createEditor({
-            plugins: [authored({ authorId: 'reader' })],
-            initialValue: changed,
-          }),
+        () => materializeAuthoredEdit(deferred),
         corruption === 'origin'
           ? /retained content does not match its target/
           : /retained/

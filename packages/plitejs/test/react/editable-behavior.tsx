@@ -132,6 +132,113 @@ describe('plite-react editable behavior', () => {
     ).toBe(true);
   });
 
+  test('keeps an emptied paragraph mounted while navigating neighboring blocks', async () => {
+    const editor = createEditor({
+      initialValue: [
+        { type: 'block', children: [{ text: 'Before' }] },
+        { type: 'block', children: [{ text: 'Remove me' }] },
+        { type: 'block', children: [{ text: 'After' }] },
+      ],
+    });
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable />
+      </EditorRoot>
+    );
+    const editable = rendered.container.querySelector<HTMLElement>(
+      '[data-editor="true"]'
+    );
+    const text = rendered.container.querySelectorAll<HTMLElement>(
+      '[data-editor-string]'
+    )[1]?.firstChild;
+
+    expect(editable).toBeTruthy();
+    expect(text).toBeTruthy();
+    Object.defineProperty(editable!, 'isContentEditable', {
+      configurable: true,
+      value: true,
+    });
+    const readDOMPoint = () => {
+      const selection = document.getSelection();
+      const anchorNode = selection?.anchorNode ?? null;
+      const anchorElement =
+        anchorNode?.nodeType === Node.ELEMENT_NODE
+          ? (anchorNode as Element)
+          : anchorNode?.parentElement;
+
+      return {
+        offset: selection?.anchorOffset,
+        path: anchorElement
+          ?.closest('[data-editor-path]')
+          ?.getAttribute('data-editor-path'),
+        text: anchorNode?.textContent,
+      };
+    };
+
+    act(() => {
+      editable!.focus();
+      document.getSelection()?.setBaseAndExtent(text!, 9, text!, 9);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+    await waitFor(() => {
+      expect(editor.read.selection()).toEqual({
+        anchor: { path: [1, 0], offset: 9 },
+        focus: { path: [1, 0], offset: 9 },
+      });
+    });
+    act(() => {
+      for (let index = 0; index < 9; index++) {
+        fireEvent.keyDown(editable!, { key: 'Backspace' });
+      }
+    });
+
+    expect(editor.read.value().children[1]).toEqual({
+      type: 'block',
+      children: [{ text: '' }],
+    });
+    await waitFor(() => {
+      expect(
+        rendered.container.querySelector(
+          '[data-editor-path="1,0"] [data-editor-zero-width]'
+        )
+      ).not.toBeNull();
+    });
+
+    await act(async () => {
+      fireEvent.keyDown(editable!, { key: 'ArrowRight' });
+    });
+    expect(editor.read.selection()).toEqual({
+      anchor: { path: [2, 0], offset: 0 },
+      focus: { path: [2, 0], offset: 0 },
+    });
+    expect(readDOMPoint()).toEqual({ offset: 0, path: '2,0', text: 'After' });
+
+    await act(async () => {
+      fireEvent.keyDown(editable!, { key: 'ArrowRight' });
+    });
+    expect(editor.read.selection()).toEqual({
+      anchor: { path: [2, 0], offset: 1 },
+      focus: { path: [2, 0], offset: 1 },
+    });
+    expect(readDOMPoint()).toEqual({ offset: 1, path: '2,0', text: 'After' });
+
+    act(() => {
+      editor.update((tx) => {
+        tx.text.insert('Restored', { at: { path: [1, 0], offset: 0 } });
+      });
+    });
+    await waitFor(() => {
+      expect(
+        rendered.container.querySelector('[data-editor-path="1,0"]')
+      ).toHaveTextContent('Restored');
+    });
+    expect(
+      rendered.container.querySelector(
+        '[data-editor-path="1,0"] [data-editor-zero-width]'
+      )
+    ).toBeNull();
+  });
+
   test('applies visible root defaults as CSS', () => {
     const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
     const editor = createEditor({ initialValue });
@@ -1085,6 +1192,77 @@ describe('plite-react editable behavior', () => {
       expect(typeof leaf.getBoundingClientRect).toBe('function');
     } finally {
       leaf.remove();
+    }
+  });
+
+  test('default scroll keeps the caret below a scroll container top inset', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [{ type: 'block', children: [{ text: 'test' }] }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+    });
+
+    const outer = document.createElement('div');
+    outer.style.overflow = 'auto';
+    outer.style.scrollPaddingTop = '40px';
+    outer.scrollTop = 50;
+
+    Object.defineProperties(outer, {
+      clientHeight: { configurable: true, value: 100 },
+      clientWidth: { configurable: true, value: 100 },
+      scrollHeight: { configurable: true, value: 300 },
+      scrollWidth: { configurable: true, value: 100 },
+    });
+    Object.defineProperty(outer, 'getBoundingClientRect', {
+      configurable: true,
+      value: () =>
+        ({
+          bottom: 100,
+          height: 100,
+          left: 0,
+          right: 100,
+          top: 0,
+          width: 100,
+          x: 0,
+          y: 0,
+        }) as DOMRect,
+    });
+
+    const leaf = document.createElement('span');
+    const text = document.createTextNode('test');
+    leaf.append(text);
+    outer.append(leaf);
+    document.body.append(outer);
+
+    const range = {
+      cloneRange: () => ({
+        collapse: () => {},
+        getBoundingClientRect: () =>
+          ({
+            bottom: 40,
+            height: 20,
+            left: 1,
+            right: 2,
+            top: 20,
+            width: 1,
+            x: 1,
+            y: 20,
+          }) as DOMRect,
+        startContainer: text,
+      }),
+    } as unknown as DOMRange;
+
+    try {
+      defaultScrollSelectionIntoView(editor, range);
+
+      expect(outer.scrollTop).toBe(26);
+    } finally {
+      outer.remove();
     }
   });
 

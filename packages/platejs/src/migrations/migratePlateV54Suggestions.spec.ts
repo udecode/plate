@@ -9,6 +9,11 @@ import {
 } from 'platejs';
 
 import { authored, readAuthoredFormatSnapshot } from '../authored';
+import type { EditorDocumentValue } from '../facade';
+import {
+  defineDocumentMigrations,
+  migrateDocument,
+} from './documentMigrations';
 import { migrateV54 } from './migratePlateV54';
 
 const BoldPlugin = definePlugin('bold', {
@@ -32,20 +37,28 @@ const RootPlugin = definePlugin('testRoot', {
   }),
 });
 
-const createMigrationEditor = () =>
-  createEditor({
-    plugins: [BaseParagraphPlugin, BoldPlugin, RootPlugin],
-    skipInitialization: true,
-  });
+const MigrationSchema = { id: 'plate', version: 54 } as const;
+const migrationPlugins = [
+  BaseParagraphPlugin,
+  BoldPlugin,
+  RootPlugin,
+  authored({ authorId: 'migration' }),
+] as const;
+const migrations = defineDocumentMigrations({
+  plugins: migrationPlugins,
+  schema: MigrationSchema,
+  steps: { 54: migrateV54 },
+});
+const migrateLegacy = (document: EditorDocumentValue) =>
+  migrateDocument(document, {
+    migrations,
+    source: 53,
+  }).output.document;
 
-const reviewSnapshot = (document: ReturnType<typeof migrateV54>) => {
+const reviewSnapshot = (document: EditorDocumentValue) => {
   const editor = createEditor({
-    plugins: [
-      BaseParagraphPlugin,
-      BoldPlugin,
-      RootPlugin,
-      authored({ authorId: 'reader' }),
-    ],
+    plugins: migrationPlugins,
+    schema: MigrationSchema,
     initialValue: document,
   });
 
@@ -54,86 +67,80 @@ const reviewSnapshot = (document: ReturnType<typeof migrateV54>) => {
 
 describe('migratePlateV54 legacy suggestions', () => {
   it('preserves accepted and proposed text, properties, blocks, roots, and identities', () => {
-    const editor = createMigrationEditor();
-    const document = migrateV54({
-      editor,
-      from: 53,
-      to: 54,
-      document: {
-        children: [
-          {
-            childRoots: { testRoot: 'notes' },
-            children: [{ text: '' }],
-            type: 'testRoot',
+    const document = migrateLegacy({
+      children: [
+        {
+          childRoots: { testRoot: 'notes' },
+          children: [{ text: '' }],
+          type: 'testRoot',
+        },
+        {
+          children: [
+            {
+              suggestion: true,
+              suggestion_replace: {
+                createdAt: 100,
+                id: 'replace',
+                type: 'remove',
+                userId: 'alice',
+              },
+              text: 'old ',
+            },
+            {
+              suggestion: true,
+              suggestion_replace: {
+                createdAt: 100,
+                id: 'replace',
+                type: 'insert',
+                userId: 'alice',
+              },
+              text: 'new ',
+            },
+            {
+              bold: true,
+              suggestion: true,
+              suggestion_format: {
+                createdAt: 200,
+                id: 'format',
+                newProperties: { bold: true },
+                type: 'update',
+                userId: 'bob',
+              },
+              text: 'text',
+            },
+          ],
+          type: 'p',
+        },
+        {
+          children: [{ text: 'block' }],
+          suggestion: {
+            createdAt: 300,
+            id: 'block',
+            type: 'insert',
+            userId: 'carol',
           },
+          type: 'p',
+        },
+      ],
+      meta: { application: 'fixture' },
+      roots: {
+        notes: [
           {
             children: [
               {
                 suggestion: true,
-                suggestion_replace: {
-                  createdAt: 100,
-                  id: 'replace',
+                suggestion_root: {
+                  createdAt: 400,
+                  id: 'root',
                   type: 'remove',
-                  userId: 'alice',
+                  userId: 'dana',
                 },
-                text: 'old ',
-              },
-              {
-                suggestion: true,
-                suggestion_replace: {
-                  createdAt: 100,
-                  id: 'replace',
-                  type: 'insert',
-                  userId: 'alice',
-                },
-                text: 'new ',
-              },
-              {
-                bold: true,
-                suggestion: true,
-                suggestion_format: {
-                  createdAt: 200,
-                  id: 'format',
-                  newProperties: { bold: true },
-                  type: 'update',
-                  userId: 'bob',
-                },
-                text: 'text',
+                text: 'note',
               },
             ],
             type: 'p',
           },
-          {
-            children: [{ text: 'block' }],
-            suggestion: {
-              createdAt: 300,
-              id: 'block',
-              type: 'insert',
-              userId: 'carol',
-            },
-            type: 'p',
-          },
         ],
-        meta: { application: 'fixture' },
-        roots: {
-          notes: [
-            {
-              children: [
-                {
-                  suggestion: true,
-                  suggestion_root: {
-                    createdAt: 400,
-                    id: 'root',
-                    type: 'remove',
-                    userId: 'dana',
-                  },
-                  text: 'note',
-                },
-              ],
-              type: 'p',
-            },
-          ],
-        },
       },
     });
     const snapshot = reviewSnapshot(document);
@@ -191,26 +198,21 @@ describe('migratePlateV54 legacy suggestions', () => {
   ])(
     'converts $type line-break suggestions',
     ({ accepted, proposed, type }) => {
-      const document = migrateV54({
-        editor: createMigrationEditor(),
-        from: 53,
-        to: 54,
-        document: {
-          children: [
-            {
-              children: [{ text: 'one' }],
-              suggestion: {
-                createdAt: 123,
-                id: 'break',
-                isLineBreak: true,
-                type,
-                userId: 'alice',
-              },
-              type: 'p',
+      const document = migrateLegacy({
+        children: [
+          {
+            children: [{ text: 'one' }],
+            suggestion: {
+              createdAt: 123,
+              id: 'break',
+              isLineBreak: true,
+              type,
+              userId: 'alice',
             },
-            { children: [{ text: 'two' }], type: 'p' },
-          ],
-        },
+            type: 'p',
+          },
+          { children: [{ text: 'two' }], type: 'p' },
+        ],
       });
       const snapshot = reviewSnapshot(document);
 
@@ -224,70 +226,60 @@ describe('migratePlateV54 legacy suggestions', () => {
 
   it('rejects overlapping identities before producing native data', () => {
     expect(() =>
-      migrateV54({
-        editor: createMigrationEditor(),
-        from: 53,
-        to: 54,
-        document: {
-          children: [
-            {
-              children: [
-                {
-                  suggestion: true,
-                  suggestion_one: {
-                    createdAt: 1,
-                    id: 'one',
-                    type: 'insert',
-                    userId: 'alice',
-                  },
-                  suggestion_two: {
-                    createdAt: 2,
-                    id: 'two',
-                    type: 'insert',
-                    userId: 'bob',
-                  },
-                  text: 'ambiguous',
+      migrateLegacy({
+        children: [
+          {
+            children: [
+              {
+                suggestion: true,
+                suggestion_one: {
+                  createdAt: 1,
+                  id: 'one',
+                  type: 'insert',
+                  userId: 'alice',
                 },
-              ],
-              type: 'p',
-            },
-          ],
-        },
+                suggestion_two: {
+                  createdAt: 2,
+                  id: 'two',
+                  type: 'insert',
+                  userId: 'bob',
+                },
+                text: 'ambiguous',
+              },
+            ],
+            type: 'p',
+          },
+        ],
       })
     ).toThrow(
       /ambiguous overlapping suggestion identities at main\.0\.children\.0/
     );
 
     expect(() =>
-      migrateV54({
-        editor: createMigrationEditor(),
-        from: 53,
-        to: 54,
-        document: {
-          children: [
-            {
-              children: [
-                {
-                  suggestion: true,
-                  suggestion_child: {
-                    createdAt: 2,
-                    id: 'child',
-                    type: 'insert',
-                    userId: 'bob',
-                  },
-                  text: 'nested',
+      migrateLegacy({
+        children: [
+          {
+            children: [
+              {
+                suggestion: true,
+                suggestion_child: {
+                  createdAt: 2,
+                  id: 'child',
+                  type: 'insert',
+                  userId: 'bob',
                 },
-              ],
-              suggestion: {
-                createdAt: 1,
-                id: 'parent',
-                type: 'insert',
-                userId: 'alice',
+                text: 'nested',
               },
-              type: 'p',
+            ],
+            suggestion: {
+              createdAt: 1,
+              id: 'parent',
+              type: 'insert',
+              userId: 'alice',
             },
-          ],
-        },
+            type: 'p',
+          },
+        ],
       })
     ).toThrow(/"parent" contains another suggestion identity/);
   });
@@ -315,14 +307,9 @@ describe('migratePlateV54 legacy suggestions', () => {
     } as const;
     const frozen = JSON.stringify(document);
 
-    expect(() =>
-      migrateV54({
-        document,
-        editor: createMigrationEditor(),
-        from: 53,
-        to: 54,
-      })
-    ).toThrow(/current property "bold" does not match newProperties/);
+    expect(() => migrateLegacy(document)).toThrow(
+      /current property "bold" does not match newProperties/
+    );
     expect(JSON.stringify(document)).toBe(frozen);
   });
 });

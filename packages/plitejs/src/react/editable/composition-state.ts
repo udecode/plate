@@ -25,7 +25,7 @@ import {
   hasMountedEditableCompositionOwner,
 } from './editable-dom-runtime';
 import type { EditableCompositionStateSetter } from './input-controller';
-import { updateNativeTextInput } from './input-history';
+import { createNativeGroupingId, updateNativeTextInput } from './input-history';
 import type {
   EditableInputController,
   PendingCompositionEnd,
@@ -35,6 +35,7 @@ import {
   beginEditableCompositionSession,
   captureEditableCompositionRuntimeMarks,
   clearEditableCompositionRuntimeState,
+  getEditableNativeGroupingInput,
   markEditableCompositionModelCommitted,
   recordEditableCompositionText,
   restoreEditableCompositionRuntimeMarks,
@@ -535,6 +536,7 @@ const schedulePendingCompositionEnd = ({
 
 export const commitChromeCompositionEndFallback = ({
   editor,
+  inputController,
   mergeHistory = false,
   rootElement,
   shouldCommit = true,
@@ -542,6 +544,7 @@ export const commitChromeCompositionEndFallback = ({
   text,
 }: {
   editor: Editor;
+  inputController?: EditableInputController;
   mergeHistory?: boolean;
   rootElement?: HTMLElement | null;
   shouldCommit?: boolean;
@@ -626,14 +629,18 @@ export const commitChromeCompositionEndFallback = ({
       tx.text.insert(text, target ? { at: target } : undefined);
     };
 
-    if (mergeHistory) {
-      editor.update(
-        { tags: ['composition', 'history-merge'] },
-        insertCompositionText
-      );
-    } else {
-      updateNativeTextInput(editor, insertCompositionText);
-    }
+    const input = inputController
+      ? getEditableNativeGroupingInput(inputController, true)
+      : (() => {
+          const origin = createNativeGroupingId();
+
+          return {
+            origin,
+            ...(mergeHistory ? { composition: origin } : {}),
+          };
+        })();
+
+    updateNativeTextInput(editor, insertCompositionText, input);
   });
   finishCleanup();
   const committed = editor.read((state) => state.children()) !== childrenBefore;
@@ -848,6 +855,7 @@ export const applyEditableCompositionEnd = ({
       const fallback = failures.attempt(() =>
         commitChromeCompositionEndFallback({
           editor,
+          inputController,
           mergeHistory,
           rootElement,
           shouldCommit:
@@ -981,9 +989,15 @@ export const applyEditableCompositionStart = ({
     setComposing(true);
 
     if (selection && RangeApi.isExpanded(selection)) {
-      updateNativeTextInput(editor, (tx) => {
-        tx.text.delete({ at: selection });
-      });
+      updateNativeTextInput(
+        editor,
+        (tx) => {
+          tx.text.delete({ at: selection });
+        },
+        inputController
+          ? getEditableNativeGroupingInput(inputController, true)
+          : { origin: createNativeGroupingId() }
+      );
     }
 
     if (marks && Object.keys(marks).length > 0) {

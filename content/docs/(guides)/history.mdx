@@ -3,7 +3,13 @@ title: "History"
 description: "Understand the undo and redo batch shape stored by the history plugin."
 ---
 
-Plate tracks local undo and redo batches by default. Each batch preserves a canonical document change, effects, and selection.
+Plate tracks local undo and redo batches by default. Each batch preserves a
+canonical document change, effects, and selection.
+
+Saving a document revision and its [Comments JSON](/docs/comment#save-and-load)
+does not save local undo. Ordinary reload creates a fresh editor with empty undo
+and redo stacks. Application version history and retained authored contributions
+have separate lifetimes from this session history.
 
 ## Usage
 
@@ -12,14 +18,32 @@ import { createEditor } from "platejs";
 
 const editor = createEditor();
 
-editor.read((state) => state.history.undos());
-
-editor.update((tx) => {
-  tx.history.undo();
-});
+const canUndo = editor.read.history.hasUndo();
+const result = editor.api.history.undo();
 
 editor.update({ history: "skip" }).text.insert("draft");
 ```
+
+`undo()` and `redo()` each run one complete update. Use `hasUndo()` and
+`hasRedo()` for controls, and inspect `editor.read.history()` when you need the full
+immutable stacks.
+
+Configure retention and automatic grouping on `HistoryPlugin`:
+
+```typescript
+import { createEditor, HistoryPlugin } from "platejs";
+
+const editor = createEditor({
+  plugins: [
+    HistoryPlugin.configure({
+      initialState: { maxDepth: 100, newBatchDelay: 750 },
+    }),
+  ],
+});
+```
+
+`maxDepth` defaults to `100`. `newBatchDelay` defaults to `500` milliseconds.
+The configured values apply to the next accepted update or replay.
 
 ## History object
 
@@ -61,6 +85,11 @@ Encode the installed undo and redo stacks as validated version 4 JSON. The
 envelope records the editor's schema identity, and each batch stores its
 canonical `DocumentChange`, registered effects, and selection envelopes.
 
+This advanced API serializes local document history. It does not serialize the
+native anchor recovery data needed to restore exact comment coverage when
+undoing pre-reload edits. Load Comments revisions into a fresh editor with empty
+local history.
+
 Compatible typing and same-node property updates coalesce from canonical
 change classifications and changed ranges. Grouping fingerprints are
 runtime-only; loading persisted history starts a fresh automatic group.
@@ -100,25 +129,34 @@ editor state untouched.
 
 ## Editor API
 
-#### `state.history(): History`
+#### `editor.read.history(): History`
 
 Read the current undo and redo stacks.
 
-#### `state.history.undos(): readonly Batch[]`
+#### `editor.read.history.hasUndo(): boolean`
 
-Read the undo stack.
+Return whether the undo branch has a surviving mapped batch.
 
-#### `state.history.redos(): readonly Batch[]`
+#### `editor.read.history.hasRedo(): boolean`
 
-Read the redo stack.
+Return whether the redo branch has a surviving mapped batch.
 
-#### `tx.history.undo(): void`
+#### `editor.api.history.undo(): HistoryResult`
 
-Undo the previous history batch.
+Run one complete update that replays the current undo batch.
 
-#### `tx.history.redo(): void`
+#### `editor.api.history.redo(): HistoryResult`
 
-Redo the next history batch.
+Run one complete update that replays the current redo batch.
+
+Both methods return `{ status: "applied" }` after a replay and
+`{ status: "empty" }` when no surviving batch exists. An authored dependency
+conflict returns `{ status: "blocked", conflicts }`, where `conflicts` contains
+the immutable contribution IDs that block replay. Other failures throw.
+
+Call these services outside `editor.read(...)` and `editor.update(...)`. A
+history batch can cover several document roots; replay always applies the
+complete batch.
 
 #### `tx.history.restore(history): void`
 
@@ -156,14 +194,6 @@ For one direct write, configure the update facade instead:
 editor.update({ history: "skip" }).text.insert("draft");
 ```
 
-#### `editor.update.history.undo(): void`
-
-Undo the previous history batch outside a larger transaction.
-
-#### `editor.update.history.redo(): void`
-
-Redo the next history batch outside a larger transaction.
-
 #### `editor.update.history.restore(history): void`
 
 Restore decoded history as one direct update.
@@ -182,13 +212,36 @@ const editor = createEditor({
 });
 ```
 
-Undo and redo reverse local interaction batches, including the authored operation and mapped selection recorded with that batch. They do not accept or reject collaborative proposals.
+Undo and redo reverse local interaction batches, including the authored operation and mapped selection recorded with that batch. An accept or reject decision made as a local document action can be undone. Undo is not a substitute for choosing a review decision through Authored.
 
 Use `update.authored.decide(...)` for review decisions. Use `update.authored.revert(...)` to create a new compensating contribution from retained accepted history. The original contribution and author remain in the authored record.
 
 Persist History with `History.toJSON` only when the application needs local undo stacks after reload. The authored document envelope in `editor.read.value()` separately persists proposals, decisions, causal operations, and optional retained author history.
 
 See [Authored Changes](/docs/authored-changes).
+
+## Comments and document revisions
+
+Document undo maps comment attachments without rewinding conversation data.
+Replies, message edits, resolution, reopening, and explicit deletion stay outside
+document undo. Undoing a suggestion decision preserves its discussion and locates
+it through the same Authored change ID.
+
+Save `editor.read.value()` with `editor.plugin(CommentsPlugin).api.toJSON()` under
+one application revision and conversation generation. Loading that pair creates
+a fresh editor with `initialComments` and an empty local undo stack.
+
+For an old-version preview, join current retained conversations with the selected
+revision's saved targets. Threads without a target in that revision are
+unavailable; currently deleted threads remain absent. A version restore creates
+a new application revision under document-head and conversation-generation
+checks, then opens a fresh editor. It is not a local undo or an in-place document
+replacement. See [Comments](/docs/comment#document-history-and-versions) for the
+target join.
+
+Saved comment ranges do not support a changed Yjs baseline. A state vector alone
+cannot map missed edits through restored targets, and Yjs admission does not
+support persisted local undo.
 
 ## Controlled previews
 

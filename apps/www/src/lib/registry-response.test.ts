@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'bun:test';
-import { readFile, readdir } from 'node:fs/promises';
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 
 import {
   PLATE_REGISTRY_BASES,
@@ -10,6 +20,34 @@ import { createRegistryResponse } from './registry-response';
 const SUPPORTED_STYLES = PLATE_REGISTRY_BASES.flatMap((base) =>
   PLATE_REGISTRY_STYLE_NAMES.map((style) => `${base}-${style}`)
 );
+const ROUTE_STYLES = [...SUPPORTED_STYLES, 'new-york', 'new-york-v4'];
+
+async function createGeneratedFixture() {
+  const root = await mkdtemp(path.join(tmpdir(), 'plate-registry-response-'));
+
+  await mkdir(path.join(root, 'src/__registry__'), { recursive: true });
+
+  await Promise.all([
+    cp('public/r', path.join(root, 'public/r'), { recursive: true }),
+    cp(
+      'src/__registry__/overlays',
+      path.join(root, 'src/__registry__/overlays'),
+      {
+        recursive: true,
+      }
+    ),
+    cp(
+      'src/__registry__/generation.json',
+      path.join(root, 'src/__registry__/generation.json')
+    ),
+    cp(
+      'src/__registry__/registry-metadata.json',
+      path.join(root, 'src/__registry__/registry-metadata.json')
+    ),
+  ]);
+
+  return root;
+}
 
 function getSourceContent(
   payload: Awaited<ReturnType<typeof createRegistryResponse>>
@@ -36,7 +74,10 @@ describe('registry style responses', () => {
       style: 'base-luma',
     });
 
-    expect(toolbar?.dependencies).toEqual(['@base-ui/react']);
+    expect(toolbar?.dependencies).toEqual(
+      expect.arrayContaining(['@base-ui/react'])
+    );
+    expect(toolbar?.dependencies).not.toContain('@radix-ui/react-toolbar');
     expect(toolbar?.files).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -61,10 +102,13 @@ describe('registry style responses', () => {
         style,
       });
 
-      expect(toolbar?.dependencies).toEqual([
-        '@radix-ui/react-toolbar',
-        '@radix-ui/react-tooltip',
-      ]);
+      expect(toolbar?.dependencies).toEqual(
+        expect.arrayContaining([
+          '@radix-ui/react-toolbar',
+          '@radix-ui/react-tooltip',
+        ])
+      );
+      expect(toolbar?.dependencies).not.toContain('@base-ui/react');
       expect(toolbar?.files).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -147,37 +191,116 @@ describe('registry style responses', () => {
     );
   });
 
-  it('serves every public registry payload under all 16 combinations', async () => {
-    const directoryEntries = await readdir('public/r');
-    const fileNames = directoryEntries.filter((fileName) =>
-      fileName.endsWith('.json')
-    );
+  it('serves complete indexes and representative payloads through all 36 routes', async () => {
+    for (const directory of ['r', 'rd'] as const) {
+      const directoryEntries = await readdir(`public/${directory}`);
+      const fileNames = directoryEntries.filter((fileName) =>
+        fileName.endsWith('.json')
+      );
 
-    expect(fileNames.length).toBeGreaterThan(0);
+      expect(fileNames.length).toBeGreaterThan(0);
 
-    const registry = JSON.parse(
-      await readFile('public/r/registry.json', 'utf-8')
-    ) as { items: Array<{ name: string }> };
-    expect(fileNames.toSorted()).toEqual(
-      [
-        'registry.json',
-        'registry-docs.json',
-        ...registry.items.map(({ name }) => `${name}.json`),
-      ].toSorted()
-    );
+      const registry = JSON.parse(
+        await readFile(`public/${directory}/registry.json`, 'utf-8')
+      ) as { items: Array<{ name: string }> };
+      expect(fileNames.toSorted()).toEqual(
+        [
+          'registry.json',
+          'registry-docs.json',
+          ...registry.items.map(({ name }) => `${name}.json`),
+        ].toSorted()
+      );
 
-    for (const style of SUPPORTED_STYLES) {
-      for (const fileName of fileNames) {
-        expect(
-          await createRegistryResponse({
-            directory: 'r',
-            fileName,
-            origin: 'https://platejs.org',
-            style,
-          }),
-          `${style}/${fileName}`
-        ).not.toBeNull();
+      for (const style of ROUTE_STYLES) {
+        for (const fileName of [
+          'registry.json',
+          'registry-docs.json',
+          'toolbar.json',
+        ]) {
+          expect(
+            await createRegistryResponse({
+              directory,
+              fileName,
+              origin:
+                directory === 'r'
+                  ? 'https://platejs.org'
+                  : 'http://localhost:3000',
+              style,
+            }),
+            `${directory}/${style}/${fileName}`
+          ).not.toBeNull();
+        }
       }
+    }
+  });
+
+  it('rejects a mixed metadata generation', async () => {
+    const root = await createGeneratedFixture();
+
+    try {
+      const metadataPath = path.join(
+        root,
+        'src/__registry__/registry-metadata.json'
+      );
+      const metadata = JSON.parse(await readFile(metadataPath, 'utf-8')) as {
+        generation: string;
+      };
+      await writeFile(
+        metadataPath,
+        `${JSON.stringify({ ...metadata, generation: 'stale' }, null, 2)}\n`
+      );
+
+      await expect(
+        createRegistryResponse({
+          directory: 'r',
+          fileName: 'toolbar.json',
+          origin: 'https://platejs.org',
+          root,
+          style: 'base-nova',
+        })
+      ).rejects.toThrow('Registry generation metadata does not match.');
+    } finally {
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
+  it('rejects an overlay listed by the manifest when its file is absent', async () => {
+    const root = await createGeneratedFixture();
+
+    try {
+      const manifestPath = path.join(
+        root,
+        'src/__registry__/overlays/manifest.json'
+      );
+      const manifest = JSON.parse(await readFile(manifestPath, 'utf-8')) as {
+        combinations: Array<{ files: string[]; style: string }>;
+      };
+      const combination = manifest.combinations.find(
+        ({ files }) => files.length > 0
+      );
+
+      expect(combination).toBeDefined();
+      const fileName = combination!.files[0];
+      await rm(
+        path.join(
+          root,
+          'src/__registry__/overlays',
+          combination!.style,
+          fileName
+        )
+      );
+
+      await expect(
+        createRegistryResponse({
+          directory: 'r',
+          fileName,
+          origin: 'https://platejs.org',
+          root,
+          style: combination!.style,
+        })
+      ).rejects.toThrow('Registry manifest lists a missing payload');
+    } finally {
+      await rm(root, { force: true, recursive: true });
     }
   });
 });

@@ -12,7 +12,7 @@ import {
   Ungroup,
   XIcon,
 } from 'lucide-react';
-import { useEditor, useEditorSelector, usePluginStore } from 'platejs/react';
+import { useEditor, useEditorSelector } from 'platejs/react';
 import { TablePlugin } from 'platejs/table/react';
 import * as React from 'react';
 
@@ -42,9 +42,8 @@ export function TableToolbarButton() {
 
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
-  const disableMerge = usePluginStore(TablePlugin, 'disableMerge');
-  const canMerge = !disableMerge && canMergeSelection;
-  const canSplit = !disableMerge && canSplitSelection;
+  const canMerge = canMergeSelection;
+  const canSplit = canSplitSelection;
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
@@ -235,8 +234,8 @@ function TablePicker({ onInsert }: { onInsert: () => void }) {
   const insertTable = (rowIndex: number, colIndex: number) => {
     editor.plugin(TablePlugin).update.insert(
       {
-        colCount: colIndex + 1,
-        rowCount: rowIndex + 1,
+        columns: colIndex + 1,
+        rows: rowIndex + 1,
       },
       { select: true }
     );

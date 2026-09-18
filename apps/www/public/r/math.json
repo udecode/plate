@@ -6,7 +6,9 @@
   "dependencies": [
     "platejs",
     "katex",
-    "react-textarea-autosize"
+    "react-textarea-autosize",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [
     "https://platejs.org/r/equation-toolbar-button.json",

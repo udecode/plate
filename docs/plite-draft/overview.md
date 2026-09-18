@@ -1,21 +1,28 @@
 ---
 date: 2026-04-08
 topic: plite-overview
+status: superseded
 ---
 
 # Plite Overview
 
+> Historical draft-program snapshot. Its “current,” “live,” and “canonical”
+> wording applies to the recorded April program, not present work. Use the
+> [Plite entrypoint](../plite/agent-start.md) and [feature review ledger](../research/reviews.md)
+> for current decisions, plans, and evidence. Prior alternatives and results
+> remain below for reconciliation.
+
 ## Purpose
 
-Front door to the live `docs/plite` stack.
+Recorded entrypoint for the prior rewrite draft.
 
-## Current Read
+## Recorded program state
 
 - live verdict now treats `Target A` as `Go` on the proved default stack
 - the broader `Target B` claim is still reopened under the exhaustive
   API/public-surface audit challenge
 - the curated perf gate package currently clears on blocker-facing lanes in
-  [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md)
+  [replacement-gates-scoreboard.md](../plite/replacement-gates-scoreboard.md)
 - completed roadmap groundwork is now called `POC RC`
 - the core `packages/plite/test/**` deleted-family bucket is closed
 - the full `packages/plite-react/**` deleted-family bucket is closed
@@ -46,9 +53,9 @@ Front door to the live `docs/plite` stack.
   - widget stores own widget UI
 - the broader program is still called `True Plite RC`
 - the current execution owners are now:
-  - [2026-04-13-plite-full-no-regression-story-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-13-plite-full-no-regression-story-plan.md)
-  - [2026-04-15-plite-example-parity-recovery-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-plite-example-parity-recovery-plan.md)
-  - [decoration-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/decoration-roadmap.md)
+  - [2026-04-13-plite-full-no-regression-story-plan.md](../plans/2026-04-13-plite-full-no-regression-story-plan.md)
+  - [2026-04-15-plite-example-parity-recovery-plan.md](../plans/2026-04-15-plite-example-parity-recovery-plan.md)
+  - [decoration-roadmap.md](../plite/decoration-roadmap.md)
 - browser/input external-evidence work is now post-RC follow-up, not the active
   current blocker lane
 - local Firefox and Android structural/browser rows are exhausted; the current
@@ -56,7 +63,7 @@ Front door to the live `docs/plite` stack.
   parity, and external Android keyboard-feature evidence plus broader iOS
   evidence remain post-RC follow-up
 - the zero-regression diff seed in
-  [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md)
+  [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md)
   is `EMPTY`, so there are no hidden unreviewed browser/input files left in the
   current scoped diff
 
@@ -64,13 +71,13 @@ Front door to the live `docs/plite` stack.
 
 | Class              | Start here                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| verdict            | [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/plite/release-readiness-decision.md) (primary); supporting live surfaces: [replacement-family-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-family-ledger.md), [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md) |
-| sequence           | [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/master-roadmap.md)                                                                                                                                                                                                                                                                                                                                                                                           |
-| evidence           | [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md), [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/release-file-review-ledger.md), [docs/plite-browser/proof-lane-matrix.md](/Users/zbeyens/git/plate-2/docs/plite-browser/proof-lane-matrix.md)                                                                                                                                                     |
-| perf gate          | [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md)                                                                                                                                                                                                                                                                                                                                                                  |
-| protocol           | [deletion-closure-protocol.md](/Users/zbeyens/git/plate-2/docs/plite/references/deletion-closure-protocol.md)                                                                                                                                                                                                                                                                                                                                                                     |
-| reference          | [architecture-contract.md](/Users/zbeyens/git/plate-2/docs/plite/references/architecture-contract.md), [live-shape-register.md](/Users/zbeyens/git/plate-2/docs/plite/references/live-shape-register.md), [normalization-reference.md](/Users/zbeyens/git/plate-2/docs/plite/references/normalization-reference.md)                                                                                                                                                                                                                                     |
-| maintainer context | [pr-description.md](/Users/zbeyens/git/plate-2/docs/plite/references/pr-description.md)                                                                                                                                                                                                                                                                                                                                  |
+| verdict            | [release-readiness-decision.md](../plite/release-readiness-decision.md) (primary); supporting live surfaces: [replacement-family-ledger.md](../plite/references/replacement-family-ledger.md), [replacement-gates-scoreboard.md](../plite/replacement-gates-scoreboard.md) |
+| sequence           | [master-roadmap.md](../plite/master-roadmap.md)                                                                                                                                                                                                                                                                                                                                                                                           |
+| evidence           | [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md), [release-file-review-ledger.md](../plite/release-file-review-ledger.md), [docs/plite-browser/proof-lane-matrix.md](../plite-browser/proof-lane-matrix.md)                                                                                                                                                     |
+| perf gate          | [replacement-gates-scoreboard.md](../plite/replacement-gates-scoreboard.md)                                                                                                                                                                                                                                                                                                                                                                  |
+| protocol           | [deletion-closure-protocol.md](../plite/references/deletion-closure-protocol.md)                                                                                                                                                                                                                                                                                                                                                                     |
+| reference          | [architecture-contract.md](../plite/references/architecture-contract.md), [live-shape-register.md](../plite/references/live-shape-register.md), [normalization-reference.md](../plite/references/normalization-reference.md)                                                                                                                                                                                                                                     |
+| maintainer context | [pr-description.md](../plite/references/pr-description.md)                                                                                                                                                                                                                                                                                                                                  |
 
 ## Vocabulary
 
@@ -81,28 +88,28 @@ Front door to the live `docs/plite` stack.
 
 ## Read In This Order
 
-1. [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/plite/release-readiness-decision.md)
-2. [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md)
-3. [replacement-family-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-family-ledger.md)
-4. [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/master-roadmap.md)
-5. [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/release-file-review-ledger.md)
-6. [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md)
-7. [decoration-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/decoration-roadmap.md)
-8. [2026-04-13-plite-full-no-regression-story-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-13-plite-full-no-regression-story-plan.md)
-9. [pr-description.md](/Users/zbeyens/git/plate-2/docs/plite/references/pr-description.md)
+1. [release-readiness-decision.md](../plite/release-readiness-decision.md)
+2. [replacement-gates-scoreboard.md](../plite/replacement-gates-scoreboard.md)
+3. [replacement-family-ledger.md](../plite/references/replacement-family-ledger.md)
+4. [master-roadmap.md](../plite/master-roadmap.md)
+5. [release-file-review-ledger.md](../plite/release-file-review-ledger.md)
+6. [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md)
+7. [decoration-roadmap.md](../plite/decoration-roadmap.md)
+8. [2026-04-13-plite-full-no-regression-story-plan.md](../plans/2026-04-13-plite-full-no-regression-story-plan.md)
+9. [pr-description.md](../plite/references/pr-description.md)
 
 ## Command Entry
 
-- [commands/reconsolidate-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/commands/reconsolidate-roadmap.md)
+- [commands/reconsolidate-roadmap.md](../plite/commands/reconsolidate-roadmap.md)
   is the command-pack entrypoint
 
 ## Reference / Historical Specs
 
-- [architecture-contract.md](/Users/zbeyens/git/plate-2/docs/plite/references/architecture-contract.md)
-- [live-shape-register.md](/Users/zbeyens/git/plate-2/docs/plite/references/live-shape-register.md)
-- [normalization-reference.md](/Users/zbeyens/git/plate-2/docs/plite/references/normalization-reference.md)
-- [slate-batch-engine.md](/Users/zbeyens/git/plate-2/docs/plite/references/slate-batch-engine.md)
-- [chunking-review.md](/Users/zbeyens/git/plate-2/docs/plite/references/chunking-review.md)
+- [architecture-contract.md](../plite/references/architecture-contract.md)
+- [live-shape-register.md](../plite/references/live-shape-register.md)
+- [normalization-reference.md](../plite/references/normalization-reference.md)
+- [plite-batch-engine.md](../plite/references/plite-batch-engine.md)
+- [chunking-review.md](../plite/references/chunking-review.md)
 
 These do not own queue or verdict truth.
 

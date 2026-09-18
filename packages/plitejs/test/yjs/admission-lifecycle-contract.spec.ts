@@ -306,7 +306,7 @@ describe('plitejs/yjs admission lifecycle contract', () => {
 
     assert.deepEqual(editor.read.children(), [paragraph('placeholder')]);
     assert.deepEqual(commits, []);
-    assert.equal(editor.read.history.undos().length, 0);
+    assert.equal(editor.read.history().undos.length, 0);
     assert.deepEqual(stateVector(doc), vectorBeforeInstall);
 
     editor.update((tx) => {
@@ -473,7 +473,7 @@ describe('plitejs/yjs admission lifecycle contract', () => {
       });
     });
     assert.equal(targetCommits.length, commitCountAfterFailure);
-    assert.equal(target.read.history.undos().length, 0);
+    assert.equal(target.read.history().undos.length, 0);
     assert.deepEqual(target.read.children(), [paragraph('base')]);
     assert.deepEqual(stateVector(targetDoc), vectorAfterFailure);
 

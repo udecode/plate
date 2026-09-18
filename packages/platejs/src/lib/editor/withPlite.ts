@@ -1,7 +1,10 @@
+import type { EditorStateField } from 'plitejs';
 import {
-  compileEditorSchemaContractEntries,
+  compileEditorSchemaCapabilityEntries,
+  type CompiledEditorSchema,
   initializePluginEntries,
   type InternalPluginPublicationEntry,
+  type NativeAuthoredDocumentCapability,
   withPluginPortalCandidates,
 } from 'plitejs/internal';
 
@@ -19,15 +22,12 @@ import {
   setEditorReadOnly,
   type SnapshotInput,
   type EditorTransactionSpecBuilder,
-  SelectionApi,
   type Selection,
   type Value,
   getCompiledEditorSchemaFromApi,
-  MAIN_ROOT_KEY,
   mapSemanticUpdateMethodArguments,
   repairEditorValue,
   setEditorMaxLength,
-  setEditorSnapshotInputTransform,
   setEditorStateViewTransform,
   setEditorTransactionViewTransform,
 } from '../../facade';
@@ -49,10 +49,6 @@ import {
   withCompiledPlateModelCandidate,
   withCompiledPlatePluginCandidate,
 } from '../../internal/plugin/compilePlateModel';
-import {
-  mapDocumentSelection,
-  prepareDocument,
-} from '../../internal/plugin/pipePrepareDocument';
 import { createPlateChangeHandlersPlugin } from '../../internal/plugin/plateChangeHandlers';
 import { clearPlateRuntimeCandidate } from '../../internal/plugin/plateRuntime';
 import { clearPluginStores } from '../../internal/plugin/pluginStore';
@@ -82,7 +78,6 @@ import {
   type CorePlugins,
   getCorePlugins,
 } from '../plugins/getCorePlugins.internal';
-import { type DocumentMigrations, migrateDocument } from './documentMigrations';
 import type {
   InferPlugins,
   InferRuntimePlugins,
@@ -744,8 +739,6 @@ export type EditorOptions<
    * limit is reached, further input will be prevented.
    */
   maxLength?: number;
-  /** Versioned complete-document migrations bound to the named schema. */
-  migrations?: DocumentMigrations;
   /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
@@ -781,8 +774,8 @@ export type EditorOptions<
    * When `true`, skips `initialValue`, selection, and normalization.
    * Useful when the editor state is managed externally (e.g., with Yjs
    * collaboration) or when you want to manually control the initialization
-   * process. A later complete `editor.update.value.replace(...)` still runs
-   * every plugin `prepareDocument` before schema fitting.
+   * process. A later complete `editor.update.value.replace(...)` accepts only
+   * current-schema input and applies normal schema fitting.
    *
    * @default false
    */
@@ -801,8 +794,8 @@ type ApplyEditorOptions<
     api?: BasePluginDefinitionInput['api'];
     /**
      * Complete editor document, persisted document envelope, or primary-root
-     * array shorthand. Versioned migrations and installed plugin preparation
-     * run after the plugin model and schema are compiled.
+     * array shorthand. Persisted envelopes must match the compiled current
+     * schema identity.
      *
      * Omit this option to preserve an existing editor document or construct the
      * schema's default primary-root child for a new editor.
@@ -846,7 +839,6 @@ const prepareInitialPlatePlugins = (
   {
     affinity,
     maxLength,
-    migrations,
     plugins = [],
     readOnly,
     schema,
@@ -854,13 +846,7 @@ const prepareInitialPlatePlugins = (
   }: Omit<
     Pick<
       EditorOptions<readonly BasePluginInput[]>,
-      | 'affinity'
-      | 'maxLength'
-      | 'migrations'
-      | 'plugins'
-      | 'readOnly'
-      | 'schema'
-      | 'userId'
+      'affinity' | 'maxLength' | 'plugins' | 'readOnly' | 'schema' | 'userId'
     >,
     'plugins'
   > & {
@@ -901,12 +887,10 @@ const prepareInitialPlatePlugins = (
   });
   const publicationBeforePlugin = getPlateModelPublication(editor);
   const applicationPolicy = schema;
-  let restoreSnapshotInputTransform: (() => void) | undefined;
   let restoreStateViewTransform: (() => void) | undefined;
   let restoreTransactionViewTransform: (() => void) | undefined;
 
   const restore = () => {
-    restoreSnapshotInputTransform?.();
     restoreStateViewTransform?.();
     restoreTransactionViewTransform?.();
     if (!publicationBeforePlugin) clearPlateModelPublication(editor);
@@ -964,85 +948,6 @@ const prepareInitialPlatePlugins = (
         }
       }
     );
-    restoreSnapshotInputTransform = setEditorSnapshotInputTransform(
-      editor,
-      (input: SnapshotInput) => {
-        const inputSelection = input.selection;
-        const innerSelection =
-          inputSelection &&
-          inputSelection !== 'start' &&
-          inputSelection !== 'end'
-            ? inputSelection
-            : null;
-        const inputDocument =
-          'document' in input
-            ? input.document
-            : {
-                children: input.children,
-                ...(input.meta === undefined ? {} : { meta: input.meta }),
-                ...(input.roots === undefined ? {} : { roots: input.roots }),
-              };
-        if ('document' in input && !migrations) {
-          const current = editor.read.schema.identity();
-          const source = input.schema;
-          const matches =
-            source.kind === current.kind &&
-            source.fingerprint === current.fingerprint &&
-            (source.kind === 'derived' ||
-              (current.kind === 'named' &&
-                source.id === current.id &&
-                source.version === current.version));
-
-          if (!matches) {
-            throw new Error(
-              `Persisted document schema ${JSON.stringify(
-                source
-              )} does not match current schema ${JSON.stringify(current)}.`
-            );
-          }
-        }
-        const migration = migrations
-          ? migrateDocument(
-              'document' in input
-                ? input
-                : (inputDocument as EditorDocumentValue),
-              { editor, migrations }
-            )
-          : undefined;
-        const migrated =
-          migration?.document ?? (inputDocument as EditorDocumentValue);
-        const selectionRoot =
-          SelectionApi.root(innerSelection) ?? MAIN_ROOT_KEY;
-        const runnerSelection =
-          migration?.selection === 'start' || migration?.selection === 'end'
-            ? undefined
-            : migration?.selection;
-        const migratedSelection =
-          runnerSelection !== undefined
-            ? runnerSelection
-            : mapDocumentSelection(
-                editor,
-                innerSelection,
-                inputDocument as EditorDocumentValue,
-                migrated,
-                selectionRoot
-              );
-        const prepared = prepareDocument(
-          editor,
-          migrated,
-          migratedSelection,
-          selectionRoot
-        );
-
-        return {
-          ...prepared.document,
-          selection:
-            inputSelection === 'start' || inputSelection === 'end'
-              ? inputSelection
-              : prepared.selection,
-        };
-      }
-    );
     return {
       identity,
       restore,
@@ -1078,6 +983,11 @@ export const applyEditor = <
   InferBaseEditorSchemaPlugins<P[]>,
   RuntimePluginsFromTuple<TPlugins>
 > => {
+  if (Object.hasOwn(options, 'migrations')) {
+    throw new Error(
+      'Plate editor `migrations` is unsupported. Convert persisted documents with migrateDocument before creating or replacing an editor value.'
+    );
+  }
   const {
     affinity,
     autoSelect,
@@ -1085,7 +995,6 @@ export const applyEditor = <
     initialSelection,
     lifecycleErrorSink: _lifecycleErrorSink,
     maxLength,
-    migrations,
     plugins = [],
     readOnly,
     schema,
@@ -1105,7 +1014,6 @@ export const applyEditor = <
       {
         affinity,
         maxLength,
-        migrations,
         plugins: pluginInputs.plate,
         readOnly,
         schema,
@@ -1182,12 +1090,20 @@ export type EditorCompilation = Readonly<{
 }>;
 
 /** @internal */
-export const compilePlateEditor = (
+export type PlateEditorTargetCompilation = Readonly<{
+  artifact: EditorCompilation;
+  authored?: NativeAuthoredDocumentCapability;
+  fields: ReadonlyArray<EditorStateField<any>>;
+  schema: CompiledEditorSchema;
+}>;
+
+/** @internal */
+export const compilePlateEditorTarget = (
   options: Pick<
     EditorOptions<readonly RuntimePluginReference[]>,
     'plugins' | 'schema'
   >
-): EditorCompilation => {
+): PlateEditorTargetCompilation => {
   const editor = createPliteEditor() as unknown as Editor;
   const pluginInputs = partitionPluginInputs(options.plugins ?? []);
   let prepared: ReturnType<typeof prepareInitialPlatePlugins> | undefined;
@@ -1208,17 +1124,19 @@ export const compilePlateEditor = (
         pluginInputs.runtime,
         options.schema
       );
-      const schema = withCompiledPlateModelCandidate(
+      const capability = withCompiledPlateModelCandidate(
         editor,
         configuration.model,
-        () => compileEditorSchemaContractEntries(editor, configuration.entries)
+        () =>
+          compileEditorSchemaCapabilityEntries(editor, configuration.entries)
       );
+      const schema = capability.contract;
       const publication = getPlateModelPublication(editor);
 
       if (!publication) {
         throw new Error('Editor compilation requires a validated Plate model.');
       }
-      return Object.freeze({
+      const artifact: EditorCompilation = Object.freeze({
         bindings: Object.freeze(
           publication.model.bindings.map((binding) =>
             Object.freeze({
@@ -1233,12 +1151,27 @@ export const compilePlateEditor = (
         ),
         schema,
       });
+
+      return Object.freeze({
+        artifact,
+        ...(capability.authored ? { authored: capability.authored } : {}),
+        fields: capability.fields,
+        schema: capability.schema,
+      });
     });
   } finally {
     prepared?.restore();
     clearPlateRuntimeCandidate(editor);
   }
 };
+
+/** @internal */
+export const compilePlateEditor = (
+  options: Pick<
+    EditorOptions<readonly RuntimePluginReference[]>,
+    'plugins' | 'schema'
+  >
+): EditorCompilation => compilePlateEditorTarget(options).artifact;
 
 type CreateEditorOptionsForValue<
   V extends Value,

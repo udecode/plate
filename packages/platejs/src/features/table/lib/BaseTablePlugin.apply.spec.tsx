@@ -94,6 +94,7 @@ describe('BaseTablePlugin apply', () => {
     ) as TestEditor;
     const editor = createTableEditor(input);
 
+    assert.ok(requested.selection);
     editor.update.selection.set(requested.selection);
 
     expect(editor.read.selection()).toEqual(
@@ -159,6 +160,7 @@ describe('BaseTablePlugin apply', () => {
 
     const editor = createTableEditor(input);
 
+    assert.ok(requested.selection);
     editor.update.selection.set(requested.selection);
 
     expect(editor.read.selection()).toEqual(
@@ -226,6 +228,7 @@ describe('BaseTablePlugin apply', () => {
 
     const editor = createTableEditor(input);
 
+    assert.ok(requested.selection);
     editor.update.selection.set(requested.selection);
 
     expect(editor.read.selection()).toEqual(
@@ -256,11 +259,11 @@ describe('BaseTablePlugin apply', () => {
     const removeKey = editor.key([0, 0, 1])!;
 
     expect(
-      editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(keepKey)
-    ).toEqual({ col: 0, row: 0 });
+      editor.plugin(BaseTablePlugin).read.cell({ at: keepKey })
+    ).toMatchObject({ col: 0, row: 0 });
     expect(
-      editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(removeKey)
-    ).toEqual({ col: 1, row: 0 });
+      editor.plugin(BaseTablePlugin).read.cell({ at: removeKey })
+    ).toMatchObject({ col: 1, row: 0 });
     editor.update.table.removeColumn();
 
     const nextKeep = editor.read.nodes.get([0, 0, 0], {
@@ -268,14 +271,14 @@ describe('BaseTablePlugin apply', () => {
     });
     assert.ok(nextKeep);
     expect(
-      editor.plugin(BaseTablePlugin).read.getCellIndices(nextKeep[0])
-    ).toEqual({ col: 0, row: 0 });
+      editor.plugin(BaseTablePlugin).read.cell({ at: nextKeep[0] })
+    ).toMatchObject({ col: 0, row: 0 });
     expect(
-      editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(keepKey)
-    ).toEqual({ col: 0, row: 0 });
+      editor.plugin(BaseTablePlugin).read.cell({ at: keepKey })
+    ).toMatchObject({ col: 0, row: 0 });
     expect(
-      editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(removeKey)
-    ).toBeUndefined();
+      editor.plugin(BaseTablePlugin).read.cell({ at: removeKey })
+    ).toBeNull();
   });
 
   it('derives current indices after replaying a classification-free change', () => {
@@ -308,11 +311,11 @@ describe('BaseTablePlugin apply', () => {
     const removeKey = replay.key([0, 0, 1])!;
 
     expect(
-      replay.plugin(BaseTablePlugin).read.getCellIndicesByKey(keepKey)
-    ).toEqual({ col: 0, row: 0 });
+      replay.plugin(BaseTablePlugin).read.cell({ at: keepKey })
+    ).toMatchObject({ col: 0, row: 0 });
     expect(
-      replay.plugin(BaseTablePlugin).read.getCellIndicesByKey(removeKey)
-    ).toEqual({ col: 1, row: 0 });
+      replay.plugin(BaseTablePlugin).read.cell({ at: removeKey })
+    ).toMatchObject({ col: 1, row: 0 });
     expect(change.primaryClassification).toBeNull();
     replay.update((tx) => tx.changes.apply(change));
 
@@ -321,14 +324,14 @@ describe('BaseTablePlugin apply', () => {
     });
     assert.ok(nextKeep);
     expect(
-      replay.plugin(BaseTablePlugin).read.getCellIndices(nextKeep[0])
-    ).toEqual({ col: 0, row: 0 });
+      replay.plugin(BaseTablePlugin).read.cell({ at: nextKeep[0] })
+    ).toMatchObject({ col: 0, row: 0 });
     expect(
-      replay.plugin(BaseTablePlugin).read.getCellIndicesByKey(keepKey)
-    ).toEqual({ col: 0, row: 0 });
+      replay.plugin(BaseTablePlugin).read.cell({ at: keepKey })
+    ).toMatchObject({ col: 0, row: 0 });
     expect(
-      replay.plugin(BaseTablePlugin).read.getCellIndicesByKey(removeKey)
-    ).toBeUndefined();
+      replay.plugin(BaseTablePlugin).read.cell({ at: removeKey })
+    ).toBeNull();
   });
 
   it('publishes a compound merge as one history entry with stable undo/redo', () => {
@@ -359,16 +362,16 @@ describe('BaseTablePlugin apply', () => {
       </editor>
     ) as TestEditor;
     const editor = createTestTableEditor({
-      plugins: getTestTablePlugins({ disableMerge: false }),
+      plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
       selection: input.selection,
       initialValue: input.children,
     });
 
-    expect(editor.read.history.undos()).toHaveLength(0);
+    expect(editor.read.history().undos).toHaveLength(0);
 
     editor.plugin(BaseTablePlugin).update.merge();
 
-    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history().undos).toHaveLength(1);
     expect(
       editor.read.nodes.get([0, 0, 0], { type: BaseTableCellPlugin })?.[0]
     ).toMatchObject({
@@ -377,7 +380,7 @@ describe('BaseTablePlugin apply', () => {
       rowSpan: 2,
     });
 
-    editor.update.history.undo();
+    editor.api.history.undo();
 
     expect(editor.read.children()).toMatchObject(input.children);
     assert.deepEqual(
@@ -385,9 +388,9 @@ describe('BaseTablePlugin apply', () => {
       projectTestSelectionRange(input.selection)
     );
 
-    editor.update.history.redo();
+    editor.api.history.redo();
 
-    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history().undos).toHaveLength(1);
     expect(
       editor.read.nodes.get([0, 0, 0], { type: BaseTableCellPlugin })?.[0]
     ).toMatchObject({
@@ -435,17 +438,17 @@ describe('BaseTablePlugin apply', () => {
     const repairedChildren = editor.read.children();
     const repairedSelection = editor.read.selection();
 
-    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history().undos).toHaveLength(1);
     expect(repairedGrid.problems).toEqual([]);
     expect(repairedGrid.anchors).toHaveLength(4);
     assert.deepEqual(repairedSelection, initialSelection);
 
-    editor.update.history.undo();
+    editor.api.history.undo();
 
     assert.deepEqual(editor.read.children(), initialChildren);
     assert.deepEqual(editor.read.selection(), initialSelection);
 
-    editor.update.history.redo();
+    editor.api.history.redo();
 
     assert.deepEqual(editor.read.children(), repairedChildren);
     assert.deepEqual(editor.read.selection(), repairedSelection);

@@ -36,6 +36,7 @@ test('scoped cell coordinates follow spanning cells, column insertion and undo/r
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await editor.focus();
     await editor.selectAll();
+    await editor.deleteFragment();
     await editor.clipboard.pasteHtml(
       '<p>before</p><table><colgroup><col style="width:100px"><col style="width:100px"><col style="width:100px"></colgroup><tbody><tr><td rowspan="2">A</td><td colspan="2">B</td></tr><tr><td>C</td><td>D</td></tr></tbody></table><p>after</p>'
     );
@@ -85,6 +86,7 @@ test('row index projection stays current after row insertion and movement of the
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await editor.focus();
     await editor.selectAll();
+    await editor.deleteFragment();
     await editor.clipboard.pasteHtml(
       '<p>before</p><table><tbody><tr><td>first</td><td>one</td></tr><tr><td>last</td><td>two</td></tr></tbody></table><p>after</p>'
     );

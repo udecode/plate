@@ -9,14 +9,20 @@ import {
   within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type {
+  CommentMutationDecision,
+  CommentMutationResult,
+} from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { createEditor, EditorRoot } from 'platejs/react';
+import { createEditor, EditorRoot, usePluginStore } from 'platejs/react';
 import * as React from 'react';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 import {
   CommentComposer,
+  CommentThreadCard,
+  createCommentValue,
   useDraftCommentThreadIds,
   useVisibleCommentThreadIds,
 } from './comment';
@@ -71,7 +77,7 @@ it('renders optional comment subscribers without installing comments', () => {
   view.unmount();
 });
 
-it.each(['empty', 'rejected', 'pending'] as const)(
+it.each(['empty', 'rejected', 'invalid', 'stale', 'error', 'pending'] as const)(
   'keeps the paragraph intact when Enter submits a comment (%s)',
   async (outcome) => {
     const editor = createEditor({
@@ -84,13 +90,17 @@ it.each(['empty', 'rejected', 'pending'] as const)(
         }),
       ],
     });
-    let complete!: (saved: boolean) => void;
-    const pending = new Promise<boolean>((resolve) => {
+    let complete!: (saved: CommentMutationResult) => void;
+    const pending = new Promise<CommentMutationResult>((resolve) => {
       complete = resolve;
     });
     const submit = mock<
       React.ComponentProps<typeof CommentComposer>['onSubmit']
-    >(() => (outcome === 'pending' ? pending : false));
+    >(async () => {
+      if (outcome === 'error') throw new Error('Network unavailable');
+      if (outcome === 'pending') return pending;
+      return { status: outcome === 'empty' ? 'invalid' : outcome };
+    });
     const body = [
       {
         type: 'paragraph',
@@ -136,22 +146,204 @@ it.each(['empty', 'rejected', 'pending'] as const)(
       expect(textbox.textContent).toBe(initialText);
       expect(submit).toHaveBeenCalledTimes(outcome === 'empty' ? 0 : 1);
       if (outcome !== 'empty') expect(submit.mock.calls[0]).toEqual([body]);
-      if (outcome === 'rejected') {
+      if (outcome !== 'empty' && outcome !== 'pending') {
         expect(view.getByRole('alert')).not.toBeNull();
       }
       if (outcome === 'pending') {
         expect(textbox.getAttribute('aria-readonly')).toBe('true');
         fireEvent.submit(view.container.querySelector('form')!);
         expect(submit).toHaveBeenCalledTimes(1);
-        await act(async () => complete(true));
+        await act(async () =>
+          complete({ status: 'applied', value: undefined })
+        );
         expect(textbox.textContent).not.toContain('Keep this draft');
       }
     } finally {
-      await act(async () => complete(false));
+      await act(async () => complete({ status: 'rejected' }));
       view.unmount();
     }
   }
 );
+
+it('awaits resolution and reopening, retains failures, and keeps document undo independent', async () => {
+  let finish!: (decision: CommentMutationDecision) => void;
+  const editor = createEditor({
+    plugins: [
+      CommentsPlugin.configure({
+        initialState: {
+          currentUserId: 'alice',
+          users: { alice: { id: 'alice', name: 'Alice' } },
+          mutate: (request) =>
+            request.operation === 'resolve' || request.operation === 'reopen'
+              ? new Promise((resolve) => {
+                  finish = resolve;
+                })
+              : { status: 'commit', thread: request.proposed },
+        },
+      }),
+    ],
+    initialValue: [{ type: 'paragraph', children: [{ text: 'Review this' }] }],
+  });
+  const comments = editor.plugin(CommentsPlugin).api;
+  const created = await comments.createThread({
+    body: createCommentValue('Keep this feedback'),
+    target: {
+      type: 'range',
+      range: {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 6 },
+      },
+    },
+  });
+  if (created.status !== 'applied') throw new Error('Expected a thread');
+  const id = created.value;
+  comments.setActive([id]);
+  const view = render(
+    <EditorRoot editor={editor}>
+      <CommentThreadCard id={id} />
+    </EditorRoot>
+  );
+  try {
+    const button = view.getByRole('button', { name: 'Resolve thread' });
+    fireEvent.click(button);
+    await waitFor(() => expect(button.hasAttribute('disabled')).toBe(true));
+    expect(comments.getThread(id)?.resolution).toBeNull();
+    await act(async () => finish({ status: 'reject' }));
+    expect(view.getByRole('alert').textContent).toContain('Could not save');
+    expect(editor.plugin(CommentsPlugin).store.get('activeIds')).toEqual([id]);
+    expect(comments.getThread(id)?.resolution).toBeNull();
+    fireEvent.click(button);
+    await waitFor(() => expect(button.hasAttribute('disabled')).toBe(true));
+    await act(async () =>
+      finish({
+        status: 'commit',
+        thread: {
+          ...comments.getThread(id)!,
+          resolution: {
+            userId: 'alice',
+            resolvedAt: '2026-09-17T10:00:00.000Z',
+          },
+        },
+      })
+    );
+    expect(comments.getThread(id)?.resolution?.userId).toBe('alice');
+    expect(editor.plugin(CommentsPlugin).store.get('activeIds')).toEqual([]);
+    expect(view.queryByRole('textbox', { name: 'Reply to thread' })).toBeNull();
+    act(() =>
+      editor.update.text.insert('X', { at: { path: [0, 0], offset: 0 } })
+    );
+    const reopen = view.getByRole('button', { name: 'Reopen thread' });
+    fireEvent.click(reopen);
+    await waitFor(() => expect(reopen.hasAttribute('disabled')).toBe(true));
+    expect(comments.getThread(id)?.resolution).not.toBeNull();
+    expect(view.queryByRole('textbox', { name: 'Reply to thread' })).toBeNull();
+    await act(async () => finish({ status: 'reject' }));
+    expect(view.getByRole('alert').textContent).toContain('Could not save');
+    expect(comments.getThread(id)?.resolution).not.toBeNull();
+    fireEvent.click(reopen);
+    await waitFor(() => expect(reopen.hasAttribute('disabled')).toBe(true));
+    await act(async () =>
+      finish({
+        status: 'commit',
+        thread: { ...comments.getThread(id)!, resolution: null },
+      })
+    );
+    expect(comments.getThread(id)?.resolution).toBeNull();
+    expect(
+      view.getByRole('textbox', { name: 'Reply to thread' })
+    ).not.toBeNull();
+    act(() => editor.api.history.undo());
+    expect(editor.read.text.string([0])).toBe('Review this');
+    expect(comments.getThread(id)?.resolution).toBeNull();
+    expect(
+      view.getByRole('textbox', { name: 'Reply to thread' })
+    ).not.toBeNull();
+  } finally {
+    view.unmount();
+  }
+});
+
+it('preserves the next active thread and its typed reply when an earlier resolve completes', async () => {
+  let finish!: () => void;
+  const editor = createEditor({
+    initialValue: [{ type: 'paragraph', children: [{ text: 'Review this' }] }],
+    plugins: [
+      CommentsPlugin.configure({
+        initialState: {
+          currentUserId: 'alice',
+          users: { alice: { id: 'alice', name: 'Alice' } },
+          mutate: (request) =>
+            request.operation === 'resolve'
+              ? new Promise((resolve) => {
+                  finish = () =>
+                    resolve({ status: 'commit', thread: request.proposed });
+                })
+              : { status: 'commit', thread: request.proposed },
+        },
+      }),
+    ],
+  });
+  const comments = editor.plugin(CommentsPlugin).api;
+  for (const id of ['a', 'b']) {
+    await comments.createThread({
+      id,
+      body: createCommentValue(`Thread ${id}`),
+      target: {
+        type: 'range',
+        range: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 6 },
+        },
+      },
+    });
+  }
+  function ActiveThread() {
+    const ids = usePluginStore(CommentsPlugin, 'activeIds');
+    return ids.map((id) => <CommentThreadCard id={id} key={id} />);
+  }
+  comments.setActive(['a']);
+  const view = render(
+    <EditorRoot editor={editor}>
+      <ActiveThread />
+    </EditorRoot>
+  );
+  try {
+    fireEvent.click(view.getByRole('button', { name: 'Resolve thread' }));
+    await waitFor(() => expect(finish).toBeDefined());
+    act(() => comments.setActive(['b']));
+    const reply = view.getByRole('textbox', { name: 'Reply to thread' });
+    await act(async () => {
+      reply.focus();
+      const selection = document.createRange();
+      selection.selectNodeContents(
+        reply.querySelector('[data-editor-node="text"]')!
+      );
+      selection.collapse(false);
+      window.getSelection()!.removeAllRanges();
+      window.getSelection()!.addRange(selection);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+    act(() => {
+      fireEvent(
+        reply,
+        new InputEvent('beforeinput', {
+          bubbles: true,
+          cancelable: true,
+          data: 'Keep my reply to B',
+          inputType: 'insertText',
+        })
+      );
+    });
+    expect(reply.textContent).toContain('Keep my reply to B');
+    await act(async () => finish());
+    expect(comments.getThread('a')?.resolution).not.toBeNull();
+    expect(editor.plugin(CommentsPlugin).store.get('activeIds')).toEqual(['b']);
+    expect(view.getByRole('textbox', { name: 'Reply to thread' })).toBe(reply);
+    expect(reply.textContent).toContain('Keep my reply to B');
+  } finally {
+    view.unmount();
+  }
+});
 
 describe('existing comment activation (#5126)', () => {
   for (const targetText of ['comments', ' on many text segments']) {

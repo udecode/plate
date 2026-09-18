@@ -3,7 +3,6 @@ const DEFAULT = {
   on: true,
   render: true,
   slots: true,
-  prepareDocument: false,
 };
 
 type EditOnlyPlugin = {

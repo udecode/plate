@@ -62,8 +62,7 @@ Resume a matching active Benchmark goal instead of adding a public resume mode.
 
 ## Do Not Use When
 
-- The problem is correctness-only with no timing claim: use `regression` or
-  `patch`.
+- The problem is correctness-only with no timing claim: use `patch`.
 - One public API/runtime boundary must be chosen before measurement can be
   fair: use `best-api`, then `plite-plan` or `plate-plan`.
 - The user only asks for existing Autoresearch session status or generic packet
@@ -76,13 +75,13 @@ Resume a matching active Benchmark goal instead of adding a public resume mode.
 | `benchmark` | baseline identity, lane discovery/order, comparison fairness, metric repair, causal gate, durable-fix checkpoint, measured rerun/resume loop, and benchmark handoff |
 | benchmark targets/runners | executable workloads, metric output, correctness commands, and durable result artifacts |
 | `benchmark review` | cohorts, repeated-unit budgets, interaction percentiles, degradation/native-behavior review, and RUM/trace expectations |
-| `regression` / `patch` | missing or failing correctness oracle and behavior repair, not timing diagnosis |
+| `patch` | missing or failing correctness oracle and behavior repair, not timing diagnosis |
 | `best-api` plus `plite-plan` / `plate-plan` | best long-term public API or runtime architecture required by a proven hot owner, including breaking/adoption decisions |
 | `codex-autoresearch` | optional packet/log/dashboard machinery after Benchmark selects one metric and correctness guard |
 | `task autonomous` | broader quality supervision and ergonomic routing into Benchmark |
 
 Do not delegate benchmark selection or causal ownership back to `task autonomous`,
-`benchmark review`, `regression`, or `slate-ar`. They may supply evidence or worker
+`benchmark review`, `patch`, or `slate-ar`. They may supply evidence or worker
 capacity without becoming a second supervisor.
 
 ## Pre-Acceptance Architecture Probe
@@ -144,7 +143,7 @@ Complete plans include `## Interaction Coverage` with `first-interaction`,
 reload or viewport changes. A page-scrolling complaint covers outer scrolling
 and embedded scrollers, including first exposure. A clean browser or warmed
 target cannot certify an untested reporter profile or phase. After a reporter
-contradiction, Regression repairs this contract before another product patch.
+contradiction, Patch reopens this contract before another product patch.
 
 Validate plan state at each conclusive-cause and resume checkpoint:
 
@@ -218,7 +217,7 @@ contract before changing product code:
    convenience, compiler difficulty, current machinery, or implementation
    cost. A cheaper patch does not win by being cheaper.
 3. Keep straightforward internal implementation work in Benchmark and route
-   correctness work to `patch`, `regression`, or `tdd`.
+   correctness work to `patch`.
 4. Run `best-api` for every `public-api` or `runtime-architecture` cause, then
    route adoption to `plite-plan`, `plate-plan`, or both. A bounded package
    owner may implement directly; broad cross-owner execution may use `task autonomous`.
@@ -281,7 +280,7 @@ claims. Programmatic transforms may isolate runtime cost but stay labeled as
 proxies.
 
 If no correctness oracle exists, pause the perf claim and create the smallest
-one through `patch`, `regression`, or `tdd`. Do not bury missing behavior proof
+one through `patch`. Do not bury missing behavior proof
 inside a benchmark artifact.
 
 ## Harness Repair

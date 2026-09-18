@@ -4,7 +4,9 @@
   "title": "Caption",
   "description": "Inline caption UI for media elements.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "button"

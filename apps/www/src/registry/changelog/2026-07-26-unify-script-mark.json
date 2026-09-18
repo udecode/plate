@@ -80,7 +80,7 @@
       "summary": "Use one script mark for subscript and superscript",
       "details": [],
       "migrationNotes": [
-        "For persisted v53 script marks, add migratePlateV54 to the app's defineDocumentMigrations chain."
+        "For persisted v53 script marks, add migrateV54 to the app's defineDocumentMigrations chain."
       ],
       "targets": [
         "basic-marks-kit",

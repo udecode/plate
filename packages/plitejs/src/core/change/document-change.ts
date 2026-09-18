@@ -421,6 +421,109 @@ export const getInternalDocumentRootChange = (
   return root === 'main' ? (state.primary ?? undefined) : state.roots.get(root);
 };
 
+type DocumentReplacementRun = Readonly<{
+  from: number;
+  to: number;
+  fromAfter: number;
+  toAfter: number;
+}>;
+const DOCUMENT_REPLACEMENT_RUNS = new WeakMap<
+  DocumentChange,
+  Map<string, readonly DocumentReplacementRun[]>
+>();
+
+const documentReplacementRuns = (
+  change: DocumentChange,
+  root: string
+): readonly DocumentReplacementRun[] => {
+  let roots = DOCUMENT_REPLACEMENT_RUNS.get(change);
+  if (!roots) {
+    roots = new Map();
+    DOCUMENT_REPLACEMENT_RUNS.set(change, roots);
+  }
+  const cached = roots.get(root);
+  if (cached) return cached;
+  const compact = getInternalDocumentRootChange(change, root);
+  if (!compact) return [];
+
+  const runs: DocumentReplacementRun[] = [];
+  let before = 0;
+  let after = 0;
+  for (let index = 0; index < compact.sections.length;) {
+    let length = compact.sections[index];
+    let inserted = compact.sections[index + 1];
+    index += 2;
+    while (
+      inserted >= 0 &&
+      index < compact.sections.length &&
+      compact.sections[index + 1] >= 0
+    ) {
+      length += compact.sections[index];
+      inserted += compact.sections[index + 1];
+      index += 2;
+    }
+    if (length > 0 && inserted > 0) {
+      runs.push({
+        from: before,
+        fromAfter: after,
+        to: before + length,
+        toAfter: after + inserted,
+      });
+    }
+    before += length;
+    after += inserted < 0 ? length : inserted;
+  }
+  const result = Object.freeze(runs);
+  roots.set(root, result);
+  return result;
+};
+
+/** Map an expanded range to content inserted by the same atomic replacement. */
+export const mapDocumentRangeReplacement = (
+  change: DocumentChange,
+  root: string,
+  first: number,
+  second: number,
+  associations: readonly [-1 | 1, -1 | 1]
+): readonly [number, number] | null => {
+  if (first === second) return null;
+  const compact = getInternalDocumentRootChange(change, root);
+  if (!compact) return null;
+  const runs = documentReplacementRuns(change, root);
+  if (!runs.length) return null;
+
+  const from = Math.min(first, second);
+  const to = Math.max(first, second);
+  let low = 0;
+  let high = runs.length;
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    if (runs[middle].to <= from) low = middle + 1;
+    else high = middle;
+  }
+  const firstRun = runs[low];
+  if (!firstRun || firstRun.from >= to) return null;
+
+  let start = firstRun.fromAfter;
+  let end = firstRun.toAfter;
+  for (
+    let index = low + 1;
+    index < runs.length && runs[index].from < to;
+    index++
+  ) {
+    start = Math.min(start, runs[index].fromAfter);
+    end = Math.max(end, runs[index].toAfter);
+  }
+  if (!(firstRun.from <= from && firstRun.to >= to)) {
+    const mappedFirst = compact.mapPos(first, associations[0]);
+    const mappedSecond = compact.mapPos(second, associations[1]);
+    if (mappedFirst === null || mappedSecond === null) return null;
+    start = Math.min(start, mappedFirst, mappedSecond);
+    end = Math.max(end, mappedFirst, mappedSecond);
+  }
+  return first < second ? [start, end] : [end, start];
+};
+
 /**
  * Read one classification through the private primary-root sentinel.
  *

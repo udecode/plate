@@ -57,7 +57,7 @@ export default function SingleBlockDemo() {
           </Label>
         </div>
 
-        <EditorContainer variant="demo">
+        <EditorContainer className="h-[650px]">
           <Editor />
         </EditorContainer>
       </EditorRoot>

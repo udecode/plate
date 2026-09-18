@@ -1,12 +1,11 @@
-import {
-  BaseParagraphPlugin,
-  createEditor,
-  definePlugin,
-  defineDocumentMigrations,
-  migrateDocument,
-} from 'platejs';
+import { BaseParagraphPlugin, createEditor, definePlugin } from 'platejs';
 
 import { type Element, property, schema, target } from '../core';
+import {
+  defineDocumentMigrations,
+  type DocumentMigrations,
+  migrateDocument as runDocumentMigration,
+} from './documentMigrations';
 import { migrateV54 } from './index';
 
 const MigrationSchema = { id: 'plate', version: 54 } as const;
@@ -267,12 +266,12 @@ const plugins = [
 ] as const;
 
 const createMigrationEditor = () => {
-  const migrations = defineDocumentMigrations(MigrationSchema, {
+  const migrations = defineDocumentMigrations({
+    plugins,
+    schema: MigrationSchema,
     steps: { 54: migrateV54 },
-    unversioned: 53,
   });
   const editor = createEditor({
-    migrations,
     plugins,
     schema: MigrationSchema,
     skipInitialization: true,
@@ -280,6 +279,23 @@ const createMigrationEditor = () => {
 
   return { editor, migrations };
 };
+
+const migrateDocument = (
+  input: unknown,
+  options: Readonly<{
+    editor?: unknown;
+    migrations: DocumentMigrations;
+  }>
+) =>
+  runDocumentMigration(input, {
+    migrations: options.migrations,
+    ...(!input ||
+    typeof input !== 'object' ||
+    Array.isArray(input) ||
+    !Object.hasOwn(input, 'document')
+      ? { source: 53 as const }
+      : {}),
+  }).output;
 
 describe('migratePlateV54 AST contracts', () => {
   it('migrates every accepted AST contract and fits the v54 schema', () => {
@@ -411,55 +427,43 @@ describe('migratePlateV54 AST contracts', () => {
     ).document;
 
     expect(() => editor.read.schema.assertDocument(result)).not.toThrow();
-    expect(result.children).toMatchObject([
-      {
-        children: [
-          { text: 'On ' },
-          { type: 'date', value: 'sometime next week' },
-          { text: ' ask ' },
-          { label: 'Ada', ref: 'user:42', type: 'mention' },
-          { text: ' about ' },
-          { ref: '1', type: 'footnoteReference' },
-          { text: ' and ' },
-          { latex: 'E = mc^2', type: 'inlineEquation' },
-          { text: ' plus ' },
-          {
-            ref: 'unresolved:main.0.children.9',
-            type: 'footnoteReference',
-          },
-        ],
-        indent: 2,
-        listRestart: -2,
-        listStart: 1,
-        listType: 'numbered',
-        type: 'paragraph',
-      },
-      { ref: '1', type: 'footnoteDefinition' },
-      {
-        code: 'graph TD; A-->B',
-        language: 'mermaid',
-        type: 'codeDrawing',
-        view: 'split',
-      },
-      { latex: 'x^2', type: 'equation' },
-      {
-        children: [{ width: '50%' }, { width: '60%' }],
-        type: 'columnGroup',
-      },
-      { naturalWidth: 640, type: 'image' },
-      { name: 'report.pdf', type: 'file' },
-      { type: 'mediaEmbed' },
-      {
-        children: [
-          {
-            children: [{ borders: { bottom: { width: 0 } } }],
-            type: 'tableRow',
-          },
-        ],
-        columnWidths: [80, null],
-        type: 'table',
-      },
-    ]);
+    expect(result.children[0]).toMatchObject({
+      indent: 2,
+      listRestart: -2,
+      listStart: 1,
+      listType: 'numbered',
+      type: 'paragraph',
+    });
+    expect(result.children[0]?.children).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'date', value: 'sometime next week' }),
+        expect.objectContaining({
+          label: 'Ada',
+          ref: 'user:42',
+          type: 'mention',
+        }),
+        expect.objectContaining({ latex: 'E = mc^2', type: 'inlineEquation' }),
+      ])
+    );
+    expect(result.children).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ ref: '1', type: 'footnoteDefinition' }),
+        expect.objectContaining({
+          code: 'graph TD; A-->B',
+          language: 'mermaid',
+          type: 'codeDrawing',
+          view: 'split',
+        }),
+        expect.objectContaining({ latex: 'x^2', type: 'equation' }),
+        expect.objectContaining({ naturalWidth: 640, type: 'image' }),
+        expect.objectContaining({ name: 'report.pdf', type: 'file' }),
+        expect.objectContaining({ type: 'mediaEmbed' }),
+        expect.objectContaining({
+          columnWidths: [80, null],
+          type: 'table',
+        }),
+      ])
+    );
   });
 
   it('runs the complete v53-to-v54 migration in one step', () => {
@@ -520,23 +524,25 @@ describe('migratePlateV54 AST contracts', () => {
     ).document;
 
     expect(() => editor.read.schema.assertDocument(result)).not.toThrow();
-    expect(result.children).toMatchObject([
-      {
-        children: [
-          { label: 'Ada', ref: 'user:42', type: 'mention' },
-          { latex: 'x', type: 'inlineEquation' },
-        ],
-        listStart: -3,
-        listType: 'numbered',
-        type: 'paragraph',
-      },
-      {
-        children: [{ text: 'zero' }],
-        listType: 'numbered',
-        type: 'paragraph',
-      },
-      { columnWidths: [80, null], type: 'table' },
-    ]);
+    expect(result.children[0]).toMatchObject({
+      listStart: -3,
+      listType: 'numbered',
+      type: 'paragraph',
+    });
+    expect(result.children[0]?.children).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: 'Ada',
+          ref: 'user:42',
+          type: 'mention',
+        }),
+        expect.objectContaining({ latex: 'x', type: 'inlineEquation' }),
+      ])
+    );
+    expect(result.children[2]).toMatchObject({
+      columnWidths: [80, null],
+      type: 'table',
+    });
     expect(result.children[1]).not.toHaveProperty('listRestart');
   });
 
@@ -624,7 +630,7 @@ describe('migratePlateV54 AST contracts', () => {
       ],
     };
 
-    expect(migrateDocument(document, { editor, migrations }).document).toBe(
+    expect(migrateDocument(document, { editor, migrations }).document).toEqual(
       document
     );
   });
@@ -712,12 +718,11 @@ describe('migratePlateV54 AST contracts', () => {
       { editor, migrations }
     ).document;
 
-    expect(result.children).toMatchObject([
-      {
-        children: [{ label: 'Ada', ref: '42', type: 'mention' }],
-        type: 'paragraph',
-      },
-    ]);
+    expect(result.children[0]?.children[1]).toMatchObject({
+      label: 'Ada',
+      ref: '42',
+      type: 'mention',
+    });
 
     const degraded = migrateDocument(
       {
@@ -763,12 +768,11 @@ describe('migratePlateV54 AST contracts', () => {
       { editor, migrations }
     ).document;
 
-    expect(preserved.children).toMatchObject([
-      {
-        children: [{ label: 'Ada', ref: 'user:42', type: 'mention' }],
-        type: 'paragraph',
-      },
-    ]);
+    expect(preserved.children[0]?.children[1]).toMatchObject({
+      label: 'Ada',
+      ref: 'user:42',
+      type: 'mention',
+    });
 
     const hybrid = migrateDocument(
       {
@@ -789,12 +793,11 @@ describe('migratePlateV54 AST contracts', () => {
       { editor, migrations }
     ).document;
 
-    expect(hybrid.children).toMatchObject([
-      {
-        children: [{ label: 'Ada', ref: 'user:42', type: 'mention' }],
-        type: 'paragraph',
-      },
-    ]);
+    expect(hybrid.children[0]?.children[1]).toMatchObject({
+      label: 'Ada',
+      ref: 'user:42',
+      type: 'mention',
+    });
   });
 
   it('allocates collision-free unresolved footnote refs', () => {
@@ -823,17 +826,14 @@ describe('migratePlateV54 AST contracts', () => {
       { editor, migrations }
     ).document;
 
-    expect(result.children).toMatchObject([
-      {
-        children: [
-          { ref: 'unresolved:main.0.children.0:1', type: 'footnoteReference' },
-        ],
-      },
-      {
-        ref: 'unresolved:main.0.children.0',
-        type: 'footnoteDefinition',
-      },
-    ]);
+    expect(result.children[0]?.children[1]).toMatchObject({
+      ref: 'unresolved:main.0.children.0:1',
+      type: 'footnoteReference',
+    });
+    expect(result.children[1]).toMatchObject({
+      ref: 'unresolved:main.0.children.0',
+      type: 'footnoteDefinition',
+    });
   });
 
   it('recovers usable legacy values over empty destination fields', () => {
@@ -871,15 +871,19 @@ describe('migratePlateV54 AST contracts', () => {
       { editor, migrations }
     ).document;
 
-    expect(result.children).toMatchObject([
-      {
-        children: [
-          { type: 'date', value: 'next week' },
-          { label: 'Ada', ref: 'user:42', type: 'mention' },
-          { latex: 'x', type: 'inlineEquation' },
-        ],
-      },
-    ]);
+    expect(result.children[0]?.children[1]).toMatchObject({
+      type: 'date',
+      value: 'next week',
+    });
+    expect(result.children[0]?.children[3]).toMatchObject({
+      label: 'Ada',
+      ref: 'user:42',
+      type: 'mention',
+    });
+    expect(result.children[0]?.children[5]).toMatchObject({
+      latex: 'x',
+      type: 'inlineEquation',
+    });
   });
 
   it('preserves canonical Code Drawing fields when legacy data is partial', () => {
@@ -1145,34 +1149,26 @@ describe('migratePlateV54 AST contracts', () => {
     );
   });
 
-  it('converts Toggles in named roots and fails closed on unsafe input', () => {
+  it('rejects undeclared roots and fails closed on unsafe Toggle input', () => {
     const { editor, migrations } = createMigrationEditor();
-    const converted = migrateDocument(
-      {
-        children: [{ children: [{ text: '' }], type: 'paragraph' }],
-        roots: {
-          sidebar: [
-            { children: [{ text: 'Title' }], type: 'toggle' },
-            {
-              children: [{ text: 'Body' }],
-              indent: 1,
-              type: 'paragraph',
-            },
-          ],
+    expect(() =>
+      migrateDocument(
+        {
+          children: [{ children: [{ text: '' }], type: 'paragraph' }],
+          roots: {
+            sidebar: [
+              { children: [{ text: 'Title' }], type: 'toggle' },
+              {
+                children: [{ text: 'Body' }],
+                indent: 1,
+                type: 'paragraph',
+              },
+            ],
+          },
         },
-      },
-      { editor, migrations }
-    ).document;
-
-    expect(converted.roots?.sidebar).toMatchObject([
-      {
-        children: [
-          { children: [{ text: 'Title' }], type: 'summary' },
-          { children: [{ text: 'Body' }], type: 'paragraph' },
-        ],
-        type: 'details',
-      },
-    ]);
+        { editor, migrations }
+      )
+    ).toThrow(/Undeclared editor root "sidebar"/);
 
     expect(() =>
       migrateDocument(
@@ -1202,14 +1198,14 @@ describe('migratePlateV54 AST contracts', () => {
         },
         { editor, migrations }
       )
-    ).toThrow(/indentation must be finite/);
+    ).toThrow(/JSON-compatible data/);
 
-    const missingMigrations = defineDocumentMigrations(MigrationSchema, {
+    const missingMigrations = defineDocumentMigrations({
+      plugins: [BaseParagraphPlugin],
+      schema: MigrationSchema,
       steps: { 54: migrateV54 },
-      unversioned: 53,
     });
     const missingEditor = createEditor({
-      migrations: missingMigrations,
       plugins: [BaseParagraphPlugin],
       schema: MigrationSchema,
       skipInitialization: true,

@@ -46,10 +46,10 @@ const ContentRootSchema = defineEditorSchema('schema:content-root-lifecycle', {
       content: schema.content.text({ default: 'text', min: 1 }),
       contentRoots: {
         body: {
-          content: schema.content.type('paragraph', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
+          content: schema.content.types(
+            ['exclusive-portal', 'paragraph', 'shared-portal'],
+            { default: { type: 'paragraph' }, min: 1 }
+          ),
           ownership: 'exclusive',
         },
       },
@@ -61,10 +61,10 @@ const ContentRootSchema = defineEditorSchema('schema:content-root-lifecycle', {
       content: schema.content.text({ default: 'text', min: 1 }),
       contentRoots: {
         body: {
-          content: schema.content.type('paragraph', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
+          content: schema.content.types(
+            ['exclusive-portal', 'paragraph', 'shared-portal'],
+            { default: { type: 'paragraph' }, min: 1 }
+          ),
           ownership: 'shared',
         },
       },
@@ -395,7 +395,111 @@ describe('element-owned root lifecycle', () => {
     ]);
   });
 
-  it('rolls back grouped placement when a later target fails', () => {
+  it('copies exclusive root closures per placement and retains shared root identity', () => {
+    const editor = createContentRootEditor(
+      [cell([paragraph('first')]), cell([paragraph('second')])],
+      {}
+    );
+    const firstKey = editor.key([0]);
+    const secondKey = editor.key([1]);
+    const content = [portal('exclusive-portal', 'exclusive:source')];
+    const source = ContentSlice.fromJSON({
+      content,
+      openEnd: 0,
+      openStart: 0,
+      roots: {
+        'exclusive:source': [
+          portal('exclusive-portal', 'exclusive:nested'),
+          portal('shared-portal', 'shared:source'),
+        ],
+        'exclusive:nested': [paragraph('private')],
+        'shared:source': [portal('exclusive-portal', 'exclusive:shared-child')],
+        'exclusive:shared-child': [paragraph('shared descendant')],
+        'exclusive:unselected': [paragraph('unselected')],
+      },
+    });
+    let commits = 0;
+
+    assert.ok(firstKey);
+    assert.ok(secondKey);
+    editor.subscribeCommit(() => (commits += 1) - 1);
+    editor.update(() => {
+      assert.equal(
+        fitSlicePlacements(editor, source, {
+          placements: [
+            { at: firstKey, content },
+            { at: secondKey, content },
+          ],
+        }),
+        true
+      );
+    });
+
+    assert.equal(commits, 1);
+    assert.equal(editor.key([0]), firstKey);
+    assert.equal(editor.key([1]), secondKey);
+    assert.deepEqual(editor.read.value(), {
+      children: [
+        cell([portal('exclusive-portal', 'exclusive:source:copy')]),
+        cell([portal('exclusive-portal', 'exclusive:source:copy:2')]),
+      ],
+      roots: {
+        'exclusive:source:copy': [
+          portal('exclusive-portal', 'exclusive:nested:copy'),
+          portal('shared-portal', 'shared:source:copy'),
+        ],
+        'exclusive:source:copy:2': [
+          portal('exclusive-portal', 'exclusive:nested:copy:2'),
+          portal('shared-portal', 'shared:source:copy'),
+        ],
+        'exclusive:nested:copy': [paragraph('private')],
+        'exclusive:nested:copy:2': [paragraph('private')],
+        'shared:source:copy': [
+          portal('exclusive-portal', 'exclusive:shared-child:copy'),
+        ],
+        'exclusive:shared-child:copy': [paragraph('shared descendant')],
+      },
+    });
+  });
+
+  it('rejects a missing reachable source root without borrowing a destination root', () => {
+    const editor = createContentRootEditor(
+      [
+        cell([paragraph('first')]),
+        cell([portal('shared-portal', 'shared:missing')]),
+      ],
+      { 'shared:missing': [paragraph('destination')] }
+    );
+    const before = editor.read.value();
+    const source = ContentSlice.fromJSON({
+      content: [],
+      openEnd: 0,
+      openStart: 0,
+      roots: { 'exclusive:valid': [paragraph('source')] },
+    });
+    let commits = 0;
+
+    editor.subscribeCommit(() => (commits += 1) - 1);
+    editor.update(() => {
+      assert.equal(
+        fitSlicePlacements(editor, source, {
+          placements: [
+            {
+              at: [0],
+              content: [portal('exclusive-portal', 'exclusive:valid')],
+            },
+            { at: [1], content: [portal('shared-portal', 'shared:missing')] },
+          ],
+        }),
+        false
+      );
+    });
+
+    assert.equal(commits, 0);
+    assert.deepEqual(editor.read.value(), before);
+  });
+
+  it('rolls back grouped roots and child writes when a later target fails', () => {
     const editor = createContentRootEditor(
       [cell([paragraph('first')]), cell([paragraph('second')])],
       {}
@@ -407,7 +511,10 @@ describe('element-owned root lifecycle', () => {
       content: [],
       openEnd: 0,
       openStart: 0,
-      roots: { 'exclusive:invalid': [paragraph('caption')] },
+      roots: {
+        'exclusive:valid': [paragraph('accepted')],
+        'exclusive:invalid': [paragraph('caption')],
+      },
     });
     let applied = true;
     let commits = 0;
@@ -418,7 +525,10 @@ describe('element-owned root lifecycle', () => {
     editor.update(() => {
       applied = fitSlicePlacements(editor, source, {
         placements: [
-          { at: firstKey, content: [paragraph('accepted')] },
+          {
+            at: firstKey,
+            content: [portal('exclusive-portal', 'exclusive:valid')],
+          },
           {
             at: secondKey,
             content: [

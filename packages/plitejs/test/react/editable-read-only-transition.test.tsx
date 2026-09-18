@@ -2,6 +2,42 @@ import { act, fireEvent, render } from '@testing-library/react';
 
 import { createEditor, Editable, EditorRoot } from '../../src/react';
 
+test('locking an editable does not rerender when native read-only state catches up', async () => {
+  const editor = createEditor({
+    initialValue: [{ type: 'paragraph', children: [{ text: 'draft' }] }],
+  });
+  const tree = (readOnly: boolean) => (
+    <EditorRoot editor={editor}>
+      <Editable aria-label="Draft" readOnly={readOnly} />
+    </EditorRoot>
+  );
+  const mounted = render(tree(false));
+  await act(async () => {});
+  const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
+  let editableRenders = 0;
+  globalThis.__EDITOR_REACT_RENDER_PROFILER__ = {
+    record(event) {
+      if (event.kind === 'editable') editableRenders += 1;
+    },
+  };
+
+  try {
+    await act(async () => mounted.rerender(tree(true)));
+    expect(editableRenders).toBe(1);
+    expect(mounted.getByRole('textbox').getAttribute('aria-readonly')).toBe(
+      'true'
+    );
+
+    await act(async () => mounted.rerender(tree(false)));
+    expect(
+      mounted.getByRole('textbox').getAttribute('aria-readonly')
+    ).toBeNull();
+  } finally {
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
+    mounted.unmount();
+  }
+});
+
 test.each([
   [false, 'keyboard'],
   [true, 'keyboard'],

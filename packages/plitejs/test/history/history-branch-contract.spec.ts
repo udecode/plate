@@ -68,8 +68,8 @@ describe('immutable history branches', () => {
 
     applyRemoteChanges(eager, true);
     applyRemoteChanges(lazy, false);
-    eager.update((tx) => tx.history.undo());
-    lazy.update((tx) => tx.history.undo());
+    eager.api.history.undo();
+    lazy.api.history.undo();
 
     assert.deepEqual(lazy.read.value(), eager.read.value());
     assert.deepEqual(lazy.read.selection(), eager.read.selection());
@@ -86,14 +86,14 @@ describe('immutable history branches', () => {
     editor.update({ history: 'skip' }, (tx) => {
       tx.text.insert('?', { at: { offset: 'alpha'.length, path: [0, 0] } });
     });
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
 
     assert.deepEqual(editor.read.children(), [
       paragraph('alpha?'),
       paragraph('beta'),
     ]);
 
-    editor.update((tx) => tx.history.redo());
+    editor.api.history.redo();
 
     assert.deepEqual(editor.read.children(), [paragraph('alpha?beta')]);
   });
@@ -110,11 +110,11 @@ describe('immutable history branches', () => {
     editor.update({ history: 'skip' }, (tx) => {
       tx.text.insert(' Ada', { at: { offset: 5, path: [0, 0] } });
     });
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
 
     assert.deepEqual(editor.read.children(), [paragraph('alpha Ada')]);
 
-    editor.update((tx) => tx.history.redo());
+    editor.api.history.redo();
 
     assert.deepEqual(editor.read.children(), [
       paragraph('alpha AdaLin fragment'),
@@ -139,14 +139,14 @@ describe('immutable history branches', () => {
       tx.nodes.remove({ at: [1] });
     });
 
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
     assert.deepEqual(editor.read.children(), [
       paragraph('alpha'),
       paragraph('remote'),
       paragraph('local'),
     ]);
 
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
     assert.deepEqual(editor.read.children(), [
       paragraph('alpha'),
       paragraph('remote'),
@@ -171,14 +171,14 @@ describe('immutable history branches', () => {
       tx.nodes.insert(paragraph('remote'), { at: [1] });
     });
 
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
     assert.deepEqual(editor.read.children(), [
       paragraph('alpha'),
       paragraph('remote'),
       paragraph('first'),
     ]);
 
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
     assert.deepEqual(editor.read.children(), [
       paragraph('alpha'),
       paragraph('remote'),
@@ -200,11 +200,11 @@ describe('immutable history branches', () => {
     });
 
     assert.throws(
-      () => editor.update((tx) => tx.history.undo()),
+      () => editor.api.history.undo(),
       /Cannot transform concurrent root lifecycle changes/
     );
     assert.throws(
-      () => editor.update((tx) => tx.history.undo()),
+      () => editor.api.history.undo(),
       /Cannot transform concurrent root lifecycle changes/
     );
   });

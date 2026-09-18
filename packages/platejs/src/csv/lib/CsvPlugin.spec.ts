@@ -65,7 +65,7 @@ const getCellHeaders = (
   editor: ReturnType<typeof createCsvEditor>,
   data: string
 ) => {
-  const table = editor.api.csv.deserialize({ data })?.[1];
+  const table = editor.api.csv.deserialize({ data })?.[0];
 
   if (!ElementApi.isElement(table)) return [];
 
@@ -116,7 +116,7 @@ describe('CsvPlugin', () => {
     expect(editor.read.schema.identity()).toEqual(identity);
   });
 
-  it('deserializes header-based csv into paragraphs around a table', () => {
+  it('deserializes header-based csv into one exact table', () => {
     const editor = createCsvEditor();
 
     expect(
@@ -124,7 +124,6 @@ describe('CsvPlugin', () => {
         data: 'name,age\nAda,36',
       })
     ).toEqual([
-      { children: [{ text: '' }], type: 'paragraph' },
       {
         children: [
           {
@@ -158,7 +157,6 @@ describe('CsvPlugin', () => {
         ],
         type: 'table',
       },
-      { children: [{ text: '' }], type: 'paragraph' },
     ]);
   });
 
@@ -174,7 +172,7 @@ describe('CsvPlugin', () => {
     expect(
       editor.api.csv
         .deserialize({ data: 'name,age\nAda,36', header: false })
-        ?.at(1)
+        ?.at(0)
     ).toMatchObject({
       children: [
         { children: [{ type: 'tableCell' }, { type: 'tableCell' }] },

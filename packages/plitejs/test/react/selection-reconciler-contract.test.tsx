@@ -504,6 +504,28 @@ test('mouse down clears stale model-owned text input guards without reclassifyin
   expect(inputController.state.selectionChangeOrigin).toBe('native-user');
 });
 
+test('mouse down ends a stale keyboard selection-move intent', () => {
+  const editor = createEditor<Value>();
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
+  });
+
+  inputController.state.activeIntent = 'native-selection-move';
+
+  applyEditableMouseDown({
+    editor,
+    event: {
+      preventDefault: vi.fn(),
+      target: document.createElement('span'),
+    } as any,
+    inputController,
+  });
+
+  expect(inputController.state.activeIntent).toBeNull();
+  expect(inputController.state.selectionChangeOrigin).toBe('native-user');
+});
+
 test('beforeinput returns same-path pending native text repair DOM range without importing it', () => {
   const editor = createEditor<Value>();
   const root = document.createElement('div');

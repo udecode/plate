@@ -99,26 +99,44 @@ const editor = createEditor({
 
 ### 转换为工具栏按钮
 
-你可以将引用块添加到[转换为工具栏按钮](/docs/toolbar#turn-into-toolbar-button)以切换引用块：
+添加一个直接调用引用功能的结构化操作：
 
 ```tsx
-{
+import { BaseBlockquotePlugin, PLUGINS } from 'platejs';
+
+const turnIntoItem = {
   icon: <QuoteIcon />,
   label: '引用',
   value: PLUGINS.blockquote,
-}
+  onSelect: () => {
+    const blockquote = editor.plugin(BaseBlockquotePlugin);
+
+    if (!blockquote.installed || editor.read.view.isReadOnly()) return;
+
+    blockquote.update.toggle();
+  },
+};
 ```
 
 ### 插入工具栏按钮
 
-你可以将引用块添加到[插入工具栏按钮](/docs/toolbar#insert-toolbar-button)以插入引用块：
+添加一个直接调用已安装引用功能的插入操作：
 
 ```tsx
-{
+import { BaseBlockquotePlugin, PLUGINS } from 'platejs';
+
+const insertItem = {
   icon: <QuoteIcon />,
   label: '引用',
   value: PLUGINS.blockquote,
-}
+  onSelect: () => {
+    const blockquote = editor.plugin(BaseBlockquotePlugin);
+
+    if (!blockquote.installed || editor.read.view.isReadOnly()) return;
+
+    blockquote.update.insert({}, { select: true });
+  },
+};
 ```
 
 </Steps>

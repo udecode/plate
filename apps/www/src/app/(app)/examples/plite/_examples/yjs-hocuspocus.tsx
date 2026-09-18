@@ -978,7 +978,7 @@ const undoPeer = (peer: PeerDefinition, editor: YjsEditor) => {
   const previousValue = readEditorValue(editor);
   const previousSelection = readEditorSelection(editor);
 
-  editor.update.history.undo();
+  editor.api.history.undo();
   syncSelectionAfterHistory(peer, editor, previousValue, previousSelection);
 };
 
@@ -986,7 +986,7 @@ const redoPeer = (peer: PeerDefinition, editor: YjsEditor) => {
   const previousValue = readEditorValue(editor);
   const previousSelection = readEditorSelection(editor);
 
-  editor.update.history.redo();
+  editor.api.history.redo();
   syncSelectionAfterHistory(peer, editor, previousValue, previousSelection);
 };
 

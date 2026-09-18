@@ -59,13 +59,11 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     const cells = editor
       .plugin(BaseTablePlugin)
       .read.selection()!
-      .anchors.map(({ cell }) => cell);
+      .cells.map(([cell]) => cell);
 
     expect(cells.map(getFixtureId)).toEqual(['c11', 'c21']);
 
-    editor
-      .plugin(BaseTablePlugin)
-      .update.toggleBorders({ border: 'left', cells });
+    editor.plugin(BaseTablePlugin).update.toggleBorders({ border: 'left' });
 
     expect(editor.read.children()).toMatchObject(
       (
@@ -133,24 +131,14 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     const cells = editor
       .plugin(BaseTablePlugin)
       .read.selection()!
-      .anchors.map(({ cell }) => cell);
+      .cells.map(([cell]) => cell);
 
     expect(cells.map(getFixtureId)).toEqual(['c12', 'c22']);
     expect(editor.read.nodes.path(cells[1])).toEqual([0, 1, 1]);
-    expect(
-      getFixtureId(
-        editor.plugin(BaseTablePlugin).read.getAdjacentCell({
-          at: editor.read.nodes.path(cells[1]),
-          deltaCol: -1,
-        })![0]
-      )
-    ).toBe('c21');
 
-    editor
-      .plugin(BaseTablePlugin)
-      .update.toggleBorders({ border: 'left', cells });
+    editor.plugin(BaseTablePlugin).update.toggleBorders({ border: 'left' });
 
-    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history().undos).toHaveLength(1);
 
     expect(editor.read.children()).toMatchObject(
       (
@@ -183,7 +171,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
       ).children
     );
 
-    editor.update.history.undo();
+    editor.api.history.undo();
 
     expect(editor.read.children()).toMatchObject(input.children);
   });
@@ -217,9 +205,10 @@ describe('TablePlugin.update.toggleBorders integration', () => {
 
     const editor = createTableEditor(input);
 
-    editor.plugin(BaseTablePlugin).update.setBorderWidth(0, {
+    editor.plugin(BaseTablePlugin).update.setBorders({
       at: [0, 1, 0],
       border: 'right',
+      value: { width: 0 },
     });
 
     expect(editor.read.children()).toMatchObject(
@@ -280,13 +269,15 @@ describe('TablePlugin.update.toggleBorders integration', () => {
 
     const editor = createTableEditor(input);
 
-    editor.plugin(BaseTablePlugin).update.setBorderWidth(0, {
+    editor.plugin(BaseTablePlugin).update.setBorders({
       at: [0, 0, 0],
       border: 'right',
+      value: { width: 0 },
     });
-    editor.plugin(BaseTablePlugin).update.setBorderWidth(0, {
+    editor.plugin(BaseTablePlugin).update.setBorders({
       at: [0, 1, 0],
       border: 'right',
+      value: { width: 0 },
     });
 
     expect(editor.read.children()).toMatchObject(
@@ -337,10 +328,14 @@ describe('TablePlugin.update.toggleBorders integration', () => {
     const before = editor.read.children();
 
     expect(() =>
-      editor.plugin(BaseTablePlugin).update.setBorderWidth(-1)
+      editor
+        .plugin(BaseTablePlugin)
+        .update.setBorders({ border: 'all', value: { width: -1 } })
     ).toThrow(/border width.*non-negative finite number/i);
     expect(() =>
-      editor.plugin(BaseTablePlugin).update.setBorderWidth(Number.NaN)
+      editor
+        .plugin(BaseTablePlugin)
+        .update.setBorders({ border: 'all', value: { width: Number.NaN } })
     ).toThrow(/border width.*non-negative finite number/i);
     expect(editor.read.children()).toBe(before);
   });
@@ -368,14 +363,8 @@ describe('TablePlugin.update.toggleBorders integration', () => {
       </editor>
     ) as TestEditor;
     const editor = createTableEditor(input);
-    const cells = editor
-      .plugin(BaseTablePlugin)
-      .read.selection()!
-      .anchors.map(({ cell }) => cell);
 
-    expect(
-      editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders(cells)
-    ).toEqual({
+    expect(editor.plugin(BaseTablePlugin).read.borders()).toEqual({
       bottom: true,
       left: true,
       none: false,
@@ -426,7 +415,7 @@ describe('TablePlugin.update.toggleBorders integration', () => {
 
     editor
       .plugin(BaseTablePlugin)
-      .update.toggleBorders({ border: 'top', cells: [target] });
+      .update.toggleBorders({ at: target, border: 'top' });
 
     expect(editor.read.children()).toMatchObject(
       (

@@ -98,6 +98,7 @@ export type {
   EditorSelection,
   EditorSelectionBlockOptions,
   EditorStateSchemaApi,
+  EditorStateField,
   EditorStateSelectionApi,
   EditorStateView,
   EditorStateViewProvider,
@@ -193,4 +194,14 @@ export type {
 } from 'plitejs/internal';
 
 export type { AnyEditor as RuntimeAnyEditor } from 'plitejs/internal';
-export { fitSlicePlacements } from 'plitejs/internal';
+export type { InternalEditorSchemaApi } from 'plitejs/internal';
+export type { NativeAuthoredDocumentCapability } from 'plitejs/internal';
+export {
+  assertDetachedSelectionSupported,
+  completePersistedDocumentFields,
+  createDetachedEditorSchema,
+  fitSlicePlacements,
+  mapDetachedSelectionThroughChange,
+  snapshotEditorJsonValue,
+  type CompiledEditorSchema,
+} from 'plitejs/internal';

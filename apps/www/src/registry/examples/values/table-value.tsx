@@ -112,8 +112,8 @@ export const tableMergeValue = (
   <fragment>
     <hheading level={3}>Table Merge</hheading>
     <hp>
-      You can disable merging using <htext code>disableMerge: true</htext>{' '}
-      option. Try it out:
+      You can disable cell span editing using{' '}
+      <htext code>allowCellSpanEditing: false</htext> option. Try it out:
     </hp>
     {createTable(true)}
   </fragment>

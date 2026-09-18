@@ -7,6 +7,7 @@ import {
   waitFor,
 } from '@testing-library/react';
 import { type Descendant, type Element, NodeApi } from 'plitejs';
+import { authored } from 'plitejs/authored';
 import { history } from 'plitejs/history';
 import type { ReactNode } from 'react';
 
@@ -14,6 +15,7 @@ import {
   createEditor,
   Editable,
   EditorRoot,
+  useEditorContext,
   useEditorHistory,
   useRootEditor,
 } from '../../src/react';
@@ -48,7 +50,10 @@ describe('useEditorHistory', () => {
       initialValue: [paragraph('body')],
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <EditorRoot editor={editor}>{children}</EditorRoot>
+      <EditorRoot editor={editor}>
+        <Editable aria-label="History editor" />
+        {children}
+      </EditorRoot>
     );
 
     const { result } = renderHook(() => useEditorHistory(), { wrapper });
@@ -74,7 +79,10 @@ describe('useEditorHistory', () => {
       initialValue: [paragraph('body')],
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <EditorRoot editor={editor}>{children}</EditorRoot>
+      <EditorRoot editor={editor}>
+        <Editable aria-label="History editor" />
+        {children}
+      </EditorRoot>
     );
 
     const { result } = renderHook(() => useEditorHistory(), { wrapper });
@@ -86,10 +94,12 @@ describe('useEditorHistory', () => {
       });
     });
 
+    let undoResult: ReturnType<typeof result.current.undo> | undefined;
     await act(async () => {
-      result.current.undo();
+      undoResult = result.current.undo();
     });
 
+    expect(undoResult).toEqual({ status: 'applied' });
     expect(editorText(editor)).toBe('body');
     expect(result.current.canUndo).toBe(false);
     expect(result.current.canRedo).toBe(true);
@@ -103,6 +113,61 @@ describe('useEditorHistory', () => {
     expect(result.current.canRedo).toBe(false);
   });
 
+  for (const action of ['accept', 'reject'] as const) {
+    test(`undoes and redoes an authored ${action} decision through the mounted controller`, async () => {
+      const editor = createEditor({
+        plugins: [history(), authored({ authorId: 'alice' })],
+        initialValue: [paragraph('body')],
+      });
+      let changeId = '';
+      let mountedEditor!: typeof editor;
+      editor.update((tx) => {
+        tx.history.skip();
+        changeId = tx.authored.propose();
+        tx.text.insert(' draft', { at: { path: [0, 0], offset: 4 } });
+      });
+      const Capture = () => {
+        mountedEditor = useEditorContext() as typeof editor;
+        return null;
+      };
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <EditorRoot
+          authored={{ intent: 'propose', projection: 'markup' }}
+          editor={editor}
+        >
+          <Editable aria-label="History editor" />
+          <Capture />
+          {children}
+        </EditorRoot>
+      );
+      const { result } = renderHook(() => useEditorHistory(), { wrapper });
+
+      await act(async () => {
+        mountedEditor.update.authored.decide({
+          action,
+          selection: mountedEditor.read.authored.select({ ids: [changeId] }),
+        });
+      });
+
+      expect(editor.read.authored.change(changeId)?.status).toBe(
+        action === 'accept' ? 'accepted' : 'rejected'
+      );
+      expect(result.current.canUndo).toBe(true);
+
+      await act(async () => result.current.undo());
+
+      expect(editor.read.authored.change(changeId)?.status).toBe('pending');
+      expect(result.current.canRedo).toBe(true);
+
+      await act(async () => result.current.redo());
+
+      expect(editor.read.authored.change(changeId)?.status).toBe(
+        action === 'accept' ? 'accepted' : 'rejected'
+      );
+      expect(result.current.canRedo).toBe(false);
+    });
+  }
+
   test('controller undo avoids normalizing the outer history transaction', async () => {
     const blockCount = 128;
     const initialValue = Array.from({ length: blockCount }, (_, index) =>
@@ -113,7 +178,10 @@ describe('useEditorHistory', () => {
       initialValue,
     });
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <EditorRoot editor={editor}>{children}</EditorRoot>
+      <EditorRoot editor={editor}>
+        <Editable aria-label="History editor" />
+        {children}
+      </EditorRoot>
     );
 
     const { result } = renderHook(() => useEditorHistory(), { wrapper });
@@ -184,6 +252,7 @@ describe('useEditorHistory', () => {
     render(
       <EditorRoot editor={editor}>
         <TitleInput />
+        <Editable aria-label="Header editor" root="header" />
       </EditorRoot>
     );
 
@@ -279,6 +348,7 @@ describe('useEditorHistory', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <EditorRoot editor={editor}>
         <Probe />
+        <Editable aria-label="History editor" />
         {children}
       </EditorRoot>
     );

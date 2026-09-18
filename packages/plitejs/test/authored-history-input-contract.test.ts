@@ -72,15 +72,15 @@ describe('native authored input history', () => {
     );
     assert.equal(view.read.text.string([]), 'AにD');
     assert.equal(source.read.text.string([]), 'ABCD');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.deepEqual(view.read.children(), source.read.children());
     assert.deepEqual(view.read.selection(), selection);
-    view.update.history.redo();
+    view.api.history.redo();
     assert.equal(view.read.text.string([]), 'AにD');
     assert.equal(view.read.authored.change(id)?.status, 'pending');
     type(view, '!');
     assert.equal(view.read.text.string([]), 'Aに!D');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'AにD');
   });
 
@@ -92,9 +92,9 @@ describe('native authored input history', () => {
     setEditorComposing(view, false);
     await Promise.resolve();
     type(view, ' B');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base A漢字');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base A');
   });
 
@@ -174,13 +174,13 @@ describe('native authored input history', () => {
       view.read.authored.changes({ status: 'pending' }).items.length,
       1
     );
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base');
     assert.deepEqual(view.read.selection(), {
       anchor: point(4),
       focus: point(4),
     });
-    view.update.history.redo();
+    view.api.history.redo();
     assert.equal(view.read.text.string([]), 'Base draft');
     assert.deepEqual(view.read.selection(), {
       anchor: point(10),
@@ -206,13 +206,13 @@ describe('native authored input history', () => {
     assert.equal(changes.length, 1);
     assert.equal(changes[0].revision, 2);
 
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base');
     assert.deepEqual(view.read.selection(), {
       anchor: point(4),
       focus: point(4),
     });
-    view.update.history.redo();
+    view.api.history.redo();
     assert.equal(view.read.text.string([]), 'Ba');
     assert.equal(view.read.authored.changes().items[0].id, changes[0].id);
     assert.equal(
@@ -380,7 +380,7 @@ describe('native authored input history', () => {
     assert.equal(changes[0].revision, 2);
     assert.equal(view.read.text.string([]), 'Ba');
 
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Bas');
     assert.deepEqual(
       view.read.authored
@@ -388,7 +388,7 @@ describe('native authored input history', () => {
         .items.map(({ id }) => id),
       [changes[0].id]
     );
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base');
   });
 
@@ -465,10 +465,10 @@ describe('native authored input history', () => {
     type(view, ' Alice');
     setAuthor('bob');
     type(view, ' Bob');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base Alice');
     setAuthor('alice');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base');
     assert.equal(source.read.text.string([]), 'Base');
   });
@@ -481,9 +481,9 @@ describe('native authored input history', () => {
       tx.selection.set(point(6));
       tx.text.insert(' B');
     });
-    other.update.history.undo();
+    other.api.history.undo();
     assert.equal(other.read.text.string([]), 'Base A');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base');
   });
 
@@ -492,7 +492,7 @@ describe('native authored input history', () => {
     view.update.selection.set({ anchor: point(1), focus: point(3) });
     type(view, 'etter');
     assert.equal(view.read.text.string([]), 'Bettere');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base');
     assert.deepEqual(view.read.selection(), {
       anchor: point(1),
@@ -506,19 +506,39 @@ describe('native authored input history', () => {
     view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
     type(view, ' draft');
     assert.equal(source.read.text.string([]), 'Base draft');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(source.read.text.string([]), 'Base');
-    view.update.history.redo();
+    view.api.history.redo();
     assert.equal(source.read.text.string([]), 'Base draft');
+  });
+
+  it('undoes direct typing from a markup editing view without hiding pending content', () => {
+    const { source, view } = setup();
+    type(view, ' draft');
+    const pending = view.read.authored.changes().items[0];
+    view.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    view.update.selection.set(point(0));
+    type(view, '!');
+    assert.equal(source.read.text.string([]), '!Base');
+    assert.equal(view.read.text.string([]), '!Base draft');
+
+    view.api.history.undo();
+    assert.equal(source.read.text.string([]), 'Base');
+    assert.equal(view.read.text.string([]), 'Base draft');
+    assert.equal(view.read.authored.change(pending.id)?.status, 'pending');
+
+    view.api.history.redo();
+    assert.equal(source.read.text.string([]), '!Base');
+    assert.equal(view.read.text.string([]), '!Base draft');
   });
 
   it('does not merge a native input burst with a programmatic proposal', () => {
     const { view } = setup();
     view.update.text.insert(' prepared');
     type(view, ' draft');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base prepared');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base');
   });
 
@@ -528,7 +548,7 @@ describe('native authored input history', () => {
     view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
     view.api.authored.setView(proposal);
     type(view, ' B');
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base A');
   });
 
@@ -540,7 +560,7 @@ describe('native authored input history', () => {
     view.update({ history: 'merge', tags: 'native-text-input' }, (tx) =>
       tx.text.insert(' B')
     );
-    view.update.history.undo();
+    view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base A');
   });
 });

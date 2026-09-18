@@ -81,13 +81,6 @@ export const useTableResize = ({
       } else {
         target = handle;
       }
-      if (
-        handle.edge === 'left' &&
-        editor.plugin(TablePlugin).store.get().disableMarginLeft
-      ) {
-        return false;
-      }
-
       cancelRef.current?.();
 
       const callbacks = callbacksRef.current;
@@ -119,7 +112,7 @@ export const useTableResize = ({
               if (delta !== 0) {
                 editor
                   .plugin(TablePlugin)
-                  .update.resize(resize(delta), { at: key });
+                  .update.resize({ at: key, resize: resize(delta) });
               }
             }
           } finally {

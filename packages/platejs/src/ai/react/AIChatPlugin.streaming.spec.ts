@@ -1,5 +1,6 @@
 import remarkMath from 'remark-math';
 
+import { DefaultAuthoredPlugin } from '../../authored';
 import {
   BaseParagraphPlugin,
   definePlugin,
@@ -10,11 +11,11 @@ import {
 } from '../../core';
 import { MarkdownPlugin } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
-import { AI_PREVIEW_KEY } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
 const createEditor = (paragraphType = 'paragraph') => {
   const plugins = [
+    DefaultAuthoredPlugin,
     BaseParagraphPlugin,
     definePlugin(PLUGINS.codeBlock, {
       codecs: ({ defineCodecs }) =>
@@ -102,119 +103,50 @@ const createEditor = (paragraphType = 'paragraph') => {
 };
 
 describe('AIChatPlugin streaming', () => {
-  it('keeps a trailing empty paragraph while deserializing chunks', () => {
+  it('keeps streamed output in a draft until one accepted edit', () => {
     const editor = createEditor();
+    const ai = editor.plugin(AIChatPlugin);
+    const before = editor.read.value();
 
-    expect(
-      editor.plugin(AIChatPlugin).api.deserializeChunk('hello\n\n')
-    ).toEqual([
-      { children: [{ text: 'hello' }], type: 'paragraph' },
-      { children: [{ text: '' }], type: 'paragraph' },
-    ]);
-  });
+    ai.api.setPreview('hello');
+    ai.api.setPreview('hello world');
 
-  it('uses the resolved paragraph type while deserializing chunks', () => {
-    const editor = createEditor('customParagraph');
-
-    expect(
-      editor.plugin(AIChatPlugin).api.deserializeChunk('hello\n\n')
-    ).toEqual([
-      { children: [{ text: 'hello' }], type: 'customParagraph' },
-      { children: [{ text: '' }], type: 'customParagraph' },
-    ]);
-  });
-
-  it('stores tracked AI content as one native proposal', () => {
-    const editor = createEditor();
-    const aiChat = editor.plugin(AIChatPlugin);
-    const nodeKey = editor.key([0])!;
-
-    editor.api.authored.setView({
-      intent: 'propose',
-      projection: 'markup',
+    expect(editor.read.text.string([])).toBe('');
+    expect(editor.read.value()).toEqual(before);
+    expect(editor.read.authored.view()).toEqual({
+      intent: 'edit',
+      projection: 'accepted',
     });
-    aiChat.store.set({
-      chatNodes: [
-        {
-          node: { children: [{ text: '' }], type: 'paragraph' },
-          nodeKey,
-        },
-      ],
-    });
+    expect(
+      ai.store.get('previewValue').map((node) => NodeApi.string(node))
+    ).toEqual(['hello world']);
 
-    aiChat.update.applySuggestions('hello');
+    ai.api.accept();
 
-    expect(editor.read.value().children).toEqual([
-      { children: [{ text: '' }], type: 'paragraph' },
-    ]);
-    expect(editor.read.text.string([])).toBe('hello');
+    expect(editor.read.text.string([])).toBe('hello world');
     expect(
       editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
+    ).toHaveLength(0);
+    editor.api.history.undo();
+    expect(editor.read.text.string([])).toBe('');
   });
 
-  it('preserves closing code and math fences before trailing newlines', () => {
-    const editor = createEditor();
-    const { read } = editor.plugin(AIChatPlugin);
-
-    expect(
-      read.serializeChunk(
-        {
-          value: {
-            children: [
-              {
-                children: [{ text: 'const answer = 42;' }],
-                lang: 'typescript',
-                type: 'codeBlock',
-              },
-            ],
-          },
-        },
-        '```typescript\nconst answer = 42;\n```\n\n'
-      )
-    ).toBe('```typescript\nconst answer = 42;\n```\n');
-    expect(
-      read.serializeChunk(
-        {
-          value: {
-            children: [
-              {
-                children: [{ text: '' }],
-                latex: 'x+1',
-                type: 'equation',
-              },
-            ],
-          },
-        },
-        '$$\nx+1\n$$\n'
-      )
-    ).toBe('$$\nx+1\n$$\n');
-  });
-
-  it('streams into the current empty block with supplied element props', () => {
-    const editor = createEditor();
-
-    editor.plugin(AIChatPlugin).update.insertChunk('hello', {
-      elementProps: { [AI_PREVIEW_KEY]: true },
-    });
-
-    expect(editor.read.text.string([])).toBe('hello');
-    expect(Reflect.get(editor.read.children()[0], AI_PREVIEW_KEY)).toBe(true);
-  });
-
-  it('replaces a streamed heading when its canonical level changes', () => {
-    const editor = createEditor();
-    const aiChat = editor.plugin(AIChatPlugin);
-
-    editor.update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
-    aiChat.store.set({ _blockChunks: '', _blockPath: [0] });
-
-    aiChat.update.insertChunk('## Two');
-
-    expect(editor.read.children()[0]).toMatchObject({
-      children: [{ text: 'Two' }],
-      level: 2,
+  it('reparses the complete response as a heading or custom paragraph', () => {
+    const editor = createEditor('customParagraph');
+    const ai = editor.plugin(AIChatPlugin);
+    ai.api.setPreview('# One');
+    expect(ai.store.get('previewValue')[0]).toMatchObject({
       type: 'heading',
+      level: 1,
+    });
+    ai.api.setPreview('## Two');
+    expect(ai.store.get('previewValue')[0]).toMatchObject({
+      type: 'heading',
+      level: 2,
+    });
+    ai.api.setPreview('text');
+    expect(ai.store.get('previewValue')[0]).toMatchObject({
+      type: 'customParagraph',
     });
   });
 });

@@ -3,10 +3,6 @@
   "elements": {
     "allowedChildren": [
       [
-        "element:aiChat",
-        []
-      ],
-      [
         "element:audio",
         [
           "date",
@@ -23,7 +19,6 @@
       [
         "element:blockquote",
         [
-          "aiChat",
           "audio",
           "blockquote",
           "callout",
@@ -66,7 +61,6 @@
       [
         "element:column",
         [
-          "aiChat",
           "audio",
           "blockquote",
           "callout",
@@ -101,7 +95,6 @@
       [
         "element:details",
         [
-          "aiChat",
           "audio",
           "blockquote",
           "callout",
@@ -148,7 +141,6 @@
       [
         "element:footnoteDefinition",
         [
-          "aiChat",
           "audio",
           "blockquote",
           "callout",
@@ -285,7 +277,6 @@
       [
         "element:tableCell",
         [
-          "aiChat",
           "audio",
           "blockquote",
           "callout",
@@ -334,7 +325,6 @@
       [
         "root",
         [
-          "aiChat",
           "audio",
           "blockquote",
           "callout",
@@ -358,17 +348,6 @@
       ]
     ],
     "allowedParents": [
-      [
-        "aiChat",
-        [
-          "element:blockquote",
-          "element:column",
-          "element:details",
-          "element:footnoteDefinition",
-          "element:tableCell",
-          "root"
-        ]
-      ],
       [
         "audio",
         [
@@ -728,51 +707,6 @@
         "behavior": {
           "atom": false,
           "inline": false,
-          "isolating": false,
-          "keyboardSelectable": false,
-          "markableVoid": false,
-          "readOnly": false,
-          "selectable": true,
-          "void": false,
-          "voidKind": null
-        },
-        "content": {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": null,
-          "min": 1
-        },
-        "contentRoots": [],
-        "construction": {
-          "materializedPropertyIds": [],
-          "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296"
-          ]
-        },
-        "groups": [
-          "all",
-          "block",
-          "element",
-          "plate:block-content",
-          "textBlock"
-        ],
-        "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296"
-        ],
-        "slice": {
-          "preserveContext": false,
-          "replaceWhenCovered": true
-        },
-        "type": "aiChat"
-      },
-      {
-        "behavior": {
-          "atom": false,
-          "inline": false,
           "isolating": true,
           "keyboardSelectable": true,
           "markableVoid": false,
@@ -805,7 +739,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:textAlign@187ef459f9d44620",
             "element:url@b09f563d04864a0d",
             "element:width@d289fcde94c1475e"
@@ -819,7 +752,6 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:textAlign@187ef459f9d44620",
           "element:url@b09f563d04864a0d",
           "element:width@d289fcde94c1475e"
@@ -844,7 +776,6 @@
         },
         "content": {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -878,7 +809,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
             "element:listRestart@35fa065cd84f9a60",
@@ -894,7 +824,6 @@
           "plate:block-content"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:listRestart@35fa065cd84f9a60",
@@ -946,7 +875,6 @@
             "element:icon@b610536939eb3f13"
           ],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:backgroundColor@abc86032ce5e8381",
             "element:icon@b610536939eb3f13",
             "element:variant@7ed3805aa01a6807"
@@ -960,7 +888,6 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:backgroundColor@abc86032ce5e8381",
           "element:icon@b610536939eb3f13",
           "element:variant@7ed3805aa01a6807"
@@ -997,7 +924,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
             "element:language@f075c3fe4239c09c",
@@ -1015,7 +941,6 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:language@f075c3fe4239c09c",
@@ -1044,7 +969,6 @@
         },
         "content": {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -1080,7 +1004,6 @@
             "element:width@7231be0c06083662"
           ],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:width@7231be0c06083662"
           ]
         },
@@ -1090,7 +1013,6 @@
           "element"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:width@7231be0c06083662"
         ],
         "slice": {
@@ -1127,9 +1049,7 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [],
-          "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296"
-          ]
+          "propertyIds": []
         },
         "groups": [
           "all",
@@ -1137,9 +1057,7 @@
           "element",
           "plate:block-content"
         ],
-        "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296"
-        ],
+        "propertyIds": [],
         "slice": {
           "preserveContext": false,
           "replaceWhenCovered": true
@@ -1203,7 +1121,6 @@
         },
         "content": {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -1237,7 +1154,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
             "element:listRestart@35fa065cd84f9a60",
@@ -1253,7 +1169,6 @@
           "plate:block-content"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:listRestart@35fa065cd84f9a60",
@@ -1342,7 +1257,6 @@
             "element:latex@6c61d1f3c8305dce"
           ],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:latex@6c61d1f3c8305dce"
           ]
         },
@@ -1353,7 +1267,6 @@
           "plate:block-content"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:latex@6c61d1f3c8305dce"
         ],
         "slice": {
@@ -1398,7 +1311,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:name@1069a658ff703b9d",
             "element:url@88fa4e556f36a1b7",
             "element:width@b3737226e8fe3a6e"
@@ -1412,7 +1324,6 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:name@1069a658ff703b9d",
           "element:url@88fa4e556f36a1b7",
           "element:width@b3737226e8fe3a6e"
@@ -1437,7 +1348,6 @@
         },
         "content": {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -1471,7 +1381,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:ref@3b0dc884d77d0966"
           ]
         },
@@ -1482,7 +1391,6 @@
           "plate:block-content"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:ref@3b0dc884d77d0966"
         ],
         "slice": {
@@ -1617,7 +1525,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
             "element:level@94a59f5f3986e008",
@@ -1637,7 +1544,6 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:level@94a59f5f3986e008",
@@ -1679,9 +1585,7 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [],
-          "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296"
-          ]
+          "propertyIds": []
         },
         "groups": [
           "all",
@@ -1689,9 +1593,7 @@
           "element",
           "plate:block-content"
         ],
-        "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296"
-        ],
+        "propertyIds": [],
         "slice": {
           "preserveContext": false,
           "replaceWhenCovered": true
@@ -1734,7 +1636,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:alt@92916bfcb7519666",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
@@ -1758,7 +1659,6 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:alt@92916bfcb7519666",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
@@ -1905,7 +1805,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:provider@84a11c95e1d74472",
             "element:sourceUrl@2bfb15bcfacea42d",
             "element:textAlign@187ef459f9d44620",
@@ -1921,7 +1820,6 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:provider@84a11c95e1d74472",
           "element:sourceUrl@2bfb15bcfacea42d",
           "element:textAlign@187ef459f9d44620",
@@ -2062,7 +1960,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
             "element:lineHeight@6366f6699ad903fe",
@@ -2081,7 +1978,6 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:lineHeight@6366f6699ad903fe",
@@ -2123,7 +2019,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:mediaType@4b72b6953a6e3307"
           ]
         },
@@ -2134,7 +2029,6 @@
           "plate:block-content"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:mediaType@4b72b6953a6e3307"
         ],
         "slice": {
@@ -2225,9 +2119,7 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [],
-          "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296"
-          ]
+          "propertyIds": []
         },
         "groups": [
           "all",
@@ -2236,9 +2128,7 @@
           "plate:block-content",
           "textBlock"
         ],
-        "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296"
-        ],
+        "propertyIds": [],
         "slice": {
           "preserveContext": false,
           "replaceWhenCovered": true
@@ -2274,7 +2164,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:columnWidths@ee103944498d7d99",
             "element:marginLeft@da82a82a76b6f0f1"
           ]
@@ -2286,7 +2175,6 @@
           "plate:block-content"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:columnWidths@ee103944498d7d99",
           "element:marginLeft@da82a82a76b6f0f1"
         ],
@@ -2310,7 +2198,6 @@
         },
         "content": {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -2346,7 +2233,6 @@
             "element:header@e1fcb0f762cb1e47"
           ],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:backgroundColor@e4bf085a06d2acd9",
             "element:borders@1161f7efe55c616d",
             "element:colSpan@263bf74d05ba194a",
@@ -2360,7 +2246,6 @@
           "element"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:backgroundColor@e4bf085a06d2acd9",
           "element:borders@1161f7efe55c616d",
           "element:colSpan@263bf74d05ba194a",
@@ -2402,7 +2287,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:height@4222b97bc19b7723"
           ]
         },
@@ -2412,7 +2296,6 @@
           "element"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:height@4222b97bc19b7723"
         ],
         "slice": {
@@ -2446,9 +2329,7 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [],
-          "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296"
-          ]
+          "propertyIds": []
         },
         "groups": [
           "all",
@@ -2456,9 +2337,7 @@
           "element",
           "plate:block-content"
         ],
-        "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296"
-        ],
+        "propertyIds": [],
         "slice": {
           "preserveContext": false,
           "replaceWhenCovered": true
@@ -2501,7 +2380,6 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
-            "element:aiPreview@65af9e5e9f595296",
             "element:provider@82a92be778594f8a",
             "element:sourceUrl@edd27c91da0ff1df",
             "element:textAlign@187ef459f9d44620",
@@ -2517,7 +2395,6 @@
           "textBlock"
         ],
         "propertyIds": [
-          "element:aiPreview@65af9e5e9f595296",
           "element:provider@82a92be778594f8a",
           "element:sourceUrl@edd27c91da0ff1df",
           "element:textAlign@187ef459f9d44620",
@@ -2532,19 +2409,6 @@
       }
     ],
     "contentPrograms": [
-      [
-        "element:aiChat",
-        {
-          "allowedElementTypes": [],
-          "allowsText": true,
-          "allowsUnknownElements": false,
-          "defaultPlan": {
-            "kind": "text"
-          },
-          "max": null,
-          "min": 1
-        }
-      ],
       [
         "element:audio",
         {
@@ -2572,7 +2436,6 @@
         "element:blockquote",
         {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -2643,7 +2506,6 @@
         "element:column",
         {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -2707,7 +2569,6 @@
         "element:details",
         {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -2791,7 +2652,6 @@
         "element:footnoteDefinition",
         {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -3074,7 +2934,6 @@
         "element:tableCell",
         {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -3161,7 +3020,6 @@
         "root",
         {
           "allowedElementTypes": [
-            "aiChat",
             "audio",
             "blockquote",
             "callout",
@@ -3194,12 +3052,6 @@
       ]
     ],
     "defaultPlans": [
-      [
-        "element:aiChat",
-        {
-          "kind": "text"
-        }
-      ],
       [
         "element:audio",
         {
@@ -3406,7 +3258,6 @@
       [
         "all",
         [
-          "aiChat",
           "audio",
           "blockquote",
           "callout",
@@ -3443,7 +3294,6 @@
       [
         "block",
         [
-          "aiChat",
           "audio",
           "blockquote",
           "callout",
@@ -3471,7 +3321,6 @@
       [
         "element",
         [
-          "aiChat",
           "audio",
           "blockquote",
           "callout",
@@ -3522,7 +3371,6 @@
       [
         "plate:block-content",
         [
-          "aiChat",
           "audio",
           "blockquote",
           "callout",
@@ -3551,7 +3399,6 @@
       [
         "textBlock",
         [
-          "aiChat",
           "audio",
           "callout",
           "codeBlock",
@@ -3571,10 +3418,6 @@
       "text"
     ],
     "wrapperPlans": [
-      [
-        "element:aiChat\u0000\u0000text",
-        []
-      ],
       [
         "element:audio\u0000date",
         []
@@ -3613,10 +3456,6 @@
       ],
       [
         "element:audio\u0000\u0000text",
-        []
-      ],
-      [
-        "element:blockquote\u0000aiChat",
         []
       ],
       [
@@ -3740,10 +3579,6 @@
         []
       ],
       [
-        "element:column\u0000aiChat",
-        []
-      ],
-      [
         "element:column\u0000audio",
         []
       ],
@@ -3825,10 +3660,6 @@
       ],
       [
         "element:date\u0000\u0000text",
-        []
-      ],
-      [
-        "element:details\u0000aiChat",
         []
       ],
       [
@@ -3953,10 +3784,6 @@
       ],
       [
         "element:file\u0000\u0000text",
-        []
-      ],
-      [
-        "element:footnoteDefinition\u0000aiChat",
         []
       ],
       [
@@ -4272,10 +4099,6 @@
         []
       ],
       [
-        "element:tableCell\u0000aiChat",
-        []
-      ],
-      [
         "element:tableCell\u0000audio",
         []
       ],
@@ -4404,10 +4227,6 @@
         []
       ],
       [
-        "root\u0000aiChat",
-        []
-      ],
-      [
         "root\u0000audio",
         []
       ],
@@ -4485,16 +4304,15 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:4c461492d319fe62",
+  "fingerprint": "fnv1a64:cd7e6fd34ea16989",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:4c461492d319fe62",
+    "fingerprint": "fnv1a64:cd7e6fd34ea16989",
     "kind": "derived"
   },
   "primaryRoot": {
     "content": {
       "allowedElementTypes": [
-        "aiChat",
         "audio",
         "blockquote",
         "callout",
@@ -4528,30 +4346,6 @@
   },
   "properties": {
     "byId": [
-      {
-        "descriptor": {
-          "kind": "boolean",
-          "omitDefault": false,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "element:aiPreview@65af9e5e9f595296",
-        "key": "aiPreview",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "ai",
-        "placement": "element",
-        "role": "content",
-        "target": {
-          "group": "block",
-          "kind": "group"
-        }
-      },
       {
         "descriptor": {
           "kind": "string",
@@ -6446,10 +6240,6 @@
     ],
     "conflictsByPropertyId": [
       [
-        "element:aiPreview@65af9e5e9f595296",
-        []
-      ],
-      [
         "element:alt@92916bfcb7519666",
         []
       ],
@@ -6756,15 +6546,8 @@
     ],
     "elementAllowedByType": [
       [
-        "aiChat",
-        [
-          "element:aiPreview@65af9e5e9f595296"
-        ]
-      ],
-      [
         "audio",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:textAlign@187ef459f9d44620",
           "element:url@b09f563d04864a0d",
           "element:width@d289fcde94c1475e"
@@ -6773,7 +6556,6 @@
       [
         "blockquote",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:listRestart@35fa065cd84f9a60",
@@ -6785,7 +6567,6 @@
       [
         "callout",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:backgroundColor@abc86032ce5e8381",
           "element:icon@b610536939eb3f13",
           "element:variant@7ed3805aa01a6807"
@@ -6794,7 +6575,6 @@
       [
         "codeBlock",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:language@f075c3fe4239c09c",
@@ -6807,15 +6587,12 @@
       [
         "column",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:width@7231be0c06083662"
         ]
       ],
       [
         "columnGroup",
-        [
-          "element:aiPreview@65af9e5e9f595296"
-        ]
+        []
       ],
       [
         "date",
@@ -6826,7 +6603,6 @@
       [
         "details",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:listRestart@35fa065cd84f9a60",
@@ -6846,14 +6622,12 @@
       [
         "equation",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:latex@6c61d1f3c8305dce"
         ]
       ],
       [
         "file",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:name@1069a658ff703b9d",
           "element:url@88fa4e556f36a1b7",
           "element:width@b3737226e8fe3a6e"
@@ -6862,7 +6636,6 @@
       [
         "footnoteDefinition",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:ref@3b0dc884d77d0966"
         ]
       ],
@@ -6883,7 +6656,6 @@
       [
         "heading",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:level@94a59f5f3986e008",
@@ -6897,14 +6669,11 @@
       ],
       [
         "horizontalRule",
-        [
-          "element:aiPreview@65af9e5e9f595296"
-        ]
+        []
       ],
       [
         "image",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:alt@92916bfcb7519666",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
@@ -6936,7 +6705,6 @@
       [
         "mediaEmbed",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:provider@84a11c95e1d74472",
           "element:sourceUrl@2bfb15bcfacea42d",
           "element:textAlign@187ef459f9d44620",
@@ -6962,7 +6730,6 @@
       [
         "paragraph",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:lineHeight@6366f6699ad903fe",
@@ -6976,7 +6743,6 @@
       [
         "placeholder",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:mediaType@4b72b6953a6e3307"
         ]
       ],
@@ -6990,14 +6756,11 @@
       ],
       [
         "summary",
-        [
-          "element:aiPreview@65af9e5e9f595296"
-        ]
+        []
       ],
       [
         "table",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:columnWidths@ee103944498d7d99",
           "element:marginLeft@da82a82a76b6f0f1"
         ]
@@ -7005,7 +6768,6 @@
       [
         "tableCell",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:backgroundColor@e4bf085a06d2acd9",
           "element:borders@1161f7efe55c616d",
           "element:colSpan@263bf74d05ba194a",
@@ -7016,20 +6778,16 @@
       [
         "tableRow",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:height@4222b97bc19b7723"
         ]
       ],
       [
         "toc",
-        [
-          "element:aiPreview@65af9e5e9f595296"
-        ]
+        []
       ],
       [
         "video",
         [
-          "element:aiPreview@65af9e5e9f595296",
           "element:provider@82a92be778594f8a",
           "element:sourceUrl@edd27c91da0ff1df",
           "element:textAlign@187ef459f9d44620",
@@ -7039,15 +6797,6 @@
       ]
     ],
     "lifecycle": [
-      [
-        "element:aiPreview@65af9e5e9f595296",
-        {
-          "copy": "preserve",
-          "inclusive": null,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
       [
         "element:alt@92916bfcb7519666",
         {
@@ -7737,12 +7486,6 @@
       "element": {
         "exact": [
           [
-            "aiPreview",
-            [
-              "element:aiPreview@65af9e5e9f595296"
-            ]
-          ],
-          [
             "alt",
             [
               "element:alt@92916bfcb7519666"
@@ -8079,10 +7822,6 @@
     },
     "mergeStrategies": [
       [
-        "element:aiPreview@65af9e5e9f595296",
-        "replace"
-      ],
-      [
         "element:alt@92916bfcb7519666",
         "replace"
       ],
@@ -8389,24 +8128,6 @@
     ],
     "membersByExclusiveGroup": [],
     "textAllowedByParentType": [
-      [
-        "aiChat",
-        [
-          "text:ai@2f2791ccdc09f005",
-          "text:backgroundColor@cb359bb332a9fb72",
-          "text:bold@66c11ef06c87ed62",
-          "text:code@6939885f562d0514",
-          "text:color@6093816ecb087592",
-          "text:fontFamily@b00b412164ea3c68",
-          "text:fontSize@5b3b0f080627a70d",
-          "text:highlight@b4c2a38d602e5889",
-          "text:italic@4f9fcc9f4f2d32c1",
-          "text:kbd@26be899c0d1b681a",
-          "text:script@508ca8ff29baaad6",
-          "text:strikethrough@9568299587c9032e",
-          "text:underline@e3a9db819714dd91"
-        ]
-      ],
       [
         "audio",
         [
@@ -8972,7 +8693,6 @@
   "unknown": "reject",
   "vocabulary": {
     "elementTypes": [
-      "aiChat",
       "audio",
       "blockquote",
       "callout",
@@ -9015,7 +8735,6 @@
       "textBlock"
     ],
     "propertyIds": [
-      "element:aiPreview@65af9e5e9f595296",
       "element:alt@92916bfcb7519666",
       "element:backgroundColor@abc86032ce5e8381",
       "element:backgroundColor@e4bf085a06d2acd9",

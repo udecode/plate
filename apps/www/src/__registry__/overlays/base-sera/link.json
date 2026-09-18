@@ -4,15 +4,19 @@
   "title": "Link",
   "description": "A component for rendering hyperlinks with hover states.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "@floating-ui/react",
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [
     "button",
     "input",
     "separator",
-    "https://platejs.org/r/link-toolbar-button.json",
-    "https://platejs.org/r/suggestion-style.json",
-    "https://platejs.org/r/use-floating-rect.json"
+    "@plate/link-toolbar-button",
+    "@plate/suggestion-style",
+    "@plate/use-floating-rect"
   ],
   "files": [
     {

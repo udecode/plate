@@ -165,9 +165,11 @@ the draft. Complete asynchronous work before building the command.
 
 Use `handle(descriptor, handler)` for fallback policy. Returning `false` runs the
 next handler or descriptor default. Use `around(descriptor, handler)` when the
-policy must rewrite downstream input or compose a prefix. Its `next.after(prefix)`
-evaluates downstream behavior against the state produced by that prefix.
-Plugin order determines handler order; the descriptor preserves input inference.
+policy must rewrite downstream input or compose a prefix. An `around` handler
+delegates only when it calls `next()` or `next.after(prefix)`; returning `false`
+rejects the command and stops fallback. `next.after(prefix)` evaluates downstream
+behavior against the state produced by that prefix. Plugin order determines
+handler order; the descriptor preserves input inference.
 
 ## Declare product codecs
 

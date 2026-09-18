@@ -1,0 +1,33 @@
+{
+  "id": "2026-09-18-recovered-2026-09-16-ai-continuation-render-recovery",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "ai",
+    "fixed-toolbar-scroll"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-16-ai-continuation-render-recovery.md",
+    "sha256": "1dd08b1306e296e392485483e2af1061094fd11f9d1208a31491d3baca7e3a35"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. Complete — Generate Markdown docs-embed containment verified The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-16-ai-continuation-render-recovery.md",
+        "sha256": "1dd08b1306e296e392485483e2af1061094fd11f9d1208a31491d3baca7e3a35",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-16-ai-continuation-render-recovery.md"
+  ]
+}

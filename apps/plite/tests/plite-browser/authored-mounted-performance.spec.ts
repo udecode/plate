@@ -10,7 +10,6 @@ import {
 } from '@platejs/test/playwright';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 
-import type { RecordTree } from '../../../../packages/plitejs/src/authored/record-tree';
 import type { PliteBrowserHandle } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 
 const contractPath =
@@ -57,10 +56,31 @@ const summarize = (samples: number[]) => ({
   p99: percentile(samples, 0.99),
 });
 
-const recordValues = <T>(tree: RecordTree<T>): T[] =>
-  tree.kind === 'leaf'
-    ? tree.entries.map(([, value]) => value)
-    : tree.children.flatMap(recordValues);
+type SavedAuthoredOperation = {
+  changeId: string;
+  kind: string;
+  proposal?: boolean;
+};
+
+const readSavedAuthoredOperations = (
+  value: unknown
+): SavedAuthoredOperation[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((entry) => {
+    if (!Array.isArray(entry)) return [];
+    if (entry[0] === 0) {
+      return typeof entry[2] === 'string' && typeof entry[8] === 'boolean'
+        ? [{ changeId: entry[2], kind: 'edit', proposal: entry[8] }]
+        : [];
+    }
+    if (entry[0] === 1 && entry[1] && typeof entry[1] === 'object') {
+      const operation = entry[1] as SavedAuthoredOperation;
+      return typeof operation.changeId === 'string' ? [operation] : [];
+    }
+    return [];
+  });
+};
 
 const nodeText = (node: unknown): string => {
   if (!node || typeof node !== 'object') return '';
@@ -70,7 +90,7 @@ const nodeText = (node: unknown): string => {
   return node.children.map(nodeText).join('');
 };
 
-const readHeapMetrics = async (page: Page) => {
+const readHeapMetricSample = async (page: Page) => {
   await page.evaluate(
     () =>
       new Promise<void>((resolve) => {
@@ -96,6 +116,31 @@ const readHeapMetrics = async (page: Page) => {
   } finally {
     await client.detach();
   }
+};
+
+const readHeapMetrics = async (page: Page) => {
+  const samples = [];
+  for (let index = 0; index < 3; index++) {
+    samples.push(await readHeapMetricSample(page));
+  }
+  const values = (key: keyof (typeof samples)[number]) =>
+    samples
+      .flatMap((sample) =>
+        sample[key] === null ? [] : [sample[key] as number]
+      )
+      .sort((left, right) => left - right);
+  const median = (key: keyof (typeof samples)[number]) => {
+    const metric = values(key);
+    return metric.length ? metric[Math.floor(metric.length / 2)] : null;
+  };
+
+  return {
+    documents: median('documents'),
+    eventListeners: median('eventListeners'),
+    jsHeapUsedSize: median('jsHeapUsedSize'),
+    nodes: median('nodes'),
+    samples,
+  };
 };
 
 const readMountedDOM = (page: Page) =>
@@ -191,18 +236,14 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
       meta?: {
         authored?: {
           value?: {
-            operations?: RecordTree<{
-              changeId: string;
-              kind: string;
-              proposal?: boolean;
-            }>;
+            operations?: unknown;
           };
         };
       };
     };
-    const initialOperations = initialValue.meta?.authored?.value?.operations
-      ? recordValues(initialValue.meta.authored.value.operations)
-      : [];
+    const initialOperations = readSavedAuthoredOperations(
+      initialValue.meta?.authored?.value?.operations
+    );
     const initialPendingIds = [
       ...new Set(
         initialOperations
@@ -286,9 +327,9 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
       await expect(accepted.root).toBeVisible();
     }
     const finalValue = (await accepted.get.modelValue()) as typeof initialValue;
-    const finalOperations = finalValue.meta?.authored?.value?.operations
-      ? recordValues(finalValue.meta.authored.value.operations)
-      : [];
+    const finalOperations = readSavedAuthoredOperations(
+      finalValue.meta?.authored?.value?.operations
+    );
     const finalPendingIds = new Set(
       finalOperations
         .filter(
@@ -356,6 +397,7 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
 };
 
 test.describe('native authored mounted performance', () => {
+  test.describe.configure({ mode: 'serial', retries: 0 });
   test.skip(
     process.env.PLITE_AUTHORED_MOUNTED_PERFORMANCE !== '1',
     'Run the frozen production mounted contract explicitly.'

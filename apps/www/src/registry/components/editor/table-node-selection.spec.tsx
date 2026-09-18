@@ -1,12 +1,16 @@
-import { afterEach, expect, it } from 'bun:test';
+import { afterEach, expect, it, mock } from 'bun:test';
 
-import { act, cleanup, render } from '@testing-library/react';
-import { createEditor, EditorRoot, EditorContent } from 'platejs/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import { createEditor, EditorRoot } from 'platejs/react';
 import * as React from 'react';
 
-import { BasicBlocksKit } from './basic-blocks';
-import { DndKit } from './dnd';
-import { TableKit } from './table';
+import { Editor } from './editor';
+
+mock.module('@uploadthing/react', () => ({
+  generateReactHelpers: () => ({ uploadFiles: mock() }),
+}));
+
+const { EditorKit } = await import('./plugins');
 
 afterEach(cleanup);
 
@@ -26,32 +30,30 @@ const table = (label: string) => ({
 
 const mount = () => {
   const editor = createEditor({
-    plugins: [...BasicBlocksKit, ...DndKit, ...TableKit],
+    plugins: EditorKit,
     initialValue: [table('first'), table('second')],
   });
   const view = render(
     <EditorRoot editor={editor}>
-      <EditorContent />
+      <Editor />
     </EditorRoot>
   );
-  const highlightedCells = () =>
-    [...view.container.querySelectorAll('td[data-editor-node="element"]')]
-      .filter((cell) =>
-        cell.querySelector(':scope > [data-slot="node-selection-highlight"]')
-      )
-      .map((cell) => cell.textContent);
+  const selectedCells = () =>
+    [
+      ...view.container.querySelectorAll('td[data-table-cell-selected="true"]'),
+    ].map((cell) => cell.textContent);
 
-  return { editor, highlightedCells, view };
+  return { editor, selectedCells, view };
 };
 
 it('paints a selected row and a selected table without leaking into neighboring rows or tables', async () => {
-  const { editor, highlightedCells } = mount();
+  const { editor, selectedCells } = mount();
 
   await act(() => editor.update.selection.setNodes([[0, 1]]));
-  expect(highlightedCells()).toEqual(['first-1-0', 'first-1-1']);
+  expect(selectedCells()).toEqual(['first-1-0', 'first-1-1']);
 
   await act(() => editor.update.selection.setNodes([[1]]));
-  expect(highlightedCells()).toEqual([
+  expect(selectedCells()).toEqual([
     'second-0-0',
     'second-0-1',
     'second-1-0',
@@ -61,11 +63,11 @@ it('paints a selected row and a selected table without leaking into neighboring 
   ]);
 
   await act(() => editor.update.selection.setNodes([]));
-  expect(highlightedCells()).toEqual([]);
+  expect(selectedCells()).toEqual([]);
 });
 
 it('leaves a cell-range highlight with the table selection owner', async () => {
-  const { editor, highlightedCells, view } = mount();
+  const { editor, selectedCells, view } = mount();
 
   await act(() =>
     editor.update.selection.setNodes([
@@ -73,7 +75,7 @@ it('leaves a cell-range highlight with the table selection owner', async () => {
       [0, 0, 1],
     ])
   );
-  expect(highlightedCells()).toEqual([]);
+  expect(selectedCells()).toEqual(['first-0-0', 'first-0-1']);
   expect(
     view.container.querySelectorAll('[data-table-cell-selected="true"]').length
   ).toBe(2);
@@ -84,8 +86,24 @@ it('leaves a cell-range highlight with the table selection owner', async () => {
       focus: { path: [0, 0, 0, 0, 0], offset: 0 },
     })
   );
-  expect(highlightedCells()).toEqual([]);
+  expect(selectedCells()).toEqual([]);
   expect(
     view.container.querySelectorAll('[data-table-cell-selected="true"]').length
   ).toBe(0);
+});
+
+it('paints a row selected from the mounted editor view', async () => {
+  const { selectedCells, view } = mount();
+  const rowControls = view.getAllByRole('button', {
+    name: 'Select or move row',
+  });
+
+  await act(async () => {
+    fireEvent.click(rowControls[1]!);
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+  });
+
+  expect(selectedCells()).toEqual(['first-1-0', 'first-1-1']);
 });

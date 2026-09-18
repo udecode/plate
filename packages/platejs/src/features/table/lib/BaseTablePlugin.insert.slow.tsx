@@ -12,14 +12,15 @@ import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
+import { BaseTablePlugin } from './BaseTablePlugin';
 
 describe('table insertion slow contracts', () => {
   jsxt;
 
   describe('when inserting a table', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'inserts a table at the current selection (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'inserts a table at the current selection (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <hp>
@@ -62,15 +63,12 @@ describe('table insertion slow contracts', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
 
-        editor.update.table.insert(
-          { colCount: 2, rowCount: 2 },
-          { select: true }
-        );
+        editor.update.table.insert({ columns: 2, rows: 2 }, { select: true });
 
         expect(editor.read.children()).toMatchObject(output.children);
         expect(editor.read.selection()).toEqual(
@@ -79,9 +77,9 @@ describe('table insertion slow contracts', () => {
       }
     );
 
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'inserts a table at the specified path (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'inserts a table at the specified path (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <hp>test</hp>
@@ -126,13 +124,13 @@ describe('table insertion slow contracts', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
 
         editor.update.table.insert(
-          { colCount: 2, rowCount: 2 },
+          { columns: 2, rows: 2 },
           { at: [0], select: true }
         );
 
@@ -143,9 +141,9 @@ describe('table insertion slow contracts', () => {
       }
     );
 
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'inserts a table after the current table when no path is specified (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'inserts a table after the current table when no path is specified (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -200,15 +198,12 @@ describe('table insertion slow contracts', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
 
-        editor.update.table.insert(
-          { colCount: 2, rowCount: 2 },
-          { select: true }
-        );
+        editor.update.table.insert({ columns: 2, rows: 2 }, { select: true });
 
         expect(editor.read.children()).toMatchObject(output.children);
         expect(editor.read.selection()).toEqual(
@@ -217,9 +212,9 @@ describe('table insertion slow contracts', () => {
       }
     );
 
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'respects the specified path even when inside a table (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'respects the specified path even when inside a table (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <hp>before</hp>
@@ -278,13 +273,13 @@ describe('table insertion slow contracts', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
 
         editor.update.table.insert(
-          { colCount: 2, rowCount: 2 },
+          { columns: 2, rows: 2 },
           { at: [1], select: true }
         );
 
@@ -295,9 +290,9 @@ describe('table insertion slow contracts', () => {
       }
     );
 
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'inserts a table after the current table when inside a table (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'inserts a table after the current table when inside a table (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -352,15 +347,12 @@ describe('table insertion slow contracts', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
 
-        editor.update.table.insert(
-          { colCount: 2, rowCount: 2 },
-          { select: true }
-        );
+        editor.update.table.insert({ columns: 2, rows: 2 }, { select: true });
 
         expect(editor.read.children()).toMatchObject(output.children);
         expect(editor.read.selection()).toEqual(
@@ -414,10 +406,13 @@ describe('table insertion slow contracts', () => {
     };
 
     describe('update.insertColumn', () => {
-      describe('without initialTableWidth', () => {
-        it.each([{ disableMerge: true }, { disableMerge: false }])(
-          'inserts at the last column (disableMerge: $disableMerge)',
-          ({ disableMerge }) => {
+      describe('without defaultTableWidth', () => {
+        it.each([
+          { allowCellSpanEditing: false },
+          { allowCellSpanEditing: true },
+        ])(
+          'inserts at the last column (allowCellSpanEditing: $allowCellSpanEditing)',
+          ({ allowCellSpanEditing }) => {
             const input = makeTableWithCols({
               cursorPath: [1, 1],
               rowCols: [
@@ -435,7 +430,7 @@ describe('table insertion slow contracts', () => {
             });
 
             const editor = createTestTableEditor({
-              plugins: getTestTablePlugins({ disableMerge }),
+              plugins: getTestTablePlugins({ allowCellSpanEditing }),
               selection: input.selection,
               initialValue: input.children,
             });
@@ -449,9 +444,12 @@ describe('table insertion slow contracts', () => {
           }
         );
 
-        it.each([{ disableMerge: true }, { disableMerge: false }])(
-          'inserts using atCell (disableMerge: $disableMerge)',
-          ({ disableMerge }) => {
+        it.each([
+          { allowCellSpanEditing: false },
+          { allowCellSpanEditing: true },
+        ])(
+          'inserts after an explicit cell (allowCellSpanEditing: $allowCellSpanEditing)',
+          ({ allowCellSpanEditing }) => {
             const input = makeTableWithCols({
               rowCols: [
                 ['11', '12'],
@@ -468,13 +466,13 @@ describe('table insertion slow contracts', () => {
             });
 
             const editor = createTestTableEditor({
-              plugins: getTestTablePlugins({ disableMerge }),
+              plugins: getTestTablePlugins({ allowCellSpanEditing }),
               selection: input.selection,
               initialValue: input.children,
             });
 
             editor.update.table.insertColumn({
-              fromCell: [0, 1, 0],
+              at: [0, 1, 0],
               select: true,
             });
 
@@ -485,9 +483,12 @@ describe('table insertion slow contracts', () => {
           }
         );
 
-        it.each([{ disableMerge: true }, { disableMerge: false }])(
-          'inserts using at (disableMerge: $disableMerge)',
-          ({ disableMerge }) => {
+        it.each([
+          { allowCellSpanEditing: false },
+          { allowCellSpanEditing: true },
+        ])(
+          'inserts using at (allowCellSpanEditing: $allowCellSpanEditing)',
+          ({ allowCellSpanEditing }) => {
             const input = makeTableWithCols({
               cursorPath: [1, 0],
               rowCols: [
@@ -497,7 +498,7 @@ describe('table insertion slow contracts', () => {
             });
 
             const output = makeTableWithCols({
-              cursorPath: [1, 0],
+              cursorPath: [0, 0],
               rowCols: [
                 ['', '11', '12'],
                 ['', '21', '22'],
@@ -505,12 +506,16 @@ describe('table insertion slow contracts', () => {
             });
 
             const editor = createTestTableEditor({
-              plugins: getTestTablePlugins({ disableMerge }),
+              plugins: getTestTablePlugins({ allowCellSpanEditing }),
               selection: input.selection,
               initialValue: input.children,
             });
 
-            editor.update.table.insertColumn({ at: [0, 0, 0], select: true });
+            editor.update.table.insertColumn({
+              at: [0, 0, 0],
+              before: true,
+              select: true,
+            });
 
             expect(editor.read.children()).toMatchObject(output.children);
             expect(editor.read.selection()).toEqual(
@@ -519,9 +524,12 @@ describe('table insertion slow contracts', () => {
           }
         );
 
-        it.each([{ disableMerge: true }, { disableMerge: false }])(
-          'inserts a column before the current column (disableMerge: $disableMerge)',
-          ({ disableMerge }) => {
+        it.each([
+          { allowCellSpanEditing: false },
+          { allowCellSpanEditing: true },
+        ])(
+          'inserts a column before the current column (allowCellSpanEditing: $allowCellSpanEditing)',
+          ({ allowCellSpanEditing }) => {
             const input = makeTableWithCols({
               cursorPath: [1, 1],
               rowCols: [
@@ -539,7 +547,7 @@ describe('table insertion slow contracts', () => {
             });
 
             const editor = createTestTableEditor({
-              plugins: getTestTablePlugins({ disableMerge }),
+              plugins: getTestTablePlugins({ allowCellSpanEditing }),
               selection: input.selection,
               initialValue: input.children,
             });
@@ -554,10 +562,13 @@ describe('table insertion slow contracts', () => {
         );
       });
 
-      describe('without initialTableWidth', () => {
-        it.each([{ disableMerge: true }, { disableMerge: false }])(
-          'uses null for the unknown inserted width (disableMerge: $disableMerge)',
-          ({ disableMerge }) => {
+      describe('without defaultTableWidth', () => {
+        it.each([
+          { allowCellSpanEditing: false },
+          { allowCellSpanEditing: true },
+        ])(
+          'uses null for the unknown inserted width (allowCellSpanEditing: $allowCellSpanEditing)',
+          ({ allowCellSpanEditing }) => {
             const input = makeTableWithCols({
               columnWidths: [20, 30],
               cursorPath: [1, 1],
@@ -567,7 +578,7 @@ describe('table insertion slow contracts', () => {
               ],
             });
             const editor = createTestTableEditor({
-              plugins: getTestTablePlugins({ disableMerge }),
+              plugins: getTestTablePlugins({ allowCellSpanEditing }),
               selection: input.selection,
               initialValue: input.children,
             });
@@ -581,11 +592,14 @@ describe('table insertion slow contracts', () => {
         );
       });
 
-      describe('with initialTableWidth', () => {
-        describe('when inserting at last column with width less than initialTableWidth', () => {
-          it.each([{ disableMerge: true }, { disableMerge: false }])(
-            'adds the last column width to columnWidths (disableMerge: $disableMerge)',
-            ({ disableMerge }) => {
+      describe('with defaultTableWidth', () => {
+        describe('when inserting at last column with width less than defaultTableWidth', () => {
+          it.each([
+            { allowCellSpanEditing: false },
+            { allowCellSpanEditing: true },
+          ])(
+            'adds the last column width to columnWidths (allowCellSpanEditing: $allowCellSpanEditing)',
+            ({ allowCellSpanEditing }) => {
               const input = makeTableWithCols({
                 columnWidths: [20, 30],
                 cursorPath: [1, 1],
@@ -606,8 +620,8 @@ describe('table insertion slow contracts', () => {
 
               const editor = createTestTableEditor({
                 plugins: getTestTablePlugins({
-                  disableMerge,
-                  initialTableWidth: 100,
+                  allowCellSpanEditing,
+                  defaultTableWidth: 100,
                   minColumnWidth: 10,
                 }),
                 selection: input.selection,
@@ -622,9 +636,12 @@ describe('table insertion slow contracts', () => {
         });
 
         describe('when inserting at first column', () => {
-          it.each([{ disableMerge: true }, { disableMerge: false }])(
-            'adds the second column width to columnWidths (disableMerge: $disableMerge)',
-            ({ disableMerge }) => {
+          it.each([
+            { allowCellSpanEditing: false },
+            { allowCellSpanEditing: true },
+          ])(
+            'adds the second column width to columnWidths (allowCellSpanEditing: $allowCellSpanEditing)',
+            ({ allowCellSpanEditing }) => {
               const input = makeTableWithCols({
                 columnWidths: [20, 30],
                 cursorPath: [0, 0],
@@ -645,8 +662,8 @@ describe('table insertion slow contracts', () => {
 
               const editor = createTestTableEditor({
                 plugins: getTestTablePlugins({
-                  disableMerge,
-                  initialTableWidth: 100,
+                  allowCellSpanEditing,
+                  defaultTableWidth: 100,
                   minColumnWidth: 10,
                 }),
                 selection: input.selection,
@@ -659,9 +676,12 @@ describe('table insertion slow contracts', () => {
             }
           );
 
-          it.each([{ disableMerge: true }, { disableMerge: false }])(
-            'adds the first column width to columnWidths using at (disableMerge: $disableMerge)',
-            ({ disableMerge }) => {
+          it.each([
+            { allowCellSpanEditing: false },
+            { allowCellSpanEditing: true },
+          ])(
+            'adds the first column width to columnWidths using at (allowCellSpanEditing: $allowCellSpanEditing)',
+            ({ allowCellSpanEditing }) => {
               const input = makeTableWithCols({
                 columnWidths: [20, 30],
                 cursorPath: [0, 0],
@@ -682,25 +702,28 @@ describe('table insertion slow contracts', () => {
 
               const editor = createTestTableEditor({
                 plugins: getTestTablePlugins({
-                  disableMerge,
-                  initialTableWidth: 100,
+                  allowCellSpanEditing,
+                  defaultTableWidth: 100,
                   minColumnWidth: 10,
                 }),
                 selection: input.selection,
                 initialValue: input.children,
               });
 
-              editor.update.table.insertColumn({ at: [0, 0, 0] });
+              editor.update.table.insertColumn({ at: [0, 0, 0], before: true });
 
               expect(editor.read.children()).toMatchObject(output.children);
             }
           );
         });
 
-        describe('when new total width is greater than initialTableWidth', () => {
-          it.each([{ disableMerge: true }, { disableMerge: false }])(
-            'keeps scaled widths positive (disableMerge: $disableMerge)',
-            ({ disableMerge }) => {
+        describe('when new total width is greater than defaultTableWidth', () => {
+          it.each([
+            { allowCellSpanEditing: false },
+            { allowCellSpanEditing: true },
+          ])(
+            'keeps scaled widths positive (allowCellSpanEditing: $allowCellSpanEditing)',
+            ({ allowCellSpanEditing }) => {
               const input = makeTableWithCols({
                 columnWidths: [1],
                 cursorPath: [0, 0],
@@ -708,8 +731,8 @@ describe('table insertion slow contracts', () => {
               });
               const editor = createTestTableEditor({
                 plugins: getTestTablePlugins({
-                  disableMerge,
-                  initialTableWidth: 1,
+                  allowCellSpanEditing,
+                  defaultTableWidth: 1,
                 }),
                 selection: input.selection,
                 initialValue: input.children,
@@ -723,9 +746,12 @@ describe('table insertion slow contracts', () => {
             }
           );
 
-          it.each([{ disableMerge: true }, { disableMerge: false }])(
-            'handles an empty width array (disableMerge: $disableMerge)',
-            ({ disableMerge }) => {
+          it.each([
+            { allowCellSpanEditing: false },
+            { allowCellSpanEditing: true },
+          ])(
+            'handles an empty width array (allowCellSpanEditing: $allowCellSpanEditing)',
+            ({ allowCellSpanEditing }) => {
               const input = makeTableWithCols({
                 columnWidths: [],
                 cursorPath: [0, 0],
@@ -733,8 +759,8 @@ describe('table insertion slow contracts', () => {
               });
               const editor = createTestTableEditor({
                 plugins: getTestTablePlugins({
-                  disableMerge,
-                  initialTableWidth: 100,
+                  allowCellSpanEditing,
+                  defaultTableWidth: 100,
                 }),
                 selection: input.selection,
                 initialValue: input.children,
@@ -742,15 +768,22 @@ describe('table insertion slow contracts', () => {
 
               editor.update.table.insertColumn();
 
-              expect(editor.read.children()).toMatchObject([
-                { columnWidths: [50, 50] },
-              ]);
+              const table = editor.read.nodes.get([0], {
+                type: BaseTablePlugin,
+              })![0];
+              expect(
+                editor.plugin(BaseTablePlugin).api.columnWidths(table)
+              ).toEqual([50, 50]);
+              expect(table.columnWidths).toEqual([null, null]);
             }
           );
 
-          it.each([{ disableMerge: true }, { disableMerge: false }])(
-            'keeps partial widths within the table width (disableMerge: $disableMerge)',
-            ({ disableMerge }) => {
+          it.each([
+            { allowCellSpanEditing: false },
+            { allowCellSpanEditing: true },
+          ])(
+            'keeps partial widths within the table width (allowCellSpanEditing: $allowCellSpanEditing)',
+            ({ allowCellSpanEditing }) => {
               const input = makeTableWithCols({
                 columnWidths: [100, null],
                 cursorPath: [0, 0],
@@ -758,30 +791,36 @@ describe('table insertion slow contracts', () => {
               });
               const editor = createTestTableEditor({
                 plugins: getTestTablePlugins({
-                  disableMerge,
-                  initialTableWidth: 200,
+                  allowCellSpanEditing,
+                  defaultTableWidth: 200,
                 }),
                 selection: input.selection,
                 initialValue: input.children,
               });
 
-              editor.update.table.insertColumn({ at: [0, 0, 0] });
+              editor.update.table.insertColumn({ at: [0, 0, 0], before: true });
 
-              const table = editor.read.children()[0] as Element & {
-                columnWidths: number[];
-              };
+              const table = editor.read.nodes.get([0], {
+                type: BaseTablePlugin,
+              })![0];
+              const widths = editor
+                .plugin(BaseTablePlugin)
+                .api.columnWidths(table);
 
-              expect(table.columnWidths).toHaveLength(3);
-              expect(table.columnWidths.every((width) => width > 0)).toBe(true);
+              expect(widths).toHaveLength(3);
+              expect(widths.every((width) => width > 0)).toBe(true);
               expect(
-                table.columnWidths.reduce((total, width) => total + width, 0)
+                widths.reduce((total, width) => total + width, 0)
               ).toBeLessThanOrEqual(200);
             }
           );
 
-          it.each([{ disableMerge: true }, { disableMerge: false }])(
-            'shrinks all columns by the same factor (disableMerge: $disableMerge)',
-            ({ disableMerge }) => {
+          it.each([
+            { allowCellSpanEditing: false },
+            { allowCellSpanEditing: true },
+          ])(
+            'shrinks all columns by the same factor (allowCellSpanEditing: $allowCellSpanEditing)',
+            ({ allowCellSpanEditing }) => {
               const input = makeTableWithCols({
                 columnWidths: [20, 30, 40],
                 cursorPath: [0, 0],
@@ -804,8 +843,8 @@ describe('table insertion slow contracts', () => {
 
               const editor = createTestTableEditor({
                 plugins: getTestTablePlugins({
-                  disableMerge,
-                  initialTableWidth: 100,
+                  allowCellSpanEditing,
+                  defaultTableWidth: 100,
                   minColumnWidth: 10,
                 }),
                 selection: input.selection,
@@ -818,9 +857,12 @@ describe('table insertion slow contracts', () => {
             }
           );
 
-          it.each([{ disableMerge: true }, { disableMerge: false }])(
-            'does not shrink columns below minColumnsWidth (disableMerge: $disableMerge)',
-            ({ disableMerge }) => {
+          it.each([
+            { allowCellSpanEditing: false },
+            { allowCellSpanEditing: true },
+          ])(
+            'does not shrink columns below minColumnsWidth (allowCellSpanEditing: $allowCellSpanEditing)',
+            ({ allowCellSpanEditing }) => {
               const input = makeTableWithCols({
                 columnWidths: Array.from<number>({ length: 10 }).fill(10),
                 cursorPath: [0, 0],
@@ -841,8 +883,8 @@ describe('table insertion slow contracts', () => {
 
               const editor = createTestTableEditor({
                 plugins: getTestTablePlugins({
-                  disableMerge,
-                  initialTableWidth: 100,
+                  allowCellSpanEditing,
+                  defaultTableWidth: 100,
                   minColumnWidth: 10,
                 }),
                 selection: input.selection,
@@ -856,9 +898,12 @@ describe('table insertion slow contracts', () => {
           );
         });
 
-        it.each([{ disableMerge: true }, { disableMerge: false }])(
-          'inserts a column before and adjusts column sizes (disableMerge: $disableMerge)',
-          ({ disableMerge }) => {
+        it.each([
+          { allowCellSpanEditing: false },
+          { allowCellSpanEditing: true },
+        ])(
+          'inserts a column before and adjusts column sizes (allowCellSpanEditing: $allowCellSpanEditing)',
+          ({ allowCellSpanEditing }) => {
             const input = makeTableWithCols({
               columnWidths: [20, 30],
               cursorPath: [1, 1],
@@ -879,8 +924,8 @@ describe('table insertion slow contracts', () => {
 
             const editor = createTestTableEditor({
               plugins: getTestTablePlugins({
-                disableMerge,
-                initialTableWidth: 100,
+                allowCellSpanEditing,
+                defaultTableWidth: 100,
                 minColumnWidth: 10,
               }),
               selection: input.selection,
@@ -895,9 +940,12 @@ describe('table insertion slow contracts', () => {
       });
 
       describe('when inserting after adding a row', () => {
-        it.each([{ disableMerge: true }, { disableMerge: false }])(
-          'keeps the correct number of cells (disableMerge: $disableMerge)',
-          ({ disableMerge }) => {
+        it.each([
+          { allowCellSpanEditing: false },
+          { allowCellSpanEditing: true },
+        ])(
+          'keeps the correct number of cells (allowCellSpanEditing: $allowCellSpanEditing)',
+          ({ allowCellSpanEditing }) => {
             const input = (
               <editor>
                 <htable>
@@ -925,7 +973,7 @@ describe('table insertion slow contracts', () => {
             ) as TestEditor;
 
             const editor = createTestTableEditor({
-              plugins: getTestTablePlugins({ disableMerge }),
+              plugins: getTestTablePlugins({ allowCellSpanEditing }),
               selection: input.selection,
               initialValue: input.children,
             });

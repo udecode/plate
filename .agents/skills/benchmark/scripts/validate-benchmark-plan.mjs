@@ -53,7 +53,6 @@ const ARCHITECTURAL_FIX_CLASSES = new Set([
   'public-api',
   'runtime-architecture',
 ]);
-const CORRECTNESS_DECISION_OWNERS = new Set(['patch', 'regression', 'tdd']);
 const LAYER_PLANS = new Set([
   'plate-plan',
   'plate-plan + plite-plan',
@@ -171,12 +170,9 @@ const validateFixDecision = (decision, label, errors) => {
       `${label} internal-implementation requires decision-owner benchmark`
     );
   }
-  if (
-    fixClass === 'correctness' &&
-    !CORRECTNESS_DECISION_OWNERS.has(decisionOwner)
-  ) {
+  if (fixClass === 'correctness' && decisionOwner !== 'patch') {
     errors.push(
-      `${label} correctness requires decision-owner patch, regression, or tdd`
+      `${label} correctness requires decision-owner patch`
     );
   }
 };

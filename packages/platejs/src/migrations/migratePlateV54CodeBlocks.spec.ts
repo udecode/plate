@@ -1,26 +1,66 @@
+import { schema, target } from '../core';
 import { BaseCodeBlockPlugin } from '../features/code-block/lib/BaseCodeBlockPlugin';
 import { BaseDetailsPlugin } from '../features/details';
+import { BaseIndentPlugin } from '../features/indent';
+import type { BasePluginInput } from '../lib/editor';
+import { definePlugin } from '../lib/plugin';
 import {
   defineDocumentMigrations,
-  migrateDocument,
-} from '../lib/editor/documentMigrations';
-import { createEditor } from '../lib/editor/withPlite';
+  type DocumentMigrations,
+  migrateDocument as runDocumentMigration,
+} from './documentMigrations';
 import { migrateV54 } from './migratePlateV54';
 
 const MigrationSchema = { id: 'plate', version: 54 } as const;
-const migrations = defineDocumentMigrations(MigrationSchema, {
-  sourceFingerprints: { 53: 'plate-v53' },
-  steps: { 54: migrateV54 },
-  unversioned: 53,
+const BaseCodeRootPlugin = definePlugin('codeRoot', {
+  dependencies: [BaseCodeBlockPlugin],
+  schema: ({ name }) => ({
+    contentRoots: [
+      {
+        content: schema.content.element(BaseCodeBlockPlugin, { min: 1 }),
+        ownership: 'exclusive',
+        slot: name,
+        target: target.element(name),
+      },
+    ],
+    element: schema.element.textBlock(),
+  }),
 });
-
-const createMigrationEditor = () =>
-  createEditor({
-    migrations,
-    plugins: [BaseCodeBlockPlugin],
+const defaultPlugins = [BaseCodeBlockPlugin, BaseCodeRootPlugin] as const;
+const defineV54Migrations = (plugins: readonly BasePluginInput[]) =>
+  defineDocumentMigrations({
+    plugins,
     schema: MigrationSchema,
-    skipInitialization: true,
+    sourceFingerprints: { 53: 'plate-v53' },
+    steps: { 54: migrateV54 },
   });
+const migrations = defineV54Migrations(defaultPlugins);
+
+const createMigrationEditor = () => ({ migrations }) as const;
+
+const createEditor = ({
+  plugins = defaultPlugins,
+}: Readonly<{
+  plugins?: readonly BasePluginInput[];
+  [key: string]: unknown;
+}>) => ({ migrations: defineV54Migrations(plugins) });
+
+const migrateDocument = (
+  input: unknown,
+  options: Readonly<{
+    editor?: Readonly<{ migrations: DocumentMigrations }>;
+    migrations: DocumentMigrations;
+  }>
+) =>
+  runDocumentMigration(input, {
+    migrations: options.editor?.migrations ?? options.migrations,
+    ...(!input ||
+    typeof input !== 'object' ||
+    Array.isArray(input) ||
+    !Object.hasOwn(input, 'document')
+      ? { source: 53 as const }
+      : {}),
+  }).output;
 
 describe('migratePlateV54 code blocks', () => {
   it('flattens legacy physical lines and preserves empty lines', () => {
@@ -67,7 +107,14 @@ describe('migratePlateV54 code blocks', () => {
       type: 'codeBlock',
     } as const;
     const document = {
-      children: [canonical],
+      children: [
+        canonical,
+        {
+          childRoots: { codeRoot: 'footnotes' },
+          children: [{ text: '' }],
+          type: 'codeRoot',
+        },
+      ],
       roots: {
         footnotes: [
           {
@@ -80,9 +127,9 @@ describe('migratePlateV54 code blocks', () => {
         ],
       },
     };
-    const result = migrateV54({ document, editor });
+    const result = migrateDocument(document, { editor, migrations }).document;
 
-    expect(result.children[0]).toBe(canonical);
+    expect(result.children[0]).toEqual(canonical);
     expect(result.roots?.footnotes).toEqual([
       { children: [{ text: 'root\ncode' }], type: 'codeBlock' },
     ]);
@@ -130,7 +177,14 @@ describe('migratePlateV54 code blocks', () => {
     const result = migrateDocument(
       {
         document: {
-          children: [{ children: [{ text: 'main' }], type: 'p' }],
+          children: [
+            { children: [{ text: 'main' }], type: 'p' },
+            {
+              childRoots: { codeRoot: 'footnotes' },
+              children: [{ text: '' }],
+              type: 'codeRoot',
+            },
+          ],
           roots: {
             footnotes: [
               {
@@ -168,7 +222,12 @@ describe('migratePlateV54 code blocks', () => {
   it('maps code-line selections after an earlier AST phase moves the block', () => {
     const editor = createEditor({
       migrations,
-      plugins: [BaseCodeBlockPlugin, BaseDetailsPlugin],
+      plugins: [
+        BaseCodeBlockPlugin,
+        BaseDetailsPlugin,
+        BaseIndentPlugin,
+        BaseCodeRootPlugin,
+      ],
       schema: MigrationSchema,
       skipInitialization: true,
     });
@@ -218,8 +277,8 @@ describe('migratePlateV54 code blocks', () => {
     const editor = createMigrationEditor();
 
     expect(() =>
-      migrateV54({
-        document: {
+      migrateDocument(
+        {
           children: [
             {
               children: [
@@ -230,8 +289,8 @@ describe('migratePlateV54 code blocks', () => {
             },
           ],
         },
-        editor,
-      })
+        { editor, migrations }
+      )
     ).toThrow('expected legacy line elements');
   });
 });

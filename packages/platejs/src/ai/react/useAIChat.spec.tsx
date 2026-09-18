@@ -1,4 +1,4 @@
-import { act, render } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
 import React from 'react';
 
@@ -8,16 +8,22 @@ import { useAIChat } from './useAIChat';
 
 function controlledTransport() {
   let stream!: ReadableStreamDefaultController<UIMessageChunk>;
+  let markReady!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    markReady = resolve;
+  });
   const transport: ChatTransport<UIMessage> = {
     reconnectToStream: async () => null,
     sendMessages: async () =>
       new ReadableStream({
         start: (controller) => {
           stream = controller;
+          markReady();
         },
       }),
   };
   return {
+    ready,
     transport,
     send: (part: UIMessageChunk) => stream.enqueue(part),
     close: () => stream.close(),
@@ -47,17 +53,14 @@ for (const parts of [['Generated'], ['First', ' second']]) {
         <Binding />
       </EditorRoot>
     );
-    let pending: Promise<void> | undefined;
     try {
       await act(async () => {
-        editor
-          .plugin(AIChatPlugin)
-          .store.set({ mode: 'chat', toolName: 'generate' });
-        pending = editor
-          .plugin(AIChatPlugin)
-          .store.get('chat')!
-          .sendMessage('replace');
+        editor.plugin(AIChatPlugin).api.submit('replace', {
+          mode: 'chat',
+          toolName: 'generate',
+        });
       });
+      await source.ready;
       await act(async () => {
         source.send({ type: 'start', messageId: 'assistant' });
         for (const [index, text] of parts.entries()) {
@@ -67,23 +70,23 @@ for (const parts of [['Generated'], ['First', ' second']]) {
           source.send({ type: 'text-end', id });
         }
         source.close();
-        await pending;
       });
-      expect(editor.plugin(AIChatPlugin).store.get('chat')?.status).toBe(
-        'ready'
+      await waitFor(() =>
+        expect(editor.plugin(AIChatPlugin).store.get('chat')?.status).toBe(
+          'ready'
+        )
       );
       expect(editor.plugin(AIChatPlugin).store.get('previewValue')).toEqual([
         { type: 'paragraph', children: [{ text: parts.join('') }] },
       ]);
       await act(async () =>
-        editor.plugin(AIChatPlugin).update.replaceSelection({ format: 'none' })
+        editor.plugin(AIChatPlugin).api.replaceSelection({ format: 'none' })
       );
       expect(editor.read.text.string([])).toBe(parts.join(''));
-      await act(async () => editor.update.history.undo());
+      await act(async () => editor.api.history.undo());
       expect(editor.read.text.string([])).toBe('original');
     } finally {
       view.unmount();
-      await pending;
     }
   });
 }

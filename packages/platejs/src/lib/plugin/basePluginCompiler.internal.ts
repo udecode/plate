@@ -344,8 +344,7 @@ type BasePluginPresenceField =
   | 'render'
   | 'rules'
   | 'shortcuts'
-  | 'targetPlugins'
-  | 'prepareDocument';
+  | 'targetPlugins';
 
 type NormalizedBasePluginField<
   TInput,

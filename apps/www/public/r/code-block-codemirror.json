@@ -11,7 +11,8 @@
     "@codemirror/search",
     "@codemirror/state",
     "@codemirror/view",
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/code-block.json"

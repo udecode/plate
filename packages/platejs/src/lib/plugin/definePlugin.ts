@@ -129,7 +129,6 @@ type BasePluginConstructorPresenceKey =
   | 'rules'
   | 'slots'
   | 'stateFields'
-  | 'prepareDocument'
   | 'validate';
 
 type BasePluginConstructorRestInput<

@@ -353,7 +353,7 @@ const ReviewSurface = ({
         <Button
           disabled={readOnly}
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => historyPortal.update.undo()}
+          onClick={() => historyPortal.api.undo()}
           size="sm"
           variant="outline"
         >
@@ -362,7 +362,7 @@ const ReviewSurface = ({
         <Button
           disabled={readOnly}
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => historyPortal.update.redo()}
+          onClick={() => historyPortal.api.redo()}
           size="sm"
           variant="outline"
         >

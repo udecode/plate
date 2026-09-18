@@ -13,13 +13,12 @@ docs:
 
 ## 功能特性
 
-- 支持创建和编辑具有高级行为的表格
-- 箭头键导航（上/下）
-- 网格单元格选择
-- 使用 `Shift+箭头键` 扩展单元格选择范围
-- 单元格复制粘贴功能
-- 行拖拽重新排序
-- 通过拖拽手柄选择整行
+- 插入和删除表格、行与列。
+- 使用指针选择单元格，或通过 `Shift+方向键` 扩展选区。
+- 合并和拆分单元格，同时保留富文本内容。
+- 复制和粘贴矩形单元格区域。
+- 调整列宽和行高，设置单元格背景与边框。
+- 使用复制到项目中的行拖拽手柄调整行顺序或选择整行。
 
 </PackageInfo>
 
@@ -29,37 +28,94 @@ docs:
 
 ### 安装
 
-最快捷的表格功能集成方式是使用 `TableKit`，它包含预配置的 `TablePlugin`、`TableRowPlugin` 和 `TableCellPlugin` 及其 [Plate UI](/docs/installation/plate-ui) 组件。
-
-<ComponentSource name="table" />
-
-- [`TableElement`](/docs/components/table): 渲染表格容器
-- [`TableRowElement`](/docs/components/table): 渲染表格行
-- [`TableCellElement`](/docs/components/table): 根据节点的 `header` 属性将 `tableCell` 渲染为 `<td>` 或 `<th>`
-
-### 添加套件
-
-表格行控件依赖 `DndKit` 实现拖放。安装两个注册表条目，并将两个套件添加到插件列表：
+`TableKit` 包含 `TablePlugin`、`TableRowPlugin`、`TableCellPlugin` 及其 [Plate UI](/docs/installation/plate-ui) 组件。复制的行控件需要 `DndKit`。
 
 ```bash
 pnpm dlx shadcn@latest add @plate/table @plate/dnd
 ```
 
+<ComponentSource name="table" />
+
+- [`TableElement`](/docs/components/table)：渲染表格。
+- [`TableRowElement`](/docs/components/table)：渲染行及其控件。
+- [`TableCellElement`](/docs/components/table)：将 `tableCell` 渲染为 `<td>`；`header: true` 时渲染为 `<th>`。
+
+### 添加套件
+
 ```tsx
 import { createEditor } from 'platejs/react';
+
 import { DndKit } from '@/components/editor/dnd';
 import { TableKit } from '@/components/editor/table';
 
 const editor = createEditor({
-  plugins: [
-    // ...其他插件
-    ...TableKit,
-    ...DndKit,
-  ],
+  plugins: [...TableKit, ...DndKit],
 });
 ```
 
 </Steps>
+
+## 使用方法
+
+通过已安装的表格描述符插入表格、读取选区和修改内容：
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
+
+const editor = createEditor({ plugins: [TablePlugin] });
+const table = editor.plugin(TablePlugin);
+
+table.update.insert({ rows: 3, columns: 4, header: true }, { select: true });
+table.update.insertColumn({ before: true });
+
+if (table.read.canMerge()) {
+  table.update.merge();
+}
+```
+
+无界面用法从 `platejs` 导入 `createEditor`，从 `platejs/table` 导入 `BaseTablePlugin`。
+
+### 指定目标单元格
+
+省略 `at` 时，操作使用调用方编辑器视图的选区。传入 `at` 可指定独立于当前选区的目标：
+
+```tsx
+const selected = table.read.selection();
+
+if (selected) {
+  table.update.insertRow({ at: selected.focus, before: true });
+
+  const cell = table.read.cell({ at: selected.anchor });
+  if (cell) {
+    table.update.setCellBackground({ at: cell.entry[0], color: '#fef9c3' });
+  }
+}
+```
+
+`TableTargetOptions.at` 接受表格、行或单元格目标，也接受 `NodeSelection`。节点目标可以是路径、点、范围、当前文档中的节点或 `NodeKey`。已删除的键或不属于当前文档的节点不会回退到当前选区。路径相对于调用方的根；带根信息的目标保留该根。
+
+`read.cell` 接受单元格目标，仅在目标解析为一个单元格时返回结果，否则返回 `null`。多单元格选区使用 `read.selection`。返回的 `cells` 精确保留所选节点；`bounds` 不会填补非矩形选区中的空隙。
+
+### 设置选中单元格的格式
+
+在一次更新中组合相关操作：
+
+```tsx
+editor.update((tx) => {
+  const table = tx.plugin(TablePlugin);
+
+  table.setCellBackground({ color: '#fef9c3' });
+  table.setBorders({
+    border: 'outer',
+    value: { color: '#334155', style: 'solid', width: 2 },
+  });
+});
+```
+
+`color: null` 清除背景。边框 `value` 替换对应边的格式；`null` 清除覆盖值，`{ width: 0 }` 隐藏边框。省略的边框字段使用渲染器默认值。
+
+`read.borders()` 为每个边框状态返回 `true`、`false` 或 `'mixed'`。控件需显式处理 `'mixed'`。`toggleBorders` 隐藏全部可见的边框，显示关闭或混合状态的边框；`border: 'none'` 切换无边框状态。
 
 ## 手动配置
 
@@ -71,31 +127,14 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual
 ```
 
-### 添加插件
-
-在创建编辑器时将 `TablePlugin` 加入插件数组：
-
-`TablePlugin` 会把 `TableRowPlugin` 和 `TableCellPlugin` 作为必需的结构依赖安装。
-
-```tsx
-import { TablePlugin } from 'platejs/table/react';
-import { createEditor } from 'platejs/react';
-
-const editor = createEditor({
-  plugins: [
-    // ...其他插件
-    TablePlugin,
-  ],
-});
-```
-
 ### 插件配置
 
-配置表格主插件；需要替换依赖的组件或配置时，再加入完整的行或单元格描述符。复制的行渲染器需要 `DndKit`：
+`TablePlugin` 会安装必需的行和单元格描述符。需要配置组件时，直接添加这些描述符。复制的行渲染器需要 `DndKit`。
 
 ```tsx
-import { TableCellPlugin, TablePlugin, TableRowPlugin } from 'platejs/table/react';
 import { createEditor } from 'platejs/react';
+import { TableCellPlugin, TablePlugin, TableRowPlugin } from 'platejs/table/react';
+
 import { DndKit } from '@/components/editor/dnd';
 import {
   TableCellElement,
@@ -105,13 +144,13 @@ import {
 
 const editor = createEditor({
   plugins: [
-    // ...其他插件
     ...DndKit,
     TablePlugin.configure({
       component: TableElement,
       initialState: {
-        initialTableWidth: 600,
-        disableMerge: false,
+        allowCellSpanEditing: true,
+        defaultTableWidth: 600,
+        expandOnPaste: true,
         minColumnWidth: 48,
       },
     }),
@@ -121,707 +160,147 @@ const editor = createEditor({
 });
 ```
 
-- `.configure({ component })`: 指定 [`TableElement`](/docs/components/table) 渲染表格容器
-- `component`: 为表格行和单元格分配组件。`TableCellElement` 读取 `element.header` 来渲染表头单元格
-- `initialState.initialTableWidth`: 设置新建表格的初始宽度
-- `initialState.disableMerge`: 禁用单元格合并功能
-- `initialState.minColumnWidth`: 设置表格列的最小宽度
-
-列宽仅存储在表格的 `columnWidths` 中；`null` 表示导入时未知的宽度，不代表零像素。
-`platejs/table/react` 的 `useTableResize` 管理指针操作，通过
-`editor.plugin(TablePlugin).update.resize` 一次提交尺寸。渲染器负责临时尺寸覆盖值和视觉指示器。
-行高存储在每一行的 `height` 中。
-
-自定义调整逻辑可调用 `api.createResize(table, target)`，用返回的函数根据像素偏移计算预览。
-预览不修改编辑器；相邻列保持总宽度，左边界在首列宽度和表格缩进之间分配空间。
-指针取消、窗口失焦、切换只读、表格替换或组件卸载都会丢弃当前拖动。
-
 ### 添加工具栏按钮
 
-可以在[工具栏](/docs/toolbar)中添加 [`TableToolbarButton`](/docs/components/table-toolbar-button) 来插入表格。
+在[工具栏](/docs/toolbar)中添加 [`TableToolbarButton`](/docs/components/table-toolbar-button) 来插入表格。
 
-### 插入工具栏按钮
+</Steps>
 
-将此条目添加到[插入工具栏按钮](/docs/toolbar#insert-toolbar-button)以插入表格元素：
+### 禁用合并和拆分
 
-```tsx
-{
-  icon: <TableIcon />,
-  label: '表格',
-  value: PLUGINS.table,
-}
-```
-
-### 禁用合并示例
+将 `initialState.allowCellSpanEditing` 设置为 `false` 可同时禁用这两项操作。已有的跨行或跨列单元格仍可显示和粘贴。
 
 <ComponentPreview name="table-nomerge-demo" />
 
-</Steps>
+## 编辑行为
+
+`TablePlugin` 处理键盘导航、选区、删除和剪贴板输入。`Tab` 和 `Shift+Tab` 在单元格间移动；在最后一个单元格按 `Tab` 可插入行。同一单元格内的文本拖选使用原生文本选区。清空结构化单元格选区会保留其精确成员和方向。
+
+合并按行优先顺序保留所选单元格的完整富文本内容，包括只有媒体的内容及其拥有的根。目标单元格和保留节点的身份不变。拆分将原始内容留在锚点单元格中，其余位置创建空单元格。
+
+结构化表格粘贴要求 `ContentSlice` 两端闭合，且顶层恰好包含一个表格。开放切片、行或单元格列表、带兄弟节点的表格均作为完整普通内容进行适配。普通内容可以分别粘贴到每个选中的单元格。
+
+将表格粘贴到矩形选区时，只允许完整重复的源区域。不完整的重复区域，以及跨出目标覆盖范围的已有合并单元格都会被拒绝；被完整覆盖的跨行或跨列单元格可以替换。`expandOnPaste: false` 时，超出表格范围的粘贴会被拒绝，而不是裁剪。适配失败不会修改文档或选区。
+
+结构化单元格复制和剪切要求矩形选区完整覆盖其中的跨行、跨列单元格。非矩形选区仍支持删除、格式设置和普通内容粘贴。剪切仅在剪贴板写入成功后清空单元格。精确切片保留富文本及其可达的拥有根；CSV 和 TSV 仅表示文本。
+
+## 自定义尺寸调整
+
+列宽存储在表格的 `columnWidths` 中；`null` 表示导入时未知的宽度。`api.columnWidths(table)` 为每个逻辑列解析数值宽度，不会将回退值写入文档。渲染器负责临时尺寸覆盖值，每一行在自身的 `height` 中存储行高。
+
+`api.createResize(table, target)` 捕获起始尺寸，返回一个把像素偏移转换为 `TableResize` 的函数。计算预览不会修改文档：
+
+```tsx
+import { TablePlugin } from 'platejs/table/react';
+
+const selected = editor.plugin(TablePlugin).read.selection();
+
+if (selected) {
+  const preview = editor.plugin(TablePlugin).api.createResize(selected.table[0], {
+    edge: 'right',
+    colIndex: 0,
+  });
+
+  editor.plugin(TablePlugin).update.resize({
+    at: selected.tableKey,
+    resize: preview(24),
+  });
+}
+```
+
+目标可以是 `{ edge: 'right', colIndex }`、`{ edge: 'left' }` 或 `{ edge: 'bottom', rowIndex, height }`。底边目标需要实测起始行高。内部列边界保持相邻两列的总宽度；左边界在首列宽度和表格缩进之间分配空间。导入宽度小于 `minColumnWidth` 时，以其起始宽度作为此次拖动的下限。
+
+横向调整的提交必须包含非空 `columns` 数组，每项为 `{ colIndex, width }`。左边界提交还必须包含 `marginLeft`，右边界提交不包含缩进。底边提交包含 `rowIndex` 和 `height`。
 
 ## 插件说明
 
 ### TablePlugin
 
-负责表格结构和行为，并要求安装行和单元格插件。
+通过 `initialState` 配置以下选项：
 
 <API name="TablePlugin">
 <APIOptions>
-  <APIItem name="disableMerge" type="boolean" optional>
-    禁用单元格合并行为
+  <APIItem name="allowCellSpanEditing" type="boolean" optional>
+    允许合并和拆分命令。默认值：`true`。
   </APIItem>
-  <APIItem name="disableExpandOnInsert" type="boolean" optional>
-    禁用插入单元格时的表格扩展
+  <APIItem name="defaultTableWidth" type="number | null" optional>
+    为缺失列宽提供表格宽度依据。非 null 值必须为有限正数。默认值：`null`。
   </APIItem>
-  <APIItem name="disableMarginLeft" type="boolean" optional>
-    禁用表格第一列的左侧调整手柄
-  </APIItem>
-  <APIItem name="enableUnsetSingleColSize" type="boolean" optional>
-    禁用当表格只有一列时取消设置第一列宽度。设置为 `true` 可在单列情况下调整表格宽度，保持 `false` 可实现全宽表格
-  </APIItem>
-  <APIItem name="initialTableWidth" type="number" optional>
-    若定义此值，标准化器会将每个未定义的表格 `columnWidths` 设置为该值除以列数（注意：暂不支持合并单元格）
+  <APIItem name="expandOnPaste" type="boolean" optional>
+    允许表格粘贴扩展目标表格，不限制显式插入行或列。默认值：`true`。
   </APIItem>
   <APIItem name="minColumnWidth" type="number" optional>
-    表格列的最小宽度
-    - **默认值:** `48`
+    尺寸调整手势的最小列宽，必须为有限正数。默认值：`48`。
   </APIItem>
 </APIOptions>
 </API>
 
 ### TableRowPlugin
 
-必需的表格行结构插件。仅在替换其默认配置或组件时直接加入。
+必需的行结构描述符。当前行被前面行的跨行单元格完整覆盖时，可以没有直接子单元格。
 
 ### TableCellPlugin
 
-所有表格单元格共用的必需结构插件。表头单元格使用同一个 `tableCell` 类型，并设置 `header: true`。仅在替换其默认配置或组件时直接加入。
+所有单元格共用的必需结构描述符。表头单元格使用 `type: 'tableCell'` 和 `header: true`。`colSpan` 与 `rowSpan` 必须为正安全整数；省略时跨度为一。
 
 ## API 参考
 
-### editor.api.table.create
+以下 `table` 指 `editor.plugin(TablePlugin)`。公开的表格类型从 `platejs/table` 导出。
 
-<API name="create">
-<APIParameters>
-<APIItem name="options" type="GetEmptyTableNodeOptions" optional>
-扩展 `GetEmptyRowNodeOptions`
-</APIItem>
-</APIParameters>
+| 纯计算 API | 返回值 | 用途 |
+| --- | --- | --- |
+| `table.api.columnWidths(tableElement)` | `readonly number[]` | 解析每个逻辑列的宽度；数组长度即列数。 |
+| `table.api.createResize(tableElement, target)` | `(delta: number) => TableResize` | 计算受尺寸约束的预览。 |
 
-<APIOptions>
-<APIItem name="header" type="boolean" optional>
-设为 `true` 表示表格包含表头行
-</APIItem>
-<APIItem name="rowCount" type="number" optional>
-表格行数
-- **默认值:** `0`
-</APIItem>
-<APIItem name="colCount" type="number | undefined" optional>
-表格列数
-</APIItem>
-</APIOptions>
+| 读取方法 | 返回值 | 用途 |
+| --- | --- | --- |
+| `table.read.selection(options?)` | `TableSelection \| null` | 精确的单元格成员、方向、表格身份与边界。 |
+| `table.read.cell(options?)` | `TableCellInfo \| null` | 单个单元格的节点条目、逻辑坐标、跨度、边框与尺寸。 |
+| `table.read.borders(options?)` | `TableBorderStates \| null` | 将 `top`、`right`、`bottom`、`left`、`none`、`outer` 汇总为 `true \| false \| 'mixed'`。 |
+| `table.read.canMerge(options?)` | `boolean` | 当前策略与视图权限是否允许合并完整覆盖跨度的矩形多单元格目标。 |
+| `table.read.canSplit(options?)` | `boolean` | 当前策略与视图权限是否允许拆分一个跨行或跨列单元格。 |
 
-<APIReturns>
-<APIItem type="Element">
-表格节点
-</APIItem>
-</APIReturns>
-</API>
+读取选项使用 `TableTargetOptions`，但 `cell` 使用 `{ at?: TableCellTarget }`。
 
-### editor.api.table.createCell
+`TableSelection` 包含 `table`、`tableKey`、`cells`、`anchor`、`focus`、`bounds`、`rectangular` 和可选的 `root`。`table` 与 `cells` 是当前文档中的元素条目；`tableKey`、`anchor` 和 `focus` 为 `NodeKey`。`rectangular` 表示选区完整覆盖一个矩形区域及其单元格跨度。
 
-创建表格的空单元格节点
-
-<API name="createCell">
-<APIOptions>
-<APIItem name="header" type="boolean" optional>
-设为 `true` 表示创建表头单元格
-</APIItem>
-<APIItem name="row" type="TableRowElement" optional>
-行元素。若未指定 `header`，将根据行的子元素判断是否为表头单元格
-</APIItem>
-<APIItem name="children" type="Descendant[]" optional>
-新单元格节点的子元素
-- **默认值:** `[{ children: [{ text: '' }], type: editor.plugin(BaseParagraphPlugin).schema.type }]`
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-<APIItem type="Element">
-单元格节点
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.createRow
-
-创建具有指定列数的空行节点
-
-<API name="createRow">
-<APIOptions>
-<APIItem name="header" type="boolean" optional>
-设为 `true` 表示创建表头行
-</APIItem>
-<APIItem name="colCount" type="number" optional>
-行的列数
-- **默认值:** `1`
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-<APIItem type="Element">
-行节点
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getCellBorders
-
-获取表格单元格的边框样式，处理首行和首列单元格的特殊情况
-
-<API name="getCellBorders">
-<APIOptions>
-<APIItem name="element" type="TableCellElement">
-要获取边框样式的表格单元格元素
-</APIItem>
-<APIItem name="defaultBorder" type="Required<TableCellBorder>" optional>
-当单元格边框未定义时使用的默认边框样式
-<APISubList>
-<APISubListItem parent="defaultBorder" name="color" type="string">
-  边框颜色
-  - **默认值:** `'rgb(209 213 219)'`
-</APISubListItem>
-<APISubListItem parent="defaultBorder" name="size" type="number">
-  边框尺寸
-  - **默认值:** `1`
-</APISubListItem>
-<APISubListItem parent="defaultBorder" name="style" type="string">
-  边框样式
-  - **默认值:** `'solid'`
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem type="BorderStylesDefault">
-    包含以下属性的对象:
-    <APISubList>
-      <APISubListItem parent="return" name="bottom" type="Required<TableCellBorder>">
-        底部边框样式
-      </APISubListItem>
-      <APISubListItem parent="return" name="right" type="Required<TableCellBorder>">
-        右侧边框样式
-      </APISubListItem>
-      <APISubListItem parent="return" name="left" type="Required<TableCellBorder>" optional>
-        左侧边框样式（仅首列单元格存在）
-      </APISubListItem>
-      <APISubListItem parent="return" name="top" type="Required<TableCellBorder>" optional>
-        顶部边框样式（仅首行单元格存在）
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.getCellChildren
-
-获取表格单元格的子元素
-
-<API name="getCellChildren">
-<APIParameters>
-<APIItem name="cell" type="Element">
-表格单元格元素
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="Descendant[]">
-表格单元格的子元素
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getCellSize
-
-获取表格单元格的宽度和最小高度，考虑列跨度和列宽设置
-
-<API name="getCellSize">
-<APIOptions>
-<APIItem name="element" type="TableCellElement">
-要获取尺寸的表格单元格元素
-</APIItem>
-<APIItem name="columnWidths" type="(number | null)[]" optional>
-列宽数组。若未提供，将使用表格的覆盖列宽设置
-</APIItem>
-<APIItem name="cellIndices" type="CellIndices" optional>
-预先计算的单元格行列索引
-</APIItem>
-<APIItem name="rowSize" type="number" optional>
-行高。若未提供，将从单元格所在行读取
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-<APIItem name="width" type="number">
-单元格总宽度（根据跨列数计算各列宽度之和）
-</APIItem>
-<APIItem name="minHeight" type="number">
-单元格最小高度（根据行的尺寸属性确定，未设置时为 `0`）
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.getColSpan
-
-获取表格单元格的列跨度
-
-<API name="getColSpan">
-<APIParameters>
-<APIItem name="element" type="TableCellElement">
-要获取列跨度的表格单元格元素
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="number">
-    单元格跨越的列数
-    - **默认值:** `1`
-  </APIItem>
-</APIReturns>
-</API>  
-
-### editor.api.table.getRowSpan
-
-获取表格单元格的行跨度
-
-<API name="getRowSpan">
-<APIParameters>
-  <APIItem name="element" type="TableCellElement">
-    要获取行跨度的表格单元格元素
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="number">
-    单元格跨越的行数
-    - **默认值:** `1`
-  </APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getNextCell
-
-获取表格中的下一个单元格
-<API name="getNextCell">
-<APIParameters>
-  <APIItem name="currentCell" type="NodeEntry">
-    当前单元格的 entry
-  </APIItem>
-  <APIItem name="currentPath" type="Path">
-    当前单元格的路径
-  </APIItem>
-  <APIItem name="currentRow" type="NodeEntry">
-    当前行的 entry
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="NodeEntry | undefined">
-    下一行单元格的节点 entry，若当前行是最后一行则返回 `undefined`
-  </APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getPreviousCell
-
-获取表格中的上一个单元格
-
-<API name="getPreviousCell">
-<APIParameters>
-  <APIItem name="currentCell" type="NodeEntry">
-    当前单元格的 entry
-  </APIItem>
-  <APIItem name="currentPath" type="Path">
-    当前单元格的路径
-  </APIItem>
-  <APIItem name="currentRow" type="NodeEntry">
-    当前行的 entry
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="NodeEntry | undefined">
-    上一行单元格的节点 entry，若当前行是首行则返回 `undefined`
-  </APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.getColumnCount
-
-获取表格列数
-
-<API name="getColumnCount">
-<APIParameters>
-  <APIItem name="tableNode" type="Element">
-    要获取列数的表格节点
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="number">
-表格列数
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getCellIndices
-
-获取单元格的行列索引
-
-<API name="getCellIndices">
-<APIParameters>
-  <APIItem name="cell" type="Element">
-    表格单元格
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="{ col: number; row: number }">单元格坐标</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getEntries
-
-根据当前选区或指定位置获取表格、行和单元格的节点 entry
-
-<API name="getEntries">
-<APIOptions>
-<APIItem name="at" type="Location | null" optional>
-表格单元格所在位置
-- **默认值:** `editor.read.selection()`
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem name="table" type="NodeEntry | undefined">
-    表格节点 entry
-  </APIItem>
-  <APIItem name="row" type="NodeEntry | undefined">
-    行节点 entry
-  </APIItem>
-  <APIItem name="cell" type="NodeEntry | undefined">
-    单元格节点 entry
-  </APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getGridAbove
-
-根据指定格式（表格或单元格）获取锚点和焦点位置上方的子表格
-
-<API name="getGridAbove">
-<APIOptions>
-<APIItem name="format" type="string" optional>
-要获取的子表格格式
-- **默认值:** `'table'`
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem type="ElementEntry[]">子表格 entry 数组</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getGridByRange
-
-获取指定范围内两个单元格路径之间的子表格
-
-<API name="getGridByRange">
-<APIOptions>
-<APIItem name="at" type="Range">
-指定起始和结束单元格路径的范围
-</APIItem>
-<APIItem name="format" type="'table' | 'cell'" optional>
-输出格式
-- **默认值:** `'table'`
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem type="ElementEntry[]">子表格 entry 数组</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getAdjacentCell
-
-获取当前单元格附近的单元格
-
-<API name="getAdjacentCell">
-<APIOptions>
-  <APIItem name="at" type="Path" optional>
-    当前单元格路径。默认使用当前选区
-  </APIItem>
-  <APIItem name="deltaCol" type="number" optional>
-    列偏移量
-  </APIItem>
-  <APIItem name="deltaRow" type="number" optional>
-    行偏移量
-  </APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem type="ElementEntry | undefined">相邻单元格 entry</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.isBorderHidden
-
-检查表格单元格或表格本身的指定方向边框是否隐藏
-
-<API name="isBorderHidden">
-<APIParameters>
-  <APIItem name="border" type="'top' | 'left' | 'bottom' | 'right'">
-    要检查的边框方向
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="boolean">
-`true` 表示边框隐藏，`false` 表示可见
-</APIItem>
-</APIReturns>
-</API>
-
-## 编辑行为
-
-`TablePlugin` 负责键盘、剪贴板、删除、粘贴、规范化和选区行为。表格变更使用插件的作用域更新入口；安装插件后，其余行为会自动生效。
+`TableCellInfo` 包含 `entry`、`row`、`col`、`rowSpan`、`colSpan`、`borders`、`size` 和可选的 `root`。`size` 包含 `width` 和 `minHeight`。解析后的边框包含 `color`、`style`、`width`：始终提供底边和右边，在对应表格边缘还提供顶边或左边。这两种读取结果省略 `root` 时均表示主根。
 
 ## 转换操作
 
-### `editor.plugin(TablePlugin).update.insert`
+所有表格更新均返回 `boolean`：接受变更返回 `true`；目标不可用、操作被拒绝或内容不变时返回 `false`。无效尺寸和数值选项会在提交前抛出错误。即使已经读取过可用性，执行命令时仍会重新检查。
 
-在当前选区插入表格（若编辑器中无现有表格）。选中插入表格的起始位置。
+| 更新方法 | 选项 | 用途 |
+| --- | --- | --- |
+| `table.update.insert(options?, placement?)` | `TableCreateOptions`、`TableInsertPlacement` | 插入表格，默认为两行两列。 |
+| `table.update.insertColumn(options?)` | `TableAxisInsertOptions` | 在逻辑列边界插入列。 |
+| `table.update.insertRow(options?)` | `TableAxisInsertOptions` | 在逻辑行边界插入行。 |
+| `table.update.removeColumn(options?)` | `TableTargetOptions` | 删除目标列；没有剩余列时删除表格。 |
+| `table.update.removeRow(options?)` | `TableTargetOptions` | 删除目标行；没有剩余行时删除表格。 |
+| `table.update.remove(options?)` | `TableTargetOptions` | 删除所在表格。 |
+| `table.update.merge(options?)` | `TableTargetOptions` | 合并完整的矩形选区。 |
+| `table.update.split(options?)` | `TableTargetOptions` | 拆分一个跨行或跨列单元格。 |
+| `table.update.setCellBackground(options)` | `{ at?, color: string \| null }` | 为精确选中的单元格设置或清除背景。 |
+| `table.update.setBorders(options)` | `{ at?, border, value: TableCellBorder \| null }` | 替换或清除边框格式。 |
+| `table.update.toggleBorders(options)` | `{ at?, border }` | 统一切换边框状态。 |
+| `table.update.resize(options)` | `TableResizeOptions` | 提交 `{ at?, resize }`。 |
+| `table.update.setColumnWidth(options)` | `TableColumnWidthOptions` | 设置 `{ at?, colIndex, width }`。 |
+| `table.update.setRowHeight(options)` | `TableRowHeightOptions` | 设置 `{ at?, rowIndex, height }`。 |
 
-<API name="insert">
-<APIParameters>
-<APIItem name="getEmptyTableNodeOptions" type="GetEmptyTableNodeOptions" optional>
-扩展 `GetEmptyRowNodeOptions`
-<APISubList>
-<APISubListItem parent="getEmptyTableNodeOptions" name="rowCount" type="number" optional>
-表格行数
-- **默认值:** `2`
-</APISubListItem>
-<APISubListItem parent="getEmptyTableNodeOptions" name="colCount" type="number" optional>
-表格列数
-- **默认值:** `2`
-</APISubListItem>
-<APISubListItem parent="getEmptyTableNodeOptions" name="header" type="boolean" optional>
-设为 `true` 时表格首行将作为表头行
-</APISubListItem>
-</APISubList>
-</APIItem>
+`TableCreateOptions` 包含 `rows`、`columns` 和 `header`。行列数必须为正安全整数；`header: true` 将首行设为表头。`TableInsertPlacement` 中，`at` 指定精确插入位置，`after` 指定当前文档中的块，两者不能同时使用。其他块插入选项（包括 `select` 和 `replaceEmpty`）仍可使用。省略位置时，表格插入在当前所在的表格或块之后。
 
-<APIItem name="options" type="object" optional>
-插入表格节点的选项
-</APIItem>
-</APIParameters>
-</API>
+`TableAxisInsertOptions` 包含 `at`、`before`、`header` 和 `select`。目标为跨行或跨列单元格时，插入使用其逻辑起始或结束边界；目标为表格时，在开头或结尾插入。尺寸调整中的行列索引从零开始，宽度和高度必须为有限正数。
 
-### `editor.plugin(TablePlugin).update.insertColumn`
+背景与边框更新接受 `TableTargetOptions.at`，包括精确的非矩形单元格选区。`setBorders.border` 可以是 `'top'`、`'right'`、`'bottom'`、`'left'`、`'all'` 或 `'outer'`；`toggleBorders.border` 接受四个方向、`'none'` 或 `'outer'`。`TableCellBorder` 包含可选的 `color`、`style`，以及非负有限数值 `width`。
 
-在表格的当前选区或指定单元格路径处插入一列。
+尺寸更新接受 `at?: TableNodeTarget`。在 `editor.update` 回调中，直接通过 `tx.plugin(TablePlugin)` 调用相同的更新方法。
 
-<API name="insertColumn">
-<APIOptions>
-<APIItem name="at" type="Path" optional>
-要插入列的单元格的确切路径。这会覆盖 `fromCell` 选项。
-</APIItem>
-<APIItem name="before" type="boolean" optional>
-如果为 true，则在当前列之前插入列，而不是之后。
-</APIItem>
-<APIItem name="fromCell" type="Path" optional>
-要从中插入列的单元格路径。
-</APIItem>
-<APIItem name="header" type="boolean" optional>
-如果为 true，则插入的列将被视为表头列。
-</APIItem>
-<APIItem name="select" type="boolean" optional>
-如果为 true，则插入后会自动选中该列。
-</APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(TablePlugin).update.insertRow`
-
-在表格的当前选区或指定行路径处插入一行。
-
-<API name="insertRow">
-<APIOptions>
-<APIItem name="at" type="Path" optional>
-要插入行的确切路径。传入表格路径可在表格末尾插入。这将覆盖 `fromRow`。
-</APIItem>
-<APIItem name="before" type="boolean" optional>
-如果为 true，则在当前行之前插入行，而不是之后。
-</APIItem>
-<APIItem name="fromRow" type="Path" optional>
-要从中插入新行的行路径。
-</APIItem>
-<APIItem name="header" type="boolean" optional>
-如果为 true，则插入的行将被视为表头行。
-</APIItem>
-<APIItem name="select" type="boolean" optional>
-如果为 true，则插入后会自动选中该行。
-</APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(TablePlugin).update.removeColumn`
-
-删除表格中包含选中单元格的列。
-
-### `editor.plugin(TablePlugin).update.removeRow`
-
-删除表格中包含选中单元格的行。
-
-### `editor.plugin(TablePlugin).update.remove`
-
-删除整个表格。
-
-### `editor.plugin(TablePlugin).update.merge`
-
-将多个选中的单元格合并为一个。
-
-合并后的单元格将：
-- 列跨度等于所选单元格跨越的列数
-- 行跨度等于所选单元格跨越的行数
-- 包含所有合并单元格的组合内容（仅非空单元格）
-- 继承第一个选中单元格的表头状态
-
-### `editor.plugin(TablePlugin).update.split`
-
-将合并的单元格拆分回单独的单元格。
-
-拆分操作将：
-- 为每个跨越的列和行创建新单元格
-- 从原始合并单元格复制表头状态
-- 将原始单元格的内容放在第一个单元格中
-- 为剩余空间创建空单元格
-
-### `editor.plugin(TablePlugin).update.moveSelection`
-
-在表格内按单元格单位移动选区。
-
-<API name="moveSelection">
-<APIOptions>
-<APIItem name="at" type="Location" optional>
-要从中移动选区的位置。
-</APIItem>
-<APIItem name="reverse" type="boolean" optional>
-设置为 `true` 将选区移动到上方单元格，`false` 移动到下方单元格。
-</APIItem>
-<APIItem name="edge" type="'top' | 'left' | 'right' | 'bottom'" optional>
-要扩展单元格选区的边缘。
-</APIItem>
-<APIItem name="fromOneCell" type="boolean" optional>
-设置为 `true` 仅从单个选中单元格移动选区。
-</APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(TablePlugin).update.setBorderSize`
-
-设置表格单元格中指定边框的大小。
-
-<API name="setBorderSize">
-<APIParameters>
-<APIItem name="size" type="number">
-边框的大小。
-</APIItem>
-<APIItem name="options" type="object" optional>
-设置边框大小的选项。
-</APIItem>
-</APIParameters>
-
-<APIOptions>
-<APIItem name="at" type="Location" optional>
-要设置边框大小的单元格位置。
-</APIItem>
-<APIItem name="border" type="'all' | 'top' | 'left' | 'bottom' | 'right'" optional>
-要设置大小的边框方向。
-
-- **默认值:** `'all'`
-
-</APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(TablePlugin).update.setColumnWidth`
-
-设置表格中特定列的宽度。
-
-<API name="setColumnWidth">
-<APIParameters>
-<APIItem name="value" type="{ colIndex: number; width: number }">
-要应用的列索引和宽度。
-</APIItem>
-<APIItem name="options" type="TableFindOptions" optional>
-定位表格的选项。
-</APIItem>
-</APIParameters>
-</API>
-
-### `editor.plugin(TablePlugin).update.set`
-
-通过描述符绑定的元素更新设置 `marginLeft` 等表格属性。
-
-<API name="set">
-<APIParameters>
-<APIItem name="properties" type="Partial&lt;TableElement&gt;">
-要应用的表格属性，例如 `{ marginLeft: 24 }`。
-</APIItem>
-<APIItem name="options" type="Omit&lt;NodeSetNodesOptions&lt;Element&gt;, 'match'&gt;" optional>
-通用节点选项。表格类型匹配由 `TablePlugin` 提供。
-</APIItem>
-</APIParameters>
-</API>
-
-### `editor.plugin(TablePlugin).update.setRowHeight`
-
-设置表格行的大小（高度）。
-
-<API name="setRowHeight">
-<APIParameters>
-<APIItem name="value" type="{ height: number; rowIndex: number }">
-要应用的行索引和高度。
-</APIItem>
-<APIItem name="options" type="TableFindOptions" optional>
-定位表格的选项。
-</APIItem>
-</APIParameters>
-</API>
+`TablePlugin` 会在渲染后的单元格宿主上绘制结构化单元格选区。自定义 `TableCellPlugin` 组件必须将 `props.attributes`（包括其中的 `ref`）绑定到唯一的标准 `<td>` 或 `<th>` 元素。
 
 ## Hooks
 
-### `useTableSelectionDOM`
+### `useTableResize`
 
-将结构化单元格选区同步到自定义表格渲染器。该 hook 会更新选中单元格的属性、隐藏锚点单元格中的光标，并在选区变化或渲染器卸载时恢复光标。
+从 `platejs/table/react` 导入并调用 `useTableResize({ element, tableRef, onResize, onResizeEnd })`。返回的函数接受指针事件和 `TableResizeHandle`。底边手柄提供 `rowIndex`，由 hook 测量起始高度。
 
-列宽、单元格布局和指针事件应在渲染器中通过 `TablePlugin` 读取方法和 Core selector hook 直接组合。
-
-<API name="useTableSelectionDOM">
-<APIParameters>
-  <APIItem name="tableRef" type="React.RefObject&lt;HTMLTableElement | null&gt;">
-    指向已渲染 `<table>` 的 ref；其中的单元格包含 `data-table-cell-key` 属性。
-  </APIItem>
-</APIParameters>
-<APIReturns type="void" />
-</API>
-
-### `editor.plugin(TablePlugin).read.canMerge()`
-
-当前可编辑选区是完整的矩形多单元格选区时返回 `true`。
-
-### `editor.plugin(TablePlugin).read.canSplit()`
-
-当前可编辑选区位于具有行跨度或列跨度的单个单元格内时返回 `true`。
-Registry 控件还会应用实时 `disableMerge` 选项。
+在本地渲染 `onResize` 的预览，并在 `onResizeEnd` 清除覆盖值。主指针释放时提交一次；取消操作、窗口失焦、只读状态变化、表格替换或组件卸载都会丢弃当前手势。

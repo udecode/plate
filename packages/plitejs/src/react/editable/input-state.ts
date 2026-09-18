@@ -8,6 +8,7 @@ import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
 } from '../../dom/internal';
+import { createNativeGroupingId } from './input-history';
 import { type AnyEditor, setEditorMarks } from './runtime-editor-api';
 
 type DOMInputRuntime = DOMRootRuntime['domInputRuntime'];
@@ -167,6 +168,8 @@ export type RepairDOMInput = (
 
 export type EditableInputController = {
   domInputRuntime: DOMInputRuntime;
+  nativeHistoryComposition: number | undefined;
+  nativeHistoryOrigin: number;
   preferModelSelectionForInputRef: RefObject<boolean>;
   scheduleTask?: DOMPhaseScheduler['schedule'];
   state: EditableInputControllerState;
@@ -174,7 +177,7 @@ export type EditableInputController = {
 
 type EditableInputControllerInput = Omit<
   EditableInputController,
-  'domInputRuntime'
+  'domInputRuntime' | 'nativeHistoryComposition' | 'nativeHistoryOrigin'
 > & {
   domInputRuntime?: DOMInputRuntime;
 };
@@ -315,6 +318,7 @@ export const beginEditableCompositionSession = (
   inputController: EditableInputController,
   { historyMergePending = false }: { historyMergePending?: boolean } = {}
 ) => {
+  inputController.nativeHistoryComposition = createNativeGroupingId();
   if (historyMergePending) {
     EDITABLE_COMPOSITION_HISTORY_MERGE.add(inputController.domInputRuntime);
   } else {
@@ -329,6 +333,16 @@ export const shouldMergeEditableCompositionHistory = (
 ) =>
   inputController.state.compositionSession !== null &&
   EDITABLE_COMPOSITION_HISTORY_MERGE.has(inputController.domInputRuntime);
+
+export const getEditableNativeGroupingInput = (
+  inputController: EditableInputController,
+  composition = inputController.state.compositionSession !== null
+) => ({
+  origin: inputController.nativeHistoryOrigin,
+  ...(composition && inputController.nativeHistoryComposition !== undefined
+    ? { composition: inputController.nativeHistoryComposition }
+    : {}),
+});
 
 export const markEditableCompositionModelCommitted = (
   inputController: EditableInputController
@@ -504,6 +518,8 @@ export const createEditableInputController = ({
 
   return {
     domInputRuntime: boundRuntime,
+    nativeHistoryComposition: undefined,
+    nativeHistoryOrigin: createNativeGroupingId(),
     preferModelSelectionForInputRef,
     scheduleTask,
     state: bindEditableInputRuntimeState(state, boundRuntime),

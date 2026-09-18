@@ -3,7 +3,8 @@
   "name": "editor-basic",
   "description": "A basic editor",
   "dependencies": [
-    "diff-match-patch-ts@^0.6.0"
+    "diff-match-patch-ts@^0.6.0",
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/plate-ui.json",

@@ -457,12 +457,12 @@ describe('plite transforms contract', () => {
       path: [1, 0],
       offset: 8,
     });
-    editor.update.history.undo();
+    editor.api.history.undo();
     assert.deepEqual(editor.read.children(), [
       paragraph('before'),
       paragraph(''),
     ]);
-    editor.update.history.redo();
+    editor.api.history.redo();
     assert.deepEqual(editor.read.children(), [
       paragraph('before'),
       paragraph('inserted'),
@@ -504,9 +504,9 @@ describe('plite transforms contract', () => {
     });
     assert.deepEqual(editor.read.children(), [paragraph('inserted')]);
     assert.equal(editor.read.lastCommit()?.version, version + 1);
-    editor.update.history.undo();
+    editor.api.history.undo();
     assert.deepEqual(editor.read.value(), before);
-    editor.update.history.redo();
+    editor.api.history.redo();
     assert.deepEqual(editor.read.children(), [paragraph('inserted')]);
   });
 

@@ -19,21 +19,27 @@ description: 为 React 安装和配置 Plate UI
 npx shadcn@latest add @plate/editor
 ```
 
-接下来，在主应用文件（如 `src/App.tsx`）中创建基础编辑器。此示例在 `EditorContainer` 内设置了一个简单编辑器。
+接下来，在主应用文件（如 `src/App.tsx`）中创建基础编辑器。本例使用 `EditorFrame`
+组织面板布局，使用 `EditorContainer` 提供滚动区域。**两者都是可选的。**
+类似 textarea 的最小编辑器可以直接在 `EditorRoot` 内渲染 `Editor`，使用
+`variant="none"` 并自行设置内边距和最小高度。三种组合方式及固定高度的设置位置见
+[编辑器布局](/docs/api/core/plate-components#编辑器布局)。
 
 ```tsx showLineNumbers title="src/App.tsx"
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/components/editor/editor';
+import { Editor, EditorContainer, EditorFrame } from '@/components/editor/editor';
 
 export default function App() {
   const editor = useCreateEditor();
 
   return (
     <EditorRoot editor={editor}>      {/* 提供编辑器上下文 */}
-      <EditorContainer>         {/* 设置编辑器区域样式 */}
-        <Editor placeholder="输入您精彩的内容..." />
-      </EditorContainer>
+      <EditorFrame>
+        <EditorContainer>         {/* 设置编辑器区域样式 */}
+          <Editor placeholder="输入您精彩的内容..." />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }
@@ -60,7 +66,7 @@ npx shadcn@latest add @plate/basic-nodes @plate/fixed-toolbar @plate/mark-toolba
 更新 `src/App.tsx` 以包含这些组件和基础标记插件。
 此示例添加了粗体、斜体和下划线功能。
 
-```tsx showLineNumbers title="src/App.tsx" {2,4-8,15-16,18-31,35-36,41-45}
+```tsx showLineNumbers title="src/App.tsx"
 import * as React from 'react';
 import type { Value } from 'platejs';
 
@@ -74,7 +80,7 @@ import {
   useCreateEditor,
 } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/components/editor/editor';
+import { Editor, EditorContainer, EditorFrame } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
@@ -101,14 +107,16 @@ export default function App() {
 
   return (
     <EditorRoot editor={editor}>
-      <FixedToolbar className="justify-start rounded-t-lg">
-        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
-      </FixedToolbar>
-      <EditorContainer>
-        <Editor placeholder="输入您精彩的内容..." />
-      </EditorContainer>
+      <EditorFrame>
+        <FixedToolbar className="justify-start rounded-t-lg">
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+        </FixedToolbar>
+        <EditorContainer>
+          <Editor placeholder="输入您精彩的内容..." />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }
@@ -120,7 +128,7 @@ export default function App() {
 
 通过自定义组件引入标题和引用块等块级元素。
 
-```tsx showLineNumbers title="src/App.tsx" {5,7-9,18,21,23,26-33,50-53,61-65}
+```tsx showLineNumbers title="src/App.tsx"
 import * as React from 'react';
 import type { Value } from 'platejs';
 
@@ -137,7 +145,7 @@ import {
 } from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/editor/blockquote';
-import { Editor, EditorContainer } from '@/components/editor/editor';
+import { Editor, EditorContainer, EditorFrame } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { HeadingElement } from '@/components/editor/heading';
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
@@ -181,20 +189,22 @@ export default function App() {
 
   return (
     <EditorRoot editor={editor}>
-      <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        {/* 元素工具栏按钮 */}
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
-        {/* 标记工具栏按钮 */}
-        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
-      </FixedToolbar>
-      <EditorContainer>
-        <Editor placeholder="输入您精彩的内容..." />
-      </EditorContainer>
+      <EditorFrame>
+        <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
+          {/* 元素工具栏按钮 */}
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
+          {/* 标记工具栏按钮 */}
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+        </FixedToolbar>
+        <EditorContainer>
+          <Editor placeholder="输入您精彩的内容..." />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }
@@ -216,7 +226,7 @@ export default function App() {
 
 为了使编辑器内容持久化，我们集成 `localStorage` 来保存和加载编辑器的值。
 
-```tsx showLineNumbers title="src/App.tsx" {55-58,64-66,76-82}
+```tsx showLineNumbers title="src/App.tsx"
 import * as React from 'react';
 import type { Value } from 'platejs';
 
@@ -233,7 +243,7 @@ import {
 } from 'platejs/react';
 
 import { BlockquoteElement } from '@/components/editor/blockquote';
-import { Editor, EditorContainer } from '@/components/editor/editor';
+import { Editor, EditorContainer, EditorFrame } from '@/components/editor/editor';
 import { FixedToolbar } from '@/components/editor/fixed-toolbar';
 import { HeadingElement } from '@/components/editor/heading';
 import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
@@ -285,27 +295,29 @@ export default function App() {
         localStorage.setItem('installation-react-demo', JSON.stringify(value));
       }}
     >
-      <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
-        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
-        <div className="flex-1" />
-        <ToolbarButton
-          className="px-2"
-          onClick={() =>
-            editor.update((tx) => tx.value.replace({ children: initialValue }))
-          }
-        >
-          Reset
-        </ToolbarButton>
-      </FixedToolbar>
-      <EditorContainer>
-        <Editor placeholder="输入您精彩的内容..." />
-      </EditorContainer>
+      <EditorFrame>
+        <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 1 })}>H1</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
+          <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+          <div className="flex-1" />
+          <ToolbarButton
+            className="px-2"
+            onClick={() =>
+              editor.update((tx) => tx.value.replace({ children: initialValue }))
+            }
+          >
+            Reset
+          </ToolbarButton>
+        </FixedToolbar>
+        <EditorContainer>
+          <Editor placeholder="输入您精彩的内容..." />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }

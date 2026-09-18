@@ -32,12 +32,12 @@ import {
   failTextProjectionConflict,
   readExternalTextBinding,
 } from './external-text-binding';
-import { getNativeTextInputUpdateTags } from './input-history';
-import { registerExternalTextHost } from './interaction-owner';
 import {
-  applyModelOwnedHistoryIntent,
-  consumeModelOwnedHistoryFocusRoot,
-} from './mutation-history';
+  createNativeGroupingId,
+  getNativeTextInputUpdateTags,
+  nativeGroupingInput,
+} from './input-history';
+import { registerExternalTextHost } from './interaction-owner';
 import {
   getSnapshot,
   setEditorFocused,
@@ -56,11 +56,15 @@ type Entry = {
   composing: boolean;
   compositionStarted: boolean;
   historyBoundary: boolean;
+  nativeHistoryComposition: number | undefined;
+  nativeHistoryOrigin: number;
   config: unknown;
   elementKey: NodeKey;
   host: HTMLElement;
   invalid: boolean;
+  callbackFailureRevision: number;
   inCallback: boolean;
+  recoveringCallbackFailure: boolean;
   origin: {
     changes: readonly ExternalTextChange[];
     selection: ExternalTextSelection;
@@ -273,11 +277,15 @@ export class ExternalTextRuntime {
       composing: false,
       compositionStarted: false,
       historyBoundary: false,
+      nativeHistoryComposition: undefined,
+      nativeHistoryOrigin: createNativeGroupingId(),
       config,
       elementKey,
       host,
       invalid: false,
+      callbackFailureRevision: 0,
       inCallback: false,
+      recoveringCallbackFailure: false,
       origin: null,
       state: null as unknown as ExternalTextState<unknown>,
       sourceVersion: binding.snapshot.version,
@@ -611,17 +619,28 @@ export class ExternalTextRuntime {
     else this.counters.patches += changes.length;
     this.counters.updates += 1;
     const next = Object.freeze({ ...state, version: previous.version + 1 });
+    const { callbackFailureRevision } = entry;
     const accepted = this.call(entry, 'update', () =>
       view.update({ changes, state: next })
     );
-    if (accepted) {
-      this.counters.canonicalCodeUnits +=
-        state.text.length - previous.text.length;
-      entry.state = next;
-      entry.authoredView = authoredView;
-      entry.invalid = false;
+    if (!accepted || !entry.active || entry.view !== view) return false;
+    if (entry.callbackFailureRevision !== callbackFailureRevision) {
+      if (entry.recoveringCallbackFailure) return false;
+      entry.recoveringCallbackFailure = true;
+      try {
+        this.refresh(entry, true);
+      } finally {
+        entry.recoveringCallbackFailure = false;
+      }
+      return !entry.invalid;
     }
-    return accepted;
+    if (entry.state !== previous) return true;
+    this.counters.canonicalCodeUnits +=
+      state.text.length - previous.text.length;
+    entry.state = next;
+    entry.authoredView = authoredView;
+    entry.invalid = false;
+    return true;
   }
 
   private call(
@@ -636,6 +655,7 @@ export class ExternalTextRuntime {
       return true;
     } catch (error) {
       entry.invalid = true;
+      entry.callbackFailureRevision += 1;
       this.counters.callbackFailures += 1;
       reportEditorLifecycleError({
         cause: error,
@@ -697,6 +717,7 @@ export class ExternalTextRuntime {
     if (!entry.composing) return;
     entry.composing = false;
     entry.compositionStarted = false;
+    entry.nativeHistoryComposition = undefined;
     entry.historyBoundary = true;
     this.runtime.setComposing(false);
   }
@@ -754,6 +775,7 @@ export class ExternalTextRuntime {
         }
         entry.composing = true;
         entry.compositionStarted = true;
+        entry.nativeHistoryComposition = createNativeGroupingId();
         this.runtime.setComposing(true);
       },
       dispatch: (input) => {
@@ -813,18 +835,10 @@ export class ExternalTextRuntime {
             {
               tags: [
                 input.intent,
-                ...(input.intent === 'input'
-                  ? getNativeTextInputUpdateTags(this.runtime.editor, {
-                      path: binding.textPath,
-                      root,
-                    })
+                ...(['composition', 'input'].includes(input.intent)
+                  ? getNativeTextInputUpdateTags()
                   : []),
-                ...(entry.compositionStarted
-                  ? ['composition-start', 'history-push']
-                  : []),
-                ...(input.intent === 'composition' && !entry.compositionStarted
-                  ? ['history-merge']
-                  : []),
+                ...(entry.compositionStarted ? ['composition-start'] : []),
                 ...(entry.historyBoundary ||
                 ['paste', 'cut', 'drop'].includes(input.intent)
                   ? ['history-push']
@@ -832,6 +846,15 @@ export class ExternalTextRuntime {
               ],
             },
             (tx) => {
+              if (['composition', 'input'].includes(input.intent)) {
+                tx.annotations.set(nativeGroupingInput, {
+                  origin: entry.nativeHistoryOrigin,
+                  ...(input.intent === 'composition' &&
+                  entry.nativeHistoryComposition !== undefined
+                    ? { composition: entry.nativeHistoryComposition }
+                    : {}),
+                });
+              }
               if (normalized.changes.length > 0) tx.changes.apply(change);
               tx.selection.set({
                 anchor: {
@@ -883,13 +906,12 @@ export class ExternalTextRuntime {
           entry.host.ownerDocument.activeElement
         );
         this.endComposition(entry);
-        const applied = applyModelOwnedHistoryIntent({
+        const result = this.runtime.replayHistory(
           direction,
-          editor: this.runtime.editor,
-        });
-        if (applied && focused) this.runtime.repairHistoryFocus();
-        else consumeModelOwnedHistoryFocusRoot(this.runtime.editor);
-        return applied;
+          focused ? 'restore-root' : 'none'
+        );
+
+        return result.status === 'applied';
       },
       navigateOut: ({ baseVersion, direction, extend, x }) => {
         const rejected = this.check(entry, baseVersion, false);

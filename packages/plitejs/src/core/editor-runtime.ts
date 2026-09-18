@@ -41,6 +41,7 @@ import type {
 } from '../interfaces/editor';
 import type { DocumentChange } from './change/document-change';
 import type { InternalEditorSchemaApi } from './editor-schema';
+import type { EditorSchemaContract } from './schema-compiler';
 import type { InternalEditorUpdateOptions } from './update-policy';
 
 type BindEditorMethod<T> = T extends (
@@ -151,7 +152,9 @@ export type InternalPluginRuntime<V extends Value = Value> = {
     documentChange: DocumentChange;
     finalize: () => void;
     afterPublish: () => void;
+    beforePublish: () => void;
     rollback: () => void;
+    schemaContract: () => EditorSchemaContract;
     stage: () => void;
     validateDocument: (value: EditorDocumentValue) => void;
   }>;

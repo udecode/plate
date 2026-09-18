@@ -113,7 +113,7 @@ describe('plite-react state field selector contract', () => {
     expect(result.current.value).toBe('Q3 Plan');
 
     await act(async () => {
-      editor.update.history.undo();
+      editor.api.history.undo();
     });
     expect(editor.read.getField(documentTitle)).toBe('Q2 Plan');
     expect(editor.read.lastCommit()?.dirtyStateKeys).toContain(

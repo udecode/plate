@@ -71,7 +71,7 @@ test('refreshes edited text, undo and replacement without a mounted view', () =>
   editor.update.text.insert('hello ', { at: { path: [1, 0], offset: 0 } });
   expect(store.get('count')).toBe(3);
   expect(store.get('activeIndex')).toBe(1);
-  editor.update.history.undo();
+  editor.api.history.undo();
   expect(store.get('count')).toBe(2);
   editor.update.value.replace({
     children: [{ type: 'paragraph', children: [{ text: 'unmatched' }] }],

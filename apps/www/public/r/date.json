@@ -4,7 +4,8 @@
   "title": "Date",
   "description": "A date field component with calendar picker.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "calendar",

@@ -14,7 +14,7 @@ docs:
 
 <ComponentPreview name="suggestion-demo" height="360px" />
 
-The demo starts in Suggestion mode with a proposed insertion and deletion. Open a paragraph's discussion button to accept or reject its change, then try undo and redo. Switch to Editing to make direct edits while the existing suggestions and review controls remain visible.
+The demo starts in Suggestion mode with a proposed insertion and deletion. Open a paragraph's discussion button to accept or reject its change, then try undo and redo. Switch to Editing to keep the pending changes visible while ordinary edits publish directly, or type in Suggestion mode to propose an edit.
 
 You can type, paste, or press Enter inside your own pending deletion. These edits remain part of that deletion. Backspace preserves the original deleted characters and removes text you added inside it. Reject restores the original content; Accept removes the entire deletion, including your additions.
 
@@ -138,12 +138,14 @@ export function SuggestionModeButton() {
 }
 ```
 
-The two modes map to authored views:
+Changing the mode updates the input intent and preserves the current projection:
 
-| Suggestion mode | Authored view |
-| --- | --- |
-| `'suggesting'` | `{ intent: 'propose', projection: 'markup' }` |
-| `'editing'` | `{ intent: 'edit', projection: 'markup' }` |
+| Mode | Intent | Projection |
+| --- | --- | --- |
+| `'suggesting'` | `'propose'` | Keeps `markup` or `proposed`. An `accepted` view changes to `markup` so new proposals remain visible. |
+| `'editing'` | `'edit'` | Keeps `accepted`, `proposed`, or `markup`. |
+
+An editing markup view shows pending changes while ordinary edits to accepted content publish directly. An edit that depends on pending content remains reviewable with the current author. Use an accepted projection only when the view should hide pending content.
 
 Mode belongs to the exact mounted view. Two views over one document can use different modes without changing each other.
 
@@ -210,7 +212,7 @@ Open a change's discussion button and add a reply, then save a snapshot. Accept 
 
 <ComponentPreview name="suggestion-persistence-demo" height="440px" />
 
-The snapshot stays in memory and disappears when the page reloads. **Reload snapshot** creates an editor from the saved document and threads, discarding unsaved work. Pending changes and decisions belong to the document; the local undo stack belongs to the editor session.
+The snapshot stays in memory and disappears when the page reloads. **Reload snapshot** creates a fresh editor from the saved document and `CommentsJSON`, discarding unsaved work and starting an empty local undo stack. Pending changes and decisions belong to the document; conversations persist separately from document undo.
 
 ## Create and decide changes
 
@@ -250,12 +252,12 @@ Save the complete value returned by `editor.read.value()`. Its `meta.authored` f
 
 ```tsx
 const savedDocument = editor.read.value();
-const savedThreads = editor.plugin(CommentsPlugin).api.getThreads();
+const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
 ```
 
-Persist the document and comment threads together for the same application revision. Use the same content plugins when loading the document. Saving only `children` discards the authored records.
+Persist the document and `CommentsJSON` atomically for the same application revision and conversation generation. Verify that association before loading, and use the same content plugins. Saving only `children` discards the authored records.
 
-Pass the saved document to `initialValue` and the saved threads to `CommentsPlugin.configure({ initialState: { initialThreads: savedThreads } })`. The document preserves each change's author and ID, so reply targets remain attached to the same suggestions. Set `userId` to the current author; loading another author's suggestions does not require changing it or replaying their edits.
+Create a fresh editor with the saved document as `initialValue` and `CommentsPlugin.configure({ initialState: { initialComments: savedComments } })`. Local undo starts empty. The document preserves each change's author and ID, so replies can locate the same suggestions. Set `userId` to the current author; loading another author's suggestions does not require changing it or replaying their edits. For historical previews and restores, [join current conversations with the selected revision's targets](/docs/comment#document-history-and-versions).
 
 For JSON, Markdown, HTML, or DOCX, choose an explicit [export projection](/docs/authored-changes#export-explicit-projections). Accepted and proposed exports omit review records; use `review` when the saved format must preserve them.
 
@@ -287,15 +289,22 @@ Add [DiscussionKit](/docs/discussion) for Accept and Reject cards and replies at
 To attach a conversation programmatically, target the authored change ID:
 
 ```tsx
-await editor.plugin(CommentsPlugin).api.createThread({
+import { CommentsPlugin } from 'platejs/comments/react';
+
+const comments = editor.plugin(CommentsPlugin).api;
+const result = await comments.createThread({
   body: [
     { type: 'paragraph', children: [{ text: 'Can we explain this edit?' }] },
   ],
   target: { type: 'change', id: changeId },
 });
+
+if (result.status === 'applied') {
+  comments.setActive([result.value]);
+}
 ```
 
-Comments stores thread records separately from the document. Accepting or rejecting a change hides its review card without resolving its thread.
+Preserve input for non-applied results and thrown errors. Comments authorizes durable writes through `initialState.mutate` and publishes only the canonical committed record. Accepting or rejecting a change is a document action that can be undone; it hides the review card without deleting or resolving its discussion. Undo restores the pending change with its messages and resolution intact. Resolving or reopening the thread stays outside document undo.
 
 ## API Reference
 

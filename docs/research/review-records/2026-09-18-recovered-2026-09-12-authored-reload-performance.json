@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-09-12-authored-reload-performance",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "authored"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-12-authored-reload-performance.md",
+    "sha256": "328ccd465656b22655d597b96dcab9a3a90be0cc5b84ec892272b9fd147bf02f"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. Complete The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-12-authored-reload-performance.md",
+        "sha256": "328ccd465656b22655d597b96dcab9a3a90be0cc5b84ec892272b9fd147bf02f",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-12-authored-reload-performance.md"
+  ]
+}

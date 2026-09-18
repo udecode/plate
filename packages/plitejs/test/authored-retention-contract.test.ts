@@ -82,13 +82,13 @@ describe('native authored payload retention', () => {
           History.fromJSON(restored, savedHistory)
         );
         for (const source of [editor, restored]) {
-          source.update.history.undo();
+          source.api.history.undo();
           const view =
             action === 'accepted-delete'
               ? source
               : createEditorView(source, { authored: proposal });
           assert.deepEqual(view.read.children(), [paragraph(payload)]);
-          source.update.history.redo();
+          source.api.history.redo();
           assert.deepEqual(view.read.children(), [paragraph('')]);
           if (source === editor) {
             assert.equal(
@@ -96,7 +96,7 @@ describe('native authored payload retention', () => {
               false
             );
           }
-          source.update.history.undo();
+          source.api.history.undo();
           assert.deepEqual(view.read.children(), [paragraph(payload)]);
         }
       });

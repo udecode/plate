@@ -5,7 +5,13 @@
   "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
   "dependencies": [
     "platejs",
-    "lodash"
+    "lodash",
+    "diff-match-patch-ts@^0.6.0",
+    "flowchart.js@^1.15.0",
+    "lucide-react",
+    "mermaid@^11.6.1",
+    "plantuml-encoder@^1.4.0",
+    "viz.js@^2.1.2"
   ],
   "registryDependencies": [
     "button",

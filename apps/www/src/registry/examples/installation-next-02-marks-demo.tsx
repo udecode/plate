@@ -10,7 +10,11 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { FixedToolbar } from '@/registry/components/editor/fixed-toolbar';
 import { MarkToolbarButton } from '@/registry/components/editor/mark-toolbar-button';
 // import { Bold, Italic, Underline } from 'lucide-react'; // Example icons
@@ -38,21 +42,23 @@ export default function MyEditorPage() {
 
   return (
     <EditorRoot editor={editor}>
-      <FixedToolbar className="justify-start rounded-t-lg">
-        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">
-          B
-        </MarkToolbarButton>
-        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">
-          I
-        </MarkToolbarButton>
-        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">
-          U
-        </MarkToolbarButton>
-      </FixedToolbar>
+      <EditorFrame>
+        <FixedToolbar className="justify-start rounded-t-lg">
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">
+            B
+          </MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">
+            I
+          </MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">
+            U
+          </MarkToolbarButton>
+        </FixedToolbar>
 
-      <EditorContainer>
-        <Editor placeholder="Type your amazing content here..." />
-      </EditorContainer>
+        <EditorContainer>
+          <Editor placeholder="Type your amazing content here..." />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }

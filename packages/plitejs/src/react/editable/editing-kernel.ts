@@ -33,6 +33,7 @@ import {
   classifyKeyboardIntent,
   getDocumentBoundaryKeyboardMove,
   isInteractiveInternalTarget,
+  isPlainVerticalDocumentBoundary,
 } from './input-controller';
 import type {
   EditableInputController,
@@ -1004,21 +1005,34 @@ export const prepareEditableKeyDownKernel = ({
   inputController: EditableInputController;
   viewportRuntime: unknown;
 }): EditableKeyDownKernelDecision => {
+  const selectionBefore = readRuntimeSelection(editor);
   const intent = classifyKeyboardIntent({
     editor,
     event,
     isComposing: inputController.state.isComposing,
+    selection: selectionBefore,
     viewportRuntime,
   });
-  const selectionBefore = readRuntimeSelection(editor);
   const internalTarget = isInteractiveInternalTarget(editor, event.target);
+  const plainVerticalDocumentBoundary = isPlainVerticalDocumentBoundary({
+    editor,
+    event: event.nativeEvent,
+    selection: selectionBefore,
+  });
   const command =
     (internalTarget && intent !== 'history') || intent === 'composition'
       ? null
-      : getEditableCommandFromKeyDown({
-          event,
-          selection: selectionBefore,
-        });
+      : plainVerticalDocumentBoundary
+        ? {
+            axis: 'line' as const,
+            extend: event.shiftKey || undefined,
+            kind: 'move-selection' as const,
+            reverse: event.key === 'ArrowUp' || undefined,
+          }
+        : getEditableCommandFromKeyDown({
+            event,
+            selection: selectionBefore,
+          });
   const targetOwner: EditableEventTargetOwner = internalTarget
     ? 'internal-control'
     : ReactEditor.hasEditableTarget(editor, event.target)

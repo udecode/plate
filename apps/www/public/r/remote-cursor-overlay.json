@@ -5,7 +5,8 @@
   "description": "Copied Yjs selection highlights, carets, and labels.",
   "dependencies": [
     "platejs",
-    "yjs"
+    "yjs",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [],
   "files": [

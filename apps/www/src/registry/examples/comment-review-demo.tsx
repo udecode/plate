@@ -7,16 +7,20 @@ import { EditorRoot, useCreateEditor, useStaticEditor } from 'platejs/react';
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BaseBasicBlocksKit } from '@/registry/components/editor/basic-blocks-static';
 import { commentDecorationAttributes } from '@/registry/components/editor/comment-static';
+import { AllCommentsButton } from '@/registry/components/editor/comment-toolbar-button';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorStatic } from '@/registry/components/editor/editor-static';
 import { LinkKit } from '@/registry/components/editor/link';
 import { BaseLinkKit } from '@/registry/components/editor/link-static';
+import { Toolbar } from '@/registry/components/editor/toolbar';
 import {
-  commentThreads,
+  createCommentSnapshot,
   commentUsers,
   commentValue,
 } from '@/registry/examples/values/comment-value';
+
+const snapshot = createCommentSnapshot(commentValue.slice(0, 2));
 
 export default function CommentReviewDemo() {
   const editor = useCreateEditor({
@@ -28,22 +32,22 @@ export default function CommentReviewDemo() {
         initialState: {
           currentUserId: 'alice',
           users: commentUsers,
-          initialThreads: commentThreads,
+          initialComments: snapshot.comments,
         },
       }),
     ],
-    initialValue: commentValue.slice(0, 2),
+    initialValue: snapshot.document,
   });
   const staticEditor = useStaticEditor({
     plugins: [
       ...BaseBasicBlocksKit,
       ...BaseLinkKit,
       BaseCommentsPlugin.configure({
-        initialState: { initialThreads: commentThreads },
+        initialState: { initialComments: snapshot.comments },
         decorate: { attributes: commentDecorationAttributes },
       }),
     ],
-    initialValue: commentValue.slice(0, 2),
+    initialValue: snapshot.document,
   });
 
   return (
@@ -55,7 +59,10 @@ export default function CommentReviewDemo() {
           edited.
         </p>
         <EditorRoot editor={editor} readOnly>
-          <EditorContainer className="h-auto rounded-md border" variant="demo">
+          <EditorContainer className="h-auto rounded-md border">
+            <Toolbar className="border-b px-3 py-1">
+              <AllCommentsButton />
+            </Toolbar>
             <Editor
               aria-label="Read-only comments document"
               className="h-auto px-8 pb-6 sm:px-12"

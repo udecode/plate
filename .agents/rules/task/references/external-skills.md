@@ -33,10 +33,10 @@ preservation checks. TDD stays with its existing shared owner and Plate Testing'
 
 ## Protected package references
 
-- Diagnosing Bugs supplies its complete hypothesis and causal diagnosis loop.
-  For live UI, use Verify Plate's permitted Browser/Chrome controls; an absent
-  `improve-codebase-architecture` tool maps to Architecture Cleanup when code
-  shape actually needs attention. Do not invent unavailable browser tools.
+- Diagnosing Bugs remains an unchanged shared causal-investigation method.
+  For Plate behavior bugs, load Patch's [diagnosis adaptation](../../patch/references/diagnosis.md),
+  which owns diagnosis-only authority, native proof routing and early
+  architecture pressure. Its fix phase returns to Patch's existing repair loop.
 - Grill with Docs resolves uncertainty against sources. Durable Plate law
   remains in `VISION.md`, scoped `docs/vision/` and the owning plan; do not
   create parallel CONTEXT/ADR owners merely because the generic recipe names

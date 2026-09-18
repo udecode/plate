@@ -3,6 +3,10 @@
 Task reads the current user request and named sources first. Root `VISION.md` is the mandatory doctrine entrypoint
 and essential summary. Detailed owner doctrine lives in `docs/vision/*.md`.
 
+Editor behavior has a separate canonical law and coverage stack under
+`docs/editor-behavior/**`; Task owns its final reconciliation. Reusable
+architecture or product taste still belongs in Vision.
+
 ## Rule
 
 1. Read the active Task plan when one exists.

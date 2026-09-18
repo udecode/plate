@@ -29,9 +29,10 @@ Creates an `Editor` with the supplied plugins and configuration.
     An array of editor plugins.
   </APIItem>
   <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: Editor }) => EditorValueInput)" optional>
-    Synchronous initial document, persisted `{ document, schema }` envelope,
-    or primary-root array. Use the callback when decoding needs the compiled
-    editor model. Load remote data before constructing the editor.
+    Synchronous initial document, persisted
+    `{ document, schema, selection? }` envelope, or primary-root array. Use the
+    callback when decoding needs the compiled editor model. Load remote data
+    before constructing the editor.
   </APIItem>
   <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
     Select the editor after initialization.
@@ -42,10 +43,6 @@ Creates an `Editor` with the supplied plugins and configuration.
   </APIItem>
   <APIItem name="maxLength" type="number" optional>
     Maximum character count for user-facing text, fragment, and node insertions.
-  </APIItem>
-  <APIItem name="migrations" type="DocumentMigrations" optional>
-    Application-owned target-version migration chain. Plate runs every required
-    step before plugin document preparation and schema fitting.
   </APIItem>
   <APIItem name="navigationFeedback" type="object | boolean" optional>
     Configuration for the built-in navigation feedback plugin.
@@ -60,9 +57,8 @@ Creates an `Editor` with the supplied plugins and configuration.
     Initial selection for the editor.
   </APIItem>
   <APIItem name="schema" type="EditorApplicationSchema" optional>
-    Application schema policy and optional named lineage. Omit `root` for the
-    standard paragraph root. A migration plan requires an exact `id` and
-    `version` match.
+    Application schema policy and optional named persisted lineage. Omit `root`
+    for the standard paragraph root. Supply `id` and `version` together.
   </APIItem>
   <APIItem name="shouldNormalizeEditor" type="boolean" optional>
     When `true`, it normalizes the `initialValue` passed to the editor.
@@ -130,12 +126,14 @@ Defines one target-version migration chain for a named application schema.
 Each numeric key is the schema version produced by that step.
 
 ```ts
-import { defineDocumentMigrations } from 'platejs/migrations';
+import { defineDocumentMigrations } from "platejs/migrations";
 
-import { fingerprint as v1Fingerprint } from './migrations/v2-add-section/from';
-import { fingerprint as v2Fingerprint } from './migrations/v3-add-caption/from';
+import { fingerprint as v1Fingerprint } from "./migrations/v2-add-section/from";
+import { fingerprint as v2Fingerprint } from "./migrations/v3-add-caption/from";
 
-const migrations = defineDocumentMigrations(EditorSchema, {
+const migrations = defineDocumentMigrations({
+  plugins: EditorKit,
+  schema: EditorSchema,
   sourceFingerprints: {
     1: v1Fingerprint,
     2: v2Fingerprint,
@@ -144,32 +142,38 @@ const migrations = defineDocumentMigrations(EditorSchema, {
     2: migrateDocumentV2,
     3: migrateDocumentV3,
   },
-  unversioned: 1,
 });
 ```
 
 `sourceFingerprints` binds every supported historical envelope version to its
-generated schema fingerprint. `unversioned` assigns an explicit source version
-to raw documents without a persisted schema identity. Plate rejects missing
-intermediate steps and historical identity drift.
+generated schema fingerprint. The definition compiles `plugins` and `schema`
+once into the immutable current target used by every step. Plate rejects
+missing intermediate steps and historical identity drift.
 
 ### `migrateDocument`
 
-Runs the required migration steps for one complete document without publishing
-it to the editor. Runtime editor loads and `plate migrate run` use this runner.
+Converts one complete document into an exact current persisted envelope. The
+operation does not create or publish an editor.
 
 ```ts
-import { migrateDocument } from 'platejs/migrations';
+import { migrateDocument } from "platejs/migrations";
 
-const result = migrateDocument(persisted, {
-  editor,
+const { output, applied, source } = migrateDocument(persisted, {
   migrations: EditorMigrations,
+});
+
+const imported = migrateDocument(legacyDocument, {
+  migrations: EditorMigrations,
+  source: 1,
 });
 ```
 
-The result contains `document`, mapped `selection`, `source`, `target`, and the
-ascending `applied` version list. The runner rejects a different schema
-lineage, a future source, or fingerprint drift.
+`output` contains exactly `{ document, schema, selection? }` and can be saved or
+passed to `createEditor`. `applied` lists the destination versions that ran, and
+`source` is the validated source version. Raw documents require `source: number`
+or `source: 'current'`; persisted envelopes carry their own source identity. The
+runner rejects a different lineage, a future source, fingerprint drift,
+non-JSON data, invalid step results, and malformed final output.
 
 ### `definePlugin`
 
@@ -417,8 +421,8 @@ Adds persisted string IDs to every block and inline element. It is opt-in and
 never assigns IDs to text nodes.
 
 ```ts
-import { ElementIdPlugin, schema, target } from 'platejs';
-import { createEditor } from 'platejs/react';
+import { ElementIdPlugin, schema, target } from "platejs";
+import { createEditor } from "platejs/react";
 
 const editor = createEditor({
   plugins: [ElementIdPlugin],
@@ -431,13 +435,15 @@ const entry = id ? elementId.read.entry(id) : undefined;
 ```
 
 Configure `initialState.generateId` to replace the default full-length
-`nanoid()` generator. Use `migrateElementIds(value, options)` for stored input
-that lacks IDs, contains legacy numeric IDs, or needs a legacy property
-canonicalized through `sourceKey`.
+`nanoid()` generator. Include `ElementIdPlugin` in the target passed to
+`defineDocumentMigrations`. Current-document admission fills missing IDs and
+rejects duplicate IDs before the editor is created. A historical migration
+step must convert numeric IDs or legacy property names and define the
+application's collision policy.
 
-The application schema can narrow the plugin-owned `id` target. Document
-preparation generates and retains IDs only for elements that match the compiled
-target.
+The application schema can narrow the plugin-owned `id` target. Current
+document admission generates and retains IDs only for elements that match the
+compiled target.
 
 ```ts
 const editor = createEditor({
@@ -445,7 +451,7 @@ const editor = createEditor({
   schema: {
     overrides: [
       schema.override(ElementIdPlugin, {
-        properties: { id: { target: target.group('block') } },
+        properties: { id: { target: target.group("block") } },
       }),
     ],
   },

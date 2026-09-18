@@ -14,7 +14,7 @@ docs:
 
 ## 功能特性
 
-- **固定工具栏**: 持久固定在编辑器顶部的工具栏
+- **固定工具栏**: 位于编辑器可滚动内容上方的持久工具栏
 - **浮动工具栏**: 文本选中时出现的上下文工具栏
 - **可定制按钮**: 添加、删除和重新排序工具栏按钮
 - **响应式设计**: 适配不同屏幕尺寸和内容
@@ -70,7 +70,7 @@ import { FloatingToolbar } from '@/components/editor/floating-toolbar';
 
 const fixedToolbarPlugin = definePlugin('fixedToolbar', {
   slots: {
-    beforeEditable: () => (
+    beforeContainer: () => (
       <FixedToolbar>
         <FixedToolbarButtons />
       </FixedToolbar>
@@ -93,8 +93,18 @@ const editor = createEditor({
 });
 ```
 
-- `slots.beforeEditable`: 在编辑器内容上方渲染[`FixedToolbar`](/docs/components/fixed-toolbar)
+- `slots.beforeContainer`: 在编辑器滚动容器前渲染[`FixedToolbar`](/docs/components/fixed-toolbar)
 - `slots.afterEditable`: 在编辑器后渲染[`FloatingToolbar`](/docs/components/floating-toolbar)作为覆盖层
+
+将编辑器容器放在 `EditorFrame` 中。固定工具栏和滚动容器会在同一个有界布局中占据不同的行。
+
+```tsx
+<EditorFrame className="h-[650px]">
+  <EditorContainer>
+    <Editor />
+  </EditorContainer>
+</EditorFrame>
+```
 
 ### 自定义固定工具栏按钮
 
@@ -165,22 +175,20 @@ export function BoldToolbarButton() {
 
 ### 转换工具栏按钮
 
-[`TurnIntoToolbarButton`](/docs/components/turn-into-toolbar-button)提供下拉菜单将当前块转换为不同类型(标题、列表、引用等)。
+[`TurnIntoToolbarButton`](/docs/components/turn-into-toolbar-button)提供用于叶格式和结构化块操作的下拉菜单。
 
 <ComponentSource name="turn-into-toolbar-button" />
 
-要添加新的块类型选项，编辑`turnIntoItems`数组:
+每个菜单项直接调用对应功能。文本、标题和列表等互斥格式放在单选组中；包装器和布局操作单独渲染，并检查各自支持的选择范围。
 
 ```tsx
-const turnIntoItems = [
-  // ... 现有项
-  {
-    icon: <CustomIcon />,
-    keywords: ['custom', 'special'],
-    label: '自定义块',
-    value: 'custom-block',
-  },
-];
+const quote = editor.plugin(BaseBlockquotePlugin);
+
+if (quote.installed) {
+  editor.update((tx) => {
+    tx.plugin(BaseBlockquotePlugin).toggle();
+  });
+}
 ```
 
 ### 插入工具栏按钮
@@ -189,24 +197,30 @@ const turnIntoItems = [
 
 <ComponentSource name="insert-toolbar-button" />
 
-要添加新的可插入项，将其添加到`groups`数组的相应分组中:
+要添加可插入项，请在`getGroups`中定义它的类型化操作。本地`value`只标识菜单项，不负责分派编辑操作。
 
 ```tsx
 {
-  group: '基础块',
-  items: [
-    // ... 现有项
-    {
-      icon: <CustomIcon />,
-      label: '自定义块',
-      value: 'custom-block',
-    },
-  ].map((item) => ({
-    ...item,
-    onSelect: (editor, value) => {
-      insertBlock(editor, value);
-    },
-  })),
+  icon: <Heading2Icon />,
+  label: '标题 2',
+  value: 'heading-2',
+  onSelect: () => {
+    const heading = editor.plugin(BaseHeadingPlugin);
+
+    if (!heading.installed || editor.read.view.isReadOnly()) return;
+
+    editor.update((tx) => {
+      insertBlock(tx, {
+        matches: (block) =>
+          !block.listType &&
+          block.type === heading.schema.type &&
+          block.level === 2,
+        insert: (options) => {
+          tx.plugin(BaseHeadingPlugin).insert({ level: 2 }, options);
+        },
+      });
+    });
+  },
 }
 ```
 
@@ -216,12 +230,12 @@ const turnIntoItems = [
 
 ### `FixedToolbarKit`
 
-在编辑器内容上方渲染固定工具栏的插件。
+在编辑器滚动容器前渲染固定工具栏的插件。
 
 <API name="FixedToolbarKit">
 <APIOptions>
-  <APIItem name="slots.beforeEditable" type="EditableSiblingComponent">
-    在编辑器内容前渲染固定工具栏。默认包含FixedToolbarButtons。
+  <APIItem name="slots.beforeContainer" type="ContainerSiblingComponent">
+    在编辑器滚动容器前渲染固定工具栏。默认包含FixedToolbarButtons。
   </APIItem>
 </APIOptions>
 </API>

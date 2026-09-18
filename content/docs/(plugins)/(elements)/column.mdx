@@ -95,14 +95,23 @@ const editor = createEditor({
 
 ### Turn into toolbar button
 
-You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into column layouts:
+Add a structural action that calls `BaseColumnPlugin` directly. Enable it only when exactly one eligible block is selected.
 
 ```tsx
-{
+import { BaseColumnPlugin } from 'platejs/layout';
+
+const turnIntoItem = {
   icon: <Columns3Icon />,
   label: '3 columns',
   value: 'action_three_columns',
-}
+  onSelect: () => {
+    const column = editor.plugin(BaseColumnPlugin);
+
+    if (!column.installed || editor.read.view.isReadOnly()) return;
+
+    column.update.toggle({ columns: 3 });
+  },
+};
 ```
 
 </Steps>

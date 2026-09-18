@@ -11,7 +11,11 @@ import {
 } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { tabbableValue } from '@/registry/examples/values/tabbable-value';
 
@@ -30,9 +34,11 @@ export default function TabbableDemo() {
 
   return (
     <EditorRoot editor={editor}>
-      <EditorContainer variant="demo">
-        <Editor />
-      </EditorContainer>
+      <EditorFrame className="h-[650px]">
+        <EditorContainer>
+          <Editor />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }

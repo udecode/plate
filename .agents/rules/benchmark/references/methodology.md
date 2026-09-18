@@ -28,7 +28,7 @@ Record `## Interaction Coverage` before closure: `first-interaction`,
 reload, warmup, or viewport changes. Page-scrolling proof includes the outer
 page and embedded scrollers at first exposure and after settlement. Keep
 extension/profile evidence with the real reporter host; a clean-browser result
-cannot replace it. A reporter contradiction reopens coverage through Regression.
+cannot replace it. A reporter contradiction reopens coverage through Patch.
 
 Resolve every lane's applicability before executing the first lane. Workflow
 status advances as one ordered prefix: completed rows, at most one active row,
@@ -260,8 +260,7 @@ lane and call a different green benchmark proof.
   metric owner first;
 - straightforward internal performance defect -> Benchmark applies and proves
   the fix;
-- behavior/correctness defect or missing oracle -> `patch`, `regression`, or
-  `tdd`, then Benchmark reruns;
+- behavior/correctness defect or missing oracle -> `patch`, then Benchmark reruns;
 - public API or runtime architecture -> `best-api` chooses the best long-term
   target, then `plite-plan`, `plate-plan`, or both own adoption; a bounded
   package owner implements directly or `task autonomous` supervises broad execution;

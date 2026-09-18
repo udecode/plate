@@ -353,6 +353,12 @@ async function main() {
   try {
     const page = await browser.newPage();
 
+    await page.setViewport({
+      deviceScaleFactor: 1,
+      height: 720,
+      width: 1280,
+    });
+
     await page.goto(url, {
       timeout: timeoutMs,
       waitUntil: 'networkidle2',
@@ -446,12 +452,19 @@ async function main() {
     }
 
     const capturedAt = new Date().toISOString();
+    const environment = {
+      browser: await browser.version(),
+      executablePath: browser.process()?.spawnfile ?? null,
+      userAgent: await page.evaluate(() => navigator.userAgent),
+      viewport: page.viewport(),
+    };
     const budgetFailures = preset === 'smoke' ? getBudgetFailures(runs) : [];
     const outPath = path.resolve(process.cwd(), outArg);
     const summaryOutPath = path.resolve(process.cwd(), summaryOutArg);
     const rawPayload = {
       budgetFailures,
       capturedAt,
+      environment,
       preset: preset ?? null,
       runs,
       url,
@@ -459,6 +472,7 @@ async function main() {
     const summaryPayload = {
       budgetFailures,
       capturedAt,
+      environment,
       preset: preset ?? null,
       runs: runs.map(summarizeRun),
       url,

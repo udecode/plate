@@ -2,7 +2,12 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "code-drawing-static",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "flowchart.js@^1.15.0",
+    "mermaid@^11.6.1",
+    "plantuml-encoder@^1.4.0",
+    "viz.js@^2.1.2"
   ],
   "registryDependencies": [],
   "files": [

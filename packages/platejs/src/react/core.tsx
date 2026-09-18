@@ -138,7 +138,6 @@ export type {
   PluginOn,
   ViewElementAttributeEntry,
   ViewElementAttributes,
-  PrepareDocument,
   RenderNodeWrapper,
   RenderNodeWrapperConfig,
   RenderNodeWrapperDescriptor,

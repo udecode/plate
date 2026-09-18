@@ -1,109 +1,29 @@
-import type { DocumentChange, RootKey } from '../..';
+import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
-  readPliteViewSelection,
-  readPliteViewSelectionHistoryEntry,
-  withPliteViewSelectionHistory,
-  writePliteViewSelection,
-} from '../view-selection';
-import {
-  type Editor,
-  getInternalDocumentChangeRootKeys,
-  runTrustedUpdate,
-} from './runtime-editor-api';
-
-const EDITOR_TO_HISTORY_FOCUS_ROOT = new WeakMap<Editor, RootKey | null>();
-
-const getHistoryBatchSingleChangedRoot = (
-  editor: Editor,
-  direction: 'redo' | 'undo'
-): RootKey | null =>
-  editor.read((state) => {
-    const history = (state as { history?: unknown }).history as
-      | {
-          redos?: () => ReadonlyArray<{ change?: DocumentChange }>;
-          undos?: () => ReadonlyArray<{ change?: DocumentChange }>;
-        }
-      | undefined;
-    const stack =
-      direction === 'undo' ? history?.undos?.() : history?.redos?.();
-    const batch = stack?.at(-1);
-    const roots = new Set<RootKey>([
-      ...(batch?.change ? getInternalDocumentChangeRootKeys(batch.change) : []),
-      ...(batch?.change?.createRoots ?? []),
-      ...(batch?.change?.deleteRoots ?? []),
-    ]);
-
-    return roots.size === 1 ? (roots.values().next().value ?? null) : null;
-  });
+  type EditableDOMRuntime,
+  type EditorHistoryFocusPolicy,
+  getMountedEditableDOMRuntime,
+} from './editable-dom-runtime';
 
 export const applyModelOwnedHistoryIntent = ({
   direction,
   editor,
+  focusPolicy = 'restore-root',
+  runtime = getMountedEditableDOMRuntime(editor),
 }: {
   direction: 'redo' | 'undo';
-  editor: Editor;
+  editor: ReactRuntimeEditor;
+  focusPolicy?: EditorHistoryFocusPolicy;
+  runtime?: EditableDOMRuntime | null;
 }) => {
-  const viewSelectionAfterHistory = readPliteViewSelectionHistoryEntry(
-    editor,
-    direction
-  );
-  const focusRoot = getHistoryBatchSingleChangedRoot(editor, direction);
-  const hasHistory = editor.read((state) => {
-    const history = (state as { history?: unknown }).history as
-      | { redos?: unknown; undos?: unknown }
-      | undefined;
+  const result = runtime?.replayHistory(direction, focusPolicy);
 
-    return (
-      typeof history?.redos === 'function' &&
-      typeof history?.undos === 'function'
-    );
-  });
-
-  if (!hasHistory) {
-    return false;
-  }
-
-  const previousViewSelection = readPliteViewSelection(editor);
-
-  writePliteViewSelection(editor, null);
-  try {
-    withPliteViewSelectionHistory(editor, direction, () => {
-      runTrustedUpdate(editor, (tx) => {
-        const { history } = tx as {
-          history?: {
-            redo?: () => void;
-            undo?: () => void;
-          };
-        };
-        const fn = history?.[direction];
-
-        if (typeof fn !== 'function') {
-          throw new Error(`Editor history API does not expose ${direction}.`);
-        }
-
-        fn();
-      });
-    });
-    writePliteViewSelection(editor, viewSelectionAfterHistory ?? null);
-  } catch (error) {
-    writePliteViewSelection(editor, previousViewSelection);
-    throw error;
-  }
-  EDITOR_TO_HISTORY_FOCUS_ROOT.set(editor, focusRoot);
-  return true;
+  return result !== undefined && result.status !== 'unavailable';
 };
 
-export const consumeModelOwnedHistoryFocusRoot = (
-  editor: Editor
-): RootKey | null => {
-  const root = EDITOR_TO_HISTORY_FOCUS_ROOT.get(editor) ?? null;
-
-  EDITOR_TO_HISTORY_FOCUS_ROOT.delete(editor);
-
-  return root;
-};
-
-export const shouldForceRenderAfterModelOwnedHistory = (editor: Editor) => {
+export const shouldForceRenderAfterModelOwnedHistory = (
+  editor: ReactRuntimeEditor
+) => {
   const commit = editor.read((state) => state.lastCommit());
 
   return (
@@ -119,26 +39,23 @@ export const applyModelOwnedNativeHistoryEvent = ({
   editor,
   event,
   readOnly = false,
+  runtime,
 }: {
-  editor: Editor;
+  editor: ReactRuntimeEditor;
   event: InputEvent;
   readOnly?: boolean;
+  runtime?: EditableDOMRuntime | null;
 }) => {
-  if (readOnly) {
-    return false;
-  }
+  if (readOnly) return false;
 
-  if (
-    event.inputType === 'historyUndo' &&
-    applyModelOwnedHistoryIntent({ direction: 'undo', editor })
-  ) {
-    return true;
-  }
-  if (
-    event.inputType === 'historyRedo' &&
-    applyModelOwnedHistoryIntent({ direction: 'redo', editor })
-  ) {
-    return true;
-  }
-  return false;
+  const direction =
+    event.inputType === 'historyUndo'
+      ? 'undo'
+      : event.inputType === 'historyRedo'
+        ? 'redo'
+        : null;
+
+  return direction
+    ? applyModelOwnedHistoryIntent({ direction, editor, runtime })
+    : false;
 };

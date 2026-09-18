@@ -1,101 +1,62 @@
-import { createEditor } from 'plitejs';
-
 import {
+  createNativeGroupingId,
   getNativeTextInputUpdateTags,
-  NATIVE_TEXT_INPUT_HISTORY_MERGE_INTERVAL_MS,
+  nativeGroupingInput,
+  updateNativeTextInput,
 } from '../../src/react/editable/input-history';
+import {
+  beginEditableCompositionSession,
+  createEditableInputController,
+  createEditableInputControllerState,
+  getEditableNativeGroupingInput,
+} from '../../src/react/editable/input-state';
+import { createEditor } from '../../src/react/plugin/with-react';
 
-const originalPerformance = globalThis.performance;
+test('native text input has no React-local clock or location policy', () => {
+  expect(getNativeTextInputUpdateTags()).toEqual(['native-text-input']);
+  expect(getNativeTextInputUpdateTags()).toEqual(['native-text-input']);
+});
 
-const setNow = (value: number) => {
-  Object.defineProperty(globalThis, 'performance', {
-    configurable: true,
-    value: { now: () => value },
+test('allocates stable numeric source and composition identities', () => {
+  const inputController = createEditableInputController({
+    preferModelSelectionForInputRef: { current: false },
+    state: createEditableInputControllerState(),
   });
-};
+  const origin = inputController.nativeHistoryOrigin;
 
-afterEach(() => {
-  Object.defineProperty(globalThis, 'performance', {
-    configurable: true,
-    value: originalPerformance,
+  expect(Number.isSafeInteger(origin)).toBe(true);
+  expect(getEditableNativeGroupingInput(inputController, false)).toEqual({
+    origin,
   });
+
+  beginEditableCompositionSession(inputController);
+  const first = getEditableNativeGroupingInput(inputController, true);
+  beginEditableCompositionSession(inputController);
+  const second = getEditableNativeGroupingInput(inputController, true);
+
+  expect(first.origin).toBe(origin);
+  expect(first.composition).not.toBeUndefined();
+  expect(second.origin).toBe(origin);
+  expect(second.composition).not.toBe(first.composition);
+  expect(createNativeGroupingId()).toBeGreaterThan(second.composition ?? 0);
 });
 
-test('native text input tags merge rapid repair batches and push after idle', () => {
-  const editor = createEditor();
-  const location = { path: [0, 0] };
+test('publishes native source metadata on the canonical update', () => {
+  const editor = createEditor({
+    initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+  });
+  const input = { composition: 9, origin: 7 };
 
-  setNow(100);
-  expect(getNativeTextInputUpdateTags(editor, location)).toEqual([
-    'native-text-input',
-  ]);
+  updateNativeTextInput(
+    editor,
+    (tx) => {
+      tx.text.insert('a', { at: { path: [0, 0], offset: 0 } });
+    },
+    input
+  );
 
-  setNow(100 + NATIVE_TEXT_INPUT_HISTORY_MERGE_INTERVAL_MS - 1);
-  expect(getNativeTextInputUpdateTags(editor, location)).toEqual([
-    'native-text-input',
-    'history-merge',
-  ]);
+  const commit = editor.read((state) => state.lastCommit());
 
-  setNow(100 + NATIVE_TEXT_INPUT_HISTORY_MERGE_INTERVAL_MS * 2);
-  expect(getNativeTextInputUpdateTags(editor, location)).toEqual([
-    'native-text-input',
-    'history-push',
-  ]);
-});
-
-test('native text input tags are scoped per editor instance', () => {
-  const firstEditor = createEditor();
-  const secondEditor = createEditor();
-  const location = { path: [0, 0] };
-
-  setNow(100);
-  expect(getNativeTextInputUpdateTags(firstEditor, location)).toEqual([
-    'native-text-input',
-  ]);
-
-  setNow(110);
-  expect(getNativeTextInputUpdateTags(secondEditor, location)).toEqual([
-    'native-text-input',
-  ]);
-
-  setNow(120);
-  expect(getNativeTextInputUpdateTags(firstEditor, location)).toEqual([
-    'native-text-input',
-    'history-merge',
-  ]);
-});
-
-test('native text input tags push when rapid input moves to another path', () => {
-  const editor = createEditor();
-
-  setNow(100);
-  expect(getNativeTextInputUpdateTags(editor, { path: [0, 0] })).toEqual([
-    'native-text-input',
-  ]);
-
-  setNow(110);
-  expect(getNativeTextInputUpdateTags(editor, { path: [1, 0] })).toEqual([
-    'native-text-input',
-    'history-push',
-  ]);
-});
-
-test('native text input tags push when rapid input moves to another root', () => {
-  const editor = createEditor();
-
-  setNow(100);
-  expect(
-    getNativeTextInputUpdateTags(editor, {
-      path: [0, 0],
-      root: 'header',
-    })
-  ).toEqual(['native-text-input']);
-
-  setNow(110);
-  expect(
-    getNativeTextInputUpdateTags(editor, {
-      path: [0, 0],
-      root: 'footer',
-    })
-  ).toEqual(['native-text-input', 'history-push']);
+  expect(commit?.tags).toContain('native-text-input');
+  expect(commit?.annotations[nativeGroupingInput.key]).toEqual(input);
 });

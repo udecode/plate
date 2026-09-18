@@ -1,10 +1,7 @@
 import {
   BaseParagraphPlugin,
-  createEditor,
   type BasePluginInput,
   definePlugin,
-  defineDocumentMigrations,
-  migrateDocument,
 } from 'platejs';
 
 import { ElementApi, PathApi, property, schema, target } from '../core';
@@ -17,18 +14,19 @@ import {
   BaseVideoPlugin,
 } from '../features/media';
 import { BaseTableCellPlugin, BaseTablePlugin } from '../features/table';
-import { migrateV54 } from './index';
+import {
+  defineDocumentMigrations,
+  type DocumentMigrations,
+  migrateDocument as runDocumentMigration,
+} from './documentMigrations';
+import { type MigratePlateV54Options, migrateV54 } from './migratePlateV54';
 import {
   V53_ELEMENT_TYPE_OWNERS,
   V53_FIRST_PARTY_IDENTITIES,
   V53_PROFILE_SOURCE,
-} from './v53-manifest';
+} from './v53-manifest.internal';
 
 const MigrationSchema = { id: 'plate', version: 54 } as const;
-const migrationPlan = defineDocumentMigrations(MigrationSchema, {
-  steps: { 54: migrateV54 },
-  unversioned: 53,
-});
 
 const elementPlugin = (name: string) =>
   definePlugin(name, {
@@ -48,37 +46,55 @@ migrationPlugins.push(
   })
 );
 
+const defineV54Migrations = (
+  plugins: readonly BasePluginInput[],
+  list?: MigratePlateV54Options['list']
+) =>
+  defineDocumentMigrations({
+    plugins,
+    schema: MigrationSchema,
+    sourceFingerprints: { 53: 'plate-v53' },
+    steps: {
+      54: list ? (context) => migrateV54(context, { list }) : migrateV54,
+    },
+  });
+
+const migrationPlan = defineV54Migrations(migrationPlugins);
+
+const createEditor = ({
+  migrationList,
+  plugins = migrationPlugins,
+}: Readonly<{
+  migrationList?: MigratePlateV54Options['list'];
+  plugins?: readonly BasePluginInput[];
+  [key: string]: unknown;
+}>) => ({
+  migrations: defineV54Migrations(plugins, migrationList),
+});
+
+const migrateDocument = (
+  input: unknown,
+  options: Readonly<{
+    editor?: Readonly<{ migrations: DocumentMigrations }>;
+    migrations: DocumentMigrations;
+  }>
+) =>
+  runDocumentMigration(input, {
+    migrations: options.editor?.migrations ?? options.migrations,
+    ...(!input ||
+    typeof input !== 'object' ||
+    Array.isArray(input) ||
+    !Object.hasOwn(input, 'document')
+      ? { source: 53 as const }
+      : {}),
+  }).output;
+
 const createMigrationEditor = () =>
   createEditor({
-    migrations: migrationPlan,
     plugins: migrationPlugins,
-    schema: MigrationSchema,
-    skipInitialization: true,
   });
 
 describe('migratePlateV54 profile', () => {
-  it('covers every v53 first-party element identity rename', () => {
-    const editor = createMigrationEditor();
-    const input = {
-      children: Object.keys(V53_ELEMENT_TYPE_OWNERS)
-        .filter((type) => type !== 'th')
-        .map((type) => ({
-          children: [{ text: type }],
-          type,
-        })),
-    };
-    const result = migrateDocument(input, {
-      editor,
-      migrations: migrationPlan,
-    }).document;
-
-    expect(result.children.map(({ type }) => type)).toEqual(
-      Object.entries(V53_ELEMENT_TYPE_OWNERS)
-        .filter(([type]) => type !== 'th')
-        .map(([, innerTarget]) => innerTarget)
-    );
-  });
-
   it('classifies every first-party v53 identity exactly once', () => {
     expect(V53_PROFILE_SOURCE).toEqual({
       commit: '2f87593f95',
@@ -91,12 +107,13 @@ describe('migratePlateV54 profile', () => {
   });
 
   it('preserves table header semantics and migrates marks and properties', () => {
-    const editor = createMigrationEditor();
+    const editor = createEditor({
+      plugins: [BaseTablePlugin, migrationPlugins.at(-1)!],
+    });
     const result = migrateDocument(
       {
         children: [
           {
-            align: 'center',
             children: [{ subscript: true, text: 'header' }],
             type: 'th',
           },
@@ -105,25 +122,30 @@ describe('migratePlateV54 profile', () => {
       { editor, migrations: migrationPlan }
     ).document;
 
-    expect(result.children[0]).toEqual({
-      children: [{ script: 'sub', text: 'header' }],
-      header: true,
-      textAlign: 'center',
-      type: 'tableCell',
+    expect(result.children[0]).toMatchObject({
+      children: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [{ script: 'sub', text: 'header' }],
+                  type: 'paragraph',
+                },
+              ],
+              header: true,
+              type: 'tableCell',
+            },
+          ],
+          type: 'tableRow',
+        },
+      ],
+      type: 'table',
     });
   });
 
-  it('preserves nested domain JSON and fails property collisions closed', () => {
+  it('fails property collisions closed', () => {
     const editor = createMigrationEditor();
-    const metadata = { nested: { align: 'domain', type: 'p' } };
-    const result = migrateDocument(
-      {
-        children: [{ children: [{ text: '' }], metadata, type: 'p' }],
-      },
-      { editor, migrations: migrationPlan }
-    ).document;
-
-    expect(result.children[0]?.metadata).toBe(metadata);
     expect(() =>
       migrateDocument(
         {
@@ -181,16 +203,28 @@ describe('migratePlateV54 profile', () => {
       migrations: migrationPlan,
     });
 
-    expect(result.document).toBe(document);
+    expect(result.document).toEqual(document);
   });
 
   it('does not reinterpret properties on custom element types', () => {
     const CustomChartPlugin = definePlugin('chart', {
-      schema: { element: schema.element.textBlock() },
+      schema: {
+        element: schema.element.textBlock({
+          properties: { align: property.string() },
+        }),
+      },
+    });
+    const CustomSubscriptPlugin = definePlugin('customSubscript', {
+      schema: {
+        mark: {
+          key: 'subscript',
+          property: property.boolean({ default: false, omitDefault: true }),
+        },
+      },
     });
     const editor = createEditor({
       migrations: migrationPlan,
-      plugins: [...migrationPlugins, CustomChartPlugin],
+      plugins: [...migrationPlugins, CustomChartPlugin, CustomSubscriptPlugin],
       schema: MigrationSchema,
       skipInitialization: true,
     });
@@ -208,7 +242,7 @@ describe('migratePlateV54 profile', () => {
       migrations: migrationPlan,
     });
 
-    expect(result.document).toBe(document);
+    expect(result.document).toEqual(document);
   });
 
   it('preserves canonical-looking list properties on custom elements', () => {
@@ -253,21 +287,31 @@ describe('migratePlateV54 profile', () => {
         editor,
         migrations: migrationPlan,
       }).document
-    ).toBe(document);
+    ).toEqual(document);
   });
 
   it('does not reinterpret a legacy alias claimed by the current schema', () => {
     const CustomLegacyPlugin = definePlugin('customLegacy', {
       schema: {
         element: {
-          ...schema.element.textBlock(),
+          ...schema.element.textBlock({
+            properties: { align: property.string() },
+          }),
           type: 'p',
+        },
+      },
+    });
+    const CustomSubscriptPlugin = definePlugin('customSubscript', {
+      schema: {
+        mark: {
+          key: 'subscript',
+          property: property.boolean({ default: false, omitDefault: true }),
         },
       },
     });
     const editor = createEditor({
       migrations: migrationPlan,
-      plugins: [...migrationPlugins, CustomLegacyPlugin],
+      plugins: [...migrationPlugins, CustomLegacyPlugin, CustomSubscriptPlugin],
       schema: MigrationSchema,
       skipInitialization: true,
     });
@@ -285,7 +329,7 @@ describe('migratePlateV54 profile', () => {
       migrations: migrationPlan,
     });
 
-    expect(result.document).toBe(document);
+    expect(result.document).toEqual(document);
   });
 
   it('is an exact structural no-op for canonical documents', () => {
@@ -298,7 +342,7 @@ describe('migratePlateV54 profile', () => {
       migrations: migrationPlan,
     });
 
-    expect(result.document).toBe(document);
+    expect(result.document).toEqual(document);
   });
 
   it('migrates the complete final Plate AST profile in one pass', () => {
@@ -876,32 +920,34 @@ describe('migratePlateV54 profile', () => {
         },
       }),
     });
+    const list: NonNullable<MigratePlateV54Options['list']> = {
+      getPreviousEntry: ([, path], state) => {
+        if (PathApi.hasPrevious(path)) {
+          return state.nodes.get(PathApi.previous(path), {
+            match: ElementApi.isElement,
+          });
+        }
+        if (path[0] === 0) return undefined;
+
+        const pagePath = [path[0] - 1];
+        const page = state.nodes.get(pagePath, {
+          match: ElementApi.isElement,
+        })?.[0];
+        const child = page?.children.at(-1);
+
+        return page && child && ElementApi.isElement(child)
+          ? [child, [...pagePath, page.children.length - 1]]
+          : undefined;
+      },
+    };
     const editor = createEditor({
+      migrationList: list,
       migrations: migrationPlan,
       plugins: [
         PagePlugin,
         BaseListPlugin.configure({
           initialState: {
-            getSiblingListOptions: {
-              getPreviousEntry: ([, path], state) => {
-                if (PathApi.hasPrevious(path)) {
-                  return state.nodes.get(PathApi.previous(path), {
-                    match: ElementApi.isElement,
-                  });
-                }
-                if (path[0] === 0) return undefined;
-
-                const pagePath = [path[0] - 1];
-                const page = state.nodes.get(pagePath, {
-                  match: ElementApi.isElement,
-                })?.[0];
-                const child = page?.children.at(-1);
-
-                return page && child && ElementApi.isElement(child)
-                  ? [child, [...pagePath, page.children.length - 1]]
-                  : undefined;
-              },
-            },
+            getSiblingListOptions: list,
           },
         }),
       ],

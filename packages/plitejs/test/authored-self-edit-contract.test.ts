@@ -531,8 +531,9 @@ describe('authored self-edit review semantics', () => {
   });
 
   it('retains only the accepted content removed by a selection spanning an own insertion', () => {
-    const { view } = setup();
+    const { source, view } = setup();
     view.update.text.insert('p', { at: point(1) });
+    const insertion = source.read.authored.changes().items[0];
     view.update.text.delete({ at: range(0, 2) });
 
     assert.deepEqual(view.read.children(), [paragraph('BC')]);
@@ -540,7 +541,9 @@ describe('authored self-edit review semantics', () => {
       before: 'A',
       after: '',
     });
-    assert.equal(view.read.authored.changesAt(range(0, 2)).length, 1);
+    const [deletion] = view.read.authored.changesAt(range(0, 2));
+    assert.ok(deletion);
+    assert.notEqual(deletion.id, insertion.id);
   });
 
   it('preserves a separate deletion when another author removes the insertion', () => {
@@ -607,7 +610,7 @@ describe('authored self-edit review semantics', () => {
     });
     assert.deepEqual(reviewParts(view), []);
 
-    view.update.history.undo();
+    view.api.history.undo();
     assert.deepEqual(view.read.children(), [paragraph('ApBC')]);
     assert.deepEqual(contentText(reviewParts(view)), {
       before: '',
@@ -617,7 +620,7 @@ describe('authored self-edit review semantics', () => {
       view.read.authored.changesAt(range(0, 4)).map((change) => change.id),
       [id]
     );
-    view.update.history.redo();
+    view.api.history.redo();
     assert.deepEqual(view.read.children(), [paragraph('ABC')]);
     assert.deepEqual(reviewParts(view), []);
     assert.deepEqual(view.read.authored.changesAt(range(0, 3)), []);
@@ -777,7 +780,7 @@ describe('authored self-edit review semantics', () => {
         before: 'B',
         after: replacement,
       });
-      view.update.history.undo();
+      view.api.history.undo();
       assert.deepEqual(view.read.children(), [paragraph('ApBqC')]);
       assert.deepEqual(
         reviewParts(view)
@@ -788,7 +791,7 @@ describe('authored self-edit review semantics', () => {
           { before: '', after: 'q' },
         ]
       );
-      view.update.history.redo();
+      view.api.history.redo();
       assert.deepEqual(contentText(reviewParts(view)), {
         before: 'B',
         after: replacement,

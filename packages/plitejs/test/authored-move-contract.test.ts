@@ -136,10 +136,10 @@ describe('authored content movement', () => {
         action === 'accept' ? movedRange : range(0)
       );
       assert.deepEqual(restoredAfterMove.resolve(), restored.resolve());
-      view.update.history.undo();
+      view.api.history.undo();
       assert.deepEqual(anchor.resolve(), range(0));
       assert.deepEqual(view.read.selection(), range(0));
-      view.update.history.redo();
+      view.api.history.redo();
       assert.deepEqual(anchor.resolve(), movedRange);
       assert.equal(view.read.selection(), null);
       const destination = createEditorView(source, {
@@ -248,10 +248,10 @@ describe('authored content movement', () => {
       const reopened = createEditorView(reloaded, { authored: proposal });
       const restored = reopened.anchor.restore(view.anchor.save(anchor));
       assert.deepEqual(restored.resolve(), anchor.resolve());
-      view.update.history.undo();
+      view.api.history.undo();
       assert.deepEqual(view.read.children(), initialValue);
       assert.deepEqual(anchor.resolve(), range(0));
-      view.update.history.redo();
+      view.api.history.redo();
       assert.deepEqual(view.read.children(), [
         initialValue[1],
         initialValue[2],
@@ -349,9 +349,9 @@ describe('authored content movement', () => {
       view.update.nodes.move({ at: [from], to: [to] });
       assert.deepEqual(anchor.resolve(), range(to));
       assert.deepEqual(accepted.resolve(), range(from));
-      view.update.history.undo();
+      view.api.history.undo();
       assert.deepEqual(anchor.resolve(), range(from));
-      view.update.history.redo();
+      view.api.history.redo();
       assert.deepEqual(anchor.resolve(), range(to));
       anchor.release();
       accepted.release();

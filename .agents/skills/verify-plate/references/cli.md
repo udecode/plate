@@ -155,7 +155,7 @@ linking each action to its result. Confirm that no compiler child or open file
 handle remains, then remove only this run's consumer. Reopen the saved evidence
 after cleanup.
 
-Ordinary scoped CLI proof uses those raw logs and fingerprints. Regression's
+Ordinary scoped CLI proof uses those raw logs and fingerprints. Patch's
 exact-case closure needs its own receipt contract and Git-backed identity;
 do not invent a substitute receipt or invoke it when the task forbids Git.
 State the narrower claim and retain the evidence actually obtained.

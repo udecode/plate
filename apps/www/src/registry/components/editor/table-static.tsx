@@ -12,16 +12,11 @@ export function TableElementStatic({
   children,
   ...props
 }: EditorElementProps<typeof BaseTablePlugin>) {
-  const { disableMarginLeft } = props.editor
-    .plugin(BaseTablePlugin)
-    .store.get();
-  const marginLeft = disableMarginLeft ? 0 : props.element.marginLeft;
-
   return (
     <EditorElement
       {...props}
       className="overflow-x-auto py-5"
-      style={{ paddingLeft: marginLeft }}
+      style={{ paddingLeft: props.element.marginLeft }}
     >
       <div className="group/table relative w-fit">
         <table
@@ -52,8 +47,11 @@ export function TableCellElementStatic(
   const isHeader = element.header === true;
   const table = editor.plugin(BaseTablePlugin);
 
-  const { minHeight, width } = table.read.getCellSize({ element });
-  const borders = table.read.getCellBorders({ element });
+  const info = table.read.cell({ at: element });
+  const { borders, size } = info ?? {
+    borders: undefined,
+    size: { minHeight: 0, width: 0 },
+  };
 
   return (
     <EditorElement
@@ -76,19 +74,19 @@ export function TableCellElementStatic(
       style={
         {
           '--cellBackground': element.backgroundColor,
-          maxWidth: width || 240,
-          minWidth: width || 120,
+          maxWidth: size.width || 240,
+          minWidth: size.width || 120,
         } as React.CSSProperties
       }
       attributes={{
         ...props.attributes,
-        colSpan: table.api.getColSpan(element),
-        rowSpan: table.api.getRowSpan(element),
+        colSpan: info?.colSpan ?? element.colSpan ?? 1,
+        rowSpan: info?.rowSpan ?? element.rowSpan ?? 1,
       }}
     >
       <div
         className="relative z-20 box-border h-full px-4 py-2"
-        style={{ minHeight }}
+        style={{ minHeight: size.minHeight }}
       >
         {props.children}
       </div>

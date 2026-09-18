@@ -151,7 +151,7 @@ it.each(cases)(
           0, 0, 0, 0,
         ]);
       }
-      editor.update.history.undo();
+      editor.api.history.undo();
       expect(editor.read.children()).toEqual(initialValue);
     }
   }

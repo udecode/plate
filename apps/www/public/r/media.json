@@ -7,7 +7,8 @@
     "platejs",
     "@uploadthing/react@7.3.3",
     "sonner",
-    "uploadthing@7.7.4"
+    "uploadthing@7.7.4",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/uploadthing.json",

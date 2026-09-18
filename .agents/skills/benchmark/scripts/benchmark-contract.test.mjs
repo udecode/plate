@@ -351,6 +351,28 @@ test('architectural causes require the long-term Best API and layer-plan decisio
   assert.deepEqual(validateBenchmarkPlan(hardLawPreservation), []);
 });
 
+test('correctness causes route their repair decision to Patch', () => {
+  const rows = Object.fromEntries(
+    DEFAULT_BENCHMARK_LANES.map((lane, index) => [
+      lane,
+      { status: index < 2 ? 'complete' : index === 2 ? 'red' : 'paused' },
+    ])
+  );
+  const cause = {
+    ...provenCause,
+    decisionOwner: 'patch',
+    fixClass: 'correctness',
+  };
+
+  assert.deepEqual(validateBenchmarkPlan(plan({ cause, rows })), []);
+  assert.match(
+    validateBenchmarkPlan(
+      plan({ cause: { ...cause, decisionOwner: 'benchmark' }, rows })
+    ).join('\n'),
+    /correctness requires decision-owner patch/
+  );
+});
+
 test('architectural fixes preserve their durable decision through completion', () => {
   const history = [
     {

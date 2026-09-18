@@ -6,6 +6,7 @@ import type {
   Node,
   NodeKey,
   NodeSelection,
+  NodeTarget,
   Path,
   Range,
 } from '../../../../core';
@@ -42,7 +43,7 @@ export type TableSelectionView = Readonly<{
   grid: TableGrid;
   hasCellKey: (key: NodeKey) => boolean;
   root?: string;
-  selection: Range;
+  selection: NodeSelection | Range;
   table: Element;
   tableKey: NodeKey;
   tablePath: Path;
@@ -50,10 +51,10 @@ export type TableSelectionView = Readonly<{
 }>;
 
 type ReadTableSelectionOptions = Readonly<{
-  at?: Location;
+  at?: NodeSelection | NodeTarget;
   cellTypes: readonly string[];
   expansion?: TableSelectionExpansion;
-  selection?: Range | null;
+  selection?: NodeSelection | Range | null;
   tableType: string;
 }>;
 
@@ -213,9 +214,9 @@ export const readTableSelection = (
   const cacheable = !isTransactionState(state);
   const cacheKey =
     cacheable && at === undefined
-      ? `${tableType}\u0000${expansion}\u0000${cellTypes.join('\u0000')}`
+      ? `${tableType}\u0000${expansion}\u0000${cellTypes.join('\u0000')}\u0000${JSON.stringify(currentSelection)}\u0000${state.view.root() ?? ''}`
       : null;
-  const cached = cacheKey ? selectionViewCache.get(snapshot.index) : undefined;
+  const cached = cacheKey ? selectionViewCache.get(state) : undefined;
 
   if (cached?.key === cacheKey && cached.version === snapshot.version) {
     cacheHitCount += 1;
@@ -232,16 +233,124 @@ export const readTableSelection = (
   const publish = (view: TableSelectionView | null) => {
     if (cacheKey) {
       selectionViewCache.set(
-        snapshot.index,
+        state,
         Object.freeze({ key: cacheKey, version: snapshot.version, view })
       );
     }
 
     return view;
   };
-  const location = at ?? currentSelection;
+  const requested = at ?? currentSelection;
+  const location =
+    requested === undefined ||
+    requested === null ||
+    SelectionApi.isNode(requested) ||
+    RangeApi.isRange(requested) ||
+    PointApi.isPoint(requested) ||
+    PathApi.isPath(requested)
+      ? requested
+      : state.nodes.path(requested);
 
   if (!location) return publish(null);
+
+  if (SelectionApi.isNode(location)) {
+    const { root } = location;
+    const targetAt = (path: Path): Location =>
+      root === undefined ? path : { offset: 0, path, root };
+    const tableEntries = location.paths.map((path) => {
+      const exact = state.nodes.get(targetAt(path), {
+        match: ElementApi.isElement,
+      });
+
+      if (exact?.[0].type === tableType) return exact;
+
+      return state.nodes.above({ at: targetAt(path), type: tableType });
+    });
+    const firstTable = tableEntries[0];
+
+    if (
+      !firstTable ||
+      tableEntries.some(
+        (entry) => !entry || !PathApi.equals(entry[1], firstTable[1])
+      )
+    ) {
+      return publish(null);
+    }
+    const [table, tablePath] = firstTable;
+    const context =
+      createTableContext(state, tablePath, root) ??
+      failInvariant('Expected value to be defined');
+    const anchorsForPath = (path: Path): readonly TableGridAnchor[] => {
+      if (PathApi.equals(path, tablePath)) return context.grid.anchors;
+      const relative = path.slice(tablePath.length);
+
+      if (relative.length === 1) {
+        return context.grid.anchorsByRow[relative[0]] ?? [];
+      }
+      if (relative.length === 2) {
+        const anchor = context.anchorAtPath(path);
+
+        return anchor ? [anchor] : [];
+      }
+
+      return [];
+    };
+    const selected = new Set<TableGridAnchor>();
+
+    for (const path of location.paths) {
+      const anchors = anchorsForPath(path);
+
+      if (anchors.length === 0) return publish(null);
+      anchors.forEach((anchor) => selected.add(anchor));
+    }
+    const anchors = context.grid.anchors.filter((anchor) =>
+      selected.has(anchor)
+    );
+    const anchorCandidates = anchorsForPath(location.anchorPath);
+    const focusCandidates = anchorsForPath(location.focusPath);
+    const anchor = anchorCandidates[0];
+    const focus = focusCandidates.at(-1);
+
+    if (!anchor || !focus || anchors.length === 0) return publish(null);
+    const bounds =
+      getTableSelectionBounds(anchors) ??
+      failInvariant('Expected value to be defined');
+    const covered = getAnchorsWithinBounds(context, bounds);
+    const complete =
+      covered.complete &&
+      covered.anchors.length === anchors.length &&
+      covered.anchors.every((candidate) => selected.has(candidate));
+    const cellEntries = anchors.map((cell): ElementEntry<TableCellElement> => [
+      cell.cell,
+      tablePath.concat(cell.path),
+    ]);
+    const keyAt = (path: Path) =>
+      state.key(root === undefined ? path : { offset: 0, path, root }) ??
+      failInvariant('Expected node key to be defined');
+    const cellKeys = Object.freeze(cellEntries.map(([, path]) => keyAt(path)));
+    const cellKeySet = new Set(cellKeys);
+
+    return publish(
+      Object.freeze({
+        anchor,
+        anchors: Object.freeze(anchors),
+        bounds: Object.freeze(bounds),
+        cellKeys,
+        cellEntries: Object.freeze(cellEntries),
+        complete,
+        context,
+        focus,
+        grid: context.grid,
+        hasCellKey: (key: NodeKey) => cellKeySet.has(key),
+        ...(root === undefined ? {} : { root }),
+        selection: location,
+        table,
+        tableKey: keyAt(tablePath),
+        tablePath,
+        version: snapshot.version,
+      })
+    );
+  }
 
   const selection = RangeApi.isRange(location)
     ? location

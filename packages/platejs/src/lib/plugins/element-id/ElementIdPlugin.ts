@@ -12,12 +12,16 @@ import {
   type NodeKey,
   schema,
   target,
-  type Value,
   getEditorCommitSnapshot,
   MAIN_ROOT_KEY,
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
 import { definePlugin } from '../../plugin/definePlugin';
+import {
+  assertElementIds,
+  elementIdDocumentRoots,
+  elementIdRootChildren,
+} from './elementIdAdmission.internal';
 
 export type ElementIdPluginState = {
   /** Generate one persisted ID for a newly materialized element. */
@@ -30,57 +34,6 @@ export type ElementIdEntry = Readonly<{
   path: Path;
   root: RootKey;
 }>;
-
-export type ElementIdMigrationLocation = Readonly<{
-  path: Path;
-  root: RootKey;
-}>;
-
-export type ElementIdMigrationDuplicate = Readonly<{
-  id: string;
-  locations: readonly ElementIdMigrationLocation[];
-}>;
-
-export type MigrateElementIdsOptions = Readonly<{
-  /** Convert legacy numeric IDs explicitly. */
-  convertNumericId?: (
-    id: number,
-    location: ElementIdMigrationLocation
-  ) => string;
-  generateId: () => string;
-  /** Legacy persisted property to read before canonicalizing to `id`. */
-  sourceKey?: string;
-}>;
-
-export type MigrateElementIdsResult<TValue> = Readonly<{
-  duplicates: readonly ElementIdMigrationDuplicate[];
-  generated: number;
-  value: TValue;
-}>;
-
-type ElementIdTargetContext = ElementIdMigrationLocation &
-  Readonly<{ ancestors: readonly string[] }>;
-
-type ElementIdTargetMatcher = (
-  element: Element,
-  context: ElementIdTargetContext
-) => boolean;
-
-const assertElementId = (id: unknown, owner: string): string => {
-  if (typeof id !== 'string' || id.length === 0) {
-    throw new Error(`${owner} must be a non-empty string.`);
-  }
-
-  return id;
-};
-
-const rootChildren = (value: EditorDocumentValue, root: RootKey) =>
-  root === MAIN_ROOT_KEY ? value.children : (value.roots?.[root] ?? []);
-
-const documentRoots = (value: EditorDocumentValue): readonly RootKey[] => [
-  MAIN_ROOT_KEY,
-  ...Object.keys(value.roots ?? {}),
-];
 
 const getDescendantAt = (
   children: readonly Descendant[],
@@ -97,192 +50,6 @@ const getDescendantAt = (
 
   return node;
 };
-
-const collectElementIdLocations = (value: EditorDocumentValue) => {
-  const locations = new Map<string, ElementIdMigrationLocation>();
-
-  for (const root of documentRoots(value)) {
-    const visit = (node: Descendant, path: Path) => {
-      if (!ElementApi.isElement(node)) return;
-      const rawId = node.id;
-
-      if (rawId !== undefined) {
-        const id = assertElementId(rawId, `Element ID at ${root}:[${path}]`);
-        const existing = locations.get(id);
-
-        if (existing) {
-          throw new Error(
-            `Duplicate element ID "${id}" at ${existing.root}:[${existing.path}] and ${root}:[${path}].`
-          );
-        }
-        locations.set(id, { path, root });
-      }
-      node.children.forEach((child, index) => {
-        visit(child, [...path, index]);
-      });
-    };
-
-    rootChildren(value, root).forEach((node, index) => {
-      visit(node, [index]);
-    });
-  }
-
-  return locations;
-};
-
-function migrateElementIdsForTarget(
-  value: Value,
-  options: MigrateElementIdsOptions,
-  matchesTarget: ElementIdTargetMatcher
-): MigrateElementIdsResult<Value>;
-function migrateElementIdsForTarget(
-  value: EditorDocumentValue,
-  options: MigrateElementIdsOptions,
-  matchesTarget: ElementIdTargetMatcher
-): MigrateElementIdsResult<EditorDocumentValue>;
-function migrateElementIdsForTarget(
-  value: EditorDocumentValue | Value,
-  options: MigrateElementIdsOptions,
-  matchesTarget: ElementIdTargetMatcher
-): MigrateElementIdsResult<EditorDocumentValue | Value>;
-function migrateElementIdsForTarget(
-  value: EditorDocumentValue | Value,
-  { convertNumericId, generateId, sourceKey = 'id' }: MigrateElementIdsOptions,
-  matchesTarget: ElementIdTargetMatcher
-): MigrateElementIdsResult<EditorDocumentValue | Value> {
-  if (
-    sourceKey.length === 0 ||
-    sourceKey === 'children' ||
-    sourceKey === 'type'
-  ) {
-    throw new Error(`Element ID sourceKey cannot be "${sourceKey}".`);
-  }
-  const locations = new Map<string, ElementIdMigrationLocation[]>();
-  let generated = 0;
-  const migrateRoot = (children: readonly Descendant[], root: RootKey) => {
-    const visit = (
-      node: Descendant,
-      path: Path,
-      ancestors: readonly string[]
-    ): Descendant => {
-      if (!ElementApi.isElement(node)) return node;
-      const location = { path, root } as const;
-      const included = matchesTarget(node, { ...location, ancestors });
-      const rawId = Object.hasOwn(node, sourceKey) ? node[sourceKey] : node.id;
-      const id = included
-        ? (() => {
-            if (rawId === undefined) {
-              generated += 1;
-
-              return assertElementId(
-                generateId(),
-                `Generated element ID at ${root}:[${path}]`
-              );
-            }
-            if (typeof rawId === 'number') {
-              if (!convertNumericId) {
-                throw new Error(
-                  `Numeric element ID at ${root}:[${path}] requires convertNumericId.`
-                );
-              }
-
-              return assertElementId(
-                convertNumericId(rawId, location),
-                `Converted element ID at ${root}:[${path}]`
-              );
-            }
-
-            return assertElementId(rawId, `Element ID at ${root}:[${path}]`);
-          })()
-        : undefined;
-
-      if (id) {
-        const known = locations.get(id) ?? [];
-
-        locations.set(id, [...known, location]);
-      }
-      let changed = included
-        ? rawId !== id || sourceKey !== 'id'
-        : Object.hasOwn(node, 'id') || Object.hasOwn(node, sourceKey);
-      const childAncestors = [node.type, ...ancestors];
-      const innerChildren = node.children.map((child, index) => {
-        const migrated = visit(child, [...path, index], childAncestors);
-
-        if (migrated !== child) changed = true;
-
-        return migrated;
-      });
-
-      if (!changed) return node;
-      const canonicalNode = { ...node, children: innerChildren } as Record<
-        string,
-        unknown
-      >;
-
-      if (id) canonicalNode.id = id;
-      else delete canonicalNode.id;
-
-      if (sourceKey !== 'id') delete canonicalNode[sourceKey];
-
-      return canonicalNode as unknown as Element;
-    };
-
-    let changed = false;
-    const migrated = children.map((node, index) => {
-      const next = visit(node, [index], []);
-
-      if (next !== node) changed = true;
-
-      return next;
-    });
-
-    return changed ? migrated : children;
-  };
-  const document: EditorDocumentValue = Array.isArray(value)
-    ? { children: value }
-    : (value as EditorDocumentValue);
-  const children = migrateRoot(document.children, MAIN_ROOT_KEY) as Value;
-  const roots = document.roots
-    ? Object.fromEntries(
-        Object.entries(document.roots).map(([root, rootValue]) => [
-          root,
-          migrateRoot(rootValue, root) as Value,
-        ])
-      )
-    : undefined;
-  const migratedDocument =
-    children === document.children &&
-    (!roots ||
-      Object.entries(roots).every(
-        ([root, rootValue]) => rootValue === document.roots?.[root]
-      ))
-      ? document
-      : { ...document, children, ...(roots ? { roots } : {}) };
-  const duplicates = [...locations]
-    .filter(([, entries]) => entries.length > 1)
-    .map(([id, entries]) => Object.freeze({ id, locations: entries }));
-
-  return Object.freeze({
-    duplicates: Object.freeze(duplicates),
-    generated,
-    value: Array.isArray(value) ? migratedDocument.children : migratedDocument,
-  });
-}
-
-export function migrateElementIds(
-  value: Value,
-  options: MigrateElementIdsOptions
-): MigrateElementIdsResult<Value>;
-export function migrateElementIds(
-  value: EditorDocumentValue,
-  options: MigrateElementIdsOptions
-): MigrateElementIdsResult<EditorDocumentValue>;
-export function migrateElementIds(
-  value: EditorDocumentValue | Value,
-  options: MigrateElementIdsOptions
-): MigrateElementIdsResult<EditorDocumentValue | Value> {
-  return migrateElementIdsForTarget(value, options, () => true);
-}
 
 const elementIdInitialState: ElementIdPluginState = {
   generateId: () => nanoid(),
@@ -320,8 +87,8 @@ export const ElementIdPlugin = definePlugin('elementId', {
   const collectRuntimeRoots = (value: EditorDocumentValue) => {
     const roots = new Map<RootKey, readonly Descendant[]>();
 
-    for (const root of documentRoots(value)) {
-      roots.set(root, rootChildren(value, root));
+    for (const root of elementIdDocumentRoots(value)) {
+      roots.set(root, elementIdRootChildren(value, root));
     }
 
     return roots;
@@ -369,14 +136,14 @@ export const ElementIdPlugin = definePlugin('elementId', {
     corrections: [
       {
         correct: ({ tx }) => {
-          collectElementIdLocations(tx.value());
+          assertElementIds(tx.value());
         },
         event: 'children',
         query: 'root',
       },
       {
         correct: ({ tx }) => {
-          collectElementIdLocations(tx.value());
+          assertElementIds(tx.value());
         },
         event: 'properties',
         query: 'root',
@@ -397,7 +164,7 @@ export const ElementIdPlugin = definePlugin('elementId', {
           nodeKeys.delete(nodeKey);
         }
         editor.read((state) => {
-          for (const root of documentRoots(state.value())) {
+          for (const root of elementIdDocumentRoots(state.value())) {
             const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
             const rootNodeKeys = new Set([
               ...commit.changed.nodeKeys('node', publicRoot),
@@ -468,7 +235,7 @@ export const ElementIdPlugin = definePlugin('elementId', {
           if (!indexed) return undefined;
           const value = state.value();
           const node = getDescendantAt(
-            rootChildren(value, indexed.root),
+            elementIdRootChildren(value, indexed.root),
             indexed.path
           );
 
@@ -483,30 +250,6 @@ export const ElementIdPlugin = definePlugin('elementId', {
         },
         id,
       };
-    },
-    prepareDocument({ document, store }) {
-      const result = migrateElementIdsForTarget(
-        document,
-        { generateId: store.get().generateId },
-        (element, { ancestors, root }) =>
-          context.editor.read.schema.property({
-            ancestors,
-            key: idProperty.key,
-            placement: 'element',
-            root: root === MAIN_ROOT_KEY ? null : root,
-            type: element.type,
-          })?.id === idProperty.id
-      );
-
-      if (result.duplicates.length > 0) {
-        const duplicate = result.duplicates[0];
-        const [first, second] = duplicate.locations;
-
-        throw new Error(
-          `Duplicate element ID "${duplicate.id}" at ${first.root}:[${first.path}] and ${second.root}:[${second.path}].`
-        );
-      }
-      return result.value;
     },
   };
 });

@@ -26,13 +26,8 @@ expectDescendants(
   })
 );
 
-baseEditor.update((tx) => {
-  tx.history.undo();
-});
-
-plateEditor.update((tx) => {
-  tx.history.undo();
-});
+baseEditor.api.history.undo();
+plateEditor.api.history.undo();
 
 // Unparameterized editors expose only the guaranteed Core capabilities.
 // @ts-expect-error Unknown API groups are never synthesized.

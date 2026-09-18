@@ -1,0 +1,17 @@
+---
+id: 2026-09-17-comment-persistence-actions
+date: 2026-09-17
+status: draft
+kind: behavior
+summary: 'Save comment attachments with document revisions and preserve input when comment actions fail'
+change: { 'type': 'source', 'date': '2026-09-17', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-17-comment-persistence-actions","kind":"behavior","migrationNotes":[]} -->
+
+- **`comment`**, **`discussion`**: Await comment actions before clearing input, retain failed replies for retry, reopen resolved conversations independently of document undo, and keep suggestion conversations replyable after decisions.
+- **`use-chat`**: Let completed AI comments finish saving when the chat menu closes; discard pending drafts on cancellation.
+- **`comment-persistence-demo`**, **`suggestion-persistence-demo`**, **`editor-ai`**: Save comments and opaque attachments with the matching document revision and restore them into a fresh editor.
+- **`discussion-demo`**: Load three authored suggestions and their conversations together while keeping direct editing as the default.

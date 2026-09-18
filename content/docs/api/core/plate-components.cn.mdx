@@ -36,6 +36,29 @@ export function Editor() {
   `null` 状态时，才使用 `useOptionalEditor()`。
 </Callout>
 
+### Authored 视图
+
+为安装了 [authored changes](/docs/authored-changes) 的编辑器传入 `authored`，分别选择输入 intent 和可见 projection：
+
+```tsx
+<EditorRoot
+  editor={editor}
+  authored={{ intent: 'edit', projection: 'markup' }}
+>
+  <EditorContent />
+</EditorRoot>
+```
+
+| `authored` 值 | 行为 |
+| --- | --- |
+| `{ intent: 'edit', projection: 'accepted' }` | 编辑 accepted 内容。 |
+| `{ intent: 'edit', projection: 'markup' }` | 显示审阅标记，并将不依赖待处理内容的编辑直接发布到 accepted 内容。 |
+| `{ intent: 'edit', projection: 'proposed' }` | 显示 proposed 结果，并将不依赖待处理内容的编辑直接发布到 accepted 内容。 |
+| `{ intent: 'propose', projection: 'markup' }` | 将编辑记录为 proposal，并显示保留的审阅内容。 |
+| `{ intent: 'propose', projection: 'proposed' }` | 将编辑记录为 proposal，并显示 proposed 结果。 |
+
+每个 `EditorRoot` 独立配置一个 view。修改 intent 或 projection 会更新该 view，但不会重新挂载，也不会接受或拒绝 change。在 editing 的 markup 或 proposed view 中，依赖待处理内容的编辑仍会以当前作者的身份保留为可审阅 change。
+
 ## 只读视图
 
 需要渲染内容和 Plate 复制行为，但不需要可编辑区域时，请为静态编辑器使用 `EditorPreview`。
@@ -60,6 +83,93 @@ export function ReadOnlyEditor() {
 ```
 
 `EditorPreview` 默认通过 `onCopy` 将 Plate fragment 数据写入剪贴板；传入自定义 `onCopy` prop 后则使用你的处理器。
+
+## 编辑器布局
+
+`EditorFrame` 和 `EditorContainer` 都是可选的。最小编辑器只需要 `EditorRoot`
+和一个可编辑区域：`platejs/react` 提供的 `EditorContent`，或
+[Editor registry 组件](/docs/components/editor)提供的带样式的 `Editor`。
+
+| 布局 | 组件结构 | 高度设置位置 |
+| --- | --- | --- |
+| 随内容增长、类似 textarea 的编辑器 | `Editor` | 在 `Editor` 上设置最小高度。 |
+| 有独立滚动区域的编辑器 | `EditorContainer` → `Editor` | 在 `EditorContainer` 上设置高度。 |
+| 固定工具栏与滚动内容共享一个面板 | `EditorFrame` → 工具栏 + `EditorContainer` → `Editor` | 在 `EditorFrame` 上设置面板总高度。 |
+
+三种结构都放在 `EditorRoot` 内。`EditorFrame` 是复制到项目中的 UI 布局组件，
+不是 `platejs/react` 的导出。它提供 flex 列布局，也可以用具有相同尺寸行为的自定义布局替代。
+
+### 最小编辑器
+
+使用 `variant="none"` 不应用文档布局的内边距和高度样式。以下编辑器随内容增长，
+不需要这两个包裹组件：
+
+```tsx title="components/message-editor.tsx"
+import { EditorRoot, useCreateEditor } from 'platejs/react';
+
+import { Editor } from '@/components/editor/editor';
+
+export function MessageEditor() {
+  const editor = useCreateEditor();
+
+  return (
+    <EditorRoot editor={editor}>
+      <Editor
+        aria-label="消息"
+        className="min-h-24 rounded-md border p-3"
+        placeholder="输入消息..."
+        variant="none"
+      />
+    </EditorRoot>
+  );
+}
+```
+
+### 可滚动编辑器
+
+如果需要有界的编辑区域而不需要固定工具栏，添加 `EditorContainer` 并直接在它上面
+设置高度即可，无需 `EditorFrame`：
+
+```tsx
+import { Editor, EditorContainer } from '@/components/editor/editor';
+
+<EditorRoot editor={editor}>
+  <EditorContainer className="h-48 rounded-md border">
+    <Editor aria-label="消息" className="min-h-full p-3" variant="none" />
+  </EditorContainer>
+</EditorRoot>
+```
+
+`EditorContainer` 将其 `div` 注册为编辑器的滚动元素，并将 `beforeContainer`
+和 `afterContainer` 插件 slot 渲染为兄弟元素。如果安装的 kit 使用这些 slot，
+即使不需要固定高度，也要保留容器；省略容器也会省略这些 UI。没有注册的容器时，
+滚动元素查询会回退到编辑器根元素或可编辑元素。
+
+### 固定工具栏与滚动内容
+
+固定工具栏与内部滚动的编辑器可以通过 `EditorFrame` 共享有界高度。
+工具栏独占一行，`EditorContainer` 在剩余空间内滚动：
+
+```tsx
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/components/editor/editor';
+
+<EditorRoot editor={editor}>
+  <EditorFrame className="h-[650px]">
+    <EditorContainer>
+      <Editor />
+    </EditorContainer>
+  </EditorFrame>
+</EditorRoot>
+```
+
+此结构要求编辑器包含 [FixedToolbarKit](/docs/toolbar)，由它通过 `beforeContainer`
+渲染工具栏。手动渲染时，将 `FixedToolbar` 放在 frame 内、`EditorContainer` 之前。
+为 frame 设置明确的高度，或为父元素设置明确的高度以供 `h-full` 填满。
+frame 本身不会强制指定一个固定高度。
 
 ## 组件映射
 
@@ -167,6 +277,10 @@ export function FigureElement({
     </APIItem>
     <APIItem name="children" type="React.ReactNode">
       可读取 Plate store 的 React 子节点。
+    </APIItem>
+    <APIItem name="authored" type="EditorViewOptions['authored']" optional>
+      设置当前已挂载 authored view 的输入 intent，以及 accepted、proposed 或 markup
+      projection。编辑模式可以继续显示待处理 change；切换 projection 不会接受或拒绝它们。
     </APIItem>
     <APIItem name="readOnly" type="boolean" optional>
       提供给内容区域的只读状态。默认为 `editor.read.view.isReadOnly()`。
@@ -296,7 +410,10 @@ export function FigureElement({
 
 ### `EditorContainer`
 
-带插件容器 slot 的容器 `div`。
+可选的容器 `div`，用于注册编辑器的滚动元素并渲染插件容器 slot。
+`EditorContent` 可以独立使用。包内组件不带滚动样式；请自行添加，或使用带样式的
+[Editor registry 组件](/docs/components/editor)。最小编辑器、可滚动编辑器和固定工具栏
+的组合方式见[编辑器布局](#编辑器布局)。
 
 <API name="EditorContainer">
   <APIProps>
@@ -308,7 +425,7 @@ export function FigureElement({
       type="React.HTMLAttributes<HTMLDivElement>"
       optional
     >
-      传给容器 `div` 和容器 slot 组件的 HTML props。
+      传给容器 `div` 的 HTML props。兄弟 slot 接收 `containerRef`，不接收这些 props。
     </APIItem>
   </APIProps>
 </API>

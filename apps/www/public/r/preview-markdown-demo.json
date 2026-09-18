@@ -4,7 +4,8 @@
   "dependencies": [
     "platejs",
     "@platejs/test",
-    "prismjs"
+    "prismjs",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/basic-nodes.json",

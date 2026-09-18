@@ -100,15 +100,22 @@ const editor = createEditor({
 
 ### Add toolbar button
 
-You can add a toolbar button to insert code drawing elements. Add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button):
+Add an item that calls the installed code-drawing feature. Code Drawing is an insertion action; it is not a Turn Into conversion.
 
 ```tsx
-import { PLUGINS } from 'platejs';
+import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
 
 const insertItem = {
   icon: <Code2Icon />,
   label: 'Code Drawing',
-  value: PLUGINS.codeDrawing,
+  value: 'code_drawing',
+  onSelect: () => {
+    const codeDrawing = editor.plugin(BaseCodeDrawingPlugin);
+
+    if (!codeDrawing.installed || editor.read.view.isReadOnly()) return;
+
+    codeDrawing.update.insert({}, { select: true });
+  },
 };
 ```
 

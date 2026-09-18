@@ -221,29 +221,24 @@ Accepted current shape:
   packages.
 - Raw Plite owns the substrate those features need: schema/spec policy,
   transforms, selection primitives, normalization, clipboard/input hooks, and
-  layout projection primitives.
-- `plite-layout` extracts leaf-level layout runs with block offsets and Plite
-  leaf paths while preserving the existing block text fallback. Page projection
-  exposes placed runs, visual text rects, native hit rects, decoration ranges,
-  and generic block-local box metadata.
+  view-owned pagination.
+- `plitejs/pagination` reads one coherent editor snapshot, lowers text,
+  atomic blocks, and direct children through explicit fragmentation, and
+  returns immutable page geometry. `PagedEditable` owns live measurement,
+  page chrome, editable element placement, fragment paint, font invalidation,
+  and optional page-level DOM omission.
 - Markdown and table examples, Plate, or app-level packages supply the
   schema-specific adapters and fixtures for code lines, images, thematic
   breaks, tables, and table cells.
-- The experimental pagination example composes the layout helpers from
-  `plite-layout` directly: geometry, projection, decorations, line hit rects,
-  page frames, and mixed Markdown-shaped content stay in the example as proof,
-  not as app-owned projection math.
-- Open architecture target: `plite-layout` should become the generic derived
-  layout service for continuous and paged snapshots, with a built-in Pretext
-  engine behind an internal boundary and `plite-react` consuming layout through
-  a DOM materialization policy instead of treating pagination or virtualization
-  as product rendering modes.
-- Pagination planning target: public beta API should stay small: `pageView`
-  groups page display settings, virtualized `domStrategy` drives internal
-  page/spread mounting in `PagedEditable`, `measurementProfile` is snapshot
-  metadata, `pageBreaks` is opt-in strict-fidelity metadata, and table/media
-  pagination uses generic provider/split protocols rather than a raw Plite
-  product TableKit. This planning target adds no fixed/improved issue claim.
+- The pagination example supplies product typography and fragmentation for
+  text, images, thematic breaks, code, and table rows. Page geometry and
+  editable placement stay inside `PagedEditable`.
+- The public runtime surface is `measurePages`, `pageSettingsCodec`,
+  `createEstimatedPageLayoutEngine`, `createPretextPageLayoutEngine`,
+  `PagedEditable`, `usePageLayout`, and `usePageLayoutFragments`.
+- Live page breaks are derived view state. Exact shared export geometry belongs
+  to a controlled measurement environment rather than the collaborative
+  document. This architecture decision adds no fixed/improved issue claim.
 
 Why it belongs in the PR:
 

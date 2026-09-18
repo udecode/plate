@@ -4,7 +4,8 @@
   "title": "Keyboard Input",
   "description": "A component for styling keyboard shortcuts.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [],
   "files": [

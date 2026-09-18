@@ -43,7 +43,7 @@ For an editor with [authored changes](/docs/authored-changes), pass `authored` t
 ```tsx
 <EditorRoot
   editor={editor}
-  authored={{ intent: 'propose', projection: 'markup' }}
+  authored={{ intent: 'edit', projection: 'markup' }}
 >
   <EditorContent />
 </EditorRoot>
@@ -52,11 +52,12 @@ For an editor with [authored changes](/docs/authored-changes), pass `authored` t
 | `authored` value | Behavior |
 | --- | --- |
 | `{ intent: 'edit', projection: 'accepted' }` | Edit accepted content. |
-| `{ intent: 'edit', projection: 'markup' }` | Edit accepted content while pending review content remains visible. Pending-only and mixed targets are read-only. |
+| `{ intent: 'edit', projection: 'markup' }` | Display review markup while publishing independent accepted-content edits directly. |
+| `{ intent: 'edit', projection: 'proposed' }` | Display the proposed result while publishing independent accepted-content edits directly. |
 | `{ intent: 'propose', projection: 'markup' }` | Propose edits and display retained review content. |
 | `{ intent: 'propose', projection: 'proposed' }` | Propose edits and display the proposed result. |
 
-The prop requires an installed authored capability. Each `EditorRoot` configures its own view, so two views of one document can use different values. Changing the intent or projection updates that view without remounting it. Rerendering with equivalent values preserves mode changes made through its mounted plugin portal. The prop does not change the saved document or accept or reject suggestions.
+The prop requires an installed authored capability. Each `EditorRoot` configures its own view, so two views of one document can use different values. Changing the intent or projection updates that view without remounting it. Rerendering with equivalent values preserves mode changes made through its mounted plugin portal. In an editing markup or proposed view, an edit that depends on pending content remains reviewable with the current author. The prop does not change the saved document or accept or reject suggestions.
 
 ## Read-only view
 
@@ -82,6 +83,97 @@ export function ReadOnlyEditor() {
 ```
 
 The default `onCopy` handler on `EditorPreview` writes Plate fragment data to the clipboard. Pass `onCopy` to supply your own handler.
+
+## Editor layout
+
+`EditorFrame` and `EditorContainer` are optional. A minimal editor needs only
+`EditorRoot` and an editable surface: `EditorContent` from `platejs/react`, or
+the styled `Editor` from the [Editor registry item](/docs/components/editor).
+
+| Layout | Composition | Where to set the height |
+| --- | --- | --- |
+| Auto-growing, textarea-like editor | `Editor` | Set a minimum height on `Editor`. |
+| Editor with its own scrolling area | `EditorContainer` → `Editor` | Set the height on `EditorContainer`. |
+| Fixed toolbar and scrolling content in one panel | `EditorFrame` → toolbar + `EditorContainer` → `Editor` | Set the total panel height on `EditorFrame`. |
+
+All three compositions render inside `EditorRoot`. `EditorFrame` is a copied UI
+layout component, not a `platejs/react` export. It supplies a flex column and
+can be replaced by your own layout with the same sizing behavior.
+
+### Minimal editor
+
+Use `variant="none"` to omit the copied editor's document-sized padding and
+height styles. This editor grows with its content without either wrapper:
+
+```tsx title="components/message-editor.tsx"
+import { EditorRoot, useCreateEditor } from 'platejs/react';
+
+import { Editor } from '@/components/editor/editor';
+
+export function MessageEditor() {
+  const editor = useCreateEditor();
+
+  return (
+    <EditorRoot editor={editor}>
+      <Editor
+        aria-label="Message"
+        className="min-h-24 rounded-md border p-3"
+        placeholder="Write a message..."
+        variant="none"
+      />
+    </EditorRoot>
+  );
+}
+```
+
+### Scrollable editor
+
+For a bounded editing area without a fixed toolbar, add `EditorContainer` and
+put the height directly on it. `EditorFrame` is unnecessary:
+
+```tsx
+import { Editor, EditorContainer } from '@/components/editor/editor';
+
+<EditorRoot editor={editor}>
+  <EditorContainer className="h-48 rounded-md border">
+    <Editor aria-label="Message" className="min-h-full p-3" variant="none" />
+  </EditorContainer>
+</EditorRoot>
+```
+
+`EditorContainer` registers its `div` as the editor's scrolling element and
+renders the `beforeContainer` and `afterContainer` plugin slots as siblings.
+Keep it when an installed kit uses those slots, even if the editor does not
+need a fixed height. Omitting it also omits that UI. Without a registered
+container, scroll lookup falls back to the editor root or editable element.
+
+### Fixed toolbar and scrolling content
+
+For a fixed toolbar and an internally scrolling editor, use `EditorFrame` to
+share a bounded height. The toolbar occupies its own row, and `EditorContainer`
+scrolls in the remaining space:
+
+```tsx
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/components/editor/editor';
+
+<EditorRoot editor={editor}>
+  <EditorFrame className="h-[650px]">
+    <EditorContainer>
+      <Editor />
+    </EditorContainer>
+  </EditorFrame>
+</EditorRoot>
+```
+
+This composition assumes the editor includes [FixedToolbarKit](/docs/toolbar),
+which renders the toolbar through `beforeContainer`. For a manual toolbar,
+place `FixedToolbar` directly before `EditorContainer` inside the frame. Set an
+explicit frame height, or give its parent a definite height for `h-full` to fill.
+The frame does not impose a fixed height by itself.
 
 ## Component map
 
@@ -248,6 +340,11 @@ Root provider for one editor instance.
     <APIItem name="children" type="React.ReactNode">
       React children that can read the selected editor context.
     </APIItem>
+    <APIItem name="authored" type="EditorViewOptions['authored']" optional>
+      Sets the input intent and accepted, proposed, or markup projection for
+      this mounted authored view. Editing can keep pending changes visible;
+      changing the projection does not accept or reject them.
+    </APIItem>
     <APIItem name="readOnly" type="boolean" optional>
       Read-only state provided to content views. Defaults to `editor.read.view.isReadOnly()`.
     </APIItem>
@@ -378,7 +475,11 @@ Read-only static renderer with Plate copy support.
 
 ### `EditorContainer`
 
-Container `div` with plugin container slots.
+Optional container `div` that registers the editor's scrolling element and
+renders plugin container slots. `EditorContent` works without it. The package
+component has no scrolling styles; apply them yourself or use the styled
+[Editor registry item](/docs/components/editor). See [Editor layout](#editor-layout)
+for minimal, scrollable, and fixed-toolbar compositions.
 
 <API name="EditorContainer">
   <APIProps>
@@ -390,7 +491,8 @@ Container `div` with plugin container slots.
       type="React.HTMLAttributes<HTMLDivElement>"
       optional
     >
-      HTML props passed to the container `div` and container slot components.
+      HTML props passed to the container `div`. Sibling slots receive
+      `containerRef`, not these props.
     </APIItem>
   </APIProps>
 </API>

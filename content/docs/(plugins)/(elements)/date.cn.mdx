@@ -93,15 +93,24 @@ const editor = createEditor({
 
 ### 插入工具栏按钮
 
-你可以将此项目添加到 [插入工具栏按钮](/docs/toolbar#insert-toolbar-button) 来插入日期元素：
+菜单项直接调用已安装的日期功能：
 
 ```tsx
-{
+import { BaseDatePlugin } from 'platejs/date';
+
+const insertItem = {
   focusEditor: true,
   icon: <CalendarIcon />,
   label: '日期',
-  value: PLUGINS.date,
-}
+  value: 'date',
+  onSelect: () => {
+    const date = editor.plugin(BaseDatePlugin);
+
+    if (!date.installed || editor.read.view.isReadOnly()) return;
+
+    date.update.insert({}, { select: true });
+  },
+};
 ```
 
 </Steps>

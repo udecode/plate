@@ -1,4 +1,10 @@
-import { createEditor, definePlugin, schema, type Point } from '../../../core';
+import {
+  createEditor,
+  createEditorView,
+  definePlugin,
+  schema,
+  type Point,
+} from '../../../core';
 import { BaseEmojiPlugin } from '../../../emoji/lib/BaseEmojiPlugin';
 import {
   BaseFootnoteDefinitionPlugin,
@@ -55,7 +61,7 @@ describe('combobox input completion', () => {
     ).toBe(true);
     expect(editor.read.text.string([0])).toBe('Before 🔥');
     expect(editor.read.lastCommit()!.version - version).toBe(1);
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.value()).toEqual(before);
   });
 
@@ -93,7 +99,7 @@ describe('combobox input completion', () => {
       ref: 'proof',
     });
     expect(editor.read.lastCommit()!.version - version).toBe(1);
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.value()).toEqual(before);
   });
 
@@ -101,17 +107,17 @@ describe('combobox input completion', () => {
     const { editor, input, combobox } = setup();
     const before = editor.read.children();
     const { version } = editor.read.lastCommit()!;
-    const undos = editor.read.history.undos().length;
+    const undos = editor.read.history().undos.length;
 
     expect(combobox.api.cancel(input, { text: '@query' })).toBe(true);
     expect(editor.read.text.string([1])).toBe('Before @query');
     expect(editor.read.lastCommit()!.version - version).toBe(1);
-    expect(editor.read.history.undos()).toHaveLength(undos + 1);
+    expect(editor.read.history().undos).toHaveLength(undos + 1);
 
     const after = editor.read.children();
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.children()).toEqual(before);
-    editor.update.history.redo();
+    editor.api.history.redo();
     expect(editor.read.children()).toEqual(after);
   });
 
@@ -138,7 +144,7 @@ describe('combobox input completion', () => {
       label: 'Alice',
     });
     expect(editor.read.lastCommit()!.version - version).toBe(1);
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.children()).toEqual(before);
   });
 
@@ -212,6 +218,17 @@ describe('combobox input completion', () => {
     expect(editor.read.value()).toEqual(before);
   });
 
+  it('binds completion to the active editor view', () => {
+    const { editor, input } = setup();
+    const view = createEditorView(editor, { readOnly: true });
+    const before = editor.read.value();
+    const combobox = view.plugin(BaseComboboxPlugin);
+
+    expect(combobox.read.canEdit(input)).toBe(false);
+    expect(combobox.api.cancel(input, { text: '@query' })).toBe(false);
+    expect(editor.read.value()).toEqual(before);
+  });
+
   it('preserves an outside selection when canceling after deselection', () => {
     const { editor, input, combobox } = setup();
     const point: Point = { path: [0, 0], offset: 3 };
@@ -247,7 +264,7 @@ describe('combobox input completion', () => {
     const { editor, input, combobox } = setup();
     expect(combobox.api.undo(input)).toBe(true);
     expect(combobox.api.cancel(input, { text: '@stale' })).toBe(false);
-    editor.update.history.redo();
+    editor.api.history.redo();
     const restored = editor.key(editor.read.children()[1].children[1]);
     expect(
       editor.plugin(BaseComboboxPlugin).api.cancel(restored, { text: '@fresh' })
@@ -317,7 +334,7 @@ describe('combobox input completion', () => {
       path: [0, 0],
       offset: 13,
     });
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.value()).toEqual(before);
   });
 });

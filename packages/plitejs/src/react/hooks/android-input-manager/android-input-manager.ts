@@ -45,11 +45,15 @@ import {
   type EditableCommand,
   getEditableCommandFromBeforeInputType,
 } from '../../editable/editing-kernel';
-import type {
-  DOMInputRepairTarget,
-  EditableInputController,
+import {
+  type DOMInputRepairTarget,
+  type EditableInputController,
+  shouldMergeEditableCompositionHistory,
 } from '../../editable/input-state';
-import { applyEditableCommand } from '../../editable/mutation-controller';
+import {
+  applyEditableCommand,
+  applyModelOwnedTextInput,
+} from '../../editable/mutation-controller';
 import {
   editorCommands,
   failInvariant,
@@ -156,6 +160,15 @@ export function createAndroidInputManager({
 
   let idCounter = 0;
   let insertPositionHint: StringDiff | null | false = false;
+
+  const applyAndroidTextInput = (text: string, inputType: string) =>
+    applyModelOwnedTextInput({
+      data: text,
+      editor,
+      inputController,
+      inputType,
+      mergeHistory: shouldMergeEditableCompositionHistory(inputController),
+    });
 
   const applyPendingSelection = () => {
     const pendingSelection = EDITOR_TO_PENDING_SELECTION.get(editor);
@@ -299,10 +312,7 @@ export function createAndroidInputManager({
       }
 
       if (diff.diff.text) {
-        applyEditableCommand({
-          command: { kind: 'insert-text', text: diff.diff.text },
-          editor,
-        });
+        applyAndroidTextInput(diff.diff.text, 'insertText');
       } else {
         applyEditableCommand({
           command: { kind: 'delete-fragment' },
@@ -647,9 +657,15 @@ export function createAndroidInputManager({
 
   const scheduleCommand = (
     command: EditableCommand,
-    { at }: { at?: Point | Range } = {}
+    { at, inputType }: { at?: Point | Range; inputType?: string } = {}
   ) => {
-    scheduleAction(() => applyEditableCommand({ command, editor }), { at });
+    scheduleAction(
+      () =>
+        command.kind === 'insert-text' && inputType
+          ? applyAndroidTextInput(command.text, inputType)
+          : applyEditableCommand({ command, editor }),
+      { at }
+    );
   };
 
   const handleDOMBeforeInput = (event: InputEvent): void => {
@@ -994,10 +1010,7 @@ export function createAndroidInputManager({
               const parts = text.split('\n');
               parts.forEach((line, i) => {
                 if (line) {
-                  applyEditableCommand({
-                    command: { kind: 'insert-text', text: line },
-                    editor,
-                  });
+                  applyAndroidTextInput(line, type);
                 }
                 if (i !== parts.length - 1) {
                   applyEditableCommand({
@@ -1144,6 +1157,7 @@ export function createAndroidInputManager({
                 ? innerTargetRange2
                 : (readRuntimeSelectionRange(editor) ?? innerTargetRange2)
             ),
+            inputType: type,
           }
         );
       }

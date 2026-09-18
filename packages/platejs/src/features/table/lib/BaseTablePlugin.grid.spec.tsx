@@ -19,7 +19,6 @@ import type {
   TableRowElement,
 } from './BaseTablePlugin';
 import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
-import { createTableContext } from './internal/context';
 import { readTableGridCompilerMetrics } from './internal/grid';
 
 describe('table grid queries', () => {
@@ -46,7 +45,7 @@ describe('table grid queries', () => {
     },
   ];
 
-  describe('getCellIndices', () => {
+  describe('cell coordinates', () => {
     it('reads every cell coordinate without recompiling the table for each cell', () => {
       const dimension = 10;
       const editor = createTestTableEditor({
@@ -65,7 +64,7 @@ describe('table grid queries', () => {
         ],
       });
       const plugin = editor.plugin(BaseTablePlugin);
-      plugin.update.setColumnWidth({ colIndex: 0, width: 104 }, { at: [0] });
+      plugin.update.setColumnWidth({ colIndex: 0, width: 104, at: [0] });
       const before = readTableGridCompilerMetrics();
       for (let row = 0; row < dimension; row++) {
         for (let col = 0; col < dimension; col++) {
@@ -74,8 +73,11 @@ describe('table grid queries', () => {
           });
           assert.ok(entry);
           const key = editor.key(entry[0]);
-          expect(plugin.read.getCellIndices(entry[0])).toEqual({ row, col });
-          expect(plugin.read.getCellIndicesByKey(key)).toEqual({ row, col });
+          expect(plugin.read.cell({ at: entry[0] })).toMatchObject({
+            row,
+            col,
+          });
+          expect(plugin.read.cell({ at: key })).toMatchObject({ row, col });
         }
       }
       expect(
@@ -94,11 +96,11 @@ describe('table grid queries', () => {
       const c12 = editor.key([0, 0, 1])!;
 
       expect(
-        editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(c11)
-      ).toEqual({ col: 0, row: 0 });
+        editor.plugin(BaseTablePlugin).read.cell({ at: c11 })
+      ).toMatchObject({ col: 0, row: 0 });
       expect(
-        editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(c12)
-      ).toEqual({ col: 1, row: 0 });
+        editor.plugin(BaseTablePlugin).read.cell({ at: c12 })
+      ).toMatchObject({ col: 1, row: 0 });
       expect(initialValue).toEqual(inputSnapshot);
     });
 
@@ -138,14 +140,13 @@ describe('table grid queries', () => {
       }) as unknown as typeof editor;
       const c11 = rootEditor.key([0, 0, 0])!;
       const c12 = rootEditor.key([0, 0, 1])!;
-      const context = rootEditor.read((state) =>
-        createTableContext(state, [0])
-      );
 
-      assert.ok(context);
-
-      expect(context.grid.byKey.get(c11)).toMatchObject({ col: 0, row: 0 });
-      expect(context.grid.byKey.get(c12)).toMatchObject({ col: 1, row: 0 });
+      expect(
+        rootEditor.plugin(BaseTablePlugin).read.cell({ at: c11 })
+      ).toMatchObject({ col: 0, row: 0 });
+      expect(
+        rootEditor.plugin(BaseTablePlugin).read.cell({ at: c12 })
+      ).toMatchObject({ col: 1, row: 0 });
     });
 
     it('derives stable indices through the canonical compiler', () => {
@@ -160,20 +161,24 @@ describe('table grid queries', () => {
       const [cell] = entry;
       const id = editor.key(cell);
 
-      expect(editor.plugin(BaseTablePlugin).read.getCellIndices(cell)).toEqual({
+      expect(
+        editor.plugin(BaseTablePlugin).read.cell({ at: cell })
+      ).toMatchObject({
         col: 1,
         row: 0,
       });
       expect(
-        editor.plugin(BaseTablePlugin).read.getCellIndicesByKey(id)
-      ).toEqual({ col: 1, row: 0 });
-      expect(editor.plugin(BaseTablePlugin).read.getCellIndices(cell)).toEqual({
+        editor.plugin(BaseTablePlugin).read.cell({ at: id })
+      ).toMatchObject({ col: 1, row: 0 });
+      expect(
+        editor.plugin(BaseTablePlugin).read.cell({ at: cell })
+      ).toMatchObject({
         col: 1,
         row: 0,
       });
     });
 
-    it('falls back when the cell does not belong to a table', () => {
+    it('returns null for a detached cell', () => {
       const orphanValue: Value = [
         { children: [{ text: '' }], type: 'paragraph' },
       ];
@@ -187,10 +192,7 @@ describe('table grid queries', () => {
         type: 'tableCell',
       };
 
-      expect(editor.plugin(BaseTablePlugin).read.getCellIndices(cell)).toEqual({
-        col: 0,
-        row: 0,
-      });
+      expect(editor.plugin(BaseTablePlugin).read.cell({ at: cell })).toBeNull();
     });
   });
 
@@ -236,7 +238,7 @@ describe('table grid queries', () => {
         const cellNode = getCell(editor);
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getCellIndices(cellNode).col
+          editor.plugin(BaseTablePlugin).read.cell({ at: cellNode })?.col
         ).toBe(1);
       });
 
@@ -260,112 +262,16 @@ describe('table grid queries', () => {
         const clonedCell = structuredClone(getCell(editor));
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getCellIndices(clonedCell).col
-        ).toBe(0);
+          editor.plugin(BaseTablePlugin).read.cell({ at: clonedCell })
+        ).toBeNull();
         expect(
-          editor.plugin(BaseTablePlugin).read.getCellIndices({
-            children: [{ text: 'ghost' }],
-            type: 'tableCell',
-          }).col
-        ).toBe(0);
-      });
-    });
-  }
-
-  {
-    jsxt;
-
-    const createTableEditor = (input: TestEditor) =>
-      createTestTableEditor({
-        plugins: getTestTablePlugins(),
-        selection: input.selection,
-        initialValue: input.children,
-      });
-
-    describe('getTableEntries', () => {
-      it('returns the cell, row, and table entries for the current table selection', () => {
-        const input = (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>11</hp>
-                </htd>
-                <htd>
-                  <hp>12</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>
-                    21
-                    <cursor />
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>22</hp>
-                </htd>
-              </htr>
-            </htable>
-          </editor>
-        ) as TestEditor;
-
-        const editor = createTableEditor(input);
-        const entries = editor.plugin(BaseTablePlugin).read.getEntries()!;
-
-        expect(entries.cell[0].type).toBe('tableCell');
-        expect(entries.cell[1]).toEqual([0, 1, 0]);
-        expect(entries.row[0].type).toBe('tableRow');
-        expect(entries.row[1]).toEqual([0, 1]);
-        expect(entries.table[0].type).toBe('table');
-        expect(entries.table[1]).toEqual([0]);
-      });
-
-      it('supports an explicit location even when the current selection is outside the table', () => {
-        const input = (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>11</hp>
-                </htd>
-              </htr>
-            </htable>
-            <hp>
-              after
-              <cursor />
-            </hp>
-          </editor>
-        ) as TestEditor;
-
-        const editor = createTableEditor(input);
-        const entries = editor.plugin(BaseTablePlugin).read.getEntries({
-          at: { offset: 0, path: [0, 0, 0, 0, 0] },
-        })!;
-
-        expect(entries.cell[1]).toEqual([0, 0, 0]);
-        expect(entries.row[1]).toEqual([0, 0]);
-        expect(entries.table[1]).toEqual([0]);
-      });
-
-      it('returns undefined when the location is not inside a table cell', () => {
-        const input = (
-          <editor>
-            <hp>
-              text
-              <cursor />
-            </hp>
-          </editor>
-        ) as TestEditor;
-
-        const editor = createTableEditor(input);
-
-        expect(
-          editor.plugin(BaseTablePlugin).read.getEntries()
-        ).toBeUndefined();
-        expect(
-          editor.plugin(BaseTablePlugin).read.getEntries({ at: null })
-        ).toBeUndefined();
+          editor.plugin(BaseTablePlugin).read.cell({
+            at: {
+              children: [{ text: 'ghost' }],
+              type: 'tableCell',
+            },
+          })
+        ).toBeNull();
       });
     });
   }
@@ -406,11 +312,11 @@ describe('table grid queries', () => {
         const [cellNode] = entry;
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getCellIndices(cellNode).row
+          editor.plugin(BaseTablePlugin).read.cell({ at: cellNode })?.row
         ).toBe(1);
       });
 
-      it('falls back to zero for detached cells', () => {
+      it('returns null for detached cells', () => {
         const editor = createTableEditor(
           (
             <editor>
@@ -420,11 +326,13 @@ describe('table grid queries', () => {
         );
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getCellIndices({
-            children: [{ text: 'ghost' }],
-            type: 'tableCell',
-          }).row
-        ).toBe(0);
+          editor.plugin(BaseTablePlugin).read.cell({
+            at: {
+              children: [{ text: 'ghost' }],
+              type: 'tableCell',
+            },
+          })
+        ).toBeNull();
       });
     });
   }
@@ -442,7 +350,7 @@ describe('table grid queries', () => {
 
         const result = editor
           .plugin(BaseTablePlugin)
-          .api.getColumnCount(tableNode);
+          .api.columnWidths(tableNode).length;
         expect(result).toBe(0);
       });
 
@@ -463,7 +371,7 @@ describe('table grid queries', () => {
 
         const result = editor
           .plugin(BaseTablePlugin)
-          .api.getColumnCount(tableNode);
+          .api.columnWidths(tableNode).length;
         expect(result).toBe(6);
       });
 
@@ -492,7 +400,7 @@ describe('table grid queries', () => {
 
         const result = editor
           .plugin(BaseTablePlugin)
-          .api.getColumnCount(tableNode);
+          .api.columnWidths(tableNode).length;
         expect(result).toBe(6);
       });
 
@@ -512,7 +420,7 @@ describe('table grid queries', () => {
 
         const result = editor
           .plugin(BaseTablePlugin)
-          .api.getColumnCount(tableNode);
+          .api.columnWidths(tableNode).length;
         expect(result).toBe(3);
       });
     });

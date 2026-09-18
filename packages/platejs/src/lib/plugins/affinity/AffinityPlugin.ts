@@ -256,7 +256,7 @@ export const AffinityPlugin = definePlugin('affinity', {
           input.unit !== 'character' ||
           !state.selection.isCollapsed()
         ) {
-          return false;
+          return next();
         }
 
         const [start] = getEdgeNodes(state) ?? [null];

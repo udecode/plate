@@ -96,6 +96,11 @@ the same plan and repair the target before continuing.
   lifetime, dependency boundary, deterministic initial window and native
   behavior limits. Pagination owns page omission and canvas coordinates; do not
   feed its layout arrays or offsets through the generic block virtualizer.
+- Plan live pagination as configuration on its mounted paged component with
+  exact-host reads of committed layout. Keep independent headless measurement
+  one-shot. Reject a public live controller/provider, persisted derived breaks,
+  caller-authored fragment paths or box/split protocols, and caller-owned
+  projection or decoration publication.
 
 ## Hard Policy
 
@@ -299,7 +304,10 @@ After standalone acceptance or a qualifying delegated supervisor gate:
 5. Run the applicable root `AGENTS.md` gates and applicable review skills.
 6. Rerun every scale-sensitive contract on the final production path with the
    recorded correctness guard; a design prototype is not implementation proof.
-7. Update the plan with actual evidence and hand off the result.
+7. Update the plan with actual evidence and its one lifecycle status. Apply
+   Task's [feature-history closure](../task/references/workflow.md#feature-history-closure)
+   to bind execution to its governing review and reconcile the decision before
+   handing off. A completed design plan does not establish adoption.
 
 ## Handoff
 

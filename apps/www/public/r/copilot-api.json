@@ -3,7 +3,8 @@
   "name": "copilot-api",
   "dependencies": [
     "@ai-sdk/gateway@3",
-    "ai@6"
+    "ai@6",
+    "next"
   ],
   "registryDependencies": [],
   "files": [

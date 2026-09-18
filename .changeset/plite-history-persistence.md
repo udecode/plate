@@ -10,4 +10,7 @@
 - Rebase saved selections through skipped changes against each batch's source and target documents
 - Canonicalize text-only inverse batches before mapping skipped text changes so concurrent boundary inserts survive undo and redo
 - Restore history selections against the editor view root that owns the batch
-- Add typed undo, redo, state-aware batching, history skipping, state reads, and redo-branch disposal
+- Expose undo and redo as document-wide `editor.api.history` services with explicit `applied`, `empty`, and authored-conflict results
+- Expose `editor.read.history.hasUndo()` and `hasRedo()` for availability, while retaining `editor.read.history()` for full immutable branch inspection
+- Keep transaction history controls limited to grouping, skipping, and restoration; replay is rejected from active reads and updates
+- Prepare history, authored state, anchors, plugin configuration, and document changes before publishing one coherent commit

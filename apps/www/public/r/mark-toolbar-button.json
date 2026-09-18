@@ -4,7 +4,8 @@
   "title": "Mark Toolbar Button",
   "description": "A toolbar control for basic text formatting.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/toolbar.json"

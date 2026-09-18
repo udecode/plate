@@ -4,7 +4,9 @@
   "title": "Resize Handle",
   "description": "A resizable wrapper with resize handles.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [],
   "files": [

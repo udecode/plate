@@ -5,6 +5,8 @@ description: 保留作者历史，并比较保存的文档版本。
 
 此示例安装原生 authored changes，并启用 `retainHistory: true`。以 Alice 或 Bob 身份编辑、revert 一个已接受贡献，或保存两个版本以查看结构比较。
 
+带评论的应用版本预览与恢复请参阅[评论的历史版本](/docs/comment#历史版本)。
+
 ## 示例
 
 <ComponentPreview name="version-history-demo" />
@@ -57,5 +59,7 @@ const reloaded = createEditor({
   initialValue: saved,
 });
 ```
+
+新 editor 从空的本地 undo 和 redo stack 开始；保留的 authored contribution 仍在保存的文档中。如果文档包含评论，用 `comments.toJSON()` 将 `CommentsJSON` 与同一版本保存，通过 `initialComments` 加载；文档 undo 不会回退讨论。
 
 Review view、decision result、协作和 format projection 请参阅 [Authored Changes](/docs/authored-changes)。

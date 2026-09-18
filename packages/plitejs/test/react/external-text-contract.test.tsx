@@ -336,7 +336,7 @@ describe('external text views', () => {
     await act(async () => {
       await mountedView.api.authored.setView({
         intent: 'edit',
-        projection: 'markup',
+        projection: 'accepted',
       });
     });
     expect(mountedView.read.authored.view()).toEqual(proposal);
@@ -354,10 +354,10 @@ describe('external text views', () => {
     await act(async () => external.actions.composition('end'));
     expect(mountedView.read.authored.view()).toEqual({
       intent: 'edit',
-      projection: 'markup',
+      projection: 'accepted',
     });
     expect(mountedView.read.view.isComposing()).toBe(false);
-    expect(external.state.text).toBe('AあB');
+    expect(external.state.text).toBe('AB');
     expect(document.activeElement).toBe(input);
     expect(
       rendered.getByRole('textbox', { name: 'Proposed code' }).textContent
@@ -365,7 +365,7 @@ describe('external text views', () => {
     expect(source.read.children()).toEqual([
       { type: 'code', children: [{ text: 'AB' }] },
     ]);
-    expect(source.read.history.undos()).toHaveLength(1);
+    expect(source.read.history().undos).toHaveLength(1);
     await act(async () => mountedView.api.authored.setView(proposal));
     expect(external.state.text).toBe('AあB');
     expect(document.activeElement).toBe(input);
@@ -377,7 +377,7 @@ describe('external text views', () => {
         selection: { anchor: 3, focus: 3 },
       });
     });
-    expect(source.read.history.undos()).toHaveLength(2);
+    expect(source.read.history().undos).toHaveLength(2);
     for (const text of ['AあB', 'AB']) {
       await act(async () =>
         expect(external.actions.history('undo')).toBe(true)
@@ -405,6 +405,35 @@ describe('external text views', () => {
     ).toBe('AB');
     rendered.unmount();
     expect(records.every((record) => record.destroyed === 1)).toBe(true);
+  });
+
+  test('accepts input after an empty authored composition epoch', async () => {
+    const editor = createEditor({
+      plugins: [textSchema, history(), authored({ authorId: 'alice' })],
+      initialValue: [{ type: 'code', children: [{ text: 'AB' }] }],
+    });
+    const { adapter, records } = createAdapter();
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    const external = records[0];
+
+    act(() => external.actions.composition('start'));
+    await act(async () => external.actions.composition('end'));
+    await act(async () => {
+      expect(
+        external.actions.dispatch({
+          baseVersion: external.state.version,
+          changes: [{ from: 0, to: 0, insert: 'x' }],
+          intent: 'input',
+          selection: { anchor: 1, focus: 1 },
+        }).status
+      ).toBe('applied');
+    });
+    expect(editor.read.text.string([])).toBe('xAB');
+    rendered.unmount();
   });
 
   test('captures external text deletion and insertion while a sibling displays retained content', async () => {
@@ -1518,7 +1547,7 @@ describe('external text views', () => {
     ).toBe('あ');
     act(() => view.actions.composition('end'));
     expect(getMountedEditorFor(view).read.view.isComposing()).toBe(false);
-    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history().undos).toHaveLength(1);
     act(() => {
       view.actions.dispatch({
         baseVersion: view.state.version,
@@ -1527,7 +1556,7 @@ describe('external text views', () => {
         selection: { anchor: 2, focus: 2 },
       });
     });
-    expect(editor.read.history.undos()).toHaveLength(2);
+    expect(editor.read.history().undos).toHaveLength(2);
     act(() => {
       view.actions.history('undo');
     });
@@ -2166,7 +2195,7 @@ describe('external text views', () => {
         }).status
       ).toBe('stale')
     );
-    expect(editor.read.history.undos()).toHaveLength(0);
+    expect(editor.read.history().undos).toHaveLength(0);
   });
 
   test('ends a stale composition before accepting a new input epoch', () => {
@@ -2206,7 +2235,7 @@ describe('external text views', () => {
         selection: { anchor: 3, focus: 3 },
       });
     });
-    expect(editor.read.history.undos()).toHaveLength(2);
+    expect(editor.read.history().undos).toHaveLength(2);
     act(() => {
       view.actions.history('undo');
     });
@@ -2253,6 +2282,153 @@ describe('external text views', () => {
     expect(results).toEqual(['stale', 'stale']);
     expect(editor.read.text.string([0])).toBe('!abcd');
     expect(fixture.records[0].state.text).toBe('!abcd');
+  });
+
+  test('keeps a successful nested delivery ahead of its older outer delivery', () => {
+    const editor = createFixture('a');
+    const fixture = createAdapter();
+    let nested = false;
+    const adapter: ExternalTextAdapter = {
+      mount(context) {
+        const view = fixture.adapter.mount(context);
+
+        return {
+          ...view,
+          update(update) {
+            view.update(update);
+            if (update.state.text !== 'Ra' || nested) return;
+            nested = true;
+            editor.update.text.insert('S', {
+              at: { path: [0, 0], offset: 0 },
+            });
+          },
+        };
+      },
+    };
+
+    render(
+      <EditorRoot editor={editor}>
+        <Editable renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    act(() =>
+      editor.update.text.insert('R', { at: { path: [0, 0], offset: 0 } })
+    );
+    const record = fixture.records[0];
+
+    expect(editor.read.text.string([0])).toBe('SRa');
+    expect(record.state.text).toBe('SRa');
+    act(() =>
+      expect(
+        record.actions.select({
+          baseVersion: record.state.version,
+          selection: { anchor: 0, focus: 0 },
+        }).status
+      ).toBe('applied')
+    );
+  });
+
+  test('recovers the latest canonical state after a nested adapter failure', () => {
+    const errors = vi.fn();
+    const editor = createEditor({
+      plugins: [textSchema],
+      initialValue: [{ type: 'code', children: [{ text: 'a' }] }],
+      lifecycleErrorSink: errors,
+    });
+    const fixture = createAdapter();
+    let applying = false;
+    let nested = false;
+    const adapter: ExternalTextAdapter = {
+      mount(context) {
+        const view = fixture.adapter.mount(context);
+
+        return {
+          ...view,
+          update(update) {
+            if (applying) throw new Error('nested adapter update');
+            applying = true;
+            try {
+              view.update(update);
+              if (update.state.text !== 'agood' || nested) return;
+              nested = true;
+              editor.update.text.insert('R', {
+                at: { path: [0, 0], offset: 0 },
+              });
+            } finally {
+              applying = false;
+            }
+          },
+        };
+      },
+    };
+
+    render(
+      <EditorRoot editor={editor}>
+        <Editable renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    act(() =>
+      editor.update.text.insert('good', { at: { path: [0, 0], offset: 1 } })
+    );
+    const record = fixture.records[0];
+
+    expect(editor.read.text.string([0])).toBe('Ragood');
+    expect(record.state.text).toBe('Ragood');
+    expect(errors).toHaveBeenCalledWith(
+      expect.objectContaining({ phase: 'update', source: 'external-text' })
+    );
+    act(() =>
+      expect(
+        record.actions.select({
+          baseVersion: record.state.version,
+          selection: { anchor: 0, focus: 0 },
+        }).status
+      ).toBe('applied')
+    );
+  });
+
+  test('does not revive an owner removed during its update callback', () => {
+    const editor = createEditor({
+      plugins: [textSchema],
+      initialValue: [
+        { type: 'code', children: [{ text: 'first' }] },
+        { type: 'code', children: [{ text: 'second' }] },
+      ],
+    });
+    const fixture = createAdapter();
+    let removed = false;
+    const adapter: ExternalTextAdapter = {
+      mount(context) {
+        const view = fixture.adapter.mount(context);
+
+        return {
+          ...view,
+          update(update) {
+            view.update(update);
+            if (update.state.text !== '!first' || removed) return;
+            removed = true;
+            editor.update.nodes.remove({ at: [0] });
+          },
+        };
+      },
+    };
+
+    render(
+      <EditorRoot editor={editor}>
+        <Editable renderElement={externalRenderer(adapter)} />
+      </EditorRoot>
+    );
+    const runtime = getMountedRuntime(fixture.records[0].host);
+    act(() =>
+      editor.update.text.insert('!', { at: { path: [0, 0], offset: 0 } })
+    );
+
+    expect(editor.read.text.string([0])).toBe('second');
+    expect(fixture.records.map((record) => record.destroyed)).toEqual([1, 0]);
+    expect(runtime.externalText.metrics()).toMatchObject({
+      canonicalCodeUnits: 'second'.length,
+      viewCount: 1,
+    });
   });
 
   test('keeps read-only view state separate from shared canonical bindings', () => {

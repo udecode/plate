@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
-import { ElementApi, schema, target } from '../../../core';
+import { ElementApi, schema } from '../../../core';
 import { jsxt } from '../../../testing';
 import { createEditor } from '../../editor';
 import { definePlugin } from '../../plugin';
-import { ElementIdPlugin, migrateElementIds } from './ElementIdPlugin';
+import { ElementIdPlugin } from './ElementIdPlugin';
 
 jsxt;
 
@@ -89,41 +89,6 @@ describe('ElementIdPlugin', () => {
       path: [0, 1],
       root: 'main',
     });
-  });
-
-  it('honors the configured schema target while preparing ids', () => {
-    const editor = createEditor({
-      initialValue: [
-        {
-          children: [
-            { text: 'before' },
-            {
-              children: [{ text: 'link' }],
-              id: 'excluded-inline-id',
-              type: 'elementIdLink',
-            },
-          ],
-          type: 'paragraph',
-        },
-      ],
-      plugins: [
-        ElementIdPlugin.configure({
-          initialState: { generateId: createIdFactory() },
-        }),
-        LinkPlugin,
-      ],
-      schema: {
-        overrides: [
-          schema.override(ElementIdPlugin, {
-            properties: { id: { target: target.group('block') } },
-          }),
-        ],
-      },
-    });
-    const paragraph = editor.read.children()[0];
-
-    expect(paragraph?.id).toMatch(/^element-/);
-    expect(paragraph?.children[1]).not.toHaveProperty('id');
   });
 
   it('resolves persisted ids from live keys without a caller node lookup', () => {
@@ -220,35 +185,6 @@ describe('ElementIdPlugin', () => {
     ).toThrow('Duplicate element ID "source" at main:[0] and main:[2].');
   });
 
-  it('seeds duplicate checks from the final transformed initial value', () => {
-    const RewriteElementIdPlugin = definePlugin('rewriteElementId', {
-      dependencies: [ElementIdPlugin],
-      prepareDocument: ({ document }) => ({
-        ...document,
-        children: document.children.map((node) =>
-          ElementApi.isElement(node) ? { ...node, id: 'rewritten' } : node
-        ),
-      }),
-    });
-    const editor = createEditor({
-      initialValue: [
-        { children: [{ text: 'source' }], id: 'source', type: 'paragraph' },
-      ],
-      plugins: [RewriteElementIdPlugin],
-    });
-
-    expect(editor.read.children()[0]?.id).toBe('rewritten');
-    expect(() =>
-      editor.update((tx) => {
-        tx.nodes.insert({
-          children: [{ text: 'duplicate' }],
-          id: 'rewritten',
-          type: 'paragraph',
-        });
-      })
-    ).toThrow(/duplicate element id "rewritten"/i);
-  });
-
   it('keeps reverse lookup coherent across live and rejected drafts', () => {
     const editor = createEditor({
       initialValue: [
@@ -287,42 +223,6 @@ describe('ElementIdPlugin', () => {
     ).toThrow('discard draft');
     expect(elementId.read.entry('discarded')).toBeUndefined();
     expect(elementId.read.entry('source')?.path).toEqual([1]);
-  });
-
-  it('canonicalizes a legacy source property to id', () => {
-    const migrated = migrateElementIds(
-      [
-        {
-          blockId: 'legacy-id',
-          children: [{ text: 'legacy' }],
-          type: 'paragraph',
-        },
-      ],
-      { generateId: () => 'generated', sourceKey: 'blockId' }
-    );
-
-    expect(migrated.value[0]).toHaveProperty('id', 'legacy-id');
-    expect(migrated.value[0]).not.toHaveProperty('blockId');
-  });
-
-  it('rejects structural and empty migration source keys', () => {
-    for (const sourceKey of ['', 'children', 'type']) {
-      expect(() =>
-        migrateElementIds(
-          [{ children: [{ text: 'legacy' }], type: 'paragraph' }],
-          { generateId: () => 'generated', sourceKey }
-        )
-      ).toThrow(`Element ID sourceKey cannot be "${sourceKey}".`);
-    }
-  });
-
-  it('does not read inherited migration source properties', () => {
-    const migrated = migrateElementIds(
-      [{ children: [{ text: 'legacy' }], type: 'paragraph' }],
-      { generateId: () => 'generated', sourceKey: 'constructor' }
-    );
-
-    expect(migrated.value[0]).toHaveProperty('id', 'generated');
   });
 
   it('updates its index atomically when persisted ids move between roots', () => {
@@ -398,36 +298,5 @@ describe('ElementIdPlugin', () => {
     expect(
       editor.plugin(ElementIdPlugin).read.entry('after-id')?.node.children
     ).toEqual([{ text: 'after' }]);
-  });
-
-  it('migrates missing ids without hiding numeric ids or duplicates', () => {
-    const migrated = migrateElementIds(
-      [
-        { children: [{ text: 'one' }], id: 1, type: 'paragraph' },
-        { children: [{ text: 'two' }], type: 'paragraph' },
-        { children: [{ text: 'duplicate' }], id: 'same', type: 'paragraph' },
-        { children: [{ text: 'duplicate' }], id: 'same', type: 'paragraph' },
-      ],
-      {
-        convertNumericId: (id) => `legacy-${id}`,
-        generateId: () => 'generated',
-      }
-    );
-
-    expect(migrated.value.map((node) => node.id)).toEqual([
-      'legacy-1',
-      'generated',
-      'same',
-      'same',
-    ]);
-    expect(migrated.duplicates).toEqual([
-      expect.objectContaining({ id: 'same' }),
-    ]);
-    expect(() =>
-      migrateElementIds(
-        [{ children: [{ text: '' }], id: 1, type: 'paragraph' }],
-        { generateId: () => 'generated' }
-      )
-    ).toThrow(/numeric element id.*convertNumericId/i);
   });
 });

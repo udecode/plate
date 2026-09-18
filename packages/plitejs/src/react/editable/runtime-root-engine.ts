@@ -120,15 +120,14 @@ export const useEditableRootRuntime = ({
   useEditableRootCommitWakeup();
   useFlushDeferredSelectorsOnRender();
 
-  const viewReadOnly = useSyncExternalStore(
+  const readOnly = useSyncExternalStore(
     useCallback(
       (listener) => subscribeEditorViewState(editor, listener),
       [editor]
     ),
-    () => editor.read.view.isReadOnly(),
+    () => readOnlyProp || editor.read.view.isReadOnly(),
     () => readOnlyProp
   );
-  const readOnly = readOnlyProp || viewReadOnly;
 
   const rootRuntimeState = useEditableRootRuntimeState({
     viewportRuntime,
@@ -154,7 +153,7 @@ export const useEditableRootRuntime = ({
   useIsomorphicLayoutEffect(() => {
     const root = rootRef.current;
 
-    if (!root || !autoFocus || (!readOnlyProp && viewReadOnly)) return;
+    if (!root || !autoFocus || (!readOnlyProp && readOnly)) return;
     if (!runtime.claimAutoFocus()) return;
 
     if (readOnlyProp) {
@@ -163,7 +162,7 @@ export const useEditableRootRuntime = ({
     }
 
     editor.api.dom.focus();
-  }, [autoFocus, editor, readOnlyProp, rootRef, runtime, viewReadOnly]);
+  }, [autoFocus, editor, readOnlyProp, rootRef, runtime, readOnly]);
 
   const {
     onDOMSelectionChange,
@@ -213,7 +212,9 @@ export const useEditableRootRuntime = ({
     scrollSelectionIntoView,
     syncDOMSelectionToEditor,
   });
-  runtime.updateHistoryFocusHandler(() => {
+  runtime.updateHistoryFocusHandler((policy) => {
+    if (policy !== 'restore-root') return;
+
     const next = getModelOwnedHistoryFocusRepair({
       editor,
       getActiveContentRootOwner: pliteRuntimeContext?.getActiveContentRootOwner,
@@ -318,6 +319,9 @@ export const useEditableRootRuntime = ({
     syncDOMSelectionToEditor,
     trace: traceRuntime,
   });
+  runtime.updateHistorySettleHandler(
+    eventRuntime.flushPendingNativeTextInput ?? (() => {})
+  );
 
   const callbackRef = useEditableRootRef({
     forwardedRef,

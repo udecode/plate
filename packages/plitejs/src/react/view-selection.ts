@@ -5,6 +5,7 @@ import {
   readAuthoredViewFragments,
 } from '../core/authored-runtime';
 import { hasEditorRuntime } from '../core/editor-runtime';
+import { readEditorHistoryHeadIdentity } from '../core/public-state';
 import type { AnyEditor } from '../interfaces/editor';
 import {
   createContentRootViewBoundaryGraph,
@@ -56,7 +57,7 @@ const VIEW_SELECTION_LISTENERS = new WeakMap<
   object,
   Set<(notification?: PliteViewSelectionNotification) => void>
 >();
-const HISTORY_BATCH_TO_VIEW_SELECTION = new WeakMap<
+const HISTORY_GROUP_TO_VIEW_SELECTION = new WeakMap<
   object,
   Readonly<{
     redo: PliteViewSelection | null;
@@ -400,30 +401,17 @@ export const subscribePliteViewSelection = (
   };
 };
 
-type HistoryStackName = 'redos' | 'undos';
-
 type HistoryDirection = 'redo' | 'undo';
 
 type EditorWithHistory = {
   read: <T>(fn: (state: unknown) => T) => T;
 };
 
-const getHistoryBatch = (
+const getHistoryGroup = (
   editor: EditorWithHistory,
-  stackName: HistoryStackName
+  direction: HistoryDirection
 ): object | null =>
-  editor.read((state) => {
-    const stack = (
-      state as {
-        history?: {
-          redos?: () => readonly object[];
-          undos?: () => readonly object[];
-        };
-      }
-    ).history?.[stackName]?.();
-
-    return stack?.at(-1) ?? null;
-  });
+  readEditorHistoryHeadIdentity(editor as AnyEditor, direction);
 
 export const savePliteViewSelectionHistoryEntry = (
   editor: EditorWithHistory,
@@ -432,40 +420,25 @@ export const savePliteViewSelectionHistoryEntry = (
     undo: PliteViewSelection | null;
   }>
 ) => {
-  const batch = getHistoryBatch(editor, 'undos');
+  const group = getHistoryGroup(editor, 'undo');
 
-  if (batch) {
-    HISTORY_BATCH_TO_VIEW_SELECTION.set(batch, entry);
+  if (group) {
+    HISTORY_GROUP_TO_VIEW_SELECTION.set(group, entry);
   }
 };
+
+export const readPliteViewSelectionHistoryGroup = (
+  group: object,
+  direction: HistoryDirection
+) => HISTORY_GROUP_TO_VIEW_SELECTION.get(group)?.[direction];
 
 export const readPliteViewSelectionHistoryEntry = (
   editor: EditorWithHistory,
   direction: HistoryDirection
 ): PliteViewSelection | null | undefined => {
-  const batch = getHistoryBatch(
-    editor,
-    direction === 'undo' ? 'undos' : 'redos'
-  );
-  const entry = batch ? HISTORY_BATCH_TO_VIEW_SELECTION.get(batch) : undefined;
+  const group = getHistoryGroup(editor, direction);
 
-  return entry?.[direction];
-};
-
-export const withPliteViewSelectionHistory = (
-  editor: EditorWithHistory,
-  direction: HistoryDirection,
-  update: () => void
-) => {
-  const batch = getHistoryBatch(
-    editor,
-    direction === 'undo' ? 'undos' : 'redos'
-  );
-  const entry = batch ? HISTORY_BATCH_TO_VIEW_SELECTION.get(batch) : undefined;
-  update();
-  const inverse = getHistoryBatch(
-    editor,
-    direction === 'undo' ? 'redos' : 'undos'
-  );
-  if (entry && inverse) HISTORY_BATCH_TO_VIEW_SELECTION.set(inverse, entry);
+  return group
+    ? readPliteViewSelectionHistoryGroup(group, direction)
+    : undefined;
 };

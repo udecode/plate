@@ -4,8 +4,8 @@ import * as Y from 'yjs';
 
 import {
   history,
+  type HistoryApi,
   type HistoryStateApi,
-  type HistoryTxApi,
 } from '../../../src/history';
 import {
   createEditor,
@@ -46,7 +46,10 @@ import {
 
 export { FakeAwareness, FakeProvider } from './provider';
 
-type TestEditor = AnyEditor;
+type TestEditor = AnyEditor & {
+  readonly api: AnyEditor['api'] & { readonly history: HistoryApi };
+  readonly read: AnyEditor['read'] & { readonly history: HistoryStateApi };
+};
 const disconnectedPeers = new WeakSet<TestEditor>();
 
 export type Peer<TEditor extends TestEditor = TestEditor> = {
@@ -446,43 +449,17 @@ export const disconnectAndClearYjsTrace = (peer: Peer): void => {
 };
 
 export const getHistoryUndoCount = (editor: TestEditor): number =>
-  editor.read(
-    (state) =>
-      (
-        state as typeof state & {
-          readonly history: HistoryStateApi;
-        }
-      ).history.undos().length
-  );
+  editor.read.history().undos.length;
 
 export const getHistoryRedoCount = (editor: TestEditor): number =>
-  editor.read(
-    (state) =>
-      (
-        state as typeof state & {
-          readonly history: HistoryStateApi;
-        }
-      ).history.redos().length
-  );
+  editor.read.history().redos.length;
 
 export const undoEditorHistory = (editor: TestEditor): void => {
-  editor.update((tx) => {
-    (
-      tx as typeof tx & {
-        readonly history: HistoryTxApi;
-      }
-    ).history.undo();
-  });
+  editor.api.history.undo();
 };
 
 export const redoEditorHistory = (editor: TestEditor): void => {
-  editor.update((tx) => {
-    (
-      tx as typeof tx & {
-        readonly history: HistoryTxApi;
-      }
-    ).history.redo();
-  });
+  editor.api.history.redo();
 };
 
 export const undoHistoryPeer = (peer: Peer): void => {

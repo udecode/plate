@@ -21,6 +21,7 @@ import {
   getSelection as editorGetSelection,
   string as editorString,
 } from '../../src/internal';
+import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   applyEditableCommand,
   applyModelOwnedHistoryIntent,
@@ -55,6 +56,21 @@ class FakeDataTransfer {
     this.store.set(type, value);
   }
 }
+
+const replayMountedHistory = (
+  editor: ReactRuntimeEditor,
+  direction: 'redo' | 'undo'
+) => {
+  const runtime = new EditableDOMRuntime({ editor });
+
+  runtime.setRoot(document.createElement('div'));
+  runtime.connect();
+  try {
+    return applyModelOwnedHistoryIntent({ direction, editor, runtime });
+  } finally {
+    runtime.destroy();
+  }
+};
 
 const encodePliteFragment = (fragment: unknown) =>
   globalThis.btoa(
@@ -1331,18 +1347,14 @@ describe('projected editable commands', () => {
     });
     expect(readPliteViewSelection(editor)).toBe(null);
 
-    expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
-      true
-    );
+    expect(replayMountedHistory(editor, 'undo')).toBe(true);
     expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('Before'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('Inside'), paragraph('More')] },
     });
     expect(readPliteViewSelection(editor)).toEqual(projectedSelection);
 
-    expect(applyModelOwnedHistoryIntent({ direction: 'redo', editor })).toBe(
-      true
-    );
+    expect(replayMountedHistory(editor, 'redo')).toBe(true);
     expect(editor.read((state) => state.value())).toEqual({
       children: [paragraph('BefX'), contentCard(), paragraph('After')],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
@@ -1383,9 +1395,7 @@ describe('projected editable commands', () => {
         editor,
       })
     ).toBe(true);
-    expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
-      true
-    );
+    expect(replayMountedHistory(editor, 'undo')).toBe(true);
     expect(editor.read((state) => state.children())).toEqual([
       paragraph('Before'),
       paragraph('After'),
@@ -1416,9 +1426,7 @@ describe('projected editable commands', () => {
     });
 
     try {
-      expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
-        true
-      );
+      expect(replayMountedHistory(editor, 'undo')).toBe(true);
     } finally {
       unsubscribe();
     }
@@ -1465,9 +1473,7 @@ describe('projected editable commands', () => {
     };
 
     try {
-      expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
-        true
-      );
+      expect(replayMountedHistory(editor, 'undo')).toBe(true);
     } finally {
       target.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
     }

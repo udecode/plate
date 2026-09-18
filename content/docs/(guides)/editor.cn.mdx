@@ -10,7 +10,7 @@ Plate 编辑器配置包括基础设置、插件管理和高级配置。
 使用 `createEditor` 创建基础 Plate 编辑器，或在 React 组件中使用 `useCreateEditor`：
 
 ```ts
-import { createEditor } from 'platejs/react';
+import { createEditor } from "platejs/react";
 
 const editor = createEditor({
   plugins: [HeadingPlugin],
@@ -25,8 +25,8 @@ const editor = createEditor({
 const editor = createEditor({
   initialValue: [
     {
-      type: 'paragraph',
-      children: [{ text: '你好，EditorRoot!' }],
+      type: "paragraph",
+      children: [{ text: "你好，EditorRoot!" }],
     },
   ],
 });
@@ -35,14 +35,14 @@ const editor = createEditor({
 当一个编辑器拥有内容根或其他命名区域时，传入包含 `children`、`roots` 和持久化
 `meta` 的 `EditorDocumentValue`。Plate 通过 `onValueChange` 返回同一完整结构。
 
-也可以使用HTML字符串和关联插件初始化编辑器：
+也可以使用 HTML 字符串和关联插件初始化编辑器：
 
 ```ts
 const editor = createEditor({
   plugins: [HtmlPlugin, BoldPlugin, ItalicPlugin],
   initialValue: ({ editor }) =>
     editor.api.html.deserialize({
-      element: '<p>这是<b>加粗</b>和<i>斜体</i>文本！</p>',
+      element: "<p>这是<b>加粗</b>和<i>斜体</i>文本！</p>",
     }),
 });
 ```
@@ -70,7 +70,7 @@ editor.read.schema.identity();
 ```ts
 const editor = createEditor({
   plugins: [HeadingPlugin],
-  schema: { id: 'acme-document', version: 3 },
+  schema: { id: "acme-document", version: 3 },
 });
 
 editor.read.schema.identity();
@@ -86,14 +86,10 @@ Plate 的标准非空段落 root 不需要 `schema.root`。只有应用需要不
 声明该字段。
 
 ```ts
-import { schema } from 'platejs';
-import {
-  createEditor,
-  definePlugin,
-  ParagraphPlugin,
-} from 'platejs/react';
+import { schema } from "platejs";
+import { createEditor, definePlugin, ParagraphPlugin } from "platejs/react";
 
-const SectionPlugin = definePlugin('section', {
+const SectionPlugin = definePlugin("section", {
   schema: {
     element: {
       content: schema.content.element(ParagraphPlugin, { min: 1 }),
@@ -119,40 +115,41 @@ const editor = createEditor({
 
 ### 文档迁移
 
-将 schema 身份与文档一起持久化，并声明一条由应用拥有的迁移链。目标版本步骤会按
-升序运行，然后 Plate 执行已安装插件的文档准备和 schema 适配。
+将 schema 身份与文档一起持久化，并声明一条由应用拥有的迁移链。在创建编辑器或替换
+编辑器值之前转换存储输入。目标版本步骤按升序运行，converter 返回完整的当前
+envelope。
 
 ```ts title="src/editor.ts" showLineNumbers
-import { ParagraphPlugin } from 'platejs/react';
-import {
-  defineDocumentMigrations,
-  migrateV54,
-} from 'platejs/migrations';
+import { ParagraphPlugin } from "platejs/react";
+import { defineDocumentMigrations, migrateV54 } from "platejs/migrations";
 
-import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
+import { fingerprint as v53Fingerprint } from "./migrations/v54-upgrade-plate/from";
 
 export const EditorKit = [ParagraphPlugin] as const;
-export const EditorSchema = { id: 'acme-document', version: 54 } as const;
+export const EditorSchema = { id: "acme-document", version: 54 } as const;
 
-export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
+export const EditorMigrations = defineDocumentMigrations({
+  plugins: EditorKit,
+  schema: EditorSchema,
   sourceFingerprints: { 53: v53Fingerprint },
   steps: { 54: migrateV54 },
-  unversioned: 53,
 });
 ```
 
-把同一组导出传给编辑器。`unversioned` 是没有 schema 元数据的历史文档的显式支持
-下限；这些文档不再受支持时应移除该字段。
+在存储边界执行转换，再把 `output` 传给编辑器。普通编辑器加载只接受当前输入。
 
 ```tsx title="src/document-editor.tsx" showLineNumbers
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from "platejs/react";
+import { migrateDocument } from "platejs/migrations";
 
-import { EditorKit, EditorMigrations, EditorSchema } from './editor';
+import { EditorKit, EditorMigrations, EditorSchema } from "./editor";
 
 export function DocumentEditor({ persisted }) {
-  const editor = useCreateEditor({
-    initialValue: persisted,
+  const current = migrateDocument(persisted, {
     migrations: EditorMigrations,
+  }).output;
+  const editor = useCreateEditor({
+    initialValue: current,
     plugins: EditorKit,
     schema: EditorSchema,
   });
@@ -161,10 +158,22 @@ export function DocumentEditor({ persisted }) {
 }
 ```
 
-持久化 `{ document: value, schema: editor.read.schema.identity() }`。版本 53 的文档由
-版本 54 的编辑器加载时，会运行步骤 54。缺失步骤、错误 schema ID、未来
-版本或指纹不匹配都会直接报错。每个历史 envelope 版本都要在 `sourceFingerprints`
-中绑定生成的精确指纹；原始文档使用显式 `unversioned` 下限。
+直接持久化 converter 返回的 envelope。版本 54 的 definition 转换版本 53 的
+envelope 时会运行步骤 54。缺失步骤、错误 schema ID、未来版本或指纹不匹配都会直接
+报错。每个受支持的历史 envelope 版本都要在 `sourceFingerprints` 中绑定生成的精确
+指纹。
+
+原始历史文档没有源身份。在对应的导入边界显式提供它：
+
+```ts
+const current = migrateDocument(legacyDocument, {
+  migrations: EditorMigrations,
+  source: 53,
+}).output;
+```
+
+只有当原始文档已使用当前 schema 时，才使用 `source: 'current'`。persisted envelope
+不能同时传入 `source` option。
 
 <Callout type="warning" title="历史和协作需要切换边界">
   文档迁移不会重写已序列化的 history 或已有内容的 Yjs room。离线迁移或丢弃旧
@@ -189,8 +198,8 @@ function AsyncEditor() {
     setTimeout(() => {
       setInitialValue([
         {
-          type: 'paragraph',
-          children: [{ text: '异步加载的值！' }],
+          type: "paragraph",
+          children: [{ text: "异步加载的值！" }],
         },
       ]);
       setLoading(false);
@@ -240,23 +249,23 @@ const editor = createEditor({
 在一个源文件中导出运行时输入：
 
 ```ts title="src/editor.ts"
-import { HeadingPlugin } from 'platejs/react';
-import { TablePlugin } from 'platejs/table/react';
-import { property, schema as s, target } from 'platejs';
+import { HeadingPlugin } from "platejs/react";
+import { TablePlugin } from "platejs/table/react";
+import { property, schema as s, target } from "platejs";
 
 export const EditorKit = [HeadingPlugin, TablePlugin] as const;
 
 export const EditorSchema = {
-  id: 'app-document',
+  id: "app-document",
   version: 1,
   overrides: [
     s.override(HeadingPlugin, {
-      element: { type: 'headingOne' },
+      element: { type: "headingOne" },
     }),
   ],
   properties: {
     reviewState: s.elementProperty(
-      property.enum(['draft', 'approved'] as const),
+      property.enum(["draft", "approved"] as const),
       { target: target.element(HeadingPlugin) }
     ),
   },
@@ -302,14 +311,14 @@ module，不复制生成的 contract。
 运行时插件组合：
 
 ```tsx title="src/editor/document-editor.tsx"
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from "platejs/react";
 
 import {
   schema as generatedSchema,
   type Editor,
   type Value,
-} from './plugins.generated';
-import { EditorKit, EditorSchema } from './editor';
+} from "./plugins.generated";
+import { EditorKit, EditorSchema } from "./editor";
 
 export function insertDocumentContent(editor: Editor) {
   editor.update.heading.insert({ level: 1 });
@@ -368,21 +377,21 @@ cat document.json | pnpm exec plate migrate run --entry src/editor.ts --stdin
 普通编辑器直接使用 `createEditor` 或 `useCreateEditor`。
 
 ```ts title="scripts/compile-editor.ts" showLineNumbers
-import { writeFileSync } from 'node:fs';
-import { compileEditor } from 'platejs/compiler';
+import { writeFileSync } from "node:fs";
+import { compileEditor } from "platejs/compiler";
 
-import { EditorKit, EditorSchema } from '../src/editor';
+import { EditorKit, EditorSchema } from "../src/editor";
 
 const artifact = compileEditor({ plugins: EditorKit, schema: EditorSchema });
 
-writeFileSync('editor.schema.json', JSON.stringify(artifact.schema, null, 2));
+writeFileSync("editor.schema.json", JSON.stringify(artifact.schema, null, 2));
 ```
 
 结果包含递归冻结的 JSON 数据：
 
-| 字段 | 内容 |
-| --- | --- |
-| `schema` | 已验证的 schema 契约、身份和指纹。 |
+| 字段       | 内容                                                                                    |
+| ---------- | --------------------------------------------------------------------------------------- |
+| `schema`   | 已验证的 schema 契约、身份和指纹。                                                      |
 | `bindings` | 已安装能力的名称、最终元素类型和 mark 键；`authoredToggle` 标识插件声明的 toggle 命令。 |
 
 编译会求值配置、API 工厂并执行验证器，不会激活扩展或生成初始文档。返回结果不包含
@@ -403,13 +412,13 @@ const editor = createEditor({
 
 ## 高级配置
 
-### 编辑器ID
+### 编辑器 ID
 
-为编辑器设置自定义ID：
+为编辑器设置自定义 ID：
 
 ```ts
 const editor = createEditor({
-  id: 'my-custom-editor-id',
+  id: "my-custom-editor-id",
 });
 ```
 
@@ -476,29 +485,28 @@ const editor = useCreateEditor({
 });
 ```
 
-文档准备只为匹配的元素生成 ID，并从不匹配的元素中移除该插件拥有的 `id`。
+当前文档进入系统时，只为匹配的元素生成 ID，并从不匹配的元素中移除该插件拥有的
+`id`。
 
-缺少 ID 的已存储文档应在加载前使用纯迁移 helper。它保留有效字符串、补齐缺失
-ID、报告重复项，并要求显式处理旧数字 ID。
+把 `ElementIdPlugin` 加入 `EditorMigrations`。已经使用当前 schema 的原始文档可以
+通过同一个 detached conversion 边界进入系统：
 
 ```ts
-import { migrateElementIds, nanoid } from "platejs";
+import { migrateDocument } from "platejs/migrations";
 
-const result = migrateElementIds(storedValue, {
-  convertNumericId: (id) => `legacy-${id}`,
-  generateId: nanoid,
-  sourceKey: 'legacyElementId',
-});
-
-if (result.duplicates.length > 0) {
-  throw new Error("请先解决重复的元素 ID，再加载文档。");
-}
+const current = migrateDocument(rawCurrentDocument, {
+  migrations: EditorMigrations,
+  source: "current",
+}).output;
 
 const editor = createEditor({
   plugins: [ElementIdPlugin],
-  initialValue: result.value,
+  initialValue: current,
 });
 ```
+
+当前文档进入系统时会保留有效字符串 ID、补齐缺失 ID，并拒绝重复 ID。旧数字 ID 和
+旧属性名应在对应历史 schema 版本的迁移步骤中转换，由应用明确规定冲突处理策略。
 
 ### 规范化
 
@@ -518,7 +526,7 @@ const editor = createEditor({
 
 ```ts
 const editor = createEditor({
-  autoSelect: 'end', // 或 'start'，或 true
+  autoSelect: "end", // 或 'start'，或 true
 });
 ```
 
@@ -544,7 +552,7 @@ const editor = createEditor({
 ```ts
 const AppLinkPlugin = LinkPlugin.configure({
   initialState: {
-    allowedSchemes: ['http', 'https'],
+    allowedSchemes: ["http", "https"],
   },
 });
 
@@ -558,8 +566,8 @@ const editor = createEditor({
 包插件可能需要适配另一个已安装的包，但不能导入它，也不能控制使用者的编辑器 kit：
 
 ```ts
-import { PLUGINS } from 'platejs';
-import { definePlugin } from 'platejs/react';
+import { PLUGINS } from "platejs";
+import { definePlugin } from "platejs/react";
 
 const SingleBlockPlugin = definePlugin(PLUGINS.singleBlock, {
   override: {
@@ -597,6 +605,9 @@ const editor = createEditor({
 ### 插件类型
 
 ```ts
+import { createEditor, LinkPlugin } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
+
 const AppKit = [TablePlugin, LinkPlugin] as const;
 const editor = createEditor({
   plugins: AppKit,
@@ -604,7 +615,7 @@ const editor = createEditor({
 
 // 使用
 editor.update((tx) => {
-  tx.table.insertRow();
+  tx.plugin(TablePlugin).insertRow();
 });
 ```
 
@@ -614,9 +625,9 @@ editor.update((tx) => {
 `typeof editor` 和 `ValueOf<typeof editor>`。
 
 ```ts
-import type { ValueOf } from 'platejs';
-import { createEditor, LinkPlugin } from 'platejs/react';
-import { TablePlugin } from 'platejs/table/react';
+import type { ValueOf } from "platejs";
+import { createEditor, LinkPlugin } from "platejs/react";
+import { TablePlugin } from "platejs/table/react";
 
 const AppKit = [TablePlugin, LinkPlugin] as const;
 
@@ -624,8 +635,8 @@ const editor = createEditor({
   plugins: AppKit,
   initialValue: [
     {
-      type: 'paragraph',
-      children: [{ text: '你好，EditorRoot!' }],
+      type: "paragraph",
+      children: [{ text: "你好，EditorRoot!" }],
     },
   ],
 });
@@ -637,8 +648,8 @@ export type MyValue = ValueOf<typeof editor>;
 组件从 context 读取当前 editor，无需重复 plugin tuple：
 
 ```ts
-import { useEditor } from 'platejs/react';
-import { TablePlugin } from 'platejs/table/react';
+import { useEditor } from "platejs/react";
+import { TablePlugin } from "platejs/table/react";
 
 const editor = useEditor();
 const table = editor.plugin(TablePlugin);

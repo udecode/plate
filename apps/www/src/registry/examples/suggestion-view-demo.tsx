@@ -27,7 +27,7 @@ export default function SuggestionViewDemo() {
     <EditorRoot
       editor={editor}
       readOnly
-      authored={{ intent: 'propose', projection: 'markup' }}
+      authored={{ intent: 'edit', projection: 'markup' }}
     >
       <SuggestionViewContent />
     </EditorRoot>
@@ -47,13 +47,12 @@ function SuggestionViewContent() {
         aria-label="Document projection"
         onValueChange={(value) => {
           const authored = editor.plugin(DefaultAuthoredPlugin);
-          if (value === 'accepted') {
+          if (
+            value === 'accepted' ||
+            value === 'proposed' ||
+            value === 'markup'
+          ) {
             authored.api.setView({ intent: 'edit', projection: value });
-          } else if (value === 'proposed' || value === 'markup') {
-            authored.api.setView({
-              intent: 'propose',
-              projection: value,
-            });
           }
         }}
         size="sm"
@@ -72,7 +71,7 @@ function SuggestionViewContent() {
             ? 'Proposed content includes additions and omits proposed deletions.'
             : 'Markup shows additions and keeps proposed deletions visible.'}
       </p>
-      <EditorContainer className="h-[200px] rounded-md border" variant="demo">
+      <EditorContainer className="h-[200px] rounded-md border">
         <Editor
           aria-label="Suggestion projection document"
           className="h-auto px-8 pb-8 sm:px-12"

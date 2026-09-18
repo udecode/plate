@@ -11,11 +11,9 @@ import {
   type TableCellFactory,
 } from './mutation';
 import {
-  createOrdinaryTablePasteElement,
   getTablePasteElement,
   planPreparedTablePaste,
   prepareTablePaste,
-  type TablePasteSource,
 } from './paste';
 
 let generatedId = 0;
@@ -55,12 +53,17 @@ const createCell: TableCellFactory = ({ header }) =>
 
 const createRow = () => row([]);
 
-const prepare = (source: Element) =>
-  prepareTablePaste(source, {
+const prepare = (source: Element) => {
+  const prepared = prepareTablePaste(ContentSlice.closed([source]), {
     createCell,
     createRow,
-    source: 'model',
+    tableType: 'table',
   });
+
+  if (!prepared) throw new Error('Expected a structural table slice');
+
+  return prepared;
+};
 
 const paste = (
   target: Element,
@@ -86,7 +89,19 @@ const paste = (
   expect(result.kind).toBe('plan');
   if (result.kind !== 'plan') throw new Error(JSON.stringify(result));
 
-  const output = applyTableMutationPlanToTable(target, [0], result);
+  const output = applyTableMutationPlanToTable(target, [0], {
+    ...result,
+    operations: [
+      ...result.operations,
+      ...result.placementGroups.flatMap((group) =>
+        group.placements.map(({ at, content }) => ({
+          children: content,
+          kind: 'replace-children' as const,
+          path: at,
+        }))
+      ),
+    ],
+  });
 
   expect(output).not.toBeNull();
 
@@ -102,8 +117,6 @@ const logicalText = (value: Element) => {
 };
 
 const types = {
-  cellTypes: ['tableCell'],
-  rowType: 'tableRow',
   tableType: 'table',
 } as const;
 
@@ -146,6 +159,98 @@ const tableWithSpan = (
     })
   );
 
+describe('structural table paste classification', () => {
+  it.each([
+    { openStart: 1, openEnd: 0 },
+    { openStart: 0, openEnd: 1 },
+    { openStart: 2, openEnd: 2 },
+  ])('declines an open table slice ($openStart, $openEnd)', (depths) => {
+    const slice = ContentSlice.fromJSON({
+      content: [table([row([cell('table')])])],
+      ...depths,
+    });
+
+    expect(getTablePasteElement(slice, types)).toBeNull();
+    expect(
+      prepareTablePaste(slice, { ...types, createCell, createRow })
+    ).toBeNull();
+  });
+
+  it.each(['before', 'after', 'both'] as const)(
+    'declines a table with ordinary siblings %s',
+    (position) => {
+      const sibling = () => ({
+        type: 'paragraph',
+        children: [{ text: 'keep me' }],
+      });
+      const slice = ContentSlice.closed([
+        ...(position !== 'after' ? [sibling()] : []),
+        table([row([cell('table')])]),
+        ...(position !== 'before' ? [sibling()] : []),
+      ]);
+
+      expect(getTablePasteElement(slice, types)).toBeNull();
+      expect(
+        prepareTablePaste(slice, { ...types, createCell, createRow })
+      ).toBeNull();
+    }
+  );
+
+  it('declines multiple tables, row lists and cell lists', () => {
+    for (const content of [
+      [table([row([cell('one')])]), table([row([cell('two')])])],
+      [row([cell('one')]), row([cell('two')])],
+      [cell('one'), cell('two')],
+    ]) {
+      const slice = ContentSlice.closed(content);
+
+      expect(getTablePasteElement(slice, types)).toBeNull();
+      expect(
+        prepareTablePaste(slice, { ...types, createCell, createRow })
+      ).toBeNull();
+    }
+  });
+
+  it('accepts the single closed table by its configured type', () => {
+    const slice = ContentSlice.closed([
+      table([row([cell('table')])], { type: 'customTable' }),
+    ]);
+
+    expect(
+      getTablePasteElement(slice, { ...types, tableType: 'customTable' }) ===
+        slice.content[0]
+    ).toBe(true);
+    expect(getTablePasteElement(slice, types)).toBeNull();
+    expect(
+      prepareTablePaste(slice, { ...types, createCell, createRow })
+    ).toBeNull();
+
+    const prepared = prepareTablePaste(slice, {
+      createCell,
+      createRow,
+      tableType: 'customTable',
+    });
+
+    expect(prepared).toMatchObject({ height: 1, width: 1 });
+    if (!prepared || 'kind' in prepared) {
+      throw new Error(JSON.stringify(prepared));
+    }
+    expect(prepared.slice).toBe(slice);
+  });
+
+  it('diagnoses an empty structural table instead of declining it', () => {
+    const slice = ContentSlice.closed([table([])]);
+
+    expect(getTablePasteElement(slice, types) === slice.content[0]).toBe(true);
+    expect(
+      prepareTablePaste(slice, { ...types, createCell, createRow })
+    ).toEqual({
+      kind: 'invalid-source',
+      reason: 'empty',
+    });
+  });
+});
+
 describe('PreparedTablePaste Wordgard oracle', () => {
   beforeEach(() => {
     generatedId = 0;
@@ -157,38 +262,15 @@ describe('PreparedTablePaste Wordgard oracle', () => {
     expect(getTablePasteElement(slice, types)).toBeNull();
   });
 
-  it('2. repeats ordinary content across a cell selection', () => {
-    const target = table([
-      row([cell('a'), cell('b'), cell('c')]),
-      row([cell('d'), cell('e'), cell('f')]),
+  it('delegates ordinary rich content as a complete slice', () => {
+    const slice = ContentSlice.closed([
+      { type: 'paragraph', children: [{ text: '!', bold: true }] },
+      { type: 'image', url: 'image.png', children: [{ text: '' }] },
     ]);
-    const ordinary = createOrdinaryTablePasteElement([{ text: '!' }], {
-      cell: cell(''),
-      rowType: 'tr',
-      tableType: 'table',
-    });
-    const { output } = paste(target, ordinary, {
-      fillBounds: { maxCol: 1, maxRow: 1, minCol: 0, minRow: 0 },
-    });
 
-    expect(logicalText(output)).toEqual([
-      ['!', '!', 'c'],
-      ['!', '!', 'f'],
-    ]);
-  });
-
-  it('3. expands a bare cell sequence from the active cell', () => {
-    const cells = [cell('x'), cell('y')];
-    const source = getTablePasteElement(ContentSlice.closed(cells), types);
-
-    expect(source).not.toBeNull();
-
-    const { output } = paste(
-      table([row([cell('a'), cell('b'), cell('c')])]),
-      source!
-    );
-
-    expect(logicalText(output)).toEqual([['x', 'y', 'c']]);
+    expect(
+      prepareTablePaste(slice, { ...types, createCell, createRow })
+    ).toBeNull();
   });
 
   it('4. grows a table horizontally', () => {
@@ -208,25 +290,6 @@ describe('PreparedTablePaste Wordgard oracle', () => {
       table([row([cell('a'), cell('b')])]),
       table([row([cell('x')]), row([cell('y')])])
     );
-
-    expect(logicalText(output)).toEqual([
-      ['x', 'b'],
-      ['y', ''],
-    ]);
-  });
-
-  it('6. recognizes retained open table content', () => {
-    const source = table([row([cell('x')]), row([cell('y')])]);
-    const slice = ContentSlice.fromJSON({
-      content: [source],
-      openEnd: 2,
-      openStart: 2,
-    });
-    const opened = getTablePasteElement(slice, types);
-
-    expect(opened).toEqual(source);
-
-    const { output } = paste(table([row([cell('a'), cell('b')])]), opened!);
 
     expect(logicalText(output)).toEqual([
       ['x', 'b'],
@@ -256,88 +319,34 @@ describe('PreparedTablePaste Wordgard oracle', () => {
     ]);
   });
 
-  it('8. splits a merged cell on the left selection border', () => {
+  it('8. rejects a merged cell crossing a selection border', () => {
     const target = table([
       row([cell('a'), cell('b'), cell('c')]),
       row([cell('d', { colSpan: 2 }), cell('e')]),
       row([cell('f'), cell('g'), cell('h')]),
     ]);
-    const { output } = paste(target, table([row([cell('x')])]), {
-      fillBounds: { maxCol: 1, maxRow: 2, minCol: 1, minRow: 0 },
-    });
+    const prepared = prepare(table([row([cell('x')])]));
 
-    expect(logicalText(output)).toEqual([
-      ['a', 'x', 'c'],
-      ['d', 'x', 'e'],
-      ['f', 'x', 'h'],
-    ]);
-    expect(compileTableGrid(output).problems).toEqual([]);
+    if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
+    const result = planPreparedTablePaste(
+      createDetachedTableContext(target, [0]),
+      prepared,
+      {
+        createCell,
+        createRow,
+        fillBounds: { maxCol: 1, maxRow: 2, minCol: 1, minRow: 0 },
+        startCol: 0,
+        startRow: 0,
+      }
+    );
+
+    expect(result).toEqual({
+      kind: 'invalid-target',
+      reason: 'shape-mismatch',
+    });
   });
 
-  it('9. splits a merged cell on the right selection border', () => {
-    const target = table([
-      row([cell('a'), cell('b'), cell('c')]),
-      row([cell('d'), cell('e', { colSpan: 2 })]),
-      row([cell('f'), cell('g'), cell('h')]),
-    ]);
-    const { output } = paste(target, table([row([cell('x')])]), {
-      fillBounds: { maxCol: 1, maxRow: 2, minCol: 1, minRow: 0 },
-    });
-
-    expect(logicalText(output)).toEqual([
-      ['a', 'x', 'c'],
-      ['d', 'x', ''],
-      ['f', 'x', 'h'],
-    ]);
-    expect(compileTableGrid(output).problems).toEqual([]);
-  });
-
-  it('10. splits merged cells on vertical selection borders', () => {
-    const target = table([
-      row([cell('a'), cell('b', { rowSpan: 3 }), cell('c')]),
-      row([cell('d'), cell('e')]),
-      row([cell('f'), cell('h')]),
-    ]);
-    const { output } = paste(target, table([row([cell('x')])]), {
-      fillBounds: { maxCol: 2, maxRow: 1, minCol: 0, minRow: 1 },
-    });
-
-    expect(logicalText(output)).toEqual([
-      ['a', 'b', 'c'],
-      ['x', 'x', 'x'],
-      ['f', '', 'h'],
-    ]);
-    expect(compileTableGrid(output).problems).toEqual([]);
-  });
-
-  it('11. splits spans crossing all four selection boundaries', () => {
-    const target = table([
-      row([cell('a'), cell('b'), cell('c', { rowSpan: 2 }), cell('d')]),
-      row([cell('e'), cell('f'), cell('g')]),
-      row([cell('h', { colSpan: 4 })]),
-      row([
-        cell('i'),
-        cell('j', { rowSpan: 2 }),
-        cell('k'),
-        cell('l', { rowSpan: 2 }),
-      ]),
-      row([cell('m'), cell('n')]),
-    ]);
-    const { output } = paste(target, table([row([cell('x')])]), {
-      fillBounds: { maxCol: 2, maxRow: 3, minCol: 1, minRow: 1 },
-    });
-
-    expect(logicalText(output)).toEqual([
-      ['a', 'b', 'c', 'd'],
-      ['e', 'x', 'x', 'g'],
-      ['h', 'x', 'x', ''],
-      ['i', 'x', 'x', 'l'],
-      ['m', '', 'n', 'l'],
-    ]);
-    expect(compileTableGrid(output).problems).toEqual([]);
-  });
-
-  it('12. clips and repeats source content to the selection size', () => {
+  it('9. rejects a partial source tile', () => {
     const target = table([
       row([cell('a'), cell('b')]),
       row([cell('c'), cell('d')]),
@@ -347,15 +356,25 @@ describe('PreparedTablePaste Wordgard oracle', () => {
       row([cell('x'), cell('y')]),
       row([cell('z'), cell('q')]),
     ]);
-    const { output } = paste(target, source, {
-      fillBounds: { maxCol: 1, maxRow: 2, minCol: 1, minRow: 0 },
-    });
+    const prepared = prepare(source);
 
-    expect(logicalText(output)).toEqual([
-      ['a', 'x'],
-      ['c', 'z'],
-      ['e', 'x'],
-    ]);
+    if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
+    const result = planPreparedTablePaste(
+      createDetachedTableContext(target, [0]),
+      prepared,
+      {
+        createCell,
+        createRow,
+        fillBounds: { maxCol: 1, maxRow: 2, minCol: 1, minRow: 0 },
+        startCol: 0,
+        startRow: 0,
+      }
+    );
+
+    expect(result).toEqual({
+      kind: 'invalid-target',
+      reason: 'shape-mismatch',
+    });
   });
 
   it('13. rectangularizes non-rectangular input before planning', () => {
@@ -367,7 +386,6 @@ describe('PreparedTablePaste Wordgard oracle', () => {
 
     expect(prepared).toMatchObject({
       height: 3,
-      source: 'model',
       width: 3,
     });
     expect(logicalText(output)).toEqual([
@@ -476,8 +494,12 @@ describe('PreparedTablePaste planning contracts', () => {
     expect(result.kind).toBe('plan');
     if (result.kind !== 'plan') return;
 
-    expect(result.operations).toHaveLength(4);
-    expect(result.operations.map(({ path }) => path)).toEqual([
+    expect(result.operations).toHaveLength(0);
+    expect(
+      result.placementGroups.flatMap((group) =>
+        group.placements.map(({ at }) => at)
+      )
+    ).toEqual([
       [0, 62, 62],
       [0, 62, 63],
       [0, 63, 62],
@@ -485,43 +507,79 @@ describe('PreparedTablePaste planning contracts', () => {
     ]);
   });
 
-  it('uses source only as diagnostic metadata', () => {
-    const source = table([row([cell('x'), cell('y')])]);
-    const target = table([row([cell('a'), cell('b')])]);
-    const outputs = (
-      ['csv', 'html', 'model', 'tsv'] satisfies TablePasteSource[]
-    ).map((sourceKind) => {
-      const prepared = prepareTablePaste(source, {
-        createCell,
-        createRow,
-        source: sourceKind,
-      });
-
-      if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
-
-      const result = planPreparedTablePaste(
-        createDetachedTableContext(target, [0]),
-        prepared,
-        {
-          createCell,
-          createRow,
-          startCol: 0,
-          startRow: 0,
-        }
-      );
-
-      if (result.kind !== 'plan') throw new Error(JSON.stringify(result));
-
-      return result.operations;
+  it('retains the complete source root graph through preparation and planning', () => {
+    const source = table([
+      row([
+        cell('', {
+          children: [
+            {
+              type: 'portal',
+              childRoots: { body: 'source-owned' },
+              children: [{ text: '' }],
+            },
+          ],
+        }),
+        cell('y'),
+      ]),
+    ]);
+    const slice = ContentSlice.fromJSON({
+      content: [source],
+      openStart: 0,
+      openEnd: 0,
+      roots: {
+        'source-owned': [
+          {
+            type: 'portal',
+            childRoots: { body: 'nested-owned' },
+            children: [{ text: '' }],
+          },
+        ],
+        'nested-owned': [
+          {
+            type: 'paragraph',
+            children: [{ text: 'keep root text', bold: true }],
+          },
+        ],
+      },
+    });
+    const prepared = prepareTablePaste(slice, {
+      ...types,
+      createCell,
+      createRow,
     });
 
-    expect(outputs.slice(1)).toEqual([outputs[0], outputs[0], outputs[0]]);
+    if (!prepared || 'kind' in prepared) {
+      throw new Error(JSON.stringify(prepared));
+    }
+
+    expect(prepared.slice).toBe(slice);
+
+    const target = table([row([cell('a'), cell('b')])]);
+    const result = planPreparedTablePaste(
+      createDetachedTableContext(target, [0]),
+      prepared,
+      {
+        createCell,
+        createRow,
+        startCol: 0,
+        startRow: 0,
+      }
+    );
+
+    if (result.kind !== 'plan') throw new Error(JSON.stringify(result));
+
+    expect(result.placementGroups[0]?.source).toBe(slice);
+    expect(result.placementGroups[0]?.placements[0]?.content).toEqual(
+      (NodeApi.get(source, [0, 0]) as TableCellElement).children
+    );
   });
 
-  it('isolates arbitrary spans crossing all four destination boundaries', () => {
+  it('rejects arbitrary spans crossing all four destination boundaries', () => {
     const selection = { maxCol: 3, maxRow: 3, minCol: 2, minRow: 2 };
+    const prepared = prepare(table([row([cell('x')])]));
     let cases = 0;
 
+    if ('kind' in prepared) throw new Error(JSON.stringify(prepared));
     for (let minRow = 0; minRow < selection.minRow; minRow++) {
       for (let maxRow = selection.maxRow + 1; maxRow < 6; maxRow++) {
         for (let minCol = 0; minCol < selection.minCol; minCol++) {
@@ -532,25 +590,22 @@ describe('PreparedTablePaste planning contracts', () => {
               minCol,
               minRow,
             });
-            const { output } = paste(target, table([row([cell('x')])]), {
-              fillBounds: selection,
-            });
-            const grid = compileTableGrid(output);
+            const result = planPreparedTablePaste(
+              createDetachedTableContext(target, [0]),
+              prepared,
+              {
+                createCell,
+                createRow,
+                fillBounds: selection,
+                startCol: 0,
+                startRow: 0,
+              }
+            );
 
-            expect(grid.problems).toEqual([]);
-            expect(grid.height).toBe(6);
-            expect(grid.width).toBe(6);
-            expect(
-              grid.slots
-                .slice(selection.minRow, selection.maxRow + 1)
-                .flatMap((slots) =>
-                  slots
-                    .slice(selection.minCol, selection.maxCol + 1)
-                    .map((anchor) =>
-                      anchor ? NodeApi.string(anchor.cell) : null
-                    )
-                )
-            ).toEqual(['x', 'x', 'x', 'x']);
+            expect(result).toEqual({
+              kind: 'invalid-target',
+              reason: 'shape-mismatch',
+            });
             cases += 1;
           }
         }

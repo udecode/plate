@@ -9,7 +9,7 @@ import {
 
 import { Hotkeys } from '../../../core';
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
-import { BaseTablePlugin } from '../../../features/table/lib/BaseTablePlugin';
+import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { DOMPlugin } from '../../../lib/plugins/dom/DOMPlugin';
 import { pipeHandler } from '../../utils/pipeHandler.internal';
 import { TablePlugin } from './TablePlugin';
@@ -47,6 +47,59 @@ const moveLineTable = (
   }
 
   return preventDefault.mock.calls.length > 0;
+};
+
+const pressTableKey = (
+  editor: ReturnType<typeof createTableEditor>,
+  key: string,
+  { shiftKey = false, which = 0 }: { shiftKey?: boolean; which?: number } = {}
+) => {
+  const event = {
+    altKey: false,
+    code: key,
+    ctrlKey: false,
+    defaultPrevented: false,
+    isDefaultPrevented: () => false,
+    isPropagationStopped: () => false,
+    key,
+    keyCode: which,
+    metaKey: false,
+    preventDefault: mock(),
+    shiftKey,
+    stopPropagation: mock(),
+    which,
+  } as unknown as KeyboardEvent & {
+    preventDefault: AnyTestMock;
+    stopPropagation: AnyTestMock;
+  };
+  const handler = pipeHandler(editor, { handlerKey: 'onKeyDown' });
+
+  if (!handler) throw new Error('Expected TablePlugin onKeyDown handler');
+
+  handler(event);
+
+  return event;
+};
+
+const pressSelectAll = (editor: ReturnType<typeof createTableEditor>) => {
+  const hotkey = spyOn(Hotkeys, 'isSelectAll').mockReturnValue(true);
+
+  try {
+    return pressTableKey(editor, 'a', { which: 65 });
+  } finally {
+    hotkey.mockRestore();
+  }
+};
+
+const runTableShortcut = (
+  editor: ReturnType<typeof createTableEditor>,
+  name: 'tab' | 'untab'
+) => {
+  const shortcut = getPlateRuntime(editor).shortcuts[`table.${name}`];
+
+  if (!shortcut?.handler) throw new Error(`Expected TablePlugin ${name}`);
+
+  return shortcut.handler({ editor } as never);
 };
 
 const createClientRect = (rect: Partial<DOMRect> = {}) =>
@@ -105,7 +158,7 @@ const createTableEditor = (input: TestEditor) =>
   createTestTableEditor({
     plugins: [
       TablePlugin.configure({
-        initialState: { disableMerge: true },
+        initialState: { allowCellSpanEditing: false },
       }),
       TestDOMRangePlugin,
     ],
@@ -125,9 +178,6 @@ describe('TablePlugin navigation', () => {
                 <cursor />
               </hp>
             </htd>
-            <htd>
-              <hp>12</hp>
-            </htd>
           </htr>
         </htable>
       </editor>
@@ -142,9 +192,6 @@ describe('TablePlugin navigation', () => {
               <hp>
                 <cursor />
               </hp>
-            </htd>
-            <htd>
-              <hp>12</hp>
             </htd>
           </htr>
         </htable>
@@ -219,6 +266,9 @@ describe('TablePlugin navigation', () => {
                 <cursor />
               </hp>
             </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
           </htr>
         </htable>
       </editor>
@@ -227,7 +277,10 @@ describe('TablePlugin navigation', () => {
     const editor = createTableEditor(input);
     const tableRange = editor.read.ranges.get([0]);
 
-    expect(editor.plugin(BaseTablePlugin).update.selectAll()).toBe(true);
+    const event = pressSelectAll(editor);
+
+    expect(event.preventDefault).toHaveBeenCalledTimes(1);
+    expect(event.stopPropagation).toHaveBeenCalledTimes(1);
     if (!tableRange) throw new Error('Expected table range');
     expect(editor.read.selection()).toEqual(tableRange);
   });
@@ -244,6 +297,9 @@ describe('TablePlugin navigation', () => {
                 <cursor />
               </hp>
             </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
           </htr>
         </htable>
         <hp>after</hp>
@@ -253,8 +309,11 @@ describe('TablePlugin navigation', () => {
     const editor = createTableEditor(input);
     const documentRange = editor.read.ranges.get([]);
 
-    expect(editor.plugin(BaseTablePlugin).update.selectAll()).toBe(true);
-    expect(editor.plugin(BaseTablePlugin).update.selectAll()).toBe(true);
+    const firstEvent = pressSelectAll(editor);
+    const secondEvent = pressSelectAll(editor);
+
+    expect(firstEvent.preventDefault).toHaveBeenCalledTimes(1);
+    expect(secondEvent.preventDefault).toHaveBeenCalledTimes(1);
     if (!documentRange) throw new Error('Expected document range');
     expect(editor.read.selection()).toEqual(documentRange);
   });
@@ -283,9 +342,7 @@ describe('TablePlugin navigation', () => {
 
     const editor = createTableEditor(input);
 
-    expect(editor.plugin(BaseTablePlugin).update.tab({ reverse: false })).toBe(
-      true
-    );
+    expect(runTableShortcut(editor, 'tab')).toBe(true);
     expect(editor.read.selection.isCollapsed()).toBe(true);
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 2, path: [0, 0, 1, 0, 0] },
@@ -314,9 +371,7 @@ describe('TablePlugin navigation', () => {
 
     const editor = createTableEditor(input);
 
-    expect(editor.plugin(BaseTablePlugin).update.tab({ reverse: false })).toBe(
-      true
-    );
+    expect(runTableShortcut(editor, 'tab')).toBe(true);
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 1, 0, 0] },
       focus: { offset: 0, path: [0, 0, 1, 0, 0] },
@@ -344,9 +399,7 @@ describe('TablePlugin navigation', () => {
 
     const editor = createTableEditor(input);
 
-    expect(editor.plugin(BaseTablePlugin).update.tab({ reverse: true })).toBe(
-      true
-    );
+    expect(runTableShortcut(editor, 'untab')).toBe(true);
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 0, 0, 0, 0] },

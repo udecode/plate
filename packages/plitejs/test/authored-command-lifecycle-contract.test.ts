@@ -365,7 +365,7 @@ describe('authored command lifecycles', () => {
     const change = source.read.authored.changes({ status: 'pending' }).items[0];
     assert.equal(decide(source, change.id, 'accept').status, 'applied');
 
-    source.update.history.undo();
+    source.api.history.undo();
 
     const details = source.read.authored.details(change.id);
     assert.equal(details?.change.status, 'pending');

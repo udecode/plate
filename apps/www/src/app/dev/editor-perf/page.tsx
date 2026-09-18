@@ -11,7 +11,6 @@ import { createStore as createJotaiStore } from 'jotai/vanilla';
 import {
   type Element as ElementNode,
   ElementIdPlugin,
-  migrateElementIds,
   type Descendant,
   type Path,
   type RenderElementProps,
@@ -84,6 +83,7 @@ import {
 } from './plugin-census';
 import {
   SCENARIO_WORKLOADS,
+  admitEditorPerfElementIds,
   createBenchIdFactory,
   getDefaultElementIdFragmentBlockCount,
   getEditorPerfWorkloadValue,
@@ -321,7 +321,7 @@ type DissectionMetrics = {
   idsAssigned: BenchmarkResult | null;
   initOnly: BenchmarkResult | null;
   pluginCount: number | null;
-  staticNormalize: BenchmarkResult | null;
+  currentAdmission: BenchmarkResult | null;
 };
 
 type ElementIdFragmentCaseId =
@@ -4276,10 +4276,12 @@ function DissectionCard({
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">pure migrateElementIds</span>
+          <span className="text-muted-foreground">
+            detached current admission
+          </span>
           <span>
-            {metrics.staticNormalize
-              ? `${metrics.staticNormalize.mean.toFixed(2)} ms`
+            {metrics.currentAdmission
+              ? `${metrics.currentAdmission.mean.toFixed(2)} ms`
               : 'n/a'}
           </span>
         </div>
@@ -4404,7 +4406,7 @@ export default function EditorPerfPage() {
             idsAssigned: null,
             initOnly: null,
             pluginCount: null,
-            staticNormalize: null,
+            currentAdmission: null,
           } satisfies DissectionMetrics,
         ])
       ) as Record<DissectionCaseId, DissectionMetrics>
@@ -4563,7 +4565,7 @@ export default function EditorPerfPage() {
           createWithValue: 25,
           constructOnly: 25,
           initOnly: 25,
-          staticNormalize: 25,
+          currentAdmission: 25,
         },
       },
       elementIdFragment: {
@@ -5060,7 +5062,7 @@ export default function EditorPerfPage() {
         const createWithValueSamples: number[] = [];
         const idsAssignedSamples: number[] = [];
         const initOnlySamples: number[] = [];
-        const staticNormalizeSamples: number[] = [];
+        const currentAdmissionSamples: number[] = [];
         let pluginCount: number | null = null;
 
         for (let run = 0; run < WARMUP_RUNS + MEASURED_RUNS; run++) {
@@ -5111,21 +5113,18 @@ export default function EditorPerfPage() {
           }
 
           if (caseItem.elementId) {
-            const staticNormalizeCounter = { count: 0 };
-            const staticNormalizeStart = performance.now();
+            const currentAdmissionStart = performance.now();
 
-            migrateElementIds(getDissectionValue(caseItem, config.blocks), {
-              generateId: createBenchIdFactory(
-                staticNormalizeCounter,
-                'static-normalize'
-              ),
-            });
+            admitEditorPerfElementIds(
+              getDissectionValue(caseItem, config.blocks),
+              'huge-paragraph'
+            );
 
-            const staticNormalizeDuration =
-              performance.now() - staticNormalizeStart;
+            const currentAdmissionDuration =
+              performance.now() - currentAdmissionStart;
 
             if (!isWarmup) {
-              staticNormalizeSamples.push(staticNormalizeDuration);
+              currentAdmissionSamples.push(currentAdmissionDuration);
             }
           }
 
@@ -5142,8 +5141,8 @@ export default function EditorPerfPage() {
             idsAssigned: calculateStats(idsAssignedSamples),
             initOnly: calculateStats(initOnlySamples),
             pluginCount,
-            staticNormalize: caseItem.elementId
-              ? calculateStats(staticNormalizeSamples)
+            currentAdmission: caseItem.elementId
+              ? calculateStats(currentAdmissionSamples)
               : null,
           },
         }));
@@ -5926,10 +5925,10 @@ export default function EditorPerfPage() {
           <div className="rounded-xl border bg-background p-4">
             <h2 className="font-semibold">Plate init dissection</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              This lane splits Plate into wrapper construction, value init, pure{' '}
-              <code>migrateElementIds</code>, and the mount of a prebuilt
-              editor. That is the cleanest way to separate store/plugin tax,
-              elementId tax, and React/provider tax.
+              This lane splits Plate into wrapper construction, value init,
+              detached current-document admission, and the mount of a prebuilt
+              editor. It separates store/plugin tax, persisted-schema admission,
+              and React/provider tax.
             </p>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-2">

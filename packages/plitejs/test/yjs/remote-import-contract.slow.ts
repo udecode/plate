@@ -1316,7 +1316,7 @@ describe('plitejs/yjs remote import contract', () => {
 
     assert.equal(getPeerTopLevelTexts(innerTarget8)[0], 'one!');
     assert.equal(
-      innerTarget8.editor.read((state) => state.history.undos().length),
+      innerTarget8.editor.read((state) => state.history().undos.length),
       0
     );
 
@@ -1324,13 +1324,11 @@ describe('plitejs/yjs remote import contract', () => {
       at: { path: [0, 0], offset: 4 },
     });
     assert.equal(
-      innerTarget8.editor.read((state) => state.history.undos().length),
+      innerTarget8.editor.read((state) => state.history().undos.length),
       1
     );
 
-    innerTarget8.editor.update((tx) => {
-      tx.history.undo();
-    });
+    innerTarget8.editor.api.history.undo();
     assert.equal(getPeerTopLevelTexts(innerTarget8)[0], 'one!');
   });
 

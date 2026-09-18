@@ -4,9 +4,10 @@ import { fileURLToPath } from 'node:url';
 
 import { createEditor } from 'platejs';
 import { authored } from 'platejs/authored';
+import type { CommentsJSON } from 'platejs/comments';
 
 import {
-  richTextEditorThreads,
+  richTextEditorComments,
   richTextEditorValue,
 } from '../src/registry/blocks/editor-ai/components/editor/rich-text-editor-value';
 import { BaseEditorKit } from '../src/registry/components/editor/plugins-static';
@@ -59,20 +60,29 @@ editor.update((tx) => {
   tx.text.insert(' like this added text', { at: { offset: 0, path: [3, 2] } });
 });
 
-const threads = richTextEditorThreads.map((thread) =>
+const threads = richTextEditorComments.threads.map((thread) =>
   thread.id === 'discussion2'
-    ? { ...thread, target: { id: overlapChangeId, type: 'change' } }
+    ? { ...thread, target: { id: overlapChangeId, type: 'change' as const } }
     : {
         ...thread,
-        target: {
-          type: 'range',
-          range: {
-            anchor: { path: [3, 1, 0], offset: 0 },
-            focus: { path: [3, 2], offset: 22 },
-          },
-        },
+        target: { type: 'range' as const },
       }
 );
+
+const anchor = editor.anchor(
+  {
+    anchor: { path: [3, 1, 0], offset: 0 },
+    focus: { path: [3, 2], offset: 22 },
+  },
+  { association: 'inward', deletion: 'nearest' }
+);
+const comments: CommentsJSON = {
+  kind: 'plate-comments',
+  version: 1,
+  threads,
+  ranges: [{ threadId: 'discussion1', range: editor.anchor.save(anchor) }],
+};
+anchor.release();
 
 const output = fileURLToPath(
   new URL(
@@ -82,7 +92,7 @@ const output = fileURLToPath(
 );
 writeFileSync(
   output,
-  `import type { EditorDocumentValue } from 'platejs';\nimport type { CommentThread } from 'platejs/comments';\n\n// Saved native document. Regenerate with apps/www/scripts/generate-rich-text-editor-value.ts.\nexport const richTextEditorValue: EditorDocumentValue = ${JSON.stringify(editor.read.value(), null, 2)};\n\nexport const richTextEditorThreads: CommentThread[] = ${JSON.stringify(threads, null, 2)};\n`
+  `import type { EditorDocumentValue } from 'platejs';\nimport type { CommentsJSON } from 'platejs/comments';\n\n// Saved native document. Regenerate with apps/www/scripts/generate-rich-text-editor-value.ts.\nexport const richTextEditorValue: EditorDocumentValue = ${JSON.stringify(editor.read.value(), null, 2)};\n\nexport const richTextEditorComments: CommentsJSON = ${JSON.stringify(comments, null, 2)};\n`
 );
 for (const args of [
   ['exec', 'oxlint', '--fix', output],

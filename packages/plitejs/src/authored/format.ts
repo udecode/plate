@@ -5,9 +5,8 @@ import {
 } from '../core/authored-runtime';
 import {
   createInternalRootChangeFromNodeSections,
-  DocumentChange,
+  type DocumentChange,
 } from '../core/change/document-change';
-import { createEditor } from '../create-editor';
 import { createEditorViewRuntime } from '../editor-runtime-view';
 import type {
   AnyEditor,
@@ -17,8 +16,11 @@ import type {
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import type { Text } from '../interfaces/text';
-import { authored } from './authored';
-import { checksumAuthoredPayload } from './state';
+import {
+  admitAuthoredReviewDocument,
+  assertAuthoredDocumentValue,
+  createAuthoredReviewCheckpoint,
+} from './checkpoint';
 import type { AuthoredChange } from './types';
 
 export type AuthoredFormatProjection = 'accepted' | 'markup' | 'proposed';
@@ -128,38 +130,6 @@ const documentFor = (
     ...(Object.keys(meta).length === 0 ? {} : { meta: Object.freeze(meta) }),
     ...(roots === undefined ? {} : { roots }),
   });
-};
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const isDocumentNode = (value: unknown): boolean => {
-  if (!isRecord(value)) return false;
-  if (typeof value.text === 'string') return !Object.hasOwn(value, 'children');
-
-  return (
-    typeof value.type === 'string' &&
-    Array.isArray(value.children) &&
-    value.children.every(isDocumentNode)
-  );
-};
-
-const assertDocumentValue = (value: unknown): EditorDocumentValue => {
-  if (
-    !isRecord(value) ||
-    !Array.isArray(value.children) ||
-    !value.children.every(isDocumentNode) ||
-    (value.meta !== undefined && !isRecord(value.meta)) ||
-    (value.roots !== undefined &&
-      (!isRecord(value.roots) ||
-        !Object.values(value.roots).every(
-          (root) => Array.isArray(root) && root.every(isDocumentNode)
-        )))
-  ) {
-    throw new Error('Authored JSON must contain a valid document envelope.');
-  }
-
-  return value as EditorDocumentValue;
 };
 
 const lossyProjectionDiagnostics = (
@@ -343,195 +313,11 @@ export const serializeAuthoredJson = <V extends Value>(
 
 /** Parse a detached authored JSON envelope. Installed editor schema validates it on load. */
 export const deserializeAuthoredJson = (data: string): EditorDocumentValue =>
-  assertDocumentValue(JSON.parse(data));
-
-const assertImportedRevision = (revision: AuthoredImportedRevision) => {
-  if (!revision.id || !revision.authorId) {
-    throw new Error('Imported authored revisions require stable identity.');
-  }
-  if (!Number.isSafeInteger(revision.createdAt) || revision.createdAt < 0) {
-    throw new Error('Imported authored revision time is invalid.');
-  }
-  if (!DocumentChange.isDocumentChange(revision.change)) {
-    throw new Error('Imported authored revision change is invalid.');
-  }
-};
-
-const rewriteImportedMetadata = (
-  value: unknown,
-  generated: ReadonlyMap<string, AuthoredImportedRevision>,
-  insideCheckpoint = false
-): unknown => {
-  if (typeof value === 'string') {
-    let result = value;
-
-    for (const [source, revision] of generated) {
-      result = result.replaceAll(source, revision.id);
-    }
-
-    return result;
-  }
-  if (Array.isArray(value)) {
-    return value.map((item) =>
-      rewriteImportedMetadata(item, generated, insideCheckpoint)
-    );
-  }
-  if (!isRecord(value)) return value;
-  const encodedCheckpoint =
-    !insideCheckpoint &&
-    Object.keys(value).length === 2 &&
-    typeof value.digest === 'string' &&
-    typeof value.payload === 'string';
-  const directCheckpoint =
-    !insideCheckpoint &&
-    Object.keys(value).length === 6 &&
-    Array.isArray(value.changes) &&
-    Array.isArray(value.operations) &&
-    Object.hasOwn(value, 'acceptedPositions') &&
-    Object.hasOwn(value, 'documentId') &&
-    Object.hasOwn(value, 'projected') &&
-    Object.hasOwn(value, 'projectedPositions');
-  if (encodedCheckpoint || directCheckpoint) {
-    const checkpoint = rewriteImportedMetadata(
-      encodedCheckpoint ? JSON.parse(value.payload as string) : value,
-      generated,
-      true
-    );
-    if (!isRecord(checkpoint) || !Array.isArray(checkpoint.changes)) {
-      throw new Error('Imported authored metadata is invalid.');
-    }
-    if (!Array.isArray(checkpoint.operations)) {
-      throw new Error('Imported authored metadata is invalid.');
-    }
-    for (const operation of checkpoint.operations) {
-      if (!Array.isArray(operation) || operation[0] !== 0) continue;
-      const revision = [...generated.values()].find(
-        (candidate) => candidate.id === operation[2]
-      );
-      if (revision) {
-        operation[1] = revision.authorId;
-        operation[12] = revision.createdAt;
-      }
-      if (operation.length === 16 && typeof operation[15] === 'string') {
-        operation[14] = checksumAuthoredPayload(operation[15]);
-      }
-    }
-    for (const change of checkpoint.changes) {
-      if (Array.isArray(change) && Array.isArray(change[2])) {
-        change[2].sort((left, right) => left.localeCompare(right));
-        const revision = [...generated.values()].find(
-          (candidate) => candidate.id === change[4]
-        );
-        if (revision) {
-          change[0] = revision.authorId;
-          change[1] = revision.createdAt;
-          change[10] = revision.createdAt;
-        }
-      } else if (isRecord(change) && Array.isArray(change.dependencies)) {
-        change.dependencies.sort((left, right) => left.localeCompare(right));
-      }
-    }
-    checkpoint.changes.sort((left, right) => {
-      const leftId = Array.isArray(left)
-        ? left[4]
-        : isRecord(left)
-          ? left.id
-          : undefined;
-      const rightId = Array.isArray(right)
-        ? right[4]
-        : isRecord(right)
-          ? right.id
-          : undefined;
-
-      return typeof leftId === 'string' && typeof rightId === 'string'
-        ? leftId.localeCompare(rightId)
-        : 0;
-    });
-    if (!encodedCheckpoint) return checkpoint;
-    const payload = JSON.stringify(checkpoint);
-
-    return { digest: checksumAuthoredPayload(payload), payload };
-  }
-  const identities = [value.changeId, value.id].filter(
-    (identity): identity is string => typeof identity === 'string'
-  );
-  const revision = [...generated].find(([source]) =>
-    identities.some((identity) => identity.includes(source))
-  )?.[1];
-  const result = Object.fromEntries(
-    Object.entries(value).map(([key, item]) => [
-      key,
-      rewriteImportedMetadata(item, generated, insideCheckpoint),
-    ])
-  );
-
-  if (revision && Object.hasOwn(result, 'authorId')) {
-    result.authorId = revision.authorId;
-  }
-  if (revision && Object.hasOwn(result, 'time')) {
-    result.time = revision.createdAt;
-  }
-  if (revision && Object.hasOwn(result, 'createdAt')) {
-    result.createdAt = revision.createdAt;
-  }
-  if (revision && Object.hasOwn(result, 'updatedAt')) {
-    result.updatedAt = revision.createdAt;
-  }
-
-  return result;
-};
+  assertAuthoredDocumentValue(JSON.parse(data));
 
 /** Build one validated native review envelope from sparse imported revisions. */
 export const createAuthoredReviewDocument = (input: {
   accepted: EditorDocumentValue;
   revisions: readonly AuthoredImportedRevision[];
-}): EditorDocumentValue => {
-  assertDocumentValue(input.accepted);
-  input.revisions.forEach(assertImportedRevision);
-  if (
-    new Set(input.revisions.map(({ id }) => id)).size !== input.revisions.length
-  ) {
-    throw new Error('Imported authored revision identities must be unique.');
-  }
-  let active = input.revisions[0];
-  const plugin = authored({ authorId: () => active?.authorId });
-  const editor = createEditor({
-    plugins: [plugin],
-    initialValue: input.accepted,
-  });
-  const generated = new Map<string, AuthoredImportedRevision>();
-
-  for (const revision of input.revisions) {
-    active = revision;
-    const view = createEditorViewRuntime(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
-    });
-    if (revision.change.empty) {
-      throw new Error(`Imported authored revision "${revision.id}" is empty.`);
-    }
-    let id = '';
-    view.update((transaction) => {
-      id = transaction.authored.propose();
-      transaction.changes.apply(revision.change);
-    });
-    generated.set(id, revision);
-  }
-
-  const document = editor.read.value();
-  const metadata = document.meta?.authored;
-
-  if (!metadata) throw new Error('Imported authored metadata is missing.');
-  const candidate = {
-    ...document,
-    meta: {
-      ...document.meta,
-      authored: rewriteImportedMetadata(metadata, generated),
-    },
-  };
-  const validated = createEditor({
-    plugins: [authored({ authorId: 'format-import' })],
-    initialValue: candidate,
-  });
-
-  return validated.read.value();
-};
+}): EditorDocumentValue =>
+  admitAuthoredReviewDocument(createAuthoredReviewCheckpoint(input)).document;

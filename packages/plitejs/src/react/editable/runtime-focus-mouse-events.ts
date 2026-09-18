@@ -33,6 +33,7 @@ type FocusHandler = (event: FocusEvent<HTMLDivElement>) => boolean | void;
 type MouseHandler = (event: MouseEvent<HTMLDivElement>) => boolean | void;
 
 export const useRuntimeFocusMouseEvents = ({
+  cancelNativeSelectionImport,
   clearVerticalGoal,
   domPhaseScheduler,
   editor,
@@ -50,6 +51,7 @@ export const useRuntimeFocusMouseEvents = ({
   syncDOMSelectionToEditor,
   trace,
 }: {
+  cancelNativeSelectionImport: () => void;
   clearVerticalGoal: () => void;
   domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
@@ -291,6 +293,7 @@ export const useRuntimeFocusMouseEvents = ({
 
   const handleMouseDownCapture = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
+      cancelNativeSelectionImport();
       externalMouseGestureRef.current = event.defaultPrevented;
 
       if (externalMouseGestureRef.current) {
@@ -325,6 +328,7 @@ export const useRuntimeFocusMouseEvents = ({
       }
     },
     [
+      cancelNativeSelectionImport,
       clearVerticalGoal,
       editor,
       inputController,

@@ -3,8 +3,8 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { render } from '@testing-library/react';
 import * as React from 'react';
 
-const PlateContainerMock = mock(({ children, className }: any) => (
-  <div className={className} data-testid="plate-container">
+const PlateContainerMock = mock(({ children, className, ...props }: any) => (
+  <div {...props} className={className} data-testid="plate-container">
     {children}
   </div>
 ));
@@ -64,6 +64,28 @@ describe('editor whitespace wrapping', () => {
       expect(editor.className).toContain('whitespace-break-spaces');
       expect(editor.className).not.toContain('whitespace-pre-wrap');
     }
+  });
+
+  it('keeps frame layout outside the editor scroll container', async () => {
+    const { Editor, EditorContainer, EditorFrame } = await import(
+      `./editor?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    const view = render(
+      <EditorFrame data-testid="editor-frame">
+        <EditorContainer aria-label="Document" role="region">
+          <Editor />
+        </EditorContainer>
+      </EditorFrame>
+    );
+    const frame = view.getByTestId('editor-frame');
+    const container = view.getByTestId('plate-container');
+
+    expect(frame.className).toContain('flex-col');
+    expect(container.parentElement).toBe(frame);
+    expect(container.className).toContain('overflow-y-auto');
+    expect(container.getAttribute('aria-label')).toBe('Document');
+    expect(container.getAttribute('role')).toBe('region');
   });
 
   it('wraps preserved spaces in static editor surfaces', async () => {

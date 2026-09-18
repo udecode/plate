@@ -1596,9 +1596,7 @@ describe('editor runtime/view contract', () => {
       tx.text.insert('?');
     });
 
-    mainEditor.update((tx) => {
-      tx.history.undo();
-    });
+    mainEditor.api.history.undo();
 
     assert.deepEqual(
       runtime.read((state) => state.value()),
@@ -1620,9 +1618,7 @@ describe('editor runtime/view contract', () => {
       null
     );
 
-    mainEditor.update((tx) => {
-      tx.history.undo();
-    });
+    mainEditor.api.history.undo();
 
     assert.deepEqual(
       runtime.read((state) => state.value()),
@@ -1677,12 +1673,8 @@ describe('editor runtime/view contract', () => {
     mainEditor.update((tx) => {
       tx.selection.set(mainSelection);
     });
-    mainEditor.update((tx) => {
-      tx.history.undo();
-    });
-    mainEditor.update((tx) => {
-      tx.history.redo();
-    });
+    mainEditor.api.history.undo();
+    mainEditor.api.history.redo();
 
     assert.deepEqual(
       runtime.read((state) => state.value()),
@@ -1733,9 +1725,7 @@ describe('editor runtime/view contract', () => {
         focus: { path: [0, 0], offset: 0 },
       });
     });
-    headerEditor.update((tx) => {
-      tx.history.undo();
-    });
+    headerEditor.api.history.undo();
 
     assert.deepEqual(
       runtime.read((state) => state.value()),
@@ -1775,9 +1765,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.doesNotThrow(() => {
-      headerEditor.update((tx) => {
-        tx.history.undo();
-      });
+      headerEditor.api.history.undo();
     });
 
     assert.deepEqual(

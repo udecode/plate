@@ -1,6 +1,7 @@
 'use client';
 
 import { NodeApi, NormalizeTypesPlugin, TextApi } from 'platejs';
+import type { CommentsJSON } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor, EditorRoot } from 'platejs/react';
 import * as React from 'react';
@@ -10,7 +11,11 @@ import { getI18nValues } from '@/i18n/getI18nValues';
 import { CodeDrawingKit } from '@/registry/components/editor/code-drawing';
 import { createCommentValue } from '@/registry/components/editor/comment';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { ExcalidrawKit } from '@/registry/components/editor/excalidraw';
 import { EditorKit } from '@/registry/components/editor/plugins';
 
@@ -27,7 +32,9 @@ export default function PlaygroundDemo({
   const editor = React.useMemo(() => {
     const initialValue = structuredClone(value);
     const root = { children: initialValue.children, type: '' };
-    const suggestion = NodeApi.get(root, [3, 1, 0]);
+    const paragraph = NodeApi.get(root, [3]);
+    const leadingText = NodeApi.get(root, [3, 0]);
+    const suggestion = NodeApi.get(root, [3, 1]);
     const sentence = NodeApi.get(root, [3, 2]);
     const discussionTail = NodeApi.get(root, [3, 4]);
     const addedText =
@@ -37,75 +44,91 @@ export default function PlaygroundDemo({
     const overlapText = locale === 'cn' ? '重叠的' : 'overlapping ';
 
     if (
-      !TextApi.isText(suggestion) ||
+      !NodeApi.isElement(paragraph) ||
+      !NodeApi.isElement(suggestion) ||
+      !TextApi.isText(leadingText) ||
       !TextApi.isText(sentence) ||
       !TextApi.isText(discussionTail)
     ) {
       throw new Error('Invalid playground suggestion fixture.');
     }
 
-    const suggestionText = suggestion.text;
     const overlapOffset = discussionTail.text.indexOf(overlapText);
+    const suggestionOffset = leadingText.text.length;
 
-    (suggestion as { text: string }).text = '';
-    (sentence as { text: string }).text = sentence.text.replace(addedText, '');
-    (discussionTail as { text: string }).text = discussionTail.text.replace(
-      overlapText,
-      ''
-    );
+    const sentenceText = sentence.text.replace(addedText, '');
+    const discussionText = discussionTail.text.replace(overlapText, '');
+    const baseline = {
+      ...initialValue,
+      children: initialValue.children.map((node, index) =>
+        index === 3
+          ? {
+              ...paragraph,
+              children: [
+                { ...leadingText, text: leadingText.text + sentenceText },
+                ...paragraph.children
+                  .slice(3)
+                  .map((child, childIndex) =>
+                    childIndex === 1
+                      ? { ...discussionTail, text: discussionText }
+                      : child
+                  ),
+              ],
+            }
+          : node
+      ),
+    };
 
-    const current = createEditor({
-      plugins: [
-        ...EditorKit,
-        ...DiscussionKit,
-        CommentsPlugin.configure({
-          initialState: {
-            currentUserId: 'alice',
-            users: {
-              alice: {
-                id: 'alice',
-                name: 'Alice',
-                avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
-              },
-              bob: {
-                id: 'bob',
-                name: 'Bob',
-                avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
-              },
-              charlie: {
-                id: 'charlie',
-                name: 'Charlie',
-                avatarUrl:
-                  'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
-              },
+    const plugins = [
+      ...EditorKit,
+      ...DiscussionKit,
+      CommentsPlugin.configure({
+        initialState: {
+          currentUserId: 'alice',
+          users: {
+            alice: {
+              id: 'alice',
+              name: 'Alice',
+              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=alice6',
             },
-            initialThreads: [],
+            bob: {
+              id: 'bob',
+              name: 'Bob',
+              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=bob4',
+            },
+            charlie: {
+              id: 'charlie',
+              name: 'Charlie',
+              avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
+            },
           },
-        }),
-        ...CodeDrawingKit,
-        ...ExcalidrawKit,
-        NormalizeTypesPlugin.configure({
-          enabled: id === 'forced-layout',
-          initialState: {
-            rules: [{ path: [0], strictType: 'h1' }],
-          },
-        }),
-      ],
+        },
+      }),
+      ...CodeDrawingKit,
+      ...ExcalidrawKit,
+      NormalizeTypesPlugin.configure({
+        enabled: id === 'forced-layout',
+        initialState: {
+          rules: [{ path: [0], strictType: 'h1' }],
+        },
+      }),
+    ];
+    const current = createEditor({
+      plugins,
       userId: 'alice',
-      initialValue,
+      initialValue: baseline,
     });
 
     current.update((tx) => {
       tx.history.skip();
       tx.authored.propose();
-      tx.text.insert(suggestionText, {
-        at: { offset: 0, path: [3, 1, 0] },
+      tx.nodes.insert([suggestion, { text: addedText }], {
+        at: { offset: suggestionOffset, path: [3, 0] },
       });
-      tx.text.insert(addedText, { at: { offset: 0, path: [3, 2] } });
     });
     current.runtime.userId = 'bob';
     current.update((tx) => {
-      const offset = addedText.length + sentence.text.indexOf(deletedText);
+      const offset = addedText.length + sentenceText.indexOf(deletedText);
 
       tx.history.skip();
       tx.authored.propose();
@@ -126,23 +149,16 @@ export default function PlaygroundDemo({
       });
     });
     current.runtime.userId = 'alice';
-    current.plugin(CommentsPlugin).api.setThreads([
+    const threads: CommentsJSON['threads'] = [
       {
         id: 'discussion1',
         createdAt: new Date(createdAt).toISOString(),
         excerpt: 'comments',
         userId: 'charlie',
-        resolved: false,
+        resolution: null,
         status: 'published',
         target: {
           type: 'range',
-          range: {
-            anchor: { path: [3, 3, 0], offset: 0 },
-            focus: {
-              path: [3, 4],
-              offset: discussionTail.text.indexOf(locale === 'cn' ? '。' : '.'),
-            },
-          },
         },
         messages: [
           {
@@ -168,7 +184,7 @@ export default function PlaygroundDemo({
         createdAt: new Date(createdAt).toISOString(),
         excerpt: 'overlapping',
         userId: 'bob',
-        resolved: false,
+        resolution: null,
         status: 'published',
         target: { id: overlapChangeId, type: 'change' },
         messages: [
@@ -190,9 +206,35 @@ export default function PlaygroundDemo({
           },
         ],
       },
-    ]);
+    ];
+    const anchor = current.anchor(
+      {
+        anchor: { path: [3, 1, 0], offset: 0 },
+        focus: {
+          path: [3, 2],
+          offset: discussionText.indexOf(locale === 'cn' ? '。' : '.'),
+        },
+      },
+      { association: 'inward', deletion: 'nearest' }
+    );
+    const comments: CommentsJSON = {
+      kind: 'plate-comments',
+      version: 1,
+      threads,
+      ranges: [{ threadId: 'discussion1', range: current.anchor.save(anchor) }],
+    };
+    anchor.release();
 
-    return current;
+    return createEditor({
+      plugins: [
+        ...plugins,
+        CommentsPlugin.configure({
+          initialState: { initialComments: comments },
+        }),
+      ],
+      userId: 'alice',
+      initialValue: current.read.value(),
+    });
   }, [createdAt, id, locale, value]);
 
   return (
@@ -208,13 +250,15 @@ export default function PlaygroundDemo({
 
 function PlaygroundDemoContent({ className }: { className?: string }) {
   return (
-    <EditorContainer className={className}>
-      <Editor
-        variant="demo"
-        className="pb-[20vh]"
-        placeholder="Type something..."
-        spellCheck={false}
-      />
-    </EditorContainer>
+    <EditorFrame className={className}>
+      <EditorContainer>
+        <Editor
+          variant="demo"
+          className="pb-[20vh]"
+          placeholder="Type something..."
+          spellCheck={false}
+        />
+      </EditorContainer>
+    </EditorFrame>
   );
 }

@@ -1,4 +1,4 @@
-import { BaseAlignKit } from './align-static';
+import { AlignKit } from './align';
 import { BaseBasicBlocksKit } from './basic-blocks-static';
 import { BaseBasicMarksKit } from './basic-marks-static';
 import { BaseCalloutKit } from './callout-static';
@@ -9,7 +9,7 @@ import { BaseDateKit } from './date-static';
 import { BaseDetailsKit } from './details-static';
 import { BaseFontKit } from './font-static';
 import { BaseFootnoteKit } from './footnote-static';
-import { BaseLineHeightKit } from './line-height-static';
+import { LineHeightKit } from './line-height';
 import { BaseLinkKit } from './link-static';
 import { BaseListKit } from './list-static';
 import { MarkdownKit } from './markdown';
@@ -37,7 +37,7 @@ export const BaseEditorKit = [
   ...BaseBasicMarksKit,
   ...BaseFontKit,
   ...BaseListKit,
-  ...BaseAlignKit,
-  ...BaseLineHeightKit,
+  ...AlignKit,
+  ...LineHeightKit,
   ...MarkdownKit,
 ] as const;

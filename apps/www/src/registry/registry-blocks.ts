@@ -1,14 +1,9 @@
 import type { Registry } from 'shadcn/schema';
 
-import {
-  EDITOR_AI_OPTIONAL_PEER_DEPENDENCIES,
-  EDITOR_BASIC_OPTIONAL_PEER_DEPENDENCIES,
-} from './registry-package-dependencies';
-
 export const registryBlocks: Registry['items'] = [
   {
     categories: ['Editors'],
-    dependencies: ['sonner', ...EDITOR_AI_OPTIONAL_PEER_DEPENDENCIES],
+    dependencies: ['sonner'],
     description: 'An AI editor',
     files: [
       {
@@ -61,7 +56,7 @@ export const registryBlocks: Registry['items'] = [
   },
   {
     categories: ['Editors'],
-    dependencies: EDITOR_BASIC_OPTIONAL_PEER_DEPENDENCIES,
+    dependencies: [],
     description: 'A basic editor',
     files: [
       {

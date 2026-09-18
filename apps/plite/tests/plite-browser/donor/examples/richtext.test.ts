@@ -4534,7 +4534,7 @@ test.describe('On richtext example', () => {
     });
   });
 
-  test('keeps DOM caret synced after ArrowUp across paragraphs', async ({
+  test('keeps DOM caret synced at the first-line ArrowUp boundary', async ({
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop navigation proof');
@@ -4579,6 +4579,41 @@ test.describe('On richtext example', () => {
           }),
         ])
       );
+
+    await page.keyboard.press('ArrowUp');
+
+    await editor.assert.collapsedModelDOMSelection({
+      offset: 0,
+      path: [0, 0],
+      text: 'This is editable ',
+    });
+    await expect
+      .poll(() => editor.get.kernelTrace())
+      .toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            command: expect.objectContaining({
+              axis: 'line',
+              kind: 'move-selection',
+              reverse: true,
+            }),
+            eventFamily: 'keydown',
+            movement: expect.objectContaining({
+              axis: 'line',
+              key: 'ArrowUp',
+              ownership: 'model-owned',
+              reason: 'model-line-browser',
+            }),
+          }),
+        ])
+      );
+
+    await page.keyboard.press('ArrowRight');
+    await editor.assert.collapsedModelDOMSelection({
+      offset: 1,
+      path: [0, 0],
+      text: 'This is editable ',
+    });
   });
 
   test('keeps navigation and mutation chained through browser editing state', async ({

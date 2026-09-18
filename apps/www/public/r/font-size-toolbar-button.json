@@ -4,7 +4,9 @@
   "title": "Font Size Toolbar Button",
   "description": "A toolbar control for adjusting font size.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [
     "button",

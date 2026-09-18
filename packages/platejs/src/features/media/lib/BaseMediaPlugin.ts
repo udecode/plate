@@ -218,7 +218,7 @@ export function defineMediaPlugin(
         around(editorCommands.insertBreak, ({ next, state }) => {
           const selection = state.selection();
 
-          if (!selection || state.selection.nodes().length > 0) return false;
+          if (!selection || state.selection.nodes().length > 0) return next();
 
           const anchorBlock = state.nodes.block({ at: selection.anchor });
           const focusBlock = state.nodes.block({ at: selection.focus });
@@ -230,7 +230,7 @@ export function defineMediaPlugin(
             focusBlock[0].type !== type ||
             !PathApi.equals(anchorBlock[1], focusBlock[1])
           ) {
-            return false;
+            return next();
           }
 
           const rightPath = PathApi.next(anchorBlock[1]);

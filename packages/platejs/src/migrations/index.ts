@@ -5,4 +5,3 @@
 export * from './documentMigrations';
 export * from './extractLegacyCommentRanges';
 export * from './migratePlateV54';
-export * from './v53-manifest';

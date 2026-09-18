@@ -1,4 +1,16 @@
+---
+review_scopes: []
+review_basis: []
+work_kind: design
+---
+
 # {{TITLE}}
+
+Status: In progress
+
+Fill the review metadata with affected scope IDs and governing review IDs, or
+leave empty when none applies. Choose work_kind for the actual outcome. Keep
+this Status line as the sole plan lifecycle; phase and evidence rows are narrower.
 
 This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
 
@@ -58,7 +70,6 @@ Blocked condition:
 
 Plite Plan state:
 
-- status: active
 - phase: ground
 - next: decide
 - handoff: not-prepared

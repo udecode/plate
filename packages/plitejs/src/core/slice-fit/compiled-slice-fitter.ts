@@ -1786,8 +1786,12 @@ export const compileSliceFitter = <V extends Value>(
     const sameTextPath =
       start.path.length === end.path.length &&
       start.path.every((part, index) => part === end.path[index]);
-    const targetText =
-      sameTextPath && start.path.length > 0 ? document.node(start.path) : null;
+    const targetText = start.path.length > 0 ? document.node(start.path) : null;
+    const endText = sameTextPath
+      ? targetText
+      : end.path.length > 0
+        ? document.node(end.path)
+        : null;
     const boundaries =
       options.target.kind === 'root'
         ? []
@@ -1897,6 +1901,15 @@ export const compileSliceFitter = <V extends Value>(
         const parent = getDescendant(rootChildren, parentPath);
 
         if (!parent || !ElementApi.isElement(parent)) break;
+        const behavior = getElementBehavior(parent);
+
+        if (
+          behavior.isolating ||
+          behavior.void ||
+          getElementSlicePolicy(parent).preserveContext
+        ) {
+          break;
+        }
 
         const childIndex = end.path[parentPath.length];
 
@@ -1937,6 +1950,7 @@ export const compileSliceFitter = <V extends Value>(
       if (
         variant.openStart === inputSlice.openStart &&
         variant.openStart > 1 &&
+        sameTextPath &&
         start.offset === end.offset &&
         start.offset === targetText.text.length &&
         targetText.text.length > 0
@@ -2085,6 +2099,30 @@ export const compileSliceFitter = <V extends Value>(
 
       const output: FitToken[] = [];
       const localStartContext = getStartContext();
+      const localEndContext = getEndContext();
+      const getProtectedDepth = (context: readonly FitOpenToken[]) =>
+        context.findLastIndex((token) => {
+          const node = openTokenNode(token);
+
+          if (!ElementApi.isElement(node)) return false;
+          const behavior = getElementBehavior(node);
+
+          return (
+            behavior.isolating ||
+            behavior.void ||
+            getElementSlicePolicy(node).preserveContext
+          );
+        }) + 1;
+      const protectedDepth = getProtectedDepth(localStartContext);
+
+      if (
+        protectedDepth !== getProtectedDepth(localEndContext) ||
+        start.path
+          .slice(0, protectedDepth)
+          .some((part, index) => part !== end.path[index])
+      ) {
+        return null;
+      }
       const stack = [...localStartContext];
       let outputPosition = 0;
       let selectionPosition: number | null = null;
@@ -2093,6 +2131,7 @@ export const compileSliceFitter = <V extends Value>(
         outputPosition += tokenLength(token);
       };
       const closeTop = () => {
+        if (stack.length <= protectedDepth) return false;
         const top = stack.pop();
 
         if (!top) return false;
@@ -2180,7 +2219,7 @@ export const compileSliceFitter = <V extends Value>(
         if (targetDepth === -1) return null;
 
         while (stack.length > targetDepth + 1) {
-          closeTop();
+          if (!closeTop()) return null;
         }
       }
 
@@ -2196,7 +2235,7 @@ export const compileSliceFitter = <V extends Value>(
             NodeApi.isText(top) ||
             (ElementApi.isElement(top) && getElementBehavior(top).inline)
           ) {
-            closeTop();
+            if (!closeTop()) return null;
             continue;
           }
 
@@ -2204,7 +2243,6 @@ export const compileSliceFitter = <V extends Value>(
         }
       }
 
-      const localEndContext = getEndContext();
       const endTextToken = localEndContext.findLast(
         (token) => token.nodeKind === 'text'
       );
@@ -2300,7 +2338,9 @@ export const compileSliceFitter = <V extends Value>(
         shared += 1;
       }
 
-      while (stack.length > shared) closeTop();
+      while (stack.length > shared) {
+        if (!closeTop()) return null;
+      }
       for (let index = shared; index < expected.length; index++) {
         append(expected[index]);
         stack.push(expected[index]);
@@ -2373,11 +2413,16 @@ export const compileSliceFitter = <V extends Value>(
       !sourceSharesTargetContent;
     const shouldGenerateLocalCandidate = () =>
       !exactBounds &&
-      sameTextPath &&
       inputSlice.content.length > 0 &&
-      ((hasContextualStructuralVariant() &&
-        start.path.length > 2 &&
-        Boolean(targetText && NodeApi.isText(targetText) && targetText.text)) ||
+      ((!sameTextPath &&
+        NodeApi.isText(targetText) &&
+        NodeApi.isText(endText) &&
+        (start.offset > 0 || end.offset < endText.text.length)) ||
+        (hasContextualStructuralVariant() &&
+          start.path.length > 2 &&
+          Boolean(
+            targetText && NodeApi.isText(targetText) && targetText.text
+          )) ||
         (inputSlice.openStart !== inputSlice.openEnd &&
           start.path.length > 2) ||
         (inputSlice.openStart === 1 &&
@@ -2816,6 +2861,7 @@ export const compileSliceFitter = <V extends Value>(
       if (
         boundary.from === exactFrom &&
         boundary.to === exactTo &&
+        sameTextPath &&
         targetText &&
         NodeApi.isText(targetText)
       ) {

@@ -10,21 +10,21 @@ import { createEditor } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 
 import {
-  richTextEditorThreads,
+  richTextEditorComments,
   richTextEditorValue,
 } from '@/registry/blocks/editor-ai/components/editor/rich-text-editor-value';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 const loadExample = (
   document = richTextEditorValue,
-  threads = richTextEditorThreads
+  comments = richTextEditorComments
 ) =>
   createEditor({
     plugins: [
       ...BaseEditorKit,
       SuggestionPlugin,
       CommentsPlugin.configure({
-        initialState: { currentUserId: 'alice', initialThreads: threads },
+        initialState: { currentUserId: 'alice', initialComments: comments },
       }),
     ],
     initialValue: structuredClone(document),
@@ -94,7 +94,18 @@ describe('saved rich-text playground', () => {
     }
 
     const threads = editor.plugin(CommentsPlugin).api.getThreads();
-    expect(threads).toEqual(richTextEditorThreads);
+    expect(threads).toEqual(richTextEditorComments.threads);
+    const attachment = editor
+      .plugin(CommentsPlugin)
+      .api.attachment('discussion1');
+    expect(attachment).toEqual({
+      type: 'range',
+      status: 'attached',
+      range: {
+        anchor: { path: [3, 1, 0], offset: 0 },
+        focus: { path: [3, 2], offset: 22 },
+      },
+    });
     expect(threads.find(({ id }) => id === 'discussion2')?.target).toEqual({
       type: 'change',
       id: snapshot.changes.find(({ authorId }) => authorId === 'charlie')!.id,
@@ -102,10 +113,60 @@ describe('saved rich-text playground', () => {
 
     const restored = loadExample(
       JSON.parse(JSON.stringify(editor.read.value())),
-      JSON.parse(JSON.stringify(threads))
+      JSON.parse(JSON.stringify(editor.plugin(CommentsPlugin).api.toJSON()))
     );
     expect(readAuthoredFormatSnapshot(restored)).toEqual(snapshot);
     expect(restored.plugin(CommentsPlugin).api.getThreads()).toEqual(threads);
+    expect(
+      restored.plugin(CommentsPlugin).api.attachment('discussion1')
+    ).toEqual(attachment);
+  });
+
+  it('loads independent conversations and attachments from one saved revision', async () => {
+    const primary = loadExample();
+    const reviewer = loadExample();
+    const snapshot = loadExample();
+    const comments = primary.plugin(CommentsPlugin).api;
+    const originalAttachment = comments.attachment('discussion1');
+
+    const reply = await comments.reply('discussion1', [
+      { type: 'paragraph', children: [{ text: 'Primary editor reply' }] },
+    ]);
+    expect(reply.status).toBe('applied');
+    const resolution = await comments.resolve('discussion1');
+    expect(resolution.status).toBe('applied');
+    primary.update((tx) => {
+      tx.text.insert('Updated ', { at: { path: [3, 1, 0], offset: 0 } });
+    });
+
+    for (const independent of [reviewer, snapshot]) {
+      expect(independent.plugin(CommentsPlugin).api.getThreads()).toEqual(
+        richTextEditorComments.threads
+      );
+      expect(
+        independent.plugin(CommentsPlugin).api.attachment('discussion1')
+      ).toEqual(originalAttachment);
+      expect(independent.read.value()).toEqual(richTextEditorValue);
+    }
+
+    const saved = JSON.parse(
+      JSON.stringify({
+        document: primary.read.value(),
+        comments: comments.toJSON(),
+      })
+    );
+    const restored = loadExample(saved.document, saved.comments);
+    const restoredComments = restored.plugin(CommentsPlugin).api;
+    expect(restoredComments.getThreads()).toEqual(comments.getThreads());
+    expect(restoredComments.attachment('discussion1')).toEqual(
+      comments.attachment('discussion1')
+    );
+    expect(restoredComments.attachment('discussion1')).not.toEqual(
+      originalAttachment
+    );
+    restored.api.history.undo();
+    expect(restored.read.value()).toEqual(saved.document);
+    expect(restoredComments.getThreads()).toEqual(saved.comments.threads);
   });
 
   it.each(['alice', 'bob', 'charlie'])(
@@ -117,7 +178,7 @@ describe('saved rich-text playground', () => {
       const changes = authored.read.changes({ status: 'pending' }).items;
       const change = changes.find((item) => item.authorId === authorId)!;
 
-      editor.update.history.undo();
+      editor.api.history.undo();
       expect(authored.read.changes({ status: 'pending' }).items).toEqual(
         changes
       );
@@ -129,7 +190,7 @@ describe('saved rich-text playground', () => {
       ).toBe('applied');
       expect(authored.read.change(change.id)?.status).toBe('accepted');
 
-      editor.update.history.undo();
+      editor.api.history.undo();
       expect(authored.read.change(change.id)?.status).toBe('pending');
       expect(authored.read.changes({ status: 'pending' }).items).toHaveLength(
         3
@@ -177,7 +238,7 @@ describe('saved rich-text playground', () => {
     ).toEqual(['bob', 'charlie']);
     expect(
       editor.plugin(CommentsPlugin).api.getThread('discussion1')?.target
-    ).toEqual(richTextEditorThreads[0].target);
+    ).toEqual(richTextEditorComments.threads[0].target);
   });
 
   it.each(['bob', 'charlie'])(
@@ -201,7 +262,7 @@ describe('saved rich-text playground', () => {
           .items.map((item) => item.authorId)
           .sort()
       ).toEqual(['alice', 'bob', 'charlie'].filter((id) => id !== authorId));
-      editor.update.history.undo();
+      editor.api.history.undo();
       expect(authored.read.changes({ status: 'pending' }).items).toHaveLength(
         3
       );

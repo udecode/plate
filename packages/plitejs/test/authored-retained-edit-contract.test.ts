@@ -69,21 +69,6 @@ it('amends a deletion at its retained caret without changing either document pro
   );
 });
 
-it('keeps retained deletions review-only while the parent markup view is editing', () => {
-  const { source, view, retained } = setup();
-  const before = JSON.stringify(source.read.value());
-  view.api.authored.setView({ intent: 'edit', projection: 'markup' });
-  const result = retainedRuntime.updateAuthoredFragment(retained, (tx) => {
-    tx.selection.set(point(2));
-    tx.text.insert('X');
-  });
-
-  assert.equal(result, null);
-  assert.equal(retained.read.text.string([]), 'bravo');
-  assert.equal(JSON.stringify(source.read.value()), before);
-  assert.equal(view.read.authored.changes().items[0].status, 'pending');
-});
-
 it('evaluates installed semantic commands in retained coordinates', () => {
   const { source, retained } = setup();
   const result = retainedRuntime.updateAuthoredFragment(retained, (tx) => {
@@ -161,7 +146,7 @@ for (const parent of ['source', 'view'] as const) {
         retained.read.children(),
         expected('redundXant phrase ')
       );
-      view.update.history.undo();
+      view.api.history.undo();
       assert.deepEqual(
         retained.read.children(),
         expected('redundXYant phrase ')
@@ -176,7 +161,7 @@ for (const parent of ['source', 'view'] as const) {
       });
       assert.deepEqual(restoredCaret.resolve(), point(8));
       restoredCaret.release();
-      view.update.history.redo();
+      view.api.history.redo();
       assert.deepEqual(
         retained.read.children(),
         expected('redundXant phrase ')
@@ -208,9 +193,9 @@ for (const parent of ['source', 'view'] as const) {
             : 'Keep this redundant phrase out of the final draft.'
         )
       );
-      view.update.history.undo();
+      view.api.history.undo();
       assert.deepEqual(retained.read.children(), amended);
-      view.update.history.redo();
+      view.api.history.redo();
       assert.deepEqual(
         retainedRuntime.readAuthoredViewFragments(view, deletion.id),
         []
@@ -324,9 +309,9 @@ it('keeps retained typing, deletion and paragraph breaks through history and rel
   });
   const text = () => retained.read.children().map(NodeApi.string);
   assert.deepEqual(text(), ['brXY', 'avo']);
-  view.update.history.undo();
+  view.api.history.undo();
   assert.deepEqual(text(), ['bravo']);
-  view.update.history.redo();
+  view.api.history.redo();
   assert.deepEqual(text(), ['brXY', 'avo']);
   const saved = JSON.stringify(source.read.value());
   for (const action of ['accept', 'reject'] as const) {

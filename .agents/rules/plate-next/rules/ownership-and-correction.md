@@ -60,6 +60,10 @@ exact node selection. Cut custom selection kinds, plugin selection payloads,
 parallel selected-node stores, duplicate codecs, and feature-owned mapping or
 history protocols. Feature plugins write core exact nodes and derive only the
 geometry their domain owns.
+Complete content transfer owns content, open depths, and the reachable named-root
+closure as one atomic unit. Multi-target fitting remaps exclusive roots per
+placement, preserves declared shared roots, prunes unreachable roots, and
+rejects without partial document, root, selection, history, or authored state.
 The callable selection read and every generic range predicate observe the same
 representative range. Exact node membership belongs only to the plural node and
 range reads; never preserve a selection-kind branch inside a range predicate.

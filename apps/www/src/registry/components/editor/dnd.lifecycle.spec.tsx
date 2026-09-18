@@ -239,9 +239,9 @@ test('table selection hides only its own editor handles across detach and remoun
         focus: { path: [1, 0, 1, 0, 0], offset: 1 },
       })
     );
-    expect(
-      first.plugin(BaseTablePlugin).read.selection()?.cellKeys
-    ).toHaveLength(2);
+    expect(first.plugin(BaseTablePlugin).read.selection()?.cells).toHaveLength(
+      2
+    );
     expect(handles('first-editor')).toBe(0);
     expect(handles('second-editor')).toBe(2);
     view.rerender(assembly(false));

@@ -25,8 +25,8 @@ export const BaseComboboxPlugin = definePlugin(PLUGINS.combobox, {
       );
     },
   }),
-}).extend(({ editor, plugin }) => ({
-  api: () => {
+}).extend(({ plugin }) => ({
+  api: ({ editor }) => {
     const finish = (
       input: NodeKey,
       callback: (tx: PluginTransaction, point: Point) => void
@@ -91,12 +91,12 @@ export const BaseComboboxPlugin = definePlugin(PLUGINS.combobox, {
       undo: (input: NodeKey) => {
         if (
           !editor.plugin(plugin).read.canEdit(input) ||
-          !editor.read.history.undos().length
+          !editor.read.history.hasUndo()
         ) {
           return false;
         }
 
-        editor.update.history.undo();
+        editor.api.history.undo();
 
         return true;
       },
@@ -104,12 +104,12 @@ export const BaseComboboxPlugin = definePlugin(PLUGINS.combobox, {
       redo: (input: NodeKey) => {
         if (
           !editor.plugin(plugin).read.canEdit(input) ||
-          !editor.read.history.redos().length
+          !editor.read.history.hasRedo()
         ) {
           return false;
         }
 
-        editor.update.history.redo();
+        editor.api.history.redo();
 
         return true;
       },

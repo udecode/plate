@@ -120,8 +120,10 @@ Required shape:
    - teach clipboard ingress as a `domCommands.insertData` interceptor in
      `commands`, never as a root plugin field or contribution; read
      `DataTransfer` from `input`, return `state.transaction(...)`, delegate with
-     `next()`, and let the owning plugin or Plate stage infer transaction
-     capabilities without callback annotations or editor type arguments
+     `next()`, teach `handle` false as fallback and `around` false as terminal
+     rejection unless it explicitly delegates, and let the owning plugin or
+     Plate stage infer transaction capabilities without callback annotations or
+     editor type arguments
    - teach Plite owner-local capabilities as `read` and `update`, pure
      core-read policy as `readMiddleware`, and config-free `validate`
 7. Style plugins without distinct components should document their schema

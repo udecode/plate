@@ -290,8 +290,8 @@ it('keeps retained inline atoms on their surrounding text line and in rich copy'
     command: { kind: 'delete', direction: 'backward' },
     editor: parent,
   });
-  parent.update.history.undo();
-  parent.update.history.redo();
+  parent.api.history.undo();
+  parent.api.history.redo();
   const mounted = render(
     <EditorRoot editor={parent}>
       <Editable renderVoid={(props) => <AtomicSelection {...props} />} />

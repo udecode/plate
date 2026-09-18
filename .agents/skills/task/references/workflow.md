@@ -33,7 +33,7 @@ The project templates under `docs/plans/templates/` remain project-owned. Their
 case matrices and package, release, browser and source gates remain available.
 Choose one primary template when its specific contract helps. Add only relevant
 surface packs; do not fill unrelated tables just to perform ordinary work.
-Regression and Benchmark retain their executable semantic-validator schemas.
+Patch's corpus method and Benchmark retain their executable semantic-validator schemas.
 
 `create-goal-scratchpad.mjs` creates a file. `check-complete.mjs` checks that
 file's structure. Neither creates a native Codex goal or proves app behavior.
@@ -60,6 +60,35 @@ next step in the existing plan, then follow Autogoal pause handling. Report
 unavailable native pause control once and end promptly. Automatic continuations
 and compaction never resume paused work; explicit user resumption reuses the
 saved plan and latest corrections.
+
+## Feature history closure
+
+For work associated with a reviewed feature, start with
+`node tooling/scripts/review-ledger.mjs lookup <scope>`. New plans declare
+`review_scopes` (all affected scope IDs), `review_basis` (the governing immutable
+review IDs, empty when no review governs the work), and `work_kind` in YAML
+frontmatter. Use `design`, `implementation`, `research`, `workflow` or
+`verification` according to the actual outcome. Keep one authoritative
+`Status:` line in the plan; completing design does not complete adoption.
+Historical associations may live in the ledger's inspected `documents` instead
+of rewriting old plans.
+
+At a material execution checkpoint or closure, finish the plan's evidence and
+status first, then run `draft-execution <plan-path>` on the same helper. Complete
+the outcome, summary, proof claims and limits; bind the actual source and proof
+inputs. Record with `record <draft-path>`. A matching hash establishes identity,
+not that a test ran. Missing historical evidence uses `historical-unbound` and
+unknown proof; never recreate a passing receipt from a claimed status alone.
+
+Reconcile the current decision page's progress and `reconciled_executions`
+record IDs, retaining its governing `current_review`. Then run `render` and
+`check`. The generated hub exposes completed plans without receipts and
+unreconciled decision summaries. Repair in-scope gaps or report their actual
+limits; never close them by independently editing adoption/proof flags. Later
+plan changes require a new outcome, not an edit to an immutable record. This
+closure does not require a new review for ordinary implementation or a plan
+for a tiny unrelated edit. The exact contract lives in
+`docs/research/schema.md`.
 
 Use native subagents for a bounded independent question or operation alongside
 useful lead work. Pass source and acceptance scope, current state, allowed
@@ -104,8 +133,8 @@ older recipe says to post status. Keep private security evidence private.
 ## Proof and review
 
 Verify Plate selects existing proof owners and the exact affected surface.
-Testing owns test value and runner mechanics. Patch owns one exact behavior
-repair; Regression owns executable corpus/oracle/receipt semantics; Benchmark
+Testing owns test value and runner mechanics. Patch owns local behavior repair
+and conditional corpus/receipt semantics; Verify Plate owns interaction oracles; Benchmark
 owns measurement and causal diagnosis. Keep their distinct claims intact.
 
 Run the narrowest affected proof during iteration. Wider package, browser,
@@ -133,8 +162,12 @@ scope, target, invocation count, findings and result once. Workers, plans,
 Autonomous checkpoints, goals, pstack critiques and closure recipes cannot reset this budget or
 add another final panel. A clean unchanged result needs no ceremonial rerun.
 
-Always inspect your own result and resolve verified in-scope defects. Apply
-Agent Native Reviewer to meaningful workflow changes. Best API still owns
+Always inspect your own result and resolve verified in-scope defects. Verify
+Plate's [implementation review](../../../skills/verify-plate/SKILL.md#review-the-implementation)
+owns final-candidate ownership and complexity acceptance for product changes;
+green runtime checks alone do not close a deficient implementation. This is
+source inspection, not another Autoreview budget or independent review claim.
+Apply Agent Native Reviewer to meaningful workflow changes. Best API still owns
 public-call-shape judgment and doctrine repair; it is not a second diff-review
 service. On `next`, report structured review as not run under branch policy;
 never switch branches to evade that rule or claim a reviewer passed.
@@ -154,7 +187,7 @@ ordinary implementation and recovery do not trigger an automatic method chain.
 
 Keep material decisions in the existing plan. Use Show Me Your Work when
 explicitly requested or when competing experiments need a separate history;
-long duration alone does not require it. Link existing Regression or Benchmark
+long duration alone does not require it. Link existing Patch corpus or Benchmark
 receipts rather than copying their contents. Preserve original evidence.
 Technical Writing owns prose and preservation. [Plate Docs](../../../skills/plate-docs/SKILL.md)
 owns the public documentation method and selects its applicable proof.

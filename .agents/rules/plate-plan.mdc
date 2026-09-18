@@ -95,7 +95,10 @@ rejected shape.
 - Keep ordinary `EditorContent` on Plite's complete DOM component. A Plate facade
   for explicit DOM omission mirrors the dedicated Plite component and options;
   it does not add a strategy prop, plugin, global store or second runtime.
-  Paginated Plate surfaces inherit pagination's own omission contract.
+  Paginated Plate surfaces are exact facades over Plite's paged component and
+  inherit its omission contract. Plate and copied UI may supply page chrome and
+  schema-specific fragmentation sizes; they do not add a pagination controller,
+  plugin, store, or projection loop.
 - Plan inline transient feature paint on the owning plugin's
   `decorate: { read, observe?, attributes? }` descriptor. Reads return keyed ranges with
   render-safe attributes; Plate lowers them into Plite decorations. Copied
@@ -106,13 +109,16 @@ rejected shape.
   Feature-owned content-root styles use `render.contentAttributes` on the
   existing plugin, with safe attribute composition on live/static roots and
   no additional DOM wrapper. Plan
-  sparse whole-element view attributes through
-  `render.useViewElementAttributes`, one hook host per enabled plugin per
-  mounted view. It returns `{ key, attributes }[]`; Plate keeps source order,
-  publication, cleanup, and keyed subscriptions private. Per-node
-  `render.attributes` and `inject.nodeProps.transformProps` stay pure and
-  hook-free. Do not add raw decoration props, public attribute stores, source
-  registries, managers, or imperative refresh APIs to Plate components.
+  sparse whole-element view attributes that custom React components receive
+  through `render.useViewElementAttributes`, one hook host per enabled plugin
+  per mounted view. It returns `{ key, attributes }[]`; Plate keeps source
+  order, publication, cleanup, and keyed subscriptions private. A benchmarked
+  high-frequency interaction may keep a feature-private view projection and
+  bind it through composed canonical node-host refs when React props must stay
+  unchanged. Require replacement, detach, cleanup, hydration, native and scale
+  proof; do not turn one feature into a public host hook, registry, store or
+  generic scalar channel. Per-node `render.attributes` and
+  `inject.nodeProps.transformProps` stay pure and hook-free.
 - Plan sibling render slots as exact placement capabilities, not host prop
   forwarding channels. Editable slots receive only `editableRef`; container
   slots receive only `containerRef`. Adopt complete components through direct
@@ -141,13 +147,16 @@ rejected shape.
   without an independently consumed lifecycle.
 - A private bridge is exceptional. Name its owner, non-public proof, deletion
   trigger, and removal gate in the decision row.
-- For persisted document upgrades, plan one app-owned `{ document, schema }`
-  envelope, exact generated fingerprints for every supported historical
+- For persisted document upgrades, plan one app-owned
+  `{ document, schema, selection? }` envelope, exact generated fingerprints for
+  every supported historical
   envelope version, an ascending `defineDocumentMigrations` target-version
-  chain, and the shared `migrateDocument` runtime/CLI runner. Raw documents use
-  only an explicit unversioned floor. Keep `prepareDocument` for installed
-  current-schema invariants after migration. Reject migration plugins,
-  historical normalizers, AST version guessing, and CLI-only runtime policy.
+  chain bound to the immutable target plugin tuple and schema, and the shared
+  detached `migrateDocument` app/CLI runner. Raw documents require an explicit
+  source at each conversion. Ordinary editor loads accept current input only.
+  Reject editor migration options, generic plugin document-preparation hooks,
+  migration plugins, historical normalizers, AST version guessing, and CLI-only
+  runtime policy.
   Only the persistence or release owner allocates a target version; fold every
   unreleased change into that target. Plate's approved next target is v54. Do
   not plan v55 or later without explicit release-owner approval and a persisted
@@ -327,7 +336,10 @@ After standalone acceptance or a qualifying delegated supervisor gate:
 6. Run the applicable root `AGENTS.md` gates and applicable review skills.
 7. Rerun every scale-sensitive contract on the final production path with the
    recorded correctness guard; a design prototype is not implementation proof.
-8. Update the plan with actual evidence and hand off the result.
+8. Update the plan with actual evidence and its one lifecycle status. Apply
+   Task's [feature-history closure](../task/references/workflow.md#feature-history-closure)
+   to bind execution to its governing review and reconcile the decision before
+   handing off. A completed design plan does not establish adoption.
 
 ## Handoff
 

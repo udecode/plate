@@ -25,6 +25,116 @@ const createTextEditor = () =>
   });
 
 describe('slice and fragment public APIs', () => {
+  for (const method of ['fragment', 'closed slice', 'open slice'] as const) {
+    for (const backward of [false, true]) {
+      it(`replaces a ${backward ? 'backward' : 'forward'} partial cross-block range with a ${method}`, () => {
+        const start = { path: [0, 0], offset: 1 };
+        const end = { path: [1, 0], offset: 2 };
+        const editor = createEditor({
+          initialSelection: SelectionApi.text({
+            anchor: backward ? end : start,
+            focus: backward ? start : end,
+          }),
+          initialValue: [paragraph('one'), paragraph('two'), paragraph('tail')],
+        });
+        const content = [paragraph('NEW'), paragraph('LAST')];
+        let applied = false;
+
+        editor.update((tx) => {
+          applied =
+            method === 'fragment'
+              ? tx.fragment.replace(content)
+              : tx.slice.replace(
+                  method === 'closed slice'
+                    ? ContentSlice.closed(content)
+                    : ContentSlice.fromJSON({
+                        content,
+                        openStart: 1,
+                        openEnd: 1,
+                      })
+                );
+        });
+
+        assert.equal(applied, true);
+        assert.deepEqual(editor.read.children(), [
+          paragraph('oNEW'),
+          paragraph('LASTo'),
+          paragraph('tail'),
+        ]);
+        assert.deepEqual(editor.read.selection(), {
+          anchor: { path: [1, 0], offset: 4 },
+          focus: { path: [1, 0], offset: 4 },
+        });
+      });
+    }
+
+    it(`keeps the unselected suffix when only the last endpoint is partial with ${method}`, () => {
+      const editor = createEditor({
+        initialSelection: SelectionApi.text({
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [1, 0], offset: 3 },
+        }),
+        initialValue: [paragraph('a'), paragraph('twotail')],
+      });
+      const content = [paragraph('NEW')];
+
+      editor.update((tx) => {
+        assert.equal(
+          method === 'fragment'
+            ? tx.fragment.replace(content)
+            : tx.slice.replace(
+                method === 'closed slice'
+                  ? ContentSlice.closed(content)
+                  : ContentSlice.fromJSON({ content, openStart: 1, openEnd: 1 })
+              ),
+          true
+        );
+      });
+
+      assert.deepEqual(editor.read.children(), [paragraph('NEWtail')]);
+    });
+
+    it(`preserves surviving marks across text leaves with a ${method}`, () => {
+      const editor = createEditor({
+        initialSelection: SelectionApi.text({
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 1], offset: 2 },
+        }),
+        initialValue: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'one', bold: true }, { text: 'two' }],
+          },
+        ],
+      });
+      const content = [paragraph('NEW')];
+
+      editor.update((tx) => {
+        assert.equal(
+          method === 'fragment'
+            ? tx.fragment.replace(content)
+            : tx.slice.replace(
+                method === 'closed slice'
+                  ? ContentSlice.closed(content)
+                  : ContentSlice.fromJSON({ content, openStart: 1, openEnd: 1 })
+              ),
+          true
+        );
+      });
+
+      assert.deepEqual(editor.read.children(), [
+        {
+          type: 'paragraph',
+          children: [{ text: 'o', bold: true }, { text: 'NEWo' }],
+        },
+      ]);
+      assert.deepEqual(editor.read.selection(), {
+        anchor: { path: [0, 1], offset: 3 },
+        focus: { path: [0, 1], offset: 3 },
+      });
+    });
+  }
+
   it('reuses immutable root nodes for a complete-root export', () => {
     const first = paragraph('first');
     const second = paragraph('second');

@@ -1,0 +1,15 @@
+---
+id: 2026-09-17-ai-comment-recovery
+date: 2026-09-17
+status: draft
+kind: fix
+summary: 'AI Comment selection and recovery'
+change: { 'type': 'source', 'date': '2026-09-17', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-09-17-ai-menu-comment-failure-feedback-recovery-19187f94","kind":"fix","migrationNotes":[]} -->
+
+- **`ai-menu`**: Publish generated feedback as ordinary comment threads. Keep completed comments when generation stops or fails, and show failed requests with retry and dismissal controls.
+- **`ai-api`**: Limit comment prompts to the selected content while preserving its formatting and inline structure.

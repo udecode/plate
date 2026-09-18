@@ -1607,21 +1607,48 @@ describe('contextual schema slice fitting', () => {
       };
       const editor = createCoveredReplacementEditor(value.children);
 
-      assert.equal(
-        editor.read.slice.fit(
-          ContentSlice.closed([
-            { children: [{ text: 'replacement' }], type: 'widget' },
-          ]),
-          {
-            at: {
-              anchor: { offset: 0, path: [0, 0, 0, 0] },
-              focus: { offset: 3, path: [0, 0, 1, 0] },
-            },
-          }
-        ),
-        false,
-        type
+      for (const [start, end] of [
+        [0, 3],
+        [1, 2],
+      ]) {
+        assert.equal(
+          editor.read.slice.fit(
+            ContentSlice.closed([
+              { children: [{ text: 'replacement' }], type: 'widget' },
+            ]),
+            {
+              at: {
+                anchor: { offset: start, path: [0, 0, 0, 0] },
+                focus: { offset: end, path: [0, 0, 1, 0] },
+              },
+            }
+          ),
+          false,
+          type
+        );
+      }
+
+      const fitted = editor.read.slice.fit(
+        ContentSlice.fromJSON({
+          content: [paragraph('NEW')],
+          openStart: 1,
+          openEnd: 1,
+        }),
+        {
+          at: {
+            anchor: { offset: 1, path: [0, 0, 0, 0] },
+            focus: { offset: 2, path: [0, 0, 1, 0] },
+          },
+        }
       );
+
+      assert.ok(fitted);
+      assert.deepEqual(fitted.changes.apply(value).children, [
+        {
+          type: 'outer',
+          children: [{ type, children: [paragraph('oNEWo')] }],
+        },
+      ]);
     }
   });
 

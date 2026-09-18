@@ -9,7 +9,31 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 const EDITOR = '[data-editor="true"]';
 
-test('Playground loads its full document and starter discussions', async ({
+const selectEditorMode = async (
+  page: Page,
+  mode: 'Editing' | 'Suggestion',
+  root: Locator | Page = page
+) => {
+  await createBrowserEditorHarness(
+    page,
+    'Comment mode toolbar',
+    root.locator(EDITOR).first()
+  ).ready({ editor: 'visible' });
+  const trigger = root.getByRole('button', {
+    name: mode === 'Suggestion' ? 'Editing' : 'Suggestion',
+    exact: true,
+  });
+  await expect(trigger).toBeVisible({ timeout: 20_000 });
+  await trigger.click();
+  const menu = page.getByRole('menu');
+  await expect(menu).toBeVisible();
+  await menu.getByRole('menuitemradio', { name: mode, exact: true }).click();
+  await expect(
+    root.getByRole('button', { name: mode, exact: true })
+  ).toBeVisible();
+};
+
+test('Playground opens in Editing with its full document and starter discussions', async ({
   page,
 }) => {
   const errors = recordBrowserRuntimeErrors(page);
@@ -19,6 +43,16 @@ test('Playground loads its full document and starter discussions', async ({
     await expect(
       page.getByRole('heading', { name: 'Welcome to the Plate Playground!' })
     ).toBeVisible({ timeout: 20_000 });
+    const editingMode = page.getByRole('button', {
+      name: 'Editing',
+      exact: true,
+    });
+    await expect(editingMode).toBeVisible();
+    await expect(
+      page
+        .locator('[data-editor-authored-change]')
+        .filter({ hasText: 'suggestions' })
+    ).toBeVisible();
     await expect(
       page.getByRole('textbox', { name: 'Enter your code here...' })
     ).toContainText('classDiagram');
@@ -35,12 +69,88 @@ test('Playground loads its full document and starter discussions', async ({
     );
     await expect(
       discussion.getByRole('textbox', { name: 'Reply to thread' })
-    ).toHaveCount(2);
+    ).toHaveCount(1);
+    await expect(
+      discussion.getByRole('textbox', { name: 'Comment on suggestion' })
+    ).toHaveCount(3);
     errors.assertNone();
   } finally {
     errors.stop();
   }
 });
+
+for (const action of ['Accept', 'Reject'] as const) {
+  test(`${action.toLowerCase()} suggestion supports native undo and redo`, async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page);
+
+    try {
+      await page.goto('/blocks/playground-demo', { waitUntil: 'commit' });
+      const editor = page.locator('[data-editor="true"]').first();
+      const insertion = editor
+        .locator('[data-editor-authored-change]')
+        .filter({ hasText: 'suggestions' });
+
+      await selectEditorMode(page, 'Suggestion');
+      await expect(insertion.first()).toBeVisible({ timeout: 20_000 });
+      await page
+        .getByRole('button', {
+          name: 'Open 5 discussion items for this block',
+        })
+        .click();
+      const discussion = page.getByRole('dialog', { name: 'Discussion items' });
+      const suggestion = discussion
+        .getByRole('article')
+        .filter({ hasText: 'Add “suggestions like this added text”' });
+
+      await suggestion
+        .getByRole('button', { name: `${action} suggestion` })
+        .click({ force: true });
+      if (action === 'Reject') {
+        await expect(suggestion.getByRole('alert')).toContainText(
+          'This decision also affects 1 related suggestion.'
+        );
+        await suggestion
+          .getByRole('button', { name: 'Reject related' })
+          .click();
+      }
+
+      await expect(insertion).toHaveCount(0);
+      await page.keyboard.press('Escape');
+      await expect
+        .poll(() =>
+          editor.evaluate((element) => element.contains(document.activeElement))
+        )
+        .toBe(true);
+
+      await page.keyboard.press(undo);
+
+      await expect(insertion.first()).toBeVisible();
+      await expect(
+        page.getByRole('button', {
+          name: /(?:Open|Close) 5 discussion items for this block/,
+        })
+      ).toBeVisible();
+
+      await page.keyboard.press(redo);
+
+      await expect(insertion).toHaveCount(0);
+      await expect(
+        page.getByRole('button', {
+          name: new RegExp(
+            `(?:Open|Close) ${
+              action === 'Accept' ? 4 : 3
+            } discussion items for this block`
+          ),
+        })
+      ).toBeVisible();
+      errors.assertNone();
+    } finally {
+      errors.stop();
+    }
+  });
+}
 
 const FIRST_BLOCK =
   'This paragraph has two overlapping comments backed by persistent editor anchors.';
@@ -430,7 +540,7 @@ for (const entryPath of commentEntryPaths) {
         const commentButton = primary
           .getByRole('toolbar')
           .first()
-          .getByRole('button', { name: 'Comment' });
+          .getByRole('button', { name: 'Comment', exact: true });
 
         await installClickEventOrderRecorder(commentButton);
         await commentButton.click();
@@ -883,10 +993,10 @@ test('a fully deleted comment stays reachable and exact through repeated history
     await composer.fill('Last character survives');
     await submitComposer(composer);
 
-    const thread = popover
-      .locator('[data-comment-thread]')
+    const floatingThread = page
+      .locator('[data-discussion-popover] [data-comment-thread]')
       .filter({ hasText: 'Last character survives' });
-    const threadId = await thread.getAttribute('data-comment-thread');
+    const threadId = await floatingThread.getAttribute('data-comment-thread');
 
     expect(threadId).not.toBeNull();
     await expect(primary.locator(`[data-comment-id="${threadId}"]`)).toHaveText(
@@ -903,35 +1013,45 @@ test('a fully deleted comment stays reachable and exact through repeated history
     ).toHaveCount(0);
 
     const trigger = primary.locator('[data-discussion-block-trigger]').first();
-
     await expect(trigger).toHaveAccessibleName(
-      'Open 3 discussion items for this block'
+      'Open 2 discussion items for this block'
     );
-    await trigger.click();
-    await expect(popover).toBeVisible();
-    await expect(thread).toBeVisible();
-    await expect(popover.locator('[data-comment-thread]')).toHaveCount(3);
-
-    const assertPopupFollowsTrigger = async () => {
-      const [popoverBox, triggerBox] = await Promise.all([
-        popover.boundingBox(),
-        trigger.boundingBox(),
-      ]);
-
-      expect(popoverBox).not.toBeNull();
-      expect(triggerBox).not.toBeNull();
-      expect(popoverBox!.x).toBeGreaterThan(0);
-      expect(popoverBox!.y).toBeGreaterThan(0);
-      const triggerCenter = triggerBox!.x + triggerBox!.width / 2;
-
-      expect(triggerCenter).toBeGreaterThanOrEqual(popoverBox!.x - 2);
-      expect(triggerCenter).toBeLessThanOrEqual(
-        popoverBox!.x + popoverBox!.width + 2
-      );
-      expect(Math.abs(popoverBox!.y - triggerBox!.y)).toBeLessThan(500);
+    const openAllComments = async () => {
+      await primary.getByRole('button', { name: 'All comments' }).click();
+      const dialog = page.getByRole('dialog', { name: 'All comments' });
+      await expect(dialog).toBeVisible();
+      return dialog;
     };
+    let allComments = await openAllComments();
+    let thread = allComments
+      .locator('[data-comment-thread]')
+      .filter({ hasText: 'Last character survives' });
+    await expect(thread).toBeVisible();
+    await expect(thread.locator('..')).toContainText(
+      'Target unavailable in this view'
+    );
 
-    await assertPopupFollowsTrigger();
+    await page.keyboard.press('Escape');
+    await physicallyPlaceCaret(page, firstBlock, 0);
+    await page.keyboard.type('N');
+    await expect
+      .poll(() => getEditorText(firstBlock))
+      .toBe(`N${FIRST_BLOCK.slice(1)}`);
+    await expect(
+      primary.locator(`[data-comment-id="${threadId}"]`)
+    ).toHaveCount(0);
+    allComments = await openAllComments();
+    thread = allComments
+      .locator('[data-comment-thread]')
+      .filter({ hasText: 'Last character survives' });
+    await expect(thread.locator('..')).toContainText(
+      'Target unavailable in this view'
+    );
+    await page.keyboard.press('Escape');
+    await editor.press(undo);
+    await expect
+      .poll(() => getEditorText(firstBlock))
+      .toBe(FIRST_BLOCK.slice(1));
 
     for (let cycle = 0; cycle < 5; cycle += 1) {
       await editor.press(undo);
@@ -943,7 +1063,14 @@ test('a fully deleted comment stays reachable and exact through repeated history
         page,
         primary.locator(`[data-comment-id="${threadId}"]`)
       );
-      await expect(thread).toBeVisible();
+      await expect(floatingThread).toBeVisible();
+      await page.keyboard.press('Escape');
+      allComments = await openAllComments();
+      thread = allComments
+        .locator('[data-comment-thread]')
+        .filter({ hasText: 'Last character survives' });
+      await expect(thread.locator('..')).toContainText('Attached to document');
+      await page.keyboard.press('Escape');
 
       await editor.press(redo);
       await expect
@@ -952,11 +1079,24 @@ test('a fully deleted comment stays reachable and exact through repeated history
       await expect(
         primary.locator(`[data-comment-id="${threadId}"]`)
       ).toHaveCount(0);
-      await trigger.click();
+      await expect(trigger).toHaveAccessibleName(
+        'Open 2 discussion items for this block'
+      );
+      allComments = await openAllComments();
+      thread = allComments
+        .locator('[data-comment-thread]')
+        .filter({ hasText: 'Last character survives' });
       await expect(thread).toBeVisible();
-      await assertPopupFollowsTrigger();
+      await expect(thread.locator('..')).toContainText(
+        'Target unavailable in this view'
+      );
+      await page.keyboard.press('Escape');
     }
 
+    allComments = await openAllComments();
+    thread = allComments
+      .locator('[data-comment-thread]')
+      .filter({ hasText: 'Last character survives' });
     const reply = thread.getByRole('textbox', { name: 'Reply to thread' });
 
     await reply.fill('Still attached');
@@ -1157,6 +1297,7 @@ test('annotated blocks open their own combined Floating Discussion', async ({
     const { popover, primary } = getDemo(page);
     const triggers = primary.locator('[data-discussion-block-trigger]');
 
+    await selectEditorMode(page, 'Suggestion', primary);
     await expect(triggers).toHaveCount(2);
     await expect(triggers.nth(0)).toHaveAccessibleName(
       'Open 2 discussion items for this block'
@@ -1180,6 +1321,7 @@ test('annotated blocks open their own combined Floating Discussion', async ({
     const aiTrigger = aiEditor.locator('[data-discussion-block-trigger]');
 
     await expect(aiEditor).toBeVisible({ timeout: 20_000 });
+    await selectEditorMode(page, 'Suggestion');
     await expect(aiTrigger).toHaveCount(1);
     await expect(aiTrigger).toHaveAccessibleName(
       'Open 5 discussion items for this block'
@@ -1215,6 +1357,7 @@ test('discussion grouping follows block split and merge edits', async ({
     await triggers.nth(0).click();
     await expect(popover.locator('[data-comment-thread]')).toHaveCount(2);
     await expect(popover.locator('[data-suggestion-review]')).toHaveCount(0);
+    await selectEditorMode(page, 'Suggestion', primary);
     await triggers.nth(1).click();
     await expect(popover.locator('[data-suggestion-review]')).toHaveCount(2);
     await expect(
@@ -1226,6 +1369,7 @@ test('discussion grouping follows block split and merge edits', async ({
       .filter({ hasText: FIRST_BLOCK })
       .first();
 
+    await selectEditorMode(page, 'Editing', primary);
     await physicallyPlaceCaret(page, movedBlock, 0);
     await editor.press('Backspace');
     await expect(triggers).toHaveCount(2);
@@ -1360,7 +1504,9 @@ for (const width of [1280, 390]) {
         contentType: 'image/png',
       });
       await page.keyboard.press('Escape');
-      await editor.locator('[data-comment-id="discussion2"]').click();
+      await editor
+        .locator('[data-editor-authored-change="playground3"]')
+        .click();
       await expect(popover.locator('[data-comment-thread]')).toHaveCount(1);
       await expect(popover.locator('[data-suggestion-review]')).toHaveCount(1);
       await expect(
@@ -1375,7 +1521,9 @@ for (const width of [1280, 390]) {
       await expect(popover.locator('[data-suggestion-review]')).toHaveCount(0);
       await editor.press(undo);
       await expect(
-        editor.locator('.editor-suggestion').filter({ hasText: 'overlapping' })
+        editor
+          .locator('[data-editor-authored-change="playground3"]')
+          .filter({ hasText: 'overlapping' })
       ).toHaveCount(1);
       await page.keyboard.press('Escape');
       await physicallyPlaceCaret(
@@ -1484,6 +1632,7 @@ test('Floating Discussion preserves the established unboxed block design', async
   const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
+    await page.clock.setFixedTime(new Date('2026-09-20T12:00:00.000Z'));
     await openDemo(page);
     const { popover, primary } = getDemo(page);
     const trigger = primary.locator('[data-discussion-block-trigger]').first();
@@ -1587,57 +1736,55 @@ test('Floating Discussion preserves the established unboxed block design', async
     const reviews = aiPopover.locator('[data-suggestion-review]');
 
     await expect(reviews).toHaveCount(3);
-    await expect(reviews.first()).toContainText('01/01/2024');
+    await expect(aiPopover.getByRole('article')).toHaveCount(5);
+    await expect(reviews.first()).toContainText('09/17/2026');
     await expect(aiPopover.locator('[data-discussion-separator]')).toHaveCount(
-      4
+      3
     );
     await expect(aiPopover).toHaveCSS('gap', '0px');
-    expect(
-      await reviews.evaluateAll((elements) =>
-        elements.map((element) => {
-          const item = element.parentElement;
-          const composer = element.querySelector('form');
-          const separator = item?.nextElementSibling;
-          const surface = element.closest('[data-discussion-popover]');
-          const separatorColor = separator
-            ? getComputedStyle(separator).backgroundColor
-            : '';
-          const surfaceColor = surface
-            ? getComputedStyle(surface).backgroundColor
-            : '';
+    const reviewGeometry = await reviews.evaluateAll((elements) =>
+      elements.map((element) => {
+        const item = element.parentElement;
+        const composer = element.querySelector('form');
+        const separator = item?.nextElementSibling;
+        const surface = element.closest('[data-discussion-popover]');
+        const separatorColor = separator
+          ? getComputedStyle(separator).backgroundColor
+          : '';
+        const surfaceColor = surface
+          ? getComputedStyle(surface).backgroundColor
+          : '';
+        const conversationHeight = [
+          ...element.querySelectorAll(':scope > [data-comment-thread]'),
+        ].reduce(
+          (height, conversation) =>
+            height + conversation.getBoundingClientRect().height,
+          0
+        );
 
-          return {
-            composerHeight: Math.round(
-              composer?.getBoundingClientRect().height ?? 0
-            ),
-            rowHeight: Math.round(item?.getBoundingClientRect().height ?? 0),
-            separatorContrastsSurface: separatorColor !== surfaceColor,
-            separatorHeight: Math.round(
-              separator?.getBoundingClientRect().height ?? 0
-            ),
-          };
-        })
-      )
-    ).toEqual([
-      {
-        composerHeight: 31,
-        rowHeight: 123,
-        separatorContrastsSurface: true,
-        separatorHeight: 1,
-      },
-      {
-        composerHeight: 31,
-        rowHeight: 123,
-        separatorContrastsSurface: true,
-        separatorHeight: 1,
-      },
-      {
-        composerHeight: 31,
-        rowHeight: 123,
-        separatorContrastsSurface: true,
-        separatorHeight: 1,
-      },
-    ]);
+        return {
+          composerHeight: Math.round(
+            composer?.getBoundingClientRect().height ?? 0
+          ),
+          reviewHeight: Math.round(
+            (item?.getBoundingClientRect().height ?? 0) - conversationHeight
+          ),
+          lastGroup: item === item?.parentElement?.lastElementChild,
+          separatorContrastsSurface: separatorColor !== surfaceColor,
+          separatorHeight: Math.round(
+            separator?.getBoundingClientRect().height ?? 0
+          ),
+        };
+      })
+    );
+    for (const geometry of reviewGeometry) {
+      expect(geometry.composerHeight).toBe(31);
+      expect(geometry.reviewHeight).toBe(123);
+      expect(geometry.separatorHeight).toBe(geometry.lastGroup ? 0 : 1);
+      if (!geometry.lastGroup) {
+        expect(geometry.separatorContrastsSurface).toBe(true);
+      }
+    }
     const firstDiscussion = aiPopover.locator(
       '[data-comment-thread="discussion1"]'
     );
@@ -1647,10 +1794,10 @@ test('Floating Discussion preserves the established unboxed block design', async
     );
     await expect(
       firstDiscussion.locator('[data-comment-message]').first()
-    ).toContainText('10m');
+    ).toContainText('09/14/2026');
     await expect(
       firstDiscussion.locator('[data-comment-message]').nth(1)
-    ).toContainText('8m');
+    ).toContainText('09/14/2026');
     await expect(firstDiscussion.locator('[data-comment-excerpt]')).toHaveText(
       'comments'
     );
@@ -1826,6 +1973,7 @@ test('suggestion cards keep document mutation and attached comments together', a
     await openDemo(page);
     const { editor, popover, primary } = getDemo(page);
 
+    await selectEditorMode(page, 'Suggestion', primary);
     await editor.getByText('tighten the wording', { exact: true }).click();
     await expect(popover).toBeVisible();
 
@@ -1856,9 +2004,19 @@ test('suggestion cards keep document mutation and attached comments together', a
     expect(attachedId).not.toBeNull();
     await suggestion.hover();
     await suggestion.getByRole('button', { name: 'Accept suggestion' }).click();
-    await expect(editor).toBeFocused();
+    await expect(popover).toBeVisible();
+    await expect(
+      popover
+        .locator(`[data-comment-thread="${attachedId}"]`)
+        .getByRole('textbox', { name: 'Reply to thread' })
+    ).toBeVisible();
+    await expect(
+      popover.locator('[data-comment-thread="suggestion-thread"]')
+    ).toBeVisible();
     await expect(suggestion).toHaveCount(0);
-    await expect(editor.getByRole('insertion')).toHaveCount(0);
+    await expect(
+      editor.locator('[data-editor-authored-change="tighten"]')
+    ).toHaveCount(0);
     await expect(editor).toContainText('tighten the wording');
     await expect(
       primary.locator('[data-comment-id="suggestion-thread"]')
@@ -1867,10 +2025,12 @@ test('suggestion cards keep document mutation and attached comments together', a
       primary.locator(`[data-comment-id="${attachedId}"]`)
     ).toHaveCount(0);
 
+    await page.keyboard.press('Escape');
+    await expect(editor).toBeFocused();
     await editor.press(undo);
-    await expect(editor.getByRole('insertion')).toContainText(
-      'tighten the wording'
-    );
+    await expect(
+      editor.locator('[data-editor-authored-change="tighten"]')
+    ).toContainText('tighten the wording');
     await editor.getByText('tighten the wording', { exact: true }).click();
     await expect(
       suggestion.locator('[data-comment-thread="suggestion-thread"]')
@@ -1880,7 +2040,9 @@ test('suggestion cards keep document mutation and attached comments together', a
 
     await editor.press(redo);
     await expect(suggestion).toHaveCount(0);
-    await expect(editor.getByRole('insertion')).toHaveCount(0);
+    await expect(
+      editor.locator('[data-editor-authored-change="tighten"]')
+    ).toHaveCount(0);
 
     await editor
       .getByText('keep this redundant phrase', { exact: true })
@@ -1895,15 +2057,19 @@ test('suggestion cards keep document mutation and attached comments together', a
 
     await removal.hover();
     await removal.getByRole('button', { name: 'Reject suggestion' }).click();
-    await expect(editor).toBeFocused();
+    await expect(popover).toContainText('Keep the removal context');
     await expect(removal).toHaveCount(0);
-    await expect(editor.getByRole('deletion')).toHaveCount(0);
+    await expect(
+      editor.locator('[data-editor-authored-change="remove"]')
+    ).toHaveCount(0);
     await expect(editor).toContainText('keep this redundant phrase');
 
+    await page.keyboard.press('Escape');
+    await expect(editor).toBeFocused();
     await editor.press(undo);
-    await expect(editor.getByRole('deletion')).toContainText(
-      'keep this redundant phrase'
-    );
+    await expect(
+      editor.locator('[data-editor-authored-change="remove"]')
+    ).toContainText('keep this redundant phrase');
     await editor
       .getByText('keep this redundant phrase', { exact: true })
       .click();
@@ -1911,7 +2077,9 @@ test('suggestion cards keep document mutation and attached comments together', a
     await expect(removal).toContainText('Keep the removal context');
     await editor.press(redo);
     await expect(removal).toHaveCount(0);
-    await expect(editor.getByRole('deletion')).toHaveCount(0);
+    await expect(
+      editor.locator('[data-editor-authored-change="remove"]')
+    ).toHaveCount(0);
 
     runtimeErrors.assertNone();
   } finally {
@@ -2006,6 +2174,10 @@ test('comment paint, independent snapshots, invalid loading, and metadata update
 
     const renderSnapshot = await getReactRenderProfilerSnapshot(page);
 
+    await testInfo.attach('comment-reply-render-counts', {
+      body: JSON.stringify(renderSnapshot),
+      contentType: 'application/json',
+    });
     expect(renderSnapshot.byKind.editable ?? 0).toBeLessThanOrEqual(6);
     expect(renderSnapshot.byKind['root-plan'] ?? 0).toBeLessThanOrEqual(8);
     expect(renderSnapshot.byKind.text ?? 0).toBe(0);
@@ -2042,12 +2214,22 @@ const triggerAiComment = async (page: Page, target: Locator) => {
   await selectCharacterWithKeyboard(page, target, 0);
   await page.keyboard.press(aiHotkey);
   await page.getByRole('option', { exact: true, name: 'Comment' }).click();
-  await expect(page.locator('[data-ai-comment-review]')).toBeVisible({
+  const thread = page
+    .locator(
+      '[data-discussion-popover] [data-comment-thread][data-status="published"]'
+    )
+    .first();
+  await expect(thread).toBeVisible({
     timeout: 15_000,
   });
+  await expect(
+    page.locator('[data-comment-thread][data-status="draft"]')
+  ).toHaveCount(0);
+
+  return thread;
 };
 
-test('AI comments stay provisional until Accept and disappear on Reject', async ({
+test('AI comments publish as ordinary threads and survive session close', async ({
   page,
 }, testInfo) => {
   expect(testInfo.retry).toBe(0);
@@ -2059,46 +2241,28 @@ test('AI comments stay provisional until Accept and disappear on Reject', async 
     const blocks = editor.locator('[data-editor-node="element"]');
     const documentText = await editor.innerText();
 
-    await triggerAiComment(page, blocks.nth(1));
-    const firstDraft = popover.locator(
-      '[data-comment-thread][data-status="draft"]'
-    );
+    const firstThread = await triggerAiComment(page, blocks.nth(1));
+    const firstId = await firstThread.getAttribute('data-comment-thread');
 
-    await expect(firstDraft).toHaveCount(1);
-    await expect(firstDraft).toContainText('AI draft');
-    const acceptedId = await firstDraft.getAttribute('data-comment-thread');
-
-    expect(acceptedId).not.toBeNull();
-    await page
-      .locator('[data-ai-comment-review]')
-      .getByRole('button', { name: 'Accept' })
-      .click();
-    await expect(firstDraft).toHaveCount(0);
-    await expect(
-      popover.locator(
-        `[data-comment-thread="${acceptedId}"][data-status="published"]`
-      )
-    ).toBeVisible();
+    expect(firstId).not.toBeNull();
     await staticView.click();
     await expect(popover).toHaveCount(0);
-
-    await triggerAiComment(page, blocks.nth(0));
-    const rejectedDraft = popover.locator(
-      '[data-comment-thread][data-status="draft"]'
-    );
-
-    await expect(rejectedDraft).toHaveCount(1);
-    const rejectedId = await rejectedDraft.getAttribute('data-comment-thread');
-
-    expect(rejectedId).not.toBeNull();
-    await page
-      .locator('[data-ai-comment-review]')
-      .getByRole('button', { name: 'Reject' })
-      .click();
-    await expect(rejectedDraft).toHaveCount(0);
     await expect(
-      primary.locator(`[data-comment-id="${rejectedId}"]`)
-    ).toHaveCount(0);
+      primary.locator(`[data-comment-id="${firstId}"]`)
+    ).toBeVisible();
+
+    const secondThread = await triggerAiComment(page, blocks.nth(0));
+    const secondId = await secondThread.getAttribute('data-comment-thread');
+
+    expect(secondId).not.toBeNull();
+    expect(secondId).not.toBe(firstId);
+    await staticView.click();
+    await expect(
+      primary.locator(`[data-comment-id="${firstId}"]`)
+    ).toBeVisible();
+    await expect(
+      primary.locator(`[data-comment-id="${secondId}"]`)
+    ).toBeVisible();
     expect(await editor.innerText()).toBe(documentText);
 
     runtimeErrors.assertNone();
@@ -2125,25 +2289,27 @@ test('AI editor keeps its toolbar above the full-width editor', async ({
       })
     ).toBeVisible({ timeout: 20_000 });
     await expect(editor).toBeVisible({ timeout: 20_000 });
-    const [containerBox, editorBox, toolbarBox] = await Promise.all([
-      toolbar.locator('..').boundingBox(),
-      editor.boundingBox(),
-      toolbar.boundingBox(),
-    ]);
+    const [frameBox, editorBox, toolbarBox, editorContainerWidth] =
+      await Promise.all([
+        page.locator('[data-slot="editor-frame"]').first().boundingBox(),
+        editor.boundingBox(),
+        toolbar.boundingBox(),
+        editor.locator('..').evaluate((element) => element.clientWidth),
+      ]);
 
-    expect(containerBox).not.toBeNull();
+    expect(frameBox).not.toBeNull();
     expect(editorBox).not.toBeNull();
     expect(toolbarBox).not.toBeNull();
 
     expect(toolbarBox!.height).toBeLessThan(96);
-    expect(
-      Math.abs(toolbarBox!.width - containerBox!.width)
-    ).toBeLessThanOrEqual(1);
+    expect(Math.abs(toolbarBox!.width - frameBox!.width)).toBeLessThanOrEqual(
+      1
+    );
     expect(editorBox!.y).toBeGreaterThanOrEqual(
       toolbarBox!.y + toolbarBox!.height - 1
     );
     expect(
-      Math.abs(editorBox!.width - containerBox!.width)
+      Math.abs(editorBox!.width - editorContainerWidth)
     ).toBeLessThanOrEqual(1);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth)
@@ -2183,18 +2349,31 @@ test('AI editor keeps Floating Discussion usable on narrow screens', async ({
     const editor = page.locator(EDITOR).first();
 
     await expect(editor).toBeVisible();
-    const overlappingComment = editor
-      .locator('[data-comment-id="discussion2"]')
+    const overlappingSuggestion = editor
+      .locator('[data-editor-authored-change]')
+      .filter({ hasText: 'overlapping' })
       .first();
 
-    await expect(overlappingComment).toBeVisible();
-    await clickCommentHighlight(page, overlappingComment);
+    await expect(overlappingSuggestion).toBeVisible();
+    await overlappingSuggestion.click();
     await expect(page.locator('[data-discussion-popover]')).toBeVisible();
+    await expect(
+      page.locator(
+        '[data-discussion-popover] [data-comment-thread="discussion2"]'
+      )
+    ).toContainText(
+      'Nice demonstration of overlapping annotations with both comments and suggestions!'
+    );
 
     const editorBox = await editor.boundingBox();
+    const editorContainerWidth = await editor
+      .locator('..')
+      .evaluate((element) => element.clientWidth);
 
     expect(editorBox).not.toBeNull();
-    expect(editorBox!.width).toBeGreaterThanOrEqual(380);
+    expect(
+      Math.abs(editorBox!.width - editorContainerWidth)
+    ).toBeLessThanOrEqual(1);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth)
     ).toBeLessThanOrEqual(
@@ -2216,7 +2395,7 @@ test('English and Chinese Comment, Suggestion, and Discussion routes render', as
   const routes = [
     ['/docs/comment', 'Comments'],
     ['/docs/discussion', 'Discussion'],
-    ['/docs/suggestion', 'Suggestion'],
+    ['/docs/suggestion', 'Suggestions'],
     ['/cn/docs/comment', '评论'],
     ['/cn/docs/discussion', '讨论'],
     ['/cn/docs/suggestion', '建议'],
@@ -2267,5 +2446,148 @@ test('independent reviewer and static documents keep their own native comment ra
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();
+  }
+});
+
+test('resolved comments remain reachable through failed reopen, retry, and snapshot reload', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto('/view/comment-persistence-demo', { waitUntil: 'commit' });
+    const editor = page.getByRole('textbox', {
+      name: 'Saved comments document',
+    });
+    await createBrowserEditorHarness(page, 'Comment persistence', editor).ready(
+      { editor: 'visible' }
+    );
+    const lastBlock = editor.locator('[data-editor-node="element"]').last();
+    await physicallyPlaceCaret(page, lastBlock, 3);
+    await editor.press(commentHotkey);
+    const composer = page.getByRole('textbox', { name: 'New comment' });
+    await expect(composer).toBeFocused();
+    await composer.fill('Keep this resolved conversation');
+    await submitComposer(composer);
+    const thread = page
+      .locator('[data-comment-thread]')
+      .filter({ hasText: 'Keep this resolved conversation' });
+    await expect(thread).toBeVisible();
+    const id = await thread.getAttribute('data-comment-thread');
+    expect(id).not.toBeNull();
+    await physicallyPlaceCaret(page, lastBlock, 0);
+    await page.keyboard.type('Draft ');
+    await expect(lastBlock).toContainText('Draft Select');
+    await editor.locator(`[data-comment-id="${id}"]`).first().click();
+    await thread.locator('[data-comment-message]').first().hover();
+    await thread.getByRole('button', { name: 'Resolve thread' }).click();
+    const openAllComments = async () => {
+      await page.getByRole('button', { name: 'All comments' }).first().click();
+      const dialog = page.getByRole('dialog', { name: 'All comments' });
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole('button', { name: 'resolved' }).click();
+      return dialog;
+    };
+    let resolved = await openAllComments();
+    await expect(resolved).toContainText('Keep this resolved conversation');
+    await expect(
+      resolved.getByRole('textbox', { name: 'Reply to thread' })
+    ).toHaveCount(0);
+    await expect(editor.locator(`[data-comment-id="${id}"]`)).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(resolved).toHaveCount(0);
+    await physicallyPlaceCaret(page, lastBlock, 0);
+    await page.keyboard.press(undo);
+    await expect(lastBlock).not.toContainText('Draft Select');
+    resolved = await openAllComments();
+    await expect(resolved).toContainText('Keep this resolved conversation');
+    await page.keyboard.press('Escape');
+    await page
+      .getByRole('button', { name: 'Save snapshot', exact: true })
+      .click();
+    await page
+      .getByRole('button', { name: 'Reload snapshot', exact: true })
+      .click();
+    resolved = await openAllComments();
+    await expect(resolved).toContainText('Keep this resolved conversation');
+    await resolved.locator('[data-comment-message]').first().hover();
+    await resolved.getByRole('button', { name: 'Reopen thread' }).click();
+    await expect(resolved.getByRole('alert')).toContainText('Could not save');
+    await expect(resolved).toContainText('Keep this resolved conversation');
+    await expect(editor.locator(`[data-comment-id="${id}"]`)).toHaveCount(0);
+    await resolved.getByRole('button', { name: 'Reopen thread' }).click();
+    await expect(resolved.getByRole('article')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(resolved).toHaveCount(0);
+    await expect(
+      editor.locator(`[data-comment-id="${id}"]`).first()
+    ).toBeVisible();
+    await page
+      .getByRole('button', { name: 'Save snapshot', exact: true })
+      .click();
+    await page
+      .getByRole('button', { name: 'Reload snapshot', exact: true })
+      .click();
+    resolved = await openAllComments();
+    await expect(resolved.getByRole('article')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await editor.locator(`[data-comment-id="${id}"]`).first().click();
+    await expect(thread).toContainText('Keep this resolved conversation');
+    await expect(
+      thread.getByRole('textbox', { name: 'Reply to thread' })
+    ).toBeVisible();
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
+
+test('historical All comments discovers current conversations without a target or Suggestions', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto('/view/comment-persistence-demo', { waitUntil: 'commit' });
+    const editor = page.getByRole('textbox', {
+      name: 'Saved comments document',
+    });
+    await createBrowserEditorHarness(
+      page,
+      'Historical comment discovery',
+      editor
+    ).ready({ editor: 'visible' });
+    await page
+      .getByRole('button', { name: 'Save snapshot', exact: true })
+      .click();
+    const firstBlock = editor.locator('[data-editor-node="element"]').first();
+    await physicallySelectText(page, firstBlock, 0, 1);
+    await editor.press(commentHotkey);
+    const composer = page.getByRole('textbox', { name: 'New comment' });
+    await composer.fill('Created after the saved revision');
+    await submitComposer(composer);
+    await page
+      .getByRole('button', {
+        name: 'Preview saved version with current comments',
+      })
+      .click();
+
+    const historicalEditor = page.getByRole('textbox', {
+      name: 'Historical comments document',
+    });
+    const historical = page
+      .locator('section')
+      .filter({ has: historicalEditor });
+    await historical.getByRole('button', { name: 'All comments' }).click();
+    const dialog = page.getByRole('dialog', { name: 'All comments' });
+    await expect(dialog).toContainText('Created after the saved revision');
+    const row = dialog
+      .locator('[data-all-comments-row]')
+      .filter({ hasText: 'Created after the saved revision' });
+    await expect(row).toContainText('Target unavailable in this view');
+    await expect(
+      row.getByRole('button', { name: 'Show in document' })
+    ).toBeDisabled();
+    errors.assertNone();
+  } finally {
+    errors.stop();
   }
 });

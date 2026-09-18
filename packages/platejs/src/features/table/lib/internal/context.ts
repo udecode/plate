@@ -21,6 +21,16 @@ export type TableContext = Readonly<{
   tablePath: Path;
 }>;
 
+type CachedTableContext = Readonly<{
+  context: TableContext;
+  table: Element;
+}>;
+
+const liveContextCache = new WeakMap<object, Map<string, CachedTableContext>>();
+
+const isTransactionState = (state: object) =>
+  'anchor' in state && 'changes' in state && 'refs' in state;
+
 const createContext = (
   table: Element,
   tablePath: Path,
@@ -73,7 +83,7 @@ export const createDetachedTableContext = (
 ): TableContext => createContext(table, tablePath, compileTableGrid(table));
 
 export const createTableContext = (
-  state: Pick<EditorStateView, 'key' | 'nodes'>,
+  state: Pick<EditorStateView, 'key' | 'nodes' | 'runtime'>,
   tablePath: Path,
   root?: string
 ): TableContext | null => {
@@ -83,6 +93,26 @@ export const createTableContext = (
   )?.[0];
 
   if (!table) return null;
+
+  if (!isTransactionState(state)) {
+    const cacheKey = `${root ?? ''}\u0000${tablePath.join(',')}`;
+    const cached = liveContextCache.get(state.runtime)?.get(cacheKey);
+
+    if (cached?.table === table) return cached.context;
+    const context = createContext(
+      table,
+      tablePath,
+      compileTableGrid(state, tablePath, root)
+    );
+    const runtimeCache =
+      liveContextCache.get(state.runtime) ??
+      new Map<string, CachedTableContext>();
+
+    runtimeCache.set(cacheKey, Object.freeze({ context, table }));
+    liveContextCache.set(state.runtime, runtimeCache);
+
+    return context;
+  }
 
   return createContext(
     table,

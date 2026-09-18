@@ -61,9 +61,9 @@ describe('DndPlugin', () => {
       });
       expect(readDragEntries().map(([node]) => node.type)).toEqual(['image']);
 
-      await act(async () => editor.update.history.undo());
+      await act(async () => editor.api.history.undo());
       expect(readDragEntries().map(([node]) => node.type)).toEqual(['image']);
-      await act(async () => editor.update.history.redo());
+      await act(async () => editor.api.history.redo());
       expect(readDragEntries().map(([node]) => node.type)).toEqual(['image']);
 
       await act(async () => {

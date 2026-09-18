@@ -4,7 +4,9 @@
   "title": "Table of Contents",
   "description": "A table of contents component with links to document headings.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "button",

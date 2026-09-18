@@ -3,7 +3,9 @@
   "name": "copilot-demo",
   "description": "Renders AI ghost text suggestions at the cursor position.",
   "dependencies": [
-    "@platejs/test"
+    "@platejs/test",
+    "diff-match-patch-ts@^0.6.0",
+    "platejs"
   ],
   "registryDependencies": [
     "https://platejs.org/r/copilot.json",
@@ -15,7 +17,7 @@
   "files": [
     {
       "path": "src/registry/examples/copilot-demo.tsx",
-      "content": "'use client';\n\nimport { EditorRoot, useCreateEditor } from 'platejs/react';\n\nimport { CopilotKit } from '@/registry/components/editor/copilot';\nimport { Editor, EditorContainer } from '@/registry/components/editor/editor';\nimport { EditorKit } from '@/registry/components/editor/plugins';\nimport { copilotValue } from '@/registry/examples/values/copilot-value';\n\nexport default function CopilotDemo() {\n  const editor = useCreateEditor({\n    plugins: [...EditorKit, ...CopilotKit],\n    initialValue: copilotValue,\n  });\n\n  return (\n    <EditorRoot editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </EditorRoot>\n  );\n}\n",
+      "content": "'use client';\n\nimport { EditorRoot, useCreateEditor } from 'platejs/react';\n\nimport { CopilotKit } from '@/registry/components/editor/copilot';\nimport {\n  Editor,\n  EditorContainer,\n  EditorFrame,\n} from '@/registry/components/editor/editor';\nimport { EditorKit } from '@/registry/components/editor/plugins';\nimport { copilotValue } from '@/registry/examples/values/copilot-value';\n\nexport default function CopilotDemo() {\n  const editor = useCreateEditor({\n    plugins: [...EditorKit, ...CopilotKit],\n    userId: 'alice',\n    initialValue: copilotValue,\n  });\n\n  return (\n    <EditorRoot editor={editor}>\n      <EditorFrame className=\"h-[650px]\">\n        <EditorContainer>\n          <Editor />\n        </EditorContainer>\n      </EditorFrame>\n    </EditorRoot>\n  );\n}\n",
       "type": "registry:example"
     },
     {

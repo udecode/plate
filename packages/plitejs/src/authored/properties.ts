@@ -15,7 +15,7 @@ import { readRecord } from './record-tree';
 import {
   authoredPropertyWrites,
   authoredPropertyKeys,
-  isAuthoredPropertyWriteVisible,
+  isAuthoredEditVisible,
   observesAuthoredOperation,
   type AuthoredEditIdentity,
   type AuthoredState,
@@ -111,11 +111,7 @@ export const projectAuthoredProperties = (input: {
           )?.properties ?? {};
       }
       if (
-        !isAuthoredPropertyWriteVisible(
-          input.state,
-          write.operation,
-          input.isVisible
-        )
+        !isAuthoredEditVisible(input.state, write.operation, input.isVisible)
       ) {
         continue;
       }
@@ -328,11 +324,7 @@ export const authoredCausalPropertyConflicts = (input: {
       readRecord(input.state.changes, write.operation.changeId)?.status ===
         'accepted' &&
       observesAuthoredOperation(write.operation, input.proposal) &&
-      isAuthoredPropertyWriteVisible(
-        input.state,
-        write.operation,
-        input.isVisible
-      )
+      isAuthoredEditVisible(input.state, write.operation, input.isVisible)
     ) {
       superseded.add(write.operation.changeId);
     }

@@ -15,13 +15,12 @@ docs:
 
 ## Features
 
-- Enables creation and editing of tables with advanced behaviors.
-- Arrow navigation (up/down).
-- Grid cell selection.
-- Cell selection expansion with `Shift+Arrow` keys.
-- Copying and pasting cells.
-- Row drag-and-drop reordering
-- Row selection via drag handle
+- Insert and remove tables, rows, and columns.
+- Select cells with the pointer or extend a selection with `Shift+Arrow`.
+- Merge and split cells while preserving rich content.
+- Copy and paste cell rectangles.
+- Resize columns and rows, and format cell backgrounds and borders.
+- Reorder and select rows with the copied row drag handle.
 
 </PackageInfo>
 
@@ -31,38 +30,94 @@ docs:
 
 ### Installation
 
-The fastest way to add table functionality is with the `TableKit`, which includes pre-configured `TablePlugin`, `TableRowPlugin`, and `TableCellPlugin` descriptors with their [Plate UI](/docs/installation/plate-ui) components.
-
-<ComponentSource name="table" />
-
-- [`TableElement`](/docs/components/table): Renders table containers.
-- [`TableRowElement`](/docs/components/table): Renders table rows.
-- [`TableCellElement`](/docs/components/table): Renders `tableCell` nodes as `<td>` or `<th>` from the node's `header` property.
-
-### Add kit
-
-The copied row controls use `DndKit` for drag-and-drop. Install both registry
-items and add both kits to your plugins:
+`TableKit` includes `TablePlugin`, `TableRowPlugin`, and `TableCellPlugin` with their [Plate UI](/docs/installation/plate-ui) components. The copied row controls require `DndKit`.
 
 ```bash
 pnpm dlx shadcn@latest add @plate/table @plate/dnd
 ```
 
+<ComponentSource name="table" />
+
+- [`TableElement`](/docs/components/table): Renders the table.
+- [`TableRowElement`](/docs/components/table): Renders rows and their controls.
+- [`TableCellElement`](/docs/components/table): Renders `tableCell` nodes as `<td>` or, when `header: true`, `<th>`.
+
+### Add kit
+
 ```tsx
 import { createEditor } from 'platejs/react';
+
 import { DndKit } from '@/components/editor/dnd';
 import { TableKit } from '@/components/editor/table';
 
 const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    ...TableKit,
-    ...DndKit,
-  ],
+  plugins: [...TableKit, ...DndKit],
 });
 ```
 
 </Steps>
+
+## Usage
+
+Use the installed table descriptor for insertion, selection reads, and updates:
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
+
+const editor = createEditor({ plugins: [TablePlugin] });
+const table = editor.plugin(TablePlugin);
+
+table.update.insert({ rows: 3, columns: 4, header: true }, { select: true });
+table.update.insertColumn({ before: true });
+
+if (table.read.canMerge()) {
+  table.update.merge();
+}
+```
+
+For headless use, import `createEditor` from `platejs` and `BaseTablePlugin` from `platejs/table`.
+
+### Target a cell
+
+Omit `at` to use the invoking editor view's selection. Pass `at` to address a specific target independently of that selection:
+
+```tsx
+const selected = table.read.selection();
+
+if (selected) {
+  table.update.insertRow({ at: selected.focus, before: true });
+
+  const cell = table.read.cell({ at: selected.anchor });
+  if (cell) {
+    table.update.setCellBackground({ at: cell.entry[0], color: '#fef9c3' });
+  }
+}
+```
+
+`TableTargetOptions.at` accepts a table, row, or cell target, or a `NodeSelection`. A node target can be a path, point, range, live node, or `NodeKey`. A deleted key or detached node does not fall back to the current selection. Paths are local to the invoking root; root-bearing targets retain their root.
+
+`read.cell` accepts a cell target and returns `null` unless it resolves to one cell. Use `read.selection` for a multi-cell selection. Its `cells` contain the exact selected entries; `bounds` does not fill gaps in a nonrectangular selection.
+
+### Format selected cells
+
+Group related changes in one update:
+
+```tsx
+editor.update((tx) => {
+  const table = tx.plugin(TablePlugin);
+
+  table.setCellBackground({ color: '#fef9c3' });
+  table.setBorders({
+    border: 'outer',
+    value: { color: '#334155', style: 'solid', width: 2 },
+  });
+});
+```
+
+Set `color: null` to clear a background. A border `value` replaces that edge's formatting; `null` clears the override, and `{ width: 0 }` hides it. Omitted border fields use the renderer defaults.
+
+`read.borders()` returns `true`, `false`, or `'mixed'` for each border predicate. Check `'mixed'` explicitly in controls. `toggleBorders` hides an all-visible border and shows an off or mixed border; `border: 'none'` toggles the no-border state.
 
 ## Manual usage
 
@@ -74,31 +129,14 @@ const editor = createEditor({
 npm install platejs @tanstack/react-virtual
 ```
 
-### Add plugin
-
-Include `TablePlugin` in your Plate plugins array when creating the editor.
-
-`TablePlugin` installs `TableRowPlugin` and `TableCellPlugin` as required structural dependencies.
-
-```tsx
-import { TablePlugin } from 'platejs/table/react';
-import { createEditor } from 'platejs/react';
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    TablePlugin,
-  ],
-});
-```
-
 ### Configure plugins
 
-Configure the table owner and add complete row or cell descriptors when you need to replace a dependency's component or configuration. The copied row renderer requires `DndKit`.
+`TablePlugin` installs the row and cell descriptors as required dependencies. Add those descriptors directly when configuring their components. The copied row renderer requires `DndKit`.
 
 ```tsx
-import { TableCellPlugin, TablePlugin, TableRowPlugin } from 'platejs/table/react';
 import { createEditor } from 'platejs/react';
+import { TableCellPlugin, TablePlugin, TableRowPlugin } from 'platejs/table/react';
+
 import { DndKit } from '@/components/editor/dnd';
 import {
   TableCellElement,
@@ -108,13 +146,13 @@ import {
 
 const editor = createEditor({
   plugins: [
-    // ...otherPlugins,
     ...DndKit,
     TablePlugin.configure({
       component: TableElement,
       initialState: {
-        initialTableWidth: 600,
-        disableMerge: false,
+        allowCellSpanEditing: true,
+        defaultTableWidth: 600,
+        expandOnPaste: true,
         minColumnWidth: 48,
       },
     }),
@@ -124,777 +162,147 @@ const editor = createEditor({
 });
 ```
 
-- `.configure({ component })`: Assigns [`TableElement`](/docs/components/table) to render table containers.
-- `component`: Assigns components for table rows and cells. `TableCellElement` reads `element.header` to render header cells.
-- `initialState.initialTableWidth`: Sets the initial width for new tables.
-- `initialState.disableMerge`: Disables cell merging functionality.
-- `initialState.minColumnWidth`: Sets the minimum width for table columns.
+### Add toolbar button
 
-Column widths are stored once on the table's `columnWidths`. Table renderers read
-that vector in the table renderer; `null` preserves an unknown imported width
-without treating it as zero pixels. `useTableResize` from `platejs/table/react`
-owns the pointer gesture and commits through
-`editor.plugin(TablePlugin).update.resize`. The renderer owns transient size
-overrides and visual indicators. Row resizing stores each row's `height`.
+Add [`TableToolbarButton`](/docs/components/table-toolbar-button) to your [Toolbar](/docs/toolbar) to insert tables.
 
-### Custom resizing
+</Steps>
 
-`api.createResize(table, target)` captures the starting sizes and returns a
-function that calculates a preview from a pixel delta. Interior column
-boundaries preserve the adjacent columns' combined width. The left boundary
-exchanges first-column width for indentation. Previews do not change the editor.
+### Disable merging and splitting
+
+Set `initialState.allowCellSpanEditing` to `false` to disable both operations. Existing spans can still be displayed and pasted.
+
+<ComponentPreview name="table-nomerge-demo" />
+
+## Editing behavior
+
+`TablePlugin` handles keyboard navigation, selection, deletion, and clipboard input. `Tab` and `Shift+Tab` move between cells; `Tab` in the last cell can insert a row. Same-cell text drags retain native text selection. Clearing a structural cell selection preserves its exact membership and direction.
+
+Merge combines the complete rich content of the selected cells in row-major order, including media-only content and owned roots. It retains the destination cell and surviving node identities. Split keeps the original content in its anchor cell and creates empty peer cells.
+
+Structural table paste requires a closed `ContentSlice` containing exactly one table. Open slices, row or cell lists, and tables with siblings are fitted as complete ordinary content. Ordinary content can be broadcast to each selected cell.
+
+Pasting a table into a selected rectangle requires complete tiles. Partial tiles and destination spans crossing the intended coverage are rejected; fully covered spans can be replaced. With `expandOnPaste: false`, overflow is rejected rather than cropped. An unsuccessful fit leaves the document and selection unchanged.
+
+Structural cell copy and cut require a rectangular selection that fully covers its spans. A nonrectangular selection still supports deletion, formatting, and ordinary-content paste. Cut clears cells only after a successful clipboard write. Exact slices retain rich content and reachable owned roots; CSV and TSV are text representations.
+
+## Custom resizing
+
+Table widths are stored in `columnWidths`; `null` means an unknown imported width. `api.columnWidths(table)` resolves every logical column to a number without persisting fallback values. The renderer owns temporary size overrides. Each row stores its own `height`.
+
+`api.createResize(table, target)` captures starting sizes and returns a function from pixel delta to `TableResize`. Preview calculation does not change the document:
 
 ```tsx
 import { TablePlugin } from 'platejs/table/react';
 
-const table = editor.read.nodes.get([0], { type: TablePlugin });
+const selected = editor.plugin(TablePlugin).read.selection();
 
-if (table) {
-  const resize = editor.plugin(TablePlugin).api.createResize(table[0], {
+if (selected) {
+  const preview = editor.plugin(TablePlugin).api.createResize(selected.table[0], {
     edge: 'right',
     colIndex: 0,
   });
-  editor.plugin(TablePlugin).update.resize(resize(24), { at: table[0] });
+
+  editor.plugin(TablePlugin).update.resize({
+    at: selected.tableKey,
+    resize: preview(24),
+  });
 }
 ```
 
-The target is `{ edge: 'right', colIndex }`, `{ edge: 'left' }`, or
-`{ edge: 'bottom', rowIndex, height }`. Supply the measured starting row height
-for a row target. Row previews remain positive. Columns respect `minColumnWidth`;
-imported columns below that minimum retain their starting width as the lower bound.
+Targets are `{ edge: 'right', colIndex }`, `{ edge: 'left' }`, or `{ edge: 'bottom', rowIndex, height }`. A bottom target needs the measured starting row height. Interior boundaries preserve adjacent columns' combined width; the left boundary exchanges first-column width for indentation. Imported widths below `minColumnWidth` retain their starting width as the gesture's lower bound.
 
-For pointer input, call `useTableResize({ element, tableRef, onResize,
-onResizeEnd })` in the table renderer. It returns a start function taking the
-pointer event and target; the hook measures row height for bottom handles.
-`onResize` receives the preview for local rendering. `onResizeEnd` clears those
-overrides after completion or cancellation. A primary pointer release commits
-once; cancellation, window blur, read-only changes, table replacement and
-unmount discard the gesture.
-
-### Add toolbar button
-
-You can add [`TableToolbarButton`](/docs/components/table-toolbar-button) to your [Toolbar](/docs/toolbar) to insert tables.
-
-### Insert toolbar button
-
-You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert table elements:
-
-```tsx
-{
-  icon: <TableIcon />,
-  label: 'Table',
-  value: PLUGINS.table,
-}
-```
-
-### Disable merging example
-
-<ComponentPreview name="table-nomerge-demo" />
-
-</Steps>
+A horizontal resize commit contains a nonempty `columns` array of `{ colIndex, width }`. A left-edge commit also requires `marginLeft`; a right-edge commit has no margin. A bottom-edge commit contains `rowIndex` and `height`.
 
 ## Plugins
 
 ### TablePlugin
 
-Owns the table schema and behavior. Requires the row and cell plugins.
+Configure these values through `initialState`:
 
 <API name="TablePlugin">
 <APIOptions>
-  <APIItem name="disableMerge" type="boolean" optional>
-    Disables the merging behavior of cells.
+  <APIItem name="allowCellSpanEditing" type="boolean" optional>
+    Allows merge and split commands. Default: `true`.
   </APIItem>
-  <APIItem name="disableExpandOnInsert" type="boolean" optional>
-    Disables the expansion of the table when inserting cells.
+  <APIItem name="defaultTableWidth" type="number | null" optional>
+    Supplies the table width used to resolve missing column widths. A non-null value must be positive and finite. Default: `null`.
   </APIItem>
-  <APIItem name="disableMarginLeft" type="boolean" optional>
-    Disables the left resizer of the first column in the table.
-  </APIItem>
-  <APIItem name="enableUnsetSingleColSize" type="boolean" optional>
-    Disables unsetting the width of the first column when the table has only one column. Set this to `true` if you want to resize the table width when there's only one column. Leave it `false` if you have a full-width table.
-  </APIItem>
-  <APIItem name="initialTableWidth" type="number" optional>
-    If defined, a normalizer will set each undefined table `columnWidths` to this value divided by the number of columns. Note that merged cells are not yet supported.
+  <APIItem name="expandOnPaste" type="boolean" optional>
+    Allows table paste to grow the destination. Does not restrict explicit row or column insertion. Default: `true`.
   </APIItem>
   <APIItem name="minColumnWidth" type="number" optional>
-    The minimum width of a column in the table.
-    - **Default:** `48`
+    Positive finite minimum for resize gestures. Default: `48`.
   </APIItem>
 </APIOptions>
 </API>
 
 ### TableRowPlugin
 
-Required structural plugin for table rows. Add it directly only to replace its default configuration or component.
+Required structural descriptor for rows. A row can have no direct cells when spans from earlier rows cover it.
 
 ### TableCellPlugin
 
-Required structural plugin for all table cells. Header cells use the same `tableCell` type with `header: true`; add the plugin directly only to replace its default configuration or component.
+Required structural descriptor for all cells. Header cells use `type: 'tableCell'` and `header: true`. Spans use positive safe integer `colSpan` and `rowSpan` values; omitted spans are one.
 
 ## API
 
-### editor.api.table.create
+In the reference below, `table` is `editor.plugin(TablePlugin)`. Public table types are exported from `platejs/table`.
 
-<API name="create">
-<APIParameters>
-<APIItem name="options" type="GetEmptyTableNodeOptions" optional>
-Extends `GetEmptyRowNodeOptions`.
-</APIItem>
-</APIParameters>
+| Pure API | Result | Purpose |
+| --- | --- | --- |
+| `table.api.columnWidths(tableElement)` | `readonly number[]` | Resolve widths for every logical column; array length is the column count. |
+| `table.api.createResize(tableElement, target)` | `(delta: number) => TableResize` | Calculate constrained resize previews. |
 
-<APIOptions>
-<APIItem name="header" type="boolean" optional>
-Specify `true` if the table has a header row.
-</APIItem>
-<APIItem name="rowCount" type="number" optional>
-The number of rows in the table.
+| Read | Result | Purpose |
+| --- | --- | --- |
+| `table.read.selection(options?)` | `TableSelection \| null` | Exact cell membership, direction, table identity, and bounds. |
+| `table.read.cell(options?)` | `TableCellInfo \| null` | One cell's entry, logical coordinates, spans, borders, and size. |
+| `table.read.borders(options?)` | `TableBorderStates \| null` | Aggregate `top`, `right`, `bottom`, `left`, `none`, and `outer` as `true \| false \| 'mixed'`. |
+| `table.read.canMerge(options?)` | `boolean` | Whether a span-complete rectangular multi-cell target can merge under the current policy and view permissions. |
+| `table.read.canSplit(options?)` | `boolean` | Whether one spanning cell can split under the current policy and view permissions. |
 
-- **Default:** `0`
+Read options are `TableTargetOptions`, except `cell`, which takes `{ at?: TableCellTarget }`.
 
-</APIItem>
-<APIItem name="colCount" type="number | undefined" optional>
-The number of columns in the table.
-</APIItem>
-</APIOptions>
+`TableSelection` contains `table`, `tableKey`, `cells`, `anchor`, `focus`, `bounds`, `rectangular`, and optional `root`. `table` and `cells` are live element entries; `tableKey`, `anchor`, and `focus` are `NodeKey` values. `rectangular` indicates complete rectangular span coverage.
 
-<APIReturns>
-<APIItem type="Element">
-
-The table node.
-
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.createCell
-
-Creates an empty cell node for a table.
-
-<API name="createCell">
-<APIOptions>
-<APIItem name="header" type="boolean" optional>
-Specify `true` if the cell is a header cell.
-</APIItem>
-<APIItem name="row" type="TableRowElement" optional>
-The row element. If `header` is not specified, it will determine if the cell is a header cell based on the row's children.
-</APIItem>
-<APIItem name="children" type="Descendant[]" optional>
-The children of the new cell node.
-
-- **Default:** `[{ children: [{ text: '' }], type: editor.plugin(BaseParagraphPlugin).schema.type }]`
-
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-<APIItem type="Element">
-
-The cell node.
-
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.createRow
-
-Creates an empty row node with the specified number of columns.
-
-<API name="createRow">
-<APIOptions>
-<APIItem name="header" type="boolean" optional>
-Specify `true` if the row is a header row.
-</APIItem>
-<APIItem name="colCount" type="number" optional>
-The number of columns in the row.
-
-- **Default:** `1`
-
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-<APIItem type="Element">
-
-The row node.
-
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getCellBorders
-
-Gets the border styles for a table cell, handling special cases for first row and first column cells.
-
-<API name="getCellBorders">
-<APIOptions>
-<APIItem name="element" type="TableCellElement">
-The table cell element to get the border styles for.
-</APIItem>
-<APIItem name="defaultBorder" type="Required<TableCellBorder>" optional>
-The default border style to use when cell borders are not defined.
-<APISubList>
-<APISubListItem parent="defaultBorder" name="color" type="string">
-  The border color.
-  - **Default:** `'rgb(209 213 219)'`
-</APISubListItem>
-<APISubListItem parent="defaultBorder" name="size" type="number">
-  The border size.
-  - **Default:** `1`
-</APISubListItem>
-<APISubListItem parent="defaultBorder" name="style" type="string">
-  The border style.
-  - **Default:** `'solid'`
-</APISubListItem>
-</APISubList>
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem type="BorderStylesDefault">
-    An object containing:
-    <APISubList>
-      <APISubListItem parent="return" name="bottom" type="Required<TableCellBorder>">
-        The bottom border style.
-      </APISubListItem>
-      <APISubListItem parent="return" name="right" type="Required<TableCellBorder>">
-        The right border style.
-      </APISubListItem>
-      <APISubListItem parent="return" name="left" type="Required<TableCellBorder>" optional>
-        The left border style. Only present for cells in the first column.
-      </APISubListItem>
-      <APISubListItem parent="return" name="top" type="Required<TableCellBorder>" optional>
-        The top border style. Only present for cells in the first row.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.getCellChildren
-
-Gets the children of a table cell.
-
-<API name="getCellChildren">
-<APIParameters>
-<APIItem name="cell" type="Element">
-The table cell element.
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="Descendant[]">
-
-The children of the table cell.
-
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getCellSize
-
-Gets the width and minimum height of a table cell, taking into account column spans and column sizes.
-
-<API name="getCellSize">
-<APIOptions>
-<APIItem name="element" type="TableCellElement">
-The table cell element to get the size for.
-</APIItem>
-<APIItem name="columnWidths" type="(number | null)[]" optional>
-Optional array of column sizes. If not provided, will use the table's overridden column sizes.
-</APIItem>
-<APIItem name="cellIndices" type="CellIndices" optional>
-Optional precomputed row and column indices for the cell.
-</APIItem>
-<APIItem name="rowSize" type="number" optional>
-Optional row height. If not provided, the value is read from the cell's row.
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-<APIItem name="width" type="number">
-The total width of the cell, calculated by summing the widths of all columns it spans.
-</APIItem>
-<APIItem name="minHeight" type="number">
-The minimum height of the cell, derived from the row's size property or `0`.
-</APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.getColSpan
-
-Gets the column span of a table cell.
-
-<API name="getColSpan">
-<APIParameters>
-<APIItem name="element" type="TableCellElement">
-The table cell element to get the column span for.
-</APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="number">
-    The number of columns this cell spans.
-    - **Default:** `1`
-  </APIItem>
-</APIReturns>
-</API>  
-
-### editor.api.table.getRowSpan
-
-Gets the row span of a table cell.
-
-<API name="getRowSpan">
-<APIParameters>
-  <APIItem name="element" type="TableCellElement">
-    The table cell element to get the row span for.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="number">
-    The number of rows this cell spans.
-    - **Default:** `1`
-  </APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getNextCell
-
-Gets the next cell in the table.
-<API name="getNextCell">
-<APIParameters>
-  <APIItem name="currentCell" type="NodeEntry">
-    The entry of the current cell.
-  </APIItem>
-  <APIItem name="currentPath" type="Path">
-    The path of the current cell.
-  </APIItem>
-  <APIItem name="currentRow" type="NodeEntry">
-    The entry of the current row.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="NodeEntry | undefined">
-    The node entry of the cell in the next row, or `undefined` if the current
-    row is the last row.
-  </APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getPreviousCell
-
-Gets the previous cell in the table.
-
-<API name="getPreviousCell">
-<APIParameters>
-  <APIItem name="currentCell" type="NodeEntry">
-    The entry of the current cell.
-  </APIItem>
-  <APIItem name="currentPath" type="Path">
-    The path of the current cell.
-  </APIItem>
-  <APIItem name="currentRow" type="NodeEntry">
-    The entry of the current row.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="NodeEntry | undefined">
-    The node entry of the cell in the previous row, or `undefined` if the
-    current row is the first row.
-  </APIItem>
-</APIReturns>
-</API>
-
-### editor.api.table.getColumnCount
-
-Gets the number of columns in a table.
-
-<API name="getColumnCount">
-<APIParameters>
-  <APIItem name="tableNode" type="Element">
-    The table node for which to retrieve the column count.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="number">
-
-The number of columns in the table.
-
-</APIItem>
-</APIReturns>
-</API>
-### editor.read.table.getCellIndices
-
-Gets the row and column indices of a cell.
-
-<API name="getCellIndices">
-<APIParameters>
-  <APIItem name="cell" type="Element">
-    The table cell.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-  <APIItem type="{ col: number; row: number }">
-    The cell coordinates.
-  </APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getEntries
-
-Gets the table, row, and cell node entries based on the current selection or a specified location.
-
-<API name="getEntries">
-<APIOptions>
-<APIItem name="at" type="Location | null" optional>
-The location where the table cell is located.
-
-- **Default:** `editor.read.selection()`
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem name="table" type="NodeEntry | undefined">
-    The table node entry.
-  </APIItem>
-  <APIItem name="row" type="NodeEntry | undefined">
-    The row node entry.
-  </APIItem>
-  <APIItem name="cell" type="NodeEntry | undefined">
-    The cell node entry.
-  </APIItem>
-</APIReturns>
-</API>
-
-
-### editor.read.table.getGridAbove
-
-Gets the sub table above the anchor and focus positions based on the specified format (tables or cells).
-
-<API name="getGridAbove">
-<APIOptions>
-<APIItem name="format" type="string" optional>
-The format of the sub table to retrieve.
-
-- **Default:** `'table'`
-
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem type="ElementEntry[]">The sub table entries.</APIItem>
-</APIReturns>
-</API>
-### editor.read.table.getGridByRange
-
-Gets the sub table between two cell paths within a given range.
-
-<API name="getGridByRange">
-<APIOptions>
-<APIItem name="at" type="Range">
-The range specifying the start and end cell paths.
-</APIItem>
-<APIItem name="format" type="'table' | 'cell'" optional>
-The format of the output.
-
-- **Default:** `'table'`
-
-</APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem type="ElementEntry[]">The sub table entries.</APIItem>
-</APIReturns>
-</API>
-
-### editor.read.table.getAdjacentCell
-
-Gets a cell relative to the current cell.
-
-<API name="getAdjacentCell">
-<APIOptions>
-  <APIItem name="at" type="Path" optional>
-    The current cell path. Defaults to the current selection.
-  </APIItem>
-  <APIItem name="deltaCol" type="number" optional>
-    The column offset.
-  </APIItem>
-  <APIItem name="deltaRow" type="number" optional>
-    The row offset.
-  </APIItem>
-</APIOptions>
-
-<APIReturns>
-  <APIItem type="ElementEntry | undefined">The adjacent cell entry.</APIItem>
-</APIReturns>
-</API>
-### editor.read.table.isBorderHidden
-
-Checks if the border of a table cell or the table itself is hidden based on the specified border direction.
-
-<API name="isBorderHidden">
-<APIParameters>
-  <APIItem name="border" type="'top' | 'left' | 'bottom' | 'right'">
-    The border direction to check.
-  </APIItem>
-</APIParameters>
-
-<APIReturns>
-<APIItem type="boolean">
-
-`true` if the border is hidden, `false` otherwise.
-
-</APIItem>
-</APIReturns>
-</API>
-
-## Editing behavior
-
-`TablePlugin` owns keyboard, clipboard, deletion, paste, normalization, and selection behavior. Use its scoped update portal for table mutations; installing the plugin activates the rest.
+`TableCellInfo` contains `entry`, `row`, `col`, `rowSpan`, `colSpan`, `borders`, `size`, and optional `root`. `size` contains `width` and `minHeight`. Resolved borders contain `color`, `style`, and `width`: bottom/right are present; top/left are present at the corresponding table edge. In both read results, an omitted `root` means the primary root.
 
 ## Transforms
 
-### `editor.plugin(TablePlugin).update.insert`
+Every table update returns `boolean`: `true` for an accepted change, `false` for an unavailable target, rejected operation, or unchanged request. Invalid dimensions and numeric options throw before publication. The command rechecks eligibility even after a capability read.
 
-Inserts a table at the current selection if there is no existing table in the editor. Selects the start of the inserted table.
+| Update | Options | Purpose |
+| --- | --- | --- |
+| `table.update.insert(options?, placement?)` | `TableCreateOptions`, `TableInsertPlacement` | Insert a table; defaults to two rows and two columns. |
+| `table.update.insertColumn(options?)` | `TableAxisInsertOptions` | Insert at a logical column boundary. |
+| `table.update.insertRow(options?)` | `TableAxisInsertOptions` | Insert at a logical row boundary. |
+| `table.update.removeColumn(options?)` | `TableTargetOptions` | Remove targeted columns; remove the table when none remain. |
+| `table.update.removeRow(options?)` | `TableTargetOptions` | Remove targeted rows; remove the table when none remain. |
+| `table.update.remove(options?)` | `TableTargetOptions` | Remove the containing table. |
+| `table.update.merge(options?)` | `TableTargetOptions` | Merge a complete rectangular selection. |
+| `table.update.split(options?)` | `TableTargetOptions` | Split one spanning cell. |
+| `table.update.setCellBackground(options)` | `{ at?, color: string \| null }` | Set or clear backgrounds on exact selected cells. |
+| `table.update.setBorders(options)` | `{ at?, border, value: TableCellBorder \| null }` | Replace or clear border formatting. |
+| `table.update.toggleBorders(options)` | `{ at?, border }` | Toggle a border predicate uniformly. |
+| `table.update.resize(options)` | `TableResizeOptions` | Commit `{ at?, resize }`. |
+| `table.update.setColumnWidth(options)` | `TableColumnWidthOptions` | Set `{ at?, colIndex, width }`. |
+| `table.update.setRowHeight(options)` | `TableRowHeightOptions` | Set `{ at?, rowIndex, height }`. |
 
-<API name="insert">
-<APIParameters>
-<APIItem name="getEmptyTableNodeOptions" type="GetEmptyTableNodeOptions" optional>
-Extends `GetEmptyRowNodeOptions`.
-<APISubList>
-<APISubListItem parent="getEmptyTableNodeOptions" name="rowCount" type="number" optional>
-The number of rows in the table.
+`TableCreateOptions` contains `rows`, `columns`, and `header`. Counts must be positive safe integers. `header: true` makes the first row a header row. In `TableInsertPlacement`, choose either `at` for exact insertion or `after` for a live block target, never both. Other block insertion options, including `select` and `replaceEmpty`, remain available. Without explicit placement, insertion follows the containing table or block.
 
-- **Default:** `2`
+`TableAxisInsertOptions` contains `at`, `before`, `header`, and `select`. For a spanning cell, insertion uses its logical leading or trailing boundary. Table targets prepend or append. Row and column indexes for sizing are zero-based; widths and heights must be positive and finite.
 
-</APISubListItem>
-<APISubListItem parent="getEmptyTableNodeOptions" name="colCount" type="number" optional>
-The number of columns in the table.
+Background and border updates accept `TableTargetOptions.at`, including exact nonrectangular cell selections. `setBorders.border` is `'top'`, `'right'`, `'bottom'`, `'left'`, `'all'`, or `'outer'`; `toggleBorders.border` accepts the four sides, `'none'`, or `'outer'`. `TableCellBorder` contains optional `color`, `style`, and non-negative finite `width`.
 
-- **Default:** `2`
+Sizing updates accept `at?: TableNodeTarget`. Inside an `editor.update` callback, call the same update methods directly on `tx.plugin(TablePlugin)`.
 
-</APISubListItem>
-<APISubListItem parent="getEmptyTableNodeOptions" name="header" type="boolean" optional>
-If `true`, the first row of the table will be treated as a header row.
-</APISubListItem>
-</APISubList>
-
-</APIItem>
-
-<APIItem name="options" type="object" optional>
-The options for inserting the table nodes.
-</APIItem>
-</APIParameters>
-</API>
-
-### `editor.plugin(TablePlugin).update.insertColumn`
-
-Inserts a column into the table at the current selection or a specified cell path.
-
-<API name="insertColumn">
-<APIOptions>
-<APIItem name="at" type="Path" optional>
-The exact path of the cell to insert the column at. This overrules the
-`fromCell` option.
-</APIItem>
-<APIItem name="before" type="boolean" optional>
-If true, insert the column before the current column instead of after.
-</APIItem>
-<APIItem name="fromCell" type="Path" optional>
-The path of the cell to insert the column from.
-</APIItem>
-<APIItem name="header" type="boolean" optional>
-If true, the inserted column will be treated as a header column.
-</APIItem>
-<APIItem name="select" type="boolean" optional>
-If true, the inserted column will be selected after insertion.
-</APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(TablePlugin).update.insertRow`
-
-Inserts a row into the table at the current selection or a specified row path.
-
-<API name="insertRow">
-<APIOptions>
-<APIItem name="at" type="Path" optional>
-Exact path of the row to insert the column at. Pass the table path to
-insert at the end of the table. Will overrule `fromRow`.
-</APIItem>
-<APIItem name="before" type="boolean" optional>
-If true, insert the row before the current row instead of after.
-</APIItem>
-<APIItem name="fromRow" type="Path" optional>
-The path of the row to insert the new row from.
-</APIItem>
-<APIItem name="header" type="boolean" optional>
-If true, the inserted row will be treated as a header row.
-</APIItem>
-<APIItem name="select" type="boolean" optional>
-If true, the inserted row will be selected after insertion.
-</APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(TablePlugin).update.removeColumn`
-
-Deletes the column containing the selected cell in a table.
-
-### `editor.plugin(TablePlugin).update.removeRow`
-
-Deletes the row containing the selected cell in a table.
-
-### `editor.plugin(TablePlugin).update.remove`
-
-Deletes the entire table.
-
-### `editor.plugin(TablePlugin).update.merge`
-
-Merges multiple selected cells into one.
-
-The merged cell will:
-- Have a colSpan equal to the number of columns spanned by the selected cells
-- Have a rowSpan equal to the number of rows spanned by the selected cells
-- Contain the combined content of all merged cells (non-empty cells only)
-- Inherit the header status from the first selected cell
-
-### `editor.plugin(TablePlugin).update.split`
-
-Splits a merged cell back into individual cells.
-
-The split operation will:
-- Create new cells for each column and row that was spanned
-- Copy the header status from the original merged cell
-- Place the original cell's content in the first cell
-- Create empty cells for the remaining spaces
-
-### `editor.plugin(TablePlugin).update.moveSelection`
-
-Moves the selection by cell unit within a table.
-
-<API name="moveSelection">
-<APIOptions>
-<APIItem name="at" type="Location" optional>
-The location to move the selection from.
-</APIItem>
-<APIItem name="reverse" type="boolean" optional>
-        Set to `true` to move the selection to the cell above, `false` to move
-the selection to the cell below.
-</APIItem>
-<APIItem name="edge" type="'top' | 'left' | 'right' | 'bottom'" optional>
-The edge to expand the cell selection to.
-</APIItem>
-<APIItem name="fromOneCell" type="boolean" optional>
-Set to `true` to move the selection from only one selected cell.
-</APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(TablePlugin).update.setBorderSize`
-
-Sets the size of the specified border in a table cell.
-
-<API name="setBorderSize">
-<APIParameters>
-<APIItem name="size" type="number">
-The size of the border.
-</APIItem>
-<APIItem name="options" type="object" optional>
-Options for setting the border size.
-</APIItem>
-</APIParameters>
-
-<APIOptions>
-<APIItem name="at" type="Location" optional>
-The location of the cell to set the border size.
-</APIItem>
-<APIItem name="border" type="'all' | 'top' | 'left' | 'bottom' | 'right'" optional>
-The border direction to set the size.
-
-- **Default:** `'all'`
-
-</APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(TablePlugin).update.setColumnWidth`
-
-Sets the width of a specific column in a table.
-
-<API name="setColumnWidth">
-<APIParameters>
-<APIItem name="value" type="{ colIndex: number; width: number }">
-The column index and width to apply.
-</APIItem>
-<APIItem name="options" type="TableFindOptions" optional>
-Options for locating the table.
-</APIItem>
-</APIParameters>
-</API>
-
-### `editor.plugin(TablePlugin).update.set`
-
-Sets typed table properties such as `marginLeft` through the descriptor-bound element update.
-
-<API name="set">
-<APIParameters>
-<APIItem name="properties" type="Partial&lt;TableElement&gt;">
-The table properties to apply, such as `{ marginLeft: 24 }`.
-</APIItem>
-<APIItem name="options" type="Omit&lt;NodeSetNodesOptions&lt;Element&gt;, 'match'&gt;" optional>
-Generic node options. The table type matcher comes from `TablePlugin`.
-</APIItem>
-</APIParameters>
-</API>
-
-### `editor.plugin(TablePlugin).update.setRowHeight`
-
-Sets the size (height) of a table row.
-
-<API name="setRowHeight">
-<APIParameters>
-<APIItem name="value" type="{ height: number; rowIndex: number }">
-The row index and height to apply.
-</APIItem>
-<APIItem name="options" type="TableFindOptions" optional>
-Options for locating the table.
-</APIItem>
-</APIParameters>
-</API>
+`TablePlugin` paints structural cell selections on the rendered cell hosts. A custom `TableCellPlugin` component must attach `props.attributes`, including its `ref`, to exactly one canonical `<td>` or `<th>` element.
 
 ## Hooks
 
-### `useTableSelectionDOM`
+### `useTableResize`
 
-Synchronizes structural cell selection with a custom table renderer. The hook
-updates selected-cell attributes, hides the caret in the anchor cell, and
-restores the caret when the selection changes or the renderer unmounts.
+Import from `platejs/table/react` and call `useTableResize({ element, tableRef, onResize, onResizeEnd })`. The returned function accepts a pointer event and `TableResizeHandle`. Bottom handles supply `rowIndex`; the hook measures the starting height.
 
-Compose column sizing, cell layout, and pointer handlers directly in your
-renderer with `TablePlugin` reads and Core selector hooks.
-
-<API name="useTableSelectionDOM">
-<APIParameters>
-  <APIItem name="tableRef" type="React.RefObject&lt;HTMLTableElement | null&gt;">
-    Ref for the rendered `<table>` that contains `data-table-cell-key`
-    attributes.
-  </APIItem>
-</APIParameters>
-<APIReturns type="void" />
-</API>
-
-### `editor.plugin(TablePlugin).read.canMerge()`
-
-Returns whether the current editable selection is a complete rectangular
-multi-cell selection.
-
-### `editor.plugin(TablePlugin).read.canSplit()`
-
-Returns whether the current editable selection is inside one cell with a row
-or column span. Registry controls also apply the live `disableMerge` option.
+Render `onResize` previews locally and clear overrides in `onResizeEnd`. Primary pointer release commits once. Cancellation, window blur, read-only changes, table replacement, and unmount discard the gesture.

@@ -9,6 +9,11 @@ import {
   RangeApi,
   type Value,
 } from '../..';
+import { getInstalledPlugin } from '../../core/plugin';
+import {
+  readEditorHistoryReplayReceipt,
+  withUpdateTagContext,
+} from '../../core/public-state';
 import type { DOMRange } from '../../dom';
 import {
   DOMRootRuntime,
@@ -30,6 +35,12 @@ import {
   isPliteNodeFlowRootBound,
 } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
+import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
+import {
+  readPliteViewSelection,
+  readPliteViewSelectionHistoryGroup,
+  writePliteViewSelection,
+} from '../view-selection';
 import { isSelectionViewportBacked } from '../viewport-commands';
 import { isRangeAcrossContentRootOwners } from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
@@ -56,13 +67,27 @@ import { attachEditableSelectionChangeListener } from './selection-change-listen
 
 type MutableCell<T> = { current: T };
 
+/** Focus behavior after mounted undo or redo applies a history batch. */
+export type EditorHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
+
+type ModelHistoryResult =
+  | Readonly<{ status: 'applied' | 'empty' }>
+  | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>;
+
+export type EditableHistoryReplayResult =
+  | ModelHistoryResult
+  | Readonly<{
+      reason: 'composing' | 'not-installed' | 'unmounted';
+      status: 'unavailable';
+    }>;
+
 type CancelableCallback = {
   cancel: () => void;
 };
 
 const ELEMENT_NODE = 1;
 
-const EDITABLE_RUNTIMES_BY_EDITOR_API = new WeakMap<
+const EDITABLE_RUNTIMES_BY_EDITOR_OWNER = new WeakMap<
   object,
   Set<EditableDOMRuntime>
 >();
@@ -157,9 +182,10 @@ export const getMountedEditableDOMRuntimes = <
 >(
   editor: ReactRuntimeEditor<V, TPlugins>
 ): readonly EditableDOMRuntime[] =>
-  [...(EDITABLE_RUNTIMES_BY_EDITOR_API.get(editor.api) ?? [])].filter(
-    (runtime) => runtime.connected && runtime.rootRef.current !== null
-  );
+  [
+    ...(EDITABLE_RUNTIMES_BY_EDITOR_OWNER.get(getEditorRuntimeOwner(editor)) ??
+      []),
+  ].filter((runtime) => runtime.connected && runtime.rootRef.current !== null);
 
 /** Resolve one connected runtime for a mounted React editor view. */
 export const getMountedEditableDOMRuntime = <
@@ -172,17 +198,44 @@ export const getMountedEditableDOMRuntime = <
   const owner = root
     ? findDOMRootRuntime(root)
     : findEditorDOMRootRuntime(editor);
-  return owner?.adapter instanceof EditableDOMRuntime &&
+  if (
+    owner?.adapter instanceof EditableDOMRuntime &&
     Object.is(owner.editor, editor)
-    ? owner.adapter
-    : null;
+  ) {
+    return owner.adapter;
+  }
+
+  const exact = getMountedEditableDOMRuntimes(editor).filter((runtime) =>
+    Object.is(runtime.editor, editor)
+  );
+
+  if (exact.length === 1) return exact[0] ?? null;
+
+  const viewRoot = editor.read.view.root();
+  const sameRoot = getMountedEditableDOMRuntimes(editor).filter(
+    (runtime) => runtime.editor.read.view.root() === viewRoot
+  );
+
+  const focused = sameRoot.filter((runtime) => {
+    const element = runtime.rootRef.current;
+    const activeElement = element?.ownerDocument.activeElement;
+
+    return !!element && !!activeElement && element.contains(activeElement);
+  });
+
+  if (focused.length === 1) return focused[0] ?? null;
+
+  return sameRoot.length === 1 ? (sameRoot[0] ?? null) : null;
 };
 
 export const hasMountedEditableCompositionOwner = (
   editor: ReactRuntimeEditor,
   excludedInputController: EditableInputController
 ) =>
-  [...(EDITABLE_RUNTIMES_BY_EDITOR_API.get(editor.api) ?? [])].some(
+  [
+    ...(EDITABLE_RUNTIMES_BY_EDITOR_OWNER.get(getEditorRuntimeOwner(editor)) ??
+      []),
+  ].some(
     (runtime) =>
       runtime.connected &&
       runtime.inputController !== excludedInputController &&
@@ -260,7 +313,10 @@ export class EditableDOMRuntime {
   ) => void = () => {};
 
   private selectionExportAfterDOMCommitHandler: () => void = () => {};
-  private historyFocusHandler: () => void = () => {};
+  private historyFocusHandler: (policy: EditorHistoryFocusPolicy) => void =
+    () => {};
+
+  private historySettleHandler: () => void = () => {};
 
   private externalMouseGesture = false;
 
@@ -838,12 +894,101 @@ export class EditableDOMRuntime {
     this.selectionExportAfterDOMCommitHandler = handler;
   }
 
-  updateHistoryFocusHandler(handler: () => void) {
+  updateHistoryFocusHandler(
+    handler: (policy: EditorHistoryFocusPolicy) => void
+  ) {
     this.historyFocusHandler = handler;
   }
 
-  repairHistoryFocus() {
-    this.historyFocusHandler();
+  updateHistorySettleHandler(handler: () => void) {
+    this.historySettleHandler = handler;
+  }
+
+  replayHistory(
+    direction: 'redo' | 'undo',
+    focusPolicy: EditorHistoryFocusPolicy = 'restore-root'
+  ): EditableHistoryReplayResult {
+    const root = this.rootElement;
+
+    if (!this.connected || !root) {
+      return { reason: 'unmounted', status: 'unavailable' };
+    }
+    if (!getInstalledPlugin(this.editorValue, 'history')) {
+      return { reason: 'not-installed', status: 'unavailable' };
+    }
+    if (this.state.isComposing) {
+      return { reason: 'composing', status: 'unavailable' };
+    }
+
+    const { pendingCompositionEnd } = this.state;
+
+    if (pendingCompositionEnd?.ownership === 'plite') {
+      pendingCompositionEnd.flush();
+    } else {
+      pendingCompositionEnd?.cancel();
+    }
+    this.state.pendingCompositionEnd?.cancel();
+    this.state.pendingCompositionEnd = null;
+    this.androidInputManagerRef.current?.flush();
+    this.historySettleHandler();
+
+    if (!this.connected || this.rootElement !== root) {
+      return { reason: 'unmounted', status: 'unavailable' };
+    }
+    if (this.state.isComposing) {
+      return { reason: 'composing', status: 'unavailable' };
+    }
+
+    const { history } = this.editorValue.api as unknown as {
+      history?: {
+        redo: () => ModelHistoryResult;
+        undo: () => ModelHistoryResult;
+      };
+    };
+
+    if (!history) {
+      return { reason: 'not-installed', status: 'unavailable' };
+    }
+
+    const previousViewSelection = readPliteViewSelection(this.editorValue);
+    const run = () => history[direction]();
+
+    writePliteViewSelection(this.editorValue, null);
+    try {
+      const result =
+        focusPolicy === 'preserve'
+          ? withUpdateTagContext(
+              this.editorValue,
+              PLITE_REACT_PRESERVE_SELECTION_TAGS,
+              run
+            )
+          : run();
+
+      if (result.status !== 'applied') {
+        writePliteViewSelection(this.editorValue, previousViewSelection);
+        return result;
+      }
+
+      const receipt = readEditorHistoryReplayReceipt(result);
+
+      if (
+        !receipt ||
+        this.editorValue.read((state) => state.lastCommit()?.version) !==
+          receipt.version
+      ) {
+        return result;
+      }
+
+      writePliteViewSelection(
+        this.editorValue,
+        readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null
+      );
+      this.historyFocusHandler(focusPolicy);
+      return result;
+    } catch (error) {
+      writePliteViewSelection(this.editorValue, previousViewSelection);
+      throw error;
+    }
   }
 
   update(update: EditableDOMRuntimeUpdate) {
@@ -920,15 +1065,15 @@ export class EditableDOMRuntime {
   }
 
   private connectVerticalGoalOwner() {
-    const owner = this.editorValue.api;
+    const owner = getEditorRuntimeOwner(this.editorValue);
 
     if (this.verticalGoalOwner === owner) return;
 
     this.disconnectVerticalGoalOwner();
-    const runtimes = EDITABLE_RUNTIMES_BY_EDITOR_API.get(owner) ?? new Set();
+    const runtimes = EDITABLE_RUNTIMES_BY_EDITOR_OWNER.get(owner) ?? new Set();
 
     runtimes.add(this);
-    EDITABLE_RUNTIMES_BY_EDITOR_API.set(owner, runtimes);
+    EDITABLE_RUNTIMES_BY_EDITOR_OWNER.set(owner, runtimes);
     this.verticalGoalOwner = owner;
     const sibling = [...runtimes].find(
       (runtime) => runtime !== this && runtime.verticalGoalX !== null
@@ -1026,7 +1171,9 @@ export class EditableDOMRuntime {
 
   private hasSiblingCompositionOwner() {
     return [
-      ...(EDITABLE_RUNTIMES_BY_EDITOR_API.get(this.editorValue.api) ?? []),
+      ...(EDITABLE_RUNTIMES_BY_EDITOR_OWNER.get(
+        getEditorRuntimeOwner(this.editorValue)
+      ) ?? []),
     ].some(
       (runtime) =>
         runtime !== this &&
@@ -1058,11 +1205,11 @@ export class EditableDOMRuntime {
 
     if (!owner) return;
 
-    const runtimes = EDITABLE_RUNTIMES_BY_EDITOR_API.get(owner);
+    const runtimes = EDITABLE_RUNTIMES_BY_EDITOR_OWNER.get(owner);
 
     runtimes?.delete(this);
     if (runtimes?.size === 0) {
-      EDITABLE_RUNTIMES_BY_EDITOR_API.delete(owner);
+      EDITABLE_RUNTIMES_BY_EDITOR_OWNER.delete(owner);
     }
     this.verticalGoalOwner = null;
   }
@@ -1076,7 +1223,7 @@ export class EditableDOMRuntime {
 
   private writeVerticalGoal(x: number | null, focus: Point | null) {
     const runtimes = this.verticalGoalOwner
-      ? EDITABLE_RUNTIMES_BY_EDITOR_API.get(this.verticalGoalOwner)
+      ? EDITABLE_RUNTIMES_BY_EDITOR_OWNER.get(this.verticalGoalOwner)
       : null;
 
     for (const runtime of runtimes ?? [this]) {

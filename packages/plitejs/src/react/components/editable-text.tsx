@@ -32,6 +32,7 @@ import { useEditorContext } from '../hooks/use-editor-context';
 import {
   type EditorTextSelectorContext,
   useMountedTextRenderSelector,
+  useTextSelector,
 } from '../hooks/use-node-selector';
 import {
   getDOMTextRenderRevision,
@@ -663,7 +664,7 @@ const RevisionedEditableText = ({
     },
     [editor, nodeKey, props.resolvedMarks, props.resolvedText]
   );
-  const decoratedText = useMountedTextRenderSelector(
+  const decoratedText = useTextSelector(
     selectDecoratedText,
     (left, right) =>
       left != null &&

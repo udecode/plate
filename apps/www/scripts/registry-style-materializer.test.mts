@@ -51,7 +51,7 @@ describe('registry style materializer', () => {
           '-e',
           `import { writeFile } from 'node:fs/promises';
 import { createDocsRegistry, createPublicDocsRegistry } from ${JSON.stringify(generator)};
-await writeFile('registry.json', JSON.stringify(createPublicDocsRegistry(await createDocsRegistry())));`,
+await writeFile('registry.json', JSON.stringify(createPublicDocsRegistry(await createDocsRegistry(), 'https://platejs.org/r')));`,
         ],
         { cwd: appDirectory }
       );

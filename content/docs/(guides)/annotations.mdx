@@ -21,10 +21,9 @@ that hangs off a node, selection, or annotation.
 ## Annotation shape
 
 ```ts
-type AnnotationAnchor = {
-  resolve(): Range | null;
-  release?(): Range | null;
-};
+import type { Anchor, Range } from "platejs";
+
+type AnnotationAnchor = Pick<Anchor<Range>, "release" | "resolve">;
 
 type Annotation<TData> = {
   anchor: AnnotationAnchor;
@@ -33,9 +32,18 @@ type Annotation<TData> = {
 };
 ```
 
-`anchor` resolves the current range. A local `Anchor<Range>` satisfies this contract.
+`anchor` resolves the current range in the store's exact editor view. A local `Anchor<Range>` satisfies this contract.
 Adapters can use the same contract for service-owned anchors, remote positions,
 or document-embedded ids.
+
+Each store passes its editor to `anchor.resolve(editor)`. Stores for different
+views of the same model can share one retained anchor while reading different
+ranges. A projection change in one view does not change another store's view.
+
+Getters refresh ranges lazily after document or projection changes and otherwise
+reuse the index. Passive reads do not subscribe. Observation starts with the
+first subscriber and stops when the last unsubscribes. `destroy()` permanently
+stops observation and clears subscribers; reads cannot reactivate the store.
 
 `data` is application metadata. It is returned by `useAnnotation` and
 `useAnnotations`.
@@ -131,7 +139,9 @@ const annotations = comments.map((comment) => ({
 }));
 ```
 
-When an external store knows which comments changed, refresh those ids.
+External changes to annotation membership or data require `refresh`; passive
+getter freshness tracks document and projection changes. When an external store
+knows which comments changed, refresh those ids.
 
 ```tsx
 annotationStore.refresh({
@@ -175,7 +185,7 @@ The `comment-mode` example renders this as two panes:
 - edit mode on the left, editable document channel
 - comment mode on the right, read-only document with writable comments
 - shared external comment state
-- same resolved anchors rendered in both panes
+- shared anchors resolved in each pane's exact editor view
 
 The comment-mode controls do not call `editor.update` or mutate the
 document.
@@ -185,9 +195,11 @@ document.
 An external adapter can keep the document and comments in separate stores.
 
 ```ts
+import type { Editor, Range } from "platejs";
+
 type ExternalAnnotationAnchor = {
-  release(): void;
-  resolve(): Range | null;
+  release(): Range | null;
+  resolve(view?: Editor): Range | null;
 };
 
 const anchor = externalAnnotationAdapter.anchorFromRange(editor, range);
@@ -200,7 +212,9 @@ commentChannel.set(threadId, {
 ```
 
 The adapter owns mapping, drift recovery, deletion policy, and permissions.
-Plate React resolves the range once the adapter provides an anchor.
+Resolve into the supplied view's coordinates. Omitting the view uses the
+capture view; an explicit view must belong to the same model and document root.
+See [Anchor API](/docs/api/anchor) for release and aborted-capture behavior.
 
 ## Document-embedded ids
 

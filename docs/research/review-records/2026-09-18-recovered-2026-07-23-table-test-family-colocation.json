@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-07-23-table-test-family-colocation",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "table"
+  ],
+  "reviewBasis": [],
+  "workKind": "verification",
+  "plan": {
+    "path": "docs/plans/2026-07-23-table-test-family-colocation.md",
+    "sha256": "3693b458cb3e01b10a1e591b52b3a92e6d57a3be1328df26743d0799704c2e59"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical verification completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-07-23-table-test-family-colocation.md",
+        "sha256": "3693b458cb3e01b10a1e591b52b3a92e6d57a3be1328df26743d0799704c2e59",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-07-23-table-test-family-colocation.md"
+  ]
+}

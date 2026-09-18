@@ -15,14 +15,15 @@ const editor = createEditor({
   plugins: [history()],
 });
 
-editor.read((state) => state.history.undos());
-
-editor.update((tx) => {
-  tx.history.undo();
-});
+const canUndo = editor.read.history.hasUndo();
+const result = editor.api.history.undo();
 
 editor.update({ history: "skip" }).text.insert("draft");
 ```
+
+`undo()` and `redo()` each run one complete update. Use `hasUndo()` and
+`hasRedo()` for controls, and inspect `editor.read.history()` when you need the full
+immutable stacks.
 
 ## History object
 
@@ -101,25 +102,34 @@ editor state untouched.
 
 ## Editor API
 
-#### `state.history(): History`
+#### `editor.read.history(): History`
 
 Read the current undo and redo stacks.
 
-#### `state.history.undos(): readonly Batch[]`
+#### `editor.read.history.hasUndo(): boolean`
 
-Read the undo stack.
+Return whether the undo branch has a surviving mapped batch.
 
-#### `state.history.redos(): readonly Batch[]`
+#### `editor.read.history.hasRedo(): boolean`
 
-Read the redo stack.
+Return whether the redo branch has a surviving mapped batch.
 
-#### `tx.history.undo(): void`
+#### `editor.api.history.undo(): HistoryResult`
 
-Undo the previous history batch.
+Run one complete update that replays the current undo batch.
 
-#### `tx.history.redo(): void`
+#### `editor.api.history.redo(): HistoryResult`
 
-Redo the next history batch.
+Run one complete update that replays the current redo batch.
+
+Both methods return `{ status: "applied" }` after a replay and
+`{ status: "empty" }` when no surviving batch exists. An authored dependency
+conflict returns `{ status: "blocked", conflicts }`, where `conflicts` contains
+the immutable contribution IDs that block replay. Other failures throw.
+
+Call these services outside `editor.read(...)` and `editor.update(...)`. A
+history batch can cover several document roots; replay always applies the
+complete batch.
 
 #### `tx.history.restore(history): void`
 
@@ -156,14 +166,6 @@ For one direct write, configure the update facade instead:
 ```typescript
 editor.update({ history: "skip" }).text.insert("draft");
 ```
-
-#### `editor.update.history.undo(): void`
-
-Undo the previous history batch outside a larger transaction.
-
-#### `editor.update.history.redo(): void`
-
-Redo the next history batch outside a larger transaction.
 
 #### `editor.update.history.restore(history): void`
 

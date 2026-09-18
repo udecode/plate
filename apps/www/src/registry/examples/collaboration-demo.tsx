@@ -726,7 +726,7 @@ function PeerCard({
             </AlertDescription>
           </Alert>
         )}
-        <EditorContainer className="h-64" variant="demo">
+        <EditorContainer className="h-64">
           <Editor
             aria-label={`${peer.name} collaborative editor`}
             aria-busy={admission.state === 'waiting'}
@@ -791,7 +791,7 @@ function PeerControls({
           event.preventDefault();
         }}
         onClick={() => {
-          editor.update.history.undo();
+          editor.api.history.undo();
         }}
         size="sm"
         variant="outline"
@@ -807,7 +807,7 @@ function PeerControls({
           event.preventDefault();
         }}
         onClick={() => {
-          editor.update.history.redo();
+          editor.api.history.redo();
         }}
         size="sm"
         variant="outline"

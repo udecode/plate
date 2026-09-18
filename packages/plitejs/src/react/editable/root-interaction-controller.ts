@@ -1466,16 +1466,25 @@ export const useRootInteractionController = ({
         const nativeEditableModifiedClick =
           nativeEditableTextTarget &&
           (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey);
+        const modelOwnsExpandedSelectionReplacementClick =
+          nativeEditableTextTarget &&
+          !nativeEditableMultiClick &&
+          !nativeEditableSelectedTextTarget &&
+          !nativeEditableModifiedClick &&
+          hasExpandedDOMSelectionInTarget(event.currentTarget);
         const nativeEditableTableCellTarget =
           nativeEditableTextTarget && Boolean(target.target.closest('td, th'));
         const nativeSelectionOwnsInteraction =
           nativeEditableTextTarget &&
+          !modelOwnsExpandedSelectionReplacementClick &&
           (!nativeEditableTableCellTarget ||
             nativeEditableMultiClick ||
             nativeEditableSelectedTextTarget ||
             nativeEditableModifiedClick);
 
-        if (nativeSelectionOwnsInteraction) {
+        if (modelOwnsExpandedSelectionReplacementClick) {
+          action = { type: 'place-native-editable' };
+        } else if (nativeSelectionOwnsInteraction) {
           action = { type: 'ignore' };
         }
 
@@ -1891,6 +1900,10 @@ export const useRootInteractionController = ({
       }
 
       const importExpandedDOMSelection = () => {
+        // Mouseup capture runs before the browser collapses a plain click.
+        // The scheduled import below observes the native result instead.
+        if (!pointerMoved) return 'none' as const;
+
         const expandedDOMSelection =
           getExpandedDOMSelectionInTarget(currentTarget);
 

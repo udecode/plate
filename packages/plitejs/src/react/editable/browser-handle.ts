@@ -28,7 +28,10 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
-import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
+import {
+  type EditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+} from './editable-dom-runtime';
 import {
   beginEditableEventFrame,
   type EditableCommand,
@@ -40,7 +43,6 @@ import type { ExternalTextRuntime } from './external-text-runtime';
 import type { EditableInputController } from './input-state';
 import {
   applyEditableCommand,
-  applyModelOwnedHistoryIntent,
   shouldForceRenderAfterModelOwnedHistory,
 } from './mutation-controller';
 import { getProjectedNativeAffordanceMatrix } from './projected-native-affordance';
@@ -225,6 +227,7 @@ export const attachPliteBrowserHandle = ({
   forceRender,
   flushPendingNativeTextInput,
   isViewportBackedSelection,
+  replayHistory,
   scrollPathIntoView,
   setExplicitViewportBackedSelection,
 }: {
@@ -237,6 +240,7 @@ export const attachPliteBrowserHandle = ({
   forceRender: () => void;
   flushPendingNativeTextInput?: () => void;
   isViewportBackedSelection: (selection: Range | null) => boolean;
+  replayHistory: EditableDOMRuntime['replayHistory'];
   scrollPathIntoView?: (
     path: Path,
     align?: EditableViewportScrollAlign
@@ -534,9 +538,9 @@ export const attachPliteBrowserHandle = ({
     getHistory: () =>
       editor.read((state) => {
         const { history } = state as {
-          history?: {
-            redos?: () => readonly unknown[];
-            undos?: () => readonly unknown[];
+          history?: () => {
+            redos: readonly unknown[];
+            undos: readonly unknown[];
           };
         };
         const summarizeBatch = (batch: unknown) => {
@@ -554,9 +558,11 @@ export const attachPliteBrowserHandle = ({
           };
         };
 
+        const snapshot = history?.();
+
         return {
-          redos: history?.redos?.().map(summarizeBatch) ?? [],
-          undos: history?.undos?.().map(summarizeBatch) ?? [],
+          redos: snapshot?.redos.map(summarizeBatch) ?? [],
+          undos: snapshot?.undos.map(summarizeBatch) ?? [],
         };
       }),
     getLastCommit: () => {
@@ -737,9 +743,9 @@ export const attachPliteBrowserHandle = ({
       forceRender();
     },
     redo: () => {
-      if (!applyModelOwnedHistoryIntent({ direction: 'redo', editor })) {
-        return;
-      }
+      const result = replayHistory('redo', 'none');
+
+      if (result.status !== 'applied') return;
 
       if (shouldForceRenderAfterModelOwnedHistory(editor)) {
         forceRender();
@@ -891,9 +897,9 @@ export const attachPliteBrowserHandle = ({
       );
     },
     undo: () => {
-      if (!applyModelOwnedHistoryIntent({ direction: 'undo', editor })) {
-        return;
-      }
+      const result = replayHistory('undo', 'none');
+
+      if (result.status !== 'applied') return;
 
       if (shouldForceRenderAfterModelOwnedHistory(editor)) {
         forceRender();

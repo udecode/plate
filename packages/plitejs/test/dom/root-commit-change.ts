@@ -35,9 +35,7 @@ describe('root commit handling', () => {
     });
 
     expect(() => {
-      headerEditor.update((tx) => {
-        tx.history.undo();
-      });
+      headerEditor.api.history.undo();
     }).not.toThrow();
 
     expect(editor.read((state) => state.value())).toEqual({

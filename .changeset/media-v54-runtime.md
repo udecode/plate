@@ -1,5 +1,5 @@
 ---
-'platejs': major
+"platejs": major
 ---
 
 Require React and React DOM 19.2 or newer.
@@ -29,7 +29,7 @@ Export complete `*PluginState` contracts for audio, file, video, image, media em
 - Rename `MediaPluginOptions` to `MediaPluginState`
 - Use `PlaceholderPluginState` for the shared upload owner; the React `PlaceholderPlugin` adds DOM input adaptation
 - Register media properties and required direct inline caption children in compiled schemas.
-- Convert legacy v53 media identities, captions, missing URLs, and retired placeholder IDs through the shared `migratePlateV54` application document step.
+- Convert legacy v53 media identities, captions, missing URLs, and retired placeholder IDs through the shared `migrateV54` application document step.
 - Accept caption strings or inline children as construction input and persist them as direct media children.
 - Split media captions into a following paragraph on Enter without duplicating the media node.
 - Use capability name `mediaEmbed` and persisted element type `mediaEmbed`, persist media alignment as `textAlign`, and preserve relative media widths.
@@ -42,12 +42,22 @@ Export complete `*PluginState` contracts for audio, file, video, image, media em
 **Migration:** Remove `@platejs/caption` imports and caption plugin registration. Store captions in each media element's direct children and render that child slot as the caption. Add the shared v54 document step while loading persisted caption properties:
 
 ```tsx
-import { defineDocumentMigrations, migratePlateV54 } from 'platejs/migrations';
+import {
+  defineDocumentMigrations,
+  migrateDocument,
+  migrateV54,
+} from "platejs/migrations";
 
-const migrations = defineDocumentMigrations(EditorSchema, {
-  steps: { 54: migratePlateV54 },
-  unversioned: 53,
+import { fingerprint as v53Fingerprint } from "./migrations/v54/from";
+
+const migrations = defineDocumentMigrations({
+  plugins: EditorKit,
+  schema: EditorSchema,
+  sourceFingerprints: { 53: v53Fingerprint },
+  steps: { 54: migrateV54 },
 });
+
+const current = migrateDocument(saved, { migrations }).output;
 ```
 
 The same application step handles legacy media identities and captions in one pass.

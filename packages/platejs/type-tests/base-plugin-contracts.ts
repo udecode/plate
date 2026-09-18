@@ -1169,11 +1169,11 @@ definePlugin('contextualInput', {
 const InlineHistoryPlugin = definePlugin('inlineHistory', {})
   .extend(history())
   .extend(({ read }) => {
-    read.undos() satisfies readonly unknown[];
+    read().undos satisfies readonly unknown[];
 
     return {
       api: () => ({
-        undoCount: () => read.undos().length,
+        undoCount: () => read().undos.length,
       }),
     };
   });
@@ -1333,9 +1333,9 @@ const extendedFullExtraUpdate: 'base-update:update' =
 
 basePlateEditor.api.callout.setVariant('info');
 basePlateEditor.api.callout.setVariant('warning');
-inlineHistoryEditor.update((tx) => tx.history.undo());
+inlineHistoryEditor.api.history.undo();
 inlineHistoryEditor.update({ history: 'skip' }, () => {});
-coreHistoryEditor.update((tx) => tx.history.redo());
+coreHistoryEditor.api.history.redo();
 coreHistoryEditor.update({ history: 'merge' }, () => {});
 
 void boldEnabled;

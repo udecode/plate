@@ -7,7 +7,6 @@ import {
   type DefinitionOf,
   ElementIdPlugin,
   type ElementWith,
-  migrateElementIds,
   type PluginReference,
   type TextWith,
 } from 'platejs';
@@ -868,22 +867,6 @@ ElementIdPlugin.configure({
     generateId: () => 1,
   },
 });
-type ExactNodeIdValue = [
-  {
-    children: [{ text: string }];
-    custom: number;
-    type: 'paragraph';
-  },
-];
-declare const exactNodeIdValue: ExactNodeIdValue;
-const migratedElementIdValue: Value = migrateElementIds(exactNodeIdValue, {
-  generateId: () => 'element-id',
-}).value;
-// @ts-expect-error Migration adds canonical IDs and cannot preserve the input's exact shape.
-const exactMigratedElementIdValue: ExactNodeIdValue = migrateElementIds(
-  exactNodeIdValue,
-  { generateId: () => 'element-id' }
-).value;
 const elementIdProperty = elementIdEditor.read.schema.getProperty(
   targetElement,
   'id'
@@ -907,8 +890,6 @@ void elementIdProperty;
 void unknownElementIdProperty;
 void semanticElementIdProperty;
 void typedElementIdProperty;
-void exactMigratedElementIdValue;
-void migratedElementIdValue;
 editor.read.schema.create(TargetPlugin, { 'first-property': 42 });
 // @ts-expect-error Property-only plugins cannot construct elements.
 editor.read.schema.create(AmbiguousPropertyPlugin);

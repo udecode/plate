@@ -176,7 +176,14 @@ Resolve the in-scope coherence findings and applicable proof:
 8. **Rerun:** after any patch, rerun affected focused proof and rerun
    P1 `autoreview` only when Task's gate still applies, the diff materially
    changed and fewer than three helper invocations have run for this scope.
-9. **Clean pass:** stop only after the latest pass has zero accepted actionable
+9. **Behavior-law reconciliation:** if accepted implementation or proof changed
+   or clarified intended editor behavior, run
+   `docs/editor-behavior/commands/reconsolidate-law-stack.md` against the final
+   result. If the change only restored settled law, update
+   `docs/editor-behavior/current-evidence.md` and affected coverage or proof
+   without rewriting the normative law. Best API Review may flag this
+   obligation but remains read-only.
+10. **Clean pass:** stop only after the latest pass has zero accepted actionable
    findings and all required proof/generation rows are closed. For risky
    changes, rerun only affected proof after a material fix. One clean result
    on the final state is sufficient; do not repeat an unchanged review. Report
@@ -193,6 +200,8 @@ Clean means:
 - required focused proof after the last patch passes or is explicitly N/A;
 - generated outputs affected by the diff are synced or intentionally absent;
 - docs/API/examples/tests are coherent with current source;
+- changed or clarified editor behavior is reconciled with its law stack, while
+  restoration-only work cites settled law and refreshes affected evidence;
 - high-risk items are in `Needs your attention` with concrete anchors;
 - no dirty speculative half-patch remains;
 - the changed files being called clean are in the current checkout. Captured

@@ -174,7 +174,7 @@ test('preserves stateful leaf owners through text, mark, and history commits', a
     expectSameLeafHosts(hosts, editable);
 
     await act(async () => {
-      fixture.editor.update((tx) => tx.history.undo());
+      fixture.editor.api.history.undo();
     });
     expect(editable.textContent).toBe('abcdefghij');
     expectSameLeafHosts(hosts, editable);
@@ -192,7 +192,7 @@ test('preserves stateful leaf owners through text, mark, and history commits', a
     expectSameLeafHosts(hosts, editable);
 
     await act(async () => {
-      fixture.editor.update((tx) => tx.history.undo());
+      fixture.editor.api.history.undo();
     });
     expect(editable.querySelectorAll('strong')).toHaveLength(0);
     expectSameLeafHosts(hosts, editable);
@@ -301,10 +301,10 @@ test('keeps source-local decoration keys and mounted view lifetimes distinct', a
       });
     });
     await act(async () => {
-      fixture.editor.update((tx) => tx.history.undo());
+      fixture.editor.api.history.undo();
     });
     await act(async () => {
-      fixture.editor.update((tx) => tx.history.redo());
+      fixture.editor.api.history.redo();
     });
 
     for (const [index, editor] of editors.entries()) {

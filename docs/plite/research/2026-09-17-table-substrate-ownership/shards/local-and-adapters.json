@@ -1,0 +1,641 @@
+{
+  "status": "complete",
+  "repos": [
+    {
+      "id": "prosekit",
+      "local_path": "/Users/zbeyens/git/prosekit",
+      "origin": "https://github.com/prosekit/prosekit",
+      "commit": "3fbfe7906c3448328e80c1c1333647d08e50907e",
+      "commit_date": "2026-08-12T19:05:09+10:00",
+      "license": "MIT",
+      "freshness": {
+        "remote_head": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5",
+        "method": "ls-remote then bounded fetch and git diff HEAD <remote> of read files; working tree unchanged",
+        "result": "ProseKit files identical; Milkdown read-file changes are comments only. No latest dependency graph or runtime execution claim."
+      }
+    },
+    {
+      "id": "milkdown",
+      "local_path": "/Users/zbeyens/git/milkdown",
+      "origin": "https://github.com/Milkdown/milkdown",
+      "commit": "6a4db480b00db8dd0322b517117dfa2154f3e2e2",
+      "commit_date": "2026-04-02T08:48:08Z",
+      "license": "MIT",
+      "freshness": {
+        "remote_head": "920cded3fc9fe956de87339e30507650a916cf56",
+        "method": "ls-remote then bounded fetch and git diff HEAD <remote> of read files; working tree unchanged",
+        "result": "ProseKit files identical; Milkdown read-file changes are comments only. No latest dependency graph or runtime execution claim."
+      }
+    }
+  ],
+  "exact_reads": [
+    {
+      "id": "local-types",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/features/table/lib/types.ts",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/features/table/lib/types.ts",
+      "ranges": [
+        [
+          1,
+          150
+        ]
+      ],
+      "purpose": "Compact public selection and resize contracts; no public selection constructor.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "374528fe899c740ca0a3dd7a12d4ce1be6efeb39b640c633983d22304fcfde2e"
+    },
+    {
+      "id": "local-table",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/features/table/lib/BaseTablePlugin.ts",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/features/table/lib/BaseTablePlugin.ts",
+      "ranges": [
+        [
+          303,
+          319
+        ],
+        [
+          450,
+          610
+        ],
+        [
+          940,
+          1042
+        ],
+        [
+          2070,
+          2218
+        ]
+      ],
+      "purpose": "Feature owns sizes, pure resize calculation and generic command interception.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "46caf4f36fb5cd298438d119f527cfbea733f81dcc0899972b45d362f2d43c2a"
+    },
+    {
+      "id": "local-selection",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/features/table/lib/internal/selection.ts",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/features/table/lib/internal/selection.ts",
+      "ranges": [
+        [
+          1,
+          100
+        ],
+        [
+          249,
+          351
+        ]
+      ],
+      "purpose": "Exact node membership is projected through one private span-aware grid.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "c9c0dcc1f4808796bec6ef6030d9bb5ff5e945ff6b5feb64eb06fb63d177d76d"
+    },
+    {
+      "id": "local-react",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/react/features/table/TablePlugin.tsx",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/react/features/table/TablePlugin.tsx",
+      "ranges": [
+        [
+          1,
+          238
+        ],
+        [
+          300,
+          536
+        ]
+      ],
+      "purpose": "Logical extension and Select All are private to React alongside genuine DOM geometry.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "01ba4d2e87db62d7938650c716ee159ca80b966d89924e32401bb42275986e40"
+    },
+    {
+      "id": "local-ui",
+      "repo": "plate-2",
+      "path": "apps/www/src/registry/components/editor/table.tsx",
+      "absolute_path": "/Users/zbeyens/git/plate-2/apps/www/src/registry/components/editor/table.tsx",
+      "ranges": [
+        [
+          140,
+          331
+        ],
+        [
+          780,
+          899
+        ],
+        [
+          914,
+          1115
+        ]
+      ],
+      "purpose": "Row range assembly, per-cell handles and shared preview; ending-column index also gates left handle.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "91b0d3eaf2b7eb1b6702c92eca6e70cd63bfa4a8546b35e5a1ea593d51a0656a"
+    },
+    {
+      "id": "local-resize",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/react/features/table/useTableResize.ts",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/react/features/table/useTableResize.ts",
+      "ranges": [
+        [
+          1,
+          130
+        ]
+      ],
+      "purpose": "Exact table/view pointer lifecycle and pure preview; node-identity invalidation.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "0794a7ec5beb225d118176be16dc7fe305000c8dc4bfcd270ca435a0fb074204"
+    },
+    {
+      "id": "local-pointer",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/react/utils/bindPointerSession.internal.ts",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/bindPointerSession.internal.ts",
+      "ranges": [
+        [
+          1,
+          45
+        ]
+      ],
+      "purpose": "Already shared private pointer mechanics; no public core resize API needed.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "9c1c01624a653dd60ce8a24b2b12a1e39c8571e49f72324ba9fbdaca58a47438"
+    },
+    {
+      "id": "local-box",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/react/features/resizable/Resizable.tsx",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/react/features/resizable/Resizable.tsx",
+      "ranges": [
+        [
+          1,
+          215
+        ]
+      ],
+      "purpose": "Independent media box policy reuses pointer mechanics.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "04b00a0d5790dd310a98761012f7f127870752223d6bf279e3322d7615e3bb4f"
+    },
+    {
+      "id": "local-paint",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/react/features/table/useTableSelectionDOM.ts",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/react/features/table/useTableSelectionDOM.ts",
+      "ranges": [
+        [
+          1,
+          186
+        ]
+      ],
+      "purpose": "Paint caches selected keys and individual DOM nodes; same-key host replacement is not tracked.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "d03b356e9abba9e6e5ef7aa8dd700c23da7db0b9f166307e4390976f842cf8d7"
+    },
+    {
+      "id": "local-paint-test",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/react/features/table/useTableSelectionDOM.spec.tsx",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/react/features/table/useTableSelectionDOM.spec.tsx",
+      "ranges": [
+        [
+          1,
+          193
+        ]
+      ],
+      "purpose": "Existing stable-DOM membership test; replacement gap reproduced separately.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "022b7d8673fe89d35c45fb1234ee4654e871456a5a8445bd1a1ca23ebed3a81f"
+    },
+    {
+      "id": "local-node-selection",
+      "repo": "plate-2",
+      "path": "packages/plitejs/src/interfaces/selection.ts",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/plitejs/src/interfaces/selection.ts",
+      "ranges": [
+        [
+          1,
+          250
+        ]
+      ],
+      "purpose": "Canonical directional node selection and validation; no custom selection kinds.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "60d58ceaf5937c5af4726a97706b1e7ff2986152376e41009f9c8df3a973a0ba"
+    },
+    {
+      "id": "local-selection-map",
+      "repo": "plate-2",
+      "path": "packages/plitejs/src/core/selection-protocol.ts",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/plitejs/src/core/selection-protocol.ts",
+      "ranges": [
+        [
+          750,
+          852
+        ]
+      ],
+      "purpose": "Maps each existing selected path; does not encode enduring rectangle intent.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "edd7b82c57b3ad9cbf21766a77f2700a641217731332ee9da9ecdb4adb215b04"
+    },
+    {
+      "id": "local-claim",
+      "repo": "plate-2",
+      "path": "packages/plitejs/src/react/hooks/use-claim-editable-dom-commit.ts",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-claim-editable-dom-commit.ts",
+      "ranges": [
+        [
+          1,
+          42
+        ]
+      ],
+      "purpose": "Commit claim classifies host changes, not table paint reapplication.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "fbcdbcbc5346f6ee3832b026fa03bf214f3b48300b58b84c6d24f10912c5d619"
+    },
+    {
+      "id": "local-selected-hook",
+      "repo": "plate-2",
+      "path": "packages/plitejs/src/react/hooks/use-element-selected.ts",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-element-selected.ts",
+      "ranges": [
+        [
+          1,
+          140
+        ]
+      ],
+      "purpose": "Existing exact-view node-selection read; not an automatically accepted per-cell paint sink.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "69f4e385e5e11cd13a9329d6548561ab645af6a990ff62e866d5a34749539193"
+    },
+    {
+      "id": "local-rendered-store",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/react/internal/rendered-attributes.tsx",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/react/internal/rendered-attributes.tsx",
+      "ranges": [
+        [
+          1,
+          215
+        ],
+        [
+          243,
+          283
+        ]
+      ],
+      "purpose": "Existing keyed attribute publication and React subscription owner.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "468d52a0f24a65bb7dce201044262ea0b73b8412927b537464d6bac03bce0ff9"
+    },
+    {
+      "id": "local-renderer",
+      "repo": "plate-2",
+      "path": "packages/platejs/src/react/utils/pluginRenderElement.internal.tsx",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/platejs/src/react/utils/pluginRenderElement.internal.tsx",
+      "ranges": [
+        [
+          1,
+          85
+        ]
+      ],
+      "purpose": "Keyed published attributes currently enter React element rendering.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "24639e10f4cc4b193e6be9f6291f1ed669585bc984a08b8c1f9b1ee9a57bfbd8"
+    },
+    {
+      "id": "local-root-effect",
+      "repo": "plate-2",
+      "path": "packages/plitejs/src/react/hooks/use-plite-runtime.tsx",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-plite-runtime.tsx",
+      "ranges": [
+        [
+          1000,
+          1060
+        ]
+      ],
+      "purpose": "Existing mounted-view effect lifecycle; does not itself establish keyed host-change notification.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "107cf57f97f4a2d306a5782bba7548d5b1ec6207a2532a0cc363c26027339582"
+    },
+    {
+      "id": "local-geometry",
+      "repo": "plate-2",
+      "path": "packages/plitejs/src/react/hooks/use-selection-geometry.tsx",
+      "absolute_path": "/Users/zbeyens/git/plate-2/packages/plitejs/src/react/hooks/use-selection-geometry.tsx",
+      "ranges": [
+        [
+          1,
+          46
+        ]
+      ],
+      "purpose": "Exact Editable geometry owner already exists; table logical navigation remains separate.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "4d74d3f6eaff8b61742baecc0f2226754186711417d37616afa724b764aaff99"
+    },
+    {
+      "id": "local-raw-example",
+      "repo": "plate-2",
+      "path": "apps/www/src/app/(app)/examples/plite/_examples/tables.tsx",
+      "absolute_path": "/Users/zbeyens/git/plate-2/apps/www/src/app/(app)/examples/plite/_examples/tables.tsx",
+      "ranges": [
+        [
+          1,
+          230
+        ]
+      ],
+      "purpose": "Minimal raw containment example is not a second full table engine consumer.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "06005d4a9c1ba6c562b210c47cf4c8c055ab21e6fc991d699405d38a78bcaf6c"
+    },
+    {
+      "id": "local-history",
+      "repo": "plate-2",
+      "path": "docs/plans/2026-09-17-table-api-design.md",
+      "absolute_path": "/Users/zbeyens/git/plate-2/docs/plans/2026-09-17-table-api-design.md",
+      "ranges": [
+        [
+          280,
+          315
+        ],
+        [
+          380,
+          398
+        ]
+      ],
+      "purpose": "Prior adoption and measured rejection of naive React view-attribute paint path.",
+      "commit": "working-tree@68898220fec48a27b0662862895628094898f066",
+      "sha256": "8c1b424ed39a446ef4be28d40db4a0c98e66094d071eee3ba67bb1ff0d0b5dff"
+    },
+    {
+      "id": "pk-table",
+      "repo": "prosekit",
+      "path": "packages/extensions/src/table/table-plugins.ts",
+      "absolute_path": "/Users/zbeyens/git/prosekit/packages/extensions/src/table/table-plugins.ts",
+      "ranges": [
+        [
+          1,
+          19
+        ]
+      ],
+      "purpose": "PM wrapper, not independent engine.",
+      "commit": "3fbfe7906c3448328e80c1c1333647d08e50907e",
+      "sha256": "d5b2815f08a93d928ab4c762c0c9e070679f67e58e81ed49cc73a2dfda86d633"
+    },
+    {
+      "id": "pk-table-current",
+      "repo": "prosekit",
+      "path": "packages/extensions/src/table/table-plugins.ts",
+      "ranges": [
+        [
+          1,
+          19
+        ]
+      ],
+      "purpose": "Freshness comparison: PM wrapper, not independent engine.",
+      "commit": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5",
+      "object_path": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5:packages/extensions/src/table/table-plugins.ts",
+      "sha256": "d5b2815f08a93d928ab4c762c0c9e070679f67e58e81ed49cc73a2dfda86d633"
+    },
+    {
+      "id": "pk-resize-root",
+      "repo": "prosekit",
+      "path": "packages/web/src/components/resizable/resizable-root.ts",
+      "absolute_path": "/Users/zbeyens/git/prosekit/packages/web/src/components/resizable/resizable-root.ts",
+      "ranges": [
+        [
+          1,
+          198
+        ]
+      ],
+      "purpose": "Generic box preview owns component properties; caller persists dimensions.",
+      "commit": "3fbfe7906c3448328e80c1c1333647d08e50907e",
+      "sha256": "cae472cb515f379d6bfb8f8c017e668a0683e9b600b02bbf2c0ec243e302426a"
+    },
+    {
+      "id": "pk-resize-root-current",
+      "repo": "prosekit",
+      "path": "packages/web/src/components/resizable/resizable-root.ts",
+      "ranges": [
+        [
+          1,
+          198
+        ]
+      ],
+      "purpose": "Freshness comparison: Generic box preview owns component properties; caller persists dimensions.",
+      "commit": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5",
+      "object_path": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5:packages/web/src/components/resizable/resizable-root.ts",
+      "sha256": "cae472cb515f379d6bfb8f8c017e668a0683e9b600b02bbf2c0ec243e302426a"
+    },
+    {
+      "id": "pk-resize-handle",
+      "repo": "prosekit",
+      "path": "packages/web/src/components/resizable/resizable-handle.ts",
+      "absolute_path": "/Users/zbeyens/git/prosekit/packages/web/src/components/resizable/resizable-handle.ts",
+      "ranges": [
+        [
+          1,
+          133
+        ]
+      ],
+      "purpose": "Separate generic box geometry and pointer handlers.",
+      "commit": "3fbfe7906c3448328e80c1c1333647d08e50907e",
+      "sha256": "3990645cb69efca63f815653ca395679e5ddd7e448a786da7ab58020c9fdfd90"
+    },
+    {
+      "id": "pk-resize-handle-current",
+      "repo": "prosekit",
+      "path": "packages/web/src/components/resizable/resizable-handle.ts",
+      "ranges": [
+        [
+          1,
+          133
+        ]
+      ],
+      "purpose": "Freshness comparison: Separate generic box geometry and pointer handlers.",
+      "commit": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5",
+      "object_path": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5:packages/web/src/components/resizable/resizable-handle.ts",
+      "sha256": "3990645cb69efca63f815653ca395679e5ddd7e448a786da7ab58020c9fdfd90"
+    },
+    {
+      "id": "pk-table-handle",
+      "repo": "prosekit",
+      "path": "packages/web/src/components/table-handle/table-handle-root.ts",
+      "absolute_path": "/Users/zbeyens/git/prosekit/packages/web/src/components/table-handle/table-handle-root.ts",
+      "ranges": [
+        [
+          1,
+          105
+        ]
+      ],
+      "purpose": "Framework-neutral mounted table controls use editor events and local state.",
+      "commit": "3fbfe7906c3448328e80c1c1333647d08e50907e",
+      "sha256": "fe42188063728adec5db65e88665b48c36a74ead8229f5b497106b6dc3c53514"
+    },
+    {
+      "id": "pk-table-handle-current",
+      "repo": "prosekit",
+      "path": "packages/web/src/components/table-handle/table-handle-root.ts",
+      "ranges": [
+        [
+          1,
+          105
+        ]
+      ],
+      "purpose": "Freshness comparison: Framework-neutral mounted table controls use editor events and local state.",
+      "commit": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5",
+      "object_path": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5:packages/web/src/components/table-handle/table-handle-root.ts",
+      "sha256": "fe42188063728adec5db65e88665b48c36a74ead8229f5b497106b6dc3c53514"
+    },
+    {
+      "id": "md-table",
+      "repo": "milkdown",
+      "path": "packages/plugins/preset-gfm/src/plugin/table-editing-plugin.ts",
+      "absolute_path": "/Users/zbeyens/git/milkdown/packages/plugins/preset-gfm/src/plugin/table-editing-plugin.ts",
+      "ranges": [
+        [
+          1,
+          14
+        ]
+      ],
+      "purpose": "Wraps PM tableEditing with table node selection enabled.",
+      "commit": "6a4db480b00db8dd0322b517117dfa2154f3e2e2",
+      "sha256": "4378aa40f97e30c4166f5b6dec95a3cdecc213a1459dffd2e0a86c277e1202c6"
+    },
+    {
+      "id": "md-table-current",
+      "repo": "milkdown",
+      "path": "packages/plugins/preset-gfm/src/plugin/table-editing-plugin.ts",
+      "ranges": [
+        [
+          1,
+          14
+        ]
+      ],
+      "purpose": "Freshness comparison: Wraps PM tableEditing with table node selection enabled.",
+      "commit": "920cded3fc9fe956de87339e30507650a916cf56",
+      "object_path": "920cded3fc9fe956de87339e30507650a916cf56:packages/plugins/preset-gfm/src/plugin/table-editing-plugin.ts",
+      "sha256": "f83b7d1e8662af3a521e2284deadf0432ebdf9d728107a4f86086254774b77d0"
+    },
+    {
+      "id": "md-view",
+      "repo": "milkdown",
+      "path": "packages/components/src/table-block/view/view.ts",
+      "absolute_path": "/Users/zbeyens/git/milkdown/packages/components/src/table-block/view/view.ts",
+      "ranges": [
+        [
+          1,
+          150
+        ]
+      ],
+      "purpose": "NodeView translates DOM selection and mounts Vue controls; delayed input policy not adopted.",
+      "commit": "6a4db480b00db8dd0322b517117dfa2154f3e2e2",
+      "sha256": "ade6891629a3a3c75dd762b952f39c7ea8b807249b401aa5643d46c231eb4f1b"
+    },
+    {
+      "id": "md-view-current",
+      "repo": "milkdown",
+      "path": "packages/components/src/table-block/view/view.ts",
+      "ranges": [
+        [
+          1,
+          150
+        ]
+      ],
+      "purpose": "Freshness comparison: NodeView translates DOM selection and mounts Vue controls; delayed input policy not adopted.",
+      "commit": "920cded3fc9fe956de87339e30507650a916cf56",
+      "object_path": "920cded3fc9fe956de87339e30507650a916cf56:packages/components/src/table-block/view/view.ts",
+      "sha256": "3781de87e1491f788bb4518060842f42f9e01cc743458537e226384da9bab358"
+    },
+    {
+      "id": "md-controls",
+      "repo": "milkdown",
+      "path": "packages/components/src/table-block/view/operation.ts",
+      "absolute_path": "/Users/zbeyens/git/milkdown/packages/components/src/table-block/view/operation.ts",
+      "ranges": [
+        [
+          1,
+          148
+        ]
+      ],
+      "purpose": "Controls call public semantic row and column selection commands.",
+      "commit": "6a4db480b00db8dd0322b517117dfa2154f3e2e2",
+      "sha256": "720ff4cd6484ed9e18b204d395030bfa556aefb08229bda8bc01ce1288351212"
+    },
+    {
+      "id": "md-controls-current",
+      "repo": "milkdown",
+      "path": "packages/components/src/table-block/view/operation.ts",
+      "ranges": [
+        [
+          1,
+          148
+        ]
+      ],
+      "purpose": "Freshness comparison: Controls call public semantic row and column selection commands.",
+      "commit": "920cded3fc9fe956de87339e30507650a916cf56",
+      "object_path": "920cded3fc9fe956de87339e30507650a916cf56:packages/components/src/table-block/view/operation.ts",
+      "sha256": "720ff4cd6484ed9e18b204d395030bfa556aefb08229bda8bc01ce1288351212"
+    },
+    {
+      "id": "md-commands",
+      "repo": "milkdown",
+      "path": "packages/plugins/preset-gfm/src/node/table/command.ts",
+      "absolute_path": "/Users/zbeyens/git/milkdown/packages/plugins/preset-gfm/src/node/table/command.ts",
+      "ranges": [
+        [
+          130,
+          185
+        ]
+      ],
+      "purpose": "Headless row/column selection wrappers over PM table selection.",
+      "commit": "6a4db480b00db8dd0322b517117dfa2154f3e2e2",
+      "sha256": "8ab415d31ca45c5ff9a7a0f5f17646b2a76d64ef27c0182f80f8a3b797c126b5"
+    },
+    {
+      "id": "md-commands-current",
+      "repo": "milkdown",
+      "path": "packages/plugins/preset-gfm/src/node/table/command.ts",
+      "ranges": [
+        [
+          130,
+          185
+        ]
+      ],
+      "purpose": "Freshness comparison: Headless row/column selection wrappers over PM table selection.",
+      "commit": "920cded3fc9fe956de87339e30507650a916cf56",
+      "object_path": "920cded3fc9fe956de87339e30507650a916cf56:packages/plugins/preset-gfm/src/node/table/command.ts",
+      "sha256": "8ab415d31ca45c5ff9a7a0f5f17646b2a76d64ef27c0182f80f8a3b797c126b5"
+    }
+  ],
+  "source_policy": "Local source and prior execution receipts; no new product code or upstream implementation copied.",
+  "queries": [
+    {
+      "surface": "web",
+      "query": "ProseMirror tables CellSelection columnResizing selection"
+    },
+    {
+      "surface": "web",
+      "query": "Lexical TableSelection TablePlugin column resize"
+    },
+    {
+      "surface": "web",
+      "query": "CKEditor 5 table column resizing multi cell selection"
+    },
+    {
+      "surface": "web",
+      "query": "ProseKit table resize handle Milkdown table selection plugin"
+    },
+    {
+      "surface": "web",
+      "query": "site.lexical.dev docs packages lexical-table TableSelection"
+    },
+    {
+      "surface": "web",
+      "query": "site.prosekit.dev table handle resizable"
+    },
+    {
+      "surface": "web",
+      "query": "site.milkdown.dev table selectRowCommand selectColCommand"
+    }
+  ],
+  "freshness_limit": "Fetched objects supplement original snapshots only for named read files. Working trees and branch refs were not changed."
+}

@@ -52,14 +52,17 @@ export const editor = createEditor({
 
 ## 操作
 
-组件读取 `editor.read.selection.nodes()`，并把变更交给对应 owner：
+组件读取精确的块选择，并把变更交给对应功能：
 
-| 操作           | Owner                       |
-| -------------- | --------------------------- |
-| Ask AI         | `AIChatPlugin`              |
-| 删除和复制     | 编辑器节点 transforms       |
-| 转换节点类型   | registry `applyBlockAction` |
-| 缩进和减少缩进 | `IndentPlugin`              |
-| 对齐           | 编辑器节点 transforms       |
+| 操作           | Owner                  |
+| -------------- | ---------------------- |
+| Ask AI         | `AIChatPlugin`         |
+| 删除和复制     | 编辑器节点 transforms  |
+| 文本和标题     | 块与功能 transforms    |
+| 引用           | `BaseBlockquotePlugin` |
+| 缩进和减少缩进 | `BaseIndentPlugin`     |
+| 对齐           | `BaseTextAlignPlugin`  |
+
+菜单会隐藏未安装插件对应的操作。对于已安装的结构化操作，如果当前选择范围不受支持，菜单会显示禁用状态。
 
 `BlockContextMenu` 是可复制的公共组件。不存在菜单状态或块选择 package API。

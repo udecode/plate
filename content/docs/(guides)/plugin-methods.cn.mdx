@@ -139,6 +139,25 @@ export const TriggerPlugin = definePlugin('trigger', {
 插件专用和 editor-wide host service 共用根级 `api` channel；Plate 会按插件
 name 投影它。不要发布两份实现。
 
+### 纯命令构建器
+
+当操作需要可拦截、带类型的复用意图时，使用 `platejs` 的
+`defineCommand`。构建器返回 `false` 或冻结的 `TransactionSpec`。
+`state.transaction(...)` 构建 spec 但不发布；
+`editor.update.command(descriptor, input)` 在一次 update 中应用处理后的
+spec。
+
+`state.transaction(...)` 和 `state.transaction.extend(...)` 的 callback
+必须同步完成。返回 Promise 或 thenable 会抛错并丢弃 draft。先完成异步工作，
+再构建命令。
+
+使用 `handle(descriptor, handler)` 声明 fallback policy。返回 `false` 会继续
+下一个 handler 或 descriptor default。需要改写下游 input 或组合 prefix 时，
+使用 `around(descriptor, handler)`。`around` 只有调用 `next()` 或
+`next.after(prefix)` 才会委托；返回 `false` 会拒绝命令并停止 fallback。
+`next.after(prefix)` 会基于 prefix 产生的 state 运行下游行为。插件顺序决定
+handler 顺序；descriptor 会保留 input inference。
+
 ## 声明产品 Codec
 
 使用 callback 中的 `defineCodecs` 构建 MIME-keyed map。它是 codec callback

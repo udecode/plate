@@ -1,5 +1,52 @@
 # Research Log
 
+## [2026-09-17] review | Registry composition and installation
+
+- Assessed ten semantic units and accounted for all 60 `ui` census groups;
+  49 assessed for composition/support applicability, 11 ancillary exclusions.
+- Pursue deleting unchecked string command routing and duplicate neutral
+  policy; derive installation facts at the existing build owner. Retain
+  optional toolbar placement, exact-view lifetimes and explicit install intent.
+- Reproduced development registry responses retaining production dependency
+  URLs. Twenty focused baseline tests pass; native toolbar behavior, complete
+  installation, both build orders and performance remain unverified.
+- Product implementation is outside this review. The next owner is Task design
+  plan for the complete UI composition/installation question.
+
+See [the decision](decisions/registry-ui-ownership.md) and
+[the immutable review](review-records/2026-09-17-ui-source-and-command-ownership.json).
+
+## [2026-09-17] review | Comments in independent mounted views
+
+- Pursue one retained target with exact-view resolution through its native
+  anchor; keep conversation records shared and attachment indexes view-local.
+- Rendered Playground proof isolates a five-to-four discussion regression:
+  model block keys remain cached when the mounted projection changes its keys.
+  Retained attachment coordinates also stay in the capture projection.
+- Reject per-view serialization/rebinding, copied ranges in semantic records,
+  and semantic writes used only to trigger repaint. Native annotations own
+  exact-view commit and projection observation with independent cleanup.
+- Implementation and final browser/scale proof remain in progress; this
+  review does not replace the preserved failed browser and timing receipts.
+
+See [the decision](decisions/comments-data-ownership.md),
+[the execution plan](../plans/2026-09-16-comments-history-api.md), and
+[the immutable review](review-records/2026-09-17-comments-mounted-view-ownership.json).
+
+## [2026-09-17] review | Direct editing with visible suggestions
+
+- Pursue removing the native coupling between write intent and projection.
+  The supplied playground screenshot exposes missing pending insertions after
+  the default-mode repair selected accepted-only content.
+- Reaffirm EditorRoot and native authored ownership; reject mode toggling,
+  implicit acceptance, copied paint and a second suggestion store.
+- Proposed edit/markup requires transaction-coordinate and publication design,
+  followed by joint visibility, typing, selection, history and persistence
+  proof. No product code or runtime acceptance in this review.
+
+See [the decision](decisions/suggestion-review-semantics.md) and
+[the immutable review](review-records/2026-09-17-suggestions-editing-visibility.json).
+
 ## [2026-09-14] review | Suggestion initialization ownership
 
 - Pursue removing fixture edit replay, author switching and late thread
@@ -937,3 +984,87 @@ See [the ledger](reviews.md), [record contract](schema.md#review-history), and
   contribution boundaries need reconciliation before implementation closure.
 - Census comparison found no added/removed feature IDs; changed fingerprints
   are observations only and do not advance unrelated review or proof state.
+
+## 2026-09-16 — Table API and ownership audit
+
+- Reviewed all 14 table census members plus the separately fingerprinted React
+  owner; retained one independent table review.
+- [Current decision](decisions/table-ownership.md) pursues complete-content and
+  canonical transaction authority, explicit targets and selection identity.
+  [Immutable assessment](review-records/2026-09-16-table-canonical-edits.json)
+  records alternatives, source identities and provisional runtime cuts.
+- Public-boundary probes reproduce merge deleting an image, paste dropping
+  mixed-slice siblings, ignored explicit targets, and a merge restriction that
+  only hides controls. Existing core/React partitions pass 284 tests.
+- Product code is unchanged. Browser/device and candidate scale proof remain
+  open. Final ledger validation and table-record freshness pass; next owner is
+  Task design/plan, with no implementation plan created by the audit.
+
+## 2026-09-18 — Comments attachment and discovery review
+
+- [Decision](decisions/comments-data-ownership.md) preserves independent
+  conversations and native targets while rejecting stale block placement and
+  an always-mounted unavailable-thread list. The target is one on-demand
+  document comments surface beside the existing Floating Discussion workflow.
+- [Source probe](../plans/artifacts/comments-history-api/deleted-target-retyping-2026-09-18.json)
+  reproduces a fully deleted comment attaching to later unrelated text when
+  Authored is installed; ordinary anchors stay unavailable. Native range
+  semantics need repair as well as copied UI. Current tests encode the stale
+  block expectation and cannot close that corrected behavior contract.
+- The immutable review records alternatives, source identities, earlier-review
+  reconciliation and Google Docs evidence limits. Product code is unchanged;
+  no browser or performance repair is claimed. Next owner: Task design/plan.
+- Comments record validation and source freshness pass. The global ledger
+  check reports a pre-existing stale `platejs/react` inventory fingerprint;
+  this review does not refresh or certify that unrelated scope.
+
+## 2026-09-18 — Comments attachment design gate
+
+- The [design plan](../plans/2026-09-18-comments-attachment-discovery.md) specifies
+  native replacement laws, live-only placement and a lazy All comments dialog
+  using existing Comments records. It keeps the user-selected Floating workflow
+  and removes stale placement, the unavailable spill and duplicate demo lists.
+- Two authored source-transform trials were rejected on scale. Trial 2 passes
+  30/30 behavior probes, but the combined 10,000-target/100-replacement arm
+  takes 628–706 ms versus 90–96 ms on source. Deterministic counters establish
+  repeated ancestry traversal per binding. The independent ordinary mapping
+  prototype passes 12/12 but narrowly misses its frozen relative timing gate.
+- The next experiment is a prepared authored-binding handoff from canonical
+  commit mapping, preserving abort, history, exact projections and persistence.
+  It is not an accepted runtime architecture. The plan remains gated; no
+  production source, browser fix or implementation readiness is claimed.
+- UI list projection passes 12 count/distribution rows through 10,000 records;
+  mounted cards, focus and async form retention need implementation proof.
+  Native packet hashes verify unchanged source. The immutable review retains
+  earlier ownership conclusions while deferring native adoption.
+- Local links and review source hashes pass. The readiness checker correctly
+  fails on the open native design items; the global ledger checker still finds
+  unrelated stale `platejs/react` inventory. These failures are preserved in
+  the plan's planning-check receipt, without refreshing unrelated evidence.
+
+## 2026-09-18 — Comments attachment bounded design trials
+
+- The [same plan](../plans/2026-09-18-comments-attachment-discovery.md) remains
+  provisional. The third native candidate's compact frontier and latest
+  deletion fence lose earlier partial coverage after save/reload and supported
+  retained-history revert. Structural collapse also produces a false expanded
+  range. Selected behavior passes 29/30; no timing or memory pass is claimed
+  for an invalid candidate. The bounded trial sequence is exhausted.
+- The [final ordinary probe](../plans/artifacts/comments-attachment-discovery/ordinary-final-design.json)
+  passes 27 focused and 36 existing history cases. Seven of eight performance
+  cohorts pass; the fragmented 100-target tail exceeds its frozen budget.
+  Host contention limits causal attribution, so the result remains gated.
+- The All comments dialog, current-view-only placement, conversation lifetime,
+  adoption inventory and browser proof requirements remain specified. Product
+  source is unchanged. This is a partial design outcome, not implementation
+  approval or a corrected browser result.
+
+## 2026-09-18 — Comments canonical provenance continuation
+
+- Read-only source analysis locates the restoration-identity loss between
+  public revert preparation and ordinary capture. Existing `afterPositions`
+  can carry known identities; contribution ownership and duplicate-origin
+  handling must remain correct. No new public primitive is justified yet.
+- The [partial outcome](review-records/2026-09-18-comments-canonical-provenance-analysis.json)
+  preserves the failed prototypes and the open scale/history gates. No fourth
+  candidate ran. A decision to extend the saved three-trial limit is pending.

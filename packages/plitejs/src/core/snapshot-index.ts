@@ -463,7 +463,7 @@ const compactMappingSegments = (
     const right = segments.pop() as StructuralSnapshotIndexMappingSegment;
     const left = segments.pop() as StructuralSnapshotIndexMappingSegment;
 
-    if (left.after.length !== right.before.length) {
+    if (left.after !== right.before) {
       throw new Error(
         `Snapshot index mappings are not sequential: previous target length ${left.after.length}, next source length ${right.before.length}.`
       );
@@ -1266,7 +1266,7 @@ export const mapSnapshotIndexThroughChange = (
   const previous = MAPPED_SNAPSHOT_INDEXES.get(index);
   const previousAfter = previous?.segments.at(-1)?.after;
 
-  if (previousAfter && previousAfter.length !== before.length) {
+  if (previousAfter && previousAfter !== before) {
     throw new Error(
       `Snapshot index mappings are not sequential: previous target length ${previousAfter.length}, next source length ${before.length}.`
     );
@@ -1695,7 +1695,9 @@ export const mapSnapshotIndexThroughChange = (
 /**
  * Advance lazy mapping provenance for a change that cannot move node paths.
  * The public index remains path-identical, while a later structural mapping
- * still starts from the exact current token document.
+ * still starts from the exact current token document. Linear edits retain the
+ * same index identity. A branch from an older shared snapshot gets a fresh
+ * lazy index from its exact source before the active branch advances again.
  */
 export const advancePathStableSnapshotIndex = (
   before: DocumentIndex,
@@ -1707,6 +1709,16 @@ export const advancePathStableSnapshotIndex = (
 ): SnapshotIndex => {
   assertMappingLengths(before, after, change);
 
+  const previous = MAPPED_SNAPSHOT_INDEXES.get(index);
+  const previousAfter = previous?.segments.at(-1)?.after;
+  const sourceIndex =
+    previousAfter && previousAfter !== before
+      ? buildSnapshotIndex(
+          editor,
+          before.value as unknown as readonly Descendant[]
+        )
+      : index;
+
   for (const candidate of runtimeCandidates ?? []) {
     const path = [...candidate.path] as Path;
 
@@ -1716,21 +1728,14 @@ export const advancePathStableSnapshotIndex = (
       );
     }
 
-    const nodeKey = index.keyAt(path);
+    const nodeKey = sourceIndex.keyAt(path);
 
     if (nodeKey) setNodeKey(candidate.node, editor, nodeKey);
   }
 
-  const previous = MAPPED_SNAPSHOT_INDEXES.get(index);
+  if (sourceIndex !== index) return sourceIndex;
 
   if (!previous) return index;
-  const previousAfter = previous.segments.at(-1)?.after;
-
-  if (previousAfter && previousAfter.length !== before.length) {
-    throw new Error(
-      `Snapshot index mappings are not sequential: previous target length ${previousAfter.length}, next source length ${before.length}.`
-    );
-  }
 
   const segment = createPathStableMappingSegment(before, after);
   const segments = compactMappingSegments(previous.segments, segment);

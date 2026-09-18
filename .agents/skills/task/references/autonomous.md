@@ -16,7 +16,7 @@ invoke another skill.
 | --- | --- |
 | PR, issue URL, public queue, security or heartbeat | Maintainer |
 | Current tree, post-merge, ready to commit or teammate branch | Task closure |
-| `regression <case|surface|corpus>` | Regression |
+| `patch <case>` / `patch corpus <surface or cases>` | Patch; corpus method only for explicit batch scope |
 | `benchmark`, `perf`, profiling or primary performance comparison | Benchmark |
 | One local behavior bug | Patch |
 | `architecture`, broad rearchitecture or an overall design challenge | [Architecture mode](./autonomous/architecture.md) |
@@ -45,7 +45,7 @@ ordinary routing uses the table above.
    method only when the checkpoint needs it. Do not run every row as a cycle.
 4. Inspect the resulting proof. Record the owner, failure or hypothesis,
    files/commands, evidence and `keep`, `revert` or `quarantine` decision once.
-   Link an existing Regression, Benchmark or research receipt instead of
+   Link an existing Patch corpus, Benchmark or research receipt instead of
    copying its ledger. Quarantined work is unfinished and stays outside the
    active runtime. Revert only the current run's unsuccessful changes.
 5. Reconcile outstanding obligations and continue. Reserve proof and cleanup
@@ -55,7 +55,7 @@ ordinary routing uses the table above.
 
 | Evidence gap | Owner and exit evidence |
 | --- | --- |
-| Incorrect local behavior | Patch; exact symptom and final replay, Regression for its explicit triggers |
+| Incorrect local behavior | Patch; exact symptom and final replay, corpus method for explicit batch scope |
 | Package, editor, visual or native input proof | Verify Plate; exact source/route/action, scoped result and surviving evidence |
 | Missing test value or reusable boundary helper | Testing; smallest worthwhile public-behavior proof |
 | Slow operation or unreliable metric | Benchmark; causal owner, comparable baseline/candidate, correctness and exact rerun |

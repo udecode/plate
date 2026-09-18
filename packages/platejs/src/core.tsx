@@ -4,14 +4,6 @@ export * from 'plitejs';
 
 export type { Editor } from './lib/editor/Editor';
 export type { EditorApplicationSchema } from './lib/editor/editorApplicationSchema';
-export {
-  defineDocumentMigrations,
-  migrateDocument,
-  type DocumentMigration,
-  type DocumentMigrationContext,
-  type DocumentMigrationResult,
-  type DocumentMigrations,
-} from './lib/editor/documentMigrations';
 export type {
   BasePluginInput,
   BlockInsertOptions,
@@ -58,7 +50,6 @@ export type {
   NodeStaticProps,
   PartialBasePlugin,
   PluginShortcutInput,
-  PrepareDocument,
   RenderStaticNodeWrapper,
   RenderStaticNodeWrapperFunction,
   RenderStaticNodeWrapperProps,

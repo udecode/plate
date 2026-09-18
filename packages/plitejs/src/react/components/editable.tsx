@@ -593,8 +593,11 @@ const offsetScrollRect = (
   top: rect.top - delta.top,
 });
 
-const canScrollAxis = (element: HTMLElement, axis: 'x' | 'y') => {
-  const style = element.ownerDocument.defaultView?.getComputedStyle(element);
+const canScrollAxis = (
+  element: HTMLElement,
+  style: CSSStyleDeclaration | undefined,
+  axis: 'x' | 'y'
+) => {
   const overflow =
     axis === 'y'
       ? `${style?.overflowY ?? ''} ${style?.overflow ?? ''}`
@@ -607,6 +610,16 @@ const canScrollAxis = (element: HTMLElement, axis: 'x' | 'y') => {
   return axis === 'y'
     ? element.scrollHeight > element.clientHeight
     : element.scrollWidth > element.clientWidth;
+};
+
+const resolveScrollPadding = (value: string | undefined, size: number) => {
+  const amount = Number.parseFloat(value ?? '');
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return 0;
+  }
+
+  return value?.trim().endsWith('%') ? (amount / 100) * size : amount;
 };
 
 const getComposedParentElement = (element: HTMLElement) => {
@@ -646,18 +659,31 @@ const scrollRectIntoViewIfNeeded = ({
     parent;
     parent = getComposedParentElement(parent)
   ) {
-    const canScrollY = canScrollAxis(parent, 'y');
-    const canScrollX = canScrollAxis(parent, 'x');
+    const style = parent.ownerDocument.defaultView?.getComputedStyle(parent);
+    const canScrollY = canScrollAxis(parent, style, 'y');
+    const canScrollX = canScrollAxis(parent, style, 'x');
 
     if (!canScrollY && !canScrollX) {
       continue;
     }
 
     const parentRect = parent.getBoundingClientRect();
-    const topEdge = parentRect.top + SCROLL_VISIBILITY_MARGIN;
-    const bottomEdge = parentRect.bottom - SCROLL_VISIBILITY_MARGIN;
-    const leftEdge = parentRect.left + SCROLL_VISIBILITY_MARGIN;
-    const rightEdge = parentRect.right - SCROLL_VISIBILITY_MARGIN;
+    const topEdge =
+      parentRect.top +
+      resolveScrollPadding(style?.scrollPaddingTop, parentRect.height) +
+      SCROLL_VISIBILITY_MARGIN;
+    const bottomEdge =
+      parentRect.bottom -
+      resolveScrollPadding(style?.scrollPaddingBottom, parentRect.height) -
+      SCROLL_VISIBILITY_MARGIN;
+    const leftEdge =
+      parentRect.left +
+      resolveScrollPadding(style?.scrollPaddingLeft, parentRect.width) +
+      SCROLL_VISIBILITY_MARGIN;
+    const rightEdge =
+      parentRect.right -
+      resolveScrollPadding(style?.scrollPaddingRight, parentRect.width) -
+      SCROLL_VISIBILITY_MARGIN;
     const nextTop =
       canScrollY && currentRect.top < topEdge
         ? currentRect.top - topEdge
@@ -693,11 +719,31 @@ const scrollRectIntoViewIfNeeded = ({
     return;
   }
 
-  const topEdge = SCROLL_VISIBILITY_MARGIN;
-  const bottomEdge = window.innerHeight - SCROLL_VISIBILITY_MARGIN;
-  const leftEdge = SCROLL_VISIBILITY_MARGIN;
-  const rightEdge = window.innerWidth - SCROLL_VISIBILITY_MARGIN;
   const { scrollingElement } = window.document;
+  const scrollingStyle =
+    scrollingElement instanceof window.HTMLElement
+      ? window.getComputedStyle(scrollingElement)
+      : undefined;
+  const topEdge =
+    resolveScrollPadding(scrollingStyle?.scrollPaddingTop, window.innerHeight) +
+    SCROLL_VISIBILITY_MARGIN;
+  const bottomEdge =
+    window.innerHeight -
+    resolveScrollPadding(
+      scrollingStyle?.scrollPaddingBottom,
+      window.innerHeight
+    ) -
+    SCROLL_VISIBILITY_MARGIN;
+  const leftEdge =
+    resolveScrollPadding(scrollingStyle?.scrollPaddingLeft, window.innerWidth) +
+    SCROLL_VISIBILITY_MARGIN;
+  const rightEdge =
+    window.innerWidth -
+    resolveScrollPadding(
+      scrollingStyle?.scrollPaddingRight,
+      window.innerWidth
+    ) -
+    SCROLL_VISIBILITY_MARGIN;
   const canScrollWindowY = scrollingElement
     ? scrollingElement.scrollHeight > scrollingElement.clientHeight
     : window.document.documentElement.scrollHeight > window.innerHeight;

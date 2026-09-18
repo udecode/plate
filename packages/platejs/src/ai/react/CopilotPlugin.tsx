@@ -419,7 +419,7 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
       }
       return undefined;
     };
-    async function triggerImmediately() {
+    async function triggerImmediately(commandEditor: MarkdownEditor<Editor>) {
       const { completeOptions, getPrompt, isLoading, triggerQuery } =
         context.store.get();
       const aiChat = context.editor.plugin(AIChatPlugin);
@@ -432,12 +432,12 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
         isLoading ||
         chatStatus === 'submitted' ||
         chatStatus === 'streaming' ||
-        !triggerQuery?.({ editor: context.editor })
+        !triggerQuery?.({ editor: commandEditor })
       ) {
         return false;
       }
 
-      const prompt = getPrompt?.({ editor: context.editor });
+      const prompt = getPrompt?.({ editor: commandEditor });
 
       if (!prompt) return false;
 
@@ -452,6 +452,9 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
       }
 
       stop();
+
+      const block = commandEditor.read.nodes.block();
+      const blockKey = block ? commandEditor.key(block[1]) : null;
 
       const { headers } = completeOptions;
       const isHeaderTupleList = (
@@ -475,7 +478,10 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
           completeOptions.onError?.(error);
         },
         onFinish: (sourcePrompt, completion) => {
-          context.update.setBlockSuggestion({ text: completion });
+          context.update.setBlockSuggestion({
+            key: blockKey,
+            text: completion,
+          });
           completeOptions.onFinish?.(sourcePrompt, completion);
         },
       });
@@ -516,9 +522,10 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
           return children;
         },
       },
-      api: () => ({
+      api: ({ editor }) => ({
         stop,
-        triggerSuggestion: () => (debouncedTrigger ?? triggerImmediately)(),
+        triggerSuggestion: () =>
+          (debouncedTrigger ?? triggerImmediately)(editor),
       }),
     };
   })

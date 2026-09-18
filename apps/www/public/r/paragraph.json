@@ -3,7 +3,10 @@
   "name": "paragraph",
   "title": "Paragraph",
   "description": "A paragraph block with background color support.",
-  "dependencies": [],
+  "dependencies": [
+    "diff-match-patch-ts@^0.6.0",
+    "platejs"
+  ],
   "registryDependencies": [],
   "files": [
     {

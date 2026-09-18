@@ -125,7 +125,7 @@ describe('collab remote selection stress contract', () => {
     );
     assertLastRemoteCommit(editor);
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       0
     );
 
@@ -133,7 +133,7 @@ describe('collab remote selection stress contract', () => {
 
     assert.equal(editorString(editor, [0]).endsWith('one!'), true);
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       1
     );
   });
@@ -208,7 +208,7 @@ describe('collab remote selection stress contract', () => {
     assert.deepEqual(editorGetSnapshot(editor).selection, collapsed([0, 0], 3));
     assertLastRemoteCommit(editor);
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       0
     );
 
@@ -218,7 +218,7 @@ describe('collab remote selection stress contract', () => {
 
     assert.equal(editorString(editor, [0]), 'one!');
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       1
     );
   });

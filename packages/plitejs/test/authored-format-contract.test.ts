@@ -4,8 +4,10 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   createEditorView,
+  defineEditorSchema,
   DocumentChange,
   NodeApi,
+  schema,
 } from 'plitejs';
 import {
   authored,
@@ -17,6 +19,14 @@ import {
   serializeAuthoredJson,
   type AuthoredFormatSegment,
 } from 'plitejs/authored';
+
+import {
+  admitAuthoredReviewDocument,
+  createAuthoredReviewCheckpoint,
+} from '../src/authored/checkpoint';
+import { records } from '../src/authored/record-tree';
+import { createDetachedEditorSchema } from '../src/core/editor-schema';
+import { getCompiledEditorSchema } from '../src/core/plugin-registry';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -150,6 +160,140 @@ describe('authored format snapshot', () => {
         authored: { intent: 'propose', projection: 'proposed' },
       }).read.children(),
       [paragraph('Base one two')]
+    );
+  });
+
+  it('constructs exact imported identities directly and admits the checkpoint', () => {
+    const accepted = { children: [paragraph('Base')] };
+    const first = { children: [paragraph('Base one')] };
+    const second = { children: [paragraph('Base one two')] };
+    const revisions = [
+      {
+        authorId: 'Alice',
+        change: DocumentChange.between(accepted, first),
+        createdAt: 1_700_000_000_000,
+        id: 'word-7',
+      },
+      {
+        authorId: 'Bob',
+        change: DocumentChange.between(first, second),
+        createdAt: 1_700_000_001_000,
+        id: 'word-9',
+      },
+    ];
+    const checked: unknown[] = [];
+    const checkpoint = createAuthoredReviewCheckpoint({
+      accepted,
+      assertTarget: (document) => checked.push(document),
+      documentId: 'document-fixture',
+      replica: 'import-fixture',
+      revisions,
+    });
+    const admitted = admitAuthoredReviewDocument(checkpoint, {
+      assertTarget: (document) => checked.push(document),
+    });
+    const operations = [...records(admitted.state.operations)].map(
+      ([id, operation]) => ({
+        authorId: operation.authorId,
+        changeId: operation.kind === 'edit' ? operation.changeId : undefined,
+        id,
+        time: operation.time,
+      })
+    );
+
+    assert.deepEqual(operations, [
+      {
+        authorId: 'Alice',
+        changeId: 'word-7',
+        id: 'import-fixture:1',
+        time: 1_700_000_000_000,
+      },
+      {
+        authorId: 'Bob',
+        changeId: 'word-9',
+        id: 'import-fixture:2',
+        time: 1_700_000_001_000,
+      },
+    ]);
+    assert.deepEqual(
+      admitted.changes.map(({ authorId, createdAt, id }) => ({
+        authorId,
+        createdAt,
+        id,
+      })),
+      [
+        { authorId: 'Alice', createdAt: 1_700_000_000_000, id: 'word-7' },
+        { authorId: 'Bob', createdAt: 1_700_000_001_000, id: 'word-9' },
+      ]
+    );
+    assert.deepEqual(admitted.accepted, accepted);
+    assert.deepEqual(admitted.proposed, second);
+    assert.equal(checked.length, 5);
+    assert.ok(Object.isFrozen(checkpoint));
+    assert.ok(Object.isFrozen(admitted.document));
+  });
+
+  it('rejects a codec-valid checkpoint attached to contradictory content', () => {
+    const accepted = { children: [paragraph('Base')] };
+    const proposed = { children: [paragraph('Base one')] };
+    const checkpoint = createAuthoredReviewCheckpoint({
+      accepted,
+      documentId: 'document-fixture',
+      replica: 'import-fixture',
+      revisions: [
+        {
+          authorId: 'Alice',
+          change: DocumentChange.between(accepted, proposed),
+          createdAt: 1_700_000_000_000,
+          id: 'word-7',
+        },
+      ],
+    });
+    const contradictory = JSON.parse(JSON.stringify(checkpoint));
+
+    contradictory.children = [paragraph('Bose')];
+
+    assert.throws(
+      () => admitAuthoredReviewDocument(contradictory),
+      /shared-origin text contradicts accepted content/
+    );
+  });
+
+  it('validates every constructed projection with detached schema authority', () => {
+    const ParagraphSchema = defineEditorSchema('schema:authored-import', {
+      elements: { paragraph: schema.element.textBlock() },
+      id: 'authored-import',
+      root: schema.content.type('paragraph', { min: 1 }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const accepted = { children: [paragraph('Base')] };
+    const compiler = createEditor({
+      initialValue: accepted,
+      plugins: [ParagraphSchema],
+    });
+    const detached = createDetachedEditorSchema(
+      getCompiledEditorSchema(compiler)
+    );
+    const invalid = {
+      children: [{ children: [{ text: 'Base one' }], type: 'quote' }],
+    };
+
+    assert.throws(() =>
+      createAuthoredReviewCheckpoint({
+        accepted,
+        documentId: 'document-fixture',
+        replica: 'import-fixture',
+        revisions: [
+          {
+            authorId: 'Alice',
+            change: DocumentChange.between(accepted, invalid),
+            createdAt: 1_700_000_000_000,
+            id: 'word-7',
+          },
+        ],
+        schema: detached,
+      })
     );
   });
 

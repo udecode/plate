@@ -91,7 +91,7 @@ it('initializes independent authored views and preserves their mode across paren
   await act(async () => mounted.rerender(tree('markup')));
   expect(views.get('proposal')).toBe(first);
   expect(first.plugin(SuggestionPlugin).read.mode()).toBe('editing');
-  expect(mounted.getByTestId('proposal')).toHaveTextContent('Base proposal');
+  expect(mounted.getByTestId('proposal').textContent).toBe('Base proposal');
 
   await act(async () => mounted.rerender(tree('proposed')));
   expect(views.get('proposal')).toBe(first);
@@ -100,6 +100,38 @@ it('initializes independent authored views and preserves their mode across paren
   expect(second.plugin(SuggestionPlugin).read.mode()).toBe('editing');
   expect(editor.plugin(SuggestionPlugin).read.mode()).toBe('editing');
   expect(editor.read.value()).toEqual(document);
+  mounted.unmount();
+});
+
+it('decorates pending changes on a client-mounted editing markup view', async () => {
+  const editor = createEditor({
+    initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+    plugins: [SuggestionPlugin],
+    userId: 'alice',
+  });
+  let changeId = '';
+
+  editor.update((tx) => {
+    changeId = tx.authored.propose();
+    tx.text.insert(' proposal', { at: { offset: 4, path: [0, 0] } });
+  });
+  const mounted = render(
+    <EditorRoot
+      editor={editor}
+      authored={{ intent: 'edit', projection: 'markup' }}
+      suppressInstanceWarning
+    >
+      <EditorContent data-testid="editing-markup" />
+    </EditorRoot>
+  );
+  const root = mounted.getByTestId('editing-markup');
+
+  await waitFor(() => {
+    expect(
+      root.querySelector(`[data-editor-authored-change="${changeId}"]`)
+    ).not.toBeNull();
+  });
+  expect(root).toHaveTextContent('Base proposal');
   mounted.unmount();
 });
 
@@ -258,7 +290,7 @@ it.each(['accept', 'reject'] as const)(
     expect(editor.read.children()).toEqual([value[0], value[2]]);
     expect(editor.read.value().children).toEqual(value);
 
-    await act(async () => editor.update.history.undo());
+    await act(async () => editor.api.history.undo());
     expect(mounted.getByTestId('retained-block')).not.toHaveAttribute(
       'data-editor-retained'
     );
@@ -266,7 +298,7 @@ it.each(['accept', 'reject'] as const)(
       'data-read-only',
       'false'
     );
-    await act(async () => editor.update.history.redo());
+    await act(async () => editor.api.history.redo());
     expect(mounted.getByTestId('retained-block')).toHaveAttribute(
       'data-editor-retained'
     );

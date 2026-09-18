@@ -1,7 +1,7 @@
 ---
 title: External text ownership
 type: decision
-status: proposed
+status: accepted
 updated: 2026-09-15
 review_scope: external-text
 current_review: 2026-09-15-external-text-ordered-feedback
@@ -18,21 +18,23 @@ related:
 
 # External text ownership
 
-**Pursue removing deferred canonical feedback from the CodeMirror adapter and
-make external-text delivery monotonic under callback failure.**
+**Canonical feedback is synchronous and ordered at CodeMirror's dispatch
+boundary; external-text delivery is monotonic under callback failure.**
 The public slot and narrow versioned protocol survive this review. A mounted
 reproduction leaves CodeMirror displaying `agoodd` while Plite's canonical text
 is `Ragood`. Changing public names, exposing the editor to adapters, or adding
 another text store would leave the demonstrated ordering problem intact.
 
-Status: Audit and subsequent design plan complete. Product adoption is planned;
-implementation and its package/native proof remain open. The original audit
-record is immutable; the follow-up evidence below belongs to the Task plan.
+Status: Product target adopted. Scope-owned package, browser-matrix and scale
+proof passes. Repository-wide browser closure remains partial because committed
+huge-document and plaintext selection tests fail outside this scope. The
+original audit record is immutable; implementation evidence belongs to the Task
+plan and its receipt.
 
 ## Design follow-up
 
-The [completed design plan](../../plans/2026-09-15-external-text-ordered-feedback.md)
-selects CodeMirror's existing `dispatchTransactions` boundary. Apply the local
+The [executed design plan](../../plans/2026-09-15-external-text-ordered-feedback.md)
+uses CodeMirror's existing `dispatchTransactions` boundary. Apply the local
 batch, finish observer notification, then publish one composed canonical action.
 Delete queued canonical feedback and rejection resets. Canonical transactions
 bypass local filters and apply synchronously. Keep the public slot/protocol.
@@ -52,16 +54,16 @@ Transaction filters and normal commands retain their editing jobs. The callback
 restriction and programmatic exception propagation require explicit lifecycle
 documentation during adoption.
 
-The final two-owner candidate passes 23 focused cases, including both mounted
-Plite canonical-reentry timings, and the transformed runtime passes its full
-58-test external-text contract suite. Its source-built Chromium owner
-probe passes the frozen comparison across 1,000 / 100,000 / 1,000,000 code units
-and four shared views: 480 measured operations, 400 stable input snapshots,
-no candidate feedback microtasks, no material regression or noise flags.
-This covers programmatic adapter work, not native input, syntax loading or paint.
-The live Plite external-text suite passes 58/58 after an independently changed
-fixture separates Alice's deletion from Bob's insertion. This task did not make
-that fixture change; authored stale-selection validation remains correct.
+The adopted source passes 19 CodeMirror tests / 57 assertions, the 62-test
+external-text contract suite, the 88-file / 1,278-test React partition, 8 www
+CodeMirror/mixed-view cases and the selected Plite browser owners across
+Chromium, Firefox, WebKit and mobile. The fresh paired Chromium probe passes the
+frozen comparison across 1,000 / 100,000 / 1,000,000 code units and four shared
+views: 480 measured operations, 394 stable input snapshots, no adopted feedback
+microtasks, and no correctness, page, noise or regression failure. The strict
+repository gate passes packages, types, contracts, builds and public
+declarations before stopping on unrelated native selection tests. Physical IME,
+assistive technology and keyboard-to-paint latency remain outside the claim.
 
 See the [evidence receipt](../../plans/artifacts/2026-09-15-external-text-plan/proof.md)
 for rejected candidates, the earlier inconclusive scale packet and replay
@@ -155,7 +157,7 @@ CodeMirror edit → adapter → Plite transaction/corrections
 At audit time, the first design question was whether synchronous feedback within
 the listener or publication from CodeMirror's `dispatchTransactions` boundary
 best preserved that order. The follow-up plan above resolves the bounded
-correctness/scale comparison; adopted-source native proof remains required.
+correctness/scale comparison; adopted-source native proof was still required.
 
 ## Complete bounded audit
 
@@ -208,19 +210,16 @@ was sequential; no independent reviewer was available in this runtime.
   The queued-feedback defect is new evidence in the first dedicated
   `external-text` review. Existing `native` Stop reasoning also remains valid.
 
-Next owner: **Task implementation of the completed plan**. Start with the
-existing CodeMirror adapter and finish lifecycle teaching, package checks and
-native/scale acceptance. The neutral Plite protocol keeps its current shape.
+No external-text implementation owner remains. The neutral Plite protocol keeps
+its current public shape. The separately owned native selection failures must be
+repaired before the repository-wide strict/browser-matrix closure can be
+promoted from partial proof.
 
-```text
-$task execute docs/plans/2026-09-15-external-text-ordered-feedback.md
-```
-
-Required doctrine follow-up is recorded in the plan: clarify synchronous
-feedback/ordering, filter authority and the extension callback contract; apply
-Best API doctrine repair and the required Plate Next version to the changed
-reusable teaching. The audit and planning pass change no product API, public
-documentation or durable product law themselves.
+The doctrine follow-up is complete: synchronous feedback/ordering, filter
+authority and the lifecycle callback contract are current in source teaching,
+Best API doctrine, Plite Vision and Plate Next version 199. Generated mirrors
+were regenerated through `pnpm install` and validated through their source
+owners.
 
 ## Audit acceptance
 

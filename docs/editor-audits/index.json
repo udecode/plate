@@ -5,7 +5,14 @@
       "id": "rendering-api-editor-audit-2026-09-01",
       "artifactVersion": 1,
       "target": "rendering-api",
-      "artifact": "docs/plans/artifacts/rendering-api-editor-audit/audit-report.md",
+      "artifact": "docs/editor-audits/reports/rendering-api-editor-audit-2026-09-01.md",
+      "summaryVersion": 1,
+      "sourceArtifact": {
+        "path": "docs/plans/artifacts/rendering-api-editor-audit/audit-report.md",
+        "sha256": "130db045e75c69d7ee87e06daa8c9ebed18cabff8eb4469442491fe6fb4c5686",
+        "preservedAt": "2026-09-18",
+        "availability": "ignored-local-artifact; may be absent in another checkout"
+      },
       "references": [
         {
           "id": "prosemirror",
@@ -280,7 +287,14 @@
       "id": "slate-regression-proof-2026-08-14",
       "artifactVersion": 2,
       "target": "regression-proof",
-      "artifact": "docs/plans/artifacts/slate-regression-proof-audit/audit-report.md",
+      "artifact": "docs/editor-audits/reports/slate-regression-proof-2026-08-14.md",
+      "summaryVersion": 1,
+      "sourceArtifact": {
+        "path": "docs/plans/artifacts/slate-regression-proof-audit/audit-report.md",
+        "sha256": "1dee0158e2218bf84ab059df6fca385e6b1ccbe3c1f7d17ad147373a85c33344",
+        "preservedAt": "2026-09-18",
+        "availability": "ignored-local-artifact; may be absent in another checkout"
+      },
       "references": [
         {
           "repoKey": "github.com/ianstormtaylor/slate",
@@ -451,7 +465,14 @@
       "id": "wordgard-latest-diff-2026-09-02",
       "artifactVersion": 1,
       "target": "diff:c715d4ded8fc780f52c13206e589ea31e4148dd4..b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54",
-      "artifact": "docs/plans/artifacts/wordgard-latest-diff-audit/audit-report.md",
+      "artifact": "docs/editor-audits/reports/wordgard-latest-diff-2026-09-02.md",
+      "summaryVersion": 1,
+      "sourceArtifact": {
+        "path": "docs/plans/artifacts/wordgard-latest-diff-audit/audit-report.md",
+        "sha256": "bfb8a46ccce9fab9c9e16b37554ff79722f3a1ec221d4f9b95a87e89b8685808",
+        "preservedAt": "2026-09-18",
+        "availability": "ignored-local-artifact; may be absent in another checkout"
+      },
       "references": [
         {
           "repoKey": "code.haverbeke.berlin/wordgard/wordgard",
@@ -751,7 +772,14 @@
       "id": "wordgard-full-strict",
       "artifactVersion": 1,
       "target": "wordgard-full-source",
-      "artifact": "docs/plans/artifacts/wordgard-full-strict-editor-audit/audit-report.md",
+      "artifact": "docs/editor-audits/reports/wordgard-full-strict.md",
+      "summaryVersion": 1,
+      "sourceArtifact": {
+        "path": "docs/plans/artifacts/wordgard-full-strict-editor-audit/audit-report.md",
+        "sha256": "e7e3715da9ccfc33df2dea2770159666c3bddf5ff1879e8ef10183fe096b7760",
+        "preservedAt": "2026-09-18",
+        "availability": "ignored-local-artifact; may be absent in another checkout"
+      },
       "references": [
         {
           "repoKey": "code.haverbeke.berlin/wordgard/wordgard",
@@ -1227,7 +1255,14 @@
       "id": "multi-editor-focus-api-review-2026-09-08",
       "artifactVersion": 1,
       "target": "multi-editor-focus-controller-api",
-      "artifact": "docs/plans/artifacts/multi-editor-architecture-review/report.md",
+      "artifact": "docs/editor-audits/reports/multi-editor-focus-api-review-2026-09-08.md",
+      "summaryVersion": 1,
+      "sourceArtifact": {
+        "path": "docs/plans/artifacts/multi-editor-architecture-review/report.md",
+        "sha256": "8420e7070a098d6c1306b505b257c1d72292bf5668f69de1fa2a966739fa1fd3",
+        "preservedAt": "2026-09-18",
+        "availability": "ignored-local-artifact; may be absent in another checkout"
+      },
       "scope": "13 named mechanisms; bounded source comparison, not global superiority",
       "references": [
         {
@@ -1314,7 +1349,14 @@
       "id": "editor-performance-research-iteration-2-2026-09-09",
       "artifactVersion": 1,
       "target": "experimental-performance-and-architecture",
-      "artifact": "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/report.md",
+      "artifact": "docs/editor-audits/reports/editor-performance-research-iteration-2-2026-09-09.md",
+      "summaryVersion": 1,
+      "sourceArtifact": {
+        "path": "docs/plans/artifacts/2026-09-09-editor-performance-research-iteration-2/report.md",
+        "sha256": "8b1ec10db3f199b60b56ecebead7ee51faa6b15824fde652032e4940b0ca8965",
+        "preservedAt": "2026-09-18",
+        "availability": "ignored-local-artifact; may be absent in another checkout"
+      },
       "qualification": "Research coverage and strict matrix integrity; 96 insufficient-evidence comparison rows per named reference. Does not certify global architectural or performance superiority.",
       "references": [
         {

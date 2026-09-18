@@ -226,7 +226,7 @@ it.each([false, true])(
       });
     }
     expect(editor.read.lastCommit()?.version).toBe(version + 1);
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.children()).toEqual(previous);
   }
 );

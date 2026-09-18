@@ -17,6 +17,16 @@ const packageJson = createRequire(import.meta.url)('../package.json') as {
   version: string;
 };
 const displayPath = (path: string) => relative(process.cwd(), path) || '.';
+const parseMigrationSource = (value: string): number | 'current' => {
+  if (value === 'current') return value;
+  const version = Number(value);
+
+  if (!Number.isSafeInteger(version) || version < 1) {
+    throw new Error('--from must be a positive schema version or "current".');
+  }
+
+  return version;
+};
 
 const program = new Command()
   .name('plate')
@@ -133,6 +143,11 @@ migrateCommand
   .argument('[files...]', 'JSON document files', [])
   .option('--entry <path>', 'editor module file', DEFAULT_ENTRY)
   .option('--check', 'exit nonzero when files require migration')
+  .option(
+    '--from <version>',
+    'source version for raw documents, or "current"',
+    parseMigrationSource
+  )
   .option('--stdin', 'read one JSON document from standard input')
   .option('--write', 'atomically replace changed files')
   .action(
@@ -141,6 +156,7 @@ migrateCommand
       options: Readonly<{
         check?: boolean;
         entry: string;
+        from?: number | 'current';
         stdin?: boolean;
         write?: boolean;
       }>

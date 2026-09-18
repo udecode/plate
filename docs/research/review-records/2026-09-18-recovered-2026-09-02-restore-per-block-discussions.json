@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-09-02-restore-per-block-discussions",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "comments"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-02-restore-per-block-discussions.md",
+    "sha256": "cb5a053ce9ce80fdf55ea43740c35d5bb8cfc335abf50e9b9fefde8e6777de10"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. complete The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-02-restore-per-block-discussions.md",
+        "sha256": "cb5a053ce9ce80fdf55ea43740c35d5bb8cfc335abf50e9b9fefde8e6777de10",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-02-restore-per-block-discussions.md"
+  ]
+}

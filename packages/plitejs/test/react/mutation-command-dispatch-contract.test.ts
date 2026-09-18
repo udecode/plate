@@ -1,5 +1,13 @@
-import { definePlugin, editorCommands } from 'plitejs';
+import {
+  createEditorView,
+  definePlugin,
+  editorCommands,
+  type Value,
+} from 'plitejs';
+import { authored } from 'plitejs/authored';
+import { domCommands } from 'plitejs/dom';
 
+import { isInTransaction } from '../../src/core/public-state';
 import { replace as editorReplace } from '../../src/internal';
 import {
   applyEditableCommand,
@@ -7,6 +15,7 @@ import {
   applyModelOwnedLineBreak,
   applyModelOwnedTextInput,
 } from '../../src/react/editable/mutation-controller';
+import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
 import { createEditor } from '../../src/react/plugin/with-react';
 
 const createCommandProbeEditor = () => {
@@ -105,6 +114,58 @@ test('React user actions dispatch through semantic editor commands', () => {
     'fragment.delete:forward',
   ]);
   expect(editor.read.lastCommit()?.tags).toContain('semantic-command');
+});
+
+test('model-owned paste evaluates against the authored mutation projection', () => {
+  let isPasteUpdateActive = () => false;
+  let evaluatedInsideUpdate = false;
+  const paste = definePlugin('authored-paste-probe', {
+    commands: ({ handle }) => [
+      handle(domCommands.insertData, ({ state }) => {
+        evaluatedInsideUpdate = isPasteUpdateActive();
+
+        return state.transaction((tx) => {
+          tx.nodes.insert(
+            [{ type: 'paragraph', children: [{ text: 'Pasted' }] }],
+            { at: [1] }
+          );
+        });
+      }),
+    ],
+  });
+  const initialValue: Value = [
+    { type: 'paragraph', children: [{ text: 'Base' }] },
+  ];
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' }), paste],
+    initialValue,
+  });
+  isPasteUpdateActive = () => isInTransaction(source);
+  const view = createReactRuntimeViewEditor(
+    createEditorView(source, {
+      authored: { intent: 'propose', projection: 'markup' },
+    })
+  );
+
+  view.update.nodes.insert(
+    [{ type: 'paragraph', children: [{ text: 'Alice' }] }],
+    { at: [1] }
+  );
+
+  expect(
+    applyEditableCommand({
+      command: { data: {} as DataTransfer, kind: 'insert-data' },
+      editor: view,
+    })
+  ).toBe(true);
+  expect(evaluatedInsideUpdate).toBe(true);
+
+  view.api.authored.setView({ intent: 'propose', projection: 'proposed' });
+  expect(view.read.children().map((node) => node.children)).toEqual([
+    [{ text: 'Base' }],
+    [{ text: 'Pasted' }],
+    [{ text: 'Alice' }],
+  ]);
 });
 
 test('React selection actions dispatch through semantic editor commands', () => {

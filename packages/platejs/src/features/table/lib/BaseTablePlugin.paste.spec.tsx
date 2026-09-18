@@ -5,10 +5,20 @@ import assert from 'node:assert/strict';
 
 import * as Y from 'yjs';
 
-import { jsxt, type TestEditor } from '#platejs-test-internal';
+import {
+  getEditorLiveSelection,
+  jsxt,
+  type TestEditor,
+} from '#platejs-test-internal';
 
-import type { Element, Value } from '../../../core';
-import { ElementIdPlugin, NodeApi } from '../../../core';
+import { DefaultAuthoredPlugin } from '../../../authored';
+import type { BasePluginInput, Element, Value } from '../../../core';
+import {
+  ContentSlice,
+  createEditorView,
+  ElementIdPlugin,
+  NodeApi,
+} from '../../../core';
 import type { Editor } from '../../../react/core';
 import { YjsPlugin } from '../../../yjs/react';
 import {
@@ -30,7 +40,10 @@ const tableText = (editor: Editor & { read: { children: () => Value } }) => {
   );
 };
 
-const createTarget = () => {
+const createTarget = (
+  plugins: readonly BasePluginInput[] = getTestTablePlugins(),
+  userId?: string
+) => {
   const input = (
     <editor>
       <htable>
@@ -59,9 +72,10 @@ const createTarget = () => {
   ) as TestEditor;
 
   return createTestTableEditor({
-    plugins: getTestTablePlugins(),
+    plugins,
     selection: input.selection,
     initialValue: input.children,
+    userId,
   });
 };
 
@@ -84,23 +98,73 @@ describe('BaseTablePlugin prepared paste', () => {
       </fragment>
     ) as Element[];
 
-    expect(editor.read.history.undos()).toHaveLength(0);
+    expect(editor.read.history().undos).toHaveLength(0);
     expect(editor.update.fragment.replace(source)).toBe(true);
-    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history().undos).toHaveLength(1);
     expect(tableText(editor)).toEqual([
       ['x', 'y'],
       ['x', 'y'],
     ]);
 
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.value()).toEqual(before);
 
-    editor.update.history.redo();
+    editor.api.history.redo();
     expect(tableText(editor)).toEqual([
       ['x', 'y'],
       ['x', 'y'],
     ]);
-    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history().undos).toHaveLength(1);
+  });
+
+  it('undoes and redoes edge expansion in an authored markup view', () => {
+    const model = createTarget(
+      [DefaultAuthoredPlugin, ...getTestTablePlugins()],
+      'alice'
+    );
+    model.update.selection.set({
+      anchor: { offset: 1, path: [0, 1, 1, 0, 0] },
+      focus: { offset: 1, path: [0, 1, 1, 0, 0] },
+      kind: 'text',
+    });
+    const editor = createEditorView(model, {
+      authored: { intent: 'edit', projection: 'markup' },
+    });
+    const source = (
+      <fragment>
+        <htable>
+          <htr>
+            <htd>
+              <hp>x</hp>
+            </htd>
+            <htd>
+              <hp>y</hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>z</hp>
+            </htd>
+            <htd>
+              <hp>w</hp>
+            </htd>
+          </htr>
+        </htable>
+      </fragment>
+    ) as Element[];
+
+    const before = structuredClone(editor.read.children());
+
+    expect(editor.update.fragment.replace(source)).toBe(true);
+    const after = structuredClone(editor.read.children());
+
+    expect(after).not.toEqual(before);
+    expect(editor.read.history().undos).toHaveLength(1);
+
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.read.children()).toEqual(before);
+    expect(editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(editor.read.children()).toEqual(after);
   });
 
   it('gives an exact model slice precedence over conflicting HTML and text', () => {
@@ -132,7 +196,9 @@ describe('BaseTablePlugin prepared paste', () => {
     const target = createTarget();
     const data = new DataTransfer();
 
-    expect(source.plugin(BaseTablePlugin).api.writeSelection(data)).toBe(true);
+    source.api.dom.clipboard.writeSlice(data, {
+      slice: source.read.slice.export(),
+    });
     data.setData(
       'text/html',
       '<table><tbody><tr><td>html-a</td><td>html-b</td></tr></tbody></table>'
@@ -181,13 +247,13 @@ describe('BaseTablePlugin prepared paste', () => {
       );
 
       expect(
-        editor.plugin(BaseTablePlugin).read.selection()?.anchors.length
+        editor.plugin(BaseTablePlugin).read.selection()?.cells.length
       ).toBeGreaterThan(1);
       expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
       unsubscribe();
 
       expect(editor.read.value()).toEqual(before);
-      expect(editor.read.history.undos()).toHaveLength(0);
+      expect(editor.read.history().undos).toHaveLength(0);
       expect(commits).toHaveLength(0);
     }
   );
@@ -216,15 +282,15 @@ describe('BaseTablePlugin prepared paste', () => {
     data.setData('application/x-editor-fragment', 'not-valid-base64');
     data.setData('text/plain', 'plain fallback');
 
-    expect(
-      editor.plugin(BaseTablePlugin).read.selection()?.anchors.length
-    ).toBe(1);
+    expect(editor.plugin(BaseTablePlugin).read.selection()?.cells.length).toBe(
+      1
+    );
     expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
     expect(tableText(editor)).toEqual([['plain fallbacka']]);
-    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history().undos).toHaveLength(1);
   });
 
-  it('consumes a recognized invalid table without partial publication', () => {
+  it('rejects a recognized invalid table without partial publication', () => {
     const editor = createTarget();
     const before = editor.read.value();
     const commits: unknown[] = [];
@@ -236,12 +302,142 @@ describe('BaseTablePlugin prepared paste', () => {
       editor.update.fragment.replace([
         { children: [], type: 'table' },
       ] as Element[])
-    ).toBe(true);
+    ).toBe(false);
     unsubscribe();
 
     expect(editor.read.value()).toEqual(before);
-    expect(editor.read.history.undos()).toHaveLength(0);
+    expect(editor.read.history().undos).toHaveLength(0);
     expect(commits).toHaveLength(0);
+  });
+
+  it.each([
+    {
+      name: 'a source that cannot tile the selected rectangle exactly',
+      input: (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
+              <htd>
+                <hp>c</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>d</hp>
+              </htd>
+              <htd>
+                <hp>e</hp>
+              </htd>
+              <htd>
+                <hp>f</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor,
+      paths: [
+        [0, 0, 0],
+        [0, 0, 1],
+        [0, 0, 2],
+        [0, 1, 0],
+        [0, 1, 1],
+        [0, 1, 2],
+      ],
+      source: (
+        <fragment>
+          <htable>
+            <htr>
+              <htd>
+                <hp>x</hp>
+              </htd>
+              <htd>
+                <hp>y</hp>
+              </htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as Element[],
+    },
+    {
+      name: 'a paste rectangle that only partly intersects a merged cell',
+      input: (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>a</hp>
+              </htd>
+              <htd>
+                <hp>b</hp>
+              </htd>
+              <htd>
+                <hp>c</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>d</hp>
+              </htd>
+              <htd colSpan={2}>
+                <hp>merged</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor,
+      paths: [[0, 0, 1]],
+      source: (
+        <fragment>
+          <htable>
+            <htr>
+              <htd>
+                <hp>x</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>y</hp>
+              </htd>
+            </htr>
+          </htable>
+        </fragment>
+      ) as Element[],
+    },
+  ])('rejects $name atomically', ({ input, paths, source }) => {
+    const editor = createTestTableEditor({
+      plugins: getTestTablePlugins(),
+      initialValue: input.children,
+    });
+    editor.update.selection.setNodes(paths);
+    const before = editor.read.value();
+    const selection = getEditorLiveSelection(editor);
+    const history = editor.read.history();
+    const tableKey = editor.key([0]);
+    const cellKeys = paths.map((path) => editor.key(path));
+    let commits = 0;
+    const unsubscribe = editor.subscribeCommit(() => {
+      commits += 1;
+    });
+
+    expect(
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({ content: source, openEnd: 0, openStart: 0 })
+      )
+    ).toBe(false);
+    unsubscribe();
+
+    expect(editor.read.value()).toEqual(before);
+    expect(getEditorLiveSelection(editor)).toEqual(selection);
+    expect(editor.read.history()).toEqual(history);
+    expect(editor.key([0])).toBe(tableKey);
+    expect(paths.map((path) => editor.key(path))).toEqual(cellKeys);
+    expect(commits).toBe(0);
   });
 
   it('publishes one canonical Yjs update and exact replay', () => {

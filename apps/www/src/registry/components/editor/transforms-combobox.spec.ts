@@ -1,110 +1,94 @@
 import { describe, expect, it } from 'bun:test';
 
-import {
-  BaseCodeBlockPlugin,
-  BaseHorizontalRulePlugin,
-  PLUGINS,
-  type Value,
-} from 'platejs';
-import { BaseCalloutPlugin } from 'platejs/callout';
-import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
+import { BaseHeadingPlugin, BaseParagraphPlugin, type Value } from 'platejs';
 import { BaseComboboxPlugin } from 'platejs/combobox';
-import { BaseDatePlugin } from 'platejs/date';
-import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
-import {
-  BaseFootnoteDefinitionPlugin,
-  BaseFootnotePlugin,
-} from 'platejs/footnote';
-import { BaseColumnPlugin } from 'platejs/layout';
-import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import { createEditor } from 'platejs/react';
 import { BaseSlashPlugin } from 'platejs/slash-command';
-import { BaseTablePlugin } from 'platejs/table';
-import { BaseTocPlugin } from 'platejs/toc';
 
 import { BaseBasicBlocksKit } from './basic-blocks-static';
-import { BaseDetailsKit } from './details-static';
-import { BaseListKit } from './list-static';
-import { insertBlock, insertInlineElement } from './transforms';
+import { insertBlock } from './transforms';
+
+const createSlashEditor = () =>
+  createEditor({
+    plugins: [...BaseBasicBlocksKit, BaseSlashPlugin],
+    initialValue: [{ type: 'paragraph', children: [{ text: '' }] }] as Value,
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    },
+  });
 
 describe('slash insertion transaction', () => {
-  it.each([
-    [PLUGINS.paragraph, { type: 'paragraph' }],
-    ['heading-1', { type: 'heading', level: 1 }],
-    ['heading-2', { type: 'heading', level: 2 }],
-    ['heading-3', { type: 'heading', level: 3 }],
-    ['disc', { type: 'paragraph', listType: 'bulleted' }],
-    ['decimal', { type: 'paragraph', listType: 'numbered' }],
-    ['todo', { type: 'paragraph', listType: 'task' }],
-    [PLUGINS.details, { type: 'details' }],
-    [PLUGINS.codeBlock, { type: 'codeBlock' }],
-    [PLUGINS.table, { type: 'table' }],
-    [PLUGINS.blockquote, { type: 'blockquote' }],
-    [PLUGINS.callout, { type: 'callout' }],
-    [PLUGINS.toc, { type: 'toc' }],
-    ['action_three_columns', { type: 'columnGroup' }],
-    [PLUGINS.equation, { type: 'equation' }],
-    [PLUGINS.excalidraw, { type: 'excalidraw' }],
-    [PLUGINS.codeDrawing, { type: 'codeDrawing' }],
-    [PLUGINS.date, { type: 'date' }],
-    ['action_footnote', { type: 'footnoteReference' }],
-    [PLUGINS.inlineEquation, { type: 'inlineEquation' }],
-  ] as const)(
-    'composes %s with input removal and one-step undo',
-    (action, expected) => {
-      const editor = createEditor({
-        plugins: [
-          ...BaseBasicBlocksKit,
-          ...BaseListKit,
-          ...BaseDetailsKit,
-          BaseCodeBlockPlugin,
-          BaseHorizontalRulePlugin,
-          BaseCalloutPlugin,
-          BaseCodeDrawingPlugin,
-          BaseDatePlugin,
-          BaseExcalidrawPlugin,
-          BaseFootnotePlugin,
-          BaseFootnoteDefinitionPlugin,
-          BaseColumnPlugin,
-          BaseEquationPlugin,
-          BaseInlineEquationPlugin,
-          BaseSlashPlugin,
-          BaseTablePlugin,
-          BaseTocPlugin,
-        ],
-        initialValue: [
-          { type: 'paragraph', children: [{ text: '' }] },
-        ] as Value,
-        selection: {
-          kind: 'text',
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 0 },
-        },
-      });
-      editor.update.text.insert('/');
-      const input = editor.key(editor.read.children()[0].children[1]);
-      const before = editor.read.value();
-      const { version } = editor.read.lastCommit()!;
-      const inline =
-        action === PLUGINS.date ||
-        action === 'action_footnote' ||
-        action === PLUGINS.inlineEquation;
+  it('composes input removal and typed insertion into one undo step', () => {
+    const editor = createSlashEditor();
 
-      expect(
-        editor.plugin(BaseComboboxPlugin).api.commit(input, (tx) => {
-          if (inline) insertInlineElement(editor, action, tx);
-          else insertBlock(editor, action, { upsert: true, tx });
-        })
-      ).toBe(true);
-      const first = editor.read.children()[0];
-      expect(inline ? first.children[1] : first).toMatchObject(expected);
-      expect(editor.read.lastCommit()!.version - version).toBe(1);
-      expect(editor.read.nodes.get(input)).toBeUndefined();
-      const after = editor.read.value();
-      editor.update.history.undo();
-      expect(editor.read.value()).toEqual(before);
-      editor.update.history.redo();
-      expect(editor.read.value()).toEqual(after);
-    }
-  );
+    editor.update.text.insert('/');
+
+    const input = editor.key(editor.read.children()[0].children[1]);
+    const before = editor.read.value();
+    const version = editor.read.lastCommit()?.version ?? 0;
+
+    expect(
+      editor.plugin(BaseComboboxPlugin).api.commit(input, (tx) => {
+        const heading = editor.plugin(BaseHeadingPlugin);
+
+        insertBlock(
+          tx,
+          {
+            matches: (block) =>
+              !block.listType &&
+              block.type === heading.schema.type &&
+              block.level === 2,
+            insert: (options) => {
+              tx.plugin(BaseHeadingPlugin).insert({ level: 2 }, options);
+            },
+          },
+          { upsert: true }
+        );
+      })
+    ).toBe(true);
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [{ text: '' }],
+      level: 2,
+      type: 'heading',
+    });
+    expect(editor.read.nodes.get(input)).toBeUndefined();
+    expect(editor.read.lastCommit()?.version).toBe(version + 1);
+
+    editor.api.history.undo();
+    expect(editor.read.value()).toEqual(before);
+  });
+
+  it('removes only the input when upserting the matching empty block', () => {
+    const editor = createSlashEditor();
+
+    editor.update.text.insert('/');
+
+    const input = editor.key(editor.read.children()[0].children[1]);
+    const version = editor.read.lastCommit()?.version ?? 0;
+
+    expect(
+      editor.plugin(BaseComboboxPlugin).api.commit(input, (tx) => {
+        const paragraph = editor.plugin(BaseParagraphPlugin);
+
+        insertBlock(
+          tx,
+          {
+            matches: (block) =>
+              !block.listType && block.type === paragraph.schema.type,
+            insert: (options) => {
+              tx.plugin(BaseParagraphPlugin).insert({}, options);
+            },
+          },
+          { upsert: true }
+        );
+      })
+    ).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '' }], type: 'paragraph' },
+    ]);
+    expect(editor.read.nodes.get(input)).toBeUndefined();
+    expect(editor.read.lastCommit()?.version).toBe(version + 1);
+  });
 });

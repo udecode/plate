@@ -95,14 +95,23 @@ const editor = createEditor({
 
 ### 转换为工具栏按钮
 
-可将此功能添加至 [转换为工具栏按钮](/docs/toolbar#turn-into-toolbar-button) 来将区块转为分栏布局：
+添加一个直接调用`BaseColumnPlugin`的结构化操作。只有在选中一个符合条件的块时才启用它。
 
 ```tsx
-{
+import { BaseColumnPlugin } from 'platejs/layout';
+
+const turnIntoItem = {
   icon: <Columns3Icon />,
   label: '3栏布局',
   value: 'action_three_columns',
-}
+  onSelect: () => {
+    const column = editor.plugin(BaseColumnPlugin);
+
+    if (!column.installed || editor.read.view.isReadOnly()) return;
+
+    column.update.toggle({ columns: 3 });
+  },
+};
 ```
 
 </Steps>

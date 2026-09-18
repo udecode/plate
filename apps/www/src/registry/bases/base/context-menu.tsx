@@ -5,7 +5,10 @@ import * as React from 'react';
 
 import {
   ContextMenu as ShadcnContextMenu,
+  ContextMenuCheckboxItem as ShadcnContextMenuCheckboxItem,
   ContextMenuContent as ShadcnContextMenuContent,
+  ContextMenuItem as ShadcnContextMenuItem,
+  ContextMenuRadioItem as ShadcnContextMenuRadioItem,
   ContextMenuTrigger as ShadcnContextMenuTrigger,
 } from '@/components/ui/context-menu';
 
@@ -17,6 +20,25 @@ type BaseContextMenuContentProps = BaseContextMenuPrimitive.Popup.Props &
 
 const BaseContextMenuContent =
   ShadcnContextMenuContent as React.ComponentType<BaseContextMenuContentProps>;
+const BaseContextMenuItem = ShadcnContextMenuItem as React.ComponentType<
+  BaseContextMenuPrimitive.Item.Props & {
+    inset?: boolean;
+    ref?: React.Ref<HTMLElement>;
+    variant?: 'default' | 'destructive';
+  }
+>;
+const BaseContextMenuCheckboxItem =
+  ShadcnContextMenuCheckboxItem as React.ComponentType<
+    BaseContextMenuPrimitive.CheckboxItem.Props & {
+      ref?: React.Ref<HTMLElement>;
+    }
+  >;
+const BaseContextMenuRadioItem =
+  ShadcnContextMenuRadioItem as React.ComponentType<
+    BaseContextMenuPrimitive.RadioItem.Props & {
+      ref?: React.Ref<HTMLElement>;
+    }
+  >;
 const BaseContextMenuTrigger =
   ShadcnContextMenuTrigger as React.ComponentType<BaseContextMenuPrimitive.Trigger.Props>;
 const BaseContextMenu =
@@ -24,19 +46,106 @@ const BaseContextMenu =
 
 // biome-ignore lint/performance/noBarrelFile: This adapter owns one stable menu API across registry bases.
 export {
-  ContextMenuCheckboxItem,
   ContextMenuGroup,
-  ContextMenuItem,
   ContextMenuLabel,
   ContextMenuPortal,
   ContextMenuRadioGroup,
-  ContextMenuRadioItem,
   ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuSub,
   ContextMenuSubContent,
   ContextMenuSubTrigger,
 } from '@/components/ui/context-menu';
+
+type SelectEventHandler = (event: Event) => void;
+type BaseUIEvent = React.MouseEvent<HTMLElement> & {
+  preventBaseUIHandler?: () => void;
+};
+
+function dispatchSelect(
+  onSelect: SelectEventHandler | undefined,
+  event: BaseUIEvent
+) {
+  if (!onSelect) return;
+
+  const selectEvent = new Event('select', { cancelable: true });
+  onSelect(selectEvent);
+
+  if (selectEvent.defaultPrevented) event.preventBaseUIHandler?.();
+}
+
+export function ContextMenuItem({
+  onClick,
+  onSelect,
+  ...props
+}: Omit<
+  React.ComponentProps<typeof ShadcnContextMenuItem>,
+  'onClick' | 'onSelect'
+> &
+  Pick<BaseContextMenuPrimitive.Item.Props, 'onClick'> & {
+    onSelect?: SelectEventHandler;
+  }) {
+  return (
+    <BaseContextMenuItem
+      {...props}
+      onClick={(event) => {
+        dispatchSelect(onSelect, event);
+        onClick?.(event);
+      }}
+    />
+  );
+}
+
+export function ContextMenuCheckboxItem({
+  closeOnClick = true,
+  onClick,
+  onSelect,
+  ...props
+}: Omit<
+  React.ComponentProps<typeof ShadcnContextMenuCheckboxItem>,
+  'checked' | 'closeOnClick' | 'onClick' | 'onSelect'
+> &
+  Pick<
+    BaseContextMenuPrimitive.CheckboxItem.Props,
+    'checked' | 'closeOnClick' | 'onClick'
+  > & {
+    onSelect?: SelectEventHandler;
+  }) {
+  return (
+    <BaseContextMenuCheckboxItem
+      {...props}
+      closeOnClick={closeOnClick}
+      onClick={(event) => {
+        dispatchSelect(onSelect, event);
+        onClick?.(event);
+      }}
+    />
+  );
+}
+
+export function ContextMenuRadioItem({
+  closeOnClick = true,
+  onClick,
+  onSelect,
+  ...props
+}: Omit<
+  React.ComponentProps<typeof ShadcnContextMenuRadioItem>,
+  'closeOnClick' | 'onClick' | 'onSelect'
+> &
+  Pick<BaseContextMenuPrimitive.RadioItem.Props, 'closeOnClick' | 'onClick'> & {
+    onSelect?: SelectEventHandler;
+  }) {
+  return (
+    <BaseContextMenuRadioItem
+      {...props}
+      closeOnClick={closeOnClick}
+      onClick={(event) => {
+        dispatchSelect(onSelect, event);
+        onClick?.(event);
+      }}
+    />
+  );
+}
 
 export function ContextMenu({
   children,

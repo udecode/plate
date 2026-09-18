@@ -1,0 +1,76 @@
+{
+  "id": "2026-09-16-repair-verification-pokayoke",
+  "scope": "repair-verification-workflow",
+  "kind": "review",
+  "date": "2026-09-16",
+  "question": "Which repair and proof boundaries prevent repeated editor defects without duplicate rules, proxy completion or compulsory publication?",
+  "model": "GPT-6 / Codex",
+  "method": "best-api-review/history-v2",
+  "trigger": "User requested scoped fix/verification skill repair after repeated editor regressions and review against Eric Provencher’s September 11 Astra guidance.",
+  "requirements": [
+    "Prevent proxy completion: exact user action, real consumer and follow-up remain required.",
+    "Prefer structural invariant ownership and shared rejecting assertions over caller workarounds or duplicate instructions.",
+    "Keep ordinary repairs proportional, preserve corpus/receipt controls, and separate local completion from publication.",
+    "Maintain shared source provenance and generated installs without changing protected upstream or other projects."
+  ],
+  "evidenceReuse": "Read prior August 26 unit-first escalation decision and September 6 verifier audit. Preserve anti-duplicate-test intent and truthful product coverage limits; rechecked current rules, validator and actual slash/suggestion proof owners. No historical product pass reused.",
+  "summary": "Pursue the cut of contradictory and duplicate proof-selection gates. Keep Task lifecycle, focused Patch repair, Verify runtime evidence and Regression corpus semantics; strengthen their existing validator and test owners. Do not introduce another fix skill, proof database, controller or test API.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "alternatives": [
+    "Keep/configure: current exact-reproduction language is sound but contradicted by the unit-only and pushed-ref local gates; wording alone is insufficient.",
+    "Delete/merge/inline: remove duplicate Patch runner selection and contradictory unit-only/mandatory-workflow-edit/publication gates; retain distinct proof/corpus jobs instead of merging all skills into a giant itinerary.",
+    "Change existing API: repair the existing Regression validation contract for separately justified native proof and evidenced no-change; preserve its schema and receipts.",
+    "Add primitive: reject another test wrapper/coverage inventory because canonical selection, focus, event and error helpers already exist.",
+    "Move ownership: shared methods remain in Dotai, Plate specifics in source rules, native proof in Verify and product invariants in their package owners.",
+    "Replace architecture: a wholesale proof-platform rewrite is unsupported by current evidence; repeated product invariant failures can separately trigger Best API Review before further patches."
+  ],
+  "proofLimits": "Instruction audit and helper semantics only. 85 validator tests and 33 source contracts pass; generated resources and shared provenance are verified. Paired fresh-agent recorded-evidence exercises both pass a blinded six-criterion artifact review; no superiority, speed or actual browser claim. No editor/release sweep. The broad ledger check detects unrelated concurrent browser/ai-session inventory drift; this scoped immutable review records its own source fingerprints.",
+  "references": [
+    "docs/plans/2026-09-16-fix-verification-audit.md",
+    ".agents/AGENTS.md",
+    ".agents/rules/patch.mdc",
+    ".agents/rules/testing.mdc",
+    ".agents/rules/verify-plate.mdc",
+    ".agents/rules/verify-plate/references/editor-proof.md",
+    ".agents/rules/regression/scripts/validate-regression-plan.mjs",
+    ".agents/rules/regression/scripts/validate-regression-plan.test.mjs"
+  ],
+  "source": {
+    "files": {
+      ".agents/AGENTS.md": "0bf67bd6f9d5c2552bd96aa9b4f8ae5436a40472577cfbdbd1978b90b69c7b62",
+      ".agents/rules/patch.mdc": "68b7706f5562e1635e134d3d30acbd74ce60be42a1e6302f91a6fc5f8126e3ba",
+      ".agents/rules/verify-plate.mdc": "d99fdaec5ab5de4d00aea1a2e851e3579b08681582dc6fa8f349ec9960c2d4f1",
+      ".agents/rules/testing.mdc": "e6cb7c4c61663e84503bf91b972db53eb42b3cf7284bef4a21dee6126f23679c",
+      ".agents/rules/regression.mdc": "52b9c7ba849c4f78f52dcc286c46847e38733f1ddf2991e31017757781fb87d1",
+      ".agents/rules/task/references/workflow.md": "7f71de1c0fae8331f0cafbb785ff3a09fa99c2c609c97933597300213ad9c9dd",
+      ".agents/rules/task/references/external-skills.md": "54eadb4dcc2b9f45def3653902697ed76c29ee167e73cfcec016f58c5188a0ff",
+      ".agents/rules/regression/scripts/validate-regression-plan.mjs": "b441beff192bac874a2f5cd5e8d18f696dc54420e22c1ae6092d2e55c6a4f366",
+      ".agents/rules/regression/scripts/validate-regression-plan.test.mjs": "9e867319b2f1b585b1385c6256a8e1161bb9b95f1cdf1e5df47cd8965a449750",
+      ".agents/rules/verify-plate/references/editor-proof.md": "363ff3d9c92d052bbbe5fbbacae46ea458dd7ba40e0bb9f001f094fea82bac4b",
+      ".agents/skills/maintain-verification-skill/SKILL.md": "04cfdb5a81a6389e1b887ee858026f7b789a0161c8eb5fe84d998cbe9b1b334f",
+      ".agents/skills/tdd/SKILL.md": "70b627c4bb83c09c72bcc9aee7e8de15a4cb13bd4e785c26d63dabf2b77cb776",
+      "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
+      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
+    },
+    "directories": {},
+    "features": {},
+    "upstreams": [
+      {
+        "checkout": "../dotai",
+        "commit": "aeabaa52ee2642120efebe70719433be9f09b6d7",
+        "files": {
+          "skills/maintain-verification-skill/SKILL.md": "04cfdb5a81a6389e1b887ee858026f7b789a0161c8eb5fe84d998cbe9b1b334f",
+          "skills/maintain-verification-skill/references/feature-pass.md": "553a1b972e5a387d7481c172d05aa1ccd06ecaebc1538da3a61aa2c652760880",
+          "skills/maintain-verification-skill/UPSTREAM.json": "e5a8f0ccc7ecf7355b9e5b1fc974cde3ba3dc2019705e2b5eaf0b7687e553a43",
+          "skills/tdd/SKILL.md": "70b627c4bb83c09c72bcc9aee7e8de15a4cb13bd4e785c26d63dabf2b77cb776"
+        }
+      }
+    ]
+  }
+}

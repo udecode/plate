@@ -134,9 +134,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   presence. The owning runtime publishes internal capability, unknown behavior
   fails closed, and ordinary applications never opt into correctness with a
   performance flag.
-- Pagination is not core editor truth. Deterministic measurement,
-  occlusion, and scroll stability live above document semantics; active caret,
-  selection, and composition stay on the native/browser editing path.
+- Pagination is view-owned derived geometry, not core editor truth. Its mounted
+  paged component owns live measurement, page surfaces, omission and scroll
+  stability; active caret, selection and composition stay on the native/browser
+  editing path. Independent headless measurement is a separate one-shot job.
 
 ## Plite API Direction
 
@@ -192,11 +193,11 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   operations, identities, dependencies, decisions, positions, and content
   needed for pending review and selected history. Accepted, proposed, and
   markup projections belong to exact editor views; their input intent and
-  rendered children never become another saved document or global mode. Review
-  markup is a review surface for both direct accepted input and proposal input.
-  Changing input intent never decides or hides pending changes. Direct input
-  maps only exact accepted targets; pending-only, retained, and mixed targets
-  remain review-only. Review decisions are atomic document writes. Local undo remains local interaction
+  rendered children never become another saved document or global mode. An
+  editing view may use any projection. Independent accepted-content edits
+  publish directly, while edits that depend on pending content remain
+  reviewable with their actual author. Review
+  decisions are atomic document writes. Local undo remains local interaction
   history, and retained author history produces new compensating changes.
   Persistence checkpoints current authored facts and exact projections
   directly; opening a document never rebuilds them by reducing retained
@@ -244,7 +245,11 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
 - Plugins have no `config` channel. Immutable construction inputs and
   opaque runtime resources stay in factory closures or honest host owners.
   `validate` checks assembled context without a configuration argument.
-  Activation schedules publication-dependent work with `afterPublish`.
+  `validate` and `activate` run early. Activation registers synchronous
+  final-candidate validation or resource initialization with `beforePublish`;
+  document writes are forbidden, and throwing vetoes publication. Resources
+  remain activation-owned through `onCleanup`, including rollback cleanup.
+  `afterPublish` is nonthrowing observation of published state, not a veto.
 - One descriptor-owned `api` projects under `name` to
   `editor.api.<name>` and `editor.plugin(Plugin).api`. Do not root-merge
   methods or expose `getApi`. `api` is always a factory, even for
@@ -257,9 +262,23 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   adapter owners.
 - Public updates are synchronous and cannot nest. Helpers inside an update use
   the active `tx`.
+- Command `handle` interceptors are conditional fallbacks: returning `false`
+  continues to the next handler or descriptor default. Command `around`
+  interceptors own the invocation unless they explicitly call `next()` or
+  `next.after(prefix)`; returning `false` is a terminal rejection.
+- A complete model action that must select published state owns one plugin
+  `api` service, opens exactly one update, and returns an explicit outcome.
+  Transaction `update` methods are reserved for mutations that honestly
+  compose with other draft work. History replay therefore lives at
+  `editor.api.history.undo()` and `redo()`; transaction history controls only
+  grouping, skipping, and restoration.
 - The primary document root is implicit in public API and docs. Do not expose a
   public `main` root key, config option, or example. Explicit roots are only for
   additional roots.
+- `ContentSlice` is the complete transfer unit: content, open depths, and the
+  reachable named-root closure move and reject atomically. Multi-target fitting
+  remaps exclusive roots per placement, preserves intentionally shared roots,
+  prunes unreachable roots, and never commits partial content or root state.
 - Inferred values preserve the primary/named root grammar and every element's
   legal child variants without an arbitrary depth cliff. Canonical output
   requiredness follows runtime defaults; construction input may omit defaulted
@@ -287,7 +306,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   it retains neutral document decorations and does not duplicate native syntax
   contributions. Keep parser configuration inside the adapter.
   External text does not make Plite a code editor and does not
-  require fixed height.
+  require fixed height. Deliver canonical updates synchronously and
+  monotonically: lifecycle callbacks cannot edit the mounted view or canonical
+  editor, an older callback cannot overwrite newer delivered state, and bounded
+  failure recovery reads the latest canonical state without a replay queue.
 - Primitive editor methods are power/runtime tools, not the final normal
   authoring story.
 - `tx.*` is the current public API authority for normal writes. Primitive
@@ -311,6 +333,11 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   belongs before publication; observers that run after an `EditorCommit`
   exists report failure through `lifecycleErrorSink` and cannot make the
   committed update appear rejected.
+- Document state, authored projection, persistent anchors, plugin
+  configuration, and local history prepare inside the same rejection boundary
+  and publish before commit observers. Native edit grouping has one history
+  owner: ordinary input uses its configured idle clock, while an exact mounted
+  composition origin and epoch joins only that composition's phases.
 - Transient view data keeps its semantic owner: Decoration owns inline paint,
   Annotation owns durable logical ranges, and selection or keyed cursor owners
   feed exact-mounted-view geometry. Plite exposes no generic widget target or
@@ -321,7 +348,12 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   paths. Immutable query results are shared across readers; a known deleted
   identity resolves to `null` without rebuilding the document index.
 - `editor.anchor` creates a persistent Path, Point, or Range handle that its
-  owner releases. `tx.anchor` creates the same mapped value from draft state,
+  owner releases. One model-owned target supports multiple projected views;
+  `resolve(view?)` defaults to its capture view and accepts only another view
+  of the same model and root. Released or aborted captures remain unavailable.
+  Annotation stores resolve and observe their exact editor view without
+  duplicating the retained target. `tx.anchor` creates the same mapped value
+  from draft state,
   auto-releases it at the transaction boundary, and exposes only `resolve`.
   Serialized durable positions are a separate concern; low-level tracking is
   runtime machinery.
@@ -418,8 +450,12 @@ post-selection navigation` order, coalesces by semantic key, and reports
   explicit browser, IME and device proof for the claimed matrix.
 - Pagination owns page omission, page surfaces and direct canvas coordinates.
   It does not route page layouts or a public vertical offset through the generic
-  top-level block virtualizer. Its complete path mounts every page, fragment,
-  layout unit and document root.
+  top-level block virtualizer. Live configuration belongs to the mounted paged
+  component; public layout reads are current committed snapshots for that exact
+  host, and page boundaries never become document authority.
+- Fragmentation is text, one atomic owner, or all direct element children.
+  Pagination derives source paths and keeps projection and decoration assembly
+  private. Its complete path mounts every document node and page surface.
 
 ## Plite Skill Topology
 

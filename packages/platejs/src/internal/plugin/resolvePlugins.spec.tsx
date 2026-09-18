@@ -2,7 +2,7 @@ import { runInNewContext } from 'node:vm';
 
 import React from 'react';
 
-import { editorCommands, property, schema } from '../../core';
+import { createEditorView, editorCommands, property, schema } from '../../core';
 import { createEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin/definePlugin';
@@ -488,7 +488,6 @@ describe('resolvePlugins', () => {
             nodeChange: () => {},
             textChange: () => {},
           },
-          prepareDocument: ({ document }) => document,
           render: {
             mark: {
               leafAttributes: { 'data-leaf': 'x' } as any,
@@ -531,9 +530,6 @@ describe('resolvePlugins', () => {
     expect(
       getPlateRuntime(editor).pluginCache.node.textAttributeMarks
     ).toContain('cachey');
-    expect(getPlateRuntime(editor).pluginCache.prepareDocument).toContain(
-      'cachey'
-    );
     expect(getPlateRuntime(editor).pluginCache.slots.wrapContent).toContain(
       'cachey'
     );
@@ -610,9 +606,9 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    getPlateRuntime(editor).shortcuts['shortcutTx.toggle']?.handler?.(
-      {} as any
-    );
+    getPlateRuntime(editor).shortcuts['shortcutTx.toggle']?.handler?.({
+      editor,
+    } as any);
 
     expect(toggle).toHaveBeenCalledTimes(1);
   });
@@ -629,9 +625,9 @@ describe('resolvePlugins', () => {
     });
     editor.update.selection.set({ offset: 0, path: [0, 0] });
 
-    getPlateRuntime(editor).shortcuts['shortcutTextBlock.toggle']?.handler?.(
-      {} as any
-    );
+    getPlateRuntime(editor).shortcuts['shortcutTextBlock.toggle']?.handler?.({
+      editor,
+    } as any);
 
     expect(editor.read.children()[0]).toMatchObject({
       type: 'shortcutTextBlock',
@@ -725,7 +721,7 @@ describe('resolvePlugins', () => {
 
     getPlateRuntime(editor).shortcuts[
       'shortcutAuthoredTextBlock.toggle'
-    ]?.handler?.({} as any);
+    ]?.handler?.({ editor } as any);
 
     expect(toggle).toHaveBeenCalledTimes(1);
   });
@@ -766,9 +762,9 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    getPlateRuntime(editor).shortcuts['shortcutRootTx.insert']?.handler?.(
-      {} as any
-    );
+    getPlateRuntime(editor).shortcuts['shortcutRootTx.insert']?.handler?.({
+      editor,
+    } as any);
 
     expect(insert).toHaveBeenCalledTimes(1);
   });
@@ -784,9 +780,9 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    getPlateRuntime(editor).shortcuts['shortcutMixed.toggle']?.handler?.(
-      {} as any
-    );
+    getPlateRuntime(editor).shortcuts['shortcutMixed.toggle']?.handler?.({
+      editor,
+    } as any);
 
     expect(other).not.toHaveBeenCalled();
     expect(toggle).toHaveBeenCalledTimes(1);
@@ -825,7 +821,7 @@ describe('resolvePlugins', () => {
 
     const result = getPlateRuntime(editor).shortcuts[
       'shortcutTxFalse.untab'
-    ]?.handler?.({} as any);
+    ]?.handler?.({ editor } as any);
 
     expect(untab).toHaveBeenCalledTimes(1);
     expect(result).toBe(false);
@@ -855,7 +851,7 @@ describe('resolvePlugins', () => {
       getPlateRuntime(apiEditor).shortcuts['shortcutAmbiguous.toggle']
     ).not.toHaveProperty('target');
     getPlateRuntime(apiEditor).shortcuts['shortcutAmbiguous.toggle']?.handler?.(
-      {} as any
+      { editor: apiEditor } as any
     );
     expect(apiToggle).toHaveBeenCalledTimes(1);
     expect(updateToggle).not.toHaveBeenCalled();
@@ -867,7 +863,7 @@ describe('resolvePlugins', () => {
 
     getPlateRuntime(updateEditor).shortcuts[
       'shortcutAmbiguous.toggle'
-    ]?.handler?.({} as any);
+    ]?.handler?.({ editor: updateEditor } as any);
     expect(updateToggle).toHaveBeenCalledTimes(1);
   });
 
@@ -904,11 +900,25 @@ describe('resolvePlugins', () => {
       ],
     });
 
-    getPlateRuntime(editor).shortcuts['shortcutApi.toggle']?.handler?.(
-      {} as any
-    );
+    getPlateRuntime(editor).shortcuts['shortcutApi.toggle']?.handler?.({
+      editor,
+    } as any);
 
     expect(toggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('invokes API shortcuts on the event editor view', () => {
+    const Plugin = defineHeadlessPlugin('shortcutView', {
+      api: ({ editor }) => ({ current: () => editor }),
+    }).extend({ shortcuts: { current: { keys: 'mod+k' } } });
+    const editor = createEditor({ plugins: [Plugin] });
+    const view = createEditorView(editor);
+
+    expect(
+      getPlateRuntime(editor).shortcuts['shortcutView.current']?.handler?.({
+        editor: view,
+      } as any)
+    ).toBe(view);
   });
 
   it('rejects plugin-set mutation after atomic model publication', () => {

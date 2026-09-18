@@ -24,7 +24,7 @@ export default function InactiveSelectionDemo() {
   return (
     <div className="space-y-4" data-inactive-selection-demo="">
       <EditorRoot editor={editor}>
-        <EditorContainer variant="demo">
+        <EditorContainer className="h-[650px]">
           <Editor aria-label="Inactive selection editor" />
         </EditorContainer>
 

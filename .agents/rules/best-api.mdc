@@ -210,6 +210,13 @@ public API. A specialized layout owner such as pagination controls omission in
 its own coordinate system instead of routing geometry through a generic
 virtualizer.
 
+When one mounted view owns live derived geometry, configure that component and
+expose only current committed reads bound to its exact host. Keep a separate
+one-shot headless operation only for an independent consumer job. Do not publish
+a live controller or provider, persist derived breaks as document authority,
+require caller-authored source paths or box/split protocols, or make callers
+assemble the view's projection and decoration machinery.
+
 A public package needs an independent current user job, not merely shared
 implementation. Framework-wide headless contracts belong in the framework
 facade root, framework-wide React contracts belong in its React subpath, and
@@ -434,6 +441,12 @@ path, or transaction as an adapter escape hatch. The external and native
 branches are exclusive: no hidden duplicate text DOM, no second history, and
 no requirement for fixed height. Adapter-internal rendering or virtualization
 does not become document virtualization or a code editor inside Plite.
+Deliver canonical view updates synchronously and monotonically: an action may
+update its originating view before returning, and an older callback must never
+overwrite a newer nested delivery. Lifecycle callbacks are notifications, not
+editing commands; reject synchronous mutation back into the mounted view or
+canonical editor, report callback failures through the lifecycle sink, and make
+bounded recovery read the latest canonical state without adding a replay queue.
 
 When callers repeatedly combine generic traversal with one canonical owner
 predicate, promote that semantic job as a named read on the traversal owner.
@@ -454,6 +467,23 @@ and type or mode knobs on this exact operation.
 ### Transient View Lifetime Gate
 
 Choose an existing lifetime owner before naming a public view abstraction.
+Temporary AI output belongs to the AI session's draft, outside document changes
+and history. Publish accumulated response text through the installed Markdown
+codec; never reserialize rendered output as the next parser input. Copied UI
+owns draft color and the streaming indicator. Apply a draft once through normal
+editor commands under the invoking view's current intent. Discard releases its
+mapped targets without undoing other edits. AI generation must not enter
+Suggesting, restore a saved input mode, or manufacture a persistent authored
+proposal merely to display a preview. Explicitly tracked AI edits use the same
+native authored owner as human suggestions after the user applies them.
+
+Closing an AI session cancels its request and discards unapplied output;
+stopping generation retains the complete received draft for review. Targets,
+transport callbacks and generated comment drafts belong to that request.
+Deleted targets fail closed, and reviewing AI comments cannot publish or delete
+unrelated drafts. Preserve outside-click selection instead of restoring the
+invoking caret when the user has chosen another destination.
+
 Inline transient paint is a Decoration. A durable logical range is an
 Annotation. Out-of-flow UI reads its semantic owner and measures against the
 exact mounted Editable only when placement needs geometry. Delete a proposed
@@ -494,15 +524,22 @@ identity attribute. Never infer ownership from CSS classes or discard neutral
 annotations along with syntax. Keep parser controls inside copied UI, outside
 the external-text protocol.
 
-Sparse attributes on whole element hosts have a different shape. Author them
-through `render.useViewElementAttributes`, one React hook host per enabled
-plugin per mounted Plate view. The callback receives the exact `view` and
-returns `{ key, attributes }[]`; Plate privately owns source identity, compiled
-plugin precedence, publication, cleanup, and per-`NodeKey` subscriptions.
-Allow only `className`, `placeholder`, `style`, and `aria-*` / `data-*`
-primitives. Keep `render.attributes` and `inject.nodeProps.transformProps`
-pure and hook-free because they run conditionally for rendered nodes. Do not
-publish the provider, store, source ID, manager, or imperative publisher.
+Sparse attributes that custom element components receive through React use
+`render.useViewElementAttributes`, one React hook host per enabled plugin per
+mounted Plate view. The callback receives the exact `view` and returns
+`{ key, attributes }[]`; Plate privately owns source identity, compiled-plugin
+precedence, publication, cleanup, and per-`NodeKey` subscriptions. Allow only
+`className`, `placeholder`, `style`, and `aria-*` / `data-*` primitives.
+
+A feature may instead bind benchmarked high-frequency interaction state
+directly to canonical mounted node hosts when that state is private, view-local,
+and deliberately absent from custom component props. Compose the existing
+canonical host ref and keep the projection in one feature-owned view effect.
+Prove replacement, detach, cleanup, hydration, native behavior and production
+scale. Do not add a public hook, host registry, store, imperative publisher or
+generic scalar channel for one feature. Keep `render.attributes` and
+`inject.nodeProps.transformProps` pure and hook-free because they run
+conditionally for rendered nodes.
 
 Raw Plite has one transient paint path. `DecorationSource` returns
 `{ key, range, attributes }`; `Editable` renders those attributes without a
@@ -517,26 +554,62 @@ from `plitejs/annotations`. Do not re-export the constructor from
 `plitejs/react`, publish an `/internal` bridge, or force a framework owner
 through a hidden component merely to reach a hook.
 
-The Comments package owns loaded thread records, comment actions, targeted
-subscriptions and native range lifetime. Applications fetch and persist plain
-records; copied UI owns presentation. Configure fetched records through
-`initialState.initialThreads`, replace them through `api.setThreads`, and save
-`api.getThreads()` with the matching document value. The initialization input
-is a seed, not a second live thread store. Keep one keyed record owner inside
-the semantic plugin and reuse Plite Annotation for range projection; the React
-plugin adds interaction. Do not make consumers assemble a channel, provider,
+A retained native anchor owns one target and one release lifetime. Resolve it
+in the exact mounted view with `anchor.resolve(view)` when the read belongs to
+that view; do not serialize and restore a second handle to translate projection.
+Omitted view retains capture-view semantics. Annotation indexes belong to their
+view, observe its projection and commits, and release their own observations
+without releasing shared targets. Model-owned records and view-owned paint must
+not share a cached coordinate or node-key index across different projections.
+
+The Comments package owns semantic thread records, awaited actions, targeted
+subscriptions and private native range lifetime. Load `initialState.initialComments`
+and persist `api.toJSON()` with the exact document revision. Live records retain
+target identity; `api.attachment(id)` reads mapped coverage. Document mapping
+notifies attachment subscribers without rewriting conversations or triggering
+semantic persistence. Reuse Plite Annotation for range projection; the React
+plugin adds interaction. Consumers never assemble a channel, provider,
 factory-bound source, native handles or anchor-binding effect.
+Capture new ranges and read attachment/decoration coverage through the calling
+editor. A model-lifetime plugin extension must not capture one view's API for
+all future mounted-view callbacks.
+
+Durable comment actions pass through `initialState.mutate` before publication
+and return a typed awaited result. The application owns authorization and
+canonical storage decisions; per-thread ordering and lifetime fencing belong
+to the package. Draft operations stay local. Resolve/Reopen changes conversation
+state outside document undo; suggestion Accept/Reject uses document history and
+preserves conversations. Ordinary reload creates a fresh editor and local undo
+stack. A generic checkpoint, live record-replacement API or separate comment
+undo stack needs an independent supported job; Comments does not require one.
+
+A published conversation outlives the current visibility of its document
+target. Exact current-view coverage alone owns inline paint, block counts and
+navigation; cached coordinates and surviving neighbor endpoints cannot place a
+thread. Keep unavailable conversations discoverable through bounded copied UI
+over semantic thread records, and resolve only the mounted page on demand.
+Document undo may restore target identity, while unrelated later typing must
+not inherit it. Do not add a Comments location store, whole-corpus attachment
+subscription, mandatory Suggestion dependency or generic Editor surface for
+document-level discovery.
 
 Load existing data through its canonical owner with IDs, authors, timestamps
 and status intact. Document-owned changes load through `initialValue`; independent
 application records use their plugin's initialization input. Neither path
 replays user commands, impersonates authors or uses a fake clock. Constructor
-input and later replacement share the owner's atomic preparation path.
+input validates and restores through the owner's preparation path. Live
+replacement requires an explicit ordering and lifetime contract of its own.
 Configure mounted-view intent and projection through `EditorRoot authored`,
 not an initialization effect or plugin-global mode. Equivalent prop values
 must preserve subsequent view-local commands across parent rerenders; changed
 values reconfigure that view. Database I/O, authentication and server
 authorization remain application responsibilities.
+Treat authored intent and projection as orthogonal view inputs. Editing may use
+accepted, proposed, or markup projection; projected editing publishes changes
+to independent accepted content directly and keeps pending-dependent changes
+reviewable. A mode command changes intent while preserving the selected
+projection, except that proposing from an accepted-only view selects markup so
+new proposals remain visible. Proposing with accepted projection is invalid.
 Comments user records and current reply identity use the ordinary plugin store.
 
 Native range handles belong to their creating editor. Each editor binds its
@@ -639,6 +712,14 @@ choice. Internal view state with input, history, clipboard, or reconciliation
 semantics is not reusable presentation state. The lower React owner renders
 neutral mechanics; a facade inherits them by identity; copied UI owns markers,
 styling, labels, and feature composition.
+
+For copied-source distribution, derive required package and item dependencies
+from the resolved source graph instead of maintaining parallel authored lists.
+Keep authored metadata only for product policy that source cannot express, such
+as intentional bundles, targets, styles, CSS, optional peers, and provider
+selection. Compile every supported public variant from one generation and bind
+its index, manifest, payload hashes, and publication marker to that generation;
+preview, docs, source checks, and installers consume the same generated facts.
 
 ## Bounded Exhaustiveness Gate
 

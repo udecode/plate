@@ -14,6 +14,7 @@ export const examples: Registry['items'] = [
     registryDependencies: [
       '@plate/basic-blocks',
       '@plate/basic-marks',
+      '@plate/comment-toolbar-button',
       '@plate/discussion',
       '@plate/editor',
       '@plate/history-toolbar-button',
@@ -63,6 +64,7 @@ export const examples: Registry['items'] = [
     meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
     registryDependencies: [
       '@plate/basic-blocks',
+      '@plate/comment-toolbar-button',
       '@plate/discussion',
       '@plate/editor',
       '@plate/history-toolbar-button',
@@ -82,6 +84,7 @@ export const examples: Registry['items'] = [
     meta: { docs: [{ route: '/docs/suggestion', title: 'Suggestions' }] },
     registryDependencies: [
       '@plate/basic-blocks',
+      '@plate/comment-toolbar-button',
       '@plate/discussion',
       '@plate/editor',
       '@plate/history-toolbar-button',
@@ -223,6 +226,7 @@ export const examples: Registry['items'] = [
     registryDependencies: [
       '@plate/basic-blocks',
       '@plate/comment',
+      '@plate/comment-toolbar-button',
       '@plate/discussion',
       '@plate/editor',
       '@plate/suggestion',
@@ -231,6 +235,7 @@ export const examples: Registry['items'] = [
       '@plate/editor-static',
       '@plate/link',
       '@plate/link-static',
+      '@plate/toolbar',
     ],
   },
   {
@@ -660,7 +665,7 @@ export const demoExamples: Registry['items'] = (
       description:
         'AI menu with commands, streaming responses in a preview or directly into the editor.',
       files: [
-        { path: 'examples/demo.tsx', type: 'registry:example' },
+        { path: 'examples/ai-demo.tsx', type: 'registry:example' },
         {
           path: 'examples/values/ai-value.tsx',
           type: 'registry:example',
@@ -675,7 +680,12 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'ai-demo',
-      registryDependencies: ['@plate/ai', '@plate/editor', '@plate/dnd'],
+      registryDependencies: [
+        '@plate/ai',
+        '@plate/discussion',
+        '@plate/editor',
+        '@plate/dnd',
+      ],
       title: 'AI',
       type: 'registry:example',
     },

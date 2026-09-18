@@ -5,7 +5,13 @@ import type {
   KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 
-import type { Editor } from '../..';
+import {
+  type Editor,
+  PointApi,
+  type Range,
+  RangeApi,
+  type Selection,
+} from '../..';
 import { getSelection, Hotkeys, isDOMElement, isDOMText } from '../../dom';
 import {
   DOMRootRuntime,
@@ -21,6 +27,7 @@ import {
 import type { EditableInputController, InputIntent } from './input-state';
 import { getExternalTextHostOwner } from './interaction-owner';
 import { setEditorComposing } from './runtime-editor-api';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 export type {
   EditableInputController,
@@ -276,15 +283,44 @@ const isClipboardKeyboardIntent = (event: KeyboardEvent) =>
     event.key.toLowerCase() === 'v' ||
     event.key.toLowerCase() === 'x');
 
+export const isPlainVerticalDocumentBoundary = ({
+  editor,
+  event,
+  selection = readRuntimeSelection(editor),
+}: {
+  editor: ReactRuntimeEditor;
+  event: Pick<KeyboardEvent, 'altKey' | 'ctrlKey' | 'key' | 'metaKey'>;
+  selection?: Range | Selection;
+}) => {
+  if (
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') ||
+    !RangeApi.isRange(selection) ||
+    !RangeApi.isCollapsed(selection)
+  ) {
+    return false;
+  }
+
+  const boundary = editor.read((state) =>
+    event.key === 'ArrowUp' ? state.points.start([]) : state.points.end([])
+  );
+
+  return Boolean(boundary && PointApi.equals(selection.focus, boundary));
+};
+
 export const classifyKeyboardIntent = ({
   editor,
   event,
   isComposing = false,
+  selection,
   viewportRuntime,
 }: {
   editor: ReactRuntimeEditor;
   event: ReactKeyboardEvent<HTMLDivElement>;
   isComposing?: boolean;
+  selection?: Range | Selection;
   viewportRuntime: unknown;
 }): InputIntent | null => {
   const { nativeEvent } = event;
@@ -306,6 +342,12 @@ export const classifyKeyboardIntent = ({
   }
 
   if (isSelectAllHotkey(nativeEvent)) {
+    return 'model-selection-move';
+  }
+
+  if (
+    isPlainVerticalDocumentBoundary({ editor, event: nativeEvent, selection })
+  ) {
     return 'model-selection-move';
   }
 

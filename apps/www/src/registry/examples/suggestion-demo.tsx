@@ -5,6 +5,7 @@ import { createEditor, EditorRoot } from 'platejs/react';
 import * as React from 'react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
+import { AllCommentsButton } from '@/registry/components/editor/comment-toolbar-button';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import {
@@ -80,10 +81,11 @@ export default function SuggestionDemo() {
 
 function SuggestionDemoContent() {
   return (
-    <EditorContainer className="h-[360px]" variant="demo">
+    <EditorContainer className="h-[360px]">
       <Toolbar className="border-b px-3 py-1">
         <UndoToolbarButton aria-label="Undo" />
         <RedoToolbarButton aria-label="Redo" />
+        <AllCommentsButton />
         <div className="ml-auto">
           <ModeToolbarButton />
         </div>

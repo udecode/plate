@@ -30,6 +30,8 @@ import {
 import { readRecord, records, writeRecord } from './record-tree';
 import {
   authoredDependants,
+  isAuthoredEditVisible,
+  observesAuthoredOperation,
   hasAuthoredPropertyProjection,
   hasAuthoredContent,
   materializeAuthoredEdit,
@@ -516,7 +518,9 @@ export const projectAuthoredSteps = (input: {
     else projectedPositions = step.positions;
   }
   for (const target of ['accepted', 'projected'] as const) {
-    if (!projectProperties) continue;
+    // Decision replay can expose adjacent text or an empty inline even without
+    // property writes, so representation repair must stay in the decision batch.
+    if (!projectProperties && !input.editor) continue;
     const steps = documentSteps.filter((step) => step.target === target);
     const last = steps.at(-1);
     if (!last) continue;
@@ -542,9 +546,11 @@ export const projectAuthoredSteps = (input: {
             ? readRecord(state.changes, edit.changeId)?.status === 'accepted'
             : readRecord(state.changes, edit.changeId)?.status !== 'rejected'),
       },
-      steps: steps.flatMap((step) =>
-        authoredOperationPropertySteps(state, step.operation)
-      ),
+      steps: projectProperties
+        ? steps.flatMap((step) =>
+            authoredOperationPropertySteps(state, step.operation)
+          )
+        : [],
       value: draft.value,
     });
     const applied = draft.apply(mapped.change);
@@ -716,6 +722,10 @@ export const prepareAuthoredRevert = (input: {
         input.target === 'accepted'
           ? projected.acceptedChange
           : projected.projectedChange,
+      positions:
+        input.target === 'accepted'
+          ? projected.projection.acceptedPositions
+          : projected.projection.projectedPositions,
     };
   } catch (error) {
     if (
@@ -756,18 +766,64 @@ export const projectAuthoredReviewUndo = (input: {
   );
   for (const identity of selected) {
     const change = readRecord(state.changes, identity);
-    if (
-      !change ||
-      change.heads.length !== 1 ||
-      change.heads[0] !== operation.id
-    ) {
-      throw new AuthoredMappingConflictError([identity]);
+    if (!change) throw new AuthoredMappingConflictError([identity]);
+    if (change.heads.length !== 1 || change.heads[0] !== operation.id) {
+      // Redo can follow balanced undo/redo edits to the proposal itself.
+      const unchangedCompensation =
+        operation.kind === 'undo' &&
+        change.heads.every((id) => {
+          const head = readRecord(state.operations, id);
+          return (
+            head?.kind === 'edit' &&
+            head.inverseOf &&
+            head.authorId === operation.authorId &&
+            observesAuthoredOperation(head, operation)
+          );
+        }) &&
+        [...records(change.reviews)].every(([, id]) => {
+          const review = getDefined(readRecord(state.operations, id));
+          return (
+            id === operation.id || observesAuthoredOperation(operation, review)
+          );
+        }) &&
+        [...records(change.operations)].every(([, id]) => {
+          const edit = getDefined(readRecord(state.operations, id));
+          return (
+            edit.kind !== 'edit' ||
+            edit.inverseOf ||
+            isAuthoredEditVisible(state, edit, () => true) ===
+              isAuthoredEditVisible(state, edit, (entry) =>
+                observesAuthoredOperation(operation, entry)
+              )
+          );
+        });
+
+      if (!unchangedCompensation) {
+        throw new AuthoredMappingConflictError([identity]);
+      }
     }
     const desired = authoredStatusBeforeReview(state, operation, identity);
     if (change.status === desired) continue;
     if (change.status === 'accepted' && desired === 'pending') {
       const dependants = [...authoredDependants(state, identity)].filter(
-        (child) => child.status === 'accepted' && !selected.has(child.id)
+        (child) =>
+          child.status === 'accepted' &&
+          !selected.has(child.id) &&
+          [...records(child.operations)].some(([, id]) => {
+            const edit = readRecord(state.operations, id);
+
+            return (
+              edit?.kind === 'edit' &&
+              !edit.inverseOf &&
+              isAuthoredEditVisible(
+                state,
+                edit,
+                (contribution) =>
+                  readRecord(state.changes, contribution.changeId)?.status ===
+                  'accepted'
+              )
+            );
+          })
       );
       if (dependants.length) {
         throw new AuthoredMappingConflictError(

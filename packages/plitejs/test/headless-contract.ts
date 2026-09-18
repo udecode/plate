@@ -89,9 +89,7 @@ describe('plite headless contract', () => {
       anchor: { path: [1, 0], offset: 7 },
       focus: { path: [1, 0], offset: 7 },
     });
-    editor.update((tx) => {
-      tx.history.undo();
-    });
+    editor.api.history.undo();
 
     assert.deepEqual(
       editorGetSnapshot(editor).children,

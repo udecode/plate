@@ -284,7 +284,11 @@
     },
     "test:partition:core": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:history"],
+      "dependsOn": [
+        "typecheck:partition:authored",
+        "typecheck:partition:core",
+        "typecheck:partition:history"
+      ],
       "inputs": [
         "src/annotations/**",
         "src/internal/index.*",

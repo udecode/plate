@@ -1,5 +1,9 @@
 # dev/table-perf Performance Snapshot
 
+Historical measurement; use the [Table hub](../research/features/table.md)
+for current decisions and bound evidence. The recorded March source, browser,
+and workload below limit the claim; no current rerun is implied.
+
 ## Environment
 
 - Test time: 2026-03-12 21:46:54 CST

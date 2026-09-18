@@ -633,17 +633,15 @@ describe('plite slice contract', () => {
     });
     assert.equal(editorGetLastCommit(editor)?.changes.empty, false);
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       1
     );
     assert.equal(
-      editor.read((state) => state.history.undos()[0]?.change.empty),
+      editor.read((state) => state.history().undos[0]?.change.empty),
       false
     );
 
-    editor.update((tx) => {
-      tx.history.undo();
-    });
+    editor.api.history.undo();
 
     assert.deepEqual(editorGetSnapshot(editor).children, children);
     assert.deepEqual(editorGetSnapshot(editor).selection, {

@@ -154,11 +154,14 @@ plugin configuration, and callback context. Its queries and transforms never
 call React hooks.
 
 Keep component-local reactive output in the owning component. First-party
-cross-cutting whole-element view paint uses
-`render.useViewElementAttributes`. It receives the exact mounted `view`, may
-use React hooks, and returns sparse `{ key, attributes }[]`. Plate keeps the
-keyed store, source order, publisher, and cleanup private. Per-node
-`render.attributes` and `inject.nodeProps.transformProps` stay pure and
+cross-cutting whole-element attributes delivered through custom React
+components use `render.useViewElementAttributes`. It receives the exact mounted
+`view`, may use React hooks, and returns sparse `{ key, attributes }[]`. Plate
+keeps the keyed store, source order, publisher, and cleanup private. A
+benchmarked high-frequency interaction may keep a feature-private projection
+and bind canonical node-host refs when it must stay outside component props;
+prove replacement and cleanup and add no public hook or generic channel.
+Per-node `render.attributes` and `inject.nodeProps.transformProps` stay pure and
 hook-free.
 
 ## Rejected Precedent

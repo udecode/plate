@@ -245,8 +245,10 @@ editor.read.selection.nodes()` is a regression: it
   a root plugin field or contribution registry. Put `handle` or `around`
   interceptors in `commands`, build pure specs through `state.transaction(...)`,
   and delegate to the shared exact-slice, host-codec, and plain-text fallback
-  with `next()`. Preserve contextual transaction inference without callback
-  annotations or editor type arguments.
+  with `next()`. `handle` returning `false` continues fallback. `around` owns
+  the invocation unless it calls `next()` or `next.after(prefix)`; `false` is a
+  terminal rejection. Preserve contextual transaction inference without
+  callback annotations or editor type arguments.
 - All lifecycle and host/DOM events use one root `on` family with prefixless
   child names such as `commit`, `keyDown`, `paste`, `nodeChange`,
   `textChange`, and capture variants. Reject a second `handlers` bucket while
@@ -288,16 +290,15 @@ editor.read.selection.nodes()` is a regression: it
   - `update`: document mutation through the active transaction;
   - flat native Plite fields: genuine editor-wide substrate;
   - `codecs`: format declarations.
-  - `prepareDocument`: deterministic installed-plugin current-schema
-    preparation after the application migration chain and before schema fit.
     Reject document reads hidden in `api`, document mutations outside `update`,
     impure selectors/reads, plugin-scoped behavior smuggled into native fields,
     and any contribution with no honest row.
-- Reject feature migration plugins, legacy-shape normalizers, and
-  `prepareDocument` release migrations. Persisted source lineage belongs to an
-  app envelope; one named app schema owns exact historical source fingerprints,
-  ascending target-version steps, and the shared `migrateDocument` runtime/CLI
-  runner. Raw input requires an explicit unversioned floor.
+- Reject feature migration plugins, legacy-shape normalizers, generic plugin
+  document-preparation hooks, and editor migration options. Persisted source
+  lineage belongs to an app envelope; one named app schema and plugin tuple own
+  exact historical source fingerprints, ascending target-version steps, and the
+  detached `migrateDocument` app/CLI runner. Raw input requires an explicit
+  source at each conversion. Ordinary editor loads accept current input only.
 - Enforce the creator's state mechanics without restating another model:
   every state-owning production descriptor has a named `*PluginState`, exported
   with an exported descriptor; owner defaults use a typed constant or explicit

@@ -152,7 +152,7 @@ node "$AR_CLI" --help --all
 Verify the plugin entry and CLI path exist before using these commands. Read
 the installed entry directly when skill discovery does not expose it. If the
 plugin is absent, report that capability gap and continue any useful Task,
-Patch, Regression or Benchmark work without inventing AR session state.
+Patch or Benchmark work without inventing AR session state.
 
 The installed plugin is executable truth. Treat `../codex-autoresearch` as a
 legacy protocol/reference checkout only. Do not run commands from it, and do

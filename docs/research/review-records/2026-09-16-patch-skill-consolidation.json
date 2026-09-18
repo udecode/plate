@@ -1,0 +1,67 @@
+{
+  "id": "2026-09-16-patch-skill-consolidation",
+  "scope": "repair-verification-workflow",
+  "kind": "review",
+  "date": "2026-09-16",
+  "question": "Which repair and proof boundaries prevent repeated editor defects without duplicate rules, proxy completion or compulsory publication?",
+  "model": "GPT-6 / Codex",
+  "method": "best-api-review/history-v2",
+  "trigger": "User asks which skills can merge into Patch to reduce duplication.",
+  "requirements": [
+    "One clear entry for individual and related bug repairs.",
+    "Preserve exact reporter proof, corpus validators and diagnosis-only authority.",
+    "Keep independent feature, verification-only, measurement and design jobs usable.",
+    "Remove duplicate ownership rather than concatenate skill bodies."
+  ],
+  "evidenceReuse": "Rechecked current Patch, Regression and methodology size, diagnosis method, TDD loop, Testing/Verify roles and Task callers. Prior repaired proof rules remain valid; reconsidered the assumption that separate corpus work requires a separate repair coordinator.",
+  "summary": "Pursue Regression lifecycle consolidation into Patch with conditional batch/failed-fix/corpus methods. Absorb diagnosis as a conditional method and reuse the bug-fix red/green loop without a separate TDD handoff. Retain shared verification, test authoring, measurement and architecture review jobs.",
+  "verdict": "pursue",
+  "previous": "2026-09-16-repair-verification-pokayoke",
+  "relation": "supersedes",
+  "alternatives": [
+    "Keep/configure: existing handoffs retain duplicated reproduction, case packets, red/green and completion in Patch and Regression.",
+    "Delete/merge/inline: merge repair coordination into Patch; retain corpus mechanics as conditional references and existing semantic validators. Remove the public distinction between first repair and repeated repair.",
+    "Add wrapper or primitive: reject another dispatcher because Task already routes and duplicate repair ownership would remain.",
+    "Merge all skills: reject absorbing Verify/Testing/Benchmark/Best API Review because new-feature, read-only verification, suite audit, measurement and design jobs exist independently.",
+    "Move ownership: reuse protected diagnosis through maintained upstream/adaptation; retain generic TDD for explicit feature work; workflow maintenance belongs to Maintain Workflow."
+  ],
+  "proofLimits": "Read-only source/design assessment. No skills merged, no runtime or behavioral migration proof run. Existing validation from the earlier repair does not certify this proposed consolidation. Corpus receipts, exact input scope and diagnosis-only authority must survive adoption.",
+  "references": [
+    "docs/plans/2026-09-16-fix-verification-audit.md",
+    ".agents/rules/patch.mdc",
+    ".agents/rules/regression.mdc",
+    ".agents/rules/regression/references/methodology.md",
+    ".agents/skills/diagnosing-bugs/SKILL.md",
+    ".agents/rules/testing.mdc",
+    ".agents/rules/verify-plate.mdc"
+  ],
+  "source": {
+    "files": {
+      ".agents/AGENTS.md": "0bf67bd6f9d5c2552bd96aa9b4f8ae5436a40472577cfbdbd1978b90b69c7b62",
+      ".agents/rules/patch.mdc": "68b7706f5562e1635e134d3d30acbd74ce60be42a1e6302f91a6fc5f8126e3ba",
+      ".agents/rules/verify-plate.mdc": "d99fdaec5ab5de4d00aea1a2e851e3579b08681582dc6fa8f349ec9960c2d4f1",
+      ".agents/rules/testing.mdc": "e6cb7c4c61663e84503bf91b972db53eb42b3cf7284bef4a21dee6126f23679c",
+      ".agents/rules/regression.mdc": "52b9c7ba849c4f78f52dcc286c46847e38733f1ddf2991e31017757781fb87d1",
+      ".agents/rules/task/references/workflow.md": "7f71de1c0fae8331f0cafbb785ff3a09fa99c2c609c97933597300213ad9c9dd",
+      ".agents/rules/task/references/external-skills.md": "54eadb4dcc2b9f45def3653902697ed76c29ee167e73cfcec016f58c5188a0ff",
+      ".agents/rules/regression/scripts/validate-regression-plan.mjs": "b441beff192bac874a2f5cd5e8d18f696dc54420e22c1ae6092d2e55c6a4f366",
+      ".agents/rules/regression/scripts/validate-regression-plan.test.mjs": "9e867319b2f1b585b1385c6256a8e1161bb9b95f1cdf1e5df47cd8965a449750",
+      ".agents/rules/verify-plate/references/editor-proof.md": "363ff3d9c92d052bbbe5fbbacae46ea458dd7ba40e0bb9f001f094fea82bac4b",
+      ".agents/skills/maintain-verification-skill/SKILL.md": "04cfdb5a81a6389e1b887ee858026f7b789a0161c8eb5fe84d998cbe9b1b334f",
+      ".agents/skills/tdd/SKILL.md": "70b627c4bb83c09c72bcc9aee7e8de15a4cb13bd4e785c26d63dabf2b77cb776",
+      "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
+      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec",
+      ".agents/rules/regression/references/methodology.md": "630a9ad98c3ddb9603428fdabfce5c0099560ca54857fe5703c3111b887c1464",
+      ".agents/skills/diagnosing-bugs/SKILL.md": "7a0779480f323a66d109404646bcc1a14bf0232b45b3e3ea93b652a035718acb",
+      ".agents/rules/task.mdc": "f384c6792faf7344c862891f062d69ff1b3249da0aa22fce74d409e9bebd379b",
+      ".agents/rules/task/references/autonomous.md": "55f904fa8a227ef73cb27275e4eb4d51598a69c7e4874e17053dbfa83e8478b0"
+    },
+    "directories": {},
+    "features": {},
+    "upstreams": []
+  }
+}

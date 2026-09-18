@@ -134,8 +134,8 @@ const DocumentStatePanel = () => {
 
     const hasHistoryBatch =
       direction === 'undo'
-        ? historyPortal.read.undos().length > 0
-        : historyPortal.read.redos().length > 0;
+        ? historyPortal.read.hasUndo()
+        : historyPortal.read.hasRedo();
 
     event.preventDefault();
     event.stopPropagation();
@@ -146,9 +146,9 @@ const DocumentStatePanel = () => {
     }
 
     if (direction === 'undo') {
-      historyPortal.update(ReactUpdatePolicy.preserveSelection).undo();
+      historyPortal.api.undo();
     } else {
-      historyPortal.update(ReactUpdatePolicy.preserveSelection).redo();
+      historyPortal.api.redo();
     }
     restoreTitleFocus();
   };
@@ -211,7 +211,7 @@ const DocumentStatePanel = () => {
         </Button>
         <Button
           onClick={() => {
-            historyPortal.update.undo();
+            historyPortal.api.undo();
           }}
           type="button"
           variant="outline"
@@ -220,7 +220,7 @@ const DocumentStatePanel = () => {
         </Button>
         <Button
           onClick={() => {
-            historyPortal.update.redo();
+            historyPortal.api.redo();
           }}
           type="button"
           variant="outline"

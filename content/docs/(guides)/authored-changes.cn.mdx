@@ -84,28 +84,7 @@ editor.update((tx) => {
 
 传入 `{ changeId }` 可以为新 proposal 指定身份，或修订当前作者拥有的待处理贡献。若该 change 已存在，当前作者必须拥有其最新 head。
 
-## 导入比较后的版本
-
-先将固定草稿与已接受文档比较，再把规范变更发布为一个原生 proposal：
-
-```tsx
-import { proposeAuthoredComparison } from "platejs/authored";
-import { compare } from "platejs/diff";
-
-const incomingDraft = [
-  { type: "paragraph", children: [{ text: "修订后的句子。" }] },
-];
-const comparison = await compare({
-  before: editor.read.value(),
-  after: incomingDraft,
-  schema: editor.read.schema,
-});
-const imported = proposeAuthoredComparison(editor, { comparison });
-```
-
-`groupIds` 可选择比较分组，并自动包含必要依赖。结果把选中的分组 ID 映射到原生 change ID。导入前会检查 schema、已接受内容和 authored frontier；遇到 `stale`、`blocked`、`invalid` 或 `unavailable` 时，不要当作已发布。三方比较完成决议后，只要选中的基线就是当前已接受文档，也可使用同一调用。
-
-在常用产品流程中，让 `SuggestionPlugin` 保留 markup projection，并在直接编辑和 proposal 输入之间切换后续输入：
+在常用产品流程中，让 `SuggestionPlugin` 在保留当前 projection 的同时切换 intent：
 
 ```tsx
 import { SuggestionPlugin } from "platejs/suggestion/react";
@@ -130,9 +109,9 @@ authored.api.setView({
 | `proposed` | 拟议结果，不含保留的审阅片段       |
 | `markup`   | 拟议内容，以及保留的删除和移动片段 |
 
-支持的组合是 `edit + accepted`、`edit + markup`、`propose + proposed` 和 `propose + markup`。`edit + markup` 保持待处理审阅内容可见，并把可精确映射的目标直接写入 accepted 内容。仅属于 pending 的目标、保留删除，以及跨 accepted 和 pending 内容的 selection 保持只读。
+`intent: 'edit'` 可与任意 projection 配合使用。编辑模式下的 markup 或 proposed view 会保留待处理 content 的可见性，同时把对独立 accepted content 的编辑直接发布。依赖待处理 content 的编辑仍会成为当前作者的 proposal。普通输入需要创建 proposal 时，请将 `intent: 'propose'` 与 `proposed` 或 `markup` 配合使用。
 
-Intent 和 projection 属于精确 view。读取使用该 view 的坐标。Authored input 会把可写目标映射到 intent 所属的文档；如果映射会改变 pending proposal，则拒绝该目标。同一个文档的两个已挂载 view 可以使用不同 policy。
+Intent 和 projection 属于精确 view。Selection、clipboard input、command 和 anchor 使用该 view 的坐标。同一个文档的两个已挂载 view 可以使用不同 policy。
 
 ## 审阅 change
 
@@ -209,7 +188,7 @@ const result = retainedAuthored.update.revert({ selection });
 
 原始记录保留其作者；补偿记录属于当前作者。后续依赖工作阻止补偿时，revert 返回 `blocked`；缺少所需内容时返回 `unavailable`。
 
-Plate History 通过 `editor.update.history.undo()` 和 `redo()` 反转本地交互 batch。本地 undo 也会恢复映射后的 selection。选择性 revert 会记录另一个 authored contribution。[版本历史示例](/docs/examples/version-history)可用两个作者编辑并 revert 一项保留贡献。
+Plate History 通过 `editor.api.history.undo()` 和 `redo()` 反转本地交互 batch。本地 undo 也会恢复映射后的 selection。选择性 revert 会记录另一个 authored contribution。[版本历史示例](/docs/examples/version-history)可用两个作者编辑并 revert 一项保留贡献。
 
 ## 保存文档
 
@@ -225,9 +204,11 @@ const restored = createEditor({
 });
 ```
 
-加载时使用相同的内容插件和 schema。要替换现有 editor 的文档，请调用 `editor.update.value.replace(savedDocument)`。加载过程会在发布 value 前验证 authored record 和 document schema。将 `meta.authored` 视为 codec 管理的数据。
+用相同的内容插件和 schema 将版本加载到新 editor。加载过程会在发布 value 前验证 authored record 和 document schema。将 `meta.authored` 视为 codec 管理的数据。本地 undo stack 从空开始。
 
-如果安装了[评论](/docs/comment)，请将 `editor.plugin(CommentsPlugin).api.getThreads()` 与文档一起保存。Thread record 有独立的持久化生命周期，并可引用 authored change ID。
+如果安装了[评论](/docs/comment)，请将 `editor.plugin(CommentsPlugin).api.toJSON()` 与文档、应用版本和对话代次一起原子保存。验证关联后，在新 editor 中用 `CommentsPlugin.configure({ initialState: { initialComments } })` 加载保存的 `CommentsJSON`。实时 thread target 只包含语义身份，通过 `attachment(id)` 读取位置。接受、拒绝和撤销建议决定都会保留讨论；解决或重新打开 thread 不进入文档 undo。
+
+历史预览和恢复保留当前对话，并只使用所选版本可验证的目标。参阅[评论的历史版本](/docs/comment#历史版本)。
 
 ## 导出显式投影
 

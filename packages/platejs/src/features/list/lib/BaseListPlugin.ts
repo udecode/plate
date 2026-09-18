@@ -1323,7 +1323,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
             !isListItem(nodeEntry[0]) ||
             state.selection.isExpanded()
           ) {
-            return false;
+            return next();
           }
           if (state.nodes.isEmpty(nodeEntry[0])) {
             return state.transaction((tx) => {
@@ -1359,7 +1359,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               ? state.nodes.block({ at: selection })
               : undefined;
 
-          if (!selection || !nodeEntry) return false;
+          if (!selection || !nodeEntry) return next();
 
           const [node, path] = nodeEntry;
 
@@ -1368,7 +1368,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
             state.selection.isExpanded() ||
             !state.points.isEnd(selection.focus, path)
           ) {
-            return false;
+            return next();
           }
 
           const result = next();

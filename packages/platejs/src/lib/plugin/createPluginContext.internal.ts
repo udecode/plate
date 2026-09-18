@@ -551,7 +551,10 @@ const createPluginAccess = (
         return result;
       },
       {
-        get(_target, key) {
+        get(target, key) {
+          if (key === 'toString' || key === 'valueOf') {
+            return Reflect.get(target, key);
+          }
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
             return undefined;
           }
@@ -584,7 +587,10 @@ const createPluginAccess = (
           ]);
         }),
       {
-        get(_target, key) {
+        get(target, key) {
+          if (key === 'toString' || key === 'valueOf') {
+            return Reflect.get(target, key);
+          }
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
             return undefined;
           }
@@ -597,7 +603,10 @@ const createPluginAccess = (
     new Proxy(
       (nextPolicy: EditorUpdatePolicy) => createScopedUpdateFacade(nextPolicy),
       {
-        get(_target, key) {
+        get(target, key) {
+          if (key === 'toString' || key === 'valueOf') {
+            return Reflect.get(target, key);
+          }
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
             return undefined;
           }

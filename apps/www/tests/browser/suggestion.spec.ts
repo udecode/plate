@@ -20,6 +20,242 @@ type SuggestionPaintSnapshot = {
   text: string;
 };
 
+const enterSuggestionMode = async (page: Page) => {
+  await page.getByRole('button', { name: 'Editing', exact: true }).click();
+  await page
+    .getByRole('menuitemradio', { name: 'Suggestion', exact: true })
+    .click();
+  await expect(
+    page.getByRole('button', { name: 'Suggestion', exact: true })
+  ).toBeVisible();
+};
+
+for (const [name, route] of [
+  ['editor-ai', '/blocks/editor-ai'],
+  ['playground', '/blocks/playground'],
+] as const) {
+  test(`${name} opens in editing mode with pending suggestions visible`, async ({
+    page,
+  }) => {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+    await page.goto(route, { waitUntil: 'commit' });
+    const root = page.locator('[data-editor="true"]').first();
+
+    await expect(root).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Editing', exact: true })
+    ).toBeVisible();
+    await expect(
+      root
+        .locator('[data-editor-authored-author="alice"]')
+        .filter({ hasText: 'suggestions' })
+        .first()
+    ).toBeVisible();
+    await expect(
+      root.locator(
+        '[data-editor-authored-author="bob"][data-editor-retained="delete"]'
+      )
+    ).toContainText('mark text for removal');
+    runtimeErrors.assertNone();
+  });
+}
+
+test('playground types and pastes direct edits without changing pending suggestions', async ({
+  context,
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/blocks/playground', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(page, 'playground editing', root);
+  const headingText = 'Welcome to the Plate Playground!';
+  const heading = root.locator('[data-editor-node="element"]').first();
+  const pending = root.locator('[data-editor-authored-status="pending"]');
+
+  await editor.ready({ editor: 'visible', text: headingText });
+  const pendingIds = await pending.evaluateAll((elements) =>
+    elements.map((element) =>
+      element.getAttribute('data-editor-authored-change')
+    )
+  );
+  await editor.selection.collapse({
+    path: [0, 0],
+    offset: headingText.length,
+  });
+  await editor.focus();
+  await page.keyboard.type('?');
+
+  await editor.assert.modelBlockText(0, `${headingText}?`);
+  await page.evaluate(async () => {
+    await navigator.clipboard.writeText('Pasted');
+  });
+  await root.press('ControlOrMeta+V');
+  await editor.assert.modelBlockText(0, `${headingText}?Pasted`);
+  await expect(
+    heading.locator('[data-editor-authored-kind="insert"]')
+  ).toHaveCount(0);
+  expect(
+    await pending.evaluateAll((elements) =>
+      elements.map((element) =>
+        element.getAttribute('data-editor-authored-change')
+      )
+    )
+  ).toEqual(pendingIds);
+  runtimeErrors.assertNone();
+});
+
+test('playground deletes commented text directly in editing mode', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  await page.goto('/blocks/playground-demo', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'playground commented deletion',
+    root
+  );
+  const authored = root.locator('[data-editor-authored-change]');
+
+  await editor.ready({
+    editor: 'visible',
+    text: 'Welcome to the Plate Playground!',
+  });
+  await expect(
+    page.getByRole('button', { name: 'Editing', exact: true })
+  ).toBeVisible();
+  const before = await editor.get.modelBlockText(3);
+  const changeIds = await authored.evaluateAll((elements) => [
+    ...new Set(
+      elements.map((element) =>
+        element.getAttribute('data-editor-authored-change')
+      )
+    ),
+  ]);
+
+  expect(before).toContain('comments on many text segments.');
+  await editor.selection.select({
+    anchor: { path: [3, 3, 0], offset: 0 },
+    focus: { path: [3, 4], offset: 23 },
+  });
+  await editor.focus();
+  await page.keyboard.press('Backspace');
+
+  await editor.assert.modelBlockText(
+    3,
+    before!.replace('comments on many text segments.', '')
+  );
+  expect(
+    await authored.evaluateAll((elements) => [
+      ...new Set(
+        elements.map((element) =>
+          element.getAttribute('data-editor-authored-change')
+        )
+      ),
+    ])
+  ).toEqual(changeIds);
+  await expect(
+    root.locator('[data-discussion-block-trigger]')
+  ).toHaveAccessibleName('Open 5 discussion items for this block');
+  runtimeErrors.assertNone();
+});
+
+test('playground deletes mixed accepted and pending text directly in editing mode', async ({
+  page,
+}, testInfo) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+  await page.goto('/', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'playground mixed pending deletion',
+    root
+  );
+
+  await editor.ready({
+    editor: 'visible',
+    text: 'Welcome to the Plate Playground!',
+  });
+  await expect(
+    page.getByRole('button', { name: 'Editing', exact: true })
+  ).toBeVisible();
+  const paragraph = root.locator('.editor-paragraph').filter({
+    hasText: 'Review and refine content seamlessly.',
+  });
+  const authored = root.locator('[data-editor-authored-change]');
+  const [before, pendingIds] = await Promise.all([
+    editor.get.modelBlockText(3),
+    authored.evaluateAll((elements) => [
+      ...new Set(
+        elements.map((element) =>
+          element.getAttribute('data-editor-authored-change')
+        )
+      ),
+    ]),
+  ]);
+  if (!before) throw new Error('Missing paragraph text.');
+  const prefix = 'Review and refine content seamlessly. Use ';
+  await editor.selection.dragTextRange({
+    endAffinity: 'after',
+    endOffset: 'suggestions'.length,
+    endText: 'suggestions',
+    startOffset: prefix.length - 'Use '.length,
+    text: prefix,
+  });
+  await expect
+    .poll(async () => {
+      const selectedText = await editor.get.selectedText();
+
+      return selectedText.replaceAll('\u00A0', '');
+    })
+    .toBe('Use suggestions');
+  const selection = await editor.selection.get();
+  expect(selection).not.toBeNull();
+  expect(selection?.anchor).not.toEqual(selection?.focus);
+  await expect(root).toBeFocused();
+  await page.keyboard.press('Backspace');
+
+  await editor.assert.modelBlockText(3, before.replace('Use suggestions', ''));
+  const remainingIds = await authored.evaluateAll((elements) => [
+    ...new Set(
+      elements.map((element) =>
+        element.getAttribute('data-editor-authored-change')
+      )
+    ),
+  ]);
+  expect(remainingIds).toHaveLength(pendingIds.length - 1);
+  expect(remainingIds.every((id) => pendingIds.includes(id))).toBe(true);
+  await expect(
+    paragraph
+      .locator('[data-editor-retained="delete"]')
+      .filter({ hasText: 'Use' })
+  ).toHaveCount(0);
+  await paragraph.scrollIntoViewIfNeeded();
+  await testInfo.attach('mixed-pending-direct-edit.png', {
+    body: await paragraph.screenshot({
+      caret: 'initial',
+      path: testInfo.outputPath('mixed-pending-direct-edit.png'),
+    }),
+    contentType: 'image/png',
+  });
+  runtimeErrors.assertNone();
+});
+
+test('suggestion demo opens in suggesting mode', async ({ page }) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  await page.goto(ROUTE, { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+
+  await expect(root).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Suggestion', exact: true })
+  ).toBeVisible();
+  runtimeErrors.assertNone();
+});
+
 test('loads the saved editor-ai suggestions with linked replies and empty initial history', async ({
   page,
 }) => {
@@ -28,6 +264,9 @@ test('loads the saved editor-ai suggestions with linked replies and empty initia
   const root = page.locator('[data-editor="true"]').first();
   const harness = createBrowserEditorHarness(page, 'saved editor-ai', root);
   await harness.ready({ editor: 'visible', text: 'Collaborative Editing' });
+  await expect(
+    page.getByRole('button', { name: 'Editing', exact: true })
+  ).toBeVisible();
 
   for (const [author, text] of [
     ['alice', 'suggestions'],
@@ -64,14 +303,17 @@ test('loads the saved editor-ai suggestions with linked replies and empty initia
   await alice.hover();
   await alice.getByRole('button', { name: 'Accept suggestion' }).click();
   await expect(alice).toHaveCount(0);
-  await root.focus();
-  await page.keyboard.press('ControlOrMeta+z');
+  await harness.undo();
+  await root.locator('[data-discussion-block-trigger]').first().click();
   await expect(alice).toHaveCount(1);
   await expect(root.locator('a[href="/docs/suggestion"]')).toHaveText(
     'suggestions'
   );
   await page.reload({ waitUntil: 'commit' });
   await harness.ready({ editor: 'visible', text: 'Collaborative Editing' });
+  await expect(
+    page.getByRole('button', { name: 'Editing', exact: true })
+  ).toBeVisible();
   expect(
     ((await harness.get.history()) as { undos: unknown[] }).undos
   ).toHaveLength(0);
@@ -91,6 +333,7 @@ test("restores another author's suggestion after canceling text typed inside it"
   const root = page.locator('[data-editor="true"]').first();
   const editor = createBrowserEditorHarness(page, 'saved editor-ai', root);
   await editor.ready({ editor: 'visible', text: 'Collaborative Editing' });
+  await enterSuggestionMode(page);
   const charlie = root.locator(
     '[data-editor-authored-author="charlie"][data-editor-authored-kind="insert"]'
   );
@@ -155,7 +398,7 @@ test("restores another author's suggestion after canceling text typed inside it"
   runtimeErrors.assertNone();
 });
 
-test('preserves the selected mode when saving and initializes it when reloading a snapshot', async ({
+test('keeps markup visible when changing mode and restores the initial mode when reloading a snapshot', async ({
   page,
 }) => {
   const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
@@ -201,21 +444,24 @@ test('loads the homepage playground with its original suggestion set', async ({
 
   await expect(
     editor.getByRole('heading', {
-      name: PLAYGROUND_TITLE,
+      name: 'Welcome to the Plate Playground!',
       exact: true,
     })
   ).toBeVisible({ timeout: 20_000 });
   await expect(
-    page.getByRole('button', { name: 'Editing', exact: true })
+    editor
+      .locator('[data-editor-authored-author="alice"]')
+      .filter({ hasText: 'suggestions' })
   ).toBeVisible();
+  await enterSuggestionMode(page);
   await expect(
     editor
-      .locator('[data-editor-authored-kind="insert"]')
+      .locator('[data-editor-authored-author="alice"]')
       .filter({ hasText: 'suggestions' })
   ).toBeVisible();
   await expect(
     editor
-      .locator('[data-editor-authored-kind="insert"]')
+      .locator('[data-editor-authored-author="alice"]')
       .filter({ hasText: 'like this added text' })
   ).toBeVisible();
   await expect(editor.locator('[data-editor-retained="delete"]')).toContainText(
@@ -253,6 +499,102 @@ test('loads the homepage playground with its original suggestion set', async ({
   await expect(
     editor.locator('[data-discussion-block-trigger]')
   ).toHaveAccessibleName('Open 5 discussion items for this block');
+  runtimeErrors.assertNone();
+});
+
+test('paints the first typed homepage suggestion with the inserted character', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  await page.goto('/blocks/playground-demo', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(page, 'homepage suggestions', root);
+
+  await editor.ready({
+    editor: 'visible',
+    text: 'Welcome to the Plate Playground!',
+  });
+  await enterSuggestionMode(page);
+  runtimeErrors.reset();
+
+  const blockIndex = 1;
+  const blockTexts = await editor.get.modelBlockTexts();
+  const before = blockTexts[blockIndex];
+  const insertionText = 'capabilities';
+  const textNode =
+    ". This playground showcases just a part of Plate's capabilities. ";
+  const at = textNode.indexOf(insertionText);
+
+  const capturePaint = (paintIndex: number) =>
+    page.evaluate(
+      async ({ captureIndex, currentBlockIndex }) => {
+        await new Promise<void>((resolve) => {
+          requestAnimationFrame(() => {
+            resolve();
+          });
+        });
+        const editorRoot = document.querySelector('[data-editor="true"]') as
+          | (HTMLElement & {
+              __pliteBrowserHandle?: {
+                getBlockText: (index: number) => string | null;
+              };
+            })
+          | null;
+        const element = editorRoot
+          ?.querySelectorAll<HTMLElement>('[data-editor-node="element"]')
+          .item(currentBlockIndex);
+        if (!element) throw new Error('Missing playground paragraph.');
+        const spans = [
+          ...element.querySelectorAll('[data-editor-authored-kind="insert"]'),
+        ].map((node, index) => {
+          const range = document.createRange();
+
+          range.setStart(element, 0);
+          range.setEndBefore(node);
+          const start = range.toString().length;
+          const text = node.textContent ?? '';
+
+          return { end: start + text.length, index, start, text };
+        });
+
+        return {
+          input: captureIndex,
+          model:
+            editorRoot?.__pliteBrowserHandle?.getBlockText(currentBlockIndex) ??
+            null,
+          spans,
+          text: element.textContent ?? '',
+        } satisfies SuggestionPaintSnapshot;
+      },
+      { captureIndex: paintIndex, currentBlockIndex: blockIndex }
+    );
+
+  await editor.selection.collapse({ path: [blockIndex, 2], offset: at });
+  await editor.focus();
+  await page.keyboard.type('w');
+  const firstPaint = await capturePaint(0);
+  await page.keyboard.type('w');
+  const secondPaint = await capturePaint(1);
+  const first = before.replace(insertionText, `w${insertionText}`);
+  const second = before.replace(insertionText, `ww${insertionText}`);
+
+  expect(firstPaint).toMatchObject({
+    input: 0,
+    model: first,
+    spans: [{ index: 0, text: 'w' }],
+  });
+  expect(firstPaint.text).toContain("Plate's wcapabilities.");
+  expect(secondPaint).toMatchObject({
+    input: 1,
+    model: second,
+    spans: [
+      { index: 0, text: 'w' },
+      { index: 1, text: 'w' },
+    ],
+  });
+  expect(secondPaint.spans[0].end).toBe(secondPaint.spans[1].start);
+  expect(secondPaint.text).toContain("Plate's wwcapabilities.");
   runtimeErrors.assertNone();
 });
 
@@ -314,7 +656,7 @@ test('keeps pending suggestions visible through both homepage mode controls', as
     .filter({ hasText: 'Welcom' })
     .last();
   const seededInsert = root
-    .locator('[data-editor-authored-kind="insert"]')
+    .locator('[data-editor-authored-author="alice"]')
     .filter({ hasText: 'suggestions' });
   const seededDelete = root
     .locator('[data-editor-retained="delete"]')
@@ -355,10 +697,14 @@ test('keeps pending suggestions visible through both homepage mode controls', as
   expect(await editor.get.modelValue()).toEqual(valueBefore);
   expect(await editor.get.history()).toEqual(historyBefore);
 
-  await editor.selection.select({
-    anchor: { path: [1, 0], offset: 0 },
-    focus: { path: [1, 0], offset: 4 },
-  });
+  const selectForFloatingToggle = async () => {
+    await editor.selection.collapse({ path: [1, 0], offset: 4 });
+    await editor.focus();
+    for (let index = 0; index < 4; index++) {
+      await page.keyboard.press('Shift+ArrowLeft');
+    }
+  };
+  await selectForFloatingToggle();
   const floatingToggle = page
     .locator('[role="toolbar"]')
     .last()
@@ -371,10 +717,7 @@ test('keeps pending suggestions visible through both homepage mode controls', as
   await expect(replacementInsert).toBeVisible();
   await expect(replacementDelete).toBeVisible();
 
-  await editor.selection.select({
-    anchor: { path: [1, 0], offset: 0 },
-    focus: { path: [1, 0], offset: 4 },
-  });
+  await selectForFloatingToggle();
   await expect(floatingToggle).toBeVisible();
   await floatingToggle.click();
   await expect(
@@ -397,6 +740,7 @@ test('keeps pending suggestions visible through both homepage mode controls', as
   await expect(review).toHaveCount(0);
   await root.focus();
   await page.keyboard.press('ControlOrMeta+z');
+  await discussion.click();
   await expect(review).toHaveCount(1);
   await expect(seededInsert).toBeVisible();
   runtimeErrors.assertNone();
@@ -407,7 +751,8 @@ test('undoes accepting the contiguous homepage insertion', async ({ page }) => {
 
   await page.goto('/', { waitUntil: 'commit' });
   const root = page.locator('[data-editor="true"]').first();
-  const inserted = root.locator('[data-editor-authored-kind="insert"]');
+  const editor = createBrowserEditorHarness(page, 'homepage suggestions', root);
+  const aliceSuggestion = root.locator('[data-editor-authored-author="alice"]');
 
   await expect(
     root.getByRole('heading', {
@@ -415,11 +760,8 @@ test('undoes accepting the contiguous homepage insertion', async ({ page }) => {
       exact: true,
     })
   ).toBeVisible({ timeout: 20_000 });
-  const history = (await createBrowserEditorHarness(
-    page,
-    'homepage suggestions',
-    root
-  ).get.history()) as { undos: unknown[] };
+  await enterSuggestionMode(page);
+  const history = (await editor.get.history()) as { undos: unknown[] };
 
   expect(history.undos).toHaveLength(0);
   await root
@@ -436,13 +778,20 @@ test('undoes accepting the contiguous homepage insertion', async ({ page }) => {
   await card.hover();
   await card.getByRole('button', { name: 'Accept suggestion' }).click();
   await expect(card).toHaveCount(0);
-  await root.focus();
-  await page.keyboard.press('ControlOrMeta+z');
+  await editor.undo();
+  await root
+    .getByRole('button', {
+      name: 'Open 5 discussion items for this block',
+      exact: true,
+    })
+    .click();
 
   await expect(card).toHaveCount(1);
-  await expect(inserted.filter({ hasText: 'suggestions' })).toBeVisible();
   await expect(
-    inserted.filter({ hasText: 'like this added text' })
+    aliceSuggestion.filter({ hasText: 'suggestions' })
+  ).toBeVisible();
+  await expect(
+    aliceSuggestion.filter({ hasText: 'like this added text' })
   ).toBeVisible();
   runtimeErrors.assertNone();
 });
@@ -452,6 +801,7 @@ test('stops undo before seeded homepage suggestions', async ({ page }) => {
 
   await page.goto('/', { waitUntil: 'commit' });
   const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(page, 'homepage suggestions', root);
 
   await expect(
     root.getByRole('heading', {
@@ -459,6 +809,7 @@ test('stops undo before seeded homepage suggestions', async ({ page }) => {
       exact: true,
     })
   ).toBeVisible({ timeout: 20_000 });
+  await enterSuggestionMode(page);
   await root
     .getByRole('button', {
       name: 'Open 5 discussion items for this block',
@@ -473,11 +824,11 @@ test('stops undo before seeded homepage suggestions', async ({ page }) => {
 
   await card.hover();
   await card.getByRole('button', { name: 'Accept suggestion' }).click();
+  await card.getByRole('button', { name: 'Accept related' }).click();
   await expect(retained).toHaveCount(0);
-  await root.focus();
-  await page.keyboard.press('ControlOrMeta+z');
+  await editor.undo();
   await expect(retained).toContainText('mark text for removal');
-  await page.keyboard.press('ControlOrMeta+z');
+  await editor.undo();
   await expect(retained).toContainText('mark text for removal');
   runtimeErrors.assertNone();
 });
@@ -507,6 +858,7 @@ for (const action of ['Accept', 'Reject'] as const) {
     const image = root.locator('.editor-image img');
 
     await expect(image).toBeVisible({ timeout: 20_000 });
+    await enterSuggestionMode(page);
     await expect
       .poll(() =>
         image.evaluate((element) => (element as HTMLImageElement).naturalWidth)
@@ -698,13 +1050,13 @@ test('paints one caret inside redlined text during pointer and arrow navigation'
   page,
 }, testInfo) => {
   type CaretFrame = {
+    expectedOffset: number;
     key: string;
-    offset: number;
-    inside: boolean;
-    collapsed: boolean;
     dx: number;
     dy: number;
     height: number;
+    viewFragment: boolean;
+    viewOffset: number | null;
   };
   const { editor, root, runtimeErrors } = await openSuggestions(page);
   const retained = root.locator('[data-editor-retained="delete"]');
@@ -723,7 +1075,10 @@ test('paints one caret inside redlined text during pointer and arrow navigation'
   await page.evaluate(() => {
     const trace: Array<{ type: string; buttons: number; retained: boolean }> =
       [];
-    Object.assign(window, { __retainedCaretInputTrace: trace });
+    Object.assign(window, {
+      __retainedCaretExpectedOffset: 6,
+      __retainedCaretInputTrace: trace,
+    });
     for (const type of [
       'pointerdown',
       'mousedown',
@@ -748,6 +1103,11 @@ test('paints one caret inside redlined text during pointer and arrow navigation'
     }
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      const state = window as typeof window & {
+        __retainedCaretExpectedOffset: number;
+      };
+      state.__retainedCaretExpectedOffset += event.key === 'ArrowLeft' ? -1 : 1;
+      const expectedOffset = state.__retainedCaretExpectedOffset;
       const frame = new Promise<CaretFrame | null>((resolve) => {
         // Sample the first frame after the key handler schedules its DOM reads.
         queueMicrotask(() =>
@@ -759,22 +1119,44 @@ test('paints one caret inside redlined text during pointer and arrow navigation'
             const retainedElement = document.querySelector(
               '[data-editor-retained="delete"]'
             );
-            if (!selection?.rangeCount || !caretElement) {
+            const retainedText = retainedElement
+              ? document
+                  .createTreeWalker(retainedElement, NodeFilter.SHOW_TEXT)
+                  .nextNode()
+              : null;
+            const editorRoot = document.querySelector(
+              '[data-editor="true"]'
+            ) as
+              | (HTMLElement & {
+                  __pliteBrowserHandle?: {
+                    getViewSelection: () => {
+                      focus?: {
+                        fragmentId?: string;
+                        point?: { offset?: number };
+                      };
+                    } | null;
+                  };
+                })
+              | null;
+            if (!selection?.rangeCount || !caretElement || !retainedText) {
               resolve(null);
               return;
             }
-            const native = selection.getRangeAt(0).getBoundingClientRect();
+            const expected = document.createRange();
+            expected.setStart(retainedText, expectedOffset);
+            expected.collapse(true);
+            const expectedRect = expected.getBoundingClientRect();
             const painted = caretElement.getBoundingClientRect();
+            const viewSelection =
+              editorRoot?.__pliteBrowserHandle?.getViewSelection();
             resolve({
+              expectedOffset,
               key: event.key,
-              offset: selection.anchorOffset,
-              inside:
-                !!selection.anchorNode &&
-                !!retainedElement?.contains(selection.anchorNode),
-              collapsed: selection.isCollapsed,
-              dx: Math.abs(painted.left - native.left),
-              dy: Math.abs(painted.top - native.top),
+              dx: Math.abs(painted.left - expectedRect.left),
+              dy: Math.abs(painted.top - expectedRect.top),
               height: painted.height,
+              viewFragment: Boolean(viewSelection?.focus?.fragmentId),
+              viewOffset: viewSelection?.focus?.point?.offset ?? null,
             });
           })
         );
@@ -796,10 +1178,10 @@ test('paints one caret inside redlined text during pointer and arrow navigation'
       : null;
     if (arrowKey) {
       expect(arrowFrame).toMatchObject({
+        expectedOffset: offset,
         key: arrowKey,
-        offset,
-        inside: true,
-        collapsed: true,
+        viewFragment: true,
+        viewOffset: offset,
       });
     }
     await expect

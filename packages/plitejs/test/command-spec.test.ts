@@ -129,6 +129,44 @@ describe('pure command transaction specs', () => {
     }
   });
 
+  it('keeps handle fallback implicit and around rejection terminal', () => {
+    let handledDownstream = 0;
+    const handled = createTextEditor(({ handle }) => [
+      handle(editorCommands.insertText, () => false),
+      handle(editorCommands.insertText, ({ state }) => {
+        handledDownstream += 1;
+
+        return state.transaction(() => {});
+      }),
+    ]);
+    let rejectedDownstream = 0;
+    const rejected = createTextEditor(({ around, handle }) => [
+      around(editorCommands.insertText, () => false),
+      handle(editorCommands.insertText, ({ state }) => {
+        rejectedDownstream += 1;
+
+        return state.transaction(() => {});
+      }),
+    ]);
+
+    assert.equal(
+      dispatchCommand(handled, editorCommands.insertText, { text: 'x' }) ===
+        false,
+      false
+    );
+    assert.equal(handledDownstream, 1);
+    const rejectedEvaluation = evaluateCommand(
+      rejected,
+      editorCommands.insertText,
+      { text: 'x' }
+    );
+
+    assert.equal(rejectedEvaluation.result, false);
+    assert.equal(rejectedEvaluation.nativeEquivalent, false);
+    assert.deepEqual(rejectedEvaluation.materialHandlers, []);
+    assert.equal(rejectedDownstream, 0);
+  });
+
   it('keeps cached command state reads live across committed changes', () => {
     const observed: Array<{
       selectionOffset: number | undefined;
@@ -511,6 +549,8 @@ describe('pure command transaction specs', () => {
                 false
               );
             }
+            if (action === 'around-false') return false;
+
             return evaluate(position + 1, nextInput, true);
           };
           const command = defineCommand<Input>('test.generated-chain', {

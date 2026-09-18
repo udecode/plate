@@ -3,7 +3,7 @@ import type { Registry } from 'shadcn/schema';
 export const editorComponents: Registry['items'] = [
   {
     dependencies: [],
-    description: 'Live editor content and container components.',
+    description: 'Live editor frame, scroll container, and content components.',
     files: [
       { path: 'components/editor/editor.tsx', type: 'registry:component' },
     ],
@@ -121,7 +121,7 @@ export const editorComponents: Registry['items'] = [
       examples: ['align-demo'],
     },
     name: 'align-toolbar-button',
-    registryDependencies: ['dropdown-menu', '@plate/toolbar'],
+    registryDependencies: ['@plate/editor-dropdown-menu', '@plate/toolbar'],
     title: 'Align Toolbar Button',
     type: 'registry:component',
   },
@@ -147,7 +147,7 @@ export const editorComponents: Registry['items'] = [
     },
     name: 'import-toolbar-button',
     registryDependencies: [
-      'dropdown-menu',
+      '@plate/editor-dropdown-menu',
       '@plate/docx-source',
       '@plate/toolbar',
     ],
@@ -186,7 +186,7 @@ export const editorComponents: Registry['items'] = [
     registryDependencies: [
       '@plate/docx-export',
       '@plate/docx-source',
-      'dropdown-menu',
+      '@plate/editor-dropdown-menu',
       '@plate/toolbar',
       '@plate/editor-static',
       '@plate/editor',
@@ -262,7 +262,8 @@ export const editorComponents: Registry['items'] = [
   },
   {
     dependencies: ['lucide-react', 'platejs'],
-    description: 'A toolbar button for adding inline comments.',
+    description:
+      'Toolbar controls for creating comments and discovering every published conversation.',
     files: [
       {
         path: 'components/editor/comment-toolbar-button.tsx',
@@ -280,7 +281,12 @@ export const editorComponents: Registry['items'] = [
       examples: ['discussion-demo', 'floating-toolbar-demo'],
     },
     name: 'comment-toolbar-button',
-    registryDependencies: ['@plate/comment', '@plate/toolbar'],
+    registryDependencies: [
+      '@plate/comment',
+      '@plate/toolbar',
+      'button',
+      'dialog',
+    ],
     title: 'Comment Toolbar Button',
     type: 'registry:component',
   },
@@ -397,7 +403,7 @@ export const editorComponents: Registry['items'] = [
       examples: ['list-demo'],
     },
     name: 'list-toolbar-button',
-    registryDependencies: ['dropdown-menu', '@plate/toolbar'],
+    registryDependencies: ['@plate/editor-dropdown-menu', '@plate/toolbar'],
     title: 'List Toolbar Button',
     type: 'registry:component',
   },
@@ -453,7 +459,8 @@ export const editorComponents: Registry['items'] = [
     },
     name: 'insert-toolbar-button',
     registryDependencies: [
-      'dropdown-menu',
+      '@plate/editor-dropdown-menu',
+      '@plate/link',
       '@plate/toolbar',
       '@plate/transforms',
     ],
@@ -474,7 +481,7 @@ export const editorComponents: Registry['items'] = [
       examples: ['line-height-demo'],
     },
     name: 'line-height-toolbar-button',
-    registryDependencies: ['@plate/toolbar', 'dropdown-menu'],
+    registryDependencies: ['@plate/editor-dropdown-menu', '@plate/toolbar'],
     title: 'Line Height Toolbar Button',
     type: 'registry:component',
   },
@@ -561,7 +568,7 @@ export const editorComponents: Registry['items'] = [
     registryDependencies: [
       '@plate/toolbar',
       'input',
-      'dropdown-menu',
+      '@plate/editor-dropdown-menu',
       'alert-dialog',
     ],
     title: 'Media Toolbar Button',
@@ -581,7 +588,7 @@ export const editorComponents: Registry['items'] = [
     },
     name: 'mode-toolbar-button',
     registryDependencies: [
-      'dropdown-menu',
+      '@plate/editor-dropdown-menu',
       '@plate/suggestion',
       '@plate/toolbar',
     ],
@@ -606,7 +613,7 @@ export const editorComponents: Registry['items'] = [
       examples: ['basic-marks-demo', 'basic-nodes-pro'],
     },
     name: 'more-toolbar-button',
-    registryDependencies: ['dropdown-menu', '@plate/toolbar'],
+    registryDependencies: ['@plate/editor-dropdown-menu', '@plate/toolbar'],
     title: 'More Toolbar Button',
     type: 'registry:component',
   },
@@ -686,11 +693,7 @@ export const editorComponents: Registry['items'] = [
       examples: ['basic-nodes-demo', 'basic-nodes-pro'],
     },
     name: 'turn-into-toolbar-button',
-    registryDependencies: [
-      '@plate/editor-dropdown-menu',
-      '@plate/toolbar',
-      '@plate/transforms',
-    ],
+    registryDependencies: ['@plate/editor-dropdown-menu', '@plate/toolbar'],
     title: 'Turn Into Toolbar Button',
     type: 'registry:component',
   },

@@ -383,7 +383,10 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
         selection: editor.read.selection(),
         status: store.get('chat')?.status,
         messageCount: store.get('chat')?.messages.length,
-        blockChunks: store.get('_blockChunks').length,
+        blockChunks: store
+          .get('previewValue')
+          .map((node) => NodeApi.string(node))
+          .join('').length,
         streaming: store.get('streaming'),
         mode: store.get('mode'),
         aborted: http.requests.map(({ signal }) => signal.aborted),
@@ -418,7 +421,12 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
       request.send({ type: 'text-start', id: 't' });
       request.send({ type: 'text-delta', id: 't', delta: 'x' });
       await waitFor(
-        () => store.get('_blockChunks').trim() === 'x',
+        () =>
+          store
+            .get('previewValue')
+            .map((node) => NodeApi.string(node))
+            .join('')
+            .trim() === 'x',
         'first chunk application'
       );
       firstChunk = performance.now() - firstStart;
@@ -450,16 +458,22 @@ export async function runProbe(variant: Variant, fixture: Cohort) {
       for (let index = 1; index < 100; index++) {
         request.send({ type: 'text-delta', id: 't', delta: 'x' });
         await waitFor(
-          () => store.get('_blockChunks').trim() === 'x'.repeat(index + 1),
+          () =>
+            store
+              .get('previewValue')
+              .map((node) => NodeApi.string(node))
+              .join('')
+              .trim() === 'x'.repeat(index + 1),
           'exact chunk application'
         );
       }
       chunks = performance.now() - chunkStart;
       streamCommits = commits - beforeStream;
-      const path = store.get('_blockPath');
+      const blockKey = store.get('_blockKey');
       check(
-        path &&
-          NodeApi.string(editor.read.nodes.get(path)![0]) === 'x'.repeat(100),
+        blockKey &&
+          NodeApi.string(editor.read.nodes.get(blockKey)![0]) ===
+            'x'.repeat(100),
         'exact model text'
       );
       check(http.requests.length === 1, 'one stream consumer');

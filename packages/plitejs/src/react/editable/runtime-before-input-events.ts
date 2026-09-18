@@ -15,12 +15,12 @@ import {
   recordPliteReactRender,
 } from '../render-profiler';
 import { getInputEventTargetRanges } from './dom-input-event';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { completeDuplicateEditableEditingEpochCommand } from './editing-epoch-adapter';
 import {
   type EditableCommand,
   prepareEditableBeforeInputKernel,
 } from './editing-kernel';
-import { getModelOwnedHistoryFocusRepair } from './history-focus';
 import {
   armModelOwnedTextInputGuard,
   getNestedEditableDOMSelectionRoot,
@@ -248,6 +248,7 @@ export const queuePendingCompositionModelInput = ({
               command: capturedInput.command,
               data: capturedInput.data,
               editor,
+              inputController,
               inputType: capturedInput.inputType,
               mergeHistory,
               native: false,
@@ -385,6 +386,7 @@ export const useRuntimeBeforeInputEvents = ({
   queuePendingNativeTextInput,
   readOnly,
   repair,
+  runtime,
   selection,
   setComposing,
   trace,
@@ -409,6 +411,7 @@ export const useRuntimeBeforeInputEvents = ({
   }) => boolean;
   readOnly: boolean;
   repair: EditableEventRuntime['repair'];
+  runtime: EditableDOMRuntime;
   selection: EditableEventRuntime['selection'];
   setComposing: EditableEventRuntime['composition']['setComposing'];
   trace: EditableEventRuntime['trace'];
@@ -448,28 +451,16 @@ export const useRuntimeBeforeInputEvents = ({
         );
         if (
           profilePliteReactDuration('beforeinput-native-history', () =>
-            applyModelOwnedNativeHistoryEvent({ editor, event, readOnly })
+            applyModelOwnedNativeHistoryEvent({
+              editor,
+              event,
+              readOnly,
+              runtime,
+            })
           )
         ) {
           event.preventDefault();
           event.stopImmediatePropagation();
-          const historyFocusRepair = getModelOwnedHistoryFocusRepair({
-            editor,
-            getActiveContentRootOwner:
-              pliteRuntimeContext?.getActiveContentRootOwner,
-            getContentRootOwnerViewEditor:
-              pliteRuntimeContext?.getContentRootOwnerViewEditor,
-            getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
-          });
-
-          if (historyFocusRepair.repair) {
-            repair.requestEditableRepair(
-              historyFocusRepair.repair,
-              historyFocusRepair.focusEditor
-                ? { focusEditor: historyFocusRepair.focusEditor }
-                : undefined
-            );
-          }
           handledDOMBeforeInputRef.current = true;
           return;
         }
@@ -535,6 +526,7 @@ export const useRuntimeBeforeInputEvents = ({
                 command: modelSelectionCommand,
                 data: event.data ?? modelSelectionCommand.text,
                 editor,
+                inputController,
                 inputType: event.inputType,
                 mergeHistory:
                   isCompositionFinalInputType(event.inputType) &&
@@ -764,6 +756,7 @@ export const useRuntimeBeforeInputEvents = ({
                     command: decision.command,
                     data,
                     editor: targetEditor,
+                    inputController,
                     inputType: type,
                     mergeHistory:
                       isCompositionFinalInputType(type) &&
@@ -1086,6 +1079,7 @@ export const useRuntimeBeforeInputEvents = ({
                     command: decision.command,
                     data,
                     editor,
+                    inputController,
                     inputType: type,
                     mergeHistory:
                       isCompositionFinalInputType(type) &&
@@ -1145,6 +1139,7 @@ export const useRuntimeBeforeInputEvents = ({
       queuePendingNativeTextInput,
       readOnly,
       repair,
+      runtime,
       selection,
       setComposing,
       pliteRuntimeContext,
@@ -1164,6 +1159,7 @@ export const useRuntimeBeforeInputEvents = ({
             command: { inputType: 'insertText', kind: 'insert-text', text },
             data: text,
             editor,
+            inputController,
             inputType: 'insertText',
             mergeHistory:
               shouldMergeEditableCompositionHistory(inputController),

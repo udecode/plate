@@ -1,13 +1,20 @@
 ---
 date: 2026-04-08
 topic: plite-master-roadmap
+status: superseded
 ---
 
 # Plite Master Roadmap
 
+> Historical draft-program snapshot. Its “current,” “live,” and “canonical”
+> wording applies to the recorded April program, not present work. Use the
+> [Plite entrypoint](../plite/agent-start.md) and [feature review ledger](../research/reviews.md)
+> for current decisions, plans, and evidence. Prior alternatives and results
+> remain below for reconciliation.
+
 ## Purpose
 
-Canonical sequence for the `plite` rewrite program.
+Recorded sequence for the prior `plite` rewrite program.
 
 This file owns:
 
@@ -25,15 +32,15 @@ It does **not** own:
 
 Use it with:
 
-- [overview.md](/Users/zbeyens/git/plate-2/docs/plite/overview.md)
-- [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/plite/release-readiness-decision.md)
-- [replacement-family-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-family-ledger.md)
-- [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md)
-- [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/release-file-review-ledger.md)
-- [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md)
-- [live-shape-register.md](/Users/zbeyens/git/plate-2/docs/plite/references/live-shape-register.md)
-- [architecture-contract.md](/Users/zbeyens/git/plate-2/docs/plite/references/architecture-contract.md)
-- [deletion-closure-protocol.md](/Users/zbeyens/git/plate-2/docs/plite/references/deletion-closure-protocol.md)
+- [overview.md](../plite/overview.md)
+- [release-readiness-decision.md](../plite/release-readiness-decision.md)
+- [replacement-family-ledger.md](../plite/references/replacement-family-ledger.md)
+- [replacement-gates-scoreboard.md](../plite/replacement-gates-scoreboard.md)
+- [release-file-review-ledger.md](../plite/release-file-review-ledger.md)
+- [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md)
+- [live-shape-register.md](../plite/references/live-shape-register.md)
+- [architecture-contract.md](../plite/references/architecture-contract.md)
+- [deletion-closure-protocol.md](../plite/references/deletion-closure-protocol.md)
 
 ## Vocabulary
 
@@ -52,16 +59,16 @@ Rule:
 
 | Class              | Owner                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| verdict            | [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/plite/release-readiness-decision.md) (primary); supporting live surfaces: [replacement-family-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-family-ledger.md), [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md) |
-| sequence           | this file and [docs/plite/commands](/Users/zbeyens/git/plate-2/docs/plite/commands)                                                                                                                                                                                                                                                                                                                                                                                 |
-| evidence           | [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md), [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/release-file-review-ledger.md), [docs/plite-browser/proof-lane-matrix.md](/Users/zbeyens/git/plate-2/docs/plite-browser/proof-lane-matrix.md)                                                                                                                                                     |
-| reference          | [architecture-contract.md](/Users/zbeyens/git/plate-2/docs/plite/references/architecture-contract.md), [live-shape-register.md](/Users/zbeyens/git/plate-2/docs/plite/references/live-shape-register.md), [normalization-reference.md](/Users/zbeyens/git/plate-2/docs/plite/references/normalization-reference.md)                                                                                                                                                                                               |
-| maintainer context | [pr-description.md](/Users/zbeyens/git/plate-2/docs/plite/references/pr-description.md) and supporting plans                                                                                                                                                                                                                                                                                                             |
+| verdict            | [release-readiness-decision.md](../plite/release-readiness-decision.md) (primary); supporting live surfaces: [replacement-family-ledger.md](../plite/references/replacement-family-ledger.md), [replacement-gates-scoreboard.md](../plite/replacement-gates-scoreboard.md) |
+| sequence           | this file and [docs/plite/commands](../plite/commands)                                                                                                                                                                                                                                                                                                                                                                                 |
+| evidence           | [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md), [release-file-review-ledger.md](../plite/release-file-review-ledger.md), [docs/plite-browser/proof-lane-matrix.md](../plite-browser/proof-lane-matrix.md)                                                                                                                                                     |
+| reference          | [architecture-contract.md](../plite/references/architecture-contract.md), [live-shape-register.md](../plite/references/live-shape-register.md), [normalization-reference.md](../plite/references/normalization-reference.md)                                                                                                                                                                                               |
+| maintainer context | [pr-description.md](../plite/references/pr-description.md) and supporting plans                                                                                                                                                                                                                                                                                                             |
 
-## Current Read
+## Recorded program state
 
 - current live go/no-go still lives in
-  [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/plite/release-readiness-decision.md)
+  [release-readiness-decision.md](../plite/release-readiness-decision.md)
 - completed `POC RC` groundwork is real
 - the core `packages/plite/test/**` deleted-family bucket is now explicitly
   closed
@@ -75,13 +82,13 @@ Rule:
   API/public-surface contract-width audit is reopened under challenge
 - the curated perf gate package now clears under the current blocker-facing
   lanes in
-  [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md)
+  [replacement-gates-scoreboard.md](../plite/replacement-gates-scoreboard.md)
 - the next honest work is now the decoration source-scoped invalidation tranche
   in
-  [decoration-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/decoration-roadmap.md)
+  [decoration-roadmap.md](../plite/decoration-roadmap.md)
 - the exhaustive API/public-surface contract-width audit remains the next
   broader replacement lane after that tranche:
-  [2026-04-13-plite-full-no-regression-story-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-13-plite-full-no-regression-story-plan.md)
+  [2026-04-13-plite-full-no-regression-story-plan.md](../plans/2026-04-13-plite-full-no-regression-story-plan.md)
 - `Editor.nodes/**` and the non-Editor `interfaces/**` namespaces now have
   direct 1:1 legacy fixture proof; the current public-surface debt is now the
   narrower post-sync matrix:
@@ -93,20 +100,20 @@ Rule:
     - annotation stores own anchored data
     - widget stores own widget UI
   - authority:
-    [decoration-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/decoration-roadmap.md)
+    [decoration-roadmap.md](../plite/decoration-roadmap.md)
   - `CustomTypes` declaration merging is now reopened and recovered on the
     package type surface; old explicit-skip ledgers for that seam are stale and
     need targeted refresh
 - browser/input parity stays active on the shared editor/input surface until
   same-path source + contract parity is restored or an explicit engine-rewrite
   exception is recorded per
-  [repair-drift.mdc](/Users/zbeyens/git/plate-2/.agents/rules/repair-drift.mdc)
+  repair-drift.mdc (historical target unavailable: `.agents/rules/repair-drift.mdc`)
 - specialist IME/platform/browser rows are secondary proof only; they do not
   close shared `Editable`/history/hotkey/android surface drift by themselves
 - perf follow-up remains real, but it is not the current control-plane owner
 - maximum parity with legacy for all examples is now reopened as a sibling
   blocker lane under
-  [2026-04-15-plite-example-parity-recovery-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-plite-example-parity-recovery-plan.md)
+  [2026-04-15-plite-example-parity-recovery-plan.md](../plans/2026-04-15-plite-example-parity-recovery-plan.md)
 
 ## Ian / Plite Rule
 
@@ -200,7 +207,7 @@ Required capability proof:
 
 Exit:
 
-- [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md)
+- [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md)
   is green for the extension lane
 
 ### [x] Tranche 4: Diff / Test / File Review Closure
@@ -211,13 +218,13 @@ Goal:
 
 Exit:
 
-- [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/release-file-review-ledger.md)
+- [release-file-review-ledger.md](../plite/release-file-review-ledger.md)
   has no vague buckets left
 - the remaining open deletion families outside `packages/plite/test/**` are
   either closed or explicitly justified per
-  [deletion-closure-protocol.md](/Users/zbeyens/git/plate-2/docs/plite/references/deletion-closure-protocol.md):
+  [deletion-closure-protocol.md](../plite/references/deletion-closure-protocol.md):
   - none
-- [pr-description.md](/Users/zbeyens/git/plate-2/docs/plite/references/pr-description.md)
+- [pr-description.md](../plite/references/pr-description.md)
   matches the current truth
 
 ### [x] Tranche 5: Perf Gate Definition And Validation Under Quarantine
@@ -262,11 +269,11 @@ Goal:
 
 Authority:
 
-- [2026-04-13-plite-full-no-regression-story-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-13-plite-full-no-regression-story-plan.md)
-- [2026-04-13-plite-exhaustive-api-contract-recovery-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-13-plite-exhaustive-api-contract-recovery-plan.md)
-- [2026-04-15-plite-example-parity-recovery-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-plite-example-parity-recovery-plan.md)
-- [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md)
-- [pr-description.md](/Users/zbeyens/git/plate-2/docs/plite/references/pr-description.md)
+- [2026-04-13-plite-full-no-regression-story-plan.md](../plans/2026-04-13-plite-full-no-regression-story-plan.md)
+- [2026-04-13-plite-exhaustive-api-contract-recovery-plan.md](../plans/2026-04-13-plite-exhaustive-api-contract-recovery-plan.md)
+- [2026-04-15-plite-example-parity-recovery-plan.md](../plans/2026-04-15-plite-example-parity-recovery-plan.md)
+- [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md)
+- [pr-description.md](../plite/references/pr-description.md)
 
 Exit:
 
@@ -291,8 +298,8 @@ Goal:
 
 Authority:
 
-- [2026-04-12-plite-zero-regression-parity-reconsolidated-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-12-plite-zero-regression-parity-reconsolidated-plan.md)
-- [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md)
+- [2026-04-12-plite-zero-regression-parity-reconsolidated-plan.md](../plans/2026-04-12-plite-zero-regression-parity-reconsolidated-plan.md)
+- [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md)
 
 Exit:
 
@@ -315,9 +322,9 @@ Goal:
 
 Authority:
 
-- [decoration-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/decoration-roadmap.md)
-- [decorations-annotations-cluster.md](/Users/zbeyens/git/plate-2/docs/plite/decorations-annotations-cluster.md)
-- [architecture-contract.md](/Users/zbeyens/git/plate-2/docs/plite/references/architecture-contract.md)
+- [decoration-roadmap.md](../plite/decoration-roadmap.md)
+- [decorations-annotations-cluster.md](../plite/decorations-annotations-cluster.md)
+- [architecture-contract.md](../plite/references/architecture-contract.md)
 
 Exit:
 
@@ -338,31 +345,31 @@ After any tranche changes truth:
 
 0. if deletion wording changes, freeze the deleted inventory and reconcile the
    parent/child rows per
-   [deletion-closure-protocol.md](/Users/zbeyens/git/plate-2/docs/plite/references/deletion-closure-protocol.md)
-1. refresh [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/master-roadmap.md)
-2. refresh [release-readiness-decision.md](/Users/zbeyens/git/plate-2/docs/plite/release-readiness-decision.md)
-3. refresh [overview.md](/Users/zbeyens/git/plate-2/docs/plite/overview.md)
-4. refresh [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/release-file-review-ledger.md)
-5. refresh [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md)
-6. refresh [pr-description.md](/Users/zbeyens/git/plate-2/docs/plite/references/pr-description.md)
-7. refresh [2026-04-13-plite-full-no-regression-story-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-13-plite-full-no-regression-story-plan.md)
+   [deletion-closure-protocol.md](../plite/references/deletion-closure-protocol.md)
+1. refresh [master-roadmap.md](../plite/master-roadmap.md)
+2. refresh [release-readiness-decision.md](../plite/release-readiness-decision.md)
+3. refresh [overview.md](../plite/overview.md)
+4. refresh [release-file-review-ledger.md](../plite/release-file-review-ledger.md)
+5. refresh [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md)
+6. refresh [pr-description.md](../plite/references/pr-description.md)
+7. refresh [2026-04-13-plite-full-no-regression-story-plan.md](../plans/2026-04-13-plite-full-no-regression-story-plan.md)
 5. refresh any touched verdict docs
 
 ## Command Pack
 
-- [reconsolidate-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/commands/reconsolidate-roadmap.md)
-- [replan-remaining-work.md](/Users/zbeyens/git/plate-2/docs/plite/commands/replan-remaining-work.md)
-- [reinterview-remaining-scope.md](/Users/zbeyens/git/plate-2/docs/plite/commands/reinterview-remaining-scope.md)
-- [run-perf-gates.md](/Users/zbeyens/git/plate-2/docs/plite/commands/run-perf-gates.md)
-- [refresh-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/commands/refresh-file-review-ledger.md)
-- [launch-next-ralph-batch.md](/Users/zbeyens/git/plate-2/docs/plite/commands/launch-next-ralph-batch.md)
+- [reconsolidate-roadmap.md](../plite/commands/reconsolidate-roadmap.md)
+- [replan-remaining-work.md](../plite/commands/replan-remaining-work.md)
+- [reinterview-remaining-scope.md](../plite/commands/reinterview-remaining-scope.md)
+- [run-perf-gates.md](../plite/commands/run-perf-gates.md)
+- [refresh-file-review-ledger.md](../plite/commands/refresh-file-review-ledger.md)
+- [launch-next-ralph-batch.md](../plite/commands/launch-next-ralph-batch.md)
 
 ## Next Move
 
 Current next move:
 
 - execute
-  [2026-04-13-plite-full-no-regression-story-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-13-plite-full-no-regression-story-plan.md)
+  [2026-04-13-plite-full-no-regression-story-plan.md](../plans/2026-04-13-plite-full-no-regression-story-plan.md)
 - first batch:
   - finish the exhaustive API / public-surface contract-width audit
   - reopen maximum parity with legacy for all examples
@@ -387,7 +394,7 @@ Current next move:
   - secondary package surfaces stay public where intended
   - explicit non-claims are documented instead of hiding in `partial` rows
 - Tranche 2 proof inputs are already known:
-  - [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md)
-  - [release-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/release-file-review-ledger.md)
+  - [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md)
+  - [release-file-review-ledger.md](../plite/release-file-review-ledger.md)
 - latest scope interview:
-  - [2026-04-09-plite-remaining-scope-reinterview.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-09-plite-remaining-scope-reinterview.md)
+  - [2026-04-09-plite-remaining-scope-reinterview.md](../plans/2026-04-09-plite-remaining-scope-reinterview.md)

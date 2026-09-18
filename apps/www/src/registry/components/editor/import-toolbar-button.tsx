@@ -9,14 +9,14 @@ import * as React from 'react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 
+import { useDocxSource } from '@/registry/components/editor/docx-source';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useDocxSource } from '@/registry/components/editor/docx-source';
+} from '@/registry/components/editor/dropdown-menu';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 export function ImportToolbarButton() {
@@ -97,7 +97,7 @@ export function ImportToolbarButton() {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger>
         <ToolbarButton
           aria-label="Import"
           pressed={open}

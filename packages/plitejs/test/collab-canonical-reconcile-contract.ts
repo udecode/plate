@@ -104,7 +104,7 @@ describe('collab canonical remote reconcile contract', () => {
     assert.equal(commit.changed.has('replace'), true);
     assert.equal(commit.changed.has('root-order'), false);
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       0
     );
     assert.deepEqual(editorGetSnapshot(editor).children, [
@@ -147,7 +147,7 @@ describe('collab canonical remote reconcile contract', () => {
     assert.equal(commit.selectionChanged, true);
     assert.deepEqual(commit.tags, remoteCollabTags);
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       0
     );
   });

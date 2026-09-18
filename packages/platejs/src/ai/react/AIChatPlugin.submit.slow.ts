@@ -6,8 +6,15 @@ import {
   SelectionApi,
   type Value,
 } from '../../core';
+import { BaseHeadingPlugin } from '../../features/basic-nodes/lib/BaseHeadingPlugins';
+import {
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+  BaseTableCellPlugin,
+} from '../../features/table';
+import { MarkdownPlugin } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
-import { AI_PREVIEW_KEY, BaseAIPlugin } from '../lib/BaseAIPlugin';
+import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
 
 const createEditor = (
@@ -15,10 +22,16 @@ const createEditor = (
   initialValue: Value = [
     { children: [{ text: 'one' }], type: 'paragraph' },
     { children: [{ text: 'two' }], type: 'paragraph' },
-  ]
+  ],
+  { markdown = false }: { markdown?: boolean } = {}
 ) => {
   const editor = createProductEditor({
-    plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+    plugins: [
+      BaseParagraphPlugin,
+      BaseAIPlugin,
+      ...(markdown ? [MarkdownPlugin] : []),
+      AIChatPlugin,
+    ],
     userId: 'alice',
     selection: {
       kind: 'text',
@@ -28,9 +41,13 @@ const createEditor = (
     initialValue,
   });
   const chat = {
+    clear: mock(),
     messages: [],
+    regenerate: mock(async () => {}),
     sendMessage,
-  } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
+    status: 'ready' as const,
+    stop: mock(),
+  };
 
   editor.plugin(AIChatPlugin).store.set({ chat });
 
@@ -38,12 +55,267 @@ const createEditor = (
 };
 
 describe('AIChatPlugin submit', () => {
+  it.each([
+    { text: 'one', offset: 1, mode: 'chat', result: ['NEW', 'two'] },
+    { text: 'one', offset: 3, mode: 'insert', result: ['one', 'NEW', 'two'] },
+    { text: '', offset: 0, mode: 'insert', result: ['NEW', 'two'] },
+  ] as const)(
+    'captures $mode when show opens at offset $offset in "$text"',
+    ({ text, offset, mode, result }) => {
+      const sendMessage = mock();
+      const editor = createEditor(sendMessage, [
+        { type: 'paragraph', children: [{ text }] },
+        { type: 'paragraph', children: [{ text: 'two' }] },
+      ]);
+      const ai = editor.plugin(AIChatPlugin);
+      editor.update.selection.set({ path: [0, 0], offset });
+
+      ai.api.show();
+      expect(editor.read.selection.nodes()).toHaveLength(
+        mode === 'chat' ? 1 : 0
+      );
+      editor.update.selection.set({ path: [1, 0], offset: 3 });
+      ai.api.submit('rewrite');
+
+      expect(ai.store.get('mode')).toBe(mode);
+      const request = sendMessage.mock.calls[0][1].body;
+      expect(request.ctx.nodeSelection?.paths ?? []).toEqual(
+        mode === 'chat' ? [[0]] : []
+      );
+      ai.api.setPreview('NEW');
+      ai.api.accept();
+      expect(
+        editor.read
+          .children()
+          .map((_, index) => editor.read.text.string([index]))
+      ).toEqual([...result]);
+    }
+  );
+
+  it('does not retry or replace a deleted text target with its successor', () => {
+    const editor = createEditor(mock());
+    const ai = editor.plugin(AIChatPlugin);
+    editor.update.selection.set({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+    ai.api.submit('edit');
+    const { regenerate } = ai.store.get('chat')!;
+    editor.update.nodes.remove({ at: [0] });
+
+    ai.api.reload();
+    ai.api.setPreview('replacement');
+    ai.api.accept();
+
+    expect(regenerate).not.toHaveBeenCalled();
+    expect(editor.read.text.string([])).toBe('two');
+  });
+
+  it.each(['accept', 'replaceSelection', 'insertBelow'] as const)(
+    'applies %s to a backward text selection spanning paragraphs',
+    (action) => {
+      const editor = createEditor(mock());
+      const ai = editor.plugin(AIChatPlugin);
+      editor.update.selection.set({
+        anchor: { path: [1, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 1 },
+      });
+      ai.api.submit('edit');
+      ai.api.setPreview('NEW');
+      const before = editor.read.value();
+      const historyDepth = editor.read.history().undos.length;
+
+      ai.api[action]();
+
+      expect(
+        editor.read
+          .children()
+          .map((_, index) => editor.read.text.string([index]))
+      ).toEqual(action === 'insertBelow' ? ['one', 'two', 'NEW'] : ['oNEWo']);
+      expect(editor.read.history().undos).toHaveLength(historyDepth + 1);
+      editor.api.history.undo();
+      expect(editor.read.value()).toEqual(before);
+    }
+  );
+
+  it.each(['accept', 'insertBelow'] as const)(
+    'keeps exact backward node targets through retry and %s',
+    (action) => {
+      const editor = createEditor(mock(), [
+        { type: 'paragraph', children: [{ text: 'one' }] },
+        { type: 'paragraph', children: [{ text: 'gap' }] },
+        { type: 'paragraph', children: [{ text: 'two' }] },
+      ]);
+      const ai = editor.plugin(AIChatPlugin);
+      editor.update.selection.set(
+        SelectionApi.nodes([[0], [2]], {
+          anchorPath: [2],
+          focusPath: [0],
+        })
+      );
+      ai.api.submit('edit');
+      ai.api.reload();
+      ai.api.setPreview('NEW');
+      ai.api[action]();
+      expect(
+        editor.read
+          .children()
+          .map((_, index) => editor.read.text.string([index]))
+      ).toEqual(
+        action === 'insertBelow' ? ['one', 'gap', 'two', 'NEW'] : ['NEW', 'gap']
+      );
+    }
+  );
+
+  it('submits and replaces the captured node after its path changes', () => {
+    const sendMessage = mock();
+    const editor = createEditor(sendMessage);
+    const ai = editor.plugin(AIChatPlugin);
+    editor.update.selection.set(SelectionApi.nodes([[1]]));
+    ai.api.show();
+    editor.update.nodes.insert(
+      { type: 'paragraph', children: [{ text: 'before' }] },
+      { at: [0] }
+    );
+    editor.update.selection.set(SelectionApi.nodes([[0]]));
+
+    ai.api.submit('edit');
+    expect(sendMessage).toHaveBeenCalledWith(
+      'edit',
+      expect.objectContaining({
+        body: {
+          ctx: expect.objectContaining({
+            nodeSelection: { anchorPath: [2], focusPath: [2], paths: [[2]] },
+            refs: { blocks: [{ path: [2], ref: 'b1' }], tableCells: [] },
+          }),
+        },
+      })
+    );
+    ai.api.setPreview('NEW');
+    ai.api.accept();
+    expect(editor.read.text.string([])).toBe('beforeoneNEW');
+  });
+
+  it('uses the captured text target for prompt callbacks and placeholders', () => {
+    const sendMessage = mock();
+    const editor = createEditor(sendMessage);
+    const ai = editor.plugin(AIChatPlugin);
+    editor.update.selection.set({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+    ai.api.show();
+    editor.update.selection.set({
+      anchor: { path: [1, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 3 },
+    });
+    ai.api.submit('edit', {
+      prompt: ({ editor: promptEditor }) => {
+        expect(promptEditor.read.selection()?.anchor.path).toEqual([0, 0]);
+        return '{block}/{nodeSelection}/{prompt}';
+      },
+    });
+    expect(sendMessage.mock.calls[0][0]).toBe('one\n/one\n/edit');
+    ai.api.setPreview('NEW');
+    ai.api.accept();
+    expect(editor.read.text.string([])).toBe('NEWtwo');
+  });
+
+  it('keeps table response targets while serializing a preset prompt', () => {
+    const sendMessage = mock();
+    const editor = createProductEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        AIChatPlugin,
+        BaseTablePlugin,
+        BaseTableRowPlugin,
+        BaseTableCellPlugin,
+      ],
+      userId: 'alice',
+      initialValue: [
+        {
+          type: 'table',
+          children: [
+            {
+              type: 'tableRow',
+              children: ['one', 'two'].map((text) => ({
+                type: 'tableCell',
+                children: [{ type: 'paragraph', children: [{ text }] }],
+              })),
+            },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0, 0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 1, 0, 0], offset: 3 },
+      },
+    });
+    const ai = editor.plugin(AIChatPlugin);
+    ai.store.set({
+      chat: {
+        clear: mock(),
+        messages: [],
+        regenerate: mock(async () => {}),
+        sendMessage,
+        status: 'ready',
+        stop: mock(),
+      },
+    });
+    ai.api.submit('edit', { prompt: '{block}: {prompt}' });
+    const { ref } = sendMessage.mock.calls[0][1].body.ctx.refs.tableCells[0];
+    editor.update.selection.set({
+      anchor: { path: [0, 0, 1, 0, 0], offset: 0 },
+      focus: { path: [0, 0, 1, 0, 0], offset: 3 },
+    });
+    ai.read.markdown({ type: 'tableCellWithRef' });
+    ai.api.setTablePreview({ content: 'NEW', ref });
+    ai.api.accept();
+    expect(editor.read.text.string([])).toBe('NEWtwo');
+  });
+
+  it('inherits the last selected block format when inserting below several blocks', () => {
+    const editor = createProductEditor({
+      plugins: [BaseParagraphPlugin, BaseHeadingPlugin, AIChatPlugin],
+      userId: 'alice',
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'one' }] },
+        { type: 'heading', level: 2, children: [{ text: 'two' }] },
+      ],
+      selection: SelectionApi.nodes([[0], [1]]),
+    });
+    const ai = editor.plugin(AIChatPlugin);
+    ai.api.submit('generate');
+    ai.api.setPreview('NEW\n\nSecond');
+    ai.api.insertBelow();
+    expect(editor.read.children().slice(2)).toEqual([
+      { type: 'heading', level: 2, children: [{ text: 'NEW' }] },
+      { type: 'paragraph', children: [{ text: 'Second' }] },
+    ]);
+  });
+
   it('returns early when both prompt and input are empty', () => {
     const sendMessage = mock();
     const editor = createEditor(sendMessage);
     editor.plugin(AIChatPlugin).api.submit('');
 
     expect(sendMessage).not.toHaveBeenCalled();
+  });
+
+  it('resolves placeholders in preset prompts before sending', () => {
+    const sendMessage = mock();
+    const editor = createEditor(sendMessage, undefined, { markdown: true });
+    const block = editor.plugin(AIChatPlugin).read.markdown({ type: 'block' });
+
+    editor.plugin(AIChatPlugin).api.submit('one sentence', {
+      prompt: '<Block>\n{block}\n</Block>\n{prompt}',
+    });
+
+    expect(sendMessage).toHaveBeenCalledWith(
+      `<Block>\n${block}\n</Block>\none sentence`,
+      expect.anything()
+    );
   });
 
   it('defaults an empty node selection to chat mode', () => {
@@ -79,26 +351,23 @@ describe('AIChatPlugin submit', () => {
     );
   });
 
-  it('undoes insert mode, stores selected blocks, and sends their context', () => {
+  it('preserves accepted content, stores selected blocks, and sends context', () => {
     const sendMessage = mock();
     const editor = createEditor(sendMessage);
     const selectedNodeKeys = new Set([editor.key([0])!, editor.key([1])!]);
-    editor.plugin(AIChatPlugin).store.set({ toolName: 'edit' });
-    editor.plugin(AIChatPlugin).store.set({ open: true });
     editor.update.selection.set(
       SelectionApi.nodes([[0], [1]], {
         anchorPath: [1],
         focusPath: [0],
       })
     );
-    editor.update({ history: 'merge' }, (tx) => {
-      tx.ai.markBatch();
-      tx.nodes.insert({ ai: true, text: ' ai' }, { at: [0, 1] });
-    });
+    editor.update.nodes.insert({ text: ' ai' }, { at: [0, 1] });
+    editor.plugin(AIChatPlugin).api.show();
+    editor.plugin(AIChatPlugin).store.set({ toolName: 'edit' });
 
     editor.plugin(AIChatPlugin).api.submit('draft', { mode: 'insert' });
 
-    expect(editor.read.text.string([])).toBe('onetwo');
+    expect(editor.read.text.string([])).toBe('one aitwo');
     expect(editor.plugin(AIChatPlugin).store.get('mode')).toBe('insert');
     expect(editor.plugin(AIChatPlugin).store.get('toolName')).toBe('edit');
     expect(
@@ -162,45 +431,6 @@ describe('AIChatPlugin submit', () => {
     expect(editor.read.selection()).toEqual(selection);
   });
 
-  it('refuses regeneration when preview rollback cannot safely restore the document', () => {
-    const regenerate = mock(async () => {});
-    const sendMessage = mock();
-    const editor = createEditor(sendMessage);
-
-    editor.plugin(AIChatPlugin).store.set({
-      chat: { messages: [], regenerate, sendMessage } as unknown as NonNullable<
-        AIChatDefinition['initialState']['chat']
-      >,
-    });
-    editor.plugin(AIChatPlugin).api.submit('draft', { mode: 'insert' });
-    editor.plugin(BaseAIPlugin).update.beginPreview();
-    editor.update({ history: 'skip' }, (tx) => {
-      tx.nodes.replaceChildren(
-        [
-          {
-            [AI_PREVIEW_KEY]: true,
-            type: 'paragraph',
-            children: [{ ai: true, text: 'first preview' }],
-          },
-          { type: 'paragraph', children: [{ text: 'unrelated edit' }] },
-          {
-            [AI_PREVIEW_KEY]: true,
-            type: 'paragraph',
-            children: [{ ai: true, text: 'second preview' }],
-          },
-        ],
-        { at: [], count: tx.children().length, index: 0 }
-      );
-    });
-    const children = structuredClone(editor.read.children());
-
-    editor.plugin(AIChatPlugin).api.reload();
-
-    expect(regenerate).not.toHaveBeenCalled();
-    expect(editor.read.children()).toEqual(children);
-    expect(editor.plugin(BaseAIPlugin).read.hasPreview()).toBe(true);
-  });
-
   it('preserves backward node selection when regenerating', () => {
     const regenerate = mock(async () => {});
     const sendMessage = mock();
@@ -219,8 +449,6 @@ describe('AIChatPlugin submit', () => {
       })
     );
     editor.plugin(AIChatPlugin).api.submit('draft');
-    editor.plugin(BaseAIPlugin).update.beginPreview();
-
     editor.plugin(AIChatPlugin).api.reload();
 
     expect(regenerate).toHaveBeenCalledWith({

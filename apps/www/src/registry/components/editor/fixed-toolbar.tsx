@@ -36,7 +36,10 @@ import { ToolbarGroup, Toolbar } from '@/registry/components/editor/toolbar';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';
-import { CommentToolbarButton } from './comment-toolbar-button';
+import {
+  AllCommentsButton,
+  CommentToolbarButton,
+} from './comment-toolbar-button';
 import { DetailsToolbarButton } from './details-toolbar-button';
 import { EmojiToolbarButton } from './emoji-toolbar-button';
 import {
@@ -179,6 +182,7 @@ export function FixedToolbarButtons({
           <HighlighterIcon />
         </MarkToolbarButton>
         <CommentToolbarButton />
+        <AllCommentsButton />
       </ToolbarGroup>
 
       <ToolbarGroup>
@@ -188,21 +192,27 @@ export function FixedToolbarButtons({
   );
 }
 
-export function FixedToolbar(props: React.ComponentProps<typeof Toolbar>) {
+export function FixedToolbar({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof Toolbar>) {
   return (
     <Toolbar
       {...props}
+      ref={ref}
       className={cn(
-        'scrollbar-hide sticky top-0 left-0 z-50 w-full justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 p-1 backdrop-blur-sm supports-backdrop-blur:bg-background/60',
-        props.className
+        'scrollbar-hide z-50 w-full shrink-0 justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 p-1 backdrop-blur-sm supports-backdrop-blur:bg-background/60',
+        className
       )}
+      data-slot="fixed-toolbar"
     />
   );
 }
 
 export const FixedToolbarPlugin = definePlugin('fixedToolbar', {
   slots: {
-    beforeEditable: () => (
+    beforeContainer: () => (
       <FixedToolbar>
         <FixedToolbarButtons />
       </FixedToolbar>

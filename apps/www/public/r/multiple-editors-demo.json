@@ -2,7 +2,9 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "multiple-editors-demo",
   "dependencies": [
-    "@platejs/test"
+    "@platejs/test",
+    "diff-match-patch-ts@^0.6.0",
+    "platejs"
   ],
   "registryDependencies": [
     "separator",

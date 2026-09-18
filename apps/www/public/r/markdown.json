@@ -5,7 +5,13 @@
     "platejs",
     "remark-emoji",
     "remark-gfm",
-    "remark-math"
+    "remark-math",
+    "diff-match-patch-ts@^0.6.0",
+    "marked@^15.0.12",
+    "remark-mdx@^3.1.0",
+    "remark-parse@^11.0.0",
+    "remark-stringify@^11.0.0",
+    "unified@^11.0.5"
   ],
   "files": [
     {

@@ -11,11 +11,16 @@ import {
   CheckIcon,
   MoreHorizontalIcon,
   PencilIcon,
+  RotateCcwIcon,
   TrashIcon,
   XIcon,
 } from 'lucide-react';
 import { type DecorationAttributes, type Value, NodeApi } from 'platejs';
-import type { CommentMessage, CommentThread } from 'platejs/comments';
+import type {
+  CommentMessage,
+  CommentMutationResult,
+  CommentThread,
+} from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   EditorRoot,
@@ -128,13 +133,13 @@ export const useDraftCommentThreadIds = () => {
 
 export function CommentComposer(props: {
   ariaLabel: string;
-  onSubmit: (
-    body: Value
-  ) => boolean | string | null | Promise<boolean | string | null>;
+  onSubmit: (body: Value) => Promise<CommentMutationResult<string | undefined>>;
   placeholder: string;
   autoFocus?: boolean;
+  cancelLabel?: string;
   initialBody?: Value;
   onCancel?: () => void;
+  onInteractionChange?: (blocked: boolean) => void;
 }) {
   return <CommentInput {...props} showAvatar />;
 }
@@ -142,21 +147,23 @@ export function CommentComposer(props: {
 function CommentInput({
   ariaLabel,
   autoFocus = false,
+  cancelLabel = 'Cancel comment',
   initialBody,
   onCancel,
+  onInteractionChange,
   onSubmit,
   placeholder,
   showAvatar,
 }: {
   ariaLabel: string;
-  onSubmit: (
-    body: Value
-  ) => boolean | string | null | Promise<boolean | string | null>;
+  onSubmit: (body: Value) => Promise<CommentMutationResult<string | undefined>>;
   placeholder: string;
   showAvatar: boolean;
   autoFocus?: boolean;
+  cancelLabel?: string;
   initialBody?: Value;
   onCancel?: () => void;
+  onInteractionChange?: (blocked: boolean) => void;
 }) {
   const currentUserId = useCurrentCommentUserId();
   const currentUser = useCommentUser(currentUserId);
@@ -177,6 +184,10 @@ function CommentInput({
   const [saving, setSaving] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   const submitting = React.useRef(false);
+  const cancel = () => {
+    onInteractionChange?.(false);
+    onCancel?.();
+  };
   const submit = async () => {
     if (submitting.current) return;
     const nextBody = normalizeBody(commentEditor.read.value().children);
@@ -184,9 +195,11 @@ function CommentInput({
     submitting.current = true;
     setSaving(true);
     setFailed(false);
+    onInteractionChange?.(true);
+    let applied = false;
     try {
       const saved = await onSubmit(nextBody);
-      if (!saved) {
+      if (saved.status !== 'applied') {
         setFailed(true);
         return;
       }
@@ -194,12 +207,14 @@ function CommentInput({
         children: createCommentValue(),
         selection: null,
       });
+      applied = true;
       setCanSubmit(false);
     } catch {
       setFailed(true);
     } finally {
       submitting.current = false;
       setSaving(false);
+      onInteractionChange?.(applied ? false : canSubmit);
     }
   };
 
@@ -227,7 +242,9 @@ function CommentInput({
           editor={commentEditor}
           readOnly={saving}
           onValueChange={({ value }) => {
-            setCanSubmit(Boolean(normalizeBody(value.children)));
+            const nextCanSubmit = Boolean(normalizeBody(value.children));
+            setCanSubmit(nextCanSubmit);
+            onInteractionChange?.(nextCanSubmit || saving);
           }}
         >
           <EditorContainer variant="comment">
@@ -242,7 +259,7 @@ function CommentInput({
               onKeyDown={(event) => {
                 if (event.key === 'Escape' && onCancel && !submitting.current) {
                   event.preventDefault();
-                  onCancel();
+                  cancel();
                   return true;
                 }
                 if (
@@ -266,7 +283,7 @@ function CommentInput({
                   aria-label="Cancel comment"
                   className="size-[28px]"
                   disabled={saving}
-                  onClick={onCancel}
+                  onClick={cancel}
                   size="icon"
                   type="button"
                   variant="ghost"
@@ -290,18 +307,32 @@ function CommentInput({
             )}
 
             {showAvatar && (
-              <Button
-                aria-label="Send comment"
-                className="absolute right-0.5 bottom-0.5 ml-auto size-6 shrink-0"
-                disabled={!canSubmit || saving}
-                size="icon"
-                type="submit"
-                variant="ghost"
-              >
-                <span className="flex size-6 items-center justify-center rounded-full">
-                  <ArrowUpIcon />
-                </span>
-              </Button>
+              <div className="absolute right-0.5 bottom-0.5 ml-auto flex items-center gap-1">
+                {canSubmit && onCancel && (
+                  <Button
+                    aria-label={cancelLabel}
+                    disabled={saving}
+                    onClick={cancel}
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  aria-label="Send comment"
+                  className="size-6 shrink-0"
+                  disabled={!canSubmit || saving}
+                  size="icon"
+                  type="submit"
+                  variant="ghost"
+                >
+                  <span className="flex size-6 items-center justify-center rounded-full">
+                    <ArrowUpIcon />
+                  </span>
+                </Button>
+              </div>
             )}
           </EditorContainer>
         </EditorRoot>
@@ -334,48 +365,110 @@ function CommentBody({ body }: { body: Value }) {
   );
 }
 
-export function CommentThreadCard({ id }: { id: string }) {
-  const { api: comments } = useEditor().plugin(CommentsPlugin);
-  const thread = useCommentThread(id);
-  const currentUserId = useCurrentCommentUserId();
-  const [editingId, setEditingId] = React.useState<string | null>(null);
+export const CommentThreadCard = React.memo(
+  ({
+    id,
+    onInteractionChange,
+    showReply = true,
+  }: {
+    id: string;
+    onInteractionChange?: (blocked: boolean) => void;
+    showReply?: boolean;
+  }) => {
+    const { api: comments } = useEditor().plugin(CommentsPlugin);
+    const thread = useCommentThread(id);
+    const currentUserId = useCurrentCommentUserId();
+    const [editingId, setEditingId] = React.useState<string | null>(null);
+    const [replyVersion, setReplyVersion] = React.useState(0);
+    const interactionsRef = React.useRef<ReadonlySet<string>>(new Set());
+    const [interactions, setInteractions] = React.useState<ReadonlySet<string>>(
+      () => new Set()
+    );
+    const interactionChangeRef = React.useRef(onInteractionChange);
+    React.useEffect(() => {
+      interactionChangeRef.current = onInteractionChange;
+    }, [onInteractionChange]);
+    React.useEffect(() => () => interactionChangeRef.current?.(false), []);
+    const setInteraction = React.useCallback(
+      (key: string, blocked: boolean) => {
+        const { current } = interactionsRef;
+        const next = new Set(current);
+        if (blocked) next.add(key);
+        else next.delete(key);
+        if (
+          next.size === current.size &&
+          [...next].every((entry) => current.has(entry))
+        ) {
+          return;
+        }
+        interactionsRef.current = next;
+        setInteractions(next);
+        onInteractionChange?.(next.size > 0);
+      },
+      [onInteractionChange]
+    );
+    const setReplyInteraction = React.useCallback(
+      (blocked: boolean) => setInteraction('reply', blocked),
+      [setInteraction]
+    );
+    if (!thread) return null;
 
-  if (!thread) return null;
+    return (
+      <article
+        className="relative"
+        data-comment-thread={id}
+        data-status={thread.status}
+      >
+        {thread.messages.map((message, index) => (
+          <CommentMessageRow
+            interactionBlocked={interactions.size > 0}
+            editing={editingId === message.id}
+            excerpt={thread.excerpt}
+            id={id}
+            index={index}
+            isLast={index === thread.messages.length - 1}
+            key={message.id}
+            message={message}
+            onEdit={() => {
+              setInteraction(`${message.id}:edit`, true);
+              setEditingId(message.id);
+            }}
+            onEditingChange={(next) => {
+              if (next === null) {
+                setInteraction(`${message.id}:edit`, false);
+              }
+              setEditingId(next);
+            }}
+            onInteractionChange={setInteraction}
+            mine={message.userId === currentUserId}
+            resolved={thread.resolution !== null}
+            showExcerpt={thread.target.type === 'range' && index === 0}
+            status={thread.status}
+            threadLength={thread.messages.length}
+          />
+        ))}
 
-  return (
-    <article
-      className="relative"
-      data-comment-thread={id}
-      data-status={thread.status}
-    >
-      {thread.messages.map((message, index) => (
-        <CommentMessageRow
-          editing={editingId === message.id}
-          excerpt={thread.excerpt}
-          id={id}
-          index={index}
-          isLast={index === thread.messages.length - 1}
-          key={message.id}
-          message={message}
-          onEdit={() => setEditingId(message.id)}
-          onEditingChange={setEditingId}
-          mine={message.userId === currentUserId}
-          showExcerpt={thread.target.type === 'range' && index === 0}
-          status={thread.status}
-          threadLength={thread.messages.length}
-        />
-      ))}
-
-      {thread.target.type === 'range' && (
-        <CommentComposer
-          ariaLabel="Reply to thread"
-          onSubmit={(body) => comments.reply(id, body)}
-          placeholder="Reply..."
-        />
-      )}
-    </article>
-  );
-}
+        {showReply &&
+          currentUserId &&
+          (!thread.resolution || interactions.has('reply')) && (
+            <CommentComposer
+              ariaLabel="Reply to thread"
+              cancelLabel="Cancel reply"
+              key={replyVersion}
+              onCancel={() => {
+                setReplyInteraction(false);
+                setReplyVersion((version) => version + 1);
+              }}
+              onInteractionChange={setReplyInteraction}
+              onSubmit={(body) => comments.reply(id, body)}
+              placeholder="Reply..."
+            />
+          )}
+      </article>
+    );
+  }
+);
+CommentThreadCard.displayName = 'CommentThreadCard';
 
 function CommentMessageRow({
   editing,
@@ -387,11 +480,15 @@ function CommentMessageRow({
   mine,
   onEdit,
   onEditingChange,
+  onInteractionChange,
+  interactionBlocked,
+  resolved,
   showExcerpt,
   status,
   threadLength,
 }: {
   editing: boolean;
+  interactionBlocked: boolean;
   excerpt: string;
   id: string;
   index: number;
@@ -400,16 +497,45 @@ function CommentMessageRow({
   mine: boolean;
   onEdit: () => void;
   onEditingChange: React.Dispatch<React.SetStateAction<string | null>>;
+  onInteractionChange: (key: string, blocked: boolean) => void;
+  resolved: boolean;
   showExcerpt: boolean;
   status: CommentThread['status'];
   threadLength: number;
 }) {
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
+  const submitting = React.useRef(false);
   const user = useCommentUser(message.userId);
+  const mutate = async (operation: 'resolve' | 'reopen' | 'remove') => {
+    if (submitting.current) return;
+    submitting.current = true;
+    setSaving(true);
+    setFailed(false);
+    onInteractionChange(`${message.id}:action`, true);
+    try {
+      const result = await (operation === 'remove'
+        ? comments.removeMessage(id, message.id)
+        : comments[operation](id));
+      if (result.status !== 'applied') {
+        setFailed(true);
+        return;
+      }
+      if (operation === 'remove') onEditingChange(null);
+    } catch {
+      setFailed(true);
+    } finally {
+      submitting.current = false;
+      setSaving(false);
+      onInteractionChange(`${message.id}:action`, false);
+    }
+  };
 
   return (
     <div
+      aria-busy={saving}
       className="focus-within:[&>div>.editor-comment-actions]:pointer-events-auto focus-within:[&>div>.editor-comment-actions]:opacity-100 hover:[&>div>.editor-comment-actions]:pointer-events-auto hover:[&>div>.editor-comment-actions]:opacity-100"
       data-comment-message={message.id}
     >
@@ -426,6 +552,7 @@ function CommentMessageRow({
             {formatCommentDate(message.editedAt ?? message.createdAt)}
           </span>
           {message.editedAt && <span>(edited)</span>}
+          {resolved && index === 0 && <span className="ml-1">Resolved</span>}
           {status === 'draft' && index === 0 && (
             <span className="ml-1">AI draft</span>
           )}
@@ -440,17 +567,18 @@ function CommentMessageRow({
           >
             {index === 0 && (
               <Button
-                aria-label="Resolve thread"
+                aria-label={resolved ? 'Reopen thread' : 'Resolve thread'}
                 className="h-6 p-1 text-muted-foreground"
-                onClick={() => {
-                  if (comments.resolve(id)) {
-                    comments.setActive([]);
-                  }
-                }}
+                disabled={saving}
+                onClick={() => void mutate(resolved ? 'reopen' : 'resolve')}
                 type="button"
                 variant="ghost"
               >
-                <CheckIcon className="size-4" />
+                {resolved ? (
+                  <RotateCcwIcon className="size-4" />
+                ) : (
+                  <CheckIcon className="size-4" />
+                )}
               </Button>
             )}
 
@@ -463,6 +591,7 @@ function CommentMessageRow({
                 <Button
                   aria-label="More comment actions"
                   className="h-6 p-1 text-muted-foreground"
+                  disabled={saving}
                   type="button"
                   variant="ghost"
                 >
@@ -471,16 +600,13 @@ function CommentMessageRow({
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-48">
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={onEdit}>
+                  <DropdownMenuItem disabled={saving} onClick={onEdit}>
                     <PencilIcon className="size-4" />
                     Edit comment
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => {
-                      if (comments.removeMessage(id, message.id)) {
-                        onEditingChange(null);
-                      }
-                    }}
+                    disabled={saving || interactionBlocked}
+                    onClick={() => void mutate('remove')}
                   >
                     <TrashIcon className="size-4" />
                     Delete comment
@@ -517,7 +643,7 @@ function CommentMessageRow({
             onCancel={() => onEditingChange(null)}
             onSubmit={async (body) => {
               const saved = await comments.edit(id, message.id, body);
-              if (saved) onEditingChange(null);
+              if (saved.status === 'applied') onEditingChange(null);
               return saved;
             }}
             placeholder="Edit comment"
@@ -525,6 +651,11 @@ function CommentMessageRow({
           />
         ) : (
           <CommentBody body={message.body} />
+        )}
+        {failed && (
+          <p className="text-xs text-destructive" role="alert">
+            Could not save comment. Try again.
+          </p>
         )}
       </div>
     </div>

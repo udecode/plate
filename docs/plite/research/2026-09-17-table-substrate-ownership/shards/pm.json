@@ -1,0 +1,2780 @@
+{
+  "shard": "pm",
+  "date": "2026-09-17",
+  "status": "complete-bounded-source-evidence",
+  "scope": {
+    "assignment": "ProseMirror tables/state and Tiptap table extension ownership evidence for the lead's table first-principles Best API Review.",
+    "write_boundary": "Only docs/plite/research/2026-09-17-table-substrate-ownership/shards/pm.json.",
+    "excluded": [
+      "Local Plite/Plate comparison and final verdict (lead-owned)",
+      "Product code, plans, doctrine and common ledger edits",
+      "Implementation, new goal, changes to existing sibling working trees, checkout, pull and publication"
+    ],
+    "stop_reason": "Selection, topology, transfer, resize cardinality/hit-testing/preview/commit/lifetime and current Tiptap additions are evidenced. Fresh current owners and relevant tests were inspected; local comparison and final verdict remain lead-owned."
+  },
+  "evidence_policy": {
+    "basis": "Actual local source/test bodies pinned to exact commits. Initial 41 files and added PM handle stylesheet match local HEAD; 27 current git-object reads add current owner/test evidence. Facts that changed in current Tiptap are explicitly refreshed.",
+    "tests": "Inspected only; no tests executed.",
+    "browser_or_native": "Not exercised. No native parity, clipboard interoperability, IME, geometry or accessibility certification.",
+    "performance": "No measurements or timing claims.",
+    "freshness": "Initial read-only ls-remote followed by user-authorized temporary shallow bare clones of current Tiptap and canonical prosemirror-state; git show inspected decisive current files. Existing sibling clones were untouched.",
+    "issues": "Three GitHub issue bodies read via gh, with current OPEN status and historical timestamps; reports are leads, not proof of current behavior.",
+    "attribution": "Tiptap delegates to ProseMirror; do not count it as an independent selection/resizing architecture."
+  },
+  "repos": [
+    {
+      "id": "prosemirror-tables",
+      "local_path": "/Users/zbeyens/git/prosemirror-tables",
+      "origin": "https://github.com/ProseMirror/prosemirror-tables.git",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "commit_date": "2025-12-24T14:47:32+11:00",
+      "branch": "master",
+      "package_version": "1.8.5",
+      "freshness": {
+        "checked": "2026-09-17",
+        "command": "git -C ../prosemirror-tables ls-remote origin HEAD refs/heads/master",
+        "remote_head": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+        "result": "Local HEAD equals observed origin HEAD/master."
+      },
+      "license": {
+        "spdx": "MIT",
+        "file": "LICENSE",
+        "lines": [
+          1,
+          19
+        ],
+        "copyright": "Copyright (C) 2015-2016 by Marijn Haverbeke and others",
+        "condition": "Retain copyright and permission notices in copies or substantial portions."
+      }
+    },
+    {
+      "id": "prosemirror-state",
+      "local_path": "/Users/zbeyens/git/prosemirror-state",
+      "origin": "https://github.com/ProseMirror/prosemirror-state.git",
+      "canonical_remote": "https://code.haverbeke.berlin/prosemirror/prosemirror-state.git",
+      "commit": "ffad5d9450a0b93438be53a801deee1a223a81bf",
+      "commit_date": "2026-04-01T18:51:57+02:00",
+      "branch": "master",
+      "package_version": "1.4.4",
+      "freshness": {
+        "checked": "2026-09-17",
+        "commands": [
+          "git -C ../prosemirror-state ls-remote origin HEAD refs/heads/master",
+          "git ls-remote https://code.haverbeke.berlin/prosemirror/prosemirror-state.git HEAD refs/heads/main"
+        ],
+        "origin_head": "ffad5d9450a0b93438be53a801deee1a223a81bf",
+        "canonical_head": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+        "result": "Initial local/GitHub mirror differs from canonical HEAD. Follow-up temporary bare clone inspected canonical HEAD; selection.ts, transaction.ts, plugin.ts, test-selection.ts, LICENSE and package.json are byte-identical to initial evidence."
+      },
+      "license": {
+        "spdx": "MIT",
+        "file": "LICENSE",
+        "lines": [
+          1,
+          19
+        ],
+        "copyright": "Copyright (C) 2015-2017 by Marijn Haverbeke and others",
+        "condition": "Retain copyright and permission notices in copies or substantial portions."
+      },
+      "current_snapshot": {
+        "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+        "commit_date": "2026-04-01T20:37:53+02:00",
+        "git_dir": "/tmp/table-pm-state-current.v0jvux/repo.git",
+        "branch": "main",
+        "package_version": "1.4.4",
+        "license": "MIT; LICENSE unchanged",
+        "owner_test_freshness": "Decisive state owners and test-selection.ts read from current canonical HEAD and compared byte-for-byte with local baseline."
+      }
+    },
+    {
+      "id": "tiptap",
+      "local_path": "/Users/zbeyens/git/tiptap",
+      "origin": "https://github.com/ueberdosis/tiptap.git",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "commit_date": "2026-03-27T15:51:20+01:00",
+      "branch": "main",
+      "package_version": "@tiptap/extension-table and @tiptap/pm 3.21.0",
+      "freshness": {
+        "checked": "2026-09-17",
+        "command": "git -C ../tiptap ls-remote origin HEAD refs/heads/main",
+        "remote_head": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+        "result": "Follow-up temporary bare clone inspected current remote HEAD. Material Tiptap changes are captured in PM-10 and current read records; original clone was not modified."
+      },
+      "dependencies": {
+        "declarations": {
+          "prosemirror-tables": "^1.6.4",
+          "prosemirror-state": "^1.4.3"
+        },
+        "lockfile": {
+          "prosemirror-tables": "1.6.4",
+          "prosemirror-state": "1.4.3"
+        },
+        "refs": [
+          {
+            "read": "tiptap-lock",
+            "lines": [
+              971,
+              1026
+            ]
+          }
+        ],
+        "limit": "Historical local lockfile only. Current remote snapshot resolves tables 1.8.5/state 1.4.4; see current_snapshot. No assembled runtime was executed."
+      },
+      "license": {
+        "spdx": "MIT",
+        "file": "LICENSE.md",
+        "lines": [
+          1,
+          21
+        ],
+        "copyright": "Copyright (c) 2025, Tiptap GmbH",
+        "condition": "Retain copyright and permission notices in copies or substantial portions."
+      },
+      "current_snapshot": {
+        "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+        "commit_date": "2026-09-16T13:53:26+02:00",
+        "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+        "branch": "main",
+        "package_version": "@tiptap/extension-table and @tiptap/pm 3.30.3",
+        "license": "MIT; LICENSE.md byte-identical",
+        "dependency_ranges": {
+          "prosemirror-tables": "^1.8.5",
+          "prosemirror-state": "^1.4.4"
+        },
+        "lockfile": {
+          "prosemirror-tables": "1.8.5",
+          "prosemirror-state": "1.4.4"
+        },
+        "refs": [
+          {
+            "read": "tiptap-lock-current",
+            "lines": [
+              923,
+              934
+            ]
+          },
+          {
+            "read": "tiptap-pm-package-current",
+            "lines": [
+              151,
+              166
+            ]
+          }
+        ],
+        "owner_test_freshness": "Current table extension, TableView, cursor-retention helper and five relevant test files inspected. Old __tests__ files moved; current paths recorded. Source-level inheritance remains, with additional framework-owned cursor and rendering policies."
+      }
+    }
+  ],
+  "exact_reads": [
+    {
+      "id": "state-selection",
+      "repo": "prosemirror-state",
+      "path": "src/selection.ts",
+      "ranges": [
+        [
+          1,
+          270
+        ]
+      ],
+      "purpose": "Core Selection extension contract, ranges, replacement, JSON identity, bookmarks and visibility.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-state/src/selection.ts",
+      "commit": "ffad5d9450a0b93438be53a801deee1a223a81bf",
+      "head_blob": "407a335433657ab0d474b818e396bb7a9891e434",
+      "file_blob": "407a335433657ab0d474b818e396bb7a9891e434",
+      "matches_commit": true,
+      "sha256": "cea98fb72c5ced3604556909df9acddf924b3e62f80cab4bdbe430a78afc529a"
+    },
+    {
+      "id": "state-transaction",
+      "repo": "prosemirror-state",
+      "path": "src/transaction.ts",
+      "ranges": [
+        [
+          35,
+          125
+        ],
+        [
+          136,
+          176
+        ]
+      ],
+      "purpose": "Selection remapping and dispatch through custom replacement methods.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-state/src/transaction.ts",
+      "commit": "ffad5d9450a0b93438be53a801deee1a223a81bf",
+      "head_blob": "6638994520eaaf1a02cf2127c53e2e8ae20bd772",
+      "file_blob": "6638994520eaaf1a02cf2127c53e2e8ae20bd772",
+      "matches_commit": true,
+      "sha256": "fbab5b3d17fc510152167b387e15dcf360c086ed78dcb2751cecae7938d01a83"
+    },
+    {
+      "id": "state-plugin",
+      "repo": "prosemirror-state",
+      "path": "src/plugin.ts",
+      "ranges": [
+        [
+          1,
+          142
+        ]
+      ],
+      "purpose": "Plugin state and mounted view update/destroy contracts.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-state/src/plugin.ts",
+      "commit": "ffad5d9450a0b93438be53a801deee1a223a81bf",
+      "head_blob": "29f07543dea295a22747e9a7fe6e5c50298dcafa",
+      "file_blob": "29f07543dea295a22747e9a7fe6e5c50298dcafa",
+      "matches_commit": true,
+      "sha256": "a0bac3d5db226ed673774b0b6b58d43e36d13f34b9ecee874d081dc3145e2202"
+    },
+    {
+      "id": "state-tests",
+      "repo": "prosemirror-state",
+      "path": "test/test-selection.ts",
+      "ranges": [
+        [
+          1,
+          100
+        ]
+      ],
+      "purpose": "Existing selection remapping, replacement and deletion assertions; inspected, not run.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-state/test/test-selection.ts",
+      "commit": "ffad5d9450a0b93438be53a801deee1a223a81bf",
+      "head_blob": "6180daf01d9383db6e95cac46d37db423d6016bb",
+      "file_blob": "6180daf01d9383db6e95cac46d37db423d6016bb",
+      "matches_commit": true,
+      "sha256": "1542328af714e389f620447fc0600fc582a63741e1960ac53bbb35fa5360219a"
+    },
+    {
+      "id": "state-moved",
+      "repo": "prosemirror-state",
+      "path": "README.md",
+      "ranges": [
+        [
+          1,
+          25
+        ]
+      ],
+      "purpose": "Canonical repository relocation and freshness limitation.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-state/README.md",
+      "commit": "ffad5d9450a0b93438be53a801deee1a223a81bf",
+      "head_blob": "a08c2cc627f5f5b39bf2494a6cb7bf0196ec1262",
+      "file_blob": "a08c2cc627f5f5b39bf2494a6cb7bf0196ec1262",
+      "matches_commit": true,
+      "sha256": "7293b501988f1f4813093ae855c75f82e81ed49d6aa4f98d99fe99aefcb77b95"
+    },
+    {
+      "id": "table-selection",
+      "repo": "prosemirror-tables",
+      "path": "src/cellselection.ts",
+      "ranges": [
+        [
+          1,
+          472
+        ]
+      ],
+      "purpose": "Cell ranges, mapping, rectangular content, replacement, bookmarks, decorations and normalization.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/src/cellselection.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "d4fcfdca5efb70601617c038440ec2f17146af59",
+      "file_blob": "d4fcfdca5efb70601617c038440ec2f17146af59",
+      "matches_commit": true,
+      "sha256": "53bd8e4c3f746f1d0a653908e3f68ecd01af21be4dfcfc37f9521a640714d9f3"
+    },
+    {
+      "id": "table-plugin",
+      "repo": "prosemirror-tables",
+      "path": "src/index.ts",
+      "ranges": [
+        [
+          1,
+          147
+        ]
+      ],
+      "purpose": "Exports, optional tableEditing plugin, drag anchor state, paste/key handlers, normalization.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/src/index.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "ed3ceb38975e0e04328de6b667016dd5a3d978a8",
+      "file_blob": "ed3ceb38975e0e04328de6b667016dd5a3d978a8",
+      "matches_commit": true,
+      "sha256": "8e3baa97e54851b13e4b156e22d21b184a3eaf0976f84004d8b81524f6fd8153"
+    },
+    {
+      "id": "table-map",
+      "repo": "prosemirror-tables",
+      "path": "src/tablemap.ts",
+      "ranges": [
+        [
+          1,
+          330
+        ]
+      ],
+      "purpose": "Node-keyed cache, relative positions, topology queries, problem detection and map construction.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/src/tablemap.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "99cad0e92bbfe57a9308821214fb3df698074b42",
+      "file_blob": "99cad0e92bbfe57a9308821214fb3df698074b42",
+      "matches_commit": true,
+      "sha256": "31504a7d98b0bd07d907693b3586ee63b4305cc4f6bf3cd9eaf7df6b529ae9d0"
+    },
+    {
+      "id": "table-resize",
+      "repo": "prosemirror-tables",
+      "path": "src/columnresizing.ts",
+      "ranges": [
+        [
+          1,
+          431
+        ]
+      ],
+      "purpose": "Resize options, remapping, preview/commit, mouse listener lifetime and direct renderer coupling.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/src/columnresizing.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "d7ffc1f50cb5f369bca8d40544b510423e2a9462",
+      "file_blob": "d7ffc1f50cb5f369bca8d40544b510423e2a9462",
+      "matches_commit": true,
+      "sha256": "6a5e39103abd1e90f07a9c3f5961d2ce9af7c4a7f053cec2d124c4395438ff5a"
+    },
+    {
+      "id": "table-view",
+      "repo": "prosemirror-tables",
+      "path": "src/tableview.ts",
+      "ranges": [
+        [
+          1,
+          102
+        ]
+      ],
+      "purpose": "DOM node view, column rendering, mutation filtering and override preview.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/src/tableview.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "3a74f80177c23c8638f4529c24d723a2dd4f5940",
+      "file_blob": "3a74f80177c23c8638f4529c24d723a2dd4f5940",
+      "matches_commit": true,
+      "sha256": "faf93beb5522596edbe33c4be4d57ff357aa8ff29fa20e85dc44864003ff2014"
+    },
+    {
+      "id": "table-input",
+      "repo": "prosemirror-tables",
+      "path": "src/input.ts",
+      "ranges": [
+        [
+          1,
+          298
+        ]
+      ],
+      "purpose": "Mouse selection, arrow and deletion key policies, paste dispatch, DOM-dependent navigation.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/src/input.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "0917b0dc2fab5ba12f21a6ad4ebb4a88a44c7f83",
+      "file_blob": "0917b0dc2fab5ba12f21a6ad4ebb4a88a44c7f83",
+      "matches_commit": true,
+      "sha256": "ce14f3a964d968585e0981625c3058cc1f2810639db417ced2c6f2a25801a60e"
+    },
+    {
+      "id": "table-transfer",
+      "repo": "prosemirror-tables",
+      "path": "src/copypaste.ts",
+      "ranges": [
+        [
+          1,
+          182
+        ],
+        [
+          316,
+          384
+        ]
+      ],
+      "purpose": "Cell slice recognition, tiling/clipping and insertion orchestration; growth/isolation helper bodies not read.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/src/copypaste.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "a2b94e1f39d44dcfbea65b92c0f027ffa62133b6",
+      "file_blob": "a2b94e1f39d44dcfbea65b92c0f027ffa62133b6",
+      "matches_commit": true,
+      "sha256": "8a86ae9514736a85d1c892f99c25160a72c6f92e240662222a443dd288da2cf1"
+    },
+    {
+      "id": "table-repair",
+      "repo": "prosemirror-tables",
+      "path": "src/fixtables.ts",
+      "ranges": [
+        [
+          1,
+          116
+        ]
+      ],
+      "purpose": "Changed subtree scan and table-owned repair entry point; not a complete normalizer audit.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/src/fixtables.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "2dac8b61d591eeae4d6e9775c8179c05cd61ad76",
+      "file_blob": "2dac8b61d591eeae4d6e9775c8179c05cd61ad76",
+      "matches_commit": true,
+      "sha256": "577ed59813dc321feb28f67284acca7392b7ffa6e60590daefd4c826259bdcae"
+    },
+    {
+      "id": "table-commands",
+      "repo": "prosemirror-tables",
+      "path": "src/commands.ts",
+      "ranges": [
+        [
+          812,
+          907
+        ]
+      ],
+      "purpose": "Public next-cell, whole-table delete, selected-cell-content deletion commands.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/src/commands.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "83f00bc0c47d7eed242d69c282f10b1e05e202e9",
+      "file_blob": "83f00bc0c47d7eed242d69c282f10b1e05e202e9",
+      "matches_commit": true,
+      "sha256": "700178a9465f627e80a4c520c4d442c5b08c7184b56290ef11884b5c73048241"
+    },
+    {
+      "id": "table-schema",
+      "repo": "prosemirror-tables",
+      "path": "src/schema.ts",
+      "ranges": [
+        [
+          96,
+          209
+        ]
+      ],
+      "purpose": "Schema factory, cell span/width attributes and role tags.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/src/schema.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "4511f172ab744736c83616d00b40a1d40e470d4e",
+      "file_blob": "4511f172ab744736c83616d00b40a1d40e470d4e",
+      "matches_commit": true,
+      "sha256": "eca86f1a90af2bf752128d88e25a38f015a4491dbf70b5bc87d88eaf02ef7bf1"
+    },
+    {
+      "id": "table-selection-tests",
+      "repo": "prosemirror-tables",
+      "path": "test/cellselection.test.ts",
+      "ranges": [
+        [
+          1,
+          200
+        ]
+      ],
+      "purpose": "Cell primary range, row/column insertion mapping, slice clipping/widths and node selection normalization assertions.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/test/cellselection.test.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "8e701db5ac7cf7c686b4b18115cad250a8a96ae5",
+      "file_blob": "8e701db5ac7cf7c686b4b18115cad250a8a96ae5",
+      "matches_commit": true,
+      "sha256": "5dc1451a59e1997673ae2d96717b73b1b3d4c262bfcc1b4128e12c53a4cf278a"
+    },
+    {
+      "id": "table-map-tests",
+      "repo": "prosemirror-tables",
+      "path": "test/tablemap.test.ts",
+      "ranges": [
+        [
+          1,
+          111
+        ]
+      ],
+      "purpose": "Span topology, rectangles, adjacent cells; no timing claim.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/test/tablemap.test.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "159b4e8826a1b05dbcf2f18cfe3b94a08a3ee693",
+      "file_blob": "159b4e8826a1b05dbcf2f18cfe3b94a08a3ee693",
+      "matches_commit": true,
+      "sha256": "52701244a021ea50d8fbc91e5e5f2e12be6d9dffeee0867af0541cc1654ddcaa"
+    },
+    {
+      "id": "table-resize-tests",
+      "repo": "prosemirror-tables",
+      "path": "test/column-resizing.test.ts",
+      "ranges": [
+        [
+          1,
+          18
+        ]
+      ],
+      "purpose": "Only null-handle decoration assertion in this file.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/test/column-resizing.test.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "7a9d70fb009ca04b4b59ee6a0001fab1931309bd",
+      "file_blob": "7a9d70fb009ca04b4b59ee6a0001fab1931309bd",
+      "matches_commit": true,
+      "sha256": "80ef7a0288bbf7361568791492ab2ca0fed025ed5aa890dd325f57f431245710"
+    },
+    {
+      "id": "table-input-tests",
+      "repo": "prosemirror-tables",
+      "path": "test/input.test.ts",
+      "ranges": [
+        [
+          1,
+          59
+        ]
+      ],
+      "purpose": "Four arrow commands against EditorView; inspected, not native interaction proof.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/test/input.test.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "a395ededc2bec9f2c357c8226927722abe863472",
+      "file_blob": "a395ededc2bec9f2c357c8226927722abe863472",
+      "matches_commit": true,
+      "sha256": "ccb1a95588b45e0312e8b44965a975bcc26f115f55d90fab2e374968047225db"
+    },
+    {
+      "id": "table-transfer-tests",
+      "repo": "prosemirror-tables",
+      "path": "test/copypaste.test.ts",
+      "ranges": [
+        [
+          99,
+          277
+        ]
+      ],
+      "purpose": "Clip/repeat, span boundaries, table growth and width-preservation assertions.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/test/copypaste.test.ts",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "5d686aa529e9e9bc2a3cadb03f1bb2dd6b41c14c",
+      "file_blob": "5d686aa529e9e9bc2a3cadb03f1bb2dd6b41c14c",
+      "matches_commit": true,
+      "sha256": "86bcc2b615fec8d7e0051670bd33be96d7fc708c32a6dd009ea9578d4062a7a3"
+    },
+    {
+      "id": "tiptap-table",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/table.ts",
+      "ranges": [
+        [
+          1,
+          513
+        ]
+      ],
+      "purpose": "Public options/commands, schema, HTML/Markdown entry points, key policy, imported PM plugins.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/src/table/table.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "31c8361de86e534643ffd95a3cfe5a6ced78189a",
+      "file_blob": "31c8361de86e534643ffd95a3cfe5a6ced78189a",
+      "matches_commit": true,
+      "sha256": "cbb513553e0219c9dee5b5f5415425a0bee05d38fb987c24b579bec18011b892"
+    },
+    {
+      "id": "tiptap-view",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/TableView.ts",
+      "ranges": [
+        [
+          1,
+          127
+        ]
+      ],
+      "purpose": "Tiptap-owned DOM renderer and mutation filtering.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/src/table/TableView.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "694509037d1c4eee15066d1cc0d486a4cb172df1",
+      "file_blob": "694509037d1c4eee15066d1cc0d486a4cb172df1",
+      "matches_commit": true,
+      "sha256": "bfb088d4b121831b28a3da7e79dd5e731f7fa89e361b725bb43a59bd1d91dd92"
+    },
+    {
+      "id": "tiptap-delete",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/deleteTableWhenAllCellsSelected.ts",
+      "ranges": [
+        [
+          1,
+          37
+        ]
+      ],
+      "purpose": "Framework full-cell-selection deletes whole table policy.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/src/table/utilities/deleteTableWhenAllCellsSelected.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "3e2947468f423da4f0b088467e11ade7c24bc2e5",
+      "file_blob": "3e2947468f423da4f0b088467e11ade7c24bc2e5",
+      "matches_commit": true,
+      "sha256": "c6e4e64a309e199d0ee004dfd11b3d4d951a12664c6078824e03a14a7841e9b9"
+    },
+    {
+      "id": "tiptap-kit",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/kit/index.ts",
+      "ranges": [
+        [
+          1,
+          64
+        ]
+      ],
+      "purpose": "Composition/configuration of four table extensions.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/src/kit/index.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "79a8fb755e335f7a5fad0373061d993fde64c2e4",
+      "file_blob": "79a8fb755e335f7a5fad0373061d993fde64c2e4",
+      "matches_commit": true,
+      "sha256": "f8bc06ee6e97bf3feb333d567ceac24a6c690b0d8e7502cdfdb46032999638c9"
+    },
+    {
+      "id": "tiptap-pm-export",
+      "repo": "tiptap",
+      "path": "packages/pm/tables/index.ts",
+      "ranges": [
+        [
+          1,
+          1
+        ]
+      ],
+      "purpose": "Direct prosemirror-tables re-export.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/pm/tables/index.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "5716c717fa95af08c7dc21c7b76a59d3a040db8d",
+      "file_blob": "5716c717fa95af08c7dc21c7b76a59d3a040db8d",
+      "matches_commit": true,
+      "sha256": "0d2670c8c0f10e28356723dc0195678c87919eaac234d32dd09ba9e830898633"
+    },
+    {
+      "id": "tiptap-cell",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/cell/table-cell.ts",
+      "ranges": [
+        [
+          1,
+          71
+        ]
+      ],
+      "purpose": "Feature schema and HTML colwidth import.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/src/cell/table-cell.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "0a135dbb5e6bef0f798b8e463a1493c248f290e3",
+      "file_blob": "0a135dbb5e6bef0f798b8e463a1493c248f290e3",
+      "matches_commit": true,
+      "sha256": "b19e850adf4b93295dc31a974133222eacc030d191306a0d4abfeb1167971f82"
+    },
+    {
+      "id": "tiptap-row",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/row/table-row.ts",
+      "ranges": [
+        [
+          1,
+          38
+        ]
+      ],
+      "purpose": "Row extension and tableRole.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/src/row/table-row.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "632a2fdf68a19be1890a864a2e20b4bb650aa11b",
+      "file_blob": "632a2fdf68a19be1890a864a2e20b4bb650aa11b",
+      "matches_commit": true,
+      "sha256": "c27c1da1a1e8b09a464b8ff9c90b88fed5f2cb1da22097bdb0fc3a2e9e4e29e9"
+    },
+    {
+      "id": "tiptap-colgroup",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/createColGroup.ts",
+      "ranges": [
+        [
+          1,
+          68
+        ]
+      ],
+      "purpose": "HTML export colgroup/width model.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/src/table/utilities/createColGroup.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "34789e640e746787f7bdc9de793b737ba813ec7f",
+      "file_blob": "34789e640e746787f7bdc9de793b737ba813ec7f",
+      "matches_commit": true,
+      "sha256": "289c66774ff90b67edf89a89ca480c4049ad18b58abf1dbeed272fe0d2f06b62"
+    },
+    {
+      "id": "tiptap-colstyle",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/colStyle.ts",
+      "ranges": [
+        [
+          1,
+          9
+        ]
+      ],
+      "purpose": "Minimum-width CSS policy.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/src/table/utilities/colStyle.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "d54a259fda55c0133d2928eb01e9e091176c7e19",
+      "file_blob": "d54a259fda55c0133d2928eb01e9e091176c7e19",
+      "matches_commit": true,
+      "sha256": "f687b1159e4377391d3c256e126a9c34a3fcb43299b5e829a68bd204cc93ebf4"
+    },
+    {
+      "id": "tiptap-create",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/createTable.ts",
+      "ranges": [
+        [
+          1,
+          40
+        ]
+      ],
+      "purpose": "Insert-table construction composition; called helpers not fully traced.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/src/table/utilities/createTable.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "39771c6548cac5c3ffc4f14de3bc54f13205b2bc",
+      "file_blob": "39771c6548cac5c3ffc4f14de3bc54f13205b2bc",
+      "matches_commit": true,
+      "sha256": "77e6987c3d25832f4261b3fb0249a2ba71ac83a65990acd78aaa18e7fe6f02cf"
+    },
+    {
+      "id": "tiptap-is-selection",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/isCellSelection.ts",
+      "ranges": [
+        [
+          1,
+          5
+        ]
+      ],
+      "purpose": "Selection type is inherited CellSelection instance.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/src/table/utilities/isCellSelection.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "59d8919f02957c9ba75aa5a0f6317f03d2d34463",
+      "file_blob": "59d8919f02957c9ba75aa5a0f6317f03d2d34463",
+      "matches_commit": true,
+      "sha256": "c3094c0401dd2cf270fb7205b1ca0b1e7c5577393869f0d98cbfa02052e0ceaf"
+    },
+    {
+      "id": "tiptap-cell-tests",
+      "repo": "tiptap",
+      "path": "packages/extension-table/__tests__/tableCell.spec.ts",
+      "ranges": [
+        [
+          1,
+          100
+        ]
+      ],
+      "purpose": "Editor setup and scalar/multiple colwidth parse assertions.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/__tests__/tableCell.spec.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "4b7db134a2013b38e2abc449227e51a2c7e4efea",
+      "file_blob": "4b7db134a2013b38e2abc449227e51a2c7e4efea",
+      "matches_commit": true,
+      "sha256": "49e70d5293c7da21b858bf371bc55b1aff34ec28d1953e3609ce894be01d62e6"
+    },
+    {
+      "id": "tiptap-header-tests",
+      "repo": "tiptap",
+      "path": "packages/extension-table/__tests__/tableHeader.spec.ts",
+      "ranges": [
+        [
+          1,
+          100
+        ]
+      ],
+      "purpose": "Header colwidth parse assertions.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/__tests__/tableHeader.spec.ts",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "8177e1a258d22cd311b93802932f716f3fb91705",
+      "file_blob": "8177e1a258d22cd311b93802932f716f3fb91705",
+      "matches_commit": true,
+      "sha256": "1d3f36f782549af05c5641d1636a01b481f877a950251bf5179ffe72804a069a"
+    },
+    {
+      "id": "tiptap-lock",
+      "repo": "tiptap",
+      "path": "pnpm-lock.yaml",
+      "ranges": [
+        [
+          962,
+          1026
+        ]
+      ],
+      "purpose": "packages/pm resolves tables 1.6.4 and state 1.4.3.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/pnpm-lock.yaml",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "f9b12c5627ee9b845e795fd99788481fce0656bb",
+      "file_blob": "f9b12c5627ee9b845e795fd99788481fce0656bb",
+      "matches_commit": true,
+      "sha256": "9d5943d539fd625a894589be3e5a5d40619823bb96a1955c29bc099397ab85a0"
+    },
+    {
+      "id": "tables-license",
+      "repo": "prosemirror-tables",
+      "path": "LICENSE",
+      "ranges": [
+        [
+          1,
+          19
+        ]
+      ],
+      "purpose": "MIT permission and notice condition.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/LICENSE",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "c34a4f121f66f8b1837845d0b86f3f71a4f3e318",
+      "file_blob": "c34a4f121f66f8b1837845d0b86f3f71a4f3e318",
+      "matches_commit": true,
+      "sha256": "d1d2046ebbe6362f9ad8fd4d62e9074f2553f289c0e1de895a650f10ba5f4239"
+    },
+    {
+      "id": "state-license",
+      "repo": "prosemirror-state",
+      "path": "LICENSE",
+      "ranges": [
+        [
+          1,
+          19
+        ]
+      ],
+      "purpose": "MIT permission and notice condition.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-state/LICENSE",
+      "commit": "ffad5d9450a0b93438be53a801deee1a223a81bf",
+      "head_blob": "7e2295b307446b171b993b705239928d8e0347b8",
+      "file_blob": "7e2295b307446b171b993b705239928d8e0347b8",
+      "matches_commit": true,
+      "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+    },
+    {
+      "id": "tiptap-license",
+      "repo": "tiptap",
+      "path": "LICENSE.md",
+      "ranges": [
+        [
+          1,
+          21
+        ]
+      ],
+      "purpose": "MIT permission and notice condition.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/LICENSE.md",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "4b28a553b563cc04587a3768c11755512ad42638",
+      "file_blob": "4b28a553b563cc04587a3768c11755512ad42638",
+      "matches_commit": true,
+      "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+    },
+    {
+      "id": "tables-package",
+      "repo": "prosemirror-tables",
+      "path": "package.json",
+      "ranges": [
+        [
+          1,
+          81
+        ]
+      ],
+      "purpose": "Package version, public exports and dependencies.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/package.json",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "head_blob": "e919e509066beca2b7481235e0e76f98a8feef33",
+      "file_blob": "e919e509066beca2b7481235e0e76f98a8feef33",
+      "matches_commit": true,
+      "sha256": "330b36a92745c7f5ad8059b97c3fcc15a4cec134e1bb843d10bba2407f88422a"
+    },
+    {
+      "id": "state-package",
+      "repo": "prosemirror-state",
+      "path": "package.json",
+      "ranges": [
+        [
+          1,
+          39
+        ]
+      ],
+      "purpose": "Package version, public exports and dependencies.",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-state/package.json",
+      "commit": "ffad5d9450a0b93438be53a801deee1a223a81bf",
+      "head_blob": "ae6eaf7496a4b4c834f77e66a153b890e93f928d",
+      "file_blob": "ae6eaf7496a4b4c834f77e66a153b890e93f928d",
+      "matches_commit": true,
+      "sha256": "2c0955682b85bef9b6fc516b4f7af5a828e1a06f0417dfcafa095479c99c9217"
+    },
+    {
+      "id": "tiptap-package",
+      "repo": "tiptap",
+      "path": "packages/extension-table/package.json",
+      "ranges": [
+        [
+          1,
+          90
+        ]
+      ],
+      "purpose": "Extension version, exports and peer dependencies.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/extension-table/package.json",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "e7dc7266dbba1fe7c4e6252fecb14b61f1f02480",
+      "file_blob": "e7dc7266dbba1fe7c4e6252fecb14b61f1f02480",
+      "matches_commit": true,
+      "sha256": "01c8643bc960db06db94db6e1f023f9bafd21b544d4e37a9dd2ba574cadfcd68"
+    },
+    {
+      "id": "tiptap-pm-package",
+      "repo": "tiptap",
+      "path": "packages/pm/package.json",
+      "ranges": [
+        [
+          1,
+          211
+        ]
+      ],
+      "purpose": "PM wrapper dependency ranges.",
+      "absolute_path": "/Users/zbeyens/git/tiptap/packages/pm/package.json",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "head_blob": "76e3a7816268f1aa06d69de758e9f6a9d121eac2",
+      "file_blob": "76e3a7816268f1aa06d69de758e9f6a9d121eac2",
+      "matches_commit": true,
+      "sha256": "ec26d5f57911fd17ce088f03f133261f9976418241ca35e99c3974c9b1d789f5"
+    },
+    {
+      "id": "table-style",
+      "repo": "prosemirror-tables",
+      "path": "style/tables.css",
+      "absolute_path": "/Users/zbeyens/git/prosemirror-tables/style/tables.css",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "ranges": [
+        [
+          1,
+          48
+        ]
+      ],
+      "sha256": "3fec20590b901e5ecf7d17691df2b053e836ed052894632a199d07081d3019a9",
+      "head_blob": "2d20634470a9dd93a2f559d5a36d8669e4518cd8",
+      "file_blob": "2d20634470a9dd93a2f559d5a36d8669e4518cd8",
+      "matches_commit": true,
+      "purpose": "Pointer-transparent right-side per-cell handle CSS; no overlay hit target."
+    },
+    {
+      "id": "state-selection-current",
+      "repo": "prosemirror-state",
+      "path": "src/selection.ts",
+      "ranges": [
+        [
+          1,
+          270
+        ]
+      ],
+      "purpose": "Core Selection extension contract, ranges, replacement, JSON identity, bookmarks and visibility.",
+      "method": "git show at canonical remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "object_spec": "57d4a96286ca972125a18a56ecd6d2b00927de30:src/selection.ts",
+      "sha256": "cea98fb72c5ced3604556909df9acddf924b3e62f80cab4bdbe430a78afc529a",
+      "head_blob": "407a335433657ab0d474b818e396bb7a9891e434"
+    },
+    {
+      "id": "state-transaction-current",
+      "repo": "prosemirror-state",
+      "path": "src/transaction.ts",
+      "ranges": [
+        [
+          35,
+          125
+        ],
+        [
+          136,
+          176
+        ]
+      ],
+      "purpose": "Selection remapping and dispatch through custom replacement methods.",
+      "method": "git show at canonical remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "object_spec": "57d4a96286ca972125a18a56ecd6d2b00927de30:src/transaction.ts",
+      "sha256": "fbab5b3d17fc510152167b387e15dcf360c086ed78dcb2751cecae7938d01a83",
+      "head_blob": "6638994520eaaf1a02cf2127c53e2e8ae20bd772"
+    },
+    {
+      "id": "state-plugin-current",
+      "repo": "prosemirror-state",
+      "path": "src/plugin.ts",
+      "ranges": [
+        [
+          1,
+          142
+        ]
+      ],
+      "purpose": "Plugin state and mounted view update/destroy contracts.",
+      "method": "git show at canonical remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "object_spec": "57d4a96286ca972125a18a56ecd6d2b00927de30:src/plugin.ts",
+      "sha256": "a0bac3d5db226ed673774b0b6b58d43e36d13f34b9ecee874d081dc3145e2202",
+      "head_blob": "29f07543dea295a22747e9a7fe6e5c50298dcafa"
+    },
+    {
+      "id": "state-tests-current",
+      "repo": "prosemirror-state",
+      "path": "test/test-selection.ts",
+      "ranges": [
+        [
+          1,
+          100
+        ]
+      ],
+      "purpose": "Existing selection remapping, replacement and deletion assertions; inspected, not run.",
+      "method": "git show at canonical remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "object_spec": "57d4a96286ca972125a18a56ecd6d2b00927de30:test/test-selection.ts",
+      "sha256": "1542328af714e389f620447fc0600fc582a63741e1960ac53bbb35fa5360219a",
+      "head_blob": "6180daf01d9383db6e95cac46d37db423d6016bb"
+    },
+    {
+      "id": "state-license-current",
+      "repo": "prosemirror-state",
+      "path": "LICENSE",
+      "ranges": [
+        [
+          1,
+          19
+        ]
+      ],
+      "purpose": "MIT permission and notice condition.",
+      "method": "git show at canonical remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "object_spec": "57d4a96286ca972125a18a56ecd6d2b00927de30:LICENSE",
+      "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8",
+      "head_blob": "7e2295b307446b171b993b705239928d8e0347b8"
+    },
+    {
+      "id": "state-package-current",
+      "repo": "prosemirror-state",
+      "path": "package.json",
+      "ranges": [
+        [
+          1,
+          39
+        ]
+      ],
+      "purpose": "Package version, public exports and dependencies.",
+      "method": "git show at canonical remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "object_spec": "57d4a96286ca972125a18a56ecd6d2b00927de30:package.json",
+      "sha256": "2c0955682b85bef9b6fc516b4f7af5a828e1a06f0417dfcafa095479c99c9217",
+      "head_blob": "ae6eaf7496a4b4c834f77e66a153b890e93f928d"
+    },
+    {
+      "id": "tiptap-delete-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/deleteTableWhenAllCellsSelected.ts",
+      "ranges": [
+        [
+          1,
+          37
+        ]
+      ],
+      "purpose": "Framework full-cell-selection deletes whole table policy.",
+      "method": "git show at fresh remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/table/utilities/deleteTableWhenAllCellsSelected.ts",
+      "sha256": "c6e4e64a309e199d0ee004dfd11b3d4d951a12664c6078824e03a14a7841e9b9",
+      "head_blob": "3e2947468f423da4f0b088467e11ade7c24bc2e5"
+    },
+    {
+      "id": "tiptap-kit-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/kit/index.ts",
+      "ranges": [
+        [
+          1,
+          64
+        ]
+      ],
+      "purpose": "Composition/configuration of four table extensions.",
+      "method": "git show at fresh remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/kit/index.ts",
+      "sha256": "f8bc06ee6e97bf3feb333d567ceac24a6c690b0d8e7502cdfdb46032999638c9",
+      "head_blob": "79a8fb755e335f7a5fad0373061d993fde64c2e4"
+    },
+    {
+      "id": "tiptap-pm-export-current",
+      "repo": "tiptap",
+      "path": "packages/pm/tables/index.ts",
+      "ranges": [
+        [
+          1,
+          1
+        ]
+      ],
+      "purpose": "Direct prosemirror-tables re-export.",
+      "method": "git show at fresh remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/pm/tables/index.ts",
+      "sha256": "0d2670c8c0f10e28356723dc0195678c87919eaac234d32dd09ba9e830898633",
+      "head_blob": "5716c717fa95af08c7dc21c7b76a59d3a040db8d"
+    },
+    {
+      "id": "tiptap-row-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/row/table-row.ts",
+      "ranges": [
+        [
+          1,
+          38
+        ]
+      ],
+      "purpose": "Row extension and tableRole.",
+      "method": "git show at fresh remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/row/table-row.ts",
+      "sha256": "c27c1da1a1e8b09a464b8ff9c90b88fed5f2cb1da22097bdb0fc3a2e9e4e29e9",
+      "head_blob": "632a2fdf68a19be1890a864a2e20b4bb650aa11b"
+    },
+    {
+      "id": "tiptap-create-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/createTable.ts",
+      "ranges": [
+        [
+          1,
+          40
+        ]
+      ],
+      "purpose": "Insert-table construction composition; called helpers not fully traced.",
+      "method": "git show at fresh remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/table/utilities/createTable.ts",
+      "sha256": "77e6987c3d25832f4261b3fb0249a2ba71ac83a65990acd78aaa18e7fe6f02cf",
+      "head_blob": "39771c6548cac5c3ffc4f14de3bc54f13205b2bc"
+    },
+    {
+      "id": "tiptap-is-selection-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/isCellSelection.ts",
+      "ranges": [
+        [
+          1,
+          5
+        ]
+      ],
+      "purpose": "Selection type is inherited CellSelection instance.",
+      "method": "git show at fresh remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/table/utilities/isCellSelection.ts",
+      "sha256": "c3094c0401dd2cf270fb7205b1ca0b1e7c5577393869f0d98cbfa02052e0ceaf",
+      "head_blob": "59d8919f02957c9ba75aa5a0f6317f03d2d34463"
+    },
+    {
+      "id": "tiptap-license-current",
+      "repo": "tiptap",
+      "path": "LICENSE.md",
+      "ranges": [
+        [
+          1,
+          21
+        ]
+      ],
+      "purpose": "MIT permission and notice condition.",
+      "method": "git show at fresh remote HEAD; exact byte equality to inspected local file verified.",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:LICENSE.md",
+      "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9",
+      "head_blob": "4b28a553b563cc04587a3768c11755512ad42638"
+    },
+    {
+      "id": "tiptap-table-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/table.ts",
+      "ranges": [
+        [
+          1,
+          646
+        ]
+      ],
+      "purpose": "Full prior source plus all current unified diff hunks; numbered current options/commands/plugin/node-view reads.",
+      "method": "git show diff against fully inspected local baseline",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/table/table.ts",
+      "sha256": "a65a5586c4bb65e3dce6c602f4964e54cee833938aac08aaa0fc0fc12181ebff",
+      "head_blob": "12d10bb5ea4e66243ecc7f42dcecd266c8d432ec"
+    },
+    {
+      "id": "tiptap-view-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/TableView.ts",
+      "ranges": [
+        [
+          1,
+          154
+        ]
+      ],
+      "purpose": "Full prior source plus all current unified diff hunks; numbered current constructor/update/mutation reads.",
+      "method": "git show diff against fully inspected local baseline",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/table/TableView.ts",
+      "sha256": "969ba14fdf2a75ceac10e4cadf2d85d352dd5709849f5987d6ed8d78503343d6",
+      "head_blob": "abb664c99bf2596dc9f3807dcf39675a1f7a3adc"
+    },
+    {
+      "id": "tiptap-cell-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/cell/table-cell.ts",
+      "ranges": [
+        [
+          1,
+          68
+        ]
+      ],
+      "purpose": "Full prior source plus all current unified diff hunks; delegated new helper internals not audited.",
+      "method": "git show diff against fully inspected local baseline",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/cell/table-cell.ts",
+      "sha256": "0230129df761b0be1ceae95cbc54169016024814ca53c50dca1180483c8deb30",
+      "head_blob": "2ead19ff197736c2ffc03f884356f4dee6323dc6"
+    },
+    {
+      "id": "tiptap-colgroup-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/createColGroup.ts",
+      "ranges": [
+        [
+          1,
+          69
+        ]
+      ],
+      "purpose": "Full prior source plus all current unified diff hunks; behavior unchanged, formatting/type alias changes.",
+      "method": "git show diff against fully inspected local baseline",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/table/utilities/createColGroup.ts",
+      "sha256": "6f98ec21325793fd5edb9d3cd410515c826b5e7ac31ece7e208a310b4b51c2f3",
+      "head_blob": "00b1249821a43b3d349e57a6e3fdc657bb28ccba"
+    },
+    {
+      "id": "tiptap-colstyle-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/colStyle.ts",
+      "ranges": [
+        [
+          1,
+          12
+        ]
+      ],
+      "purpose": "Full prior source plus all current unified diff hunks; formatting changes only.",
+      "method": "git show diff against fully inspected local baseline",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/table/utilities/colStyle.ts",
+      "sha256": "666e91e951619a7ea373138c605a08da65b1aaccb537bb26428aa81f20029ef1",
+      "head_blob": "f72d43bd865982bdc1712e3b116486c82978282d"
+    },
+    {
+      "id": "tiptap-cursor-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/utilities/keepCursorInTable.ts",
+      "ranges": [
+        [
+          1,
+          29
+        ]
+      ],
+      "purpose": "Current mapped table identity and cursor retention helper.",
+      "method": "git show with numbered source lines",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/table/utilities/keepCursorInTable.ts",
+      "sha256": "74fd2b80a713bfa0ca0b27088163dd04ab8ca5aa47dbf1c3841a5dce8cd559c3",
+      "head_blob": "0eb200a2a62519165e16d8a48af6cf8094676a7f"
+    },
+    {
+      "id": "tiptap-colgroup-tests-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/tests/integration/colgroupUpdate.test.ts",
+      "ranges": [
+        [
+          1,
+          196
+        ]
+      ],
+      "purpose": "Current tests of colgroup changes, resizable/nonresizable, read-only programmatic changes and width retention.",
+      "method": "git show with numbered source lines",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/tests/integration/colgroupUpdate.test.ts",
+      "sha256": "303b2faab76dc5cb07866011703ed9a5088e278a438933a10b2135eaee3893a4",
+      "head_blob": "fff75a0775e7bcbf029d4cfe266ab06a4225faac"
+    },
+    {
+      "id": "tiptap-delete-tests-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/tests/integration/deleteSelection.test.ts",
+      "ranges": [
+        [
+          1,
+          64
+        ]
+      ],
+      "purpose": "Current canonical multi-cell selection deletion test.",
+      "method": "git show with numbered source lines",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/tests/integration/deleteSelection.test.ts",
+      "sha256": "65c0db3032b6caea008c2232f8538b9083f4a3803a04b84a88e6862d07be7d82",
+      "head_blob": "ec24cf3e692ec9f8654a4294728a8ee08777f4b2"
+    },
+    {
+      "id": "tiptap-command-tests-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/tests/integration/tableCommands.test.ts",
+      "ranges": [
+        [
+          1,
+          184
+        ]
+      ],
+      "purpose": "Current row/column cursor retention tests including following table.",
+      "method": "git show with numbered source lines",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/tests/integration/tableCommands.test.ts",
+      "sha256": "932f01c564a4f66c08b56b47fb33f6a7c5bed236deb78e2ff2cf86d44ce47d36",
+      "head_blob": "4748849a55247d86c66a65e327b779a369723b87"
+    },
+    {
+      "id": "tiptap-view-tests-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/table/table.test.ts",
+      "ranges": [
+        [
+          1,
+          76
+        ]
+      ],
+      "purpose": "Current HTMLAttributes tests for nonresizable TableView and View=null fallback.",
+      "method": "git show with numbered source lines",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/table/table.test.ts",
+      "sha256": "30a3096f9963cfda1f2680497882392aac9b9ab5b1be07a6fc44c527790623a7",
+      "head_blob": "1dac6edf3ab2e88489d4bbdc7c81c29f88c5a79e"
+    },
+    {
+      "id": "tiptap-cell-tests-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/src/cell/table-cell.test.ts",
+      "ranges": [
+        [
+          1,
+          103
+        ]
+      ],
+      "purpose": "Current relocated scalar/multiple colwidth parsing tests.",
+      "method": "git show with numbered source lines",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/src/cell/table-cell.test.ts",
+      "sha256": "092a0349e2cd4abd4013dd8aa979a3b46e31705238bc2091783f54071f61742a",
+      "head_blob": "b2f9a04c0768c242638d4d8da5a9bf862c88caa2"
+    },
+    {
+      "id": "tiptap-lock-current",
+      "repo": "tiptap",
+      "path": "pnpm-lock.yaml",
+      "ranges": [
+        [
+          894,
+          906
+        ],
+        [
+          915,
+          934
+        ]
+      ],
+      "purpose": "Current packages/pm dependencies; tables 1.8.5/state 1.4.4.",
+      "method": "git show with numbered source lines",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:pnpm-lock.yaml",
+      "sha256": "92999136e8a143301655c572a751fc8b88f9e6444c288971ad885a191c90a4ee",
+      "head_blob": "690d751e46bd05806c83f3357e38e672cde97dfa"
+    },
+    {
+      "id": "tiptap-pm-package-current",
+      "repo": "tiptap",
+      "path": "packages/pm/package.json",
+      "ranges": [
+        [
+          151,
+          166
+        ]
+      ],
+      "purpose": "Current PM dependency ranges.",
+      "method": "git show with numbered source lines",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/pm/package.json",
+      "sha256": "3d4154d60e053c3fa2ec950e8f30fb1bb8073cd15b52dcf70ae110ac3af298a3",
+      "head_blob": "eb67c31b60978d1efc34463c970aea554c515dc3"
+    },
+    {
+      "id": "tiptap-package-current",
+      "repo": "tiptap",
+      "path": "packages/extension-table/package.json",
+      "ranges": [
+        [
+          1,
+          32
+        ]
+      ],
+      "purpose": "Current extension version and MIT package declaration from diff.",
+      "method": "git show diff against fully inspected local baseline",
+      "git_dir": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "object_spec": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8:packages/extension-table/package.json",
+      "sha256": "295b4b247d0c991724cdf4c2c94094a4ba6bddf620de2fd03ed9c66883504c35",
+      "head_blob": "57babc2cd01e434b0e42208845a421d9c1082717"
+    }
+  ],
+  "current_public_call_shapes": [
+    {
+      "owner": "prosemirror-state core",
+      "status": "Live local baseline; decisive owners byte-identical at current canonical commit 57d4a96286ca972125a18a56ecd6d2b00927de30.",
+      "shapes": [
+        "class CustomSelection extends Selection: eq(other), map(doc, mapping), toJSON(); optionally override content(), replace(tr, slice), replaceWith(tr, node), getBookmark(), visible.",
+        "Selection.jsonID(id, CustomSelection); CustomSelection.fromJSON(doc, json).",
+        "SelectionBookmark: map(mapping) -> bookmark; resolve(doc) -> Selection.",
+        "tr.setSelection(selection); tr.replaceSelection(slice); tr.replaceSelectionWith(node); tr.deleteSelection().",
+        "new Plugin({ state: { init, apply }, view(editorView) -> { update?, destroy? }, props, appendTransaction? })."
+      ],
+      "refs": [
+        {
+          "read": "state-selection",
+          "lines": [
+            7,
+            111
+          ]
+        },
+        {
+          "read": "state-selection",
+          "lines": [
+            153,
+            215
+          ]
+        },
+        {
+          "read": "state-transaction",
+          "lines": [
+            67,
+            89
+          ]
+        },
+        {
+          "read": "state-transaction",
+          "lines": [
+            140,
+            160
+          ]
+        },
+        {
+          "read": "state-plugin",
+          "lines": [
+            7,
+            56
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "prosemirror-tables optional feature",
+      "status": "Live at inspected commit",
+      "shapes": [
+        "tableNodes({ tableGroup?, cellContent, cellAttributes }); tableEditing({ allowTableNodeSelection?: boolean }).",
+        "CellSelection.create(doc, anchorCell, headCell?); new CellSelection($anchorCell, $headCell?); CellSelection.rowSelection/colSelection($anchorCell, $headCell?).",
+        "TableMap.get(tableNode); map.findCell(relativePos); map.rectBetween(a, b); map.cellsInRect(rect); map.nextCell(pos, axis, direction).",
+        "columnResizing({ handleWidth?, cellMinWidth?, defaultCellMinWidth?, lastColumnResizable?, View? }); View can be a node-view constructor or null.",
+        "goToNextCell(1 | -1)(state, dispatch?); deleteCellSelection(state, dispatch?); deleteTable(state, dispatch?)."
+      ],
+      "refs": [
+        {
+          "read": "table-schema",
+          "lines": [
+            96,
+            201
+          ]
+        },
+        {
+          "read": "table-plugin",
+          "lines": [
+            70,
+            147
+          ]
+        },
+        {
+          "read": "table-selection",
+          "lines": [
+            239,
+            269
+          ]
+        },
+        {
+          "read": "table-selection",
+          "lines": [
+            295,
+            354
+          ]
+        },
+        {
+          "read": "table-map",
+          "lines": [
+            94,
+            232
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            23,
+            111
+          ]
+        },
+        {
+          "read": "table-commands",
+          "lines": [
+            816,
+            888
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "Tiptap framework extension",
+      "status": "Refreshed against current Tiptap eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8 (3.30.3); baseline calls remain, with extended View signature.",
+      "shapes": [
+        "extensions: [Table.configure({ resizable: true, View, cellMinWidth, allowTableNodeSelection }), TableRow, TableHeader, TableCell].",
+        "TableKit.configure({ table: { resizable: true }, tableRow?, tableHeader?, tableCell? }); each kit member accepts options or false.",
+        "editor.commands.insertTable({ rows: 3, cols: 3, withHeaderRow: true }); editor.commands.setCellSelection({ anchorCell, headCell? }).",
+        "editor.commands.addColumnAfter(); editor.commands.mergeOrSplit(); editor.commands.goToNextCell(); editor.commands.deleteTable().",
+        "View: new (node, cellMinWidth, view, HTMLAttributes?) => NodeView, or null. Non-resizable Table.addNodeView also uses View; resizing registration remains delegated to PM."
+      ],
+      "refs": [
+        {
+          "read": "tiptap-table",
+          "lines": [
+            45,
+            101
+          ]
+        },
+        {
+          "read": "tiptap-table",
+          "lines": [
+            103,
+            244
+          ]
+        },
+        {
+          "read": "tiptap-table",
+          "lines": [
+            335,
+            456
+          ]
+        },
+        {
+          "read": "tiptap-kit",
+          "lines": [
+            12,
+            64
+          ]
+        },
+        {
+          "read": "tiptap-cell-tests",
+          "lines": [
+            25,
+            39
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            86,
+            97
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            575,
+            633
+          ]
+        }
+      ]
+    }
+  ],
+  "ownership": [
+    {
+      "layer": "Core state/substrate",
+      "owns": "One canonical Selection value; abstract remapping/equality/serialization/replacement contract; generic ranges and bookmarks; transaction integration; plugin state and mounted view lifecycle interfaces.",
+      "does_not_establish": "Core does not supply rectangular table selection, span topology, table paste tiling or column width policy.",
+      "refs": [
+        {
+          "read": "state-selection",
+          "lines": [
+            7,
+            111
+          ]
+        },
+        {
+          "read": "state-selection",
+          "lines": [
+            153,
+            215
+          ]
+        },
+        {
+          "read": "state-transaction",
+          "lines": [
+            67,
+            89
+          ]
+        },
+        {
+          "read": "state-transaction",
+          "lines": [
+            140,
+            160
+          ]
+        },
+        {
+          "read": "state-plugin",
+          "lines": [
+            7,
+            56
+          ]
+        }
+      ]
+    },
+    {
+      "layer": "Optional table feature",
+      "owns": "CellSelection semantics, TableMap/cache, table schema/normalizer, selection paint, mouse/keyboard handlers, cell paste and commands; separate optional columnResizing plugin owns width interaction and persistent colwidth edits.",
+      "nuance": "This feature package includes model and DOM code. Optional package ownership does not imply every module is headless.",
+      "refs": [
+        {
+          "read": "table-plugin",
+          "lines": [
+            19,
+            65
+          ]
+        },
+        {
+          "read": "table-plugin",
+          "lines": [
+            83,
+            147
+          ]
+        },
+        {
+          "read": "table-input",
+          "lines": [
+            32,
+            171
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            23,
+            111
+          ]
+        }
+      ]
+    },
+    {
+      "layer": "Framework integration",
+      "owns": "Tiptap node definitions, command wrappers/chaining, defaults, TableKit, table insertion, HTML/Markdown integration, Tab row creation and whole-table deletion when all cells are selected. Current Tiptap also wraps row/column deletion with cursor retention and owns non-resizable TableView registration for colgroup synchronization.",
+      "inherits": "CellSelection, tableEditing, columnResizing, structural commands and selection navigation are imports through a direct prosemirror-tables re-export.",
+      "refs": [
+        {
+          "read": "tiptap-pm-export",
+          "lines": [
+            1,
+            1
+          ]
+        },
+        {
+          "read": "tiptap-table",
+          "lines": [
+            13,
+            38
+          ]
+        },
+        {
+          "read": "tiptap-table",
+          "lines": [
+            250,
+            333
+          ]
+        },
+        {
+          "read": "tiptap-table",
+          "lines": [
+            335,
+            512
+          ]
+        },
+        {
+          "read": "tiptap-kit",
+          "lines": [
+            40,
+            64
+          ]
+        },
+        {
+          "read": "tiptap-delete",
+          "lines": [
+            6,
+            36
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            447,
+            496
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            596,
+            633
+          ]
+        },
+        {
+          "read": "tiptap-cursor-current",
+          "lines": [
+            1,
+            29
+          ]
+        }
+      ]
+    },
+    {
+      "layer": "DOM/UI rendering",
+      "owns": "PM TableView or configurable Tiptap TableView supplies wrapper/table/colgroup/tbody and mutation filtering. Selection and resize handle decorations are feature-owned DOM paint. Inspected implementation does not require React. Current Tiptap registers TableView even without resizing (unless View=null); resizable tables continue to receive their node view from PM's resize plugin.",
+      "caveat": "PM resize preview directly locates TABLE DOM and invokes PM updateColumnsOnResize even when View is customized.",
+      "refs": [
+        {
+          "read": "table-view",
+          "lines": [
+            9,
+            102
+          ]
+        },
+        {
+          "read": "table-selection",
+          "lines": [
+            389,
+            398
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            356,
+            430
+          ]
+        },
+        {
+          "read": "tiptap-view",
+          "lines": [
+            73,
+            127
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            617,
+            633
+          ]
+        },
+        {
+          "read": "tiptap-view-current",
+          "lines": [
+            77,
+            154
+          ]
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "PM-01",
+      "topic": "Selection state and mapping",
+      "fact": "CellSelection is the canonical editor selection, not a second table selection store. It constructs one core range per selected cell's content, with the head cell first; generic anchor/head describe that primary range, while $anchorCell/$headCell retain the table endpoints. Transaction selection mapping calls the subclass. Mapping validates endpoints in the same table, preserves whole row/column extent when the table changes, and falls back to TextSelection when invalid.",
+      "consequence": "The reusable substrate capability is polymorphic selection participation in normal transactions, not table-specific fields in core.",
+      "refs": [
+        {
+          "read": "table-selection",
+          "lines": [
+            41,
+            102
+          ]
+        },
+        {
+          "read": "state-transaction",
+          "lines": [
+            67,
+            89
+          ]
+        },
+        {
+          "read": "table-selection-tests",
+          "lines": [
+            41,
+            81
+          ]
+        }
+      ],
+      "proof_limit": "Read tests assert primary range and row/column insertion mapping; no exhaustive invalidation/collaboration proof."
+    },
+    {
+      "id": "PM-02",
+      "topic": "Serialization, history-facing bookmarks and paint",
+      "fact": "CellSelection serializes as type cell plus cell endpoints, registers with Selection.jsonID, and overrides getBookmark. CellBookmark maps positions without a document and validates/resolves later, falling back to Selection.near. visible=false suppresses normal selection visibility via the contract; the table plugin supplies selectedCell node decorations.",
+      "consequence": "A feature-defined selection needs serialization/bookmark/fallback and paint integration to be a complete editor citizen. A pair of UI coordinates alone is insufficient.",
+      "refs": [
+        {
+          "read": "state-selection",
+          "lines": [
+            153,
+            204
+          ]
+        },
+        {
+          "read": "table-selection",
+          "lines": [
+            329,
+            398
+          ]
+        },
+        {
+          "read": "table-plugin",
+          "lines": [
+            119,
+            129
+          ]
+        }
+      ],
+      "proof_limit": "History implementation and browser selection rendering were not inspected or executed; bookmark support is an evidenced contract, not proven undo/native behavior."
+    },
+    {
+      "id": "PM-03",
+      "topic": "Grid topology and cache",
+      "fact": "TableMap.get caches by immutable table-node identity in a WeakMap (bounded fallback if unavailable). Offsets are table-relative. It owns span-aware rectangles, neighbor queries, unique-cell enumeration and malformed-grid/width problems. A changed table node recomputes its map; this is not an incremental topology-only cache.",
+      "consequence": "Keep one derived topology owner in the table feature, reusable by selection, commands, transfer and resize. Reusing the same table node can preserve its map when document positions outside the table change; content changes inside the table may invalidate it even when topology does not.",
+      "refs": [
+        {
+          "read": "table-map",
+          "lines": [
+            1,
+            10
+          ]
+        },
+        {
+          "read": "table-map",
+          "lines": [
+            49,
+            74
+          ]
+        },
+        {
+          "read": "table-map",
+          "lines": [
+            94,
+            232
+          ]
+        },
+        {
+          "read": "table-map",
+          "lines": [
+            235,
+            314
+          ]
+        },
+        {
+          "read": "table-map-tests",
+          "lines": [
+            18,
+            111
+          ]
+        },
+        {
+          "read": "table-repair",
+          "lines": [
+            28,
+            86
+          ]
+        }
+      ],
+      "proof_limit": "No cache hit measurements or performance comparison; immutable identity reasoning only."
+    },
+    {
+      "id": "PM-04",
+      "topic": "Copy, paste, replacement and delete",
+      "fact": "CellSelection.content creates a rectangular slice, clips spans at its boundaries, preserves surviving width attributes, and includes the table wrapper when every row/column is selected. Generic transaction replacement/deletion delegates to selection methods; CellSelection.replace maps each selected range after prior steps, inserts into the primary range and clears others. Table paste recognizes cell slices, tiles/clips to selected rectangles or grows from a single destination cell, then selects inserted cells. The keyboard delete command clears cell contents while retaining the table.",
+      "consequence": "Core supplies selection/transaction dispatch; the feature owns rectangular transfer and deletion semantics. These policies cannot be recovered from a flat generic from/to pair.",
+      "refs": [
+        {
+          "read": "table-selection",
+          "lines": [
+            104,
+            204
+          ]
+        },
+        {
+          "read": "state-transaction",
+          "lines": [
+            140,
+            160
+          ]
+        },
+        {
+          "read": "table-input",
+          "lines": [
+            129,
+            171
+          ]
+        },
+        {
+          "read": "table-transfer",
+          "lines": [
+            38,
+            178
+          ]
+        },
+        {
+          "read": "table-transfer",
+          "lines": [
+            324,
+            384
+          ]
+        },
+        {
+          "read": "table-commands",
+          "lines": [
+            862,
+            888
+          ]
+        },
+        {
+          "read": "table-selection-tests",
+          "lines": [
+            84,
+            146
+          ]
+        },
+        {
+          "read": "table-transfer-tests",
+          "lines": [
+            99,
+            277
+          ]
+        }
+      ],
+      "proof_limit": "No native copy/cut/paste performed. Browser clipboard caller/serialization, external spreadsheet formats and complete growth/isolation helper implementations were not audited."
+    },
+    {
+      "id": "PM-05",
+      "topic": "Keyboard and mouse ownership",
+      "fact": "tableEditing installs arrows, Shift-arrows, cell-content deletion and paste. Arrow navigation consults view.endOfTextblock; selection dragging is feature-owned and keeps a separately remapped transient drag anchor in plugin state. That transient anchor is not a second authoritative selection. Tiptap adds Tab/Shift-Tab, creates a row at the last Tab destination when possible, and intercepts deletion of an all-cell selection to delete the entire table.",
+      "consequence": "Structural navigation belongs with table topology; framework UX can choose different whole-table deletion and Tab behavior without inventing another selection model.",
+      "refs": [
+        {
+          "read": "table-input",
+          "lines": [
+            32,
+            116
+          ]
+        },
+        {
+          "read": "table-input",
+          "lines": [
+            173,
+            270
+          ]
+        },
+        {
+          "read": "table-plugin",
+          "lines": [
+            103,
+            137
+          ]
+        },
+        {
+          "read": "table-commands",
+          "lines": [
+            816,
+            860
+          ]
+        },
+        {
+          "read": "tiptap-table",
+          "lines": [
+            460,
+            499
+          ]
+        },
+        {
+          "read": "tiptap-delete",
+          "lines": [
+            6,
+            36
+          ]
+        },
+        {
+          "read": "table-input-tests",
+          "lines": [
+            11,
+            59
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            575,
+            614
+          ]
+        },
+        {
+          "read": "tiptap-delete-current",
+          "lines": [
+            6,
+            36
+          ]
+        }
+      ],
+      "proof_limit": "Read arrow tests exercise command calls with EditorView, not real key dispatch or native caret parity. No Tiptap precedence runtime proof."
+    },
+    {
+      "id": "PM-06",
+      "topic": "Resize preview and commit",
+      "fact": "The optional resize plugin stores activeHandle and startX/startWidth in plugin state via transaction metadata. Mousedown and movement preview width through direct colgroup/table DOM writes; movement does not write colwidth document attributes. Mouseup or movement with no pressed button finishes, writes each distinct affected cell's colwidth in one document transaction when changed, then clears dragging metadata. Width is clamped to cellMinWidth; span and row-span traversal is table-specific.",
+      "consequence": "Transient interaction, render preview and persistent document edits have distinct lifetimes. This supports retaining table width policy in the feature and exposing any missing generic mounted interaction support separately.",
+      "refs": [
+        {
+          "read": "table-resize",
+          "lines": [
+            116,
+            138
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            192,
+            256
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            312,
+            382
+          ]
+        },
+        {
+          "read": "table-view",
+          "lines": [
+            54,
+            102
+          ]
+        }
+      ],
+      "proof_limit": "One document transaction is not an assertion about one undo item. History grouping, collaboration visibility and pointer/native behavior were not run."
+    },
+    {
+      "id": "PM-07",
+      "topic": "Resize lifetime and custom views",
+      "fact": "Hover handling is disabled when the view is not editable. activeHandle remaps with association -1 and is invalidated when it no longer points at a cell. Window mouseup/mousemove listeners are removed by finish. The inspected plugin supplies no PluginSpec.view destroy callback, Escape/blur/pointercancel handler or dedicated cancellation operation. Remapping an invalid handle to -1 retains the dragging payload. A custom View does not replace the direct PM preview renderer.",
+      "consequence": "Do not promote this implementation as a complete generic gesture lifecycle. The general core PluginView destroy contract exists, but this resize plugin does not use it to own the temporary listeners. Preview customization and teardown/invalidation are concrete boundaries for the lead to compare locally.",
+      "refs": [
+        {
+          "read": "state-plugin",
+          "lines": [
+            23,
+            56
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            56,
+            138
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            141,
+            255
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            356,
+            382
+          ]
+        }
+      ],
+      "proof_limit": "These are source-level lifetime/coupling observations, not reproduced crashes or proof of leaks. An actual deletion/unmount-during-drag scenario remains unverified.",
+      "issue_refs": [
+        "PM-I293",
+        "PM-I120"
+      ]
+    },
+    {
+      "id": "PM-08",
+      "topic": "What Tiptap adds",
+      "fact": "Current Tiptap 3.30.3 imports and installs PM behavior, defines tableRole schema, exposes commands/kit/insertion and HTML/Markdown integration, and supplies a DOM TableView. It additionally retains cursor position after row/column deletion and registers its node view for non-resizable/read-only rendering so colgroups follow model changes. resizable defaults false; resize plugin inclusion is gated by configured resizing and editor.isEditable when plugins are constructed.",
+      "consequence": "Treat Tiptap as an integration/UX layer over the same table engine, with real extra rendering and cursor policy. It is not an independent selection, topology or resize state machine; do not reduce all its current structural commands to unchanged one-line wrappers.",
+      "refs": [
+        {
+          "read": "tiptap-pm-export",
+          "lines": [
+            1,
+            1
+          ]
+        },
+        {
+          "read": "tiptap-table",
+          "lines": [
+            13,
+            38
+          ]
+        },
+        {
+          "read": "tiptap-table",
+          "lines": [
+            250,
+            333
+          ]
+        },
+        {
+          "read": "tiptap-table",
+          "lines": [
+            335,
+            512
+          ]
+        },
+        {
+          "read": "tiptap-view",
+          "lines": [
+            6,
+            127
+          ]
+        },
+        {
+          "read": "tiptap-colstyle",
+          "lines": [
+            1,
+            9
+          ]
+        },
+        {
+          "read": "tiptap-kit",
+          "lines": [
+            40,
+            64
+          ]
+        },
+        {
+          "read": "tiptap-cell-tests",
+          "lines": [
+            21,
+            100
+          ]
+        },
+        {
+          "read": "tiptap-header-tests",
+          "lines": [
+            21,
+            100
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            447,
+            496
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            575,
+            646
+          ]
+        },
+        {
+          "read": "tiptap-view-current",
+          "lines": [
+            77,
+            154
+          ]
+        },
+        {
+          "read": "tiptap-cursor-current",
+          "lines": [
+            1,
+            29
+          ]
+        },
+        {
+          "read": "tiptap-colgroup-tests-current",
+          "lines": [
+            55,
+            194
+          ]
+        },
+        {
+          "read": "tiptap-command-tests-current",
+          "lines": [
+            86,
+            182
+          ]
+        }
+      ],
+      "proof_limit": "Current lockfile resolves tables 1.8.5/state 1.4.4, matching inspected package versions. No installation/runtime, browser proof or released-artifact identity check. Markdown tokenizer changes were read in the diff but not audited end-to-end."
+    },
+    {
+      "id": "PM-09",
+      "topic": "Resize handle cardinality and hit-testing ownership",
+      "fact": "columnResizing has one activeHandle in its keyed editor plugin state. Its decorations callback emits handles only while activeHandle > -1. handleDecorations walks that active table's rows at the selected column, adding a widget at each qualifying cell's end: only where the column is a cell boundary and only once per row-spanning cell. It adds a dragging node decoration to the same qualifying cells while dragging. Thus this is transient per-cell paint along one active boundary, not a single table overlay and not permanent bottom/right controls in every cell.",
+      "cardinality": "With H unmerged rows and an active column boundary, source constructs H handle widgets (and H cell decorations while dragging). Generally widget count is <= H because spans suppress duplicates/non-boundaries. No active boundary means the callback returns no handles. Counts are derived from source, not DOM/performance measurements.",
+      "hit_testing": "Editor-view mousemove walks event.target ancestors to TD/TH, tests getBoundingClientRect left/right distances against handleWidth, then edgeCell uses view.posAtCoords with an offset away from collapsed borders. Right edge maps to that cell; left edge maps to the preceding grid cell, and the table's first-column left edge returns -1. lastColumnResizable can suppress the last boundary. The supplied PM stylesheet sets handle pointer-events:none and positions it on the cell's physical right edge; handles are paint, not hit targets under that stylesheet.",
+      "ownership": "Feature plugin owns hit-testing, active boundary, gesture and shared preview; cell DOM carries transient decorations. Default PM/Tiptap TableView builds table/colgroup/tbody, without per-cell resize controls or a separate overlay. This is column resizing only: no bottom-edge row-height resize owner is present in these inspected implementations.",
+      "refs": [
+        {
+          "read": "table-resize",
+          "lines": [
+            63,
+            108
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            116,
+            138
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            141,
+            182
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            278,
+            309
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            388,
+            430
+          ]
+        },
+        {
+          "read": "table-style",
+          "lines": [
+            10,
+            36
+          ]
+        },
+        {
+          "read": "table-view",
+          "lines": [
+            15,
+            29
+          ]
+        },
+        {
+          "read": "tiptap-view-current",
+          "lines": [
+            90,
+            124
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            596,
+            633
+          ]
+        }
+      ],
+      "local_comparison_limit": "Lead-supplied local baseline: copied TableCellResizeControls mounts bottom+right in every cell plus first-column left, with shared table preview. This shard did not inspect that local implementation; lead owns its verification and final cut. PM demonstrates centralized hit-testing and transient boundary paint, but does not demonstrate an equivalent row resize feature.",
+      "proof_limit": "No browser interaction, actual mounted-node count, touch/pointer device, accessibility or speed proof. PM CSS behavior is stated for the supplied stylesheet; no assumption it is imported by every Tiptap app."
+    },
+    {
+      "id": "PM-10",
+      "topic": "Current Tiptap owner/test refresh",
+      "fact": "At remote HEAD eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8, deleteColumn/deleteRow wrap PM dispatch with keepCursorInTable, which maps the original table position, checks whether the selection still belongs to that table, and otherwise places TextSelection near its end. Table.addNodeView registers the configured View when resizing is inactive, passes merged HTMLAttributes, and leaves resizable registration to PM. Current tests assert last-row/column cursor retention (including another table below), non-resizable/read-only programmatic colgroup updates, and multi-cell canonical deleteSelection.",
+      "consequence": "Current framework ownership includes document-command UX and model-to-view synchronization beyond options/aliases. Separating sizing rendering lifetime from the optional resize gesture is a source-backed comparison candidate.",
+      "refs": [
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            447,
+            496
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            617,
+            633
+          ]
+        },
+        {
+          "read": "tiptap-cursor-current",
+          "lines": [
+            1,
+            29
+          ]
+        },
+        {
+          "read": "tiptap-view-current",
+          "lines": [
+            90,
+            134
+          ]
+        },
+        {
+          "read": "tiptap-command-tests-current",
+          "lines": [
+            86,
+            182
+          ]
+        },
+        {
+          "read": "tiptap-colgroup-tests-current",
+          "lines": [
+            55,
+            194
+          ]
+        },
+        {
+          "read": "tiptap-delete-tests-current",
+          "lines": [
+            28,
+            64
+          ]
+        },
+        {
+          "read": "tiptap-view-tests-current",
+          "lines": [
+            14,
+            76
+          ]
+        }
+      ],
+      "proof_limit": "Read tests were not executed. Tests state intended assertions; they do not prove actual current browser behavior or full keyboard handler precedence."
+    }
+  ],
+  "strongest_justified_promotion_cut": {
+    "status": "Evidence-backed candidate for lead comparison; not a local verdict or selected implementation.",
+    "promotion": "If Plite's canonical selection cannot host feature-defined range, mapping, replacement, bookmark/restore and paint semantics, change that core contract and let table selection participate in it.",
+    "cut": "Cut any parallel authoritative table-selection store and table-specific remapping/transfer interception that exists only to compensate for that core gap. Keep CellSelection semantics and TableMap/topology in the optional table owner.",
+    "supported_by": [
+      "PM-01",
+      "PM-02",
+      "PM-03",
+      "PM-04"
+    ],
+    "current_upstream_flow": "CellSelection.create(doc, anchorCell, headCell) -> tr.setSelection(...) -> ordinary Transaction.selection remapping -> CellSelection.map/replace/content/bookmark.",
+    "material_benefit": "One authoritative selection and transaction integration can remove caller coordination across typing, deletion, transfer and state restoration.",
+    "strongest_counterargument": "A full subclass protocol adds registration, validity/fallback, replacement, bookmark and rendering obligations. PM alone does not prove a new Plite protocol is needed, nor that its exact class API is the right design. If existing Plite selection/reference/transfer capabilities already provide these laws with one owner, adding another protocol would be needless machinery.",
+    "resize_related_cut": "Unify committed and preview rendering ownership when they diverge; avoid a second hard-coded renderer that bypasses a configurable node view. Upstream source supports this local comparison, not a generic core table-resize API.",
+    "unresolved_by_this_shard": "The lead must establish the actual local duplication/gap and decide the smallest durable core contract and adoption cost.",
+    "handle_related_cut": "Compare deleting permanent per-cell resize hit controls in favor of one feature-owned hit-testing/gesture owner and transient boundary paint. PM is evidence for that ownership split, not evidence for a single overlay or for removing row-height/keyboard jobs."
+  },
+  "leads": [
+    {
+      "id": "PM-L1",
+      "idea": "Generic custom-selection participation",
+      "disposition": "Hand to lead as strongest promotion/cut candidate",
+      "findings": [
+        "PM-01",
+        "PM-02",
+        "PM-04"
+      ],
+      "remaining": "Compare local canonical selection, transaction, transfer and restore integration."
+    },
+    {
+      "id": "PM-L2",
+      "idea": "One derived table topology cache",
+      "disposition": "Feature-owned reuse candidate; no core promotion established",
+      "findings": [
+        "PM-03"
+      ],
+      "remaining": "Compare local topology ownership and immutable identity assumptions; no speed claim."
+    },
+    {
+      "id": "PM-L3",
+      "idea": "Mounted interaction teardown/invalidation owner",
+      "disposition": "Evidence supports checking local capability; generic addition remains conditional",
+      "findings": [
+        "PM-06",
+        "PM-07"
+      ],
+      "remaining": "Check local existing view lifecycle before adding abstraction; deletion/unmount during active drag would be a decisive runtime case."
+    },
+    {
+      "id": "PM-L4",
+      "idea": "One owner for resize preview and committed DOM sizing",
+      "disposition": "Concrete renderer-boundary pressure",
+      "findings": [
+        "PM-07",
+        "PM-08"
+      ],
+      "issue_refs": [
+        "PM-I293"
+      ],
+      "remaining": "Check whether local preview bypasses its customization/rendering owner."
+    },
+    {
+      "id": "PM-L5",
+      "idea": "Framework-selected deletion/Tab policy",
+      "disposition": "Keep UX choice outside generic selection",
+      "findings": [
+        "PM-05",
+        "PM-08"
+      ],
+      "remaining": "Lead chooses product policy; PM and Tiptap differ legitimately."
+    },
+    {
+      "id": "PM-L6",
+      "idea": "Cut permanent per-cell resize hit controls where one feature-owned hit-testing owner can provide the same user behavior.",
+      "disposition": "Bounded source-backed comparison for lead, not an adopted overlay design.",
+      "findings": [
+        "PM-09"
+      ],
+      "remaining": "Local row-height resizing, first-column left-edge semantics, keyboard accessibility and native pointer behavior must remain explicit. Upstream supports transient per-boundary cell paint, not proof that one overlay is best."
+    },
+    {
+      "id": "PM-L7",
+      "idea": "Keep table width rendering mounted independently of whether resize interaction is enabled.",
+      "disposition": "Current Tiptap supplies source and test pressure for separating these lifetimes.",
+      "findings": [
+        "PM-10"
+      ],
+      "remaining": "Compare local read-only/non-resizable colgroup synchronization; retain any existing correct owner."
+    }
+  ],
+  "rejected_ideas": [
+    {
+      "idea": "Move the entire table engine or TableMap into generic editor core because selection needs core integration.",
+      "reason": "The inspected architecture integrates custom selection through a generic contract while span geometry, transfer and widths stay in an optional feature. No independent non-table consumer is evidenced.",
+      "findings": [
+        "PM-01",
+        "PM-03",
+        "PM-04"
+      ]
+    },
+    {
+      "idea": "Replace rectangular selection with one generic text interval.",
+      "reason": "A table rectangle requires multiple cell ranges, clipped span-aware content and feature fallback policy. Flat from/to loses this behavior.",
+      "findings": [
+        "PM-01",
+        "PM-04"
+      ]
+    },
+    {
+      "idea": "Store each resize preview as persistent document attributes.",
+      "reason": "The source demonstrates direct DOM preview with a later document commit. It supplies no evidence that per-move document writes are necessary.",
+      "findings": [
+        "PM-06"
+      ]
+    },
+    {
+      "idea": "Copy ProseMirror columnResizing as a complete reusable gesture/lifetime primitive.",
+      "reason": "Its renderer coupling and limited explicit teardown/cancellation ownership are reasons to compare the boundary, not adopt it wholesale.",
+      "findings": [
+        "PM-07"
+      ]
+    },
+    {
+      "idea": "Count Tiptap as independent confirmation of ProseMirror selection and resize architecture.",
+      "reason": "The PM tables entrypoint is a direct re-export and the extension installs those imported implementations.",
+      "findings": [
+        "PM-08"
+      ]
+    },
+    {
+      "idea": "Treat an open historical issue, read test or cached topology as proof of a current runtime failure, native parity or speed.",
+      "reason": "Issue reproduction and source/test inspection have different proof limits; nothing was executed or measured."
+    },
+    {
+      "idea": "Describe ProseMirror/Tiptap as a single table overlay, or claim it proves elimination of all local cell resize controls without preserving their jobs.",
+      "reason": "Upstream paints multiple per-cell handle widgets for one active column boundary and does centralized geometry hit-testing. It does not supply local bottom-edge row resizing, first-column outer-left resizing or demonstrated keyboard/native parity.",
+      "findings": [
+        "PM-09"
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "id": "PM-I293",
+      "repo": "ProseMirror/prosemirror-tables",
+      "number": 293,
+      "type": "issue",
+      "title": "columnresizing jumps around when using a \"width aware\" custom view - uses TableView.updateColumnsOnResize while expecting to override it",
+      "url": "https://github.com/ProseMirror/prosemirror-tables/issues/293",
+      "state": "OPEN",
+      "read_at": "2026-09-17",
+      "created_at": "2025-08-11T12:49:23Z",
+      "updated_at": "2025-08-12T18:32:07Z",
+      "body_summary": "Reporter using PM tables through Tiptap describes a custom width-aware TableView whose preview is overridden by PM's static updateColumnsOnResize; proposes a preview callback or delegation to the view.",
+      "relevance": "The customization bypass is confirmed in the inspected source.",
+      "refs": [
+        {
+          "read": "table-resize",
+          "lines": [
+            35,
+            45
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            356,
+            382
+          ]
+        },
+        {
+          "read": "tiptap-table",
+          "lines": [
+            481,
+            499
+          ]
+        }
+      ],
+      "proof_limit": "Body only; comments, linked v1.7.1 GitHub source and reporter runtime were not read/reproduced. OPEN is tracker status, not proof of current visible failure."
+    },
+    {
+      "id": "PM-I120",
+      "repo": "ProseMirror/prosemirror-tables",
+      "number": 120,
+      "type": "issue",
+      "title": "Breaks when deleting a table while hovering over the resize column.",
+      "url": "https://github.com/ProseMirror/prosemirror-tables/issues/120",
+      "state": "OPEN",
+      "read_at": "2026-09-17",
+      "created_at": "2020-09-09T10:25:30Z",
+      "updated_at": "2021-03-02T08:55:20Z",
+      "body_summary": "Reporter describes hovering a resize boundary, selecting all and deleting the table, then a failure.",
+      "relevance": "Target deletion/invalidation is an appropriate lifetime pressure case. Inspected ResizeState has a handle validity check, so the historical report cannot be assumed current.",
+      "refs": [
+        {
+          "read": "table-resize",
+          "lines": [
+            122,
+            138
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            214,
+            243
+          ]
+        }
+      ],
+      "proof_limit": "Body only; sandbox and comments not inspected, no reproduction, no current bug/closure claim. Hover-only deletion and deletion during an active drag are distinct cases."
+    },
+    {
+      "id": "PM-I333",
+      "repo": "ProseMirror/prosemirror-tables",
+      "number": 333,
+      "type": "issue",
+      "title": "Column Resizing does not work in RTL directionality",
+      "url": "https://github.com/ProseMirror/prosemirror-tables/issues/333",
+      "state": "OPEN",
+      "read_at": "2026-09-17",
+      "created_at": "2026-03-11T14:06:12Z",
+      "updated_at": "2026-03-11T14:06:12Z",
+      "body_summary": "Reporter sets the demo root to dir=rtl and reports handles sometimes appearing on the wrong cell and resizing the wrong column.",
+      "relevance": "The inspected source has physical-direction calculations and no RTL branch; supports keeping an explicit RTL proof gap.",
+      "refs": [
+        {
+          "read": "table-resize",
+          "lines": [
+            152,
+            160
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            287,
+            319
+          ]
+        },
+        {
+          "read": "table-style",
+          "lines": [
+            23,
+            32
+          ]
+        }
+      ],
+      "proof_limit": "Body and live state only. Demo/video/comments not examined; no runtime reproduction or claim all RTL behavior fails."
+    }
+  ],
+  "resize_input_policies": {
+    "scope": "PM columnResizing at eb522f25959a1e4515a4ff5ce7e3a939f19c55e9 and current Tiptap delegation.",
+    "keyboard": {
+      "observation": "Resize plugin props only register mousemove, mouseleave and mousedown; window handlers use mousemove/mouseup. No keyboard resize or Escape handler is present. Table arrow/Tab/delete navigation is separate and is not evidence of keyboard-accessible resizing.",
+      "refs": [
+        {
+          "read": "table-resize",
+          "lines": [
+            80,
+            108
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            192,
+            255
+          ]
+        },
+        {
+          "read": "table-input",
+          "lines": [
+            32,
+            47
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            575,
+            594
+          ]
+        }
+      ]
+    },
+    "rtl": {
+      "observation": "Inspected resizing code uses physical left/right cell edges, previous map column for left-edge hits, and width=startWidth+(clientX-startX). Supplied CSS uses right:-2px. No direction/RTL branch appears in this resize owner. Open issue #333 reports wrong-cell/wrong-column behavior in RTL; that runtime report was not reproduced.",
+      "refs": [
+        {
+          "read": "table-resize",
+          "lines": [
+            152,
+            160
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            287,
+            319
+          ]
+        },
+        {
+          "read": "table-style",
+          "lines": [
+            23,
+            32
+          ]
+        }
+      ],
+      "issue_refs": [
+        "PM-I333"
+      ]
+    },
+    "cancel": {
+      "observation": "Mouseup and mousemove with no pressed button finish and commit; they are not cancellation. Mouseleave clears inactive hover only. No Escape, pointercancel, blur rollback or plugin destroy cleanup is provided in this owner. No unmount or deletion failure is claimed without runtime proof.",
+      "refs": [
+        {
+          "read": "table-resize",
+          "lines": [
+            184,
+            190
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            214,
+            255
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            56,
+            111
+          ]
+        }
+      ]
+    },
+    "read_only": {
+      "observation": "PM hover, mouseleave and mousedown check view.editable. Already-installed window move/finish closures do not re-check editable. Tiptap includes resizing only when configured resizable and editor.isEditable during plugin construction; its non-resizable node view still supports rendering. Current colgroup test changes editor to read-only then executes a column command and asserts synchronized colgroup. No claim is made that toggling editability during a drag cancels it.",
+      "refs": [
+        {
+          "read": "table-resize",
+          "lines": [
+            141,
+            204
+          ]
+        },
+        {
+          "read": "table-resize",
+          "lines": [
+            214,
+            243
+          ]
+        },
+        {
+          "read": "tiptap-table-current",
+          "lines": [
+            596,
+            633
+          ]
+        },
+        {
+          "read": "tiptap-colgroup-tests-current",
+          "lines": [
+            158,
+            171
+          ]
+        }
+      ]
+    }
+  },
+  "verification_and_gaps": {
+    "completed": [
+      "Read exact local source/test bodies and verified 42 local evidence files including the PM handle stylesheet against HEAD.",
+      "Used temporary bare clones only for current Tiptap/canonical state; inspected 27 current git-object records with exact hashes and ranges.",
+      "Confirmed canonical state selection/transaction/plugin owners and test-selection.ts are byte-identical to the local baseline.",
+      "Read current Tiptap owner changes and relevant rendering/deletion tests; current lockfile aligns PM package versions.",
+      "Recorded three issue bodies/live OPEN states with historical timestamps and explicit runtime limits.",
+      "Documented resize handle cardinality, hit-test ownership, keyboard/RTL/cancel/read-only observations without browser claims."
+    ],
+    "not_run": [
+      "Repository test suites",
+      "Browser/clipboard/drag/keyboard interactions",
+      "History/collaboration integration",
+      "Native device or performance checks"
+    ],
+    "decisive_gaps": [
+      "No browser or device proof for preview/commit/cancellation, RTL, actual handle cardinality, hit accuracy, clipboard or keyboard accessibility.",
+      "No tests executed; current test assertions are inspected evidence only.",
+      "Resolved dependency version agreement does not independently verify npm artifact bytes or a composed application runtime.",
+      "PM dedicated resize test only checks invalid-handle decorations; no drag-lifetime certification.",
+      "Core view copy/cut and history callers remain outside this bounded source read.",
+      "Local Plite/Plate comparison, preservation of row-height/first-column handle jobs, and final verdict remain lead-owned."
+    ]
+  }
+}

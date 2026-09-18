@@ -2,20 +2,11 @@
 
 import { Chat as SDKChat } from '@ai-sdk/react';
 import type { ChatTransport, DataUIPart, UIMessage } from 'ai';
-import cloneDeep from 'lodash/cloneDeep.js';
 import * as React from 'react';
 
-import type { AuthoredPlugin } from '../../authored';
-import {
-  ElementApi,
-  getEditorRuntimeOwner,
-  PathApi,
-  type Value,
-} from '../../core';
-import { MarkdownPlugin } from '../../markdown';
+import { getEditorRuntimeOwner } from '../../core';
 import { type Editor, useEditor, useEditorViewState } from '../../react/core';
 import { AIChatPlugin, getAIChatCommandEditor } from './AIChatPlugin';
-import { AIPlugin } from './AIPlugin';
 
 type ToolName = 'comment' | 'edit' | 'generate';
 type TableData = {
@@ -45,8 +36,6 @@ type ChatView = {
     | ((part: DataUIPart<Record<string, unknown>>, signal: AbortSignal) => void)
     | undefined;
 };
-type AuthoredAIEditor = Editor<Value, readonly [AuthoredPlugin]>;
-
 type EditorChatSession = {
   transport: ChatTransport<UIMessage>;
   attach: (view: ChatView) => () => void;
@@ -67,20 +56,12 @@ function createEditorChat(
   let insertedText = '';
   let previousContent = '';
   let previousLoading = false;
+  let chatPublishTimer: ReturnType<typeof setTimeout> | null = null;
+  let insertStarted = false;
+  let insertTimer: ReturnType<typeof setTimeout> | null = null;
+  let pendingInsert = '';
+  let pendingInsertRequestId: string | null = null;
   const getCommandEditor = () => getAIChatCommandEditor(editor);
-  const enterProposalView = (commandEditor: Editor) => {
-    const authoredEditor = commandEditor as AuthoredAIEditor;
-
-    if (!store.get('_previousAuthoredView')) {
-      store.set({
-        _previousAuthoredView: authoredEditor.read.authored.view(),
-      });
-    }
-    authoredEditor.api.authored.setView({
-      intent: 'propose',
-      projection: 'markup',
-    });
-  };
   const isOwner = () => !disposed && sessions.get(editor) === session;
   const isLive = () =>
     isOwner() &&
@@ -93,68 +74,127 @@ function createEditorChat(
         element.getAttribute('aria-disabled') !== 'true'
     );
   let request: AbortController | null = null;
-  const chat = new SDKChat<UIMessage>({
-    id: 'editor',
-    transport,
-    onData(data) {
-      const signal = request?.signal;
-      if (!isLive() || !signal || signal.aborted) return;
-      if (data.type === 'data-toolName' && isToolName(data.data)) {
-        editor.plugin(AIChatPlugin).store.set({ toolName: data.data });
-      }
-
-      if (data.type === 'data-table' && isTableCellUpdate(data.data)) {
-        const tableData = data.data;
-        const commandEditor = getCommandEditor();
-
-        if (tableData.status === 'finished') {
-          const chatSelection = commandEditor
-            .plugin(AIChatPlugin)
-            .store.get('chatSelection');
-
-          if (!chatSelection) return;
-
-          commandEditor.update.selection.set(chatSelection);
-
+  const createChat = (messages: UIMessage[] = [], signal?: AbortSignal) =>
+    new SDKChat<UIMessage>({
+      id: 'editor',
+      transport,
+      messages,
+      onData(data) {
+        if (
+          !isLive() ||
+          !signal ||
+          signal.aborted ||
+          signal !== request?.signal
+        ) {
           return;
         }
-
-        const { cellUpdate } = tableData;
-
-        if (cellUpdate == null) {
-          throw new Error('Streaming table data requires a cell update');
+        if (data.type === 'data-toolName' && isToolName(data.data)) {
+          editor.plugin(AIChatPlugin).store.set({ toolName: data.data });
         }
 
-        enterProposalView(commandEditor);
-        commandEditor
-          .plugin(AIChatPlugin)
-          .update.applyTableCellSuggestion(cellUpdate);
-      }
+        if (data.type === 'data-table' && isTableCellUpdate(data.data)) {
+          const tableData = data.data;
+          const commandEditor = getCommandEditor();
 
-      const view = Array.from(views.values()).find(
-        ({ element }) =>
-          element.isConnected &&
-          element.getAttribute('data-readonly') !== 'true' &&
-          element.getAttribute('aria-readonly') !== 'true' &&
-          element.getAttribute('aria-disabled') !== 'true'
-      );
-      view?.onData?.(data, signal);
-    },
-  });
+          if (tableData.status === 'finished') return;
+
+          const { cellUpdate } = tableData;
+
+          if (cellUpdate == null) {
+            throw new Error('Streaming table data requires a cell update');
+          }
+
+          commandEditor.plugin(AIChatPlugin).api.setTablePreview(cellUpdate, {
+            requestId: store.get('_requestId'),
+          });
+        }
+
+        const view = Array.from(views.values()).find(
+          ({ element }) =>
+            element.isConnected &&
+            element.getAttribute('data-readonly') !== 'true' &&
+            element.getAttribute('aria-readonly') !== 'true' &&
+            element.getAttribute('aria-disabled') !== 'true'
+        );
+        view?.onData?.(data, signal);
+      },
+    });
+  let chat = createChat();
+  const clearPendingInsert = () => {
+    if (insertTimer) clearTimeout(insertTimer);
+    insertTimer = null;
+    insertStarted = false;
+    pendingInsert = '';
+    pendingInsertRequestId = null;
+  };
+  const flushPendingInsert = () => {
+    if (insertTimer) clearTimeout(insertTimer);
+    insertTimer = null;
+
+    const requestId = pendingInsertRequestId;
+
+    if (
+      !isLive() ||
+      request?.signal.aborted ||
+      !store.get('streaming') ||
+      requestId !== store.get('_requestId')
+    ) {
+      clearPendingInsert();
+      return;
+    }
+
+    const chunk = pendingInsert;
+    pendingInsert = '';
+    pendingInsertRequestId = null;
+
+    if (!chunk) return;
+
+    getCommandEditor().plugin(AIChatPlugin).api.setPreview(chunk, {
+      requestId,
+    });
+    publishChat();
+  };
+  const queueInsert = (chunk: string) => {
+    const requestId = store.get('_requestId');
+
+    if (pendingInsert && pendingInsertRequestId !== requestId) {
+      clearPendingInsert();
+    }
+    pendingInsert = chunk;
+    pendingInsertRequestId = requestId;
+
+    if (!insertStarted) {
+      insertStarted = true;
+      flushPendingInsert();
+      return;
+    }
+    if (!insertTimer) {
+      insertTimer = setTimeout(flushPendingInsert, 32);
+    }
+  };
   const finish = () => {
+    flushPendingInsert();
     if (store.get('chat')?.stop === stop) {
       store.set({
         streaming: false,
-        _blockChunks: '',
-        _blockPath: null,
-        _mdxName: null,
       });
     }
   };
   const stop = () => {
+    flushPendingInsert();
     request?.abort();
+    clearPendingChatPublish();
+    clearPendingInsert();
     finish();
     return chat.stop();
+  };
+  const retire = () => {
+    const ownsStore = store.get('chat')?.stop === stop;
+
+    void stop();
+    if (!ownsStore) return;
+
+    getCommandEditor().plugin(AIChatPlugin).api.reset();
   };
   const assertLive = () => {
     if (!isLive()) {
@@ -163,9 +203,38 @@ function createEditorChat(
       );
     }
   };
+  const clearPendingChatPublish = () => {
+    if (chatPublishTimer) clearTimeout(chatPublishTimer);
+    chatPublishTimer = null;
+  };
+  const publishChat = () => {
+    clearPendingChatPublish();
+    store.set({
+      chat: {
+        clear: () => {
+          chat.messages = [];
+        },
+        messages: chat.messages,
+        error: chat.error,
+        regenerate: async (requestOptions) => {
+          assertLive();
+          await beginRequest().regenerate(requestOptions);
+        },
+        sendMessage: async (text, requestOptions) => {
+          assertLive();
+          await beginRequest().sendMessage({ text }, requestOptions);
+        },
+        status: chat.status,
+        stop,
+      },
+    });
+  };
+  const queueChatPublish = () => {
+    if (chatPublishTimer) return;
+    chatPublishTimer = setTimeout(publishChat, 32);
+  };
   const sync = () => {
     if (!isOwner()) return;
-    const commandEditor = getCommandEditor();
     const toolName = store.get('toolName');
     const mode = store.get('mode');
     const loading = chat.status === 'streaming' || chat.status === 'submitted';
@@ -188,97 +257,46 @@ function createEditorChat(
     if (content && changed) insertedText = content;
     previousContent = content;
     previousLoading = loading;
-    store.set({
-      chat: {
-        clear: () => {
-          chat.messages = [];
-        },
-        messages: chat.messages,
-        regenerate: async (requestOptions) => {
-          assertLive();
-          request?.abort();
-          request = new AbortController();
-          await chat.regenerate(requestOptions);
-        },
-        sendMessage: async (text, requestOptions) => {
-          assertLive();
-          request?.abort();
-          request = new AbortController();
-          await chat.sendMessage({ text }, requestOptions);
-        },
-        status: chat.status,
-        stop,
-      },
-    });
+    const publishedChat = store.get('chat');
     if (
-      changed &&
-      isLive() &&
-      !request?.signal.aborted &&
-      mode === 'chat' &&
-      toolName === 'generate'
+      !publishedChat ||
+      publishedChat.status !== chat.status ||
+      publishedChat.error !== chat.error ||
+      publishedChat.messages.length !== chat.messages.length
     ) {
-      store.set({
-        previewValue: content
-          ? commandEditor.plugin(MarkdownPlugin).api.deserialize(content)
-              .children
-          : [],
-      });
+      publishChat();
+    } else if (mode !== 'insert' || !loading) {
+      queueChatPublish();
     }
     if (chunk && isLive() && !request?.signal.aborted) {
-      if (isFirst && mode === 'insert') {
-        const selection = commandEditor.read.selection();
-
-        if (!selection) return;
-
-        const { path, startBlock, startInEmptyParagraph } = commandEditor
-          .plugin(AIChatPlugin)
-          .read.insertStart();
-
-        commandEditor.plugin(AIPlugin).update.beginPreview({
-          originalBlocks:
-            startInEmptyParagraph &&
-            startBlock &&
-            ElementApi.isElement(startBlock)
-              ? [cloneDeep(startBlock)]
-              : [],
-        });
-
-        commandEditor.update({ history: 'skip' }).nodes.insert(
-          {
-            children: [{ text: '' }],
-            type: commandEditor.plugin(AIChatPlugin).schema.type,
-          },
-          {
-            at: PathApi.next(path),
-          }
-        );
-        store.set({ streaming: true });
-      }
-
-      if (mode === 'insert' && chunk.length > 0) {
-        if (!store.get('streaming')) return;
-
-        commandEditor.plugin(AIChatPlugin).update.insertChunk(chunk, {
-          autoScroll: true,
-          textProps: {
-            [commandEditor.plugin(AIPlugin).schema.key]: true,
-          },
-        });
-      }
-
-      if (toolName === 'edit' && mode === 'chat') {
-        enterProposalView(commandEditor);
-        commandEditor
-          .plugin(AIChatPlugin)
-          .update.applySuggestions(content, { split: isFirst });
-      }
+      if (isFirst) store.set({ streaming: true });
+      if (!store.get('streaming')) return;
+      queueInsert(content);
     }
     if (finished) finish();
   };
-  const unsubscribe = [
+  const subscribe = () => [
     chat['~registerMessagesCallback'](sync),
     chat['~registerStatusCallback'](sync),
+    chat['~registerErrorCallback'](sync),
   ];
+  let unsubscribe = subscribe();
+  const beginRequest = () => {
+    request?.abort();
+    void chat.stop();
+    unsubscribe.forEach((off) => off());
+    clearPendingChatPublish();
+    clearPendingInsert();
+    insertedText = '';
+    previousContent = '';
+    previousLoading = false;
+    request = new AbortController();
+    // SDK callbacks carry no request identity. Give each request its own SDK
+    // instance so a retired response cannot mutate the current conversation.
+    chat = createChat(chat.messages, request.signal);
+    unsubscribe = subscribe();
+    return chat;
+  };
   const session: EditorChatSession = {
     transport,
     attach(view) {
@@ -301,7 +319,7 @@ function createEditorChat(
     dispose() {
       if (disposed) return;
       disposed = true;
-      void stop();
+      retire();
       unsubscribe.forEach((off) => off());
       if (sessions.get(editor) === session) {
         sessions.delete(editor);

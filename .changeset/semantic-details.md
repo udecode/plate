@@ -9,10 +9,18 @@ Replace flat Toggle blocks with semantic nested Details and Summary nodes.
 Add the v54 document migration when loading persisted v53 Toggle values:
 
 ```tsx
-import { defineDocumentMigrations, migratePlateV54 } from 'platejs/migrations';
+import {
+  defineDocumentMigrations,
+  migrateDocument,
+  migrateV54,
+} from 'platejs/migrations';
 
-const migrations = defineDocumentMigrations(EditorSchema, {
-  steps: { 54: migratePlateV54 },
-  unversioned: 53,
+const migrations = defineDocumentMigrations({
+  plugins: EditorKit,
+  schema: EditorSchema,
+  sourceFingerprints: { 53: v53Fingerprint },
+  steps: { 54: migrateV54 },
 });
+
+const current = migrateDocument(persisted, { migrations }).output;
 ```

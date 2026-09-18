@@ -10,16 +10,14 @@ import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
-import { BaseTablePlugin } from './BaseTablePlugin';
-import { projectTableSelection } from './internal/selection';
 
 describe('table clipboard', () => {
   jsxt;
 
   describe('when copying cells 11-21', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'copies a table 2x1 with 11-21 cells (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'copies a table 2x1 with 11-21 cells (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -50,7 +48,7 @@ describe('table clipboard', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -58,9 +56,33 @@ describe('table clipboard', () => {
         const fragment = editor.read.slice.export().content;
 
         expect(fragment).toMatchObject([
-          projectTableSelection(
-            editor.plugin(BaseTablePlugin).read.selection()!
-          ),
+          {
+            type: 'table',
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  {
+                    type: 'tableCell',
+                    children: [
+                      { type: 'paragraph', children: [{ text: '11' }] },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  {
+                    type: 'tableCell',
+                    children: [
+                      { type: 'paragraph', children: [{ text: '21' }] },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
         ]);
       }
     );
@@ -68,9 +90,9 @@ describe('table clipboard', () => {
 
   // https://github.com/udecode/editor-protocol/issues/63
   describe('when copying a single cell with 2 blocks', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'copies only the 2 blocks (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'copies only the 2 blocks (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const blocks = (
           <fragment>
             <hp>
@@ -95,7 +117,7 @@ describe('table clipboard', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -182,9 +204,9 @@ describe('table clipboard', () => {
   jsxt;
 
   describe('typing over a multi-cell selection', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'clears the selected cells and inserts into the focus cell (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'clears the selected cells and inserts into the focus cell (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -238,7 +260,7 @@ describe('table clipboard', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -274,50 +296,8 @@ describe('table clipboard', () => {
       };
     };
 
-    describe('BaseTablePlugin writeSelection', () => {
-      it('ignores selections outside tables', () => {
-        const input = (
-          <editor>
-            <hp>
-              text
-              <cursor />
-            </hp>
-          </editor>
-        ) as TestEditor;
-        const editor = createTableEditor(input);
-        const { clipboard, values } = createClipboard();
-
-        expect(
-          editor.plugin(BaseTablePlugin).api.writeSelection(clipboard)
-        ).toBe(false);
-        expect(values.size).toBe(0);
-      });
-
-      it('ignores a selection inside one cell', () => {
-        const input = (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>
-                    hello
-                    <cursor />
-                  </hp>
-                </htd>
-              </htr>
-            </htable>
-          </editor>
-        ) as TestEditor;
-        const editor = createTableEditor(input);
-        const { clipboard, values } = createClipboard();
-
-        expect(
-          editor.plugin(BaseTablePlugin).api.writeSelection(clipboard)
-        ).toBe(false);
-        expect(values.size).toBe(0);
-      });
-
-      it('writes the complete selected table to every clipboard format', () => {
+    describe('canonical table slice export', () => {
+      it('exports the complete selected table through the canonical DOM clipboard', () => {
         const input = (
           <editor>
             <htable>
@@ -349,12 +329,9 @@ describe('table clipboard', () => {
         const { clipboard, values } = createClipboard();
         const editor = createTableEditor(input);
 
-        expect(
-          editor.plugin(BaseTablePlugin).api.writeSelection(clipboard)
-        ).toBe(true);
-        expect(values.get('text/csv')).toBe('11,12\n21,22\n');
-        expect(values.get('text/tsv')).toBe('11\t12\n21\t22\n');
-        expect(values.get('text/plain')).toBe('11\t12\n21\t22\n');
+        editor.api.dom.clipboard.writeSlice(clipboard, {
+          slice: editor.read.slice.export(),
+        });
         expect(values.get('text/html')).toContain(
           'data-editor-fragment-format="x-editor-fragment"'
         );
@@ -447,9 +424,9 @@ describe('table clipboard', () => {
           })
         );
 
-        expect(
-          editor.plugin(BaseTablePlugin).api.writeSelection(clipboard)
-        ).toBe(true);
+        editor.api.dom.clipboard.writeSlice(clipboard, {
+          slice: editor.read.slice.export(),
+        });
 
         const encoded = values.get('application/x-editor-fragment');
         const envelope = JSON.parse(decodeURIComponent(atob(encoded!))) as {
@@ -459,52 +436,6 @@ describe('table clipboard', () => {
         };
 
         expect(envelope.slice.content[0]?.clipboardProjection).toBe(true);
-      });
-
-      it('quotes CSV fields while leaving TSV and plain text literal', () => {
-        const input = (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>
-                    <anchor />
-                    left,right
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>say "hi"</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>{'line 1\nline 2'}</hp>
-                </htd>
-                <htd>
-                  <hp>
-                    {'carriage\rreturn'}
-                    <focus />
-                  </hp>
-                </htd>
-              </htr>
-            </htable>
-          </editor>
-        ) as TestEditor;
-        const { clipboard, values } = createClipboard();
-        const editor = createTableEditor(input);
-
-        expect(
-          editor.plugin(BaseTablePlugin).api.writeSelection(clipboard)
-        ).toBe(true);
-        expect(values.get('text/csv')).toBe(
-          '"left,right","say ""hi"""\n"line 1\nline 2","carriage\rreturn"\n'
-        );
-        expect(values.get('text/tsv')).toBe(
-          'left,right\tsay "hi"\nline 1\nline 2\tcarriage\rreturn\n'
-        );
-        expect(values.get('text/plain')).toBe(
-          'left,right\tsay "hi"\nline 1\nline 2\tcarriage\rreturn\n'
-        );
       });
     });
   }

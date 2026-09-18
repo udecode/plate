@@ -531,6 +531,81 @@ export function* authoredPositionSpans(
   yield* visit(index.root, 0);
 }
 
+type AuthoredLivePosting = Readonly<{
+  from: number;
+  span: AuthoredSpan;
+  to: number;
+}>;
+const AUTHORED_LIVE_POSTINGS = new WeakMap<
+  AuthoredPositions,
+  ReadonlyMap<string, readonly AuthoredLivePosting[]>
+>();
+const AUTHORED_CONTENT_BOUNDS = new WeakMap<
+  AuthoredPositions,
+  WeakMap<object, readonly [number, number] | null>
+>();
+
+const authoredLivePostings = (index: AuthoredPositions) => {
+  const cached = AUTHORED_LIVE_POSTINGS.get(index);
+  if (cached) return cached;
+  const postings = new Map<string, AuthoredLivePosting[]>();
+  for (const posting of authoredPositionSpans(index)) {
+    const origin = postings.get(posting.span.origin) ?? [];
+    origin.push(posting);
+    postings.set(posting.span.origin, origin);
+  }
+  const result = new Map(
+    [...postings].map(([origin, entries]) => [
+      origin,
+      Object.freeze(
+        entries.sort((left, right) => left.span.offset - right.span.offset)
+      ),
+    ])
+  );
+  AUTHORED_LIVE_POSTINGS.set(index, result);
+  return result;
+};
+
+/** Finds the live envelope of a retained authored-content lineage. */
+export const authoredPositionContentBounds = (
+  index: AuthoredPositions,
+  content: ReadonlyMap<
+    string,
+    ReadonlyArray<Readonly<{ from: number; to: number }>>
+  >
+): readonly [number, number] | null => {
+  let cache = AUTHORED_CONTENT_BOUNDS.get(index);
+  if (!cache) {
+    cache = new WeakMap();
+    AUTHORED_CONTENT_BOUNDS.set(index, cache);
+  }
+  if (cache.has(content)) return cache.get(content) ?? null;
+
+  const postings = authoredLivePostings(index);
+  let from = Number.POSITIVE_INFINITY;
+  let to = Number.NEGATIVE_INFINITY;
+  for (const [origin, intervals] of content) {
+    for (const posting of postings.get(origin) ?? []) {
+      const spanFrom = posting.span.offset;
+      const spanTo = spanFrom + posting.span.length;
+      for (const interval of intervals) {
+        if (interval.from >= spanTo || spanFrom >= interval.to) continue;
+        from = Math.min(
+          from,
+          posting.from + Math.max(interval.from, spanFrom) - spanFrom
+        );
+        to = Math.max(
+          to,
+          posting.from + Math.min(interval.to, spanTo) - spanFrom
+        );
+      }
+    }
+  }
+  const result = from < to ? ([from, to] as const) : null;
+  cache.set(content, result);
+  return result;
+};
+
 export const authoredPositionAt = (
   index: AuthoredPositions,
   position: number

@@ -6,6 +6,7 @@ import type { EditableViewportScrollAlign } from '../components/editable';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { attachPliteBrowserHandle } from './browser-handle';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableInputController } from './input-state';
 
 export const useRuntimeBrowserHandle = ({
@@ -18,6 +19,7 @@ export const useRuntimeBrowserHandle = ({
   inputController,
   isViewportBackedSelection,
   rootRef,
+  runtime,
   scrollPathIntoView,
   setExplicitViewportBackedSelection,
 }: {
@@ -30,6 +32,7 @@ export const useRuntimeBrowserHandle = ({
   inputController: EditableInputController;
   isViewportBackedSelection: (selection: Range | null) => boolean;
   rootRef: RefObject<HTMLDivElement | null>;
+  runtime: EditableDOMRuntime;
   scrollPathIntoView?: (
     path: Range['anchor']['path'],
     align?: EditableViewportScrollAlign
@@ -51,6 +54,7 @@ export const useRuntimeBrowserHandle = ({
       forceRender,
       flushPendingNativeTextInput,
       isViewportBackedSelection,
+      replayHistory: runtime.replayHistory.bind(runtime),
       scrollPathIntoView,
       setExplicitViewportBackedSelection,
     });
@@ -64,6 +68,7 @@ export const useRuntimeBrowserHandle = ({
     inputController,
     isViewportBackedSelection,
     rootRef,
+    runtime,
     scrollPathIntoView,
     setExplicitViewportBackedSelection,
   ]);

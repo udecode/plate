@@ -153,11 +153,7 @@ export const CsvPlugin = definePlugin(PLUGINS.csv, {
                 : []
             );
 
-        return [
-          { children: [{ text: '' }], type: paragraph },
-          { children: rows, type: table },
-          { children: [{ text: '' }], type: paragraph },
-        ];
+        return [{ children: rows, type: table }];
       },
     }),
   }))

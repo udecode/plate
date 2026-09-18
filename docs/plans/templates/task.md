@@ -1,4 +1,16 @@
+---
+review_scopes: []
+review_basis: []
+work_kind: implementation
+---
+
 # {{TITLE}}
+
+Status: In progress
+
+Fill the review metadata with affected scope IDs and governing review IDs, or
+leave empty when none applies. Choose work_kind for the actual outcome. Keep
+this Status line as the sole plan lifecycle; phase and evidence rows are narrower.
 
 Use this file only when the task benefits from durable state. Task owns the
 lifecycle under `.agents/rules/task/references/workflow.md`; apply the user's
@@ -40,7 +52,6 @@ Blocked condition:
 Task state:
 - current_phase: intake
 - next: establish the source and proof
-- status: active
 
 Work Checklist:
 - [ ] Every applicable user, method, reference and template obligation maps to a source-linked row here or an existing linked ledger; exclusions have reasons.

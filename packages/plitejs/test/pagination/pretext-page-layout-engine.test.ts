@@ -1,15 +1,18 @@
 import { describe, expect, it } from 'bun:test';
 
+import { createEditor } from 'plitejs';
+
 import {
-  createPage,
-  pretextPageLayoutEngine,
-  type PageLayoutBlock,
+  createPretextPageLayoutEngine,
+  measurePages,
 } from '../../src/pagination';
 
 class TestCanvasRenderingContext2D {
   font = '';
+  calls = 0;
 
   measureText(text: string): { width: number } {
+    this.calls += 1;
     const fontSize = Number(this.font.match(/(\d+(?:\.\d+)?)px/)?.[1] ?? 16);
     const textWidth = this.font.includes('700')
       ? fontSize * 0.65
@@ -26,550 +29,237 @@ class TestCanvasRenderingContext2D {
   }
 }
 
+const canvasContext = new TestCanvasRenderingContext2D();
+
 class TestOffscreenCanvas {
   getContext(_kind: string): TestCanvasRenderingContext2D {
-    return new TestCanvasRenderingContext2D();
+    return canvasContext;
   }
 }
 
-describe('pretextPageLayoutEngine', () => {
-  it('emits a zero-width line for an empty editable block', () => {
-    Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
-    const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPage(settings);
-    const block: PageLayoutBlock = {
-      element: {
-        type: 'paragraph',
-        children: [{ text: '' }],
-      },
-      lineHeight: 24,
-      path: [0],
-      spacingAfter: 12,
-      text: '',
-      textStyle: {
-        font: '400 16px Arial',
-        letterSpacing: 0,
-      },
-    };
+const installCanvas = () => {
+  canvasContext.calls = 0;
+  Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
+};
 
-    const output = pretextPageLayoutEngine().compose({
-      blocks: [block],
-      page,
-      settings,
-      version: 1,
+const paragraph = (children: ReadonlyArray<Record<string, unknown>>) => ({
+  children,
+  type: 'paragraph' as const,
+});
+
+const page = { margins: 96, preset: 'a4' } as const;
+
+describe('createPretextPageLayoutEngine', () => {
+  it('keeps an empty editable insertion position', () => {
+    installCanvas();
+    const editor = createEditor({
+      initialValue: [paragraph([{ text: '' }])],
     });
+    const snapshot = measurePages(editor, {
+      engine: createPretextPageLayoutEngine(),
+      page,
+    });
+    const fragment = snapshot.fragments[0];
 
-    expect(output.fragments).toHaveLength(1);
-    expect(output.fragments[0].lines).toEqual([
+    expect(fragment?.type).toBe('text');
+    if (fragment?.type !== 'text') return;
+    expect(fragment.lines).toEqual([
       {
-        end: 0,
-        height: 24,
-        start: 0,
-        text: '',
-        top: page.content.top,
-        width: 0,
+        rect: { height: 24, left: 96, top: 96, width: 0 },
+        runs: [
+          {
+            rect: { height: 24, left: 96, top: 96, width: 0 },
+            source: {
+              anchor: { offset: 0, path: [0, 0] },
+              focus: { offset: 0, path: [0, 0] },
+            },
+          },
+        ],
+        source: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+        },
       },
     ]);
   });
 
-  it('keeps trailing editable spaces in the projected line range', () => {
-    Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
-    const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPage(settings);
-    const block: PageLayoutBlock = {
-      element: {
-        type: 'paragraph',
-        children: [{ text: 'Text   ' }],
-      },
-      lineHeight: 24,
-      path: [0],
-      spacingAfter: 12,
-      text: 'Text   ',
-      textStyle: {
-        font: '400 16px Arial',
-        letterSpacing: 0,
-      },
-    };
-
-    const output = pretextPageLayoutEngine().compose({
-      blocks: [block],
+  it('conserves trailing spaces and hard breaks under pre-wrap', () => {
+    installCanvas();
+    const editor = createEditor({
+      initialValue: [paragraph([{ text: 'alpha\nbeta   ' }])],
+    });
+    const snapshot = measurePages(editor, {
+      engine: createPretextPageLayoutEngine(),
       page,
-      settings,
-      version: 1,
     });
+    const fragment = snapshot.fragments[0];
 
-    expect(output.fragments[0].lines[0]).toMatchObject({
-      end: block.text.length,
-      start: 0,
-      text: block.text,
-    });
-    expect(output.fragments[0].lines[0].width).toBeGreaterThan(0);
-  });
-
-  it('positions mixed inline runs with their own measured fonts', () => {
-    Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
-    const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPage(settings);
-    const block: PageLayoutBlock = {
-      element: {
-        type: 'paragraph',
-        children: [
-          { text: 'one ' },
-          { text: 'two', bold: true },
-          { text: ' code', code: true },
-        ],
-      },
-      lineHeight: 24,
-      path: [0],
-      runs: [
-        {
-          id: '0.0:0-4',
-          path: [0, 0],
-          range: { end: 4, start: 0 },
-          text: 'one ',
-          textStyle: {
-            font: '400 16px Arial',
-            letterSpacing: 0,
-          },
-        },
-        {
-          id: '0.1:4-7',
-          path: [0, 1],
-          range: { end: 7, start: 4 },
-          text: 'two',
-          textStyle: {
-            font: '700 16px Arial',
-            letterSpacing: 0,
-          },
-        },
-        {
-          id: '0.2:7-12',
-          path: [0, 2],
-          range: { end: 12, start: 7 },
-          text: ' code',
-          textStyle: {
-            font: '400 16px Menlo, monospace',
-            letterSpacing: 0,
-          },
-        },
-      ],
-      spacingAfter: 12,
-      text: 'one two code',
-      textStyle: {
-        font: '400 16px Arial',
-        letterSpacing: 0,
-      },
-    };
-
-    const output = pretextPageLayoutEngine().compose({
-      blocks: [block],
-      page,
-      settings,
-      version: 1,
-    });
-    const line = output.fragments[0].lines[0];
-
-    expect(line.runs).toHaveLength(3);
-    expect(line.runs![0]).toMatchObject({
-      left: 0,
-      path: [0, 0],
-      text: 'one ',
-    });
-    expect(line.runs![0].width).toBeCloseTo(34.08);
-    expect(line.runs![1]).toMatchObject({
-      path: [0, 1],
-      text: 'two',
-    });
-    expect(line.runs![1].left).toBeCloseTo(34.08);
-    expect(line.runs![1].width).toBeCloseTo(31.2);
-    expect(line.runs![2]).toMatchObject({
-      path: [0, 2],
-      text: ' code',
-    });
-    expect(line.runs![2].left).toBeCloseTo(65.28);
-    expect(line.runs![2].width).toBeCloseTo(50.08);
-    expect(line.width).toBeCloseTo(115.36);
-  });
-
-  it('keeps long source blocks logical while projecting them into page fragments', () => {
-    Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
-    const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPage(settings);
-    const block: PageLayoutBlock = {
-      element: {
-        type: 'paragraph',
-        children: [{ text: 'One '.repeat(5000) }],
-      },
-      lineHeight: 24,
-      path: [0],
-      spacingAfter: 12,
-      text: 'One '.repeat(5000),
-      textStyle: {
-        font: '400 16px Arial',
-        letterSpacing: 0,
-      },
-    };
-
-    const output = pretextPageLayoutEngine().compose({
-      blocks: [block],
-      page,
-      settings,
-      version: 1,
-    });
-
-    expect(output.pages.length).toBeGreaterThan(1);
-    expect(output.fragments.length).toBeGreaterThan(1);
-    expect(output.fragments.every((fragment) => fragment.path[0] === 0)).toBe(
-      true
-    );
-    expect(output.fragments[0].lines.length).toBeGreaterThan(0);
-    expect(output.fragments[0].lines[0].end).toBeGreaterThan(
-      output.fragments[0].lines[0].start
-    );
-    expect(output.fragments[0].lines[0].top).toBe(page.content.top);
-  });
-
-  it('paginates unit-owned blocks without text measurement', () => {
-    let measureCalls = 0;
-
-    class CountingCanvasRenderingContext2D {
-      font = '';
-
-      measureText(text: string): { width: number } {
-        measureCalls += 1;
-        return { width: text.length * 10 };
-      }
-    }
-
-    class CountingOffscreenCanvas {
-      getContext(_kind: string): CountingCanvasRenderingContext2D {
-        return new CountingCanvasRenderingContext2D();
-      }
-    }
-
-    Reflect.set(globalThis, 'OffscreenCanvas', CountingOffscreenCanvas);
-    const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPage(settings);
-    const block: PageLayoutBlock = {
-      element: {
-        type: 'table',
-        children: [],
-      },
-      lineHeight: 24,
-      path: [0],
-      spacingAfter: 12,
-      text: 'ignored by unit layout',
-      textStyle: {
-        font: '400 16px Arial',
-        letterSpacing: 0,
-      },
-      units: Array.from({ length: 40 }, (_, index) => ({
-        key: `row-${index}`,
-        kind: 'table-row',
-        path: [0, index],
-        rect: {
-          height: 36,
-          left: 0,
-          top: index * 36,
-          width: page.content.width,
-        },
-        split: 'avoid',
-      })),
-    };
-
-    const output = pretextPageLayoutEngine().compose({
-      blocks: [block],
-      page,
-      settings,
-      version: 1,
-    });
-
-    expect(measureCalls).toBe(0);
-    expect(output.fragments.length).toBeGreaterThan(1);
+    expect(fragment?.type).toBe('text');
+    if (fragment?.type !== 'text') return;
     expect(
-      output.fragments.every((fragment) => fragment.lines.length === 0)
-    ).toBe(true);
+      fragment.lines.map((line) =>
+        line.runs.map((run) => [
+          run.source.anchor.offset,
+          run.source.focus.offset,
+        ])
+      )
+    ).toEqual([[[0, 6]], [[6, 13]]]);
+    expect(fragment.lines[1]?.rect.width).toBeGreaterThan(0);
+  });
+
+  it('uses each inline run font and assigns collapsed whitespace once', () => {
+    installCanvas();
+    const editor = createEditor({
+      initialValue: [
+        paragraph([
+          { text: 'alpha ' },
+          { bold: true, text: 'beta' },
+          { code: true, text: ' code' },
+        ]),
+      ],
+    });
+    const snapshot = measurePages(editor, {
+      engine: createPretextPageLayoutEngine({ whiteSpace: 'normal' }),
+      page: {
+        margins: { bottom: 96, left: 358, right: 358, top: 96 },
+        preset: 'letter',
+      },
+      typography: {
+        text: ({ leaf }) => ({
+          font: leaf.bold
+            ? '700 16px Arial'
+            : leaf.code
+              ? '400 16px Menlo, monospace'
+              : '400 16px Arial',
+        }),
+      },
+    });
+    const fragment = snapshot.fragments[0];
+
+    expect(fragment?.type).toBe('text');
+    if (fragment?.type !== 'text') return;
+    expect(fragment.lines).toHaveLength(2);
     expect(
-      output.fragments.flatMap((fragment) => fragment.units ?? [])
-    ).toHaveLength(40);
+      fragment.lines[0]?.runs.map((run) => ({
+        end: run.source.focus.offset,
+        path: run.source.anchor.path,
+        start: run.source.anchor.offset,
+      }))
+    ).toEqual([
+      { end: 5, path: [0, 0], start: 0 },
+      { end: 6, path: [0, 0], start: 5 },
+      { end: 4, path: [0, 1], start: 0 },
+      { end: 1, path: [0, 2], start: 0 },
+    ]);
+    expect(fragment.lines[0]?.runs[0]?.rect.width).toBeCloseTo(48);
+    expect(fragment.lines[0]?.runs[1]?.rect.width).toBeCloseTo(5.28);
+    expect(fragment.lines[0]?.runs[2]?.rect.width).toBeCloseTo(41.6);
+    expect(fragment.lines[0]?.runs[3]?.rect.width).toBe(0);
+    expect(fragment.lines[1]?.runs).toEqual([
+      expect.objectContaining({
+        source: {
+          anchor: { offset: 1, path: [0, 2] },
+          focus: { offset: 5, path: [0, 2] },
+        },
+      }),
+    ]);
+    expect(fragment.lines[1]?.runs[0]?.rect.width).toBeCloseTo(44.8);
   });
 
-  it('reuses measured text blocks across path shifts', () => {
-    Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
-    const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPage(settings);
-    const engine = pretextPageLayoutEngine();
-    const events: Array<{ id: string; kind: string }> = [];
-    const previousProfiler = (
-      globalThis as typeof globalThis & {
-        __EDITOR_REACT_RENDER_PROFILER__?: unknown;
-      }
-    ).__EDITOR_REACT_RENDER_PROFILER__;
-    const createBlock = (index: number): PageLayoutBlock => ({
-      element: {
-        type: 'paragraph',
-        children: [{ text: 'Path shifted text keeps the same line layout.' }],
-      },
-      lineHeight: 24,
-      path: [index],
-      runs: [
-        {
-          id: `${index}.0:0-43`,
-          path: [index, 0],
-          range: { end: 43, start: 0 },
-          text: 'Path shifted text keeps the same line layout.',
-          textStyle: {
-            font: '400 16px Arial',
-            letterSpacing: 0,
+  it('can estimate selected cold blocks without canvas measurement', () => {
+    class ThrowingCanvas {
+      getContext() {
+        return {
+          font: '',
+          measureText() {
+            throw new Error('canvas measurement should be bypassed');
           },
-        },
-      ],
-      spacingAfter: 12,
-      text: 'Path shifted text keeps the same line layout.',
-      textStyle: {
-        font: '400 16px Arial',
-        letterSpacing: 0,
-      },
-    });
-
-    (
-      globalThis as typeof globalThis & {
-        __EDITOR_REACT_RENDER_PROFILER__?: {
-          record: (event: { id: string; kind: string }) => void;
         };
       }
-    ).__EDITOR_REACT_RENDER_PROFILER__ = {
-      record: (event) => events.push(event),
-    };
+    }
 
-    try {
-      engine.compose({
-        blocks: [createBlock(0)],
-        page,
-        settings,
-        version: 1,
-      });
-      const output = engine.compose({
-        blocks: [createBlock(1)],
-        page,
-        settings,
-        version: 2,
-      });
+    Reflect.set(globalThis, 'OffscreenCanvas', ThrowingCanvas);
+    const editor = createEditor({
+      initialValue: [paragraph([{ text: 'abcdefghij' }])],
+    });
+    const snapshot = measurePages(editor, {
+      engine: createPretextPageLayoutEngine({ estimateBlock: () => true }),
+      page,
+    });
+    const fragment = snapshot.fragments[0];
 
-      expect(
-        events.some((event) => event.id === 'measured-block-cache-hit')
-      ).toBe(true);
-      expect(output.fragments[0].path).toEqual([1]);
-      expect(output.fragments[0].lines[0].runs![0].path).toEqual([1, 0]);
-    } finally {
-      (
-        globalThis as typeof globalThis & {
-          __EDITOR_REACT_RENDER_PROFILER__?: unknown;
-        }
-      ).__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
+    expect(fragment?.type).toBe('text');
+    if (fragment?.type === 'text') {
+      expect(fragment.lines[0]?.rect.width).toBe(80);
     }
   });
 
-  it('remaps cached measured runs that do not carry their source path', () => {
-    Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
-    const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPage(settings);
-    const engine = pretextPageLayoutEngine();
-    const createBlock = (index: number): PageLayoutBlock => ({
-      element: {
-        type: 'paragraph',
-        children: [{ text: 'Pathless measured run still maps to text.' }],
-      },
-      lineHeight: 24,
-      path: [index],
-      runs: [
+  it('bypasses text preparation for atomic and direct-child content', () => {
+    installCanvas();
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: '' }], type: 'image' },
         {
-          id: `${index}.0:0-38`,
-          range: { end: 38, start: 0 },
-          text: 'Pathless measured run still maps to text.',
-          textStyle: {
-            font: '400 16px Arial',
-            letterSpacing: 0,
-          },
-        } as PageLayoutBlock['runs'][number],
-      ],
-      spacingAfter: 12,
-      text: 'Pathless measured run still maps to text.',
-      textStyle: {
-        font: '400 16px Arial',
-        letterSpacing: 0,
-      },
-    });
-
-    engine.compose({
-      blocks: [createBlock(0)],
-      page,
-      settings,
-      version: 1,
-    });
-    const output = engine.compose({
-      blocks: [createBlock(1)],
-      page,
-      settings,
-      version: 2,
-    });
-
-    expect(output.fragments[0].path).toEqual([1]);
-    expect(output.fragments[0].lines[0].runs![0].path).toEqual([1, 0]);
-  });
-
-  it('reuses measured boxed blocks across path shifts', () => {
-    Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
-    const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPage(settings);
-    const engine = pretextPageLayoutEngine();
-    const events: Array<{ id: string; kind: string }> = [];
-    const previousProfiler = (
-      globalThis as typeof globalThis & {
-        __EDITOR_REACT_RENDER_PROFILER__?: unknown;
-      }
-    ).__EDITOR_REACT_RENDER_PROFILER__;
-    const createBlock = (index: number): PageLayoutBlock => ({
-      boxes: [
-        {
-          kind: 'block',
-          path: [index],
-          rect: {
-            height: 24,
-            left: 0,
-            top: 0,
-            width: page.content.width,
-          },
-          split: 'avoid',
+          children: [
+            { children: [paragraph([{ text: 'one' }])], type: 'row' },
+            { children: [paragraph([{ text: 'two' }])], type: 'row' },
+          ],
+          type: 'table',
         },
       ],
-      element: {
-        type: 'code-block',
-        children: [{ text: 'const shifted = true' }],
+    });
+    const snapshot = measurePages(editor, {
+      engine: createPretextPageLayoutEngine(),
+      fragmentation: ({ content, element }) => {
+        if (element.type === 'image') {
+          return {
+            size: { height: 40, width: content.width },
+            type: 'atomic',
+          };
+        }
+        if (element.type === 'table') {
+          return {
+            sizes: element.children.map(() => ({
+              height: 32,
+              width: content.width,
+            })),
+            type: 'direct-children',
+          };
+        }
+        return undefined;
       },
-      lineHeight: 24,
-      path: [index],
-      runs: [
-        {
-          id: `${index}.0:0-20`,
-          path: [index, 0],
-          range: { end: 20, start: 0 },
-          text: 'const shifted = true',
-          textStyle: {
-            font: '400 16px Menlo, monospace',
-            letterSpacing: 0,
-          },
-        },
-      ],
-      spacingAfter: 12,
-      text: 'const shifted = true',
-      textStyle: {
-        font: '400 16px Menlo, monospace',
-        letterSpacing: 0,
-      },
+      page,
     });
 
-    (
-      globalThis as typeof globalThis & {
-        __EDITOR_REACT_RENDER_PROFILER__?: {
-          record: (event: { id: string; kind: string }) => void;
-        };
-      }
-    ).__EDITOR_REACT_RENDER_PROFILER__ = {
-      record: (event) => events.push(event),
-    };
-
-    try {
-      engine.compose({
-        blocks: [createBlock(0)],
-        page,
-        settings,
-        version: 1,
-      });
-      const output = engine.compose({
-        blocks: [createBlock(1)],
-        page,
-        settings,
-        version: 2,
-      });
-
-      expect(
-        events.some((event) => event.id === 'measured-block-cache-hit')
-      ).toBe(true);
-      expect(output.fragments[0].path).toEqual([1]);
-      expect(output.fragments[0].lines[0].runs![0].path).toEqual([1, 0]);
-    } finally {
-      (
-        globalThis as typeof globalThis & {
-          __EDITOR_REACT_RENDER_PROFILER__?: unknown;
-        }
-      ).__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
-    }
+    expect(canvasContext.calls).toBe(0);
+    expect(snapshot.fragments.map((fragment) => fragment.type)).toEqual([
+      'atomic',
+      'direct-children',
+    ]);
   });
 
-  it('estimates cold blocks without measured cache keying', () => {
-    Reflect.set(globalThis, 'OffscreenCanvas', TestOffscreenCanvas);
-    const settings = { margins: 96, preset: 'a4' } as const;
-    const page = createPage(settings);
-    const engine = pretextPageLayoutEngine({ estimateBlock: () => true });
-    const events: Array<{ id: string; kind: string }> = [];
-    const previousProfiler = (
-      globalThis as typeof globalThis & {
-        __EDITOR_REACT_RENDER_PROFILER__?: unknown;
-      }
-    ).__EDITOR_REACT_RENDER_PROFILER__;
-    const createBlock = (index: number): PageLayoutBlock => ({
-      element: {
-        type: 'paragraph',
-        children: [{ text: 'Estimated cold content keeps stable height.' }],
-      },
-      lineHeight: 24,
-      path: [index],
-      spacingAfter: 12,
-      text: 'Estimated cold content keeps stable height.',
-      textStyle: {
-        font: '400 16px Arial',
-        letterSpacing: 0,
-      },
+  it('remaps cached measured lines to current source paths', () => {
+    installCanvas();
+    const engine = createPretextPageLayoutEngine();
+    const first = createEditor({
+      initialValue: [paragraph([{ text: 'Reusable measured text.' }])],
+    });
+    const shifted = createEditor({
+      initialValue: [
+        paragraph([{ text: 'Prefix' }]),
+        paragraph([{ text: 'Reusable measured text.' }]),
+      ],
     });
 
-    (
-      globalThis as typeof globalThis & {
-        __EDITOR_REACT_RENDER_PROFILER__?: {
-          record: (event: { id: string; kind: string }) => void;
-        };
-      }
-    ).__EDITOR_REACT_RENDER_PROFILER__ = {
-      record: (event) => events.push(event),
-    };
+    measurePages(first, { engine, page });
+    const snapshot = measurePages(shifted, { engine, page });
+    const fragment = snapshot.fragments.find(
+      (candidate) => candidate.path[0] === 1
+    );
 
-    try {
-      engine.compose({
-        blocks: [createBlock(0)],
-        page,
-        settings,
-        version: 1,
-      });
-      const output = engine.compose({
-        blocks: [createBlock(1)],
-        page,
-        settings,
-        version: 2,
-      });
-
-      expect(
-        events.some((event) => event.id === 'measured-block-cache-hit')
-      ).toBe(false);
-      expect(
-        events.some((event) => event.id === 'measured-block-cache-miss')
-      ).toBe(false);
-      expect(output.fragments[0].path).toEqual([1]);
-    } finally {
-      (
-        globalThis as typeof globalThis & {
-          __EDITOR_REACT_RENDER_PROFILER__?: unknown;
-        }
-      ).__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
+    expect(fragment?.type).toBe('text');
+    if (fragment?.type === 'text') {
+      expect(fragment.lines[0]?.runs[0]?.source.anchor.path).toEqual([1, 0]);
     }
   });
 });

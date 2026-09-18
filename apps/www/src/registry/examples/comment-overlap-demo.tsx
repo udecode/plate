@@ -1,13 +1,16 @@
 'use client';
 
-import type { Value } from 'platejs';
-import type { CommentThread } from 'platejs/comments';
+import { createEditor, type Value } from 'platejs';
+import type { CommentsJSON, CommentThread } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { createCommentValue } from '@/registry/components/editor/comment';
-import { CommentToolbarButton } from '@/registry/components/editor/comment-toolbar-button';
+import {
+  AllCommentsButton,
+  CommentToolbarButton,
+} from '@/registry/components/editor/comment-toolbar-button';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import {
@@ -26,20 +29,21 @@ export default function CommentOverlapDemo() {
         initialState: {
           currentUserId: 'alice',
           users: commentUsers,
-          initialThreads,
+          initialComments,
         },
       }),
     ],
-    initialValue: value,
+    initialValue: fixture.read.value(),
   });
 
   return (
     <EditorRoot editor={editor}>
-      <EditorContainer className="h-[360px]" variant="demo">
+      <EditorContainer className="h-[360px]">
         <Toolbar className="border-b px-3 py-1">
           <UndoToolbarButton aria-label="Undo" />
           <RedoToolbarButton aria-label="Redo" />
           <CommentToolbarButton />
+          <AllCommentsButton />
         </Toolbar>
         <Editor
           aria-label="Overlapping comments document"
@@ -65,21 +69,15 @@ const value: Value = [
   },
 ];
 
-const initialThreads: CommentThread[] = [
+const threads: CommentThread[] = [
   {
     id: 'wording',
     userId: 'alice',
     createdAt: '2026-09-10T10:00:00.000Z',
-    resolved: false,
+    resolution: null,
     status: 'published',
     excerpt: 'these overlapping',
-    target: {
-      type: 'range',
-      range: {
-        anchor: { path: [0, 0], offset: 5 },
-        focus: { path: [0, 0], offset: 22 },
-      },
-    },
+    target: { type: 'range' },
     messages: [
       {
         id: 'wording-message',
@@ -93,16 +91,10 @@ const initialThreads: CommentThread[] = [
     id: 'context',
     userId: 'bob',
     createdAt: '2026-09-10T10:01:00.000Z',
-    resolved: false,
+    resolution: null,
     status: 'published',
     excerpt: 'overlapping comments',
-    target: {
-      type: 'range',
-      range: {
-        anchor: { path: [0, 0], offset: 11 },
-        focus: { path: [0, 0], offset: 31 },
-      },
-    },
+    target: { type: 'range' },
     messages: [
       {
         id: 'context-message',
@@ -115,3 +107,28 @@ const initialThreads: CommentThread[] = [
     ],
   },
 ];
+
+const fixture = createEditor({ initialValue: value });
+const initialComments: CommentsJSON = {
+  kind: 'plate-comments',
+  version: 1,
+  threads,
+  ranges: [
+    {
+      anchor: { path: [0, 0], offset: 5 },
+      focus: { path: [0, 0], offset: 22 },
+    },
+    {
+      anchor: { path: [0, 0], offset: 11 },
+      focus: { path: [0, 0], offset: 31 },
+    },
+  ].map((range, index) => {
+    const anchor = fixture.anchor(range, {
+      association: 'inward',
+      deletion: 'nearest',
+    });
+    const saved = fixture.anchor.save(anchor);
+    anchor.release();
+    return { threadId: threads[index].id, range: saved };
+  }),
+};

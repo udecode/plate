@@ -31,7 +31,8 @@ description: \platejs 的 API 参考文档。
     编辑器插件数组。
   </APIItem>
   <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: Editor }) => EditorValueInput)" optional>
-    同步初始文档、持久化的 `{ document, schema }` envelope 或主 root 数组。
+    同步初始文档、持久化的 `{ document, schema, selection? }` envelope 或主 root
+    数组。
   </APIItem>
   <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
     初始化后是否选中编辑器。
@@ -43,15 +44,12 @@ description: \platejs 的 API 参考文档。
   <APIItem name="maxLength" type="number" optional>
     限制用户输入、片段插入和节点插入的最大字符数。
   </APIItem>
-  <APIItem name="migrations" type="DocumentMigrations" optional>
-    应用拥有的目标版本迁移链。Plate 在插件文档准备和 schema 适配前运行每个所需步骤。
-  </APIItem>
   <APIItem name="selection" type="TSelection" optional>
     编辑器的初始选区。
   </APIItem>
   <APIItem name="schema" type="EditorApplicationSchema" optional>
-    应用 schema policy 和可选命名谱系。省略 `root` 时使用标准段落 root。迁移计划要求
-    `id` 和 `version` 精确匹配。
+    应用 schema policy 和可选的命名持久化谱系。省略 `root` 时使用标准段落 root。
+    `id` 和 `version` 必须一起提供。
   </APIItem>
   <APIItem name="shouldNormalizeEditor" type="boolean" optional>
     当 `true` 时，将规范化传递给 `editor` 的初始 `value`。
@@ -116,12 +114,14 @@ description: \platejs 的 API 参考文档。
 版本。
 
 ```ts
-import { defineDocumentMigrations } from 'platejs/migrations';
+import { defineDocumentMigrations } from "platejs/migrations";
 
-import { fingerprint as v1Fingerprint } from './migrations/v2-add-section/from';
-import { fingerprint as v2Fingerprint } from './migrations/v3-add-caption/from';
+import { fingerprint as v1Fingerprint } from "./migrations/v2-add-section/from";
+import { fingerprint as v2Fingerprint } from "./migrations/v3-add-caption/from";
 
-const migrations = defineDocumentMigrations(EditorSchema, {
+const migrations = defineDocumentMigrations({
+  plugins: EditorKit,
+  schema: EditorSchema,
   sourceFingerprints: {
     1: v1Fingerprint,
     2: v2Fingerprint,
@@ -130,30 +130,35 @@ const migrations = defineDocumentMigrations(EditorSchema, {
     2: migrateDocumentV2,
     3: migrateDocumentV3,
   },
-  unversioned: 1,
 });
 ```
 
 `sourceFingerprints` 将每个受支持的历史 envelope 版本绑定到生成的 schema 指纹。
-`unversioned` 为没有持久化 schema 身份的原始文档指定显式源版本。缺失中间步骤或历史
-身份漂移都会报错。
+definition 会把 `plugins` 和 `schema` 编译一次，生成供所有步骤使用的不可变当前
+target。缺失中间步骤或历史身份漂移都会报错。
 
 ### `migrateDocument`
 
-对一个完整文档运行所有必需迁移步骤，但不将结果发布到编辑器。编辑器运行时加载和
-`plate migrate run` 使用同一个 runner。
+把一个完整文档转换成精确的当前 persisted envelope。这个操作不会创建或发布编辑器。
 
 ```ts
-import { migrateDocument } from 'platejs/migrations';
+import { migrateDocument } from "platejs/migrations";
 
-const result = migrateDocument(persisted, {
-  editor,
+const { output, applied, source } = migrateDocument(persisted, {
   migrations: EditorMigrations,
+});
+
+const imported = migrateDocument(legacyDocument, {
+  migrations: EditorMigrations,
+  source: 1,
 });
 ```
 
-结果包含 `document`、映射后的 `selection`、`source`、`target` 和升序 `applied` 版本
-列表。schema 谱系不同、源版本更新或指纹漂移都会报错。
+`output` 只包含 `{ document, schema, selection? }`，可以直接持久化或传给
+`createEditor`。`applied` 是实际执行的目标版本升序列表，`source` 是经过验证的源版本。
+原始文档必须显式传入 `source: number` 或 `source: 'current'`；persisted envelope 自带
+源身份。谱系不同、未来版本、指纹漂移、非 JSON 数据、无效步骤结果或错误的最终输出
+都会报错。
 
 ### `definePlugin`
 
@@ -357,8 +362,8 @@ const generic = useElement();
 节点生成 ID。
 
 ```ts
-import { ElementIdPlugin, schema, target } from 'platejs';
-import { createEditor } from 'platejs/react';
+import { ElementIdPlugin, schema, target } from "platejs";
+import { createEditor } from "platejs/react";
 
 const editor = createEditor({
   plugins: [ElementIdPlugin],
@@ -370,12 +375,13 @@ const id = elementId.read.id(key);
 const entry = id ? elementId.read.entry(id) : undefined;
 ```
 
-通过 `initialState.generateId` 替换默认的完整长度 `nanoid()` 生成器。已存储输入
-缺少 ID、包含旧数字 ID，或需要通过 `sourceKey` 规范化旧属性时，使用
-`migrateElementIds(value, options)`。
+通过 `initialState.generateId` 替换默认的完整长度 `nanoid()` 生成器。把
+`ElementIdPlugin` 加入传给 `defineDocumentMigrations` 的 target。当前文档进入系统时，
+会在编辑器创建前补齐缺失 ID 并拒绝重复 ID。旧数字 ID 或旧属性名应由历史迁移步骤
+转换，并由应用明确规定冲突处理策略。
 
-应用 schema 可以收窄该插件拥有的 `id` target。文档准备只为匹配编译后 target
-的元素生成并保留 ID。
+应用 schema 可以收窄该插件拥有的 `id` target。当前文档进入系统时，只为匹配编译后
+target 的元素生成并保留 ID。
 
 ```ts
 const editor = createEditor({
@@ -383,7 +389,7 @@ const editor = createEditor({
   schema: {
     overrides: [
       schema.override(ElementIdPlugin, {
-        properties: { id: { target: target.group('block') } },
+        properties: { id: { target: target.group("block") } },
       }),
     ],
   },

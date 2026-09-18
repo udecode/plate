@@ -25,6 +25,7 @@ import { DocumentIndex } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorSchema } from './editor-runtime';
+import type { InternalEditorSchemaApi } from './editor-schema';
 import { toPublicRoot } from './public-root';
 import {
   assertEditorJsonValue,
@@ -48,6 +49,11 @@ type SelectionMappingOptions = RangeMappingOptions & {
     before: SnapshotIndex;
   }>;
 };
+
+type SelectionSchemaContext = Editor &
+  Partial<Readonly<{ getSchema: () => ReturnType<typeof getEditorSchema> }>>;
+const selectionSchema = (context: SelectionSchemaContext) =>
+  context.getSchema?.() ?? getEditorSchema(context);
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -736,7 +742,7 @@ export const assertSelectionSupported = (
 
   if (SelectionApi.isText(selection) && selection.marks !== undefined) {
     const marksRoot = pointRoot(selection.focus, root);
-    getEditorSchema(editor).validateTextPropertiesAtValue(
+    selectionSchema(editor).validateTextPropertiesAtValue(
       selection.marks,
       selection.focus.path,
       documentValue,
@@ -913,3 +919,40 @@ export const mapSelectionThroughChange = (
 
   return mapped;
 };
+
+const detachedSelectionContext = (schema: InternalEditorSchemaApi) =>
+  Object.freeze({ getSchema: () => schema }) as unknown as Editor;
+
+/** Map one persisted selection without a live editor runtime. @internal */
+export const mapDetachedSelectionThroughChange = (
+  schema: InternalEditorSchemaApi,
+  selection: Selection,
+  change: DocumentChange,
+  before: EditorDocumentValue,
+  after: EditorDocumentValue,
+  fallbackRoot: RootKey,
+  options: SelectionMappingOptions = {}
+) =>
+  mapSelectionThroughChange(
+    detachedSelectionContext(schema),
+    selection,
+    change,
+    before,
+    after,
+    fallbackRoot,
+    options
+  );
+
+/** Validate one persisted selection without a live editor runtime. @internal */
+export const assertDetachedSelectionSupported = (
+  schema: InternalEditorSchemaApi,
+  selection: unknown,
+  document: EditorDocumentValue,
+  fallbackRoot: RootKey = 'main'
+) =>
+  assertSelectionSupported(
+    detachedSelectionContext(schema),
+    selection,
+    document,
+    fallbackRoot
+  );

@@ -1,12 +1,20 @@
 import {
   type Descendant,
+  type EditorDocumentValue,
   type Element,
   ElementApi,
   TextApi,
   type Value,
 } from '../facade';
-import { getCompiledPlatePlugin } from '../internal/plugin/compilePlateModel';
-import type { DocumentMigration } from '../lib/editor/documentMigrations';
+import type {
+  DocumentMigrationContext,
+  DocumentMigrationTarget,
+} from './documentMigrations';
+
+const getCompiledPlatePlugin = (
+  target: DocumentMigrationTarget,
+  name: string
+) => target.bindings.find((binding) => binding.name === name);
 
 const CODE_DRAWING_LANGUAGES = new Set([
   'flowchart',
@@ -55,14 +63,24 @@ const safeInteger = (value: unknown) => {
 };
 
 /** Apply the final AST contracts inside the Plate v54 migration. */
-export const migratePlateV54Ast: DocumentMigration = ({ document, editor }) => {
+export const migratePlateV54Ast = ({
+  document,
+  target: conversionTarget,
+}: Pick<
+  DocumentMigrationContext,
+  'document' | 'target'
+>): EditorDocumentValue => {
   const resolveElementType = (name: string) => {
-    const descriptor = getCompiledPlatePlugin(editor, name);
+    const descriptor = getCompiledPlatePlugin(conversionTarget, name);
 
-    return descriptor ? editor.plugin(descriptor).schema.type : undefined;
+    return descriptor?.type;
   };
   const ownsProperty = (type: string, key: string) =>
-    editor.read.schema.property({ key, placement: 'element', type }) !== null;
+    conversionTarget.schema.property({
+      key,
+      placement: 'element',
+      type,
+    }) !== null;
   const dateType = resolveElementType('date');
   const mentionType = resolveElementType('mention');
   const footnoteDefinitionType = resolveElementType('footnoteDefinition');

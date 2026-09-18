@@ -7,7 +7,9 @@
     "platejs",
     "sonner",
     "use-file-picker@2.1.2",
-    "zod"
+    "zod",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [
     "https://platejs.org/r/use-object-url.json"

@@ -2,7 +2,8 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "block-list-static",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "lucide-react"
   ],
   "registryDependencies": [],
   "files": [

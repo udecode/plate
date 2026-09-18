@@ -2,7 +2,11 @@
 
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 
 import { createValue } from './values/demo-values';
@@ -15,9 +19,11 @@ export default function CodeBlockHugeDemo({ id }: { id: string }) {
 
   return (
     <EditorRoot editor={editor}>
-      <EditorContainer variant="demo">
-        <Editor />
-      </EditorContainer>
+      <EditorFrame className="h-[650px]">
+        <EditorContainer>
+          <Editor />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }

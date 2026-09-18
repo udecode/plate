@@ -16,7 +16,7 @@ docs:
 
 ## Features
 
-- **Fixed Toolbar**: Persistent toolbar that sticks to the top of the editor
+- **Fixed Toolbar**: Persistent toolbar above the editor's scrollable content
 - **Floating Toolbar**: Contextual toolbar that appears on text selection
 - **Customizable Buttons**: Add, remove, and reorder toolbar buttons
 - **Responsive Design**: Adapts to different screen sizes and content
@@ -72,7 +72,7 @@ import { FloatingToolbar } from '@/components/editor/floating-toolbar';
 
 const fixedToolbarPlugin = definePlugin('fixedToolbar', {
   slots: {
-    beforeEditable: () => (
+    beforeContainer: () => (
       <FixedToolbar>
         <FixedToolbarButtons />
       </FixedToolbar>
@@ -95,8 +95,19 @@ const editor = createEditor({
 });
 ```
 
-- `slots.beforeEditable`: Renders [`FixedToolbar`](/docs/components/fixed-toolbar) above the editor content
+- `slots.beforeContainer`: Renders [`FixedToolbar`](/docs/components/fixed-toolbar) before the editor scroll container
 - `slots.afterEditable`: Renders [`FloatingToolbar`](/docs/components/floating-toolbar) as an overlay after the editor
+
+Place the editor container in an `EditorFrame`. The fixed toolbar and scroll
+container then occupy separate rows inside the same bounded layout.
+
+```tsx
+<EditorFrame className="h-[650px]">
+  <EditorContainer>
+    <Editor />
+  </EditorContainer>
+</EditorFrame>
+```
 
 ### Customizing fixed toolbar buttons
 
@@ -167,22 +178,20 @@ export function BoldToolbarButton() {
 
 ### Turn into toolbar button
 
-The [`TurnIntoToolbarButton`](/docs/components/turn-into-toolbar-button) provides a dropdown menu to convert the current block into different types (headings, lists, quotes, etc.).
+The [`TurnIntoToolbarButton`](/docs/components/turn-into-toolbar-button) provides a dropdown menu for leaf formats and structural block actions.
 
 <ComponentSource name="turn-into-toolbar-button" />
 
-To add a new block type to the turn-into options, edit the `turnIntoItems` array:
+Each item calls its feature directly. Keep mutually exclusive text, heading, and list formats in the radio group. Render wrappers and layouts as separate actions with their own selection checks.
 
 ```tsx
-const turnIntoItems = [
-  // ... existing items
-  {
-    icon: <CustomIcon />,
-    keywords: ['custom', 'special'],
-    label: 'Custom Block',
-    value: 'custom-block',
-  },
-];
+const quote = editor.plugin(BaseBlockquotePlugin);
+
+if (quote.installed) {
+  editor.update((tx) => {
+    tx.plugin(BaseBlockquotePlugin).toggle();
+  });
+}
 ```
 
 ### Insert toolbar button
@@ -191,24 +200,30 @@ The [`InsertToolbarButton`](/docs/components/insert-toolbar-button) provides a d
 
 <ComponentSource name="insert-toolbar-button" />
 
-To add a new insertable item, add it to the appropriate group in the `groups` array:
+To add an insertable item, define its typed operation in `getGroups`. The local `value` identifies the menu item; it does not dispatch the edit.
 
 ```tsx
 {
-  group: 'Basic blocks',
-  items: [
-    // ... existing items
-    {
-      icon: <CustomIcon />,
-      label: 'Custom Block',
-      value: 'custom-block',
-    },
-  ].map((item) => ({
-    ...item,
-    onSelect: (editor, value) => {
-      insertBlock(editor, value);
-    },
-  })),
+  icon: <Heading2Icon />,
+  label: 'Heading 2',
+  value: 'heading-2',
+  onSelect: () => {
+    const heading = editor.plugin(BaseHeadingPlugin);
+
+    if (!heading.installed || editor.read.view.isReadOnly()) return;
+
+    editor.update((tx) => {
+      insertBlock(tx, {
+        matches: (block) =>
+          !block.listType &&
+          block.type === heading.schema.type &&
+          block.level === 2,
+        insert: (options) => {
+          tx.plugin(BaseHeadingPlugin).insert({ level: 2 }, options);
+        },
+      });
+    });
+  },
 }
 ```
 
@@ -222,12 +237,12 @@ To add a new insertable item, add it to the appropriate group in the `groups` ar
 
 ### `FixedToolbarKit`
 
-Plugin that renders a fixed toolbar above the editor content.
+Plugin that renders a fixed toolbar before the editor scroll container.
 
 <API name="FixedToolbarKit">
 <APIOptions>
-  <APIItem name="slots.beforeEditable" type="EditableSiblingComponent">
-    Renders the fixed toolbar before the editor content. Contains FixedToolbarButtons by default.
+  <APIItem name="slots.beforeContainer" type="ContainerSiblingComponent">
+    Renders the fixed toolbar before the editor scroll container. Contains FixedToolbarButtons by default.
   </APIItem>
 </APIOptions>
 </API>

@@ -3,6 +3,7 @@ import { createPliteEditor } from '#platejs-test-internal';
 import {
   createEditor as createHeadlessEditor,
   ElementIdPlugin,
+  type EditorApplicationSchema,
   type BasePluginInput,
   type Editor as BaseEditor,
   type InferUpdate,
@@ -59,16 +60,23 @@ export const createTestTableEditor = (
   }
 ): TableTestEditor => {
   const { initialValue, ...rest } = options;
+  const plugins: readonly BasePluginInput[] = hasPersistedElementId(
+    initialValue
+  )
+    ? [ElementIdPlugin, ...(rest.plugins ?? [])]
+    : (rest.plugins ?? []);
 
-  return createEditor({
+  return createEditor<
+    Value,
+    readonly BasePluginInput[],
+    EditorApplicationSchema | undefined
+  >({
     ...rest,
     editor: createPliteEditor<Value>(),
     initialValue: initialValue ?? [
       { children: [{ text: '' }], type: 'paragraph' },
     ],
-    plugins: hasPersistedElementId(initialValue)
-      ? [ElementIdPlugin, ...(rest.plugins ?? [])]
-      : rest.plugins,
+    plugins,
   }) as unknown as TableTestEditor;
 };
 
@@ -77,7 +85,7 @@ export const getTestTablePlugins = (
 ) => [
   BaseTablePlugin.configure({
     initialState: {
-      disableMerge: true,
+      allowCellSpanEditing: false,
       ...options,
     },
   }),

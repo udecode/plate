@@ -69,7 +69,7 @@ describe('SuggestionKit', () => {
 
     editor.plugin(SuggestionPlugin).api.setMode('suggesting');
     expect(() => editor.update.text.insert(' lost')).toThrow(
-      'author is required'
+      'author ID is required'
     );
     expect(editor.read.children()).toEqual(value);
   });

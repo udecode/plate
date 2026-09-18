@@ -4,7 +4,10 @@
   "title": "Media Preview Dialog",
   "description": "A modal component for previewing and manipulating images.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [],
   "files": [

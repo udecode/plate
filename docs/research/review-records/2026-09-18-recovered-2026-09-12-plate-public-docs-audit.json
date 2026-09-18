@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-09-12-plate-public-docs-audit",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "editor-public-naming"
+  ],
+  "reviewBasis": [],
+  "workKind": "research",
+  "plan": {
+    "path": "docs/plans/2026-09-12-plate-public-docs-audit.md",
+    "sha256": "6032540793b325ef6439967d0b36a23fee04f4d297b2435c6e8af6ca0316fa41"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical research completion from the plan. Complete — audit only; findings remain open for implementation. The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-12-plate-public-docs-audit.md",
+        "sha256": "6032540793b325ef6439967d0b36a23fee04f4d297b2435c6e8af6ca0316fa41",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-12-plate-public-docs-audit.md"
+  ]
+}

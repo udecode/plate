@@ -7,19 +7,16 @@ import {
   type Descendant,
   editorCommands,
   editorReads,
+  type Editor,
   type EditorStateView,
   type Element,
   ElementApi,
+  type ElementEntry,
   type ElementOf,
-  getSelectionRange as getEditorSelectionRange,
   type Location,
   type Node,
-  NodeApi,
-  type NodeEntry,
-  type NodeKey,
   type Path,
   PathApi,
-  type BlockInsertOptions,
   PLUGINS,
   PointApi,
   property,
@@ -31,7 +28,6 @@ import {
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { fitSlicePlacements } from '../../../facade';
-import { failInvariant } from '../internal/failInvariant';
 import {
   getColSpan,
   getImportedTableCellColSpan,
@@ -46,7 +42,7 @@ import {
 } from './internal/codec';
 import {
   createDetachedTableContext,
-  createTableContext,
+  type createTableContext,
 } from './internal/context';
 import {
   compileTableGrid,
@@ -60,16 +56,12 @@ import {
   type TableIntent,
 } from './internal/mutation';
 import {
-  createOrdinaryTablePasteElement,
   getTablePasteElement,
   planPreparedTablePaste,
   prepareTablePaste,
   type TablePasteDiagnostic,
-  type TablePasteSource,
 } from './internal/paste';
 import {
-  createTableNodeSelection,
-  getTableSelectionExpansion,
   getTableSelectionNeighbor,
   projectTableSelection,
   readTableSelection,
@@ -77,49 +69,23 @@ import {
 } from './internal/selection';
 import type {
   BorderDirection,
-  BorderStylesDefault,
-  CellIndices,
-  CreateCellOptions,
-  GetEmptyRowNodeOptions,
-  GetEmptyTableNodeOptions,
-  SetBorderWidthOptions,
+  TableAxisInsertOptions,
   TableBorderStates,
-  TableFindOptions,
+  TableBorderTarget,
+  TableCellBorder,
+  TableCellBorders,
+  TableCellInfo,
+  TableCellTarget,
+  TableColumnWidthOptions,
+  TableCreateOptions,
+  TableInsertPlacement,
   TableResize,
+  TableResizeOptions,
   TableResizeTarget,
-  TableStoreSizeOverrides,
+  TableRowHeightOptions,
+  TableSelection,
+  TableTargetOptions,
 } from './types';
-
-type GetSelectedCellsBordersOptions = {
-  select?: {
-    none?: boolean;
-    outer?: boolean;
-    side?: boolean;
-  };
-};
-
-type TableCellBoundsInput = Readonly<{
-  col: number;
-  colSpan: number;
-  row: number;
-  rowSpan: number;
-}>;
-
-const getTableCellBounds = (cells: readonly TableCellBoundsInput[]) =>
-  cells.reduce(
-    (bounds, cell) => ({
-      maxCol: Math.max(bounds.maxCol, cell.col + cell.colSpan - 1),
-      maxRow: Math.max(bounds.maxRow, cell.row + cell.rowSpan - 1),
-      minCol: Math.min(bounds.minCol, cell.col),
-      minRow: Math.min(bounds.minRow, cell.row),
-    }),
-    {
-      maxCol: Number.NEGATIVE_INFINITY,
-      maxRow: Number.NEGATIVE_INFINITY,
-      minCol: Number.POSITIVE_INFINITY,
-      minRow: Number.POSITIVE_INFINITY,
-    }
-  );
 
 const clampTableSelection = (
   tableType: string,
@@ -173,26 +139,8 @@ const clampTableSelection = (
     : selection;
 };
 
-const getTableAnchorPoint = (
-  view: TableSelectionView,
-  anchor: TableGridAnchor,
-  edge: 'end' | 'start' = 'start'
-) => {
-  const [text, path] =
-    edge === 'end'
-      ? NodeApi.last(anchor.cell, [])
-      : NodeApi.first(anchor.cell, []);
-
-  if (!TextApi.isText(text)) return undefined;
-
-  return {
-    offset: edge === 'end' ? text.text.length : 0,
-    path: view.tablePath.concat(anchor.path, path),
-    ...(view.root === undefined ? {} : { root: view.root }),
-  };
-};
-
 const projectTableSelectionSlice = (
+  editor: Editor,
   slice: ContentSlice,
   view: TableSelectionView
 ) => {
@@ -204,7 +152,7 @@ const projectTableSelectionSlice = (
       ? slice.content[0]
       : null;
 
-  return ContentSlice.withContent(
+  const projected = ContentSlice.withContent(
     slice,
     [
       exportedTable
@@ -213,73 +161,94 @@ const projectTableSelectionSlice = (
     ],
     { open: 'closed' }
   );
+
+  if (!projected.roots) return projected;
+  const roots: Record<string, readonly Descendant[]> = {};
+  const visited = new Set<string>();
+  const collectRoots = (children: readonly Descendant[]) => {
+    for (const node of children) {
+      if (!ElementApi.isElement(node)) continue;
+
+      for (const root of Object.values(
+        editor.read.schema.getElementContentRoots(node)
+      )) {
+        if (visited.has(root)) continue;
+        const rootChildren = projected.roots?.[root];
+
+        if (!rootChildren) {
+          throw new Error(`Missing content slice source root "${root}".`);
+        }
+        visited.add(root);
+        roots[root] = rootChildren;
+        collectRoots(rootChildren);
+      }
+      collectRoots(node.children);
+    }
+  };
+
+  collectRoots(projected.content);
+
+  return ContentSlice.fromJSON({
+    content: projected.content,
+    openEnd: projected.openEnd,
+    openStart: projected.openStart,
+    ...(visited.size > 0 ? { roots } : {}),
+  });
+};
+
+const toPublicTableSelection = (view: TableSelectionView): TableSelection => {
+  const selectedArea = view.anchors.reduce(
+    (area, anchor) => area + anchor.colSpan * anchor.rowSpan,
+    0
+  );
+  const boundsArea =
+    (view.bounds.maxCol - view.bounds.minCol + 1) *
+    (view.bounds.maxRow - view.bounds.minRow + 1);
+  const anchor = view.cellKeys[view.anchors.indexOf(view.anchor)];
+  const focus = view.cellKeys[view.anchors.indexOf(view.focus)];
+
+  if (!anchor || !focus) {
+    throw new Error('Table selection endpoints must be selected cells.');
+  }
+
+  return Object.freeze({
+    anchor,
+    bounds: view.bounds,
+    cells: Object.freeze([...view.cellEntries]),
+    focus,
+    rectangular: view.complete && selectedArea === boundsArea,
+    ...(view.root === undefined ? {} : { root: view.root }),
+    table: [
+      view.table as TableElement,
+      view.tablePath,
+    ] as ElementEntry<TableElement>,
+    tableKey: view.tableKey,
+  });
 };
 
 export type TablePluginState = {
-  /** Disable expanding the table when inserting cells. */
-  disableExpandOnInsert: boolean;
-  /** Disable first column left resizer. */
-  disableMarginLeft: boolean;
-  /** Disable cell merging functionality. */
-  disableMerge: boolean;
-  /** Preserve the first column width when the table has one column. */
-  enableUnsetSingleColSize: boolean;
-  /** Initial table width used to derive missing column sizes. */
-  initialTableWidth: number | null;
+  /** Allow merge and split edits that change cell spans. */
+  allowCellSpanEditing: boolean;
+  /** Width used to resolve missing column sizes. */
+  defaultTableWidth: number | null;
+  /** Allow a structural table paste to add rows and columns. */
+  expandOnPaste: boolean;
   /** Minimum column width. */
   minColumnWidth: number;
 };
 
-type InsertTableColumnOptions = {
-  /** Exact cell path to insert the column at. Takes precedence over `fromCell`. */
-  at?: Path;
-  /** Insert before the current column. */
-  before?: boolean;
-  /** Cell path used to locate the table and column. */
-  fromCell?: Path;
+type CreateCellOptions = {
+  children?: TableCellElement['children'];
   header?: boolean;
-  select?: boolean;
+  row?: TableRowElement;
 };
 
-type InsertTableRowOptions = {
-  /** Exact row path, or a table path to append a row. Takes precedence over `fromRow`. */
-  at?: Path;
-  /** Insert before the current row. */
-  before?: boolean;
-  /** Row path used to locate the table. */
-  fromRow?: Path;
-  header?: boolean;
-  select?: boolean;
-};
-
-type MoveTableSelectionOptions = {
-  at?: Location;
-  /** Expand the cell selection to an edge. */
-  edge?: 'bottom' | 'left' | 'right' | 'top';
-  /** Move from a single selected cell when expanding to an edge. */
-  fromOneCell?: boolean;
-  /** Move upward instead of downward. */
-  reverse?: boolean;
-};
+type CreateRowOptions = CreateCellOptions & { columns?: number };
+type CreateTableOptions = CreateRowOptions & { rows?: number };
 
 type ToggleTableBordersOptions = {
+  at?: TableTargetOptions['at'];
   border: BorderDirection | 'none' | 'outer';
-  cells?: TableCellElement[];
-};
-
-export type TableCellBorder = {
-  color?: string;
-  style?: string;
-  width?: number;
-};
-
-export type TableCellBorders = {
-  /** Only the last row cells have a bottom border. */
-  bottom?: TableCellBorder;
-  left?: TableCellBorder;
-  /** Only the last column cells have a right border. */
-  right?: TableCellBorder;
-  top?: TableCellBorder;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -293,17 +262,17 @@ const isPositiveFiniteNumber = (value: unknown): value is number =>
 
 const getFallbackColumnWidth = ({
   columnCount,
-  initialTableWidth,
+  defaultTableWidth,
   minColumnWidth,
 }: {
   columnCount: number;
-  initialTableWidth: number | null;
+  defaultTableWidth: number | null;
   minColumnWidth?: number;
 }) => {
   const minimum = isPositiveFiniteNumber(minColumnWidth) ? minColumnWidth : 1;
 
-  return isPositiveFiniteNumber(initialTableWidth) && columnCount > 0
-    ? Math.max(initialTableWidth / columnCount, minimum)
+  return isPositiveFiniteNumber(defaultTableWidth) && columnCount > 0
+    ? Math.max(defaultTableWidth / columnCount, minimum)
     : minimum;
 };
 
@@ -388,6 +357,12 @@ export const BaseTableCellPlugin = definePlugin(PLUGINS.tableCell, {
       },
       'text/markdown': {
         encode: ({ encode, isPhrasing, node }) => {
+          if (getColSpan(node) > 1 || getRowSpan(node) > 1) {
+            throw new Error(
+              'Markdown tables cannot represent rowSpan or colSpan.'
+            );
+          }
+
           const blocks = encode(node.children);
           const children = blocks.flatMap((block, index) => {
             const content =
@@ -470,50 +445,110 @@ export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {
     }),
 });
 
-const csvSpecialCharacterPattern = /[",\r\n]/;
-const tablePasteSources = new WeakMap<object, TablePasteSource[]>();
-const withTablePasteSource = <T>(
-  editor: object,
-  source: TablePasteSource,
-  run: () => T
-): T => {
-  const stack = tablePasteSources.get(editor) ?? [];
-
-  stack.push(source);
-  tablePasteSources.set(editor, stack);
-
-  try {
-    return run();
-  } finally {
-    stack.pop();
-
-    if (stack.length === 0) tablePasteSources.delete(editor);
-  }
-};
-
 const initialState: TablePluginState = {
-  disableExpandOnInsert: false,
-  disableMarginLeft: false,
-  disableMerge: false,
-  enableUnsetSingleColSize: false,
-  initialTableWidth: null,
+  allowCellSpanEditing: true,
+  defaultTableWidth: null,
+  expandOnPaste: true,
   minColumnWidth: 48,
 };
 
 const MAX_IMPORTED_TABLE_CONSTRAINT_WORK = 10_000;
 const TABLE_WIDTH_CONSTRAINT_EPSILON = 0.001;
 
-const escapeCsvField = (value: string) =>
-  csvSpecialCharacterPattern.test(value)
-    ? `"${value.replaceAll('"', '""')}"`
-    : value;
+const isTableCell = (editor: Editor, node: Node): node is TableCellElement =>
+  ElementApi.isElement(node) &&
+  node.type === editor.plugin(BaseTableCellPlugin).schema.type;
 
-export type TableRowElement = ElementOf<typeof BaseTableRowPlugin>;
+const createTableCell = (
+  editor: Editor,
+  { children, header, row }: CreateCellOptions = {}
+): TableCellElement => {
+  const isHeader =
+    header ??
+    (row
+      ? (row as Element).children.every(
+          (cell) => ElementApi.isElement(cell) && cell.header === true
+        )
+      : false);
 
-export type TableCellElement = ElementOf<typeof BaseTableCellPlugin>;
+  return {
+    children: children ?? [
+      {
+        children: [{ text: '' }],
+        type: editor.plugin(BaseParagraphPlugin).schema.type,
+      },
+    ],
+    ...(isHeader ? { header: true } : {}),
+    type: editor.plugin(BaseTableCellPlugin).schema.type,
+  };
+};
+
+const createTableRow = (
+  editor: Editor,
+  { columns = 1, ...cellOptions }: CreateRowOptions = {}
+): TableRowElement => ({
+  children: Array.from({ length: columns }, () =>
+    createTableCell(editor, cellOptions)
+  ),
+  type: editor.plugin(BaseTableRowPlugin).schema.type,
+});
+
+const createTable = (
+  editor: Editor,
+  tableType: string,
+  { columns = 2, header, rows = 2, ...cellOptions }: CreateTableOptions = {}
+): Element => ({
+  children: Array.from({ length: rows }, (_, index) =>
+    createTableRow(editor, {
+      columns,
+      ...cellOptions,
+      header: header && index === 0,
+    })
+  ),
+  type: tableType,
+});
+
+const hasDefaultCellContent = (editor: Editor, cell: TableCellElement) => {
+  if (cell.children.length !== 1) return false;
+  const paragraph = cell.children[0];
+
+  if (
+    !ElementApi.isElement(paragraph) ||
+    paragraph.type !== editor.plugin(BaseParagraphPlugin).schema.type ||
+    paragraph.children.length !== 1 ||
+    Object.keys(paragraph).some((key) => key !== 'children' && key !== 'type')
+  ) {
+    return false;
+  }
+  const text = paragraph.children[0];
+
+  return (
+    TextApi.isText(text) &&
+    text.text === '' &&
+    Object.keys(text).every((key) => key === 'text')
+  );
+};
+
+const getResolvedColumnWidths = (
+  table: Element,
+  state: Pick<TablePluginState, 'defaultTableWidth' | 'minColumnWidth'>
+): readonly number[] => {
+  const columnCount = compileTableGrid(table).width;
+  const columnWidths = getTableColumnSizes(table);
+  const fallbackWidth = getFallbackColumnWidth({
+    columnCount,
+    defaultTableWidth: state.defaultTableWidth,
+    minColumnWidth: state.minColumnWidth,
+  });
+
+  return Array.from(
+    { length: columnCount },
+    (_, index) => columnWidths?.[index] ?? fallbackWidth
+  );
+};
 
 /** Enables support for tables. */
-export const BaseTablePlugin = definePlugin(PLUGINS.table, {
+const BaseTableSchemaPlugin = definePlugin(PLUGINS.table, {
   dependencies: [BaseTableRowPlugin],
   initialState,
   schema: {
@@ -907,1254 +942,306 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
         kind: 'node',
       },
     }),
-})
-  .extend(({ editor }) => ({
-    api: () => ({
-      createCell: ({
-        children,
-        header,
-        row,
-      }: CreateCellOptions = {}): TableCellElement => {
-        const isHeader =
-          header ??
-          (row
-            ? (row as Element).children.every(
-                (cell) => ElementApi.isElement(cell) && cell.header === true
-              )
-            : false);
+});
 
-        return {
-          children: children ?? [
-            {
-              children: [{ text: '' }],
-              type: editor.plugin(BaseParagraphPlugin).schema.type,
-            },
-          ],
-          ...(isHeader ? { header: true } : {}),
-          type: editor.plugin(BaseTableCellPlugin).schema.type,
-        };
-      },
-      getCellChildren: (cell: TableCellElement) => [...cell.children],
-      isCell: (node: Node): node is TableCellElement =>
-        ElementApi.isElement(node) &&
-        node.type === editor.plugin(BaseTableCellPlugin).schema.type,
-      getColSpan,
-      getColumnCount: (tableNode: Element) => compileTableGrid(tableNode).width,
-      getRowSpan,
-      isRectangular: (table?: Element) =>
-        !table ||
-        !compileTableGrid(table).problems.some(({ kind }) =>
-          [
-            'collision',
-            'invalid-col-span',
-            'invalid-row-span',
-            'row-span-overflow',
-            'uncovered-slot',
-          ].includes(kind)
-        ),
-    }),
-  }))
-  .extend(({ api, editor, store }) => ({
-    api: () => ({
-      createRow: ({
-        colCount = 1,
-        ...cellOptions
-      }: GetEmptyRowNodeOptions = {}): TableRowElement => ({
-        children: Array.from({ length: colCount }, () =>
-          api.createCell(cellOptions)
-        ),
-        type: editor.plugin(BaseTableRowPlugin).schema.type,
-      }),
-      getOverriddenColumnSizes: (
-        tableNode: Element,
-        colSizeOverrides?: TableStoreSizeOverrides
-      ): number[] => {
-        const colCount = api.getColumnCount(tableNode);
-        const columnWidths = getTableColumnSizes(tableNode);
-        const { initialTableWidth, minColumnWidth } = store.get();
-        const fallbackWidth = getFallbackColumnWidth({
-          columnCount: colCount,
-          initialTableWidth,
-          minColumnWidth,
-        });
+export type TableCellElement = ElementOf<typeof BaseTableCellPlugin>;
+export type TableRowElement = ElementOf<typeof BaseTableRowPlugin>;
+export type TableElement = ElementOf<typeof BaseTableSchemaPlugin>;
 
-        return Array.from(
-          { length: colCount },
-          (_, index) =>
-            colSizeOverrides?.get?.(index) ??
-            columnWidths?.[index] ??
-            fallbackWidth
-        );
-      },
-    }),
-  }))
-  .extend(({ api, editor, schema: { type } }) => ({
-    api: () => ({
-      create: ({
-        colCount,
-        header,
-        rowCount = 0,
-        ...cellOptions
-      }: GetEmptyTableNodeOptions = {}): Element => ({
-        children: Array.from({ length: rowCount }, (_, index) =>
-          api.createRow({
-            colCount,
-            ...cellOptions,
-            header: header && index === 0,
-          })
-        ),
-        type,
-      }),
-    }),
-    read: ({ state }) => {
-      const getCellIndicesAtPath = (
-        cellPath: Path | undefined
-      ): CellIndices | undefined => {
-        if (!cellPath) return undefined;
+export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
+  api: () => ({
+    columnWidths: (table: TableElement) =>
+      getResolvedColumnWidths(table, store.get()),
+    /**
+     * Captures table sizes and returns a pure delta-to-preview calculation.
+     * Interior boundaries preserve the adjacent columns' combined width.
+     * The left boundary exchanges first-column width for table indentation.
+     * Commit the result with `update.resize`; previews never change the editor.
+     */
+    createResize: (table: TableElement, target: TableResizeTarget) => {
+      const { minColumnWidth } = store.get();
+      const minimum = isPositiveFiniteNumber(minColumnWidth)
+        ? minColumnWidth
+        : 1;
+      const widths = getResolvedColumnWidths(table, store.get());
+      const marginLeft = table.marginLeft ?? 0;
+      const index = target.edge === 'right' ? target.colIndex : 0;
 
-        const table = state.nodes.get(cellPath.slice(0, -2), {
-          match: ElementApi.isElement,
-        })?.[0];
-        const anchor = table
-          ? compileTableGrid(table).byPath.get(cellPath.slice(-2).join(','))
-          : undefined;
-
-        return anchor ? { col: anchor.col, row: anchor.row } : undefined;
-      };
-
-      return {
-        getCellIndicesByKey: (key: NodeKey): CellIndices | undefined =>
-          getCellIndicesAtPath(state.nodes.path(key)),
-        getCellIndices: (element: TableCellElement): CellIndices =>
-          getCellIndicesAtPath(state.nodes.path(element)) ?? { col: 0, row: 0 },
-        selection: (at?: Location) =>
-          readTableSelection(state, {
-            at,
-            cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-            selection: state.selection(),
-            tableType: type,
-          }),
-      };
-    },
-  }))
-  .extend(({ api, plugin, store }) => ({
-    api: () => ({
-      /**
-       * Captures table sizes and returns a pure delta-to-preview calculation.
-       * Interior boundaries preserve the adjacent columns' combined width.
-       * The left boundary exchanges first-column width for table indentation.
-       * Commit the result with `update.resize`; previews never change the editor.
-       */
-      createResize: (
-        table: ElementOf<typeof plugin>,
-        target: TableResizeTarget
-      ) => {
-        const { minColumnWidth } = store.get();
-        const minimum = isPositiveFiniteNumber(minColumnWidth)
-          ? minColumnWidth
-          : 1;
-        const widths = api.getOverriddenColumnSizes(table);
-        const marginLeft = table.marginLeft ?? 0;
-        const index = target.edge === 'right' ? target.colIndex : 0;
-
-        if (target.edge === 'bottom') {
-          if (
-            !Number.isSafeInteger(target.rowIndex) ||
-            target.rowIndex < 0 ||
-            target.rowIndex >= table.children.length ||
-            !isPositiveFiniteNumber(target.height)
-          ) {
-            throw new TypeError(
-              'Table resize requires a valid row and positive height.'
-            );
-          }
-        } else if (
-          !Number.isSafeInteger(index) ||
-          index < 0 ||
-          index >= widths.length
+      if (target.edge === 'bottom') {
+        if (
+          !Number.isSafeInteger(target.rowIndex) ||
+          target.rowIndex < 0 ||
+          target.rowIndex >= table.children.length ||
+          !isPositiveFiniteNumber(target.height)
         ) {
-          throw new RangeError('Table resize requires an existing column.');
+          throw new TypeError(
+            'Table resize requires a valid row and positive height.'
+          );
+        }
+      } else if (
+        !Number.isSafeInteger(index) ||
+        index < 0 ||
+        index >= widths.length
+      ) {
+        throw new RangeError('Table resize requires an existing column.');
+      }
+
+      return (delta: number): TableResize => {
+        if (!Number.isFinite(delta)) {
+          throw new TypeError('Table resize delta must be finite.');
+        }
+        if (target.edge === 'bottom') {
+          return { ...target, height: Math.max(1, target.height + delta) };
         }
 
-        return (delta: number): TableResize => {
-          if (!Number.isFinite(delta)) {
-            throw new TypeError('Table resize delta must be finite.');
-          }
-          if (target.edge === 'bottom') {
-            return { ...target, height: Math.max(1, target.height + delta) };
-          }
+        const initial = widths[index];
 
-          const initial = widths[index];
-
-          if (target.edge === 'left') {
-            const nextMarginLeft = Math.max(
-              0,
-              Math.min(
-                marginLeft + delta,
-                marginLeft + initial - Math.min(minimum, initial)
-              )
-            );
-
-            return {
-              columns: [
-                { colIndex: 0, width: initial + marginLeft - nextMarginLeft },
-              ],
-              edge: 'left',
-              marginLeft: nextMarginLeft,
-            };
-          }
-
-          const adjacent = widths[index + 1];
-          const width = Math.max(
-            Math.min(minimum, initial),
+        if (target.edge === 'left') {
+          const nextMarginLeft = Math.max(
+            0,
             Math.min(
-              initial + delta,
-              adjacent === undefined
-                ? Number.POSITIVE_INFINITY
-                : initial + adjacent - Math.min(minimum, adjacent)
+              marginLeft + delta,
+              marginLeft + initial - Math.min(minimum, initial)
             )
           );
 
           return {
             columns: [
-              { colIndex: index, width },
-              ...(adjacent === undefined
-                ? []
-                : [{ colIndex: index + 1, width: initial + adjacent - width }]),
+              { colIndex: 0, width: initial + marginLeft - nextMarginLeft },
             ],
-            edge: 'right',
+            edge: 'left',
+            marginLeft: nextMarginLeft,
           };
-        };
-      },
-    }),
-  }))
-  .extend(({ api, plugin }) => ({
-    read: ({ state }) => ({
-      canMerge: () => {
-        const view = state.table.selection();
-
-        return (
-          !state.view.isReadOnly() &&
-          !!view &&
-          view.anchors.length > 1 &&
-          view.complete
-        );
-      },
-      canSplit: () => {
-        const view = state.table.selection();
-
-        return (
-          !state.view.isReadOnly() &&
-          view?.anchors.length === 1 &&
-          (view.anchor.colSpan > 1 || view.anchor.rowSpan > 1)
-        );
-      },
-      getAdjacentCell: ({
-        at,
-        deltaCol = 0,
-        deltaRow = 0,
-      }: {
-        at?: Location;
-        deltaCol?: number;
-        deltaRow?: number;
-      } = {}) => {
-        const view = state.table.selection(at);
-
-        if (!view) return undefined;
-
-        const row =
-          view.anchor.row +
-          (deltaRow > 0 ? view.anchor.rowSpan + deltaRow - 1 : deltaRow);
-        const col =
-          view.anchor.col +
-          (deltaCol > 0 ? view.anchor.colSpan + deltaCol - 1 : deltaCol);
-
-        return view.context.entryAt(row, col);
-      },
-      getCellInNextRow: (currentRowAt: Location): NodeEntry | undefined => {
-        const view = state.table.selection(currentRowAt);
-        const anchor = view?.grid.anchorsByRow[view.anchor.row + 1]?.[0];
-
-        return anchor && view
-          ? view.context.entryAt(anchor.row, anchor.col)
-          : undefined;
-      },
-      getCellInPreviousRow: (currentRowAt: Location): NodeEntry | undefined => {
-        const view = state.table.selection(currentRowAt);
-        const anchors = view?.grid.anchorsByRow[view.anchor.row - 1];
-        const anchor = anchors?.at(-1);
-
-        return anchor && view
-          ? view.context.entryAt(anchor.row, anchor.col)
-          : undefined;
-      },
-      getEntries: ({
-        at,
-      }: {
-        at?: Location | null;
-      } = {}) => {
-        const location = at ?? state.selection();
-
-        if (!location) return undefined;
-
-        const cellEntry = state.nodes.find({
-          at: location,
-          match: api.isCell,
-        });
-
-        if (!cellEntry) return undefined;
-
-        const rowEntry = state.nodes.above({
-          at: cellEntry[1],
-          type: BaseTableRowPlugin,
-        });
-
-        if (!rowEntry) return undefined;
-
-        const tableEntry = state.nodes.above({
-          at: rowEntry[1],
-          type: plugin,
-        });
-
-        if (!tableEntry) return undefined;
-
-        return {
-          cell: cellEntry,
-          row: rowEntry,
-          table: tableEntry,
-        };
-      },
-      getNextCell: (
-        currentCell: NodeEntry,
-        currentAt: Location,
-        _currentRow: NodeEntry
-      ): NodeEntry | undefined => {
-        const view = state.table.selection(currentAt);
-        const anchor = ElementApi.isElement(currentCell[0])
-          ? view?.context.anchorOf(currentCell[0] as TableCellElement)
-          : undefined;
-        const next =
-          view && anchor
-            ? getTableSelectionNeighbor(view.context, anchor, 'next')
-            : undefined;
-
-        return next ? view?.context.entryAt(next.row, next.col) : undefined;
-      },
-      getPreviousCell: (
-        currentCell: NodeEntry,
-        currentAt: Location,
-        _currentRow: NodeEntry
-      ): NodeEntry | undefined => {
-        const view = state.table.selection(currentAt);
-        const anchor = ElementApi.isElement(currentCell[0])
-          ? view?.context.anchorOf(currentCell[0] as TableCellElement)
-          : undefined;
-        const previous =
-          view && anchor
-            ? getTableSelectionNeighbor(view.context, anchor, 'previous')
-            : undefined;
-
-        return previous
-          ? view?.context.entryAt(previous.row, previous.col)
-          : undefined;
-      },
-    }),
-  }))
-  .extend(({ api, editor, plugin, read, schema: { type }, store }) => ({
-    read: ({ state }) => ({
-      getCellBorders: ({
-        cellIndices,
-        defaultBorder = { width: 1 },
-        element,
-      }: {
-        element: TableCellElement;
-        cellIndices?: CellIndices;
-        defaultBorder?: TableCellBorder;
-      }): BorderStylesDefault => {
-        const cellPath = state.nodes.path(element);
-
-        if (!cellPath) {
-          return { bottom: defaultBorder, right: defaultBorder };
         }
 
-        const [rowNode, rowPath] =
-          state.nodes.parent(cellPath, { type: BaseTableRowPlugin }) ?? [];
-
-        if (!rowNode || !rowPath) {
-          return { bottom: defaultBorder, right: defaultBorder };
-        }
-
-        const [tableNode] = state.nodes.parent(rowPath, { type: plugin }) ?? [];
-
-        if (!tableNode || tableNode.type !== type) {
-          return { bottom: defaultBorder, right: defaultBorder };
-        }
-
-        const { col } = cellIndices ?? state.table.getCellIndices(element);
-        const isFirstCell = col === 0;
-        const isFirstRow = tableNode.children?.[0] === rowNode;
-        const getBorder = (direction: BorderDirection) => {
-          const border = element.borders?.[direction];
-
-          return {
-            color: border?.color ?? defaultBorder.color,
-            width: border?.width ?? defaultBorder.width,
-            style: border?.style ?? defaultBorder.style,
-          };
-        };
-
-        return {
-          bottom: getBorder('bottom'),
-          left: isFirstCell ? getBorder('left') : undefined,
-          right: getBorder('right'),
-          top: isFirstRow ? getBorder('top') : undefined,
-        };
-      },
-      getCellSize: ({
-        cellIndices,
-        columnWidths: initialColumnWidths,
-        element,
-        rowSize: initialRowSize,
-      }: {
-        element: TableCellElement;
-        cellIndices?: CellIndices;
-        columnWidths?: ReadonlyArray<number | null>;
-        rowSize?: number;
-      }): { minHeight: number; width: number } => {
-        let rowSize = initialRowSize;
-        let columnWidths = initialColumnWidths;
-        const path = state.nodes.path(element);
-
-        if (!path) return { minHeight: rowSize ?? 0, width: 0 };
-
-        if (!rowSize) {
-          const [rowElement] =
-            state.nodes.parent(path, { type: BaseTableRowPlugin }) ?? [];
-
-          if (
-            !rowElement ||
-            rowElement.type !== editor.plugin(BaseTableRowPlugin).schema.type
-          ) {
-            return { minHeight: 0, width: 0 };
-          }
-
-          rowSize = rowElement.height ?? 0;
-        }
-        if (!columnWidths) {
-          const [, rowPath] =
-            state.nodes.parent(path, { type: BaseTableRowPlugin }) ?? [];
-
-          if (!rowPath) return { minHeight: rowSize, width: 0 };
-
-          const [tableNode] =
-            state.nodes.parent(rowPath, { type: plugin }) ?? [];
-
-          if (!tableNode) return { minHeight: rowSize, width: 0 };
-
-          columnWidths = api.getOverriddenColumnSizes(tableNode);
-        }
-
-        const { initialTableWidth, minColumnWidth } = store.get();
-        const fallbackWidth = getFallbackColumnWidth({
-          columnCount: columnWidths.length,
-          initialTableWidth,
-          minColumnWidth,
-        });
-
-        const colSpan = getColSpan(element);
-        const { col } = cellIndices ?? state.table.getCellIndices(element);
-        const width = columnWidths
-          .slice(col, col + colSpan)
-          .reduce<number>(
-            (total, innerWidth) => total + (innerWidth ?? fallbackWidth),
-            0
-          );
-
-        return { minHeight: rowSize, width };
-      },
-      getSelectedCellsBorders: (
-        selectedCells?: Element[] | null,
-        options: GetSelectedCellsBordersOptions = {}
-      ): TableBorderStates => {
-        const { select = { none: true, outer: true, side: true } } = options;
-        let cells =
-          selectedCells ??
-          state.table.selection()?.cellEntries.map(([cell]) => cell);
-
-        if (!cells || cells.length === 0) {
-          const cell = state.nodes.block({
-            match: api.isCell,
-          });
-
-          if (cell) {
-            cells = [cell[0]];
-          } else {
-            return {
-              bottom: true,
-              left: true,
-              none: false,
-              outer: true,
-              right: true,
-              top: true,
-            };
-          }
-        }
-
-        const cellElements = cells.map((cell) => cell as TableCellElement);
-        const { maxCol, maxRow, minCol, minRow } = getTableCellBounds(
-          cellElements.map((cell) => ({
-            ...state.table.getCellIndices(cell),
-            colSpan: getColSpan(cell),
-            rowSpan: getRowSpan(cell),
-          }))
-        );
-        let hasAnyBorder = false;
-        let allOuterBordersSet = true;
-        const borderStates = {
-          bottom: false,
-          left: false,
-          right: false,
-          top: false,
-        };
-
-        for (const cell of cellElements) {
-          const { col, row } = state.table.getCellIndices(cell);
-          const cellPath = state.nodes.path(cell);
-          const colSpan = getColSpan(cell);
-          const rowSpan = getRowSpan(cell);
-          const isFirstRow = row === 0;
-          const isFirstCell = col === 0;
-
-          if (!cellPath) continue;
-          if (select.none && !hasAnyBorder) {
-            if (isFirstRow && (cell.borders?.top?.width ?? 1) > 0) {
-              hasAnyBorder = true;
-            }
-            if (isFirstCell && (cell.borders?.left?.width ?? 1) > 0) {
-              hasAnyBorder = true;
-            }
-            if ((cell.borders?.bottom?.width ?? 1) > 0) hasAnyBorder = true;
-            if ((cell.borders?.right?.width ?? 1) > 0) hasAnyBorder = true;
-
-            if (!hasAnyBorder) {
-              if (!isFirstRow) {
-                const cellAboveEntry = state.table.getAdjacentCell({
-                  at: cellPath,
-                  deltaRow: -1,
-                });
-
-                if (
-                  cellAboveEntry &&
-                  (cellAboveEntry[0].borders?.bottom?.width ?? 1) > 0
-                ) {
-                  hasAnyBorder = true;
-                }
-              }
-              if (!isFirstCell) {
-                const previousCellEntry = state.table.getAdjacentCell({
-                  at: cellPath,
-                  deltaCol: -1,
-                });
-
-                if (
-                  previousCellEntry &&
-                  (previousCellEntry[0].borders?.right?.width ?? 1) > 0
-                ) {
-                  hasAnyBorder = true;
-                }
-              }
-            }
-          }
-          if (select.side || select.outer) {
-            for (let rowIndex = row; rowIndex < row + rowSpan; rowIndex++) {
-              for (
-                let columnIndex = col;
-                columnIndex < col + colSpan;
-                columnIndex++
-              ) {
-                if (rowIndex === minRow) {
-                  if (isFirstRow) {
-                    if ((cell.borders?.top?.width ?? 1) <= 0) {
-                      borderStates.top = false;
-                      if (select.outer) allOuterBordersSet = false;
-                    } else if (!borderStates.top) {
-                      borderStates.top = true;
-                    }
-                  } else {
-                    const cellAboveEntry = state.table.getAdjacentCell({
-                      at: cellPath,
-                      deltaRow: -1,
-                    });
-
-                    if (cellAboveEntry) {
-                      if (
-                        (cellAboveEntry[0].borders?.bottom?.width ?? 1) <= 0
-                      ) {
-                        borderStates.top = false;
-                        if (select.outer) allOuterBordersSet = false;
-                      } else if (!borderStates.top) {
-                        borderStates.top = true;
-                      }
-                    }
-                  }
-                }
-                if (rowIndex === maxRow) {
-                  if ((cell.borders?.bottom?.width ?? 1) <= 0) {
-                    borderStates.bottom = false;
-                    if (select.outer) allOuterBordersSet = false;
-                  } else if (!borderStates.bottom) {
-                    borderStates.bottom = true;
-                  }
-                }
-                if (columnIndex === minCol) {
-                  if (isFirstCell) {
-                    if ((cell.borders?.left?.width ?? 1) <= 0) {
-                      borderStates.left = false;
-                      if (select.outer) allOuterBordersSet = false;
-                    } else if (!borderStates.left) {
-                      borderStates.left = true;
-                    }
-                  } else {
-                    const previousCellEntry = state.table.getAdjacentCell({
-                      at: cellPath,
-                      deltaCol: -1,
-                    });
-
-                    if (previousCellEntry) {
-                      if (
-                        (previousCellEntry[0].borders?.right?.width ?? 1) <= 0
-                      ) {
-                        borderStates.left = false;
-                        if (select.outer) allOuterBordersSet = false;
-                      } else if (!borderStates.left) {
-                        borderStates.left = true;
-                      }
-                    }
-                  }
-                }
-                if (columnIndex === maxCol) {
-                  if ((cell.borders?.right?.width ?? 1) <= 0) {
-                    borderStates.right = false;
-                    if (select.outer) allOuterBordersSet = false;
-                  } else if (!borderStates.right) {
-                    borderStates.right = true;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        return {
-          ...(select.side
-            ? borderStates
-            : { bottom: true, left: true, right: true, top: true }),
-          none: select.none ? !hasAnyBorder : false,
-          outer: select.outer ? allOuterBordersSet : true,
-        };
-      },
-      isBorderHidden: (border: BorderDirection) => {
-        if (border === 'left') {
-          const node = state.table.getAdjacentCell({ deltaCol: -1 })?.[0];
-
-          if (node) return node.borders?.right?.width === 0;
-        }
-        if (border === 'top') {
-          const node = state.table.getAdjacentCell({ deltaRow: -1 })?.[0];
-
-          if (node) return node.borders?.bottom?.width === 0;
-        }
-
-        return (
-          state.nodes.find({
-            match: api.isCell,
-          })?.[0].borders?.[border]?.width === 0
-        );
-      },
-      isSelectedCellBorder: (
-        cells: TableCellElement[],
-        side: BorderDirection
-      ): boolean => {
-        const { maxCol, maxRow, minCol, minRow } = getTableCellBounds(
-          cells.map((cell) => ({
-            ...state.table.getCellIndices(cell),
-            colSpan: getColSpan(cell),
-            rowSpan: getRowSpan(cell),
-          }))
-        );
-
-        return cells.every((cell) => {
-          const { col, row } = state.table.getCellIndices(cell);
-          const colSpan = getColSpan(cell);
-          const rowSpan = getRowSpan(cell);
-          const cellPath = state.nodes.path(cell);
-
-          if (!cellPath) return true;
-
-          for (let rowIndex = row; rowIndex < row + rowSpan; rowIndex++) {
-            for (
-              let columnIndex = col;
-              columnIndex < col + colSpan;
-              columnIndex++
-            ) {
-              if (side === 'top' && rowIndex === minRow) {
-                if (row === 0) {
-                  return (cell.borders?.top?.width ?? 1) > 0;
-                }
-
-                const cellAboveEntry = state.table.getAdjacentCell({
-                  at: cellPath,
-                  deltaRow: -1,
-                });
-
-                return cellAboveEntry
-                  ? (cellAboveEntry[0].borders?.bottom?.width ?? 1) > 0
-                  : true;
-              }
-              if (side === 'bottom' && rowIndex === maxRow) {
-                return (cell.borders?.bottom?.width ?? 1) > 0;
-              }
-              if (side === 'left' && columnIndex === minCol) {
-                if (col === 0) {
-                  return (cell.borders?.left?.width ?? 1) > 0;
-                }
-
-                const previousCellEntry = state.table.getAdjacentCell({
-                  at: cellPath,
-                  deltaCol: -1,
-                });
-
-                return previousCellEntry
-                  ? (previousCellEntry[0].borders?.right?.width ?? 1) > 0
-                  : true;
-              }
-              if (side === 'right' && columnIndex === maxCol) {
-                return (cell.borders?.right?.width ?? 1) > 0;
-              }
-            }
-          }
-
-          return true;
-        });
-      },
-      isSelectedCellBordersNone: (cells: TableCellElement[]): boolean =>
-        cells.every((cell) => {
-          const { borders } = cell;
-          const { col, row } = state.table.getCellIndices(cell);
-          const cellPath = state.nodes.path(cell);
-
-          if (!cellPath) return true;
-          if (row === 0 && (borders?.top?.width ?? 1) > 0) return false;
-          if (col === 0 && (borders?.left?.width ?? 1) > 0) return false;
-          if ((borders?.bottom?.width ?? 1) > 0) return false;
-          if ((borders?.right?.width ?? 1) > 0) return false;
-
-          if (row !== 0) {
-            const cellAboveEntry = state.table.getAdjacentCell({
-              at: cellPath,
-              deltaRow: -1,
-            });
-
-            if (
-              cellAboveEntry &&
-              (cellAboveEntry[0].borders?.bottom?.width ?? 1) > 0
-            ) {
-              return false;
-            }
-          }
-          if (col !== 0) {
-            const previousCellEntry = state.table.getAdjacentCell({
-              at: cellPath,
-              deltaCol: -1,
-            });
-
-            if (
-              previousCellEntry &&
-              (previousCellEntry[0].borders?.right?.width ?? 1) > 0
-            ) {
-              return false;
-            }
-          }
-
-          return true;
-        }),
-      isSelectedCellBordersOuter: (cells: TableCellElement[]): boolean => {
-        const { maxCol, maxRow, minCol, minRow } = getTableCellBounds(
-          cells.map((cell) => ({
-            ...state.table.getCellIndices(cell),
-            colSpan: getColSpan(cell),
-            rowSpan: getRowSpan(cell),
-          }))
-        );
-
-        for (const cell of cells) {
-          const { col, row } = state.table.getCellIndices(cell);
-          const colSpan = getColSpan(cell);
-          const rowSpan = getRowSpan(cell);
-
-          for (let rowIndex = row; rowIndex < row + rowSpan; rowIndex++) {
-            for (
-              let columnIndex = col;
-              columnIndex < col + colSpan;
-              columnIndex++
-            ) {
-              if (rowIndex === minRow && (cell.borders?.top?.width ?? 1) <= 0) {
-                return false;
-              }
-              if (
-                rowIndex === maxRow &&
-                (cell.borders?.bottom?.width ?? 1) <= 0
-              ) {
-                return false;
-              }
-              if (
-                columnIndex === minCol &&
-                (cell.borders?.left?.width ?? 1) <= 0
-              ) {
-                return false;
-              }
-              if (
-                columnIndex === maxCol &&
-                (cell.borders?.right?.width ?? 1) <= 0
-              ) {
-                return false;
-              }
-            }
-          }
-        }
-
-        return true;
-      },
-    }),
-    api: () => ({
-      writeSelection: (
-        data: Pick<DataTransfer, 'getData' | 'setData'>
-      ): boolean => {
-        const view = read.selection();
-
-        if (!view || view.cellEntries.length <= 1) return false;
-        const rows = projectTableSelection(view).children as TableRowElement[];
-        const values = rows.map((row) =>
-          (row.children as TableCellElement[]).map((cell) =>
-            NodeApi.string(cell)
+        const adjacent = widths[index + 1];
+        const width = Math.max(
+          Math.min(minimum, initial),
+          Math.min(
+            initial + delta,
+            adjacent === undefined
+              ? Number.POSITIVE_INFINITY
+              : initial + adjacent - Math.min(minimum, adjacent)
           )
         );
-        const csv = `${values
-          .map((row) => row.map(escapeCsvField).join(','))
-          .join('\n')}\n`;
-        const tsv = `${values.map((row) => row.join('\t')).join('\n')}\n`;
 
-        editor.api.dom.clipboard.writeSlice(data, {
-          formats: {
-            'text/csv': csv,
-            'text/plain': tsv,
-            'text/tab-separated-values': tsv,
-            'text/tsv': tsv,
-          },
-          slice: editor.read.slice.export(),
+        return {
+          columns: [
+            { colIndex: index, width },
+            ...(adjacent === undefined
+              ? []
+              : [{ colIndex: index + 1, width: initial + adjacent - width }]),
+          ],
+          edge: 'right',
+        };
+      };
+    },
+  }),
+}))
+  .extend(({ editor, schema: { type }, store }) => ({
+    read: ({ state }) => {
+      const selectionView = (options: TableTargetOptions = {}) =>
+        readTableSelection(state, {
+          at: options.at,
+          cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+          selection: state.selection(),
+          tableType: type,
         });
+      const resolvedBorder = (
+        border: TableCellBorder | undefined
+      ): Required<TableCellBorder> => ({
+        color: border?.color ?? 'currentColor',
+        style: border?.style ?? 'solid',
+        width: border?.width ?? 1,
+      });
+      const cellInfo = (view: TableSelectionView): TableCellInfo | null => {
+        if (view.anchors.length !== 1) return null;
+        const { anchor } = view;
+        const entry = view.context.entryAt(anchor.row, anchor.col);
 
-        return true;
-      },
-    }),
-  }))
-  .extend(({ api, editor, plugin, store, schema: { type } }) => ({
-    update: ({ tx }) => {
-      const applyMutation = (
-        context: NonNullable<ReturnType<typeof createTableContext>>,
-        intent: TableIntent
+        if (!entry) return null;
+        const [cell] = entry;
+        const { defaultTableWidth, minColumnWidth } = store.get();
+        const columnWidths = getTableColumnSizes(view.table);
+        const fallbackWidth = getFallbackColumnWidth({
+          columnCount: view.context.grid.width,
+          defaultTableWidth,
+          minColumnWidth,
+        });
+        let width = 0;
+
+        for (
+          let index = anchor.col;
+          index < anchor.col + anchor.colSpan;
+          index++
+        ) {
+          width += columnWidths?.[index] ?? fallbackWidth;
+        }
+        const minHeight = view.table.children
+          .slice(anchor.row, anchor.row + anchor.rowSpan)
+          .reduce(
+            (total, row) =>
+              total +
+              (ElementApi.isElement(row) &&
+              typeof row.height === 'number' &&
+              Number.isFinite(row.height)
+                ? row.height
+                : 0),
+            0
+          );
+        const firstRow = anchor.row === 0;
+        const firstColumn = anchor.col === 0;
+
+        return Object.freeze({
+          borders: Object.freeze({
+            bottom: resolvedBorder(cell.borders?.bottom),
+            ...(firstColumn
+              ? { left: resolvedBorder(cell.borders?.left) }
+              : {}),
+            right: resolvedBorder(cell.borders?.right),
+            ...(firstRow ? { top: resolvedBorder(cell.borders?.top) } : {}),
+          }),
+          col: anchor.col,
+          colSpan: anchor.colSpan,
+          entry,
+          ...(view.root === undefined ? {} : { root: view.root }),
+          row: anchor.row,
+          rowSpan: anchor.rowSpan,
+          size: Object.freeze({ minHeight, width }),
+        });
+      };
+      const edgeVisible = (
+        view: TableSelectionView,
+        anchor: TableGridAnchor,
+        direction: BorderDirection
       ) => {
-        const result = planTableMutation(context, intent);
+        if (direction === 'top' && anchor.row > 0) {
+          const above = getTableSelectionNeighbor(
+            view.context,
+            anchor,
+            'above'
+          );
+          const entry = above && view.context.entryAt(above.row, above.col);
 
-        if (result.kind !== 'plan') {
-          editor
-            .plugin(DebugPlugin)
-            .api.warn(
-              `Table mutation rejected: ${result.kind}.`,
-              'TABLE_MUTATION_DIAGNOSTIC',
-              result
-            );
+          return (entry?.[0].borders?.bottom?.width ?? 1) > 0;
+        }
+        if (direction === 'left' && anchor.col > 0) {
+          const left = getTableSelectionNeighbor(view.context, anchor, 'left');
+          const entry = left && view.context.entryAt(left.row, left.col);
 
-          return false;
+          return (entry?.[0].borders?.right?.width ?? 1) > 0;
         }
 
-        applyTableMutationPlan(tx, result);
-
-        return true;
+        return (anchor.cell.borders?.[direction]?.width ?? 1) > 0;
       };
+      const mixed = (values: readonly boolean[]) =>
+        values.every(Boolean)
+          ? true
+          : values.every((value) => !value)
+            ? false
+            : ('mixed' as const);
 
       return {
-        insert: (
-          { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
-          options: BlockInsertOptions = {}
-        ): void => {
-          const newTable = api.create({ colCount, header, rowCount });
-          if (options.at !== undefined && options.after === undefined) {
-            tx.nodes.insert(newTable, options);
-          } else {
-            const currentTable = tx.nodes.above({ at: options.after, type });
-            tx.blocks.insertAfter(newTable, {
-              ...options,
-              at: currentTable?.[1] ?? options.after,
-            });
-          }
+        borders: (
+          options: TableTargetOptions = {}
+        ): TableBorderStates | null => {
+          const view = selectionView(options);
 
-          if (!options.select) return;
-          const tablePath = tx.nodes.path(newTable);
-          const point = tablePath && tx.points.start(tablePath.concat([0, 0]));
-          if (point) tx.selection.set(point);
-        },
-        insertColumn: (options: InsertTableColumnOptions = {}): void => {
-          const { initialTableWidth, minColumnWidth } = store.get();
-          const tableAt = options.at
-            ? tx.nodes.get(options.at, { type: plugin })?.[0]
-            : undefined;
-          let tablePath: Path;
-          let anchorPath: Path;
-          let { before } = options;
-          let atColumn: number | undefined;
+          if (!view || view.anchors.length === 0) return null;
+          const sides = {
+            bottom: view.anchors
+              .filter(
+                (anchor) =>
+                  anchor.row + anchor.rowSpan - 1 === view.bounds.maxRow
+              )
+              .map((anchor) => edgeVisible(view, anchor, 'bottom')),
+            left: view.anchors
+              .filter((anchor) => anchor.col === view.bounds.minCol)
+              .map((anchor) => edgeVisible(view, anchor, 'left')),
+            right: view.anchors
+              .filter(
+                (anchor) =>
+                  anchor.col + anchor.colSpan - 1 === view.bounds.maxCol
+              )
+              .map((anchor) => edgeVisible(view, anchor, 'right')),
+            top: view.anchors
+              .filter((anchor) => anchor.row === view.bounds.minRow)
+              .map((anchor) => edgeVisible(view, anchor, 'top')),
+          };
+          const allEdges = view.anchors.flatMap((anchor) =>
+            (['bottom', 'left', 'right', 'top'] as const).map((direction) =>
+              edgeVisible(view, anchor, direction)
+            )
+          );
+          const outerEdges = [
+            ...sides.bottom,
+            ...sides.left,
+            ...sides.right,
+            ...sides.top,
+          ];
 
-          if (tableAt?.type === type && options.at) {
-            tablePath = options.at;
-            const context = createTableContext(tx, tablePath);
-            const anchor = context?.grid.slots[0]?.at(-1);
-
-            if (!context || !anchor) return;
-
-            anchorPath = tablePath.concat(anchor.path);
-            before = false;
-          } else {
-            const cellEntry = tx.nodes.find({
-              at: options.fromCell,
-              match: api.isCell,
-            });
-
-            if (!cellEntry) return;
-
-            anchorPath = cellEntry[1];
-            const tableEntry = tx.nodes.above({
-              at: anchorPath,
-              type: plugin,
-            });
-
-            if (!tableEntry) return;
-
-            tablePath = tableEntry[1];
-            if (options.at) atColumn = options.at.at(-1);
-          }
-
-          const context = createTableContext(tx, tablePath);
-
-          if (!context) return;
-
-          applyMutation(context, {
-            anchorPath,
-            atColumn,
-            before,
-            createCell: ({ children, header, sourceRow }) =>
-              api.createCell({
-                children: children ? [...children] : undefined,
-                header,
-                row: sourceRow,
-              }),
-            header: options.header,
-            initialTableWidth: initialTableWidth ?? undefined,
-            kind: 'insert-column',
-            minColumnWidth,
-            select: options.select,
+          return Object.freeze({
+            bottom: mixed(sides.bottom),
+            left: mixed(sides.left),
+            none: mixed(allEdges.map((value) => !value)),
+            outer: mixed(outerEdges),
+            right: mixed(sides.right),
+            top: mixed(sides.top),
           });
         },
+        cell: (options: { at?: TableCellTarget } = {}) => {
+          const view = selectionView(options);
 
-        insertRow: (options: InsertTableRowOptions = {}): void => {
-          const tableAt = options.at
-            ? tx.nodes.get(options.at, { type: plugin })?.[0]
-            : undefined;
-          let tablePath: Path;
-          let anchorPath: Path;
-          let { before } = options;
-
-          if (tableAt?.type === type && options.at) {
-            tablePath = options.at;
-            const context = createTableContext(tx, tablePath);
-            const anchor = context?.grid.slots.at(-1)?.[0];
-
-            if (!context || !anchor) return;
-
-            anchorPath = tablePath.concat(anchor.path);
-            before = false;
-          } else {
-            const rowEntry = tx.nodes.find({
-              at: options.fromRow ?? options.at,
-              type: BaseTableRowPlugin,
-            });
-
-            if (!rowEntry) return;
-
-            const tableEntry = tx.nodes.above({
-              at: rowEntry[1],
-              type: plugin,
-            });
-
-            if (!tableEntry) return;
-
-            tablePath = tableEntry[1];
-            const context = createTableContext(tx, tablePath);
-            const rowIndex = rowEntry[1].at(-1);
-            const anchor =
-              rowIndex === undefined
-                ? undefined
-                : (context?.grid.anchorsByRow[rowIndex]?.[0] ??
-                  context?.grid.slots[rowIndex]?.[0]);
-
-            if (!context || !anchor) return;
-
-            anchorPath = tablePath.concat(anchor.path);
-            if (options.at) before = true;
-          }
-
-          const context = createTableContext(tx, tablePath);
-
-          if (!context) return;
-
-          applyMutation(context, {
-            anchorPath,
-            before,
-            createCell: ({ children, header, sourceRow }) =>
-              api.createCell({
-                children: children ? [...children] : undefined,
-                header,
-                row: sourceRow,
-              }),
-            header: options.header,
-            kind: 'insert-row',
-            rowType: editor.plugin(BaseTableRowPlugin).schema.type,
-            select: options.select,
-          });
+          return view ? cellInfo(view) : null;
         },
-        removeColumn: (): void => {
-          const tableEntry = tx.nodes.above({
-            type: plugin,
-          });
+        canMerge: (options: TableTargetOptions = {}) => {
+          const view = selectionView(options);
 
-          if (!tableEntry) return;
-
-          const view = tx.table.selection();
-          const isMultiCell = (view?.anchors.length ?? 0) > 1;
-          const context =
-            view?.context ?? createTableContext(tx, tableEntry[1]);
-
-          if (!context) return;
-
-          if (isMultiCell) {
-            if (!view) return;
-
-            if (
-              view.bounds.minRow !== 0 ||
-              view.bounds.maxRow !== context.grid.height - 1
-            ) {
-              return;
-            }
-
-            const startCol = view.bounds.minCol;
-            const endCol = view.bounds.maxCol;
-
-            applyMutation(context, {
-              columnCount: endCol - startCol + 1,
-              kind: 'remove-column',
-              selectionRows: [view.bounds.minRow, view.bounds.maxRow],
-              startCol,
-            });
-
-            return;
-          }
-
-          const cellEntry = tx.nodes.above({
-            match: api.isCell,
-          });
-
-          if (!cellEntry) return;
-
-          const selectedAnchor = context.anchorAtPath(cellEntry[1]);
-          const selectedRow = context.table.children[
-            selectedAnchor?.row ?? -1
-          ] as TableRowElement | undefined;
-
-          if (
-            selectedAnchor?.colSpan === 1 &&
-            selectedRow?.children.length === 1 &&
-            context.grid.width > 1
-          ) {
-            return;
-          }
-
-          applyMutation(context, {
-            anchorPath: cellEntry[1],
-            kind: 'remove-column',
-          });
+          return (
+            store.get().allowCellSpanEditing &&
+            !state.view.isReadOnly() &&
+            !!view &&
+            view.anchors.length > 1 &&
+            toPublicTableSelection(view).rectangular
+          );
         },
+        canSplit: (options: TableTargetOptions = {}) => {
+          const view = selectionView(options);
 
-        removeRow: (): void => {
-          const tableEntry = tx.nodes.above({
-            type: plugin,
-          });
-
-          if (!tableEntry) return;
-
-          const view = tx.table.selection();
-          const isMultiCell = (view?.anchors.length ?? 0) > 1;
-          const context =
-            view?.context ?? createTableContext(tx, tableEntry[1]);
-
-          if (!context) return;
-
-          if (isMultiCell) {
-            if (!view) return;
-
-            if (
-              view.bounds.minCol !== 0 ||
-              view.bounds.maxCol !== context.grid.width - 1
-            ) {
-              return;
-            }
-
-            const startRow = view.bounds.minRow;
-            const endRow = view.bounds.maxRow;
-
-            applyMutation(context, {
-              kind: 'remove-row',
-              rowCount: endRow - startRow + 1,
-              selectionCol: view.bounds.minCol,
-              startRow,
-            });
-
-            return;
-          }
-
-          const cellEntry = tx.nodes.above({
-            match: api.isCell,
-          });
-
-          if (!cellEntry) return;
-
-          applyMutation(context, {
-            anchorPath: cellEntry[1],
-            kind: 'remove-row',
-          });
+          return (
+            store.get().allowCellSpanEditing &&
+            !state.view.isReadOnly() &&
+            view?.anchors.length === 1 &&
+            (view.anchor.colSpan > 1 || view.anchor.rowSpan > 1)
+          );
         },
+        selection: (options: TableTargetOptions = {}) => {
+          const view = selectionView(options);
 
-        remove: () => {
-          const tableEntry = tx.nodes.above({
-            type: plugin,
-          });
-
-          if (!tableEntry) return;
-
-          const context = createTableContext(tx, tableEntry[1]);
-
-          if (!context) return;
-
-          applyMutation(context, { kind: 'remove-table' });
+          return view ? toPublicTableSelection(view) : null;
         },
       };
     },
   }))
   .extend((context) => {
-    const { api, editor } = context;
+    const { editor } = context;
+    const { type } = context.schema;
+    const { store } = context;
 
     return {
       update: ({ tx }) => {
-        const setBorderWidths = (options: readonly SetBorderWidthOptions[]) => {
-          const updates = new Map<
-            string,
-            { borders: TableCellElement['borders']; path: Path }
-          >();
-          const addBorder = (
-            [node, path]: NodeEntry<TableCellElement>,
-            direction: BorderDirection,
-            width: number
-          ) => {
-            const key = path.join(',');
-            const current = updates.get(key);
-
-            updates.set(key, {
-              borders: {
-                ...(current?.borders ?? node.borders),
-                [direction]: { width },
-              },
-              path,
-            });
-          };
-
-          options.forEach(({ at, border = 'all', width }) => {
-            const cellEntry = tx.nodes.find({
-              at,
-              match: api.isCell,
-            });
-
-            if (!cellEntry) return;
-
-            const [, cellPath] = cellEntry;
-            const cellIndex = cellPath.at(-1);
-            const rowIndex = cellPath.at(-2);
-            const view = tx.table.selection(cellPath);
-            const addDirection = (direction: BorderDirection) => {
-              if (direction === 'top') {
-                if (rowIndex === 0) {
-                  addBorder(cellEntry, 'top', width);
-                  return;
-                }
-
-                const anchor = view
-                  ? getTableSelectionNeighbor(
-                      view.context,
-                      view.anchor,
-                      'above'
-                    )
-                  : undefined;
-                const cellAbove =
-                  anchor && view
-                    ? view.context.entryAt(anchor.row, anchor.col)
-                    : undefined;
-
-                if (cellAbove) addBorder(cellAbove, 'bottom', width);
-                return;
-              }
-              if (direction === 'left') {
-                if (cellIndex === 0) {
-                  addBorder(cellEntry, 'left', width);
-                  return;
-                }
-
-                const anchor = view
-                  ? getTableSelectionNeighbor(view.context, view.anchor, 'left')
-                  : undefined;
-                const cellLeft =
-                  anchor && view
-                    ? view.context.entryAt(anchor.row, anchor.col)
-                    : undefined;
-
-                if (cellLeft) addBorder(cellLeft, 'right', width);
-                return;
-              }
-
-              addBorder(cellEntry, direction, width);
-            };
-
-            (border === 'all'
-              ? (['top', 'bottom', 'left', 'right'] as const)
-              : [border]
-            ).forEach(addDirection);
+        const selectionView = (options: TableTargetOptions = {}) =>
+          readTableSelection(tx, {
+            at: options.at,
+            cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+            selection: tx.selection(),
+            tableType: context.schema.type,
           });
-
-          updates.forEach(({ borders, path }) => {
-            tx.nodes.set({ borders }, { at: path });
-          });
-        };
         const applyMutation = (
-          innerContext: NonNullable<ReturnType<typeof createTableContext>>,
+          tableContext: NonNullable<ReturnType<typeof createTableContext>>,
           intent: TableIntent
         ) => {
-          const result = planTableMutation(innerContext, intent);
+          const result = planTableMutation(tableContext, intent);
 
           if (result.kind !== 'plan') {
             editor
@@ -2167,372 +1254,539 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
 
             return false;
           }
+          if (result.operations.length === 0) return false;
 
           applyTableMutationPlan(tx, result);
 
           return true;
         };
+        const resolvePhysicalEdge = (
+          view: TableSelectionView,
+          anchor: TableGridAnchor,
+          direction: BorderDirection
+        ): {
+          direction: BorderDirection;
+          entry: ElementEntry<TableCellElement>;
+        } | null => {
+          if (direction === 'top' && anchor.row > 0) {
+            const above = getTableSelectionNeighbor(
+              view.context,
+              anchor,
+              'above'
+            );
+            const entry = above && view.context.entryAt(above.row, above.col);
+
+            return entry ? { direction: 'bottom', entry } : null;
+          }
+          if (direction === 'left' && anchor.col > 0) {
+            const left = getTableSelectionNeighbor(
+              view.context,
+              anchor,
+              'left'
+            );
+            const entry = left && view.context.entryAt(left.row, left.col);
+
+            return entry ? { direction: 'right', entry } : null;
+          }
+          const entry = view.context.entryAt(anchor.row, anchor.col);
+
+          return entry ? { direction, entry } : null;
+        };
+        const edgeVisible = (
+          view: TableSelectionView,
+          anchor: TableGridAnchor,
+          direction: BorderDirection
+        ) => {
+          const physical = resolvePhysicalEdge(view, anchor, direction);
+          const borders = physical?.entry[0].borders as
+            | TableCellBorders
+            | undefined;
+
+          return (borders?.[physical?.direction ?? direction]?.width ?? 1) > 0;
+        };
+        const directionsForBorder = (
+          view: TableSelectionView,
+          anchor: TableGridAnchor,
+          border: TableBorderTarget
+        ): readonly BorderDirection[] => {
+          if (border === 'all') {
+            return ['bottom', 'left', 'right', 'top'];
+          }
+          if (border === 'outer') {
+            return [
+              ...(anchor.row === view.bounds.minRow ? (['top'] as const) : []),
+              ...(anchor.row + anchor.rowSpan - 1 === view.bounds.maxRow
+                ? (['bottom'] as const)
+                : []),
+              ...(anchor.col === view.bounds.minCol ? (['left'] as const) : []),
+              ...(anchor.col + anchor.colSpan - 1 === view.bounds.maxCol
+                ? (['right'] as const)
+                : []),
+            ];
+          }
+
+          const onBoundary =
+            border === 'top'
+              ? anchor.row === view.bounds.minRow
+              : border === 'bottom'
+                ? anchor.row + anchor.rowSpan - 1 === view.bounds.maxRow
+                : border === 'left'
+                  ? anchor.col === view.bounds.minCol
+                  : anchor.col + anchor.colSpan - 1 === view.bounds.maxCol;
+
+          return onBoundary ? [border] : [];
+        };
+        const applyBorders = (
+          view: TableSelectionView,
+          border: TableBorderTarget,
+          value: TableCellBorder | null
+        ) => {
+          type MutableBorders = {
+            -readonly [TKey in keyof TableCellBorders]?: TableCellBorders[TKey];
+          };
+          const updates = new Map<
+            string,
+            { borders: MutableBorders; path: Path }
+          >();
+          const add = (anchor: TableGridAnchor, direction: BorderDirection) => {
+            const physical = resolvePhysicalEdge(view, anchor, direction);
+
+            if (!physical) return;
+            const [cell, path] = physical.entry;
+            const key = path.join(',');
+            const borders: MutableBorders = {
+              ...(updates.get(key)?.borders ??
+                (cell.borders as TableCellBorders | undefined)),
+            };
+
+            if (value === null) {
+              delete borders[physical.direction];
+            } else {
+              borders[physical.direction] = { ...value };
+            }
+            updates.set(key, { borders, path });
+          };
+
+          for (const anchor of view.anchors) {
+            directionsForBorder(view, anchor, border).forEach((direction) =>
+              add(anchor, direction)
+            );
+          }
+
+          let changed = false;
+
+          for (const { borders, path } of updates.values()) {
+            const current = tx.nodes.get(path, {
+              match: (node) => isTableCell(editor, node),
+            })?.[0] as TableCellElement | undefined;
+
+            if (
+              current &&
+              JSON.stringify(current.borders ?? {}) !== JSON.stringify(borders)
+            ) {
+              changed = true;
+              if (Object.keys(borders).length === 0) {
+                tx.nodes.unset('borders', { at: path });
+              } else {
+                tx.nodes.set({ borders }, { at: path });
+              }
+            }
+          }
+
+          return changed;
+        };
 
         return {
-          toggleBorders: ({
-            border,
-            cells: explicitCells,
-          }: ToggleTableBordersOptions) => {
-            const selectedCells =
-              explicitCells ??
-              (() => {
-                const selected = tx.table.selection()?.cellEntries ?? [];
-
-                if (selected.length > 1) {
-                  return selected.map(([cell]) => cell);
-                }
-
-                const cell = tx.nodes.block({
-                  match: api.isCell,
-                });
-
-                return cell ? [cell[0]] : [];
-              })();
-
-            if (selectedCells.length === 0) return;
-
-            const targets = selectedCells.flatMap((cell) => {
-              const path = tx.nodes.path(cell);
-
-              if (!path) return [];
-
-              const view = tx.table.selection(path);
-              const anchor = view?.context.anchorOf(cell);
-
-              if (!view || !anchor) return [];
-
-              const top = getTableSelectionNeighbor(
-                view.context,
-                anchor,
-                'above'
-              );
-              const left = getTableSelectionNeighbor(
-                view.context,
-                anchor,
-                'left'
-              );
-
-              return [
-                {
-                  col: anchor.col,
-                  colSpan: anchor.colSpan,
-                  leftCellPath: left
-                    ? (view.context.entryAt(left.row, left.col)?.[1] ?? null)
-                    : null,
-                  path,
-                  row: anchor.row,
-                  rowSpan: anchor.rowSpan,
-                  topCellPath: top
-                    ? (view.context.entryAt(top.row, top.col)?.[1] ?? null)
-                    : null,
-                },
-              ];
-            });
-            const updates: SetBorderWidthOptions[] = [];
-            const add = (
-              at: Path | null,
-              directions: readonly BorderDirection[] | 'all',
-              width: number
-            ) => {
-              if (!at) return;
-
-              if (directions === 'all') {
-                updates.push({ at, border: 'all', width });
-                return;
-              }
-
-              directions.forEach((direction) => {
-                updates.push({ at, border: direction, width });
-              });
-            };
-            const apply = () => {
-              setBorderWidths(updates);
-            };
-
-            if (border === 'none') {
-              const width = tx.table.getSelectedCellsBorders(selectedCells).none
-                ? 1
-                : 0;
-
-              targets.forEach((target) => {
-                const directions: BorderDirection[] = ['bottom', 'right'];
-
-                if (target.row === 0) directions.unshift('top');
-                if (target.col === 0) directions.unshift('left');
-                if (target.row > 0) {
-                  add(target.topCellPath, ['bottom'], width);
-                }
-                if (target.col > 0) {
-                  add(target.leftCellPath, ['right'], width);
-                }
-                add(target.path, directions, width);
-              });
-
-              apply();
-              return;
-            }
-
-            const { maxCol, maxRow, minCol, minRow } =
-              getTableCellBounds(targets);
-
-            if (border === 'outer') {
-              const width = tx.table.getSelectedCellsBorders(selectedCells)
-                .outer
-                ? 0
-                : 1;
-
-              targets.forEach((target) => {
-                for (
-                  let { row } = target;
-                  row < target.row + target.rowSpan;
-                  row++
-                ) {
-                  for (
-                    let { col } = target;
-                    col < target.col + target.colSpan;
-                    col++
-                  ) {
-                    const directions: BorderDirection[] = [];
-
-                    if (row === minRow) directions.push('top');
-                    if (row === maxRow) directions.push('bottom');
-                    if (col === minCol) directions.push('left');
-                    if (col === maxCol) directions.push('right');
-                    add(target.path, directions, width);
-                  }
-                }
-              });
-
-              apply();
-              return;
-            }
-
-            const width = tx.table.isSelectedCellBorder(selectedCells, border)
-              ? 0
-              : 1;
-
-            targets.forEach((target) => {
-              const directions: BorderDirection[] = [];
-
-              if (border === 'top' && target.row === minRow) {
-                if (target.row === 0) {
-                  directions.push('top');
-                } else {
-                  add(target.topCellPath, ['bottom'], width);
-                }
-              }
-              if (
-                border === 'bottom' &&
-                target.row + target.rowSpan - 1 === maxRow
-              ) {
-                directions.push('bottom');
-              }
-              if (border === 'left' && target.col === minCol) {
-                if (target.col === 0) {
-                  directions.push('left');
-                } else {
-                  add(target.leftCellPath, ['right'], width);
-                }
-              }
-              if (
-                border === 'right' &&
-                target.col + target.colSpan - 1 === maxCol
-              ) {
-                directions.push('right');
-              }
-              add(target.path, directions, width);
-            });
-
-            apply();
-          },
-          setBorderWidth: (
-            width: number,
-            { at, border = 'all' }: Omit<SetBorderWidthOptions, 'width'> = {}
-          ) => {
+          insert: (
+            { columns = 2, header, rows = 2 }: TableCreateOptions = {},
+            placement: TableInsertPlacement = {}
+          ): boolean => {
             if (
-              typeof width !== 'number' ||
-              !Number.isFinite(width) ||
-              width < 0
+              !Number.isSafeInteger(columns) ||
+              columns <= 0 ||
+              !Number.isSafeInteger(rows) ||
+              rows <= 0
             ) {
               throw new TypeError(
-                'Table border width must be a non-negative finite number.'
+                'Table insertion requires positive safe integer rows and columns.'
               );
             }
+            if (placement.at !== undefined && placement.after !== undefined) {
+              throw new TypeError(
+                'Table insertion accepts either at or after, never both.'
+              );
+            }
+            if (tx.view.isReadOnly()) return false;
 
-            setBorderWidths([{ at, border, width }]);
-          },
-          merge: (): void => {
-            const cellEntries = tx.table.selection()?.cellEntries ?? [];
+            const table = createTable(editor, type, { columns, header, rows });
 
-            if (cellEntries.length < 2) return;
-
-            const firstCellPath = cellEntries[0][1];
-            const innerContext2 = createTableContext(
-              tx,
-              firstCellPath.slice(0, -2)
-            );
-
-            if (!innerContext2) return;
-
-            const cellKeys = cellEntries.map(
-              ([cell]) =>
-                (
-                  innerContext2.anchorOf(cell) ??
-                  failInvariant('Expected value to be defined')
-                ).key
-            );
-
-            applyMutation(innerContext2, {
-              cellKeys,
-              createCell: ({ children, header, sourceRow }) =>
-                api.createCell({
-                  children: children ? [...children] : undefined,
-                  header,
-                  row: sourceRow,
-                }),
-              kind: 'merge',
-            });
-          },
-          moveSelection: ({
-            at,
-            edge,
-            fromOneCell,
-            reverse,
-          }: MoveTableSelectionOptions = {}) => {
-            const view = tx.table.selection(at);
-
-            if (!view) return undefined;
-
-            if (edge) {
-              const minCell = fromOneCell ? 0 : 1;
-
-              if (view.anchors.length > minCell) {
-                const expansion = getTableSelectionExpansion(view, edge);
-
-                if (expansion) {
-                  const anchor = getTableAnchorPoint(view, expansion.anchor);
-                  const focus = getTableAnchorPoint(view, expansion.focus);
-
-                  if (anchor && focus) {
-                    const range = { anchor, focus };
-                    const expandedView = tx.table.selection(range);
-
-                    tx.selection.set(
-                      (expandedView &&
-                        createTableNodeSelection(expandedView)) ??
-                        range
-                    );
-                  }
-                }
-
-                return true;
-              }
-
-              return undefined;
+            if (placement.at !== undefined) {
+              tx.nodes.insert(table, placement);
+            } else {
+              const currentTable = tx.nodes.above({
+                at: placement.after,
+                type,
+              });
+              tx.blocks.insertAfter(table, {
+                ...placement,
+                at: currentTable?.[1] ?? placement.after,
+              });
             }
 
-            const target = getTableSelectionNeighbor(
-              view.context,
-              view.anchor,
-              reverse ? 'above' : 'below'
-            );
-
-            if (target) {
-              const point = getTableAnchorPoint(view, target);
+            if (placement.select) {
+              const tablePath = tx.nodes.path(table);
+              const point =
+                tablePath && tx.points.start(tablePath.concat([0, 0]));
 
               if (point) tx.selection.set(point);
-            } else {
-              const rootNode = {
-                children:
-                  view.root === undefined ? tx.children() : tx.root(view.root),
-                type: '__table_root__',
-              };
-              const textEntries = [...NodeApi.texts(rootNode)];
-              const nextTablePath = PathApi.next(view.tablePath);
-              const textEntry = reverse
-                ? textEntries
-                    .reverse()
-                    .find(([, path]) => PathApi.isBefore(path, view.tablePath))
-                : textEntries.find(
-                    ([, path]) => !PathApi.isBefore(path, nextTablePath)
-                  );
-              const point = textEntry
-                ? {
-                    offset: reverse ? textEntry[0].text.length : 0,
-                    path: textEntry[1],
-                    ...(view.root === undefined ? {} : { root: view.root }),
-                  }
-                : undefined;
-
-              if (point) tx.selection.set({ anchor: point, focus: point });
             }
 
             return true;
           },
-          selectAll: () => {
-            const table = tx.nodes.above({ type: context.plugin });
+          insertColumn: (options: TableAxisInsertOptions = {}): boolean => {
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView(options);
 
-            if (!table) return false;
+            if (!view || view.anchors.length === 0) return false;
+            const anchor = [...view.anchors].sort(
+              (left, right) => left.col - right.col || left.row - right.row
+            )[options.before ? 0 : view.anchors.length - 1];
 
-            const [, tablePath] = table;
-            const tableRange = tx.ranges.get(tablePath);
-            const selection = tx.selection();
+            if (!anchor) return false;
+            const { defaultTableWidth, minColumnWidth } = store.get();
+
+            return applyMutation(view.context, {
+              anchorPath: view.tablePath.concat(anchor.path),
+              before: options.before,
+              createCell: ({ children, header: cellHeader, sourceRow }) =>
+                createTableCell(editor, {
+                  children: children ? [...children] : undefined,
+                  header: cellHeader,
+                  row: sourceRow,
+                }),
+              header: options.header,
+              initialTableWidth: defaultTableWidth ?? undefined,
+              kind: 'insert-column',
+              minColumnWidth,
+              select: options.select,
+            });
+          },
+          insertRow: (options: TableAxisInsertOptions = {}): boolean => {
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView(options);
+
+            if (!view || view.anchors.length === 0) return false;
+            const anchor = [...view.anchors].sort(
+              (left, right) => left.row - right.row || left.col - right.col
+            )[options.before ? 0 : view.anchors.length - 1];
+
+            if (!anchor) return false;
+
+            return applyMutation(view.context, {
+              anchorPath: view.tablePath.concat(anchor.path),
+              before: options.before,
+              createCell: ({ children, header: cellHeader, sourceRow }) =>
+                createTableCell(editor, {
+                  children: children ? [...children] : undefined,
+                  header: cellHeader,
+                  row: sourceRow,
+                }),
+              header: options.header,
+              kind: 'insert-row',
+              rowType: editor.plugin(BaseTableRowPlugin).schema.type,
+              select: options.select,
+            });
+          },
+          removeColumn: (options: TableTargetOptions = {}): boolean => {
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView(options);
+
+            if (!view) return false;
+            const count = view.bounds.maxCol - view.bounds.minCol + 1;
+
+            if (view.anchors.length > 1) {
+              if (
+                view.bounds.minRow !== 0 ||
+                view.bounds.maxRow !== view.context.grid.height - 1
+              ) {
+                return false;
+              }
+              if (count >= view.context.grid.width) {
+                return applyMutation(view.context, { kind: 'remove-table' });
+              }
+
+              return applyMutation(view.context, {
+                columnCount: count,
+                kind: 'remove-column',
+                selectionRows: [view.bounds.minRow, view.bounds.maxRow],
+                startCol: view.bounds.minCol,
+              });
+            }
+
+            if (view.context.grid.width <= view.anchor.colSpan) {
+              return applyMutation(view.context, { kind: 'remove-table' });
+            }
+
+            return applyMutation(view.context, {
+              anchorPath: view.tablePath.concat(view.anchor.path),
+              kind: 'remove-column',
+            });
+          },
+          removeRow: (options: TableTargetOptions = {}): boolean => {
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView(options);
+
+            if (!view) return false;
+            const count = view.bounds.maxRow - view.bounds.minRow + 1;
+
+            if (view.anchors.length > 1) {
+              if (
+                view.bounds.minCol !== 0 ||
+                view.bounds.maxCol !== view.context.grid.width - 1
+              ) {
+                return false;
+              }
+              if (count >= view.context.grid.height) {
+                return applyMutation(view.context, { kind: 'remove-table' });
+              }
+
+              return applyMutation(view.context, {
+                kind: 'remove-row',
+                rowCount: count,
+                selectionCol: view.bounds.minCol,
+                startRow: view.bounds.minRow,
+              });
+            }
+
+            if (view.context.grid.height <= view.anchor.rowSpan) {
+              return applyMutation(view.context, { kind: 'remove-table' });
+            }
+
+            return applyMutation(view.context, {
+              anchorPath: view.tablePath.concat(view.anchor.path),
+              kind: 'remove-row',
+            });
+          },
+          remove: (options: TableTargetOptions = {}): boolean => {
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView(options);
+
+            return view
+              ? applyMutation(view.context, { kind: 'remove-table' })
+              : false;
+          },
+          merge: (options: TableTargetOptions = {}): boolean => {
+            if (
+              tx.view.isReadOnly() ||
+              !context.store.get().allowCellSpanEditing
+            ) {
+              return false;
+            }
+            const view = selectionView(options);
 
             if (
-              tableRange &&
-              selection &&
-              RangeApi.equals(selection, tableRange)
+              !view ||
+              view.anchors.length < 2 ||
+              !toPublicTableSelection(view).rectangular
             ) {
-              const documentRange = tx.ranges.get([]);
-
-              if (documentRange) tx.selection.set(documentRange);
-
-              return true;
+              return false;
             }
 
-            if (tableRange) {
-              const tableView = tx.table.selection(tableRange);
+            const [destination, ...sources] = view.anchors;
 
-              tx.selection.set(
-                (tableView && createTableNodeSelection(tableView)) ?? tableRange
+            if (!destination) return false;
+            const destinationKey =
+              view.cellKeys[view.anchors.indexOf(destination)];
+
+            if (!destinationKey) return false;
+            const atPath = (path: Path): Location =>
+              view.root === undefined
+                ? path
+                : { offset: 0, path, root: view.root };
+            const sourceChildren = sources.flatMap((anchor) =>
+              anchor.cell.children.map((_, index) =>
+                tx.key(atPath(view.tablePath.concat(anchor.path, index)))
+              )
+            );
+
+            if (
+              sourceChildren.length > 0 &&
+              hasDefaultCellContent(editor, destination.cell)
+            ) {
+              const placeholderKey = tx.key(
+                view.tablePath.concat(destination.path, 0)
               );
+
+              if (placeholderKey) tx.nodes.remove({ at: placeholderKey });
             }
+            for (const childKey of sourceChildren) {
+              if (!childKey) continue;
+              const destinationEntry = tx.nodes.get(destinationKey, {
+                match: (node) => isTableCell(editor, node),
+              });
+
+              if (!destinationEntry) return false;
+              tx.nodes.move({
+                at: childKey,
+                to: destinationEntry[1].concat(
+                  destinationEntry[0].children.length
+                ),
+              });
+            }
+            for (const source of sources.toReversed()) {
+              const sourceKey = view.cellKeys[view.anchors.indexOf(source)];
+
+              if (sourceKey) tx.nodes.remove({ at: sourceKey });
+            }
+            tx.nodes.set(
+              {
+                colSpan: view.bounds.maxCol - view.bounds.minCol + 1,
+                rowSpan: view.bounds.maxRow - view.bounds.minRow + 1,
+              },
+              { at: destinationKey }
+            );
+            tx.selection.setNodes([destinationKey], {
+              anchor: destinationKey,
+              focus: destinationKey,
+            });
 
             return true;
           },
-          setCellBackground: ({ color }: { color: string | null }) => {
-            const selectedCells = tx.table.selection()?.cellEntries ?? [];
-            const currentCell =
-              selectedCells.length === 0
-                ? tx.nodes.find({ match: api.isCell })
-                : undefined;
-            const cells =
-              selectedCells.length > 0
-                ? selectedCells
-                : currentCell
-                  ? [currentCell]
-                  : [];
+          split: (options: TableTargetOptions = {}): boolean => {
+            if (
+              tx.view.isReadOnly() ||
+              !context.store.get().allowCellSpanEditing
+            ) {
+              return false;
+            }
+            const view = selectionView(options);
 
-            cells.forEach(([, path]) => {
+            if (
+              !view ||
+              view.anchors.length !== 1 ||
+              (view.anchor.colSpan === 1 && view.anchor.rowSpan === 1)
+            ) {
+              return false;
+            }
+
+            const selected = view.anchor;
+            const selectedKey = view.cellKeys[view.anchors.indexOf(selected)];
+
+            if (!selectedKey) return false;
+            tx.nodes.unset(['colSpan', 'rowSpan'], { at: selectedKey });
+            for (
+              let { row } = selected;
+              row < selected.row + selected.rowSpan;
+              row++
+            ) {
+              const rowNode = view.table.children[row] as
+                | TableRowElement
+                | undefined;
+
+              if (!rowNode) return false;
+              const anchors = view.context.grid.anchorsByRow[row] ?? [];
+              const insertionIndex =
+                row === selected.row
+                  ? selected.cellIndex + 1
+                  : (anchors.find((anchor) => anchor.col >= selected.col)
+                      ?.cellIndex ?? rowNode.children.length);
+              const count =
+                row === selected.row ? selected.colSpan - 1 : selected.colSpan;
+
+              if (count > 0) {
+                tx.nodes.insert(
+                  Array.from({ length: count }, () =>
+                    createTableCell(editor, {
+                      header: selected.cell.header === true,
+                      row: rowNode,
+                    })
+                  ),
+                  { at: view.tablePath.concat(row, insertionIndex) }
+                );
+              }
+            }
+            tx.selection.setNodes([selectedKey], {
+              anchor: selectedKey,
+              focus: selectedKey,
+            });
+
+            return true;
+          },
+          setCellBackground: ({
+            at,
+            color,
+          }: TableTargetOptions & { color: string | null }): boolean => {
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView({ at });
+
+            if (!view) return false;
+            let changed = false;
+
+            for (const [cell, path] of view.cellEntries) {
+              if ((cell.backgroundColor ?? null) === color) continue;
+              changed = true;
               if (color === null) {
                 tx.nodes.unset('backgroundColor', { at: path });
               } else {
                 tx.nodes.set({ backgroundColor: color }, { at: path });
               }
-            });
+            }
+
+            return changed;
           },
-          /** Applies all sizes in a resize preview as one editor transaction. */
-          resize: (resize: TableResize, options: TableFindOptions = {}) => {
-            const table = tx.nodes.find({ ...options, type: context.plugin });
+          setBorders: ({
+            at,
+            border,
+            value,
+          }: TableTargetOptions & {
+            border: TableBorderTarget;
+            value: TableCellBorder | null;
+          }): boolean => {
+            if (
+              value?.width !== undefined &&
+              (!Number.isFinite(value.width) || value.width < 0)
+            ) {
+              throw new TypeError(
+                'Table border width must be a non-negative finite number.'
+              );
+            }
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView({ at });
 
-            if (!table) return;
+            return view ? applyBorders(view, border, value) : false;
+          },
+          toggleBorders: ({
+            at,
+            border,
+          }: ToggleTableBordersOptions): boolean => {
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView({ at });
 
-            const [node, path] = table;
+            if (!view) return false;
+            const target = border === 'none' ? 'all' : border;
+            const visible = view.anchors.flatMap((anchor) =>
+              directionsForBorder(view, anchor, target).map((direction) =>
+                edgeVisible(view, anchor, direction)
+              )
+            );
+            const width =
+              border === 'none'
+                ? visible.every((value) => !value)
+                  ? 1
+                  : 0
+                : visible.every(Boolean)
+                  ? 0
+                  : 1;
+
+            return applyBorders(view, target, { width });
+          },
+          resize: ({ at, resize }: TableResizeOptions): boolean => {
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView({ at });
+
+            if (!view) return false;
+            const node = view.table;
+            const path = view.tablePath;
 
             if (resize.edge === 'bottom') {
               if (
@@ -2545,15 +1799,25 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
                   'Table resize requires a valid row and positive height.'
                 );
               }
+              const row = node.children[resize.rowIndex];
+
+              if (ElementApi.isElement(row) && row.height === resize.height) {
+                return false;
+              }
               tx.nodes.set(
                 { height: resize.height },
                 { at: [...path, resize.rowIndex] }
               );
 
-              return;
+              return true;
+            }
+            if (resize.columns.length === 0) {
+              throw new TypeError(
+                'Horizontal table resize requires at least one column.'
+              );
             }
 
-            const columnCount = api.getColumnCount(node);
+            const columnCount = compileTableGrid(node).width;
             const current = getTableColumnSizes(node);
             const columnWidths = Array.from(
               { length: columnCount },
@@ -2574,28 +1838,37 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
               columnWidths[colIndex] = width;
             }
             if (
-              resize.marginLeft !== undefined &&
+              resize.edge === 'left' &&
               (!Number.isFinite(resize.marginLeft) || resize.marginLeft < 0)
             ) {
               throw new TypeError(
                 'Table resize margin must be non-negative and finite.'
               );
             }
+            const marginChanged =
+              resize.edge === 'left' &&
+              (node.marginLeft ?? 0) !== resize.marginLeft;
+            const widthsChanged =
+              JSON.stringify(current ?? []) !== JSON.stringify(columnWidths);
 
+            if (!marginChanged && !widthsChanged) return false;
             tx.nodes.set(
               {
                 columnWidths,
-                ...(resize.marginLeft === undefined
-                  ? {}
-                  : { marginLeft: resize.marginLeft }),
+                ...(resize.edge === 'left'
+                  ? { marginLeft: resize.marginLeft }
+                  : {}),
               },
               { at: path }
             );
+
+            return true;
           },
-          setColumnWidth: (
-            { colIndex, width }: { colIndex: number; width: number },
-            options: TableFindOptions = {}
-          ) => {
+          setColumnWidth: ({
+            at,
+            colIndex,
+            width,
+          }: TableColumnWidthOptions): boolean => {
             if (!Number.isSafeInteger(colIndex) || colIndex < 0) {
               throw new TypeError(
                 'Table column index must be a non-negative safe integer.'
@@ -2606,39 +1879,34 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
                 'Table column width must be a positive finite number.'
               );
             }
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView({ at });
 
-            const table = tx.nodes.find({
-              ...options,
-              type: context.plugin,
-            });
-
-            if (!table) return;
-
-            const [tableNode, tablePath] = table;
-            const columnCount = api.getColumnCount(tableNode);
+            if (!view) return false;
+            const columnCount = view.context.grid.width;
 
             if (colIndex >= columnCount) {
               throw new RangeError(
-                `Table column index ${colIndex} exceeds the last column index ${
-                  columnCount - 1
-                }.`
+                'Table column index exceeds the last table column.'
               );
             }
-
-            const currentColSizes = getTableColumnSizes(tableNode);
+            const current = getTableColumnSizes(view.table);
             const columnWidths: Array<number | null> = Array.from(
               { length: columnCount },
-              (_, index): number | null => currentColSizes?.[index] ?? null
+              (_, index): number | null => current?.[index] ?? null
             );
 
+            if (columnWidths[colIndex] === width) return false;
             columnWidths[colIndex] = width;
+            tx.nodes.set({ columnWidths }, { at: view.tablePath });
 
-            tx.nodes.set({ columnWidths }, { at: tablePath });
+            return true;
           },
-          setRowHeight: (
-            { height, rowIndex }: { height: number; rowIndex: number },
-            options: TableFindOptions = {}
-          ) => {
+          setRowHeight: ({
+            at,
+            height,
+            rowIndex,
+          }: TableRowHeightOptions): boolean => {
             if (!Number.isSafeInteger(rowIndex) || rowIndex < 0) {
               throw new TypeError(
                 'Table row index must be a non-negative safe integer.'
@@ -2649,85 +1917,21 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
                 'Table row height must be a positive finite number.'
               );
             }
+            if (tx.view.isReadOnly()) return false;
+            const view = selectionView({ at });
+            const row = view?.table.children[rowIndex];
 
-            const table = tx.nodes.find({
-              ...options,
-              type: context.plugin,
-            });
+            if (!view || !ElementApi.isElement(row)) {
+              if (view && rowIndex >= view.table.children.length) {
+                throw new RangeError(
+                  'Table row index exceeds the last table row.'
+                );
+              }
 
-            if (!table) return;
-
-            const rowCount = table[0].children.length;
-
-            if (rowIndex >= rowCount) {
-              throw new RangeError(
-                `Table row index ${rowIndex} exceeds the last row index ${
-                  rowCount - 1
-                }.`
-              );
+              return false;
             }
-
-            tx.nodes.set({ height }, { at: [...table[1], rowIndex] });
-          },
-          split: (): void => {
-            const firstCell = tx.table.selection()?.cellEntries[0];
-
-            if (!firstCell) return;
-
-            const [cell, path] = firstCell;
-            const innerContext3 = createTableContext(tx, path.slice(0, -2));
-
-            if (!innerContext3) return;
-
-            const cellKey = innerContext3.anchorOf(cell)?.key;
-
-            applyMutation(innerContext3, {
-              ...(cellKey ? { anchorKey: cellKey } : { anchorPath: path }),
-              createCell: ({ children, header, sourceRow }) =>
-                api.createCell({
-                  children: children ? [...children] : undefined,
-                  header,
-                  row: sourceRow,
-                }),
-              kind: 'split',
-              rowType: editor.plugin(BaseTableRowPlugin).schema.type,
-            });
-          },
-          tab: ({ reverse = false }: { reverse?: boolean } = {}) => {
-            const selection = tx.selection();
-            const view = selection ? tx.table.selection(selection) : null;
-
-            if (selection && (view?.anchors.length ?? 0) > 1) {
-              tx.selection.collapse({ edge: 'end' });
-              return true;
-            }
-
-            const cellEntry = tx.nodes.find({
-              match: api.isCell,
-            });
-
-            if (!cellEntry) return false;
-
-            const tableView = tx.table.selection(cellEntry[1]);
-            const anchor = tableView?.context.anchorAtPath(cellEntry[1]);
-            const target =
-              tableView && anchor
-                ? getTableSelectionNeighbor(
-                    tableView.context,
-                    anchor,
-                    reverse ? 'previous' : 'next'
-                  )
-                : undefined;
-            const targetEntry =
-              target && tableView
-                ? tableView.context.entryAt(target.row, target.col)
-                : undefined;
-
-            if (targetEntry) {
-              const targetStart = tx.points.start(targetEntry[1]);
-
-              if (targetStart) tx.selection.set(targetStart);
-            }
+            if (row.height === height) return false;
+            tx.nodes.set({ height }, { at: [...view.tablePath, rowIndex] });
 
             return true;
           },
@@ -2746,17 +1950,13 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
             return;
           }
 
-          const { enableUnsetSingleColSize, initialTableWidth } =
-            context.store.get();
-
           if (node.type === context.schema.type) {
             const table = node;
-            const currentColSizes = getTableColumnSizes(table);
             const repair = planTableMutation(
               createDetachedTableContext(table, path),
               {
                 createCell: ({ children, header, sourceRow }) =>
-                  context.api.createCell({
+                  createTableCell(context.editor, {
                     children: children ? [...children] : undefined,
                     header,
                     row: sourceRow,
@@ -2778,36 +1978,6 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
 
             if (repair.operations.length > 0) {
               applyTableMutationPlan(tx, repair);
-              return;
-            }
-
-            if (
-              currentColSizes?.length &&
-              enableUnsetSingleColSize &&
-              context.api.getColumnCount(table) < 2
-            ) {
-              tx.nodes.unset('columnWidths', { at: path });
-              return;
-            }
-
-            if (initialTableWidth) {
-              const colCount = (
-                table.children[0] as TableRowElement | undefined
-              )?.children.length;
-
-              if (colCount) {
-                const fallbackSize = initialTableWidth / colCount;
-                const columnWidths = currentColSizes
-                  ? currentColSizes.map((width) => width ?? fallbackSize)
-                  : Array.from({ length: colCount }, () => fallbackSize);
-
-                if (
-                  !currentColSizes ||
-                  currentColSizes.some((width) => width === null)
-                ) {
-                  tx.nodes.set({ columnWidths }, { at: path });
-                }
-              }
             }
           }
         },
@@ -2816,7 +1986,10 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
   }))
   .extend((context) => {
     const cellType = context.editor.plugin(BaseTableCellPlugin).schema.type;
-    const readSelection = (state: EditorStateView, at?: Location) =>
+    const readSelection = (
+      state: EditorStateView,
+      at?: Location | TableTargetOptions['at']
+    ) =>
       readTableSelection(state, {
         at,
         cellTypes: [cellType],
@@ -2828,21 +2001,14 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
       readMiddleware: ({ around }) => [
         around(editorReads.slice.get, ({ input, next, state }) => {
           const slice = next();
-          const at = SelectionApi.isNode(input.options.at)
-            ? (getEditorSelectionRange(
-                context.editor,
-                input.options.at,
-                state.value()
-              ) ?? undefined)
-            : input.options.at;
-          const view = readSelection(state, at);
+          const view = readSelection(state, input.options.at);
           const hasNodeSelection =
             SelectionApi.isNode(input.options.at) ||
             (input.options.at === undefined &&
               state.selection.nodes().length > 0);
 
           return hasNodeSelection && view && view.anchors.length > 1
-            ? projectTableSelectionSlice(slice, view)
+            ? projectTableSelectionSlice(context.editor, slice, view)
             : slice;
         }),
         around(editorReads.slice.export, ({ input, next, state }) => {
@@ -2850,14 +2016,7 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
 
           if (input.source === 'assembled') return slice;
 
-          const at = SelectionApi.isNode(input.options.at)
-            ? (getEditorSelectionRange(
-                context.editor,
-                input.options.at,
-                state.value()
-              ) ?? undefined)
-            : input.options.at;
-          const view = readSelection(state, at);
+          const view = readSelection(state, input.options.at);
           const hasNodeSelection =
             SelectionApi.isNode(input.options.at) ||
             (input.options.at === undefined &&
@@ -2865,7 +2024,7 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
 
           if (!view || hasNodeSelection) return slice;
           if (view.anchors.length > 1) {
-            return projectTableSelectionSlice(slice, view);
+            return projectTableSelectionSlice(context.editor, slice, view);
           }
 
           const table =
@@ -2894,37 +2053,13 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
   .extend((context) => ({
     commands: ({ around, handle }) => [
       around(domCommands.insertData, ({ input, next, state }) => {
-        const types = new Set(input.types);
-        const read = (format: string) => {
-          try {
-            return input.getData(format);
-          } catch {
-            return '';
-          }
-        };
-        const html = read('text/html');
-        const text = read('text/plain') || read('text/tsv') || read('text/csv');
         const exact = context.editor.api.dom.clipboard.readSlice(input);
-        const view = state.table.selection();
+        const view = readTableSelection(state, {
+          cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
+          selection: state.selection(),
+          tableType: context.schema.type,
+        });
         const hasStructuralTarget = (view?.anchors.length ?? 0) > 1;
-        const source: TablePasteSource =
-          exact.kind !== 'absent'
-            ? 'model'
-            : html
-              ? 'html'
-              : types.has('text/tsv') ||
-                  types.has('text/tab-separated-values') ||
-                  text.includes('\t')
-                ? 'tsv'
-                : 'csv';
-        const exactSlice = exact.kind === 'slice' ? exact.slice : null;
-        const exactTable =
-          exactSlice &&
-          getTablePasteElement(exactSlice, {
-            cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
-            rowType: context.editor.plugin(BaseTableRowPlugin).schema.type,
-            tableType: context.schema.type,
-          });
 
         if (hasStructuralTarget && exact.kind === 'invalid') {
           context.editor
@@ -2937,30 +2072,33 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
 
           return state.transaction(() => {});
         }
+        if (exact.kind === 'slice') {
+          const table = getTablePasteElement(exact.slice, {
+            tableType: context.schema.type,
+          });
 
-        if (exactSlice && exactTable) {
-          const grid = compileTableGrid(exactTable);
+          if (table) {
+            const grid = compileTableGrid(table);
 
-          if (
-            grid.height === 0 ||
-            grid.width === 0 ||
-            grid.anchors.length === 0
-          ) {
-            context.editor
-              .plugin(DebugPlugin)
-              .api.warn(
-                'Table paste rejected: invalid-source.',
-                'TABLE_MUTATION_DIAGNOSTIC',
-                { kind: 'invalid-source', reason: 'empty' }
-              );
+            if (
+              grid.height === 0 ||
+              grid.width === 0 ||
+              grid.anchors.length === 0
+            ) {
+              context.editor
+                .plugin(DebugPlugin)
+                .api.warn(
+                  'Table paste rejected: invalid-source.',
+                  'TABLE_MUTATION_DIAGNOSTIC',
+                  { kind: 'invalid-source', reason: 'empty' }
+                );
 
-            return state.transaction(() => {});
+              return state.transaction(() => {});
+            }
           }
-
-          return withTablePasteSource(context.editor, 'model', () => next());
         }
 
-        return withTablePasteSource(context.editor, source, () => next());
+        return next();
       }),
       around(editorCommands.select, ({ input, state, next }) =>
         next({
@@ -2973,7 +2111,7 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
       around(editorCommands.setSelection, ({ input, state, next }) => {
         const selection = state.selection();
 
-        if (!selection) return next();
+        if (!selection || SelectionApi.isNode(selection)) return next();
 
         const nextSelection = { ...selection, ...input.props };
         const clamped = clampTableSelection(
@@ -2993,7 +2131,13 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
       handle(editorCommands.delete, ({ input, state }) => {
         const selection = state.selection();
 
-        if (!selection || !state.selection.isCollapsed()) return false;
+        if (
+          !selection ||
+          SelectionApi.isNode(selection) ||
+          !state.selection.isCollapsed()
+        ) {
+          return false;
+        }
 
         const reverse = input.direction === 'forward';
         const cellEntry = state.nodes.block({
@@ -3029,15 +2173,22 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
         return false;
       }),
       handle(editorCommands.deleteFragment, ({ input, state }) => {
-        const selection =
-          input.at === undefined
-            ? state.selection()
-            : state.ranges.get(input.at);
+        const target = input.at ?? state.selection();
 
-        if (!selection) return false;
-        const view = state.table.selection(selection);
+        if (!target) return false;
+        const view = readTableSelection(state, {
+          at: target,
+          cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
+          selection: state.selection(),
+          tableType: context.schema.type,
+        });
 
-        if (!view || view.cellEntries.length < 2) return false;
+        if (
+          !view ||
+          (!SelectionApi.isNode(target) && view.cellEntries.length < 2)
+        ) {
+          return false;
+        }
 
         return state.transaction((tx) => {
           const cellPaths = view.cellEntries.map(([, path]) => path);
@@ -3059,10 +2210,10 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
           });
         });
       }),
-      handle(editorCommands.replaceSlice, ({ input, state }) => {
+      around(editorCommands.replaceSlice, ({ input, state, next }) => {
         const { slice } = input;
-        const selection = state.selection();
-        const rejectTablePaste = (diagnostic: TablePasteDiagnostic) => {
+        const target = input.options?.at ?? state.selection();
+        const rejectTablePaste = (diagnostic: TablePasteDiagnostic): false => {
           context.editor
             .plugin(DebugPlugin)
             .api.warn(
@@ -3071,87 +2222,89 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
               diagnostic
             );
 
-          return state.transaction(() => {});
+          return false;
         };
 
-        if (!selection) return false;
-
-        const view = state.table.selection(selection);
-
-        if (!view) return false;
-
-        const { root } = view;
-        let source = getTablePasteElement(slice, {
+        if (!target) return next();
+        const view = readTableSelection(state, {
+          at: target,
           cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
-          rowType: context.editor.plugin(BaseTableRowPlugin).schema.type,
+          selection: state.selection(),
           tableType: context.schema.type,
         });
-        if (!source) {
-          if (view.anchors.length <= 1) {
-            return false;
-          }
 
-          const children = state.slice.fitContent(slice, {
-            parent: view.anchor.cell,
-            ...(root === undefined ? {} : { root }),
-          });
+        if (!view) return next();
 
-          if (children === null) {
-            return rejectTablePaste({
-              kind: 'invalid-source',
-              reason: 'content-rejected',
-            });
-          }
-
-          source = createOrdinaryTablePasteElement(children, {
-            cell: view.anchor.cell,
-            rowType: context.editor.plugin(BaseTableRowPlugin).schema.type,
-            tableType: context.schema.type,
-          });
-        }
-
-        const prepared = prepareTablePaste(source, {
+        const prepared = prepareTablePaste(slice, {
           createCell: ({ children, header, sourceRow }) =>
-            context.api.createCell({
+            createTableCell(context.editor, {
               children: children ? [...children] : undefined,
               header,
               row: sourceRow,
             }),
-          createRow: () => context.api.createRow({ colCount: 0 }),
-          slice,
-          source: tablePasteSources.get(context.editor)?.at(-1) ?? 'model',
+          createRow: () => createTableRow(context.editor, { columns: 0 }),
+          tableType: context.schema.type,
         });
 
-        if ('kind' in prepared) {
-          return rejectTablePaste(prepared);
+        if (prepared === null) {
+          if (view.anchors.length <= 1) return next();
+          let fitted = false;
+          const transaction = state.transaction(() => {
+            fitted = fitSlicePlacements(context.editor, slice, {
+              placements: view.cellEntries.map(([, path]) => ({
+                at: path,
+                content: slice.content,
+              })),
+            });
+          });
+
+          return fitted
+            ? transaction
+            : rejectTablePaste({
+                kind: 'invalid-source',
+                reason: 'content-rejected',
+              });
+        }
+        if ('kind' in prepared) return rejectTablePaste(prepared);
+        if (
+          view.anchors.length > 1 &&
+          !toPublicTableSelection(view).rectangular
+        ) {
+          return rejectTablePaste({
+            kind: 'invalid-target',
+            reason: 'shape-mismatch',
+          });
         }
 
+        const { root } = view;
         const fillBounds = view.anchors.length > 1 ? view.bounds : undefined;
+        const { defaultTableWidth, minColumnWidth } = context.store.get();
         const plan = planPreparedTablePaste(view.context, prepared, {
           createCell: ({ children, header, sourceRow }) =>
-            context.api.createCell({
+            createTableCell(context.editor, {
               children: children ? [...children] : undefined,
               header,
               row: sourceRow,
             }),
-          createRow: () => context.api.createRow({ colCount: 0 }),
-          disableExpand: context.store.get().disableExpandOnInsert,
+          createRow: () => createTableRow(context.editor, { columns: 0 }),
+          disableExpand: !context.store.get().expandOnPaste,
           ...(fillBounds ? { fillBounds } : {}),
+          ...(defaultTableWidth === null
+            ? {}
+            : { initialTableWidth: defaultTableWidth }),
+          minColumnWidth,
           ...(root === undefined ? {} : { root }),
           startCol: fillBounds?.minCol ?? view.anchor.col,
           startRow: fillBounds?.minRow ?? view.anchor.row,
         });
 
-        if (plan.kind !== 'plan') {
-          return rejectTablePaste(plan);
-        }
+        if (plan.kind !== 'plan') return rejectTablePaste(plan);
 
         let fitted = true;
         const transaction = state.transaction((tx) => {
           applyTableMutationPlan(tx, {
             kind: 'plan',
             operations: plan.operations,
-            selection: plan.selection,
           });
 
           for (const group of plan.placementGroups) {
@@ -3164,12 +2317,41 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
               return;
             }
           }
+          if (!fitted) return;
 
-          tx.selection.set(plan.selection);
-          const nextView = tx.table.selection(plan.selection);
-          const nodeSelection = nextView && createTableNodeSelection(nextView);
+          const selectedPaths = [
+            ...new Map(
+              plan.placementGroups.flatMap((group) =>
+                group.placements.map(({ at }) => [at.join(','), at] as const)
+              )
+            ).values(),
+          ];
 
-          if (nodeSelection) tx.selection.set(nodeSelection);
+          if (selectedPaths.length > 1) {
+            const firstPath = selectedPaths[0];
+            const anchorPath =
+              selectedPaths.find(
+                (path) =>
+                  PathApi.equals(path, plan.selection.anchor.path) ||
+                  PathApi.isAncestor(path, plan.selection.anchor.path)
+              ) ?? selectedPaths[0];
+            const focusPath =
+              selectedPaths.find(
+                (path) =>
+                  PathApi.equals(path, plan.selection.focus.path) ||
+                  PathApi.isAncestor(path, plan.selection.focus.path)
+              ) ?? selectedPaths.at(-1);
+
+            if (firstPath && anchorPath && focusPath) {
+              tx.selection.setNodes([firstPath, ...selectedPaths.slice(1)], {
+                anchor: anchorPath,
+                focus: focusPath,
+                ...(root === undefined ? {} : { root }),
+              });
+            }
+          } else {
+            tx.selection.set(plan.selection);
+          }
         });
 
         return fitted
@@ -3181,16 +2363,28 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
       }),
       around(editorCommands.insertText, ({ state, next }) => {
         const selection = state.selection();
-        const view = selection ? state.table.selection(selection) : null;
+        const view = selection
+          ? readTableSelection(state, {
+              at: selection,
+              cellTypes: [
+                context.editor.plugin(BaseTableCellPlugin).schema.type,
+              ],
+              selection,
+              tableType: context.schema.type,
+            })
+          : null;
 
-        if (!selection || !view || view.cellEntries.length < 2) return next();
-        const cells = view.cellEntries;
-
-        const focus = state.points.start(
-          (cells.at(-1) ?? failInvariant('Expected value to be defined'))[1]
-        );
+        if (
+          !selection ||
+          !view ||
+          (!SelectionApi.isNode(selection) && view.cellEntries.length < 2)
+        ) {
+          return next();
+        }
+        const focusPath = view.tablePath.concat(view.focus.path);
+        const focus = state.points.start(focusPath);
         const transaction = state.transaction((tx) => {
-          cells.forEach(([, path]) => {
+          view.cellEntries.forEach(([, path]) => {
             tx.nodes.replaceChildren(
               [
                 {
@@ -3202,9 +2396,7 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
             );
           });
 
-          if (focus) {
-            tx.selection.set({ anchor: focus, focus });
-          }
+          if (focus) tx.selection.set({ anchor: focus, focus });
         });
 
         return next.after(transaction);
@@ -3212,5 +2404,6 @@ export const BaseTablePlugin = definePlugin(PLUGINS.table, {
     ],
   }));
 
-export type TableElement = ElementOf<typeof BaseTablePlugin>;
 export type TableDefinition = DefinitionOf<typeof BaseTablePlugin>;
+
+export type { TableCellBorder, TableCellBorders } from './types';

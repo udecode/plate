@@ -729,7 +729,10 @@ const AUTHORED_EDIT_BODIES = new WeakMap<
     input: readonly unknown[];
   }
 >();
-const AUTHORED_EDIT_ENCODINGS = new WeakMap<AuthoredEdit, readonly unknown[]>();
+const AUTHORED_EDIT_ENCODINGS = new WeakMap<
+  AuthoredContribution,
+  readonly unknown[]
+>();
 
 const encodeCheckpointSteps = (operation: AuthoredEdit) =>
   JSON.stringify(
@@ -767,6 +770,7 @@ const encodeCheckpointEdit = (operation: AuthoredEdit) => {
     changeKind(operation),
     checksumAuthoredPayload(steps),
     steps,
+    compactAuthoredEdit(operation).content,
   ]);
   AUTHORED_EDIT_ENCODINGS.set(operation, value);
 
@@ -784,13 +788,22 @@ const encodeCheckpointOperation = (operation: AuthoredOperation) => {
   if ('content' in operation) {
     const deferred = operation as unknown as AuthoredCompactEdit;
     const body = getDefined(AUTHORED_EDIT_BODIES.get(deferred));
-    if (body.input.length === 16) return body.input;
-    const steps = JSON.stringify(body.input[14]);
-    const value = freezeOwnedJsonValue([
-      ...body.input.slice(0, 14),
-      checksumAuthoredPayload(steps),
-      steps,
-    ]);
+    if (body.input.length === 17) return body.input;
+    const content = deferred.content.steps.length
+      ? deferred.content
+      : compactAuthoredEdit(materializeAuthoredEdit(operation)).content;
+    const value =
+      body.input.length === 16
+        ? freezeOwnedJsonValue([...body.input, content])
+        : (() => {
+            const steps = JSON.stringify(body.input[14]);
+            return freezeOwnedJsonValue([
+              ...body.input.slice(0, 14),
+              checksumAuthoredPayload(steps),
+              steps,
+              content,
+            ]);
+          })();
     AUTHORED_EDIT_ENCODINGS.set(operation, value);
 
     return value;
@@ -833,11 +846,12 @@ const decodeCheckpointEditIdentity = (
 
 const decodeDeferredCheckpointEdit = (
   input: readonly unknown[],
-  encodedSteps: boolean
+  encodedSteps: boolean,
+  persistedFootprint: boolean
 ): AuthoredCompactEdit => {
   const value = checkpointTuple(
     input,
-    encodedSteps ? 16 : 15,
+    persistedFootprint ? 17 : encodedSteps ? 16 : 15,
     'checkpoint edit'
   );
   const identity = decodeCheckpointEditIdentity(value);
@@ -855,17 +869,22 @@ const decodeDeferredCheckpointEdit = (
   ) {
     throw new Error('Invalid authored retained operation body.');
   }
-  let operation: AuthoredCompactEdit = freezeOwnedJsonValue({
-    ...identity,
-    content: {
-      digest:
-        '0000000000000000000000000000000000000000000000000000000000000000',
-      kind: kind as AuthoredChangeKind,
-      steps: [],
-    },
-  } satisfies AuthoredCompactEdit);
+  let operation: AuthoredCompactEdit = persistedFootprint
+    ? decodeCompactEdit({ ...identity, content: value[16] })
+    : freezeOwnedJsonValue({
+        ...identity,
+        content: {
+          digest:
+            '0000000000000000000000000000000000000000000000000000000000000000',
+          kind: kind as AuthoredChangeKind,
+          steps: [],
+        },
+      } satisfies AuthoredCompactEdit);
+  if (operation.content.kind !== kind) {
+    throw new Error('Invalid authored content footprint.');
+  }
   AUTHORED_EDIT_BODIES.set(operation, { input: value });
-  if (kind !== 'insert' || identity.inverseOf) {
+  if (!persistedFootprint && (kind !== 'insert' || identity.inverseOf)) {
     const decoded = decodeFullCheckpointEdit(value);
     const compact = compactAuthoredEdit(decoded);
     operation = compact;
@@ -876,13 +895,16 @@ const decodeDeferredCheckpointEdit = (
 };
 
 const decodeFullCheckpointEdit = (input: unknown): AuthoredEdit => {
-  if (!Array.isArray(input) || (input.length !== 15 && input.length !== 16)) {
+  if (
+    !Array.isArray(input) ||
+    (input.length !== 15 && input.length !== 16 && input.length !== 17)
+  ) {
     throw new Error('Invalid authored checkpoint edit.');
   }
   const value = input;
   const identity = decodeCheckpointEditIdentity(value);
   let stepInputs: unknown = value[14];
-  if (value.length === 16) {
+  if (value.length >= 16) {
     if (
       typeof value[14] !== 'string' ||
       !/^[a-f0-9]{16}$/.test(value[14]) ||
@@ -918,7 +940,8 @@ const decodeFullCheckpointEdit = (input: unknown): AuthoredEdit => {
 
 const decodeCheckpointOperation = (
   input: unknown,
-  encodedSteps: boolean
+  encodedSteps: boolean,
+  persistedFootprint: boolean
 ): AuthoredOperation => {
   if (!Array.isArray(input) || ![0, 1].includes(input[0] as number)) {
     throw new Error('Invalid authored checkpoint operation.');
@@ -927,7 +950,7 @@ const decodeCheckpointOperation = (
     const value = checkpointTuple(input, 2, 'checkpoint operation');
     return operationCodec.decode(value[1]);
   }
-  return decodeDeferredCheckpointEdit(input, encodedSteps);
+  return decodeDeferredCheckpointEdit(input, encodedSteps, persistedFootprint);
 };
 
 export const materializeAuthoredEdit = (
@@ -1336,6 +1359,7 @@ const decodeDirectAuthoredState = (
   options: Readonly<{
     detachOperationBodies: boolean;
     encodedSteps: boolean;
+    persistedFootprints: boolean;
     tupleChanges: boolean;
   }>
 ): AuthoredState => {
@@ -1369,7 +1393,8 @@ const decodeDirectAuthoredState = (
       operationInputs.map((operationInput) => {
         const operation = decodeCheckpointOperation(
           operationInput,
-          options.encodedSteps
+          options.encodedSteps,
+          options.persistedFootprints
         );
         return [operation.id, operation] as const;
       })
@@ -1462,26 +1487,32 @@ const decodeAuthoredStateV2 = (input: unknown): AuthoredState => {
   return decodeDirectAuthoredState(parsed, {
     detachOperationBodies: false,
     encodedSteps: false,
+    persistedFootprints: false,
     tupleChanges: false,
   });
 };
 
+const decodeAuthoredStateV5 = (input: unknown) =>
+  decodeDirectAuthoredState(input, {
+    detachOperationBodies: true,
+    encodedSteps: true,
+    persistedFootprints: false,
+    tupleChanges: true,
+  });
+
 const stateCodec = ownCurrentEditorValueCodecInput(
   defineValueCodec<AuthoredState>({
-    version: 5,
+    version: 6,
     previousVersions: {
-      4: (input) =>
-        decodeDirectAuthoredState(input, {
-          detachOperationBodies: true,
-          encodedSteps: true,
-          tupleChanges: true,
-        }),
+      4: decodeAuthoredStateV5,
+      5: decodeAuthoredStateV5,
       1: decodeLegacyAuthoredState,
       2: decodeAuthoredStateV2,
       3: (input) =>
         decodeDirectAuthoredState(input, {
           detachOperationBodies: true,
           encodedSteps: false,
+          persistedFootprints: false,
           tupleChanges: true,
         }),
     },
@@ -1493,6 +1524,7 @@ const stateCodec = ownCurrentEditorValueCodecInput(
       decodeDirectAuthoredState(input, {
         detachOperationBodies: true,
         encodedSteps: true,
+        persistedFootprints: true,
         tupleChanges: true,
       }),
   })
@@ -1604,9 +1636,10 @@ const decodeDirectAuthoredOperations = (
 };
 
 const operationsCodec = defineValueCodec<AuthoredOperations>({
-  version: 4,
+  version: 5,
   previousVersions: {
-    3: (input) => decodeDirectAuthoredOperations(input, stateCodec.decode),
+    3: (input) => decodeDirectAuthoredOperations(input, decodeAuthoredStateV5),
+    4: (input) => decodeDirectAuthoredOperations(input, decodeAuthoredStateV5),
     1: decodeLegacyAuthoredOperations,
     2: (input) => decodeDirectAuthoredOperations(input, decodeAuthoredStateV2),
   },
@@ -2453,6 +2486,18 @@ type AuthoredIndex = Readonly<{
     Readonly<{ order: string; spans: readonly AuthoredSpan[] }>
   > | null;
   compensations: RecordTree<RecordTree<AuthoredEditIdentity>> | null;
+  successors: RecordTree<readonly AuthoredSuccessor[]> | null;
+}>;
+type AuthoredContentInterval = Readonly<{ from: number; to: number }>;
+type AuthoredSuccessorDependency = Readonly<{
+  interval: AuthoredContentInterval;
+  origin: string;
+}>;
+type AuthoredSuccessor = Readonly<{
+  inserted: readonly AuthoredSpan[];
+  left: AuthoredSuccessorDependency | null;
+  removed: readonly AuthoredSuccessorDependency[];
+  right: AuthoredSuccessorDependency | null;
 }>;
 type AuthoredDeletion = Readonly<{
   operation: AuthoredEditIdentity;
@@ -2479,18 +2524,43 @@ const EMPTY_AUTHORED_INDEX: AuthoredIndex = Object.freeze({
   textProperties: null,
   textBoundaries: null,
   compensations: null,
+  successors: null,
 });
 const propertyNodePrefix = (origin: string, offset: number) =>
   `${JSON.stringify([origin, offset])}\u0000`;
 const propertyKey = (origin: string, offset: number, key: string) =>
   `${propertyNodePrefix(origin, offset)}${JSON.stringify(key)}`;
+const successorPositionKey = (root: string, position: AuthoredPosition) =>
+  JSON.stringify([root, position.left, position.right]);
+const successorDependency = (
+  endpoint: AuthoredPosition['left'],
+  side: 'left' | 'right'
+): AuthoredSuccessorDependency | null => {
+  if (!endpoint) return null;
+  const from = endpoint.offset - (side === 'left' ? 1 : 0);
+  return from < 0
+    ? null
+    : { interval: { from, to: from + 1 }, origin: endpoint.origin };
+};
+const spanSuccessorDependency = (
+  span: AuthoredSpan
+): AuthoredSuccessorDependency => ({
+  interval: { from: span.offset, to: span.offset + span.length },
+  origin: span.origin,
+});
 const indexPropertyWrites = (
   index: AuthoredIndex,
   operation: AuthoredOperation
 ): AuthoredIndex => {
   if (operation.kind !== 'edit' || operation.retained) return index;
-  let { properties, textProperties, textBoundaries, compensations, deletions } =
-    index;
+  let {
+    properties,
+    textProperties,
+    textBoundaries,
+    compensations,
+    deletions,
+    successors,
+  } = index;
   const identity: AuthoredEditIdentity = Object.freeze({
     authorId: operation.authorId,
     changeId: operation.changeId,
@@ -2519,6 +2589,7 @@ const indexPropertyWrites = (
   }
   const steps =
     'steps' in operation ? operation.steps : operation.content.steps;
+  const removedAt = new Map<string, AuthoredTarget>();
   for (const [stepIndex, step] of steps.entries()) {
     for (const [targetIndex, target] of step.targets.entries()) {
       const sections =
@@ -2529,6 +2600,14 @@ const indexPropertyWrites = (
           : undefined;
       const section = sections?.[target.section];
       const facts = 'forward' in step ? undefined : step.targets[targetIndex];
+      const indexedTarget: AuthoredTarget = facts
+        ? (({
+            length: _length,
+            properties: _properties,
+            textBoundary: _boundary,
+            ...value
+          }) => value)(facts)
+        : target;
       const order = `${authoredOrderKey(
         operation.clock,
         operation.id
@@ -2538,6 +2617,41 @@ const indexPropertyWrites = (
       const boundary = facts
         ? facts.textBoundary
         : section && readAuthoredTextBoundary(target, section);
+      const paired = removedAt.get(
+        successorPositionKey(target.root, target.from)
+      );
+      const removed = (
+        target.removed.length ? target.removed : (paired?.removed ?? [])
+      ).map(spanSuccessorDependency);
+      if (target.inserted.length) {
+        const successor: AuthoredSuccessor = Object.freeze({
+          inserted: target.inserted,
+          left: removed.length
+            ? null
+            : successorDependency(target.from.left, 'left'),
+          removed,
+          right: removed.length
+            ? null
+            : successorDependency(target.from.right, 'right'),
+        });
+        const sources = removed.length
+          ? removed
+          : [successor.left, successor.right].filter(
+              (entry): entry is AuthoredSuccessorDependency => entry !== null
+            );
+        for (const origin of new Set(sources.map((source) => source.origin))) {
+          successors = writeRecord(successors, origin, [
+            ...(readRecord(successors, origin) ?? []),
+            successor,
+          ]);
+        }
+      }
+      if (target.removed.length && !target.inserted.length) {
+        removedAt.set(
+          successorPositionKey(target.root, target.afterFrom),
+          target
+        );
+      }
       if (boundary) {
         const key = JSON.stringify([
           boundary.position.origin,
@@ -2569,7 +2683,7 @@ const indexPropertyWrites = (
             key,
             writeRecord(readRecord(deletions, key), order, {
               operation: identity,
-              target,
+              target: indexedTarget,
               stepIndex,
               targetIndex,
             })
@@ -2582,7 +2696,7 @@ const indexPropertyWrites = (
       if (!modifications || !span) continue;
       const write = Object.freeze({
         operation: identity,
-        target,
+        target: indexedTarget,
         modifications,
       });
       if (
@@ -2618,7 +2732,8 @@ const indexPropertyWrites = (
     deletions === index.deletions &&
     textProperties === index.textProperties &&
     textBoundaries === index.textBoundaries &&
-    compensations === index.compensations
+    compensations === index.compensations &&
+    successors === index.successors
     ? index
     : {
         ...index,
@@ -2627,7 +2742,111 @@ const indexPropertyWrites = (
         textBoundaries,
         compensations,
         deletions,
+        successors,
       };
+};
+
+const AUTHORED_CONTENT_LINEAGES = new WeakMap<
+  object,
+  Map<string, ReadonlyMap<string, readonly AuthoredContentInterval[]>>
+>();
+const overlapsAuthoredContent = (
+  left: AuthoredContentInterval,
+  right: AuthoredContentInterval
+) => left.from < right.to && right.from < left.to;
+const retainedContentKey = (
+  content: ReadonlyArray<
+    Readonly<{
+      length: number;
+      offset: number;
+      origin: string;
+    }>
+  >,
+  association: string
+) =>
+  `${association}\u0000${content
+    .map((span) => `${span.origin}\u0000${span.offset}\u0000${span.length}`)
+    .join('\u0001')}`;
+
+/** Resolves the immutable authored identities that succeed retained content. */
+export const authoredContentLineage = (
+  state: AuthoredState,
+  content: ReadonlyArray<
+    Readonly<{
+      length: number;
+      offset: number;
+      origin: string;
+    }>
+  >,
+  association: 'backward' | 'forward' | 'inward' | 'outward'
+): ReadonlyMap<string, readonly AuthoredContentInterval[]> => {
+  const owner = (state.operations ?? state) as object;
+  let cache = AUTHORED_CONTENT_LINEAGES.get(owner);
+  if (!cache) {
+    cache = new Map();
+    AUTHORED_CONTENT_LINEAGES.set(owner, cache);
+  }
+  const key = retainedContentKey(content, association);
+  const cached = cache.get(key);
+  if (cached) return cached;
+
+  const owned = new Map<string, AuthoredContentInterval[]>();
+  const queue: AuthoredSuccessorDependency[] = [];
+  const add = (item: AuthoredSuccessorDependency) => {
+    const intervals = owned.get(item.origin) ?? [];
+    if (
+      intervals.some(
+        (interval) =>
+          item.interval.from >= interval.from && item.interval.to <= interval.to
+      )
+    ) {
+      return;
+    }
+    intervals.push(item.interval);
+    owned.set(item.origin, intervals);
+    queue.push(item);
+  };
+  const contains = (item: AuthoredSuccessorDependency | null) =>
+    !!item &&
+    (owned.get(item.origin) ?? []).some((interval) =>
+      overlapsAuthoredContent(interval, item.interval)
+    );
+  for (const span of content) {
+    add({
+      interval: { from: span.offset, to: span.offset + span.length },
+      origin: span.origin,
+    });
+  }
+
+  const { successors } = indexAuthoredState(state);
+  const visited = new Set<AuthoredSuccessor>();
+  for (const source of queue) {
+    for (const successor of readRecord(successors, source.origin) ?? []) {
+      if (visited.has(successor)) continue;
+      const relevant = [...successor.removed, successor.left, successor.right]
+        .filter((entry): entry is AuthoredSuccessorDependency => entry !== null)
+        .some(
+          (entry) =>
+            entry.origin === source.origin &&
+            overlapsAuthoredContent(entry.interval, source.interval)
+        );
+      if (!relevant) continue;
+      const matches = successor.removed.length
+        ? successor.removed.some(contains)
+        : association === 'forward'
+          ? contains(successor.left)
+          : association === 'backward'
+            ? contains(successor.right)
+            : association === 'outward'
+              ? contains(successor.left) || contains(successor.right)
+              : contains(successor.left) && contains(successor.right);
+      if (!matches) continue;
+      visited.add(successor);
+      for (const span of successor.inserted) add(spanSuccessorDependency(span));
+    }
+  }
+  cache.set(key, owned);
+  return owned;
 };
 
 export function* authoredDeletionsAt(
@@ -2788,7 +3007,7 @@ export const authoredTextBoundary = (
     JSON.stringify([origin, offset])
   );
 
-export const isAuthoredPropertyWriteVisible = (
+export const isAuthoredEditVisible = (
   state: AuthoredState,
   operation: AuthoredEditIdentity,
   visible: (edit: AuthoredEditIdentity) => boolean
@@ -2799,7 +3018,7 @@ export const isAuthoredPropertyWriteVisible = (
       readRecord(indexAuthoredState(state).compensations, operation.id)
     ),
   ].some(([, compensation]) =>
-    isAuthoredPropertyWriteVisible(state, compensation, visible)
+    isAuthoredEditVisible(state, compensation, visible)
   );
 
 export const authoredOperationPropertySteps = (

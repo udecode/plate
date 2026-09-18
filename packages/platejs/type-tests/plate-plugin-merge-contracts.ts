@@ -75,8 +75,8 @@ const lowLevelPluginEditor = createEditor({
 });
 const lowLevelHistoryPortal = lowLevelPluginEditor.plugin(HistoryPlugin);
 
-lowLevelHistoryPortal.read.undos();
-lowLevelHistoryPortal.update.undo();
+lowLevelHistoryPortal.read().undos;
+lowLevelHistoryPortal.api.undo();
 
 const useLowLevelPluginEditor = () => {
   const hookEditor = useCreateEditor({
@@ -84,8 +84,8 @@ const useLowLevelPluginEditor = () => {
   });
   const hookHistoryPortal = hookEditor.plugin(HistoryPlugin);
 
-  hookHistoryPortal.read.redos();
-  hookHistoryPortal.update.redo();
+  hookHistoryPortal.read().redos;
+  hookHistoryPortal.api.redo();
 };
 
 const RawBaseCapabilityPlugin = defineRuntimePlugin('rawBaseCallback', {

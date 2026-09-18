@@ -148,7 +148,7 @@
       "details": [],
       "migrationNotes": [
         "Remove CaptionPlugin from media kits and render each media element's direct children as its caption; use [{ text: '' }] when the caption is absent.",
-        "For persisted v53 media captions, add migratePlateV54 to the app's defineDocumentMigrations chain."
+        "For persisted v53 media captions, add migrateV54 to the app's defineDocumentMigrations chain."
       ],
       "targets": [
         "caption",

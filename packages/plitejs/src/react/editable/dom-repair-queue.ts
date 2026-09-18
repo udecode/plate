@@ -29,7 +29,10 @@ import {
   recordEditableKernelTrace,
 } from './editing-kernel';
 import { updateNativeTextInput } from './input-history';
-import type { EditableInputController } from './input-state';
+import {
+  type EditableInputController,
+  getEditableNativeGroupingInput,
+} from './input-state';
 import { readRuntimeText } from './runtime-live-state';
 import {
   readRuntimeSelection,
@@ -296,24 +299,28 @@ export const createDOMRepairQueue = ({
 
     armRepairInducedSelectionOriginGuard();
     profileDOMRepairDuration('captured-update-model', () => {
-      updateNativeTextInput(editor, (tx) => {
-        tx.text.insert(insert.text, {
-          at: { path: target.path, offset: insert.offset },
-        });
-        const selectionAfter = tx.selection();
-
-        if (
-          !selectionAfter ||
-          !RangeApi.isCollapsed(selectionAfter) ||
-          !PathApi.equals(selectionAfter.anchor.path, target.path) ||
-          selectionAfter.anchor.offset !== nextOffset
-        ) {
-          tx.selection.set({
-            anchor: { path: target.path, offset: nextOffset },
-            focus: { path: target.path, offset: nextOffset },
+      updateNativeTextInput(
+        editor,
+        (tx) => {
+          tx.text.insert(insert.text, {
+            at: { path: target.path, offset: insert.offset },
           });
-        }
-      });
+          const selectionAfter = tx.selection();
+
+          if (
+            !selectionAfter ||
+            !RangeApi.isCollapsed(selectionAfter) ||
+            !PathApi.equals(selectionAfter.anchor.path, target.path) ||
+            selectionAfter.anchor.offset !== nextOffset
+          ) {
+            tx.selection.set({
+              anchor: { path: target.path, offset: nextOffset },
+              focus: { path: target.path, offset: nextOffset },
+            });
+          }
+        },
+        getEditableNativeGroupingInput(inputController)
+      );
     });
     if (!isInsideVirtualizedDOM(textHost)) {
       setEditableModelSelectionPreference({
@@ -610,20 +617,24 @@ export const createDOMRepairQueue = ({
             armModelOwnedTextInputGuard({ inputController });
           }
         }
-        updateNativeTextInput(editor, (tx) => {
-          tx.text.insert(insert.text, {
-            at: shouldReplaceExpandedSelection
-              ? expandedReplacementRange
-              : { path, offset: insert.offset },
-          });
-
-          if (shouldMoveSelection) {
-            tx.selection.set({
-              anchor: { path, offset: nextOffset },
-              focus: { path, offset: nextOffset },
+        updateNativeTextInput(
+          editor,
+          (tx) => {
+            tx.text.insert(insert.text, {
+              at: shouldReplaceExpandedSelection
+                ? expandedReplacementRange
+                : { path, offset: insert.offset },
             });
-          }
-        });
+
+            if (shouldMoveSelection) {
+              tx.selection.set({
+                anchor: { path, offset: nextOffset },
+                focus: { path, offset: nextOffset },
+              });
+            }
+          },
+          getEditableNativeGroupingInput(inputController)
+        );
         if (textHost && !isInsideVirtualizedDOM(textHost)) {
           setEditableModelSelectionPreference({
             inputController,

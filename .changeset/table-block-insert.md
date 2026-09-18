@@ -1,57 +1,39 @@
 ---
-'platejs': major
+"platejs": major
 ---
 
-Require React and React DOM 19.2 or newer.
+Use the table API through `editor.plugin(TablePlugin)` with explicit targets, nullable reads, and boolean update results.
 
-Use `useTableSelectionDOM(tableRef)` as the sole package React primitive for a custom table renderer. Compose transient column, row, and margin state, cell layout reads, and pointer handlers in the renderer through `TablePlugin` and Core selector hooks. Replace `useTableSelectionDom` and the old renderer-state hook family with this DOM lifecycle hook and the matching scoped capabilities.
+- Import headless descriptors and table types from `platejs/table`, and React descriptors and hooks from `platejs/table/react`.
+- Insert tables with `{ rows, columns, header }`; use the separate placement argument for either `at` or `after`, plus block insertion options such as `select` and `replaceEmpty`. Default to two rows and two columns.
+- Read exact cell membership and direction with `read.selection({ at? })`, cell layout with `read.cell({ at? })`, and tri-state border predicates with `read.borders({ at? })`.
+- Check merge and split availability with `read.canMerge({ at? })` and `read.canSplit({ at? })`; apply formatting to the exact selected cells.
+- Set complete border records with `update.setBorders({ at?, border, value })`; use `null` to clear an override and `width: 0` to hide an edge.
+- Resolve column widths with `api.columnWidths(table)` and calculate resize previews with `api.createResize(table, target)`. Commit sizing through `update.resize({ at?, resize })`, `update.setColumnWidth({ at?, colIndex, width })`, or `update.setRowHeight({ at?, rowIndex, height })`.
+- Configure `allowCellSpanEditing`, `expandOnPaste`, `defaultTableWidth`, and `minColumnWidth` through `initialState`. Keep transient sizing and presentation choices in the renderer.
+- Preserve rich content and surviving node identities when merging cells. Fit complete clipboard slices with their owned roots; reject cropped table tiles, partial destination spans, and overflow when paste growth is disabled.
+- Represent structural cell selections as directional `NodeSelection` values. Require span-complete rectangles for structural copy and cut, and clear cells only after a successful clipboard write.
+- Store column widths on tables as `columnWidths`, using `null` for unknown imported widths. Store numeric `colSpan` and `rowSpan` directly on cells, and `height` on rows. Validate spans as positive safe integers, sizes as positive finite values, and border widths as non-negative finite values.
+- Install row and cell descriptors automatically. Represent headers as `tableCell` with `header: true`.
+- Require React and React DOM 19.2 or newer. Use `useTableSelectionDOM(tableRef)` for custom selection rendering and `useTableResize` for pointer resizing; render transient previews locally.
 
-Derive merge and split eligibility from `editor.plugin(TablePlugin).read.selection()`. The copied `table` owns transient column, row, and margin overrides plus row rendering.
-
-Export `TablePluginState` as the complete mutable state contract for `BaseTablePlugin`.
-
-Consolidate pure table factories and schema services into `editor.api.table`, snapshot queries into `editor.read.table`, and mutations into `editor.update.table`. Register validated table structure and properties in the compiled schema, including versioned validation for cell attributes, borders, and column sizes. Store table-cell spans only in numeric `colSpan` and `rowSpan` fields.
-
-Validate spans as positive safe integers, row heights as positive finite numbers, and border widths as non-negative finite numbers. Represent unknown partial column widths with `null` instead of `0`.
-
-Repair malformed grids and paste rectangular cell fragments across merged-cell boundaries. Keep paste, drag-and-drop, and compound table commands targeting the intended rows and cells after earlier edits.
-
-Represent multi-cell pointer drags as directional core `NodeSelection` values, preserve them when clearing cells, and leave same-cell text drags native. Derive rectangular cell geometry through `editor.plugin(TablePlugin).read.selection(at?)`.
-
-Return live cell entries, anchors, bounds, and table identity from the sole Table selection read. Use core `selection.nodes()` and `selection.contains()` for generic membership. Persisted table element IDs remain ordinary schema data.
-
-**Migration:** Replace direct table helper imports with the matching scoped capability:
+**Migration:** Replace direct table helper calls with the corresponding descriptor API. Use `rows` and `columns` for insertion, invert `disableMerge` into `allowCellSpanEditing`, invert `disableExpandOnInsert` into `expandOnPaste`, and configure fallback width with `defaultTableWidth`. In a transaction, call update methods on `tx.plugin(TablePlugin)`.
 
 ```tsx
-editor.api.table.create({ colCount: 3, rowCount: 2 });
-editor.plugin(TablePlugin).read.selection();
-editor.update.table.insert({ colCount: 3, rowCount: 2 });
-editor.update.table.insertColumn();
-editor.update.table.removeRow();
-editor.update.table.merge();
-```
+import { TablePlugin } from 'platejs/table/react';
 
-Remove `nextBlock` from insertion options. Use `at` for exact placement or `after` for a live source block, with `select` and `replaceEmpty` controlling selection and empty text-block replacement. Implicit insertion places the table after the current containing table.
+const table = editor.plugin(TablePlugin);
 
-Replace persisted `attributes.colspan` and `attributes.rowspan` with `colSpan` and `rowSpan`. HTML import and rendering continue to use lowercase DOM attributes.
+table.update.insert({ rows: 2, columns: 3 }, { select: true });
+table.update.insertColumn({ before: true });
 
-Install table row and cell descriptors through required plugin dependencies. Persist every data or header cell as `tableCell`; set `header: true` for cells that render as `<th>`. `BaseTableCellHeaderPlugin`, `TableCellHeaderPlugin`, `TableCellHeaderElement`, and `TableCellHeaderElementStatic` are not part of the table surface.
+if (table.read.canMerge()) {
+  table.update.merge();
+}
 
-Add the shared v54 document step when loading documents that persisted header cells under the legacy `tableCellHeader` type:
-
-```tsx
-import { defineDocumentMigrations, migratePlateV54 } from 'platejs/migrations';
-
-const migrations = defineDocumentMigrations(EditorSchema, {
-  steps: { 54: migratePlateV54 },
-  unversioned: 53,
+editor.update((tx) => {
+  tx.plugin(TablePlugin).setCellBackground({ color: '#fef9c3' });
 });
 ```
 
-Replace `editor.api.table.getCellTypes()` with `editor.plugin(TableCellPlugin).schema.type`; tables have one cell element type.
-
-Use `getCellIndices(cell)` for row and column coordinates and `getAdjacentCell({ deltaCol, deltaRow })` for neighboring cells. Border batch mutation is private to the table command owner; public callers use `setBorderSize` or `toggleBorders`.
-
-Use exact clipboard slices through `readSlice` and `writeSlice`, preserve complete row and cell root graphs when copying or moving a selected rectangle, and export directional node selections through the core slice read.
-
-Use semantic table fields and store column widths only on tables.
+Apply the shared `migrateV54` document step when loading stored header cells with the legacy `th` or `tableCellHeader` type. Migrate persisted `attributes.colspan` and `attributes.rowspan` to numeric `colSpan` and `rowSpan`; HTML continues to use lowercase attributes.

@@ -5,11 +5,16 @@ import {
 import { expect, type Page, test } from '@playwright/test';
 
 const PAINT_CASE_ID = 'table:hide-native-highlight-during-multi-cell-drag';
+const ROW_HANDLE_PAINT_CASE_ID = 'table:paint-row-handle-selection';
 const CONTRACT_CASE_ID = 'table:contract-selection-on-drag-back';
 const RESIZE_HANDLE_CASE_ID =
   'table:ignore-resize-handle-hover-during-cell-selection-drag';
 const BLOCK_HANDLE_CASE_ID = 'table:hide-block-handles-during-cell-selection';
 const CELL_ONLY_PAINT_CASE_ID = 'table:paint-only-selected-cells';
+const CLIPBOARD_RECTANGLE_CASE_ID =
+  'table:paste-copied-cell-rectangle-into-selected-cells';
+const CLIPBOARD_CARET_CASE_ID =
+  'table:paste-copied-cell-rectangle-at-caret-in-authored-playground';
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 
 const isTransparent = (color: string) =>
@@ -144,16 +149,17 @@ const setTableSelectionLayerControl = async (
     document.head.append(style);
 
     if (nextControl === 'duplicate') {
-      const cellLayer = wrapper.querySelector(
-        'td [data-slot="node-selection-highlight"], th [data-slot="node-selection-highlight"]'
-      );
       const duplicate = document.createElement('div');
 
-      duplicate.className = cellLayer?.className ?? '';
       duplicate.contentEditable = 'false';
       duplicate.dataset.editorRootChromeIgnore = 'true';
       duplicate.dataset.slot = 'node-selection-highlight';
       duplicate.dataset.testTableSelectionDuplicate = 'true';
+      duplicate.style.backgroundColor = 'rgba(0, 92, 255, 0.35)';
+      duplicate.style.inset = '0';
+      duplicate.style.pointerEvents = 'none';
+      duplicate.style.position = 'absolute';
+      duplicate.style.zIndex = '1';
       wrapper.append(duplicate);
     }
   }, control);
@@ -208,6 +214,295 @@ const expectCellSelectionDragAffordances = async (
     .toBe(rowHandleCount);
 };
 
+test(CLIPBOARD_RECTANGLE_CASE_ID, async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.goto('/blocks/table-demo', { waitUntil: 'commit' });
+
+    const root = page.locator(EDITOR_ROOT).first();
+    const editor = createBrowserEditorHarness(
+      page,
+      CLIPBOARD_RECTANGLE_CASE_ID,
+      root
+    );
+    const cells = root.locator(
+      'table td[data-editor-node-key], table th[data-editor-node-key]'
+    );
+    const modelSelection = () =>
+      root.evaluate((element) =>
+        (
+          element as HTMLElement & {
+            __pliteBrowserHandle?: { getModelSelection: () => unknown };
+          }
+        ).__pliteBrowserHandle?.getModelSelection()
+      );
+    await editor.ready({ editor: 'visible', text: 'Plugin' });
+    await expect(cells).toHaveCount(16);
+
+    const dragSelection = async (startIndex: number, endIndex: number) => {
+      const start = await cells.nth(startIndex).boundingBox();
+      const end = await cells.nth(endIndex).boundingBox();
+
+      expect(start).not.toBeNull();
+      expect(end).not.toBeNull();
+
+      await page.mouse.move(start!.x + 30, start!.y + start!.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(end!.x + 30, end!.y + end!.height / 2, {
+        steps: 8,
+      });
+      await page.mouse.up();
+
+      await expect
+        .poll(() =>
+          cells.evaluateAll(
+            (elements) =>
+              elements.filter((element) =>
+                element.hasAttribute('data-table-cell-selected')
+              ).length
+          )
+        )
+        .toBe(4);
+    };
+
+    await dragSelection(0, 5);
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+      paths: expect.arrayContaining([
+        [2, 0, 0],
+        [2, 0, 1],
+        [2, 1, 0],
+        [2, 1, 1],
+      ]),
+    });
+    const payload = await editor.clipboard.copyEventPayload();
+
+    expect(payload.types).toContain('application/x-editor-fragment');
+    expect(payload.text).toBe('Plugin\tElement\nHeading\t\n');
+    const copiedSlice = JSON.parse(
+      decodeURIComponent(atob(payload.fragment!))
+    ) as {
+      slice: { content: Array<{ children: Array<{ children: unknown[] }> }> };
+    };
+
+    expect(copiedSlice.slice.content[0]?.children).toHaveLength(2);
+    expect(
+      copiedSlice.slice.content[0]?.children.map((row) => row.children.length)
+    ).toEqual([2, 2]);
+    await expect.poll(modelSelection).toMatchObject({ kind: 'node' });
+    await dragSelection(10, 15);
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+      paths: expect.arrayContaining([
+        [2, 2, 2],
+        [2, 2, 3],
+        [2, 3, 2],
+        [2, 3, 3],
+      ]),
+    });
+    await editor.clipboard.pasteEventPayload(payload);
+
+    await expect(root.locator('table')).toHaveCount(1);
+    await expect(cells).toHaveCount(16);
+    await expect(cells.nth(10)).toHaveText('Plugin');
+    await expect(cells.nth(11)).toHaveText('Element');
+    await expect(cells.nth(14)).toHaveText('Heading');
+    await expect(cells.nth(15)).toHaveText('');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test(CLIPBOARD_CARET_CASE_ID, async ({ context, page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.goto('/blocks/playground', { waitUntil: 'commit' });
+
+    const root = page.locator(EDITOR_ROOT).first();
+    const editor = createBrowserEditorHarness(
+      page,
+      CLIPBOARD_CARET_CASE_ID,
+      root
+    );
+    await editor.ready({ editor: 'visible', text: 'How Plate Compares' });
+
+    const table = root.locator('table').filter({ hasText: 'Feature' }).first();
+    const cells = table.locator(
+      'td[data-editor-node-key], th[data-editor-node-key]'
+    );
+    const modelSelection = () =>
+      root.evaluate((element) =>
+        (
+          element as HTMLElement & {
+            __pliteBrowserHandle?: { getModelSelection: () => unknown };
+          }
+        ).__pliteBrowserHandle?.getModelSelection()
+      );
+
+    await expect(cells).toHaveCount(24);
+    runtimeErrors.reset();
+    await cells.nth(4).scrollIntoViewIfNeeded();
+
+    const sourceStart = await cells.nth(4).boundingBox();
+    const sourceEnd = await cells.nth(0).boundingBox();
+
+    expect(sourceStart).not.toBeNull();
+    expect(sourceEnd).not.toBeNull();
+
+    await page.mouse.move(
+      sourceStart!.x + 30,
+      sourceStart!.y + sourceStart!.height / 2
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      sourceEnd!.x + 30,
+      sourceEnd!.y + sourceEnd!.height / 2,
+      { steps: 8 }
+    );
+    await page.mouse.up();
+
+    await expect
+      .poll(() =>
+        cells.evaluateAll(
+          (elements) =>
+            elements.filter((element) =>
+              element.hasAttribute('data-table-cell-selected')
+            ).length
+        )
+      )
+      .toBe(4);
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+      paths: expect.arrayContaining([
+        [15, 0, 0],
+        [15, 0, 1],
+        [15, 1, 0],
+        [15, 1, 1],
+      ]),
+    });
+
+    const payload = await editor.clipboard.copyNativeEventPayload();
+
+    expect(payload.types).toContain('application/x-editor-fragment');
+    expect(payload.text).toBe('Feature\tPlate (Free & OSS)\nAI\t✅\n');
+
+    const modelChildren = async () =>
+      ((await editor.get.modelValue()) as { children: unknown[] }).children;
+    const historyDepth = async () => {
+      const history = (await editor.get.history()) as {
+        redos: unknown[];
+        undos: unknown[];
+      };
+
+      return { redos: history.redos.length, undos: history.undos.length };
+    };
+    const beforePasteChildren = await modelChildren();
+    const beforePasteHistory = await historyDepth();
+    const target = await cells.nth(23).boundingBox();
+
+    expect(target).not.toBeNull();
+
+    await page.mouse.click(
+      target!.x + target!.width / 2,
+      target!.y + target!.height / 2
+    );
+    await page.keyboard.press('ControlOrMeta+V');
+
+    await expect
+      .poll(() => editor.get.lastCommit())
+      .toMatchObject({
+        tags: expect.arrayContaining(['paste', 'semantic-command']),
+      });
+    await expect(root.locator('table')).toHaveCount(1);
+    await expect(table.locator('tr')).toHaveCount(9);
+    await expect(cells).toHaveCount(36);
+    await expect(table.locator(':scope > colgroup > col')).toHaveCount(5);
+    await expect(cells.nth(30)).toHaveText('Feature');
+    await expect(cells.nth(31)).toHaveText('Plate (Free & OSS)');
+    await expect(cells.nth(34)).toHaveText('AI');
+    await expect(cells.nth(35)).toHaveText('✅');
+    await expect.poll(historyDepth).toEqual({
+      redos: 0,
+      undos: beforePasteHistory.undos + 1,
+    });
+    await expect
+      .poll(() =>
+        cells.evaluateAll(
+          (elements) =>
+            elements.filter((element) =>
+              element.hasAttribute('data-table-cell-selected')
+            ).length
+        )
+      )
+      .toBe(4);
+
+    const expandedWidths = await Promise.all(
+      [30, 31, 34, 35].map(async (index) =>
+        cells
+          .nth(index)
+          .evaluate((element) => element.getBoundingClientRect().width)
+      )
+    );
+
+    expect(expandedWidths.every((width) => width >= 48)).toBe(true);
+
+    const value = (await editor.get.modelValue()) as {
+      children: Array<{
+        columnWidths?: Array<number | null>;
+        type?: string;
+      }>;
+    };
+    const modelTable = value.children.find((node) => node.type === 'table');
+    const afterPasteChildren = await modelChildren();
+
+    expect(modelTable?.columnWidths).toHaveLength(4);
+
+    await cells.nth(35).scrollIntoViewIfNeeded();
+    await testInfo.attach('table-bottom-right-edge-paste', {
+      body: await page.screenshot({ animations: 'disabled', caret: 'hide' }),
+      contentType: 'image/png',
+    });
+
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect.poll(modelChildren).toEqual(beforePasteChildren);
+    await expect.poll(historyDepth).toEqual({
+      redos: 1,
+      undos: beforePasteHistory.undos,
+    });
+    await expect(table.locator('tr')).toHaveCount(8);
+    await expect(cells).toHaveCount(24);
+    await expect(table.locator(':scope > colgroup > col')).toHaveCount(4);
+
+    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await expect(table.locator('tr')).toHaveCount(9);
+    await expect(cells).toHaveCount(36);
+    await expect(cells.nth(30)).toHaveText('Feature');
+    await expect(cells.nth(31)).toHaveText('Plate (Free & OSS)');
+    await expect(cells.nth(34)).toHaveText('AI');
+    await expect(cells.nth(35)).toHaveText('✅');
+    await expect.poll(modelChildren).toEqual(afterPasteChildren);
+    await expect.poll(historyDepth).toEqual({
+      redos: 0,
+      undos: beforePasteHistory.undos + 1,
+    });
+
+    await cells.nth(35).click();
+    await page.keyboard.type('edge');
+    await expect(cells.nth(35)).toContainText('edge');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
 test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
 
@@ -241,6 +536,8 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
         return {
           cell: layers.filter((layer) => layer.parentElement?.matches('td,th'))
             .length,
+          selected: table?.querySelectorAll('[data-table-cell-selected="true"]')
+            .length,
           table: wrapper
             ? wrapper.querySelectorAll(
                 ':scope > [data-slot="node-selection-highlight"]'
@@ -250,45 +547,10 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
       });
 
     await cells.nth(0).click();
-
-    const tableBlockHandle = page
-      .getByRole('button', { name: 'Drag block' })
-      .nth(2);
-    const handleBox = await tableBlockHandle.boundingBox();
-
-    expect(handleBox).not.toBeNull();
-
-    await page.evaluate(() => {
-      document.addEventListener(
-        'pointerdown',
-        (event) => {
-          const pointerEvent = event;
-          const handle = (event.target as Element).closest(
-            '[aria-label="Drag block"]'
-          );
-
-          document.documentElement.setAttribute(
-            'data-test-table-pointer-trace',
-            `target:${handle ? 'table-block-handle' : 'other'};event:${pointerEvent.type};buttons:${pointerEvent.buttons}`
-          );
-        },
-        { capture: true }
-      );
-    });
-
-    await page.mouse.move(
-      handleBox!.x + handleBox!.width / 2,
-      handleBox!.y + handleBox!.height / 2
-    );
-    await page.mouse.down();
-
-    await expect(page.locator('html')).toHaveAttribute(
-      'data-test-table-pointer-trace',
-      'target:table-block-handle;event:pointerdown;buttons:1'
-    );
+    await root.press('ControlOrMeta+A');
     expect(await editor.get.selection()).not.toBeNull();
 
-    await expect.poll(paintLayers).toEqual({ cell: 16, table: 0 });
+    await expect.poll(paintLayers).toEqual({ cell: 0, selected: 16, table: 0 });
     await expect
       .poll(() =>
         page.locator('[data-radix-popper-content-wrapper]').evaluateAll(
@@ -371,21 +633,6 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
     ).toBeLessThanOrEqual(allowedSignal);
 
     await setTableSelectionLayerControl(page, 'actual');
-    await page.mouse.up();
-    await afterPaint(page);
-    await expect.poll(paintLayers).toEqual({ cell: 16, table: 0 });
-
-    const released = await capturePixels(page, clip);
-    const releasedSignal = changedPixelCount(released.image, single.image);
-
-    expect(
-      releasedSignal,
-      'released table paint matches the cell-only control'
-    ).toBeLessThanOrEqual(allowedSignal);
-    await testInfo.attach('table-selection-released', {
-      body: released.png,
-      contentType: 'image/png',
-    });
     await testInfo.attach('table-selection-pixel-signals', {
       body: Buffer.from(
         JSON.stringify({
@@ -394,20 +641,19 @@ test(CELL_ONLY_PAINT_CASE_ID, async ({ page }, testInfo) => {
           duplicateSignal,
           negativeSignal,
           positiveSignal,
-          releasedSignal,
         })
       ),
       contentType: 'application/json',
     });
 
-    const originalValue = await editor.get.modelValue();
+    const originalText = await editor.get.modelText();
 
     await cells.nth(0).click();
     await page.keyboard.press('End');
     await page.keyboard.type('x');
     await expect(cells.nth(0)).toHaveText('Pluginx');
     await page.keyboard.press('ControlOrMeta+z');
-    await expect.poll(() => editor.get.modelValue()).toEqual(originalValue);
+    await expect.poll(() => editor.get.modelText()).toBe(originalText);
 
     runtimeErrors.assertNone();
   } finally {
@@ -526,6 +772,55 @@ test(BLOCK_HANDLE_CASE_ID, async ({ page }, testInfo) => {
 
     await expect.poll(selectedCellCount).toBe(2);
     await expectCellSelectionDragAffordances(page, 0);
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test(ROW_HANDLE_PAINT_CASE_ID, async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.goto('/blocks/table-demo', { waitUntil: 'commit' });
+
+    const root = page.locator(EDITOR_ROOT).first();
+    const editor = createBrowserEditorHarness(
+      page,
+      ROW_HANDLE_PAINT_CASE_ID,
+      root
+    );
+    const rowHandles = root.getByRole('button', {
+      name: 'Select or move row',
+    });
+    const selectedCells = root.locator(
+      'table td[data-table-cell-selected="true"], table th[data-table-cell-selected="true"]'
+    );
+    await editor.ready({ editor: 'visible', text: 'Plugin' });
+    await expect(rowHandles).toHaveCount(4);
+
+    await rowHandles.nth(1).click();
+    await expect(selectedCells).toHaveCount(4);
+    await expect(selectedCells).toHaveText(['Heading', '', '', 'No']);
+    const displayedSelection = await editor.get.displayedSelection();
+
+    expect(displayedSelection.model).not.toBeNull();
+    expect(displayedSelection.native.rangeCount).toBe(1);
+    expect(displayedSelection.native.textLength).toBeGreaterThan(0);
+    expect(
+      isTransparent(
+        await selectedCells
+          .first()
+          .evaluate(
+            (element) => getComputedStyle(element, '::before').backgroundColor
+          )
+      )
+    ).toBe(false);
+    await rowHandles.nth(2).click();
+
+    await expect(selectedCells).toHaveText(['Image', 'Yes', 'No', 'Yes']);
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

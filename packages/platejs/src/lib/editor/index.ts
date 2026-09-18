@@ -3,7 +3,6 @@
  */
 
 export * from './Editor';
-export * from './documentMigrations';
 export * from './editorApplicationSchema';
 export * from './pluginRuntimeTypes';
 export * from './withPlite';

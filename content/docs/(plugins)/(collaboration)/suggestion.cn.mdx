@@ -14,7 +14,7 @@ docs:
 
 <ComponentPreview name="suggestion-demo" height="360px" />
 
-示例默认使用建议模式，并包含一条插入建议和一条删除建议。打开段落旁的讨论按钮来接受或拒绝修改，再尝试撤销和重做。切换到编辑模式后，已有建议和审阅控件仍然可见，后续输入会直接修改已接受内容。
+示例默认使用建议模式，并包含一条插入建议和一条删除建议。打开段落旁的讨论按钮来接受或拒绝修改，再尝试撤销和重做。切换到编辑模式后，待处理修改仍然可见，而普通编辑会直接发布；在建议模式下输入可提议修改。
 
 <PackageInfo>
 
@@ -134,12 +134,14 @@ export function SuggestionModeButton() {
 }
 ```
 
-两个模式映射到以下 authored view：
+切换模式会更新输入 intent，并保留当前 projection：
 
-| 建议模式 | Authored view |
-| --- | --- |
-| `'suggesting'` | `{ intent: 'propose', projection: 'markup' }` |
-| `'editing'` | `{ intent: 'edit', projection: 'markup' }` |
+| 模式 | Intent | Projection |
+| --- | --- | --- |
+| `'suggesting'` | `'propose'` | 保留 `markup` 或 `proposed`。`accepted` view 会切换到 `markup`，以便显示新 proposal。 |
+| `'editing'` | `'edit'` | 保留 `accepted`、`proposed` 或 `markup`。 |
+
+编辑模式下的 markup view 会显示待处理 change，同时把对 accepted content 的普通编辑直接发布。依赖待处理 content 的编辑仍可审阅，并归属于当前作者。只有需要隐藏待处理 content 时才使用 accepted projection。
 
 模式属于精确的已挂载 view。同一个文档的两个 view 可以使用不同模式，互不影响。
 
@@ -206,7 +208,7 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 <ComponentPreview name="suggestion-persistence-demo" height="440px" />
 
-Snapshot 仅保存在内存中，页面重新加载后会消失。**Reload snapshot** 会从已保存的文档和 thread 创建 editor，并丢弃未保存的工作。待处理 change 和决定属于文档；本地 undo stack 属于 editor session。
+Snapshot 仅保存在内存中，页面重新加载后会消失。**Reload snapshot** 会从已保存的文档和 `CommentsJSON` 创建新 editor，丢弃未保存的工作，并从空的本地 undo stack 开始。待处理 change 和决定属于文档；对话独立于文档 undo 保存。
 
 ## 创建和决定 change
 
@@ -246,10 +248,12 @@ const result = authored.update.decide({
 
 ```tsx
 const savedDocument = editor.read.value();
-const savedThreads = editor.plugin(CommentsPlugin).api.getThreads();
+const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
 ```
 
-为同一个应用 revision 一起保存文档和评论 thread。加载文档时使用相同的内容插件。只保存 `children` 会丢失 authored record。
+按同一个应用版本和对话代次原子保存文档与 `CommentsJSON`。加载前验证关联，并使用相同的内容插件。只保存 `children` 会丢失 authored record。
+
+创建新 editor，将文档传给 `initialValue`，并配置 `CommentsPlugin.configure({ initialState: { initialComments: savedComments } })`。本地 undo stack 从空开始。文档保留每个 change 的作者和 ID，使回复仍可定位同一建议。将 `userId` 设置为当前作者；加载其他作者的建议不需要切换身份或重放编辑。历史预览和恢复请参阅[当前对话与历史目标的关联](/docs/comment#历史版本)。
 
 对于 JSON、Markdown、HTML 或 DOCX，请选择显式的[导出投影](/docs/authored-changes#导出显式投影)。Accepted 和 proposed 导出会省略审阅记录；当保存格式需要保留记录时，使用 `review`。
 
@@ -281,15 +285,22 @@ editor.plugin(BaseSuggestionPlugin).api.setMode('suggesting');
 以 authored change ID 为 target，即可通过编程方式附加对话：
 
 ```tsx
-await editor.plugin(CommentsPlugin).api.createThread({
+import { CommentsPlugin } from 'platejs/comments/react';
+
+const comments = editor.plugin(CommentsPlugin).api;
+const result = await comments.createThread({
   body: [
     { type: 'paragraph', children: [{ text: 'Can we explain this edit?' }] },
   ],
   target: { type: 'change', id: changeId },
 });
+
+if (result.status === 'applied') {
+  comments.setActive([result.value]);
+}
 ```
 
-Comments 将 thread record 与文档分开保存。接受或拒绝 change 会隐藏其审阅卡片，但不会解决 thread。
+结果不是 `applied` 或抛出异常时保留输入。Comments 通过 `initialState.mutate` 授权持久化写入，只发布已提交的规范记录。接受或拒绝 change 是可撤销的文档操作；它隐藏审阅卡片，但不删除或解决讨论。Undo 恢复待处理 change，并保留消息与解决状态。解决或重新打开 thread 不进入文档 undo。
 
 ## API 参考
 

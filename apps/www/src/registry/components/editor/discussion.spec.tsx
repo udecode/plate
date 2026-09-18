@@ -1,8 +1,9 @@
 import { afterAll, describe, expect, it, mock } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import { BaseLinkPlugin, type Range } from 'platejs';
+import { BaseLinkPlugin, ElementApi, type Range } from 'platejs';
 import { type AuthoredChange, DefaultAuthoredPlugin } from 'platejs/authored';
+import type { CommentMutationResult } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   EditorContainer,
@@ -19,6 +20,11 @@ import * as React from 'react';
 
 import { commentDecorationAttributes, createCommentValue } from './comment';
 import { SuggestionKit } from './suggestion';
+
+const applied = <T,>(result: CommentMutationResult<T>): T => {
+  if (result.status !== 'applied') throw new Error(`Mutation ${result.status}`);
+  return result.value;
+};
 
 let floatingAnchor:
   | Element
@@ -49,6 +55,168 @@ afterAll(() => {
 });
 
 describe('DiscussionSlots', () => {
+  it('maps a decided conversation through a pending prepend without rescanning it for an unrelated edit', async () => {
+    const { DiscussionSlots } = await import(
+      `./discussion?test=${Math.random().toString(36).slice(2)}`
+    );
+    let reads = 0;
+    const commentsPlugin = CommentsPlugin.extend({
+      api: ({ api }) => ({
+        getThreads: () => {
+          reads += 1;
+          return api.getThreads();
+        },
+      }),
+    }).configure({
+      slots: DiscussionSlots,
+      initialState: { currentUserId: 'alice' },
+    });
+    const model = createEditor({
+      plugins: [...SuggestionKit, commentsPlugin],
+      userId: 'alice',
+      initialValue: ['Before', 'Target', 'Unrelated'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      })),
+    });
+    let changeId = '';
+    model.update((tx) => {
+      changeId = tx.authored.propose();
+      tx.text.insert(' noted', { at: { path: [1, 0], offset: 6 } });
+    });
+    const authored = model.plugin(DefaultAuthoredPlugin);
+    authored.update.decide({
+      action: 'accept',
+      selection: authored.read.select({ ids: [changeId] }),
+    });
+    const comments = model.plugin(CommentsPlugin).api;
+    const id = applied(
+      await comments.createThread({
+        target: { type: 'change', id: changeId },
+        body: createCommentValue('Retained review'),
+      })
+    );
+    let mountedEditor!: ReturnType<typeof useEditor>;
+    function CaptureEditor() {
+      mountedEditor = useEditor();
+      return null;
+    }
+    const view = render(
+      <EditorRoot
+        editor={model}
+        authored={{ intent: 'edit', projection: 'markup' }}
+      >
+        <CaptureEditor />
+        <EditorContainer>
+          <EditorContent />
+        </EditorContainer>
+      </EditorRoot>
+    );
+    const trigger = () =>
+      view
+        .getAllByRole('button', {
+          name: 'Open 1 discussion item for this block',
+        })
+        .find(
+          (button) =>
+            button.parentElement?.parentElement?.textContent === 'Target noted'
+        )!;
+    await waitFor(() =>
+      expect(trigger().parentElement?.parentElement?.textContent).toBe(
+        'Target noted'
+      )
+    );
+    reads = 0;
+    act(() =>
+      mountedEditor.update.text.insert('!', { at: { path: [2, 0], offset: 9 } })
+    );
+    expect(reads).toBe(0);
+    act(() => {
+      mountedEditor.plugin(SuggestionPlugin).api.setMode('suggesting');
+      mountedEditor.update.nodes.insert(
+        { type: 'paragraph', children: [{ text: 'Pending prepend' }] },
+        { at: [0] }
+      );
+    });
+    await waitFor(() =>
+      expect(
+        mountedEditor.plugin(DefaultAuthoredPlugin).read.change(changeId)
+          ?.ranges[0].anchor.path[0]
+      ).toBe(2)
+    );
+    expect(trigger().parentElement?.parentElement?.textContent).toBe(
+      'Target noted'
+    );
+    expect(reads).toBeGreaterThan(0);
+    fireEvent.click(trigger());
+    expect(view.getByText('Retained review')).toBeTruthy();
+    expect(view.getByRole('textbox', { name: 'Reply to thread' })).toBeTruthy();
+    expect(comments.getThread(id)?.target).toEqual({
+      type: 'change',
+      id: changeId,
+    });
+    view.unmount();
+  });
+
+  it('keeps suggestion cards on their live block after a preceding split and merge', async () => {
+    const { DiscussionSlots } = await import(
+      `./discussion?test=${Math.random().toString(36).slice(2)}`
+    );
+    const editor = createEditor({
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'Before' }] },
+        { type: 'paragraph', children: [{ text: 'Review this' }] },
+      ],
+      plugins: [
+        ...SuggestionKit,
+        CommentsPlugin.configure({ slots: DiscussionSlots }),
+      ],
+      userId: 'alice',
+    });
+    let changeId = '';
+    editor.update((tx) => {
+      changeId = tx.authored.propose();
+      tx.text.insert(' carefully', { at: { path: [1, 0], offset: 11 } });
+    });
+    const view = render(
+      <EditorRoot editor={editor}>
+        <EditorContainer>
+          <EditorContent />
+        </EditorContainer>
+      </EditorRoot>
+    );
+    const checkSuggestion = async () => {
+      const trigger = await view.findByRole('button', {
+        name: 'Open 1 discussion item for this block',
+      });
+      expect(trigger.parentElement?.parentElement?.textContent).toBe(
+        'Review this'
+      );
+      fireEvent.click(trigger);
+      expect(
+        view.container.querySelector(`[data-suggestion-review="${changeId}"]`)
+      ).not.toBeNull();
+      fireEvent.click(
+        view.getByRole('button', {
+          name: 'Close 1 discussion item for this block',
+        })
+      );
+    };
+    await checkSuggestion();
+    act(() =>
+      editor.update.nodes.split({
+        at: { path: [0, 0], offset: 0 },
+        always: true,
+        match: (node) =>
+          ElementApi.isElement(node) && node.type === 'paragraph',
+      })
+    );
+    await checkSuggestion();
+    act(() => editor.update.nodes.merge({ at: [1] }));
+    await checkSuggestion();
+    view.unmount();
+  });
+
   it('groups only contiguous inserted text across an inline boundary', async () => {
     const { DiscussionSlots } = await import(
       `./discussion?test=${Math.random().toString(36).slice(2)}`
@@ -97,7 +265,6 @@ describe('DiscussionSlots', () => {
       tx.text.insert('first', { at: { offset: 0, path: [1, 0] } });
       tx.text.insert('second', { at: { offset: 6, path: [1, 0] } });
     });
-    editor.plugin(SuggestionPlugin).api.setMode('suggesting');
     const view = render(
       <EditorRoot editor={editor}>
         <EditorContainer>
@@ -208,10 +375,9 @@ describe('DiscussionSlots', () => {
         <>
           <button
             onClick={() =>
-              editor.plugin(DefaultAuthoredPlugin).api.setView({
-                intent: 'edit',
-                projection: 'accepted',
-              })
+              editor
+                .plugin(DefaultAuthoredPlugin)
+                .api.setView({ intent: 'edit', projection: 'accepted' })
             }
             type="button"
           >
@@ -219,10 +385,9 @@ describe('DiscussionSlots', () => {
           </button>
           <button
             onClick={() =>
-              editor.plugin(DefaultAuthoredPlugin).api.setView({
-                intent: 'propose',
-                projection: 'markup',
-              })
+              editor
+                .plugin(DefaultAuthoredPlugin)
+                .api.setView({ intent: 'edit', projection: 'markup' })
             }
             type="button"
           >
@@ -303,20 +468,24 @@ describe('DiscussionSlots', () => {
         tx.text.insert(' carefully', { at: { offset: 11, path: [0, 0] } });
       });
       const comments = editor.plugin(CommentsPlugin).api;
-      const id = (await comments.createThread({
-        body: [
-          {
-            children: [{ bold: true, text: 'Original rich reply' }],
-            type: 'paragraph',
-          },
-        ],
-        target: { id: changeId, type: 'change' },
-      }))!;
-      const resolvedId = (await comments.createThread({
-        body: createCommentValue('Explicitly resolved reply'),
-        target: { id: changeId, type: 'change' },
-      }))!;
-      comments.resolve(resolvedId);
+      const id = applied(
+        await comments.createThread({
+          body: [
+            {
+              children: [{ bold: true, text: 'Original rich reply' }],
+              type: 'paragraph',
+            },
+          ],
+          target: { id: changeId, type: 'change' },
+        })
+      );
+      const resolvedId = applied(
+        await comments.createThread({
+          body: createCommentValue('Explicitly resolved reply'),
+          target: { id: changeId, type: 'change' },
+        })
+      );
+      await comments.resolve(resolvedId);
       const record = comments.getThread(id);
       const snapshot = comments.getSnapshot();
       let changes: readonly AuthoredChange[] = [];
@@ -324,15 +493,30 @@ describe('DiscussionSlots', () => {
         changes = useSuggestionChanges([0]);
         return null;
       }
-      editor.plugin(SuggestionPlugin).api.setMode('suggesting');
+      function SuggestionModeControl() {
+        const mountedEditor = useEditor();
+
+        return (
+          <button
+            onClick={() =>
+              mountedEditor.plugin(SuggestionPlugin).api.setMode('suggesting')
+            }
+            type="button"
+          >
+            Suggestion mode
+          </button>
+        );
+      }
       const view = render(
         <EditorRoot editor={editor}>
+          <SuggestionModeControl />
           <ReadChanges />
           <EditorContainer>
             <EditorContent aria-label="Suggestions" />
           </EditorContainer>
         </EditorRoot>
       );
+      fireEvent.click(view.getByRole('button', { name: 'Suggestion mode' }));
       await waitFor(() =>
         expect(
           view.container.querySelector(
@@ -361,11 +545,30 @@ describe('DiscussionSlots', () => {
       );
       await waitFor(() =>
         expect(
-          view.container.querySelector(`[data-comment-thread="${id}"]`)
-        ).toBeNull()
+          view.container.querySelector(`[data-comment-thread="${id}"] strong`)
+            ?.textContent
+        ).toBe('Original rich reply')
       );
       expect(comments.getSnapshot()).toBe(snapshot);
-      act(() => editor.update((tx) => tx.history.undo()));
+      fireEvent.click(
+        await view.findByRole('button', {
+          name: 'Open 1 discussion item for this block',
+        })
+      );
+      expect(
+        view.container.querySelector(`[data-comment-thread="${id}"] strong`)
+          ?.textContent
+      ).toBe('Original rich reply');
+      expect(
+        view.queryByRole('button', { name: 'Accept suggestion' })
+      ).toBeNull();
+      expect(comments.getThread(id)).toBe(record);
+      fireEvent.click(
+        view.getByRole('button', {
+          name: 'Close 1 discussion item for this block',
+        })
+      );
+      act(() => editor.api.history.undo());
       fireEvent.click(
         await view.findByRole('button', {
           name: 'Open 2 discussion items for this block',
@@ -384,20 +587,25 @@ describe('DiscussionSlots', () => {
       expect(
         comments.getThreads().every(({ target }) => target.type === 'change')
       ).toBe(true);
-      act(() => editor.update((tx) => tx.history.redo()));
+      act(() => editor.api.history.redo());
       await waitFor(() =>
         expect(
-          view.container.querySelector(`[data-comment-thread="${id}"]`)
-        ).toBeNull()
+          view.container.querySelector(`[data-comment-thread="${id}"] strong`)
+            ?.textContent
+        ).toBe('Original rich reply')
       );
       expect(comments.getSnapshot()).toBe(snapshot);
-      expect(comments.getThread(resolvedId)?.resolved).toBe(true);
+      expect(
+        view.container.querySelector(`[data-comment-thread="${id}"] strong`)
+          ?.textContent
+      ).toBe('Original rich reply');
+      expect(comments.getThread(resolvedId)?.resolution).not.toBeNull();
       expect(comments.getThread(id)).toBe(record);
       view.unmount();
     }
   );
 
-  it('tracks the active collapsed range and falls back to its block trigger', async () => {
+  it('removes live placement when an active range loses all content', async () => {
     const { DiscussionSlots } = await import(
       `./discussion?test=${Math.random().toString(36).slice(2)}`
     );
@@ -427,42 +635,27 @@ describe('DiscussionSlots', () => {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     };
-    const id = (await comments.createThread({
-      target: { range, type: 'range' },
-      body: createCommentValue('First character'),
-      id: 'first-character',
-    }))!;
-    const Root = DiscussionSlots.wrapRoot;
-    const Block = DiscussionSlots.wrapNode.component;
-    const AfterEditable = DiscussionSlots.afterEditable;
-    const editableRef = { current: document.createElement('div') };
-
+    const id = applied(
+      await comments.createThread({
+        target: { range, type: 'range' },
+        body: createCommentValue('First character'),
+        id: 'first-character',
+      })
+    );
     editor.plugin(commentsPlugin).api.setActive([id]);
 
     const view = render(
       <EditorRoot editor={editor}>
-        <Root>
-          <Block
-            {...({
-              children: <div>Alpha</div>,
-              editor,
-              element: editor.read.nodes.get([0])![0],
-              renderPath: [0],
-            } as any)}
-          />
-          <AfterEditable editableRef={editableRef} />
-        </Root>
+        <EditorContainer>
+          <EditorContent />
+        </EditorContainer>
       </EditorRoot>
     );
 
-    const trigger = await view.findByRole('button', {
+    await view.findByRole('button', {
       name: 'Open 1 discussion item for this block',
     });
-    const triggerRect = new DOMRect(480, 120, 30, 24);
-
-    trigger.getBoundingClientRect = () => triggerRect;
     await waitFor(() => expect(floatingAnchor).not.toBeNull());
-    const initialFloatingAnchor = floatingAnchor;
 
     act(() => {
       editor.update({ history: 'new-batch' }, (tx) => {
@@ -471,18 +664,16 @@ describe('DiscussionSlots', () => {
     });
 
     await waitFor(() => {
-      expect(editor.plugin(commentsPlugin).api.range(id)).toEqual({
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
+      expect(editor.plugin(commentsPlugin).api.attachment(id)).toEqual({
+        type: 'range',
+        status: 'unavailable',
       });
-      expect(floatingAnchor).not.toBe(initialFloatingAnchor);
       expect(
-        (
-          floatingAnchor as {
-            getBoundingClientRect: () => DOMRect | DOMRectReadOnly;
-          }
-        ).getBoundingClientRect()
-      ).toEqual(triggerRect);
+        view.queryByRole('button', {
+          name: 'Open 1 discussion item for this block',
+        })
+      ).toBeNull();
+      expect(view.queryByText('First character')).toBeNull();
     });
   });
 
@@ -508,17 +699,19 @@ describe('DiscussionSlots', () => {
       ],
       plugins: [commentsPlugin],
     });
-    const id = (await editor.plugin(commentsPlugin).api.createThread({
-      body: createCommentValue('Mounted comment'),
-      id: 'mounted-comment',
-      target: {
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 6, path: [0, 0] },
+    const id = applied(
+      await editor.plugin(commentsPlugin).api.createThread({
+        body: createCommentValue('Mounted comment'),
+        id: 'mounted-comment',
+        target: {
+          range: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 6, path: [0, 0] },
+          },
+          type: 'range',
         },
-        type: 'range',
-      },
-    }))!;
+      })
+    );
 
     editor.plugin(commentsPlugin).api.setActive([id]);
     const view = render(
@@ -571,28 +764,21 @@ it('discovers a suggestion after the first 200 without materializing a global ca
     });
   }
 
-  const Root = DiscussionSlots.wrapRoot;
-  const Block = DiscussionSlots.wrapNode.component;
   const view = render(
     <EditorRoot editor={editor}>
-      <Root>
-        <Block
-          {...({
-            children: <div>Block 200</div>,
-            editor,
-            element: editor.read.nodes.get([200])![0],
-            renderPath: [200],
-          } as any)}
-        />
-      </Root>
+      <EditorContainer>
+        <EditorContent />
+      </EditorContainer>
     </EditorRoot>
   );
 
-  expect(
-    await view.findByRole('button', {
-      name: 'Open 1 discussion item for this block',
-    })
-  ).toBeTruthy();
+  const triggers = await view.findAllByRole('button', {
+    name: 'Open 1 discussion item for this block',
+  });
+  expect(triggers).toHaveLength(201);
+  expect(triggers[200].parentElement?.parentElement?.textContent).toBe(
+    'Block 200'
+  );
   view.unmount();
 });
 
@@ -715,98 +901,169 @@ it('keeps a blocked decision open and applies related changes only after an expl
   view.unmount();
 });
 
-it('moves block triggers with loaded ranges and preserves them when invalid records are rejected', async () => {
+it('restores independent block triggers from saved ranges and rejects invalid initialization', async () => {
   const { DiscussionSlots } = await import(
     `./discussion?test=${Math.random().toString(36).slice(2)}`
   );
-  let range: Range = {
-    anchor: { path: [0, 0], offset: 4 },
-    focus: { path: [0, 0], offset: 1 },
-  };
   const plugin = CommentsPlugin.configure({
     initialState: { currentUserId: 'alice' },
     decorate: { attributes: commentDecorationAttributes },
     slots: DiscussionSlots,
   });
-  const editor = createEditor({
+  const source = createEditor({
     plugins: [plugin],
     initialValue: [
       { type: 'paragraph', children: [{ text: 'Alpha' }] },
       { type: 'paragraph', children: [{ text: 'Bravo' }] },
     ],
   });
-  const comments = editor.plugin(CommentsPlugin).api;
-  await comments.createThread({
-    id: 'moving',
-    target: { type: 'range', range },
-    body: createCommentValue('Move me'),
+  const comments = source.plugin(CommentsPlugin).api;
+  applied(
+    await comments.createThread({
+      id: 'moving',
+      target: {
+        type: 'range',
+        range: {
+          anchor: { path: [0, 0], offset: 4 },
+          focus: { path: [0, 0], offset: 1 },
+        },
+      },
+      body: createCommentValue('Move me'),
+    })
+  );
+  const snapshot = JSON.parse(
+    JSON.stringify({
+      document: source.read.value(),
+      comments: comments.toJSON(),
+    })
+  );
+  const editor = createEditor({
+    plugins: [
+      plugin,
+      CommentsPlugin.configure({
+        initialState: { initialComments: snapshot.comments },
+      }),
+    ],
+    initialValue: snapshot.document,
   });
-  const Root = DiscussionSlots.wrapRoot;
-  const Block = DiscussionSlots.wrapNode.component;
-  const view = render(
+  const assembly = () => (
     <EditorRoot editor={editor}>
-      <Root>
-        {[0, 1].map((index) => (
-          <section data-testid={`block-${index}`} key={index}>
-            <Block
-              {...({
-                children: <div>Block {index}</div>,
-                editor,
-                element: editor.read.nodes.get([index])![0],
-                renderPath: [index],
-              } as any)}
-            />
-          </section>
-        ))}
-      </Root>
+      <EditorContainer>
+        <EditorContent />
+      </EditorContainer>
     </EditorRoot>
   );
-  expect(view.getByTestId('block-0').querySelector('button')).not.toBeNull();
-  expect(view.getByTestId('block-1').querySelector('button')).toBeNull();
-  act(() => {
-    range = {
-      anchor: { path: [1, 0], offset: 2 },
-      focus: { path: [0, 0], offset: 1 },
-    };
-    comments.setThreads([
-      { ...comments.getThread('moving')!, target: { type: 'range', range } },
-    ]);
-  });
-  expect(view.getByTestId('block-0').querySelector('button')).not.toBeNull();
-  expect(view.getByTestId('block-1').querySelector('button')).not.toBeNull();
-  act(() => {
-    range = {
-      anchor: { path: [1, 0], offset: 2 },
-      focus: { path: [1, 0], offset: 2 },
-    };
-    comments.setThreads([
-      { ...comments.getThread('moving')!, target: { type: 'range', range } },
-    ]);
-  });
-  expect(view.getByTestId('block-0').querySelector('button')).toBeNull();
-  expect(view.getByTestId('block-1').querySelector('button')).not.toBeNull();
-  act(() => {
-    expect(() =>
-      comments.setThreads([
-        comments.getThread('moving')!,
-        comments.getThread('moving')!,
-      ])
-    ).toThrow('Duplicate comment thread ID');
-  });
-  expect(view.getByTestId('block-1').querySelector('button')).not.toBeNull();
-  act(() => {
-    range = {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 1 },
-    };
-    comments.setThreads([
-      { ...comments.getThread('moving')!, target: { type: 'range', range } },
-    ]);
-  });
-  expect(view.getByTestId('block-0').querySelector('button')).not.toBeNull();
-  expect(view.getByTestId('block-1').querySelector('button')).toBeNull();
+  const view = render(assembly());
+  const block = (index: number) =>
+    view.container.querySelector('[data-editor="true"]')!.children[index];
+  expect(block(0).querySelector('button')).not.toBeNull();
+  expect(block(1).querySelector('button')).toBeNull();
+  act(() => source.update.nodes.move({ at: [0], to: [1] }));
+  expect(block(0).querySelector('button')).not.toBeNull();
+  expect(block(1).querySelector('button')).toBeNull();
+  expect(() =>
+    createEditor({
+      plugins: [
+        plugin,
+        CommentsPlugin.configure({
+          initialState: {
+            initialComments: {
+              ...snapshot.comments,
+              threads: [
+                ...snapshot.comments.threads,
+                snapshot.comments.threads[0],
+              ],
+            },
+          },
+        }),
+      ],
+      initialValue: snapshot.document,
+    })
+  ).toThrow('Duplicate comment thread ID');
+  expect(block(0).querySelector('button')).not.toBeNull();
+  act(() => editor.update.nodes.move({ at: [0], to: [1] }));
+  view.rerender(assembly());
+  expect(block(0).querySelector('button')).toBeNull();
+  expect(block(1).querySelector('button')).not.toBeNull();
   view.unmount();
 });
+
+it.each(['range', 'change'] as const)(
+  'does not place a restored %s conversation when this revision has no target',
+  async (targetType) => {
+    const { DiscussionSlots } = await import(
+      `./discussion?test=${Math.random().toString(36).slice(2)}`
+    );
+    const source = createEditor({
+      plugins: [
+        CommentsPlugin.configure({ initialState: { currentUserId: 'alice' } }),
+      ],
+      initialValue: [{ type: 'paragraph', children: [{ text: 'Original' }] }],
+    });
+    const comments = source.plugin(CommentsPlugin).api;
+    const id = applied(
+      await comments.createThread({
+        body: createCommentValue('Retained conversation'),
+        target:
+          targetType === 'change'
+            ? { type: 'change', id: 'historical-change' }
+            : {
+                type: 'range',
+                range: {
+                  anchor: { path: [0, 0], offset: 0 },
+                  focus: { path: [0, 0], offset: 8 },
+                },
+              },
+      })
+    );
+    const saved = comments.toJSON();
+    const editor = createEditor({
+      plugins: [
+        CommentsPlugin.configure({
+          initialState: {
+            currentUserId: 'alice',
+            initialComments: {
+              ...saved,
+              ranges:
+                targetType === 'range' ? [{ threadId: id, range: null }] : [],
+            },
+          },
+          slots: DiscussionSlots,
+        }),
+      ],
+      initialValue: source.read.value(),
+    });
+    const Root = DiscussionSlots.wrapRoot;
+    const AfterEditable = DiscussionSlots.afterEditable;
+    const view = render(
+      <EditorRoot editor={editor}>
+        <Root>
+          <AfterEditable editableRef={{ current: null }} />
+        </Root>
+      </EditorRoot>
+    );
+    try {
+      expect(view.queryByText('Retained conversation')).toBeNull();
+      expect(view.queryByText('Comment target unavailable')).toBeNull();
+      expect(
+        view.queryByRole('textbox', { name: 'Reply to thread' })
+      ).toBeNull();
+      expect(editor.plugin(CommentsPlugin).api.getThread(id)?.target).toEqual(
+        targetType === 'change'
+          ? { type: 'change', id: 'historical-change' }
+          : { type: 'range' }
+      );
+      await act(async () => {
+        await editor.plugin(CommentsPlugin).api.resolve(id);
+      });
+      expect(
+        editor.plugin(CommentsPlugin).api.getThread(id)?.resolution
+      ).not.toBeNull();
+    } finally {
+      view.unmount();
+    }
+  }
+);
 
 it('groups mixed discussions in every covered block without filling gaps in a suggestion', async () => {
   const { DiscussionSlots } = await import(
@@ -846,34 +1103,23 @@ it('groups mixed discussions in every covered block without filling gaps in a su
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [2, 0], offset: 4 },
   };
-  const id = (await comments.createThread({
-    body: createCommentValue('Across paragraphs'),
-    target: { type: 'range', range },
-  }))!;
-  const Root = DiscussionSlots.wrapRoot;
-  const Block = DiscussionSlots.wrapNode.component;
+  const id = applied(
+    await comments.createThread({
+      body: createCommentValue('Across paragraphs'),
+      target: { type: 'range', range },
+    })
+  );
   const view = render(
     <EditorRoot editor={editor}>
-      <Root>
-        {[0, 1, 2].map((index) => (
-          <section data-testid={`block-${index}`} key={index}>
-            <Block
-              {...({
-                children: <div>Block {index}</div>,
-                editor,
-                element: editor.read.nodes.get([index])![0],
-                renderPath: [index],
-              } as any)}
-            />
-          </section>
-        ))}
-      </Root>
+      <EditorContainer>
+        <EditorContent />
+      </EditorContainer>
     </EditorRoot>
   );
   const count = (index: number) =>
-    view
-      .getByTestId(`block-${index}`)
-      .querySelector('[data-count]')
+    view.container
+      .querySelector('[data-editor="true"]')!
+      .children[index].querySelector('[data-count]')
       ?.getAttribute('data-count');
 
   expect([0, 1, 2].map(count)).toEqual(['2', '1', '2']);
@@ -896,7 +1142,9 @@ it('retains rich composer input on rejection and pending persistence, then clear
     decorate: { attributes: commentDecorationAttributes },
   });
   const editor = createEditor({ plugins: [plugin] });
-  let outcome: boolean | Promise<boolean> = false;
+  let outcome: Promise<CommentMutationResult> = Promise.resolve({
+    status: 'rejected',
+  });
   const submit = mock<React.ComponentProps<typeof CommentComposer>['onSubmit']>(
     () => outcome
   );
@@ -928,7 +1176,7 @@ it('retains rich composer input on rejection and pending persistence, then clear
   expect(
     view.getByRole('textbox', { name: 'Persisted reply' }).textContent
   ).toContain('Keep this draft');
-  let complete!: (saved: boolean) => void;
+  let complete!: (saved: CommentMutationResult) => void;
   outcome = new Promise((resolve) => {
     complete = resolve;
   });
@@ -940,7 +1188,7 @@ it('retains rich composer input on rejection and pending persistence, then clear
   fireEvent.submit(form);
   expect(submit).toHaveBeenCalledTimes(3);
   await act(async () => {
-    complete(true);
+    complete({ status: 'applied', value: undefined });
     await outcome;
   });
   await waitFor(() =>
@@ -971,7 +1219,7 @@ it('updates a mounted author profile without publishing thread or anchor changes
   const comments = editor.plugin(CommentsPlugin).api;
   const anchors = mock();
   const threadIds = mock();
-  comments.subscribe(anchors);
+  comments.subscribeAttachments(anchors);
   comments.subscribeVisibleThreadIds(threadIds);
   const Profile = () => <span>{useCommentUser('alice')?.name}</span>;
   const view = render(

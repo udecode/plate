@@ -19,6 +19,7 @@ import {
   select as editorSelect,
   string as editorString,
 } from '../../src/internal';
+import { nativeGroupingInput } from '../../src/react/editable/input-history';
 import {
   clearExpiredTextInputRepairEcho,
   createEditableInputController,
@@ -636,6 +637,12 @@ describe('Android input manager stored text diffs', () => {
     manager.flush();
 
     expect(editorString(editor, [])).toBe('x');
+    const commit = editor.read((state) => state.lastCommit());
+
+    expect(commit?.tags).toContain('dom-text-input');
+    expect(commit?.annotations[nativeGroupingInput.key]).toEqual({
+      origin: inputController.nativeHistoryOrigin,
+    });
   });
 
   it('flushes pending text diffs on input while selection is model-owned', () => {

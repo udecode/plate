@@ -6,7 +6,8 @@
   "dependencies": [
     "@hookform/resolvers",
     "react-hook-form",
-    "zod"
+    "zod",
+    "lucide-react"
   ],
   "registryDependencies": [
     "button",

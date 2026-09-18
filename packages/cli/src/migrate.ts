@@ -174,7 +174,7 @@ export const createEditorMigration = async (
     compiled.schema.identity.kind === 'named'
       ? compiled.schema.identity.version
       : 'number';
-  const migration = `import type { DocumentMigration, EditorDocumentValue } from 'platejs';\n\nimport type { Value as FromValue } from './from';\nimport type { Value as ToValue } from './to';\n\ntype FromDocument = EditorDocumentValue<FromValue>;\ntype ToDocument = EditorDocumentValue<ToValue>;\n\n/** Add this target-version step to the application document migration chain. */\nexport const migrate: DocumentMigration<\n  FromDocument,\n  ToDocument,\n  ${fromVersion},\n  ${toVersion}\n> = ({ document }) => {\n  void document;\n  throw new Error('Implement schema migration: ${name}');\n};\n`;
+  const migration = `import type { EditorDocumentValue } from 'platejs';\nimport type { DocumentMigration } from 'platejs/migrations';\n\nimport type { Value as FromValue } from './from';\nimport type { Value as ToValue } from './to';\n\ntype FromDocument = EditorDocumentValue<FromValue>;\ntype ToDocument = EditorDocumentValue<ToValue>;\n\n/** Add this target-version step to the application document migration chain. */\nexport const migrate: DocumentMigration<\n  FromDocument,\n  ToDocument,\n  ${fromVersion},\n  ${toVersion}\n> = ({ document }) => {\n  void document;\n  throw new Error('Implement schema migration: ${name}');\n};\n`;
   const manifest = `${JSON.stringify(
     {
       checksums: {

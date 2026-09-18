@@ -3,7 +3,9 @@
   "name": "emoji-toolbar-button",
   "title": "Emoji Toolbar Button",
   "description": "An emoji picker toolbar button.",
-  "dependencies": [],
+  "dependencies": [
+    "lucide-react"
+  ],
   "registryDependencies": [
     "https://platejs.org/r/emoji-picker.json",
     "https://platejs.org/r/toolbar.json"

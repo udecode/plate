@@ -84,8 +84,10 @@ accessibility traversal, print output, and third-party DOM integrations. Keep a
 complete surface when those jobs matter more than the DOM budget.
 
 For paginated documents, set `virtualize` on
-[`PagedEditable`](../libraries/plite-pagination). Pagination owns omission at
-the page boundary and keeps one canvas coordinate system.
+[`PagedEditable`](../libraries/plite-pagination). The paged view owns
+measurement, element placement, and omission at the page boundary while
+keeping one canvas coordinate system. The complete paged DOM remains the
+default.
 
 Use stable `PliteDecorationSource` objects for inline paint. Plite subscribes
 once per source, rereads only affected input node keys after document edits, and

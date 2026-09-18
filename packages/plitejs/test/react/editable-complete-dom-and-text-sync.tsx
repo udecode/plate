@@ -222,7 +222,7 @@ test('Editable restores native-updated app-owned text from model history', async
       });
       tx.text.insert('beta', { at: { path: [0, 0], offset: 0 } });
     });
-    editor.update.history.undo();
+    editor.api.history.undo();
   });
 
   expect(
@@ -379,8 +379,8 @@ test('Editable routes native-updated decorated text through React', async () => 
   await act(async () => {
     editor.update({ history: 'new-batch' }).break.insert();
     editor.update({ history: 'new-batch' }).break.insert();
-    editor.update.history.undo();
-    editor.update.history.undo();
+    editor.api.history.undo();
+    editor.api.history.undo();
   });
 
   expect(editor.read.text.string([])).toBe('alpha! beta');
@@ -473,7 +473,7 @@ test('custom text history preserves affected and sibling leaf owners', async () 
     });
   });
   await act(async () => {
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
   });
 
   expect(editor.read.text.string([])).toBe('firstsecond');
@@ -565,7 +565,7 @@ test('Editable renders decorated leaf strings from model-owned history', async (
     editor.update((tx) => {
       tx.text.insert('!', { at: { path: [0, 0], offset: 5 } });
     });
-    editor.update.history.undo();
+    editor.api.history.undo();
   });
 
   expect(didSyncTextPathToDOM(mountedEditor, [0, 0])).toBe(true);
@@ -610,8 +610,8 @@ test('Editable restores decorated text exactly after split history merges', asyn
     editor.update.text.insert('!');
     editor.update({ history: 'new-batch' }).break.insert();
     editor.update({ history: 'new-batch' }).break.insert();
-    editor.update.history.undo();
-    editor.update.history.undo();
+    editor.api.history.undo();
+    editor.api.history.undo();
   });
 
   expect(editor.read.text.string([])).toBe('alpha! beta');
@@ -659,8 +659,8 @@ test('Editable restores capability-backed decorated leaf text after split histor
     editor.update.text.insert('!');
     editor.update({ history: 'new-batch' }).break.insert();
     editor.update({ history: 'new-batch' }).break.insert();
-    editor.update.history.undo();
-    editor.update.history.undo();
+    editor.api.history.undo();
+    editor.api.history.undo();
   });
 
   expect(editor.read.text.string([])).toBe('alpha! beta');

@@ -1,9 +1,17 @@
 'use client';
 
-import type { Range, Value } from 'platejs';
-import { BaseCommentsPlugin, type CommentThread } from 'platejs/comments';
+import {
+  createEditor,
+  DocumentChange,
+  type EditorDocumentValue,
+  NodeApi,
+  type Range,
+} from 'platejs';
+import { createAuthoredReviewDocument } from 'platejs/authored';
+import { BaseCommentsPlugin, type CommentsJSON } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
+import { BaseSuggestionPlugin } from 'platejs/suggestion';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -12,9 +20,16 @@ import {
   createCommentValue,
 } from '@/registry/components/editor/comment';
 import { commentDecorationAttributes as staticCommentDecorationAttributes } from '@/registry/components/editor/comment-static';
-import { CommentToolbarButton } from '@/registry/components/editor/comment-toolbar-button';
+import {
+  AllCommentsButton,
+  CommentToolbarButton,
+} from '@/registry/components/editor/comment-toolbar-button';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { EditorStatic } from '@/registry/components/editor/editor-static';
 import {
   FixedToolbar,
@@ -36,48 +51,120 @@ const commentRanges: readonly Range[] = [
   },
 ];
 
-const createInitialValue = (): Value => [
-  {
-    children: [
-      {
-        text: 'This paragraph has two overlapping comments backed by persistent editor anchors.',
-      },
-    ],
-    type: 'paragraph',
-  },
-  ...structuredClone(suggestionValue),
-];
+const createInitialValue = (review: string): EditorDocumentValue => ({
+  children: [
+    {
+      children: [
+        {
+          text: 'This paragraph has two overlapping comments backed by persistent editor anchors.',
+        },
+      ],
+      type: 'paragraph',
+    },
+    { type: 'paragraph', children: [{ text: review }] },
+  ],
+});
 
-const initialThreads: readonly CommentThread[] = [
-  ...commentRanges.map((range, index): CommentThread => ({
-    createdAt: '2026-09-09T12:00:00.000Z',
-    excerpt:
-      index === 0
-        ? 'paragraph has two overlapping'
-        : 'overlapping comments backed by',
-    id: index === 0 ? 'ownership' : 'overlap',
-    messages: [
-      {
-        body: createCommentValue(
-          index === 0
-            ? 'The first thread stores its body with a document range.'
-            : 'Overlaps stay ordered without nested leaf renderers.'
-        ),
+const createInitialRevision = () => {
+  const review = NodeApi.string(suggestionValue[0]);
+  const accepted = createInitialValue(
+    review.replace('tighten the wording', '')
+  );
+  const inserted = createInitialValue(review);
+  const proposed = createInitialValue(
+    review.replace('keep this redundant phrase', '')
+  );
+  const fixture = createEditor({
+    plugins: [...BaseEditorKit, BaseSuggestionPlugin],
+    userId: 'alice',
+    initialValue: createAuthoredReviewDocument({
+      accepted,
+      revisions: [
+        {
+          id: 'tighten',
+          authorId: 'alice',
+          createdAt: Date.parse('2026-09-09T12:00:00.000Z'),
+          change: DocumentChange.between(accepted, inserted),
+        },
+        {
+          id: 'remove',
+          authorId: 'bob',
+          createdAt: Date.parse('2026-09-09T12:01:00.000Z'),
+          change: DocumentChange.between(inserted, proposed),
+        },
+      ],
+    }),
+  });
+  const comments: CommentsJSON = {
+    kind: 'plate-comments',
+    version: 1,
+    ranges: commentRanges.map((range, index) => {
+      const anchor = fixture.anchor(range, {
+        association: 'inward',
+        deletion: 'nearest',
+      });
+      const saved = fixture.anchor.save(anchor);
+      anchor.release();
+      return { threadId: index === 0 ? 'ownership' : 'overlap', range: saved };
+    }),
+    threads: [
+      ...commentRanges.map((_, index) => ({
         createdAt: '2026-09-09T12:00:00.000Z',
-        id: index === 0 ? 'ownership-message' : 'overlap-message',
+        excerpt:
+          index === 0
+            ? 'paragraph has two overlapping'
+            : 'overlapping comments backed by',
+        id: index === 0 ? 'ownership' : 'overlap',
+        messages: [
+          {
+            body: createCommentValue(
+              index === 0
+                ? 'The first thread stores its body with a document range.'
+                : 'Overlaps stay ordered without nested leaf renderers.'
+            ),
+            createdAt: '2026-09-09T12:00:00.000Z',
+            id: index === 0 ? 'ownership-message' : 'overlap-message',
+            userId: index === 0 ? 'alice' : 'bob',
+          },
+        ],
+        resolution: null,
+        status: 'published' as const,
+        target: { type: 'range' as const },
         userId: index === 0 ? 'alice' : 'bob',
+      })),
+      {
+        id: 'suggestion-thread',
+        createdAt: '2026-09-09T12:02:00.000Z',
+        excerpt: 'tighten the wording',
+        userId: 'bob',
+        resolution: null,
+        status: 'published',
+        target: { type: 'change', id: 'tighten' },
+        messages: [
+          {
+            id: 'suggestion-message',
+            userId: 'bob',
+            createdAt: '2026-09-09T12:02:00.000Z',
+            body: [
+              {
+                type: 'paragraph',
+                children: [
+                  { text: 'This makes the wording ' },
+                  { text: 'clearer', bold: true },
+                  { text: '.' },
+                ],
+              },
+            ],
+          },
+        ],
       },
     ],
-    resolved: false,
-    status: 'published',
-    target: { type: 'range', range },
-    userId: index === 0 ? 'alice' : 'bob',
-  })),
-];
+  };
+  return { document: fixture.read.value(), comments };
+};
 
 const initialState = {
   currentUserId: 'alice',
-  initialThreads,
   users: {
     alice: {
       id: 'alice',
@@ -99,9 +186,10 @@ const initialState = {
 
 const DiscussionDemoToolbarPlugin = FixedToolbarPlugin.configure({
   slots: {
-    beforeEditable: () => (
+    beforeContainer: () => (
       <FixedToolbar className="justify-end gap-1">
         <CommentToolbarButton />
+        <AllCommentsButton />
         <ModeToolbarButton />
       </FixedToolbar>
     ),
@@ -110,8 +198,9 @@ const DiscussionDemoToolbarPlugin = FixedToolbarPlugin.configure({
 
 const DiscussionReviewerToolbarPlugin = FixedToolbarPlugin.configure({
   slots: {
-    beforeEditable: () => (
+    beforeContainer: () => (
       <FixedToolbar className="justify-end">
+        <AllCommentsButton />
         <ModeToolbarButton />
       </FixedToolbar>
     ),
@@ -120,72 +209,52 @@ const DiscussionReviewerToolbarPlugin = FixedToolbarPlugin.configure({
 
 export default function DiscussionProof() {
   const [loadError, setLoadError] = React.useState(false);
-  const editor = useCreateEditor({
-    plugins: [
-      ...EditorKit,
-      ...DiscussionKit,
-      DiscussionDemoToolbarPlugin,
-      CommentsPlugin.configure({ initialState }),
-    ],
-    userId: 'alice',
-    initialValue: createInitialValue(),
-  });
+  const [initialRevision] = React.useState(createInitialRevision);
+  const [loaded, setLoaded] = React.useState(initialRevision);
+  const editor = useCreateEditor(
+    {
+      plugins: [
+        ...EditorKit,
+        ...DiscussionKit,
+        DiscussionDemoToolbarPlugin,
+        CommentsPlugin.configure({
+          initialState: { ...initialState, initialComments: loaded.comments },
+        }),
+      ],
+      userId: 'alice',
+      initialValue: loaded.document,
+    },
+    [loaded]
+  );
   const reviewerEditor = useCreateEditor({
     plugins: [
       ...EditorKit,
       DiscussionReviewerToolbarPlugin,
       CommentsPlugin.configure({
-        initialState,
+        initialState: {
+          ...initialState,
+          initialComments: initialRevision.comments,
+        },
         decorate: { attributes: commentDecorationAttributes },
       }),
     ],
     userId: 'alice',
-    initialValue: createInitialValue(),
+    initialValue: initialRevision.document,
   });
   const staticEditor = useCreateEditor({
     plugins: [
       ...BaseEditorKit,
+      BaseSuggestionPlugin,
       BaseCommentsPlugin.configure({
-        initialState,
+        initialState: {
+          ...initialState,
+          initialComments: initialRevision.comments,
+        },
         decorate: { attributes: staticCommentDecorationAttributes },
       }),
     ],
-    initialValue: createInitialValue(),
+    initialValue: initialRevision.document,
   });
-  React.useEffect(() => {
-    for (const current of [editor, reviewerEditor]) {
-      if (
-        current.read.authored.changes({ status: 'pending' }).items.length > 0
-      ) {
-        continue;
-      }
-      current.update((tx) => {
-        tx.authored.propose();
-        tx.text.insert('suggested ', {
-          at: { offset: 14, path: [1, 0] },
-        });
-      });
-    }
-  }, [editor, reviewerEditor]);
-
-  React.useEffect(() => {
-    const comments = editor.plugin(CommentsPlugin).api;
-    const reviewerComments = reviewerEditor.plugin(BaseCommentsPlugin).api;
-    const staticComments = staticEditor.plugin(BaseCommentsPlugin).api;
-
-    return comments.subscribeThreads(({ ids, reason }) => {
-      if (reason !== 'data') return;
-      for (const target of [reviewerComments, staticComments]) {
-        target.setThreads(
-          target.getThreads().flatMap((thread) => {
-            if (!ids.includes(thread.id)) return [thread];
-            const updated = comments.getThread(thread.id);
-            return updated ? [{ ...updated, target: thread.target }] : [];
-          })
-        );
-      }
-    });
-  }, [editor, reviewerEditor, staticEditor]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -197,18 +266,30 @@ export default function DiscussionProof() {
         <Button
           onClick={() => {
             try {
-              const comments = editor.plugin(CommentsPlugin).api;
-              if (loadError) {
-                comments.setThreads(
-                  JSON.parse(JSON.stringify(comments.getThreads()))
-                );
-                setLoadError(false);
-              } else {
-                comments.setThreads([
-                  ...comments.getThreads(),
-                  initialThreads[0],
-                ]);
-              }
+              const revision = structuredClone({
+                document: editor.read.value(),
+                comments: editor.plugin(CommentsPlugin).api.toJSON(),
+              });
+              const candidate = createEditor({
+                plugins: [
+                  ...EditorKit,
+                  CommentsPlugin.configure({
+                    initialState: {
+                      ...initialState,
+                      initialComments: JSON.parse(
+                        JSON.stringify({
+                          ...revision.comments,
+                          version: loadError ? 1 : 0,
+                        })
+                      ),
+                    },
+                  }),
+                ],
+                initialValue: revision.document,
+              });
+              candidate.plugin(BaseCommentsPlugin).api.getSnapshot();
+              setLoaded(revision);
+              setLoadError(false);
             } catch {
               setLoadError(true);
             }
@@ -227,13 +308,12 @@ export default function DiscussionProof() {
 
       <div className="grid gap-4">
         <div className="min-w-0" data-comment-editor="primary">
-          <EditorRoot editor={editor}>
-            <EditorContainer
-              className="grid h-[520px] grid-cols-1 grid-rows-[auto_minmax(0,1fr)]"
-              variant="demo"
-            >
-              <Editor className="px-8" variant="fullWidth" />
-            </EditorContainer>
+          <EditorRoot editor={editor} key={editor.id}>
+            <EditorFrame className="h-[520px]">
+              <EditorContainer>
+                <Editor className="px-8" variant="fullWidth" />
+              </EditorContainer>
+            </EditorFrame>
           </EditorRoot>
         </div>
 
@@ -243,15 +323,14 @@ export default function DiscussionProof() {
         >
           <h2 className="text-sm font-medium">Read-only reviewer</h2>
           <EditorRoot editor={reviewerEditor} readOnly>
-            <EditorContainer
-              className="grid h-[180px] grid-rows-[auto_minmax(0,1fr)]"
-              variant="demo"
-            >
-              <Editor
-                className="size-full px-6 py-3 text-base"
-                variant="none"
-              />
-            </EditorContainer>
+            <EditorFrame className="h-[180px]">
+              <EditorContainer>
+                <Editor
+                  className="size-full px-6 py-3 text-base"
+                  variant="none"
+                />
+              </EditorContainer>
+            </EditorFrame>
           </EditorRoot>
         </div>
 

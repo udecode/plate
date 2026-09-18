@@ -1,5 +1,6 @@
 import type { Value } from '../../facade';
 import type {
+  HistoryApi,
   HistoryStateApi,
   HistoryTxApi,
 } from '../../history/plite-history.internal';
@@ -32,6 +33,7 @@ export type CoreEditorCapabilityDefinition =
       name: 'elementState';
     }>
   | Readonly<{
+      api: HistoryApi;
       name: 'history';
       read: HistoryStateApi;
       update: HistoryTxApi;
@@ -48,6 +50,7 @@ export type CoreEditorApi<V extends Value = Value> = Readonly<{
   debug: DebugApi;
   dom: DomApi;
   elementState: ElementStateApi;
+  history: HistoryApi;
   html: HtmlApi<V>;
 }>;
 
@@ -58,7 +61,7 @@ export type CoreEditorRead = Readonly<{
 export type CoreEditorTransaction = Readonly<{
   affinity: AffinityPluginUpdate;
   dom: DomPluginUpdate;
-  history: HistoryStateApi & HistoryTxApi;
+  history: HistoryTxApi & HistoryStateApi;
 }>;
 
 export type CoreEditorUpdate = Readonly<{

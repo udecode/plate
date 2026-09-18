@@ -133,6 +133,14 @@ a promise for one; obsolete loads are ignored after configuration changes or
 disposal. Omit it for plain text. Keep CodeMirror history extensions disabled:
 undo and redo use the editor's shared history.
 
+Plate-authored text, selection, configuration, and decoration transactions
+bypass CodeMirror transaction filters so local extensions cannot veto canonical
+state. Update listeners observe a local prediction before any synchronous
+canonical correction. They must not synchronously dispatch another CodeMirror
+transaction or mutate Plate; use a transaction filter to shape the current
+transaction, and run later edits from an input handler or command after the
+listener returns.
+
 The copied component uses two-space line indentation for Tab and syntax-aware
 indentation for Enter. Its language picker, search panel and theme stay in the
 component.
@@ -257,29 +265,43 @@ For the runtime model, see [Plugin Input Rules](/docs/plugin-input-rules).
 
 ### Turn into toolbar button
 
-You can add this item to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to convert blocks into code blocks:
+Add a structural action that calls `BaseCodeBlockPlugin` directly. Enable it only for a contiguous sibling selection with one homogeneous active state.
 
 ```tsx
-import { PLUGINS } from 'platejs';
+import { BaseCodeBlockPlugin, PLUGINS } from 'platejs';
 
 const turnIntoItem = {
   icon: <FileCodeIcon />,
   label: 'Code',
   value: PLUGINS.codeBlock,
+  onSelect: () => {
+    const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+    if (!codeBlock.installed || editor.read.view.isReadOnly()) return;
+
+    codeBlock.update.toggle();
+  },
 };
 ```
 
 ### Insert toolbar button
 
-You can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert code block elements:
+Add an item whose callback calls the installed code-block feature:
 
 ```tsx
-import { PLUGINS } from 'platejs';
+import { BaseCodeBlockPlugin, PLUGINS } from 'platejs';
 
 const insertItem = {
   icon: <FileCodeIcon />,
   label: 'Code',
   value: PLUGINS.codeBlock,
+  onSelect: () => {
+    const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+    if (!codeBlock.installed || editor.read.view.isReadOnly()) return;
+
+    codeBlock.update.insert({}, { select: true });
+  },
 };
 ```
 

@@ -1,6 +1,6 @@
 ---
 title: 评论
-description: 加载带文档范围的评论记录，并保存随编辑更新的位置。
+description: 保存评论与文档版本，读取实时附着位置，并通过应用授权评论操作。
 docs:
   - route: /docs/discussion
     title: 讨论
@@ -12,15 +12,17 @@ docs:
 
 <ComponentPreview name="discussion-demo" />
 
-把获取的评论记录传给 `CommentsPlugin`。包负责记录、评论操作、订阅和范围映射；应用负责加载与保存数据。
+把与文档版本匹配的 `CommentsJSON` 传给 `CommentsPlugin`。包负责记录、评论操作、订阅和范围映射；应用负责版本关联、授权与持久化。
 
 <PackageInfo>
 
 ## 功能
 
-- 包含富文本消息与 ISO 时间戳的可序列化线程记录
+- 包含富文本消息、ISO 时间戳和解决状态的语义线程记录
+- 与文档版本一起保存的 Comments JSON
 - 随编辑、撤销和重做更新的范围
 - 有序重叠高亮与每个编辑器独立的激活状态
+- 用于打开、已解决和目标不可用对话的文档级发现入口
 - 按记录、待提交输入和线程列表分别订阅
 - 通过复制的 Discussion UI 审阅评论和建议
 
@@ -36,29 +38,31 @@ docs:
 npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/r/comment-toolbar-button.json
 ```
 
-`DiscussionKit` 包含评论样式、共享讨论索引、区块触发器和 Floating Discussion。复制的 `comment` 项提供 `CommentKit`、富文本卡片和输入框。工具栏按钮或 `Mod+Shift+M` 可根据选区开始评论。
+`DiscussionKit` 包含评论样式、共享讨论索引、区块触发器和 Floating Discussion。只有需要审阅 authored change 的编辑器才要添加 `SuggestionKit`。复制的 `comment` 项提供 `CommentKit`、富文本卡片和输入框。工具栏按钮或 `Mod+Shift+M` 可根据选区开始评论。
 
 <ComponentSource name="discussion" />
 
 ### 添加 Kit
 
-将与文档一起获取的记录传给 `initialThreads`：
+将与文档版本匹配的 Comments JSON 传给 `initialComments`：
 
-```tsx title="components/editor/comments-editor.tsx" showLineNumbers {23-30}
+```tsx title="components/editor/comments-editor.tsx" showLineNumbers
 "use client";
 
 import type { EditorValueInput } from "platejs";
-import type { CommentThread, CommentUser } from "platejs/comments";
+import type { CommentsJSON, CommentUser } from "platejs/comments";
 import { CommentsPlugin } from "platejs/comments/react";
 import { EditorRoot, useCreateEditor } from "platejs/react";
 
+import { AllCommentsButton, CommentToolbarButton } from "@/components/editor/comment-toolbar-button";
 import { DiscussionKit } from "@/components/editor/discussion";
 import { Editor, EditorContainer } from "@/components/editor/editor";
 import { EditorKit } from "@/components/editor/plugins";
+import { Toolbar } from "@/components/editor/toolbar";
 
-export function CommentsEditor({ value, threads, users, currentUserId }: {
+export function CommentsEditor({ value, initialComments, users, currentUserId }: {
   value: EditorValueInput;
-  threads: readonly CommentThread[];
+  initialComments: CommentsJSON;
   users: Record<string, CommentUser>;
   currentUserId: string;
 }) {
@@ -68,7 +72,7 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          initialThreads: threads,
+          initialComments,
           users,
           currentUserId,
         },
@@ -80,6 +84,10 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
   return (
     <EditorRoot editor={editor}>
       <EditorContainer>
+        <Toolbar>
+          <CommentToolbarButton />
+          <AllCommentsButton />
+        </Toolbar>
         <Editor />
       </EditorContainer>
     </EditorRoot>
@@ -87,75 +95,115 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
 }
 ```
 
-`initialThreads` 只在每个编辑器初始化时读取一次。重新获取数据后，调用 `api.setThreads(records)`。修改组件的初始属性不会替换编辑器当前的评论记录。
+`initialComments` 只在每个编辑器初始化时读取一次。挂载前验证它与 `value` 属于同一个文档版本。加载另一个版本时，用对应文档和 Comments JSON 创建新编辑器；修改初始属性不会替换当前记录。
 
 </Steps>
 
 ## 应用数据
 
-存储完整的 `CommentThread` 记录。消息正文使用 Plate `Value`，时间戳使用 ISO 8601 字符串，范围目标包含普通文档坐标：
+`CommentThread` 保存对话数据和语义目标：`{ type: 'range' }` 或 `{ type: 'change', id }`。实时记录不包含映射后的 `Range`。消息正文使用 Plate `Value`，时间戳使用 ISO 8601 字符串。未解决线程的 `resolution` 为 `null`；已解决线程的值为 `{ resolvedAt: string | null, userId: string | null }`。
 
-```ts
-import type { CommentThread } from "platejs/comments";
+线程记录和私有锚点属于共享编辑器模型。每个视图读取自己的位置：同一线程在不同投影中可以有不同范围或不可用，无需复制记录或锚点。
 
-const threads: CommentThread[] = [{
-  id: "review-1",
-  userId: "alice",
-  createdAt: "2026-09-09T12:00:00.000Z",
-  excerpt: "Selected text",
-  resolved: false,
-  status: "published",
-  target: {
-    type: "range",
-    range: {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 13 },
-    },
-  },
-  messages: [{
-    id: "message-1",
-    userId: "alice",
-    createdAt: "2026-09-09T12:00:00.000Z",
-    body: [{ type: "paragraph", children: [{ text: "Please review this." }] }],
-  }],
-}];
-```
-
-`{ type: "change", id }` 将线程关联到原生 authored change。`range: null` 表示已脱离文档位置的范围线程。
-
-保存时读取当前映射后的范围，并与同一版本的文档一起保存：
+通过使用坐标的精确视图读取插件 API。此例中的 `editor` 是消费返回坐标的视图；React UI 可通过 `useEditor()` 获取已挂载的编辑器：
 
 ```ts
 import { CommentsPlugin } from "platejs/comments/react";
 
-const comments = editor.plugin(CommentsPlugin);
-const snapshot = {
-  document: editor.read.value(),
-  threads: comments.api.getThreads(),
-};
+const comments = editor.plugin(CommentsPlugin).api;
+const thread = comments.getThread(threadId);
+const attachment = comments.attachment(threadId);
+
+if (attachment?.type === "range" && attachment.status === "attached") {
+  editor.update.selection.set(attachment.range);
+}
 ```
 
-`api.subscribeThreads(listener)` 报告 `{ ids, reason }`，其中 `reason` 为 `"data"` 或 `"document"`。持久化层可通过此订阅观察变化。数据库请求、协作传输和服务端授权由应用负责。
+`attachment(id)` 返回以下值之一：
 
-`api.setThreads(records)` 一次替换完整记录，同时保留当前用户和待提交输入。包复制传入数据，并在替换现有记录之前拒绝重复线程 ID、无效时间戳和无效范围。范围必须属于主文档，不支持命名的次级文档根。`api.setThreads([])` 清空记录。读取的快照不可变；请通过 API 修改记录。
+| 值 | 含义 |
+| --- | --- |
+| `{ type: 'range', status: 'attached', range }` | 当前映射范围可用 |
+| `{ type: 'range', status: 'unavailable' }` | 当前文档投影没有可显示的范围 |
+| `{ type: 'change', id }` | 通过 Authored 定位稳定的 change ID |
+| `null` | 线程不存在 |
+
+`unavailable` 不能证明文本已被删除；投影隐藏目标或历史版本缺少目标也会导致此状态。**所有评论**会保留线程和原始摘录，只有附着位置可用时才显示行内高亮和区块计数。
+
+### 发现对话
+
+编辑器安装 Comments 时，在工具栏中渲染 `AllCommentsButton`。它按需打开分页 dialog，无需文档选区，也可用于只读视图或未安装 Suggestions 的编辑器。**全部**、**打开**和**已解决**按对话状态筛选；目标是否可用不会移除记录。
+
+只有当前挂载页会解析目标。**在文档中显示**会在选择和滚动前重新读取当前位置。不可用目标显示中性的 **此视图中目标不可用**。有未保存的回复或编辑内容，或操作仍在等待时，dialog 会保留当前页，并阻止关闭、筛选、翻页、导航和破坏性删除，直到操作成功或用户明确取消。
+
+### 保存和加载
+
+显式保存时调用 `toJSON()`。它同步返回 `CommentsJSON`：`{ kind: 'plate-comments', version: 1, threads, ranges }`。`threads` 包含已发布的语义记录，`ranges` 为每个范围线程保存 `{ threadId, range: EditorDocumentRange | null }`，不包含本地草稿。将 `EditorDocumentRange` 视为不透明数据。
+
+原子保存文档和 Comments JSON。此例中的 `repository` 是应用的存储适配器，它在提交前检查预期版本：
+
+```ts
+import { CommentsPlugin } from "platejs/comments/react";
+
+const comments = editor.plugin(CommentsPlugin).api;
+const revision = {
+  comments: comments.toJSON(),
+  conversationGeneration,
+  document: editor.read.value(),
+  revisionId,
+};
+
+await repository.put(revision, { ifMatch: previousRevision });
+```
+
+加载前，在存储层验证文档版本与对话代次的关联。用 `revision.document` 创建新编辑器，将 `revision.comments` 传给 `initialComments`，并安装相同的内容插件。Comments 会在挂载前验证格式版本、重复 ID、时间戳、目标一致性和范围恢复，但无法识别坐标看似有效的其他文档。
+
+如果保存的不透明范围包含 Authored 绑定，加载 `initialComments` 时必须安装与保存文档时相同的 Authored runtime。`SuggestionKit` 提供 `DefaultAuthoredPlugin`；仅安装 Comments 的无界面配置需要从 `platejs/authored` 添加匹配的 Authored 插件。保留完整的已保存文档及所需 authored history。缺少 runtime 或历史会拒绝恢复，不会回退到普通坐标。普通范围评论仍不要求 Authored。
+
+普通重新加载从空的本地撤销栈开始。`getThreads()` 只读取实时语义记录；持久化时使用 `toJSON()` 保存对应版本的附着位置。不要在每次输入或附着位置订阅回调中导出整个 envelope。
+
+### 授权和提交操作
+
+通过 `CommentsPlugin.configure({ initialState: { mutate } })` 配置应用适配器。回调接收结构有效的 `CommentMutationRequest`，同步或异步返回 `CommentMutationDecision`：
+
+```ts showLineNumbers
+import type { EditorDocumentRange } from "platejs";
+import type { CommentOperation, CommentThread } from "platejs/comments";
+
+export type CommentMutationRequest = Readonly<{
+  mutationId: string;
+  operation: CommentOperation;
+  previous: CommentThread | null;
+  proposed: CommentThread | null;
+  attachment?: EditorDocumentRange;
+}>;
+
+export type CommentMutationDecision =
+  | Readonly<{ status: 'commit'; thread: CommentThread | null }>
+  | Readonly<{ code?: string; status: 'reject' }>;
+```
+
+服务端验证身份、授权并持久化后，返回 `{ status: 'commit', thread }`，其中 `thread` 是规范记录；删除时为 `null`。提交的记录保留提案中的线程 ID 和目标身份。拒绝写入时返回 `{ status: 'reject' }`，可附带 `code`。用 `mutationId` 保证重试幂等，并在存储层执行跨客户端的比较并交换检查。
+
+Comments 只在提交后发布记录。拒绝或抛出错误时，保留原记录和输入。操作按线程串行执行；等待期间编辑器或线程失效时，可返回 `stale`。默认适配器在本地提交。隐藏控件或设置文档 `readOnly` 不能替代评论授权。
 
 ## 手动用法
 
-无界面插件提供相同的数据与范围 API，不依赖 React。此例加载上面的记录：
+无界面插件提供相同的数据与附着位置 API，不依赖 React。此例加载已验证的纯段落文档版本；更丰富的文档需要安装匹配的内容插件：
 
 ```bash
 npm install platejs
 ```
 
 ```ts
-import { createEditor } from "platejs";
+import { BaseParagraphPlugin, createEditor } from "platejs";
 import { BaseCommentsPlugin } from "platejs/comments";
 
 const editor = createEditor({
-  plugins: [BaseCommentsPlugin.configure({
-    initialState: { initialThreads: threads, currentUserId: "alice" },
+  plugins: [BaseParagraphPlugin, BaseCommentsPlugin.configure({
+    initialState: { initialComments: revision.comments, currentUserId: "alice" },
   })],
-  initialValue: [{ type: "paragraph", children: [{ text: "Selected text" }] }],
+  initialValue: revision.document,
 });
 ```
 
@@ -166,7 +214,7 @@ const editor = createEditor({
 | `platejs/comments` | 管理记录、操作、订阅和私有原生范围句柄 |
 | `platejs/comments/react` | 添加选区命令、快捷键和高亮点击行为 |
 | 复制的 `comment` 与 `discussion` 项 | 设置高亮样式，渲染表单、卡片、区块触发器和弹出层 |
-| 应用 | 提供用户与获取的记录，持久化数据并授权远程写入 |
+| 应用 | 关联文档与 Comments JSON，提供用户，授权并持久化规范记录 |
 
 评论消息独立于文档节点和标记。修改消息只通知该线程的订阅者，不解析锚点或刷新编辑器装饰。`users` 和 `currentUserId` 位于插件 store 中；用 `usePluginStore` 订阅，用 `store.set` 更新。
 
@@ -174,11 +222,43 @@ const editor = createEditor({
 
 Comments 在内部使用向内关联的 `nearest` 锚点。范围内插入文本会扩大范围，删除文本会缩小范围；边界处插入的文本保持在范围之外。
 
-删除全部注解文本后，范围折叠到有效的文档位置。区块触发器仍可打开线程，不会高亮相邻文本。撤销和重做恢复映射后的范围，包括反向范围和重叠范围。
+没有可显示的范围时，`attachment(id)` 返回 `unavailable`。讨论面板保留线程与摘录，不会高亮相邻文本。同一会话中的撤销和重做恢复映射后的范围，包括反向范围和重叠范围。
+
+解决与重新打开线程更新对话元数据，不进入文档撤销历史。回复、编辑消息、显式删除消息或线程也不会被文档撤销。撤销文本删除可以恢复高亮，但不会重建已显式删除的对话。
+
+接受或拒绝建议属于可撤销的文档操作。决定及其撤销保留讨论正文和解决状态；建议再次可见时，线程仍关联同一个 Authored change ID。
+
+### 历史版本
+
+只读版本预览将当前保留的对话与该历史文档版本保存的范围目标关联，不用旧对话覆盖当前记录。以下示例假设存储层已经验证 `revision` 和 `currentComments`：
+
+```ts showLineNumbers
+import type { CommentsJSON } from "platejs/comments";
+
+const savedRanges = new Map(
+  revision.comments.ranges.map(({ threadId, range }) => [threadId, range])
+);
+const initialComments: CommentsJSON = {
+  kind: "plate-comments",
+  version: 1,
+  threads: currentComments.threads,
+  ranges: currentComments.threads.flatMap((thread) =>
+    thread.target.type === "range"
+      ? [{ threadId: thread.id, range: savedRanges.get(thread.id) ?? null }]
+      : []
+  ),
+};
+```
+
+用 `revision.document` 和此 `initialComments` 创建新的只读编辑器。新线程没有历史目标时显示不可用；当前已删除的线程保持不存在。只有该历史 Authored 文档包含对应 ID 时，change 目标才可定位。
+
+恢复历史版本时，在文档头版本与对话代次的检查下创建新的应用版本，保留当前对话，并仅安装所选版本可验证的目标。随后创建本地历史为空的新编辑器。参阅 [History](/docs/history)。
 
 ## 协作与只读审阅
 
-文档相同时，可将同一份序列化记录传给独立编辑器。各编辑器创建自己的原生句柄和激活状态。文档版本不同时，请加载对应版本的范围；普通坐标无法识别其他位置发生的编辑。
+独立编辑器可以加载同一保存版本，并绑定各自的附着位置。此持久化 API 不提供实时远程评论同步；操作适配器只向发起操作的编辑器返回规范记录。
+
+保存的范围目标不支持恢复到已变化的 Yjs 房间基线。状态向量本身不能映射缺失的编辑，Yjs 接入也不支持恢复已持久化的本地撤销栈。应用必须先确认目标对应的精确保存基线。
 
 只读视图应同时在 `EditorRoot` 和 `Editor` 上设置 `readOnly`。静态渲染使用 `BaseCommentsPlugin`，并配置复制的 `comment-static` 项提供的 `commentDecorationAttributes`。线程卡片仍属于复制的应用 UI。
 
@@ -213,38 +293,83 @@ console.table(diagnostics);
 
 | 方法 | 用途 |
 | --- | --- |
-| `api.getThreads()` | 读取带当前映射范围的完整记录，用于持久化 |
+| `api.getThreads()` | 读取不可变的语义线程记录 |
 | `api.getThread(id)` | 读取稳定的单条记录；不存在时返回 `undefined` |
-| `api.setThreads(records)` | 替换获取的全部记录 |
+| `api.toJSON()` | 同步导出该文档版本的 `CommentsJSON` |
 | `api.getSnapshot()` | 读取稳定的线程 ID、可见 ID、草稿 ID 与待提交输入 |
-| `api.range(id)` | 读取范围目标当前的 `Range`，或 `null` |
-| `api.idsAt(location)` | 按记录顺序读取该位置未解决的重叠评论 ID |
+| `api.attachment(id)` | 读取调用视图中的 `CommentAttachment`；线程不存在时返回 `null` |
+| `api.idsAt(location)` | 按记录顺序读取调用视图中该位置未解决的重叠评论 ID |
 | `api.setActive(ids)` | 选择有序 ID 组；`[]` 清空选择 |
-| `api.subscribe(listener)` | 观察规范范围投影的变化 |
+| `api.subscribeAttachments(listener)` | 观察调用视图中的附着位置映射和投影变化 |
 
 ### 评论操作
 
 | 方法 | 用途 |
 | --- | --- |
-| `api.begin(range?)` | 开始待提交输入；光标位置扩展为所在文本区块 |
-| `api.pendingRange()` | 读取待提交输入映射后的范围 |
+| `api.begin(range?)` | 在调用视图中捕获输入；光标位置扩展为所在文本区块 |
+| `api.pendingRange()` | 读取调用视图中待提交输入映射后的范围 |
 | `api.cancel()` | 取消待提交输入并释放范围 |
-| `api.create(body)` | 完成待提交线程 |
-| `api.createThread({ body, target, ... })` | 创建范围或建议线程；可传入 `id`、`excerpt`、`status` 和 `userId` |
+| `api.create(body)` | 发布待提交线程；等待 `CommentMutationResult<string>` |
+| `api.createThread(input)` | 发布范围或建议线程；等待 `CommentMutationResult<string>` |
 | `api.reply(id, body)` | 向未解决线程追加消息 |
-| `api.edit(id, messageId, body)` | 编辑当前用户的消息 |
-| `api.removeMessage(id, messageId)` | 删除当前用户的消息；没有消息时删除线程 |
-| `api.removeThread(id)` | 删除当前用户拥有的线程 |
-| `api.resolve(id, resolved?)` | 解决或重新打开当前用户的线程；默认为 `true` |
-| `api.publishDraft(id)` | 发布 AI 草稿 |
-| `api.discardDraft(id)` | 删除 AI 草稿 |
+| `api.edit(id, messageId, body)` | 在适配器授权下编辑消息 |
+| `api.removeMessage(id, messageId)` | 删除消息；没有消息时删除线程 |
+| `api.removeThread(id)` | 在适配器授权下删除线程 |
+| `api.resolve(id)` | 记录规范的解决人和时间 |
+| `api.reopen(id)` | 清空解决状态元数据 |
+| `api.publishDraft(id)` | 通过操作适配器提交本地草稿 |
+| `api.createDraft(input)` | 创建本地未发布草稿；同步返回 `string` 或 `null` |
+| `api.discardDraft(id)` | 删除本地未发布草稿；同步返回 `boolean` |
 
-创建需要用户 ID 和非空正文。创建失败返回 `null`；被拒绝的布尔操作返回 `false`。`create`、`createThread`、`reply` 和 `edit` 允许异步 API 覆盖，调用者可等待其结果。
+`createThread` 与 `createDraft` 接收 `CreateCommentThreadInput`：
+
+```ts showLineNumbers
+import type { Range, Value } from "platejs";
+
+export type CreateCommentThreadInput = Readonly<{
+  body: Value;
+  excerpt?: string;
+  id?: string;
+  target:
+    | Readonly<{ range: Range; type: 'range' }>
+    | Readonly<{ id: string; type: 'change' }>;
+}>;
+```
+
+创建需要当前用户和非空正文。范围目标必须是主文档中的非折叠范围。Comments 生成身份与时间戳，或接受适配器返回的规范值。
+
+传给 `begin`、`createThread` 和 `createDraft` 的范围必须来自调用视图，锚点会在该视图中捕获坐标。通过消费坐标的视图读取 `pendingRange()` 和 `attachment(id)`，不要复用其他投影中的坐标。
+
+`create` 和 `createThread` 返回 `Promise<CommentMutationResult<string>>`。其他持久化操作返回 `Promise<CommentMutationResult<undefined>>`。`begin`、`cancel`、`createDraft` 和 `discardDraft` 仅在本地执行。
+
+```ts
+export type CommentMutationResult<T = undefined> =
+  | Readonly<{ status: 'applied'; value: T }>
+  | Readonly<{ status: 'invalid' }>
+  | Readonly<{ code?: string; status: 'rejected' }>
+  | Readonly<{ status: 'stale' }>;
+```
+
+等待结果后再清空输入或更新选区：
+
+```ts
+const result = await comments.create(body);
+
+if (result.status === "applied") {
+  comments.setActive([result.value]);
+}
+```
+
+遇到 `invalid`、`rejected`、`stale` 或异常时保留输入。AI 集成将已完成的生成评论直接发布为普通线程，不显示批准提示；本地草稿操作不要求额外批准步骤。
 
 ### 订阅
 
-`subscribeThread(id, listener)` 观察一条记录。`subscribeVisibleThreadIds`、`subscribeDraftThreadIds` 和 `subscribePending` 分别观察对应快照。`subscribeThreads` 观察持久化数据的变化，包括映射后的范围。各方法均返回取消订阅函数。
+`subscribeThread(id, listener)` 观察一条共享语义记录，`subscribeThreads(listener)` 只为语义记录变化报告 `{ ids }`。文档编辑映射附着位置或视图切换投影时，不重写线程，也不通知语义订阅者。
+
+通过精确视图的 API 调用 `subscribeAttachments(listener)`，观察该视图的位置变化。装饰也在同一视图中读取和观察。切换其他视图的投影不会切换此订阅的视图。取消订阅会释放视图观察，不会释放共享对话目标。
+
+`subscribeVisibleThreadIds`、`subscribeDraftThreadIds` 和 `subscribePending` 分别观察对应快照。各方法均返回取消订阅函数。显式 `toJSON()` 导出放在这些订阅之外。
 
 ### `CommentComposer`
 
-`onSubmit(body)` 成功时返回线程 ID 或 `true`，拒绝时返回 `null` 或 `false`，也可返回 Promise。输入框在保存时保留富文本输入，阻止重复提交，仅在成功后清空。拒绝或抛出错误会保留草稿并显示重试提示。
+`onSubmit(body)` 返回 `Promise<CommentMutationResult<string | undefined>>`。返回等待后的持久化操作结果；输入框只在 `status: 'applied'` 时清空，在保存期间保留富文本并阻止重复提交，失败时保留草稿并显示重试提示。

@@ -70,10 +70,10 @@ const lastCommit = (editor: CollabEditor): CollabCommit => {
 };
 
 const historyUndoCount = (editor: HistoryCollabEditor) =>
-  editor.read((state) => state.history.undos().length);
+  editor.read((state) => state.history().undos.length);
 
 const firstUndoChange = (editor: HistoryCollabEditor) =>
-  editor.read((state) => state.history.undos()[0]?.change);
+  editor.read((state) => state.history().undos[0]?.change);
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
@@ -187,15 +187,15 @@ describe('collab and history runtime contract', () => {
     );
 
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       1
     );
     assert.deepEqual(
-      editor.read((state) => state.history.undos()[0]?.change.toJSON()),
+      editor.read((state) => state.history().undos[0]?.change.toJSON()),
       commit.inverseChanges.toJSON()
     );
     assert.deepEqual(
-      editor.read((state) => state.history.undos()[0]?.selectionBefore),
+      editor.read((state) => state.history().undos[0]?.selectionBefore),
       commit.selectionBefore
     );
   });
@@ -481,9 +481,7 @@ describe('collab and history runtime contract', () => {
       before.children
     );
 
-    editor.update((tx) => {
-      tx.history.undo();
-    });
+    editor.api.history.undo();
 
     assert.deepEqual(editorGetSnapshot(editor).children, before.children);
     assert.deepEqual(editorGetSnapshot(editor).selection, before.selection);
@@ -508,9 +506,7 @@ describe('collab and history runtime contract', () => {
     assert.equal(editorString(editor, []), 'hello test');
     assert.equal(historyUndoCount(editor), 1);
 
-    editor.update((tx) => {
-      tx.history.undo();
-    });
+    editor.api.history.undo();
 
     assert.equal(editorString(editor, []), 'hello world');
     assert.deepEqual(editorGetSnapshot(editor).selection, {
@@ -537,9 +533,7 @@ describe('collab and history runtime contract', () => {
 
     assert.equal(editorString(editor, [0]), '?one!');
 
-    editor.update((tx) => {
-      tx.history.undo();
-    });
+    editor.api.history.undo();
 
     assert.equal(editorString(editor, [0]), '?one');
     assert.deepEqual(editorGetSnapshot(editor).selection, {
@@ -548,9 +542,7 @@ describe('collab and history runtime contract', () => {
       focus: { path: [0, 0], offset: 4 },
     });
 
-    editor.update((tx) => {
-      tx.history.redo();
-    });
+    editor.api.history.redo();
 
     assert.equal(editorString(editor, [0]), '?one!');
   });

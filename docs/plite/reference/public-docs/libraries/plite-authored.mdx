@@ -28,17 +28,19 @@ const reviewView = createEditorView(editor, {
 });
 ```
 
-The author callback must return a nonempty authenticated identity for every write. `retainHistory` keeps closed edit bodies for selective author-history revert.
+The author callback must return a nonempty author ID for every write. The application owns authentication. `retainHistory` keeps closed edit bodies for selective author-history revert.
 
 ## Views
 
 | Policy | Content and input |
 | --- | --- |
 | `{ intent: 'edit', projection: 'accepted' }` | Show and edit accepted content. |
+| `{ intent: 'edit', projection: 'proposed' }` | Show pending content without retained fragments. Publish independent accepted-content edits directly. |
+| `{ intent: 'edit', projection: 'markup' }` | Show pending content and retained fragments. Publish independent accepted-content edits directly. |
 | `{ intent: 'propose', projection: 'proposed' }` | Show the proposed result and record input as proposals. |
 | `{ intent: 'propose', projection: 'markup' }` | Show the proposed result with retained review fragments and record input as proposals. |
 
-Call `view.api.authored.setView(policy)` to change one view. The source editor and sibling views keep their own policies and selections.
+Call `view.api.authored.setView(policy)` to change one view. The source editor and sibling views keep their own policies and selections. In an editing proposed or markup view, an edit that depends on pending content remains reviewable with the current author. Projection changes never accept or reject changes.
 
 ## Propose and decide
 

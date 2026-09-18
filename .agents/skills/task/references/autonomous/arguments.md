@@ -13,7 +13,7 @@ outcome. Explicit leading modes win over words inside the scope.
 | `task autonomous benchmark only <lane-or-target>` | Benchmark's explicitly narrowed run; preserve its exclusions and receipt contract. |
 | `task autonomous issue-harvester <repo-or-ledger>` | Issue Harvester owns exhaustive issue coverage and resume. |
 | `task autonomous <repo> issue inventory` | Editor Test Harvester owns the first inventory and invariant map. |
-| `task autonomous regression <case-or-surface-or-corpus>` | Regression's case/oracle/proof method; it delegates exact repairs to Patch. |
+| `task autonomous patch <case>` / `task autonomous patch corpus <surface>` | Patch owns the repair loop; corpus scope adds case/oracle/receipt gates. |
 | `task autonomous PR #123`, `task autonomous <issue-or-PR-URL>`, `task autonomous queue` | Maintainer interprets the requested public work and its authority. |
 | `task autonomous security <scope>` | Maintainer's private-security method. |
 | `task autonomous current tree`, `task autonomous post-merge <target>`, `task autonomous ready to commit` | Task closure. “Ready to commit” alone does not commit. |

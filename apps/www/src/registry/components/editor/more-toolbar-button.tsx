@@ -15,17 +15,29 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/registry/components/editor/dropdown-menu';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 export function MoreToolbarButton() {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
+  const focusEditorRef = React.useRef(false);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={open} tooltip="Insert">
+    <DropdownMenu
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) focusEditorRef.current = false;
+        setOpen(nextOpen);
+      }}
+      modal={false}
+    >
+      <DropdownMenuTrigger>
+        <ToolbarButton
+          aria-label="More formatting"
+          pressed={open}
+          tooltip="More formatting"
+        >
           <MoreHorizontalIcon />
         </ToolbarButton>
       </DropdownMenuTrigger>
@@ -33,15 +45,22 @@ export function MoreToolbarButton() {
       <DropdownMenuContent
         className="ignore-click-outside/toolbar flex max-h-[500px] min-w-[180px] flex-col overflow-y-auto"
         align="start"
+        onFinalFocus={(event) => {
+          if (!focusEditorRef.current) return;
+
+          focusEditorRef.current = false;
+          event.preventDefault();
+          editor.api.dom.focus();
+        }}
       >
         <DropdownMenuGroup>
           <DropdownMenuItem
             onSelect={() => {
+              focusEditorRef.current = true;
               editor.update((tx) => {
                 tx.plugin(KbdPlugin).toggle();
                 tx.selection.collapse({ edge: 'end' });
               });
-              editor.api.dom.focus();
             }}
           >
             <KeyboardIcon />
@@ -50,8 +69,8 @@ export function MoreToolbarButton() {
 
           <DropdownMenuItem
             onSelect={() => {
+              focusEditorRef.current = true;
               editor.plugin(ScriptPlugin).update.toggle('sup');
-              editor.api.dom.focus();
             }}
           >
             <SuperscriptIcon />
@@ -60,8 +79,8 @@ export function MoreToolbarButton() {
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
+              focusEditorRef.current = true;
               editor.plugin(ScriptPlugin).update.toggle('sub');
-              editor.api.dom.focus();
             }}
           >
             <SubscriptIcon />

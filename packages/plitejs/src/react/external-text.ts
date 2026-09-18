@@ -32,12 +32,15 @@ export type ExternalTextState<TConfig = undefined> = Readonly<{
   version: number;
 }>;
 
-/** Rejected actions never change the canonical document. */
+/** Rejected actions never change the canonical document and may reset the view before returning. */
 export type ExternalTextDispatchResult = Readonly<{
   status: 'applied' | 'read-only' | 'stale';
 }>;
 
-/** The only mutation bridge from an external view to its owning editor runtime. */
+/** The only mutation bridge from an external view to its owning editor runtime.
+ * Actions may synchronously deliver view updates before they return. Invoke them
+ * from input and command handlers, never from adapter lifecycle callbacks.
+ */
 export type ExternalTextActions = Readonly<{
   composition: (phase: 'end' | 'start') => void;
   deleteOut: (input: {
@@ -68,6 +71,7 @@ export type ExternalTextActions = Readonly<{
 export type ExternalTextView<TConfig = undefined> = Readonly<{
   destroy: () => void;
   focus: (options?: { edge?: 'end' | 'start'; x?: number }) => void;
+  /** Apply patches and canonical state before returning without dispatching an action. */
   update: (input: {
     /** `null` resets from state.text; a list applies exact patches; [] acknowledges. */
     changes: readonly ExternalTextChange[] | null;
@@ -75,7 +79,10 @@ export type ExternalTextView<TConfig = undefined> = Readonly<{
   }) => void;
 }>;
 
-/** Render one exact-one-Text block without a second model or history owner. */
+/** Render one exact-one-Text block without a second model or history owner.
+ * Lifecycle callbacks are synchronous notifications and must not mutate the
+ * owning editor or reenter the mounted view.
+ */
 export type ExternalTextAdapter<TConfig = undefined> = Readonly<{
   mount: (context: {
     actions: ExternalTextActions;

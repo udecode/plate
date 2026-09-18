@@ -334,6 +334,8 @@ type PluginActivation = {
   abortController: AbortController;
   active: boolean;
   afterPublishCallbacks: Array<() => void>;
+  beforePublishCallbacks: Array<() => void>;
+  beforePublishCalled: boolean;
   cleanups: Array<(context: PluginCleanupContext) => void>;
   published: boolean;
 };
@@ -397,13 +399,14 @@ const assertSynchronousLifecycleResult = (result: unknown, label: string) => {
 
 export class PluginPublicationError extends Error {
   readonly pluginName: string;
-  readonly phase = 'activate' as const;
+  readonly phase: 'activate' | 'beforePublish';
   readonly rollbackErrors: readonly unknown[];
 
   constructor(
     pluginName: string,
     cause: unknown,
-    rollbackErrors: readonly unknown[] = []
+    rollbackErrors: readonly unknown[] = [],
+    phase: 'activate' | 'beforePublish' = 'activate'
   ) {
     const causeMessage =
       cause instanceof Error
@@ -413,13 +416,14 @@ export class PluginPublicationError extends Error {
           : undefined;
 
     super(
-      `Editor plugin "${pluginName}" activation failed${
+      `Editor plugin "${pluginName}" ${phase === 'activate' ? 'activation' : 'before-publish callback'} failed${
         causeMessage ? `: ${causeMessage}` : '.'
       }`,
       { cause }
     );
     this.name = 'PluginPublicationError';
     this.pluginName = pluginName;
+    this.phase = phase;
     this.rollbackErrors = Object.freeze([...rollbackErrors]);
   }
 }
@@ -1574,6 +1578,8 @@ const activatePluginRecord = <TEditor extends Editor>(
     abortController: new AbortController(),
     active: true,
     afterPublishCallbacks: [],
+    beforePublishCallbacks: [],
+    beforePublishCalled: false,
     cleanups: [],
     published: false,
   };
@@ -1594,6 +1600,20 @@ const activatePluginRecord = <TEditor extends Editor>(
       }
 
       activation.cleanups.push(cleanup);
+    },
+    beforePublish(callback) {
+      if (!activation.active || activation.beforePublishCalled) {
+        throw new Error(
+          `Editor plugin "${descriptor.name}" cannot register before-publish work after preparation.`
+        );
+      }
+      if (typeof callback !== 'function') {
+        throw new Error(
+          'Editor plugin before-publish callback must be a function.'
+        );
+      }
+
+      activation.beforePublishCallbacks.push(callback);
     },
     afterPublish(callback) {
       if (!activation.active || activation.published) {
@@ -2338,24 +2358,36 @@ const validatePlugins = <TEditor extends Editor>(
 
 export type PreparedPluginPublication = Readonly<{
   afterPublish: () => void;
+  beforePublish: () => void;
   cleanup: () => void;
   commit: () => void;
   configurationChanged: boolean;
   documentChange: DocumentChange;
   finalize: () => void;
   rollback: () => void;
+  schemaCompilation: () => PreparedEditorSchemaCompilation;
   schemaContract: () => EditorSchemaContract;
   stage: () => void;
   validateDocument: (value: EditorDocumentValue) => void;
 }>;
 
+export type PreparedEditorSchemaCompilation = Readonly<{
+  contributions: <TValue>(
+    point: PluginPoint<TValue>
+  ) => ReadonlyArray<Readonly<TValue>>;
+  fields: ReadonlyArray<EditorStateField<any>>;
+  schema: import('./schema-compiler').CompiledEditorSchema;
+}>;
+
 const createNoopPublication = (
+  editor: Editor,
   schema: CompiledEditorSchema
 ): PreparedPluginPublication => {
   let phase: 'cancelled' | 'finalized' | 'prepared' | 'published' = 'prepared';
 
   return Object.freeze({
     afterPublish() {},
+    beforePublish() {},
     cleanup() {
       phase = 'cancelled';
     },
@@ -2370,6 +2402,21 @@ const createNoopPublication = (
     rollback() {
       if (phase === 'prepared' || phase === 'published') phase = 'cancelled';
     },
+    schemaCompilation: () =>
+      Object.freeze({
+        contributions: <TValue>(point: PluginPoint<TValue>) =>
+          Object.freeze(
+            (getPluginRegistry(editor).contributions.get(point) ?? []).map(
+              ({ value }) => value as Readonly<TValue>
+            )
+          ),
+        fields: Object.freeze(
+          [...getPluginRegistry(editor).stateFields.values()].map(
+            ({ field }) => field
+          )
+        ),
+        schema,
+      }),
     stage() {},
     schemaContract: () => createEditorSchemaContract(schema),
     validateDocument() {},
@@ -2390,6 +2437,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
 ): PreparedPluginPublication => {
   if (samePluginRecords(previousRecords, nextRecords)) {
     return createNoopPublication(
+      editor,
       getPluginRegistry(editor).schemaContributions.compiled
     );
   }
@@ -2599,6 +2647,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
   let cleanupRunning = false;
   let phase: 'cancelled' | 'finalized' | 'prepared' | 'published' = 'prepared';
   let afterPublishCalled = false;
+  let beforePublishCalled = false;
   let registryPublication: PublishedConfiguredPluginRegistry | null = null;
 
   const rollbackPublication = () => {
@@ -2621,6 +2670,37 @@ const prepareRecordPublication = <TEditor extends Editor>(
   };
 
   const publication = Object.freeze({
+    beforePublish() {
+      if (phase !== 'published' || beforePublishCalled) return;
+      beforePublishCalled = true;
+
+      runWithPluginPublicationGuard(editor, () => {
+        withTransactionSpecDraftRead(editor, () => {
+          for (const record of activatedRecords) {
+            const { activation } = record;
+            if (!activation?.active) continue;
+            activation.beforePublishCalled = true;
+            try {
+              for (const callback of activation.beforePublishCallbacks) {
+                assertSynchronousLifecycleResult(
+                  // oxlint-disable-next-line typescript/no-confusing-void-expression -- Runtime plugins can return a Promise despite the declared void contract.
+                  callback(),
+                  `Editor plugin "${record.descriptor.name}" before-publish callback`
+                );
+              }
+              activation.beforePublishCallbacks = [];
+            } catch (error) {
+              throw new PluginPublicationError(
+                record.descriptor.name,
+                error,
+                rollbackStagedActivations().map(({ cause }) => cause),
+                'beforePublish'
+              );
+            }
+          }
+        });
+      });
+    },
     cleanup() {
       if (cleanupCalled || cleanupRunning) return;
       cleanupRunning = true;
@@ -2756,6 +2836,23 @@ const prepareRecordPublication = <TEditor extends Editor>(
     rollback() {
       rollbackPublication();
     },
+    schemaCompilation() {
+      if (phase !== 'prepared') {
+        throw new Error('Editor plugin candidate schema is not prepared.');
+      }
+      return Object.freeze({
+        contributions: <TValue>(point: PluginPoint<TValue>) =>
+          Object.freeze(
+            (mergedCandidate.contributions.get(point) ?? []).map(
+              ({ value }) => value as Readonly<TValue>
+            )
+          ),
+        fields: Object.freeze(
+          [...mergedCandidate.stateFields.values()].map(({ field }) => field)
+        ),
+        schema: mergedCandidate.schemaContributions.compiled,
+      });
+    },
     stage() {
       stageFields();
     },
@@ -2865,6 +2962,7 @@ export const prepareScopedPluginPublication = <TEditor extends Editor>(
 
   if (equivalentReplacement) {
     return createNoopPublication(
+      editor,
       getPluginRegistry(editor).schemaContributions.compiled
     );
   }

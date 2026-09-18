@@ -133,7 +133,6 @@ test.describe('example query controls', () => {
         debug: true,
         margins: 72,
         media_height: 320,
-        media_split: 'page',
         page_layout: 'single',
         preset: 'letter',
         row_height: 44,
@@ -152,7 +151,6 @@ test.describe('example query controls', () => {
     await expect(page.getByLabel('Rows')).toHaveValue('96');
     await expect(page.getByLabel('Row px')).toHaveValue('44');
     await expect(page.getByLabel('Media px')).toHaveValue('320');
-    await expect(page.getByLabel('Media split')).toHaveValue('page');
     await expect(page.getByLabel('Facing')).not.toBeChecked();
     await expect(page.getByLabel('Debug')).toBeChecked();
 

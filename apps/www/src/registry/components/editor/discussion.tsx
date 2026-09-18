@@ -8,6 +8,8 @@ import {
   XIcon,
 } from 'lucide-react';
 import {
+  createEditorView,
+  getEditorRuntimeOwner,
   type NodeKey,
   type Path,
   PathApi,
@@ -31,6 +33,8 @@ import {
   useEditor,
   useEditorRootElement,
   useEditorSelector,
+  useEditorViewState,
+  usePath,
   usePluginStore,
 } from 'platejs/react';
 import {
@@ -61,6 +65,7 @@ import {
 type DiscussionItem =
   | Readonly<{
       blockIndices: readonly number[];
+      changeId?: string;
       createdAt: Date;
       id: string;
       kind: 'comment';
@@ -96,6 +101,10 @@ type DiscussionSnapshot = Readonly<{
   revision: number;
   target: DiscussionTarget | null;
 }>;
+
+type AuthoredViewSource = Editor & {
+  read: Editor['read'] & { authored: unknown };
+};
 
 const EMPTY_BLOCK_SNAPSHOT: DiscussionBlockSnapshot = Object.freeze({
   active: false,
@@ -282,6 +291,11 @@ const createDiscussionStore = () => {
     getComment(id: string) {
       return commentsById.get(id) ?? null;
     },
+    hasChangeCommentAt(nodeKeys: readonly NodeKey[]) {
+      return nodeKeys.some((key) =>
+        commentBlocks.get(key)?.items.some((item) => item.changeId)
+      );
+    },
     getGroup,
     getSnapshot: () => snapshot,
     getSuggestion(id: string) {
@@ -425,45 +439,71 @@ const useDiscussionController = () => {
   const editor = useEditor();
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const visibleThreadIds = useVisibleCommentThreadIds();
+  const authoredView = useEditorViewState(editor, () => {
+    const authored = editor.plugin(DefaultAuthoredPlugin);
+    return authored.installed ? authored.read.view().projection : null;
+  });
   const [store] = React.useState(createDiscussionStore);
   React.useEffect(() => {
     const { api } = editor.plugin(CommentsPlugin);
+    let suggestionThreads = new Map<string, string[]>();
     const locate = (id: string, thread = comments.getThread(id)) => {
-      const range = api.range(id);
+      if (!thread || thread.resolution) return null;
+      const attachment = api.attachment(id);
+      const authored = editor.plugin(DefaultAuthoredPlugin);
+      const change =
+        thread.target.type === 'change' && authored.installed
+          ? authored.read.change(thread.target.id)
+          : null;
       if (
-        !thread ||
-        thread.resolved ||
-        thread.target.type !== 'range' ||
-        !range
+        thread.target.type === 'change' &&
+        (!change ||
+          change.status === 'pending' ||
+          change.status === 'conflicted')
       ) {
         return null;
       }
-      const [start, end] = RangeApi.edges(range);
-      const firstBlock = start.path[0] ?? 0;
+      const ranges =
+        attachment?.type === 'range' && attachment.status === 'attached'
+          ? [attachment.range]
+          : (change?.ranges ?? []);
+      if (ranges.length === 0) return null;
       return {
-        blockIndices: Array.from(
-          { length: (end.path[0] ?? firstBlock) - firstBlock + 1 },
-          (_, offset) => firstBlock + offset
-        ),
+        ...(thread.target.type === 'change'
+          ? { changeId: thread.target.id }
+          : {}),
+        blockIndices: [
+          ...new Set(
+            ranges.flatMap((range) => {
+              const [start, end] = RangeApi.edges(range);
+              const firstBlock = start.path[0] ?? 0;
+              return Array.from(
+                { length: (end.path[0] ?? firstBlock) - firstBlock + 1 },
+                (_, offset) => firstBlock + offset
+              );
+            })
+          ),
+        ],
         createdAt: new Date(thread.createdAt),
         id,
         kind: 'comment' as const,
       };
     };
     const publish = () => {
-      const suggestionThreads = new Map<string, string[]>();
+      suggestionThreads = new Map<string, string[]>();
       const commentItems: Array<Extract<DiscussionItem, { kind: 'comment' }>> =
         [];
       const visible = new Set(visibleThreadIds);
 
       comments.getThreads().forEach((thread) => {
-        if (thread.resolved) return;
+        if (thread.resolution) return;
         if (thread.target.type === 'change') {
           const ids = suggestionThreads.get(thread.target.id) ?? [];
 
           ids.push(thread.id);
           suggestionThreads.set(thread.target.id, ids);
-
+          const item = locate(thread.id, thread);
+          if (item) commentItems.push(item);
           return;
         }
         if (!visible.has(thread.id)) return;
@@ -472,11 +512,51 @@ const useDiscussionController = () => {
       });
       store.update(editor, commentItems, suggestionThreads);
     };
-    const unsubscribe = api.subscribe(publish);
+    const unsubscribeAttachments = api.subscribeAttachments(publish);
+    const unsubscribeThreads = api.subscribeThreads(publish);
+    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const unsubscribeAuthored = authored.installed
+      ? authored.api.subscribeChanges(({ changeIds }) => {
+          if (changeIds.some((id) => suggestionThreads.has(id))) {
+            publish();
+          }
+        })
+      : undefined;
+    const unsubscribeCommit = editor.subscribeCommit((commit) => {
+      if (
+        !authored.installed ||
+        !suggestionThreads.size ||
+        !(commit.changed.hasAny('document') || commit.changed.hasAny('replace'))
+      ) {
+        return;
+      }
+      if (
+        commit.changed.hasAny('structure') ||
+        commit.changed.hasAny('replace') ||
+        commit.changed.hasAny('root-order') ||
+        store.hasChangeCommentAt(commit.changed.nodeKeysAll('node')) ||
+        [...suggestionThreads].some(([changeId, ids]) => {
+          if (ids.some((id) => store.getComment(id))) return false;
+          const change = authored.read.change(changeId);
+          return (
+            !change ||
+            change.status === 'accepted' ||
+            change.status === 'rejected'
+          );
+        })
+      ) {
+        publish();
+      }
+    });
 
     publish();
-    return unsubscribe;
-  }, [comments, editor, store, visibleThreadIds]);
+    return () => {
+      unsubscribeAttachments();
+      unsubscribeThreads();
+      unsubscribeAuthored?.();
+      unsubscribeCommit();
+    };
+  }, [authoredView, comments, editor, store, visibleThreadIds]);
 
   return store;
 };
@@ -487,13 +567,20 @@ function DiscussionRoot({ children }: { children: React.ReactNode }) {
   return <DiscussionContext value={store}>{children}</DiscussionContext>;
 }
 
-function DiscussionCard({ item }: { item: DiscussionItem }) {
+function DiscussionCard({
+  item,
+  onDecisionApplied,
+}: {
+  item: DiscussionItem;
+  onDecisionApplied: () => void;
+}) {
   return item.kind === 'comment' ? (
     <CommentThreadCard id={item.id} />
   ) : (
     <SuggestionDiscussionCard
       change={item.change}
       createdAt={item.createdAt}
+      onDecisionApplied={onDecisionApplied}
       threadIds={item.threadIds}
     />
   );
@@ -554,6 +641,22 @@ const insertionPartsAreAdjacent = (
       !!afterLeft &&
       PointApi.equals(afterLeft, rightStart))
   );
+};
+
+const proposedEditors = new WeakMap<Editor, Editor>();
+
+const getProposedEditor = (editor: Editor) => {
+  const documentEditor = getEditorRuntimeOwner(editor) as AuthoredViewSource;
+  const existing = proposedEditors.get(documentEditor);
+
+  if (existing) return existing;
+
+  const proposedEditor = createEditorView(documentEditor, {
+    authored: { intent: 'propose', projection: 'proposed' },
+  });
+
+  proposedEditors.set(documentEditor, proposedEditor);
+  return proposedEditor;
 };
 
 const formatPropertyName = (key: string) =>
@@ -682,13 +785,16 @@ const describeSuggestion = (
 function SuggestionDiscussionCard({
   change,
   createdAt,
+  onDecisionApplied,
   threadIds,
 }: {
   change: AuthoredChange;
   createdAt: Date;
+  onDecisionApplied: () => void;
   threadIds: readonly string[];
 }) {
   const editor = useEditor();
+  const proposedEditor = getProposedEditor(editor);
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const user = useCommentUser(change.authorId);
   const changeKey = `${change.id}:${change.revision}`;
@@ -708,7 +814,11 @@ function SuggestionDiscussionCard({
         commit.changed.hasAny('state'),
     }
   );
-  const descriptions = describeSuggestion(editor, details ?? null, change.kind);
+  const descriptions = describeSuggestion(
+    proposedEditor,
+    details ?? null,
+    change.kind
+  );
   const setOutcome = (result: AuthoredResult) =>
     setOutcomeState({ changeKey, result });
 
@@ -732,7 +842,10 @@ function SuggestionDiscussionCard({
         ? authored.update.resolve(input)
         : authored.update.decide(input);
 
-    if (result.status === 'applied' || result.status === 'unchanged') return;
+    if (result.status === 'applied' || result.status === 'unchanged') {
+      onDecisionApplied();
+      return;
+    }
     setOutcome(result);
   };
   const relatedIds =
@@ -835,7 +948,7 @@ function SuggestionDiscussionCard({
       </div>
 
       {threadIds.map((id) => (
-        <CommentThreadCard id={id} key={id} />
+        <CommentThreadCard id={id} key={id} showReply={false} />
       ))}
 
       <CommentComposer
@@ -857,7 +970,6 @@ function NewComment({
   autoFocus,
   editableRef,
 }: EditableSiblingProps & { autoFocus: boolean }) {
-  const editor = useEditor();
   const { api: comments } = useEditor().plugin(CommentsPlugin);
 
   return (
@@ -869,10 +981,10 @@ function NewComment({
         editableRef.current?.focus();
       }}
       onSubmit={async (body) => {
-        const id = await comments.create(body);
+        const result = await comments.create(body);
 
-        if (id) editor.plugin(CommentsPlugin).api.setActive([id]);
-        return id;
+        if (result.status === 'applied') comments.setActive([result.value]);
+        return result;
       }}
       placeholder="Add a comment"
     />
@@ -882,20 +994,20 @@ function NewComment({
 function DiscussionBlock({
   children,
   editor,
-  renderPath,
 }: RenderNodeWrapperProps<typeof CommentsPlugin>) {
-  const blockKey = editor.key(renderPath);
+  const path = usePath();
+  const blockKey = editor.key(path);
 
   if (!blockKey) return children;
 
   const props = {
-    blockIndex: renderPath[0] ?? 0,
+    blockIndex: path[0] ?? 0,
     blockKey,
     children,
   };
 
   if (editor.plugin(SuggestionPlugin).installed) {
-    return <SuggestionDiscussionBlockContent {...props} path={renderPath} />;
+    return <SuggestionDiscussionBlockContent {...props} path={path} />;
   }
 
   return <DiscussionBlockContent {...props} changes={[]} />;
@@ -1015,6 +1127,7 @@ function DiscussionPopover({
   const editor = useEditor();
   const rootElement = useEditorRootElement(editor);
   const store = useDiscussionStore();
+  const popoverRef = React.useRef<HTMLDivElement>(null);
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const pending = usePendingComment();
   const activeCommentIds = usePluginStore(CommentsPlugin, 'activeIds');
@@ -1058,19 +1171,22 @@ function DiscussionPopover({
       item.kind === 'suggestion'
   )?.range;
   const { api } = editor.plugin(CommentsPlugin);
-  const subscribe = React.useCallback(
-    (listener: () => void) => api.subscribe(listener),
-    [api]
-  );
-  const getCommentRange = React.useCallback(
-    () => activeCommentIds.map(api.range).find(Boolean) ?? null,
-    [activeCommentIds, api]
-  );
-  const commentRange = React.useSyncExternalStore(
-    subscribe,
-    getCommentRange,
-    getCommentRange
-  );
+  const commentRange = (() => {
+    const authored = editor.plugin(DefaultAuthoredPlugin);
+
+    for (const id of activeCommentIds) {
+      const attachment = api.attachment(id);
+      if (attachment?.type === 'range' && attachment.status === 'attached') {
+        return attachment.range;
+      }
+      if (attachment?.type === 'change' && authored.installed) {
+        const range = authored.read.change(attachment.id)?.ranges[0];
+
+        if (range) return range;
+      }
+    }
+    return null;
+  })();
   const pendingRange = useEditorSelector(
     () => (pending ? comments.pendingRange() : null),
     {
@@ -1161,9 +1277,20 @@ function DiscussionPopover({
           className="max-h-[min(50dvh,calc(-24px+var(--floating-popover-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] gap-0 overflow-y-auto p-0 data-[state=closed]:opacity-0"
           data-discussion-popover=""
           data-editor-keep-selection-visible
+          ref={popoverRef}
+          tabIndex={-1}
           onFinalFocus={(event) => {
             event.preventDefault();
-            if (!openRef.current) editableRef.current?.focus();
+            const document = editableRef.current?.ownerDocument;
+            const active = document?.activeElement;
+            if (
+              !openRef.current &&
+              (!active ||
+                active === document?.body ||
+                popoverRef.current?.contains(active))
+            ) {
+              editableRef.current?.focus();
+            }
           }}
           onInitialFocus={(event) => event.preventDefault()}
           onPlaced={() => {
@@ -1183,7 +1310,19 @@ function DiscussionPopover({
               {shownItems.map((item, index) => (
                 <React.Fragment key={`${item.kind}-${item.id}`}>
                   <div className="p-4">
-                    <DiscussionCard item={item} />
+                    <DiscussionCard
+                      item={item}
+                      onDecisionApplied={() => {
+                        if (!snapshot.target && item.kind === 'suggestion') {
+                          requestAnimationFrame(() => {
+                            comments.setActive(item.threadIds);
+                            popoverRef.current?.focus();
+                          });
+                          return;
+                        }
+                        popoverRef.current?.focus();
+                      }}
+                    />
                   </div>
                   {(index < shownItems.length - 1 ||
                     shownItems.length < targetItems.length) && (
@@ -1279,9 +1418,8 @@ function Discussion({ editableRef }: EditableSiblingProps) {
     store.getSnapshot
   );
   const suggestionsInstalled = useEditorSelector(
-    (editor) => editor.plugin(SuggestionPlugin).installed
+    (current) => current.plugin(SuggestionPlugin).installed
   );
-
   return suggestionsInstalled ? (
     <SuggestionDiscussion editableRef={editableRef} snapshot={snapshot} />
   ) : (

@@ -125,9 +125,7 @@ function Draggable({
   const hasTableCellSelection = useEditorSelector((innerEditor) => {
     const table = innerEditor.plugin(BaseTablePlugin);
 
-    return (
-      table.installed && (table.read.selection()?.cellKeys.length ?? 0) > 1
-    );
+    return table.installed && (table.read.selection()?.cells.length ?? 0) > 1;
   });
   const isContainer =
     ElementApi.isElement(element.children[0]) &&

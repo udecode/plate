@@ -54,12 +54,16 @@ describe('createPluginContext', () => {
   it('keeps plugin capability facades serialization-safe', () => {
     const plugin = definePlugin('serializableContext', {
       api: () => ({ ready: () => true }),
-      read: () => ({ ready: () => true }),
+      read: () => ({ name: () => 'custom name', ready: () => true }),
       update: () => ({ run: () => {} }),
     });
     const typedEditor = createEditor({ plugins: [plugin] });
     const portal = typedEditor.plugin(plugin);
 
+    expect(() => String(Reflect.get(portal.read, 'name'))).not.toThrow();
+    expect(() => String(Reflect.get(portal.update, 'name'))).not.toThrow();
+    expect(() => String(Reflect.get(portal.update.run, 'name'))).not.toThrow();
+    expect(portal.read.name()).toBe('custom name');
     expect(() => JSON.stringify(portal.api)).not.toThrow();
     expect(() => JSON.stringify(portal.read)).not.toThrow();
     expect(() => JSON.stringify(portal.update)).not.toThrow();

@@ -4,7 +4,9 @@
   "title": "Suggestion Toolbar Button",
   "description": "A toolbar button for toggling suggestion mode in the editor.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [
     "https://platejs.org/r/suggestion.json",

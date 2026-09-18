@@ -5,18 +5,6 @@ export const registryStaticFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
-        path: 'components/editor/align-static.tsx',
-        type: 'registry:component',
-      },
-    ],
-    name: 'align-static',
-    registryDependencies: [],
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['platejs'],
-    files: [
-      {
         path: 'components/editor/basic-blocks-static.tsx',
         type: 'registry:component',
       },
@@ -164,18 +152,6 @@ export const registryStaticFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
-        path: 'components/editor/line-height-static.tsx',
-        type: 'registry:component',
-      },
-    ],
-    name: 'line-height-static',
-    registryDependencies: [],
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['platejs'],
-    files: [
-      {
         path: 'components/editor/link-static.tsx',
         type: 'registry:component',
       },
@@ -284,7 +260,7 @@ export const registryStaticFeatures: Registry['items'] = [
     name: 'editor-plugins-static',
     registryDependencies: [
       '@plate/editor-static',
-      '@plate/align-static',
+      '@plate/align',
       '@plate/basic-blocks-static',
       '@plate/basic-marks-static',
       '@plate/callout-static',
@@ -294,7 +270,7 @@ export const registryStaticFeatures: Registry['items'] = [
       '@plate/date-static',
       '@plate/font-static',
       '@plate/footnote-static',
-      '@plate/line-height-static',
+      '@plate/line-height',
       '@plate/link-static',
       '@plate/list-static',
       '@plate/markdown',
@@ -350,7 +326,6 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'align',
-    registryDependencies: ['@plate/align-toolbar-button'],
     type: 'registry:component',
   },
   {
@@ -418,7 +393,7 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'block-menu',
-    registryDependencies: ['@plate/editor-context-menu', '@plate/transforms'],
+    registryDependencies: ['@plate/editor-context-menu'],
     type: 'registry:component',
     description: 'A context menu for block-level operations.',
     title: 'Block Menu',
@@ -1000,7 +975,6 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'line-height',
-    registryDependencies: ['@plate/line-height-toolbar-button'],
     type: 'registry:component',
   },
   {

@@ -5,7 +5,9 @@
   "description": "A searchable emoji picker with frequent emoji storage.",
   "dependencies": [
     "platejs",
-    "@emoji-mart/data@1.2.1"
+    "@emoji-mart/data@1.2.1",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [
     "button",

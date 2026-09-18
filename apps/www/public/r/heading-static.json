@@ -2,7 +2,9 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "heading-static",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [],
   "files": [

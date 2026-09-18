@@ -138,7 +138,9 @@ stay in that family. Do not retain a second `handlers` bucket. `schema`,
   `Editor` parameter names one concrete capability tuple; it is not an
   existential runtime boundary. Reject arbitrary runtime objects and unknown
   payload fields in the same compile-only fixture.
-- Publication-dependent activation work is `afterPublish`; cleanup remains
+- Activation registers final-candidate admission with synchronous `beforePublish`;
+  a failure must roll back before publication. Use `afterPublish` for observation
+  of committed state, whose errors cannot veto publication. Cleanup remains
   activation-owned. Do not hide activation behind a vague lifecycle bucket.
 - `validate` checks the assembled descriptor/editor context; it never receives
   a fictional configuration object.
@@ -331,11 +333,15 @@ source's attributes or read the relevant semantic owner outside the renderer.
 Copied presentation configures
 `decorate.attributes` with an inferred object/callback/null input while retaining
 the required semantic reader and its observer.
-Whole-element view paint uses the owning Plate plugin's
-`render.useViewElementAttributes` hook program. It returns sparse safe
-attributes by exact `NodeKey`; Plate owns the private keyed runtime. Per-node
-`render.attributes` and `inject.nodeProps.transformProps` callbacks stay pure
-and hook-free.
+Whole-element view attributes delivered through custom React components use the
+owning Plate plugin's `render.useViewElementAttributes` hook program. It returns
+sparse safe attributes by exact `NodeKey`; Plate owns the private keyed runtime.
+A benchmarked high-frequency interaction may bind private view-local state to
+canonical mounted node hosts through their existing composed refs when custom
+component props must remain unchanged. Keep that binder feature-owned, prove
+replacement and cleanup, and do not publish another hook, registry or generic
+channel. Per-node `render.attributes` and `inject.nodeProps.transformProps`
+callbacks stay pure and hook-free.
 Wrapper and selector APIs follow the same law. Pass the descriptor directly to
 `RenderNodeWrapper<typeof FooPlugin>`,
 `RenderStaticNodeWrapper<typeof BaseFooPlugin>`, and

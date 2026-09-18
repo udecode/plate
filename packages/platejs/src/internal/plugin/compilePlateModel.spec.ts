@@ -200,7 +200,7 @@ describe('compilePlateModel', () => {
     element.update({ history: 'merge' }).set({ tone: 'info' }, { at: [0] });
 
     expect(editor.read.history().undos).toHaveLength(1);
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
     expect(editor.read.children()[0]).toMatchObject({ tone: 'info' });
   });
 

@@ -132,13 +132,17 @@ Colocation is the default.
   free of optional feature selectors. Use `render.contentAttributes` for a
   safe attribute object on the existing live/static content root; `null` clears
   inherited configuration. The copied feature owns its styling values, and
-  core owns composition. Author sparse whole-element attributes through
-  `render.useViewElementAttributes`, which receives the mounted `view` and
-  returns `{ key, attributes }[]` from one hook host per enabled plugin per
-  view. Keep per-node attribute and injection callbacks pure and hook-free.
-  Structural render slots remain for nodes and marks. Do not publish source
-  registries, renderer registries, keyed stores, managers, or manual refresh
-  requirements.
+  core owns composition. Author sparse whole-element attributes delivered to
+  custom React components through `render.useViewElementAttributes`, which
+  receives the mounted `view` and returns `{ key, attributes }[]` from one hook
+  host per enabled plugin per view. A benchmarked high-frequency interaction
+  may bind private view-local state through composed canonical node-host refs
+  when it must stay outside component props; keep that binder feature-owned and
+  prove replacement, detach, cleanup, hydration and native behavior. Keep
+  per-node attribute and injection callbacks pure and hook-free. Structural
+  render slots remain for nodes and marks. Do not publish source registries,
+  renderer registries, keyed stores, managers, generic host channels, or manual
+  refresh requirements.
 - Give before/after Editable and container sibling components only their exact
   slot ref. Never intersect those props with Editable props or container HTML
   attributes, and never spread host props into the sibling invocation. Register

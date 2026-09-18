@@ -30,14 +30,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
+} from '@/registry/components/editor/dropdown-menu';
 import {
   ToolbarSplitButton,
   ToolbarSplitButtonPrimary,
@@ -119,7 +119,7 @@ export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
         </ToolbarSplitButtonPrimary>
 
         <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger>
             <ToolbarSplitButtonSecondary />
           </DropdownMenuTrigger>
 

@@ -1,14 +1,19 @@
 'use client';
 
-import type { Value } from 'platejs';
-import type { CommentThread } from 'platejs/comments';
+import { DocumentChange, type EditorDocumentValue } from 'platejs';
+import { createAuthoredReviewDocument } from 'platejs/authored';
+import type { CommentsJSON, CommentThread } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import { createEditor, EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { createCommentValue } from '@/registry/components/editor/comment';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 
 export default function DiscussionDemo() {
@@ -36,64 +41,43 @@ export default function DiscussionDemo() {
               avatarUrl: 'https://api.dicebear.com/9.x/glass/svg?seed=charlie2',
             },
           },
-          initialThreads,
+          initialComments,
         },
       }),
     ],
     userId: 'alice',
-    initialValue: value,
+    initialValue: fixture.read.value(),
   });
-  React.useEffect(() => {
-    if (editor.read.authored.changes({ status: 'pending' }).items.length > 0) {
-      return;
-    }
-    editor.update((tx) => {
-      tx.history.skip();
-      tx.authored.propose();
-      tx.text.insert('collaboratively ', {
-        at: { offset: 18, path: [1, 0] },
-      });
-    });
-  }, [editor]);
-
   return (
-    <EditorRoot editor={editor}>
-      <EditorContainer
-        className="grid grid-rows-[auto_minmax(0,1fr)] overflow-hidden"
-        variant="demo"
-      >
-        <Editor className="min-w-0" variant="demo" />
-      </EditorContainer>
+    <EditorRoot
+      authored={{ intent: 'edit', projection: 'markup' }}
+      editor={editor}
+    >
+      <EditorFrame className="h-[650px]">
+        <EditorContainer>
+          <Editor className="min-w-0" variant="demo" />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }
 
-const discussionTrailingText =
-  ' on many text segments. You can even have overlapping annotations!';
+const discussionTrailingText = ' on many text segments. You can even have ';
 
-const initialThreads: CommentThread[] = [
+const threads: CommentThread[] = [
   {
     id: 'discussion1',
-    createdAt: new Date(Date.now() - 10 * 60_000).toISOString(),
-    resolved: false,
+    createdAt: '2026-09-09T12:03:00.000Z',
+    resolution: null,
     status: 'published',
     excerpt: 'comments on many text segments',
     userId: 'charlie',
-    target: {
-      type: 'range',
-      range: {
-        anchor: { path: [1, 3, 0], offset: 0 },
-        focus: {
-          path: [1, 4],
-          offset: discussionTrailingText.indexOf('.'),
-        },
-      },
-    },
+    target: { type: 'range' },
     messages: [
       {
         id: 'discussion1-comment',
         userId: 'charlie',
-        createdAt: new Date(Date.now() - 10 * 60_000).toISOString(),
+        createdAt: '2026-09-09T12:03:00.000Z',
         body: createCommentValue(
           'Comments are a great way to provide feedback and discuss changes.'
         ),
@@ -101,7 +85,7 @@ const initialThreads: CommentThread[] = [
       {
         id: 'discussion1-reply',
         userId: 'bob',
-        createdAt: new Date(Date.now() - 8 * 60_000).toISOString(),
+        createdAt: '2026-09-09T12:04:00.000Z',
         body: createCommentValue(
           'Agreed! The link to the docs makes it easy to learn more.'
         ),
@@ -110,31 +94,17 @@ const initialThreads: CommentThread[] = [
   },
   {
     id: 'discussion2',
-    createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
-    resolved: false,
+    createdAt: '2026-09-09T12:05:00.000Z',
+    resolution: null,
     status: 'published',
     excerpt: 'overlapping',
     userId: 'bob',
-    target: {
-      type: 'range',
-      range: {
-        anchor: {
-          path: [1, 4],
-          offset: discussionTrailingText.indexOf('overlapping'),
-        },
-        focus: {
-          path: [1, 4],
-          offset:
-            discussionTrailingText.indexOf('overlapping') +
-            'overlapping'.length,
-        },
-      },
-    },
+    target: { type: 'change', id: 'playground3' },
     messages: [
       {
         id: 'discussion2-comment',
         userId: 'bob',
-        createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
+        createdAt: '2026-09-09T12:05:00.000Z',
         body: createCommentValue(
           'Nice demonstration of overlapping annotations with both comments and suggestions!'
         ),
@@ -142,7 +112,7 @@ const initialThreads: CommentThread[] = [
       {
         id: 'discussion2-reply',
         userId: 'charlie',
-        createdAt: new Date(Date.now() - 3 * 60_000).toISOString(),
+        createdAt: '2026-09-09T12:06:00.000Z',
         body: createCommentValue(
           'This helps users understand how powerful the editor can be.'
         ),
@@ -150,26 +120,96 @@ const initialThreads: CommentThread[] = [
     ],
   },
 ];
-const value: Value = [
-  { type: 'heading', level: 2, children: [{ text: 'Discussions' }] },
-  {
-    type: 'paragraph',
+const createDiscussionValue = ({
+  inserted = false,
+  removed = false,
+  overlapping = false,
+}: {
+  inserted?: boolean;
+  removed?: boolean;
+  overlapping?: boolean;
+}): EditorDocumentValue => {
+  const leadingText = 'Review and refine content together. Use ';
+  const reviewText = ` or to ${removed ? '' : 'mark text for removal'}. Discuss changes using `;
+
+  return {
     children: [
-      { text: 'Review and refine content together. Use ' },
+      { type: 'heading', level: 2, children: [{ text: 'Discussions' }] },
       {
-        type: 'link',
-        url: '/docs/suggestion',
+        type: 'paragraph',
         children: [
+          ...(inserted
+            ? [
+                { text: leadingText },
+                {
+                  type: 'link',
+                  url: '/docs/suggestion',
+                  children: [{ text: 'suggestions' }],
+                },
+                { text: ` like this added text${reviewText}` },
+              ]
+            : [{ text: leadingText + reviewText }]),
           {
-            text: 'suggestions',
+            type: 'link',
+            url: '/docs/comment',
+            children: [{ text: 'comments' }],
+          },
+          {
+            text: `${discussionTrailingText}${overlapping ? 'overlapping ' : ''}annotations!`,
           },
         ],
       },
-      {
-        text: ' like this added text or to mark text for removal. Discuss changes using ',
-      },
-      { type: 'link', url: '/docs/comment', children: [{ text: 'comments' }] },
-      { text: discussionTrailingText },
     ],
+  };
+};
+
+const accepted = createDiscussionValue({});
+const deleted = createDiscussionValue({ removed: true });
+const overlapped = createDiscussionValue({ removed: true, overlapping: true });
+const proposed = createDiscussionValue({
+  inserted: true,
+  removed: true,
+  overlapping: true,
+});
+
+const fixture = createEditor({
+  plugins: EditorKit,
+  initialValue: createAuthoredReviewDocument({
+    accepted,
+    revisions: [
+      {
+        id: 'playground2',
+        authorId: 'bob',
+        createdAt: Date.parse('2026-09-09T12:00:00.000Z'),
+        change: DocumentChange.between(accepted, deleted),
+      },
+      {
+        id: 'playground3',
+        authorId: 'charlie',
+        createdAt: Date.parse('2026-09-09T12:01:00.000Z'),
+        change: DocumentChange.between(deleted, overlapped),
+      },
+      {
+        id: 'playground1',
+        authorId: 'alice',
+        createdAt: Date.parse('2026-09-09T12:02:00.000Z'),
+        change: DocumentChange.between(overlapped, proposed),
+      },
+    ],
+  }),
+  userId: 'alice',
+});
+const anchor = fixture.anchor(
+  {
+    anchor: { path: [1, 1, 0], offset: 0 },
+    focus: { path: [1, 2], offset: discussionTrailingText.indexOf('.') },
   },
-];
+  { association: 'inward', deletion: 'nearest' }
+);
+const initialComments: CommentsJSON = {
+  kind: 'plate-comments',
+  version: 1,
+  threads,
+  ranges: [{ threadId: 'discussion1', range: fixture.anchor.save(anchor) }],
+};
+anchor.release();

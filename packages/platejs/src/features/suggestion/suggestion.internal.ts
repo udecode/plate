@@ -8,7 +8,7 @@ export const observeSuggestionChanges = (
   onPublication?: (publication: AuthoredChangePublication) => void
 ) =>
   editor.plugin(DefaultAuthoredPlugin).api.subscribeChanges((publication) => {
-    if (!publication.documentChanged && publication.nodeKeys.length > 0) {
+    if (publication.nodeKeys.length > 0) {
       refresh({ nodeKeys: publication.nodeKeys });
     }
     onPublication?.(publication);

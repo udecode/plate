@@ -21,7 +21,7 @@ const isHeadingLevel = (value: unknown): value is HeadingLevel =>
 
 const rules = {
   break: { splitReset: true },
-  delete: { start: 'reset' },
+  delete: { empty: 'reset', start: 'reset' },
   merge: { removeEmpty: true },
 } satisfies NonNullable<BasePluginDefinitionInput['rules']>;
 

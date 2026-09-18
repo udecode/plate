@@ -1,17 +1,23 @@
 ---
 date: 2026-04-03
 topic: plite-browser-testing-framework-overview
+status: historical
 ---
 
 # Plite Browser Testing Framework Overview
 
-> Specialist testing/proof doc. For current queue and roadmap truth, see [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/master-roadmap.md).
+> Historical April browser-proof design and reference comparison. Commands,
+> source locations, and “current” claims below belong to that captured program.
+> Select live proof through [Verify Plate](../../.agents/skills/verify-plate/SKILL.md)
+> and [Plite Agent Start](../plite/agent-start.md); consult the
+> [feature review ledger](../research/reviews.md) before reopening its proposals.
+> The retired sibling checkout is unavailable; its paths are provenance only.
 
 ## Purpose
 
 This doc defines the specialist testing/proof lane for editor work and the
 future testing-framework direction it draws from
-[editor-architecture-candidates.md](/Users/zbeyens/git/plate-2/docs/analysis/editor-architecture-candidates.md).
+[editor-architecture-candidates.md](../analysis/editor-architecture-candidates.md).
 
 This is not a “pick one runner and call it done” doc.
 
@@ -27,23 +33,23 @@ internal docs under `docs/`, so the doc lives in `docs/plite-browser/`.
 
 Follow-up docs:
 
-- [framework-design.md](/Users/zbeyens/git/plate-2/docs/plite-browser/framework-design.md)
-- [api-design.md](/Users/zbeyens/git/plate-2/docs/plite-browser/api-design.md)
-- [proof-lane-matrix.md](/Users/zbeyens/git/plate-2/docs/plite-browser/proof-lane-matrix.md)
-- [next-api-candidates.md](/Users/zbeyens/git/plate-2/docs/plite-browser/next-api-candidates.md)
-- [next-api-candidates-matrix.md](/Users/zbeyens/git/plate-2/docs/plite-browser/next-api-candidates-matrix.md)
-- [four-way-api-deep-dive.md](/Users/zbeyens/git/plate-2/docs/plite-browser/four-way-api-deep-dive.md)
-- [next-system-move.md](/Users/zbeyens/git/plate-2/docs/plite-browser/next-system-move.md)
-- [prioritized-backlog.md](/Users/zbeyens/git/plate-2/docs/plite-browser/prioritized-backlog.md)
+- [framework-design.md](framework-design.md)
+- [api-design.md](api-design.md)
+- [proof-lane-matrix.md](proof-lane-matrix.md)
+- [next-api-candidates.md](next-api-candidates.md)
+- [next-api-candidates-matrix.md](next-api-candidates-matrix.md)
+- [four-way-api-deep-dive.md](four-way-api-deep-dive.md)
+- [next-system-move.md](next-system-move.md)
+- [prioritized-backlog.md](prioritized-backlog.md)
 
-Current package:
+Historical package:
 
 - package:
-  [/Users/zbeyens/git/plite/packages/plite-browser](/Users/zbeyens/git/plite/packages/plite-browser)
+  `../plite/packages/plite-browser` (historical target unavailable)
 - Playwright harness entrypoint:
-  [/Users/zbeyens/git/plite/packages/plite-browser/src/playwright/index.ts](/Users/zbeyens/git/plite/packages/plite-browser/src/playwright/index.ts)
+  `../plite/packages/plite-browser/src/playwright/index.ts` (historical target unavailable)
 
-Canonical root commands:
+Historical root commands:
 
 - `yarn build:plite-browser:playwright`
 - `yarn setup:plite-browser`
@@ -59,17 +65,17 @@ Canonical root commands:
 - `yarn test:replacement:compat:local`
 - `yarn test:replacement:gate:local`
 
-Current role:
+Recorded role:
 
 - `plite-browser` is the specialist testing/proof lane for the master roadmap
 - it does not own roadmap truth or queue order
 - it feeds the emitted-artifact obligations in
-  [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md)
+  [true-plite-rc-proof-ledger.md](../plite/true-plite-rc-proof-ledger.md)
 - the current live browser/runtime proof rows are carried by:
-  - [runtime.tsx](/Users/zbeyens/git/plite/packages/plite-react/test/runtime.tsx)
-  - [replacement-compatibility.test.ts](/Users/zbeyens/git/plite/playwright/integration/examples/replacement-compatibility.test.ts)
+  - `../plite/packages/plite-react/test/runtime.tsx` (historical target unavailable)
+  - `../plite/playwright/integration/examples/replacement-compatibility.test.ts` (historical target unavailable)
 - if `plite-browser` work reopens, the current follow-on seam is captured in
-  [next-system-move.md](/Users/zbeyens/git/plate-2/docs/plite-browser/next-system-move.md)
+  [next-system-move.md](next-system-move.md)
 
 ## Migration Review Rule
 
@@ -80,7 +86,7 @@ The acceptance bar is:
 
 - the contributor-facing concept still exists
 - the proof owner is explicit in
-  [proof-lane-matrix.md](/Users/zbeyens/git/plate-2/docs/plite-browser/proof-lane-matrix.md)
+  [proof-lane-matrix.md](proof-lane-matrix.md)
   or the live `docs/plite` verdict docs
 - the moved or removed lane is documented in the maintainer diff story
 
@@ -106,8 +112,8 @@ Best steal:
 
 Key files:
 
-- [/Users/zbeyens/git/lexical/packages/lexical-playground/**tests**/e2e/Composition.spec.mjs](/Users/zbeyens/git/lexical/packages/lexical-playground/__tests__/e2e/Composition.spec.mjs)
-- [/Users/zbeyens/git/lexical/packages/lexical-playground/**tests**/utils/index.mjs](/Users/zbeyens/git/lexical/packages/lexical-playground/__tests__/utils/index.mjs)
+- [../lexical/packages/lexical-playground/__tests__/e2e/Composition.spec.mjs](../../../lexical/packages/lexical-playground/__tests__/e2e/Composition.spec.mjs)
+- [../lexical/packages/lexical-playground/__tests__/utils/index.mjs](../../../lexical/packages/lexical-playground/__tests__/utils/index.mjs)
 
 Take:
 
@@ -124,8 +130,8 @@ Best steal:
 
 Key files:
 
-- [/Users/zbeyens/git/plite/playwright/integration/examples/placeholder.test.ts](/Users/zbeyens/git/plite/playwright/integration/examples/placeholder.test.ts)
-- [/Users/zbeyens/git/plite/package.json](/Users/zbeyens/git/plite/package.json)
+- `../plite/playwright/integration/examples/placeholder.test.ts` (historical target unavailable)
+- `../plite/package.json` (historical target unavailable)
 
 Take:
 
@@ -141,8 +147,8 @@ Best steal:
 
 Key files:
 
-- [/Users/zbeyens/git/edix/vitest.config.ts](/Users/zbeyens/git/edix/vitest.config.ts)
-- [/Users/zbeyens/git/edix/e2e/common.spec.ts](/Users/zbeyens/git/edix/e2e/common.spec.ts)
+- [../edix/vitest.config.ts](../../../edix/vitest.config.ts)
+- [../edix/e2e/common.spec.ts](../../../edix/e2e/common.spec.ts)
 
 Take:
 
@@ -159,9 +165,9 @@ Best steal:
 
 Key files:
 
-- [/Users/zbeyens/git/rich-textarea/src/selection.ts](/Users/zbeyens/git/rich-textarea/src/selection.ts)
-- [/Users/zbeyens/git/rich-textarea/vitest.config.ts](/Users/zbeyens/git/rich-textarea/vitest.config.ts)
-- [/Users/zbeyens/git/rich-textarea/e2e/textarea.spec.ts](/Users/zbeyens/git/rich-textarea/e2e/textarea.spec.ts)
+- [../rich-textarea/src/selection.ts](../../../rich-textarea/src/selection.ts)
+- [../rich-textarea/vitest.config.ts](../../../rich-textarea/vitest.config.ts)
+- [../rich-textarea/e2e/textarea.spec.ts](../../../rich-textarea/e2e/textarea.spec.ts)
 
 Take:
 
@@ -177,8 +183,8 @@ Best steal:
 
 Key files:
 
-- [/Users/zbeyens/git/tiptap/packages/extensions/**tests**/placeholder.spec.ts](/Users/zbeyens/git/tiptap/packages/extensions/__tests__/placeholder.spec.ts)
-- [/Users/zbeyens/git/tiptap/package.json](/Users/zbeyens/git/tiptap/package.json)
+- [../tiptap/packages/extensions/__tests__/placeholder.spec.ts](../../../tiptap/packages/extensions/__tests__/placeholder.spec.ts)
+- [../tiptap/package.json](../../../tiptap/package.json)
 
 Take:
 
@@ -193,7 +199,7 @@ Best steal:
 
 Key file:
 
-- [/Users/zbeyens/git/premirror/docs/testing-strategy.md](/Users/zbeyens/git/premirror/docs/testing-strategy.md)
+- [../premirror/docs/testing-strategy.md](../../../premirror/docs/testing-strategy.md)
 
 Take:
 
@@ -208,7 +214,7 @@ Best steal:
 
 Key file:
 
-- [/Users/zbeyens/git/pretext/package.json](/Users/zbeyens/git/pretext/package.json)
+- [../pretext/package.json](../../../pretext/package.json)
 
 Take:
 
@@ -224,7 +230,7 @@ Best steal:
 
 Key file:
 
-- [/Users/zbeyens/git/vscode/package.json](/Users/zbeyens/git/vscode/package.json)
+- [../vscode/package.json](../../../vscode/package.json)
 
 Take:
 
@@ -239,7 +245,7 @@ Best steal:
 
 Key file:
 
-- [/Users/zbeyens/git/prosemirror/package.json](/Users/zbeyens/git/prosemirror/package.json)
+- [../prosemirror/package.json](../../../prosemirror/package.json)
 
 Take:
 
@@ -254,8 +260,8 @@ Best steal:
 
 Key files:
 
-- [/Users/zbeyens/git/use-editable/package.json](/Users/zbeyens/git/use-editable/package.json)
-- [/Users/zbeyens/git/markdown-editor/package.json](/Users/zbeyens/git/markdown-editor/package.json)
+- [../use-editable/package.json](../../../use-editable/package.json)
+- [../markdown-editor/package.json](../../../markdown-editor/package.json)
 
 Take:
 
@@ -271,8 +277,8 @@ Best steal:
 
 Key files:
 
-- [/Users/zbeyens/git/urql/package.json](/Users/zbeyens/git/urql/package.json)
-- [/Users/zbeyens/git/db/package.json](/Users/zbeyens/git/db/package.json)
+- [../urql/package.json](../../../urql/package.json)
+- [../db/package.json](../../../db/package.json)
 
 Take:
 
@@ -288,9 +294,9 @@ Best steal:
 
 Key files:
 
-- [/Users/zbeyens/git/agent-browser/AGENTS.md](/Users/zbeyens/git/agent-browser/AGENTS.md)
-- [/Users/zbeyens/git/dev-browser/package.json](/Users/zbeyens/git/dev-browser/package.json)
-- [/Users/zbeyens/git/oh-my-codex/COVERAGE.md](/Users/zbeyens/git/oh-my-codex/COVERAGE.md)
+- [../agent-browser/AGENTS.md](../../../agent-browser/AGENTS.md)
+- [../dev-browser/package.json](../../../dev-browser/package.json)
+- [../oh-my-codex/COVERAGE.md](../../../oh-my-codex/COVERAGE.md)
 
 Take:
 

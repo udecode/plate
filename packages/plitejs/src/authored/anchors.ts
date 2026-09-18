@@ -4,19 +4,25 @@ import { DocumentIndex } from '../core/change/document-index';
 import { getRangeEndpointAssociations } from '../core/change/range-association';
 import type { JsonEditorValue } from '../core/change/tokens';
 import { snapshotEditorJsonValue } from '../core/value-codec';
+import type { AnyEditor as Editor } from '../interfaces/editor';
 import type { Path } from '../interfaces/path';
 import { RangeApi, type Range } from '../interfaces/range';
 import { getDefined } from '../internal/get-defined';
 import {
   authoredOriginSpans,
   authoredPositionAt,
+  authoredPositionContentBounds,
   authoredPositionSpans,
   decodeAuthoredPosition,
   resolveAuthoredPosition,
   type AuthoredPosition,
 } from './positions';
-import { readRecord } from './record-tree';
-import { authoredOriginOperation, type AuthoredState } from './state';
+import { readRecord, records } from './record-tree';
+import {
+  authoredContentLineage,
+  authoredOriginOperation,
+  type AuthoredState,
+} from './state';
 import {
   authoredPositionRoot,
   authoredRootNodes,
@@ -47,7 +53,7 @@ export type AuthoredRangeProjection = Readonly<{
 export const bindAuthoredDocumentPath = (
   path: Path,
   options: AnchorOptions<Path>,
-  read: () => AuthoredRangeProjection | null,
+  read: (view?: Editor) => AuthoredRangeProjection | null,
   isAborted: () => boolean,
   draftPath?: () => Path | null | undefined
 ) => {
@@ -86,11 +92,16 @@ export const bindAuthoredDocumentPath = (
   };
   let retained = capture(path, initial);
   return {
-    resolve(): Path | null {
+    resolve(view?: Editor): Path | null {
       if (isAborted()) return null;
       const draft = draftPath?.();
-      if (draft !== undefined) return draft;
-      const current = read();
+      if (draft !== undefined) {
+        if (!view) return draft;
+        const captureProjection = read();
+        if (!captureProjection) return null;
+        retained = capture(draft, captureProjection);
+      }
+      const current = read(view);
       if (!current || current.state.documentId !== documentId || !retained) {
         return null;
       }
@@ -207,7 +218,7 @@ const decodeRange = (input: unknown): RetainedRange => {
 export const bindAuthoredDocumentRange = (
   input: Readonly<{ range: Range }> | Readonly<{ saved: unknown }>,
   options: AnchorOptions<Range>,
-  read: () => AuthoredRangeProjection | null,
+  read: (view?: Editor) => AuthoredRangeProjection | null,
   isAborted: () => boolean,
   draftRange?: () => Range | null | undefined
 ): NativeAuthoredRangeBinding => {
@@ -306,17 +317,99 @@ export const bindAuthoredDocumentRange = (
     retained = capture(input.range, initial);
   }
   return {
-    resolve() {
+    resolve(view) {
       if (isAborted()) return null;
       const draft = draftRange?.();
-      if (draft !== undefined) return draft;
-      const current = read();
+      if (draft !== undefined) {
+        if (!view) return draft;
+        const captureProjection = read();
+        if (!captureProjection) return null;
+        retained = capture(draft, captureProjection);
+      }
+      const current = read(view);
       if (!current) return null;
       if (current.state.documentId !== retained.documentId) return null;
       const associations = getRangeEndpointAssociations(
         retained.direction,
         options.association
       );
+      if (retained.content.length) {
+        const lineage = authoredContentLineage(
+          current.state,
+          retained.content,
+          options.association ?? 'inward'
+        );
+        const live = [...records(current.positions)]
+          .filter(([, positions]) => positions.present)
+          .map(([candidateRoot, positions]) => ({
+            bounds: authoredPositionContentBounds(positions.positions, lineage),
+            positions,
+            root: candidateRoot,
+          }))
+          .filter(
+            (
+              entry
+            ): entry is typeof entry & {
+              bounds: readonly [number, number];
+            } => entry.bounds !== null
+          );
+        if (live.length === 1) {
+          const [{ bounds, root: resolvedRoot }] = live;
+          const document = DocumentIndex.fromValue(
+            authoredRootNodes(current.value, resolvedRoot)
+          );
+          const offsets =
+            retained.direction === 'backward'
+              ? ([bounds[1], bounds[0]] as const)
+              : bounds;
+          const points = offsets.map((offset, index) => {
+            const point = document.pointAt(offset, associations[index]);
+            return point
+              ? {
+                  ...point,
+                  ...(resolvedRoot === 'main' ? {} : { root: resolvedRoot }),
+                }
+              : null;
+          });
+          return points[0] && points[1]
+            ? snapshotEditorJsonValue(
+                { anchor: points[0], focus: points[1] },
+                'Resolved editor range'
+              )
+            : null;
+        }
+        if (live.length > 1 || options.deletion === 'drop') return null;
+
+        const collapseRoot =
+          authoredPositionRoot(
+            current.positions,
+            root,
+            retained.anchor,
+            associations[0] === -1 ? 'left' : 'right'
+          ) ?? root;
+        const positions = readRecord(current.positions, collapseRoot);
+        if (!positions?.present) return null;
+        const offset = resolveAuthoredPosition(
+          positions.positions,
+          retained.anchor,
+          associations[0] === -1 ? 'left' : 'right',
+          'collapse'
+        );
+        if (offset === null) return null;
+        const document = DocumentIndex.fromValue(
+          authoredRootNodes(current.value, collapseRoot)
+        );
+        const point = document.pointAt(offset, associations[0]);
+        if (!point) return null;
+        const resolved = {
+          ...point,
+          ...(collapseRoot === 'main' ? {} : { root: collapseRoot }),
+        };
+        return snapshotEditorJsonValue(
+          { anchor: resolved, focus: resolved },
+          'Resolved editor range'
+        );
+      }
       const pointRoots = [retained.anchor, retained.focus].map(
         (position, index) =>
           authoredPositionRoot(
@@ -330,19 +423,6 @@ export const bindAuthoredDocumentRange = (
       const resolvedRoot = pointRoots[0];
       const positions = readRecord(current.positions, resolvedRoot);
       if (!positions?.present) return null;
-      if (
-        options.deletion === 'drop' &&
-        retained.content.length &&
-        !retained.content.some((content) =>
-          authoredOriginSpans(positions.positions, content.origin).some(
-            ({ span }) =>
-              span.offset < content.offset + content.length &&
-              content.offset < span.offset + span.length
-          )
-        )
-      ) {
-        return null;
-      }
       const document = DocumentIndex.fromValue(
         authoredRootNodes(current.value, resolvedRoot)
       );

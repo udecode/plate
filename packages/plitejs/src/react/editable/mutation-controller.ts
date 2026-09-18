@@ -50,9 +50,11 @@ import {
   type EditableRepairPolicy,
   getEditableRepairPolicy,
 } from './editing-kernel';
-import type {
-  EditableInputController,
-  EditableSelectionSourceTransition,
+import { type NativeGroupingInput, nativeGroupingInput } from './input-history';
+import {
+  type EditableInputController,
+  type EditableSelectionSourceTransition,
+  getEditableNativeGroupingInput,
 } from './input-state';
 import {
   applyParagraphBreakAfterSelectedBlockVoid,
@@ -96,7 +98,6 @@ import { shouldSkipSelectionFocus } from './selection-side-effect-policy';
 export {
   applyModelOwnedHistoryIntent,
   applyModelOwnedNativeHistoryEvent,
-  consumeModelOwnedHistoryFocusRoot,
   shouldForceRenderAfterModelOwnedHistory,
 } from './mutation-history';
 
@@ -216,9 +217,11 @@ const deleteProjectedRanges = (
 
 const applyProjectedViewSelectionTextCommand = ({
   editor,
+  nativeInput,
   text,
 }: {
   editor: RuntimeEditor;
+  nativeInput?: NativeGroupingInput;
   text?: string;
 }) => {
   const viewSelection = readPliteViewSelection(editor);
@@ -244,6 +247,7 @@ const applyProjectedViewSelectionTextCommand = ({
   editor.update(() => {
     // The view wrapper would pin implicit commands to its mounted root.
     const tx = getDefined(getActiveEditorTransaction(editor));
+    if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
     deleteProjectedRanges(runtimeEditor, tx, target.ranges);
 
     if (text) {
@@ -602,7 +606,8 @@ export const applyModelOwnedTransposeCharacterIntent = ({
 const applyRetainedViewSelectionCommand = (
   editor: RuntimeEditor,
   command: EditableCommand,
-  tags?: readonly EditorUpdateTag[]
+  tags?: readonly EditorUpdateTag[],
+  nativeInput?: NativeGroupingInput
 ) => {
   const previous = readPliteViewSelection(editor);
   if (!previous?.segments.parts.some((part) => part.fragment)) return false;
@@ -621,6 +626,7 @@ const applyRetainedViewSelectionCommand = (
   const result = updateAuthoredFragment(
     fragmentEditor,
     (tx) => {
+      if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
       tx.selection.set({
         anchor: previous.anchor.point,
         focus: previous.focus.point,
@@ -822,7 +828,7 @@ export const applyEditableCommand = ({
     case 'history': {
       return applyModelOwnedHistoryIntent({
         direction: command.direction,
-        editor,
+        editor: toReactRuntimeEditor(editor),
       });
     }
 
@@ -853,9 +859,20 @@ export const applyEditableCommand = ({
         return true;
       }
 
-      return toReactRuntimeEditor(editor).api.dom.clipboard.insertData(
-        command.data
-      );
+      const selection = readRuntimeSelection(editor);
+      let handled = false;
+
+      editor.update((tx) => {
+        if (SelectionApi.isNode(selection)) {
+          tx.selection.set(selection);
+        }
+
+        handled = toReactRuntimeEditor(editor).api.dom.clipboard.insertData(
+          command.data
+        );
+      });
+
+      return handled;
     }
 
     case 'insert-text': {
@@ -1031,12 +1048,14 @@ export const focusEditableRepairTarget = (editor: ReactRuntimeEditor) => {
 export const applyModelOwnedTextInput = ({
   data,
   editor,
+  inputController,
   inputType,
   mergeHistory = false,
   selection,
 }: {
   data: string;
   editor: Editor;
+  inputController?: EditableInputController;
   inputType: string;
   mergeHistory?: boolean;
   selection?: Range | Selection;
@@ -1045,23 +1064,28 @@ export const applyModelOwnedTextInput = ({
     getEditorRuntimeOwner(editor),
     ['dom-text-input'],
     () => {
+      const nativeInput = inputController
+        ? getEditableNativeGroupingInput(inputController, mergeHistory)
+        : undefined;
+
       if (
         applyRetainedViewSelectionCommand(
           editor,
           { kind: 'insert-text', text: data },
-          mergeHistory ? ['composition', 'history-merge'] : undefined
+          mergeHistory ? ['composition'] : undefined,
+          nativeInput
         )
       ) {
         return { kind: 'sync-selection', syncDOMSelection: true };
       }
       if (SelectionApi.isNode(selection)) {
-        editor.update(
-          mergeHistory ? { tags: ['composition', 'history-merge'] } : {},
-          (tx) => {
-            tx.selection.set(selection);
-            tx.command(editorCommands.insertText, { text: data });
+        editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
+          if (nativeInput) {
+            tx.annotations.set(nativeGroupingInput, nativeInput);
           }
-        );
+          tx.selection.set(selection);
+          tx.command(editorCommands.insertText, { text: data });
+        });
 
         return inputType === 'insertText'
           ? {
@@ -1079,8 +1103,9 @@ export const applyModelOwnedTextInput = ({
       }
 
       const insertAtSelection = (target: Range) => {
-        if (mergeHistory) {
-          editor.update({ tags: ['composition', 'history-merge'] }, (tx) => {
+        if (nativeInput) {
+          editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
+            tx.annotations.set(nativeGroupingInput, nativeInput);
             tx.command(editorCommands.insertText, {
               options: { at: target },
               text: data,
@@ -1100,7 +1125,11 @@ export const applyModelOwnedTextInput = ({
 
       if (
         !hasExplicitTargetSelection &&
-        applyProjectedViewSelectionTextCommand({ editor, text: data })
+        applyProjectedViewSelectionTextCommand({
+          editor,
+          nativeInput,
+          text: data,
+        })
       ) {
         if (inputType === 'insertText') {
           return {
@@ -1137,12 +1166,20 @@ export const applyModelOwnedTextInput = ({
           () => insertAtSelection(selection)
         );
       } else {
-        profilePliteReactDuration('model-text-input-apply-command', () =>
-          applyEditableCommand({
-            command: { inputType, kind: 'insert-text', text: data },
-            editor,
-          })
-        );
+        profilePliteReactDuration('model-text-input-apply-command', () => {
+          if (!nativeInput) {
+            applyEditableCommand({
+              command: { inputType, kind: 'insert-text', text: data },
+              editor,
+            });
+            return;
+          }
+
+          editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
+            tx.annotations.set(nativeGroupingInput, nativeInput);
+            tx.command(editorCommands.insertText, { text: data });
+          });
+        });
       }
 
       if (inputType === 'insertText') {

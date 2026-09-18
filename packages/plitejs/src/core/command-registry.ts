@@ -340,9 +340,7 @@ const evaluateCommandChainInRead = <
       return commandResult;
     }
 
-    return commandResult === false
-      ? dispatch(index + 1, preparedInput, true)
-      : commandResult;
+    return commandResult;
   };
 
   const stack = commandStacks.get(owner) ?? [];

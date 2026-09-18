@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { highlightFiles } from '@/lib/highlight-code';
+import { getRegistryMetadata } from '@/lib/registry-metadata';
 import { getRegistryItem } from '@/lib/rehype-utils';
-import { registry } from '@/registry/registry';
+
+const registry = getRegistryMetadata();
 
 const ParamsSchema = z.object({
   name: z.string().min(1, 'Name parameter is required'),

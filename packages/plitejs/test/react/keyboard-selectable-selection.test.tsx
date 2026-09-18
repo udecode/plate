@@ -1,10 +1,13 @@
 import { act, fireEvent, render } from '@testing-library/react';
 import {
   defineEditorSchema,
+  definePlugin,
   type Descendant,
+  type PluginInput,
   schema,
   SelectionApi,
 } from 'plitejs';
+import { domCommands } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import { createDataTransfer } from 'plitejs/testing';
 
@@ -65,11 +68,12 @@ const renderElement = ({
 
 const renderKeyboardSelectableEditor = (
   props: Pick<EditableProps, 'onClick' | 'onMouseUp'> = {},
-  options: { history?: boolean } = {}
+  options: { history?: boolean; plugins?: readonly PluginInput[] } = {}
 ) => {
   const editor = createEditor({
     plugins: [
       ...(options.history ? [history()] : []),
+      ...(options.plugins ?? []),
       keyboardSelectableSchema,
     ],
     initialValue: initialValue(),
@@ -424,6 +428,50 @@ describe('keyboard-selectable element selection', () => {
     expect(editor.read((state) => state.selection())).toEqual({
       anchor: { offset: 5, path: [2, 0] },
       focus: { offset: 5, path: [2, 0] },
+    });
+  });
+
+  test('paste handlers receive the exact multi-node selection', async () => {
+    let projectedSelection: unknown;
+    const selectedPaths: number[][] = [];
+    const ClipboardObserverPlugin = definePlugin('clipboard-observer', {
+      commands: ({ handle }) => [
+        handle(domCommands.insertData, ({ state }) => {
+          projectedSelection = state.selection();
+          selectedPaths.push(
+            ...state.selection.nodes().map(([, path]) => [...path])
+          );
+
+          return state.transaction(() => {});
+        }),
+      ],
+    });
+    const { editable, editor } = renderKeyboardSelectableEditor(
+      {},
+      { plugins: [ClipboardObserverPlugin] }
+    );
+    const clipboard = createDataTransfer();
+
+    clipboard.setData('text/plain', 'paste');
+    editor.update.selection.setNodes([[1], [2]], {
+      anchor: [1],
+      focus: [2],
+    });
+
+    await act(async () => {
+      fireEvent.paste(editable, { clipboardData: clipboard });
+    });
+
+    expect(projectedSelection).toEqual({
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 7, path: [2, 0] },
+    });
+    expect(selectedPaths).toEqual([[1], [2]]);
+    expect(getEditorLiveSelection(editor)).toEqual({
+      anchorPath: [1],
+      focusPath: [2],
+      kind: 'node',
+      paths: [[1], [2]],
     });
   });
 

@@ -1590,6 +1590,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:code-block-codemirror",
+        "typecheck:partition:core",
         "typecheck:partition:react-core"
       ],
       "inputs": [
@@ -1659,7 +1660,8 @@
       "dependsOn": [
         "plitejs#typecheck:partition:core",
         "typecheck:partition:comments",
-        "typecheck:partition:core"
+        "typecheck:partition:core",
+        "typecheck:partition:proxies"
       ],
       "inputs": [
         "src/features/comments/**",
@@ -1682,6 +1684,7 @@
         "typecheck:partition:comments",
         "typecheck:partition:comments-react",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:react-core"
       ],
       "inputs": [
@@ -2416,6 +2419,7 @@
         "typecheck:partition:root",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-code-block",
+        "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list",
         "typecheck:partition:table"
       ],
@@ -3200,7 +3204,6 @@
         "typecheck:partition:combobox",
         "typecheck:partition:core",
         "typecheck:partition:markdown",
-        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:table"
       ],
@@ -4341,7 +4344,7 @@
     },
     "typecheck:partition:migrations": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:proxies"],
+      "dependsOn": ["typecheck:partition:core"],
       "inputs": [
         "src/migrations/**",
         "!src/**/*.spec.*",

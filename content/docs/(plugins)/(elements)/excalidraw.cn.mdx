@@ -34,14 +34,23 @@ const plugins = [
 
 ### 插入工具栏按钮
 
-可以将此项添加到[插入工具栏按钮](/docs/toolbar#insert-toolbar-button)来插入 Excalidraw 元素：
+菜单项直接调用已安装的 Excalidraw 功能：
 
 ```tsx
-{
+import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
+
+const insertItem = {
   icon: <PenToolIcon />,
   label: 'Excalidraw',
-  value: PLUGINS.excalidraw,
-}
+  value: 'excalidraw',
+  onSelect: () => {
+    const excalidraw = editor.plugin(BaseExcalidrawPlugin);
+
+    if (!excalidraw.installed || editor.read.view.isReadOnly()) return;
+
+    excalidraw.update.insert({}, { select: true });
+  },
+};
 ```
 
 ## 插件

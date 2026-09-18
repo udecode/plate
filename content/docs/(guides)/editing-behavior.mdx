@@ -201,7 +201,8 @@ export const StableCalloutPlugin = CalloutPlugin.configure({
 <Callout>
   Merge rules are not table cell merge commands. `rules.merge` protects
   document structure during node joins. Table cell merge and split commands live
-  on `tx.table.merge()` and `tx.table.split()`.
+  on `tx.plugin(TablePlugin).merge()` and `tx.plugin(TablePlugin).split()`,
+  using `TablePlugin` from `platejs/table/react`.
 </Callout>
 
 ## Normalize behavior
@@ -270,7 +271,7 @@ For list metadata and code-block children, use `rules.match` so the feature plug
 | `rules.match` | Core rule lookup plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesmatch) |
 | `tx.nodes.merge(...)` | Plate transaction command | [Transforms](/docs/api/editor-transforms#txnodesmergeoptions) |
 | `editorReads.nodes.shouldMergeNodesRemovePrevNode` | Internal Plate descriptor extended by Plate merge-rule middleware | [Plugin Rules](/docs/plugin-rules#rulesmerge) |
-| `tx.table.merge()` | Table feature package | [Table](/docs/table#editing-behavior) |
+| `tx.plugin(TablePlugin).merge()` | Table feature package | [Table](/docs/table#editing-behavior) |
 
 
 ## Correction timing

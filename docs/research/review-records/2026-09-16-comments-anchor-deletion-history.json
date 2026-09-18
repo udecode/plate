@@ -1,0 +1,79 @@
+{
+  "id": "2026-09-16-comments-anchor-deletion-history",
+  "scope": "comments",
+  "kind": "review",
+  "date": "2026-09-16",
+  "question": "When an edit deletes every character under a published comment, should the thread survive, and how should document and comment history interact?",
+  "model": "gpt-6-astra",
+  "method": "best-api-review/history-v2; direct Google Docs UI inspection; official Google and Notion documentation; current source and focused proof",
+  "trigger": "User requested a Google Docs and Notion comparison, a harsh API verdict, and a full analysis of history behavior.",
+  "requirements": [
+    "Deleting all anchored document characters must not silently destroy a published conversation.",
+    "Document undo, redo, and revision restore must map or recover anchors without rewinding comment data.",
+    "Draft cancellation, empty message edits, resolve, reopen, message deletion, and thread deletion need distinct semantics.",
+    "A thread with deleted source content must remain discoverable and actionable from comment history.",
+    "Suggestion decisions and ordinary comments need one history projection without merging their storage owners.",
+    "The editor package owns current thread records and anchor mapping; applications own persistence, authorization, retention, and cross-document history queries.",
+    "History must scale without loading every document revision or all comment activity into the live editor."
+  ],
+  "evidenceReuse": "Reused the accepted package-data ownership decision and its source map. Replayed the current deleted-range unit/component proof and the focused Chromium history case. Inspected the supplied Google Doc comment-history and version-history surfaces instead of creating new test content.",
+  "summary": "Preserve every published thread when its annotated text is deleted. Keep its last excerpt and a collapsed or detached mapped target, show it in comment history as deleted source content, and let undo or a historical document projection restore the anchor. Keep document revisions, comment activity, and retained suggestion decisions as separate durable authorities joined by a history read model. Current Plate already preserves collapsed anchors through repeated undo/redo; it lacks the durable activity/tombstone data required for a truthful history product.",
+  "verdict": "pursue",
+  "previous": "2026-09-09-comments-package-data",
+  "relation": "reaffirms",
+  "alternatives": [
+    "Delete the thread with its anchor: reject; a reversible document edit would cause irreversible conversation loss and remote editors could erase other people’s discussion.",
+    "Auto-resolve the thread: reject; removing text does not prove the question was answered, and Google Docs keeps original-content-deleted items visible in comment history.",
+    "Keep only the current collapsed range: keep as the live-editor projection, but insufficient for durable history because resolve, reopen, edit, deletion, actor, and time are overwritten or discarded.",
+    "Put comments inside editor undo/version history: reject; document restoration must not roll conversation state backward or resurrect deleted message content.",
+    "Add a second history plugin or duplicate thread store: reject; comments owns conversation state, authored owns edit decisions, and an application history read model should join their immutable activity.",
+    "Preserve a compact thread aggregate plus append-only activity/tombstones and per-document-revision target projections: pursue."
+  ],
+  "proofLimits": "The supplied Google Doc was inspected read-only. It directly showed open and resolved suggestions, original-content-deleted entries, explicit resolve/delete actions, and a separate version-history surface; no new external comment was posted and no live regular-comment anchor was deleted. Google official help documents lifecycle and export, while the exact anchor-deletion evidence also includes a Google support community report. Notion official documentation proves explicit comment lifecycle, a comments pane, and a page timeline containing revisions and comments, but does not document the exact inline-anchor deletion result; no Notion workspace was mutated. Current Plate proof passed 29 focused unit/component tests and the single Chromium case for fully deleted comment history. This is a review record, not an implementation.",
+  "references": [
+    "packages/platejs/src/features/comments/BaseCommentsPlugin.ts",
+    "packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts",
+    "apps/www/src/registry/components/editor/discussion.tsx",
+    "apps/www/src/registry/components/editor/discussion.spec.tsx",
+    "apps/www/tests/browser/comment.spec.ts",
+    "apps/www/src/registry/examples/comment-persistence-demo.tsx",
+    "apps/www/src/registry/examples/version-history-demo.tsx",
+    "docs/research/decisions/comments-data-ownership.md"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/features/comments/BaseCommentsPlugin.ts": "4674bdb54eb5c160c922c25f577a8112c3d120bfe055334768db75068b043b9b",
+      "apps/www/src/registry/components/editor/comment.tsx": "603a81bac4f057450d148bb173541c2c2b4db4955d98d7dfcc37c67251f9c6b6",
+      "apps/www/src/registry/examples/comment-persistence-demo.tsx": "175ea0db05b68bd8294944ffe99ae6b2584b2c77d828492914145ae899178f69",
+      "apps/www/src/registry/examples/comment-overlap-demo.tsx": "493a0cd0e2549c45f032448f9f16cd5fddbc312af8e8effe1239453b88ca822a",
+      "packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts": "d986ad7e118a39a2934c5f84e2925881c3ee23256b06dfeffe7357b252db2160",
+      "apps/www/tests/browser/comment.spec.ts": "1ec9b659328219842110290215fc104201d255b4ccb512256f7777dab5beb094",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "apps/www/package.json": "dedd5e93b76023363430b12bb4e9a46d05ab1f71a5ad2f25878967c8058fce90",
+      "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
+      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
+    },
+    "directories": {},
+    "features": {
+      "browser/comment": "09e027a81d7e9b9b75f93754c84d1bd3c6adfc5841b95ea19dbec8e3f447eb9d",
+      "example/plite/comment-mode": "14d11a62f1f5a69e9c6afb5663cbf53b655f5968acaae639e4a706df0375a0ed",
+      "example/registry/comment-demo": "1adda4b262fa477c9e3c552b67e0c9179d9c26faa8b887c80620330a0c6f0c8f",
+      "example/registry/comment-overlap-demo": "d0687820f703820397506fe9ab910d1a80c0e0ac6d199fd75dabc0ddbb9f50ed",
+      "example/registry/comment-persistence-demo": "369d83ae08cbc4491088713cc5a1c0ac0305e6cf8215dfcbfd16caf44666cd2a",
+      "example/registry/comment-review-demo": "eb7ee67f3989c01d3a5c363a0168572b1de199c5665624bd2530e10eae351103",
+      "example/registry/discussion-demo": "cc07731f04ba4d5c18aa0e850fc1cfc8d11571eaa70d4b5e120ef5da63de090e",
+      "example/value/comment-value": "1f1c9d6cd55260e0e1e152bb4fdf9fabd721b72b62c63a6a6b706f2419163841",
+      "export/platejs/./comments": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "export/platejs/./comments/react": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "platejs/comments": "5c7fd3ee5dbcb04e74b1a85812a0d152a37b63c61da6846af13f51337d2aa77e",
+      "ui/comment": "7e56b6518aacb0ed0ad272fd0279c71ae530c114735dbfaf23f35f3d614c0b3e",
+      "ui/comment-toolbar-button": "a844ef3fee43ea803532fba85bbaf599cc6d4613f07e15e4e4180f957c13602d",
+      "ui/discussion": "d7d6c14ce239dff2a4c8c1b7de58bfc6b4a5f1fd0ca16aea192b4af4cab58ad3"
+    },
+    "upstreams": []
+  }
+}

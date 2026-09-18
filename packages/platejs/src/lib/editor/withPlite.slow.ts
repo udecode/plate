@@ -15,7 +15,6 @@ import { createEditor as createReactEditor } from '../../react/editor/withPlate'
 import { definePlugin } from '../../react/plugin/definePlugin';
 import {
   AffinityPlugin,
-  type Editor,
   BaseParagraphPlugin,
   definePlugin as defineHeadlessPlugin,
   createEditor as createHeadlessEditor,
@@ -440,7 +439,7 @@ describe('createReactEditor', () => {
         },
       ]);
 
-      editor.update((tx) => tx.history.undo());
+      editor.api.history.undo();
 
       expect(editor.read.children()).toEqual([
         { children: [{ text: '' }], type: 'paragraph' },
@@ -877,35 +876,6 @@ describe('createReactEditor', () => {
       ]);
     });
 
-    it('decodes and transforms HTML before fitting its root content', () => {
-      let transformedInput: ReturnType<Editor['read']['value']> | undefined;
-      const TransformHtmlPlugin = definePlugin('transformHtml', {
-        prepareDocument: ({ document }) => {
-          transformedInput = document;
-
-          return {
-            ...document,
-            children: [{ children: [], type: 'paragraph' }],
-          };
-        },
-      });
-      const editor = createHeadlessEditor({
-        editor: createPliteEditor(),
-        plugins: [TransformHtmlPlugin, HtmlPlugin],
-        initialValue: ({ editor: innerEditor }) =>
-          innerEditor
-            .plugin(HtmlPlugin)
-            .api.deserialize({ element: '<p>html</p>' }),
-      });
-
-      expect(transformedInput).toEqual({
-        children: [{ children: [{ text: 'html' }], type: 'paragraph' }],
-      });
-      expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], type: 'paragraph' },
-      ]);
-    });
-
     it('preserves an existing document when initialValue is omitted', () => {
       const rawEditor = createPliteEditor({
         initialValue: [{ children: [{ text: 'existing' }], type: 'paragraph' }],
@@ -916,87 +886,6 @@ describe('createReactEditor', () => {
       expect(editor.read.children()).toEqual([
         { children: [{ text: 'existing' }], type: 'paragraph' },
       ]);
-    });
-
-    it('initializes and transforms one full multi-root document', () => {
-      const FigurePlugin = definePlugin('figure', {
-        schema: {
-          element: {
-            contentRoots: {
-              caption: {
-                content: schema.content.type('paragraph', {
-                  default: { type: 'paragraph' },
-                  min: 1,
-                }),
-                ownership: 'exclusive',
-              },
-            },
-            blockContent: true,
-            void: 'block',
-          },
-        },
-      });
-      const TransformDocumentPlugin = definePlugin('transformDocument', {
-        schema: {
-          properties: {
-            transformed: schema.elementProperty(property.boolean(), {
-              target: target.group('element'),
-            }),
-          },
-        },
-        prepareDocument: ({ document }) => ({
-          ...document,
-          children: document.children.map((node) => ({
-            ...node,
-            transformed: true,
-          })),
-          roots: Object.fromEntries(
-            Object.entries(document.roots ?? {}).map(([root, children]) => [
-              root,
-              children.map((node) => ({ ...node, transformed: true })),
-            ])
-          ),
-        }),
-      });
-      const editor = createHeadlessEditor({
-        plugins: [FigurePlugin, TransformDocumentPlugin],
-        initialValue: () => ({
-          children: [
-            {
-              childRoots: { caption: 'caption:1' },
-              children: [{ text: '' }],
-              type: 'figure',
-            },
-          ],
-          meta: { revision: 7 },
-          roots: {
-            'caption:1': [
-              { children: [{ text: 'Caption' }], type: 'paragraph' },
-            ],
-          },
-        }),
-      });
-
-      expect(editor.read.value()).toEqual({
-        children: [
-          {
-            childRoots: { caption: 'caption:1' },
-            children: [{ text: '' }],
-            transformed: true,
-            type: 'figure',
-          },
-        ],
-        meta: { revision: 7 },
-        roots: {
-          'caption:1': [
-            {
-              children: [{ text: 'Caption' }],
-              transformed: true,
-              type: 'paragraph',
-            },
-          ],
-        },
-      });
     });
 
     it('requires explicit initialValue to contain a root element', () => {
@@ -1496,107 +1385,6 @@ describe('createReactEditor', () => {
     expect(editorWithEmptyChildren.read.children()).toEqual([
       { children: [{ text: '' }], type: 'paragraph' },
     ]);
-  });
-
-  it('preserves initial selection when transforms wrap selected text', () => {
-    const wrapCellText = (node: any): any => {
-      if (!node || typeof node !== 'object' || !Array.isArray(node.children)) {
-        return node;
-      }
-
-      if (node.type === 'tableCell') {
-        return {
-          ...node,
-          children: node.children.map((child: any) =>
-            child && typeof child === 'object' && 'text' in child
-              ? { children: [child], type: 'paragraph' }
-              : wrapCellText(child)
-          ),
-        };
-      }
-
-      return {
-        ...node,
-        children: node.children.map(wrapCellText),
-      };
-    };
-    const WrapTextPlugin = definePlugin('wrapText', {
-      prepareDocument: ({ document }) => ({
-        ...document,
-        children: document.children.map(wrapCellText) as Value,
-        roots: Object.fromEntries(
-          Object.entries(document.roots ?? {}).map(([root, children]) => [
-            root,
-            children.map(wrapCellText) as Value,
-          ])
-        ),
-      }),
-    });
-    const TablePlugin = definePlugin('table', {
-      schema: {
-        element: {
-          content: schema.content.type('tableRow', {
-            default: { type: 'tableRow' },
-            min: 1,
-          }),
-        },
-      },
-    });
-    const TableRowPlugin = definePlugin('tableRow', {
-      schema: {
-        element: {
-          content: schema.content.type('tableCell', {
-            default: { type: 'tableCell' },
-            min: 1,
-          }),
-        },
-      },
-    });
-    const TableCellPlugin = definePlugin('tableCell', {
-      schema: {
-        element: {
-          content: schema.content.group('block', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
-        },
-      },
-    });
-    const editor = createHeadlessEditor({
-      editor: createPliteEditor(),
-      plugins: [WrapTextPlugin, TablePlugin, TableRowPlugin, TableCellPlugin],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 2, path: [0, 1, 0, 0] },
-        focus: { offset: 2, path: [0, 0, 1, 0] },
-      },
-      initialValue: [
-        {
-          children: [
-            {
-              children: [
-                { children: [{ text: '11' }], type: 'tableCell' },
-                { children: [{ text: '12' }], type: 'tableCell' },
-              ],
-              type: 'tableRow',
-            },
-            {
-              children: [
-                { children: [{ text: '21' }], type: 'tableCell' },
-                { children: [{ text: '22' }], type: 'tableCell' },
-              ],
-              type: 'tableRow',
-            },
-          ],
-          type: 'table',
-        },
-      ],
-    });
-
-    expect(editor.read.selection()).toEqual({
-      anchor: { offset: 2, path: [0, 1, 0, 0, 0] },
-      focus: { offset: 2, path: [0, 0, 1, 0, 0] },
-    });
   });
 
   describe('contextual initialValue', () => {

@@ -1,37 +1,18 @@
-import { BaseParagraphPlugin, definePlugin, PLUGINS, schema } from '../../core';
+import { DefaultAuthoredPlugin } from '../../authored';
+import { BaseParagraphPlugin, createEditorView } from '../../core';
+import {
+  BaseTablePlugin as TablePlugin,
+  BaseTableRowPlugin as TableRowPlugin,
+  BaseTableCellPlugin as TableCellPlugin,
+} from '../../features/table';
 import { MarkdownPlugin } from '../../markdown';
 import { createEditor } from '../../react/core';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
-import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
-
-const TableCellPlugin = definePlugin(PLUGINS.tableCell, {
-  schema: ({ plugins }) => ({
-    element: {
-      content: plugins.blockContent({
-        default: BaseParagraphPlugin,
-        min: 1,
-      }),
-    },
-  }),
-});
-const TableRowPlugin = definePlugin(PLUGINS.tableRow, {
-  schema: {
-    element: {
-      content: schema.content.element(TableCellPlugin, { min: 1 }),
-    },
-  },
-});
-const TablePlugin = definePlugin(PLUGINS.table, {
-  schema: {
-    element: {
-      content: schema.content.element(TableRowPlugin, { min: 1 }),
-    },
-  },
-});
+import { AIChatPlugin } from './AIChatPlugin';
 
 const createSuggestionEditor = () => {
   const editor = createEditor({
-    plugins: [BaseParagraphPlugin, AIChatPlugin],
+    plugins: [DefaultAuthoredPlugin, BaseParagraphPlugin, AIChatPlugin],
     userId: 'u1',
     selection: {
       kind: 'text',
@@ -42,23 +23,65 @@ const createSuggestionEditor = () => {
   });
   const node = editor.read.children()[0];
 
-  editor.api.authored.setView({
-    intent: 'propose',
-    projection: 'markup',
-  });
   editor.plugin(AIChatPlugin).store.set({
     chatNodes: [{ node, nodeKey: editor.key(node) }],
     mode: 'chat',
   });
-  editor.plugin(AIChatPlugin).update.applySuggestions('suggested');
+  editor.plugin(AIChatPlugin).api.setPreview('suggested');
 
   return editor;
 };
 
 describe('ai chat action utils', () => {
+  it('keeps streaming into an empty paragraph without changing editing mode', async () => {
+    const editor = createEditor({
+      plugins: [
+        DefaultAuthoredPlugin,
+        BaseParagraphPlugin,
+        BaseAIPlugin,
+        MarkdownPlugin,
+        AIChatPlugin,
+      ],
+      userId: 'u1',
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 7 },
+        focus: { path: [0, 0], offset: 7 },
+      },
+      initialValue: [{ type: 'paragraph', children: [{ text: 'AI Menu' }] }],
+    });
+    const view = createEditorView(editor);
+    view.update.break.insert();
+    const ai = view.plugin(AIChatPlugin);
+    ai.api.show();
+
+    ai.api.setPreview('AI can help ');
+    await Promise.resolve();
+    ai.api.setPreview(
+      'AI can help turn an initial idea into a clear and useful first draft.'
+    );
+
+    expect(view.read.text.string([1])).toBe('');
+    expect(view.read.authored.view()).toEqual({
+      intent: 'edit',
+      projection: 'accepted',
+    });
+    expect(ai.store.get('previewValue')[0].children).toEqual([
+      {
+        text: 'AI can help turn an initial idea into a clear and useful first draft.',
+      },
+    ]);
+    ai.api.accept();
+    view.update.text.insert('!');
+    expect(view.api.history.undo().status).toBe('applied');
+    expect(view.api.history.undo().status).toBe('applied');
+    expect(view.read.text.string([1])).toBe('');
+  });
+
   it('diffs a table cell update and replaces only its children', () => {
     const editor = createEditor({
       plugins: [
+        DefaultAuthoredPlugin,
         BaseParagraphPlugin,
         BaseAIPlugin,
         MarkdownPlugin,
@@ -91,18 +114,14 @@ describe('ai chat action utils', () => {
     editor.plugin(AIChatPlugin).store.set({
       _tableCellRefs: { c1: { key: cellNodeKey } },
     });
-    editor.api.authored.setView({
-      intent: 'propose',
-      projection: 'markup',
-    });
 
     editor
       .plugin(AIChatPlugin)
-      .update.applyTableCellSuggestion({ content: 'ai', ref: 'c1' });
+      .api.setTablePreview({ content: 'ai', ref: 'c1' });
 
     expect(
       editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
+    ).toHaveLength(0);
     expect(editor.read.value().children).toEqual([
       {
         children: [
@@ -119,91 +138,30 @@ describe('ai chat action utils', () => {
         type: 'table',
       },
     ]);
-    expect(editor.read.text.string([])).toContain('ai');
-    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.text.string([])).toBe('old');
+    expect(editor.read.history().undos).toHaveLength(0);
+    editor.plugin(AIChatPlugin).api.accept();
+    expect(editor.read.text.string([])).toBe('ai');
+    expect(editor.key([0, 0, 0])).toBe(cellNodeKey);
+    expect(editor.read.history().undos).toHaveLength(1);
   });
 
-  it('accepts the tracked AI proposal through native authored decisions', () => {
+  it('applies the draft as an ordinary edit', () => {
     const editor = createSuggestionEditor();
 
-    const result = editor.plugin(AIChatPlugin).update.acceptSuggestions();
+    editor.plugin(AIChatPlugin).api.accept();
 
-    expect(result?.status).toBe('applied');
     expect(editor.read.text.string([])).toBe('suggested');
     expect(editor.read.authored.changes({ status: 'pending' }).items).toEqual(
       []
     );
   });
 
-  it('rejects the tracked AI proposal through native authored decisions', () => {
+  it('discards the draft without a document edit', () => {
     const editor = createSuggestionEditor();
-
-    const result = editor.plugin(AIChatPlugin).update.rejectSuggestions();
-
-    expect(result?.status).toBe('applied');
-    expect(editor.read.text.string([])).toBe('');
-  });
-
-  it('stops chat, resets options, and undoes the active AI batch', () => {
-    const stop = mock();
-    const clear = mock();
-    const editor = createEditor({
-      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      userId: 'u1',
-      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
-    });
-    const chat = {
-      messages: [
-        {
-          id: 'm1',
-          parts: [{ text: 'answer', type: 'text' }],
-          role: 'assistant',
-        },
-      ],
-      clear,
-      stop,
-    } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
-    const nodeKey = editor.key([0])!;
-    editor.plugin(AIChatPlugin).store.set({
-      _replaceNodeKeys: [nodeKey],
-      chat,
-      chatNodes: [
-        {
-          node: editor.read.children()[0],
-          nodeKey,
-        },
-      ],
-      mode: 'chat',
-      toolName: 'edit',
-      open: true,
-    });
-    editor.update({ history: 'merge' }, (tx) => {
-      tx.ai.markBatch();
-      tx.ai.insertNodes([{ text: 'ai' }], { target: [0, 0] });
-    });
 
     editor.plugin(AIChatPlugin).api.reset();
 
-    expect(stop).toHaveBeenCalled();
-    expect(clear).toHaveBeenCalled();
     expect(editor.read.text.string([])).toBe('');
-    expect(editor.plugin(AIChatPlugin).store.get('_replaceNodeKeys')).toEqual(
-      []
-    );
-    expect(editor.plugin(AIChatPlugin).store.get('chatNodes')).toEqual([]);
-    expect(editor.plugin(AIChatPlugin).store.get('mode')).toBe('insert');
-    expect(editor.plugin(AIChatPlugin).store.get('toolName')).toBeNull();
-  });
-
-  it('discards preview bookkeeping when reset skips undo', () => {
-    const editor = createEditor({
-      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
-      userId: 'u1',
-    });
-
-    editor.plugin(BaseAIPlugin).update.beginPreview();
-    editor.plugin(AIChatPlugin).api.reset({ undo: false });
-
-    expect(editor.plugin(BaseAIPlugin).read.hasPreview()).toBe(false);
   });
 });

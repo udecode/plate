@@ -1,4 +1,5 @@
 import {
+  clearCache as clearPretextCache,
   layoutWithLines,
   measureNaturalWidth,
   prepareWithSegments,
@@ -12,53 +13,222 @@ import {
 import {
   type Descendant,
   defineValueCodec,
+  type Editor as EditorType,
   type EditorStateField,
   type Element,
+  type ElementOf,
+  type NamedRootKey,
   NodeApi,
   type Path,
-  type Point,
   type Range,
   type RootKey,
-  type Editor as EditorType,
-  type Text,
+  type TextOf,
   type Value,
 } from '..';
 import { toInternalRoot } from '../core/public-root';
-import {
-  isLayoutRuntimeConnectionDeferred,
-  registerLayoutRuntimeLifecycle,
-} from './layout-runtime-lifecycle';
+import type { AnyEditor } from '../interfaces/editor';
+import { registerPageLayoutEngineInvalidator } from './page-layout-engine-invalidation.internal';
 
 const MAIN_ROOT_KEY: RootKey = 'main';
-
-const failInvariant = (message: string): never => {
-  throw new Error(message);
-};
-
-const assertPublicRootKey = (root: RootKey | undefined) => {
-  if (root === MAIN_ROOT_KEY) {
-    throw new Error('[Plite] Omit root to target the primary document.');
-  }
-};
-
-const _toPublicRootOption = (root: RootKey): RootKey | undefined =>
-  root === MAIN_ROOT_KEY ? undefined : root;
 
 export type PagePreset = 'a4' | 'letter';
 
 export type PageMargins =
   | number
-  | {
+  | Readonly<{
       bottom: number;
       left: number;
       right: number;
       top: number;
-    };
+    }>;
 
-/** Page size and margins used by editor page-layout readers. */
-export type PageSettings = {
+export type PageSettings = Readonly<{
   margins: PageMargins;
   preset: PagePreset;
+}>;
+
+export type PageSettingsSource<TSettings extends PageSettings = PageSettings> =
+  | EditorStateField<TSettings>
+  | TSettings;
+
+export type PageRect = Readonly<{
+  height: number;
+  left: number;
+  top: number;
+  width: number;
+}>;
+
+export type PageLayoutSize = Readonly<{
+  height: number;
+  width: number;
+}>;
+
+export type PageLayoutPage = Readonly<{
+  content: PageRect;
+  height: number;
+  index: number;
+  width: number;
+}>;
+
+export type PageLayoutMode = 'single' | 'spread';
+
+export type PageLayoutTextStyle = Readonly<{
+  font: string;
+  letterSpacing?: number;
+}>;
+
+export type PageLayoutBlockStyle = Readonly<{
+  blockSpacing?: number;
+  lineHeight: number;
+}>;
+
+export type PageLayoutRun = Readonly<{
+  source: Range;
+  text: string;
+  textStyle: PageLayoutTextStyle;
+}>;
+
+export type PageLayoutBlock = Readonly<
+  { path: Path; spacingAfter: number } & (
+    | {
+        keepTogether: boolean;
+        lineHeight: number;
+        runs: readonly PageLayoutRun[];
+        type: 'text';
+      }
+    | { size: PageLayoutSize; type: 'atomic' }
+    | {
+        children: ReadonlyArray<
+          Readonly<{
+            path: Path;
+            size: PageLayoutSize;
+          }>
+        >;
+        type: 'direct-children';
+      }
+  )
+>;
+
+export type PageLayoutFragment = Readonly<
+  {
+    pageIndex: number;
+    path: Path;
+    rect: PageRect;
+  } & (
+    | {
+        lines: ReadonlyArray<
+          Readonly<{
+            rect: PageRect;
+            runs: ReadonlyArray<
+              Readonly<{
+                rect: PageRect;
+                source: Range;
+              }>
+            >;
+            source: Range;
+          }>
+        >;
+        type: 'text';
+      }
+    | { type: 'atomic' }
+    | {
+        children: ReadonlyArray<Readonly<{ path: Path; rect: PageRect }>>;
+        type: 'direct-children';
+      }
+  )
+>;
+
+export type PageLayoutSnapshot = Readonly<{
+  fragments: readonly PageLayoutFragment[];
+  pages: readonly PageLayoutPage[];
+  root?: NamedRootKey;
+  settings: PageSettings;
+  version: number;
+}>;
+
+export type NodeFragmentationPlan =
+  | Readonly<{ keepTogether?: boolean; type: 'text' }>
+  | Readonly<{ size: PageLayoutSize; type: 'atomic' }>
+  | Readonly<{
+      sizes: readonly PageLayoutSize[];
+      type: 'direct-children';
+    }>;
+
+export type NodeFragmentationProvider<TElement extends Element = Element> =
+  (context: {
+    content: PageLayoutSize;
+    element: TElement;
+    path: Path;
+  }) => NodeFragmentationPlan | undefined;
+
+export type PageLayoutTypography<TElement extends Element = Element> =
+  Readonly<{
+    block?: (context: {
+      element: TElement;
+      path: Path;
+    }) => PageLayoutBlockStyle;
+    text?: (context: {
+      element: TElement;
+      leaf: TextOf<TElement>;
+      path: Path;
+    }) => PageLayoutTextStyle;
+  }>;
+
+export type PageLayoutEngineInput = Readonly<{
+  blocks: readonly PageLayoutBlock[];
+  page: PageLayoutPage;
+  settings: PageSettings;
+  version: number;
+}>;
+
+export type PageLayoutEngineOutput = Pick<
+  PageLayoutSnapshot,
+  'fragments' | 'pages'
+>;
+
+export type PageLayoutEngine = Readonly<{
+  compose: (input: PageLayoutEngineInput) => PageLayoutEngineOutput;
+  invalidate?: () => void;
+}>;
+
+export type PretextPageLayoutEngineOptions = Readonly<{
+  estimateBlock?: (context: {
+    block: PageLayoutBlock;
+    blockIndex: number;
+    page: PageLayoutPage;
+    settings: PageSettings;
+  }) => boolean;
+  maxPreparedEntries?: number;
+  whiteSpace?: 'normal' | 'pre-wrap';
+  wordBreak?: 'keep-all' | 'normal';
+}>;
+
+type PaginationInputs<TElement extends Element> = Readonly<{
+  fragmentation?: NodeFragmentationProvider<TElement>;
+  page: PageSettingsSource;
+  typography?: PageLayoutTypography<TElement>;
+}>;
+
+export type MeasurePagesOptions<TElement extends Element = Element> =
+  PaginationInputs<TElement> &
+    Readonly<{
+      engine: PageLayoutEngine;
+      root?: NamedRootKey;
+    }>;
+
+const PAGE_PRESETS: Record<PagePreset, PageLayoutSize> = {
+  a4: { height: 1123, width: 794 },
+  letter: { height: 1056, width: 816 },
+};
+
+const DEFAULT_TEXT_STYLE: PageLayoutTextStyle = {
+  font: '400 16px Arial, sans-serif',
+  letterSpacing: 0,
+};
+
+const DEFAULT_BLOCK_STYLE: PageLayoutBlockStyle = {
+  blockSpacing: 12,
+  lineHeight: 24,
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -100,837 +270,19 @@ const decodePageSettings = (value: unknown): PageSettings => {
   };
 };
 
-/** Versioned persistence codec for editor page settings. */
 export const pageSettingsCodec = defineValueCodec<PageSettings>({
   decode: decodePageSettings,
   encode: decodePageSettings,
   version: 1,
 });
 
-/** Rectangle in layout coordinates. */
-export type PageRect = {
-  height: number;
-  left: number;
-  top: number;
-  width: number;
-};
-
-export type PageLayoutPage = {
-  content: PageRect;
-  height: number;
-  index: number;
-  width: number;
-};
-
-export type PageLayoutMode = 'single' | 'spread';
-
-export type PageLayoutPlacement = {
-  left: number;
-  top: number;
-};
-
-export type PageLayoutGeometry = {
-  height: number;
-  pagePlacements: readonly PageLayoutPlacement[];
-  width: number;
-};
-
-export type PageLayoutGeometryOptions = {
-  pageGap?: number;
-  pageLayoutMode?: PageLayoutMode;
-};
-
-export type PageLayoutTextStyle = {
-  font: string;
-  letterSpacing?: number;
-};
-
-export type PageLayoutBlockStyle = {
-  blockSpacing?: number;
-  lineHeight: number;
-};
-
-export type PageLayoutRun = {
-  id: string;
-  path: Path;
-  range: {
-    end: number;
-    start: number;
-  };
-  text: string;
-  textStyle: PageLayoutTextStyle;
-};
-
-export type PageLayoutPlacedRun = PageLayoutRun & {
-  leafRange: {
-    end: number;
-    start: number;
-  };
-  left: number;
-  width: number;
-};
-
-export type PageLayoutBoxKind =
-  | 'block'
-  | 'code-line'
-  | 'image'
-  | 'table'
-  | 'table-cell'
-  | 'thematic-break';
-
-export type PageLayoutBoxSplit = 'avoid' | 'line' | 'page' | 'row';
-
-export type PageLayoutBox = {
-  kind: PageLayoutBoxKind;
-  path: Path;
-  rect: PageRect;
-  split?: PageLayoutBoxSplit;
-};
-
-export type PageLayoutUnitSplit = 'avoid' | 'page';
-
-export type PageLayoutUnit = {
-  key: string;
-  kind?: string;
-  path: Path;
-  rect: PageRect;
-  split?: PageLayoutUnitSplit;
-};
-
-export type NodeLayoutDefaults = {
-  block: PageLayoutBlockStyle;
-  boxes: readonly PageLayoutBox[];
-  text: PageLayoutTextStyle;
-};
-
-export type NodeLayoutContext = {
-  defaults: NodeLayoutDefaults;
-  element: Element;
-  measurementProfile: PageLayoutMeasurementProfile;
-  pageSettings: PageSettings;
-  path: Path;
-};
-
-export type NodeLayoutPlan =
-  | {
-      boxes?: readonly PageLayoutBox[];
-      type: 'text';
-    }
-  | {
-      box: PageLayoutBox;
-      type: 'box';
-    }
-  | {
-      boxes?: readonly PageLayoutBox[];
-      type: 'units';
-      units: readonly PageLayoutUnit[];
-    };
-
-export type NodeLayoutProvider = (
-  context: NodeLayoutContext
-) => NodeLayoutPlan | null | undefined;
-
-export type PageLayoutTypography = {
-  block?: (context: { element: Element; path: Path }) => PageLayoutBlockStyle;
-  text?: (context: {
-    element: Element;
-    leaf: Text;
-    path: Path;
-  }) => PageLayoutTextStyle;
-};
-
-export type PageLayoutBlock = {
-  element: Element;
-  boxes?: readonly PageLayoutBox[];
-  lineHeight: number;
-  path: Path;
-  runs?: readonly PageLayoutRun[];
-  spacingAfter: number;
-  text: string;
-  textStyle: PageLayoutTextStyle;
-  units?: readonly PageLayoutUnit[];
-};
-
-export type PageLayoutMeasuredLine = {
-  end: number;
-  height: number;
-  runs?: readonly PageLayoutPlacedRun[];
-  start: number;
-  text: string;
-  width: number;
-};
-
-export type PageLayoutLine = PageLayoutMeasuredLine & {
-  top: number;
-};
-
-export type PageLayoutFragment = {
-  blockIndex: number;
-  height: number;
-  id: string;
-  lineCount: number;
-  lines: readonly PageLayoutLine[];
-  pageIndex: number;
-  path: Path;
-  text: string;
-  top: number;
-  units?: readonly PageLayoutUnit[];
-};
-
-export type PageLayoutProjectedBlock = PageRect & {
-  blockIndex: number;
-  path: Path;
-};
-
-export type PageLayoutProjectedLine = PageLayoutMeasuredLine & {
-  blockIndex: number;
-  fragmentId: string;
-  hitRect: PageRect;
-  left: number;
-  lineIndex: number;
-  pageIndex: number;
-  path: Path;
-  textRect: PageRect;
-  top: number;
-};
-
-export type PageLayoutProjectedUnit = PageLayoutUnit & {
-  blockIndex: number;
-  fragmentId: string;
-  pageIndex: number;
-};
-
-export type PageLayoutProjection = {
-  blocks: readonly PageLayoutProjectedBlock[];
-  geometry: PageLayoutGeometry;
-  lines: readonly PageLayoutProjectedLine[];
-  root: RootKey;
-  units: readonly PageLayoutProjectedUnit[];
-};
-
-export type PageLayoutHitTestingOptions = {
-  blockGap?:
-    | false
-    | {
-        max?: number;
-        target?: 'previous-line-end';
-      };
-  inlineInset?: number;
-};
-
-export type PageLayoutProjectionOptions = PageLayoutGeometryOptions & {
-  geometry?: PageLayoutGeometry;
-  hitTesting?: false | PageLayoutHitTestingOptions;
-};
-
-export type PageLayoutDecoration<TData = unknown> = {
-  data?: TData;
-  key: string;
-  range: Range;
-};
-
-export type PageLayoutDecorationRects = {
-  hitRect: PageRect;
-  textRect: PageRect;
-};
-
-export type PageLayoutDecorationRectSpace = 'block' | 'page';
-
-export type PageLayoutDecorationContext = {
-  block?: PageLayoutProjectedBlock;
-  line: PageLayoutProjectedLine;
-  rects: PageLayoutDecorationRects;
-  run: PageLayoutPlacedRun;
-};
-
-export type PageLayoutDecorationOptions<TData> = {
-  data?: (context: PageLayoutDecorationContext) => TData | undefined;
-  /**
-   * Return false to skip creating an editor decoration for this projected run.
-   */
-  filter?: (context: PageLayoutDecorationContext) => boolean;
-  key?: (context: PageLayoutDecorationContext) => string;
-  rects?: PageLayoutDecorationRectSpace;
-};
-
-export type PageLayoutSnapshot = {
-  blocks: readonly PageLayoutBlock[];
-  fragments: readonly PageLayoutFragment[];
-  measurementProfile: PageLayoutMeasurementProfile;
-  page: PageLayoutPage;
-  pageBreaks: PageBreakSnapshot | null;
-  pageBreaksStatus: PageBreakSnapshotStatus;
-  pages: readonly PageLayoutPage[];
-  root: RootKey;
-  settings: PageSettings;
-  version: number;
-};
-
-export type PageLayoutMetrics = {
-  blockCount: number;
-  composeCount: number;
-  lastDurationMs: number;
-  pageCount: number;
-};
-
-export type PageLayoutRefreshReason =
-  | 'editor'
-  | 'font'
-  | 'settings'
-  | 'viewport';
-
-export type PageLayoutError = Readonly<{
-  cause: unknown;
-  phase: 'notify' | 'page-break-write';
-  reason: PageLayoutRefreshReason;
-}>;
-
-export type PageLayoutErrorSink = (error: PageLayoutError) => void;
-
-export type PageLayoutEngineInput = {
-  blocks: readonly PageLayoutBlock[];
-  page: PageLayoutPage;
-  settings: PageSettings;
-  version: number;
-};
-
-export type PageLayoutEngineOutput = Pick<
-  PageLayoutSnapshot,
-  'fragments' | 'pages'
->;
-
-export type PageLayoutMeasuredBlock = PageLayoutBlock & {
-  blockIndex: number;
-  lineCount: number;
-  lines?: readonly PageLayoutMeasuredLine[];
-};
-
-export type PageLayoutEngine = {
-  compose: (input: PageLayoutEngineInput) => PageLayoutEngineOutput;
-  id?: string;
-  measurementProfile?: unknown;
-};
-
-export type PageLayoutMeasurementProfile = {
-  engine: {
-    id: string;
-    profile?: unknown;
-  };
-  page: PageSettings;
-  root: RootKey;
-  schemaVersion: 1;
-  typography: 'custom' | 'default';
-};
-
-export type PageBreak = {
-  blockIndex: number;
-  fragmentId: string;
-  pageIndex: number;
-  path: Path;
-};
-
-export type PageBreakSnapshot = {
-  breaks: readonly PageBreak[];
-  documentKey: string;
-  documentVersion: number;
-  measurementProfile: PageLayoutMeasurementProfile;
-  root: RootKey;
-  schemaVersion: 1;
-  writerId?: string;
-};
-
-const decodePageBreakSnapshot = (value: unknown): PageBreakSnapshot | null => {
-  if (value === null) return null;
-  if (
-    !isRecord(value) ||
-    !Array.isArray(value.breaks) ||
-    typeof value.documentKey !== 'string' ||
-    value.documentKey.length === 0 ||
-    !Number.isSafeInteger(value.documentVersion) ||
-    (value.documentVersion as number) < 0 ||
-    !isRecord(value.measurementProfile) ||
-    typeof value.root !== 'string' ||
-    value.root.length === 0 ||
-    value.schemaVersion !== 1 ||
-    (value.writerId !== undefined &&
-      (typeof value.writerId !== 'string' || value.writerId.length === 0))
-  ) {
-    throw new Error('Invalid Plite page-break snapshot.');
-  }
-
-  const breaks = value.breaks.map((entry) => {
-    if (
-      !isRecord(entry) ||
-      !Number.isSafeInteger(entry.blockIndex) ||
-      (entry.blockIndex as number) < 0 ||
-      typeof entry.fragmentId !== 'string' ||
-      entry.fragmentId.length === 0 ||
-      !Number.isSafeInteger(entry.pageIndex) ||
-      (entry.pageIndex as number) < 0 ||
-      !Array.isArray(entry.path) ||
-      !entry.path.every(
-        (index) => Number.isSafeInteger(index) && (index as number) >= 0
-      )
-    ) {
-      throw new Error('Invalid Plite page break.');
-    }
-
-    return {
-      blockIndex: entry.blockIndex as number,
-      fragmentId: entry.fragmentId,
-      pageIndex: entry.pageIndex as number,
-      path: entry.path as Path,
-    };
-  });
-  const profile = value.measurementProfile;
-
-  if (
-    !isRecord(profile.engine) ||
-    typeof profile.engine.id !== 'string' ||
-    profile.engine.id.length === 0 ||
-    typeof profile.root !== 'string' ||
-    profile.root.length === 0 ||
-    profile.schemaVersion !== 1 ||
-    (profile.typography !== 'custom' && profile.typography !== 'default')
-  ) {
-    throw new Error('Invalid Plite page-layout measurement profile.');
-  }
-
-  return {
-    breaks,
-    documentKey: value.documentKey,
-    documentVersion: value.documentVersion as number,
-    measurementProfile: {
-      engine: {
-        id: profile.engine.id,
-        ...(profile.engine.profile === undefined
-          ? {}
-          : { profile: profile.engine.profile }),
-      },
-      page: decodePageSettings(profile.page),
-      root: profile.root,
-      schemaVersion: 1,
-      typography: profile.typography,
-    },
-    root: value.root,
-    schemaVersion: 1,
-    ...(value.writerId === undefined ? {} : { writerId: value.writerId }),
-  };
-};
-
-/** Versioned persistence codec for authoritative page-break snapshots. */
-export const pageBreakSnapshotCodec =
-  defineValueCodec<PageBreakSnapshot | null>({
-    decode: decodePageBreakSnapshot,
-    encode: decodePageBreakSnapshot,
-    version: 1,
-  });
-
-export type PageBreakSnapshotStatus =
-  | 'accepted'
-  | 'none'
-  | 'stale-document'
-  | 'stale-profile'
-  | 'stale-root'
-  | 'written';
-
-export type PageBreakSnapshotSource =
-  | EditorStateField<PageBreakSnapshot | null>
-  | PageBreakSnapshot
-  | null;
-
-export type PageBreaksOptions =
-  | {
-      mode: 'read';
-      source: PageBreakSnapshotSource;
-    }
-  | {
-      mode: 'write';
-      source: EditorStateField<PageBreakSnapshot | null>;
-      writerId: string;
-    };
-
-export type PretextPageLayoutEngineOptions = {
-  estimateBlock?: (context: {
-    block: PageLayoutBlock;
-    blockIndex: number;
-    page: PageLayoutPage;
-    settings: PageSettings;
-  }) => boolean;
-  maxPreparedEntries?: number;
-  whiteSpace?: 'normal' | 'pre-wrap';
-  wordBreak?: 'normal' | 'keep-all';
-};
-
-export type PageSettingsSource<TSettings extends PageSettings = PageSettings> =
-  | EditorStateField<TSettings>
-  | TSettings;
-
-/** Layout options with a built-in engine or caller-owned measurement. */
-export type LayoutOptions<TSettings extends PageSettings = PageSettings> = {
-  engine?: PageLayoutEngine;
-  nodeLayout?: NodeLayoutProvider;
-  /** Receives isolated subscriber and page-break persistence failures. */
-  onError?: PageLayoutErrorSink;
-  page: PageSettingsSource<TSettings>;
-  pageBreaks?: PageBreaksOptions | null;
-  root?: RootKey;
-  textChangeRefresh?: PageLayoutTextChangeRefresh;
-  typography?: PageLayoutTypography;
-};
-
-export type PageLayoutDeferredTextChangeRefresh = {
-  delayMs?: number;
-  maxDelayMs?: number;
-  mode: 'deferred';
-};
-
-export type PageLayoutTextChangeRefresh =
-  | 'sync'
-  | 'deferred'
-  | PageLayoutDeferredTextChangeRefresh;
-
-export type PageLayoutProjectRangeOptions = PageLayoutGeometryOptions & {
-  root?: RootKey;
-};
-
-/** Live derived layout reader. It owns subscriptions, not document content. */
-export type PageLayout<TOptions = LayoutOptions> = {
-  destroy: () => void;
-  getFragments: (path: Path) => readonly PageLayoutFragment[];
-  getMetrics: () => PageLayoutMetrics;
-  getSnapshot: () => PageLayoutSnapshot;
-  projectRange: (
-    range: Range,
-    options?: PageLayoutProjectRangeOptions
-  ) => readonly PageRect[];
-  refresh: (reason?: PageLayoutRefreshReason) => void;
-  reconfigure: (options: TOptions) => void;
-  subscribe: (listener: () => void) => () => void;
-};
-
-const PAGE_PRESETS: Record<PagePreset, { height: number; width: number }> = {
-  a4: { height: 1123, width: 794 },
-  letter: { height: 1056, width: 816 },
-};
-
-const DEFAULT_SETTINGS: PageSettings = {
-  margins: 96,
-  preset: 'a4',
-};
-
-const DEFAULT_TEXT_STYLE: PageLayoutTextStyle = {
-  font: '400 16px Inter',
-  letterSpacing: 0,
-};
-
-const DEFAULT_BLOCK_STYLE: PageLayoutBlockStyle = {
-  blockSpacing: 12,
-  lineHeight: 24,
-};
-
-const DEFAULT_MEASUREMENT_PROFILE: PageLayoutMeasurementProfile = {
-  engine: { id: 'none' },
-  page: DEFAULT_SETTINGS,
-  root: MAIN_ROOT_KEY,
-  schemaVersion: 1,
-  typography: 'default',
-};
-
-const TEXT_CHANGE_REFRESH_DELAY_MS = 40;
-const TEXT_CHANGE_REFRESH_MAX_DELAY_MS = 80;
-
-const normalizeRefreshDelay = (value: number | undefined, fallback: number) =>
-  typeof value === 'number' && Number.isFinite(value)
-    ? Math.max(0, value)
-    : fallback;
-
-const getTextChangeRefreshOptions = (
-  refresh: PageLayoutTextChangeRefresh | undefined
-):
-  | {
-      delayMs: number;
-      maxDelayMs: number;
-      mode: 'deferred';
-    }
-  | {
-      mode: 'sync';
-    } => {
-  if (refresh === 'deferred') {
-    return {
-      delayMs: TEXT_CHANGE_REFRESH_DELAY_MS,
-      maxDelayMs: TEXT_CHANGE_REFRESH_MAX_DELAY_MS,
-      mode: 'deferred',
-    };
-  }
-
-  if (refresh && typeof refresh === 'object' && refresh.mode === 'deferred') {
-    const delayMs = normalizeRefreshDelay(
-      refresh.delayMs,
-      TEXT_CHANGE_REFRESH_DELAY_MS
-    );
-    const maxDelayMs = normalizeRefreshDelay(
-      refresh.maxDelayMs,
-      Math.max(delayMs, TEXT_CHANGE_REFRESH_MAX_DELAY_MS)
-    );
-
-    return {
-      delayMs,
-      maxDelayMs: Math.max(delayMs, maxDelayMs),
-      mode: 'deferred',
-    };
-  }
-
-  return { mode: 'sync' };
-};
-
-const getNow = () =>
-  typeof performance === 'undefined' ? Date.now() : performance.now();
-
-const profileLayoutDuration = <T>(id: string, callback: () => T): T => {
-  const profiler = (
-    globalThis as typeof globalThis & {
-      __EDITOR_REACT_RENDER_PROFILER__?: {
-        record?: (event: {
-          duration: number;
-          id: string;
-          kind: 'layout-time';
-        }) => void;
-      };
-    }
-  ).__EDITOR_REACT_RENDER_PROFILER__;
-
-  if (!profiler) {
-    return callback();
-  }
-
-  const start = getNow();
-
-  try {
-    return callback();
-  } finally {
-    profiler.record?.({
-      duration: getNow() - start,
-      id,
-      kind: 'layout-time',
-    });
-  }
-};
-
-const isElement = (node: Descendant): node is Element => !NodeApi.isText(node);
-
-const getStableProfileKey = (value: unknown) => JSON.stringify(value);
-
-const createPlitePageLayoutMeasurementProfile = ({
-  engine,
-  root,
-  settings,
-  typography,
-}: {
-  engine: PageLayoutEngine;
-  root: RootKey;
-  settings: PageSettings;
-  typography?: PageLayoutTypography;
-}): PageLayoutMeasurementProfile => ({
-  engine: {
-    id: engine.id ?? 'anonymous',
-    profile: engine.measurementProfile,
-  },
-  page: normalizePageSettings(settings),
-  root,
-  schemaVersion: 1,
-  typography: typography ? 'custom' : 'default',
-});
-
-export const createPageBreakSnapshot = ({
-  documentKey,
-  fragments,
-  measurementProfile,
-  root,
-  version,
-  writerId,
-}: {
-  documentKey: string;
-  fragments: readonly PageLayoutFragment[];
-  measurementProfile: PageLayoutMeasurementProfile;
-  root: RootKey;
-  version: number;
-  writerId?: string;
-}): PageBreakSnapshot => {
-  const breaksByPageIndex = new Map<number, PageBreak>();
-
-  for (const fragment of fragments) {
-    if (fragment.pageIndex === 0 || breaksByPageIndex.has(fragment.pageIndex)) {
-      continue;
-    }
-
-    breaksByPageIndex.set(fragment.pageIndex, {
-      blockIndex: fragment.blockIndex,
-      fragmentId: fragment.id,
-      pageIndex: fragment.pageIndex,
-      path: fragment.path,
-    });
-  }
-
-  return {
-    breaks: [...breaksByPageIndex.values()].sort(
-      (left, right) => left.pageIndex - right.pageIndex
-    ),
-    documentKey,
-    documentVersion: version,
-    measurementProfile,
-    root,
-    schemaVersion: 1,
-    writerId,
-  };
-};
-
-const readPlitePageBreakSnapshot = <
-  V extends Value,
-  TPlugins extends readonly unknown[],
->(
-  editor: EditorType<V, TPlugins>,
-  source: PageBreakSnapshotSource
-) => {
-  if (!source) {
-    return null;
-  }
-
-  if ('key' in source) {
-    return editor.read((state) => state.getField(source));
-  }
-
-  return source;
-};
-
-const getPlitePageBreakSnapshotStatus = ({
-  documentKey,
-  measurementProfile,
-  root,
-  snapshot,
-  version,
-}: {
-  documentKey: string;
-  measurementProfile: PageLayoutMeasurementProfile;
-  root: RootKey;
-  snapshot: PageBreakSnapshot | null;
-  version: number;
-}): PageBreakSnapshotStatus => {
-  if (!snapshot) {
-    return 'none';
-  }
-
-  if (snapshot.root !== root) {
-    return 'stale-root';
-  }
-
-  if (
-    snapshot.documentKey !== documentKey ||
-    snapshot.documentVersion > version
-  ) {
-    return 'stale-document';
-  }
-
-  if (
-    getStableProfileKey(snapshot.measurementProfile) !==
-    getStableProfileKey(measurementProfile)
-  ) {
-    return 'stale-profile';
-  }
-
-  return 'accepted';
-};
-
-const samePlitePageBreakSnapshot = (
-  left: PageBreakSnapshot | null,
-  right: PageBreakSnapshot
-) => Boolean(left && getStableProfileKey(left) === getStableProfileKey(right));
-
-const getStableHashKey = (value: unknown): string => {
-  const source = getStableProfileKey(value);
-  let hash = 2_166_136_261;
-
-  for (let index = 0; index < source.length; index++) {
-    hash ^= source.charCodeAt(index);
-    hash = Math.imul(hash, 16_777_619);
-  }
-
-  return `${source.length}:${(hash >>> 0).toString(36)}`;
-};
-
-const getPliteLayoutDocumentKey = (
-  blocks: readonly PageLayoutBlock[]
-): string =>
-  getStableHashKey(
-    blocks.map((block) => ({
-      boxes: block.boxes?.map((box) => ({
-        kind: box.kind,
-        path: box.path,
-        rect: box.rect,
-        split: box.split,
-      })),
-      path: block.path,
-      runs: block.runs?.map((run) => ({
-        path: run.path,
-        range: run.range,
-        text: run.text,
-        textStyle: run.textStyle,
-      })),
-      spacingAfter: block.spacingAfter,
-      text: block.text,
-      textStyle: block.textStyle,
-      units: block.units?.map((unit) => ({
-        key: unit.key,
-        kind: unit.kind,
-        path: unit.path,
-        rect: unit.rect,
-        split: unit.split,
-      })),
-    }))
-  );
-
-const canUseCanvasTextMeasurement = () => {
-  if (typeof OffscreenCanvas !== 'undefined') {
-    return true;
-  }
-
-  if (typeof document === 'undefined') {
-    return false;
-  }
-
-  try {
-    return Boolean(document.createElement('canvas').getContext('2d'));
-  } catch {
-    return false;
-  }
-};
-
 const normalizeMargins = (margins: PageMargins) =>
   typeof margins === 'number'
-    ? {
-        bottom: margins,
-        left: margins,
-        right: margins,
-        top: margins,
-      }
+    ? { bottom: margins, left: margins, right: margins, top: margins }
     : margins;
 
-export const getPagePresetSize = (preset: PagePreset) => PAGE_PRESETS[preset];
-
-/** Normalize page settings without resolving shorthand margins. */
-export const normalizePageSettings = (
-  settings: PageSettings
-): PageSettings => ({
-  margins: settings.margins,
-  preset: settings.preset,
-});
-
-/** Create one page rectangle and its content box from settings. */
-export const createPage = (
-  settings: PageSettings,
-  index = 0
-): PageLayoutPage => {
-  const size = getPagePresetSize(settings.preset);
+const createPage = (settings: PageSettings, index = 0): PageLayoutPage => {
+  const size = PAGE_PRESETS[settings.preset];
   const margins = normalizeMargins(settings.margins);
 
   return {
@@ -946,1895 +298,1038 @@ export const createPage = (
   };
 };
 
-/** Compute page placements for single-page or spread rendering. */
-export const getPageLayoutGeometry = (
-  pages: readonly PageLayoutPage[],
-  { pageGap = 24, pageLayoutMode = 'single' }: PageLayoutGeometryOptions = {}
-): PageLayoutGeometry => {
-  if (pages.length === 0) {
-    return { height: 0, pagePlacements: [], width: 0 };
-  }
+const isFiniteSize = (size: PageLayoutSize) =>
+  Number.isFinite(size.height) &&
+  Number.isFinite(size.width) &&
+  size.height >= 0 &&
+  size.width >= 0;
 
-  if (pageLayoutMode === 'spread') {
-    const rows = Math.ceil(pages.length / 2);
-    const rowTops = Array.from({ length: rows }, () => 0);
-    const rowWidths = Array.from({ length: rows }, () => 0);
-    let height = 0;
+const samePath = (left: Path, right: Path) =>
+  left.length === right.length &&
+  left.every((value, index) => value === right[index]);
 
-    for (let row = 0; row < rows; row++) {
-      rowTops[row] = height;
+const rangeRoot = (root: NamedRootKey | undefined) =>
+  root === undefined ? {} : { root };
 
-      const left = pages[row * 2];
-      const right = pages[row * 2 + 1];
-      const rowHeight = Math.max(left?.height ?? 0, right?.height ?? 0);
-
-      rowWidths[row] = (left?.width ?? 0) + (right ? pageGap + right.width : 0);
-      height += rowHeight + (row < rows - 1 ? pageGap : 0);
-    }
-
-    return {
-      height,
-      pagePlacements: pages.map((_, index) => {
-        const row = Math.floor(index / 2);
-
-        if (index % 2 === 0) {
-          return { left: 0, top: rowTops[row] ?? 0 };
-        }
-
-        return {
-          left: (pages[row * 2]?.width ?? 0) + pageGap,
-          top: rowTops[row] ?? 0,
-        };
-      }),
-      width: Math.max(0, ...rowWidths),
-    };
-  }
-
-  const pagePlacements: PageLayoutPlacement[] = [];
-  let height = 0;
-  let width = 0;
-
-  pages.forEach((page, index) => {
-    pagePlacements.push({ left: 0, top: height });
-    height += page.height + (index < pages.length - 1 ? pageGap : 0);
-    width = Math.max(width, page.width);
-  });
-
-  return { height, pagePlacements, width };
-};
-
-/** Stable key for layout maps keyed by editor path. */
-export const getPageLayoutPathKey = (path: Path) => path.join('.');
-
-const getRunId = (path: Path, start: number, end: number) =>
-  `${path.join('.')}:${start}-${end}`;
-
-const compareLayoutPaths = (left: Path, right: Path): number => {
-  const length = Math.min(left.length, right.length);
-
-  for (let index = 0; index < length; index++) {
-    if (left[index] !== right[index]) {
-      return left[index] < right[index] ? -1 : 1;
-    }
-  }
-
-  if (left.length === right.length) {
-    return 0;
-  }
-
-  return left.length < right.length ? -1 : 1;
-};
-
-const compareLayoutPoints = (left: Point, right: Point): number => {
-  const pathComparison = compareLayoutPaths(left.path, right.path);
-
-  if (pathComparison !== 0) {
-    return pathComparison;
-  }
-
-  if (left.offset === right.offset) {
-    return 0;
-  }
-
-  return left.offset < right.offset ? -1 : 1;
-};
-
-const getLayoutRangeEdges = (range: Range): [Point, Point] =>
-  compareLayoutPoints(range.anchor, range.focus) <= 0
-    ? [range.anchor, range.focus]
-    : [range.focus, range.anchor];
-
-const clamp = (value: number, min: number, max: number) =>
-  Math.max(min, Math.min(max, value));
-
-export const getPageLayoutProjection = (
-  snapshot: PageLayoutSnapshot,
-  options: PageLayoutProjectionOptions = {}
-): PageLayoutProjection => {
-  const {
-    geometry: providedGeometry,
-    hitTesting = {},
-    ...geometryOptions
-  } = options;
-  const geometry =
-    providedGeometry ?? getPageLayoutGeometry(snapshot.pages, geometryOptions);
-  const blockBoxes = new Map<string, PageLayoutProjectedBlock>();
-  const lines: PageLayoutProjectedLine[] = [];
-  const units: PageLayoutProjectedUnit[] = [];
-  const inlineInset = hitTesting === false ? 0 : (hitTesting.inlineInset ?? 0);
-
-  snapshot.fragments.forEach((fragment) => {
-    const page = snapshot.pages[fragment.pageIndex] ?? snapshot.page;
-    const placement = geometry.pagePlacements[fragment.pageIndex] ?? {
-      left: 0,
-      top: page.index * page.height,
-    };
-
-    fragment.lines.forEach((line, lineIndex) => {
-      const left = placement.left + page.content.left;
-      const top = placement.top + line.top;
-      const right = left + page.content.width;
-      const bottom = top + line.height;
-      const textRect = {
-        height: line.height,
-        left: left + inlineInset,
-        top,
-        width: line.width,
-      };
-
-      lines.push({
-        ...line,
-        blockIndex: fragment.blockIndex,
-        fragmentId: fragment.id,
-        hitRect: textRect,
-        left,
-        lineIndex,
-        pageIndex: fragment.pageIndex,
-        path: [...fragment.path],
-        textRect,
-        top,
-      });
-
-      const pathKey = getPageLayoutPathKey(fragment.path);
-      const existing = blockBoxes.get(pathKey);
-
-      if (!existing) {
-        blockBoxes.set(pathKey, {
-          blockIndex: fragment.blockIndex,
-          height: line.height,
-          left,
-          path: [...fragment.path],
-          top,
-          width: page.content.width,
-        });
-        return;
-      }
-
-      const nextLeft = Math.min(existing.left, left);
-      const nextTop = Math.min(existing.top, top);
-      const nextRight = Math.max(existing.left + existing.width, right);
-      const nextBottom = Math.max(existing.top + existing.height, bottom);
-
-      blockBoxes.set(pathKey, {
-        ...existing,
-        height: nextBottom - nextTop,
-        left: nextLeft,
-        top: nextTop,
-        width: nextRight - nextLeft,
-      });
-    });
-
-    fragment.units?.forEach((unit) => {
-      const left = placement.left + page.content.left + unit.rect.left;
-      const top = placement.top + unit.rect.top;
-      const right = left + unit.rect.width;
-      const bottom = top + unit.rect.height;
-
-      units.push({
-        ...unit,
-        blockIndex: fragment.blockIndex,
-        fragmentId: fragment.id,
-        pageIndex: fragment.pageIndex,
-        path: [...unit.path],
-        rect: {
-          ...unit.rect,
-          left,
-          top,
-        },
-      });
-
-      const pathKey = getPageLayoutPathKey(fragment.path);
-      const existing = blockBoxes.get(pathKey);
-
-      if (!existing) {
-        blockBoxes.set(pathKey, {
-          blockIndex: fragment.blockIndex,
-          height: unit.rect.height,
-          left,
-          path: [...fragment.path],
-          top,
-          width: Math.max(page.content.width, unit.rect.width),
-        });
-        return;
-      }
-
-      const nextLeft = Math.min(existing.left, left);
-      const nextTop = Math.min(existing.top, top);
-      const nextRight = Math.max(existing.left + existing.width, right);
-      const nextBottom = Math.max(existing.top + existing.height, bottom);
-
-      blockBoxes.set(pathKey, {
-        ...existing,
-        height: nextBottom - nextTop,
-        left: nextLeft,
-        top: nextTop,
-        width: nextRight - nextLeft,
-      });
-    });
-  });
-
-  const blocks = [...blockBoxes.values()];
-  const blockByIndex = new Map(
-    blocks.map((block) => [block.blockIndex, block])
-  );
-  const maxBlockGap =
-    hitTesting === false || hitTesting.blockGap === false
-      ? 0
-      : (hitTesting.blockGap?.max ?? 48);
-  const linesWithHitRects = lines.map((line) => {
-    const block = blockByIndex.get(line.blockIndex);
-
-    if (!block || hitTesting === false) {
-      return {
-        ...line,
-        hitRect: line.textRect,
-      };
-    }
-
-    const blockTextLength = snapshot.blocks[line.blockIndex]?.text.length ?? 0;
-    const nextBlock = blockByIndex.get(line.blockIndex + 1);
-    const blockGap =
-      nextBlock &&
-      line.end >= blockTextLength &&
-      Math.abs(nextBlock.left - block.left) < 1
-        ? Math.max(0, nextBlock.top - (block.top + block.height))
-        : 0;
-    const extendsBlockGap = blockGap > 0 && blockGap <= maxBlockGap;
-
-    return {
-      ...line,
-      hitRect: {
-        height: line.textRect.height + (extendsBlockGap ? blockGap : 0),
-        left: line.textRect.left,
-        top: line.textRect.top,
-        width: Math.max(
-          line.textRect.width,
-          block.left + block.width - line.textRect.left
-        ),
-      },
-    };
-  });
+const createRange = (
+  path: Path,
+  start: number,
+  end: number,
+  root: NamedRootKey | undefined
+): Range => {
+  const sourcePath = Object.isFrozen(path)
+    ? path
+    : (Object.freeze([...path]) as Path);
 
   return {
-    blocks,
-    geometry,
-    lines: linesWithHitRects,
-    root: snapshot.root,
-    units,
+    anchor: { offset: start, path: sourcePath, ...rangeRoot(root) },
+    focus: { offset: end, path: sourcePath, ...rangeRoot(root) },
   };
 };
 
-/** Convert projected line runs into editor decorations keyed by path. */
-export const getPageLayoutDecorations = <TData = unknown>(
-  projection: PageLayoutProjection,
-  options: PageLayoutDecorationOptions<TData> = {}
-): Map<string, Array<PageLayoutDecoration<TData>>> => {
-  const decorations = new Map<string, Array<PageLayoutDecoration<TData>>>();
-  const blockByIndex = new Map(
-    projection.blocks.map((block) => [block.blockIndex, block])
-  );
-  const rectSpace = options.rects ?? 'page';
-  const root = projection.root === MAIN_ROOT_KEY ? undefined : projection.root;
+const getRangeEdges = (range: Range) => {
+  const { anchor, focus } = range;
 
-  projection.lines.forEach((line) => {
-    const block = blockByIndex.get(line.blockIndex);
-
-    line.runs?.forEach((run) => {
-      const pathKey = getPageLayoutPathKey(run.path);
-      const rects = getDecorationRects(line, block, run, rectSpace);
-      const context = { block, line, rects, run };
-
-      if (options.filter && !options.filter(context)) {
-        return;
-      }
-
-      const decoration: PageLayoutDecoration<TData> = {
-        key:
-          options.key?.(context) ??
-          `plite-layout:${line.fragmentId}:${line.lineIndex}:${pathKey}:${run.leafRange.start}-${run.leafRange.end}`,
-        range: {
-          anchor: {
-            path: [...run.path],
-            offset: run.leafRange.start,
-            ...(root ? { root } : {}),
-          },
-          focus: {
-            path: [...run.path],
-            offset: run.leafRange.end,
-            ...(root ? { root } : {}),
-          },
-        },
-      };
-      const data = options.data?.(context);
-
-      if (data !== undefined) {
-        decoration.data = data;
-      }
-
-      const pathDecorations = decorations.get(pathKey) ?? [];
-      pathDecorations.push(decoration);
-      decorations.set(pathKey, pathDecorations);
-    });
-  });
-
-  return decorations;
+  return anchor.offset <= focus.offset
+    ? { end: focus.offset, start: anchor.offset }
+    : { end: anchor.offset, start: focus.offset };
 };
 
-const getDecorationRects = (
-  line: PageLayoutProjectedLine,
-  block: PageLayoutProjectedBlock | undefined,
-  run: PageLayoutPlacedRun,
-  rectSpace: PageLayoutDecorationRectSpace
-): PageLayoutDecorationRects => {
-  const textRect = {
-    height: line.textRect.height,
-    left: line.textRect.left + run.left,
-    top: line.textRect.top,
-    width: run.width,
-  };
-  const runTextRight = textRect.left + textRect.width;
-  const lineHitRight = line.hitRect.left + line.hitRect.width;
-  const hitRight =
-    run.range.end >= line.end
-      ? Math.max(lineHitRight, runTextRight)
-      : runTextRight;
-  const hitRect = {
-    height: line.hitRect.height,
-    left: textRect.left,
-    top: line.hitRect.top,
-    width: Math.max(0, hitRight - textRect.left),
-  };
-
-  if (rectSpace === 'page' || !block) {
-    return {
-      hitRect,
-      textRect,
-    };
-  }
-
-  return {
-    hitRect: getRectRelativeToBlock(hitRect, block),
-    textRect: getRectRelativeToBlock(textRect, block),
-  };
-};
-
-const getRectRelativeToBlock = (
-  rect: PageRect,
-  block: PageLayoutProjectedBlock
-): PageRect => ({
-  height: rect.height,
-  left: rect.left - block.left,
-  top: rect.top - block.top,
-  width: rect.width,
-});
-
-const getRunWidthAtOffset = (run: PageLayoutPlacedRun, blockOffset: number) => {
-  const rangeLength = run.range.end - run.range.start;
-
-  if (rangeLength <= 0) {
-    return 0;
-  }
-
-  return run.width * clamp((blockOffset - run.range.start) / rangeLength, 0, 1);
-};
-
-const getProjectedPointBlockOffset = (
-  projection: PageLayoutProjection,
-  point: Point
-) => {
-  const topLevelIndex = point.path[0];
-
-  if (topLevelIndex === undefined) {
-    return null;
-  }
-
-  if (point.path.length === 1) {
-    return point.offset;
-  }
-
-  const matchingRuns: PageLayoutPlacedRun[] = [];
-
-  for (const line of projection.lines) {
-    if (line.path[0] !== topLevelIndex) {
-      continue;
-    }
-
-    for (const run of line.runs ?? []) {
-      if (compareLayoutPaths(run.path, point.path) !== 0) {
-        continue;
-      }
-
-      matchingRuns.push(run);
-    }
-  }
-
-  const containingRun =
-    matchingRuns.find(
-      (run) =>
-        run.leafRange.start <= point.offset && point.offset < run.leafRange.end
-    ) ??
-    matchingRuns.find(
-      (run) =>
-        run.leafRange.start <= point.offset && point.offset <= run.leafRange.end
-    );
-
-  if (containingRun) {
-    return (
-      containingRun.range.start + point.offset - containingRun.leafRange.start
-    );
-  }
-
-  const firstRun = matchingRuns[0];
-  const lastRun = matchingRuns.at(-1);
-
-  if (!firstRun || !lastRun) {
-    return point.offset;
-  }
-
-  return point.offset < firstRun.leafRange.start
-    ? firstRun.range.start
-    : lastRun.range.end;
-};
-
-const getProjectedCaretRect = (
-  projection: PageLayoutProjection,
-  point: Point
-): PageRect[] => {
-  const blockIndex = point.path[0];
-  const blockOffset = getProjectedPointBlockOffset(projection, point);
-
-  if (blockIndex === undefined || blockOffset === null) {
-    return [];
-  }
-
-  const blockLines = projection.lines.filter(
-    (line) => line.path[0] === blockIndex
-  );
-  const line =
-    blockLines.find(
-      (candidate) =>
-        candidate.start <= blockOffset && blockOffset < candidate.end
-    ) ??
-    blockLines.find(
-      (candidate) =>
-        candidate.start <= blockOffset && blockOffset <= candidate.end
-    );
-
-  if (!line) {
-    return [];
-  }
-
-  const runs = line.runs ?? [];
-  const run =
-    runs.find(
-      (candidate) =>
-        candidate.range.start <= blockOffset &&
-        blockOffset < candidate.range.end
-    ) ??
-    runs.find(
-      (candidate) =>
-        candidate.range.start <= blockOffset &&
-        blockOffset <= candidate.range.end
-    );
-  const left = run
-    ? line.textRect.left + run.left + getRunWidthAtOffset(run, blockOffset)
-    : line.textRect.left;
-
-  return [
-    {
-      height: line.textRect.height,
-      left,
-      top: line.textRect.top,
-      width: 0,
-    },
-  ];
-};
-
-const projectRangeThroughRuns = (
-  projection: PageLayoutProjection,
-  range: Range
-): PageRect[] => {
-  const [startPoint, endPoint] = getLayoutRangeEdges(range);
-
-  if (compareLayoutPoints(startPoint, endPoint) === 0) {
-    return getProjectedCaretRect(projection, startPoint);
-  }
-
-  const startBlockIndex = startPoint.path[0];
-  const endBlockIndex = endPoint.path[0];
-  const startBlockOffset = getProjectedPointBlockOffset(projection, startPoint);
-  const endBlockOffset = getProjectedPointBlockOffset(projection, endPoint);
-
-  if (
-    startBlockIndex === undefined ||
-    endBlockIndex === undefined ||
-    startBlockOffset === null ||
-    endBlockOffset === null
-  ) {
-    return [];
-  }
-
-  const rects: PageRect[] = [];
-
-  for (const line of projection.lines) {
-    const lineBlockIndex = line.path[0];
-
-    if (
-      lineBlockIndex === undefined ||
-      lineBlockIndex < startBlockIndex ||
-      lineBlockIndex > endBlockIndex
-    ) {
-      continue;
-    }
-
-    const requestedStart =
-      lineBlockIndex === startBlockIndex ? startBlockOffset : line.start;
-    const requestedEnd =
-      lineBlockIndex === endBlockIndex ? endBlockOffset : line.end;
-    const lineStart = Math.max(line.start, requestedStart);
-    const lineEnd = Math.min(line.end, requestedEnd);
-
-    if (lineEnd <= lineStart) {
-      continue;
-    }
-
-    if (!line.runs?.length) {
-      rects.push({
-        height: line.textRect.height,
-        left: line.textRect.left,
-        top: line.textRect.top,
-        width: line.textRect.width,
-      });
-      continue;
-    }
-
-    for (const run of line.runs) {
-      const start = Math.max(run.range.start, lineStart);
-      const end = Math.min(run.range.end, lineEnd);
-
-      if (end <= start) {
-        continue;
-      }
-
-      const left =
-        line.textRect.left + run.left + getRunWidthAtOffset(run, start);
-      const right =
-        line.textRect.left + run.left + getRunWidthAtOffset(run, end);
-
-      rects.push({
-        height: line.textRect.height,
-        left,
-        top: line.textRect.top,
-        width: Math.max(0, right - left),
-      });
-    }
-  }
-
-  return rects;
-};
-
-const getFirstLeaf = (element: Element): Text => {
-  const [entry] = NodeApi.texts(element);
-
-  return entry?.[0] ?? { text: '' };
-};
-
-const getBlockStyle = (
-  typography: PageLayoutTypography | undefined,
-  element: Element,
+const getBlockStyle = <TElement extends Element>(
+  typography: PageLayoutTypography<TElement> | undefined,
+  element: TElement,
   path: Path
-) => ({
+): PageLayoutBlockStyle => ({
   ...DEFAULT_BLOCK_STYLE,
   ...typography?.block?.({ element, path }),
 });
 
-const getTextStyle = (
-  typography: PageLayoutTypography | undefined,
-  element: Element,
-  path: Path,
-  leaf: Text = getFirstLeaf(element)
-) => ({
-  ...DEFAULT_TEXT_STYLE,
-  ...typography?.text?.({
-    element,
-    leaf,
-    path,
-  }),
-});
-
-const extractLayoutRuns = (
-  element: Element,
-  path: Path,
-  typography: PageLayoutTypography | undefined
-): PageLayoutRun[] => {
-  const runs: PageLayoutRun[] = [];
-  let offset = 0;
-
-  for (const [leaf, leafPath] of NodeApi.texts(element)) {
-    const start = offset;
-    const end = start + leaf.text.length;
-    const fullPath = [...path, ...leafPath];
-
-    runs.push({
-      id: getRunId(fullPath, start, end),
-      path: fullPath,
-      range: { end, start },
-      text: leaf.text,
-      textStyle: getTextStyle(typography, element, fullPath, leaf),
-    });
-    offset = end;
-  }
-
-  if (runs.length === 0) {
-    const fullPath = [...path, 0];
-
-    return [
-      {
-        id: getRunId(fullPath, 0, 0),
-        path: fullPath,
-        range: { end: 0, start: 0 },
-        text: '',
-        textStyle: getTextStyle(typography, element, fullPath, { text: '' }),
-      },
-    ];
-  }
-
-  return runs;
-};
-
-const createBox = ({
-  height,
-  kind,
-  left = 0,
-  path,
-  split,
-  top = 0,
-  width = 0,
-}: {
-  height: number;
-  kind: PageLayoutBoxKind;
-  left?: number;
-  path: Path;
-  split?: PageLayoutBoxSplit;
-  top?: number;
-  width?: number;
-}): PageLayoutBox => ({
-  kind,
-  path,
-  rect: { height, left, top, width },
-  split,
-});
-
-const getElementChildrenOfType = (element: Element, type: string) =>
-  element.children.filter(
-    (child): child is Element => isElement(child) && child.type === type
-  );
-
-const createLayoutBoxes = (
-  element: Element,
-  path: Path,
-  lineHeight: number
-): PageLayoutBox[] => {
-  switch (element.type) {
-    case 'code-block': {
-      const lines = Math.max(1, NodeApi.string(element).split('\n').length);
-
-      return [
-        createBox({
-          height: lines * lineHeight,
-          kind: 'block',
-          path,
-          split: 'avoid',
-        }),
-        ...Array.from({ length: lines }, (_, index) =>
-          createBox({
-            height: lineHeight,
-            kind: 'code-line',
-            path: [...path, 0],
-            split: 'line',
-            top: index * lineHeight,
-          })
-        ),
-      ];
-    }
-    case 'image': {
-      return [
-        createBox({
-          height: lineHeight,
-          kind: 'image',
-          path,
-          split: 'avoid',
-        }),
-      ];
-    }
-    case 'table': {
-      return createTableLayoutBoxes(element, path);
-    }
-    case 'thematic-break': {
-      return [
-        createBox({
-          height: lineHeight,
-          kind: 'thematic-break',
-          path,
-          split: 'avoid',
-        }),
-      ];
-    }
-    default: {
-      return [];
-    }
-  }
-};
-
-const createTableLayoutBoxes = (
-  element: Element,
+const getTextStyle = <TElement extends Element>(
+  typography: PageLayoutTypography<TElement> | undefined,
+  element: TElement,
+  leaf: TextOf<TElement>,
   path: Path
-): PageLayoutBox[] => {
-  const rows = getElementChildrenOfType(element, 'table-row');
-  const width = rows.reduce(
-    (max, row) =>
-      Math.max(max, getElementChildrenOfType(row, 'table-cell').length),
-    0
-  );
-  const boxes = [
-    createBox({
-      height: rows.length,
-      kind: 'table',
-      path,
-      split: 'row',
-      width,
-    }),
-  ];
+): PageLayoutTextStyle => ({
+  ...DEFAULT_TEXT_STYLE,
+  ...typography?.text?.({ element, leaf, path }),
+});
 
-  rows.forEach((row, rowIndex) => {
-    getElementChildrenOfType(row, 'table-cell').forEach((_, columnIndex) => {
-      boxes.push(
-        createBox({
-          height: 1,
-          kind: 'table-cell',
-          left: columnIndex,
-          path: [...path, rowIndex, columnIndex],
-          split: 'avoid',
-          top: rowIndex,
-          width: 1,
-        })
-      );
-    });
+const isSupportedInlineFlow = (editor: AnyEditor, element: Element): boolean =>
+  element.children.every((child) => {
+    if (NodeApi.isText(child)) return true;
+    if (!editor.read.schema.isInline(child)) return false;
+
+    return isSupportedInlineFlow(editor, child);
   });
 
-  return boxes;
-};
+const extractTextRuns = <TElement extends Element>(
+  element: TElement,
+  path: Path,
+  root: NamedRootKey | undefined,
+  typography: PageLayoutTypography<TElement> | undefined
+): readonly PageLayoutRun[] => {
+  const runs = [...NodeApi.texts(element)].map(([leaf, leafPath]) => {
+    const sourcePath = [...path, ...leafPath];
 
-const resolveNodeLayoutPlan = (
-  plan: NodeLayoutPlan | null | undefined,
-  getDefaultBoxes: () => readonly PageLayoutBox[]
-): {
-  boxes: readonly PageLayoutBox[];
-  mode: 'text' | 'units';
-  units?: readonly PageLayoutUnit[];
-} => {
-  if (!plan || plan.type === 'text') {
     return {
-      boxes: plan?.boxes ?? getDefaultBoxes(),
-      mode: 'text',
+      source: createRange(sourcePath, 0, leaf.text.length, root),
+      text: leaf.text,
+      textStyle: getTextStyle(
+        typography,
+        element,
+        leaf as TextOf<TElement>,
+        sourcePath
+      ),
     };
-  }
+  });
 
-  if (plan.type === 'box') {
-    return {
-      boxes: [plan.box],
-      mode: 'units',
-      units: [
+  return runs.length > 0
+    ? runs
+    : [
         {
-          key: `${getPageLayoutPathKey(plan.box.path)}:${plan.box.kind}`,
-          kind: plan.box.kind,
-          path: [...plan.box.path],
-          rect: plan.box.rect,
-          split: plan.box.split === 'avoid' ? 'avoid' : 'page',
+          source: createRange([...path, 0], 0, 0, root),
+          text: '',
+          textStyle: getTextStyle(
+            typography,
+            element,
+            { text: '' } as TextOf<TElement>,
+            [...path, 0]
+          ),
         },
-      ],
-    };
-  }
-
-  return {
-    boxes: plan.boxes ?? getDefaultBoxes(),
-    mode: 'units',
-    units: plan.units,
-  };
+      ];
 };
 
-const extractLayoutBlocks = <
-  V extends Value,
-  TPlugins extends readonly unknown[],
->(
-  editor: EditorType<V, TPlugins>,
-  root: RootKey,
-  settings: PageSettings,
-  measurementProfile: PageLayoutMeasurementProfile,
-  typography: PageLayoutTypography | undefined,
-  nodeLayout: NodeLayoutProvider | undefined
-): PageLayoutBlock[] => {
-  const children = editor.read((state) =>
-    root === MAIN_ROOT_KEY ? state.children() : state.root(root)
-  );
+const extractBlocks = <TElement extends Element>(
+  editor: AnyEditor,
+  children: readonly Descendant[],
+  root: NamedRootKey | undefined,
+  page: PageLayoutPage,
+  fragmentation: NodeFragmentationProvider<TElement> | undefined,
+  typography: PageLayoutTypography<TElement> | undefined
+): readonly PageLayoutBlock[] =>
+  children.flatMap<PageLayoutBlock>((node, index) => {
+    if (!NodeApi.isElement(node)) return [];
 
-  return children.flatMap((node: Descendant, index: number) => {
-    if (!isElement(node)) {
-      return [];
+    const element = node as TElement;
+    const path = [index];
+    const style = getBlockStyle(typography, element, path);
+    const plan = fragmentation?.({
+      content: {
+        height: page.content.height,
+        width: page.content.width,
+      },
+      element,
+      path,
+    });
+    const supportedInlineFlow = isSupportedInlineFlow(editor, element);
+    const resolved =
+      plan ?? (supportedInlineFlow ? ({ type: 'text' } as const) : undefined);
+
+    if (!resolved) {
+      throw new Error(
+        `Pagination requires an explicit fragmentation plan for ${String(element.type ?? 'this element')} at [${path.join(',')}].`
+      );
     }
 
-    const path = [index];
-    const blockStyle = getBlockStyle(typography, node, path);
-    let defaultBoxes: readonly PageLayoutBox[] | null = null;
-    let defaultTextStyle: PageLayoutTextStyle | null = null;
-    const getDefaultBoxes = () => {
-      defaultBoxes ??= createLayoutBoxes(node, path, blockStyle.lineHeight);
+    const spacingAfter = style.blockSpacing ?? 0;
 
-      return defaultBoxes;
-    };
-    const getDefaultTextStyle = () => {
-      defaultTextStyle ??= getTextStyle(typography, node, path, { text: '' });
-
-      return defaultTextStyle;
-    };
-    const resolvedLayout = resolveNodeLayoutPlan(
-      nodeLayout?.({
-        defaults: {
-          block: blockStyle,
-          get boxes() {
-            return getDefaultBoxes();
-          },
-          get text() {
-            return getDefaultTextStyle();
-          },
-        },
-        element: node,
-        measurementProfile,
-        pageSettings: settings,
-        path,
-      }),
-      getDefaultBoxes
-    );
-    const textLayout = resolvedLayout.mode === 'text';
-    const runs = textLayout ? extractLayoutRuns(node, path, typography) : [];
-    const text = textLayout ? NodeApi.string(node) : '';
-    const textStyle = runs[0]?.textStyle ?? getDefaultTextStyle();
-
-    return {
-      boxes: resolvedLayout.boxes,
-      element: node,
-      lineHeight: blockStyle.lineHeight,
-      path,
-      runs,
-      spacingAfter: blockStyle.blockSpacing ?? 0,
-      text,
-      textStyle,
-      units: resolvedLayout.units,
-    };
-  });
-};
-
-const isPlitePageSettings = <TSettings extends PageSettings>(
-  source: PageSettingsSource<TSettings>
-): source is TSettings => 'margins' in source && 'preset' in source;
-
-const readLayoutSettings = <
-  TSettings extends PageSettings,
-  V extends Value,
-  TPlugins extends readonly unknown[],
->(
-  editor: EditorType<V, TPlugins>,
-  source: PageSettingsSource<TSettings> | null | undefined
-): PageSettings => {
-  if (!source) {
-    return DEFAULT_SETTINGS;
-  }
-
-  if (isPlitePageSettings(source)) {
-    return normalizePageSettings(source);
-  }
-
-  return normalizePageSettings(editor.read((state) => state.getField(source)));
-};
-
-const createEmptyLayoutSnapshot = (
-  settings: PageSettings,
-  version: number,
-  root: RootKey = MAIN_ROOT_KEY
-): PageLayoutSnapshot => {
-  const page = createPage(settings);
-
-  return {
-    blocks: [],
-    fragments: [],
-    measurementProfile: {
-      ...DEFAULT_MEASUREMENT_PROFILE,
-      page: settings,
-      root,
-    },
-    page,
-    pageBreaks: null,
-    pageBreaksStatus: 'none',
-    pages: [page],
-    root,
-    settings,
-    version,
-  };
-};
-
-type PlitePageLayoutFragmentUnitMatch = {
-  fragment: PageLayoutFragment;
-  unit: PageLayoutUnit;
-};
-
-type PlitePageLayoutFragmentIndex = {
-  exactFragments: Map<string, readonly PageLayoutFragment[]>;
-  unitsByAncestorPath: Map<string, readonly PlitePageLayoutFragmentUnitMatch[]>;
-  unitsByPath: Map<string, readonly PlitePageLayoutFragmentUnitMatch[]>;
-};
-
-const SNAPSHOT_FRAGMENT_INDEX = new WeakMap<
-  PageLayoutSnapshot,
-  PlitePageLayoutFragmentIndex
->();
-
-const appendFragmentIndexValue = <T>(
-  map: Map<string, T[]>,
-  key: string,
-  value: T
-) => {
-  const values = map.get(key);
-
-  if (values) {
-    values.push(value);
-  } else {
-    map.set(key, [value]);
-  }
-};
-
-const getPlitePageLayoutFragmentIndex = (
-  snapshot: PageLayoutSnapshot
-): PlitePageLayoutFragmentIndex => {
-  const cached = SNAPSHOT_FRAGMENT_INDEX.get(snapshot);
-
-  if (cached) {
-    return cached;
-  }
-
-  const exactFragments = new Map<string, PageLayoutFragment[]>();
-  const unitsByAncestorPath = new Map<
-    string,
-    PlitePageLayoutFragmentUnitMatch[]
-  >();
-  const unitsByPath = new Map<string, PlitePageLayoutFragmentUnitMatch[]>();
-
-  for (const fragment of snapshot.fragments) {
-    appendFragmentIndexValue(
-      exactFragments,
-      getPageLayoutPathKey(fragment.path),
-      fragment
-    );
-
-    for (const unit of fragment.units ?? []) {
-      const match = { fragment, unit };
-      const unitPathKey = getPageLayoutPathKey(unit.path);
-
-      appendFragmentIndexValue(unitsByPath, unitPathKey, match);
-
-      for (let index = 0; index <= unit.path.length; index++) {
-        appendFragmentIndexValue(
-          unitsByAncestorPath,
-          getPageLayoutPathKey(unit.path.slice(0, index)),
-          match
+    if (resolved.type === 'text') {
+      if (!supportedInlineFlow) {
+        throw new Error(
+          `Pagination text fragmentation requires one supported inline flow at [${path.join(',')}].`
         );
       }
-    }
-  }
 
-  const index = {
-    exactFragments,
-    unitsByAncestorPath,
-    unitsByPath,
-  };
-
-  SNAPSHOT_FRAGMENT_INDEX.set(snapshot, index);
-  return index;
-};
-
-const addFragmentUnitMatches = (
-  target: Map<string, PlitePageLayoutFragmentUnitMatch>,
-  matches: readonly PlitePageLayoutFragmentUnitMatch[] | undefined
-) => {
-  if (!matches) {
-    return;
-  }
-
-  for (const match of matches) {
-    target.set(`${match.fragment.id}:${match.unit.key}`, match);
-  }
-};
-
-const getAncestorPathKeys = (path: Path) => {
-  const keys: string[] = [];
-
-  for (let index = path.length; index >= 0; index--) {
-    keys.push(getPageLayoutPathKey(path.slice(0, index)));
-  }
-
-  return keys;
-};
-
-export const getPageLayoutFragments = (
-  snapshot: PageLayoutSnapshot,
-  path: Path
-): readonly PageLayoutFragment[] => {
-  const index = getPlitePageLayoutFragmentIndex(snapshot);
-  const pathKey = getPageLayoutPathKey(path);
-  const exactFragments = index.exactFragments.get(pathKey);
-
-  if (exactFragments) {
-    return exactFragments;
-  }
-
-  const matchedUnits = new Map<string, PlitePageLayoutFragmentUnitMatch>();
-
-  for (const ancestorPathKey of getAncestorPathKeys(path)) {
-    addFragmentUnitMatches(
-      matchedUnits,
-      index.unitsByPath.get(ancestorPathKey)
-    );
-  }
-  addFragmentUnitMatches(matchedUnits, index.unitsByAncestorPath.get(pathKey));
-
-  if (matchedUnits.size === 0) {
-    return [];
-  }
-
-  const unitsByFragment = new Map<string, PageLayoutUnit[]>();
-  const fragmentsById = new Map<string, PageLayoutFragment>();
-
-  for (const { fragment, unit } of matchedUnits.values()) {
-    fragmentsById.set(fragment.id, fragment);
-    appendFragmentIndexValue(unitsByFragment, fragment.id, unit);
-  }
-
-  return [...fragmentsById.values()].map((fragment) => ({
-    ...fragment,
-    units: unitsByFragment.get(fragment.id) ?? [],
-  }));
-};
-
-const readLayoutRoot = <
-  TSettings extends PageSettings,
-  V extends Value,
-  TPlugins extends readonly unknown[],
->(
-  editor: EditorType<V, TPlugins>,
-  options: LayoutOptions<TSettings>
-): RootKey => {
-  assertPublicRootKey(options.root);
-
-  return toInternalRoot(
-    options.root ?? editor.read((state) => state.view.root())
-  );
-};
-
-const resolveProjectionRoot = (
-  range: Range,
-  layoutRoot: RootKey,
-  options: PageLayoutProjectRangeOptions | undefined
-): RootKey | null => {
-  assertPublicRootKey(options?.root);
-  assertPublicRootKey(range.anchor.root);
-  assertPublicRootKey(range.focus.root);
-
-  const fallbackRoot = options?.root ?? layoutRoot;
-  const anchorRoot = range.anchor.root ?? fallbackRoot;
-  const focusRoot = range.focus.root ?? fallbackRoot;
-
-  if (anchorRoot !== focusRoot) {
-    return null;
-  }
-
-  if (options?.root && options.root !== anchorRoot) {
-    return null;
-  }
-
-  return anchorRoot;
-};
-
-const createEstimatedLines = (
-  block: PageLayoutMeasuredBlock
-): PageLayoutMeasuredLine[] => {
-  if (block.lines && block.lines.length > 0) {
-    return block.lines.map((line) => {
-      const runs =
-        line.runs ??
-        (block.runs
-          ? createEstimatedLineRuns(block, line.start, line.end)
-          : []);
-
-      return runs.length > 0 ? { ...line, runs } : { ...line };
-    });
-  }
-
-  const lineCount = Math.max(1, block.lineCount);
-  const charactersPerLine = Math.max(
-    1,
-    Math.ceil(block.text.length / lineCount)
-  );
-  const lines: PageLayoutMeasuredLine[] = [];
-
-  for (let index = 0; index < lineCount; index++) {
-    const start = Math.min(block.text.length, index * charactersPerLine);
-    const end =
-      index === lineCount - 1
-        ? block.text.length
-        : Math.min(block.text.length, start + charactersPerLine);
-
-    lines.push({
-      end,
-      height: block.lineHeight,
-      runs: createEstimatedLineRuns(block, start, end),
-      start,
-      text: block.text.slice(start, end),
-      width: 0,
-    });
-  }
-
-  return lines;
-};
-
-const createEstimatedLineRuns = (
-  block: PageLayoutBlock,
-  lineStart: number,
-  lineEnd: number
-): PageLayoutPlacedRun[] =>
-  (block.runs ?? []).flatMap((run) => {
-    const start = Math.max(lineStart, run.range.start);
-    const end = Math.min(lineEnd, run.range.end);
-
-    if (end < start || (end === start && run.text.length > 0)) {
-      return [];
+      return [
+        {
+          keepTogether: resolved.keepTogether ?? false,
+          lineHeight: style.lineHeight,
+          path,
+          runs: extractTextRuns(element, path, root, typography),
+          spacingAfter,
+          type: 'text' as const,
+        },
+      ];
     }
 
-    const textStart = start - run.range.start;
-    const textEnd = end - run.range.start;
+    if (resolved.type === 'atomic') {
+      if (!isFiniteSize(resolved.size)) {
+        throw new Error(
+          `Pagination atomic size must be finite and nonnegative at [${path.join(',')}].`
+        );
+      }
+
+      return [
+        {
+          path,
+          size: { ...resolved.size },
+          spacingAfter,
+          type: 'atomic' as const,
+        },
+      ];
+    }
+
+    if (
+      element.children.length === 0 ||
+      element.children.some((child) => !NodeApi.isElement(child)) ||
+      resolved.sizes.length !== element.children.length
+    ) {
+      throw new Error(
+        `Pagination direct-children fragmentation requires one size for every element child at [${path.join(',')}].`
+      );
+    }
+    if (resolved.sizes.some((size) => !isFiniteSize(size))) {
+      throw new Error(
+        `Pagination direct-child sizes must be finite and nonnegative at [${path.join(',')}].`
+      );
+    }
 
     return [
       {
-        ...run,
-        leafRange: {
-          end: textEnd,
-          start: textStart,
-        },
-        left: estimateTextWidth(block.text.slice(lineStart, start)),
-        range: { end, start },
-        text: run.text.slice(textStart, textEnd),
-        width: estimateTextWidth(run.text.slice(textStart, textEnd)),
+        children: resolved.sizes.map((size, childIndex) => ({
+          path: [...path, childIndex],
+          size: { ...size },
+        })),
+        path,
+        spacingAfter,
+        type: 'direct-children' as const,
       },
     ];
   });
+
+type FlatRun = PageLayoutRun & {
+  blockEnd: number;
+  blockStart: number;
+};
+
+type MeasuredRun = Readonly<{
+  blockEnd: number;
+  blockStart: number;
+  left: number;
+  source: Range;
+  width: number;
+}>;
+
+type MeasuredLine = Readonly<{
+  end: number;
+  height: number;
+  runs: readonly MeasuredRun[];
+  source: Range;
+  start: number;
+  width: number;
+}>;
+
+type MeasuredTextBlock = Extract<PageLayoutBlock, { type: 'text' }> & {
+  lines: readonly MeasuredLine[];
+};
+
+type MeasuredBlock =
+  | MeasuredTextBlock
+  | Exclude<PageLayoutBlock, { type: 'text' }>;
+
+const flattenRuns = (
+  block: Extract<PageLayoutBlock, { type: 'text' }>
+): readonly FlatRun[] => {
+  let offset = 0;
+
+  return block.runs.map((run) => {
+    const blockStart = offset;
+    const blockEnd = blockStart + run.text.length;
+
+    offset = blockEnd;
+
+    return { ...run, blockEnd, blockStart };
+  });
+};
+
+const getBlockText = (block: Extract<PageLayoutBlock, { type: 'text' }>) =>
+  block.runs.map((run) => run.text).join('');
+
+const createSourceRange = (
+  runs: readonly FlatRun[],
+  start: number,
+  end: number
+): Range => {
+  const first =
+    runs.find(
+      (run) =>
+        run.blockEnd > start ||
+        (run.text.length === 0 && run.blockEnd === start)
+    ) ?? runs.at(-1);
+
+  if (!first) throw new Error('Pagination text block has no source run.');
+
+  const last =
+    [...runs]
+      .reverse()
+      .find(
+        (run) =>
+          run.blockStart < end ||
+          (run.text.length === 0 && run.blockStart === end)
+      ) ?? first;
+  const firstEdges = getRangeEdges(first.source);
+  const lastEdges = getRangeEdges(last.source);
+
+  return {
+    anchor: {
+      ...first.source.anchor,
+      offset:
+        firstEdges.start +
+        Math.max(0, Math.min(first.text.length, start - first.blockStart)),
+    },
+    focus: {
+      ...last.source.focus,
+      offset:
+        lastEdges.start +
+        Math.max(0, Math.min(last.text.length, end - last.blockStart)),
+    },
+  };
+};
+
+const createMeasuredRuns = (
+  block: Extract<PageLayoutBlock, { type: 'text' }>,
+  start: number,
+  end: number,
+  measure: (text: string, style: PageLayoutTextStyle) => number,
+  flatRuns = flattenRuns(block)
+): readonly MeasuredRun[] => {
+  const measured: MeasuredRun[] = [];
+  let left = 0;
+
+  for (const run of flatRuns) {
+    const blockStart = Math.max(start, run.blockStart);
+    const blockEnd = Math.min(end, run.blockEnd);
+
+    if (
+      blockEnd < blockStart ||
+      (blockEnd === blockStart && run.text.length > 0)
+    ) {
+      continue;
+    }
+
+    const textStart = blockStart - run.blockStart;
+    const textEnd = blockEnd - run.blockStart;
+    const width = measure(
+      run.text.slice(textStart, textEnd).replaceAll('\n', ''),
+      run.textStyle
+    );
+    const edges = getRangeEdges(run.source);
+
+    measured.push({
+      blockEnd,
+      blockStart,
+      left,
+      source: createRange(
+        run.source.anchor.path,
+        edges.start + textStart,
+        edges.start + textEnd,
+        run.source.anchor.root
+      ),
+      width,
+    });
+    left += width;
+  }
+
+  return measured;
+};
+
+const createMeasuredLine = (
+  block: Extract<PageLayoutBlock, { type: 'text' }>,
+  start: number,
+  end: number,
+  width: number,
+  measure: (text: string, style: PageLayoutTextStyle) => number,
+  flatRuns = flattenRuns(block)
+): MeasuredLine => {
+  const runs = createMeasuredRuns(block, start, end, measure, flatRuns);
+  const firstRun = runs[0];
+  const lastRun = runs.at(-1);
+
+  return {
+    end,
+    height: block.lineHeight,
+    runs,
+    source:
+      firstRun && lastRun
+        ? { anchor: firstRun.source.anchor, focus: lastRun.source.focus }
+        : createSourceRange(flatRuns, start, end),
+    start,
+    width,
+  };
+};
 
 const estimateTextWidth = (text: string) => text.length * 8;
 
-const createEstimatedBlockLines = (
-  block: PageLayoutBlock,
+const createEstimatedLines = (
+  block: Extract<PageLayoutBlock, { type: 'text' }>,
   page: PageLayoutPage
-): PageLayoutMeasuredLine[] => {
-  const charactersPerLine = Math.max(18, Math.floor(page.content.width / 8));
-  const lines: PageLayoutMeasuredLine[] = [];
-  const hardLines = block.text.split('\n');
-  let offset = 0;
+): readonly MeasuredLine[] => {
+  const text = getBlockText(block);
+  const charactersPerLine = Math.max(1, Math.floor(page.content.width / 8));
+  const lines: MeasuredLine[] = [];
+  const flatRuns = flattenRuns(block);
+  let hardLineStart = 0;
+  const hardLines = text.split('\n');
 
   hardLines.forEach((hardLine, hardLineIndex) => {
-    if (hardLine.length === 0) {
-      lines.push({
-        end: offset,
-        height: block.lineHeight,
-        runs: createEstimatedLineRuns(block, offset, offset),
-        start: offset,
-        text: '',
-        width: 0,
-      });
-    } else {
-      for (
-        let lineStart = 0;
-        lineStart < hardLine.length;
-        lineStart += charactersPerLine
-      ) {
-        const lineEnd = Math.min(
-          hardLine.length,
-          lineStart + charactersPerLine
-        );
-        const start = offset + lineStart;
-        const end = offset + lineEnd;
-        const text = block.text.slice(start, end);
+    const hasHardBreak = hardLineIndex < hardLines.length - 1;
 
-        lines.push({
-          end,
-          height: block.lineHeight,
-          runs: createEstimatedLineRuns(block, start, end),
-          start,
-          text,
-          width: Math.min(page.content.width, estimateTextWidth(text)),
-        });
+    if (hardLine.length === 0) {
+      lines.push(
+        createMeasuredLine(
+          block,
+          hardLineStart,
+          hardLineStart + (hasHardBreak ? 1 : 0),
+          0,
+          estimateTextWidth,
+          flatRuns
+        )
+      );
+    } else {
+      for (let start = 0; start < hardLine.length; start += charactersPerLine) {
+        const end = Math.min(hardLine.length, start + charactersPerLine);
+        const blockStart = hardLineStart + start;
+        const blockEnd =
+          hardLineStart +
+          end +
+          (hasHardBreak && end === hardLine.length ? 1 : 0);
+
+        lines.push(
+          createMeasuredLine(
+            block,
+            blockStart,
+            blockEnd,
+            estimateTextWidth(
+              text.slice(blockStart, blockEnd).replaceAll('\n', '')
+            ),
+            (value) => estimateTextWidth(value),
+            flatRuns
+          )
+        );
       }
     }
 
-    offset += hardLine.length;
-
-    if (hardLineIndex < hardLines.length - 1) {
-      offset += 1;
-    }
+    hardLineStart += hardLine.length + 1;
   });
 
   return lines.length > 0
     ? lines
-    : [
-        {
-          end: 0,
-          height: block.lineHeight,
-          start: 0,
-          text: '',
-          width: 0,
-        },
-      ];
+    : [createMeasuredLine(block, 0, 0, 0, () => 0, flatRuns)];
 };
 
-const estimatePlitePageLayoutMeasuredBlock = (
-  block: PageLayoutBlock,
-  blockIndex: number,
-  page: PageLayoutPage
-): PageLayoutMeasuredBlock => {
-  const lines = createEstimatedBlockLines(block, page);
+const createFragmentRect = (rects: readonly PageRect[]): PageRect => {
+  if (rects.length === 0) return { height: 0, left: 0, top: 0, width: 0 };
 
-  return {
-    ...block,
-    blockIndex,
-    lineCount: Math.max(1, lines.length),
-    lines,
-  };
+  const left = Math.min(...rects.map((rect) => rect.left));
+  const top = Math.min(...rects.map((rect) => rect.top));
+  const right = Math.max(...rects.map((rect) => rect.left + rect.width));
+  const bottom = Math.max(...rects.map((rect) => rect.top + rect.height));
+
+  return { height: bottom - top, left, top, width: right - left };
 };
 
-const createUnitPlitePageLayoutMeasuredBlock = (
-  block: PageLayoutBlock,
-  blockIndex: number
-): PageLayoutMeasuredBlock => ({
-  ...block,
-  blockIndex,
-  lineCount: 0,
-  lines: [],
-});
-
-export const createEstimatedPageLayoutEngine = (): PageLayoutEngine => ({
-  id: 'estimated',
-  measurementProfile: { strategy: 'estimated' },
-  compose(input) {
-    const measuredBlocks = input.blocks.map((block, blockIndex) =>
-      block.units?.length
-        ? createUnitPlitePageLayoutMeasuredBlock(block, blockIndex)
-        : estimatePlitePageLayoutMeasuredBlock(block, blockIndex, input.page)
-    );
-
-    return paginatePageLayoutBlocks({
-      measuredBlocks,
-      page: input.page,
-      settings: input.settings,
-      version: input.version,
-    });
-  },
-});
-
-const getPretextPreparedKey = (
-  text: string,
-  font: string,
-  letterSpacing: number | undefined,
-  whiteSpace: NonNullable<PretextPageLayoutEngineOptions['whiteSpace']>,
-  wordBreak: NonNullable<PretextPageLayoutEngineOptions['wordBreak']>
-) => `${font}\0${letterSpacing ?? 0}\0${whiteSpace}\0${wordBreak}\0${text}`;
-
-const getPretextMeasuredBlockCacheKey = (
-  block: PageLayoutBlock,
-  pageContentWidth: number,
-  getTextKey: (text: string) => string = getStableHashKey
-) =>
-  getStableHashKey({
-    boxes: block.boxes?.map((box) => ({
-      kind: box.kind,
-      rect: box.rect,
-      split: box.split,
-    })),
-    lineHeight: block.lineHeight,
-    pageContentWidth,
-    runs: block.runs?.map((run) => ({
-      range: run.range,
-      textStyle: run.textStyle,
-    })),
-    spacingAfter: block.spacingAfter,
-    textKey: getTextKey(block.text),
-    textStyle: block.textStyle,
-    units: block.units?.map((unit) => ({
-      key: unit.key,
-      kind: unit.kind,
-      rect: unit.rect,
-      split: unit.split,
-    })),
-  });
-
-const remapPretextMeasuredRun = (
-  run: PageLayoutPlacedRun,
-  block: PageLayoutBlock,
-  measuredBlock: PageLayoutMeasuredBlock
-): PageLayoutPlacedRun => {
-  const runPath = run.path;
-  const matchingRun = block.runs?.find(
-    (blockRun) =>
-      Array.isArray(blockRun.path) &&
-      blockRun.range.start <= run.range.start &&
-      blockRun.range.end >= run.range.end
-  );
-  const path = runPath
-    ? measuredBlock.path.length <= runPath.length
-      ? [...block.path, ...runPath.slice(measuredBlock.path.length)]
-      : [...runPath]
-    : matchingRun
-      ? [...matchingRun.path]
-      : [...block.path, 0];
-
-  return {
-    ...run,
-    id: getRunId(path, run.range.start, run.range.end),
-    path,
-  };
-};
-
-const remapPretextMeasuredBlock = ({
-  block,
-  blockIndex,
-  measuredBlock,
+const paginateMeasuredBlocks = ({
+  measuredBlocks,
+  page,
+  settings,
 }: {
-  block: PageLayoutBlock;
-  blockIndex: number;
-  measuredBlock: PageLayoutMeasuredBlock;
-}): PageLayoutMeasuredBlock => ({
-  ...block,
-  blockIndex,
-  lineCount: measuredBlock.lineCount,
-  lines: measuredBlock.lines?.map((line) => ({
-    ...line,
-    runs: line.runs?.map((run) =>
-      remapPretextMeasuredRun(run, block, measuredBlock)
-    ),
-  })),
-});
+  measuredBlocks: readonly MeasuredBlock[];
+  page: PageLayoutPage;
+  settings: PageSettings;
+}): PageLayoutEngineOutput => {
+  const pages: PageLayoutPage[] = [page];
+  const fragments: PageLayoutFragment[] = [];
+  let pageIndex = 0;
+  let cursorTop = page.content.top;
 
-const COLLAPSIBLE_BOUNDARY_RE = /[ \t\n\f\r]+/;
-const LEADING_COLLAPSIBLE_BOUNDARY_RE = /^[ \t\n\f\r]+/;
-const TRAILING_COLLAPSIBLE_BOUNDARY_RE = /[ \t\n\f\r]+$/;
+  const advancePage = () => {
+    pageIndex += 1;
+    pages[pageIndex] = createPage(settings, pageIndex);
+    cursorTop = pages[pageIndex].content.top;
+  };
+  const ensureFits = (height: number) => {
+    const current = pages[pageIndex];
+    const remaining = current.content.top + current.content.height - cursorTop;
 
-const getLeadingCollapsibleLength = (text: string) =>
-  text.match(LEADING_COLLAPSIBLE_BOUNDARY_RE)?.[0].length ?? 0;
-
-const getTrailingCollapsibleLength = (text: string) =>
-  text.match(TRAILING_COLLAPSIBLE_BOUNDARY_RE)?.[0].length ?? 0;
-
-export const pretextPageLayoutEngine = ({
-  estimateBlock,
-  maxPreparedEntries = 5000,
-  whiteSpace = 'pre-wrap',
-  wordBreak = 'normal',
-}: PretextPageLayoutEngineOptions = {}): PageLayoutEngine => {
-  const preparedCache = new Map<
-    string,
-    ReturnType<typeof prepareWithSegments>
-  >();
-  const measuredBlockCache = new Map<
-    string,
-    {
-      measuredBlock: PageLayoutMeasuredBlock;
-      text: string;
-    }
-  >();
-  const textKeyCache = new Map<string, string>();
-
-  const getPrepared = (
-    text: string,
-    font: string,
-    letterSpacing: number | undefined
-  ) => {
-    const key = getPretextPreparedKey(
-      text,
-      font,
-      letterSpacing,
-      whiteSpace,
-      wordBreak
-    );
-    const cached = preparedCache.get(key);
-
-    if (cached) {
-      return cached;
-    }
-
-    const prepared = prepareWithSegments(text, font, {
-      letterSpacing,
-      whiteSpace,
-      wordBreak,
-    });
-    preparedCache.set(key, prepared);
-
-    if (preparedCache.size > maxPreparedEntries) {
-      const [oldestKey] = preparedCache.keys();
-
-      if (oldestKey) {
-        preparedCache.delete(oldestKey);
-      }
-    }
-
-    return prepared;
+    if (cursorTop !== current.content.top && height > remaining) advancePage();
   };
 
-  const getTextKey = (text: string) => {
-    const cached = textKeyCache.get(text);
+  for (const block of measuredBlocks) {
+    if (block.type === 'atomic') {
+      ensureFits(block.size.height);
+      const current = pages[pageIndex];
+      const rect = {
+        height: block.size.height,
+        left: current.content.left,
+        top: cursorTop,
+        width: block.size.width,
+      };
 
-    if (cached) {
-      return cached;
+      fragments.push({
+        pageIndex,
+        path: [...block.path],
+        rect,
+        type: 'atomic',
+      });
+      cursorTop += block.size.height + block.spacingAfter;
+      continue;
     }
 
-    const key = getStableHashKey(text);
-    textKeyCache.set(text, key);
+    if (block.type === 'direct-children') {
+      let consumed = 0;
 
-    if (textKeyCache.size > maxPreparedEntries) {
-      const [oldestKey] = textKeyCache.keys();
+      while (consumed < block.children.length) {
+        const fragmentChildren: Array<{ path: Path; rect: PageRect }> = [];
 
-      if (oldestKey) {
-        textKeyCache.delete(oldestKey);
+        while (consumed < block.children.length) {
+          const child = block.children[consumed];
+          const current = pages[pageIndex];
+          const remaining =
+            current.content.top + current.content.height - cursorTop;
+          const pageIsEmpty = cursorTop === current.content.top;
+
+          if (child.size.height > remaining && !pageIsEmpty) break;
+
+          fragmentChildren.push({
+            path: [...child.path],
+            rect: {
+              height: child.size.height,
+              left: current.content.left,
+              top: cursorTop,
+              width: child.size.width,
+            },
+          });
+          cursorTop += child.size.height;
+          consumed += 1;
+
+          if (child.size.height > remaining && pageIsEmpty) break;
+        }
+
+        if (fragmentChildren.length === 0) {
+          advancePage();
+          continue;
+        }
+
+        fragments.push({
+          children: fragmentChildren,
+          pageIndex,
+          path: [...block.path],
+          rect: createFragmentRect(fragmentChildren.map((child) => child.rect)),
+          type: 'direct-children',
+        });
+
+        if (consumed < block.children.length) advancePage();
       }
+
+      cursorTop += block.spacingAfter;
+      continue;
     }
 
-    return key;
-  };
+    const totalHeight =
+      block.lines.reduce((sum, line) => sum + line.height, 0) +
+      block.spacingAfter;
 
-  const measureInlineText = (
-    text: string,
-    font: string,
-    letterSpacing: number | undefined
-  ) => measureNaturalWidth(getPrepared(text, font, letterSpacing));
+    if (block.keepTogether && totalHeight <= page.content.height) {
+      ensureFits(totalHeight);
+    }
 
-  const createLineRuns = (
-    block: PageLayoutBlock,
-    lineStart: number,
-    lineEnd: number
-  ): PageLayoutPlacedRun[] => {
-    const lineRuns: PageLayoutPlacedRun[] = [];
-    let left = 0;
+    let consumed = 0;
 
-    for (const run of block.runs ?? []) {
-      const start = Math.max(lineStart, run.range.start);
-      const end = Math.min(lineEnd, run.range.end);
+    while (consumed < block.lines.length) {
+      const fragmentLines: Array<{
+        rect: PageRect;
+        runs: Array<{ rect: PageRect; source: Range }>;
+        source: Range;
+      }> = [];
 
-      if (end < start || (end === start && run.text.length > 0)) {
+      while (consumed < block.lines.length) {
+        const line = block.lines[consumed];
+        const current = pages[pageIndex];
+        const remaining =
+          current.content.top + current.content.height - cursorTop;
+        const pageIsEmpty = cursorTop === current.content.top;
+
+        if (line.height > remaining && !pageIsEmpty) break;
+
+        const measuredWidth = Math.max(
+          line.width,
+          ...line.runs.map((run) => run.left + run.width)
+        );
+        const lineRect = {
+          height: line.height,
+          left: current.content.left,
+          top: cursorTop,
+          width: measuredWidth,
+        };
+
+        fragmentLines.push({
+          rect: lineRect,
+          runs: line.runs.map((run) => ({
+            rect: {
+              height: line.height,
+              left: current.content.left + run.left,
+              top: cursorTop,
+              width: run.width,
+            },
+            source: run.source,
+          })),
+          source: line.source,
+        });
+        cursorTop += line.height;
+        consumed += 1;
+
+        if (line.height > remaining && pageIsEmpty) break;
+      }
+
+      if (fragmentLines.length === 0) {
+        advancePage();
         continue;
       }
 
-      const textStart = start - run.range.start;
-      const textEnd = end - run.range.start;
-      const text = run.text.slice(textStart, textEnd);
-      const width = measureInlineText(
-        text,
-        run.textStyle.font,
-        run.textStyle.letterSpacing
-      );
-
-      lineRuns.push({
-        ...run,
-        leafRange: {
-          end: textEnd,
-          start: textStart,
-        },
-        left,
-        range: { end, start },
-        text,
-        width,
+      fragments.push({
+        lines: fragmentLines,
+        pageIndex,
+        path: [...block.path],
+        rect: createFragmentRect(fragmentLines.map((line) => line.rect)),
+        type: 'text',
       });
-      left += width;
+
+      if (consumed < block.lines.length) advancePage();
     }
 
-    return lineRuns;
-  };
+    cursorTop += block.spacingAfter;
+  }
 
-  const createRichInlineLines = (
-    block: PageLayoutBlock,
-    maxWidth: number
-  ): PageLayoutMeasuredLine[] | null => {
-    if (
-      whiteSpace !== 'normal' ||
-      wordBreak !== 'normal' ||
-      !block.runs ||
-      block.runs.length <= 1
-    ) {
-      return null;
-    }
-
-    const sourceItems = block.runs.map((run) => {
-      const sourceStart = getLeadingCollapsibleLength(run.text);
-      const sourceEnd =
-        run.text.length - getTrailingCollapsibleLength(run.text);
-      const text =
-        sourceEnd <= sourceStart ? '' : run.text.slice(sourceStart, sourceEnd);
-
-      return {
-        prepared: getPrepared(
-          text,
-          run.textStyle.font,
-          run.textStyle.letterSpacing
-        ),
-        run,
-        sourceEnd,
-        sourceStart,
-      };
-    });
-    const prepared = prepareRichInline(
-      block.runs.map((run) => ({
-        font: run.textStyle.font,
-        letterSpacing: run.textStyle.letterSpacing,
-        text: run.text,
-      }))
-    );
-    const lines: PageLayoutMeasuredLine[] = [];
-
-    walkRichInlineLineRanges(prepared, maxWidth, (range) => {
-      const line = materializeRichInlineLineRange(prepared, range);
-      const runs: PageLayoutPlacedRun[] = [];
-      let left = 0;
-
-      for (const fragment of line.fragments) {
-        const source = sourceItems[fragment.itemIndex];
-
-        if (!source) {
-          continue;
-        }
-
-        if (fragment.gapBefore > 0) {
-          const previousSource = sourceItems[fragment.itemIndex - 1];
-          const gapSource =
-            previousSource &&
-            previousSource.sourceEnd < previousSource.run.text.length
-              ? {
-                  end: previousSource.run.text.length,
-                  source: previousSource,
-                  start: previousSource.sourceEnd,
-                }
-              : source.sourceStart > 0
-                ? {
-                    end: source.sourceStart,
-                    source,
-                    start: 0,
-                  }
-                : null;
-
-          if (gapSource && gapSource.end > gapSource.start) {
-            runs.push({
-              ...gapSource.source.run,
-              leafRange: {
-                end: gapSource.end,
-                start: gapSource.start,
-              },
-              left,
-              range: {
-                end: gapSource.source.run.range.start + gapSource.end,
-                start: gapSource.source.run.range.start + gapSource.start,
-              },
-              text: gapSource.source.run.text.slice(
-                gapSource.start,
-                gapSource.end
-              ),
-              width: fragment.gapBefore,
-            });
-          }
-
-          left += fragment.gapBefore;
-        }
-
-        const textStart =
-          source.sourceStart +
-          getPretextPreparedTextOffset(source.prepared, fragment.start);
-        const textEnd =
-          source.sourceStart +
-          getPretextPreparedTextOffset(source.prepared, fragment.end);
-
-        if (
-          textEnd < textStart ||
-          (textEnd === textStart && source.run.text.length > 0)
-        ) {
-          left += fragment.occupiedWidth;
-          continue;
-        }
-
-        runs.push({
-          ...source.run,
-          leafRange: {
-            end: textEnd,
-            start: textStart,
-          },
-          left,
-          range: {
-            end: source.run.range.start + textEnd,
-            start: source.run.range.start + textStart,
-          },
-          text: fragment.text,
-          width: fragment.occupiedWidth,
-        });
-        left += fragment.occupiedWidth;
-      }
-
-      lines.push({
-        end: runs.at(-1)?.range.end ?? 0,
-        height: block.lineHeight,
-        runs: runs.length > 0 ? runs : undefined,
-        start: runs[0]?.range.start ?? 0,
-        text: line.fragments
-          .map(
-            (fragment) => `${fragment.gapBefore > 0 ? ' ' : ''}${fragment.text}`
-          )
-          .join(''),
-        width: line.width,
-      });
-    });
-
-    if (lines.length > 0) {
-      return lines;
-    }
-
-    if (COLLAPSIBLE_BOUNDARY_RE.test(block.text)) {
-      return [
-        {
-          end: 0,
-          height: block.lineHeight,
-          start: 0,
-          text: '',
-          width: 0,
-        },
-      ];
-    }
-
-    return null;
-  };
-
-  const withMeasuredRuns = (
-    block: PageLayoutBlock,
-    line: Omit<PageLayoutMeasuredLine, 'runs'>
-  ): PageLayoutMeasuredLine => {
-    if (block.runs?.length === 1) {
-      const run = block.runs[0];
-      const lineEnd =
-        line.end === line.start && line.text.length > 0
-          ? line.start + line.text.length
-          : line.end;
-      const start = Math.max(line.start, run.range.start);
-      const end = Math.min(lineEnd, run.range.end);
-
-      if (end < start || (end === start && run.text.length > 0)) {
-        return line;
-      }
-
-      const textStart = start - run.range.start;
-      const textEnd = end - run.range.start;
-
-      return {
-        ...line,
-        runs: [
-          {
-            ...run,
-            leafRange: {
-              end: textEnd,
-              start: textStart,
-            },
-            left: 0,
-            range: { end, start },
-            text: run.text.slice(textStart, textEnd),
-            width: line.width,
-          },
-        ],
-      };
-    }
-
-    const runs = createLineRuns(block, line.start, line.end);
-
-    if (runs.length === 0) {
-      return line;
-    }
-
-    const width =
-      (runs.at(-1) ?? failInvariant('Expected value to be defined')).left +
-      (runs.at(-1) ?? failInvariant('Expected value to be defined')).width;
-
-    return {
-      ...line,
-      runs,
-      width,
-    };
-  };
-
-  return {
-    id: 'pretext',
-    measurementProfile: {
-      estimatedBlocks: Boolean(estimateBlock),
-      whiteSpace,
-      wordBreak,
-    },
-    compose(input) {
-      let recordedCacheHit = false;
-      let recordedCacheMiss = false;
-      const recordCacheEvent = (
-        id: 'measured-block-cache-hit' | 'measured-block-cache-miss'
-      ) => {
-        if (id === 'measured-block-cache-hit') {
-          if (recordedCacheHit) {
-            return;
-          }
-          recordedCacheHit = true;
-        } else {
-          if (recordedCacheMiss) {
-            return;
-          }
-          recordedCacheMiss = true;
-        }
-
-        profileLayoutDuration(id, () => {});
-      };
-      const measureBlock = (
-        block: PageLayoutBlock,
-        blockIndex: number
-      ): PageLayoutMeasuredBlock => {
-        const richInlineLines = createRichInlineLines(
-          block,
-          input.page.content.width
-        );
-
-        if (richInlineLines) {
-          return {
-            ...block,
-            blockIndex,
-            lineCount: Math.max(1, richInlineLines.length),
-            lines: richInlineLines,
-          };
-        }
-
-        const prepared = getPrepared(
-          block.text,
-          block.textStyle.font,
-          block.textStyle.letterSpacing
-        );
-        const result = layoutWithLines(
-          prepared,
-          input.page.content.width,
-          block.lineHeight
-        );
-
-        return {
-          ...block,
-          blockIndex,
-          lineCount: Math.max(1, result.lineCount),
-          lines:
-            result.lines.length === 0
-              ? [
-                  withMeasuredRuns(block, {
-                    end: 0,
-                    height: block.lineHeight,
-                    start: 0,
-                    text: '',
-                    width: 0,
-                  }),
-                ]
-              : result.lines.map((line) =>
-                  withMeasuredRuns(block, {
-                    end: getPretextPreparedTextOffset(prepared, line.end),
-                    height: block.lineHeight,
-                    start: getPretextPreparedTextOffset(prepared, line.start),
-                    text: line.text,
-                    width: line.width,
-                  })
-                ),
-        };
-      };
-
-      const measuredBlocks = profileLayoutDuration(
-        'pretext-measure-blocks',
-        () =>
-          input.blocks.map((block, blockIndex) => {
-            if (block.units?.length) {
-              return createUnitPlitePageLayoutMeasuredBlock(block, blockIndex);
-            }
-
-            if (
-              estimateBlock?.({
-                block,
-                blockIndex,
-                page: input.page,
-                settings: input.settings,
-              })
-            ) {
-              return estimatePlitePageLayoutMeasuredBlock(
-                block,
-                blockIndex,
-                input.page
-              );
-            }
-
-            const key = getPretextMeasuredBlockCacheKey(
-              block,
-              input.page.content.width,
-              getTextKey
-            );
-            const cached = measuredBlockCache.get(key);
-
-            if (cached && cached.text === block.text) {
-              recordCacheEvent('measured-block-cache-hit');
-              return remapPretextMeasuredBlock({
-                block,
-                blockIndex,
-                measuredBlock: cached.measuredBlock,
-              });
-            }
-
-            recordCacheEvent('measured-block-cache-miss');
-
-            const measuredBlock = measureBlock(block, blockIndex);
-
-            measuredBlockCache.set(key, {
-              measuredBlock,
-              text: block.text,
-            });
-
-            if (measuredBlockCache.size > maxPreparedEntries) {
-              const [oldestKey] = measuredBlockCache.keys();
-
-              if (oldestKey) {
-                measuredBlockCache.delete(oldestKey);
-              }
-            }
-
-            return measuredBlock;
-          })
-      );
-
-      return profileLayoutDuration('pretext-paginate-blocks', () =>
-        paginatePageLayoutBlocks({
-          measuredBlocks,
-          page: input.page,
-          settings: input.settings,
-          version: input.version,
-        })
-      );
-    },
-  };
+  return { fragments, pages };
 };
 
-const getPretextPreparedTextOffset = (
+const validateRect = (rect: PageRect) => {
+  if (
+    !Number.isFinite(rect.height) ||
+    !Number.isFinite(rect.left) ||
+    !Number.isFinite(rect.top) ||
+    !Number.isFinite(rect.width) ||
+    rect.height < 0 ||
+    rect.width < 0
+  ) {
+    throw new Error('Pagination engine returned invalid geometry.');
+  }
+};
+
+const sameRect = (left: PageRect, right: PageRect) =>
+  left.height === right.height &&
+  left.left === right.left &&
+  left.top === right.top &&
+  left.width === right.width;
+
+const sameRangeOwner = (left: Range, right: Range) =>
+  samePath(left.anchor.path, right.anchor.path) &&
+  left.anchor.root === right.anchor.root &&
+  samePath(left.focus.path, right.focus.path) &&
+  left.focus.root === right.focus.root;
+
+const validateEngineOutput = (
+  blocks: readonly PageLayoutBlock[],
+  output: PageLayoutEngineOutput,
+  settings: PageSettings
+) => {
+  if (output.pages.length === 0) {
+    throw new Error('Pagination engine must return at least one page.');
+  }
+
+  output.pages.forEach((page, index) => {
+    const expected = createPage(settings, index);
+
+    validateRect(page.content);
+    if (
+      page.index !== index ||
+      page.height !== expected.height ||
+      page.width !== expected.width ||
+      !sameRect(page.content, expected.content)
+    ) {
+      throw new Error('Pagination engine returned an invalid page sequence.');
+    }
+  });
+
+  const blockByPath = new Map(
+    blocks.map((block, index) => [block.path.join('.'), { block, index }])
+  );
+  const fragmentsByPath = new Map<string, PageLayoutFragment[]>();
+  let previousBlockIndex = -1;
+  let previousPageIndex = -1;
+
+  output.fragments.forEach((fragment) => {
+    const pathKey = fragment.path.join('.');
+    const owner = blockByPath.get(pathKey);
+
+    if (!owner || owner.block.type !== fragment.type) {
+      throw new Error('Pagination engine returned a foreign fragment.');
+    }
+    if (
+      fragment.pageIndex < previousPageIndex ||
+      owner.index < previousBlockIndex
+    ) {
+      throw new Error(
+        'Pagination engine returned fragments out of source order.'
+      );
+    }
+    previousPageIndex = fragment.pageIndex;
+    previousBlockIndex = owner.index;
+    const siblings = fragmentsByPath.get(pathKey);
+
+    if (siblings) siblings.push(fragment);
+    else fragmentsByPath.set(pathKey, [fragment]);
+    if (output.pages[fragment.pageIndex]?.index !== fragment.pageIndex) {
+      throw new Error('Pagination engine returned a fragment for no page.');
+    }
+    validateRect(fragment.rect);
+    if (fragment.type === 'text') {
+      if (fragment.lines.length === 0) {
+        throw new Error('Pagination engine returned an empty text fragment.');
+      }
+      fragment.lines.forEach((line) => {
+        validateRect(line.rect);
+        if (line.runs.length === 0) {
+          throw new Error(
+            'Pagination engine returned a text line without source.'
+          );
+        }
+        line.runs.forEach((run) => {
+          validateRect(run.rect);
+          if (
+            run.rect.top !== line.rect.top ||
+            run.rect.height !== line.rect.height
+          ) {
+            throw new Error(
+              'Pagination engine returned inconsistent line geometry.'
+            );
+          }
+        });
+        const firstRun = line.runs[0];
+        const lastRun = line.runs.at(-1);
+
+        if (
+          !firstRun ||
+          !lastRun ||
+          !samePath(line.source.anchor.path, firstRun.source.anchor.path) ||
+          line.source.anchor.root !== firstRun.source.anchor.root ||
+          line.source.anchor.offset !== firstRun.source.anchor.offset ||
+          !samePath(line.source.focus.path, lastRun.source.focus.path) ||
+          line.source.focus.root !== lastRun.source.focus.root ||
+          line.source.focus.offset !== lastRun.source.focus.offset
+        ) {
+          throw new Error(
+            'Pagination engine returned inconsistent line source.'
+          );
+        }
+      });
+      if (
+        !sameRect(
+          fragment.rect,
+          createFragmentRect(fragment.lines.map((line) => line.rect))
+        )
+      ) {
+        throw new Error(
+          'Pagination engine returned inconsistent fragment geometry.'
+        );
+      }
+    } else if (fragment.type === 'direct-children') {
+      fragment.children.forEach((child) => validateRect(child.rect));
+      if (
+        !sameRect(
+          fragment.rect,
+          createFragmentRect(fragment.children.map((child) => child.rect))
+        )
+      ) {
+        throw new Error(
+          'Pagination engine returned inconsistent fragment geometry.'
+        );
+      }
+    }
+  });
+
+  for (const block of blocks) {
+    const fragments = fragmentsByPath.get(block.path.join('.')) ?? [];
+
+    if (block.type === 'atomic') {
+      if (fragments.length !== 1 || fragments[0]?.type !== 'atomic') {
+        throw new Error('Pagination engine must emit each atomic block once.');
+      }
+      if (
+        fragments[0].rect.height !== block.size.height ||
+        fragments[0].rect.width !== block.size.width
+      ) {
+        throw new Error('Pagination engine changed an atomic block size.');
+      }
+      continue;
+    }
+
+    if (block.type === 'direct-children') {
+      const children = fragments.flatMap((fragment) =>
+        fragment.type === 'direct-children' ? fragment.children : []
+      );
+
+      if (
+        children.length !== block.children.length ||
+        children.some(
+          (child, index) =>
+            !samePath(child.path, block.children[index].path) ||
+            child.rect.height !== block.children[index].size.height ||
+            child.rect.width !== block.children[index].size.width
+        )
+      ) {
+        throw new Error(
+          'Pagination engine must conserve direct children in source order.'
+        );
+      }
+      continue;
+    }
+
+    if (
+      fragments.length === 0 ||
+      fragments.some((fragment) => fragment.type !== 'text')
+    ) {
+      throw new Error('Pagination engine must emit every text block.');
+    }
+    const expectedRuns = new Map(
+      block.runs.map((run) => [run.source.anchor.path.join('.'), run])
+    );
+    const actualRuns = new Map<string, Array<{ end: number; start: number }>>();
+
+    for (const fragment of fragments) {
+      if (fragment.type !== 'text') continue;
+
+      for (const line of fragment.lines) {
+        for (const candidate of line.runs) {
+          const pathKey = candidate.source.anchor.path.join('.');
+          const expectedRun = expectedRuns.get(pathKey);
+
+          if (
+            !expectedRun ||
+            !sameRangeOwner(candidate.source, expectedRun.source)
+          ) {
+            throw new Error('Pagination engine returned a foreign text range.');
+          }
+          const ranges = actualRuns.get(pathKey);
+          const edges = getRangeEdges(candidate.source);
+
+          if (ranges) ranges.push(edges);
+          else actualRuns.set(pathKey, [edges]);
+        }
+      }
+    }
+    for (const run of block.runs) {
+      const expected = getRangeEdges(run.source);
+      const actual = actualRuns.get(run.source.anchor.path.join('.')) ?? [];
+
+      if (run.text.length === 0) {
+        if (
+          actual.length !== 1 ||
+          actual[0].start !== expected.start ||
+          actual[0].end !== expected.end
+        ) {
+          throw new Error('Pagination engine lost an empty text position.');
+        }
+        continue;
+      }
+
+      let cursor = expected.start;
+
+      for (const range of actual) {
+        if (range.start !== cursor || range.end < range.start) {
+          throw new Error(
+            'Pagination engine returned overlapping text ranges.'
+          );
+        }
+        cursor = range.end;
+      }
+      if (cursor !== expected.end) {
+        throw new Error('Pagination engine did not conserve text content.');
+      }
+    }
+  }
+};
+
+const freezeRange = (range: Range): Range =>
+  Object.freeze({
+    anchor: Object.freeze({
+      ...range.anchor,
+      path: Object.freeze([...range.anchor.path]),
+    }),
+    focus: Object.freeze({
+      ...range.focus,
+      path: Object.freeze([...range.focus.path]),
+    }),
+  });
+
+const freezeRect = (rect: PageRect): PageRect => Object.freeze({ ...rect });
+
+const freezePage = (page: PageLayoutPage): PageLayoutPage =>
+  Object.freeze({ ...page, content: freezeRect(page.content) });
+
+const freezeSettings = (settings: PageSettings): PageSettings =>
+  Object.freeze({
+    ...settings,
+    margins:
+      typeof settings.margins === 'number'
+        ? settings.margins
+        : Object.freeze({ ...settings.margins }),
+  });
+
+const freezeOwnedRange = (range: Range): Range => {
+  if (Object.isFrozen(range)) return range;
+
+  if (!Object.isFrozen(range.anchor.path)) Object.freeze(range.anchor.path);
+  if (!Object.isFrozen(range.anchor)) Object.freeze(range.anchor);
+  if (!Object.isFrozen(range.focus.path)) Object.freeze(range.focus.path);
+  if (!Object.isFrozen(range.focus)) Object.freeze(range.focus);
+  return Object.freeze(range);
+};
+
+const freezeBlock = (block: PageLayoutBlock): PageLayoutBlock => {
+  Object.freeze(block.path);
+
+  if (block.type === 'text') {
+    block.runs.forEach((run) => {
+      freezeOwnedRange(run.source);
+      Object.freeze(run.textStyle);
+      Object.freeze(run);
+    });
+    Object.freeze(block.runs);
+    return Object.freeze(block);
+  }
+  if (block.type === 'atomic') {
+    Object.freeze(block.size);
+    return Object.freeze(block);
+  }
+
+  block.children.forEach((child) => {
+    Object.freeze(child.path);
+    Object.freeze(child.size);
+    Object.freeze(child);
+  });
+  Object.freeze(block.children);
+  return Object.freeze(block);
+};
+
+const freezeFragment = (fragment: PageLayoutFragment): PageLayoutFragment => {
+  const common = {
+    pageIndex: fragment.pageIndex,
+    path: Object.freeze([...fragment.path]),
+    rect: freezeRect(fragment.rect),
+  };
+
+  if (fragment.type === 'atomic') {
+    return Object.freeze({ ...common, type: 'atomic' as const });
+  }
+  if (fragment.type === 'direct-children') {
+    return Object.freeze({
+      ...common,
+      children: Object.freeze(
+        fragment.children.map((child) =>
+          Object.freeze({
+            path: Object.freeze([...child.path]),
+            rect: freezeRect(child.rect),
+          })
+        )
+      ),
+      type: 'direct-children' as const,
+    });
+  }
+
+  return Object.freeze({
+    ...common,
+    lines: Object.freeze(
+      fragment.lines.map((line) =>
+        Object.freeze({
+          rect: freezeRect(line.rect),
+          runs: Object.freeze(
+            line.runs.map((run) =>
+              Object.freeze({
+                rect: freezeRect(run.rect),
+                source: freezeRange(run.source),
+              })
+            )
+          ),
+          source: freezeRange(line.source),
+        })
+      )
+    ),
+    type: 'text' as const,
+  });
+};
+
+const ownedEngineOutputs = new WeakSet<PageLayoutEngineOutput>();
+const ownedPageLayoutEngines = new WeakSet<PageLayoutEngine>();
+
+const freezeOwnedRect = (rect: PageRect): PageRect =>
+  Object.isFrozen(rect) ? rect : Object.freeze(rect);
+
+const freezeOwnedPage = (page: PageLayoutPage): PageLayoutPage => {
+  if (Object.isFrozen(page)) return page;
+
+  freezeOwnedRect(page.content);
+  return Object.freeze(page);
+};
+
+const freezeOwnedFragment = (
+  fragment: PageLayoutFragment
+): PageLayoutFragment => {
+  if (Object.isFrozen(fragment)) return fragment;
+
+  Object.freeze(fragment.path);
+  freezeOwnedRect(fragment.rect);
+  if (fragment.type === 'direct-children') {
+    fragment.children.forEach((child) => {
+      Object.freeze(child.path);
+      freezeOwnedRect(child.rect);
+      Object.freeze(child);
+    });
+    Object.freeze(fragment.children);
+  } else if (fragment.type === 'text') {
+    fragment.lines.forEach((line) => {
+      freezeOwnedRect(line.rect);
+      line.runs.forEach((run) => {
+        freezeOwnedRect(run.rect);
+        freezeOwnedRange(run.source);
+        Object.freeze(run);
+      });
+      Object.freeze(line.runs);
+      freezeOwnedRange(line.source);
+      Object.freeze(line);
+    });
+    Object.freeze(fragment.lines);
+  }
+  return Object.freeze(fragment);
+};
+
+export const createEstimatedPageLayoutEngine = (): PageLayoutEngine => {
+  const engine: PageLayoutEngine = {
+    compose(input) {
+      const output = paginateMeasuredBlocks({
+        measuredBlocks: input.blocks.map((block) =>
+          block.type === 'text'
+            ? { ...block, lines: createEstimatedLines(block, input.page) }
+            : block
+        ),
+        page: input.page,
+        settings: input.settings,
+      });
+
+      ownedEngineOutputs.add(output);
+      return output;
+    },
+  };
+
+  Object.freeze(engine);
+  ownedPageLayoutEngines.add(engine);
+  return engine;
+};
+
+const getPreparedTextOffset = (
   prepared: ReturnType<typeof prepareWithSegments>,
   cursor: { graphemeIndex: number; segmentIndex: number }
-): number => {
+) => {
   let offset = 0;
 
   for (let index = 0; index < cursor.segmentIndex; index++) {
@@ -2849,626 +1344,377 @@ const getPretextPreparedTextOffset = (
   );
 };
 
-export const paginatePageLayoutBlocks = ({
-  measuredBlocks,
-  page,
-  settings,
-  version,
-}: {
-  measuredBlocks: readonly PageLayoutMeasuredBlock[];
-  page: PageLayoutPage;
-  settings: PageSettings;
-  version: number;
-}): PageLayoutEngineOutput => {
-  const pages: PageLayoutPage[] = [page];
-  const fragments: PageLayoutFragment[] = [];
-  let pageIndex = 0;
-  let cursorTop = page.content.top;
+const stableKey = (value: unknown) => JSON.stringify(value);
 
-  measuredBlocks.forEach((block) => {
-    if (block.units?.length) {
-      let consumedUnits = 0;
-      let fragmentIndex = 0;
+const LEADING_COLLAPSIBLE_RE = /^[ \t\n\f\r]+/;
+const TRAILING_COLLAPSIBLE_RE = /[ \t\n\f\r]+$/;
 
-      while (consumedUnits < block.units.length) {
-        const innerPage = pages[pageIndex];
-        const pageBottom = innerPage.content.top + innerPage.content.height;
-        const fragmentTop = cursorTop;
-        const fragmentUnits: PageLayoutUnit[] = [];
-        let fragmentHeight = 0;
+const getLeadingCollapsibleLength = (text: string) =>
+  text.match(LEADING_COLLAPSIBLE_RE)?.[0].length ?? 0;
 
-        while (consumedUnits < block.units.length) {
-          const unit = block.units[consumedUnits];
-          const unitHeight = Math.max(0, unit.rect.height);
-          const remainingPageHeight = Math.max(0, pageBottom - cursorTop);
-          const pageIsEmpty = cursorTop === innerPage.content.top;
+const getTrailingCollapsibleLength = (text: string) =>
+  text.match(TRAILING_COLLAPSIBLE_RE)?.[0].length ?? 0;
 
-          if (unitHeight > remainingPageHeight && !pageIsEmpty) {
-            break;
-          }
-
-          fragmentUnits.push({
-            ...unit,
-            path: [...unit.path],
-            rect: {
-              ...unit.rect,
-              top: fragmentTop + fragmentHeight,
-            },
-          });
-          fragmentHeight += unitHeight;
-          cursorTop += unitHeight;
-          consumedUnits += 1;
-
-          if (unitHeight > remainingPageHeight && pageIsEmpty) {
-            break;
-          }
-        }
-
-        if (fragmentUnits.length === 0) {
-          pageIndex += 1;
-          pages[pageIndex] = createPage(settings, pageIndex);
-          cursorTop = pages[pageIndex].content.top;
-          continue;
-        }
-
-        const isLastFragment = consumedUnits === block.units.length;
-        const height =
-          fragmentHeight + (isLastFragment ? block.spacingAfter : 0);
-
-        fragments.push({
-          blockIndex: block.blockIndex,
-          height,
-          id: `${block.path.join('.')}:${version}:${fragmentIndex}`,
-          lineCount: 0,
-          lines: [],
-          pageIndex,
-          path: block.path,
-          text: block.text,
-          top: fragmentTop,
-          units: fragmentUnits,
-        });
-        cursorTop += isLastFragment ? block.spacingAfter : 0;
-        fragmentIndex += 1;
-
-        if (consumedUnits < block.units.length) {
-          pageIndex += 1;
-          pages[pageIndex] = createPage(settings, pageIndex);
-          cursorTop = pages[pageIndex].content.top;
-        }
-      }
-
-      return;
-    }
-
-    const measuredLines = createEstimatedLines(block);
-    const lineTotal = Math.max(block.lineCount, measuredLines.length);
-    const innerPage = pages[pageIndex];
-    const blockContentHeight = lineTotal * block.lineHeight;
-    const blockHeight = blockContentHeight + block.spacingAfter;
-    const avoidSplitHeight =
-      blockHeight <= innerPage.content.height
-        ? blockHeight
-        : blockContentHeight;
-    const avoidsSplit =
-      avoidSplitHeight <= innerPage.content.height &&
-      block.boxes?.some(
-        (box) =>
-          box.split === 'avoid' &&
-          getPageLayoutPathKey(box.path) === getPageLayoutPathKey(block.path)
-      );
-
-    if (avoidsSplit && cursorTop !== innerPage.content.top) {
-      const pageBottom = innerPage.content.top + innerPage.content.height;
-      const remainingPageHeight = Math.max(0, pageBottom - cursorTop);
-
-      if (avoidSplitHeight > remainingPageHeight) {
-        pageIndex += 1;
-        pages[pageIndex] = createPage(settings, pageIndex);
-        cursorTop = pages[pageIndex].content.top;
-      }
-    }
-
-    let consumedLines = 0;
-    let remainingLines = lineTotal;
-    let fragmentIndex = 0;
-
-    while (remainingLines > 0) {
-      const innerPage2 = pages[pageIndex];
-      const pageBottom = innerPage2.content.top + innerPage2.content.height;
-      const remainingPageHeight = Math.max(0, pageBottom - cursorTop);
-      const availableLines =
-        cursorTop === innerPage2.content.top
-          ? Math.max(
-              1,
-              Math.floor(innerPage2.content.height / block.lineHeight)
-            )
-          : Math.floor(remainingPageHeight / block.lineHeight);
-
-      if (availableLines <= 0) {
-        pageIndex += 1;
-        pages[pageIndex] = createPage(settings, pageIndex);
-        cursorTop = pages[pageIndex].content.top;
-        continue;
-      }
-
-      const lineCount = Math.min(remainingLines, availableLines);
-      const isLastFragment = lineCount === remainingLines;
-      const fragmentLines = measuredLines
-        .slice(consumedLines, consumedLines + lineCount)
-        .map((line, index) => ({
-          ...line,
-          top: cursorTop + index * block.lineHeight,
-        }));
-      const height =
-        lineCount * block.lineHeight +
-        (isLastFragment ? block.spacingAfter : 0);
-
-      fragments.push({
-        blockIndex: block.blockIndex,
-        height,
-        id: `${block.path.join('.')}:${version}:${fragmentIndex}`,
-        lineCount,
-        lines: fragmentLines,
-        pageIndex,
-        path: block.path,
-        text: block.text,
-        top: cursorTop,
-      });
-      cursorTop += height;
-      consumedLines += lineCount;
-      remainingLines -= lineCount;
-      fragmentIndex += 1;
-
-      if (remainingLines > 0) {
-        pageIndex += 1;
-        pages[pageIndex] = createPage(settings, pageIndex);
-        cursorTop = pages[pageIndex].content.top;
-      }
-    }
-  });
-
-  return { fragments, pages };
-};
-
-/** Create a layout reader with built-in or caller-owned measurement. */
-export const createLayout = <
-  TSettings extends PageSettings = PageSettings,
-  V extends Value = Value,
-  TPlugins extends readonly unknown[] = readonly [],
->(
-  editor: EditorType<V, TPlugins>,
-  initialOptions: LayoutOptions<TSettings>
-): PageLayout<LayoutOptions<TSettings>> => {
-  const connectionDeferred = isLayoutRuntimeConnectionDeferred(initialOptions);
-  let fallbackEngine: PageLayoutEngine | undefined;
-  const resolveOptions = (nextOptions: LayoutOptions<TSettings>) => ({
-    ...nextOptions,
-    engine:
-      nextOptions.engine ??
-      (fallbackEngine ??= canUseCanvasTextMeasurement()
-        ? pretextPageLayoutEngine()
-        : createEstimatedPageLayoutEngine()),
-  });
-  let options = resolveOptions(initialOptions);
-  let snapshot = createEmptyLayoutSnapshot(DEFAULT_SETTINGS, 0);
-  let metrics: PageLayoutMetrics = {
-    blockCount: 0,
-    composeCount: 0,
-    lastDurationMs: 0,
-    pageCount: 1,
+export const createPretextPageLayoutEngine = ({
+  estimateBlock,
+  maxPreparedEntries = 5000,
+  whiteSpace = 'pre-wrap',
+  wordBreak = 'normal',
+}: PretextPageLayoutEngineOptions = {}): PageLayoutEngine => {
+  const preparedCache = new Map<
+    string,
+    ReturnType<typeof prepareWithSegments>
+  >();
+  const measuredCache = new Map<string, readonly MeasuredLine[]>();
+  const clearLocal = () => {
+    preparedCache.clear();
+    measuredCache.clear();
   };
-  const listeners = new Set<() => void>();
-  let activeConnections = 0;
-  let destroyed = false;
-  let unsubscribeEditor: (() => void) | null = null;
-  let pendingPageBreakWrite: {
-    options: LayoutOptions<TSettings>;
-    reason: PageLayoutRefreshReason;
-    snapshot: PageBreakSnapshot;
-    source: EditorStateField<PageBreakSnapshot | null>;
-  } | null = null;
-  let scheduledRefresh: {
-    animationFrame: number | null;
-    firstScheduledAt: number;
-    timeout: ReturnType<typeof setTimeout> | null;
-  } | null = null;
+  const getPrepared = (text: string, style: PageLayoutTextStyle) => {
+    const key = stableKey([
+      text,
+      style.font,
+      style.letterSpacing ?? 0,
+      whiteSpace,
+      wordBreak,
+    ]);
+    const cached = preparedCache.get(key);
 
-  const reportError = (
-    currentOptions: LayoutOptions<TSettings>,
-    phase: PageLayoutError['phase'],
-    reason: PageLayoutRefreshReason,
-    cause: unknown
-  ) => {
-    const error = Object.freeze({ cause, phase, reason });
+    if (cached) return cached;
 
-    if (currentOptions.onError) {
-      try {
-        currentOptions.onError(error);
-        return;
-      } catch (sinkError) {
-        globalThis.console?.error(
-          'Plite page-layout error sink failed.',
-          error,
-          sinkError
-        );
-        return;
-      }
+    const prepared = prepareWithSegments(text, style.font, {
+      letterSpacing: style.letterSpacing,
+      whiteSpace,
+      wordBreak,
+    });
+
+    preparedCache.set(key, prepared);
+    if (preparedCache.size > maxPreparedEntries) {
+      const oldest = preparedCache.keys().next().value;
+      if (oldest) preparedCache.delete(oldest);
     }
 
-    globalThis.console?.error('Plite page-layout runtime failed.', error);
+    return prepared;
   };
-
-  const writePageBreakSnapshot = (
-    write: NonNullable<typeof pendingPageBreakWrite>
-  ) => {
-    try {
-      editor.update((tx) => {
-        tx.setField(write.source, write.snapshot);
-      });
-    } catch (error) {
-      reportError(write.options, 'page-break-write', write.reason, error);
-    }
-  };
-
-  const notify = (
-    currentOptions: LayoutOptions<TSettings>,
-    reason: PageLayoutRefreshReason
-  ) => {
-    for (const listener of listeners) {
-      try {
-        listener();
-      } catch (error) {
-        reportError(currentOptions, 'notify', reason, error);
-      }
-    }
-  };
-
-  const cancelScheduledRefresh = () => {
-    if (!scheduledRefresh) {
-      return;
-    }
-
+  const measure = (text: string, style: PageLayoutTextStyle) =>
+    measureNaturalWidth(getPrepared(text, style));
+  const createRichInlineLines = (
+    block: Extract<PageLayoutBlock, { type: 'text' }>,
+    maxWidth: number
+  ): readonly MeasuredLine[] | null => {
     if (
-      scheduledRefresh.animationFrame !== null &&
-      typeof cancelAnimationFrame === 'function'
+      whiteSpace !== 'normal' ||
+      wordBreak !== 'normal' ||
+      block.runs.length <= 1
     ) {
-      cancelAnimationFrame(scheduledRefresh.animationFrame);
+      return null;
     }
 
-    if (scheduledRefresh.timeout !== null) {
-      clearTimeout(scheduledRefresh.timeout);
-    }
-
-    scheduledRefresh = null;
-  };
-
-  const refresh = (
-    reason: PageLayoutRefreshReason = 'editor',
-    nextOptions = options
-  ) => {
-    cancelScheduledRefresh();
-
-    const startedAt = getNow();
-    const currentOptions = nextOptions;
-    const root = profileLayoutDuration('read-root', () =>
-      readLayoutRoot(editor, currentOptions)
-    );
-    const settings = profileLayoutDuration('read-settings', () =>
-      readLayoutSettings(editor, currentOptions.page)
-    );
-    const page = createPage(settings);
-    const version = profileLayoutDuration('read-version', () =>
-      editor.read(
-        (state) =>
-          state.lastCommit()?.version ?? state.runtime.snapshot().version
-      )
-    );
-    const measurementProfile = profileLayoutDuration(
-      'measurement-profile',
-      () =>
-        createPlitePageLayoutMeasurementProfile({
-          engine: currentOptions.engine,
-          root,
-          settings,
-          typography: currentOptions.typography,
-        })
-    );
-    const blocks = profileLayoutDuration('extract-blocks', () =>
-      extractLayoutBlocks(
-        editor,
-        root,
-        settings,
-        measurementProfile,
-        currentOptions.typography,
-        currentOptions.nodeLayout
-      )
-    );
-    const output = profileLayoutDuration('engine-compose', () =>
-      currentOptions.engine.compose({
-        blocks,
-        page,
-        settings,
-        version,
-      })
-    );
-    const pageBreakResult = profileLayoutDuration('page-breaks', () => {
-      let pageBreaks: PageBreakSnapshot | null = null;
-      let pageBreaksStatus: PageBreakSnapshotStatus = 'none';
-      let pageBreakSnapshotToWrite: PageBreakSnapshot | null = null;
-      let pageBreakSnapshotWriteSource: EditorStateField<PageBreakSnapshot | null> | null =
-        null;
-      const pageBreakOptions = currentOptions.pageBreaks;
-
-      if (pageBreakOptions?.mode === 'read') {
-        const documentKey = getPliteLayoutDocumentKey(blocks);
-        const readSnapshot = readPlitePageBreakSnapshot(
-          editor,
-          pageBreakOptions.source
-        );
-        pageBreaksStatus = getPlitePageBreakSnapshotStatus({
-          documentKey,
-          measurementProfile,
-          root,
-          snapshot: readSnapshot,
-          version,
-        });
-        pageBreaks = pageBreaksStatus === 'accepted' ? readSnapshot : null;
-      } else if (pageBreakOptions?.mode === 'write') {
-        const documentKey = getPliteLayoutDocumentKey(blocks);
-        const computedPageBreakSnapshot = createPageBreakSnapshot({
-          documentKey,
-          fragments: output.fragments,
-          measurementProfile,
-          root,
-          version,
-          writerId: pageBreakOptions.writerId,
-        });
-        const writeSource = pageBreakOptions.source;
-        const currentSnapshot = editor.read((state) =>
-          state.getField(writeSource)
-        );
-        const shouldWrite = !samePlitePageBreakSnapshot(
-          currentSnapshot,
-          computedPageBreakSnapshot
-        );
-
-        pageBreaks = computedPageBreakSnapshot;
-        pageBreaksStatus = shouldWrite ? 'written' : 'accepted';
-        pageBreakSnapshotToWrite = shouldWrite
-          ? computedPageBreakSnapshot
-          : null;
-        pageBreakSnapshotWriteSource = shouldWrite ? writeSource : null;
-      }
+    const flatRuns = flattenRuns(block);
+    const sources = flatRuns.map((run) => {
+      const sourceStart = getLeadingCollapsibleLength(run.text);
+      const sourceEnd =
+        run.text.length - getTrailingCollapsibleLength(run.text);
+      const text =
+        sourceEnd <= sourceStart ? '' : run.text.slice(sourceStart, sourceEnd);
 
       return {
-        pageBreaks,
-        pageBreaksStatus,
-        pageBreakSnapshotToWrite,
-        pageBreakSnapshotWriteSource,
+        flat: run,
+        prepared: getPrepared(text, run.textStyle),
+        sourceEnd,
+        sourceStart,
       };
     });
-
-    const nextSnapshot: PageLayoutSnapshot = {
-      blocks,
-      fragments: output.fragments,
-      measurementProfile,
-      page,
-      pageBreaks: pageBreakResult.pageBreaks,
-      pageBreaksStatus: pageBreakResult.pageBreaksStatus,
-      pages: output.pages.length === 0 ? [page] : output.pages,
-      root,
-      settings,
-      version,
-    };
-    const nextMetrics: PageLayoutMetrics = {
-      blockCount: blocks.length,
-      composeCount: metrics.composeCount + 1,
-      lastDurationMs: getNow() - startedAt,
-      pageCount: nextSnapshot.pages.length,
-    };
-
-    options = currentOptions;
-    snapshot = nextSnapshot;
-    metrics = nextMetrics;
-    profileLayoutDuration('notify', () => {
-      notify(currentOptions, reason);
-    });
-
-    pendingPageBreakWrite =
-      pageBreakResult.pageBreakSnapshotWriteSource &&
-      pageBreakResult.pageBreakSnapshotToWrite
-        ? {
-            options: currentOptions,
-            reason,
-            snapshot: pageBreakResult.pageBreakSnapshotToWrite,
-            source: pageBreakResult.pageBreakSnapshotWriteSource,
-          }
-        : null;
-
-    if (activeConnections > 0 && pendingPageBreakWrite) {
-      const write = pendingPageBreakWrite;
-
-      pendingPageBreakWrite = null;
-      writePageBreakSnapshot(write);
-    }
-  };
-
-  const scheduleRefreshAfterTextInput = (
-    reason: PageLayoutRefreshReason,
-    refreshOptions: {
-      delayMs: number;
-      maxDelayMs: number;
-    }
-  ) => {
-    const now = getNow();
-    const firstScheduledAt = scheduledRefresh?.firstScheduledAt ?? now;
-    const delay = Math.max(
-      0,
-      Math.min(
-        refreshOptions.delayMs,
-        refreshOptions.maxDelayMs - (now - firstScheduledAt)
-      )
+    const prepared = prepareRichInline(
+      block.runs.map((run) => ({
+        font: run.textStyle.font,
+        letterSpacing: run.textStyle.letterSpacing,
+        text: run.text,
+      }))
     );
-    cancelScheduledRefresh();
+    const rawLines: Array<{
+      runs: MeasuredRun[];
+      width: number;
+    }> = [];
 
-    const run = () => {
-      scheduledRefresh = null;
-      refresh(reason);
-    };
+    walkRichInlineLineRanges(prepared, maxWidth, (range) => {
+      const line = materializeRichInlineLineRange(prepared, range);
+      const runs: MeasuredRun[] = [];
+      let left = 0;
 
-    scheduledRefresh = {
-      animationFrame: null,
-      firstScheduledAt,
-      timeout: setTimeout(() => {
-        if (!scheduledRefresh) {
-          return;
+      line.fragments.forEach((fragment) => {
+        const source = sources[fragment.itemIndex];
+
+        if (!source) return;
+        if (fragment.gapBefore > 0) {
+          const previous = sources[fragment.itemIndex - 1];
+          const gap =
+            previous && previous.sourceEnd < previous.flat.text.length
+              ? {
+                  end: previous.flat.text.length,
+                  source: previous,
+                  start: previous.sourceEnd,
+                }
+              : source.sourceStart > 0
+                ? { end: source.sourceStart, source, start: 0 }
+                : null;
+
+          if (gap && gap.end > gap.start) {
+            const edges = getRangeEdges(gap.source.flat.source);
+
+            runs.push({
+              blockEnd: gap.source.flat.blockStart + gap.end,
+              blockStart: gap.source.flat.blockStart + gap.start,
+              left,
+              source: createRange(
+                gap.source.flat.source.anchor.path,
+                edges.start + gap.start,
+                edges.start + gap.end,
+                gap.source.flat.source.anchor.root
+              ),
+              width: fragment.gapBefore,
+            });
+          }
+          left += fragment.gapBefore;
         }
 
-        if (typeof requestAnimationFrame === 'function') {
-          scheduledRefresh.timeout = null;
-          scheduledRefresh.animationFrame = requestAnimationFrame(run);
+        const textStart =
+          source.sourceStart +
+          getPreparedTextOffset(source.prepared, fragment.start);
+        const textEnd =
+          source.sourceStart +
+          getPreparedTextOffset(source.prepared, fragment.end);
+
+        if (
+          textEnd < textStart ||
+          (textEnd === textStart && source.flat.text.length > 0)
+        ) {
+          left += fragment.occupiedWidth;
           return;
         }
+        const edges = getRangeEdges(source.flat.source);
 
-        run();
-      }, delay),
-    };
-  };
-
-  const subscribeToEditor = () =>
-    editor.subscribeCommit((change) => {
-      const currentOptions = options;
-      const writePageBreaks =
-        currentOptions.pageBreaks?.mode === 'write'
-          ? currentOptions.pageBreaks
-          : null;
-
-      if (
-        writePageBreaks &&
-        !change.changed.hasAny('document') &&
-        change.dirtyStateKeys.length > 0 &&
-        change.dirtyStateKeys.every((key) => key === writePageBreaks.source.key)
-      ) {
-        return;
-      }
-
-      const shouldRefresh =
-        change.changed.hasAny('document') || change.changed.hasAny('state');
-
-      if (!shouldRefresh) {
-        return;
-      }
-
-      const textOnlyChange = Boolean(
-        change.changed.hasAny('text') &&
-        !change.changed.hasAny('state') &&
-        !change.changed.hasAny('structure')
-      );
-      const textChangeRefresh = getTextChangeRefreshOptions(
-        currentOptions.textChangeRefresh
-      );
-
-      if (textOnlyChange && textChangeRefresh.mode === 'deferred') {
-        scheduleRefreshAfterTextInput('editor', textChangeRefresh);
-      } else {
-        refresh('editor');
-      }
+        runs.push({
+          blockEnd: source.flat.blockStart + textEnd,
+          blockStart: source.flat.blockStart + textStart,
+          left,
+          source: createRange(
+            source.flat.source.anchor.path,
+            edges.start + textStart,
+            edges.start + textEnd,
+            source.flat.source.anchor.root
+          ),
+          width: fragment.occupiedWidth,
+        });
+        left += fragment.occupiedWidth;
+      });
+      rawLines.push({ runs, width: line.width });
     });
 
-  const connect = () => {
-    if (destroyed) return () => {};
+    const textLength = getBlockText(block).length;
 
-    activeConnections += 1;
-
-    if (activeConnections === 1) {
-      unsubscribeEditor = subscribeToEditor();
-
-      if (pendingPageBreakWrite) {
-        const write = pendingPageBreakWrite;
-
-        pendingPageBreakWrite = null;
-        writePageBreakSnapshot(write);
-      }
+    if (rawLines.length === 0) {
+      return [createMeasuredLine(block, 0, textLength, 0, () => 0)];
     }
 
-    let connected = true;
+    let assignedStart = 0;
 
-    return () => {
-      if (!connected) return;
+    return rawLines.map((line, lineIndex) => {
+      const nextStart = rawLines[lineIndex + 1]?.runs[0]?.blockStart;
+      const rawEnd = line.runs.at(-1)?.blockEnd ?? assignedStart;
+      const assignedEnd =
+        lineIndex === rawLines.length - 1
+          ? textLength
+          : Math.max(assignedStart, rawEnd, nextStart ?? rawEnd);
+      const completeRuns: MeasuredRun[] = [];
+      let cursor = assignedStart;
+      let left = 0;
 
-      connected = false;
-
-      if (destroyed) return;
-
-      activeConnections -= 1;
-
-      if (activeConnections === 0) {
-        cancelScheduledRefresh();
-        unsubscribeEditor?.();
-        unsubscribeEditor = null;
+      line.runs.forEach((run) => {
+        if (run.blockStart > cursor) {
+          createMeasuredRuns(block, cursor, run.blockStart, () => 0).forEach(
+            (gap) => completeRuns.push({ ...gap, left })
+          );
+        }
+        completeRuns.push({ ...run, left });
+        left += run.width;
+        cursor = Math.max(cursor, run.blockEnd);
+      });
+      if (cursor < assignedEnd || completeRuns.length === 0) {
+        createMeasuredRuns(block, cursor, assignedEnd, () => 0).forEach((gap) =>
+          completeRuns.push({ ...gap, left })
+        );
       }
-    };
+      const measuredLine: MeasuredLine = {
+        end: assignedEnd,
+        height: block.lineHeight,
+        runs: completeRuns,
+        source: createSourceRange(flatRuns, assignedStart, assignedEnd),
+        start: assignedStart,
+        width: Math.max(line.width, left),
+      };
+
+      assignedStart = assignedEnd;
+      return measuredLine;
+    });
   };
+  const measureBlock = (
+    block: Extract<PageLayoutBlock, { type: 'text' }>,
+    page: PageLayoutPage
+  ) => {
+    const richLines = createRichInlineLines(block, page.content.width);
 
-  const runtime: PageLayout<LayoutOptions<TSettings>> = {
-    destroy() {
-      if (destroyed) return;
+    if (richLines) return richLines;
+    const text = getBlockText(block);
+    const cacheKey = stableKey({
+      lineHeight: block.lineHeight,
+      pageWidth: page.content.width,
+      runs: block.runs.map((run) => ({
+        text: run.text,
+        textStyle: run.textStyle,
+      })),
+      whiteSpace,
+      wordBreak,
+    });
+    const cached = measuredCache.get(cacheKey);
 
-      destroyed = true;
-      cancelScheduledRefresh();
-      unsubscribeEditor?.();
-      unsubscribeEditor = null;
-      activeConnections = 0;
-      pendingPageBreakWrite = null;
-      listeners.clear();
-    },
-    getFragments(path) {
-      return getPageLayoutFragments(snapshot, path);
-    },
-    getMetrics() {
-      return metrics;
-    },
-    getSnapshot() {
-      return snapshot;
-    },
-    projectRange(range, innerOptions) {
-      const rangeRoot = resolveProjectionRoot(
-        range,
-        snapshot.root,
-        innerOptions
+    if (cached) {
+      return cached.map((line) =>
+        createMeasuredLine(block, line.start, line.end, line.width, measure)
       );
+    }
 
-      if (rangeRoot !== snapshot.root) {
-        return [];
-      }
+    const style = block.runs[0]?.textStyle ?? DEFAULT_TEXT_STYLE;
+    const prepared = getPrepared(text, style);
+    const result = layoutWithLines(
+      prepared,
+      page.content.width,
+      block.lineHeight
+    );
+    const lines =
+      result.lines.length === 0
+        ? [createMeasuredLine(block, 0, 0, 0, measure)]
+        : result.lines.map((line) => {
+            const start = getPreparedTextOffset(prepared, line.start);
+            const end = getPreparedTextOffset(prepared, line.end);
 
-      const geometry = getPageLayoutGeometry(snapshot.pages, innerOptions);
-      const projection = getPageLayoutProjection(snapshot, {
-        geometry,
-        hitTesting: false,
+            return createMeasuredLine(block, start, end, line.width, measure);
+          });
+
+    measuredCache.set(cacheKey, lines);
+    if (measuredCache.size > maxPreparedEntries) {
+      const oldest = measuredCache.keys().next().value;
+      if (oldest) measuredCache.delete(oldest);
+    }
+
+    return lines;
+  };
+  const engine: PageLayoutEngine = {
+    compose(input) {
+      const output = paginateMeasuredBlocks({
+        measuredBlocks: input.blocks.map((block, blockIndex) => {
+          if (block.type !== 'text') return block;
+          if (
+            estimateBlock?.({
+              block,
+              blockIndex,
+              page: input.page,
+              settings: input.settings,
+            })
+          ) {
+            return { ...block, lines: createEstimatedLines(block, input.page) };
+          }
+
+          return { ...block, lines: measureBlock(block, input.page) };
+        }),
+        page: input.page,
+        settings: input.settings,
       });
 
-      return projectRangeThroughRuns(projection, range);
+      ownedEngineOutputs.add(output);
+      return output;
     },
-    refresh,
-    reconfigure(nextOptions) {
-      refresh('settings', resolveOptions(nextOptions));
-    },
-    subscribe(listener) {
-      listeners.add(listener);
-
-      return () => {
-        listeners.delete(listener);
-      };
+    invalidate() {
+      clearLocal();
+      clearPretextCache();
     },
   };
+  Object.freeze(engine);
+  ownedPageLayoutEngines.add(engine);
+  registerPageLayoutEngineInvalidator(engine, {
+    local: clearLocal,
+    shared: clearPretextCache,
+  });
 
-  registerLayoutRuntimeLifecycle(runtime, { connect });
-  refresh('editor');
+  return engine;
+};
 
-  if (!connectionDeferred) {
-    connect();
+export const measurePages = <
+  V extends Value,
+  TPlugins extends readonly unknown[],
+>(
+  editor: EditorType<V, TPlugins>,
+  options: MeasurePagesOptions<
+    ElementOf<EditorType<NoInfer<V>, NoInfer<TPlugins>>>
+  >
+): PageLayoutSnapshot => {
+  if (options.root === 'main') {
+    throw new Error('[Plite] Omit root to target the primary document.');
   }
 
-  return runtime;
+  const source = editor.read((state) => {
+    const root = toInternalRoot(options.root ?? state.view.root());
+    const settings =
+      'margins' in options.page && 'preset' in options.page
+        ? decodePageSettings(options.page)
+        : decodePageSettings(state.getField(options.page));
+
+    return {
+      children: root === MAIN_ROOT_KEY ? state.children() : state.root(root),
+      publicRoot: root === MAIN_ROOT_KEY ? undefined : (root as NamedRootKey),
+      settings,
+      version: state.lastCommit()?.version ?? state.runtime.snapshot().version,
+    };
+  });
+  const settings = freezeSettings(source.settings);
+  const page = freezePage(createPage(settings));
+  const extractedBlocks = extractBlocks(
+    editor,
+    source.children,
+    source.publicRoot,
+    page,
+    options.fragmentation,
+    options.typography
+  );
+  const blocks = ownedPageLayoutEngines.has(options.engine)
+    ? extractedBlocks
+    : Object.freeze(extractedBlocks.map(freezeBlock));
+  const output = options.engine.compose({
+    blocks,
+    page,
+    settings,
+    version: source.version,
+  });
+  const ownedOutput =
+    ownedPageLayoutEngines.has(options.engine) &&
+    ownedEngineOutputs.has(output);
+
+  if (!ownedOutput) validateEngineOutput(blocks, output, settings);
+  const fragments = ownedOutput
+    ? output.fragments
+    : output.fragments.map(freezeFragment);
+  const pages = ownedOutput ? output.pages : output.pages.map(freezePage);
+
+  if (ownedOutput) {
+    fragments.forEach(freezeOwnedFragment);
+    pages.forEach(freezeOwnedPage);
+  }
+
+  return Object.freeze({
+    fragments: Object.freeze(fragments),
+    pages: Object.freeze(pages),
+    ...(source.publicRoot === undefined ? {} : { root: source.publicRoot }),
+    settings,
+    version: source.version,
+  });
 };

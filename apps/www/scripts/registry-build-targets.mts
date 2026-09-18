@@ -1,58 +1,59 @@
+import path from 'node:path';
+
 import type { PlateRegistryBase } from '@/lib/plate-registry-styles';
 
 export const REGISTRY_HOMEPAGE = 'https://platejs.org';
+
+export type RegistryDirectory = 'r' | 'rd';
 
 export interface RegistryBuildTarget {
   base: PlateRegistryBase;
   kind: 'canonical' | 'provider-overlay';
   outputDir: string;
-  registryBaseUrl: string;
   registryFile: string;
 }
 
-export interface RegistryOutputTarget {
-  canonicalDir: string;
-  overlayDir: string;
-  registryBaseUrl: string;
-}
+export const REGISTRY_PUBLIC_TARGETS: ReadonlyArray<{
+  baseUrl: string;
+  directory: RegistryDirectory;
+}> = [
+  { baseUrl: `${REGISTRY_HOMEPAGE}/r`, directory: 'r' },
+  { baseUrl: 'http://localhost:3000/rd', directory: 'rd' },
+];
 
-export function getRegistryBuildTargets({
-  dev,
-}: {
-  dev: boolean;
-}): [RegistryBuildTarget, RegistryBuildTarget] {
-  const registryRootUrl = dev
-    ? 'http://localhost:3000/rd'
-    : `${REGISTRY_HOMEPAGE}/r`;
-
+export function getRegistryBuildTargets(
+  stageDir: string
+): [RegistryBuildTarget, RegistryBuildTarget] {
   return [
     {
       base: 'base',
       kind: 'canonical',
-      outputDir: '.registry-build/base',
-      registryBaseUrl: registryRootUrl,
-      registryFile: '.registry-build/base.registry.json',
+      outputDir: path.join(stageDir, 'raw/base'),
+      registryFile: path.join(stageDir, 'input/base.registry.json'),
     },
     {
       base: 'radix',
       kind: 'provider-overlay',
-      outputDir: '.registry-build/radix',
-      registryBaseUrl: registryRootUrl,
-      registryFile: '.registry-build/radix.registry.json',
+      outputDir: path.join(stageDir, 'raw/radix'),
+      registryFile: path.join(stageDir, 'input/radix.registry.json'),
     },
   ];
 }
 
-export function getRegistryOutputTarget({
-  dev,
-}: {
-  dev: boolean;
-}): RegistryOutputTarget {
+export function getRegistryStageTargets(stageDir: string) {
   return {
-    canonicalDir: dev ? 'public/rd' : 'public/r',
-    overlayDir: 'src/__registry__/overlays',
-    registryBaseUrl: dev
-      ? 'http://localhost:3000/rd'
-      : `${REGISTRY_HOMEPAGE}/r`,
+    canonicalDir: path.join(stageDir, 'neutral/canonical'),
+    metadataFile: path.join(
+      stageDir,
+      'src/__registry__/registry-metadata.json'
+    ),
+    overlayDir: path.join(stageDir, 'src/__registry__/overlays'),
+    previewIndexFile: path.join(stageDir, 'src/__registry__/index.tsx'),
+    publicDirectories: Object.fromEntries(
+      REGISTRY_PUBLIC_TARGETS.map(({ directory }) => [
+        directory,
+        path.join(stageDir, `public/${directory}`),
+      ])
+    ) as Record<RegistryDirectory, string>,
   };
 }

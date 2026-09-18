@@ -1156,7 +1156,7 @@ describe('keyboard input strategy', () => {
     }
   });
 
-  it("repairs history focus to the preserved selection root when undoing another root's batch", () => {
+  it('routes repeated history shortcuts through the mounted replay owner', () => {
     const runtime = createEditor({
       plugins: [history()],
       initialValue: {
@@ -1214,26 +1214,25 @@ describe('keyboard input strategy', () => {
         );
       }
 
-      expect(
-        results.map((result) =>
-          result.repair && 'forceRender' in result.repair
-            ? result.repair.forceRender
-            : undefined
-        )
-      ).toEqual([true, true]);
-      expect(getMountedViewEditor).toHaveBeenLastCalledWith('main');
-      expect(mainEditor.read((state) => state.selection())).toEqual({
-        anchor: { path: [0, 0], offset: 'body'.length },
-        focus: { path: [0, 0], offset: 'body'.length },
-      });
-      expect(headerEditor.read((state) => state.selection())).toBe(null);
+      expect(results.map((result) => result.handled)).toEqual([true, true]);
+      expect(results.map((result) => result.repair)).toEqual([
+        undefined,
+        undefined,
+      ]);
+      expect(getMountedViewEditor).not.toHaveBeenCalled();
+      expect(mainEditor.read((state) => state.children())).toEqual([
+        paragraph('body'),
+      ]);
+      expect(headerEditor.read((state) => state.children())).toEqual([
+        paragraph('header'),
+      ]);
     } finally {
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     }
   });
 
-  it('skips caret DOM repair when history restores an expanded view selection', () => {
+  it('leaves restored projected selection repair to the mounted replay owner', () => {
     const runtime = createEditor({
       plugins: [history()],
       initialValue: [paragraph('Before'), paragraph('After')],
@@ -1279,10 +1278,7 @@ describe('keyboard input strategy', () => {
       });
 
       expect(result.handled).toBe(true);
-      expect(result.repair).toEqual({
-        forceRender: true,
-        kind: 'force-render',
-      });
+      expect(result.repair).toBeUndefined();
       expect(readPliteViewSelection(editor)).toEqual(projectedSelection);
     } finally {
       hasEditableTarget.mockRestore();
@@ -1356,11 +1352,20 @@ describe('keyboard input strategy', () => {
       tx.selection.set({ path: [0, 0], offset: 'body'.length });
       tx.text.insert('?');
     });
+    const historyRuntime = getTestRuntime(
+      headerEditor as unknown as ReactEditorType
+    );
+    const editorRoot = document.createElement('div');
+
+    document.body.append(editorRoot);
+    historyRuntime.setRoot(editorRoot);
+    historyRuntime.connect();
 
     expect(
       applyModelOwnedNativeHistoryEvent({
-        editor: headerEditor,
+        editor: headerEditor as unknown as ReactEditorType,
         event: { inputType: 'historyUndo' } as InputEvent,
+        runtime: historyRuntime,
       })
     ).toBe(true);
 
@@ -2531,7 +2536,7 @@ describe('keyboard input strategy', () => {
   it('routes printable expanded-selection fallback input through the model without beforeinput support', async () => {
     vi.resetModules();
 
-    const innerApplyEditableCommand = vi.fn(() => true);
+    const innerApplyModelOwnedTextInput = vi.fn(() => ({ kind: 'none' }));
 
     vi.doMock(
       '../../src/react/editable/mutation-controller',
@@ -2543,7 +2548,7 @@ describe('keyboard input strategy', () => {
 
         return {
           ...actual,
-          applyEditableCommand: innerApplyEditableCommand,
+          applyModelOwnedTextInput: innerApplyModelOwnedTextInput,
         };
       }
     );
@@ -2577,6 +2582,7 @@ describe('keyboard input strategy', () => {
       const isComposing = vi
         .spyOn(innerReactEditor, 'isComposing')
         .mockReturnValue(false);
+      const inputController = {} as any;
 
       const result = innerApplyEditableKeyDown({
         domPhaseScheduler: createTestScheduler(),
@@ -2584,7 +2590,7 @@ describe('keyboard input strategy', () => {
         editor,
         event,
         forceRender: vi.fn(),
-        inputController: {} as any,
+        inputController,
         readOnly: false,
         viewportRuntime: null,
         setComposing: vi.fn(),
@@ -2594,9 +2600,16 @@ describe('keyboard input strategy', () => {
 
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(innerApplyEditableCommand).toHaveBeenCalledWith({
-        command: { inputType: 'insertText', kind: 'insert-text', text: 'a' },
+      expect(innerApplyModelOwnedTextInput).toHaveBeenCalledWith({
+        data: 'a',
         editor,
+        inputController,
+        inputType: 'insertText',
+        selection: {
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [1, 0], offset: 2 },
+          kind: 'text',
+        },
       });
 
       realmEvent.remove();
@@ -2611,7 +2624,7 @@ describe('keyboard input strategy', () => {
   it('routes printable expanded inline-void replacement through the model with beforeinput support', async () => {
     vi.resetModules();
 
-    const innerApplyEditableCommand2 = vi.fn(() => true);
+    const innerApplyModelOwnedTextInput2 = vi.fn(() => ({ kind: 'none' }));
 
     vi.doMock(
       '../../src/react/editable/mutation-controller',
@@ -2623,7 +2636,7 @@ describe('keyboard input strategy', () => {
 
         return {
           ...actual,
-          applyEditableCommand: innerApplyEditableCommand2,
+          applyModelOwnedTextInput: innerApplyModelOwnedTextInput2,
         };
       }
     );
@@ -2682,6 +2695,7 @@ describe('keyboard input strategy', () => {
       const isComposing = vi
         .spyOn(innerReactEditor2, 'isComposing')
         .mockReturnValue(false);
+      const inputController = {} as any;
 
       const result = innerApplyEditableKeyDown2({
         domPhaseScheduler: createTestScheduler(),
@@ -2689,7 +2703,7 @@ describe('keyboard input strategy', () => {
         editor,
         event,
         forceRender: vi.fn(),
-        inputController: {} as any,
+        inputController,
         readOnly: false,
         viewportRuntime: null,
         setComposing: vi.fn(),
@@ -2699,9 +2713,16 @@ describe('keyboard input strategy', () => {
 
       expect(result.handled).toBe(true);
       expect(event.preventDefault).toHaveBeenCalled();
-      expect(innerApplyEditableCommand2).toHaveBeenCalledWith({
-        command: { inputType: 'insertText', kind: 'insert-text', text: 'Z' },
+      expect(innerApplyModelOwnedTextInput2).toHaveBeenCalledWith({
+        data: 'Z',
         editor,
+        inputController,
+        inputType: 'insertText',
+        selection: {
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 2], offset: 1 },
+          kind: 'text',
+        },
       });
 
       realmEvent.remove();

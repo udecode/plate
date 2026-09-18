@@ -13,6 +13,7 @@ import {
   createEditor,
   createEditorView,
   defineEditorSchema,
+  defineUpdateAnnotation,
   DocumentChange,
   schema,
   SelectionApi,
@@ -30,7 +31,13 @@ import {
 } from '../../src/internal';
 import { inheritNodeKeys } from '../../src/utils/node-keys';
 
-const ROLLBACK_ERROR_RE = /rollback/;
+const nativeGroupingInput = defineUpdateAnnotation<{
+  composition?: number;
+  origin: number;
+}>({
+  combine: (_previous, next) => next,
+  key: 'history.native-grouping-input',
+});
 
 const paragraph = (
   text: string,
@@ -82,15 +89,11 @@ const getHistory = (editor: EditorType) =>
   editor.read((state: any) => state.history());
 
 const undo = (editor: EditorType) => {
-  editor.update((tx) => {
-    tx.history.undo();
-  });
+  editor.api.history.undo();
 };
 
 const redo = (editor: EditorType) => {
-  editor.update((tx) => {
-    tx.history.redo();
-  });
+  editor.api.history.redo();
 };
 
 const replace = (
@@ -390,7 +393,7 @@ describe('plite-history contract', () => {
     );
   });
 
-  it('keeps empty undo and redo stacks as no-op commands', () => {
+  it('reports empty undo and redo stacks without publishing an update', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('Initial text')], {
@@ -401,12 +404,109 @@ describe('plite-history contract', () => {
 
     const before = getVisibleState(editor);
 
-    undo(editor);
-    redo(editor);
+    assert.deepEqual(editor.api.history.undo(), { status: 'empty' });
+    assert.deepEqual(editor.api.history.redo(), { status: 'empty' });
 
     assert.deepEqual(getVisibleState(editor), before);
     assert.deepEqual(getHistory(editor).undos, []);
     assert.deepEqual(getHistory(editor).redos, []);
+  });
+
+  it('publishes history before commit observers run', () => {
+    const editor = historyTestEditor();
+    const observed: Array<{
+      hasRedo: boolean;
+      hasUndo: boolean;
+      redos: number;
+      text: string;
+      undos: number;
+    }> = [];
+
+    replace(editor, [paragraph('one')], {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+    editor.subscribeCommit(() => {
+      const snapshot = editor.read.history();
+
+      observed.push({
+        hasRedo: editor.read.history.hasRedo(),
+        hasUndo: editor.read.history.hasUndo(),
+        redos: snapshot.redos.length,
+        text: editorString(editor, []),
+        undos: snapshot.undos.length,
+      });
+    });
+
+    write(editor, (tx) => tx.text.insert('!'));
+
+    assert.deepEqual(observed, [
+      {
+        hasRedo: false,
+        hasUndo: true,
+        redos: 0,
+        text: 'one!',
+        undos: 1,
+      },
+    ]);
+  });
+
+  it('rejects replay from active reads and transaction specs before consuming a batch', () => {
+    const editor = historyTestEditor();
+
+    replace(editor, [paragraph('one')], {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 3 },
+    });
+    write(editor, (tx) => tx.text.insert('!'));
+    const before = getVisibleState(editor);
+
+    assert.throws(
+      () => editor.read(() => editor.api.history.undo()),
+      /update|transaction spec/i
+    );
+    assert.throws(
+      () =>
+        editor.read((state) =>
+          state.transaction(() => editor.api.history.undo())
+        ),
+      /update|transaction spec/i
+    );
+
+    assert.deepEqual(getVisibleState(editor), before);
+    assert.equal(getHistory(editor).undos.length, 1);
+    assert.equal(getHistory(editor).redos.length, 0);
+  });
+
+  it('replays one document-wide batch from a named-root view', () => {
+    const editor = createEditor({
+      plugins: [history()],
+      initialValue: {
+        children: [paragraph('main')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const header = createEditorView(editor, { root: 'header' });
+
+    editor.update({ history: 'new-batch' }, (tx) => {
+      tx.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+      tx.text.insert('!', {
+        at: { offset: 6, path: [0, 0], root: 'header' },
+      });
+    });
+
+    assert.deepEqual(header.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('main')],
+      roots: { header: [paragraph('header')] },
+    });
+    assert.deepEqual(header.api.history.redo(), { status: 'applied' });
+    assert.deepEqual(editor.read.value(), {
+      children: [paragraph('main!')],
+      roots: { header: [paragraph('header!')] },
+    });
   });
 
   it('undoes a plain insertText commit', () => {
@@ -1237,7 +1337,7 @@ describe('plite-history contract', () => {
     });
   });
 
-  it('tags tx undo and redo as semantic commands', () => {
+  it('tags history service undo and redo as semantic commands', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {
@@ -1258,46 +1358,6 @@ describe('plite-history contract', () => {
     assert.equal(undoCommit?.tags.includes('semantic-command'), true);
     assert.equal(redoCommit?.tags.includes('semantic-command'), true);
     assert.equal(editorString(editor, [0]), 'one!');
-  });
-
-  it('discards the redo branch without changing the document', () => {
-    const editor = historyTestEditor();
-
-    replace(editor, [paragraph('one')], {
-      kind: 'text',
-      anchor: { path: [0, 0], offset: 3 },
-      focus: { path: [0, 0], offset: 3 },
-    });
-    write(editor, (tx) => {
-      tx.text.insert('!');
-    });
-    undo(editor);
-
-    assert.equal(
-      editor.read((state) => state.history.redos().length),
-      1
-    );
-
-    assert.throws(() => {
-      editor.update((tx) => {
-        tx.history.discardRedo();
-        throw new Error('rollback');
-      });
-    }, ROLLBACK_ERROR_RE);
-    assert.equal(
-      editor.read((state) => state.history.redos().length),
-      1
-    );
-
-    editor.update((tx) => {
-      tx.history.discardRedo();
-    });
-
-    assert.equal(
-      editor.read((state) => state.history.redos().length),
-      0
-    );
-    assert.equal(editorString(editor, [0]), 'one');
   });
 
   it('merges contiguous insertText commits into one undo unit', () => {
@@ -1824,6 +1884,49 @@ describe('plite-history contract', () => {
     undo(editor);
 
     assert.deepEqual(getVisibleState(editor), before);
+  });
+
+  it('keeps one composition batch across a skipped remote edit', () => {
+    const editor = createEditor({
+      plugins: [history({ newBatchDelay: 0 })],
+      initialValue: [paragraph('abcd'), paragraph('else')],
+    });
+    const selection = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 3 },
+    };
+    const composition = (update: (tx: EditorUpdateTransaction) => void) =>
+      editor.update({ tags: ['composition', 'native-text-input'] }, (tx) => {
+        tx.annotations.set(nativeGroupingInput, {
+          composition: 1,
+          origin: 1,
+        });
+        update(tx);
+      });
+
+    editor.update.selection.set(selection);
+    composition((tx) => tx.text.delete({ at: selection }));
+    editor.update({ tags: 'history-skip' }, (tx) => {
+      tx.text.insert('R', { at: { path: [1, 0], offset: 4 } });
+    });
+    composition((tx) => {
+      const at = { path: [0, 0], offset: 1 };
+
+      tx.selection.set(at);
+      tx.text.insert('Z', { at });
+    });
+
+    assert.equal(getHistory(editor).undos.length, 1);
+    undo(editor);
+    assert.deepEqual(editor.read.children(), [
+      paragraph('abcd'),
+      paragraph('elseR'),
+    ]);
+    redo(editor);
+    assert.deepEqual(editor.read.children(), [
+      paragraph('aZd'),
+      paragraph('elseR'),
+    ]);
   });
 
   it('does not save canceled composition text to history', () => {

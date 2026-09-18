@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-18-comment-discovery",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-18-comment-discovery.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Keep conversations discoverable when their document target is unavailable",
+  "targets": [
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-overlap-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-overlap-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-persistence-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-persistence-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-review-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-review-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-demo",
+      "files": ["apps/www/src/registry/examples/suggestion-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-format-demo",
+      "files": ["apps/www/src/registry/examples/suggestion-format-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-persistence-demo",
+      "files": [
+        "apps/www/src/registry/examples/suggestion-persistence-demo.tsx",
+        "apps/www/src/registry/examples/values/suggestion-document.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-18-comment-toolbar-keep-conversations-discoverable-when-76811421",
+      "kind": "behavior",
+      "summary": "Discover open, resolved, and unavailable conversations through All comments; remove stale block placement and preserve in-progress conversation actions.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "comment-toolbar-button",
+        "comment",
+        "discussion",
+        "fixed-toolbar"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-18",
+          "entry": "2026-09-18-comment-discovery",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-18-comment-discovery-examples",
+      "kind": "wiring",
+      "summary": "Include document-level comment discovery in editable, read-only, persistence, and suggestion examples.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "comment-demo",
+        "comment-overlap-demo",
+        "comment-persistence-demo",
+        "comment-review-demo",
+        "suggestion-demo",
+        "suggestion-format-demo",
+        "suggestion-persistence-demo"
+      ],
+      "source": {
+        "line": 14,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-18",
+          "entry": "2026-09-18-comment-discovery",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

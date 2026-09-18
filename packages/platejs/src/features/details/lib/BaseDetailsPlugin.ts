@@ -361,11 +361,11 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
     }),
   }))
   .extend(({ editor, plugin, store }) => ({
-    commands: ({ around }) => [
+    commands: ({ around, handle }) => [
       around(editorCommands.insertBreak, ({ state, next }) => {
         const selection = state.selection();
 
-        if (!selection || !RangeApi.isCollapsed(selection)) return false;
+        if (!selection || !RangeApi.isCollapsed(selection)) return next();
 
         const summary = state.nodes.above({
           at: selection,
@@ -375,7 +375,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           ? state.nodes.parent(summary[1], { type: plugin })
           : state.nodes.above({ at: selection, type: plugin });
 
-        if (!details) return false;
+        if (!details) return next();
 
         const detailsKey = state.key(details[0]);
         const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
@@ -443,9 +443,9 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           return exitAfterDetails();
         }
 
-        return false;
+        return next();
       }),
-      around(editorCommands.delete, ({ input, state }) => {
+      handle(editorCommands.delete, ({ input, state }) => {
         const selection = state.selection();
 
         if (!selection || !RangeApi.isCollapsed(selection)) return false;

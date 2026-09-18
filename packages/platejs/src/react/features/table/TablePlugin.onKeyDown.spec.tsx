@@ -25,7 +25,7 @@ const createTableEditor = (input: TestEditor) =>
   createTestTableEditor({
     plugins: [
       TablePlugin.configure({
-        initialState: { disableMerge: true },
+        initialState: { allowCellSpanEditing: false },
       }),
     ],
     selection: input.selection,
@@ -97,7 +97,7 @@ describe('TablePlugin onKeyDown', () => {
       plugins: [
         CompetingTabPlugin,
         TablePlugin.configure({
-          initialState: { disableMerge: true },
+          initialState: { allowCellSpanEditing: false },
         }),
       ],
       selection: input.selection,
@@ -172,7 +172,7 @@ describe('TablePlugin onKeyDown', () => {
       plugins: [
         CompetingTabPlugin,
         TablePlugin.configure({
-          initialState: { disableMerge: true },
+          initialState: { allowCellSpanEditing: false },
         }),
       ],
       selection: input.selection,

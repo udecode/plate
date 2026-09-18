@@ -9,8 +9,6 @@ import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
-import { BaseTablePlugin } from './BaseTablePlugin';
-import { projectTableSelection } from './internal/selection';
 
 describe('table grid slow contracts', () => {
   jsxt;
@@ -23,53 +21,13 @@ describe('table grid slow contracts', () => {
     ) as Element;
 
   describe('table range projection', () => {
-    describe('when selection is in cell 1', () => {
-      it.each([{ disableMerge: true }, { disableMerge: false }])(
-        'returns the selected single cell (disableMerge: $disableMerge)',
-        ({ disableMerge }) => {
-          const input = (
-            <editor>
-              <htable>
-                <htr>
-                  <htd>
-                    <hp>
-                      1<cursor />
-                    </hp>
-                  </htd>
-                </htr>
-              </htable>
-            </editor>
-          ) as TestEditor;
-
-          const output = (
-            <htable>
-              <htr>
-                <htd>
-                  <hp>1</hp>
-                </htd>
-              </htr>
-            </htable>
-          ) as Element;
-
-          const editor = createTestTableEditor({
-            plugins: getTestTablePlugins({ disableMerge }),
-            selection: input.selection,
-            initialValue: input.children,
-          });
-
-          const table = projectTableSelection(
-            editor.plugin(BaseTablePlugin).read.selection()!
-          );
-
-          expect(getTableShape(table)).toEqual(getTableShape(output));
-        }
-      );
-    });
-
     describe('when selection is from cell 12 to 22', () => {
-      it.each([{ disableMerge: true }, { disableMerge: false }])(
-        'returns the selected right column slice (disableMerge: $disableMerge)',
-        ({ disableMerge }) => {
+      it.each([
+        { allowCellSpanEditing: false },
+        { allowCellSpanEditing: true },
+      ])(
+        'returns the selected right column slice (allowCellSpanEditing: $allowCellSpanEditing)',
+        ({ allowCellSpanEditing }) => {
           const input = (
             <editor>
               <htable>
@@ -115,14 +73,12 @@ describe('table grid slow contracts', () => {
           ) as Element;
 
           const editor = createTestTableEditor({
-            plugins: getTestTablePlugins({ disableMerge }),
+            plugins: getTestTablePlugins({ allowCellSpanEditing }),
             selection: input.selection,
             initialValue: input.children,
           });
 
-          const table = projectTableSelection(
-            editor.plugin(BaseTablePlugin).read.selection()!
-          );
+          const table = editor.read.slice.export().content[0];
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -130,9 +86,12 @@ describe('table grid slow contracts', () => {
     });
 
     describe('when selection is from cell 21 to 22', () => {
-      it.each([{ disableMerge: true }, { disableMerge: false }])(
-        'returns the selected bottom row slice (disableMerge: $disableMerge)',
-        ({ disableMerge }) => {
+      it.each([
+        { allowCellSpanEditing: false },
+        { allowCellSpanEditing: true },
+      ])(
+        'returns the selected bottom row slice (allowCellSpanEditing: $allowCellSpanEditing)',
+        ({ allowCellSpanEditing }) => {
           const input = (
             <editor>
               <htable>
@@ -176,14 +135,12 @@ describe('table grid slow contracts', () => {
           ) as Element;
 
           const editor = createTestTableEditor({
-            plugins: getTestTablePlugins({ disableMerge }),
+            plugins: getTestTablePlugins({ allowCellSpanEditing }),
             selection: input.selection,
             initialValue: input.children,
           });
 
-          const table = projectTableSelection(
-            editor.plugin(BaseTablePlugin).read.selection()!
-          );
+          const table = editor.read.slice.export().content[0];
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -191,9 +148,12 @@ describe('table grid slow contracts', () => {
     });
 
     describe('when selection is from cell 21 to 11', () => {
-      it.each([{ disableMerge: true }, { disableMerge: false }])(
-        'returns the selected left column slice when traversing upward (disableMerge: $disableMerge)',
-        ({ disableMerge }) => {
+      it.each([
+        { allowCellSpanEditing: false },
+        { allowCellSpanEditing: true },
+      ])(
+        'returns the selected left column slice when traversing upward (allowCellSpanEditing: $allowCellSpanEditing)',
+        ({ allowCellSpanEditing }) => {
           const input = (
             <editor>
               <htable>
@@ -242,14 +202,12 @@ describe('table grid slow contracts', () => {
           ) as Element;
 
           const editor = createTestTableEditor({
-            plugins: getTestTablePlugins({ disableMerge }),
+            plugins: getTestTablePlugins({ allowCellSpanEditing }),
             selection: input.selection,
             initialValue: input.children,
           });
 
-          const table = projectTableSelection(
-            editor.plugin(BaseTablePlugin).read.selection()!
-          );
+          const table = editor.read.slice.export().content[0];
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -257,9 +215,12 @@ describe('table grid slow contracts', () => {
     });
 
     describe('when selection is from cell 11 to cell 22', () => {
-      it.each([{ disableMerge: true }, { disableMerge: false }])(
-        'returns the full 2x2 selection from top-left to bottom-right (disableMerge: $disableMerge)',
-        ({ disableMerge }) => {
+      it.each([
+        { allowCellSpanEditing: false },
+        { allowCellSpanEditing: true },
+      ])(
+        'returns the full 2x2 selection from top-left to bottom-right (allowCellSpanEditing: $allowCellSpanEditing)',
+        ({ allowCellSpanEditing }) => {
           const input = (
             <editor>
               <htable>
@@ -311,14 +272,12 @@ describe('table grid slow contracts', () => {
           ) as Element;
 
           const editor = createTestTableEditor({
-            plugins: getTestTablePlugins({ disableMerge }),
+            plugins: getTestTablePlugins({ allowCellSpanEditing }),
             selection: input.selection,
             initialValue: input.children,
           });
 
-          const table = projectTableSelection(
-            editor.plugin(BaseTablePlugin).read.selection()!
-          );
+          const table = editor.read.slice.export().content[0];
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -326,9 +285,12 @@ describe('table grid slow contracts', () => {
     });
 
     describe('when selection is from cell 22 to cell 11', () => {
-      it.each([{ disableMerge: true }, { disableMerge: false }])(
-        'returns the full 2x2 selection from bottom-right to top-left (disableMerge: $disableMerge)',
-        ({ disableMerge }) => {
+      it.each([
+        { allowCellSpanEditing: false },
+        { allowCellSpanEditing: true },
+      ])(
+        'returns the full 2x2 selection from bottom-right to top-left (allowCellSpanEditing: $allowCellSpanEditing)',
+        ({ allowCellSpanEditing }) => {
           const input = (
             <editor>
               <htable>
@@ -380,14 +342,12 @@ describe('table grid slow contracts', () => {
           ) as Element;
 
           const editor = createTestTableEditor({
-            plugins: getTestTablePlugins({ disableMerge }),
+            plugins: getTestTablePlugins({ allowCellSpanEditing }),
             selection: input.selection,
             initialValue: input.children,
           });
 
-          const table = projectTableSelection(
-            editor.plugin(BaseTablePlugin).read.selection()!
-          );
+          const table = editor.read.slice.export().content[0];
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -395,9 +355,12 @@ describe('table grid slow contracts', () => {
     });
 
     describe('when selection is from cell 12 to cell 21', () => {
-      it.each([{ disableMerge: true }, { disableMerge: false }])(
-        'returns the full 2x2 selection from top-right to bottom-left (disableMerge: $disableMerge)',
-        ({ disableMerge }) => {
+      it.each([
+        { allowCellSpanEditing: false },
+        { allowCellSpanEditing: true },
+      ])(
+        'returns the full 2x2 selection from top-right to bottom-left (allowCellSpanEditing: $allowCellSpanEditing)',
+        ({ allowCellSpanEditing }) => {
           const input = (
             <editor>
               <htable>
@@ -449,14 +412,12 @@ describe('table grid slow contracts', () => {
           ) as Element;
 
           const editor = createTestTableEditor({
-            plugins: getTestTablePlugins({ disableMerge }),
+            plugins: getTestTablePlugins({ allowCellSpanEditing }),
             selection: input.selection,
             initialValue: input.children,
           });
 
-          const table = projectTableSelection(
-            editor.plugin(BaseTablePlugin).read.selection()!
-          );
+          const table = editor.read.slice.export().content[0];
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }
@@ -464,9 +425,12 @@ describe('table grid slow contracts', () => {
     });
 
     describe('when selection is from cell 12 to cell 21', () => {
-      it.each([{ disableMerge: true }, { disableMerge: false }])(
-        'returns the full 2x2 selection from bottom-left to top-right (disableMerge: $disableMerge)',
-        ({ disableMerge }) => {
+      it.each([
+        { allowCellSpanEditing: false },
+        { allowCellSpanEditing: true },
+      ])(
+        'returns the full 2x2 selection from bottom-left to top-right (allowCellSpanEditing: $allowCellSpanEditing)',
+        ({ allowCellSpanEditing }) => {
           const input = (
             <editor>
               <htable>
@@ -518,14 +482,12 @@ describe('table grid slow contracts', () => {
           ) as Element;
 
           const editor = createTestTableEditor({
-            plugins: getTestTablePlugins({ disableMerge }),
+            plugins: getTestTablePlugins({ allowCellSpanEditing }),
             selection: input.selection,
             initialValue: input.children,
           });
 
-          const table = projectTableSelection(
-            editor.plugin(BaseTablePlugin).read.selection()!
-          );
+          const table = editor.read.slice.export().content[0];
 
           expect(getTableShape(table)).toEqual(getTableShape(output));
         }

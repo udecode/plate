@@ -22,9 +22,9 @@ describe('table clipboard slow contracts', () => {
   jsxt;
 
   describe('when inserting table 2x1 into cell 11', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'replaces the first table column with the inserted column (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'replaces the first table column with the inserted column (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -92,7 +92,7 @@ describe('table clipboard slow contracts', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -106,9 +106,9 @@ describe('table clipboard slow contracts', () => {
 
   // https://github.com/udecode/editor-protocol/issues/14
   describe('when inserting table 1x2 into cell 11', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'replaces the first table row with the inserted row (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'replaces the first table row with the inserted row (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -174,7 +174,7 @@ describe('table clipboard slow contracts', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -188,9 +188,9 @@ describe('table clipboard slow contracts', () => {
 
   // https://github.com/udecode/editor-protocol/issues/24
   describe('Insert a table when selecting table cells', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'replace these cells (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'replace these cells (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -259,7 +259,7 @@ describe('table clipboard slow contracts', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -369,12 +369,12 @@ describe('table clipboard slow contracts', () => {
         options: {},
       },
       {
-        name: 'with disableMerge: true',
-        options: { disableMerge: true },
+        name: 'with allowCellSpanEditing: false',
+        options: { allowCellSpanEditing: false },
       },
       {
-        name: 'with disableMerge: false',
-        options: { disableMerge: false },
+        name: 'with allowCellSpanEditing: true',
+        options: { allowCellSpanEditing: true },
       },
     ];
 
@@ -439,7 +439,7 @@ describe('table clipboard slow contracts', () => {
                 <htd>
                   <hp>12</hp>
                 </htd>
-                <htd backgroundColor="custom">
+                <htd>
                   <hp>
                     <htext />
                   </hp>
@@ -455,20 +455,20 @@ describe('table clipboard slow contracts', () => {
                     aa
                   </hp>
                 </htd>
-                <htd backgroundColor="custom">
+                <htd>
                   <hp>ab</hp>
                 </htd>
               </htr>
               <htr>
-                <htd backgroundColor="custom">
+                <htd>
                   <hp>
                     <htext />
                   </hp>
                 </htd>
-                <htd backgroundColor="custom">
+                <htd>
                   <hp>ba</hp>
                 </htd>
-                <htd backgroundColor="custom">
+                <htd>
                   <hp>
                     bb
                     <focus />
@@ -481,22 +481,9 @@ describe('table clipboard slow contracts', () => {
 
         const editor = createTestTableEditor({
           plugins: [
-            BaseTablePlugin.extend(() => ({
-              api: () => ({
-                createCell: () => ({
-                  backgroundColor: 'custom',
-                  children: [
-                    {
-                      children: [{ text: '' }],
-                      type: 'paragraph',
-                    },
-                  ],
-                  type: 'tableCell',
-                }),
-              }),
-            })).configure({
+            BaseTablePlugin.configure({
               initialState: {
-                disableMerge: true,
+                allowCellSpanEditing: false,
                 ...options,
               },
             }),
@@ -515,8 +502,72 @@ describe('table clipboard slow contracts', () => {
     });
   });
 
-  describe('when insert table 2x2 into cell 22 with disableExpandOnInsert', () => {
-    it('does not expand the table', () => {
+  it('updates column widths when table paste grows past the right edge', () => {
+    const input = (
+      <editor>
+        <htable columnWidths={[20, 30]}>
+          <htr>
+            <htd>
+              <hp>11</hp>
+            </htd>
+            <htd>
+              <hp>
+                12
+                <cursor />
+              </hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>21</hp>
+            </htd>
+            <htd>
+              <hp>22</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const fragment = (
+      <fragment>
+        <htable>
+          <htr>
+            <htd>
+              <hp>a</hp>
+            </htd>
+            <htd>
+              <hp>b</hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>c</hp>
+            </htd>
+            <htd>
+              <hp>d</hp>
+            </htd>
+          </htr>
+        </htable>
+      </fragment>
+    ) as Element[];
+    const editor = createTestTableEditor({
+      plugins: getTestTablePlugins({
+        defaultTableWidth: 100,
+        minColumnWidth: 10,
+      }),
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    editor.update.fragment.replace(fragment);
+
+    expect(editor.read.children()[0]).toMatchObject({
+      columnWidths: [20, 30, 30],
+    });
+  });
+
+  describe('when a table paste overflows with expansion disabled', () => {
+    it('rejects overflow without changing content or selection', () => {
       const input = (
         <editor>
           <htable>
@@ -566,47 +617,20 @@ describe('table clipboard slow contracts', () => {
         </fragment>
       ) as Element[];
 
-      const output = (
-        <editor>
-          <htable>
-            <htr>
-              <htd>
-                <hp>11</hp>
-              </htd>
-              <htd>
-                <hp>12</hp>
-              </htd>
-            </htr>
-            <htr>
-              <htd>
-                <hp>21</hp>
-              </htd>
-              <htd>
-                <hp>
-                  <anchor />
-                  aa
-                  <focus />
-                </hp>
-              </htd>
-            </htr>
-          </htable>
-        </editor>
-      ) as TestEditor;
-
       const editor = createTestTableEditor({
         plugins: getTestTablePlugins({
-          disableExpandOnInsert: true,
+          expandOnPaste: false,
         }),
         selection: input.selection,
         initialValue: input.children,
       });
 
-      editor.update.fragment.replace(fragment);
+      expect(editor.update.fragment.replace(fragment)).toBe(false);
 
-      expect(editor.read.children()).toMatchObject(output.children);
+      expect(editor.read.children()).toMatchObject(input.children);
 
       expect(editor.read.selection()).toEqual(
-        projectTestSelectionRange(output.selection)
+        projectTestSelectionRange(input.selection)
       );
     });
   });
@@ -678,7 +702,7 @@ describe('table clipboard slow contracts', () => {
   });
 
   describe('logical table grid paste', () => {
-    it('splits merged cells that cross the pasted rectangle', () => {
+    it('splits a merged cell fully covered by the pasted rectangle', () => {
       const input = (
         <editor>
           <htable>
@@ -699,11 +723,14 @@ describe('table clipboard slow contracts', () => {
               </htd>
             </htr>
             <htr>
-              <htd colSpan={2}>
+              <htd>
                 <hp>e</hp>
               </htd>
               <htd colSpan={2}>
                 <hp>f</hp>
+              </htd>
+              <htd>
+                <hp>g</hp>
               </htd>
             </htr>
           </htable>
@@ -759,23 +786,27 @@ describe('table clipboard slow contracts', () => {
                 <hp>q</hp>
               </htd>
               <htd>
-                <hp>
-                  <htext />
-                </hp>
+                <hp>g</hp>
               </htd>
             </htr>
           </htable>
         </editor>
       ) as TestEditor;
       const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: false }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         selection: input.selection,
         initialValue: input.children,
       });
 
-      editor.update.fragment.replace(fragment);
+      expect(editor.update.fragment.replace(fragment)).toBe(true);
 
       expect(editor.read.children()).toMatchObject(output.children);
+      expect(
+        editor.plugin(BaseTablePlugin).read.cell({ at: [0, 1, 1] })?.colSpan
+      ).toBe(1);
+      expect(
+        editor.plugin(BaseTablePlugin).read.cell({ at: [0, 1, 2] })?.colSpan
+      ).toBe(1);
     });
 
     it('fills a non-rectangular fragment before pasting it', () => {
@@ -849,7 +880,7 @@ describe('table clipboard slow contracts', () => {
         </editor>
       ) as TestEditor;
       const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: false }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         selection: input.selection,
         initialValue: input.children,
       });
@@ -862,9 +893,9 @@ describe('table clipboard slow contracts', () => {
 
   // https://github.com/udecode/editor-protocol/issues/64
   describe('when inserting blocks inside a table', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'inserts the blocks without removing the cells (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'inserts the blocks without removing the cells (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -911,7 +942,7 @@ describe('table clipboard slow contracts', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -1038,7 +1069,7 @@ describe('table clipboard slow contracts', () => {
       assert.equal(NodeApi.string(editor.read.children()[0]), 'a?b');
     });
 
-    it('recognizes an open table slice from its retained content context', () => {
+    it('delegates an open table slice to canonical fitting', () => {
       const source = createTestTableEditor({
         plugins: [BaseTablePlugin],
         selection: {
@@ -1144,8 +1175,8 @@ describe('table clipboard slow contracts', () => {
           (row as Element).children.map((cell) => NodeApi.string(cell))
         ),
         [
-          ['x', 'b'],
-          ['y', ''],
+          ['x', ''],
+          ['ya', 'b'],
         ]
       );
     });

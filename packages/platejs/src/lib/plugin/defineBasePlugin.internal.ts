@@ -7,6 +7,7 @@ import {
   mergePlugins,
   setPluginDescriptorMetadata,
 } from '../../internal/utils/mergePlugins';
+import { assertNoPrepareDocument } from './assertNoPrepareDocument.internal';
 import type { AnyBasePlugin, AnyBasePluginContext } from './BasePlugin';
 import type { PluginReference } from './PluginDefinition';
 
@@ -32,6 +33,7 @@ const assertBaseDefinition: (
   if (typeof value.name !== 'string' || value.name.length === 0) {
     throw new Error('Plate plugins require a non-empty `name`.');
   }
+  assertNoPrepareDocument(value);
   if (Object.hasOwn(value, 'key') || Object.hasOwn(value, 'type')) {
     throw new Error(
       'Plate plugins do not support top-level `key` or `type`; declare persisted identity inside `schema`.'
@@ -49,6 +51,8 @@ const assertBaseDefinition: (
 };
 
 const assertExtendObject = (value: object) => {
+  assertNoPrepareDocument(value);
+
   if (Object.hasOwn(value, 'component')) {
     throw new Error(
       'Plate plugin .extend() cannot define `component`; declare the default in the constructor or replace it through terminal .configure({ component }).'
@@ -78,6 +82,8 @@ const assertExtendObject = (value: object) => {
 };
 
 const assertConfigureObject = (value: object) => {
+  assertNoPrepareDocument(value);
+
   for (const field of [
     'activate',
     'api',
@@ -253,6 +259,7 @@ const attachPluginMethods = (
                 'Plate plugin .extend() callbacks must return an object.'
               );
             }
+            assertNoPrepareDocument(contribution);
             if (!Object.hasOwn(contribution, 'name')) {
               assertExtendObject(contribution);
             }
@@ -265,6 +272,8 @@ const attachPluginMethods = (
       if (!isObjectRecord(input)) {
         throw new Error('Plate plugin .extend() values must be objects.');
       }
+
+      assertNoPrepareDocument(input);
 
       // A named object is a canonical raw Plite descriptor. Its name is
       // validated by the resolver and its native fields are adopted flat.

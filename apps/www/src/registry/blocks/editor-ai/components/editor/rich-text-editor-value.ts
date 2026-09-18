@@ -1,5 +1,5 @@
 import type { EditorDocumentValue } from 'platejs';
-import type { CommentThread } from 'platejs/comments';
+import type { CommentsJSON } from 'platejs/comments';
 
 // Saved native document. Regenerate with apps/www/scripts/generate-rich-text-editor-value.ts.
 export const richTextEditorValue: EditorDocumentValue = {
@@ -896,7 +896,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                   birth: null,
                   length: 2111,
                   offset: 0,
-                  origin: '12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main',
+                  origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
                   placement: null,
                   properties: {},
                 },
@@ -906,100 +906,487 @@ export const richTextEditorValue: EditorDocumentValue = {
         ],
         changes: [
           [
-            'charlie',
-            1_789_411_213_209,
+            'alice',
+            1_789_665_010_655,
             [],
-            ['31501029-8941-40db-b3db-3b4cb9954e84:2'],
-            '31632a17-2bd0-4bc9-803d-29b5189774d9',
-            'insert',
-            ['31501029-8941-40db-b3db-3b4cb9954e84:2'],
+            ['46698e02-343b-4124-b006-04f709d55cf9:3'],
+            '1935a2f6-3721-419c-a60c-210ad906cf1e',
+            'mixed',
+            ['46698e02-343b-4124-b006-04f709d55cf9:3'],
             [],
             1,
             'pending',
-            1_789_411_213_209,
+            1_789_665_010_655,
+          ],
+          [
+            'charlie',
+            1_789_665_010_644,
+            [],
+            ['46698e02-343b-4124-b006-04f709d55cf9:2'],
+            '69612039-53dc-49cc-8ff5-ee6de67c11e3',
+            'insert',
+            ['46698e02-343b-4124-b006-04f709d55cf9:2'],
+            [],
+            1,
+            'pending',
+            1_789_665_010_644,
           ],
           [
             'bob',
-            1_789_411_213_174,
+            1_789_665_010_637,
             [],
-            ['31501029-8941-40db-b3db-3b4cb9954e84:1'],
-            '9adf5a63-7ee4-491c-b7ac-0f8d0e797a60',
+            ['46698e02-343b-4124-b006-04f709d55cf9:1'],
+            'ca8cfc79-f4b8-4c28-ad0d-9bb59ac7949f',
             'delete',
-            ['31501029-8941-40db-b3db-3b4cb9954e84:1'],
+            ['46698e02-343b-4124-b006-04f709d55cf9:1'],
             [],
             1,
             'pending',
-            1_789_411_213_174,
-          ],
-          [
-            'alice',
-            1_789_411_213_237,
-            [],
-            ['31501029-8941-40db-b3db-3b4cb9954e84:3'],
-            'b4566937-7869-469e-b51c-fcbcd3f74a0d',
-            'mixed',
-            ['31501029-8941-40db-b3db-3b4cb9954e84:3'],
-            [],
-            1,
-            'pending',
-            1_789_411_213_237,
+            1_789_665_010_637,
           ],
         ],
-        documentId: '12ee2a5d-02bc-470d-82c3-ff21534aa192',
+        documentId: '488acfe8-fd98-49a6-82d5-b70b69cf98fb',
         operations: [
           [
             0,
             'bob',
-            '9adf5a63-7ee4-491c-b7ac-0f8d0e797a60',
+            'ca8cfc79-f4b8-4c28-ad0d-9bb59ac7949f',
             1,
             [],
-            '31501029-8941-40db-b3db-3b4cb9954e84:1',
+            '46698e02-343b-4124-b006-04f709d55cf9:1',
             null,
             [],
             true,
-            '31501029-8941-40db-b3db-3b4cb9954e84',
+            '46698e02-343b-4124-b006-04f709d55cf9',
             [],
             1,
-            1_789_411_213_174,
+            1_789_665_010_637,
             'delete',
-            '6a8f7ea0e801b424',
-            '[[{"primary":[{"length":289},{"length":21,"replacement":[]},{"length":1801}],"version":3},[],[[null,[["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",289],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",310]],[["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",289],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",310]],[["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",289],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",289]],[],[[null,21,289,"12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",null,{}]],{"from":2,"kind":"delete","slice":{"content":[{"type":"paragraph","children":[{"text":"mark text for removal"}]}],"openEnd":1,"openStart":1},"spans":[{"birth":null,"length":1,"offset":238,"origin":"12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":239,"origin":"12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main","placement":null,"properties":{}},{"birth":null,"length":21,"offset":289,"origin":"12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":334,"origin":"12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":403,"origin":"12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main","placement":null,"properties":{}}],"to":23},"main",1,[["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",310],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",310]]]]]]',
+            '4642e15ef79b1a6a',
+            '[[{"primary":[{"length":289},{"length":21,"replacement":[]},{"length":1801}],"version":3},[],[[null,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",289],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",310]],[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",289],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",310]],[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",289],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",289]],[],[[null,21,289,"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",null,{}]],{"from":2,"kind":"delete","slice":{"content":[{"type":"paragraph","children":[{"text":"mark text for removal"}]}],"openEnd":1,"openStart":1},"spans":[{"birth":null,"length":1,"offset":238,"origin":"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":239,"origin":"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main","placement":null,"properties":{}},{"birth":null,"length":21,"offset":289,"origin":"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":334,"origin":"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":403,"origin":"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main","placement":null,"properties":{}}],"to":23},"main",1,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",310],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",310]]]]]]',
+            {
+              digest:
+                'dea1730f015ddc7d8536d8ce724dd2bd5f86df8bf36fc8c15c14398903eb0bd5',
+              kind: 'delete',
+              steps: [
+                {
+                  rootTargets: [],
+                  targets: [
+                    {
+                      association: null,
+                      from: {
+                        left: {
+                          offset: 289,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        right: {
+                          offset: 289,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      to: {
+                        left: {
+                          offset: 310,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        right: {
+                          offset: 310,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      root: 'main',
+                      section: 1,
+                      removed: [
+                        {
+                          birth: null,
+                          length: 21,
+                          offset: 289,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                          placement: null,
+                          properties: {},
+                        },
+                      ],
+                      inserted: [],
+                      afterFrom: {
+                        left: {
+                          offset: 289,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        right: {
+                          offset: 310,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      afterTo: {
+                        left: {
+                          offset: 289,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        right: {
+                          offset: 310,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      retained: null,
+                      length: 21,
+                      properties: null,
+                      textBoundary: null,
+                    },
+                  ],
+                },
+              ],
+            },
           ],
           [
             0,
             'charlie',
-            '31632a17-2bd0-4bc9-803d-29b5189774d9',
+            '69612039-53dc-49cc-8ff5-ee6de67c11e3',
             2,
             [],
-            '31501029-8941-40db-b3db-3b4cb9954e84:2',
+            '46698e02-343b-4124-b006-04f709d55cf9:2',
             null,
-            ['31501029-8941-40db-b3db-3b4cb9954e84:1'],
+            ['46698e02-343b-4124-b006-04f709d55cf9:1'],
             true,
-            '31501029-8941-40db-b3db-3b4cb9954e84',
-            [['31501029-8941-40db-b3db-3b4cb9954e84', 1]],
+            '46698e02-343b-4124-b006-04f709d55cf9',
+            [['46698e02-343b-4124-b006-04f709d55cf9', 1]],
             2,
-            1_789_411_213_209,
+            1_789_665_010_644,
             'insert',
-            '86e6de48c360a734',
-            '[[{"primary":[{"length":369},{"length":0,"replacement":[{"kind":"text","text":"overlapping "}]},{"length":1721}],"version":3},[],[[null,[["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",390],["31501029-8941-40db-b3db-3b4cb9954e84:2:main",0]],[["31501029-8941-40db-b3db-3b4cb9954e84:2:main",12],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",390]],[["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",390],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",390]],[["31632a17-2bd0-4bc9-803d-29b5189774d9",12,0,"31501029-8941-40db-b3db-3b4cb9954e84:2:main",null,{}]],[],null,"main",1,[["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",390],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",390]]]]]]',
+            'cc319607af1ba9d3',
+            '[[{"primary":[{"length":369},{"length":0,"replacement":[{"kind":"text","text":"overlapping "}]},{"length":1721}],"version":3},[],[[null,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390],["46698e02-343b-4124-b006-04f709d55cf9:2:main",0]],[["46698e02-343b-4124-b006-04f709d55cf9:2:main",12],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390]],[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390]],[["69612039-53dc-49cc-8ff5-ee6de67c11e3",12,0,"46698e02-343b-4124-b006-04f709d55cf9:2:main",null,{}]],[],null,"main",1,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390]]]]]]',
+            {
+              digest:
+                '484d072810783cf6ff13776e5bbf2523d13c907ef256f612bc7b5b81b59b5e36',
+              kind: 'insert',
+              steps: [
+                {
+                  rootTargets: [],
+                  targets: [
+                    {
+                      association: null,
+                      from: {
+                        left: {
+                          offset: 390,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        right: {
+                          offset: 390,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      to: {
+                        left: {
+                          offset: 390,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        right: {
+                          offset: 390,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      root: 'main',
+                      section: 1,
+                      removed: [],
+                      inserted: [
+                        {
+                          birth: '69612039-53dc-49cc-8ff5-ee6de67c11e3',
+                          length: 12,
+                          offset: 0,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:2:main',
+                          placement: null,
+                          properties: {},
+                        },
+                      ],
+                      afterFrom: {
+                        left: {
+                          offset: 390,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        right: {
+                          offset: 0,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:2:main',
+                        },
+                      },
+                      afterTo: {
+                        left: {
+                          offset: 12,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:2:main',
+                        },
+                        right: {
+                          offset: 390,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      retained: null,
+                      length: 0,
+                      properties: null,
+                      textBoundary: null,
+                    },
+                  ],
+                },
+              ],
+            },
           ],
           [
             0,
             'alice',
-            'b4566937-7869-469e-b51c-fcbcd3f74a0d',
+            '1935a2f6-3721-419c-a60c-210ad906cf1e',
             3,
             [],
-            '31501029-8941-40db-b3db-3b4cb9954e84:3',
+            '46698e02-343b-4124-b006-04f709d55cf9:3',
             null,
-            ['31501029-8941-40db-b3db-3b4cb9954e84:2'],
+            ['46698e02-343b-4124-b006-04f709d55cf9:2'],
             true,
-            '31501029-8941-40db-b3db-3b4cb9954e84',
-            [['31501029-8941-40db-b3db-3b4cb9954e84', 2]],
+            '46698e02-343b-4124-b006-04f709d55cf9',
+            [['46698e02-343b-4124-b006-04f709d55cf9', 2]],
             3,
-            1_789_411_213_237,
+            1_789_665_010_655,
             'mixed',
-            '4288f6a5320dab71',
-            '[[{"primary":[{"length":282},{"length":0,"replacement":[{"kind":"close","nodeKind":"text"},{"kind":"open","nodeKind":"text","props":{}}]},{"length":1820}],"version":3},[],[[null,[["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",282],["31501029-8941-40db-b3db-3b4cb9954e84:3:main",0]],[["31501029-8941-40db-b3db-3b4cb9954e84:3:main",2],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",282]],[["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",282],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",282]],[["b4566937-7869-469e-b51c-fcbcd3f74a0d",2,0,"31501029-8941-40db-b3db-3b4cb9954e84:3:main",null,{}]],[],null,"main",1,[["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",282],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",282]]]]],[{"primary":[{"length":283},{"length":0,"replacement":[{"kind":"open","nodeKind":"element","props":{"type":"link","url":"/docs/suggestion"}},{"kind":"open","nodeKind":"text","props":{}},{"kind":"text","text":"suggestions"},{"kind":"close","nodeKind":"text"},{"kind":"close","nodeKind":"element"}]},{"length":1821}],"version":3},[],[[null,[["31501029-8941-40db-b3db-3b4cb9954e84:3:main",1],["31501029-8941-40db-b3db-3b4cb9954e84:3:main",2]],[["31501029-8941-40db-b3db-3b4cb9954e84:3:main",17],["31501029-8941-40db-b3db-3b4cb9954e84:3:main",1]],[["31501029-8941-40db-b3db-3b4cb9954e84:3:main",1],["31501029-8941-40db-b3db-3b4cb9954e84:3:main",1]],[["b4566937-7869-469e-b51c-fcbcd3f74a0d",15,2,"31501029-8941-40db-b3db-3b4cb9954e84:3:main",null,{}]],[],null,"main",1,[["31501029-8941-40db-b3db-3b4cb9954e84:3:main",1],["31501029-8941-40db-b3db-3b4cb9954e84:3:main",1]]]]],[{"primary":[{"length":299},{"length":0,"replacement":[{"kind":"text","text":" like this added text"}]},{"length":1820}],"version":3},[],[[null,[["31501029-8941-40db-b3db-3b4cb9954e84:3:main",2],["31501029-8941-40db-b3db-3b4cb9954e84:3:main",17]],[["31501029-8941-40db-b3db-3b4cb9954e84:3:main",38],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",282]],[["31501029-8941-40db-b3db-3b4cb9954e84:3:main",2],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",282]],[["b4566937-7869-469e-b51c-fcbcd3f74a0d",21,17,"31501029-8941-40db-b3db-3b4cb9954e84:3:main",null,{}]],[],null,"main",1,[["31501029-8941-40db-b3db-3b4cb9954e84:3:main",2],["12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main",282]]]]]]',
+            '37b918d5c6a70919',
+            '[[{"primary":[{"length":282},{"length":0,"replacement":[{"kind":"close","nodeKind":"text"},{"kind":"open","nodeKind":"text","props":{}}]},{"length":1820}],"version":3},[],[[null,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282],["46698e02-343b-4124-b006-04f709d55cf9:3:main",0]],[["46698e02-343b-4124-b006-04f709d55cf9:3:main",2],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]],[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]],[["1935a2f6-3721-419c-a60c-210ad906cf1e",2,0,"46698e02-343b-4124-b006-04f709d55cf9:3:main",null,{}]],[],null,"main",1,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]]]]],[{"primary":[{"length":283},{"length":0,"replacement":[{"kind":"open","nodeKind":"element","props":{"type":"link","url":"/docs/suggestion"}},{"kind":"open","nodeKind":"text","props":{}},{"kind":"text","text":"suggestions"},{"kind":"close","nodeKind":"text"},{"kind":"close","nodeKind":"element"}]},{"length":1821}],"version":3},[],[[null,[["46698e02-343b-4124-b006-04f709d55cf9:3:main",1],["46698e02-343b-4124-b006-04f709d55cf9:3:main",2]],[["46698e02-343b-4124-b006-04f709d55cf9:3:main",17],["46698e02-343b-4124-b006-04f709d55cf9:3:main",1]],[["46698e02-343b-4124-b006-04f709d55cf9:3:main",1],["46698e02-343b-4124-b006-04f709d55cf9:3:main",1]],[["1935a2f6-3721-419c-a60c-210ad906cf1e",15,2,"46698e02-343b-4124-b006-04f709d55cf9:3:main",null,{}]],[],null,"main",1,[["46698e02-343b-4124-b006-04f709d55cf9:3:main",1],["46698e02-343b-4124-b006-04f709d55cf9:3:main",1]]]]],[{"primary":[{"length":299},{"length":0,"replacement":[{"kind":"text","text":" like this added text"}]},{"length":1820}],"version":3},[],[[null,[["46698e02-343b-4124-b006-04f709d55cf9:3:main",2],["46698e02-343b-4124-b006-04f709d55cf9:3:main",17]],[["46698e02-343b-4124-b006-04f709d55cf9:3:main",38],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]],[["46698e02-343b-4124-b006-04f709d55cf9:3:main",2],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]],[["1935a2f6-3721-419c-a60c-210ad906cf1e",21,17,"46698e02-343b-4124-b006-04f709d55cf9:3:main",null,{}]],[],null,"main",1,[["46698e02-343b-4124-b006-04f709d55cf9:3:main",2],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]]]]]]',
+            {
+              digest:
+                '2e3c6ce4583f5f377576756488dcf61050482bec249c7af756ae4d9283408311',
+              kind: 'mixed',
+              steps: [
+                {
+                  rootTargets: [],
+                  targets: [
+                    {
+                      association: null,
+                      from: {
+                        left: {
+                          offset: 282,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        right: {
+                          offset: 282,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      to: {
+                        left: {
+                          offset: 282,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        right: {
+                          offset: 282,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      root: 'main',
+                      section: 1,
+                      removed: [],
+                      inserted: [
+                        {
+                          birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                          length: 2,
+                          offset: 0,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          placement: null,
+                          properties: {},
+                        },
+                      ],
+                      afterFrom: {
+                        left: {
+                          offset: 282,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        right: {
+                          offset: 0,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                      },
+                      afterTo: {
+                        left: {
+                          offset: 2,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                        right: {
+                          offset: 282,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      retained: null,
+                      length: 0,
+                      properties: null,
+                      textBoundary: {
+                        position: {
+                          offset: 282,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                        spans: [
+                          {
+                            birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                            length: 2,
+                            offset: 0,
+                            origin:
+                              '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                            placement: null,
+                            properties: {},
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+                {
+                  rootTargets: [],
+                  targets: [
+                    {
+                      association: null,
+                      from: {
+                        left: {
+                          offset: 1,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                        right: {
+                          offset: 1,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                      },
+                      to: {
+                        left: {
+                          offset: 1,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                        right: {
+                          offset: 1,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                      },
+                      root: 'main',
+                      section: 1,
+                      removed: [],
+                      inserted: [
+                        {
+                          birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                          length: 15,
+                          offset: 2,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          placement: null,
+                          properties: {},
+                        },
+                      ],
+                      afterFrom: {
+                        left: {
+                          offset: 1,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                        right: {
+                          offset: 2,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                      },
+                      afterTo: {
+                        left: {
+                          offset: 17,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                        right: {
+                          offset: 1,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                      },
+                      retained: null,
+                      length: 0,
+                      properties: null,
+                      textBoundary: null,
+                    },
+                  ],
+                },
+                {
+                  rootTargets: [],
+                  targets: [
+                    {
+                      association: null,
+                      from: {
+                        left: {
+                          offset: 2,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                        right: {
+                          offset: 282,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      to: {
+                        left: {
+                          offset: 2,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                        right: {
+                          offset: 282,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      root: 'main',
+                      section: 1,
+                      removed: [],
+                      inserted: [
+                        {
+                          birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                          length: 21,
+                          offset: 17,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          placement: null,
+                          properties: {},
+                        },
+                      ],
+                      afterFrom: {
+                        left: {
+                          offset: 2,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                        right: {
+                          offset: 17,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                      },
+                      afterTo: {
+                        left: {
+                          offset: 38,
+                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                        },
+                        right: {
+                          offset: 282,
+                          origin:
+                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                        },
+                      },
+                      retained: null,
+                      length: 0,
+                      properties: null,
+                      textBoundary: null,
+                    },
+                  ],
+                },
+              ],
+            },
           ],
         ],
         projected: {
@@ -1903,7 +2290,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                 count: 1,
                 entries: [
                   [
-                    '12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main',
+                    '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
                     {
                       count: 1,
                       entries: [
@@ -1915,12 +2302,12 @@ export const richTextEditorValue: EditorDocumentValue = {
                               left: {
                                 offset: 289,
                                 origin:
-                                  '12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main',
+                                  '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
                               },
                               right: {
                                 offset: 310,
                                 origin:
-                                  '12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main',
+                                  '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
                               },
                             },
                           },
@@ -1932,7 +2319,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                     },
                   ],
                 ],
-                first: '12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main',
+                first: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
                 height: 1,
                 kind: 'leaf',
               },
@@ -1942,39 +2329,39 @@ export const richTextEditorValue: EditorDocumentValue = {
                   birth: null,
                   length: 282,
                   offset: 0,
-                  origin: '12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main',
+                  origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
                   placement: null,
                   properties: {},
                 },
                 {
-                  birth: 'b4566937-7869-469e-b51c-fcbcd3f74a0d',
+                  birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
                   length: 1,
                   offset: 0,
-                  origin: '31501029-8941-40db-b3db-3b4cb9954e84:3:main',
+                  origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
                   placement: null,
                   properties: {},
                 },
                 {
-                  birth: 'b4566937-7869-469e-b51c-fcbcd3f74a0d',
+                  birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
                   length: 15,
                   offset: 2,
-                  origin: '31501029-8941-40db-b3db-3b4cb9954e84:3:main',
+                  origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
                   placement: null,
                   properties: {},
                 },
                 {
-                  birth: 'b4566937-7869-469e-b51c-fcbcd3f74a0d',
+                  birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
                   length: 1,
                   offset: 1,
-                  origin: '31501029-8941-40db-b3db-3b4cb9954e84:3:main',
+                  origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
                   placement: null,
                   properties: {},
                 },
                 {
-                  birth: 'b4566937-7869-469e-b51c-fcbcd3f74a0d',
+                  birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
                   length: 21,
                   offset: 17,
-                  origin: '31501029-8941-40db-b3db-3b4cb9954e84:3:main',
+                  origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
                   placement: null,
                   properties: {},
                 },
@@ -1982,7 +2369,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                   birth: null,
                   length: 7,
                   offset: 282,
-                  origin: '12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main',
+                  origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
                   placement: null,
                   properties: {},
                 },
@@ -1990,15 +2377,15 @@ export const richTextEditorValue: EditorDocumentValue = {
                   birth: null,
                   length: 80,
                   offset: 310,
-                  origin: '12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main',
+                  origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
                   placement: null,
                   properties: {},
                 },
                 {
-                  birth: '31632a17-2bd0-4bc9-803d-29b5189774d9',
+                  birth: '69612039-53dc-49cc-8ff5-ee6de67c11e3',
                   length: 12,
                   offset: 0,
-                  origin: '31501029-8941-40db-b3db-3b4cb9954e84:2:main',
+                  origin: '46698e02-343b-4124-b006-04f709d55cf9:2:main',
                   placement: null,
                   properties: {},
                 },
@@ -2006,7 +2393,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                   birth: null,
                   length: 1721,
                   offset: 390,
-                  origin: '12ee2a5d-02bc-470d-82c3-ff21534aa192:base:main',
+                  origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
                   placement: null,
                   properties: {},
                 },
@@ -2015,107 +2402,148 @@ export const richTextEditorValue: EditorDocumentValue = {
           ],
         ],
       },
-      version: 5,
+      version: 6,
     },
   },
 };
 
-export const richTextEditorThreads: CommentThread[] = [
-  {
-    id: 'discussion1',
-    createdAt: '2026-09-14T18:18:51.315Z',
-    resolved: false,
-    status: 'published',
-    excerpt: 'comments',
-    userId: 'charlie',
-    target: {
-      type: 'range',
+export const richTextEditorComments: CommentsJSON = {
+  kind: 'plate-comments',
+  version: 1,
+  threads: [
+    {
+      id: 'discussion1',
+      createdAt: '2026-09-14T18:18:51.315Z',
+      status: 'published',
+      excerpt: 'comments',
+      userId: 'charlie',
+      target: {
+        type: 'range',
+      },
+      messages: [
+        {
+          id: 'discussion1-comment',
+          userId: 'charlie',
+          createdAt: '2026-09-14T18:18:51.315Z',
+          body: [
+            {
+              children: [
+                {
+                  text: 'Comments are a great way to provide feedback and discuss changes.',
+                },
+              ],
+              type: 'paragraph',
+            },
+          ],
+        },
+        {
+          id: 'discussion1-reply',
+          userId: 'bob',
+          createdAt: '2026-09-14T18:20:51.315Z',
+          body: [
+            {
+              children: [
+                {
+                  text: 'Agreed! The link to the docs makes it easy to learn more.',
+                },
+              ],
+              type: 'paragraph',
+            },
+          ],
+        },
+      ],
+      resolution: null,
+    },
+    {
+      id: 'discussion2',
+      createdAt: '2026-09-14T18:23:51.315Z',
+      status: 'published',
+      excerpt: 'overlapping',
+      userId: 'bob',
+      target: {
+        id: '69612039-53dc-49cc-8ff5-ee6de67c11e3',
+        type: 'change',
+      },
+      messages: [
+        {
+          id: 'discussion2-comment',
+          userId: 'bob',
+          createdAt: '2026-09-14T18:23:51.315Z',
+          body: [
+            {
+              children: [
+                {
+                  text: 'Nice demonstration of overlapping annotations with both comments and suggestions!',
+                },
+              ],
+              type: 'paragraph',
+            },
+          ],
+        },
+        {
+          id: 'discussion2-reply',
+          userId: 'charlie',
+          createdAt: '2026-09-14T18:25:51.315Z',
+          body: [
+            {
+              children: [
+                {
+                  text: 'This helps users understand how powerful the editor can be.',
+                },
+              ],
+              type: 'paragraph',
+            },
+          ],
+        },
+      ],
+      resolution: null,
+    },
+  ],
+  ranges: [
+    {
+      threadId: 'discussion1',
       range: {
-        anchor: {
-          path: [3, 1, 0],
-          offset: 0,
-        },
-        focus: {
-          path: [3, 2],
-          offset: 22,
+        kind: 'range',
+        version: 1,
+        value: {
+          association: 'inward',
+          deletion: 'nearest',
+          root: 'main',
+          range: null,
+          authored: {
+            anchor: {
+              left: {
+                offset: 337,
+                origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+              },
+              right: {
+                offset: 337,
+                origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+              },
+            },
+            content: [
+              {
+                origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                offset: 337,
+                length: 33,
+              },
+            ],
+            documentId: '488acfe8-fd98-49a6-82d5-b70b69cf98fb',
+            direction: 'forward',
+            focus: {
+              left: {
+                offset: 370,
+                origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+              },
+              right: {
+                offset: 370,
+                origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+              },
+            },
+            root: 'main',
+          },
         },
       },
     },
-    messages: [
-      {
-        id: 'discussion1-comment',
-        userId: 'charlie',
-        createdAt: '2026-09-14T18:18:51.315Z',
-        body: [
-          {
-            children: [
-              {
-                text: 'Comments are a great way to provide feedback and discuss changes.',
-              },
-            ],
-            type: 'paragraph',
-          },
-        ],
-      },
-      {
-        id: 'discussion1-reply',
-        userId: 'bob',
-        createdAt: '2026-09-14T18:20:51.315Z',
-        body: [
-          {
-            children: [
-              {
-                text: 'Agreed! The link to the docs makes it easy to learn more.',
-              },
-            ],
-            type: 'paragraph',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'discussion2',
-    createdAt: '2026-09-14T18:23:51.315Z',
-    resolved: false,
-    status: 'published',
-    excerpt: 'overlapping',
-    userId: 'bob',
-    target: {
-      id: '31632a17-2bd0-4bc9-803d-29b5189774d9',
-      type: 'change',
-    },
-    messages: [
-      {
-        id: 'discussion2-comment',
-        userId: 'bob',
-        createdAt: '2026-09-14T18:23:51.315Z',
-        body: [
-          {
-            children: [
-              {
-                text: 'Nice demonstration of overlapping annotations with both comments and suggestions!',
-              },
-            ],
-            type: 'paragraph',
-          },
-        ],
-      },
-      {
-        id: 'discussion2-reply',
-        userId: 'charlie',
-        createdAt: '2026-09-14T18:25:51.315Z',
-        body: [
-          {
-            children: [
-              {
-                text: 'This helps users understand how powerful the editor can be.',
-              },
-            ],
-            type: 'paragraph',
-          },
-        ],
-      },
-    ],
-  },
-];
+  ],
+};

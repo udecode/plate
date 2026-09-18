@@ -1,0 +1,40 @@
+{
+  "id": "2026-09-18-table-strict-mode-execution-recovery",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "table"
+  ],
+  "reviewBasis": [
+    "2026-09-17-table-host-delivery-benchmark-closure"
+  ],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-17-table-selection-host-projection-design.md",
+    "sha256": "528862276ba507be243ef88b87513a81b7afa832806a5479ae655e7ace630504"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "The September 18 checkpoint completes Strict Mode cleanup within the retained private TablePlugin host binder. It removes controller replacement/disposal machinery and uses ordinary empty-selection cleanup. Two attempts to delete the model/command selection bridge failed imperative selection cases and were rejected. The plan reports 37 Table React cases, 3 copied-UI cases, 4 Chromium cases and an actual Chrome drag; topology, resize and unrelated paste policy are unchanged.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-17-table-selection-host-projection-design.md",
+        "sha256": "528862276ba507be243ef88b87513a81b7afa832806a5479ae655e7ace630504",
+        "claim": "Dated September 18 execution checkpoint and scoped test/browser results, including rejected deletion experiments."
+      },
+      {
+        "path": "docs/plans/artifacts/2026-09-18-table-repair-cleanup/final-source.sha256",
+        "sha256": "b5b7fddb069373b7020035d62d75273a2961067e84e5ec20b9d5b9be1a3a60c3",
+        "claim": "Original hashes for TablePlugin, private host binding and its contract test match their observed files during recovery; this is only a subset of the required runtime/fixture/runner inputs."
+      }
+    ],
+    "limits": "Recovery, not replay. Three retained source hashes match, but a complete original source/fixture/runner/result binding is not recovered. Reported test and Chrome results remain historical claims; no fresh browser or scale acceptance."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-17-table-selection-host-projection-design.md",
+    "docs/plans/artifacts/2026-09-18-table-repair-cleanup/final-source.sha256"
+  ]
+}

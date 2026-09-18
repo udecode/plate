@@ -149,9 +149,9 @@ describe('placeholder upload lifetime', () => {
     expect(editor.key([1, 0])).toBe(childKey);
     expect(editor.read.children()[1]).not.toHaveProperty('mediaType');
     expect(owner.store.get('uploadTask', key)).toBeUndefined();
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.children()).toEqual(initialValue);
-    editor.update.history.redo();
+    editor.api.history.redo();
     expect(editor.read.children()[1]).toMatchObject({
       type: 'image',
       url: 'https://example.test/image.png',
@@ -201,7 +201,7 @@ describe('placeholder upload lifetime', () => {
     expect(editor.read.selection()?.anchor.path[0]).toBe(0);
     expect(owner.store.get('uploadTask', editor.key([0])!)?.file).toBe(file);
     expect(signal?.aborted).toBe(false);
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.children()).toEqual(initialValue);
     expect(signal?.aborted).toBe(true);
   });

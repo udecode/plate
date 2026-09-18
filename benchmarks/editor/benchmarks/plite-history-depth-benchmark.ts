@@ -60,9 +60,11 @@ const rows = [100, 1000].map((depth) => {
   const heapDeltaBytes = process.memoryUsage().heapUsed - heapBefore;
   const undoStartedAt = performance.now();
 
-  editor.update((tx) => {
-    tx.history.undo();
-  });
+  const undoResult = editor.api.history.undo();
+
+  if (undoResult.status !== 'applied') {
+    throw new Error(`${depth}: lazy history did not apply the retained batch.`);
+  }
 
   const undoResolutionMs = performance.now() - undoStartedAt;
   const expected = `${'r'.repeat(remoteCommits)}body${'l'.repeat(depth - 1)}`;

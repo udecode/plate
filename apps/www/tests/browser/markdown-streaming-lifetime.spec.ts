@@ -5,6 +5,54 @@ import {
 import { expect, test } from '@playwright/test';
 
 for (const mode of ['editable', 'static'] as const) {
+  test(`${mode} streaming renders columns`, async ({ page }) => {
+    const errors = recordBrowserRuntimeErrors(page);
+
+    try {
+      await page.goto('/blocks/markdown-streaming-demo', {
+        waitUntil: 'commit',
+      });
+      const heading = page.getByRole('heading', {
+        name: /^Transformed Chunks/,
+      });
+      await expect(heading).toBeVisible({ timeout: 20_000 });
+      await createBrowserEditorHarness(
+        page,
+        'markdown-streaming-demo',
+        page.locator('[data-editor="true"]').first()
+      ).ready({ editor: 'visible' });
+      await page.getByRole('combobox').first().selectOption('columns');
+      await page.getByRole('combobox').nth(1).selectOption('10');
+      if (mode === 'static') {
+        await page
+          .getByRole('button', { name: 'Switch to PlateStatic', exact: true })
+          .click();
+      }
+      await page
+        .getByRole('button', { name: 'Start streaming', exact: true })
+        .click();
+      await expect(heading).toHaveText(
+        /^Transformed Chunks \(([1-9]\d*)\/\1\)$/
+      );
+      await expect(
+        page.getByRole('button', { name: 'Start streaming', exact: true })
+      ).toBeVisible();
+
+      const output = page
+        .getByRole('heading', { name: 'Editor Output' })
+        .locator('..');
+      await expect(output.locator('[class~="group/column"]')).toHaveText([
+        '1',
+        '2',
+        '3',
+      ]);
+      await expect(output).not.toContainText(/<\/?column(?:Group|_group)/);
+      errors.assertNone();
+    } finally {
+      errors.stop();
+    }
+  });
+
   for (const action of [
     'reset',
     'paused reset',

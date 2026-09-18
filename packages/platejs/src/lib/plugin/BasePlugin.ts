@@ -4,7 +4,6 @@ import type {
   Descendant,
   Element,
   EditorCommitContext,
-  EditorDocumentValue,
   RuntimePlugin,
   EditorSchemaPluginProvider,
   RuntimePluginDefinitionInput,
@@ -247,7 +246,6 @@ export type AnyBasePlugin = {
     RuntimePluginDefinitionInput<Editor>['stateFields']
   >;
   targetPlugins: ReadonlyArray<PluginReference | string>;
-  prepareDocument?: ErasedPluginCallable<EditorDocumentValue | Value> | null;
   update?: ErasedPluginCallable<object>;
   validate?: ErasedPluginCallable;
 } & PluginReference;
@@ -359,22 +357,6 @@ export type NodeStaticProps<
       props: BaseRenderNodeProps<C> & RenderElementProps & StaticRenderLeafProps
     ) => AnyObject | undefined)
   | AnyObject;
-
-/**
- * Transforms a complete document input before schema fitting.
- *
- * Runs for editor initialization and every complete
- * `editor.update.value.replace(...)` load. The transform should be
- * deterministic and safe to reapply to canonical documents.
- */
-export type PrepareDocument<
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = (
-  ctx: PluginBaseContext<C> & {
-    document: EditorDocumentValue;
-    editor: Editor;
-  }
-) => EditorDocumentValue;
 
 export type HtmlCodecHooks<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
@@ -995,7 +977,6 @@ type ErasedBasePluginOverride = Partial<{
   shortcuts: object;
   slots: object;
   targetPlugins: ReadonlyArray<PluginReference | string>;
-  prepareDocument: unknown;
 }>;
 
 /**
@@ -1173,7 +1154,6 @@ type BasePluginAuthorFields<
       | PluginCodecMapDeclaration
       | ((context: BasePluginContext<C>) => PluginCodecMapDeclaration);
     decorate?: Decorate<C>;
-    prepareDocument?: PrepareDocument<WithAnyName<C>>;
   }> &
   BasePluginMethods<C> & {
     inject: Nullable<{
@@ -1271,7 +1251,7 @@ type BasePluginAuthorFields<
 type ProjectBasePluginFields<C extends AnyBasePluginDefinition> = Readonly<{
   [
     TKey in Extract<
-      Exclude<keyof C, BasePluginRuntimeField | 'decorate' | 'prepareDocument'>,
+      Exclude<keyof C, BasePluginRuntimeField | 'decorate'>,
       keyof BasePluginAuthorFields<C>
     >
   ]-?: Exclude<BasePluginAuthorFields<C>[TKey], undefined>;
@@ -1279,12 +1259,10 @@ type ProjectBasePluginFields<C extends AnyBasePluginDefinition> = Readonly<{
 
 type ProjectBasePluginContextualFields<C extends AnyBasePluginDefinition> =
   Readonly<{
-    [
-      TKey in Extract<
-        keyof C,
-        ('decorate' | 'prepareDocument') & keyof BasePluginAuthorFields<C>
-      >
-    ]-?: Exclude<BasePluginAuthorFields<C>[TKey], undefined>;
+    [TKey in Extract<keyof C, 'decorate'>]-?: Exclude<
+      BasePluginAuthorFields<C>[TKey],
+      undefined
+    >;
   }>;
 
 type BasePluginRuntimeField =
@@ -1341,7 +1319,6 @@ type BasePluginRuntimeDescriptor<
   | 'read'
   | 'render'
   | 'schema'
-  | 'prepareDocument'
   | 'update'
 > &
   BasePluginRuntimeShell<C> &

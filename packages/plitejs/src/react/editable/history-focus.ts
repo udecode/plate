@@ -6,10 +6,7 @@ import {
   readPliteViewSelection,
 } from '../view-selection';
 import type { EditableRepairRequest } from './mutation-controller';
-import {
-  consumeModelOwnedHistoryFocusRoot,
-  shouldForceRenderAfterModelOwnedHistory,
-} from './mutation-history';
+import { shouldForceRenderAfterModelOwnedHistory } from './mutation-history';
 import {
   getInternalDocumentChangeRootKeys,
   toInternalRoot,
@@ -113,7 +110,6 @@ export const getModelOwnedHistoryFocusRepair = ({
   repair?: EditableRepairRequest;
 } => {
   const shouldForceRender = shouldForceRenderAfterModelOwnedHistory(editor);
-  const historyFocusRoot = consumeModelOwnedHistoryFocusRoot(editor);
   const selection = readRuntimeSelection(editor);
   const selectionRoot = selection
     ? (SelectionApi.root(selection) ?? MAIN_ROOT_KEY)
@@ -125,7 +121,7 @@ export const getModelOwnedHistoryFocusRepair = ({
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
-    historyRoot: historyFocusRoot ?? getLastCommitSingleChangedRoot(editor),
+    historyRoot: getLastCommitSingleChangedRoot(editor),
     selectionRoot,
   });
 

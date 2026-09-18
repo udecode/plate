@@ -1,12 +1,16 @@
+import type React from 'react';
+
 import {
-  DebugPlugin,
+  ElementApi,
   Hotkeys,
-  createEditorView,
   type NodeKey,
+  NodeApi,
   PathApi,
+  RangeApi,
+  SelectionApi,
+  TextApi,
 } from '../../../core';
 import { getSelection } from '../../../dom/plite-dom.internal';
-import { fitSlicePlacements } from '../../../facade';
 import { failInvariant } from '../../../features/table/internal/failInvariant';
 import {
   BaseTableCellPlugin,
@@ -14,25 +18,290 @@ import {
   BaseTableRowPlugin,
 } from '../../../features/table/lib/BaseTablePlugin';
 import {
-  planTableCellDrop,
-  type TableDragCapture,
-} from '../../../features/table/lib/internal/paste';
-import {
   createTableNodeSelection,
+  getTableSelectionExpansion,
+  getTableSelectionNeighbor,
+  projectTableSelection,
   readTableSelection,
+  type TableSelectionView,
 } from '../../../features/table/lib/internal/selection';
-import { type Editor, toReactPlugin } from '../../core';
+import {
+  type Editor,
+  toReactPlugin,
+  useEditor,
+  useIsomorphicLayoutEffect,
+  useModelEditor,
+} from '../../core';
+import { useEditorContext } from '../../internal/plite-components';
+import {
+  useClaimEditableDOMCommit,
+  useEditorRuntimeState,
+} from '../../plite-react';
+import {
+  getTableSelectionCellRef,
+  updateTableSelectionHostState,
+} from './tableSelectionHostBinding.internal';
 
-const tableDragCaptures = new WeakMap<Editor, TableDragCapture>();
-const TABLE_CELL_DRAG_MIME = 'application/x-editor-table-cell-selection';
-const TABLE_COPY_FIT_REJECTED = new Error('Table copy fit rejected.');
+const csvSpecialCharacterPattern = /[",\r\n]/;
+const escapeCsvField = (value: string) =>
+  csvSpecialCharacterPattern.test(value)
+    ? `"${value.replaceAll('"', '""')}"`
+    : value;
 
-const consumeTableDragEvent = (event: {
-  preventDefault: () => void;
-  stopPropagation: () => void;
-}) => {
-  event.preventDefault();
-  event.stopPropagation();
+const readInternalSelection = (
+  editor: Editor,
+  at?: Parameters<typeof readTableSelection>[1]['at']
+) =>
+  editor.read((state) =>
+    readTableSelection(state, {
+      at,
+      cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+      selection: state.selection(),
+      tableType: editor.plugin(BaseTablePlugin).schema.type,
+    })
+  );
+
+const writeTableSelection = (
+  editor: Editor,
+  data: Pick<DataTransfer, 'getData' | 'setData'>
+): 'rejected' | 'unhandled' | 'written' => {
+  const view = readInternalSelection(editor);
+
+  if (!view || view.cellEntries.length <= 1) return 'unhandled';
+  const selectedArea = view.anchors.reduce(
+    (area, anchor) => area + anchor.colSpan * anchor.rowSpan,
+    0
+  );
+  const boundsArea =
+    (view.bounds.maxCol - view.bounds.minCol + 1) *
+    (view.bounds.maxRow - view.bounds.minRow + 1);
+
+  if (!view.complete || selectedArea !== boundsArea) return 'rejected';
+  const rows = projectTableSelection(view).children;
+  const values = rows.map((row) =>
+    NodeApi.isElement(row)
+      ? row.children.map((cell) => NodeApi.string(cell))
+      : []
+  );
+  const csv = `${values
+    .map((row) => row.map(escapeCsvField).join(','))
+    .join('\n')}\n`;
+  const tsv = `${values.map((row) => row.join('\t')).join('\n')}\n`;
+
+  try {
+    editor.api.dom.clipboard.writeSlice(data, {
+      formats: {
+        'text/csv': csv,
+        'text/plain': tsv,
+        'text/tab-separated-values': tsv,
+        'text/tsv': tsv,
+      },
+      slice: editor.read.slice.export(),
+    });
+  } catch {
+    return 'rejected';
+  }
+
+  return 'written';
+};
+
+const getTableAnchorPoint = (
+  view: TableSelectionView,
+  anchor: TableSelectionView['anchor']
+) => {
+  const [text, path] = NodeApi.first(anchor.cell, []);
+
+  return TextApi.isText(text)
+    ? {
+        offset: 0,
+        path: view.tablePath.concat(anchor.path, path),
+        ...(view.root === undefined ? {} : { root: view.root }),
+      }
+    : undefined;
+};
+
+const moveTableSelection = (
+  editor: Editor,
+  {
+    at,
+    edge,
+    fromOneCell,
+    reverse,
+  }: {
+    at?: Parameters<typeof readTableSelection>[1]['at'];
+    edge?: 'bottom' | 'left' | 'right' | 'top';
+    fromOneCell?: boolean;
+    reverse?: boolean;
+  } = {}
+) => {
+  let handled = false;
+
+  editor.update((tx) => {
+    const view = readTableSelection(tx, {
+      at,
+      cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+      selection: tx.selection(),
+      tableType: editor.plugin(BaseTablePlugin).schema.type,
+    });
+
+    if (!view) return;
+    if (edge) {
+      if (view.anchors.length <= (fromOneCell ? 0 : 1)) return;
+      const expansion = getTableSelectionExpansion(view, edge);
+
+      if (!expansion) return;
+      const anchor = getTableAnchorPoint(view, expansion.anchor);
+      const focus = getTableAnchorPoint(view, expansion.focus);
+
+      if (!anchor || !focus) return;
+      const range = { anchor, focus };
+      const expanded = readTableSelection(tx, {
+        at: range,
+        cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+        selection: tx.selection(),
+        tableType: editor.plugin(BaseTablePlugin).schema.type,
+      });
+
+      tx.selection.set(
+        (expanded && createTableNodeSelection(expanded)) ?? range
+      );
+      handled = true;
+      return;
+    }
+
+    const target = getTableSelectionNeighbor(
+      view.context,
+      view.anchor,
+      reverse ? 'above' : 'below'
+    );
+
+    if (target) {
+      const point = getTableAnchorPoint(view, target);
+
+      if (point) tx.selection.set(point);
+      handled = true;
+      return;
+    }
+
+    const rootNode = {
+      children: view.root === undefined ? tx.children() : tx.root(view.root),
+      type: '__table_root__',
+    };
+    const texts = [...NodeApi.texts(rootNode)];
+    const nextTablePath = PathApi.next(view.tablePath);
+    const text = reverse
+      ? texts
+          .reverse()
+          .find(([, path]) => PathApi.isBefore(path, view.tablePath))
+      : texts.find(([, path]) => !PathApi.isBefore(path, nextTablePath));
+
+    if (!text) return;
+    const point = {
+      offset: reverse ? text[0].text.length : 0,
+      path: text[1],
+      ...(view.root === undefined ? {} : { root: view.root }),
+    };
+
+    tx.selection.set({ anchor: point, focus: point });
+    handled = true;
+  });
+
+  return handled;
+};
+
+const selectAllTable = (editor: Editor) => {
+  let handled = false;
+
+  editor.update((tx) => {
+    const selection = tx.selection();
+    const currentView = readTableSelection(tx, {
+      cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+      selection,
+      tableType: editor.plugin(BaseTablePlugin).schema.type,
+    });
+    const tablePath =
+      currentView?.tablePath ?? tx.nodes.above({ type: BaseTablePlugin })?.[1];
+
+    if (!tablePath) return;
+    const range = tx.ranges.get(tablePath);
+
+    if (!range) return;
+    const allCellsSelected =
+      selection &&
+      SelectionApi.isNode(selection) &&
+      !!currentView &&
+      currentView.anchors.length === currentView.context.grid.anchors.length;
+
+    if ((selection && RangeApi.equals(selection, range)) || allCellsSelected) {
+      const documentRange = tx.ranges.get([]);
+
+      if (documentRange) tx.selection.set(documentRange);
+      handled = true;
+      return;
+    }
+    const view = readTableSelection(tx, {
+      at: range,
+      cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+      selection,
+      tableType: editor.plugin(BaseTablePlugin).schema.type,
+    });
+
+    tx.selection.set((view && createTableNodeSelection(view)) ?? range);
+    handled = true;
+  });
+
+  return handled;
+};
+
+const tabTable = (editor: Editor, reverse = false) => {
+  let handled = false;
+
+  editor.update((tx) => {
+    const selection = tx.selection();
+    const view = readTableSelection(tx, {
+      cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
+      selection,
+      tableType: editor.plugin(BaseTablePlugin).schema.type,
+    });
+
+    if (selection && (view?.anchors.length ?? 0) > 1) {
+      tx.selection.collapse({ edge: 'end' });
+      handled = true;
+      return;
+    }
+    const cell = tx.nodes.find({
+      match: (node) =>
+        ElementApi.isElement(node) &&
+        node.type === editor.plugin(BaseTableCellPlugin).schema.type,
+    });
+
+    if (!cell || !view) return;
+    const anchor = view.context.anchorAtPath(cell[1]);
+    const target =
+      anchor &&
+      getTableSelectionNeighbor(
+        view.context,
+        anchor,
+        reverse ? 'previous' : 'next'
+      );
+    const targetEntry = target && view.context.entryAt(target.row, target.col);
+
+    if (targetEntry) {
+      const point = tx.points.start(targetEntry[1]);
+
+      if (point) tx.selection.set(point);
+      handled = true;
+      return;
+    }
+    if (!reverse) {
+      handled = tx.plugin(BaseTablePlugin).insertRow({
+        at: cell[1],
+        select: true,
+      });
+    }
+  });
+
+  return handled;
 };
 
 export const TableCellPlugin = toReactPlugin(BaseTableCellPlugin);
@@ -41,195 +310,127 @@ export const TableRowPlugin = toReactPlugin(BaseTableRowPlugin, {
   dependencies: [TableCellPlugin],
 });
 
+type TableSelectionHostState = Readonly<{
+  anchorKey: NodeKey | null;
+  ownsSelection: boolean;
+  selectedKeys: readonly NodeKey[];
+}>;
+
+const hasSameKeys = (
+  nextValue: readonly NodeKey[],
+  previousValue: readonly NodeKey[]
+) => {
+  if (nextValue === previousValue) return true;
+  if (nextValue.length !== previousValue.length) return false;
+
+  return nextValue.every((key, index) => key === previousValue[index]);
+};
+
+const hasSameTableSelectionHostState = (
+  nextValue: TableSelectionHostState | null | undefined,
+  previousValue: TableSelectionHostState | null | undefined
+) =>
+  nextValue === previousValue ||
+  (!!nextValue &&
+    !!previousValue &&
+    nextValue.anchorKey === previousValue.anchorKey &&
+    nextValue.ownsSelection === previousValue.ownsSelection &&
+    hasSameKeys(nextValue.selectedKeys, previousValue.selectedKeys));
+
+const readTableSelectionHostState = (
+  editor: Editor
+): TableSelectionHostState => {
+  const ownsSelection = editor.read.selection() !== null;
+  const view = editor.plugin(TablePlugin).read.selection();
+  const isExpanded = !!view && view.cells.length > 1;
+
+  if (!isExpanded) {
+    return { anchorKey: null, ownsSelection, selectedKeys: [] };
+  }
+
+  return {
+    anchorKey: view.anchor,
+    ownsSelection,
+    selectedKeys: view.cells.flatMap(([, path]) => {
+      const key = editor.key(
+        view.root === undefined ? path : { offset: 0, path, root: view.root }
+      );
+
+      return key ? [key] : [];
+    }),
+  };
+};
+
+function TableSelectionHostEffect() {
+  useClaimEditableDOMCommit();
+
+  const editor = useEditor();
+  const modelEditor = useModelEditor();
+  const viewEditor = useEditorContext();
+  const modelState = useEditorRuntimeState(
+    modelEditor,
+    () => readTableSelectionHostState(modelEditor),
+    { equalityFn: hasSameTableSelectionHostState }
+  );
+  const editorState = useEditorRuntimeState(
+    editor,
+    () => readTableSelectionHostState(editor),
+    { equalityFn: hasSameTableSelectionHostState }
+  );
+  const state = editorState.ownsSelection ? editorState : modelState;
+
+  useIsomorphicLayoutEffect(() => {
+    updateTableSelectionHostState(viewEditor, state);
+  }, [state, viewEditor]);
+  useIsomorphicLayoutEffect(
+    () => () => {
+      // Ref lifetimes own hosts; effect replay only resets their selection paint.
+      updateTableSelectionHostState(viewEditor, {
+        anchorKey: null,
+        selectedKeys: [],
+      });
+    },
+    [viewEditor]
+  );
+
+  return null;
+}
+
 /** Enables support for tables with React-specific features. */
 export const TablePlugin = toReactPlugin(BaseTablePlugin, {
   dependencies: [TableRowPlugin],
   shortcuts: {
     tab: {
-      handler: ({ editor }) => editor.plugin(BaseTablePlugin).update.tab(),
+      handler: ({ editor }) => tabTable(editor),
       keys: 'tab',
       priority: 10,
     },
     untab: {
-      handler: ({ editor }) =>
-        editor.plugin(BaseTablePlugin).update.tab({ reverse: true }),
+      handler: ({ editor }) => tabTable(editor, true),
       keys: 'shift+tab',
       priority: 10,
     },
   },
   on: {
-    copy: ({ api, event }) => {
-      if (!api.writeSelection(event.clipboardData)) {
-        return undefined;
-      }
+    copy: ({ editor, event }) => {
+      const result = writeTableSelection(editor, event.clipboardData);
+
+      if (result === 'unhandled') return undefined;
 
       event.preventDefault();
       return true;
     },
-    cut: ({ api, editor, event }) => {
-      if (!api.writeSelection(event.clipboardData)) {
-        return undefined;
-      }
+    cut: ({ editor, event }) => {
+      const result = writeTableSelection(editor, event.clipboardData);
+
+      if (result === 'unhandled') return undefined;
 
       event.preventDefault();
+      if (result === 'rejected') return true;
       editor.update.fragment.delete();
       return true;
     },
-    dragEnd: ({ editor }) => {
-      tableDragCaptures.delete(editor);
-    },
-    dragOver: ({ editor, event }) => {
-      if (
-        !tableDragCaptures.has(editor) ||
-        !Array.from(event.dataTransfer.types ?? []).includes(
-          TABLE_CELL_DRAG_MIME
-        )
-      ) {
-        return undefined;
-      }
-
-      consumeTableDragEvent(event);
-      return true;
-    },
-    dragStart: ({ editor, event, read }) => {
-      tableDragCaptures.delete(editor);
-
-      const dragCellKey =
-        (
-          event.target as {
-            closest?: (selector: string) => Element | null;
-          } | null
-        )
-          ?.closest?.('[data-table-cell-drag-handle="true"]')
-          ?.getAttribute('data-table-cell-drag-for') ?? undefined;
-
-      if (!dragCellKey) return undefined;
-
-      const source = read.selection();
-
-      if (!source || !source.cellKeys.includes(dragCellKey as NodeKey)) {
-        return undefined;
-      }
-      if (!source.complete || source.grid.problems.length > 0) {
-        consumeTableDragEvent(event);
-        editor
-          .plugin(DebugPlugin)
-          .api.warn(
-            'Table drag/drop rejected before mutation.',
-            'TABLE_MUTATION_DIAGNOSTIC',
-            { kind: 'invalid', reason: 'invalid-grid' }
-          );
-
-        return true;
-      }
-      const { tableKey } = source;
-
-      event.dataTransfer.effectAllowed = 'copyMove';
-      event.dataTransfer.setData(TABLE_CELL_DRAG_MIME, '1');
-      tableDragCaptures.set(
-        editor,
-        Object.freeze({
-          bounds: source.bounds,
-          cellKeys: Object.freeze([...source.cellKeys]),
-          editor,
-          ...(source.root === undefined ? {} : { root: source.root }),
-          tableKey,
-          tablePath: Object.freeze([...source.tablePath]),
-          version: source.version,
-        })
-      );
-
-      return undefined;
-    },
-    drop: ({ api, editor, event, store }) => {
-      const source = tableDragCaptures.get(editor);
-
-      if (!source) return undefined;
-      if (
-        !Array.from(event.dataTransfer.types ?? []).includes(
-          TABLE_CELL_DRAG_MIME
-        )
-      ) {
-        tableDragCaptures.delete(editor);
-
-        return undefined;
-      }
-
-      const at = editor.api.dom.resolveEventRange(event);
-      const target = at
-        ? createEditorView(editor, {
-            ...(at.anchor.root === undefined ? {} : { root: at.anchor.root }),
-          }).read((state) =>
-            readTableSelection(state, {
-              at,
-              cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-              tableType: editor.plugin(BaseTablePlugin).schema.type,
-            })
-          )
-        : null;
-
-      if (!target) return undefined;
-
-      tableDragCaptures.delete(editor);
-      consumeTableDragEvent(event);
-
-      const result = planTableCellDrop(editor, {
-        copy:
-          event.dataTransfer.dropEffect === 'copy' ||
-          event.altKey ||
-          event.ctrlKey ||
-          event.metaKey,
-        createCell: api.createCell,
-        createRow: api.createRow,
-        disableExpand: !!store.get().disableExpandOnInsert,
-        source,
-        target,
-      });
-
-      if (result.kind !== 'plan') {
-        editor
-          .plugin(DebugPlugin)
-          .api.warn(
-            'Table drag/drop rejected before mutation.',
-            'TABLE_MUTATION_DIAGNOSTIC',
-            result
-          );
-
-        return true;
-      }
-
-      try {
-        editor.update({ history: 'new-batch', tags: 'paste' }, (tx) => {
-          tx.changes.apply(result.change);
-          const targetEditor = result.root
-            ? createEditorView(editor, { root: result.root })
-            : editor;
-
-          for (const group of result.placementGroups) {
-            if (
-              !fitSlicePlacements(targetEditor, group.source, {
-                placements: group.placements,
-              })
-            ) {
-              throw TABLE_COPY_FIT_REJECTED;
-            }
-          }
-          tx.selection.set(result.selection);
-        });
-      } catch (error) {
-        if (error !== TABLE_COPY_FIT_REJECTED) throw error;
-        editor
-          .plugin(DebugPlugin)
-          .api.warn(
-            'Table drag/drop rejected during content fitting.',
-            'TABLE_MUTATION_DIAGNOSTIC',
-            { kind: 'invalid-source', reason: 'content-rejected' }
-          );
-      }
-
-      return true;
-    },
-    mouseUp: ({ editor, read }) => {
+    mouseUp: ({ editor }) => {
       const domSelection = getSelection(
         editor.api.dom.findDocumentOrShadowRoot()
       );
@@ -239,7 +440,7 @@ export const TablePlugin = toReactPlugin(BaseTablePlugin, {
       const range = editor.api.dom.resolveRange(domSelection, {
         exactMatch: false,
       });
-      const view = range && read.selection(range);
+      const view = range && readInternalSelection(editor, range);
       const selection = view && createTableNodeSelection(view);
 
       if (!selection) return undefined;
@@ -248,7 +449,7 @@ export const TablePlugin = toReactPlugin(BaseTablePlugin, {
 
       return true;
     },
-    keyDown: ({ editor, event, read, update }) => {
+    keyDown: ({ editor, event, read }) => {
       if (event.defaultPrevented) return undefined;
 
       const selection = editor.read.selection();
@@ -347,7 +548,7 @@ export const TablePlugin = toReactPlugin(BaseTablePlugin, {
         if (hasAdjacentBlock({ ...context, reverse })) return false;
         if (!shouldMove({ ...context, reverse })) return false;
 
-        return !!update.moveSelection({ reverse });
+        return moveTableSelection(editor, { reverse });
       };
       const edges = {
         'shift+down': 'bottom',
@@ -381,7 +582,7 @@ export const TablePlugin = toReactPlugin(BaseTablePlugin, {
       if (
         // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] Safari IME exposes composition code 229 through which when cell selection is active.
         event.which === 229 &&
-        (read.selection()?.anchors.length ?? 0) > 1
+        (read.selection()?.cells.length ?? 0) > 1
       ) {
         editor.update.selection.collapse({ edge: 'end' });
 
@@ -400,9 +601,9 @@ export const TablePlugin = toReactPlugin(BaseTablePlugin, {
 
         const reverse = key === 'shift+up';
         const handled =
-          update.moveSelection({ edge: edges[key], reverse }) ||
+          moveTableSelection(editor, { edge: edges[key], reverse }) ||
           (shouldMoveSingleCell(key) &&
-            update.moveSelection({
+            moveTableSelection(editor, {
               at: selection ?? failInvariant('Expected value to be defined'),
               edge: edges[key],
               fromOneCell: true,
@@ -423,7 +624,7 @@ export const TablePlugin = toReactPlugin(BaseTablePlugin, {
           : Hotkeys.isMoveDownward(event) || Hotkeys.isMoveLineForward(event)
             ? moveLine(false)
             : Hotkeys.isSelectAll(event)
-              ? update.selectAll()
+              ? selectAllTable(editor)
               : false;
 
       if (handled) {
@@ -436,4 +637,32 @@ export const TablePlugin = toReactPlugin(BaseTablePlugin, {
       return undefined;
     },
   },
+}).extend({
+  inject: {
+    nodeProps: {
+      transformProps: (context) => {
+        const { editor, element } = context;
+
+        if (!element) return undefined;
+
+        const key = editor.key(element);
+
+        if (!key) return undefined;
+
+        return {
+          ref: getTableSelectionCellRef(
+            editor,
+            key,
+            (
+              context as typeof context & {
+                attributes?: { ref?: React.Ref<HTMLElement> };
+              }
+            ).attributes?.ref
+          ),
+        };
+      },
+    },
+  },
+  slots: { afterEditable: TableSelectionHostEffect },
+  targetPlugins: [TableCellPlugin],
 });

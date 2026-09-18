@@ -16,11 +16,9 @@ import {
 const HOMEPAGE = 'https://platejs.org';
 const NAME = 'plate';
 
-const isDev = process.env.NODE_ENV === 'development';
 const RELATIVE_SOURCE_DIR = '../../content/docs';
 const SOURCE_DIR = path.join(process.cwd(), RELATIVE_SOURCE_DIR);
 const META_FILE = 'meta.json';
-const REGISTRY_BASE_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
 
 const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g;
 const DOCS_ROUTE_PREFIX = '/docs';
@@ -240,7 +238,7 @@ export async function createDocsRegistry(): Promise<Registry> {
 
 export function createPublicDocsRegistry(
   registry: Registry,
-  registryBaseUrl = REGISTRY_BASE_URL
+  registryBaseUrl: string
 ): Registry {
   return registrySchema.parse({
     ...registry,

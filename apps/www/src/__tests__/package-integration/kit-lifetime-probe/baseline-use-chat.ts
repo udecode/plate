@@ -1,3 +1,5 @@
+// oxlint-disable-next-line typescript/ban-ts-comment -- Frozen pre-cut source is compiled only by the baseline harness.
+// @ts-nocheck -- Frozen pre-cut source is compiled only by the baseline harness.
 'use client';
 
 // Fake stream abort control is imperative transport state.
@@ -269,7 +271,7 @@ export const useEditorChat = ({
           throw new Error('Streaming table data requires a cell update');
         }
 
-        editor.plugin(AIChatPlugin).update.applyTableCellSuggestion(cellUpdate);
+        editor.plugin(AIChatPlugin).api.setTablePreview(cellUpdate);
       }
 
       if (data.type === 'data-comment' && isComment(data.data)) {
@@ -337,9 +339,7 @@ export const useEditorChat = ({
       if (store.get('chat')?.stop === stopSession) {
         store.set({
           streaming: false,
-          _blockChunks: '',
           _blockPath: null,
-          _mdxName: null,
         });
       }
     };

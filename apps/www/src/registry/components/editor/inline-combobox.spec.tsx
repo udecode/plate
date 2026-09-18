@@ -192,7 +192,7 @@ describe('InlineCombobox', () => {
     fireEvent.click(view.getByRole('button', { name: 'Alice' }));
     expect(editor.read.lastCommit()!.version - version).toBe(1);
     expect(onClick).toHaveBeenCalledTimes(1);
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.children()).toEqual(before);
   });
 

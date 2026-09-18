@@ -31,7 +31,7 @@ docs:
 
 ### Add the kit
 
-Use `AlignKit` for the Plate UI setup. It targets headings, paragraphs, images, and media embeds.
+Use `AlignKit` for live and static Plate UI setups. The server-safe kit targets headings, paragraphs, images, and media embeds.
 
 <ComponentSource name="align" />
 
@@ -47,7 +47,13 @@ export const editor = createEditor({
 
 ### Add the toolbar control
 
-`AlignToolbarButton` shows left, center, right, and justify controls.
+Install `AlignToolbarButton` separately when the editor needs alignment controls.
+
+```bash
+npx shadcn@latest add @plate/align-toolbar-button
+```
+
+The dropdown shows left, center, right, and justify controls.
 
 ```tsx
 import { AlignToolbarButton } from "@/components/editor/align-toolbar-button";
@@ -74,15 +80,14 @@ npm install platejs @tanstack/react-virtual
 Configure the blocks that can store alignment.
 
 ```tsx
-import { TextAlignPlugin } from "platejs/react";
-import { PLUGINS } from "platejs";
+import { BaseTextAlignPlugin, PLUGINS } from "platejs";
 import { createEditor } from "platejs/react";
 
 export const editor = createEditor({
   plugins: [
-    TextAlignPlugin.configure({
+    BaseTextAlignPlugin.configure({
       targetPlugins: [
-        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
+        PLUGINS.heading,
         PLUGINS.paragraph,
       ],
       inject: {
@@ -122,8 +127,7 @@ editor.update.textAlign.set("start", { at: [] });
 | `BaseTextAlignPlugin`         | `platejs`       | Headless plugin that stores alignment, injects block props, and parses HTML text-align styles. |
 | `TextAlignPlugin`             | `platejs/react` | React wrapper around `BaseTextAlignPlugin`.                                                    |
 | `editor.update.textAlign.set` | `platejs`       | Bound update method exposed by the plugin.                                                     |
-| `BaseAlignKit`                | Registry kit                  | Static/headless setup for headings, paragraphs, images, and media embeds.                      |
-| `AlignKit`                    | Registry kit                  | React setup plus toolbar dependency.                                                           |
+| `AlignKit`                    | Registry kit                  | Server-safe setup shared by live and static editors.                                           |
 | `AlignToolbarButton`          | Registry UI                   | Dropdown that writes alignment through `textAlign.set`.                                        |
 
 The package owns alignment storage and parsing. The registry owns the dropdown UI.
@@ -167,8 +171,8 @@ with a `text-align` style becomes a `textAlign` property on matching blocks.
 
 | Option                              | Surface                       | Use                                                                                    |
 | ----------------------------------- | ----------------------------- | -------------------------------------------------------------------------------------- |
-| `targetPlugins`                     | `TextAlignPlugin`             | Element plugin descriptors or dynamic names whose schema can keep `textAlign`; injection is derived from this list. |
-| `inject.nodeProps.defaultNodeValue` | `TextAlignPlugin`             | Value that clears the stored property when selected.                                   |
-| `inject.nodeProps.styleKey`         | `TextAlignPlugin`             | CSS property used for rendering.                                                       |
+| `targetPlugins`                     | `BaseTextAlignPlugin`         | Element plugin descriptors or dynamic names whose schema can keep `textAlign`; injection is derived from this list. |
+| `inject.nodeProps.defaultNodeValue` | `BaseTextAlignPlugin`         | Value that clears the stored property when selected.                                   |
+| `inject.nodeProps.styleKey`         | `BaseTextAlignPlugin`         | CSS property used for rendering.                                                       |
 | `inject.nodeProps.validNodeValues`  | Registry toolbar              | Values exposed to alignment UI.                                                        |
 | `options`                           | `editor.update.textAlign.set` | Plate node update options for the target range and matcher.                            |

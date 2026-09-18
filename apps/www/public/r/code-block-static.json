@@ -3,7 +3,8 @@
   "name": "code-block-static",
   "dependencies": [
     "platejs",
-    "lowlight"
+    "lowlight",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [],
   "files": [

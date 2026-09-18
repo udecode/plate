@@ -27,11 +27,11 @@ describe('screen-reader announcement history policy', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.history.undos()[0]?.effects),
+      editor.read((state) => state.history().undos[0]?.effects),
       []
     );
 
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
 
     assert.equal(
       editor.read
@@ -42,7 +42,7 @@ describe('screen-reader announcement history policy', () => {
       false
     );
 
-    editor.update((tx) => tx.history.redo());
+    editor.api.history.redo();
 
     assert.equal(
       editor.read

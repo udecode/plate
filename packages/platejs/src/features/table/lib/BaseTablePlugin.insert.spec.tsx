@@ -16,9 +16,9 @@ describe('table insertion', () => {
   jsxt;
 
   describe('when inserting a table row', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'inserts a tr with empty cells (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'inserts a tr with empty cells (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -81,7 +81,7 @@ describe('table insertion', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -97,9 +97,9 @@ describe('table insertion', () => {
   });
 
   describe('when inserting a table row at specific path', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'inserts a tr with empty cells (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'inserts a tr with empty cells (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -162,12 +162,16 @@ describe('table insertion', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
 
-        editor.update.table.insertRow({ at: [0, 0], select: true });
+        editor.update.table.insertRow({
+          at: [0, 0],
+          before: true,
+          select: true,
+        });
 
         expect(editor.read.children()).toMatchObject(output.children);
         expect(editor.read.selection()).toEqual(
@@ -178,9 +182,9 @@ describe('table insertion', () => {
   });
 
   describe('when inserting a table row before', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'inserts a tr with empty cells before the current row (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'inserts a tr with empty cells before the current row (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -243,7 +247,7 @@ describe('table insertion', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });

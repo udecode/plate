@@ -91,12 +91,12 @@ describe('canonical text splice projection', () => {
     });
     const key = getNodeKey(editor, [0, 0]);
     editor.update.text.insert('X', { at: { path: [0, 0], offset: 2 } });
-    editor.update.history.undo();
+    editor.api.history.undo();
     assert.deepEqual(
       projectEditorTextSplices(getLastCommit(editor)!).changes.get(key),
       [{ from: 2, to: 3, insert: '' }]
     );
-    editor.update.history.redo();
+    editor.api.history.redo();
     assert.deepEqual(
       projectEditorTextSplices(getLastCommit(editor)!).changes.get(key),
       [{ from: 2, to: 2, insert: 'X' }]

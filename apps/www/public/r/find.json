@@ -5,7 +5,8 @@
   "description": "A search bar over the editor’s current text matches.",
   "dependencies": [
     "platejs",
-    "lucide-react"
+    "lucide-react",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "input-group",

@@ -1,4 +1,4 @@
-import type { Extension } from '@codemirror/state';
+import { EditorState, type Extension } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 
 import type { ExternalTextState } from '../../react/core';
@@ -61,7 +61,7 @@ function mount(options: Parameters<typeof createCodeMirrorAdapter>[0] = {}) {
   };
 }
 
-test('stale local changes reset to canonical text without a second dispatch', async () => {
+test('stale local changes reset before dispatch returns', () => {
   const { actions, host, view } = mount();
   expect(host.querySelector('.cm-content')?.getAttribute('aria-label')).toBe(
     'Source'
@@ -76,12 +76,11 @@ test('stale local changes reset to canonical text without a second dispatch', as
     intent: 'paste',
     selection: { anchor: 0, focus: 0 },
   });
-  await Promise.resolve();
   expect(view.state.doc.toString()).toBe('abc');
   expect(actions.dispatch).toHaveBeenCalledTimes(1);
 });
 
-test('a superseded nested projection cannot overwrite the latest projection', async () => {
+test('synchronous canonical feedback cannot overwrite a later projection', () => {
   const { actions, set, view } = mount();
   actions.dispatch.mockImplementation(() => {
     set({ text: 'abc', version: 2 }, null);
@@ -93,15 +92,162 @@ test('a superseded nested projection cannot overwrite the latest projection', as
     changes: { from: 1, insert: 'X', to: 1 },
     userEvent: 'input.type',
   });
+  expect(view.state.doc.toString()).toBe('abc');
   set({ text: 'aXbc', version: 3 }, null);
-  expect(view.state.doc.toString()).toBe('aXbc');
-
-  await Promise.resolve();
   expect(view.state.doc.toString()).toBe('aXbc');
 });
 
+test('notifies extension observers before applying canonical feedback', () => {
+  const observed: string[] = [];
+  const mounted = mount({
+    extensions: EditorView.updateListener.of((update) => {
+      if (update.docChanged) observed.push(update.state.doc.toString());
+    }),
+  });
+  mounted.actions.dispatch.mockImplementation(() => {
+    mounted.set({ text: 'abcgood', version: 2 }, null);
+
+    return { status: 'applied' as const };
+  });
+
+  mounted.view.dispatch({
+    changes: { from: 3, insert: 'bad' },
+    userEvent: 'input.type',
+  });
+
+  expect(observed).toEqual(['abcbad', 'abcgood']);
+});
+
+test('publishes transaction batches in their starting coordinates', () => {
+  const { actions, view } = mount();
+  actions.dispatch.mockReturnValue({ status: 'applied' as const });
+  const first = view.state.update({ changes: { from: 1, insert: 'X' } });
+  const second = first.state.update({
+    changes: { from: 3, insert: 'Y', to: 4 },
+  });
+
+  view.dispatch([first, second]);
+
+  expect(view.state.doc.toString()).toBe('aXbY');
+  expect(actions.dispatch).toHaveBeenCalledWith({
+    baseVersion: 1,
+    changes: [
+      { from: 1, insert: 'X', to: 1 },
+      { from: 2, insert: 'Y', to: 3 },
+    ],
+    intent: 'input',
+    selection: { anchor: 0, focus: 0 },
+  });
+});
+
+test('restores canonical feedback before a dispatch error escapes', () => {
+  const mounted = mount();
+  mounted.actions.dispatch.mockImplementation(() => {
+    mounted.set({ text: 'abc', version: 2 }, null);
+    throw new Error('canonical transaction failed');
+  });
+
+  expect(() =>
+    mounted.view.dispatch({ changes: { from: 3, insert: 'bad' } })
+  ).toThrow('canonical transaction failed');
+  expect(mounted.view.state.doc.toString()).toBe('abc');
+});
+
+test('rejects recursive dispatch from an update listener before mutation', () => {
+  const errors: unknown[] = [];
+  let attempted = false;
+  const mounted = mount({
+    extensions: [
+      EditorView.exceptionSink.of((error) => errors.push(error)),
+      EditorView.updateListener.of((update) => {
+        if (!update.docChanged || attempted) return;
+        attempted = true;
+        update.view.dispatch({ changes: { from: 0, insert: 'R' } });
+      }),
+    ],
+  });
+  mounted.actions.dispatch.mockReturnValue({ status: 'applied' as const });
+
+  mounted.view.dispatch({ changes: { from: 3, insert: 'bad' } });
+
+  expect(mounted.view.state.doc.toString()).toBe('abcbad');
+  expect(mounted.actions.dispatch).toHaveBeenCalledTimes(1);
+  expect(errors).toHaveLength(1);
+  expect(String(errors[0])).toContain('update listeners');
+});
+
+test('accepts an in-flight focus refresh that needs no view mutation', () => {
+  const mountedRef: { current?: ReturnType<typeof mount> } = {};
+  const mounted = mount({
+    extensions: EditorView.updateListener.of((update) => {
+      if (!update.selectionSet || update.docChanged) return;
+      const selection = update.state.selection.main;
+
+      mountedRef.current!.set({
+        selection: {
+          anchor: selection.anchor,
+          focus: selection.head,
+          mode: 'native',
+        },
+        version: 2,
+      });
+    }),
+  });
+  mountedRef.current = mounted;
+  mounted.actions.select.mockReturnValue({ status: 'applied' as const });
+
+  mounted.view.dispatch({ selection: { anchor: 1 } });
+
+  expect(mounted.actions.select).toHaveBeenCalledWith({
+    baseVersion: 2,
+    selection: { anchor: 1, focus: 1 },
+  });
+});
+
+test('rejects a non-monotonic no-op refresh during listener delivery', () => {
+  const errors: unknown[] = [];
+  let refreshes = 0;
+  const mountedRef: { current?: ReturnType<typeof mount> } = {};
+  const mounted = mount({
+    extensions: [
+      EditorView.exceptionSink.of((error) => errors.push(error)),
+      EditorView.updateListener.of((update) => {
+        if (!update.selectionSet || update.docChanged) return;
+        const selection = update.state.selection.main;
+
+        refreshes += 1;
+        mountedRef.current!.set({
+          selection: {
+            anchor: selection.anchor,
+            focus: selection.head,
+            mode: 'native',
+          },
+          version: 2,
+        });
+      }),
+    ],
+  });
+  mountedRef.current = mounted;
+  mounted.actions.select.mockReturnValue({ status: 'applied' as const });
+
+  mounted.view.dispatch({ selection: { anchor: 1 } });
+  mounted.view.dispatch({ selection: { anchor: 2 } });
+
+  expect(refreshes).toBe(2);
+  expect(errors).toHaveLength(1);
+  expect(String(errors[0])).toContain('update listeners');
+  expect(mounted.actions.select).toHaveBeenLastCalledWith({
+    baseVersion: 2,
+    selection: { anchor: 2, focus: 2 },
+  });
+});
+
 test('canonical text, read-only and selection updates do not echo to the model', () => {
-  const { actions, set, view } = mount();
+  const { actions, set, view } = mount({
+    extensions: EditorState.transactionFilter.of((transaction) =>
+      transaction.docChanged ? [] : transaction
+    ),
+  });
   set(
     {
       text: 'remote:abc',

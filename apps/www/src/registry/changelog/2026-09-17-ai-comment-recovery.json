@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-17-ai-comment-recovery",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-17-ai-comment-recovery.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "AI Comment selection and recovery",
+  "targets": [
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-api",
+      "files": [
+        "apps/www/src/registry/app/api/ai/command/prompt/common.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getChooseToolPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getCommentPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/route.ts",
+        "apps/www/src/registry/app/api/ai/command/utils.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-17-ai-menu-comment-failure-feedback-recovery-19187f94",
+      "kind": "fix",
+      "summary": "Publish generated feedback as ordinary comment threads. Keep completed comments when generation stops or fails, and show failed requests with retry and dismissal controls.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-menu"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-17",
+          "entry": "2026-09-17-ai-comment-recovery",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-09-17-ai-comment-recovery-2",
+      "kind": "behavior",
+      "summary": "Limit comment prompts to the selected content while preserving its formatting and inline structure.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-api"],
+      "source": {
+        "line": 13,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-09-17",
+          "entry": "2026-09-17-ai-comment-recovery",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

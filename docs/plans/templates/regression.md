@@ -3,7 +3,7 @@
 This is a project-owned file template under Task. Apply the project's standing Autogoal request for long-running work unless the user opts out. Apply `.agents/rules/task/references/workflow.md` to timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
 
 Objective:
-TODO: Write the short Regression objective under 240 characters.
+TODO: Write the short corpus repair objective under 240 characters.
 
 Flow mode:
 one-shot execution
@@ -28,58 +28,22 @@ First checkpoint:
 - Copy every explicit requirement, scope boundary, non-goal, timing rule, stop
   condition, deliverable, verification surface, and final handoff requirement
   into the Work Checklist before mutable work.
-- Load `.agents/skills/regression/references/methodology.md`.
+- Load `.agents/skills/patch/references/corpus.md`.
 - Fill the selected-case, reporter-oracle, failed-fix, and architecture tables,
   then run `validate-regression-plan.mjs` before implementation.
 - Do not create a TSV, JSON, database, manifest, or manual case registry.
 
 Completion threshold:
 
-- Every selected observed regression has an executable test that fails on the
-  violated invariant and passes after the fix.
-- Every selected case records `unit-red: <test>` or
-  `e2e-required: <lower-layer limitation>`. Unit/package RED stops new E2E test
-  creation; Browser may remain final verification without permanent E2E coverage.
-- Every `unit-red:` case records `runtime-modes:` in `Exact environment` and
-  matches every route mode that changes mutation representation or schema
-  properties; a disabled preview, suggestion, history, or other material mode
-  keeps the lower-layer result proxy-only.
-- Every `unit-red:` case records `fixture-scope: complete <input>` or
-  `fixture-scope: minimal <invariant>` in `Exact environment`. Minimal input is
-  reproduction-only and cannot support kept, fixed, completed, or full-flow
-  status; deterministic generated actions replay their complete fixture.
-- Every case has positive and forbidden-state assertions for model, DOM/native,
-  pointer feedback, focus, popup, geometry/paint, runtime errors, and follow-up
-  input, with an N/A reason for observations that do not apply.
-- Current source and every proof host are ready before behavior claims.
-- Every browser proof after product-source edits records
-  `browser-source-attestation: <fresh host restart or served-input digest>` in
-  Proof-host readiness before its behavior assertion. Browser-family changes
-  repeat the attestation; an unexplained running server and unproved hot reload
-  are invalid.
-- Every reporter-named route uses one literal `exact-route:` in the selected
-  environment and Proof-host readiness row. Final proof names the route and a
-  receipt input contains it as the executable navigation target; proxy routes
-  cannot certify it.
-- Every kept case has exact reproduction, one-case Patch evidence, focused
-  green proof, required retry-free stability, final ref/dirty-boundary proof,
-  and no accepted P1 finding.
-- Every kept case and the run are marked `completed` when those local gates
-  pass. Commit and push are not local completion gates.
-- Every case records `repair-now`, evidence-backed `no-change`, or
-  evidence-backed `defer`.
-- Every failed claimed fix invalidates its prior proof and automatically repairs
-  Regression with an executable workflow test before the next product attempt.
-- A second failed fix or architecture trigger has an accepted Best API and
-  Plite/Plate layer plan before implementation resumes.
-- Final proof has a generated receipt and affected-corpus replay after the last
-  shared-owner edit.
-- Render-count, rerender, and profiler-event cases declare every measured event
-  emitter/router/filter/aggregator/render owner as `measurement-owner-inputs:`;
-  completion records `measurement-owner-closure: pass`, and one final receipt
-  includes every named path.
-- All canonical Work Checklist and Completion Gates rows resolve and
-  both semantic validation and `check-complete.mjs` pass.
+- Every required selected case has permanent executable red/green coverage,
+  exact final-byte proof, applicable stability and a completed local decision.
+- Apply the canonical [Patch corpus method](../../../.agents/rules/patch/references/corpus.md)
+  and applicable [Verify Plate oracles](../../../.agents/rules/verify-plate/references/regression-oracles.md).
+  Their tags and domain gates remain required; this template stores evidence.
+- Every still-applicable reporter claim has a phase-specific positive and
+  forbidden-state oracle; evidence deltas never erase base acceptance.
+- Resolve every canonical checklist/gate and pass semantic validation before
+  structural completion. Commit and push are not local completion gates.
 
 Verification surface:
 
@@ -87,32 +51,22 @@ Verification surface:
 - exact final-case replay and retry-free stability when required
 - source/host freshness proof and exact final ref
 - generated proof receipts and affected-corpus replay
-- `node .agents/skills/regression/scripts/validate-regression-plan.mjs {{PLAN_PATH}} --complete`
+- `node .agents/skills/patch/scripts/validate-regression-plan.mjs {{PLAN_PATH}} --complete`
 - Task-owned review when explicitly requested or closing a PR
 - `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
 
 Constraints:
 
-- Executable tests own durable regression behavior.
-- GitHub owns issue provenance/status; exact refs and runtime/CI receipts own
-  integration claims.
-- Regression owns selection, proof width, stability, packet decision, claim
-  width, and methodology delta.
-- Patch owns one normalized local repair at a time.
-- The goal plan is transient coordination, not a second behavior database.
-- Baselines are evidence, not law. Proxy proof never upgrades the exact case.
-- No parallel writers to shared source, tests, plans, generated output, builds,
-  or route hosts.
-- Generated output is not a source owner.
-- Mark fully proved local work `completed` and record its local ref/dirty
-  fingerprints plus uncommitted/unpushed state when true. Do not widen that
+- Executable tests own durable behavior; the Task plan is transient coordination.
+- Patch owns case selection and repair; Verify Plate owns applicable proof.
+- No parallel writers to shared source, tests, plans, builds or managed hosts.
+- Generated output is not a source owner. A proxy cannot close the exact case.
+- Mark fully proved local work `completed` with ref/dirty fingerprints and
+  uncommitted/unpushed state when true. Do not widen that
   status into integrated, shipped, released, or public issue completion without
   the owning evidence and authority.
-- A failed fix means a claimed candidate/kept/completed repair that fails exact
-  replay/final verification or receives a reporter contradiction. Expected TDD
-  red is not a failed fix.
-- A failed fix always enters automatic Regression `repair-now`; prose-only
-  repair, `no-change`, and `defer` cannot resume the product attempt.
+- A failed claimed fix follows Patch’s failed-fix method before product work
+  resumes. Expected red reproduction does not count as a failed fix.
 
 Boundaries:
 
@@ -141,7 +95,7 @@ Regression state:
 - current phase: requirement extraction
 - current executable case: pending
 - current case status: pending
-- next owner: Regression
+- next owner: Patch
 - goal status: active
 
 Completion rule:
@@ -156,7 +110,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured | pending | pending |
-| Regression methodology loaded | pending | pending |
+| Patch corpus method loaded | pending | pending |
 | Task plan reused; standing Autogoal request or explicit opt-out resolved | pending | pending |
 | Current source owner and tested ref recorded | pending | pending |
 | Executable test cases discovered | pending | pending |
@@ -164,276 +118,34 @@ Start Gates:
 | Reporter oracle matrix resolved | pending | pending |
 | Regression semantic validator ready | pending | pending |
 | Route/proof-host readiness plan recorded | pending | pending |
-| Patch delegation boundary recorded | pending | pending |
+| Direct/delegated repair boundary recorded | pending | pending |
 | Orchestrator writer ownership recorded | pending | pending |
 | Output budget strategy recorded | pending | pending |
 | Claim width and blocked rules recorded | pending | pending |
 
 Work Checklist:
 
-- [ ] Skill analysis complete: Regression is the supervisor, Patch is the
-      one-case worker, and executable tests are the behavior authority.
-- [ ] First checkpoint captures every explicit requirement before mutable work.
-- [ ] Objective, threshold, verification, constraints, boundaries, output
-      budget, and blocked condition are concrete.
-- [ ] Current source, exact ref/dirty boundary, test runner, route/proof host,
-      export/build path, and freshness method are recorded.
-- [ ] Every reporter-named route binds one literal `exact-route:` across the
-      selected environment and Proof-host readiness row. Final proof names that
-      route, a receipt input contains it as executable navigation, and a
-      route-based reporter contradiction records
-      `exact-route-reproduction: red` or `pass` before product work resumes.
-- [ ] Generated/source drift and host readiness are repaired or block the claim.
-- [ ] Every browser proof after product-source edits records
-      `browser-source-attestation: <fresh host restart or served-input digest>`
-      in Proof-host readiness before behavior assertions. Browser-family
-      changes repeat the attestation; unexplained running servers and unproved
-      hot reload do not validate current bytes.
-- [ ] Every selected case has a stable ID, source reference, owner, setup,
-      action, expected outcome, expected-outcome authority, executable test
-      path/command, tested ref, and required stability. A negative report does
-      not authorize an invented positive behavior.
-- [ ] Every selected case records its `Red-test escalation`. Try the exact
-      owner-level unit/package test first. `unit-red:` forbids a new E2E test;
-      `e2e-required:` names why no exact unit/package RED is possible. Browser
-      verification alone does not become permanent E2E coverage.
-- [ ] Every selected case inventories its base acceptance, recordings, and all
-      later reporter confirmations/contradictions as cumulative deltas. Every
-      still-applicable claim stays required; superseded claims cite the source
-      and reason that removed them.
+- [ ] Capture explicit requirements, scope, completion threshold and proof once.
+- [ ] Apply Patch corpus mode and load only relevant Verify Plate domain oracles.
+- [ ] Bind current source, exact environment, route/host and runtime inputs.
+- [ ] Select atomic executable cases with positive-outcome authority and scope.
+- [ ] Inventory cumulative base acceptance and every later reporter delta.
 - [ ] Every required evidence row maps to a phase-specific executable oracle.
-      A final-state assertion never substitutes for a transient during-action
-      caret, overlay, popup, selection, pointer affordance, or paint assertion.
-- [ ] Every selected case has one or more phase-specific reporter-oracle rows
-      for model, DOM/native, pointer feedback, focus, popup, geometry/paint,
-      runtime errors, and follow-up input.
-- [ ] Every pointer, mouse, cursor, hover, or resize/drag-handle case has an
-      applicable `pointer-feedback` row for the named interaction phase. Cursor
-      and hover/active/tooltip/drag affordances are proved independently from
-      model state, DOM selection, preview state, and eventual action.
-- [ ] Every applicable `pointer-feedback` positive assertion records
-      `reporter-noun: <plain noun>` and
-      `affordance-inventory: <accessible labels, selectors, or owners>` after
-      source and exact-route discovery. Any excluded matching affordance cites
-      explicit reporter or accepted-product authority.
-- [ ] Every focus-transfer case covers both a direct `relatedTarget` and null
-      `relatedTarget` followed by document `focusin`. Its positive assertion
-      records `focus-transfer: direct-related-target + null-related-target ->
-      focusin`; completion records `direct-related-target: pass`,
-      `null-related-target: pass`, and `focusin-resolution: pass`.
-- [ ] Every completed applicable `pointer-feedback` row records
-      `interaction-trace: pass`, the actual pointer `target:`, delivered
-      `event:`, and `buttons:` state from the same interaction path.
-- [ ] Every flash, flicker, or one-frame pointer-feedback claim uses a target-
-      capture or equivalent pre-handler oracle and records
-      `pre-handler-state: pass`; eventual post-handler style is insufficient.
-- [ ] Every reporter click reproduced through a drag surrogate proves the same
-      gesture delivered a click event; a drag surrogate without the delivered
-      click cannot authorize a product patch.
-- [ ] Every focus-first click report records the reporter's concrete setup in
-      both required evidence and the focus oracle as
-      `initial-focus: <concrete reporter state>`, records one real gesture as
-      `event-order: <actual pointerdown/mousedown/(focus when emitted)/click trace>`,
-      and proves
-      `first-click-popup: open` immediately after that click. A pre-focused or
-      outside-focused setup is valid only when reporter evidence matches it;
-      an invented focus state or `fireEvent.click`-only test cannot close
-      single-click behavior.
-- [ ] Every repeated focus-first contradiction whose component test stays green
-      reruns against a passive popup wrapper that only reflects the component's
-      `open` input and never injects a click toggle; completion records
-      `component-open-owner: pass`.
-- [ ] When reporter video identifies concrete hit targets after locator-click
-      or programmatic-selection proof stayed green, required evidence records
-      `physical-hit-path: <first target -> action target>`. Browser proof drives
-      both gestures from live coordinates, records
-      `physical-hit-target: <actual target>` and
-      `selection-origin: physical-pointer`, and completion records
-      `physical-hit-target: pass`, `click-delivery: pass`, and
-      `selection-origin: pass`. Locator clicks and direct Range mutation remain
-      proxy evidence.
-- [ ] A physical pointer path appears in setup only when the case's source,
-      action, or outcome claims that path. Setup-only selection uses the
-      smallest deterministic browser setup such as `locator.selectText()` or
-      native-keyboard selection, asserts the seeded state, and does not widen
-      the result. Reporter-identified pointer paths still use physical proof.
-- [ ] When reporter video visibly identifies a browser family, profile,
-      extension, or browser-owned overlay, required evidence and Exact
-      environment record
-      `reporter-profile: <browser family and visible profile/extension state>`.
-      In-app Browser, clean-profile, different-binding, and exact-binary-only
-      proof stay support-only. Applicable DOM/native, focus, and popup rows
-      replay the physical path in that reporter profile and record
-      `reporter-profile-replay: pass`; the receipt host binds the same profile.
-      If only Computer Use can replay the profile/OS path, Exact environment
-      records `tool-proof: computer-use`, every applicable profile oracle names
-      Computer Use, and an exact executable receipt still binds the final bytes
-      and browser binary.
-      Every scroll, selection, focus, layout, or overlay-state change refreshes
-      and verifies the live hit target before the next physical gesture.
-- [ ] When editor capture routing branches on target/ancestor attributes,
-      required evidence records
-      `capture-routing-path: <target -> capture owner>`. The DOM/native oracle
-      inventories the complete target-to-owner chain and the attributes read on
-      their actual owners as `interaction-owner-chain: <nodes>` and
-      `capture-routing-contract: <owner attributes>`; completion records both
-      `interaction-owner-chain: pass` and `capture-routing-contract: pass`. A
-      child-only attribute assertion is proxy evidence when capture reads the
-      ancestor.
-- [ ] When a reporter's live tab stays red while an isolated exact-host case is
-      green, required evidence inventories active dev overlays and global
-      capture listeners as
-      `interaction-interceptor-path: <global capture owner -> target>` and
-      `external-interceptor-state: <active mode/settings>`. Product code may not
-      compensate for an external owner that calls
-      `preventDefault`/`stopPropagation` on the gesture;
-      completion records `external-interceptor-isolated: pass` after the same
-      tab is replayed with that interceptor inactive or permissive.
-- [ ] Every applicable popup/toolbar oracle after an action or release has an
-      applicable `follow-up-input@follow-up` oracle proving the next owning-
-      surface interaction still works.
-- [ ] Every applicable popup/toolbar focus oracle records
-      `focus-stability: settled + follow-up-key`, uses browser-native proof
-      after the named layout/render settling boundary, and completes with
-      `settled-focus: pass` plus `follow-up-key: pass`. Immediate focus samples
-      and locator-side refocus are support-only.
-- [ ] When reporter evidence shows the first popup key is lost, Exact
-      environment records
-      `first-key-boundary: trigger-release -> native-key without focus wait`;
-      the focus oracle records `first-key-before-focus-wait: required`, the
-      DOM/native oracle records `first-key-caret: popup-input`, the follow-up-
-      input oracle records `first-key-target: popup-input`, and the native key
-      follows the real trigger before any focus poll or assertion. Completion
-      records `first-key-caret: pass`, `first-key-routing: pass`, and
-      `first-key-input: pass`. The DOM/native oracle also records
-      `first-key-caret-competitors: clear-before-focus + clear-after-focus`,
-      and completion records `clear-before-focus: pass` plus
-      `clear-after-focus: pass`. If the input changes read-only state or remounts,
-      Exact environment and the focus oracle record
-      `focus-lifecycle-modes: writable-mount + transient-read-only + read-only-transition + remount`,
-      and completion records `writable-mount: pass`,
-      `transient-read-only: pass`, `read-only-transition: pass`, and
-      `remount: pass`. The transient row proves that a writable target's
-      not-yet-ready read-only view does not consume autofocus. `activeElement` alone,
-      mount-only fixtures, locator-owned keys, and pre-key `toBeFocused()`
-      waits are invalid.
-- [ ] Every shortcut- or hotkey-opened popup focus oracle records
-      `trigger-path: pre-focused-surface + native-keyboard`, delivers the key
-      through the browser keyboard instead of locator-owned `press()`, and
-      completes with `native-trigger-key: pass`.
-- [ ] When reporter evidence or acceptance criteria name multiple entry paths
-      to one popup, Exact environment and the applicable focus oracle record
-      `entry-paths: path-a + path-b`. The executable test drives every named
-      real input path, and completion records `entry-path-coverage: pass` plus
-      `entry-path:<path>: pass` for each path. One green path cannot certify the
-      others.
-- [ ] Every applicable popup close oracle at `after-action` or `after-release`
-      accounts for `dom-native` and `focus` at the same phase; later follow-up
-      input never substitutes for close-time selection/caret preservation.
-- [ ] Every required caret, insertion-point, caret-accessible line, editable
-      blank line/row, or text-cursor claim maps to applicable same-phase
-      `dom-native` and `focus` rows plus `follow-up-input@follow-up`. Native
-      browser proof replays the real interaction and asserts caret paint
-      independently from wrapper height, DOM markers, and block highlighting.
-- [ ] Every required positive layout reference maps to same-phase
-      `geometry-paint`. The oracle records `reference-geometry:`, its browser
-      proof executes `layout-bounds`, and completion records
-      `layout-bounds: pass`; negative-only paint or absence proof is insufficient.
-- [ ] Every applicable oracle row has a positive assertion, a distinct forbidden
-      state, an executable layer/anchor, and an exact result; every inapplicable
-      row has N/A reasons.
-- [ ] The smallest falsifying executable probe ran before scaling.
-- [ ] Exact reproduction and durable owner classification are recorded; proxy
-      evidence stays labeled proxy.
-- [ ] The executable test is red before the fix, or the exact safe-red
-      limitation and proof-host repair are explicit.
-- [ ] Regression delegated only one normalized case at a time to Patch.
-- [ ] Patch returned root cause, durable owner, changed files, exact red/green
-      commands, final ref/dirty fingerprints, stability, architecture verdict,
-      P1 review, and caveat.
-- [ ] Focused green proof passed. Final Browser verification runs when repo or
-      claim policy requires it; E2E replay is required only for
-      `e2e-required:` or already-existing affected-corpus E2E coverage.
-- [ ] Final proof ran through `capture-proof-receipt.mjs`; its ref, input digest,
-      host, timestamps, retry count, and receipt ID validate.
-- [ ] Every managed browser receipt includes its literal `--base-url` in the
-      proof command (for example `PLAYWRIGHT_BASE_URL=<url>`); a host label and
-      command default may not name different ports.
-- [ ] Required retry-free stability runs passed with no retry.
-- [ ] Responsive geometry proof waits through animation-frame, resize-observer,
-      or renderer-commit settling with a bounded invariant poll; it records
-      pre-convergence and converged geometry instead of treating one immediate
-      post-resize bounding-box read as final.
-- [ ] Any stability-only failure after an exact green run froze product edits,
-      gained a phase-specific executable diagnostic, and restarted baselines
-      after product-versus-proof classification.
-- [ ] Any compositor phase claim records computed style, live range geometry,
-      model/DOM endpoints, and callback identity at the mutation boundary. If
-      those are final while pixels stay red, timing is rejected as the cause.
-- [ ] Every ordering fix exercises a pre-handler already-queued competitor and
-      a delayed post-handler re-entry when either can overwrite the result; one
-      ordering window cannot close the case.
-- [ ] Every blocking pixel classifier passes known-correct single-layer,
-      known-absent, and known-invalid duplicate-layer controls through the same
-      capture path; width or outer geometry alone cannot certify layer count.
-      A failed control invalidates prior results and freezes product edits until
-      the proof helper is repaired.
-- [ ] Every completed applicable `geometry-paint` row names actual pixel capture
-      and classification in its proof layer and records `positive-control: pass`
-      plus `negative-control: pass` and `duplicate-control: pass`; computed style,
-      DOM state, selection text, callback traces, and unclassified screenshots
-      are diagnostics only.
-- [ ] Every target placement oracle uses a bounded visible interval with both a
-      lower and upper bound; a one-sided threshold cannot prove visibility.
-- [ ] When behavior depends on a geometry library, a mock that records only the
-      call stays proxy evidence; a real calculation or exact browser probe runs
-      before the candidate can satisfy target placement.
-- [ ] Every final screenshot is followed by the surface settle boundary and a
-      reassertion of the settled reporter final state after capture; a
-      pre-capture transient poll cannot close the case.
-- [ ] Every shared owner was replayed against its affected exact corpus after
-      the final owner edit.
-- [ ] Every shared CSS selector, marker, class map, or style expansion has a
-      pre-edit consumer inventory. The affected corpus includes explicit
-      transparent, borderless, shadowless, and ringless overrides, each with a
-      forbidden duplicate/inherited-paint geometry oracle.
-- [ ] Every already-executable affected case has a `pass:` or `red:` pre-edit
-      baseline recorded before its shared owner changes.
-- [ ] When Regression adopts already-applied work previously called
-      `candidate-local`, `kept`, or `completed`, the frozen candidate corpus
-      runs before baseline restoration or product edits. A red candidate intake
-      invalidates the prior claim and enters `final-verification` Failed-Fix
-      Interrupt before attempt N+1.
-- [ ] Every requested or started package, browser, root, or CI gate that failed
-      is recorded and passes an exact final rerun on the final bytes.
-- [ ] Every selected case is kept, reverted, quarantined, deferred, or blocked
-      honestly; only kept cases can satisfy goal success.
-- [ ] No sidecar case registry, TSV, JSON manifest, or duplicate behavior
-      database was created.
-- [ ] Orchestrator ownership and overlapping writer/host serialization passed
-      or are N/A with reason.
-- [ ] Workflow slowdowns and avoidable proof-host/command mistakes were
-      repaired or deferred with owner.
-- [ ] Every case records one methodology delta.
-- [ ] Every failed claimed fix revoked prior completion, automatically repaired
-      Regression with executable workflow proof, and restarted at attempt N+1.
-- [ ] Every failed popup/toolbar focus replay records native focus events,
-      focus owners at mount/positioned/settled/follow-up-key, the first divergent
-      phase, and a native `focus()` call trace with target, connected, display,
-      visibility, disabled, and active-after-call state before another product
-      attempt.
-- [ ] Every failed scheduled popup/toolbar focus replay records
-      `focus-scheduler-trace: request + cancel + run` and
-      `focus-scheduler-result: <ran-or-cancelled/target-readiness>` before
-      another scheduler or readiness predicate is selected.
-- [ ] Every second failed fix or architecture trigger passed Best API and the
-      owning Plite/Plate plan before another Patch attempt.
-- [ ] Claim wording matches local, pushed, integration, and release evidence.
-- [ ] Every kept case and the run are marked `completed` once all required local
-      proof and plan gates pass; commit/push state is recorded separately.
-- [ ] Final handoff records executable tests, decisions, refs, proof, sync,
-      reviews, risks, and next owner.
-- [ ] Output budget discipline was followed.
+- [ ] Fill all schema observations with applicable proof or explicit N/A reasons.
+- [ ] Run semantic validation before implementation and the smallest falsifying probe.
+- [ ] Record affected-owner pre-edit baselines before shared changes.
+- [ ] Repair one case and record exact red/green evidence in `Patch delegation`;
+      direct execution satisfies this historical schema heading.
+- [ ] Prove final inputs, applicable domain oracles, receipts and affected corpus.
+- [ ] Count fresh retry-free executions for required stability; cached reuse is invalid.
+- [ ] Close each started gate failure with its exact final rerun.
+- [ ] Invalidate and diagnose every failed claimed fix before another attempt.
+- [ ] Prove canonical escape prevention or an existing gate rejecting each escape.
+- [ ] Resolve required architecture review, methodology deltas and packet decisions.
+- [ ] Mark evidence-complete local cases completed; preserve wider claim limits.
+- [ ] Finish applicable source regeneration, parity and Task-owned review gates.
+- [ ] Reconcile acceptance and record final evidence, risks and next owner.
+- [ ] Pass semantic completion, then structural completion.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
@@ -443,18 +155,18 @@ Completion Gates:
 | Route/proof-host readiness | pending | Prove the runner/host observes current source | pending |
 | Exact reporter route | pending | Bind reporter route through selected environment, proof host, final command, and executable receipt input; reject proxy routes | pending |
 | Executable regression coverage | pending | Record exact test file, red result, green result, and owning invariant | pending |
-| E2E escalation closure | pending | Prove each case uses `unit-red:` without a new E2E or records `e2e-required:` with the exact unit/package limitation | pending |
+| E2E escalation closure | pending | Select the smallest sufficient proof; record `e2e-required:` for any distinct native boundary, including when combined with `unit-red:` | pending |
 | Cumulative reporter evidence closure | pending | Map every still-applicable base acceptance and later reporter delta to a phase-specific executable oracle | pending |
-| Reporter oracle closure | pending | Resolve positive and forbidden states for all eight observations and every applicable interaction phase per case | pending |
-| Failed-fix interrupt closure | pending | Prove every claimed-fix failure invalidated prior proof and completed automatic Regression repair | pending |
-| Architecture pressure closure | pending | Prove every second failure or architecture trigger has Best API and layer-plan evidence | pending |
+| Reporter oracle closure | pending | Resolve positive and forbidden states for all nine observations and every applicable interaction phase per case | pending |
+| Failed-fix interrupt closure | pending | Prove every claimed-fix failure invalidated prior proof and repaired the escape or demonstrated its existing rejecting gate | pending |
+| Architecture pressure closure | pending | Prove every second failure or architecture trigger has a Best API Review verdict and any required design/adoption evidence | pending |
 | Proof receipt closure | pending | Validate generated final receipts against unchanged issue-owned inputs | pending |
 | Measurement-owner closure | pending | For render-count/rerender/profiler claims, bind every measured event emitter/router/filter/aggregator/render owner through `measurement-owner-inputs:` and one completed receipt | pending |
 | Affected-corpus replay closure | pending | Replay all cases affected by the last shared-owner edit | pending |
 | Shared-style consumer closure | pending | Inventory every shared selector/class consumer and prove explicit paint neutralizers do not inherit or duplicate the shared surface | pending |
 | Started-gate failure closure | pending | Rerun every requested or started gate that failed; completion requires the exact gate to pass on final bytes | pending |
 | Smallest-probe closure | pending | Record first falsifying probe and any host repair | pending |
-| Patch delegation closure | pending | Read back one-case root-cause/red/green/proof evidence | pending |
+| Patch delegation closure | pending | Record one-case root-cause/red/green/proof evidence; delegation is optional | pending |
 | Focused verification closure | pending | Run owning test and exact final-case replay | pending |
 | Stability closure | pending | Record retry-free warm runs or evidence-backed N/A | pending |
 | Packet decision closure | pending | Keep/revert/quarantine/defer/block every selected case honestly | pending |
@@ -468,7 +180,7 @@ Completion Gates:
 | Agent-native review | pending | Run for changed agent workflows or record N/A | pending |
 | Final handoff contract | pending | Record tests, decisions, proof, sync, reviews, risks, and next owner | pending |
 | Autoreview | pending | Run Task-owned review when explicitly requested or closing a PR or record N/A | pending |
-| Regression semantic plan | yes | Run `node .agents/skills/regression/scripts/validate-regression-plan.mjs {{PLAN_PATH}} --complete` | pending |
+| Regression semantic plan | yes | Run `node .agents/skills/patch/scripts/validate-regression-plan.mjs {{PLAN_PATH}} --complete` | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
 Phase / pass table:
@@ -481,8 +193,8 @@ Phase / pass table:
 | Reporter oracle expansion | pending | | semantic validation |
 | Pre-implementation semantic validation | pending | | smallest probe |
 | Smallest high-value probe | pending | | reproduce/classify |
-| Reproduce, classify, and red test | pending | | patch delegation |
-| One-case Patch delegation | pending | | verification |
+| Reproduce, classify, and red test | pending | | case repair |
+| One-case Patch repair | pending | | verification |
 | Focused verification and stability | pending | | packet decision |
 | Keep/revert/quarantine | pending | | methodology delta |
 | Methodology repair/no-change/defer | pending | | next case or closure |
@@ -500,15 +212,6 @@ Reporter evidence inventory:
 | pending | pending | pending | pending | pending | pending | pending | pending | pending |
 
 Reporter oracle matrix:
-
-For an effect-owned disposable source, the `subscription-lifecycle` row records
-`strict-effect: mount + cleanup + remount` and closes with `mount: pass`,
-`cleanup: pass`, `remount: pass`, and `post-remount-publication: pass`.
-
-For render-count, rerender, or profiler-event proof, the applicable oracle's
-positive assertion records `measurement-owner-inputs: <comma-separated paths>`.
-Its result records `measurement-owner-closure: pass`; one completed receipt
-must contain every named path.
 
 | Case ID | Observation | Phase | Applies | Positive assertion | Forbidden state | Proof layer | Executable anchor | Result |
 |---------|-------------|-------|---------|--------------------|-----------------|-------------|-------------------|--------|
@@ -606,7 +309,7 @@ Final handoff:
 
 - executable cases: pending
 - cumulative reporter evidence, phase-specific oracles, and forbidden states: pending
-- failed-fix invalidation and automatic repair: pending
+- failed-fix invalidation and escape-prevention evidence: pending
 - proof receipts and affected-corpus replay: pending
 - started-gate failure closure: pending
 - changed files: pending

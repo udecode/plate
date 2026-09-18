@@ -204,6 +204,7 @@ export const useRuntimeInputEvents = ({
             inputController,
             onInput,
             readOnly,
+            runtime,
             skipNativeTextInputRepair,
           }),
         editor,
@@ -236,6 +237,7 @@ export const useRuntimeInputEvents = ({
       readOnly,
       repair,
       rootRef,
+      runtime,
       trace,
       syncDOMSelectionToEditor,
     ]

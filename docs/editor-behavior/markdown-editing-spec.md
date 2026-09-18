@@ -861,6 +861,41 @@ addMark / removeMark on selected cells
 note: multi-cell operations stay table-scoped instead of degrading into generic
 block selection behavior
 
+### Rectangular Paste
+
+- `EDIT-TABLE-PASTE-EXPAND-001` `locked`
+
+```text
+copy a 2 × 2 cell rectangle
+paste into the bottom-right cell
+=>
+preserve all four source cells
+add the minimum required row and column
+select the pasted 2 × 2 rectangle
+```
+
+note: a closed table slice pasted at one cell starts at that cell
+note: when table expansion is enabled, paste adds every required row and column
+instead of truncating the source rectangle at the existing edge
+note: structural growth and column-width metadata commit together, so every
+logical column has a usable rendered column and pasted text does not collapse
+vertically
+note: in-bounds paste preserves the existing table dimensions
+note: one paste creates one history action; undo restores the exact prior table
+content, dimensions, and widths, and redo restores the complete paste
+
+- `EDIT-TABLE-PASTE-REJECT-001` `locked`
+
+```text
+paste a cell rectangle that crosses the table edge
+with expansion disabled
+=>
+reject the complete paste
+```
+
+note: disabled expansion rejects overflow atomically; it must not apply a
+partial rectangle or leave changed content, widths, or selection
+
 ## Link And Image
 
 Authority:

@@ -87,10 +87,6 @@ mock.module('@/registry/components/editor/plugins-static', () => ({
   BaseEditorKit: [],
 }));
 
-mock.module('@/registry/components/editor/comment', () => ({
-  useDraftCommentThreadIds: () => [],
-}));
-
 mock.module('./editor-static', () => ({
   EditorStatic: () => null,
 }));

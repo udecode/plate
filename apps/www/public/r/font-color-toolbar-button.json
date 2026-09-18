@@ -5,7 +5,9 @@
   "description": "A color picker toolbar button with text and background color controls.",
   "dependencies": [
     "platejs",
-    "lodash"
+    "lodash",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "devDependencies": [
     "@types/lodash"

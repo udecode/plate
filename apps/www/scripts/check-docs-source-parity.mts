@@ -4,8 +4,8 @@ import path from 'node:path';
 import matter from 'gray-matter';
 
 import { PLATE_DEFAULT_REGISTRY_STYLE } from '@/lib/plate-registry-styles';
+import { getRegistryMetadata } from '@/lib/registry-metadata';
 import { hrefWithLocale } from '@/lib/withLocale';
-import { registry } from '@/registry/registry';
 import { registryExamples } from '@/registry/registry-examples';
 import type { SidebarNavItem } from '@/types/nav';
 
@@ -42,6 +42,7 @@ const PACKAGE_INSTALL_COMMAND_REGEX =
   /^\s*(?:npm\s+(?:i|install)|pnpm\s+(?:add|install)|yarn\s+(?:add|install)|bun\s+(?:add|install))\s+(.+)$/u;
 const PACKAGE_IMPORT_REGEX =
   /\b(?:from\s+|import\s*\(\s*|require\s*\(\s*)['"]((?:platejs|plitejs)(?:\/[^'"]+)?)['"]/gu;
+const registry = getRegistryMetadata();
 
 const appOnlyDocsRoutes = new Set([
   '/docs/api',

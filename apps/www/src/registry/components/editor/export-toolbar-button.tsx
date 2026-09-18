@@ -9,17 +9,17 @@ import * as React from 'react';
 import { toast } from 'sonner';
 
 import {
+  DOCX_EXPORT_STYLES,
+  DocxExportKit,
+} from '@/registry/components/editor/docx-export';
+import { useDocxSource } from '@/registry/components/editor/docx-source';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  DOCX_EXPORT_STYLES,
-  DocxExportKit,
-} from '@/registry/components/editor/docx-export';
-import { useDocxSource } from '@/registry/components/editor/docx-source';
+} from '@/registry/components/editor/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
@@ -194,7 +194,7 @@ export function ExportToolbarButton() {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger>
         <ToolbarButton
           aria-label="Export"
           pressed={open}

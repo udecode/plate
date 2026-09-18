@@ -46,7 +46,7 @@ it('/blocks/multiple-editors-demo binds each independent editor to its complete 
       expect(roots[otherIndex].textContent).not.toContain(`isolated-${index}`);
     }
     act(() => {
-      editor.update.history.undo();
+      editor.api.history.undo();
     });
     expect(editor.read.children()).toEqual(initial[index]);
     await waitFor(() =>

@@ -490,11 +490,22 @@ component 或 slot。
 </APIItem>
 
 <APIItem name="activate" type="PluginDefinitionInput['activate']">
-  管理同步资源。需要观察发布结果的工作使用 `context.afterPublish(...)` 延后。
+  在早期运行并管理同步资源。需要最终文档候选值的验证或资源初始化，通过
+  `context.beforePublish(callback)` 注册，其签名为
+  `beforePublish: (callback: () => void) => void`。回调在编辑器构造和动态插件
+  变更中、发布不可回退之前执行。它必须同步运行，且不能写入文档。
+  抛出异常会否决发布并回滚候选值。
+
+  通过 `context.onCleanup(...)` 注册资源清理，包括在 `beforePublish` 中获取的
+  资源。清理由 activation 管理，在回滚、移除或替换时执行。
+
+  `context.afterPublish(...)` 用于不抛出异常的发布后观察。回调错误会被报告，
+  不能否决或回滚发布。
 </APIItem>
 
 <APIItem name="validate" type="PluginDefinitionInput['validate']">
-  在 activation 前验证 detached candidate。
+  在 activation 前检查已组装的 detached candidate。此早期检查无法观察完成
+  初始化的最终文档；需要该文档的检查在 `activate` 中通过 `beforePublish` 注册。
 </APIItem>
 
 <APIItem name="enabled" type="boolean" optional>
@@ -514,17 +525,6 @@ component 或 slot。
   回调在每次来源读取后运行，不增加订阅。外部输入的变化由来源的 `observe` 负责通知。
 </APIItem>
 
-<APIItem
-  name="prepareDocument"
-  type="PrepareDocument<WithAnyName<D>>"
-  optional
->
-  在应用迁移之后、schema fitting 之前准备完整 document input。editor initialization
-  和完整 `editor.update.value.replace(...)` 加载都会运行。用于已安装插件的当前 schema
-  不变量，不用于源版本迁移。
-</APIItem>
-
-
 <APIItem name="editOnly" type="boolean | EditOnlyConfig" optional>
 配置哪些插件功能仅在编辑器非只读时激活。
 
@@ -535,32 +535,24 @@ type EditOnlyConfig = {
   render?: boolean; // 默认: true
   on?: boolean; // 默认: true
   inject?: boolean; // 默认: true
-  prepareDocument?: boolean; // 默认: false
 };
 ```
 
 当设置为 `true`（布尔值）时：
 
 - `render`、`on` 和 `inject.nodeProps` 仅在编辑器非只读时激活
-- `prepareDocument` 无论只读状态如何都保持激活
 
 当设置为对象时：
 
 - 每个属性可以单独配置
-- 属性默认是仅编辑的（`true`），除了 `prepareDocument` 默认始终激活（`false`）
+- 属性默认是仅编辑的（`true`）
 - 将属性设置为 `false` 使其始终激活，无论只读状态如何
-- 对于 `prepareDocument`，设置为 `true` 使其仅在编辑时激活
 
 示例：
 
 ```ts
-// 所有功能（除 prepareDocument 外）都是仅编辑的
+// 所有受支持的功能都是仅编辑的
 editOnly: true;
-
-// prepareDocument 是仅编辑的，其他保持默认行为
-editOnly: {
-  prepareDocument: true;
-}
 
 // render 始终激活，其他遵循默认行为
 editOnly: {

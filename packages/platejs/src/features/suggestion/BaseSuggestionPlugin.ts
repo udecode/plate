@@ -1,12 +1,8 @@
-import { DefaultAuthoredPlugin, type AuthoredView } from '../../authored';
+import { DefaultAuthoredPlugin } from '../../authored';
 import { definePlugin, RangeApi, TextApi } from '../../core';
 import { PLUGINS } from '../../utils';
 import { observeSuggestionChanges } from './suggestion.internal';
 
-const viewByMode = {
-  editing: { intent: 'edit', projection: 'markup' },
-  suggesting: { intent: 'propose', projection: 'markup' },
-} as const satisfies Record<'editing' | 'suggesting', AuthoredView>;
 const suggestionModes = {
   editing: 'editing',
   suggesting: 'suggesting',
@@ -16,8 +12,21 @@ const suggestionModes = {
 export const BaseSuggestionPlugin = definePlugin(PLUGINS.suggestion, {
   dependencies: [DefaultAuthoredPlugin],
   api: ({ editor }) => ({
-    setMode: (mode: keyof typeof viewByMode) =>
-      editor.plugin(DefaultAuthoredPlugin).api.setView(viewByMode[mode]),
+    setMode: (mode: keyof typeof suggestionModes) => {
+      const authored = editor.plugin(DefaultAuthoredPlugin);
+      const current = authored.read.view();
+      authored.api.setView(
+        mode === suggestionModes.editing
+          ? { intent: 'edit', projection: current.projection }
+          : {
+              intent: 'propose',
+              projection:
+                current.projection === 'accepted'
+                  ? 'markup'
+                  : current.projection,
+            }
+      );
+    },
   }),
   read: ({ editor }) => ({
     mode: () =>

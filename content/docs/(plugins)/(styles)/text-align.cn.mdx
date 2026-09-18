@@ -23,7 +23,7 @@ docs:
 
 ### 安装
 
-最快捷的文本对齐实现方式是使用 `AlignKit`，它包含了预配置好的 `TextAlignPlugin`，可作用于段落、标题、图片和媒体元素。
+最快捷的文本对齐实现方式是使用 `AlignKit`。它包含预配置的 `BaseTextAlignPlugin`，可安全地用于客户端和服务端渲染，并作用于段落、标题、图片和媒体元素。
 
 <ComponentSource name="align" />
 
@@ -60,35 +60,34 @@ npm install platejs @tanstack/react-virtual
 
 ### 添加插件
 
-在创建编辑器时，将 `TextAlignPlugin` 加入 Plate 插件数组。
+在创建编辑器时，将 `BaseTextAlignPlugin` 加入 Plate 插件数组。
 
 ```tsx
-import { TextAlignPlugin } from "platejs/react";
+import { BaseTextAlignPlugin } from "platejs";
 import { createEditor } from "platejs/react";
 
 const editor = createEditor({
   plugins: [
     // ...其他插件
-    TextAlignPlugin,
+    BaseTextAlignPlugin,
   ],
 });
 ```
 
 ### 配置插件
 
-可以配置 `TextAlignPlugin` 来指定目标元素和定义对齐选项。
+可以配置 `BaseTextAlignPlugin` 来指定目标元素和定义对齐选项。
 
 ```tsx
-import { TextAlignPlugin } from "platejs/react";
-import { PLUGINS } from "platejs";
+import { BaseTextAlignPlugin, PLUGINS } from "platejs";
 import { createEditor } from "platejs/react";
 
 const editor = createEditor({
   plugins: [
     // ...其他插件
-    TextAlignPlugin.configure({
+    BaseTextAlignPlugin.configure({
       targetPlugins: [
-        PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading, PLUGINS.heading,
+        PLUGINS.heading,
         PLUGINS.paragraph,
       ],
       inject: {
@@ -119,17 +118,23 @@ const editor = createEditor({
 
 ### 添加工具栏按钮
 
-可以在[工具栏](/docs/toolbar)中添加 [`AlignToolbarButton`](/docs/components/align-toolbar-button) 来控制文本对齐。
+工具栏控件需要单独安装：
+
+```bash
+npx shadcn@latest add @plate/align-toolbar-button
+```
+
+然后可以在[工具栏](/docs/toolbar)中添加 [`AlignToolbarButton`](/docs/components/align-toolbar-button) 来控制文本对齐。
 
 </Steps>
 
 ## 插件
 
-### `TextAlignPlugin`
+### `BaseTextAlignPlugin`
 
 用于设置块级元素内文本对齐的插件。它允许 `targetPlugins` 指定的元素保存 `textAlign` 属性。
 
-<API name="TextAlignPlugin">
+<API name="BaseTextAlignPlugin">
   <APIOptions type="object">
     <APIItem name="inject.nodeProps.defaultNodeValue" type="string" optional>
       默认文本对齐值 - **默认值:** `'start'`

@@ -108,7 +108,7 @@ Reads go through `editor.read(...)`. Writes go through `editor.update(...)`. Ins
 | `tx.selection`       | set, clear, collapse, and move model selection                  |
 | `tx.marks`           | read, set, toggle, add, and remove active marks                 |
 | `tx.roots`           | create, replace, and delete extra roots                         |
-| `tx.history`         | undo and redo when `plitejs/history` is installed        |
+| `editor.api.history` | replay complete undo and redo batches when `plitejs/history` is installed |
 | `tx.changes`         | apply canonical root-aware document changes                     |
 | `tx.effects`         | emit typed state and integration effects                        |
 
@@ -241,7 +241,7 @@ The packages are split by responsibility.
 | `plitejs/history`     | history plugin and undo/redo runtime                                                                      |
 | `plitejs/hyperscript` | JSX fixtures for tests                                                                                       |
 | `plitejs/yjs`               | Yjs collaboration adapter, awareness bridge, remote cursor hooks                                             |
-| `plitejs/pagination`      | page layout and page-view proof work                                                                         |
+| `plitejs/pagination`      | immutable page measurement and the view-owned `PagedEditable` surface                                        |
 | `@platejs/test`           | Node-safe fixtures plus React, DOM, Playwright, and proof helpers behind explicit subpaths                   |
 
 Apps should import public package exports. `/internal` subpaths are for sibling packages in this repo.
@@ -254,7 +254,7 @@ This fork is intentionally narrow about what it claims.
 | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Desktop browser editing    | In scope when covered by browser proof.                                                                         |
 | Raw mobile device behavior | Not claimed without real device proof artifacts.                                                                |
-| Pagination and page layout | Useful proof lane, not a mature production promise for every browser geometry and export case.                  |
+| Pagination and page layout | Live page measurement and editing are supported; identical cross-platform export geometry needs a controlled measurement environment. |
 | Collaboration              | `plitejs/yjs` owns the adapter. Apps own provider packages, auth, persistence, room naming, and server policy. |
 | Upstream identity          | This is Plite, not an official upstream Slate release.                                             |
 
@@ -279,9 +279,9 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 | DOM bridge         | DOM point/range conversion, clipboard bridge, hotkeys, DOM coverage boundaries, browser environment helpers                                                                                                                                                                                   |
 | Overlays           | decoration manager, annotation stores, widget stores, source-scoped invalidation                                                                                                                                                                                                                |
 | Large documents    | complete DOM rendering, explicit virtualized rendering, bounded editing proof, huge-document smoke lanes                                                                                                                                                                                        |
-| History            | `history()` plugin, `state.history`, `tx.history`, semantic `editor.update({ history })` policies, direct undo/redo, history stack validation                                                                                                                                                |
+| History            | `history()` plugin, `state.history`, `editor.api.history`, transaction grouping controls, semantic `editor.update({ history })` policies, and history stack validation                                                                                                                                                |
 | Hyperscript        | JSX fixture factory, custom fixture tags, low-level fixture creators                                                                                                                                                                                                                          |
-| Layout             | `createPliteLayout`, `PagedEditable`, page mount plans, fragment hooks                                                                                                                                                                                                                        |
+| Layout             | `measurePages`, `PagedEditable`, explicit node fragmentation, page mount plans, and current-element fragment hooks                                                                                                                                                                             |
 | Browser proof      | `@platejs/test/proof`, `@platejs/test/browser`, `@platejs/test/playwright`, feature contracts, screenshots, traces, replay, and explicit non-replayable imperative runs                                                                                                                 |
 | Docs               | migration guide, walkthroughs, API reference, roots/meta docs, React setup docs, DOM coverage docs, layout docs                                                                                                                                                                               |
 | Examples           | plaintext, richtext, checklists, markdown, inlines, mentions, images, embeds, tables, paste HTML, placeholder, read-only, iframe/shadow DOM, styling, document meta, hidden content, huge document, multi-root document, synced blocks, comment mode, search/code highlighting, Yjs examples |

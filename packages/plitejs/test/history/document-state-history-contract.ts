@@ -40,15 +40,11 @@ const optionalStringCodec = defineValueCodec<string | undefined>({
 });
 
 const undo = (editor: EditorType) => {
-  editor.update((tx) => {
-    tx.history.undo();
-  });
+  editor.api.history.undo();
 };
 
 const redo = (editor: EditorType) => {
-  editor.update((tx) => {
-    tx.history.redo();
-  });
+  editor.api.history.redo();
 };
 
 describe('document meta history contract', () => {
@@ -77,7 +73,7 @@ describe('document meta history contract', () => {
 
     assert.equal(editor.read.getField(counter), 3);
     assert.deepEqual(
-      editor.read((state) => state.history.undos()[0]?.effects),
+      editor.read((state) => state.history().undos[0]?.effects),
       [{ type: increment, value: -3 }]
     );
 
@@ -114,7 +110,7 @@ describe('document meta history contract', () => {
     editor.update((tx) => tx.effects.emit(replace, input));
     input.nested.count = 99;
 
-    const stored = editor.read((state) => state.history.undos()[0]?.effects[0]);
+    const stored = editor.read((state) => state.history().undos[0]?.effects[0]);
 
     assert.ok(stored);
     assert.equal(stored.value.nested.count, -3);
@@ -158,10 +154,10 @@ describe('document meta history contract', () => {
 
     assert.equal(readTitle(), 'Q3 Plan');
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       1
     );
-    const [batch] = editor.read((state) => state.history.undos());
+    const [batch] = editor.read((state) => state.history().undos);
 
     assert.equal(batch.change.empty, true);
     assert.equal(batch.selectionBefore, null);
@@ -185,11 +181,11 @@ describe('document meta history contract', () => {
     ]);
     assert.equal(undoCommit?.tags.includes('historic'), true);
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       0
     );
     assert.equal(
-      editor.read((state) => state.history.redos().length),
+      editor.read((state) => state.history().redos.length),
       1
     );
 
@@ -205,11 +201,11 @@ describe('document meta history contract', () => {
     ]);
     assert.equal(redoCommit?.tags.includes('historic'), true);
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       1
     );
     assert.equal(
-      editor.read((state) => state.history.redos().length),
+      editor.read((state) => state.history().redos.length),
       0
     );
   });
@@ -245,11 +241,11 @@ describe('document meta history contract', () => {
     });
 
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       1
     );
     assert.deepEqual(
-      editor.read((state) => state.history.undos()[0]?.effects),
+      editor.read((state) => state.history().undos[0]?.effects),
       [
         {
           type: streamState.effect,
@@ -306,7 +302,7 @@ describe('document meta history contract', () => {
 
     assert.equal(readPanel(), 'open');
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       0
     );
 
@@ -314,11 +310,11 @@ describe('document meta history contract', () => {
 
     assert.equal(readPanel(), 'open');
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       0
     );
     assert.equal(
-      editor.read((state) => state.history.redos().length),
+      editor.read((state) => state.history().redos.length),
       0
     );
   });
@@ -353,7 +349,7 @@ describe('document meta history contract', () => {
       { children: [paragraph('Original body')] }
     );
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       0
     );
 
@@ -364,7 +360,7 @@ describe('document meta history contract', () => {
     assert.equal(readPreview(), null);
     assert.equal(readText(), 'Original body');
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       0
     );
 
@@ -386,7 +382,7 @@ describe('document meta history contract', () => {
     assert.equal(readPreview(), null);
     assert.equal(readText(), 'Accepted body');
     assert.deepEqual(
-      editor.read((state) => state.history.undos()[0]?.effects),
+      editor.read((state) => state.history().undos[0]?.effects),
       []
     );
 
@@ -481,7 +477,7 @@ describe('document meta history contract', () => {
       { children: [paragraph('body')] }
     );
     assert.equal(
-      editor.read((state) => state.history.undos().length),
+      editor.read((state) => state.history().undos.length),
       0
     );
 
@@ -550,12 +546,12 @@ describe('document meta history contract', () => {
     });
 
     assert.deepEqual(
-      editor.read((state) => state.history.undos()[0]?.effects),
+      editor.read((state) => state.history().undos[0]?.effects),
       [{ type: increment, value: -3 }]
     );
     assert.equal(
       JSON.stringify(
-        editor.read((state) => state.history.undos()[0]?.effects)
+        editor.read((state) => state.history().undos[0]?.effects)
       ).includes('xxxxx'),
       false
     );

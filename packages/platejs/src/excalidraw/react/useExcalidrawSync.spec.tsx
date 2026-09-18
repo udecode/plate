@@ -191,9 +191,9 @@ it('projects external changes and document undo/redo without an echo', () => {
     )
   );
   expect(target.api.getAppState().viewBackgroundColor).toBe('#ff0000');
-  act(() => target.editor.update.history.undo());
+  act(() => target.editor.api.history.undo());
   expect(target.api.getAppState().viewBackgroundColor).toBe('#ffffff');
-  act(() => target.editor.update.history.redo());
+  act(() => target.editor.api.history.redo());
   expect(target.api.getAppState().viewBackgroundColor).toBe('#ff0000');
   expect(target.commits).toBe(3);
   expect(target.cleared).toBe(4);

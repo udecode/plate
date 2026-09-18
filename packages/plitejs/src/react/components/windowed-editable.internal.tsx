@@ -3,11 +3,13 @@
 import React from 'react';
 
 import type { Element, Path, RootKey } from '../..';
+import type { PliteDecorationStore } from '../decoration-context';
 import { useRootNodeKeys } from '../editable/root-selector-sources';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
 import { createEditableViewportPlan } from '../viewport-plan';
 import {
+  type EditableElementLayout,
   EditableViewportSurface,
   type EditableProps,
 } from './editable-text-blocks';
@@ -17,6 +19,8 @@ export type WindowedEditableProps<
   TElement extends Element = Element,
   TRoot extends RootKey = RootKey,
 > = EditableProps<TElement, TRoot> & {
+  decorationStore?: PliteDecorationStore | null;
+  elementLayouts?: ReadonlyMap<string, EditableElementLayout | null>;
   enabled?: boolean;
   mountedTopLevelIndexes: readonly number[];
   onRequestMount?: (index: number, path?: Path) => void;
@@ -28,6 +32,8 @@ export type WindowedEditableProps<
 };
 
 const WindowedEditableInner = <TElement extends Element>({
+  decorationStore,
+  elementLayouts,
   enabled = true,
   mountedTopLevelIndexes,
   onRequestMount,
@@ -60,7 +66,14 @@ const WindowedEditableInner = <TElement extends Element>({
     ]
   );
 
-  return <EditableViewportSurface {...props} viewportPlan={viewportPlan} />;
+  return (
+    <EditableViewportSurface
+      {...props}
+      decorationStore={decorationStore}
+      elementLayouts={elementLayouts}
+      viewportPlan={viewportPlan}
+    />
+  );
 };
 
 export const WindowedEditable = <

@@ -8,10 +8,12 @@ import { PointApi } from '../interfaces/point';
 import {
   type DocumentChange,
   getInternalDocumentChangeEntries,
+  mapDocumentRangeReplacement,
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
+import { reportEditorLifecycleError } from './lifecycle-error';
 import { toPublicRoot } from './public-root';
 
 export const RECOVERY_RECORD_SIZE = 7;
@@ -92,6 +94,7 @@ export type AnchorStateListener = {
   fallback: () => boolean;
   history?: AnchorHistoryListener;
   nodeKeys: () => readonly NodeKey[];
+  prepareCommit: () => () => void;
   root: string;
 };
 
@@ -134,7 +137,11 @@ type ActiveAnchorState = {
 };
 
 const ACTIVE_ANCHORS = new WeakMap<object, ActiveAnchorState>();
-const ANCHOR_SCOPES = new WeakMap<object, ActiveAnchorState[]>();
+type AnchorScope = {
+  kind: 'draft' | 'prepared' | 'published';
+  state: ActiveAnchorState;
+};
+const ANCHOR_SCOPES = new WeakMap<object, AnchorScope[]>();
 const BOUND_ANCHORS = new WeakMap<object, number>();
 
 export const registerBoundAnchor = (editor: Editor) => {
@@ -152,6 +159,7 @@ const ANCHOR_STATE_WORK_OBSERVERS = new WeakMap<
   Editor,
   (work: AnchorStateWork) => void
 >();
+const COHERENT_ANCHOR_WORK = new WeakMap<Editor, AnchorStateWork[]>();
 const ANCHOR_RUNTIME_ID = new WeakMap<Editor, number>();
 const ANCHOR_TRANSACTION_CEILING = new WeakMap<Editor, number>();
 const COMMIT_ANCHOR_HISTORY = new WeakMap<EditorCommit, AnchorHistoryCapture>();
@@ -183,16 +191,20 @@ const recordAnchorStateWork = (
   recoveryEntries = 0,
   recoveryBytes = 0
 ) => {
-  ANCHOR_STATE_WORK_OBSERVERS.get(editor)?.({
+  const work = {
     phase,
     recoveryBytes,
     recoveryEntries,
     visitedAnchors,
-  });
+  };
+  const queued = COHERENT_ANCHOR_WORK.get(editor);
+
+  if (queued) queued.push(work);
+  else ANCHOR_STATE_WORK_OBSERVERS.get(editor)?.(work);
 };
 
 const getActiveAnchorState = (editor: object) =>
-  ANCHOR_SCOPES.get(editor)?.at(-1) ?? ACTIVE_ANCHORS.get(editor);
+  ANCHOR_SCOPES.get(editor)?.at(-1)?.state ?? ACTIVE_ANCHORS.get(editor);
 
 const createActiveAnchorState = (
   value: EditorDocumentValue
@@ -255,15 +267,32 @@ const indexAnchorListener = (
     previousNodeKeys?.length === nodeKeys.length &&
     previousNodeKeys.every((nodeKey, index) => nodeKey === nodeKeys[index])
   ) {
+    PREPARING_ANCHOR_STATES.get(state)?.indexes.delete(listener);
     return;
   }
 
+  const fallback = nodeKeys.length === 0 && listener.fallback();
+  const preparing = PREPARING_ANCHOR_STATES.get(state);
+
+  if (preparing) {
+    preparing.indexes.set(listener, { fallback, nodeKeys });
+    return;
+  }
+  applyPreparedAnchorIndex(state, listener, nodeKeys, fallback);
+};
+
+const applyPreparedAnchorIndex = (
+  state: ActiveAnchorState,
+  listener: AnchorStateListener,
+  nodeKeys: readonly NodeKey[],
+  fallback: boolean
+) => {
   unindexAnchorListener(state, listener);
   state.listenerNodeKeys.set(listener, nodeKeys);
   for (const nodeKey of nodeKeys) {
     addToIndex(state.listenersByNodeKey, nodeKey, listener);
   }
-  if (nodeKeys.length === 0 && listener.fallback()) {
+  if (fallback) {
     addToIndex(state.fallbackListeners, listener.root, listener);
   }
 };
@@ -271,7 +300,8 @@ const indexAnchorListener = (
 const addAnchorListener = (
   state: ActiveAnchorState,
   listener: AnchorStateListener,
-  runtimeId?: number
+  runtimeId?: number,
+  preparedIndex?: { fallback: boolean; nodeKeys: readonly NodeKey[] }
 ) => {
   state.listeners.add(listener);
   if (listener.history) state.historyListeners += 1;
@@ -280,13 +310,21 @@ const addAnchorListener = (
     state.listenersByRuntimeId.set(runtimeId, listener);
     state.runtimeIds.set(listener, runtimeId);
   }
-  indexAnchorListener(state, listener);
+  if (preparedIndex) {
+    applyPreparedAnchorIndex(
+      state,
+      listener,
+      preparedIndex.nodeKeys,
+      preparedIndex.fallback
+    );
+  } else indexAnchorListener(state, listener);
 };
 
 const removeAnchorListener = (
   state: ActiveAnchorState,
   listener: AnchorStateListener
 ) => {
+  if (!state.listeners.has(listener)) return;
   state.activeTransaction?.delete(listener);
   state.listeners.delete(listener);
   if (listener.history) state.historyListeners -= 1;
@@ -319,19 +357,14 @@ export const suspendAnchorScopes = (editor: Editor) => {
   };
 };
 
-/** Isolate live anchors created while building a non-publishing transaction. */
-export const enterAnchorScope = (
-  editor: Editor,
-  value: EditorDocumentValue
-) => {
+const pushAnchorScope = (editor: Editor, scope: AnchorScope) => {
   const scopes = ANCHOR_SCOPES.get(editor) ?? [];
-  const state = createActiveAnchorState(value);
 
-  scopes.push(state);
+  scopes.push(scope);
   ANCHOR_SCOPES.set(editor, scopes);
 
   return () => {
-    if (scopes.at(-1) !== state) {
+    if (scopes.at(-1) !== scope) {
       throw new Error('Anchor scopes must close in stack order.');
     }
 
@@ -339,6 +372,13 @@ export const enterAnchorScope = (
     if (scopes.length === 0) ANCHOR_SCOPES.delete(editor);
   };
 };
+
+/** Isolate live anchors created while building a non-publishing transaction. */
+export const enterAnchorScope = (editor: Editor, value: EditorDocumentValue) =>
+  pushAnchorScope(editor, {
+    kind: 'draft',
+    state: createActiveAnchorState(value),
+  });
 
 export const hasActiveAnchors = (editor: object) =>
   (getActiveAnchorState(editor)?.listeners.size ?? 0) > 0 ||
@@ -722,10 +762,21 @@ export const mapAnchorHistoryRecovery = (
       );
     }
 
-    const mappedFirst = mapPointPosition(root, first, associations[0]);
+    const replacement =
+      kind === RECOVERY_KIND_RANGE
+        ? mapDocumentRangeReplacement(
+            change,
+            root,
+            first,
+            second,
+            associations as readonly [-1 | 1, -1 | 1]
+          )
+        : null;
+    const mappedFirst =
+      replacement?.[0] ?? mapPointPosition(root, first, associations[0]);
     const mappedSecond =
       kind === RECOVERY_KIND_RANGE
-        ? mapPointPosition(root, second, associations[1])
+        ? (replacement?.[1] ?? mapPointPosition(root, second, associations[1]))
         : null;
     const firstPoint =
       mappedFirst === null
@@ -940,34 +991,44 @@ export const subscribeAnchorState = (
 ) => {
   const scoped = ANCHOR_SCOPES.get(editor)?.at(-1);
   const state =
-    scoped ??
+    scoped?.state ??
     ACTIVE_ANCHORS.get(editor) ??
     createActiveAnchorState(getInitialValue());
-  const runtimeId = scoped
-    ? undefined
-    : (() => {
-        const id = (ANCHOR_RUNTIME_ID.get(editor) ?? 0) + 1;
+  const runtimeId =
+    scoped?.kind === 'draft'
+      ? undefined
+      : (() => {
+          const id = (ANCHOR_RUNTIME_ID.get(editor) ?? 0) + 1;
 
-        if (id > 0x7f_ff_ff_ff) {
-          throw new Error('Anchor runtime identity space is exhausted.');
-        }
-        ANCHOR_RUNTIME_ID.set(editor, id);
+          if (id > 0x7f_ff_ff_ff) {
+            throw new Error('Anchor runtime identity space is exhausted.');
+          }
+          ANCHOR_RUNTIME_ID.set(editor, id);
 
-        return id;
-      })();
+          return id;
+        })();
 
   addAnchorListener(state, listener, runtimeId);
   if (!scoped) ACTIVE_ANCHORS.set(editor, state);
+  const subscription = scoped ?? { kind: 'published' as const, state };
 
   return {
     runtimeId,
     isShadowed() {
-      return !scoped && (ANCHOR_SCOPES.get(editor)?.length ?? 0) > 0;
+      return (
+        subscription.kind === 'published' &&
+        (ANCHOR_SCOPES.get(editor)?.length ?? 0) > 0
+      );
     },
     unsubscribe() {
-      removeAnchorListener(state, listener);
+      removeAnchorListener(subscription.state, listener);
 
-      if (!scoped && state.listeners.size === 0) ACTIVE_ANCHORS.delete(editor);
+      if (
+        subscription.kind === 'published' &&
+        subscription.state.listeners.size === 0
+      ) {
+        ACTIVE_ANCHORS.delete(editor);
+      }
     },
     value: state.value,
   };
@@ -1065,6 +1126,7 @@ export const notifyAnchorChanges = (
   recordAnchorStateWork(editor, 'change', listeners.size);
   for (const listener of listeners) {
     if (state.activeTransaction && !state.activeTransaction.has(listener)) {
+      PREPARING_ANCHOR_STATES.get(state)?.pending.add(listener);
       listener.begin();
       state.activeTransaction.add(listener);
     }
@@ -1118,6 +1180,13 @@ export const commitAnchorTransaction = (
 
       if (!listener?.history) continue;
       if (deferRecovery) {
+        const preparing = PREPARING_ANCHOR_STATES.get(state);
+
+        if (preparing && !preparing.pending.has(listener)) {
+          preparing.pending.add(listener);
+          listener.begin();
+          listeners.add(listener);
+        }
         listener.history.restore(
           data,
           offset,
@@ -1130,6 +1199,7 @@ export const commitAnchorTransaction = (
         continue;
       }
       if (!listeners.has(listener)) {
+        PREPARING_ANCHOR_STATES.get(state)?.pending.add(listener);
         listener.begin();
         listeners.add(listener);
       }
@@ -1162,7 +1232,7 @@ export const commitAnchorTransaction = (
       ) {
         indexAnchorListener(state, listener);
       }
-      listener.commit(value, commit);
+      commitPreparedAnchorListener(state, listener, value, commit);
       listeners.delete(listener);
       recoveredAnchors += 1;
     }
@@ -1275,7 +1345,7 @@ export const commitAnchorTransaction = (
     recovery?.data.byteLength ?? staged?.recovery?.data.byteLength ?? 0
   );
   for (const listener of listeners ?? []) {
-    listener.commit(value, commit);
+    commitPreparedAnchorListener(state, listener, value, commit);
   }
   if (state) {
     state.activeTransaction = null;
@@ -1305,4 +1375,176 @@ export const discardAnchorTransaction = (
     listener.discard(value);
   }
   if (state) state.activeTransaction = null;
+};
+
+type PreparedAnchorWork = {
+  before: EditorDocumentValue;
+  indexes: Map<
+    AnchorStateListener,
+    { fallback: boolean; nodeKeys: readonly NodeKey[] }
+  >;
+  pending: Set<AnchorStateListener>;
+  publications: Array<() => void>;
+};
+
+const PREPARING_ANCHOR_STATES = new WeakMap<
+  ActiveAnchorState,
+  PreparedAnchorWork
+>();
+
+const commitPreparedAnchorListener = (
+  state: ActiveAnchorState | undefined,
+  listener: AnchorStateListener,
+  value?: EditorDocumentValue,
+  commit?: EditorCommit
+) => {
+  const preparing = state && PREPARING_ANCHOR_STATES.get(state);
+
+  if (!preparing) {
+    listener.commit(value, commit);
+    return;
+  }
+  const publish = listener.prepareCommit();
+
+  listener.discard(preparing.before);
+  preparing.pending.delete(listener);
+  preparing.publications.push(publish);
+};
+
+export const clearStagedAnchorHistory = (editor: Editor) => {
+  STAGED_ANCHOR_HISTORY.delete(editor);
+};
+
+export const prepareAnchorPublication = (
+  editor: Editor,
+  commit: EditorCommit,
+  prepare: () => void
+) => {
+  const resumeScopes = suspendAnchorScopes(editor);
+  const state = getActiveAnchorState(editor);
+  const before = state && {
+    activeTransaction: state.activeTransaction,
+    indexes: state.indexes,
+    transactionBeforeValue: state.transactionBeforeValue,
+    value: state.value,
+  };
+  const preparing: PreparedAnchorWork = {
+    before: before?.value as EditorDocumentValue,
+    indexes: new Map(),
+    pending: new Set(),
+    publications: [],
+  };
+  const work: AnchorStateWork[] = [];
+  let additions: AnchorScope | undefined;
+  const discardAdditions = () => {
+    if (!additions || additions.kind !== 'prepared') return;
+    for (const listener of additions.state.listeners) {
+      listener.discard(additions.state.value);
+      removeAnchorListener(additions.state, listener);
+    }
+    additions.kind = 'draft';
+  };
+
+  if (state) PREPARING_ANCHOR_STATES.set(state, preparing);
+  COHERENT_ANCHOR_WORK.set(editor, work);
+  let succeeded = false;
+
+  try {
+    prepare();
+    const next = state && { indexes: state.indexes, value: state.value };
+    succeeded = true;
+    return {
+      initialize(value: EditorDocumentValue, run: () => void) {
+        if (additions) {
+          throw new Error(
+            'Anchor publication initialization cannot run twice.'
+          );
+        }
+        // These anchors already use final coordinates, so they join live mapping
+        // only after this commit and retain their history identities on adoption.
+        additions = { kind: 'prepared', state: createActiveAnchorState(value) };
+        const close = pushAnchorScope(editor, additions);
+        try {
+          run();
+        } finally {
+          close();
+        }
+      },
+      notify() {
+        const observer = ANCHOR_STATE_WORK_OBSERVERS.get(editor);
+
+        if (!observer) return;
+        for (const item of work) {
+          try {
+            observer(item);
+          } catch (error) {
+            reportEditorLifecycleError({
+              cause: error,
+              editor,
+              phase: 'commit-listener',
+              pluginName: '$anchor',
+            });
+          }
+        }
+      },
+      publish() {
+        if (state && next) {
+          state.value = next.value;
+          state.indexes = next.indexes;
+          for (const publish of preparing.publications) publish();
+          for (const [listener, patch] of preparing.indexes) {
+            applyPreparedAnchorIndex(
+              state,
+              listener,
+              patch.nodeKeys,
+              patch.fallback
+            );
+          }
+        }
+        if (additions?.kind === 'prepared') {
+          if (state) {
+            for (const listener of additions.state.listeners) {
+              addAnchorListener(
+                state,
+                listener,
+                additions.state.runtimeIds.get(listener),
+                {
+                  fallback:
+                    additions.state.fallbackListeners
+                      .get(listener.root)
+                      ?.has(listener) ?? false,
+                  nodeKeys:
+                    additions.state.listenerNodeKeys.get(listener) ?? [],
+                }
+              );
+            }
+            additions.state = state;
+          }
+          additions.kind = 'published';
+          if (additions.state.listeners.size > 0) {
+            ACTIVE_ANCHORS.set(editor, additions.state);
+          }
+        }
+      },
+      rollback() {
+        COMMIT_ANCHOR_HISTORY.delete(commit);
+        discardAdditions();
+      },
+    };
+  } finally {
+    if (state && before) {
+      if (preparing.pending.size > 0) {
+        state.activeTransaction = preparing.pending;
+        discardAnchorTransaction(editor, before.value);
+      }
+      Object.assign(state, before);
+      PREPARING_ANCHOR_STATES.delete(state);
+    }
+    if (!succeeded) {
+      COMMIT_ANCHOR_HISTORY.delete(commit);
+      discardAdditions();
+    }
+    COHERENT_ANCHOR_WORK.delete(editor);
+    resumeScopes();
+  }
 };

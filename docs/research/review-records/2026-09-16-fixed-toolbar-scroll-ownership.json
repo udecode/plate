@@ -1,0 +1,70 @@
+{
+  "id": "2026-09-16-fixed-toolbar-scroll-ownership",
+  "scope": "fixed-toolbar-scroll",
+  "kind": "review",
+  "date": "2026-09-16",
+  "question": "Should FixedToolbar measure itself and mutate an editor scroll container, or should copied editor layout eliminate the overlap?",
+  "model": "GPT-6",
+  "method": "best-api-review/history-v2",
+  "trigger": "User asks whether the FixedToolbar working-tree diff is dirty and requests the cleanest architecture through Best API Review.",
+  "requirements": [
+    "Keep a fixed toolbar visible without obscuring the editor's caret or generated content.",
+    "Preserve a shared toolbar with no selected editor and manual toolbars outside EditorContainer.",
+    "Keep copied layout policy out of Plite and preserve the existing neutral CSS scroll-padding behavior.",
+    "Review only; do not implement the downstream layout migration."
+  ],
+  "evidenceReuse": "Rechecked the current diff, actual internal/external/shared consumers, the padding test, container registration, throwing editor lookup and Plite's CSS-padding reader. Prior AI preview ownership and completed docs-embed behavior receipts are context, not proof of toolbar ownership. First focused review; broader UI remains unassessed.",
+  "summary": "Pursue deleting the FixedToolbar editor subscription, ResizeObserver and inline-padding save/restore protocol by making the copied panel allocate a toolbar row outside the actual content scrollport.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "alternatives": [
+    "Keep/configure: the current effect assumes every toolbar obstructs the selected editor scrollport, contradicted by external and shared consumers.",
+    "Change API: optional editor lookup or a reusable measuring hook can avoid one failure but preserves incorrect placement and style ownership.",
+    "Add primitive: a toolbar obstruction registry or new Plite scrolling API is unnecessary; the substrate already honors CSS scroll padding.",
+    "Delete/merge: remove the overlap and all height synchronization from the default composition; retain presentational FixedToolbar and its kit plugin for their current independent jobs.",
+    "Move ownership: copied editor layout owns height and scroll placement; beforeContainer is an existing slot for toolbar placement when used inside the appropriate outer frame.",
+    "Replace architecture: a flex/grid panel with a non-scrolling toolbar row and a shrinking content scroll area removes the protocol entirely. CSS scroll padding remains an escape for deliberately overlapping custom UI."
+  ],
+  "proofLimits": "Source review only; no browser or performance run for a replacement. The mocked toolbar test asserts the chosen implementation protocol, not containment or selected-editor availability. Proposed layout still needs bounded/page scrolling, shared-toolbar startup, zoom/custom heights, selection and exact AI menu replay. No new JavaScript runtime machinery or speed claim is accepted. Broad UI and AI scope proof statuses are unchanged.",
+  "references": [
+    "docs/research/decisions/fixed-toolbar-scroll-ownership.md",
+    "docs/research/decisions/ai-preview-ownership.md",
+    "docs/plans/2026-09-16-ai-continuation-render-recovery.md",
+    "apps/www/src/registry/components/editor/fixed-toolbar.tsx",
+    "apps/www/src/registry/components/editor/fixed-toolbar.spec.tsx",
+    "apps/www/src/registry/components/editor/editor.tsx",
+    "apps/www/src/registry/examples/multiple-editors-demo.tsx",
+    "apps/www/src/registry/examples/installation-next-02-marks-demo.tsx",
+    "packages/platejs/src/react/components/PlateContainer.tsx",
+    "packages/platejs/src/react/stores/plate/useEditor.ts",
+    "packages/plitejs/src/react/components/editable.tsx"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/fixed-toolbar.tsx": "454d9b889530c7f81bd4fcff5cfd410cec176f467674cd2bd96f9cae0166a089",
+      "apps/www/src/registry/components/editor/editor.tsx": "40d625ae18bfa249fc4cf56d2bfc00e587f6233dd3b54b3bed99e30f149e8989",
+      "apps/www/src/registry/examples/ai-demo.tsx": "58c38f28414fbb41d026ddfce7e390492bbd5dd5038afda63fb57ef19519ce36",
+      "apps/www/src/registry/examples/multiple-editors-demo.tsx": "afcb8934c0f8a2b008a3d4e103ea970a06cfa1f6a38c8a2ded258c826843f4a3",
+      "apps/www/src/registry/examples/installation-next-02-marks-demo.tsx": "173e25cd4d324332bf16f7d8a3609cb34ee11842629c7a2bc2d15a1f6ca290af",
+      "apps/www/src/registry/examples/docx-demo.tsx": "a315d89b9945d22d52b49d8fe6b99ffab7a253a623680e9fcde2b07a6e812c3a",
+      "apps/www/src/registry/components/editor/fixed-toolbar.spec.tsx": "391bbac00989c92e7d9f0d99ab62d3fda808aa13444229a5f22320076fb6ade6",
+      "apps/www/tests/browser/ai-session.spec.ts": "133394232d2558c7f9e91bfb01b159227c747b813246aa61b22ef57b59cbede8",
+      "packages/platejs/src/react/components/PlateContainer.tsx": "a5dbe651b6cc2aaaa2db3717febf00059ccaa99d6e0ba92fda6a2aa4c9e6fd38",
+      "packages/platejs/src/react/components/PlateController.tsx": "6b4144a4f99f30f980afcd48a2b7625d55388d6d9f31a27e12c1e55dfc7a207d",
+      "packages/platejs/src/react/stores/plate/useEditor.ts": "c9a6cfc63e0960a6b41944e1e11c756a2db4aecb76f8e120e1f00faeb57da666",
+      "packages/plitejs/src/react/hooks/use-editor-dom-scope.ts": "25bf846906077cf1eb7485a88c8cfa55deaf6b3147e7a9616dca34a228257733",
+      "packages/plitejs/src/react/components/editable.tsx": "154448feb5614f87ed943c4df59558a72a8d0449c57451ed5a8df50ecdba5f26",
+      "docs/vision/plate.md": "a72e823ae61d995b01bf511bb174506cea9cf8185533a9c3afbcc4e840e0107a",
+      "VISION.md": "cd67a9558acedd98aa5cc2bc95f7e15493138b8e8f8c2bc74f0bba57d83bf1b9",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
+      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
+    },
+    "directories": {},
+    "features": {},
+    "upstreams": []
+  }
+}

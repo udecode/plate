@@ -1,8 +1,15 @@
 'use client';
 
-import { defineDocumentMigrations, migrateV54 } from 'platejs/migrations';
+import { readEditorSelection, type PersistedDocumentInput } from 'platejs';
+import {
+  defineDocumentMigrations,
+  migrateDocument,
+  migrateV54,
+} from 'platejs/migrations';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
+import * as React from 'react';
 
+import { Button } from '@/components/ui/button';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 
@@ -96,24 +103,94 @@ const MigrationDemoSchema = {
   version: 54,
 } as const;
 
-const MigrationDemoMigrations = defineDocumentMigrations(MigrationDemoSchema, {
+const MigrationDemoMigrations = defineDocumentMigrations({
+  plugins: MigrationDemoKit,
+  schema: MigrationDemoSchema,
+  sourceFingerprints: { 53: 'plate-v53' },
   steps: { 54: migrateV54 },
-  unversioned: 53,
 });
+const migratedDocument = migrateDocument(v53Document, {
+  migrations: MigrationDemoMigrations,
+  source: 53,
+}).output;
 
 export default function DocumentMigrationDemo() {
-  const editor = useCreateEditor({
-    initialValue: v53Document,
-    migrations: MigrationDemoMigrations,
-    plugins: MigrationDemoKit,
-    schema: MigrationDemoSchema,
-  });
+  const [loaded, setLoaded] =
+    React.useState<PersistedDocumentInput>(migratedDocument);
+  const [savedJson, setSavedJson] = React.useState<string | null>(null);
+  const [status, setStatus] = React.useState(
+    'The v53 source is converted before the editor is created.'
+  );
+  const editor = useCreateEditor(
+    {
+      initialValue: loaded,
+      plugins: MigrationDemoKit,
+      schema: MigrationDemoSchema,
+      userId: 'migration-demo',
+    },
+    [loaded]
+  );
 
   return (
-    <EditorRoot editor={editor}>
-      <EditorContainer>
-        <Editor placeholder="Type something..." />
-      </EditorContainer>
-    </EditorRoot>
+    <div className="flex w-full flex-col gap-4 p-4 sm:p-6">
+      <div className="flex flex-wrap gap-2">
+        <Button
+          onClick={() => {
+            setSavedJson(
+              JSON.stringify({
+                document: editor.read.value(),
+                schema: editor.read.schema.identity(),
+                selection: readEditorSelection(editor),
+              })
+            );
+            setStatus('Saved the complete current document as JSON.');
+          }}
+          size="sm"
+          variant="outline"
+        >
+          Save JSON
+        </Button>
+        <Button
+          disabled={!savedJson}
+          onClick={() => {
+            if (!savedJson) return;
+
+            const result = migrateDocument(JSON.parse(savedJson), {
+              migrations: MigrationDemoMigrations,
+            });
+            setLoaded(result.output);
+            setStatus(
+              `Reopened current JSON with ${result.applied.length} historical steps.`
+            );
+          }}
+          size="sm"
+          variant="outline"
+        >
+          Reopen saved JSON
+        </Button>
+      </div>
+      <p aria-live="polite" className="text-sm text-muted-foreground">
+        {status}
+      </p>
+      {savedJson && (
+        <details className="rounded-md border p-3 text-sm">
+          <summary className="cursor-pointer font-medium">Saved JSON</summary>
+          <pre
+            className="mt-3 max-h-40 overflow-auto text-xs whitespace-pre-wrap"
+            data-testid="saved-document-json"
+          >
+            {savedJson}
+          </pre>
+        </details>
+      )}
+      <EditorRoot editor={editor} key={editor.id}>
+        <EditorContainer>
+          <Editor
+            aria-label="Migrated document"
+            placeholder="Type something..."
+          />
+        </EditorContainer>
+      </EditorRoot>
+    </div>
   );
 }

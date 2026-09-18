@@ -20,7 +20,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/registry/components/editor/dropdown-menu';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 const items = [
@@ -59,18 +59,36 @@ export function AlignToolbarButton() {
   const selectedValue = typeof value === 'string' ? value : 'left';
 
   const [open, setOpen] = React.useState(false);
+  const focusEditorRef = React.useRef(false);
   const IconValue =
     items.find((item) => item.value === value)?.icon ?? AlignLeftIcon;
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
+    <DropdownMenu
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) focusEditorRef.current = false;
+        setOpen(nextOpen);
+      }}
+      modal={false}
+    >
+      <DropdownMenuTrigger>
         <ToolbarButton pressed={open} tooltip="Align" isDropdown>
           <IconValue />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="min-w-0" align="start">
+      <DropdownMenuContent
+        className="min-w-0"
+        align="start"
+        onFinalFocus={(event) => {
+          if (!focusEditorRef.current) return;
+
+          focusEditorRef.current = false;
+          event.preventDefault();
+          editor.api.dom.focus();
+        }}
+      >
         <DropdownMenuRadioGroup
           value={selectedValue}
           onValueChange={(innerValue2) => {
@@ -80,8 +98,8 @@ export function AlignToolbarButton() {
 
             if (!alignment) return;
 
+            focusEditorRef.current = true;
             editor.plugin(TextAlignPlugin).update.set(alignment);
-            editor.api.dom.focus();
           }}
         >
           {items.map(({ icon: Icon, value: itemValue }) => (

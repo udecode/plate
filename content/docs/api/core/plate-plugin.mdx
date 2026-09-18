@@ -520,12 +520,26 @@ Renders after a node's children inside its primary component.
 </APIItem>
 
 <APIItem name="activate" type="PluginDefinitionInput['activate']">
-  Owns synchronous resources. Defer work that must observe publication with
-  `context.afterPublish(...)`.
+  Runs early and owns synchronous resources. Register
+  `context.beforePublish(callback)` for validation or resource initialization
+  that needs the final document candidate. Its signature is
+  `beforePublish: (callback: () => void) => void`. The callback runs before
+  publication becomes permanent, during both editor construction and dynamic
+  plugin changes. It must be synchronous and must not write to the document.
+  Throwing vetoes publication and rolls back the candidate.
+
+  Register resource cleanup with `context.onCleanup(...)`, including resources
+  acquired in `beforePublish`. Cleanup belongs to the activation and runs on
+  rollback, removal, or replacement.
+
+  Use `context.afterPublish(...)` for nonthrowing observation of published
+  state. Callback errors are reported; they cannot veto or roll back publication.
 </APIItem>
 
 <APIItem name="validate" type="PluginDefinitionInput['validate']">
-  Validates the detached candidate before activation.
+  Checks the assembled detached candidate before activation. This early check
+  does not observe the final initialized document. Register checks that need
+  that document through `beforePublish` inside `activate`.
 </APIItem>
 
 <APIItem name="enabled" type="boolean" optional>
@@ -552,18 +566,6 @@ Renders after a node's children inside its primary component.
   `observe` contract.
 </APIItem>
 
-<APIItem
-  name="prepareDocument"
-  type="PrepareDocument<WithAnyName<D>>"
-  optional
->
-  Prepares complete document input after application migrations and before
-  schema fitting. It runs during initialization and complete
-  `editor.update.value.replace(...)` loads. Use it for installed current-schema
-  invariants, not source-version migrations.
-</APIItem>
-
-
 <APIItem name="editOnly" type="boolean | EditOnlyConfig" optional>
 Configures which plugin functionalities should only be active when the editor is not read-only.
 
@@ -574,32 +576,24 @@ type EditOnlyConfig = {
   render?: boolean; // default: true
   on?: boolean; // default: true
   inject?: boolean; // default: true
-  prepareDocument?: boolean; // default: false
 };
 ```
 
 When set to `true` (boolean):
 
 - `render`, `on`, and `inject.nodeProps` are only active when editor is not read-only
-- `prepareDocument` remains active regardless of read-only state
 
 When set to an object:
 
 - Each property can be individually configured
-- Properties default to being edit-only (`true`) except `prepareDocument` which defaults to always active (`false`)
+- Properties default to being edit-only (`true`)
 - Set a property to `false` to make it always active regardless of read-only state
-- For `prepareDocument`, set to `true` to make it edit-only
 
 Examples:
 
 ```ts
-// All features (except prepareDocument) are edit-only
+// All supported features are edit-only
 editOnly: true;
-
-// prepareDocument is edit-only, others remain edit-only by default
-editOnly: {
-  prepareDocument: true;
-}
 
 // render is always active, others follow default behavior
 editOnly: {

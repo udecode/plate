@@ -4,7 +4,9 @@
   "title": "Diff",
   "description": "Structural document comparison with evidence, diagnostics, filtering, navigation, and text granularity.",
   "dependencies": [
-    "platejs/diff"
+    "platejs/diff",
+    "diff-match-patch-ts@^0.6.0",
+    "platejs"
   ],
   "registryDependencies": [
     "button"

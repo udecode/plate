@@ -12,7 +12,7 @@ Preserve compound command targets and make earlier edits visible to later steps 
 
 Store each code block in one newline-bearing text child. Remove `CodeLinePlugin`, `BaseCodeLinePlugin`, and the `codeLine` element. Replace `CodeSyntaxPlugin` and `BaseCodeSyntaxPlugin` with `CodeHighlightPlugin` and `BaseCodeHighlightPlugin`. The highlighting plugin owns Lowlight state, transient token decorations, and refresh behavior and depends on `CodeBlockPlugin`.
 
-**Migration:** Remove code-line plugins and components from plugin arrays. Run `migratePlateV54` while loading persisted v53 code blocks. Replace standalone query, formatter, decoration, and transform imports with the installed plugin groups:
+**Migration:** Remove code-line plugins and components from plugin arrays. Run `migrateV54` in the app's detached document migration chain before loading persisted v53 code blocks. Replace standalone query, formatter, decoration, and transform imports with the installed plugin groups:
 
 ```tsx
 editor.read.codeBlock.entry();

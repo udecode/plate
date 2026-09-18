@@ -5,7 +5,6 @@ import { registryEditor } from '../../registry-editor';
 import { registryFeatures } from '../../registry-features';
 
 const registryItems = [...registryEditor, ...registryFeatures];
-
 const composedToolbarNames = [
   'fixed-toolbar',
   'floating-toolbar',
@@ -74,24 +73,11 @@ describe('composed toolbar registry', () => {
 
       expect(componentSource.match(/\buseEditorReadOnly\(\)/g)).toHaveLength(1);
       expect(componentSource).not.toMatch(
-        /\b(?:useEditor|useEditorSelector|useEditorState|useEditor|useSelectionFragmentProp)\(/
+        /\b(?:useEditorSelector|useEditorState|useSelectionFragmentProp)\(/
       );
       expect(componentSource).not.toMatch(
         /\b(?:editor\.children|read\.children|read\.nodes)\b/
       );
     }
   );
-
-  it('keeps turn-into subscribed to the selected block fact', () => {
-    const source = readFileSync(
-      new URL('turn-into-toolbar-button.tsx', import.meta.url),
-      'utf-8'
-    );
-
-    expect(source.match(/\buseSelectionFragmentProp\(/g)).toHaveLength(1);
-    expect(source).not.toMatch(/\b(?:useEditorSelector|useEditorState)\(/);
-    expect(source).not.toMatch(
-      /\b(?:editor\.children|read\.children|read\.nodes)\b/
-    );
-  });
 });

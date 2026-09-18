@@ -18,6 +18,7 @@ import {
   applyEditableCompositionUpdate,
   commitChromeCompositionEndFallback,
 } from '../../src/react/editable/composition-state';
+import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   type EditableCompositionStateSetter,
   setEditableComposingState,
@@ -58,6 +59,18 @@ const createAndroidManager = () =>
     handleDomMutations: vi.fn(),
     handleInput: vi.fn(() => false),
   }) satisfies AndroidInputManager;
+
+const replayMountedHistory = (editor: Editor, direction: 'redo' | 'undo') => {
+  const runtime = new EditableDOMRuntime({ editor });
+
+  runtime.setRoot(document.createElement('div'));
+  runtime.connect();
+  try {
+    return applyModelOwnedHistoryIntent({ direction, editor, runtime });
+  } finally {
+    runtime.destroy();
+  }
+};
 
 const createTextEditor = (text = 'abcd') => {
   const editor = createEditor();
@@ -260,18 +273,14 @@ describe('composition state', () => {
       const composed = readVisibleEditorState(editor);
 
       expect(editorString(editor, [])).toBe('This is すし, done');
-      expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
-        true
-      );
+      expect(replayMountedHistory(editor, 'undo')).toBe(true);
       expect(
         editor.read((state) => ({
           selection: state.selection(),
           value: state.value(),
         }))
       ).toEqual(before);
-      expect(applyModelOwnedHistoryIntent({ direction: 'redo', editor })).toBe(
-        true
-      );
+      expect(replayMountedHistory(editor, 'redo')).toBe(true);
       expect(
         editor.read((state) => ({
           selection: state.selection(),
@@ -304,6 +313,7 @@ describe('composition state', () => {
       applyModelOwnedBeforeInputMutation({
         data: 'すし',
         editor,
+        inputController,
         inputType: 'insertFromComposition',
         mergeHistory: shouldMergeEditableCompositionHistory(inputController),
         native: false,
@@ -313,13 +323,9 @@ describe('composition state', () => {
       const composed = readVisibleEditorState(editor);
 
       expect(editorString(editor, [])).toBe('This is すし, done');
-      expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
-        true
-      );
+      expect(replayMountedHistory(editor, 'undo')).toBe(true);
       expect(readVisibleEditorState(editor)).toEqual(before);
-      expect(applyModelOwnedHistoryIntent({ direction: 'redo', editor })).toBe(
-        true
-      );
+      expect(replayMountedHistory(editor, 'redo')).toBe(true);
       expect(readVisibleEditorState(editor)).toEqual(composed);
     } finally {
       hasSelectableTarget.mockRestore();
@@ -349,6 +355,7 @@ describe('composition state', () => {
       expect(
         commitChromeCompositionEndFallback({
           editor,
+          inputController,
           mergeHistory: shouldMergeEditableCompositionHistory(inputController),
           target: compositionSelection,
           text: 'すし',
@@ -357,13 +364,9 @@ describe('composition state', () => {
       const composed = readVisibleEditorState(editor);
 
       expect(editorString(editor, [])).toBe('This is すし, done');
-      expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
-        true
-      );
+      expect(replayMountedHistory(editor, 'undo')).toBe(true);
       expect(readVisibleEditorState(editor)).toEqual(before);
-      expect(applyModelOwnedHistoryIntent({ direction: 'redo', editor })).toBe(
-        true
-      );
+      expect(replayMountedHistory(editor, 'redo')).toBe(true);
       expect(readVisibleEditorState(editor)).toEqual(composed);
     } finally {
       hasSelectableTarget.mockRestore();
@@ -427,9 +430,7 @@ describe('composition state', () => {
 
       expect(editorString(editor, [0])).toBe('a文b');
       expect(editorString(editor, [1])).toBe('tail!');
-      expect(applyModelOwnedHistoryIntent({ direction: 'undo', editor })).toBe(
-        true
-      );
+      expect(replayMountedHistory(editor, 'undo')).toBe(true);
       expect(editor.read((state) => state.value())).toEqual(
         valueAfterUnrelatedEdit
       );

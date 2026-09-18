@@ -16,7 +16,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/registry/components/editor/dropdown-menu';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 const MODE_ITEMS = {
@@ -60,20 +60,38 @@ function ModeToolbarButtonContent({
   const editor = useEditor();
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const [open, setOpen] = React.useState(false);
+  const focusEditorRef = React.useRef(false);
   const suggestionsInstalled = suggestionMode !== null;
   const isSuggesting = suggestionMode === 'suggesting';
   const value = readOnly ? 'viewing' : isSuggesting ? 'suggestion' : 'editing';
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
+    <DropdownMenu
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) focusEditorRef.current = false;
+        setOpen(nextOpen);
+      }}
+      modal={false}
+    >
+      <DropdownMenuTrigger>
         <ToolbarButton pressed={open} tooltip="Editing mode" isDropdown>
           {MODE_ITEMS[value].icon}
           <span className="hidden lg:inline">{MODE_ITEMS[value].label}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="min-w-[180px]">
+      <DropdownMenuContent
+        align="start"
+        className="min-w-[180px]"
+        onFinalFocus={(event) => {
+          if (!focusEditorRef.current) return;
+
+          focusEditorRef.current = false;
+          event.preventDefault();
+          editor.api.dom.focus();
+        }}
+      >
         <DropdownMenuRadioGroup
           onValueChange={(newValue) => {
             if (newValue === 'viewing') {
@@ -93,7 +111,7 @@ function ModeToolbarButtonContent({
             }
 
             if (newValue === 'editing') {
-              editor.api.dom.focus();
+              focusEditorRef.current = true;
             }
           }}
           value={value}

@@ -199,13 +199,13 @@ const reactValue: ValueOf<typeof reactEditor> = [
 ];
 
 historyOnlyEditor.update({ history: 'skip' }, () => {});
-historyOnlyEditor.read((state) => state.history.undos());
-historyOnlyEditor.update((tx) => tx.history.undo());
+historyOnlyEditor.read((state) => state.history());
+historyOnlyEditor.api.history.undo();
 manualReactHistoryEditor.update({ history: 'skip' }, () => {});
 manualReactHistoryEditor.api.react.isComposing();
 manualReactHistoryEditor.api.dom.focus();
-manualReactHistoryEditor.read((state) => state.history.undos());
-manualReactHistoryEditor.update((tx) => tx.history.undo());
+manualReactHistoryEditor.read((state) => state.history());
+manualReactHistoryEditor.api.history.undo();
 
 reactEditor.api.dom.resolvePath(pliteNode);
 reactEditor.api.dom.clipboard.insertData(dataTransfer);
@@ -218,14 +218,12 @@ reactWithoutClipboardEditor.api.dom.clipboard.insertData(dataTransfer);
 createEditor({ dom: DOMWithoutClipboard, initialValue });
 
 historyReactEditor.read((state) => {
-  const undos = state.history.undos();
+  const { undos } = state.history();
 
   void undos;
 });
 
-historyReactEditor.update((tx) => {
-  tx.history.undo();
-});
+historyReactEditor.api.history.undo();
 
 historyReactEditor.update({ history: 'skip' }, () => {});
 historyReactEditor.api.dom.focus();
@@ -279,14 +277,14 @@ type _NoEditableCommandContext = PliteReact.EditableCommandContext;
 // @ts-expect-error Editor exposes DOM through api.dom, not root dom
 void typedDefaultReactEditor.dom;
 
-// @ts-expect-error disabled history does not accept history update policy
-typedNoHistoryReactEditor.update({ history: 'skip' }, () => {});
+// @ts-expect-error disabled history does not expose the history service
+typedNoHistoryReactEditor.api.history.undo();
 
 // @ts-expect-error disabled default history removes state history
-noHistoryReactEditor.read((state) => state.history.undos());
+noHistoryReactEditor.read((state) => state.history());
 
-// @ts-expect-error disabled default history removes tx history
-noHistoryReactEditor.update((tx) => tx.history.undo());
+// @ts-expect-error disabled default history removes the history service
+noHistoryReactEditor.api.history.undo();
 
 // @ts-expect-error disabled default history rejects history update policy
 noHistoryReactEditor.update({ history: 'skip' }, () => {});
@@ -336,14 +334,12 @@ const HookProbe = () => {
   );
 
   hookEditor.read((state) => {
-    const undos = state.history.undos();
+    const { undos } = state.history();
 
     void undos;
   });
 
-  hookEditor.update((tx) => {
-    tx.history.undo();
-  });
+  hookEditor.api.history.undo();
 
   hookEditor.update({ history: 'skip' }, () => {});
   hookEditor.api.dom.focus();
@@ -420,7 +416,7 @@ const NoHistoryHookProbe = () => {
   });
 
   // @ts-expect-error disabled default history removes hook state history
-  hookEditor.read((state) => state.history.undos());
+  hookEditor.read((state) => state.history().undos);
 
   return null;
 };

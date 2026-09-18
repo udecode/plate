@@ -1,5 +1,10 @@
 # dev/table-perf Performance Snapshot
 
+Historical measurement; use the [Table hub](../research/features/table.md)
+for current decisions and bound evidence. The original snapshot records neither
+a test date nor source revision. Its numbers remain unbound; they cannot prove
+the current implementation’s latency.
+
 ## Environment
 
 - Page route: `/dev/table-perf`
@@ -23,7 +28,7 @@
 | Table Selection Latency | Min | 368.90 ms |
 | Table Selection Latency | Max | 489.50 ms |
 
-### Current
+### Recorded candidate (source/date unknown)
 
 | Category | Metric | Value |
 | --- | --- | ---: |

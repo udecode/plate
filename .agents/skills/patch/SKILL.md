@@ -1,6 +1,6 @@
 ---
-description: Repair one local Plate/Plite behavior bug with exact reproduction, an owning fix and focused verification.
-argument-hint: '[repair <expectation> | <one bug report, route, failing test, or observable regression case>]'
+description: Repair Plate/Plite behavior bugs with exact reproduction, an owning fix and verified prevention; diagnose-only and explicit corpus modes preserve their scope.
+argument-hint: '[<bug report> | diagnose <report> | corpus <surface or cases>]'
 disable-model-invocation: true
 name: patch
 metadata:
@@ -10,425 +10,140 @@ metadata:
 
 # Patch
 
-Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
-
-
-Handle $ARGUMENTS.
-
-If the arguments start with `repair <expectation>`, run Repair Command.
-Otherwise run the normal workflow.
-
-This is the sole local repair owner for one Plate or Plite behavior bug or
-regression:
-
-```txt
-reproduce -> classify -> red proof -> fix durable owner
--> architecture pressure -> verify -> handoff
-```
-
-It owns local code and proof only. It does not read or mutate public issue/PR
-state. Use `maintainer slate-issue` when a Slate issue is the public target and
-`maintainer` for a public Plate issue; let the coordinator delegate the local
-repair here.
-
-## Use When
-
-- The user invokes `patch`.
-- `regression`, `maintainer`, or `maintainer slate-issue` delegates a
-  normalized one-case local repair packet. The packet may retain issue, corpus,
-  or report references for provenance; do not treat that as public-mutation
-  authority.
-- One local Plate or Plite behavior is wrong relative to Slate or the intended
-  editor/product contract.
-- One failing test, browser route, or observable regression case needs a fix now.
-- A previous local patch fixed the symptom at the wrong owner.
-- The user invokes `patch repair <expectation>` because future runs
-  missed a recurring proof, workflow, or handoff standard.
-
-## Do Not Use When
-
-- A direct user prompt names a public issue or PR, even when it asks for a
-  local-only fix or no public mutation. Use `maintainer slate-issue` for one Slate
-  issue or `maintainer` for Plate/public queue work; accept issue provenance
-  only inside the normalized local repair packet that coordinator delegates
-  back here.
-- The defect is repo tooling, build infrastructure, or another non-product
-  task rather than Plate/Plite behavior. Use `task`.
-- The prompt asks for a public queue, batch, or repository heartbeat. Use
-  `maintainer`.
-- The prompt asks for a regression cluster, multi-issue batch, harness rewrite,
-  or rewrite-closure loop. Use `regression` directly or through
-  `task autonomous regression`; Regression normalizes and prioritizes
-  cases, then delegates exactly one observable repair case here at a time.
-- The prompt asks for broad or timed quality work. Use `task autonomous`.
-- The prompt asks only for an architecture plan. Use `plite-plan` or
-  `plate-plan` after classifying the owning lane.
-- Reusable public call shape is unresolved. Use `best-api`, then the owning
-  lane plan for adoption/runtime planning.
-
-`patch repair` is the sole tooling-shaped exception: it repairs only this
-workflow's recurring reproduction, proof, routing, review, or handoff contract.
-Use `task` for every unrelated skill, generator, or repository-tooling change.
-
-## Authority
-
-- Implementation: the caller-provided current Plate checkout. Do not switch
-  branches; coordinators own integration-target decisions such as Slate work on
-  `next`.
-- Plite substrate owners: the relevant entrypoint under `packages/plitejs` and
-  the proof harness under `packages/test`.
-- Plate product owners: the relevant entrypoint under `packages/platejs` and
-  its canonical example or registry source under `apps/www`.
-- Plite Browser proof: `apps/plite`, importing Plite examples from `apps/www`.
-- Plate Browser proof: the affected `apps/www` route; prefer
-  `/blocks/[id]-demo` for registry components when it exists.
-- Public mutation: none. Do not create, edit, comment on, close, or merge an
-  issue or PR.
-- Git mutation: do not commit unless the user explicitly asks. Never push;
-  return shipping to the coordinator or normal Git workflow after handoff.
-
-Current checkout source beats memory, old plans, inventories, and upstream
-diagnosis. Upstream Slate is a behavior oracle when a shared editor contract is
-disputed, never the implementation owner. Plate owns product/plugin policy;
-Plite owns only editor-agnostic substrate behavior.
-
-## Hard Rules
-
-- Reproduce first whenever practical.
-- For a report-backed bug, reproduce the reporter's exact observable case on
-  the named route, starting state, target, input path, and browser/device scope.
-  A nearby demo, easier DOM target, gutter-only path, synthetic model call, or
-  visually similar outcome is a proxy, not reproduction.
-- Add a behavior-level regression test when sane. Cover the bug class, not only
-  the screenshot that exposed it.
-- Classify Plate versus Plite ownership before adding the red proof.
-- Fix the durable owning package. Example patches are valid only when the
-  example contract is wrong.
-- Keep Plate product policy out of Plite substrate.
-- Public API changes go through `best-api`; broader adoption/runtime changes go
-  through `plite-plan` or `plate-plan` for the owning lane.
-- If the first green patch is not the cleanest long-term shape, rework it before
-  verification.
-- Add a changeset when published packages change.
-- Use Browser proof for visible behavior.
-- For a reporter-visible paint claim, computed style, DOM attributes, callback
-  traces, selection text, and an unclassified screenshot are diagnostics only.
-  Final proof must classify actual pixels from the named interaction phase and
-  pass known-correct single-layer, known-absent, and known-invalid
-  duplicate-layer controls through the identical capture path. Without that
-  oracle, return `needs-repro`; never claim fixed.
-- When Task's review gate applies, use its single P1 `autoreview` budget by passing
-  `--max-priority P1`. Use P2 or P3 only when explicitly requested.
-- A claimed `candidate-local`, `kept`, or `completed` fix that later fails its
-  exact replay/final verification, or receives a reporter contradiction, is a
-  failed fix. Stop product edits and automatically route
-  `regression repair <case-id>: <missed invariant or proof failure>` before any
-  retry. Expected red-before-green is not a failed fix. On the second failed
-  fix, or on an architecture trigger named by Regression, require `best-api`
-  and the owning Plite/Plate plan before another Patch attempt.
-
-## Repair Command
-
-Trigger on:
-
-```txt
-repair <expectation>
-```
-
-Repair the workflow, not runtime code:
-
-1. State the missed recurring expectation.
-2. Patch `.agents/rules/patch.mdc`.
-3. Put large reusable coverage law in a focused reference doc. Selection and
-   navigation coverage belongs in
-   `docs/plite/selection-navigation-coverage.md`.
-4. Run `pnpm install`.
-5. Prove source and generated mirrors contain the rule:
-
-```bash
-rg '<expected text>' .agents/rules/patch.mdc
-rg '<expected text>' .agents/skills/patch/SKILL.md
-```
-
-6. Run agent-native review when routing, authority, proof, or handoff changed.
-
-Do not hand-edit `.agents/skills/**/SKILL.md`.
-
-## Goal Setup
-
-Use one Task-owned file plan for non-trivial work. Apply the project's standing Autogoal request when this work becomes long-running.
-
-```txt
-Fix <Plate or Plite> behavior bug or regression <one observable case>; done when
-reproduction, durable behavior coverage, and focused owning-lane proof pass in
-the current Plate checkout, with Task's applicable review gate resolved.
-```
-
-Add Browser or package proof packs only when the claim needs them. Add the
-agent-native pack in repair mode.
-
-## Workflow
-
-### 1. Reproduce And Bound
-
-Read the latest report, attached media, route, and failing test. Inspect the
-live owner, classify Plate versus Plite, then reproduce through the narrowest
-honest path:
-
-- package test for pure model behavior;
-- real keyboard, mouse, clipboard, focus, or composition input for browser
-  behavior;
-- both when model and DOM behavior can disagree.
-
-Record actual behavior, expected behavior, owning package/route, model state,
-and DOM/native state when relevant.
-
-Before editing, record one reporter-valid case in the active plan or delegated
-packet:
-
-- stable `case_id` such as `issue-5088:node-selection-pointer-drag`;
-- exact route/surface, setup, target, action, and expected end state;
-- issue body, attachment, comment, docs, or prior-version `source_refs`;
-- browser, OS/device, branch/channel, and observed bad ref when known;
-- applicable claim fields: model, rendered DOM, native selection/caret,
-  pointer feedback, focus, popup/toolbar, geometry/paint, runtime errors, and
-  follow-up input;
-- production, test, fixture, and harness file fingerprints for the proof run;
-- the commit/ref tested, or `dirty:<ref>` plus those fingerprints.
-
-When delegated by `regression`, require the normalized executable case packet
-defined by `.agents/skills/regression/references/methodology.md`: case ID and
-source references, owner and route/surface, setup/action/expected outcome,
-violated invariant, exact test file and red result, allowed edit boundary,
-forbidden scope, required proof layers, stability count, and expected return
-evidence. One case means one externally observable setup/action/outcome, not
-one function or assertion. A baseline, older release, upstream implementation,
-or recording is evidence; current accepted behavior decides the oracle.
-
-If the exact case does not fail before the fix, classify it `needs-repro`. Do
-not replace it with a proxy red test, infer the root cause, or return a fixed
-packet. A temporary stub, alias, generated-file edit, route bypass, or other
-unshipped scaffolding may diagnose a blocker but cannot satisfy reproduction or
-final proof.
-
-### 2. Classify
-
-Name the class before patching:
-
-- selection/navigation;
-- focus/browser event ownership;
-- history/undo;
-- DOM coverage/hidden content;
-- multi-root/content root/void root;
-- rendering/projection;
-- normalization/schema;
-- clipboard/paste;
-- IME/mobile;
-- collaboration/replay;
-- performance/scalability.
-
-Search adjacent owners and tests when the same assumption can fail elsewhere.
-
-### 3. Add Red Proof
-
-Use:
-
-- package tests for operations, transforms, plugins, history, normalization,
-  codecs, schema, and deterministic model state;
-- focused Browser or Playwright proof on `apps/plite` for Plite or the owning
-  `apps/www` route for Plate browser-visible behavior;
-- both when the browser symptom starts in a model transform.
-
-Assert the user-visible invariant and the model invariant when both matter.
-For Plite selection/navigation, choose and name the relevant rows from
-`docs/plite/selection-navigation-coverage.md`: command, direction, topology,
-starting state, model result, and DOM/native result. For Plate product behavior,
-assert the plugin/component contract without moving product policy into Plite.
-
-Do not claim raw-device IME/mobile proof from viewport emulation.
-
-The red proof must fail on the same case and claim fields that will certify the
-green result. Do not prove a transient state and omit the final state. Examples:
-after pointer-up recheck native selection and floating-toolbar visibility; after
-table navigation recheck destination selection shape; after formatting preserve
-the required selection instead of accepting its disappearance; after DnD prove
-the final model/DOM order and drag-time caret/selection behavior.
-
-For pointer, mouse, cursor, hover, or resize/drag-handle cases, assert the
-cursor and relevant hover, active, tooltip, or drag affordance in the named
-interaction phase. Selection, preview, and final action assertions do not prove
-pointer feedback.
-Trace the actual pointer target, delivered event, and button state in the same
-interaction. Completion evidence records `interaction-trace: pass`,
-`target:`, `event:`, and `buttons:`; a synthetic boundary event that never
-occurs in the reporter path is not proof.
-For a flash, flicker, or one-frame pointer-feedback report, prove the state
-before the target component's event handler with target-capture or an
-equivalent earlier browser anchor. Record `pre-handler-state: pass`; a
-post-handler computed-style assertion does not close the case.
-
-### 4. Fix The Durable Owner
-
-Prefer this ownership order after classifying the behavior:
-
-1. Plite model/runtime for editor-agnostic substrate behavior;
-2. the owning Plate core/plugin/component package for Plate product policy;
-3. the shared DOM/React bridge when browser/model projection owns the failure;
-4. the owning schema/API contract;
-5. the shared example/component pattern;
-6. one example, only when it owns the contract.
-
-Prefer deterministic model operations, stable identity, bounded hot paths,
-schema-owned behavior, and deletion of workarounds after the real fix.
-
-Reject caller-specific branches, example masking, compatibility aliases for
-unreleased APIs, timing waits, broad scans, and tests of implementation trivia.
-
-### 5. Apply Architecture Pressure
-
-After the first green patch, decide:
-
-- `keep`: the owner and shape are durable;
-- `rework`: simplify or move the fix before final proof;
-- `escalate`: public call shape needs `best-api`, or broader runtime/adoption
-  needs `plite-plan` or `plate-plan` for the owning lane.
-
-Check ownership, API/DX, unopinionated substrate, performance bounds,
-determinism, browser/model agreement, class-level coverage, and deletable
-machinery. Breaking cost does not justify preserving a bad unreleased shape.
-
-Run a supported-domain gate before keeping robustness machinery or accepting a
-review finding. The finding must serve the authorized invariant inside an
-input domain that the complete owning path can validate, construct, process,
-and serialize when those stages apply. A theoretical or synthetic extremal
-case does not expand the product contract. Reject the finding, simplify the
-patch, and remove any misleading test when only one helper can satisfy the new
-guarantee. Record the real user job and absolute impact before trading lasting
-complexity for a relative benchmark or isolated hardening claim.
-
-### 6. Verify
-
-Run focused proof first. Choose the lane; do not run both packs by habit.
-
-```bash
-# Plite package examples; choose only affected entrypoints
-pnpm --filter plitejs test
-pnpm --filter plitejs typecheck
-
-# Focused browser row
-pnpm --filter plite test:plite-browser:chromium <file-or--grep>
-
-# Normal affected development gate
-pnpm check:plite:dev
-
-# Strict handoff or release-quality breadth
-pnpm check:plite
-pnpm check:plite:browser-matrix
-
-# Plate package examples; replace placeholders with the exact owner
-pnpm --filter <package> test
-pnpm turbo typecheck --filter=./packages/<owner>
-pnpm exec ultracite check <changed-paths>
-```
-
-Run Browser proof for changed visible behavior on the owning route. `apps/plite`
-must continue to import examples from `apps/www`; never create a second example
-source tree. Never edit `templates/**`; fix its source owner and let CI
-regenerate it.
-
-Keep formatting and lint fixes inside the changed path set. Never run a
-workspace-wide mutating fixer from this narrow repair lane when unrelated work
-is present.
-
-Use the strict gate or browser matrix only when the claim width requires it.
-Record exact unrelated failures without hiding relevant failures.
-
-For report-backed browser behavior, final proof is stricter:
-
-1. Always start a fresh app process, then open a fresh page/session with the
-   reporter's exact setup. A local candidate may run from the current checkout
-   only with recorded fingerprints. Fixed/completed proof must run from a clean
-   checkout at the exact final pushed ref, or an immutable CI artifact of that
-   ref, with zero tracked or untracked issue-owned runtime-input differences.
-   A reused dev server, HMR state, cache from another ref, or dirty scaffolding
-   cannot certify the pushed tree.
-2. Replay the exact case against the final code state. No production, fixture,
-   harness, config, generated, or route-host file may change afterward; any
-   change invalidates the replay.
-3. Assert every applicable claim field before, during, and after the action,
-   including post-pointer-up or post-popup-close state and follow-up input.
-4. For native selection/caret paint, focus, DnD, browser compositor, or React DOM
-   lifecycle regressions, pass five consecutive warm runs with no retry. Record
-   every timing and result; one failure keeps the case open.
-5. When the report or intended claim names Chrome, run the entire applicable
-   final replay and its retry-free warm runs in exact Chrome. This includes
-   toolbar, crash, React DOM, selection/paint, native drag/focus, and rendering
-   cases. Browser is still useful for exploration; it does not substitute for
-   the named browser. If exact Chrome cannot run the deterministic replay, the
-   browser limitation blocks the fixed claim.
-6. Record the tested ref plus SHA-256 fingerprints of every issue-owned
-   production, fixture, test, and harness file. If the patch is later committed,
-   combined with other work, rebased, regenerated, or pushed, replay on that
-   final ref before anyone calls it fixed.
-
-If the real route cannot render, requires a temporary stub, or cannot reproduce
-the reporter environment, stop with `methodology-repair` or `needs-repro`.
-Package tests, DOM reads, screenshots, autoreview, and green proxy routes cannot
-upgrade that blocker into a behavior claim.
-
-### 7. Review When Applicable
-
-Only when Task's explicit-review or PR-closeout gate applies, and never on `next`:
-
-1. Load `.agents/skills/autoreview/SKILL.md` for the P1 review contract.
-2. Review the actual current-checkout diff with a strict file boundary and
-   `--max-priority P1`. Use P2 or P3 only when explicitly requested.
-3. Reject stale, out-of-scope, non-matching, or unsupported-domain findings.
-   Review is advisory and cannot silently add a product requirement.
-4. Fix valid findings only after the supported-domain and architecture-pressure
-   gates pass.
-5. Rerun focused proof and P1 autoreview as needed, with at most three helper
-   invocations for the unchanged review scope. The initial review counts as 1.
-   An exhausted review budget does not stop authorized repairs. Resolve known
-   defects with focused proof, report the actual review limit, and do not claim
-   an unperformed clean review.
-
-## Coordinator Handoff
-
-When invoked by `regression`, `maintainer slate-issue`, or `maintainer`,
-return a compact evidence packet:
-
-- classification and root cause;
-- reporter-valid case ID, source refs, exact route/setup/action/outcome, and
-  applicable claim fields;
-- durable owner and changed files;
-- exact red proof; final local ref/fingerprints; retry-free warm runs; and
-  passing commands;
-- Browser/device proof or explicit limitation;
-- architecture-pressure verdict;
-- changeset status;
-- Task review result, or N/A with its applicability reason;
-- unresolved caveat.
-
-For `regression`, also return the executable test path and command, exact red
-and green results, final tested ref or dirty fingerprints, and retry-free
-stability results. Regression owns the final keep/revert/quarantine and
-methodology-delta decision.
-
-Use the claim label `candidate-local` for uncommitted or unpushed public-issue
-handoffs. The worker may say the exact local case passes, but must not call the
-public issue fixed or completed. The coordinator owns replay on the final
-pushed ref and any public status wording.
-
-Do not perform the coordinator's root check, push, PR, issue comment, release
-readback, or closure work.
-
-## Final Response
-
-Keep it short:
-
-- root cause and durable owner;
-- architecture-pressure verdict;
-- tests and Browser proof;
-- changeset and Task review status, including N/A when review does not apply;
-- unresolved gate or next owner.
+Handle $ARGUMENTS under [the Plate workflow](../task/references/workflow.md).
+Patch owns local behavior repair; Task retains scope, continuation, the current
+plan and authorized delivery. Use the existing checkout and one acceptance record.
+
+## Select the work
+
+| Request | Method |
+| --- | --- |
+| One local bug, failing behavior test, or normalized repair packet | Follow the repair loop below. |
+| `diagnose`, `debug only`, or cause still unresolved | Load [diagnosis](./references/diagnosis.md). Diagnosis-only stops at evidence and cause; it does not authorize a product fix. |
+| Several bugs, explicit corpus, regression harness or rewrite closure | Load [corpus](./references/corpus.md) for case selection, semantic schema, receipts and affected-case replay; use this same repair loop for each case. |
+| A claimed fix fails exact replay or receives a reporter contradiction | Load [failed-fix recovery](./references/failed-fix.md) before another product edit. Preserve earlier acceptance and the new evidence. |
+| Workflow/rule/helper maintenance, including a request phrased `patch repair` | Use Maintain Workflow at the actual source owner. No separate Patch maintenance procedure. |
+
+Public issue/PR requests go through Maintainer; a delegated local packet may
+retain issue provenance without public-mutation authority. Timing or profiling
+goes to Benchmark. Verification-only goes to Verify Plate and stays read-only
+for product code. Non-product tooling fixes stay with Task. Generic feature TDD
+remains a shared method; an ordinary bug does not load a second TDD lifecycle.
+
+## Reproduce the actual failure
+
+Read the latest report, source and supplied evidence. Record the exact
+setup, active modes, route or public entry, input, expected result, observed
+failure and required follow-up. Separate observed behavior from the reporter's
+theory. Preserve every still-applicable acceptance item across follow-ups.
+
+Classify the invariant and owner: Plate owns product/plugin policy; Plite owns
+editor-agnostic substrate. Reproduce through the smallest honest boundary:
+package proof for model behavior, real input on the reported surface for native
+interaction, and both when their failures differ. A detached transform,
+alternate route, synthetic click or model selection is not proof of an Enter,
+pointer, native caret or focus report. Keep the complete original fixture even
+when a smaller diagnostic reproduces the first fault.
+
+Mark the acceptance as `visual` when the reported result concerns paint,
+highlighting, visibility, layout, styling, clipping, position or animation.
+When the failure is reproducible, capture and inspect the failing state after
+the exact reporter interaction before changing product source. A reporter image
+may establish the observed failure. DOM markers, computed styles, geometry and
+automated assertions remain diagnostics; they do not replace looking at the
+rendered pixels for a visual report.
+
+If the exact case does not fail, record `needs-repro` and continue useful
+diagnosis without calling a proxy the reproduction or the bug fixed. Repair a
+diagnosed host/runner prerequisite within scope; a stub, route bypass or edited
+generated file cannot certify product behavior. Use the conditional diagnosis
+method when the cause remains unclear.
+
+## Fix and prevent
+
+Before implementation, name the violated invariant and why it escaped. Search
+materially different callers for the same assumption. Compare fixing the
+existing owner with deleting the condition that creates the bug before adding
+compensation. The smallest durable fix is the simplest correct ownership, not
+the fewest changed files. Choose one canonical owner, an impossible invalid
+state, an existing reusable assertion, or a valuable behavior test. Prefer shared
+selection/focus utilities in `packages/test`; keep one-use setup local.
+
+Use Testing's value gate for new coverage. When a regression test is justified,
+run it red on the reported invariant, fix the owner, then run the same proof
+green. An existing test or diagnostic may supply red; do not create duplicate
+tests simply to perform TDD. Native proof remains required when the lower-layer
+test cannot observe the reported input, focus, selection or paint. A test helper
+must reject the known bad state as well as accept the valid one.
+
+Make the ownership decision early, and revisit it if a workaround appears:
+
+- **Keep:** the owner and shape can enforce the invariant directly.
+- **Rework:** simplify or move the fix before final proof.
+- **Escalate:** unresolved ownership, a proposed cross-owner compensation
+  protocol, recurring invariant failures or several caller workarounds require
+  Best API Review before accepting the fix; do not wait for another failed
+  attempt. Compare deleting, merging and reusing owners. Choose the next owner
+  for the whole remaining job through Task's review routing. Continue necessary
+  design, adoption and proof under existing repair authority.
+
+Fix the durable package or bridge, not an example unless the example owns the
+contract. Reject timing guesses, caller-specific compensation, unbounded hot
+work, unreleased compatibility aliases and implementation-spelling tests.
+Before accepting robustness machinery or review findings, establish the real
+user job and supported input domain across the complete owning path. A helper's
+synthetic extremal case cannot silently expand product requirements.
+
+Published package edits require the applicable changeset; public API changes
+also retain Best API's doctrine-repair obligation. Remove temporary probes and
+obsolete workarounds after the cause is proved.
+
+## Verify the final source
+
+Use [Verify Plate's implementation review](../verify-plate/SKILL.md#review-the-implementation)
+on the final candidate before closure, as well as its actual package/route,
+runner, source identity and native evidence. Apply its ownership and complexity
+gate before expensive final replay; if repair changes the candidate, review the
+affected delta and rerun invalidated proof. Its conditional
+[regression oracles](../verify-plate/references/regression-oracles.md) preserve
+phase-specific focus, pointer, caret, paint and identity contracts; load the
+applicable sections, not every domain for every bug. Testing owns test mechanics.
+
+Re-run the full reporter interaction and follow-up against the final source.
+Record the tested ref or dirty file fingerprints and, for browser proof, the
+serving source. Retain failures: a passing unit test cannot close a red native
+case, and a failure before the reported action leaves that interaction unproved.
+Never replace Enter with click, weaken an assertion or delete a failing test to
+close the same claim. Correct a faulty oracle only with source-backed evidence.
+
+For `visual` acceptance, capture the final state immediately after the exact
+interaction, open the resulting image and inspect the claimed pixels at a
+legible scale. Record the screenshot and the visible result in the handoff. A
+screenshot path without inspection, a passing browser test, DOM attributes,
+computed styles or model state cannot close the visual claim. Keep the case
+open as `visual-unverified` when no image-capable runner is available. Human
+inspection complements rather than replaces any pixel classifier required by
+the applicable paint oracle.
+
+Run narrow checks during iteration and the required affected gates for the
+settled change. Reuse valid evidence until relevant inputs change. Select
+stability repetitions for a demonstrated intermittent risk; explicit corpus
+mode retains its stricter executable stability/receipt contract. Exact browser
+or device claims need the matching capability; report the missing claim while
+continuing independently actionable work.
+
+Local completion requires an accepted implementation review plus the exact case
+and required checks passing on final local source. Green behavior alone cannot
+accept unjustified compensation. It does not require commit or push. Follow
+Task's existing review and delivery gates only when applicable; no separate
+review budget or publication authority arises here.
+
+## Handoff
+
+Report the cause, owner, prevention, implementation-review conclusion, actual
+red/green and final interaction evidence, and material limits. Keep it concise.
+For a delegated or corpus case,
+return its ID/source refs, exact test commands, final fingerprints, required
+stability, architecture decision and unresolved gates in the existing packet.
+Use `candidate-local` for uncommitted/unpushed public-issue handoffs; the public
+coordinator owns pushed-ref replay and public completion wording.

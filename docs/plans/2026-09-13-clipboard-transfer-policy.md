@@ -1,3 +1,9 @@
+---
+review_scopes: [clipboard]
+review_basis: [2026-09-13-clipboard-transfer-convergence]
+work_kind: implementation
+---
+
 # Unify clipboard transfer and preserve complete slices
 
 Status: Complete. The accepted implementation and every clipboard-owned proof

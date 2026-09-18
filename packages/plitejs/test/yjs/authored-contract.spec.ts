@@ -140,6 +140,41 @@ const connected = (value: InitialValue = [paragraph('Base')]) => {
 const point = (offset: number, block = 0) => ({ path: [block, 0], offset });
 
 describe('authored Yjs collaboration', () => {
+  it('synchronizes direct editing from projected coordinates with pending content intact', () => {
+    const { left, right } = connected();
+    left.view.update.text.insert(' draft', { at: point(4) });
+    const pending = left.view.read.authored.changes({
+      status: 'pending',
+    }).items[0];
+    sync(left.doc, right.doc);
+
+    left.view.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    left.view.update.text.insert('!', { at: point(0) });
+    sync(left.doc, right.doc);
+
+    for (const peer of [left, right]) {
+      assert.equal(peer.editor.read.text.string([]), '!Base');
+      assert.equal(peer.view.read.text.string([]), '!Base draft');
+      assert.equal(
+        peer.view.read.authored.change(pending.id)?.status,
+        'pending'
+      );
+    }
+
+    right.view.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    right.view.update.text.insert('X', { at: point(8) });
+    sync(right.doc, left.doc);
+
+    for (const peer of [left, right]) {
+      assert.equal(peer.editor.read.text.string([]), '!Base');
+      assert.equal(peer.view.read.text.string([]), '!Base drXaft');
+      const dependent = peer.view.read.authored
+        .changes({ authorId: 'bob', status: 'pending' })
+        .items.find((change) => change.dependencies.includes(pending.id));
+      assert.ok(dependent);
+    }
+  });
+
   for (const initialEdit of ['insertion', 'deletion'] as const) {
     it(`synchronizes an own ${initialEdit} cancellation and restored identities through reload`, () => {
       const { left, right } = connected([paragraph('ABC')]);
@@ -549,7 +584,7 @@ describe('authored Yjs collaboration', () => {
           });
           assert.equal(JSON.stringify(peer.editor.read.value()), before);
         }
-        left.editor.update.history.undo();
+        left.editor.api.history.undo();
         sync(left.doc, right.doc);
         sync(left.doc, late.doc);
         assert.deepEqual(anchor.resolve(), anchoredRange);
@@ -681,11 +716,11 @@ describe('authored Yjs collaboration', () => {
             }
           }
         }
-        left.editor.update.history.undo();
+        left.editor.api.history.undo();
         assert.deepEqual(left.view.read.children(), rightOnly);
         sync(left.doc, right.doc);
         assert.deepEqual(right.view.read.children(), rightOnly);
-        left.editor.update.history.redo();
+        left.editor.api.history.redo();
         assert.deepEqual(left.view.read.children(), expected);
         sync(left.doc, right.doc);
         assert.deepEqual(right.view.read.children(), expected);
@@ -972,7 +1007,7 @@ describe('authored Yjs collaboration', () => {
       }, /waiting for load/);
       assert.equal(JSON.stringify(editor.read.value()), before);
       assert.deepEqual(view.read.children(), [paragraph('Base')]);
-      assert.equal(editor.read.history.undos().length, 0);
+      assert.equal(editor.read.history().undos.length, 0);
       assert.equal(doc.getArray(`${rootName}:shared-effect-events`).length, 0);
       assert.equal(publications, 0);
       initialReady.setReady(true);
@@ -1009,7 +1044,7 @@ describe('authored Yjs collaboration', () => {
       'pending'
     );
     assert.deepEqual(right.view.read.children(), [paragraph('Base draft')]);
-    assert.equal(right.editor.read.history.undos().length, 0);
+    assert.equal(right.editor.read.history().undos.length, 0);
     assert.equal(commits, 1);
     sync(left.doc, right.doc);
     assert.equal(commits, 1);
@@ -1383,14 +1418,14 @@ describe('authored Yjs collaboration', () => {
     const { left, right } = connected();
     left.view.update.text.insert(' draft', { at: point(4) });
     sync(left.doc, right.doc);
-    left.view.update.history.undo();
+    left.view.api.history.undo();
     sync(left.doc, right.doc);
     assert.deepEqual(right.view.read.children(), [paragraph('Base')]);
-    left.view.update.history.redo();
+    left.view.api.history.redo();
     sync(left.doc, right.doc);
     assert.deepEqual(right.view.read.children(), [paragraph('Base draft')]);
     assert.deepEqual(right.editor.read.children(), [paragraph('Base')]);
-    assert.equal(right.editor.read.history.undos().length, 0);
+    assert.equal(right.editor.read.history().undos.length, 0);
   });
 
   it('merges independent proposals from disconnected peers', () => {

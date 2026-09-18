@@ -74,7 +74,10 @@ const useEditableDOMInputHandler = (
 const useTestRuntimeFocusMouseEvents = (
   options: Omit<
     Parameters<typeof useRuntimeFocusMouseEvents>[0],
-    'clearVerticalGoal' | 'domPhaseScheduler' | 'publishFocusState'
+    | 'cancelNativeSelectionImport'
+    | 'clearVerticalGoal'
+    | 'domPhaseScheduler'
+    | 'publishFocusState'
   >
 ) => {
   const domPhaseScheduler = useMemo(() => createDOMPhaseScheduler(), []);
@@ -88,6 +91,7 @@ const useTestRuntimeFocusMouseEvents = (
 
   return useRuntimeFocusMouseEvents({
     ...options,
+    cancelNativeSelectionImport: () => {},
     clearVerticalGoal: () => {},
     domPhaseScheduler,
     publishFocusState: () => {},
@@ -653,6 +657,7 @@ test('material beforeinput commands bypass direct DOM repair at the mounted sele
     state: createEditableInputControllerState(),
   });
   const root = mountEditableRoot(editor);
+  const runtime = new EditableDOMRuntime({ editor });
   const text = appendTextHost(root, '0,0');
   const repairDOMInputWithTrace = vi.fn();
   const requestEditableRepair = vi.fn();
@@ -675,6 +680,7 @@ test('material beforeinput commands bypass direct DOM repair at the mounted sele
         processing: { current: false },
         readOnly: false,
         repair: { requestEditableRepair } as any,
+        runtime,
         selection: {
           allowDOMSelectionImport: () => true,
           flushSelectionChange: vi.fn(),
@@ -701,6 +707,7 @@ test('material beforeinput commands bypass direct DOM repair at the mounted sele
     expect(requestEditableRepair).toHaveBeenCalled();
     expect(editorString(editor, [0])).toBe('a ');
   } finally {
+    runtime.destroy();
     unmountEditableRoot(editor, root);
   }
 });

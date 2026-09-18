@@ -191,26 +191,44 @@ const editor = createEditor({
 
 ### 转换为工具栏按钮
 
-你可以将此项目添加到[转换为工具栏按钮](/docs/toolbar#turn-into-toolbar-button)中，将块转换为代码块：
+添加一个直接调用`BaseCodeBlockPlugin`的结构化操作。只有连续的同级选择具有一致的激活状态时才启用它。
 
 ```tsx
-{
+import { BaseCodeBlockPlugin, PLUGINS } from 'platejs';
+
+const turnIntoItem = {
   icon: <FileCodeIcon />,
   label: '代码',
   value: PLUGINS.codeBlock,
-}
+  onSelect: () => {
+    const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+    if (!codeBlock.installed || editor.read.view.isReadOnly()) return;
+
+    codeBlock.update.toggle();
+  },
+};
 ```
 
 ### 插入工具栏按钮
 
-你可以将此项目添加到[插入工具栏按钮](/docs/toolbar#insert-toolbar-button)中，插入代码块元素：
+添加一个回调直接调用已安装代码块功能的菜单项：
 
 ```tsx
-{
+import { BaseCodeBlockPlugin, PLUGINS } from 'platejs';
+
+const insertItem = {
   icon: <FileCodeIcon />,
   label: '代码',
   value: PLUGINS.codeBlock,
-}
+  onSelect: () => {
+    const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+    if (!codeBlock.installed || editor.read.view.isReadOnly()) return;
+
+    codeBlock.update.insert({}, { select: true });
+  },
+};
 ```
 
 </Steps>

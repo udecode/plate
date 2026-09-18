@@ -9,11 +9,16 @@ jsxt;
 
 const streamChunks = (chunks: string[]) => {
   const { editor } = createTestEditor();
+  let response = '';
+  const source = editor.read.value();
 
   for (const chunk of chunks) {
-    editor.plugin(AIChatPlugin).update.insertChunk(chunk);
+    response += chunk;
+    editor.plugin(AIChatPlugin).api.setPreview(response);
+    expect(editor.read.children()).toBe(source.children);
   }
 
+  editor.plugin(AIChatPlugin).api.accept();
   return editor;
 };
 
@@ -25,7 +30,7 @@ const getStreamedMarkdown = (chunks: string[]) => {
   return { editor, expected: expectedEditor.read.children() };
 };
 
-describe('AIChatPlugin update.insertChunk', () => {
+describe('AIChatPlugin response drafts', () => {
   describe('paragraph boundaries', () => {
     it('starts a new paragraph after a trailing blank line', () => {
       const editor = streamChunks(['chunk1\n\n', 'chunk2', 'chunk3']);

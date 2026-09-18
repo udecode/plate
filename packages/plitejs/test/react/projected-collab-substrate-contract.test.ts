@@ -131,7 +131,7 @@ describe('projected root lifecycle collaboration substrate', () => {
     expect(readValue(remote).roots?.[UNSYNCED_ROOT]).toEqual([
       paragraph('Shared mission statement'),
     ]);
-    expect(remote.read((state) => state.history.undos().length)).toBe(0);
+    expect(remote.read((state) => state.history().undos.length)).toBe(0);
   });
 
   it('keeps root deletion explicit instead of cascading from owner deletion', () => {

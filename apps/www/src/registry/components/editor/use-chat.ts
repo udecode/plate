@@ -7,6 +7,7 @@ import { CommentsPlugin } from 'platejs/comments/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 import { useEditor, usePluginStore } from 'platejs/react';
 import * as React from 'react';
+import { toast } from 'sonner';
 
 import { createCommentValue } from '@/registry/components/editor/comment';
 
@@ -22,6 +23,7 @@ export const AIChatTransportPlugin = AIChatPlugin.extend({
 }).extend(({ store }) => {
   let api: string | undefined;
   let transport: DefaultChatTransport<UIMessage> | undefined;
+
   return {
     api: () => ({
       transport: () => {
@@ -85,8 +87,22 @@ export function useEditorChat(
   const editor = useEditor();
   const comments = editor.plugin(CommentsPlugin);
   usePluginStore(AIChatTransportPlugin, 'chatOptions');
+  const chat = usePluginStore(AIChatPlugin, 'chat');
+  const toolName = usePluginStore(AIChatPlugin, 'toolName');
   const transport = editor.plugin(AIChatTransportPlugin).api.transport();
   const markdownApi = editor.plugin(MarkdownPlugin).api;
+
+  React.useEffect(() => {
+    if (
+      toolName === 'comment' &&
+      chat?.status === 'ready' &&
+      chat.messages.length > 0
+    ) {
+      // Completed streams can still have comment saves awaiting persistence.
+      editor.plugin(AIChatPlugin).store.set({ open: false });
+    }
+  }, [chat?.messages.length, chat?.status, editor, toolName]);
+
   useAIChat({
     editableRef,
     transport,
@@ -119,29 +135,54 @@ export function useEditorChat(
         }
 
         void (async () => {
-          let id: string | null;
+          if (signal.aborted) return;
+          let id: string | null = null;
+          const discard = () => {
+            if (id) comments.api.discardDraft(id);
+          };
           try {
-            id = await comments.api.createThread({
+            id = comments.api.createDraft({
               target: { range, type: 'range' },
               body: createCommentValue(aiComment.comment),
               excerpt: markdownApi
                 .deserialize(aiComment.content)
                 .children.map((node) => NodeApi.string(node))
                 .join('\n'),
-              status: 'draft',
             });
+            if (!id) {
+              console.warn('Could not create AI comment');
+              toast.error(
+                'Could not save AI comment. Try generating comments again.'
+              );
+              return;
+            }
+            signal.addEventListener('abort', discard, { once: true });
+            if (signal.aborted) {
+              discard();
+              return;
+            }
+            const result = await comments.api.publishDraft(id);
+            if (signal.aborted) return;
+            if (result.status !== 'applied') {
+              discard();
+              console.warn('Could not publish AI comment');
+              toast.error(
+                'Could not save AI comment. Try generating comments again.'
+              );
+              return;
+            }
+            comments.api.setActive([id]);
           } catch (error) {
+            discard();
             // The SDK does not await onData promises, so rejection must terminate here.
             if (!signal.aborted) {
-              console.warn('Could not create AI comment', error);
+              console.warn('Could not publish AI comment', error);
+              toast.error(
+                'Could not save AI comment. Try generating comments again.'
+              );
             }
-            return;
-          }
-
-          if (id) {
-            if (!signal.aborted) {
-              comments.api.setActive([id]);
-            } else comments.api.discardDraft(id);
+          } finally {
+            signal.removeEventListener('abort', discard);
           }
         })();
       }

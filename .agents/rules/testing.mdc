@@ -21,11 +21,14 @@ its inventory and evidence without granting test-writing authority.
 Apply [the Plate workflow](../task/references/workflow.md) for plan, authority, proof and review ownership.
 
 
-Push the suite toward three layers only:
+Choose the smallest boundary that proves the behavior:
 
 - Pure unit tests for deterministic logic.
 - Thin editor or plugin contract tests for real Plate or Slate wiring.
 - Golden input or output tests for serializer and parser behavior.
+- Managed browser tests for native input, focus, selection, rendering and real
+  component interactions that the lower layers cannot prove. Verify Plate owns
+  the route, source identity and evidence; this skill owns test value and shape.
 
 Hard constraints:
 
@@ -33,7 +36,8 @@ Hard constraints:
   `bun run test` is its aggregate and `pnpm test:all` is the full handoff/CI lane
   only when required by the change or claim.
 - Keep the default iterative suite fast.
-- No browser or e2e coverage in this program.
+- A unit regression may accompany a browser regression when they guard distinct
+  failure boundaries. Avoid duplicate assertions, not necessary integration proof.
 - No one-smoke-test-per-package sweep.
 - Do not add broad smoke coverage for thin wrapper packages.
 
@@ -43,7 +47,8 @@ Hard constraints:
 - Do not use coverage to justify testing files with no meaningful contract.
 - Bun globals come from `tooling/config/global.d.ts`. Do not import `describe`, `it`, `expect`, `mock`, `spyOn`, or other globals from `bun:test`.
 - Use `*.spec.ts[x]` for the fast lane and `*.slow.ts[x]` for the slow lane.
-- Keep helpers package-local. Never import a helper from another spec file.
+- Keep helpers package-local first. Reuse `packages/test` (`@platejs/test`) for
+  shared editor/browser contracts; never import a helper from another spec file.
 - No spec should import another spec.
 - Put compile-only type contracts in `type-tests/`, not mixed into runtime specs.
 - Titles should describe behavior semantically, not echo raw option names.
@@ -93,6 +98,12 @@ Good targets:
 Keep these helpers focused and package-local first. Promote them only after
 multiple tests repeat the same boundary. Do not add broad barrels or
 cross-package dev dependencies to support an overbuilt fake runtime.
+
+For an escaped defect, identify what the test could miss before adding cases:
+wrong input path, missing consumer/plugin mode, unobserved follow-up state, or
+an assertion that can pass on invalid output. Extend the existing helper when
+that omission recurs. Prove a changed assertion rejects the known bad result
+and accepts the valid one. A fake runtime cannot certify native browser behavior.
 
 ## File Organization
 

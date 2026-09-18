@@ -41,16 +41,23 @@ describe('registry index', () => {
   });
 
   it('keeps metadata entries without importing metadata-only components', () => {
-    const source = createRegistryIndexSource({
-      items: [
-        createItem('toolbar-demo', 'registry:example'),
-        createItem('editor', 'registry:block'),
-        createItem('toolbar', 'registry:ui'),
-        createItem('upload', 'registry:file'),
-      ],
-    } as Registry);
+    const toolbar = createItem('toolbar', 'registry:ui');
+    toolbar.dependencies = ['platejs'];
+    const source = createRegistryIndexSource(
+      {
+        items: [
+          createItem('toolbar-demo', 'registry:example'),
+          createItem('editor', 'registry:block'),
+          toolbar,
+          createItem('upload', 'registry:file'),
+        ],
+      } as Registry,
+      'generation-id'
+    );
 
+    expect(source).toContain('registryGeneration = "generation-id"');
     expect(source).toContain('"toolbar": {');
+    expect(source).toContain('dependencies: ["platejs"]');
     expect(source).toContain('"upload": {');
     expect(source).toContain('import("@/registry/toolbar-demo.tsx")');
     expect(source).toContain('import("@/registry/editor.tsx")');

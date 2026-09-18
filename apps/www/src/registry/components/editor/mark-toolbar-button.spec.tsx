@@ -315,7 +315,7 @@ describe('feature toolbar plugin portals', () => {
     expect(focusMock).toHaveBeenCalledTimes(1);
   });
 
-  it('uses the installed script portal for both script values', async () => {
+  it('uses the installed script portal and restores editor focus', async () => {
     pluginMock.mockImplementation(() => ({
       update: {
         toggle: scriptToggleMock,
@@ -327,7 +327,9 @@ describe('feature toolbar plugin portals', () => {
     const view = render(<MoreToolbarButton />);
 
     fireEvent.click(view.getByRole('button', { name: 'Superscript' }));
+    dropdownOnFinalFocus?.({ preventDefault: mock() });
     fireEvent.click(view.getByRole('button', { name: 'Subscript' }));
+    dropdownOnFinalFocus?.({ preventDefault: mock() });
 
     expect(pluginMock).toHaveBeenNthCalledWith(1, ScriptPlugin);
     expect(pluginMock).toHaveBeenNthCalledWith(2, ScriptPlugin);

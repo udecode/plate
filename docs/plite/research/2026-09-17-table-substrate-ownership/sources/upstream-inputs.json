@@ -1,0 +1,519 @@
+{
+  "upstreams": [
+    {
+      "checkout": "/Users/zbeyens/git/prosemirror-tables",
+      "commit": "eb522f25959a1e4515a4ff5ce7e3a939f19c55e9",
+      "files": {
+        "src/cellselection.ts": "53bd8e4c3f746f1d0a653908e3f68ecd01af21be4dfcfc37f9521a640714d9f3",
+        "src/index.ts": "8e3baa97e54851b13e4b156e22d21b184a3eaf0976f84004d8b81524f6fd8153",
+        "src/tablemap.ts": "31504a7d98b0bd07d907693b3586ee63b4305cc4f6bf3cd9eaf7df6b529ae9d0",
+        "src/columnresizing.ts": "6a5e39103abd1e90f07a9c3f5961d2ce9af7c4a7f053cec2d124c4395438ff5a",
+        "src/tableview.ts": "faf93beb5522596edbe33c4be4d57ff357aa8ff29fa20e85dc44864003ff2014",
+        "src/input.ts": "ce14f3a964d968585e0981625c3058cc1f2810639db417ced2c6f2a25801a60e",
+        "src/copypaste.ts": "8a86ae9514736a85d1c892f99c25160a72c6f92e240662222a443dd288da2cf1",
+        "src/fixtables.ts": "577ed59813dc321feb28f67284acca7392b7ffa6e60590daefd4c826259bdcae",
+        "src/commands.ts": "700178a9465f627e80a4c520c4d442c5b08c7184b56290ef11884b5c73048241",
+        "src/schema.ts": "eca86f1a90af2bf752128d88e25a38f015a4491dbf70b5bc87d88eaf02ef7bf1",
+        "test/cellselection.test.ts": "5dc1451a59e1997673ae2d96717b73b1b3d4c262bfcc1b4128e12c53a4cf278a",
+        "test/tablemap.test.ts": "52701244a021ea50d8fbc91e5e5f2e12be6d9dffeee0867af0541cc1654ddcaa",
+        "test/column-resizing.test.ts": "80ef7a0288bbf7361568791492ab2ca0fed025ed5aa890dd325f57f431245710",
+        "test/input.test.ts": "ccb1a95588b45e0312e8b44965a975bcc26f115f55d90fab2e374968047225db",
+        "test/copypaste.test.ts": "86bcc2b615fec8d7e0051670bd33be96d7fc708c32a6dd009ea9578d4062a7a3",
+        "LICENSE": "d1d2046ebbe6362f9ad8fd4d62e9074f2553f289c0e1de895a650f10ba5f4239",
+        "package.json": "330b36a92745c7f5ad8059b97c3fcc15a4cec134e1bb843d10bba2407f88422a",
+        "style/tables.css": "3fec20590b901e5ecf7d17691df2b053e836ed052894632a199d07081d3019a9"
+      }
+    },
+    {
+      "checkout": "/Users/zbeyens/git/prosemirror-state",
+      "commit": "ffad5d9450a0b93438be53a801deee1a223a81bf",
+      "files": {
+        "src/selection.ts": "cea98fb72c5ced3604556909df9acddf924b3e62f80cab4bdbe430a78afc529a",
+        "src/transaction.ts": "fbab5b3d17fc510152167b387e15dcf360c086ed78dcb2751cecae7938d01a83",
+        "src/plugin.ts": "a0bac3d5db226ed673774b0b6b58d43e36d13f34b9ecee874d081dc3145e2202",
+        "test/test-selection.ts": "1542328af714e389f620447fc0600fc582a63741e1960ac53bbb35fa5360219a",
+        "README.md": "7293b501988f1f4813093ae855c75f82e81ed49d6aa4f98d99fe99aefcb77b95",
+        "LICENSE": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8",
+        "package.json": "2c0955682b85bef9b6fc516b4f7af5a828e1a06f0417dfcafa095479c99c9217"
+      }
+    },
+    {
+      "checkout": "/Users/zbeyens/git/tiptap",
+      "commit": "91c51be53c4655ef07e29ec489471524debfa0ca",
+      "files": {
+        "packages/extension-table/src/table/table.ts": "cbb513553e0219c9dee5b5f5415425a0bee05d38fb987c24b579bec18011b892",
+        "packages/extension-table/src/table/TableView.ts": "bfb088d4b121831b28a3da7e79dd5e731f7fa89e361b725bb43a59bd1d91dd92",
+        "packages/extension-table/src/table/utilities/deleteTableWhenAllCellsSelected.ts": "c6e4e64a309e199d0ee004dfd11b3d4d951a12664c6078824e03a14a7841e9b9",
+        "packages/extension-table/src/kit/index.ts": "f8bc06ee6e97bf3feb333d567ceac24a6c690b0d8e7502cdfdb46032999638c9",
+        "packages/pm/tables/index.ts": "0d2670c8c0f10e28356723dc0195678c87919eaac234d32dd09ba9e830898633",
+        "packages/extension-table/src/cell/table-cell.ts": "b19e850adf4b93295dc31a974133222eacc030d191306a0d4abfeb1167971f82",
+        "packages/extension-table/src/row/table-row.ts": "c27c1da1a1e8b09a464b8ff9c90b88fed5f2cb1da22097bdb0fc3a2e9e4e29e9",
+        "packages/extension-table/src/table/utilities/createColGroup.ts": "289c66774ff90b67edf89a89ca480c4049ad18b58abf1dbeed272fe0d2f06b62",
+        "packages/extension-table/src/table/utilities/colStyle.ts": "f687b1159e4377391d3c256e126a9c34a3fcb43299b5e829a68bd204cc93ebf4",
+        "packages/extension-table/src/table/utilities/createTable.ts": "77e6987c3d25832f4261b3fb0249a2ba71ac83a65990acd78aaa18e7fe6f02cf",
+        "packages/extension-table/src/table/utilities/isCellSelection.ts": "c3094c0401dd2cf270fb7205b1ca0b1e7c5577393869f0d98cbfa02052e0ceaf",
+        "packages/extension-table/__tests__/tableCell.spec.ts": "49e70d5293c7da21b858bf371bc55b1aff34ec28d1953e3609ce894be01d62e6",
+        "packages/extension-table/__tests__/tableHeader.spec.ts": "1d3f36f782549af05c5641d1636a01b481f877a950251bf5179ffe72804a069a",
+        "pnpm-lock.yaml": "9d5943d539fd625a894589be3e5a5d40619823bb96a1955c29bc099397ab85a0",
+        "LICENSE.md": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9",
+        "packages/extension-table/package.json": "01c8643bc960db06db94db6e1f023f9bafd21b544d4e37a9dd2ba574cadfcd68",
+        "packages/pm/package.json": "ec26d5f57911fd17ce088f03f133261f9976418241ca35e99c3974c9b1d789f5"
+      }
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+      "files": {
+        "LICENSE": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+        "packages/lexical-table/package.json": "73103bdc66a831cd4424d165f59b8c2ae8c495a6f86866bb672d9685c0246552",
+        "packages/lexical/src/LexicalSelection.ts": "925a0f22a337d34dc049e7f06d59713c50b742b813bb9c46fabb7963aa5d619e",
+        "packages/lexical/src/LexicalEditorState.ts": "0de44d82e4bdc1b55e64b8182652de440fd8d6bb851697c1596ddb77d59efcbc",
+        "packages/lexical/src/LexicalUtils.ts": "9c4db2790579fdb3e628f42ae957d998e3815fc2ce08c28336ad2e7adffe78ae",
+        "packages/lexical-table/src/index.ts": "94b3079ed281a019f711ff71631619af4e64f9c0def872a453c21f16e2ea107b",
+        "packages/lexical-table/src/LexicalTableCommands.ts": "5430fe987fbe7328be4c24234b6c2ef3ff339f165f8b1d596c885c277a6a00ba",
+        "packages/lexical-table/src/LexicalTableSelection.ts": "169ffa5f4aba2e5d359d8431c9c43f4d07ce0df1ecd952ea68a097b4d37358c3",
+        "packages/lexical-table/src/LexicalTablePluginHelpers.ts": "39872af39a7ef445cd8ae0ff1cf76ac0d4b2f6281ea0ff2644a2df0cd61478c2",
+        "packages/lexical-table/src/LexicalTableExtension.ts": "1fa64b657424e18b03ce1fb579763a166c168e3bc653b8c77ec77c0feee171aa",
+        "packages/lexical-react/src/LexicalTablePlugin.ts": "718286a7ffeb848998901b4bdfde003b84fb4a493d01fe9c1b5570844af1f638",
+        "packages/lexical-table/src/LexicalTableObserver.ts": "6d49be9dc00901303d07346d43b559203ef1d5b52b3ee4daeadc7e6e7ff0fe71",
+        "packages/lexical-table/src/LexicalTableSelectionHelpers.ts": "283bf92e54846041a00ad82047a180795d3d14354c21974f532dbfa029e3738a",
+        "packages/lexical-table/src/LexicalTableUtils.ts": "16b10591827ff60852c79f94ff9bf8022f48af8a37dbd3b8914840119fed8f88",
+        "packages/lexical-table/src/LexicalTableNode.ts": "b1001636311f550a53a75d46ff1bf8c62950f5be6aed824ba27ebd2d049bc161",
+        "packages/lexical-table/src/LexicalTableRowNode.ts": "7654077b81bc9a59eabf1d502d3e8c7b9fb2c7b3cda0fa7178085e0d09827b66",
+        "packages/lexical-playground/src/plugins/TableCellResizer/index.tsx": "586997e33ad775d158b2ea362a98a5344bb6b68f4aa91a237646623808753940",
+        "packages/lexical-clipboard/src/clipboard.ts": "f0667a903d611c7c03f14bd2071bbf9378acbbd33a1dfc0fd3e99e428b1a0dc6",
+        "packages/lexical-yjs/src/SyncCursors.ts": "759bc84654f51a68c4e6b2ffac56d484e0fcff93a3f41448d32b8ab0631072a1",
+        "packages/lexical-table/src/__tests__/unit/LexicalTableSelection.test.tsx": "29bebe120d7f81a3ea08d828fa8cafd71644ad1c8e3d627ae923c7e35d09869d",
+        "packages/lexical-table/src/__tests__/unit/LexicalTableSelectionHelpers.test.ts": "3e1b3ebc6021f6f86683c2d93b1e799bdb460832f40d9a978497b43bf69b2585",
+        "packages/lexical-table/src/__tests__/unit/LexicalTableExtension.test.ts": "bb8bc753cd802c831c2535d8a5beb2bc2395e1246335debf9e57ba137d881c1c",
+        "packages/lexical-playground/__tests__/e2e/Tables.spec.mjs": "45a1dc9320190e6c5d462836bbf09f1011dc28c5dfd9931371e184a6ed135359",
+        "packages/lexical-playground/__tests__/utils/index.mjs": "8049cbb1a5f6f7584486e2a726cb2803d8f74fe94ecf2f3e378ee234266044ed",
+        "packages/lexical-table/src/__tests__/unit/LexicalTableNode.test.tsx": "f1480c4553831f7538c5d2ece8262e2a405741ab4550f4b03c6d317a8f00a756",
+        "packages/lexical-yjs/src/Utils.ts": "45ae250a157b73b8d80930d84c4cbc463e4dd3c058f41d26fe84134449563dcc",
+        "packages/lexical-playground/src/Editor.tsx": "1f866006cfcda42de3a69a06ba1c715f6b27992134e294a5d954edc741b1da3c",
+        "packages/lexical-table/LICENSE": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+        "packages/lexical-playground/src/plugins/TableCellResizer/index.css": "44d7ed272b778a4a95df80568c7bf9571dd5414ad01294236a08743f974a0565"
+      }
+    },
+    {
+      "checkout": "/Users/zbeyens/git/ckeditor5",
+      "commit": "14e73cc31b869ce483bd8449f40b9102ac7746da",
+      "files": {
+        "LICENSE.md": "6226a1b6b05e07d887f516a40bc000bb7617a4fa0f36721234453ca436ba7d23",
+        "packages/ckeditor5/LICENSE.md": "36a71958376efedd9f9fed622561af7aefb8de6ccaff923ac76e170761fc9064",
+        "packages/ckeditor5-table/LICENSE.md": "fe9a7f354d43a9f8bb3b74b2c4597c88b718daafc81ec90256e0f1d0fa19f894",
+        "packages/ckeditor5-widget/LICENSE.md": "9fd518b774781d0789ccf3f9c42e05a51c23c48bc82c8338f5cd7d2333d8f4fe",
+        "packages/ckeditor5-table/package.json": "255ff4b6c76813e5bb60a57a8f49794d1c5cb9020cd6dd28c63af2bb19c2700c",
+        "packages/ckeditor5-widget/package.json": "06e9465e24b0b1ada26a1a6a56a20ee494c3a8f81bfb175f22b6fc06668577fb",
+        "packages/ckeditor5-table/src/table.ts": "e82c6c247c24fee898a629bfd0e19e16723c7481a96817353d60141a500a3a84",
+        "packages/ckeditor5-table/src/tableediting.ts": "7f50eb958144d5e597bca082b1d65237c2601e004d91b36a4f2d015fa30ba698",
+        "packages/ckeditor5-table/src/tableselection.ts": "75b4fa32a4f6bbb4d940da1aacfa7f74767bf3570d6169fb1108da530e238525",
+        "packages/ckeditor5-engine/src/model/documentselection.ts": "9facf42fabe7177d04bc104a7d66f07d1bcc9b86acf701055a7e843d5d68705a",
+        "packages/ckeditor5-engine/src/model/liverange.ts": "27f0a30833c44635e13bfe03cb85d895536f60853fc190c0b6893a98dbcb64ab",
+        "packages/ckeditor5-table/src/tableclipboard.ts": "76c06bb2891f0eedc8304bf0268d7486c959ad8b7e8fec97f9fdce7d372a1a7d",
+        "packages/ckeditor5-table/src/tablekeyboard.ts": "295759bbf64cb099f5f4b0ff6f143a4d25458cf49868709124e5f5a2dc758709",
+        "packages/ckeditor5-table/src/tablemouse.ts": "3c43479e51acce10fcfea39a31f21373b9e86bd7a9d1f5191998542fab1ef6b7",
+        "packages/ckeditor5-table/src/tablecolumnresize.ts": "bc7be4c524b60e170c65c970f5204dcd979367869fc9d3da0ed182d371df5161",
+        "packages/ckeditor5-table/src/tablecolumnresize/tablecolumnresizeediting.ts": "cf81b2c1422f3977069261e494596fa87246f96cb03095007ef3d51e384c1c49",
+        "packages/ckeditor5-table/src/tablecolumnresize/tablewidthscommand.ts": "7728405c59bbcf4155dd6a2e3d8e11eafe67370f5f27b3217dca7f5a996d4683",
+        "packages/ckeditor5-table/src/tablecolumnresize/utils.ts": "e5e7542c973edf5f0477b0a7cb284b598239bf37a732dac97f6075f0eeb7440a",
+        "packages/ckeditor5-table/src/tablelayout/tablelayoutediting.ts": "9e211d5ff75863b32860614c549480f10099533f97c27f943ded54bb58fe9f56",
+        "packages/ckeditor5-widget/src/widgetresize.ts": "a9dd07395e2f7cbb09b8e75f2bc644246fd65b53982eaa318ef311c46d107046",
+        "packages/ckeditor5-widget/src/widgetresize/resizer.ts": "7780954a69e77c0d1f951efadc6a1490ee43b5404c4874d1d93a36391c4edc94",
+        "packages/ckeditor5-widget/src/widgetresize/resizerstate.ts": "d0cbfd44142cabe3d3a2f22d632d8f3cc55562a9420e72c9d8e03129548eff0d",
+        "packages/ckeditor5-image/src/imageresize/imageresizehandles.ts": "1fbc55189ef1c6cafc712985d9e14c817f2c19a218a10e1b073fcadfabd187d7",
+        "packages/ckeditor5-table/theme/tablecolumnresize.css": "d60d6e824b5d037581d8d791b3b99c1bcf298a6e842c8ae8826be68bc2a081aa",
+        "packages/ckeditor5-table/src/index.ts": "ecb421821a326072a368409608eac46a69b528d7a2f01fec84446993cf129d2f",
+        "packages/ckeditor5-table/src/tableui.ts": "f1233f49bcd87145521fc59364b3c62c78fa243352e59843a4367b1da0ebc248",
+        "packages/ckeditor5-table/src/tablecellwidth/tablecellwidthediting.ts": "7862f690bbb31f07d3f2fd9e8325742114218c2b97eebf496e9b1fb1efc18094",
+        "packages/ckeditor5-table/tests/tableselection.js": "4d7e9ceaa8f2346ea487f7502371b048db42e3e997a0daf42d46443293eb8b37",
+        "packages/ckeditor5-table/tests/tableselection-integration.js": "e869e86665256e33de281f9a461adc24e8ab1a429dd432269052fd36f7cfd42f",
+        "packages/ckeditor5-table/tests/tableclipboard-copy-cut.js": "21b6cee6d4f48200bc22bbeca12f4226b7ed1d9948295df312c176cd629f991f",
+        "packages/ckeditor5-table/tests/tableclipboard-paste.js": "93d9439e7aade73219b26f64bd119cc6a510771391afb1ca8f05b290a482d82c",
+        "packages/ckeditor5-table/tests/tablekeyboard.js": "2d41c16b0a3b8dc6c37215f4b150d0932894c6d4a8c38d09d17c2030ddd330ad",
+        "packages/ckeditor5-table/tests/tablecolumnresize/tablecolumnresizeediting.js": "02affc8dc4c7d1c039530d98ccab035e7838caf0864a18859e175be673f659a0",
+        "packages/ckeditor5-table/tests/tablecolumnresize/tablewidthscommand.js": "0592d737d5c5af52292a5029d111c71524164657201e425659cf4b0ee3666e2d",
+        "packages/ckeditor5-table/tests/tablelayout/tablelayoutediting.js": "00e03f0d0f600e8158c40f9bb8ad9eaa1d882876dfe92adcfeb8b3de2048b22e",
+        "packages/ckeditor5-widget/tests/widgetresize.js": "eacd016c02410567a9aa2f0fad14687e60e44c7e342f77b44f33fc4731f068ca",
+        "packages/ckeditor5-widget/tests/widgetresize/resizer.js": "a6d82282b1c71a333825591eb5516e5bfb4c72255605873e3a6ee26b6b8777a3"
+      }
+    },
+    {
+      "checkout": "/Users/zbeyens/git/prosekit",
+      "commit": "3fbfe7906c3448328e80c1c1333647d08e50907e",
+      "files": {
+        "packages/extensions/src/table/table-plugins.ts": "d5b2815f08a93d928ab4c762c0c9e070679f67e58e81ed49cc73a2dfda86d633",
+        "packages/web/src/components/resizable/resizable-root.ts": "cae472cb515f379d6bfb8f8c017e668a0683e9b600b02bbf2c0ec243e302426a",
+        "packages/web/src/components/resizable/resizable-handle.ts": "3990645cb69efca63f815653ca395679e5ddd7e448a786da7ab58020c9fdfd90",
+        "packages/web/src/components/table-handle/table-handle-root.ts": "fe42188063728adec5db65e88665b48c36a74ead8229f5b497106b6dc3c53514"
+      }
+    },
+    {
+      "checkout": "/Users/zbeyens/git/milkdown",
+      "commit": "6a4db480b00db8dd0322b517117dfa2154f3e2e2",
+      "files": {
+        "packages/plugins/preset-gfm/src/plugin/table-editing-plugin.ts": "4378aa40f97e30c4166f5b6dec95a3cdecc213a1459dffd2e0a86c277e1202c6",
+        "packages/components/src/table-block/view/view.ts": "ade6891629a3a3c75dd762b952f39c7ea8b807249b401aa5643d46c231eb4f1b",
+        "packages/components/src/table-block/view/operation.ts": "720ff4cd6484ed9e18b204d395030bfa556aefb08229bda8bc01ce1288351212",
+        "packages/plugins/preset-gfm/src/node/table/command.ts": "8ab415d31ca45c5ff9a7a0f5f17646b2a76d64ef27c0182f80f8a3b797c126b5"
+      }
+    }
+  ],
+  "fetched_object_reads": [
+    {
+      "checkout": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "path": "src/selection.ts",
+      "sha256": "cea98fb72c5ced3604556909df9acddf924b3e62f80cab4bdbe430a78afc529a"
+    },
+    {
+      "checkout": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "path": "src/transaction.ts",
+      "sha256": "fbab5b3d17fc510152167b387e15dcf360c086ed78dcb2751cecae7938d01a83"
+    },
+    {
+      "checkout": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "path": "src/plugin.ts",
+      "sha256": "a0bac3d5db226ed673774b0b6b58d43e36d13f34b9ecee874d081dc3145e2202"
+    },
+    {
+      "checkout": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "path": "test/test-selection.ts",
+      "sha256": "1542328af714e389f620447fc0600fc582a63741e1960ac53bbb35fa5360219a"
+    },
+    {
+      "checkout": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "path": "LICENSE",
+      "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+    },
+    {
+      "checkout": "/tmp/table-pm-state-current.v0jvux/repo.git",
+      "commit": "57d4a96286ca972125a18a56ecd6d2b00927de30",
+      "path": "package.json",
+      "sha256": "2c0955682b85bef9b6fc516b4f7af5a828e1a06f0417dfcafa095479c99c9217"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/table/utilities/deleteTableWhenAllCellsSelected.ts",
+      "sha256": "c6e4e64a309e199d0ee004dfd11b3d4d951a12664c6078824e03a14a7841e9b9"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/kit/index.ts",
+      "sha256": "f8bc06ee6e97bf3feb333d567ceac24a6c690b0d8e7502cdfdb46032999638c9"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/pm/tables/index.ts",
+      "sha256": "0d2670c8c0f10e28356723dc0195678c87919eaac234d32dd09ba9e830898633"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/row/table-row.ts",
+      "sha256": "c27c1da1a1e8b09a464b8ff9c90b88fed5f2cb1da22097bdb0fc3a2e9e4e29e9"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/table/utilities/createTable.ts",
+      "sha256": "77e6987c3d25832f4261b3fb0249a2ba71ac83a65990acd78aaa18e7fe6f02cf"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/table/utilities/isCellSelection.ts",
+      "sha256": "c3094c0401dd2cf270fb7205b1ca0b1e7c5577393869f0d98cbfa02052e0ceaf"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "LICENSE.md",
+      "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/table/table.ts",
+      "sha256": "a65a5586c4bb65e3dce6c602f4964e54cee833938aac08aaa0fc0fc12181ebff"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/table/TableView.ts",
+      "sha256": "969ba14fdf2a75ceac10e4cadf2d85d352dd5709849f5987d6ed8d78503343d6"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/cell/table-cell.ts",
+      "sha256": "0230129df761b0be1ceae95cbc54169016024814ca53c50dca1180483c8deb30"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/table/utilities/createColGroup.ts",
+      "sha256": "6f98ec21325793fd5edb9d3cd410515c826b5e7ac31ece7e208a310b4b51c2f3"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/table/utilities/colStyle.ts",
+      "sha256": "666e91e951619a7ea373138c605a08da65b1aaccb537bb26428aa81f20029ef1"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/table/utilities/keepCursorInTable.ts",
+      "sha256": "74fd2b80a713bfa0ca0b27088163dd04ab8ca5aa47dbf1c3841a5dce8cd559c3"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/tests/integration/colgroupUpdate.test.ts",
+      "sha256": "303b2faab76dc5cb07866011703ed9a5088e278a438933a10b2135eaee3893a4"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/tests/integration/deleteSelection.test.ts",
+      "sha256": "65c0db3032b6caea008c2232f8538b9083f4a3803a04b84a88e6862d07be7d82"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/tests/integration/tableCommands.test.ts",
+      "sha256": "932f01c564a4f66c08b56b47fb33f6a7c5bed236deb78e2ff2cf86d44ce47d36"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/table/table.test.ts",
+      "sha256": "30a3096f9963cfda1f2680497882392aac9b9ab5b1be07a6fc44c527790623a7"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/src/cell/table-cell.test.ts",
+      "sha256": "092a0349e2cd4abd4013dd8aa979a3b46e31705238bc2091783f54071f61742a"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "pnpm-lock.yaml",
+      "sha256": "92999136e8a143301655c572a751fc8b88f9e6444c288971ad885a191c90a4ee"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/pm/package.json",
+      "sha256": "3d4154d60e053c3fa2ec950e8f30fb1bb8073cd15b52dcf70ae110ac3af298a3"
+    },
+    {
+      "checkout": "/tmp/table-pm-tiptap-current.zxElYP/repo.git",
+      "commit": "eb974ea2f6e6eae10d987bcba4d32f80ca4f1ca8",
+      "path": "packages/extension-table/package.json",
+      "sha256": "295b4b247d0c991724cdf4c2c94094a4ba6bddf620de2fd03ed9c66883504c35"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical/src/LexicalSelection.ts",
+      "sha256": "addf74d3c4abf9509f659a9f066f37fdd7bb548e2d56f97512ba2db03357420d"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical/src/LexicalEditorState.ts",
+      "sha256": "21d543fa8021ad498d34cfd46b6d5fbc56e7be857d6626d821d38ce372155ca9"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical/src/LexicalUtils.ts",
+      "sha256": "51ef887f216a6691caea1d599a50f94651808b904f3631f144d047d5c03d92bd"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-table/src/LexicalTableSelection.ts",
+      "sha256": "169ffa5f4aba2e5d359d8431c9c43f4d07ce0df1ecd952ea68a097b4d37358c3"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-table/src/LexicalTablePluginHelpers.ts",
+      "sha256": "92417edaa9760292e49bd5a89544380d9c23ed702290f30a15bca74dc7a26505"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-table/src/LexicalTableExtension.ts",
+      "sha256": "81445313a33e91864268a26c5ce47d2f7fb080cba46c6cf079a3fbcec87c2f82"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-react/src/LexicalTablePlugin.ts",
+      "sha256": "718286a7ffeb848998901b4bdfde003b84fb4a493d01fe9c1b5570844af1f638"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-table/src/LexicalTableObserver.ts",
+      "sha256": "971e06f056ba49d9ec5bc9495a0c0b6102f6ab3bccb0e95de04d326a91c5529a"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-table/src/LexicalTableSelectionHelpers.ts",
+      "sha256": "4345e7af373cc5c503beed13e436d94460a1ceb690a2f1ff6c5448abdd0ab3f6"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-table/src/LexicalTableUtils.ts",
+      "sha256": "a6a141b09a8caa894de7118642856e905424cc9d4cc780ee5903a644aa561d45"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-table/src/LexicalTableNode.ts",
+      "sha256": "a449174971183cdc7f8545f740d71c0f24b7951ccd852d3d5c271ce6da91bf66"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-table/src/LexicalTableRowNode.ts",
+      "sha256": "e0fa2681b1651a6635472e79e9a8048b6cef76f516f8ccd4132b5b7780189e39"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-playground/src/plugins/TableCellResizer/index.tsx",
+      "sha256": "e204fdbdafa5821ac2d2c1e2c65e8caf13abc2eaf86dd26df0613abd8e01902a"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-playground/src/Editor.tsx",
+      "sha256": "beacb5dfd53ecf4201546cd5df1994199c23d4997632074a47b2bc4995d959ae"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/lexical",
+      "commit": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "path": "packages/lexical-playground/src/plugins/TableCellResizer/index.css",
+      "sha256": "44d7ed272b778a4a95df80568c7bf9571dd5414ad01294236a08743f974a0565"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/ckeditor5",
+      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
+      "path": "packages/ckeditor5-table/src/tablecolumnresize/tablecolumnresizeediting.ts",
+      "sha256": "eea6e60a865f4e9ec2365f29faabcfb9bc38e0c42809a879a4ff5f7c98ca1f87"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/ckeditor5",
+      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
+      "path": "packages/ckeditor5-table/src/tablecolumnresize/utils.ts",
+      "sha256": "e75733cfbfc24e8dc4335ca9616cbce82897470e3a1593d8e5c626a38876d200"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/ckeditor5",
+      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
+      "path": "packages/ckeditor5-table/theme/tablecolumnresize.css",
+      "sha256": "76aca9cd93d4a40716f33f4667115c7191dffa82874acdb60856f93e5fc82d44"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/ckeditor5",
+      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
+      "path": "packages/ckeditor5-table/src/tablecolumnresize/commands/tablecolumnwidthcommand.ts",
+      "sha256": "523de0096a113a0bb90e9da7044fe842386511e82e2b4ad93e987770633e753b"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/ckeditor5",
+      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
+      "path": "packages/ckeditor5-table/src/tablecolumnresize/tablewidthscommand.ts",
+      "sha256": "716dea1baf74a17122a595b42412ed02f6fb26aaae5784a7988a91b6577a4c90"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/ckeditor5",
+      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
+      "path": "packages/ckeditor5-table/tests/tablecolumnresize/tablecolumnresizeediting.js",
+      "sha256": "3db26ca9bb886f5dae309aba7c1c4853388853b5720446c6781e5b18bb844a65"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/ckeditor5",
+      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
+      "path": "packages/ckeditor5-table/LICENSE.md",
+      "sha256": "7992fa649bf150e077dc88f079ca27485c26d637aafa8bc93c7dd028bfcb9ff8"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/ckeditor5",
+      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
+      "path": "packages/ckeditor5-widget/LICENSE.md",
+      "sha256": "a46198316c23a1f5292fea8b0bfe0837e43c51889c5187caefad64139d7d0b64"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/ckeditor5",
+      "commit": "2453faa4466dd1b4715e3df6caebd4b22efbff1b",
+      "path": "packages/ckeditor5-table/package.json",
+      "sha256": "70c8a68eb7c3a0755e4bbfc0964e185089ba7e1d073595f609e37c6742e73a81"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/prosekit",
+      "commit": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5",
+      "path": "packages/extensions/src/table/table-plugins.ts",
+      "sha256": "d5b2815f08a93d928ab4c762c0c9e070679f67e58e81ed49cc73a2dfda86d633"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/prosekit",
+      "commit": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5",
+      "path": "packages/web/src/components/resizable/resizable-root.ts",
+      "sha256": "cae472cb515f379d6bfb8f8c017e668a0683e9b600b02bbf2c0ec243e302426a"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/prosekit",
+      "commit": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5",
+      "path": "packages/web/src/components/resizable/resizable-handle.ts",
+      "sha256": "3990645cb69efca63f815653ca395679e5ddd7e448a786da7ab58020c9fdfd90"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/prosekit",
+      "commit": "9ce6e9860b4b04fdb011e8ba3548b8305f67afd5",
+      "path": "packages/web/src/components/table-handle/table-handle-root.ts",
+      "sha256": "fe42188063728adec5db65e88665b48c36a74ead8229f5b497106b6dc3c53514"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/milkdown",
+      "commit": "920cded3fc9fe956de87339e30507650a916cf56",
+      "path": "packages/plugins/preset-gfm/src/plugin/table-editing-plugin.ts",
+      "sha256": "f83b7d1e8662af3a521e2284deadf0432ebdf9d728107a4f86086254774b77d0"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/milkdown",
+      "commit": "920cded3fc9fe956de87339e30507650a916cf56",
+      "path": "packages/components/src/table-block/view/view.ts",
+      "sha256": "3781de87e1491f788bb4518060842f42f9e01cc743458537e226384da9bab358"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/milkdown",
+      "commit": "920cded3fc9fe956de87339e30507650a916cf56",
+      "path": "packages/components/src/table-block/view/operation.ts",
+      "sha256": "720ff4cd6484ed9e18b204d395030bfa556aefb08229bda8bc01ce1288351212"
+    },
+    {
+      "checkout": "/Users/zbeyens/git/milkdown",
+      "commit": "920cded3fc9fe956de87339e30507650a916cf56",
+      "path": "packages/plugins/preset-gfm/src/node/table/command.ts",
+      "sha256": "8ab415d31ca45c5ff9a7a0f5f17646b2a76d64ef27c0182f80f8a3b797c126b5"
+    }
+  ],
+  "method": "Snapshots use working-tree source hashes; current-head supplements use immutable fetched git object hashes. No remote runtime claim."
+}

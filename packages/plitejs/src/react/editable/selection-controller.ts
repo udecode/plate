@@ -1109,6 +1109,14 @@ export const applyEditableDOMSelectionChange = ({
   }
 
   const { anchorNode, focusNode } = domSelection;
+  const selectionChangeOrigin = state.selectionChangeOrigin ?? 'native-user';
+
+  if (
+    readPliteViewSelection(editor) &&
+    selectionChangeOrigin !== 'native-user'
+  ) {
+    return;
+  }
 
   if (
     importProjectedDOMSelection({
@@ -1117,15 +1125,6 @@ export const applyEditableDOMSelectionChange = ({
       editorElement,
       inputController,
     })
-  ) {
-    return;
-  }
-
-  const selectionChangeOrigin = state.selectionChangeOrigin ?? 'native-user';
-
-  if (
-    readPliteViewSelection(editor) &&
-    selectionChangeOrigin !== 'native-user'
   ) {
     return;
   }

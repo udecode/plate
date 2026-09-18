@@ -17,7 +17,7 @@ import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
 describe('table presentation slow contracts', () => {
   jsxt;
 
-  describe('setBorderWidth', () => {
+  describe('setBorders', () => {
     const createEditorInstance = (input: TestEditor) =>
       createTestTableEditor({
         plugins: getTestTablePlugins(),
@@ -82,7 +82,7 @@ describe('table presentation slow contracts', () => {
         const editor = createEditorInstance(input);
         editor
           .plugin(BaseTablePlugin)
-          .update.setBorderWidth(2, { border: 'top' });
+          .update.setBorders({ border: 'top', value: { width: 2 } });
 
         expect(editor.read.children()).toMatchObject(output.children);
       });
@@ -109,7 +109,7 @@ describe('table presentation slow contracts', () => {
         editor.subscribeCommit(() => (commits += 1) - 1);
         editor
           .plugin(BaseTablePlugin)
-          .update.setBorderWidth(2, { border: 'all' });
+          .update.setBorders({ border: 'all', value: { width: 2 } });
 
         expect(editor.read.children()).toMatchObject(
           (
@@ -193,7 +193,7 @@ describe('table presentation slow contracts', () => {
         const editor = createEditorInstance(input);
         editor
           .plugin(BaseTablePlugin)
-          .update.setBorderWidth(2, { border: 'left' });
+          .update.setBorders({ border: 'left', value: { width: 2 } });
 
         expect(editor.read.children()).toMatchObject(output.children);
       });
@@ -255,7 +255,7 @@ describe('table presentation slow contracts', () => {
           const editor = createEditorInstance(input);
           editor
             .plugin(BaseTablePlugin)
-            .update.setBorderWidth(3, { border: 'left' });
+            .update.setBorders({ border: 'left', value: { width: 3 } });
 
           expect(editor.read.children()).toMatchObject(output.children);
         });
@@ -319,7 +319,7 @@ describe('table presentation slow contracts', () => {
             const editor = createEditorInstance(input);
             editor
               .plugin(BaseTablePlugin)
-              .update.setBorderWidth(2, { border: 'top' });
+              .update.setBorders({ border: 'top', value: { width: 2 } });
 
             expect(editor.read.children()).toMatchObject(output.children);
           });
@@ -382,7 +382,7 @@ describe('table presentation slow contracts', () => {
             const editor = createEditorInstance(input);
             editor
               .plugin(BaseTablePlugin)
-              .update.setBorderWidth(1, { border: 'right' });
+              .update.setBorders({ border: 'right', value: { width: 1 } });
 
             expect(editor.read.children()).toMatchObject(output.children);
           });
@@ -444,7 +444,7 @@ describe('table presentation slow contracts', () => {
               const editor = createEditorInstance(input);
               editor
                 .plugin(BaseTablePlugin)
-                .update.setBorderWidth(2, { border: 'left' });
+                .update.setBorders({ border: 'left', value: { width: 2 } });
 
               expect(editor.read.children()).toMatchObject(output.children);
             });
@@ -508,7 +508,7 @@ describe('table presentation slow contracts', () => {
             const editor = createEditorInstance(input);
             editor
               .plugin(BaseTablePlugin)
-              .update.setBorderWidth(4, { border: 'bottom' });
+              .update.setBorders({ border: 'bottom', value: { width: 4 } });
 
             expect(editor.read.children()).toMatchObject(output.children);
           });
@@ -842,8 +842,8 @@ describe('table presentation slow contracts', () => {
     const visible = { width: 1 };
     const hidden = { width: 0 };
 
-    describe('getSelectedCellsBorders', () => {
-      it('returns defaults outside a table and reads the current cell', () => {
+    describe('selected border states', () => {
+      it('returns null outside a table and reads the current cell', () => {
         const outsideValue: Value = [
           { children: [{ text: 'outside' }], type: 'paragraph' },
         ];
@@ -852,16 +852,7 @@ describe('table presentation slow contracts', () => {
           initialValue: outsideValue,
         });
 
-        expect(
-          outside.plugin(BaseTablePlugin).read.getSelectedCellsBorders()
-        ).toEqual({
-          bottom: true,
-          left: true,
-          none: false,
-          outer: true,
-          right: true,
-          top: true,
-        });
+        expect(outside.plugin(BaseTablePlugin).read.borders()).toBeNull();
 
         const editor = createEditor();
         setBorders(editor, [0, 0, 0], {
@@ -871,9 +862,7 @@ describe('table presentation slow contracts', () => {
           top: visible,
         });
 
-        expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders()
-        ).toEqual({
+        expect(editor.plugin(BaseTablePlugin).read.borders()).toEqual({
           bottom: true,
           left: true,
           none: false,
@@ -894,11 +883,7 @@ describe('table presentation slow contracts', () => {
         const cell = getCell(editor, [0, 0, 0]);
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders([cell])
-            .none
-        ).toBe(true);
-        expect(
-          editor.plugin(BaseTablePlugin).read.isSelectedCellBordersNone([cell])
+          editor.plugin(BaseTablePlugin).read.borders({ at: cell })!.none
         ).toBe(true);
       });
 
@@ -914,17 +899,9 @@ describe('table presentation slow contracts', () => {
           right: visible,
           top: visible,
         });
-        const cells = [getCell(editor, [0, 0, 0]), getCell(editor, [0, 0, 1])];
 
         expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders(cells)
-            .outer
-        ).toBe(true);
-        expect(
-          editor.plugin(BaseTablePlugin).read.isSelectedCellBordersOuter(cells)
-        ).toBe(true);
-        expect(
-          editor.plugin(BaseTablePlugin).read.isSelectedCellBorder(cells, 'top')
+          editor.plugin(BaseTablePlugin).read.borders({ at: [0, 0] })!.outer
         ).toBe(true);
 
         editor.update.selection.setNodes(
@@ -935,9 +912,7 @@ describe('table presentation slow contracts', () => {
           { anchor: [0, 0, 0], focus: [0, 0, 1] }
         );
 
-        expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders().outer
-        ).toBe(true);
+        expect(editor.plugin(BaseTablePlugin).read.borders()!.outer).toBe(true);
 
         setBorders(editor, [0, 0, 1], {
           bottom: visible,
@@ -946,13 +921,8 @@ describe('table presentation slow contracts', () => {
         });
 
         expect(
-          editor
-            .plugin(BaseTablePlugin)
-            .read.getSelectedCellsBorders([
-              getCell(editor, [0, 0, 0]),
-              getCell(editor, [0, 0, 1]),
-            ]).outer
-        ).toBe(false);
+          editor.plugin(BaseTablePlugin).read.borders({ at: [0, 0] })!.outer
+        ).toBe('mixed');
       });
 
       it('reads top and left edges from adjacent cells', () => {
@@ -965,27 +935,7 @@ describe('table presentation slow contracts', () => {
         });
 
         expect(
-          editor
-            .plugin(BaseTablePlugin)
-            .read.getSelectedCellsBorders([getCell(editor, [0, 1, 1])])
-        ).toEqual({
-          bottom: true,
-          left: true,
-          none: false,
-          outer: true,
-          right: true,
-          top: true,
-        });
-      });
-
-      it('skips side computation when it is not requested', () => {
-        const editor = createEditor();
-        const cell = getCell(editor, [0, 0, 0]);
-
-        expect(
-          editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders([cell], {
-            select: { none: false, outer: false, side: false },
-          })
+          editor.plugin(BaseTablePlugin).read.borders({ at: [0, 1, 1] })
         ).toEqual({
           bottom: true,
           left: true,

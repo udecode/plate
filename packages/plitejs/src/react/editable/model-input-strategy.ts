@@ -7,6 +7,7 @@ import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { commitInsertFromComposition } from './composition-state';
 import { isDataTransferInput } from './dom-input-event';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
   type EditableCommand,
   getEditableCommandFromBeforeInputType,
@@ -80,6 +81,7 @@ export const applyEditableInput = ({
   inputController,
   onInput,
   readOnly = false,
+  runtime,
   skipNativeTextInputRepair = false,
 }: {
   androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
@@ -95,6 +97,7 @@ export const applyEditableInput = ({
   inputController: import('./input-controller').EditableInputController;
   onInput?: EditableInputHandler;
   readOnly?: boolean;
+  runtime?: EditableDOMRuntime;
   skipNativeTextInputRepair?: boolean;
 }): EditableInputResult => {
   if (isInputEventHandled({ event, handler: onInput })) {
@@ -259,6 +262,7 @@ export const applyEditableInput = ({
       editor,
       event: event.nativeEvent,
       readOnly,
+      runtime,
     })
   ) {
     repairs.push({ forceRender: true, kind: 'force-render' });
@@ -271,6 +275,7 @@ export const applyModelOwnedBeforeInputMutation = ({
   command: preparedCommand,
   data,
   editor,
+  inputController,
   inputType: type,
   mergeHistory = false,
   native,
@@ -281,6 +286,7 @@ export const applyModelOwnedBeforeInputMutation = ({
   command?: EditableCommand | null;
   data: unknown;
   editor: ReactRuntimeEditor;
+  inputController?: import('./input-state').EditableInputController;
   inputType: string;
   mergeHistory?: boolean;
   native: boolean;
@@ -408,6 +414,7 @@ export const applyModelOwnedBeforeInputMutation = ({
         return applyModelOwnedTextInput({
           data: textCommand.text,
           editor,
+          inputController,
           inputType: textCommand.inputType ?? type,
           mergeHistory,
           selection,

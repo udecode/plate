@@ -10,8 +10,15 @@ import {
   type Selection,
   TextApi,
 } from '../facade';
-import { getCompiledPlatePlugin } from '../internal/plugin/compilePlateModel';
-import type { DocumentMigrationContext } from '../lib/editor/documentMigrations';
+import type {
+  DocumentMigrationContext,
+  DocumentMigrationTarget,
+} from './documentMigrations';
+
+const getCompiledPlatePlugin = (
+  target: DocumentMigrationTarget,
+  name: string
+) => target.bindings.find((binding) => binding.name === name);
 
 type TextPointMapping = Readonly<{ offset: number; path: Path }>;
 
@@ -26,14 +33,17 @@ type PlateV54CodeBlockMigrationResult = Readonly<{
 /** Flatten legacy code-block lines inside the Plate v54 migration. */
 export const migratePlateV54CodeBlocks = ({
   document,
-  editor,
+  target: conversionTarget,
 }: DocumentMigrationContext): PlateV54CodeBlockMigrationResult => {
   const { roots: inputRoots } = document;
-  const codeBlockDescriptor = getCompiledPlatePlugin(editor, 'codeBlock');
+  const codeBlockDescriptor = getCompiledPlatePlugin(
+    conversionTarget,
+    'codeBlock'
+  );
 
-  if (!codeBlockDescriptor) return { document };
+  if (!codeBlockDescriptor?.type) return { document };
 
-  const codeBlockType = editor.plugin(codeBlockDescriptor).schema.type;
+  const codeBlockType = codeBlockDescriptor.type;
   const pointMappings = new Map<string, TextPointMapping>();
   const collectPointMappings = (
     input: Descendant,

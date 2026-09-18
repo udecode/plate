@@ -24,7 +24,10 @@ import {
 } from './dom-coverage-vertical-selection';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableKeyDownKernel } from './editing-kernel';
-import { isNestedEditableDOMTarget } from './input-controller';
+import {
+  isNestedEditableDOMTarget,
+  isPlainVerticalDocumentBoundary,
+} from './input-controller';
 import { useEditableKeyboardHandler } from './input-router';
 import {
   type EditableInputController,
@@ -246,6 +249,7 @@ export const useRuntimeKeyboardEvents = ({
   onKeyDown,
   readOnly,
   runtime,
+  scheduleNativeSelectionImport,
   setExplicitViewportBackedSelection,
   verticalNavigation,
   viewportBackedSelection,
@@ -262,10 +266,14 @@ export const useRuntimeKeyboardEvents = ({
   onKeyDown?: EditableKeyDownHandler;
   readOnly: boolean;
   runtime: EditableEventRuntimeCore;
+  scheduleNativeSelectionImport: () => void;
   setExplicitViewportBackedSelection: (nextValue: boolean) => void;
   verticalNavigation: Pick<
     EditableDOMRuntime,
-    'clearVerticalGoal' | 'readVerticalGoalX' | 'setVerticalGoalX'
+    | 'clearVerticalGoal'
+    | 'readVerticalGoalX'
+    | 'replayHistory'
+    | 'setVerticalGoalX'
   >;
   viewportBackedSelection: boolean;
 }) => {
@@ -365,6 +373,12 @@ export const useRuntimeKeyboardEvents = ({
             })
           )
       );
+      const modelOwnsPlainVerticalDocumentBoundary =
+        isPlainVerticalDocumentBoundary({
+          editor,
+          event,
+          selection: snapshotRange,
+        });
 
       if (
         !readOnly &&
@@ -377,6 +391,7 @@ export const useRuntimeKeyboardEvents = ({
         !modelOwnsVerticalShift &&
         !modelOwnsContentRootVerticalShift &&
         !modelOwnsContentRootVerticalMove &&
+        !modelOwnsPlainVerticalDocumentBoundary &&
         (nativeMountedVerticalShift ||
           isNativeVerticalKeyFastPathFullyMounted({
             viewportRuntime,
@@ -431,6 +446,8 @@ export const useRuntimeKeyboardEvents = ({
             onKeyDown,
             preferredVerticalX,
             readOnly,
+            replayHistory:
+              verticalNavigation.replayHistory.bind(verticalNavigation),
             setExplicitViewportBackedSelection,
             setComposing: runtime.composition.setComposing,
             viewportBackedSelection,
@@ -470,17 +487,9 @@ export const useRuntimeKeyboardEvents = ({
       if (
         !readOnly &&
         !keyDownWorkerResult.handled &&
-        decision.intent === 'native-selection-move' &&
-        (event.key === 'ArrowUp' || event.key === 'ArrowDown')
+        decision.intent === 'native-selection-move'
       ) {
-        domPhaseScheduler.schedule(
-          'selection-repair',
-          'native-vertical-selection-import',
-          () => {
-            runtime.selection.syncDOMSelectionFromRuntime();
-          },
-          { timing: 'timeout' }
-        );
+        scheduleNativeSelectionImport();
       }
       profilePliteReactDuration('keydown.trace-record', () => {
         runtime.trace.recordKeyDownTrace({
@@ -499,10 +508,11 @@ export const useRuntimeKeyboardEvents = ({
       onKeyDown,
       readOnly,
       runtime,
+      scheduleNativeSelectionImport,
+      verticalNavigation,
       pliteRuntimeContext,
       setExplicitViewportBackedSelection,
       viewportBackedSelection,
-      verticalNavigation,
     ]
   );
 
@@ -584,6 +594,8 @@ export const useRuntimeKeyboardEvents = ({
         getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
         onKeyDown,
         readOnly,
+        replayHistory:
+          verticalNavigation.replayHistory.bind(verticalNavigation),
         setExplicitViewportBackedSelection,
         setComposing: runtime.composition.setComposing,
         viewportBackedSelection,
@@ -622,6 +634,7 @@ export const useRuntimeKeyboardEvents = ({
       onKeyDown,
       readOnly,
       runtime,
+      verticalNavigation,
       pliteRuntimeContext,
       setExplicitViewportBackedSelection,
       viewportBackedSelection,

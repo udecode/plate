@@ -36,15 +36,11 @@ const getHistory = (editor: EditorType) =>
   editor.read((state: any) => state.history());
 
 const undo = (editor: EditorType) => {
-  editor.update((tx) => {
-    tx.history.undo();
-  });
+  editor.api.history.undo();
 };
 
 const redo = (editor: EditorType) => {
-  editor.update((tx) => {
-    tx.history.redo();
-  });
+  editor.api.history.redo();
 };
 
 const replace = (
@@ -377,7 +373,7 @@ describe('plite-history integrity contract', () => {
     assert.equal(markCommit?.changed.has('marks'), true);
   });
 
-  it('tx.history.undo moves the current undo batch onto the redo stack', () => {
+  it('editor.api.history.undo moves the current undo batch onto the redo stack', () => {
     const editor = historyTestEditor();
 
     replace(editor, [paragraph('one')], {

@@ -1,3 +1,5 @@
+// oxlint-disable-next-line typescript/ban-ts-comment -- Frozen pre-cut source is compiled only by the baseline harness.
+// @ts-nocheck -- Frozen pre-cut source is compiled only by the baseline harness.
 'use client';
 
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -134,7 +136,7 @@ function AIChatSessionContent({
   const mode = usePluginStore(AIChatPlugin, 'mode');
   const toolName = usePluginStore(AIChatPlugin, 'toolName');
   useChatChunk({
-    onChunk: ({ chunk, isFirst, nodes, text: content }) => {
+    onChunk: ({ isFirst, nodes, text: content }) => {
       if (!chat.isStreamingLive()) return;
       if (isFirst && mode === 'insert') {
         const selection = editor.read.selection();
@@ -167,18 +169,11 @@ function AIChatSessionContent({
       if (mode === 'insert' && nodes.length > 0) {
         if (!store.get('streaming')) return;
 
-        editor.plugin(AIChatPlugin).update.insertChunk(chunk, {
-          autoScroll: true,
-          textProps: {
-            [editor.plugin(AIPlugin).schema.key]: true,
-          },
-        });
+        editor.plugin(AIChatPlugin).api.setPreview(content);
       }
 
       if (toolName === 'edit' && mode === 'chat') {
-        editor
-          .plugin(AIChatPlugin)
-          .update.applySuggestions(content, { split: isFirst });
+        editor.plugin(AIChatPlugin).api.setPreview(content);
       }
     },
     onFinish: () => {

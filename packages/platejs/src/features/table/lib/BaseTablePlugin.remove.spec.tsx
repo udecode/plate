@@ -73,9 +73,9 @@ describe('table removal', () => {
   jsxt;
 
   describe('when 2x2', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'deletes a column (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'deletes a column (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -120,7 +120,7 @@ describe('table removal', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -133,9 +133,9 @@ describe('table removal', () => {
   });
 
   describe('when first row has 2 cells, second row has 1 cell, focus 12', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'deletes cell 12 (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'deletes cell 12 (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -177,7 +177,7 @@ describe('table removal', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -190,9 +190,9 @@ describe('table removal', () => {
   });
 
   describe('when first row has 2 cells, second row has 1 cell, focus 11', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'deletes cell 11 (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'deletes cell 11 (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -234,7 +234,7 @@ describe('table removal', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -247,9 +247,9 @@ describe('table removal', () => {
   });
 
   describe('when first row has 2 cells, second row has 1 cell, focus 21', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'keeps the table unchanged when no second-column match exists (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'removes the selected logical column from a repaired table (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <editor>
             <htable>
@@ -278,17 +278,13 @@ describe('table removal', () => {
             <htable>
               <htr>
                 <htd>
-                  <hp>11</hp>
-                </htd>
-                <htd>
                   <hp>12</hp>
                 </htd>
               </htr>
               <htr>
                 <htd>
                   <hp>
-                    21
-                    <cursor />
+                    <htext />
                   </hp>
                 </htd>
               </htr>
@@ -297,7 +293,7 @@ describe('table removal', () => {
         ) as TestEditor;
 
         const editor = createTestTableEditor({
-          plugins: getTestTablePlugins({ disableMerge }),
+          plugins: getTestTablePlugins({ allowCellSpanEditing }),
           selection: input.selection,
           initialValue: input.children,
         });
@@ -337,7 +333,7 @@ describe('table removal', () => {
     ) as TestEditor;
 
     const editor = createTestTableEditor({
-      plugins: getTestTablePlugins({ disableMerge: true }),
+      plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
       selection: input.selection,
       initialValue: input.children,
     });
@@ -383,7 +379,7 @@ describe('table removal', () => {
     ) as TestEditor;
 
     const editor = createTestTableEditor({
-      plugins: getTestTablePlugins({ disableMerge: true }),
+      plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
       selection: input.selection,
       initialValue: input.children,
     });
@@ -400,10 +396,10 @@ describe('table removal', () => {
 
     const createTableEditor = (
       input: TestEditor,
-      { disableMerge = true }: { disableMerge?: boolean } = {}
+      { allowCellSpanEditing = false }: { allowCellSpanEditing?: boolean } = {}
     ) =>
       createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing }),
         selection: input.selection,
         initialValue: input.children,
       });
@@ -480,7 +476,7 @@ describe('table removal', () => {
         expect(editor.read.text.string([0, 0, 0])).toBe('11');
       });
 
-      it('keeps the last remaining row intact', () => {
+      it('removes the table when its final row is removed', () => {
         const input = (
           <editor>
             <htable>
@@ -500,7 +496,9 @@ describe('table removal', () => {
 
         editor.update.table.removeRow();
 
-        expect(editor.read.children()).toMatchObject(input.children);
+        expect(editor.read.children()).toEqual([
+          { type: 'paragraph', children: [{ text: '' }] },
+        ]);
       });
     });
   }

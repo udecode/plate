@@ -23,7 +23,7 @@ export function DetailsElement(
   const openKeys = usePluginStore(BaseDetailsPlugin, 'openKeys');
   const { api } = useEditor().plugin(BaseDetailsPlugin);
   const open = detailsKey !== undefined && openKeys.has(detailsKey);
-  const bodyId = detailsKey === undefined ? undefined : `details-${detailsKey}`;
+  const bodyId = React.useId();
 
   return (
     <EditorElement {...props} className="relative my-1 pl-6">

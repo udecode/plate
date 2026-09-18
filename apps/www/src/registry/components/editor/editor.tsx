@@ -29,8 +29,7 @@ const editorContainerVariants = cva(
           'has-[[data-editor]:focus]:border-brand/50 has-[[data-editor]:focus]:ring-2 has-[[data-editor]:focus]:ring-brand/30',
           'has-aria-disabled:border-input has-aria-disabled:bg-muted'
         ),
-        default: 'h-full',
-        demo: 'h-[650px]',
+        default: 'min-h-0 flex-1',
         select: cn(
           'group rounded-md border border-input ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
           'has-data-readonly:w-fit has-data-readonly:cursor-default has-data-readonly:border-transparent has-data-readonly:focus-within:[box-shadow:none]'
@@ -39,6 +38,19 @@ const editorContainerVariants = cva(
     },
   }
 );
+
+export function EditorFrame({
+  className,
+  ...props
+}: React.ComponentProps<'div'>) {
+  return (
+    <div
+      className={cn('relative flex h-full min-h-0 w-full flex-col', className)}
+      data-slot="editor-frame"
+      {...props}
+    />
+  );
+}
 
 export function EditorContainer({
   className,
@@ -52,6 +64,7 @@ export function EditorContainer({
         editorContainerVariants({ variant }),
         className
       )}
+      data-slot="editor-container"
       {...props}
     />
   );

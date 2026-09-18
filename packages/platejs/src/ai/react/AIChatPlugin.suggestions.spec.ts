@@ -1,3 +1,4 @@
+import { DefaultAuthoredPlugin } from '../../authored';
 import {
   BaseParagraphPlugin,
   definePlugin,
@@ -18,18 +19,21 @@ const createEditor = (
   selection: TextSelection | null = null
 ) => {
   const editor = createProductEditor({
-    plugins: [BaseParagraphPlugin, BaseAIPlugin, MarkdownPlugin, AIChatPlugin],
+    plugins: [
+      DefaultAuthoredPlugin,
+      BaseParagraphPlugin,
+      BaseAIPlugin,
+      MarkdownPlugin,
+      AIChatPlugin,
+    ],
     userId: 'alice',
     selection,
     initialValue: value,
   });
 
-  editor.api.authored.setView({
-    intent: 'propose',
-    projection: 'markup',
-  });
-
   editor.plugin(AIChatPlugin).store.set({
+    mode: 'chat',
+    chatSelection: selection,
     chatNodes: chatNodes.map((node, index) => ({
       node,
       nodeKey: editor.key([index])!,
@@ -56,9 +60,9 @@ describe('AIChatPlugin suggestions', () => {
       'This sentence',
       'This sentence is poorly written.',
     ]) {
-      ai.update.applySuggestions(content);
+      ai.api.setPreview(content);
     }
-    ai.update.accept();
+    ai.api.accept();
 
     expect(editor.read.text.string([])).toBe(
       'This sentence is poorly written.'
@@ -83,14 +87,36 @@ describe('AIChatPlugin suggestions', () => {
     const tailKey = editor.key([1]);
     const ai = editor.plugin(AIChatPlugin);
 
-    ai.update.applySuggestions('new');
-    ai.update.applySuggestions('new text');
-    const result = ai.update.rejectSuggestions();
+    ai.api.setPreview('new');
+    ai.api.setPreview('new text');
+    ai.api.reset();
 
-    expect(result?.status).toBe('applied');
     expect(editor.read.value().children).toEqual(before.children);
     expect(editor.read.text.string([])).toBe('oldtail');
     expect(editor.key([1])).toBe(tailKey);
+  });
+
+  it('dismisses a selection draft without applying it', () => {
+    const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes, {
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.store.set({ open: true });
+    ai.api.setPreview('new');
+    expect(ai.store.get('previewValue')).toHaveLength(1);
+
+    ai.api.hide({ focus: false });
+
+    expect(ai.store.get('open')).toBe(false);
+    expect(ai.store.get('previewValue')).toEqual([]);
+    expect(editor.read.text.string([])).toBe('old');
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(0);
   });
 
   it('cancels only the AI proposal and preserves an independent foreign edit', () => {
@@ -109,7 +135,7 @@ describe('AIChatPlugin suggestions', () => {
     );
     const ai = editor.plugin(AIChatPlugin);
 
-    ai.update.applySuggestions('new');
+    ai.api.setPreview('new');
     Reflect.set(editor.runtime, 'userId', 'bob');
     editor.api.authored.setView({
       intent: 'edit',
@@ -119,42 +145,31 @@ describe('AIChatPlugin suggestions', () => {
       at: { offset: 4, path: [1, 0] },
     });
 
-    const result = ai.api.reset();
+    ai.api.reset();
 
-    expect(result?.status).toBe('applied');
     expect(editor.read.text.string([])).toBe('oldtail foreign');
     expect(editor.read.authored.changes({ status: 'pending' }).items).toEqual(
       []
     );
   });
 
-  it('reports a dependent foreign proposal instead of erasing it on cancel', () => {
-    const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
-    const editor = createEditor(structuredClone(chatNodes), chatNodes, {
-      kind: 'text',
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 3, path: [0, 0] },
-    });
+  it('discards the draft without deciding another author’s suggestion', () => {
+    const nodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(structuredClone(nodes), nodes);
     const ai = editor.plugin(AIChatPlugin);
-
-    ai.update.applySuggestions('new');
-    const aiChangeId = ai.store.get('_changeId');
-    Reflect.set(editor.runtime, 'userId', 'bob');
-    editor.update.text.insert('!', {
-      at: { offset: 3, path: [0, 0] },
+    ai.api.setPreview('new');
+    editor.api.authored.setView({ intent: 'propose', projection: 'markup' });
+    editor.update.text.insert('!', { at: { offset: 3, path: [0, 0] } });
+    const proposals = editor.read.authored.changes({ status: 'pending' }).items;
+    ai.api.reset();
+    expect(editor.read.authored.changes({ status: 'pending' }).items).toEqual(
+      proposals
+    );
+    expect(editor.read.text.string([])).toBe('old!');
+    expect(editor.read.authored.view()).toEqual({
+      intent: 'propose',
+      projection: 'markup',
     });
-
-    const result = ai.api.reset();
-
-    expect(result?.status).toBe('blocked');
-    if (result?.status !== 'blocked') throw new Error('Expected blocked reset');
-    expect(result.ids).toEqual([aiChangeId]);
-    expect(result.dependants).toHaveLength(1);
-    expect(ai.store.get('_changeId')).toBe(aiChangeId);
-    expect(editor.read.text.string([])).toBe('new!');
-    expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(2);
   });
 
   it('stops later chunks when a single-block preview target is deleted', () => {
@@ -173,11 +188,11 @@ describe('AIChatPlugin suggestions', () => {
     );
     const ai = editor.plugin(AIChatPlugin);
 
-    ai.update.applySuggestions('new');
+    ai.api.setPreview('new');
     editor.update.nodes.remove({ at: [0] });
     const before = editor.read.value();
 
-    ai.update.applySuggestions('new text');
+    ai.api.setPreview('new text');
 
     expect(editor.read.value()).toEqual(before);
     expect(editor.read.text.string([])).toBe('tail');
@@ -190,11 +205,13 @@ describe('AIChatPlugin suggestions', () => {
     ];
     const editor = createEditor(structuredClone(chatNodes), chatNodes);
 
-    editor.plugin(AIChatPlugin).update.applySuggestions('next-a\n\nnext-b');
+    editor.plugin(AIChatPlugin).api.setPreview('next-a\n\nnext-b');
 
-    const replacementIds = editor
-      .plugin(AIChatPlugin)
-      .store.get('_replaceNodeKeys');
+    expect(editor.read.text.string([])).toBe('old-aold-b');
+    editor.plugin(AIChatPlugin).api.accept();
+    const replacementIds = editor.read.selection
+      .nodes()
+      .map(([node]) => editor.key(node));
 
     expect(replacementIds).toHaveLength(2);
     expect(
@@ -220,11 +237,18 @@ describe('AIChatPlugin suggestions', () => {
 
     editor
       .plugin(AIChatPlugin)
-      .update.applySuggestions('next-a\n\nnext-b\n\nnext-c\n\nnext-d', {
-        split: true,
-      });
-    editor.plugin(AIChatPlugin).update.insertBelow();
+      .api.setPreview('next-a\n\nnext-b\n\nnext-c\n\nnext-d');
+    const historyDepth = editor.read.history().undos.length;
+    let commits = 0;
+    const unsubscribe = editor.subscribeCommit(() => {
+      commits += 1;
+    });
 
+    editor.plugin(AIChatPlugin).api.insertBelow();
+    unsubscribe();
+
+    expect(commits).toBe(1);
+    expect(editor.read.history().undos).toHaveLength(historyDepth + 1);
     expect(
       editor.read.children().map((_, index) => editor.read.text.string([index]))
     ).toEqual([
@@ -236,6 +260,53 @@ describe('AIChatPlugin suggestions', () => {
       'next-d',
       'tail',
     ]);
+
+    const completed = structuredClone(editor.read.children());
+
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.read.text.string([])).toBe('old-aold-btail');
+    expect(editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(editor.read.children()).toEqual(completed);
+  });
+
+  it('replaces accepted content with proposal output as one reversible action', () => {
+    const chatNodes = [
+      { children: [{ text: 'old-a' }], type: 'paragraph' },
+      { children: [{ text: 'old-b' }], type: 'paragraph' },
+    ];
+    const editor = createEditor(
+      [
+        ...structuredClone(chatNodes),
+        { children: [{ text: 'tail' }], type: 'paragraph' },
+      ],
+      chatNodes
+    );
+    const ai = editor.plugin(AIChatPlugin);
+
+    ai.api.setPreview('next-a\n\nnext-b');
+    const historyDepth = editor.read.history().undos.length;
+    let commits = 0;
+    const unsubscribe = editor.subscribeCommit(() => {
+      commits += 1;
+    });
+
+    ai.api.replaceSelection({ format: 'none' });
+    unsubscribe();
+
+    expect(commits).toBe(1);
+    expect(editor.read.history().undos).toHaveLength(historyDepth + 1);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'next-a' }], type: 'paragraph' },
+      { children: [{ text: 'next-b' }], type: 'paragraph' },
+      { children: [{ text: 'tail' }], type: 'paragraph' },
+    ]);
+
+    const completed = structuredClone(editor.read.children());
+
+    expect(editor.api.history.undo()).toEqual({ status: 'applied' });
+    expect(editor.read.text.string([])).toBe('old-aold-btail');
+    expect(editor.api.history.redo()).toEqual({ status: 'applied' });
+    expect(editor.read.children()).toEqual(completed);
   });
 
   it('does not reuse a stale path when a chat source block is deleted', () => {
@@ -251,11 +322,11 @@ describe('AIChatPlugin suggestions', () => {
       chatNodes
     );
 
-    editor.plugin(AIChatPlugin).update.applySuggestions('next-a\n\nnext-b');
+    editor.plugin(AIChatPlugin).api.setPreview('next-a\n\nnext-b');
     editor.update.nodes.remove({ at: [1] });
     const before = editor.read.value();
 
-    editor.plugin(AIChatPlugin).update.insertBelow();
+    editor.plugin(AIChatPlugin).api.insertBelow();
 
     expect(editor.read.value()).toEqual(before);
   });
@@ -273,11 +344,11 @@ describe('AIChatPlugin suggestions', () => {
       chatNodes
     );
 
-    editor.plugin(AIChatPlugin).update.applySuggestions('next-a\n\nnext-b');
+    editor.plugin(AIChatPlugin).api.setPreview('next-a\n\nnext-b');
     editor.update.nodes.remove({ at: [1] });
     const before = editor.read.value();
 
-    editor.plugin(AIChatPlugin).update.insertBelow();
+    editor.plugin(AIChatPlugin).api.insertBelow();
 
     expect(editor.read.value()).toEqual(before);
   });
@@ -289,17 +360,15 @@ describe('AIChatPlugin suggestions', () => {
     ];
     const editor = createEditor(structuredClone(chatNodes), chatNodes);
 
-    editor.plugin(AIChatPlugin).update.applySuggestions('next-a\n\nnext-b');
-    const [firstKey] = editor
-      .plugin(AIChatPlugin)
-      .store.get('_replaceNodeKeys');
+    editor.plugin(AIChatPlugin).api.setPreview('next-a\n\nnext-b');
+    const firstKey = editor.key([0]);
 
     if (!firstKey) throw new Error('Expected a replacement key');
 
     editor.update.nodes.remove({ at: firstKey });
     const before = editor.read.value();
 
-    editor.plugin(AIChatPlugin).update.applySuggestions('later-a\n\nlater-b');
+    editor.plugin(AIChatPlugin).api.setPreview('later-a\n\nlater-b');
 
     expect(editor.read.value()).toEqual(before);
   });
@@ -317,7 +386,7 @@ describe('AIChatPlugin suggestions', () => {
     editor.update.nodes.remove({ at: [0] });
     const before = editor.read.value();
 
-    editor.plugin(AIChatPlugin).update.applySuggestions('replacement');
+    editor.plugin(AIChatPlugin).api.setPreview('replacement');
 
     expect(editor.read.value()).toEqual(before);
   });
@@ -339,11 +408,12 @@ describe('AIChatPlugin suggestions', () => {
     );
     const unrelatedKey = editor.key([2])!;
 
-    editor.plugin(AIChatPlugin).update.applySuggestions('next-a\n\nnext-b');
+    editor.plugin(AIChatPlugin).api.setPreview('next-a\n\nnext-b');
 
-    const replacementKeys = editor
-      .plugin(AIChatPlugin)
-      .store.get('_replaceNodeKeys');
+    editor.plugin(AIChatPlugin).api.accept();
+    const replacementKeys = editor.read.selection
+      .nodes()
+      .map(([node]) => editor.key(node));
 
     expect(replacementKeys).toHaveLength(2);
     expect(replacementKeys).not.toContain(unrelatedKey);
@@ -360,13 +430,14 @@ describe('AIChatPlugin suggestions', () => {
     const editor = createEditor(structuredClone(chatNodes), chatNodes);
     const aiChat = editor.plugin(AIChatPlugin);
 
-    aiChat.update.applySuggestions('next-a\n\nnext-b\n\nnext-c');
+    aiChat.api.setPreview('next-a\n\nnext-b\n\nnext-c');
 
-    expect(aiChat.store.get('_replaceNodeKeys')).toHaveLength(3);
+    expect(aiChat.store.get('previewValue')).toHaveLength(3);
 
-    aiChat.update.applySuggestions('last-a\n\nlast-b\n\nlast-c\n\nlast-d');
+    aiChat.api.setPreview('last-a\n\nlast-b\n\nlast-c\n\nlast-d');
 
-    expect(aiChat.store.get('_replaceNodeKeys')).toHaveLength(4);
+    expect(aiChat.store.get('previewValue')).toHaveLength(4);
+    aiChat.api.accept();
     expect(
       editor.read
         .children()
@@ -436,7 +507,7 @@ describe('AIChatPlugin suggestions', () => {
 
     const before = editor.read.value();
 
-    editor.plugin(AIChatPlugin).update.applySuggestions('replacement');
+    editor.plugin(AIChatPlugin).api.setPreview('replacement');
 
     expect(editor.read.value()).toEqual(before);
   });
@@ -503,7 +574,7 @@ describe('AIChatPlugin suggestions', () => {
       })),
       previewValue: [{ children: [{ text: 'new' }], type: 'paragraph' }],
     });
-    editor.plugin(AIChatPlugin).update.replaceSelection({ format: 'none' });
+    editor.plugin(AIChatPlugin).api.replaceSelection({ format: 'none' });
 
     expect(editor.read.children()).toEqual(mainChildren);
     expect(header.read.children()).toEqual([
@@ -522,7 +593,7 @@ describe('AIChatPlugin suggestions', () => {
     editor.plugin(AIChatPlugin).store.set({
       previewValue: [{ children: [{ text: 'new' }], type: 'paragraph' }],
     });
-    editor.plugin(AIChatPlugin).update.replaceSelection({ format: 'none' });
+    editor.plugin(AIChatPlugin).api.replaceSelection({ format: 'none' });
 
     expect(editor.read.text.string([])).toBe('new');
   });
@@ -539,24 +610,45 @@ describe('AIChatPlugin suggestions', () => {
     expect(editor.plugin(AIChatPlugin).store.get('previewValue')).toEqual([]);
   });
 
-  it('stores one native proposal and selects its replacement block', () => {
-    const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
-    const editor = createEditor(structuredClone(chatNodes), chatNodes, {
+  it('maps a text replacement past an intervening block insertion', () => {
+    const nodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(structuredClone(nodes), nodes, {
       kind: 'text',
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 3, path: [0, 0] },
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 3 },
     });
+    const ai = editor.plugin(AIChatPlugin);
+    ai.api.setPreview('replacement');
+    editor.update.nodes.insert(
+      { type: 'paragraph', children: [{ text: 'independent' }] },
+      { at: [0] }
+    );
+    ai.api.accept();
+    expect(
+      editor.read.children().map((_, index) => editor.read.text.string([index]))
+    ).toEqual(['independent', 'replacement']);
+    editor.api.history.undo();
+    expect(editor.read.text.string([])).toBe('independentold');
+  });
 
-    editor.plugin(AIChatPlugin).update.applySuggestions('done');
-
-    const changeId = editor.plugin(AIChatPlugin).store.get('_changeId');
-    expect(changeId).not.toBeNull();
-    expect(editor.read.authored.change(changeId!)).toMatchObject({
-      authorId: 'alice',
-      status: 'pending',
-    });
-    expect(editor.read.value().children).toEqual(chatNodes);
+  it('creates tracked edits only when the user explicitly chooses suggesting', () => {
+    const nodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(structuredClone(nodes), nodes);
+    const ai = editor.plugin(AIChatPlugin);
+    editor.api.authored.setView({ intent: 'propose', projection: 'markup' });
+    ai.api.setPreview('done');
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(0);
+    ai.api.accept();
+    expect(
+      editor.read.authored.changes({ status: 'pending' }).items
+    ).toHaveLength(1);
+    expect(editor.read.value().children).toEqual(nodes);
     expect(editor.read.text.string([])).toBe('done');
-    expect(editor.read.selection.nodes()).toHaveLength(1);
+    expect(editor.read.authored.view()).toEqual({
+      intent: 'propose',
+      projection: 'markup',
+    });
   });
 });

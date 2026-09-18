@@ -14,7 +14,7 @@ export const BaseMultiSelectPlugin = BaseTagPlugin.extend(
   ({ editor, plugin, schema: { type } }) => ({
     commands: ({ around }) => [
       around(editorCommands.delete, ({ input, state, next }) => {
-        if (input.direction !== 'backward') return false;
+        if (input.direction !== 'backward') return next();
 
         const result = next();
 

@@ -50,6 +50,14 @@ type TextFlowSegmentPlan = Readonly<{
   segments: readonly TextFlowSegment[];
 }>;
 
+const EMPTY_TEXT_FLOW_SEGMENT: TextFlowSegment = {
+  decorations: [],
+  end: 0,
+  identity: 'zero-width',
+  start: 0,
+  text: '',
+};
+
 type TextFlowPaint = ReturnType<typeof readDOMTextFlowPaint>;
 
 type DecorationDOMRecord = {
@@ -392,6 +400,14 @@ export const compileTextFlowSegments = (
   decorations: readonly DecorationSlice[]
 ) => compileTextFlowWindow(text, decorations, 0, text.length);
 
+const compileImperativeTextFlowSegments = (
+  text: string,
+  decorations: readonly DecorationSlice[]
+): TextFlowSegmentPlan =>
+  text.length === 0
+    ? { boundaryVisits: 0, segments: [EMPTY_TEXT_FLOW_SEGMENT] }
+    : compileTextFlowSegments(text, decorations);
+
 const toCSSPropertyName = (name: string) =>
   name.startsWith('--')
     ? name
@@ -499,9 +515,11 @@ const getDisplayedText = (
   count: number,
   isLast: boolean
 ) =>
-  isLast && index === count - 1 && segment.text.endsWith('\n')
-    ? `${segment.text}\n`
-    : segment.text;
+  segment === EMPTY_TEXT_FLOW_SEGMENT
+    ? '\uFEFF'
+    : isLast && index === count - 1 && segment.text.endsWith('\n')
+      ? `${segment.text}\n`
+      : segment.text;
 
 const updateStringMetadata = (
   stringElement: HTMLSpanElement,
@@ -540,6 +558,7 @@ const requiresSegmentWrapper = (
   count: number,
   isLast: boolean
 ) =>
+  segment === EMPTY_TEXT_FLOW_SEGMENT ||
   segment.decorations.length > 0 ||
   (isLast && index === count - 1 && segment.text.endsWith('\n'));
 
@@ -551,6 +570,32 @@ const createSegmentRecord = (
   isLast: boolean
 ): SegmentDOMRecord => {
   const displayedText = getDisplayedText(segment, index, count, isLast);
+
+  if (segment === EMPTY_TEXT_FLOW_SEGMENT) {
+    const zeroWidth = document.createElement('span');
+    const textNode = document.createTextNode(displayedText);
+
+    zeroWidth.setAttribute('data-editor-zero-width', 'z');
+    zeroWidth.setAttribute('data-editor-length', '0');
+    zeroWidth.append(textNode);
+
+    return {
+      bindingIndex: -1,
+      bindingHost: null,
+      bindingRecord: null,
+      decorationRecords: [],
+      decorations: [],
+      domLength: displayedText.length,
+      end: 0,
+      identity: segment.identity,
+      leaf: zeroWidth,
+      rootNode: zeroWidth,
+      start: 0,
+      stringElement: zeroWidth,
+      text: '',
+      textNode,
+    };
+  }
 
   if (!requiresSegmentWrapper(segment, index, count, isLast)) {
     const textNode = document.createTextNode(displayedText);
@@ -649,34 +694,48 @@ const canReuseSegmentRecord = (
   count: number,
   isLast: boolean,
   paint: TextFlowPaint
-) =>
-  (paint.isClean(record) ||
-    (record.rootNode.isConnected &&
-      (!record.leaf ||
-        !record.stringElement ||
-        record.stringElement === record.leaf ||
-        record.leaf.contains(record.stringElement)) &&
-      record.decorationRecords.every(
-        ({ element }, decorationIndex) =>
-          decorationIndex === record.decorationRecords.length - 1 ||
-          (element.childNodes.length === 1 &&
-            element.firstChild ===
-              record.decorationRecords[decorationIndex + 1].element)
-      ))) &&
-  (record.leaf !== null) ===
-    requiresSegmentWrapper(segment, index, count, isLast) &&
-  record.decorationRecords.length === segment.decorations.length &&
-  record.decorationRecords.every(
-    ({ identity }, decorationIndex) =>
-      identity ===
-      getDecorationSliceIdentity(segment.decorations[decorationIndex])
-  ) &&
-  record.decorations.length === segment.decorations.length &&
-  record.decorations.every(
-    (decoration, decorationIndex) =>
-      getDecorationSliceIdentity(decoration) ===
-      getDecorationSliceIdentity(segment.decorations[decorationIndex])
+) => {
+  if (segment === EMPTY_TEXT_FLOW_SEGMENT) {
+    return (
+      record.identity === EMPTY_TEXT_FLOW_SEGMENT.identity &&
+      record.stringElement === record.rootNode &&
+      record.stringElement?.getAttribute('data-editor-zero-width') === 'z' &&
+      record.stringElement.getAttribute('data-editor-length') === '0' &&
+      record.textNode.nodeValue === '\uFEFF' &&
+      paint.isClean(record)
+    );
+  }
+
+  return (
+    (paint.isClean(record) ||
+      (record.rootNode.isConnected &&
+        (!record.leaf ||
+          !record.stringElement ||
+          record.stringElement === record.leaf ||
+          record.leaf.contains(record.stringElement)) &&
+        record.decorationRecords.every(
+          ({ element }, decorationIndex) =>
+            decorationIndex === record.decorationRecords.length - 1 ||
+            (element.childNodes.length === 1 &&
+              element.firstChild ===
+                record.decorationRecords[decorationIndex + 1].element)
+        ))) &&
+    (record.leaf !== null) ===
+      requiresSegmentWrapper(segment, index, count, isLast) &&
+    record.decorationRecords.length === segment.decorations.length &&
+    record.decorationRecords.every(
+      ({ identity }, decorationIndex) =>
+        identity ===
+        getDecorationSliceIdentity(segment.decorations[decorationIndex])
+    ) &&
+    record.decorations.length === segment.decorations.length &&
+    record.decorations.every(
+      (decoration, decorationIndex) =>
+        getDecorationSliceIdentity(decoration) ===
+        getDecorationSliceIdentity(segment.decorations[decorationIndex])
+    )
   );
+};
 
 const updateSegmentRecord = (
   record: SegmentDOMRecord,
@@ -1357,6 +1416,7 @@ const reconcileTextFlow = ({
     const insertionResult =
       !reconciledDecorationAttributes &&
       record.segments.length > 0 &&
+      record.text.length > 0 &&
       record.text !== entry.node.text &&
       reconcilePureInsertion({
         isLast: entry.isLast,
@@ -1388,23 +1448,37 @@ const reconcileTextFlow = ({
         decorations.length === 0 &&
         !(entry.isLast && entry.node.text.endsWith('\n'))
       ) {
-        record.segments = [
-          createPlainSegmentRecord(root.ownerDocument, entry.node.text),
-        ];
+        record.segments =
+          entry.node.text.length === 0
+            ? [
+                createSegmentRecord(
+                  root.ownerDocument,
+                  EMPTY_TEXT_FLOW_SEGMENT,
+                  0,
+                  1,
+                  entry.isLast
+                ),
+              ]
+            : [createPlainSegmentRecord(root.ownerDocument, entry.node.text)];
         createdSegments += 1;
         requiresSelectionExport = true;
       } else {
         const segmentResult =
-          reconcilePaintChange(
-            root.ownerDocument,
-            record,
-            entry.node.text,
-            decorations,
-            entry.isLast,
-            paint
-          ) ??
+          (record.text.length > 0 && entry.node.text.length > 0
+            ? reconcilePaintChange(
+                root.ownerDocument,
+                record,
+                entry.node.text,
+                decorations,
+                entry.isLast,
+                paint
+              )
+            : null) ??
           (() => {
-            const plan = compileTextFlowSegments(entry.node.text, decorations);
+            const plan = compileImperativeTextFlowSegments(
+              entry.node.text,
+              decorations
+            );
 
             return {
               ...reconcileSegments(

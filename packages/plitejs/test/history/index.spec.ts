@@ -107,10 +107,7 @@ const withTest = (editor: any) => {
       },
     },
     redo: {
-      value: () =>
-        editor.update((tx) => {
-          tx.history.redo();
-        }),
+      value: () => editor.api.history.redo(),
     },
     select: {
       value: (...args: any[]) => {
@@ -118,10 +115,7 @@ const withTest = (editor: any) => {
       },
     },
     undo: {
-      value: () =>
-        editor.update((tx) => {
-          tx.history.undo();
-        }),
+      value: () => editor.api.history.undo(),
     },
   });
 
@@ -173,7 +167,7 @@ describe('plitejs/history', () => {
     assert.equal(batch?.selectionAfterRoot, undefined);
     assert.equal(Object.hasOwn(batch, 'selectionAfterRoot'), false);
 
-    headerEditor.update((tx) => tx.history.undo());
+    headerEditor.api.history.undo();
 
     assert.deepEqual(headerEditor.read.selection(), {
       anchor: { offset: 2, path: [0, 0], root: 'header' },
@@ -192,9 +186,7 @@ describe('plitejs/history', () => {
     };
 
     run(editor);
-    editor.update((tx) => {
-      tx.history.undo();
-    });
+    editor.api.history.undo();
 
     const snapshot = editorGetSnapshot(editor);
     const expected = hasEditorRuntime(output)

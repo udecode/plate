@@ -1,0 +1,102 @@
+{
+  "id": "2026-09-18-slash-command-composition-ownership",
+  "scope": "slash",
+  "kind": "review",
+  "date": "2026-09-18",
+  "question": "Which command discovery and insertion policy belongs to the slash menu, and which can reuse canonical commands and combobox sessions?",
+  "model": "GPT-6 (Codex)",
+  "method": "best-api-review/history-v3; redesign-from-first-principles; maximum-value hard cut; bounded package/catalog/consumer census",
+  "trigger": "The user asked whether the large copied slash.tsx boilerplate should be promoted into a package while challenging the adjacent registry insertion helper.",
+  "requirements": [
+    "Keep slash trigger recognition, transient input schema and atomic completion usable without a product command catalog.",
+    "Commit input removal and the selected edit in one synchronous transaction with rollback, one-step undo and exact-view permission checks.",
+    "Keep product labels, icons, keywords, grouping, AI membership and feature selection customizable in copied source.",
+    "Reuse typed feature operations and the canonical combobox session instead of publishing duplicate command execution or raw transaction recipes.",
+    "Keep semantic plugin identity in Plate and structural insertion in Plite; do not teach Plite heading, list or feature meaning.",
+    "Review every current slash owner, item class and materially overlapping Insert consumer before deciding package promotion."
+  ],
+  "evidenceReuse": "Initial slash review. Rechecked BaseSlashPlugin, BaseComboboxPlugin.api.commit, all 21 copied items, 17 block insertion recipes, the 15 materially overlapping Insert actions, transforms.ts and its tests. Reused the ui decision only for its still-valid copied-presentation and no-universal-catalog conclusions; the companion current ui review reopens helper and focus ownership. Historical slash regression executions remain behavior context with unknown current proof.",
+  "summary": "Pursue shrinking the 676-line copied slash component by adopting typed matching-empty insertion and deleting 17 repeated matcher/insert recipes plus redundant availability/read-only guards where the combobox session already proves eligibility. Keep the 21-item catalog, labels, icons, keywords, groups, AI membership, trigger policy and JSX in copied source. Retain BaseSlashPlugin and BaseComboboxPlugin; reject a public slash item factory, command registry or whole-component package promotion. Five bounded units reviewed, zero excluded and zero unresolved.",
+  "verdict": "pursue",
+  "previous": null,
+  "relation": "initial",
+  "reconciliation": [
+    {
+      "record": "2026-09-18-recovered-2026-08-30-fix-combobox-popup-y-position",
+      "question": "Which command discovery and insertion policy belongs to the slash menu, and which can reuse canonical commands and combobox sessions?",
+      "action": "retains",
+      "reason": "Retains the reported popup-position behavior context; its historical proof is unknown and it does not decide command ownership."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-07-full-plate-ui-extraction-audit",
+      "question": "Which command discovery and insertion policy belongs to the slash menu, and which can reuse canonical commands and combobox sessions?",
+      "action": "retains",
+      "reason": "Retains copied presentation ownership while rechecking current insertion and catalog source directly."
+    },
+    {
+      "record": "2026-09-18-recovered-2026-09-16-slash-ai-suggested-paragraph",
+      "question": "Which command discovery and insertion policy belongs to the slash menu, and which can reuse canonical commands and combobox sessions?",
+      "action": "retains",
+      "reason": "Retains the AI completion behavior requirement; the current package-boundary verdict does not inherit its historical completion proof."
+    }
+  ],
+  "alternatives": [
+    "Move slash.tsx or its whole 21-item catalog into platejs/slash-command: reject; that would make the package own product icons, copy, grouping, AI defaults and optional feature membership.",
+    "Publish a generic slash command registry or item factory: reject; there is one copied terminal owner and the plugin portal already owns typed operations and availability.",
+    "Share one presentation catalog between Slash and Insert: reject; 15 actions overlap, but labels, groups, membership, focus policy and asynchronous actions materially differ.",
+    "Keep every inline matcher and guard: reject; 17 block items repeat one semantic insertion law and obscure the product catalog.",
+    "Move matching-empty reuse into Plate typed plugin insertion, keep Plite replaceEmpty structural, and optionally use one lexical inferred factory in slash.tsx: pursue.",
+    "Merge slash and combobox package ownership: reject; combobox completion serves mentions, emoji and other transient inputs independently, while slash owns only its trigger/input capability."
+  ],
+  "proofLimits": "Read-only source review. Existing package and registry tests establish trigger defaults, transient input schema, stale/read-only rejection, atomic commit, one-step undo and current empty-block behavior. No proposed typed insertion API or lexical item factory was implemented or typechecked. No native keyboard/pointer selection, IME, focus, async AI action, generated provider installation, or complete slash catalog behavior was replayed.",
+  "references": [
+    "docs/research/decisions/slash-command-ownership.md",
+    "docs/research/decisions/registry-ui-ownership.md",
+    "apps/www/src/registry/components/editor/slash.tsx",
+    "apps/www/src/registry/components/editor/inline-combobox.tsx",
+    "apps/www/src/registry/components/editor/insert-toolbar-button.tsx",
+    "apps/www/src/registry/components/editor/transforms.ts",
+    "apps/www/src/registry/components/editor/transforms-combobox.spec.ts",
+    "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.spec.ts",
+    "packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.spec.ts"
+  ],
+  "source": {
+    "files": {
+      "apps/www/src/registry/components/editor/slash.tsx": "0cf6e8d6a1c3cbef94e41933baaf826def0eefefc89bf0067f2e3159527f9af8",
+      "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.spec.ts": "8a3868375994b84f879be04ddede4a46f44aca99eb054f2b2a9d3583d2acabbb",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "540c4ad1419f4b1d836afc3f9d9b92a9df11d8811ca2ad45c4131ab9dead461d",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
+      ".agents/skills/best-api-review/SKILL.md": "6efbd1969db986962f154708c20e4f359c11cfc914e3dcf8deaf205bed00fa65",
+      ".agents/rules/task/references/best-api-review.md": "c1647f7156572e48e349a35d4ff6dce7075e4c230854e3f7dc216644e7521c63",
+      "apps/www/src/registry/components/editor/inline-combobox.tsx": "cddc6577a968bf411fa72e78d01927c6b2ed1bbae7999f1f898c3ed4151dfd70",
+      "apps/www/src/registry/components/editor/insert-toolbar-button.tsx": "f78d263502bf52e854d218d08d17c99d1f6c4255d04183f2f036a837d1e480cb",
+      "apps/www/src/registry/components/editor/transforms.ts": "ccd96077c8666b6310568cc58673665c65f938326e1f051a375f3cd10f0388e5",
+      "apps/www/src/registry/components/editor/transforms.spec.ts": "1fd20d113a8f99d00aea2b2dbb7e8018fbab3f0ec3274c1722863ffd3c63de45",
+      "apps/www/src/registry/components/editor/transforms-combobox.spec.ts": "737684d532c11ecf24947b28cfe11b4884966a866ae868360d97f4c0faf2b8ec",
+      "packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.ts": "eb52a14c2b115f7cf6049227da6411588518add30aa1e28b7f3b490d945dcd44",
+      "packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.spec.ts": "fd59f433fae8992ee4c47054cf1c3ee7ebc1763326415e5c26363266591fc43b",
+      "packages/platejs/src/lib/editor/pluginRuntimeTypes.ts": "4f5b702a236a99ea7e2b3784789bbe3bdda4a3e582ab973acc996df890214dfb",
+      "packages/platejs/src/internal/plugin/resolvePlugins.ts": "746fc017687a8b92dc387abca0f85ae7d035ef9d86b4ad8a5ecb322d46af3dc4",
+      "packages/platejs/src/lib/plugin/block-insertion.spec.ts": "de308b809d5566c0343af06d3852040c6e074f5ded65692d9f3e7250db881207",
+      "packages/plitejs/src/interfaces/editor.ts": "efcce77427d426da2896c4b668a7129746464a069db08cbef4c61b7a76025ccd",
+      "packages/plitejs/src/core/public-state.ts": "5821353d1b963ce4a8a2bf1670536eccbefd63e4671b1d63badfd3ec4b5b33a0",
+      "docs/vision/plate.md": "592e32076331693b1a808e896fe86b2044a9287584fb0f1a677c3fee258f62d7",
+      "docs/vision/plite.md": "caac1f5c37b13aeda7a3986b4cdaac2f2cd26a476b48fde47d791232d6fa06e2"
+    },
+    "directories": {
+      "packages/platejs/src/features/slash-command": "2145f942d01ceb5503b3837eb962763f74733d33f0af2256657af25636706906"
+    },
+    "features": {
+      "capability/slashCommand": "3ae58704cb48c4c01c0b79b4ee891f8af84f700a2567cf23e28a2392d5e7e4b0",
+      "capability/slashInput": "de63e9a537bf9c6bdc53aad0a0c5e05430cc08a7cafac56fd4115ecabf4a4d35",
+      "example/value/slash-command-value": "7cc9972cb24fce8ce17f6917a1c48f9b7d6cec8683eeeddfd4ae08854d467522",
+      "export/platejs/./slash-command": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "export/platejs/./slash-command/react": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "platejs/slash-command": "2145f942d01ceb5503b3837eb962763f74733d33f0af2256657af25636706906",
+      "ui/slash": "d4d8bd70f89b058007a68c69eb9847476f5ee94ef8ab1ad4721b4927e274b9a4"
+    },
+    "upstreams": []
+  }
+}

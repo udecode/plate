@@ -111,8 +111,8 @@ export const tableMergeValue = (
   <fragment>
     <hheading level={3}>表格合并</hheading>
     <hp>
-      您可以使用 <htext code>enableMerging: true</htext>{' '}
-      选项启用合并功能。试试看：
+      您可以使用 <htext code>allowCellSpanEditing: false</htext>{' '}
+      选项禁用单元格跨行列编辑。试试看：
     </hp>
     {createTable(true)}
   </fragment>

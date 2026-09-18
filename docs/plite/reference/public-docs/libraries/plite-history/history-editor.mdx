@@ -1,34 +1,51 @@
 ---
 title: "History Editor API"
-description: "Read history state, run undo/redo transactions, and control history batches."
+description: "Read history state, replay complete batches, and control history grouping."
 ---
 
-History adds owner-local read and update groups instead of mutating the root
-editor object.
+History adds an owner-local read group, a replay service, and transaction
+controls for the update being built.
 
-## State API
+## Read API
 
-#### `state.history(): History`
+#### `editor.read.history(): History`
 
 Read the full history value.
 
-#### `state.history.undos(): readonly Batch[]`
+#### `editor.read.history.hasUndo(): boolean`
 
-Read the undo stack.
+Return whether the undo branch has a surviving mapped batch.
 
-#### `state.history.redos(): readonly Batch[]`
+#### `editor.read.history.hasRedo(): boolean`
 
-Read the redo stack.
+Return whether the redo branch has a surviving mapped batch.
+
+Use `editor.read.history().undos` and `editor.read.history().redos` when you need
+the full immutable arrays. The same group is available as `state.history` inside
+`editor.read((state) => ...)`.
+
+## Replay service
+
+#### `editor.api.history.undo(): HistoryResult`
+
+Replay the current undo batch in one complete update.
+
+#### `editor.api.history.redo(): HistoryResult`
+
+Replay the current redo batch in one complete update.
+
+```typescript
+type HistoryResult =
+  | Readonly<{ status: "applied" | "empty" }>
+  | Readonly<{ status: "blocked"; conflicts: readonly string[] }>;
+```
+
+`blocked` reports an authored dependency conflict. Invalid runtime use and
+other failures throw. Invoke replay outside an active read or update. Replay
+always applies the complete document-wide batch, including changes in other
+roots.
 
 ## Transaction API
-
-#### `tx.history.undo(): void`
-
-Undo the previous history batch.
-
-#### `tx.history.redo(): void`
-
-Redo the next history batch.
 
 #### `tx.history.skip(): void`
 
@@ -62,14 +79,6 @@ Configure a direct write by calling `editor.update(policy)` first.
 ```typescript
 editor.update({ history: "skip" }).text.insert("draft");
 ```
-
-#### `editor.update.history.undo(): void`
-
-Undo the previous history batch outside a larger transaction.
-
-#### `editor.update.history.redo(): void`
-
-Redo the next history batch outside a larger transaction.
 
 ## Types
 

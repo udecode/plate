@@ -20,7 +20,7 @@ Plate 不是普通的受控文本输入。编辑器拥有内容、选择、历�
 
 ### 延迟初始化
 
-当协作层、多步骤加载器或异步请求拥有启动时机时，使用 `skipInitialization`。数据准备好后，用一次事务替换内容并设置选择。完整文档替换会先运行应用配置的版本迁移，再运行已安装插件的 `prepareDocument`，最后进行 schema 适配。插件只用该 hook 维护当前 schema 的不变量，不负责历史版本迁移。
+当协作层、多步骤加载器或异步请求拥有启动时机时，使用 `skipInitialization`。数据准备好后，用一次事务替换内容并设置选择。完整文档替换只对当前输入执行 schema 适配。历史持久化数据必须先通过 `migrateDocument` 转换，再进入替换事务。
 
 ```tsx
 function AsyncControlledEditor() {

@@ -4,7 +4,11 @@
   "title": "Toolbar",
   "description": "A customizable toolbar component with various button styles and group",
   "dependencies": [
-    "@base-ui/react"
+    "@base-ui/react",
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react",
+    "platejs"
   ],
   "registryDependencies": [],
   "files": [

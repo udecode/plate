@@ -6,7 +6,8 @@
   "dependencies": [
     "platejs",
     "react-tweet",
-    "react-lite-youtube-embed"
+    "react-lite-youtube-embed",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/media-toolbar.json",

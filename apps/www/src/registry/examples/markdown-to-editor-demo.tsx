@@ -8,7 +8,11 @@ import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { useDebounce } from '@/registry/hooks/use-debounce';
 
@@ -148,9 +152,11 @@ export default function MarkdownDemo() {
       </EditorRoot>
 
       <EditorRoot editor={editor}>
-        <EditorContainer>
-          <Editor variant="none" className="px-4 py-2" />
-        </EditorContainer>
+        <EditorFrame>
+          <EditorContainer>
+            <Editor variant="none" className="px-4 py-2" />
+          </EditorContainer>
+        </EditorFrame>
       </EditorRoot>
     </div>
   );

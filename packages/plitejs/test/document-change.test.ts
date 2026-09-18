@@ -1605,6 +1605,77 @@ describe('JSON document change algebra', () => {
     assert.deepEqual(index.pathOf(retainedNodeKey!), [64]);
   });
 
+  it('forks path-stable provenance from a shared mapped snapshot', () => {
+    const owner = {} as Editor;
+    const before = DocumentIndex.fromValue(
+      asJsonNodes([paragraph('a'), paragraph('b')])
+    );
+    const sourceIndex = buildSnapshotIndex(
+      owner,
+      before.value as unknown as readonly Element[]
+    );
+    const removal = replaceChildrenChange(before, [], 0, 1, []);
+    const sharedDocument = removal.apply(before);
+    const sharedIndex = mapSnapshotIndexThroughChange(
+      before,
+      sharedDocument,
+      removal,
+      sourceIndex,
+      owner
+    );
+    const retainedNodeKey = sharedIndex.keyAt([0]);
+    const leftChange = insertTextChange(sharedDocument, [0, 0], 1, '!');
+    const rightChange = insertTextChange(sharedDocument, [0, 0], 1, '?');
+    const leftDocument = leftChange.apply(sharedDocument);
+    const rightDocument = rightChange.apply(sharedDocument);
+    const leftIndex = advancePathStableSnapshotIndex(
+      sharedDocument,
+      leftDocument,
+      leftChange,
+      sharedIndex,
+      owner
+    );
+    const rightIndex = advancePathStableSnapshotIndex(
+      sharedDocument,
+      rightDocument,
+      rightChange,
+      sharedIndex,
+      owner
+    );
+
+    assert.equal(leftIndex, sharedIndex);
+    assert.notEqual(rightIndex, sharedIndex);
+    assert.notEqual(leftIndex, rightIndex);
+
+    const leftInsertion = insertNodeChange(
+      leftDocument,
+      [0],
+      paragraph('left')
+    );
+    const mappedLeft = mapSnapshotIndexThroughChange(
+      leftDocument,
+      leftInsertion.apply(leftDocument),
+      leftInsertion,
+      leftIndex,
+      owner
+    );
+    const rightInsertion = insertNodeChange(
+      rightDocument,
+      [1],
+      paragraph('right')
+    );
+    const mappedRight = mapSnapshotIndexThroughChange(
+      rightDocument,
+      rightInsertion.apply(rightDocument),
+      rightInsertion,
+      rightIndex,
+      owner
+    );
+
+    assert.deepEqual(mappedLeft.pathOf(retainedNodeKey!), [1]);
+    assert.deepEqual(mappedRight.pathOf(retainedNodeKey!), [0]);
+  });
+
   it('reuses one projection index across repeated path-stable text edits', () => {
     const editor = createEditor();
     let value: JsonEditorValue = {
@@ -1771,6 +1842,28 @@ describe('JSON document change algebra', () => {
           before,
           unrelatedChange.apply(before),
           unrelatedChange,
+          mapped,
+          owner
+        ),
+      /Snapshot index mappings are not sequential/
+    );
+
+    const sibling = DocumentIndex.fromValue(
+      asJsonNodes([paragraph('x'), paragraph('y')])
+    );
+    const siblingInsertion = insertNodeChange(
+      sibling,
+      [0],
+      paragraph('sibling')
+    );
+
+    assert.equal(firstAfter.length, sibling.length);
+    assert.throws(
+      () =>
+        mapSnapshotIndexThroughChange(
+          sibling,
+          siblingInsertion.apply(sibling),
+          siblingInsertion,
           mapped,
           owner
         ),

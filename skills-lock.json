@@ -29,7 +29,7 @@
     "best-api-review": {
       "source": "/Users/zbeyens/git/dotai",
       "sourceType": "local",
-      "computedHash": "9646238aa9b45eb0d4b8185517b265b0d54b9f1f3b6fb59331b97df4de09a4a7"
+      "computedHash": "1a805ec7fb226b5a702de57589933f8959c816533d28e5bcdaeddc0cb7cb0d46"
     },
     "blast-radius": {
       "source": "../dotai",
@@ -68,9 +68,9 @@
       "computedHash": "c07d5fef9ed3ccb77ae938853bf9714144a5bb53b76d694a71bab23903a861d4"
     },
     "maintain-verification-skill": {
-      "source": "../dotai",
+      "source": "/Users/zbeyens/git/dotai",
       "sourceType": "local",
-      "computedHash": "a491f1a3e056531cf3ad02e3f3d86ff77c0828c1f496d162a36c65a7762ee20d"
+      "computedHash": "6ef435f5fd5906e814a90b330b6fe9416bb318c9c5d1e2f20c8c95471a9c5f9c"
     },
     "maintain-workflow": {
       "source": "../dotai",
@@ -243,9 +243,9 @@
       "computedHash": "987d0fcffeac700cea1303a13a9cecd8a4583985dd675f97ebbca27bfa592b47"
     },
     "tdd": {
-      "source": "../dotai",
+      "source": "/Users/zbeyens/git/dotai",
       "sourceType": "local",
-      "computedHash": "ce845e91ba284bbbc90384c3fbe75c54e44c2af9474bd2e08b8bb241c51b2181"
+      "computedHash": "3d66192ae65b77e8d7f9e3437ad2afc6024ec5fd3d666e586758b1e188814c90"
     },
     "teach": {
       "source": "../dotai",

@@ -1,7 +1,9 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "exit-break",
-  "dependencies": [],
+  "dependencies": [
+    "platejs"
+  ],
   "files": [
     {
       "path": "src/registry/components/editor/exit-break.tsx",

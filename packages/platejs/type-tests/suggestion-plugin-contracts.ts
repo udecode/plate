@@ -47,8 +47,9 @@ const root: EditorRootProps<typeof react> = {
   authored: { intent: 'propose', projection: 'markup' },
 };
 root.authored = { intent: 'edit', projection: 'accepted' };
-root.authored = { intent: 'propose', projection: 'proposed' };
 root.authored = { intent: 'edit', projection: 'markup' };
+root.authored = { intent: 'edit', projection: 'proposed' };
+root.authored = { intent: 'propose', projection: 'proposed' };
 // @ts-expect-error Proposing requires a proposal projection.
 root.authored = { intent: 'propose', projection: 'accepted' };
 

@@ -31,7 +31,10 @@ import {
   shouldModelOwnPlainVerticalLargeDocumentPlugin,
 } from './dom-coverage-vertical-selection';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
-import { getDocumentBoundaryKeyboardMove } from './input-controller';
+import {
+  getDocumentBoundaryKeyboardMove,
+  isPlainVerticalDocumentBoundary,
+} from './input-controller';
 import type { EditableRepairRequest } from './mutation-controller';
 import {
   before as editorBefore,
@@ -537,6 +540,17 @@ export const applyEditableCaretMovement = ({
 
   if (!RangeApi.isRange(selection)) {
     return caretMovementUnhandled();
+  }
+
+  if (
+    isPlainVerticalDocumentBoundary({
+      editor,
+      event: nativeEvent,
+      selection,
+    })
+  ) {
+    event.preventDefault();
+    return caretMovementHandled();
   }
 
   const ownerlessViewSelectionRange = profilePliteReactDuration(

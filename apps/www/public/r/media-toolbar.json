@@ -4,7 +4,9 @@
   "title": "Media Toolbar",
   "description": "A toolbar interface for media settings.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [
     "button",

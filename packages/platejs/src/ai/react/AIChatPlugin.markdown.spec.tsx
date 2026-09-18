@@ -6,10 +6,16 @@ import { describe, expect, it } from 'bun:test';
 import { jsxt, type TestEditor } from '#platejs-test-internal';
 
 import {
+  createAuthoredReviewDocument,
+  DefaultAuthoredPlugin,
+} from '../../authored';
+import {
   BaseParagraphPlugin,
   definePlugin,
   createEditorView,
+  DocumentChange,
   schema,
+  SelectionApi,
 } from '../../core';
 import {
   BaseTableCellPlugin,
@@ -41,6 +47,214 @@ const createTestEditor = async (input: TestEditor) => {
 };
 
 describe('AIChatPlugin read.markdown', () => {
+  it('maps a comment back into the exact authored view that submitted the selected heading', async () => {
+    const { AIChatPlugin } = await import('./AIChatPlugin');
+    const document = (text: string) => ({
+      children: [
+        { type: 'paragraph', children: [{ text: 'Heading' }] },
+        { type: 'paragraph', children: [{ text }] },
+      ],
+    });
+    const accepted = document('Text');
+    const model = createEditor({
+      plugins: [DefaultAuthoredPlugin, AIChatPlugin],
+      userId: 'alice',
+      initialValue: createAuthoredReviewDocument({
+        accepted,
+        revisions: [
+          {
+            id: 'proposal',
+            authorId: 'alice',
+            createdAt: 1,
+            change: DocumentChange.between(accepted, document('Proposed text')),
+          },
+        ],
+      }),
+    });
+    const editor = createEditorView(model, {
+      authored: { intent: 'edit', projection: 'markup' },
+    });
+    const selection = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 7 },
+    };
+    editor.update.selection.set(selection);
+    const aiChat = editor.plugin(AIChatPlugin);
+    aiChat.api.submit('Review', { toolName: 'comment' });
+
+    expect(
+      aiChat.read.commentRange({
+        blockRef: 'b1',
+        comment: 'Review this heading',
+        content: 'Heading',
+      })
+    ).toEqual(selection);
+  });
+
+  it('comments on the mapped selected occurrence of repeated text', async () => {
+    const { AIChatPlugin } = await import('./AIChatPlugin');
+    const editor = createEditor({
+      plugins: [AIChatPlugin],
+      userId: 'alice',
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'one and one' }] },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 8 },
+        focus: { path: [0, 0], offset: 11 },
+      },
+    });
+    const aiChat = editor.plugin(AIChatPlugin);
+    aiChat.api.submit('Review', { toolName: 'comment' });
+    editor.update.text.insert('X ', { at: { path: [0, 0], offset: 0 } });
+    editor.update.selection.set({ path: [0, 0], offset: 0 });
+
+    expect(
+      aiChat.read.commentRange({
+        blockRef: 'b1',
+        comment: 'Review this',
+        content: 'one',
+      })
+    ).toEqual({
+      anchor: { path: [0, 0], offset: 10 },
+      focus: { path: [0, 0], offset: 13 },
+    });
+  });
+
+  it('resolves every paragraph of a comment inside a table cell', async () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <anchor />
+                Alpha
+              </hp>
+              <hp>
+                Beta
+                <focus />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+        <hp>Outside</hp>
+      </editor>
+    ) as TestEditor;
+    const aiChat = await createTestEditor(input);
+    aiChat.api.submit('Review', { toolName: 'comment' });
+
+    expect(
+      aiChat.read.commentRange({
+        blockRef: 'b1',
+        comment: 'Review both',
+        content: 'Alpha\n\nBeta',
+      })
+    ).toEqual({
+      anchor: { path: [0, 0, 0, 0, 0], offset: 0 },
+      focus: { path: [0, 0, 0, 1, 0], offset: 4 },
+    });
+    expect(
+      aiChat.read.commentRange({
+        blockRef: 'b1',
+        comment: 'Do not truncate',
+        content: 'Alpha\n\nZZZZZZ',
+      })
+    ).toBeUndefined();
+  });
+
+  it('rejects a combined comment crossing an unselected block', async () => {
+    const { AIChatPlugin } = await import('./AIChatPlugin');
+    const editor = createEditor({
+      plugins: [AIChatPlugin],
+      userId: 'alice',
+      initialValue: ['Alpha', 'Beta', 'Beta'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      })),
+      selection: SelectionApi.nodes([[0], [2]]),
+    });
+    const aiChat = editor.plugin(AIChatPlugin);
+    aiChat.api.submit('Review', { toolName: 'comment' });
+
+    expect(
+      aiChat.read.commentRange({
+        blockRef: 'b1',
+        comment: 'Do not include the gap',
+        content: 'Alpha\n\nBeta',
+      })
+    ).toBeUndefined();
+    expect(
+      aiChat.read.commentRange({
+        blockRef: 'b2',
+        comment: 'Review the selected block',
+        content: 'Beta',
+      })
+    ).toEqual({
+      anchor: { path: [2, 0], offset: 0 },
+      focus: { path: [2, 0], offset: 4 },
+    });
+  });
+
+  it('submits surrounding document blocks for comments from an empty cursor', async () => {
+    const { AIChatPlugin } = await import('./AIChatPlugin');
+    const editor = createEditor({
+      plugins: [AIChatPlugin],
+      userId: 'alice',
+      initialValue: ['Before', '', 'After'].map((text) => ({
+        type: 'paragraph',
+        children: [{ text }],
+      })),
+      selection: {
+        kind: 'text',
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
+      },
+    });
+    const sendMessage = mock(async () => {});
+    const aiChat = editor.plugin(AIChatPlugin);
+    aiChat.store.set({
+      chat: {
+        messages: [],
+        status: 'ready',
+        clear: mock(),
+        stop: mock(),
+        regenerate: mock(async () => {}),
+        sendMessage,
+      },
+    });
+    aiChat.api.submit('Review', { toolName: 'comment' });
+
+    expect(sendMessage).toHaveBeenCalledWith(
+      'Review',
+      expect.objectContaining({
+        body: {
+          ctx: expect.objectContaining({
+            refs: {
+              blocks: [
+                { path: [0], ref: 'b1' },
+                { path: [1], ref: 'b2' },
+                { path: [2], ref: 'b3' },
+              ],
+              tableCells: [],
+            },
+          }),
+        },
+      })
+    );
+    expect(
+      aiChat.read.commentRange({
+        blockRef: 'b3',
+        comment: 'Review outside the cursor',
+        content: 'After',
+      })
+    ).toEqual({
+      anchor: { path: [2, 0], offset: 0 },
+      focus: { path: [2, 0], offset: 5 },
+    });
+  });
+
   it('keeps request-local comment references attached through moves without ElementIdPlugin', async () => {
     const { AIChatPlugin } = await import('./AIChatPlugin');
     const editor = createEditor({
@@ -152,7 +366,7 @@ describe('AIChatPlugin read.markdown', () => {
 
       aiChat.read.markdown({ type: 'block' });
 
-      expect(aiChat.store.get('_tableCellRefs')).toEqual({});
+      expect(aiChat.store.get('_tableCellRefs')).toEqual(refs);
     });
 
     it('handle single cell selection', async () => {
@@ -301,15 +515,24 @@ describe('AIChatPlugin read.markdown', () => {
       expect(ref?.root).toBe('header');
       expect(ref?.key).toBe(cellKey);
 
-      header.api.authored.setView({
-        intent: 'propose',
-        projection: 'markup',
+      header.plugin(AIChatPlugin).api.submit('Review', { toolName: 'comment' });
+      expect(
+        aiChat.read.commentRange({
+          blockRef: 'b1',
+          comment: 'Review this cell',
+          content: 'cell',
+        })
+      ).toEqual({
+        anchor: { path: [0, 0, 0, 0, 0], offset: 0, root: 'header' },
+        focus: { path: [0, 0, 0, 0, 0], offset: 4, root: 'header' },
       });
-      header.plugin(AIChatPlugin).update.applyTableCellSuggestion({
+
+      header.plugin(AIChatPlugin).api.setTablePreview({
         content: 'replacement',
         ref: 'c1',
       });
 
+      header.plugin(AIChatPlugin).api.accept();
       expect(header.read.text.string([])).toContain('replacement');
       expect(header.read.nodes.get([0, 0, 0, 0])?.[0]).toMatchObject({
         type: 'paragraph',

@@ -2,15 +2,16 @@
 title: Native authored-change ownership
 type: decision
 status: accepted
-updated: 2026-09-13
+updated: 2026-09-16
 review_scope: authored
-current_review: 2026-09-13-authored-direct-checkpoint-implementation
+current_review: 2026-09-16-authored-writer-identity
 review_history:
   - ../review-records/2026-09-10-authored-research.json
   - ../review-records/2026-09-10-authored-adoption-plan.json
   - ../review-records/2026-09-12-authored-scalability.json
   - ../review-records/2026-09-12-authored-loadable-state.json
   - ../review-records/2026-09-13-authored-direct-checkpoint-implementation.json
+  - ../review-records/2026-09-16-authored-writer-identity.json
 source_refs:
   - ../../plans/2026-09-12-authored-live-state-implementation.md
   - ../../plans/artifacts/authored-live-state-implementation/final-summary.json
@@ -29,6 +30,28 @@ review decisions and accepted/projected views. Plate owns review workflow and
 presentation. Applications keep the ordinary `initialValue` and
 `editor.read.value()` calls; there is no public authored loader, cache,
 trusted-input mode, worker protocol or background replay controller.
+
+## Writer identity
+
+Every non-empty document write through the authored capability requires a
+current author ID. This includes accepted edits: Plite records them as authored
+operations with `proposal: false` so they share the same causal graph,
+projection mapping, collaboration admission and retained-history machinery as
+proposals. Letting accepted edits bypass that path would create a second
+mutation authority and leave pending changes without complete causal facts.
+
+`authored({ authorId })` accepts a fixed ID or a resolver. A resolver may return
+`null` while an editor only reads or renders authored state; the first authored
+write is the validation boundary. Plite validates a non-empty identifier. It
+does not authenticate the writer, so application authentication and access
+policy remain outside the engine.
+
+Plate's default authored descriptor resolves the ID from
+`editor.runtime.userId`. An app-owned composition that installs suggestions
+therefore supplies a user ID before allowing edits. A local example may use a
+stable demo identity. Plite does not invent an anonymous or system author,
+silently discard accepted operations, or maintain an unauthored write path
+beside the authored graph.
 
 The version 4 checkpoint is the current persistence authority:
 

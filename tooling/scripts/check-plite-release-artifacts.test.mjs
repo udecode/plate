@@ -331,7 +331,7 @@ test('proves Plite and Plate cross-subpath runtime identity', () => {
   );
   assert.match(
     source,
-    /releaseLayout\.createLayout,[\s\S]*releaseLayoutReact\.createLayout/
+    /releaseLayout\.measurePages,[\s\S]*releaseLayoutReact\.measurePages/
   );
   assert.match(
     source,

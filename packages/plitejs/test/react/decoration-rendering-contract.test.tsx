@@ -689,12 +689,12 @@ test.each([true, false])(
 
     for (let cycle = 0; cycle < 10; cycle++) {
       await act(async () => {
-        editor.update((tx) => tx.history.undo());
+        editor.api.history.undo();
       });
       expectPaint('bcdeXfg', 'eXfghi', 'eXfg');
 
       await act(async () => {
-        editor.update((tx) => tx.history.redo());
+        editor.api.history.redo();
       });
       expectPaint('bcdefg', 'efghi', 'efg');
     }
@@ -719,7 +719,7 @@ test.each([true, false])(
     ).toHaveLength(0);
 
     await act(async () => {
-      editor.update((tx) => tx.history.undo());
+      editor.api.history.undo();
     });
     expectPaint('bcdefg', 'efghi', 'efg');
 

@@ -1,6 +1,6 @@
 import dedent from 'dedent';
-import { ElementApi } from 'platejs';
-import type { AIChatRequestRefs } from 'platejs/ai';
+import { ElementApi, NodeApi, RangeApi } from 'platejs';
+import type { AIChatRequestContext, AIChatRequestRefs } from 'platejs/ai';
 import type { MarkdownEditor } from 'platejs/markdown';
 
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
@@ -13,6 +13,53 @@ import {
 
 const blockRefPattern = /^b[1-9]\d*$/;
 
+export function getCommentBlocks({
+  children,
+  refs,
+  selection,
+}: Pick<AIChatRequestContext, 'children' | 'selection'> & {
+  refs: AIChatRequestRefs['blocks'];
+}) {
+  const root = { children, type: '' };
+  return refs.flatMap(({ path, ref }) => {
+    if (!blockRefPattern.test(ref)) {
+      throw new Error(`Invalid AI block reference: ${ref}`);
+    }
+    const block = NodeApi.getIf(root, path);
+    if (!ElementApi.isElement(block)) {
+      throw new Error(`AI block reference ${ref} does not resolve to a block.`);
+    }
+    if (!selection || RangeApi.isCollapsed(selection)) return [{ block, ref }];
+
+    const [, startPath] = NodeApi.first(root, path);
+    const [last, endPath] = NodeApi.last(root, path);
+    const range = RangeApi.intersection(selection, {
+      anchor: { path: startPath, offset: 0 },
+      focus: { path: endPath, offset: NodeApi.string(last).length },
+    });
+    if (!range || RangeApi.isCollapsed(range)) return [];
+
+    return [
+      {
+        block: {
+          ...block,
+          children: NodeApi.fragment(block, {
+            anchor: {
+              ...range.anchor,
+              path: range.anchor.path.slice(path.length),
+            },
+            focus: {
+              ...range.focus,
+              path: range.focus.path.slice(path.length),
+            },
+          }),
+        },
+        ref,
+      },
+    ];
+  });
+}
+
 export function getCommentPrompt(
   editor: MarkdownEditor,
   {
@@ -23,29 +70,27 @@ export function getCommentPrompt(
     refs: AIChatRequestRefs['blocks'];
   }
 ) {
-  const selectingMarkdown = refs
-    .map(({ path, ref }) => {
-      if (!blockRefPattern.test(ref)) {
-        throw new Error(`Invalid AI block reference: ${ref}`);
-      }
-
-      const entry = editor.read.nodes.get(path);
-
-      if (
-        !entry ||
-        !ElementApi.isElement(entry[0]) ||
-        !editor.read.schema.isBlock(entry[0])
-      ) {
+  const selection = editor.read.selection.nodes().length
+    ? null
+    : editor.read.selection();
+  const isSelecting = !!selection && RangeApi.isExpanded(selection);
+  const selectingMarkdown = getCommentBlocks({
+    children: editor.read.children(),
+    refs,
+    selection,
+  })
+    .map(({ block, ref }) => {
+      if (!editor.read.schema.isBlock(block)) {
         throw new Error(
           `AI block reference ${ref} does not resolve to a block.`
         );
       }
 
       const markdown = editor.api.markdown
-        .serialize({ value: { children: [entry[0]] } })
+        .serialize({ value: { children: [block] } })
         .trim();
 
-      return `<block ref="${ref}">${markdown}</block>`;
+      return `<block ref="${ref}">${isSelecting ? `<Selection>${markdown}</Selection>` : markdown}</block>`;
     })
     .join('\n');
 

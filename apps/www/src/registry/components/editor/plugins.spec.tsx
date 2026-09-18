@@ -3,6 +3,7 @@ import { describe, expect, it } from 'bun:test';
 import { MentionInputPlugin } from 'platejs/mention/react';
 import { createEditor } from 'platejs/react';
 import { SlashInputPlugin } from 'platejs/slash-command/react';
+import { TablePlugin } from 'platejs/table/react';
 
 import { EmojiKit } from './emoji';
 import { FootnoteKit } from './footnote';
@@ -83,5 +84,39 @@ describe('EditorKit combobox triggers', () => {
         expect.objectContaining({ type: 'mentionInput' }),
       ])
     );
+  });
+});
+
+describe('EditorKit table policy', () => {
+  it('supplies a usable default width for imported tables', async () => {
+    const { EditorKit } = await import('./plugins');
+    const editor = createEditor({
+      plugins: EditorKit,
+      initialValue: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [{ children: [{ text: 'A' }], type: 'paragraph' }],
+                  type: 'tableCell',
+                },
+                {
+                  children: [{ children: [{ text: 'B' }], type: 'paragraph' }],
+                  type: 'tableCell',
+                },
+              ],
+              type: 'tableRow',
+            },
+          ],
+          type: 'table',
+        },
+      ],
+    });
+    const table = editor.read.children()[0];
+
+    expect(editor.plugin(TablePlugin).api.columnWidths(table)).toEqual([
+      300, 300,
+    ]);
   });
 });

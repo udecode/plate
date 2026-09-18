@@ -5,7 +5,8 @@
   "description": "A drawing component powered by Excalidraw.",
   "dependencies": [
     "platejs",
-    "@excalidraw/excalidraw"
+    "@excalidraw/excalidraw",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [],
   "files": [

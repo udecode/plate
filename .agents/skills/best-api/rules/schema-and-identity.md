@@ -107,25 +107,27 @@ standard:
 Versioned persisted documents use one app-owned envelope and one ascending
 target-version chain:
 
-- Persist `{ document, schema }`; source lineage is data, never inferred from
+- Persist exactly `{ document, schema, selection? }`; source lineage is data, never inferred from
   node strings or an npm package version. Bind every supported historical
-  envelope version to its exact generated fingerprint. An explicit
-  `unversioned` floor is the only path without historical fingerprint proof.
-- Configure `migrations` beside the named app `schema`. Define exact target
-  steps with `defineDocumentMigrations`; a source at version 1 and target at
-  version 3 runs steps 2 then 3. Missing steps, another lineage, future input,
-  downgrade, and same-version fingerprint drift fail closed.
+  envelope version to its exact generated fingerprint. Raw input has no
+  lineage proof and requires `source: number | 'current'` at that conversion.
+- Bind immutable target facts once with
+  `defineDocumentMigrations({ plugins, schema, sourceFingerprints, steps })`.
+  A source at version 1 and target at version 3 runs steps 2 then 3. Missing
+  steps, another lineage, future input, downgrade, and same-version fingerprint
+  drift fail closed before any step runs.
 - Only the persistence or release owner allocates a target version. Fold every
   change into the current target until that boundary ships; implementation
   order never earns another schema version. Plate's approved next target is
   v54. Do not create v55 or later without explicit release-owner approval and
   a persisted v54 source fingerprint.
-- `migrateDocument` is the shared document runner for runtime loads, app
-  storage jobs, and CLI dry-run/check/write. It is not an editor option or a
-  second migration declaration grammar.
-- Installed plugins may use `prepareDocument` after host migration and before
-  schema fitting to establish permanent current-schema invariants. They never
-  own release migrations, source-version selection, or a compatibility kit.
+- `migrateDocument` is the complete detached converter for app storage jobs and
+  CLI dry-run/check/write. It returns `{ output, applied, source }`; `output` is
+  the exact current persisted envelope. Ordinary editor creation and complete
+  replacement accept current input only and expose no migration option.
+- Plugin schema, property, state-field, and feature validators own permanent
+  current-document invariants. Do not add a generic plugin document-preparation
+  hook or hide migration selection/mapping behind object identity.
 - Normalizers and corrections accept only current-schema shapes. They never
   recognize historical ASTs. Offline history and Yjs room cutovers remain
   app-owned persistence work.
@@ -234,16 +236,20 @@ Choose the capability by semantics, not by which callback is easiest to type:
 | `initialState`      | defaults for mutable editor-local plugin state                                                                             | the value is not state or needs a second configuration channel                  |
 | `store`             | live state reads, writes, subscriptions, and selector evaluation                                                           | the value is document state or a schema rebuild is expected                     |
 | `selectors`         | pure projections of readonly store state plus domain arguments                                                             | it reads the editor/document, mutates, performs I/O, or writes the store        |
-| `api`               | stable plugin services not bound to a supplied document snapshot or active tx                                              | it mutates the document or is really a snapshot query                           |
+| `api`               | stable plugin services, including a complete action that owns exactly one update and cannot compose against a supplied tx | it is really a snapshot query or a mutation that must compose in an active tx   |
 | `read`              | pure, replayable queries over supplied document state                                                                      | it mutates, performs I/O, writes plugin state, or depends on ambient live state |
 | `update`            | document reads and mutations through the active transaction                                                                | it opens a nested one-shot update or owns unrelated I/O                         |
 | native Plite fields | genuine editor-wide substrate through flat fields such as `commands`, `corrections`, `contributions`, `on`, and `activate` | it merely republishes plugin-scoped state, API, reads, or updates               |
 | `codecs`            | format encode/decode declarations                                                                                          | it owns runtime service or mutation behavior                                    |
 
 `api` being immutable describes publication of the method object, not method
-purity. A non-document service may have external or store effects; document
-reads belong in `read`, pure store projections belong in `selectors`, and
-document writes belong in `update`.
+purity. A service may have external or store effects. It may also own a complete
+document action when the job must select published state, open exactly one
+update, and return the outcome of that update; history replay is the canonical
+case. Mutations that need to compose with other draft work belong in `update`.
+Document reads belong in `read`, and pure store projections belong in
+`selectors`. Do not expose the same complete action again through `update` as a
+public forwarding path.
 
 The `api` field is factory-only at Plite, Base, and Plate layers, even when the
 returned object needs no context: write `api: () => ({ ... })`, never

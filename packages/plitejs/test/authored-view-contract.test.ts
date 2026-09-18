@@ -27,6 +27,7 @@ const paragraph = (text: string) => ({
 });
 const point = (offset: number) => ({ path: [0, 0], offset });
 const proposal = { intent: 'propose', projection: 'proposed' } as const;
+const editingMarkup = { intent: 'edit', projection: 'markup' } as const;
 
 const setup = () => {
   const source = createEditor({
@@ -41,6 +42,302 @@ const setup = () => {
 };
 
 describe('native authored views', () => {
+  it('edits accepted content directly while pending content stays visible', () => {
+    const { source, proposed } = setup();
+    proposed.update.text.insert(' draft', { at: point(4) });
+    const pending = proposed.read.authored.changes().items[0];
+
+    proposed.api.authored.setView(editingMarkup);
+    proposed.update.text.insert('!', { at: point(0) });
+
+    assert.equal(source.read.text.string([]), '!Base');
+    assert.equal(proposed.read.text.string([]), '!Base draft');
+    assert.deepEqual(proposed.read.authored.change(pending.id), {
+      ...pending,
+      ranges: [{ anchor: point(5), focus: point(11) }],
+    });
+    assert.equal(
+      proposed.read.authored
+        .changes()
+        .items.filter((change) => change.status === 'pending').length,
+      1
+    );
+  });
+
+  it('deletes accepted content directly in projected coordinates', () => {
+    const { source, proposed } = setup();
+    proposed.update.text.insert(' draft', { at: point(4) });
+    const pending = proposed.read.authored.changes().items[0];
+
+    proposed.api.authored.setView(editingMarkup);
+    proposed.update.text.delete({
+      at: { anchor: point(1), focus: point(2) },
+    });
+
+    assert.equal(source.read.text.string([]), 'Bse');
+    assert.equal(proposed.read.text.string([]), 'Bse draft');
+    assert.equal(proposed.read.authored.change(pending.id)?.status, 'pending');
+  });
+
+  it('deletes accepted content directly beside a pending deletion', () => {
+    const { source, proposed } = setup();
+    proposed.update.text.delete({
+      at: { anchor: point(3), focus: point(4) },
+    });
+    const pending = proposed.read.authored.changes().items[0];
+    proposed.api.authored.setView(editingMarkup);
+    proposed.update.selection.set(point(3));
+
+    proposed.update.text.deleteBackward();
+
+    assert.equal(source.read.text.string([]), 'Bae');
+    assert.equal(proposed.read.text.string([]), 'Ba');
+    assert.deepEqual(
+      proposed.read.authored
+        .changes({ status: 'pending' })
+        .items.map(({ id, revision }) => ({ id, revision })),
+      [{ id: pending.id, revision: pending.revision }]
+    );
+  });
+
+  it('deletes accepted inline content directly when a later proposal shares its text node', () => {
+    const inline = defineEditorSchema('authored-edit-markup-inline-delete', {
+      elements: {
+        link: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+        },
+      },
+      id: 'authored-edit-markup-inline-delete',
+      root: schema.content.not(schema.content.text()),
+      unknown: 'preserve',
+      version: 1,
+    });
+    let authorId = 'alice';
+    const leading =
+      'Review and refine content seamlessly. Use  or to mark text for removal. Discuss changes using ';
+    const trailing = ' on many text segments. You can even have annotations!';
+    const added = ' like this added text';
+    const deleted = 'mark text for removal';
+    const suggestionOffset = leading.indexOf(' or to');
+    const source = createEditor({
+      plugins: [inline, authored({ authorId: () => authorId })],
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: leading },
+            { type: 'link', children: [{ text: 'comments' }] },
+            { text: trailing },
+          ],
+        },
+      ],
+    });
+    const view = createEditorView(source, { authored: proposal });
+    view.update.nodes.insert(
+      [{ type: 'link', children: [{ text: 'suggestions' }] }, { text: added }],
+      { at: { path: [0, 0], offset: suggestionOffset } }
+    );
+    authorId = 'bob';
+    const deletionOffset =
+      added.length + leading.slice(suggestionOffset).indexOf(deleted);
+    view.update.text.delete({
+      at: {
+        anchor: {
+          path: [0, 2],
+          offset: deletionOffset,
+        },
+        focus: {
+          path: [0, 2],
+          offset: deletionOffset + deleted.length,
+        },
+      },
+    });
+    authorId = 'charlie';
+    view.update.text.insert('overlapping ', {
+      at: {
+        path: [0, 4],
+        offset: trailing.indexOf('annotations'),
+      },
+    });
+    const pending = view.read.authored.changes().items.map(({ id }) => id);
+
+    authorId = 'alice';
+    view.api.authored.setView(editingMarkup);
+    view.update.text.delete({
+      at: {
+        anchor: { path: [0, 3, 0], offset: 0 },
+        focus: { path: [0, 4], offset: 23 },
+      },
+    });
+
+    const withoutPendingDeletion = `${leading.slice(
+      0,
+      leading.indexOf(deleted)
+    )}${leading.slice(leading.indexOf(deleted) + deleted.length)}`;
+    assert.equal(
+      view.read.text.string([]),
+      `${withoutPendingDeletion.slice(0, suggestionOffset)}suggestions${added}${withoutPendingDeletion.slice(suggestionOffset)} You can even have overlapping annotations!`
+    );
+    assert.deepEqual(
+      view.read.authored
+        .changes({ status: 'pending' })
+        .items.map(({ id }) => id),
+      pending
+    );
+    view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+    assert.equal(
+      view.read.text.string([]),
+      `${leading} You can even have annotations!`
+    );
+  });
+
+  it('formats accepted content directly while pending content stays visible', () => {
+    const marks = defineEditorSchema('schema:authored-edit-markup-marks', {
+      elements: { paragraph: { content: schema.content.text() } },
+      id: 'authored-edit-markup-marks',
+      properties: [schema.textProperty('bold', property.boolean())],
+      root: schema.content.type('paragraph'),
+      unknown: 'reject',
+      version: 1,
+    });
+    const source = createEditor({
+      plugins: [marks, authored({ authorId: 'alice' })],
+      initialValue: [paragraph('Base')],
+    });
+    const view = createEditorView(source, { authored: proposal });
+    view.update.text.insert(' draft', { at: point(4) });
+    view.api.authored.setView(editingMarkup);
+    view.update.selection.set({ anchor: point(0), focus: point(4) });
+
+    view.update.marks.toggle('bold');
+
+    assert.deepEqual(source.read.children(), [
+      { type: 'paragraph', children: [{ text: 'Base', bold: true }] },
+    ]);
+    assert.deepEqual(view.read.children(), [
+      {
+        type: 'paragraph',
+        children: [{ text: 'Base', bold: true }, { text: ' draft' }],
+      },
+    ]);
+
+    const restored = createEditor({
+      plugins: [marks, authored({ authorId: 'alice' })],
+      initialValue: JSON.parse(JSON.stringify(source.read.value())),
+    });
+    const restoredView = createEditorView(restored, {
+      authored: editingMarkup,
+    });
+    assert.deepEqual(restored.read.children(), source.read.children());
+    assert.deepEqual(restoredView.read.children(), view.read.children());
+  });
+
+  it('splits accepted structure directly while pending content stays visible', () => {
+    const { source, proposed } = setup();
+    proposed.update.text.insert(' draft', { at: point(4) });
+    proposed.api.authored.setView(editingMarkup);
+
+    proposed.update.nodes.split({ at: point(2) });
+
+    assert.deepEqual(source.read.children(), [
+      paragraph('Ba'),
+      paragraph('se'),
+    ]);
+    assert.deepEqual(proposed.read.children(), [
+      paragraph('Ba'),
+      paragraph('se draft'),
+    ]);
+  });
+
+  it('keeps edits inside owned pending content in the pending change', () => {
+    const { source, proposed } = setup();
+    proposed.update.text.insert(' draft', { at: point(4) });
+    const pending = proposed.read.authored.changes().items[0];
+
+    proposed.api.authored.setView(editingMarkup);
+    proposed.update.text.insert('X', { at: point(7) });
+
+    assert.equal(source.read.text.string([]), 'Base');
+    assert.equal(proposed.read.text.string([]), 'Base drXaft');
+    assert.equal(proposed.read.authored.changes().items.length, 1);
+    assert.equal(proposed.read.authored.change(pending.id)?.revision, 2);
+  });
+
+  it('attributes edits inside foreign pending content to a dependent change', () => {
+    let authorId = 'alice';
+    const source = createEditor({
+      plugins: [authored({ authorId: () => authorId })],
+      initialValue: [paragraph('Base')],
+    });
+    const view = createEditorView(source, { authored: proposal });
+    view.update.text.insert(' draft', { at: point(4) });
+    const original = view.read.authored.changes().items[0];
+
+    authorId = 'bob';
+    view.api.authored.setView(editingMarkup);
+    view.update.text.insert('X', { at: point(7) });
+
+    assert.equal(source.read.text.string([]), 'Base');
+    assert.equal(view.read.text.string([]), 'Base drXaft');
+    const changes = view.read.authored.changes().items;
+    assert.equal(changes.length, 2);
+    const dependent = changes.find((change) => change.id !== original.id);
+    assert.equal(dependent?.authorId, 'bob');
+    assert.deepEqual(dependent?.dependencies, [original.id]);
+  });
+
+  it('applies a replacement spanning accepted and pending content directly', () => {
+    const { source, proposed } = setup();
+    proposed.update.text.insert(' draft', { at: point(4) });
+    const pending = proposed.read.authored.changes().items[0];
+    proposed.api.authored.setView(editingMarkup);
+
+    proposed.update.text.delete({
+      at: { anchor: point(2), focus: point(8) },
+    });
+
+    assert.equal(source.read.text.string([]), 'Ba');
+    assert.equal(proposed.read.text.string([]), 'Baft');
+    assert.deepEqual(
+      proposed.read.authored
+        .changes({ status: 'pending' })
+        .items.map(({ id }) => id),
+      [pending.id]
+    );
+  });
+
+  it('keeps a direct composition accepted while pending content stays visible', async () => {
+    const { source, proposed } = setup();
+    proposed.update.text.insert(' draft', { at: point(4) });
+    const pending = proposed.read.authored.changes().items[0];
+    proposed.api.authored.setView(editingMarkup);
+    proposed.update.selection.set(point(0));
+
+    setEditorComposing(proposed, true);
+    proposed.update(
+      { tags: ['dom-text-input', 'composition', 'history-merge'] },
+      (tx) => tx.text.insert('a')
+    );
+    proposed.update(
+      { tags: ['dom-text-input', 'composition', 'history-merge'] },
+      (tx) => {
+        tx.selection.set({ anchor: point(0), focus: point(1) });
+        tx.text.insert('あ');
+      }
+    );
+    setEditorComposing(proposed, false);
+    await Promise.resolve();
+
+    assert.equal(source.read.text.string([]), 'あBase');
+    assert.equal(proposed.read.text.string([]), 'あBase draft');
+    assert.equal(proposed.read.authored.change(pending.id)?.status, 'pending');
+    assert.equal(
+      proposed.read.authored.changes({ status: 'pending' }).items.length,
+      1
+    );
+  });
+
   it('formats text after a proposed block insertion using projected paths', () => {
     const source = createEditor({
       plugins: [
@@ -200,13 +497,13 @@ describe('native authored views', () => {
     restoredView.update.history.restore(
       History.fromJSON(restoredView, savedHistory)
     );
-    restoredView.update.history.undo();
+    restoredView.api.history.undo();
     assert.equal(restoredView.read.text.string([]), 'Base');
     assert.deepEqual(restoredView.read.selection(), {
       anchor: point(4),
       focus: point(4),
     });
-    restoredView.update.history.redo();
+    restoredView.api.history.redo();
     assert.equal(restoredView.read.text.string([]), 'Base draft');
     assert.deepEqual(restoredView.read.selection(), {
       anchor: point(10),
@@ -262,7 +559,7 @@ describe('native authored views', () => {
     proposed.update.selection.set(point(4));
     assert.throws(
       () => proposed.update.text.insert(' draft'),
-      /author|identity/i
+      /author ID is required/
     );
     assert.equal(source.read.authored.changes().items.length, 0);
     assert.equal(source.read.text.string([]), 'Base');
@@ -333,26 +630,21 @@ describe('native authored views', () => {
     const { source, proposed, accepted } = setup();
     proposed.update.selection.set(point(4));
     setEditorComposing(proposed, true);
-    proposed.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    proposed.api.authored.setView({ intent: 'edit', projection: 'accepted' });
     assert.deepEqual(proposed.read.authored.view(), proposal);
     proposed.update.text.insert(' draft');
     setEditorComposing(proposed, false);
     proposed.update.text.insert('!');
     assert.deepEqual(proposed.read.authored.view(), proposal);
     await Promise.resolve();
-    assert.deepEqual(proposed.read.authored.view(), {
-      intent: 'edit',
-      projection: 'markup',
-    });
+    assert.equal(proposed.read.authored.view().intent, 'edit');
     assert.equal(source.read.text.string([]), 'Base');
-    assert.equal(proposed.read.text.string([]), 'Base draft!');
     assert.equal(accepted.read.view.isComposing(), false);
-    proposed.update.text.insert('>', { at: point(0) });
-    assert.equal(source.read.text.string([]), '>Base');
-    assert.equal(proposed.read.text.string([]), '>Base draft!');
+    proposed.api.authored.setView(proposal);
+    assert.equal(proposed.read.text.string([]), 'Base draft!');
     assert.deepEqual(proposed.read.selection(), {
-      anchor: point(12),
-      focus: point(12),
+      anchor: point(11),
+      focus: point(11),
     });
   });
   it('amends an owned insertion through ordinary view input', () => {
@@ -374,14 +666,14 @@ describe('native authored views', () => {
     proposed.update.selection.set(point(4));
     proposed.update.text.insert(' draft');
     const { id } = proposed.read.authored.changes().items[0];
-    proposed.update.history.undo();
+    proposed.api.history.undo();
     assert.equal(proposed.read.text.string([]), 'Base');
     assert.equal(source.read.authored.change(id)?.status, 'pending');
     assert.deepEqual(proposed.read.selection(), {
       anchor: point(4),
       focus: point(4),
     });
-    proposed.update.history.redo();
+    proposed.api.history.redo();
     assert.equal(proposed.read.text.string([]), 'Base draft');
     assert.deepEqual(proposed.read.selection(), {
       anchor: point(10),
@@ -674,9 +966,8 @@ describe('native authored views', () => {
     accepted.api.authored.setView(proposal);
     assert.equal(accepted.read.authored.view().intent, 'propose');
     assert.equal(source.read.authored.view().intent, 'edit');
-    proposed.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    proposed.api.authored.setView({ intent: 'edit', projection: 'accepted' });
     assert.equal(proposed.read.authored.view().intent, 'edit');
-    assert.equal(proposed.read.authored.view().projection, 'markup');
     assert.equal(JSON.stringify(source.read.value()), before);
     assert.throws(
       () =>
@@ -687,97 +978,5 @@ describe('native authored views', () => {
       /Authored input/
     );
     assert.equal(accepted.read.authored.view().intent, 'propose');
-  });
-
-  it('edits accepted content through markup coordinates without deciding pending changes', () => {
-    const source = createEditor({
-      plugins: [
-        history(),
-        authored({ authorId: 'alice', retainHistory: true }),
-      ],
-      initialValue: [paragraph('Base')],
-    });
-    const proposed = createEditorView(source, { authored: proposal });
-    proposed.update.text.insert(' draft', { at: point(4) });
-    const before = source.read.authored.changes().items.map((change) => ({
-      authorId: change.authorId,
-      id: change.id,
-      status: change.status,
-    }));
-
-    proposed.update.selection.set(point(2));
-    proposed.api.authored.setView({ intent: 'edit', projection: 'markup' });
-    assert.deepEqual(
-      source.read.authored.changes().items.map((change) => ({
-        authorId: change.authorId,
-        id: change.id,
-        status: change.status,
-      })),
-      before
-    );
-    proposed.update.text.insert('!');
-
-    assert.equal(source.read.text.string([]), 'Ba!se');
-    assert.match(proposed.read.text.string([]), /draft/);
-    assert.match(proposed.read.text.string([]), /!/);
-    assert.deepEqual(
-      source.read.authored
-        .changes()
-        .items.filter((change) => change.status === 'pending')
-        .map((change) => ({
-          authorId: change.authorId,
-          id: change.id,
-          status: change.status,
-        })),
-      before
-    );
-    proposed.update.history.undo();
-    assert.equal(source.read.text.string([]), 'Base');
-    assert.match(proposed.read.text.string([]), /draft/);
-    proposed.update.history.redo();
-    assert.equal(source.read.text.string([]), 'Ba!se');
-  });
-
-  it('keeps pending and mixed markup selections read-only in editing mode', () => {
-    const { source, proposed } = setup();
-    proposed.update.text.insert(' draft', { at: point(4) });
-    const before = JSON.stringify(source.read.value());
-    proposed.update.selection.set(point(7));
-    proposed.api.authored.setView({ intent: 'edit', projection: 'markup' });
-    proposed.update.text.insert('!');
-    assert.equal(JSON.stringify(source.read.value()), before);
-    assert.equal(proposed.read.text.string([]), 'Base draft');
-
-    proposed.api.authored.setView(proposal);
-    proposed.update.selection.set({
-      anchor: point(2),
-      focus: point(7),
-    });
-    proposed.api.authored.setView({ intent: 'edit', projection: 'markup' });
-    proposed.update.text.insert('replace');
-    assert.equal(JSON.stringify(source.read.value()), before);
-    assert.equal(proposed.read.text.string([]), 'Base draft');
-
-    proposed.update.text.insert('!', { at: point(7) });
-    assert.equal(JSON.stringify(source.read.value()), before);
-    assert.equal(proposed.read.text.string([]), 'Base draft');
-  });
-
-  it('honors an exact accepted target while the visible caret is pending', () => {
-    const { source, proposed } = setup();
-    proposed.update.text.insert(' draft', { at: point(4) });
-    proposed.update.selection.set(point(7));
-    proposed.api.authored.setView({ intent: 'edit', projection: 'markup' });
-
-    proposed.update.text.insert('!', { at: point(0) });
-
-    assert.equal(source.read.text.string([]), '!Base');
-    assert.equal(proposed.read.text.string([]), '!Base draft');
-    assert.equal(
-      source.read.authored
-        .changes()
-        .items.filter((change) => change.status === 'pending').length,
-      1
-    );
   });
 });

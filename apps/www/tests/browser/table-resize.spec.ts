@@ -171,6 +171,7 @@ test('large tables defer column layout until pointer release', async ({
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await editor.focus();
     await editor.selectAll();
+    await editor.deleteFragment();
     const rows = Array.from(
       { length: 301 },
       (_row, row) =>

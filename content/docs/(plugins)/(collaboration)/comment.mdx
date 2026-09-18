@@ -23,7 +23,8 @@ For comments alongside proposed edits, see [Discussion](/docs/discussion).
 - Rich-text comments, replies, and resolved threads
 - Highlights that follow document edits, undo, and redo
 - Overlapping threads and comments spanning text segments
-- Serializable records for saving with your document
+- Document-level discovery for open, resolved, and unavailable conversations
+- A versioned Comments JSON envelope saved with your document revision
 - Read-only review and static highlights
 
 </PackageInfo>
@@ -38,33 +39,33 @@ For comments alongside proposed edits, see [Discussion](/docs/discussion).
 npx shadcn@latest add https://platejs.org/r/basic-blocks.json https://platejs.org/r/link.json https://platejs.org/r/discussion.json https://platejs.org/r/comment-toolbar-button.json
 ```
 
-`DiscussionKit` supplies comment styling, block buttons, and the floating thread view. Its copied UI requires `SuggestionKit`, which the registry command also installs. The example uses no suggested edits.
+`DiscussionKit` supplies comment styling, block buttons, and the floating thread view. Add `SuggestionKit` only when the editor reviews authored changes. The example uses comments without suggestions.
 
 <ComponentSource name="discussion" />
 
 ### Add Kit
 
-Load comment records with their matching document:
+Load `CommentsJSON` with its matching document revision:
 
 ```tsx title="components/editor/comments-editor.tsx" showLineNumbers
 "use client";
 
 import type { EditorValueInput, Value } from "platejs";
-import type { CommentThread, CommentUser } from "platejs/comments";
+import type { CommentsJSON, CommentUser } from "platejs/comments";
 import { CommentsPlugin } from "platejs/comments/react";
 import { EditorRoot, useCreateEditor } from "platejs/react";
 
 import { BasicBlocksKit } from "@/components/editor/basic-blocks";
-import { CommentToolbarButton } from "@/components/editor/comment-toolbar-button";
+import { AllCommentsButton, CommentToolbarButton } from "@/components/editor/comment-toolbar-button";
 import { DiscussionKit } from "@/components/editor/discussion";
 import { Editor, EditorContainer } from "@/components/editor/editor";
 import { LinkKit } from "@/components/editor/link";
 import { SuggestionKit } from "@/components/editor/suggestion";
 import { Toolbar } from "@/components/editor/toolbar";
 
-export function CommentsEditor({ value, threads, users, currentUserId }: {
+export function CommentsEditor({ value, initialComments, users, currentUserId }: {
   value: EditorValueInput<Value>;
-  threads: readonly CommentThread[];
+  initialComments: CommentsJSON;
   users: Record<string, CommentUser>;
   currentUserId: string;
 }) {
@@ -75,7 +76,7 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
       ...SuggestionKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
-        initialState: { initialThreads: threads, users, currentUserId },
+        initialState: { initialComments, users, currentUserId },
       }),
     ],
     initialValue: value,
@@ -86,6 +87,7 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
       <EditorContainer>
         <Toolbar>
           <CommentToolbarButton />
+          <AllCommentsButton />
         </Toolbar>
         <Editor />
       </EditorContainer>
@@ -94,7 +96,7 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
 }
 ```
 
-`initialThreads` seeds each editor once. Use `api.setThreads(records)` for an explicit refetch. Updating initial props does not replace the editor's current records.
+`initialComments` initializes each editor once. Verify that it belongs to `value` before mounting. To load another revision, create a fresh editor with that revision's document and Comments JSON. Updating initial props does not replace the current records.
 
 </Steps>
 
@@ -102,23 +104,25 @@ export function CommentsEditor({ value, threads, users, currentUserId }: {
 
 ### Overlaps and history
 
-Click “overlapping” to open both conversations. Edit the highlighted text, then undo and redo. Delete all text in the first paragraph and open its block button to find the threads again.
+Click “overlapping” to open both conversations. Edit the highlighted text, then undo and redo. Use **All comments** to find published conversations after their quoted text disappears.
 
 <ComponentPreview name="comment-overlap-demo" height="360px" />
 
-Inserting text inside a range expands it; deleting text contracts it. Text inserted at either boundary stays outside. If all annotated text is deleted, the range collapses at a valid position and its block button keeps the thread reachable. Undo and redo restore the mapped range, including backward direction and overlaps.
+Inserting text inside a range expands it; deleting text contracts it. Text inserted at either boundary stays outside. An intentional atomic replacement carries the target to its replacement text. Deleting the target and typing later is a separate edit, so the later text does not inherit the comment. When no range can be shown, `attachment(id)` reports `unavailable`; **All comments** keeps the thread and its original excerpt reachable without a stale block badge. Undo and redo in the live session restore mapped coverage, including backward direction and overlaps.
 
 ### Save, reload, and retry
 
-Save a snapshot, change the document or a comment, then reload to restore the saved pair. The snapshot stays in memory. The reply form below the editor simulates one failed send: the draft stays in place, and sending again adds the reply.
+Save a snapshot, change the document or a comment, then reload to restore the saved pair in a fresh editor. The snapshot stays in memory, and reload starts an empty local undo stack. Open **All comments** to review resolved or unavailable conversations. The reply form simulates one failed send: the draft stays in place, and sending again adds the reply.
+
+Choose **Preview saved version with current comments** to open the saved document with current conversations and that revision's targets. Threads created after the snapshot remain in the panel with unavailable targets.
 
 <ComponentPreview name="comment-persistence-demo" height="700px" />
 
-Use `CommentComposer`'s `onSubmit` to await your save. Return a thread ID or `true` only after success. Returning `false` or `null`, or throwing an error, keeps the rich-text draft and displays a retry message. The composer blocks duplicate submissions while waiting.
+Await the Comments mutation in `CommentComposer`'s `onSubmit` and treat only `status: 'applied'` as success. Preserve the rich-text input on rejection or an error, and block duplicate submissions while waiting. Configure persistence and authorization through `initialState.mutate`.
 
 ### Read-only and static
 
-Open comments in the read-only document to read and reply. The static snapshot paints the same initial ranges without thread controls.
+Open **All comments** in the read-only document to read, navigate, and reply. Document read-only prevents range creation and text edits; `currentUserId` and `mutate` still control conversation actions. The static snapshot paints the same initial ranges without thread controls.
 
 <ComponentPreview name="comment-review-demo" height="720px" />
 
@@ -130,57 +134,133 @@ For static rendering, configure `BaseCommentsPlugin` with `commentDecorationAttr
 npx shadcn@latest add https://platejs.org/r/comment-static.json https://platejs.org/r/editor-static.json
 ```
 
-Each view needs the records for its own document revision. Plain coordinates cannot identify edits that happened in a different document.
+Each independently loaded editor needs `CommentsJSON` for its document revision. Views of one model share that loaded data. Plain coordinates cannot identify edits that happened in a different document.
 
 ## Integration
 
 ### Application data
 
-Store complete `CommentThread` records. Message bodies use Plate `Value`; timestamps use ISO 8601 strings. Range targets contain plain document coordinates:
+`CommentThread` contains conversation data and a semantic target: `{ type: 'range' }` or `{ type: 'change', id }`. It never contains a mapped `Range`. Message bodies use Plate `Value`; timestamps use ISO 8601 strings. `resolution` is `null` for an open thread, or `{ resolvedAt: string | null, userId: string | null }` for a resolved thread.
 
-```ts
-import type { CommentThread } from "platejs/comments";
+Thread records and private anchors belong to the shared editor model. Each view reads its own placement: the same thread can have different ranges, or be unavailable, in different projections without copying its record or anchor.
 
-const threads: CommentThread[] = [{
-  id: "review-1",
-  userId: "alice",
-  createdAt: "2026-09-09T12:00:00.000Z",
-  excerpt: "Selected text",
-  resolved: false,
-  status: "published",
-  target: {
-    type: "range",
-    range: {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 13 },
-    },
-  },
-  messages: [{
-    id: "message-1",
-    userId: "alice",
-    createdAt: "2026-09-09T12:00:00.000Z",
-    body: [{ type: "paragraph", children: [{ text: "Please review this." }] }],
-  }],
-}];
-```
-
-`{ type: "change", id }` attaches a thread to a native authored change. A range target with `range: null` represents a detached thread.
-
-Read current mapped ranges when saving, together with the same document revision:
+Read placement through the exact view's plugin API. In this example, `editor` is the view that will use the returned coordinates; React UI can obtain its mounted editor with `useEditor()`:
 
 ```ts
 import { CommentsPlugin } from "platejs/comments/react";
 
-const comments = editor.plugin(CommentsPlugin);
-const snapshot = {
+const comments = editor.plugin(CommentsPlugin).api;
+const thread = comments.getThread(threadId);
+const attachment = comments.attachment(threadId);
+
+if (attachment?.type === "range" && attachment.status === "attached") {
+  editor.update.selection.set(attachment.range);
+}
+```
+
+`attachment(id)` returns one of these values:
+
+| Value | Meaning |
+| --- | --- |
+| `{ type: 'range', status: 'attached', range }` | Current mapped coverage is available |
+| `{ type: 'range', status: 'unavailable' }` | No range can be shown in this document projection |
+| `{ type: 'change', id }` | Locate the stable change ID through Authored |
+| `null` | No thread exists for that ID |
+
+An unavailable attachment does not prove deletion. It can also mean that a projection hides the target or that a historical revision has no target for the thread. Keep conversation data visible independently of inline placement.
+
+### Discover conversations
+
+Render `AllCommentsButton` inside a toolbar whenever the editor installs Comments. It opens a lazy, paginated dialog over published records and works without a document selection, in read-only views, and without Suggestions. The **All**, **Open**, and **Resolved** filters use conversation state; target availability does not remove a record from those filters.
+
+Only the mounted page resolves targets. **Show in document** reads the attachment again before selecting and scrolling the exact current-view range. Unavailable targets remain readable with the neutral label **Target unavailable in this view**. Dirty reply or edit input and pending actions keep their page mounted and block dismissal, filtering, paging, navigation, and destructive deletion until the action succeeds or the user cancels.
+
+### Save and load
+
+Call `toJSON()` during an explicit save. It synchronously returns `CommentsJSON`: `{ kind: 'plate-comments', version: 1, threads, ranges }`. `threads` contains published semantic records; each `ranges` entry contains `{ threadId, range: EditorDocumentRange | null }` for a range-targeted thread. Local drafts are excluded. Treat `EditorDocumentRange` as opaque.
+
+Store the envelope and document atomically. In this example, `repository` is your application's storage adapter; it checks the expected revision before committing:
+
+```ts
+import { CommentsPlugin } from "platejs/comments/react";
+
+const comments = editor.plugin(CommentsPlugin).api;
+const revision = {
+  comments: comments.toJSON(),
+  conversationGeneration,
   document: editor.read.value(),
-  threads: comments.api.getThreads(),
+  revisionId,
+};
+
+await repository.put(revision, { ifMatch: previousRevision });
+```
+
+Before loading, verify the document revision and conversation generation in your storage layer. Construct a fresh editor from `revision.document` and pass `revision.comments` as `initialComments`, using the same content plugins. Comments validates the envelope version, duplicate IDs, timestamps, target agreement, and range restoration before mounting. It cannot identify a foreign document with otherwise valid-looking coordinates.
+
+If saved opaque ranges contain Authored bindings, install the same Authored runtime used for the saved document when loading `initialComments`. `SuggestionKit` supplies `DefaultAuthoredPlugin`; for a headless Comments-only setup, add the matching Authored plugin from `platejs/authored`. Preserve the full saved document and required authored history. A missing runtime or missing history rejects restoration; saved bindings do not fall back to plain coordinates. Authored remains optional for ordinary range comments.
+
+Ordinary reload starts fresh local undo. `getThreads()` reads live conversation records; use `toJSON()` to persist their revision-bound attachments. Do not export the envelope on every keystroke or from attachment subscriptions.
+
+### Authorize and commit mutations
+
+Configure your application adapter through `CommentsPlugin.configure({ initialState: { mutate } })`. The callback receives a structurally valid `CommentMutationRequest` and returns a `CommentMutationDecision`, synchronously or through a promise:
+
+```ts showLineNumbers
+import type { EditorDocumentRange } from "platejs";
+import type { CommentOperation, CommentThread } from "platejs/comments";
+
+export type CommentMutationRequest = Readonly<{
+  mutationId: string;
+  operation: CommentOperation;
+  previous: CommentThread | null;
+  proposed: CommentThread | null;
+  attachment?: EditorDocumentRange;
+}>;
+
+export type CommentMutationDecision =
+  | Readonly<{ status: 'commit'; thread: CommentThread | null }>
+  | Readonly<{ code?: string; status: 'reject' }>;
+```
+
+Authenticate the actor, authorize the operation, and persist it in your service before returning `{ status: 'commit', thread }`. Return the canonical approved record, or `thread: null` for deletion. The committed record preserves the proposed thread ID and target identity. Return `{ status: 'reject' }` with an optional `code` to deny a write. Use `mutationId` for idempotency and enforce cross-client compare-and-swap in your storage layer.
+
+Comments publishes only after commit. Rejection or a thrown error preserves the previous record and composer. Actions are serialized per thread; an editor or thread retired while work is pending can return `stale`. The default adapter commits locally. Hiding controls or setting document `readOnly` does not authorize comment writes.
+
+### Document history and versions
+
+Resolve and reopen update conversation metadata outside document undo. Replies, message edits, and explicit message or thread deletion also stay outside document history. Undoing a text deletion can restore its highlight, but never recreates an explicitly deleted conversation.
+
+Accepting or rejecting a suggestion is a document action that can be undone. These decisions preserve its discussion, including messages and resolution. A change-targeted thread follows the same Authored change ID when the pending change becomes visible again.
+
+For a read-only version preview, combine current retained conversations with range targets saved for that exact document revision. Do not load old conversation records over current ones. This example assumes your storage layer has verified `revision` and `currentComments`:
+
+```ts showLineNumbers
+import type { CommentsJSON } from "platejs/comments";
+
+const savedRanges = new Map(
+  revision.comments.ranges.map(({ threadId, range }) => [threadId, range])
+);
+const initialComments: CommentsJSON = {
+  kind: "plate-comments",
+  version: 1,
+  threads: currentComments.threads,
+  ranges: currentComments.threads.flatMap((thread) =>
+    thread.target.type === "range"
+      ? [{ threadId: thread.id, range: savedRanges.get(thread.id) ?? null }]
+      : []
+  ),
 };
 ```
 
-`api.subscribeThreads(listener)` reports `{ ids, reason }`, where `reason` is `"data"` or `"document"`. Use it to observe changes for your persistence layer. Database requests, collaboration transport, and server authorization belong to the application.
+Open a fresh read-only editor with `revision.document` and this `initialComments`. Newer threads without a saved target are unavailable; currently deleted threads stay absent. Change targets can be located only when their IDs exist in that revision's Authored document.
 
-`api.setThreads(records)` replaces complete records together and preserves the current user and pending composer. It copies incoming data and rejects duplicate thread IDs, invalid timestamps, and invalid ranges before replacing existing records. Ranges address the primary document; named secondary roots are unsupported. `api.setThreads([])` clears the records. Read snapshots are immutable; use the API to change them.
+Restoring a version creates a new application revision under both document-head and conversation-generation checks. Retain current conversations, install only the selected revision's proven targets, and open a fresh editor with empty local history. See [History](/docs/history) for local undo and retained author history.
+
+### Collaboration
+
+Independent editors can load the same saved revision and bind their own attachments. Real-time remote comment synchronization is not supported by this persistence API. Mutation results provide canonical records to the initiating editor.
+
+Saved range targets cannot be restored against a changed Yjs room baseline. A state vector alone does not map missed edits, and persisted local undo is not supported on Yjs admission. Your application must establish the exact saved baseline before admitting its targets.
 
 ### Ownership
 
@@ -188,28 +268,28 @@ const snapshot = {
 | --- | --- |
 | `platejs/comments` | Own records, actions, subscriptions, and private native range handles |
 | `platejs/comments/react` | Add selection commands, shortcuts, and highlight clicks |
-| Copied `comment` and `discussion` items | Style highlights and render forms, cards, block triggers, and popovers |
-| Your application | Supply users and fetched records; persist data and authorize remote writes |
+| Copied `comment`, `comment-toolbar-button`, and `discussion` items | Style highlights; render forms, cards, live block triggers, Floating Discussion, and document-level discovery |
+| Your application | Pair documents and Comments JSON; supply users, authorize mutations, and persist canonical records |
 
 Comment messages remain separate from document nodes and marks. A message edit notifies that thread's subscribers without resolving anchors or refreshing editor decorations. `users` and `currentUserId` use the plugin store; subscribe with `usePluginStore` and update them through `store.set`.
 
 ## Manual Usage
 
-The headless plugin provides the same data and range API without React. This example loads the records above:
+The headless plugin provides the same data and attachment API without React. This example loads a verified paragraph-only revision; install the matching content plugins for richer documents:
 
 ```bash
 npm install platejs
 ```
 
 ```ts
-import { createEditor } from "platejs";
+import { BaseParagraphPlugin, createEditor } from "platejs";
 import { BaseCommentsPlugin } from "platejs/comments";
 
 const editor = createEditor({
-  plugins: [BaseCommentsPlugin.configure({
-    initialState: { initialThreads: threads, currentUserId: "alice" },
+  plugins: [BaseParagraphPlugin, BaseCommentsPlugin.configure({
+    initialState: { initialComments: revision.comments, currentUserId: "alice" },
   })],
-  initialValue: [{ type: "paragraph", children: [{ text: "Selected text" }] }],
+  initialValue: revision.document,
 });
 ```
 
@@ -226,37 +306,82 @@ For stored documents with inline comment properties, see [Import comment annotat
 
 | Method | Purpose |
 | --- | --- |
-| `api.getThreads()` | Read complete records with current mapped ranges for persistence |
+| `api.getThreads()` | Read immutable semantic thread records |
 | `api.getThread(id)` | Read one stable record, or `undefined` |
-| `api.setThreads(records)` | Replace all records from a fetch |
+| `api.toJSON()` | Synchronously export `CommentsJSON` for this document revision |
 | `api.getSnapshot()` | Read stable thread IDs, visible IDs, draft IDs, and pending input |
-| `api.range(id)` | Read a range target's current `Range`, or `null` |
-| `api.idsAt(location)` | Read overlapping unresolved IDs in record order |
+| `api.attachment(id)` | Read `CommentAttachment` in the calling view, or `null` when the thread is absent |
+| `api.idsAt(location)` | Read unresolved IDs overlapping this view's location, in record order |
 | `api.setActive(ids)` | Select an ordered group; use `[]` to clear it |
-| `api.subscribe(listener)` | Observe canonical range projection changes |
+| `api.subscribeAttachments(listener)` | Observe attachment mapping and projection changes in the calling view |
 
 ### Comment actions
 
 | Method | Purpose |
 | --- | --- |
-| `api.begin(range?)` | Start pending input; a caret expands to its text block |
-| `api.pendingRange()` | Read the pending input's mapped range |
+| `api.begin(range?)` | Capture input in the calling view; a caret expands to its text block |
+| `api.pendingRange()` | Read the pending input's mapped range in the calling view |
 | `api.cancel()` | Cancel pending input and release its range |
-| `api.create(body)` | Complete the pending thread |
-| `api.createThread({ body, target, ... })` | Create a range or authored-change thread; accepts `id`, `excerpt`, `status`, and `userId` |
+| `api.create(body)` | Publish the pending thread; await `CommentMutationResult<string>` |
+| `api.createThread(input)` | Publish a range or authored-change thread; await `CommentMutationResult<string>` |
 | `api.reply(id, body)` | Append a message to an unresolved thread |
-| `api.edit(id, messageId, body)` | Edit the current user's message |
-| `api.removeMessage(id, messageId)` | Remove the current user's message; remove its thread when no messages remain |
-| `api.removeThread(id)` | Remove a thread owned by the current user |
-| `api.resolve(id, resolved?)` | Resolve or reopen a thread owned by the current user; defaults to `true` |
-| `api.publishDraft(id)` | Publish an AI draft |
-| `api.discardDraft(id)` | Remove an AI draft |
+| `api.edit(id, messageId, body)` | Edit a message under adapter authorization |
+| `api.removeMessage(id, messageId)` | Remove a message; remove its thread when no messages remain |
+| `api.removeThread(id)` | Delete a thread under adapter authorization |
+| `api.resolve(id)` | Record canonical resolution actor and time |
+| `api.reopen(id)` | Clear resolution metadata |
+| `api.publishDraft(id)` | Commit a local draft through the mutation adapter |
+| `api.createDraft(input)` | Create a local unpublished draft; synchronously return `string` or `null` |
+| `api.discardDraft(id)` | Remove a local unpublished draft; synchronously return `boolean` |
 
-Creation requires a user ID and a nonempty body. Failed creation returns `null`; rejected boolean actions return `false`. `create`, `createThread`, `reply`, and `edit` allow asynchronous API overrides, so callers can await their results.
+`createThread` and `createDraft` accept `CreateCommentThreadInput`:
+
+```ts showLineNumbers
+import type { Range, Value } from "platejs";
+
+export type CreateCommentThreadInput = Readonly<{
+  body: Value;
+  excerpt?: string;
+  id?: string;
+  target:
+    | Readonly<{ range: Range; type: 'range' }>
+    | Readonly<{ id: string; type: 'change' }>;
+}>;
+```
+
+Creation requires a current user and a nonempty body. Range creation requires a noncollapsed range in the primary document. Comments supplies actors and timestamps, or accepts canonical values from the adapter.
+
+Pass ranges from the calling view to `begin`, `createThread`, and `createDraft`. Their anchors capture that view's coordinates. Read `pendingRange()` and `attachment(id)` through the view that will consume them rather than reusing coordinates from another projection.
+
+`create` and `createThread` return `Promise<CommentMutationResult<string>>`. All other durable methods return `Promise<CommentMutationResult<undefined>>`. `begin`, `cancel`, `createDraft`, and `discardDraft` stay local.
+
+```ts
+export type CommentMutationResult<T = undefined> =
+  | Readonly<{ status: 'applied'; value: T }>
+  | Readonly<{ status: 'invalid' }>
+  | Readonly<{ code?: string; status: 'rejected' }>
+  | Readonly<{ status: 'stale' }>;
+```
+
+Await the result before clearing input or updating selection:
+
+```ts
+const result = await comments.create(body);
+
+if (result.status === "applied") {
+  comments.setActive([result.value]);
+}
+```
+
+Handle `invalid`, `rejected`, `stale`, and thrown errors without discarding input. The AI integration publishes completed generated comments as ordinary threads without an approval prompt; local draft operations do not require a separate approval step.
 
 ### Subscriptions
 
-`subscribeThread(id, listener)` observes one record. `subscribeVisibleThreadIds`, `subscribeDraftThreadIds`, and `subscribePending` observe their respective snapshots. `subscribeThreads` observes persisted data changes, including mapped ranges. Each method returns an unsubscribe function.
+`subscribeThread(id, listener)` observes one shared semantic record. `subscribeThreads(listener)` reports `{ ids }` for semantic record changes only. Document edits that map attachments and view projection changes do not rewrite threads or wake semantic subscribers.
+
+Use `subscribeAttachments(listener)` through the exact view's API for its placement changes. Decorations read and observe that same view. Switching another view's projection does not switch this subscription's view. Unsubscribing releases the view observation without releasing shared conversation targets.
+
+`subscribeVisibleThreadIds`, `subscribeDraftThreadIds`, and `subscribePending` observe their respective snapshots. Each method returns an unsubscribe function. Keep explicit `toJSON()` export outside these listeners.
 
 ### Copied UI
 
@@ -264,4 +389,4 @@ Creation requires a user ID and a nonempty body. Failed creation returns `null`;
 
 ### `CommentComposer`
 
-`onSubmit(body)` returns a thread ID or `true` after success, or `null` or `false` after rejection. It can return a promise. The composer preserves rich input while saving, blocks duplicate submissions, and clears only on success. Rejection or a thrown error retains the draft and displays a retry message.
+`onSubmit(body)` returns `Promise<CommentMutationResult<string | undefined>>`. Return the awaited durable action's result; the composer clears input only for `status: 'applied'`. It preserves rich input while saving and blocks duplicate submissions. Failed actions retain the draft and display a retry message.

@@ -268,49 +268,6 @@ const snapshotHugeDocumentKeyboardProfiler = async (
     return target?.__HUGE_DOCUMENT_KEYDOWN_PROFILER__?.snapshot() ?? [];
   });
 
-const selectTextBlockEndDOM = async (
-  editor: BrowserEditorHarness,
-  blockIndex: number
-) =>
-  editor.root.evaluate((element: HTMLElement, index) => {
-    const textElement = element.querySelector<HTMLElement>(
-      `[data-editor-node="text"][data-editor-path="${index},0"]`
-    );
-
-    if (!textElement) {
-      throw new Error(`Missing text element for block ${index}`);
-    }
-
-    const walker = element.ownerDocument.createTreeWalker(
-      textElement,
-      NodeFilter.SHOW_TEXT
-    );
-    let textNode: Text | null = null;
-    let currentNode: Node | null = null;
-
-    currentNode = walker.nextNode();
-    while (currentNode) {
-      textNode = currentNode as Text;
-      currentNode = walker.nextNode();
-    }
-
-    if (!textNode) {
-      throw new Error(`Missing text node for block ${index}`);
-    }
-
-    const range = element.ownerDocument.createRange();
-    const selection = element.ownerDocument.getSelection();
-
-    element.focus();
-    range.setStart(textNode, textNode.textContent?.length ?? 0);
-    range.collapse(true);
-    selection?.removeAllRanges();
-    selection?.addRange(range);
-    element.ownerDocument.dispatchEvent(
-      new Event('selectionchange', { bubbles: true })
-    );
-  }, blockIndex);
-
 const waitForTextBlockMaterialized = async (
   editor: BrowserEditorHarness,
   blockIndex: number
@@ -2263,7 +2220,7 @@ test.describe('huge document example', {
     let expectedOffset = blockTexts[lastBlockIndex]!.length;
 
     await scrollBlockIntoView(editor, lastBlockIndex);
-    await selectTextBlockEndDOM(editor, lastBlockIndex);
+    await selectTextBlockOffsetDOM(editor, lastBlockIndex, expectedOffset);
     await expect
       .poll(() => editor.selection.get())
       .toEqual({

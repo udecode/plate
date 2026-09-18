@@ -3,7 +3,10 @@ import { UI_MESSAGE_STREAM_HEADERS } from 'ai';
 import { NodeApi, nanoid } from 'platejs';
 import type { AIChatRequestContext } from 'platejs/ai';
 
+import { getCommentBlocks } from '@/registry/app/api/ai/command/prompt/getCommentPrompt';
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
+
+type DemoSample = 'comment' | 'continue-writing' | 'markdown' | 'mdx' | 'table';
 
 export async function createAIChatDemoResponse({
   messages,
@@ -14,22 +17,33 @@ export async function createAIChatDemoResponse({
   ctx?: AIChatRequestContext;
   signal: AbortSignal;
 }) {
-  let sample: 'comment' | 'markdown' | 'mdx' | 'table' | null = null;
+  let sample: DemoSample | null = null;
 
   try {
     const content = messages
       .at(-1)
       ?.parts.find((part) => part.type === 'text')?.text;
 
-    if (content?.includes('Generate a markdown sample')) {
+    const toolName = ctx?.toolName;
+
+    if (toolName === 'comment') {
+      sample = 'comment';
+    } else if (toolName === 'edit') {
+      if ((ctx?.refs.tableCells.length ?? 0) > 1) sample = 'table';
+    } else if (content === 'Generate a markdown sample') {
       sample = 'markdown';
-    } else if (content?.includes('Generate a mdx sample')) {
+    } else if (content === 'Generate a mdx sample') {
       sample = 'mdx';
-    } else if (content?.includes('comment')) {
+    } else if (
+      content?.includes('Continue writing AFTER <Block>') ||
+      content?.includes('Start writing a new paragraph AFTER <Document>')
+    ) {
+      sample = 'continue-writing';
+    } else if (!toolName && content?.includes('comment')) {
       sample = 'comment';
     }
 
-    if (!sample && (ctx?.refs.tableCells.length ?? 0) > 1) {
+    if (!sample && !toolName && (ctx?.refs.tableCells.length ?? 0) > 1) {
       sample = 'table';
     }
   } catch {
@@ -76,7 +90,7 @@ const fakeStreamText = ({
 }: {
   context?: AIChatRequestContext;
   chunkCount?: number;
-  sample?: 'comment' | 'markdown' | 'mdx' | 'table' | null;
+  sample?: DemoSample | null;
   signal?: AbortSignal;
 }) => {
   const encoder = new TextEncoder();
@@ -90,6 +104,10 @@ const fakeStreamText = ({
 
         if (sample === 'mdx') {
           return mdxChunks;
+        }
+
+        if (sample === 'continue-writing') {
+          return continueWritingChunks;
         }
 
         if (sample === 'comment') {
@@ -259,6 +277,15 @@ const fakeStreamText = ({
 };
 
 const delay = faker.number.int({ max: 20, min: 5 });
+
+const continueWritingChunks = [
+  [
+    { delay, texts: 'AI can help ' },
+    { delay, texts: 'turn an initial idea ' },
+    { delay, texts: 'into a clear and useful ' },
+    { delay, texts: 'first draft.' },
+  ],
+];
 
 const markdownChunks = [
   [
@@ -1356,15 +1383,13 @@ const mdxChunks = [
 ];
 
 const createCommentChunks = (context?: AIChatRequestContext) => {
-  const root = context ? { children: context.children, type: '' } : null;
-  const blocks =
-    root && context
-      ? context.refs.blocks.flatMap(({ path, ref }) => {
-          const block = NodeApi.getIf(root, path);
-
-          return block ? [{ block, ref }] : [];
-        })
-      : [];
+  const blocks = context
+    ? getCommentBlocks({
+        children: context.children,
+        refs: context.refs.blocks,
+        selection: context.nodeSelection ? null : context.selection,
+      }).filter(({ block }) => NodeApi.string(block).trim())
+    : [];
   const max = blocks.length;
 
   if (max === 0) {
@@ -1404,9 +1429,18 @@ const createCommentChunks = (context?: AIChatRequestContext) => {
       return [
         {
           delay: faker.number.int({ max: 500, min: 200 }),
-          texts: `{"id":"${nanoid()}","data":{"comment":{"blockRef":"${
-            entry.ref
-          }","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"streaming"},"type":"data-comment"}`,
+          texts: JSON.stringify({
+            id: nanoid(),
+            data: {
+              comment: {
+                blockRef: entry.ref,
+                comment: faker.lorem.sentence(),
+                content,
+              },
+              status: 'streaming',
+            },
+            type: 'data-comment',
+          }),
         },
       ];
     })

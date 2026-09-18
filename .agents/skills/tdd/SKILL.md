@@ -191,10 +191,14 @@ RED:   Write test → run test → confirm it FAILS correctly
 GREEN: Write minimal code → run test → confirm it PASSES
 ```
 
-- Test passes immediately? You're testing existing behavior. Fix the test.
-- Test errors (not assertion failure)? Fix the error first — erroring is not the same as failing.
+- Test passes immediately? Confirm the case and boundary before changing it;
+  existing regression coverage may already prove that behavior.
+- Confirm the failure is the reported behavior. A product exception can be valid
+  RED; a syntax, setup or runner error is not reproduction.
 
-This is your tracer bullet - proves the path works end-to-end.
+This proves the boundary actually exercised. It does not certify a browser,
+consumer or external service omitted from the test. Add a distinct integration
+case when that boundary can still fail; do not duplicate a proven assertion.
 
 ### 3. Incremental Loop
 
@@ -224,7 +228,9 @@ After all tests pass, look for refactor candidates:
 
 Refactor candidates: duplication → extract function/class, long methods → break into private helpers, shallow modules → combine or deepen, feature envy → move logic to where data lives, primitive obsession → introduce value objects.
 
-**Never refactor while RED.** Get to GREEN first.
+Keep unrelated refactoring out of RED. When ownership or representation causes
+the defect, repair that design under the same failing behavior test instead of
+adding a temporary workaround solely to reach GREEN.
 
 ## Checklist Per Cycle
 

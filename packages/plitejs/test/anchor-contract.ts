@@ -19,6 +19,38 @@ const paragraph = (text: string): Element => ({
 });
 
 describe('canonical anchor contract', () => {
+  it('resolves ordinary handles across same-root views and rejects another model or root', () => {
+    const source = createEditor({
+      initialValue: {
+        children: [paragraph('text')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const view = createEditorView(source);
+    const header = createEditorView(source, { root: 'header' });
+    const other = createEditor({ initialValue: source.read.value() });
+    const path = source.anchor([0], { deletion: 'drop' });
+    const point = source.anchor(
+      { path: [0, 0], offset: 1 },
+      { deletion: 'drop' }
+    );
+    const range = source.anchor(
+      {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+      { deletion: 'drop' }
+    );
+    view.update.text.insert('X', { at: { path: [0, 0], offset: 0 } });
+    for (const handle of [path, point, range]) {
+      assert.deepEqual(handle.resolve(view), handle.resolve());
+      assert.throws(() => handle.resolve(header), /same editor and root/);
+      assert.throws(() => handle.resolve(other), /same editor and root/);
+      handle.release();
+      assert.equal(handle.resolve(view), null);
+    }
+  });
+
   it('maps distinct endpoints without rebuilding the same text change', () => {
     const editor = createEditor({
       initialValue: [paragraph('x'.repeat(256))],

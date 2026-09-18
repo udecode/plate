@@ -1764,7 +1764,7 @@ export type EditorViewOptions<TRoot extends RootKey = RootKey> = {
    * direct edits; pending-only and mixed targets remain read-only.
    */
   authored?: Readonly<
-    | { intent: 'edit'; projection: 'accepted' | 'markup' }
+    | { intent: 'edit'; projection: 'accepted' | 'markup' | 'proposed' }
     | { intent: 'propose'; projection: 'markup' | 'proposed' }
   >;
   readOnly?: boolean;
@@ -2077,7 +2077,10 @@ export type PluginCommandContext<
     command: CompatibleEditorCommand<TEditor, TCommand>,
     handler: EditorCommandHandler<EditorCommandInput<TCommand>, TEditor>
   ) => EditorCommandRegistration<TEditor>;
-  /** Register input rewriting or downstream spec composition. */
+  /**
+   * Register input rewriting or downstream spec composition. Delegate with
+   * `next()` or `next.after()`; returning `false` rejects the command.
+   */
   around: <TCommand extends EditorCommandDescriptor>(
     command: CompatibleEditorCommand<TEditor, TCommand>,
     handler: EditorCommandAroundHandler<EditorCommandInput<TCommand>, TEditor>
@@ -2450,6 +2453,12 @@ export type PluginCleanupContext = Readonly<{
 
 export type PluginActivationContext = Readonly<{
   afterPublish: (callback: () => void) => void;
+  /**
+   * Initialize against the final document before publication becomes permanent.
+   * Must be synchronous. Throwing aborts publication and runs activation cleanup.
+   * Document writes are forbidden; register acquired resources with onCleanup.
+   */
+  beforePublish: (callback: () => void) => void;
   pluginName: string;
   onCleanup: (cleanup: (context: PluginCleanupContext) => void) => void;
   /** Named view root, or `undefined` for the primary document. */
@@ -2459,6 +2468,12 @@ export type PluginActivationContext = Readonly<{
 }>;
 
 export type EditorLifecycleError<TEditor = Editor> =
+  | Readonly<{
+      cause: unknown;
+      editor: TEditor;
+      phase: 'cleanup' | 'measure' | 'publish';
+      source: 'pagination';
+    }>
   | Readonly<{
       cause: unknown;
       editor: TEditor;

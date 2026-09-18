@@ -1,5 +1,6 @@
 import { property } from '../../core';
 import { defineRuntimePlugin } from '../../facade';
+import { mergePlugins } from '../../internal/utils/mergePlugins';
 import { createEditor } from '../editor';
 import { definePlugin } from './definePlugin';
 
@@ -220,6 +221,38 @@ describe('definePlugin', () => {
         },
       ])
     ).toThrow('api` must be a context factory');
+  });
+
+  it('rejects stale prepareDocument fields at authoring and compilation boundaries', () => {
+    const prepareDocument = () => ({ children: [] });
+    const error =
+      'Plate plugin `prepareDocument` is unsupported. Convert persisted documents before creating or replacing an editor value.';
+
+    expect(() =>
+      Reflect.apply(definePlugin, undefined, [
+        'stalePrepareConstructor',
+        { prepareDocument },
+      ])
+    ).toThrow(error);
+
+    const Plugin = definePlugin('stalePrepare', {});
+
+    expect(() =>
+      Reflect.apply(Plugin.extend, undefined, [{ prepareDocument }])
+    ).toThrow(error);
+    expect(() =>
+      Reflect.apply(Plugin.configure, undefined, [{ prepareDocument }])
+    ).toThrow(error);
+
+    const ContextualPlugin = Reflect.apply(Plugin.extend, undefined, [
+      () => ({ prepareDocument }),
+    ]) as typeof Plugin;
+
+    expect(() => createEditor({ plugins: [ContextualPlugin] })).toThrow(error);
+
+    const staleDescriptor = mergePlugins(Plugin, { prepareDocument });
+
+    expect(() => createEditor({ plugins: [staleDescriptor] })).toThrow(error);
   });
 
   it('accepts Base constructor components and rejects author-stage replacement', () => {

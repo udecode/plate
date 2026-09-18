@@ -4,7 +4,9 @@
   "title": "Heading",
   "description": "A heading with multiple level support.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [],
   "files": [

@@ -1,3 +1,28 @@
+## Choose the interaction contract
+
+Preserve the reporter's entry, active modes, action and follow-up. A slash menu
+case includes the real menu/focus consumer, Enter, the resulting caret, and the
+next typed key; a store's `open` flag alone cannot prove that journey. A click,
+synthetic event, transform call and keyboard gesture are different proof paths.
+Use model setters for setup only when setup is not the behavior under test.
+
+Reuse `@platejs/test/playwright` before adding utilities:
+
+- `selection-snapshots.ts`'s `collapsedModelDOMSelection` checks collapsed
+  model/native agreement. `selectionContract` checks only the assertions supplied
+  to it; a model-only invocation does not establish native agreement.
+- `harness-assertions.ts`, `native-event-trace.ts`, `caret-visibility.ts` and
+  `runtime-errors.ts` own focus, event delivery, caret evidence and errors.
+- Wait for the actual consumer's expected ready state. The scenario runner's
+  generic settle delay cannot establish popup readiness or correct next-key routing.
+
+For suggestion regressions, derive a small set of neighbors from the violated
+invariant: own/foreign author, contiguous/gapped edits, forward/backward/range
+deletion, text/block boundary, accept/reject then undo/redo. Preserve foreign
+contribution identity as well as visible text. Extend the existing authored
+contract suites and `apps/www/tests/browser/suggestion.spec.ts`; do not enumerate
+every combination or maintain another coverage database.
+
 ## Vision Proof
 
 Metrics are not enough. Browser-visible editor work needs a human-like proof.
@@ -111,8 +136,9 @@ parity when only one route and one gesture were checked.
 
 ## Scenario Generator
 
-Before route-level proof, synthesize a scenario matrix from the named surface
-instead of checking random gestures.
+For a broad sweep or a defect that crosses several states, derive a small
+scenario matrix from the violated invariant. One exact local bug does not
+require the full editor matrix.
 
 Build rows from these axes:
 

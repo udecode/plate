@@ -79,7 +79,7 @@ export function FloatingPopoverContent({
   sideOffset = 4,
   style,
   ...props
-}: Omit<React.ComponentPropsWithoutRef<'div'>, 'onAbort'> & {
+}: Omit<React.ComponentProps<'div'>, 'onAbort'> & {
   align?: 'center' | 'end' | 'start';
   alignOffset?: number;
   onFinalFocus?: (event: Event) => void;

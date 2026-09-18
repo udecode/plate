@@ -137,7 +137,7 @@ map. Recheck changed rule inputs on a later invocation.
 | Lane | Inspect and route through |
 | --- | --- |
 | Architecture and API | Plate Review, Architecture Cleanup, Best API, and Task's architecture method: ownership, lifetime, data flow, packages, public calls, redundant state, wrappers, and compatibility paths. |
-| Correctness and behavior | Patch, Regression when its triggers apply, and Verify Plate: existing editor and app behavior, failure recovery, resource cleanup, data integrity, and native interaction contracts. |
+| Correctness and behavior | Patch (including its corpus method) and Verify Plate: existing editor and app behavior, failure recovery, resource cleanup, data integrity, and native interaction contracts. |
 | Runtime and scale | Benchmark: editor, rendering, input, selection, history, serialization, collaboration, allocations, and fan-out where implemented. Include existing specialized lanes such as pagination when auditing the whole project; do not infer new features. |
 | DX and CI | Benchmark and owning tooling: startup, incremental checks, builds, lint, typechecks, test discovery, caching, generators, and duplicated proof work. |
 | Tests and proof | Testing and Verify Plate: real regression value, duplicate fixtures, useless wrappers' tests, private spelling locks, fake smoke tests, missing hard-law proof, runner cost, browser/native capability gaps. |

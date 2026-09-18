@@ -1,28 +1,28 @@
 # External text: ordered canonical feedback
 
-Status: Design complete — ready for Task implementation. Product repair is unadopted.
+Status: Implemented. Scope-owned package, browser-matrix and scale proof passes;
+repository-wide browser closure remains partial because unrelated committed
+selection tests fail before the matrix can complete.
 
 Objective:
 
-Complete the design/adoption plan requested after the
+Implement the design/adoption plan requested after the
 [external-text audit](../research/decisions/external-text-ownership.md): delete
 deferred canonical feedback, choose its correct publication boundary, and
-specify implementation and proof. The audit's 11-unit inventory remains the
+complete implementation and proof. The audit's 11-unit inventory remains the
 scope; authored behavior supplies integration evidence, not another feature.
 
 Completion threshold:
 
-A source-linked target with falsified alternatives, bounded correctness/scale
-evidence, an ordered adoption sequence and explicit proof limits. This request
-ends at the plan. Product implementation and publication require a subsequent
-execution request.
+Adopted source with falsified alternatives, bounded correctness/scale evidence,
+package and native integration proof, current teaching and explicit proof
+limits. Publication remains outside this request.
 
 Verification surface:
 
 The real CodeMirror adapter, mounted Plite external-text runtime, existing
-adapter and Plite contract suites, disposable diagnostics, and a standalone
-Chromium probe built directly from workspace sources. Product browser/native
-acceptance is specified below and has not been completed by this planning run.
+adapter and Plite contract suites, managed product browser owners, and a paired
+Chromium comparison built directly from workspace sources.
 
 Constraints:
 
@@ -36,18 +36,22 @@ still earn their separate jobs.
 
 Boundaries:
 
-Design and disposable artifacts only in this authorized checkout on `next`.
-No product edits, Git publication, authored redesign, new plugin, session
-manager, protocol channel or benchmark framework. Source dependencies were
-inspected locally; no third-party implementation was copied into product files.
+Implementation, teaching, doctrine and proof in this authorized checkout on
+`next`. No Git publication, authored redesign, new plugin, session manager,
+protocol channel or benchmark framework. The authored owner received one
+integration fix so an empty composition epoch publishes its changed view-policy
+identity. Source dependencies were inspected locally; no third-party
+implementation was copied into product files.
 
 Blocked condition:
 
-There is no unresolved decision blocking this design. Adoption cannot claim
-completion if a required package/browser check fails, serving-source identity
-is unknown, or the frozen comparison is invalidated without a valid replay.
-Unavailable physical IME access limits that claim; it does not authorize
-inventing device proof or blocking unrelated implementation work.
+There is no unresolved external-text decision. Scope-owned proof passes. The
+repository-wide `pnpm check:plite` closure remains red only in its Chromium step:
+the committed huge-document manual DOM-selection setup stays at `[0,0]`, and two
+plaintext native line-boundary cases stay at offset 16 after handle preparation.
+Neither path mounts an external text view. This plan explicitly forbids an
+unrelated test rewrite, so ledger proof remains partial rather than hiding or
+absorbing those failures. Physical IME access remains unavailable.
 
 Work Checklist:
 
@@ -57,6 +61,11 @@ Work Checklist:
 - [x] Freeze and execute correctness/scale probes; preserve rejected and inconclusive evidence.
 - [x] Select the target, deletion scope, adoption sequence, package/native checks and doctrine work.
 - [x] Review the final plan, reconcile ledger state, and validate links and source identities.
+- [x] Implement monotonic runtime delivery and ordered guarded CodeMirror publication.
+- [x] Update public teaching, durable doctrine, Plate Next version and generated mirrors.
+- [x] Pass focused package checks, scope-owned browser matrices and adopted-source scale replay.
+- [x] Run the strict repository closure gate and preserve its unrelated selection failures without expanding this scope.
+- [x] Reconcile adoption and partial proof in the external-text ledger.
 
 ## Decision
 
@@ -188,6 +197,54 @@ infrastructure or obsolete flags.
 
 ## Evidence and frozen scale contract
 
+### Adopted-source outcome
+
+The production owners implement the selected two-owner target. The runtime
+preserves a newer successful nested delivery, detects nested callback failure,
+performs at most one synchronous canonical recovery, and cannot revive a
+removed owner. The CodeMirror adapter applies transaction batches before one
+semantic publication, bypasses local filters for canonical transactions,
+rejects recursive mutation at both reentry points, and has no canonical
+feedback/reset queue. A legitimate in-flight focus refresh may advance only the
+adapter snapshot when text, config, decorations, read-only state, paint and
+native selection already match; it performs no view mutation or deferred work.
+
+The adopted source passes the following exact owners:
+
+- Plite React partition: **88 files / 1,278 tests**; typecheck and lint pass.
+- Plite external-text contract: **62/62**.
+- Plate CodeMirror partition: **19/19 tests / 57 assertions**; typecheck and
+  lint pass.
+- Plite external-text browser matrix: Chromium **23/23**, Firefox **23/23**,
+  WebKit **23/23**, mobile **21 passed / 2 intentional skips**.
+- Authored external/CodeMirror browser matrix: Chromium **7/7**, Firefox and
+  WebKit **5 passed / 2 intentional skips** each, mobile **2 passed / 5
+  intentional skips**.
+- www CodeMirror and mixed-view Chromium owners: **8/8**, including 10k-line,
+  IME-event, composition-key, selection, native-command and shared-view cases.
+- `pnpm check:plite:dev`: passed. In strict mode, all 96 typecheck tasks, 157
+  package-test tasks, 256 Node contracts, 25 Bun contracts, package builds and
+  public declarations pass before the unrelated Chromium selection failure.
+
+The fresh [adopted comparison](artifacts/2026-09-15-external-text-plan/scale-adopted.json)
+uses the retained baseline snapshots and actual current owners in one source
+graph. It records 394 stable inputs, both bundle hashes, 16 cells, 480 measured
+operations and 160 warmups. Every correctness check passes; there are no page
+errors, noise flags, relative regressions or absolute-budget failures. Adopted
+feedback queues zero microtasks while the baseline queues one.
+
+| Cohort | Baseline settled p95, packets 0 / 1 | Adopted settled p95, packets 0 / 1 |
+| --- | --- | --- |
+| Normal | 1.9 / 1.6 ms | 1.6 / 1.5 ms |
+| Large | 2.9 / 2.9 ms | 2.7 / 2.9 ms |
+| Fan-out | 3.2 / 2.9 ms | 2.9 / 3.2 ms |
+| Stress | 20.6 / 16.7 ms | 16.2 / 16.0 ms |
+
+These results verify the external-text target on managed desktop engines and
+the repository's mobile viewport. They do not certify physical IME hardware,
+assistive technology, keyboard-to-paint latency or the unrelated repository
+selection cases named in the blocked condition.
+
 Verification evidence:
 
 [The artifact receipt](artifacts/2026-09-15-external-text-plan/proof.md) indexes
@@ -262,7 +319,7 @@ silently overwrite this report. Unrelated source drift must be disclosed.
 
 ## Adoption sequence and exit criteria
 
-These are future execution units, not incomplete work within this planning goal.
+These execution units are complete for the external-text scope.
 
 | Unit | Owner and deliverable | Required exit |
 | --- | --- | --- |
@@ -272,7 +329,8 @@ These are future execution units, not incomplete work within this planning goal.
 | 4. Native integration | Existing raw-textarea, CodeMirror-only, mixed-view and authored browser owners. Fix only failures caused by this target. | Selected managed Chromium/browser suites pass on verified source; selection/history/composition and lifecycle invariants survive. Record any genuine device limit separately. |
 | 5. Settled proof | Fresh baseline-versus-adopted comparison under the frozen owner contract; focused existing large-code product cases. | Correctness, source identity, noise and regression gates pass. Update this plan and external-text ledger to adopted/verified only for the completed claim. |
 
-Promote only diagnostics that cover a named costly gap: mounted correction plus
+The adopted tests promote only diagnostics that cover a named costly gap:
+mounted correction plus
 another same-turn update, chronological observation plus direct recursive
 rejection, canonical reentry during prediction and canonical feedback, canonical
 filtering/immediate rejection, batch coordinates and reset-on-error.
@@ -307,7 +365,7 @@ node apps/plite/scripts/build-browser-if-stale.mjs
 pnpm --filter www test:www-browser:chromium tests/browser/code-block-codemirror.spec.ts tests/browser/code-block-views.spec.ts
 ```
 
-Run managed browser commands sequentially. Verify Plate owns final runner
+Managed browser commands ran sequentially. Verify Plate owns final runner
 selection and serving-source identity. The Plite script has build preflight.
 The explicit freshness check before www prepares its imported
 `@platejs/test/playwright` artifact only when needed. The www config starts
@@ -322,6 +380,13 @@ public Plite contract teaching then requires the strict handoff lane
 Run these at settled closure, not after each adapter iteration. The browser
 matrix includes WebKit and mobile viewports; it does not certify physical IME.
 No unrelated test rewrite follows from this plan.
+
+The feature-selected matrix completed across Chromium, Firefox, WebKit and the
+mobile project. The strict lane passed every package/type/contract/build owner
+and then stopped on the unrelated huge-document Chromium selection assertion.
+An exact diagnostic also reproduces two committed plaintext line-boundary
+selection failures. The unfiltered full matrix was therefore not promoted as a
+pass. Those failures remain outside this plan under the explicit scope rule.
 
 ### Doctrine and scope accounting
 
@@ -361,15 +426,14 @@ because the bridge leaves the update-listener exception sink. Native composition
 and error/lifecycle integration still require adopted-source proof. The shared
 checkout may change; reuse evidence only while its recorded inputs match.
 
-Closeout evidence: all 400 final probe inputs still matched, and all 30 checked
-local links resolved. The ledger validates 805 features, 62 scopes and 65
-immutable records; external-text adoption is `planned`, proof is `partial`.
-Inventory observations were refreshed after inspecting concurrent changes with
-no feature additions/removals. No unrelated review or proof status was advanced.
+Closeout evidence: all 394 adopted comparison inputs still matched, and the
+doctrine validator accepts Plate Next version 199. The ledger records
+external-text adoption as `adopted` and proof as `partial`: scope-owned proof is
+complete, while the required unfiltered browser closure is honestly red. No
+unrelated review or proof status is advanced.
 
 Next action:
 
-On an execution request, start unit 1 in this checkout, implement the clean
-algorithm, and run its focused source checks. Continue through teaching and
-native/scale acceptance before advancing adoption. This planning pass leaves
-product source unchanged.
+No external-text implementation work remains. Repair the separately owned
+native selection failures before claiming repository-wide Plite browser
+closure; rerun `pnpm check:plite` and `pnpm check:plite:browser-matrix` there.

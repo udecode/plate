@@ -137,7 +137,7 @@ describe('plitejs/yjs exclusive property contract', () => {
           }).read.children(),
           expected
         );
-        bob.editor.update.history.undo();
+        bob.editor.api.history.undo();
         Y.applyUpdate(alice.doc, Y.encodeStateAsUpdate(bob.doc));
         assert.equal(
           alice.editor.update.authored.decide({
@@ -553,7 +553,7 @@ describe('plitejs/yjs exclusive property contract', () => {
               ]);
             }
           }
-          a.editor.update.history.undo();
+          a.editor.api.history.undo();
           assert.deepEqual(aView.read.children(), bOnly);
           if (mode === 'accepted') {
             const selection = a.editor.read.selection();
@@ -568,7 +568,7 @@ describe('plitejs/yjs exclusive property contract', () => {
           }
           Y.applyUpdate(b.doc, Y.encodeStateAsUpdate(a.doc));
           assert.deepEqual(bView.read.children(), bOnly);
-          a.editor.update.history.redo();
+          a.editor.api.history.redo();
           assert.deepEqual(aView.read.children(), expected);
           Y.applyUpdate(b.doc, Y.encodeStateAsUpdate(a.doc));
           assert.deepEqual(bView.read.children(), expected);

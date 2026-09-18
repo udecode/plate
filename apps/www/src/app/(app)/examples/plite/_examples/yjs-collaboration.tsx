@@ -173,8 +173,8 @@ type YjsEditor = ReactViewEditor<
 >;
 
 const syncPeerHistoryDepths = (peer: ExamplePeer, editor: YjsEditor) => {
-  peer.undoDepth = editor.read.history.undos().length;
-  peer.redoDepth = editor.read.history.redos().length;
+  peer.undoDepth = editor.read.history().undos.length;
+  peer.redoDepth = editor.read.history().redos.length;
 };
 
 const INITIAL_VALUE: CollaborationValue = [
@@ -1165,7 +1165,7 @@ const undoPeer = (
   const previousValue = getEditorValue(editor);
   const previousSelection = readEditorSelection(editor);
 
-  editor.update.history.undo();
+  editor.api.history.undo();
 
   syncPeerHistoryDepths(peer, editor);
   syncPeerSelectionAfterHistory(
@@ -1186,7 +1186,7 @@ const redoPeer = (
   const previousValue = getEditorValue(editor);
   const previousSelection = readEditorSelection(editor);
 
-  editor.update.history.redo();
+  editor.api.history.redo();
 
   syncPeerHistoryDepths(peer, editor);
   syncPeerSelectionAfterHistory(

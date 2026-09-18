@@ -51,11 +51,16 @@ import { bindAuthoredRange, bindAuthoredPath } from './authored-runtime';
 import {
   DocumentChange,
   getInternalDocumentRootChange,
+  mapDocumentRangeReplacement,
 } from './change/document-change';
 import { DocumentIndex, nodeAtPath } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
-import { getEditorRuntime, getEditorRuntimeOwner } from './editor-runtime';
+import {
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+  getEditorRuntimeRoot,
+} from './editor-runtime';
 import {
   assertPublicLocationRoot,
   assertPublicRootKey,
@@ -97,11 +102,21 @@ const SAVED_RANGES = new WeakMap<
 >();
 const RELEASED_RANGES = new WeakSet<Anchor<Range>>();
 
+const assertAnchorView = (editor: Editor, root: string, view?: Editor) => {
+  if (
+    view &&
+    (getEditorRuntimeOwner(view) !== getEditorRuntimeOwner(editor) ||
+      getEditorRuntimeRoot(view) !== root)
+  ) {
+    throw new Error('Resolve an anchor in a view of the same editor and root.');
+  }
+};
+
 const createBoundAnchor = <TValue extends AnchorValue>(
   editor: Editor,
   saved: Omit<SavedRange, 'range' | 'authored'>,
   binding:
-    | { resolve: () => TValue | null; serialize?: () => unknown }
+    | { resolve: (view?: Editor) => TValue | null; serialize?: () => unknown }
     | undefined,
   kind: 'path' | 'point' | 'range'
 ): Anchor<TValue> => {
@@ -127,9 +142,10 @@ const createBoundAnchor = <TValue extends AnchorValue>(
       }
       return value;
     },
-    resolve() {
+    resolve(view?: Editor) {
       if (released) return null;
-      return activeBinding?.resolve() ?? null;
+      assertAnchorView(editor, saved.root, view);
+      return activeBinding?.resolve(view) ?? null;
     },
   }) as Anchor<TValue>;
   if (kind === 'range') {
@@ -137,12 +153,12 @@ const createBoundAnchor = <TValue extends AnchorValue>(
       editor: getEditorRuntimeOwner(editor),
       save() {
         if (released) throw new Error('Cannot save a released range anchor.');
+        const authored = activeBinding?.serialize?.();
         return {
           ...saved,
-          range: anchor.resolve() as Range | null,
-          ...(activeBinding?.serialize
-            ? { authored: activeBinding.serialize() }
-            : {}),
+          range:
+            authored === undefined ? (anchor.resolve() as Range | null) : null,
+          ...(authored === undefined ? {} : { authored }),
         };
       },
     });
@@ -220,10 +236,18 @@ export const createEditorAnchorApi = (
         if (!saved || saved.editor !== getEditorRuntimeOwner(getEditor())) {
           throw new Error('Save a range anchor owned by this editor.');
         }
-        return snapshotEditorJsonValue(
-          { kind: 'range', version: 1, value: saved.save() },
-          'Saved editor range'
-        );
+        const value = saved.save();
+        // Authored bindings own immutable JSON; restore uses no resolved fallback.
+        return Object.hasOwn(value, 'authored')
+          ? Object.freeze({
+              kind: 'range' as const,
+              version: 1 as const,
+              value: Object.freeze(value),
+            })
+          : snapshotEditorJsonValue(
+              { kind: 'range', version: 1, value },
+              'Saved editor range'
+            );
       },
       restore(input: unknown): Anchor<Range> {
         const editor = getEditor();
@@ -275,7 +299,8 @@ export interface Anchor<TValue extends AnchorValue> {
       : 'path';
   readonly root: NamedRootKey | undefined;
   release(): TValue | null;
-  resolve(): TValue | null;
+  /** Resolve in the capture view by default, or another view of the same model/root. */
+  resolve(view?: Editor): TValue | null;
 }
 
 type PointState = {
@@ -450,7 +475,7 @@ export function createAnchor<TValue extends AnchorValue>(
     });
     if (binding) {
       return createBoundAnchor<Path>(
-        runtimeEditor,
+        viewEditor,
         { association, deletion: options.deletion, root },
         binding,
         'path'
@@ -471,10 +496,10 @@ export function createAnchor<TValue extends AnchorValue>(
     });
     if (binding) {
       return createBoundAnchor<Range | Point>(
-        runtimeEditor,
+        viewEditor,
         { association, deletion: options.deletion, root },
         pointValue
-          ? { resolve: () => binding.resolve()?.anchor ?? null }
+          ? { resolve: (view) => binding.resolve(view)?.anchor ?? null }
           : binding,
         pointValue ? 'point' : 'range'
       ) as Anchor<TValue>;
@@ -561,6 +586,8 @@ export function createAnchor<TValue extends AnchorValue>(
     recoveryFirst: number;
     recoveryFlags: number;
     recoverySecond: number;
+    pathBoundaryParentNodeKey: NodeKey | null;
+    pathNodeKey: NodeKey | null;
   }> = [];
 
   const cloneAnchorValue = (anchorValue: AnchorValue | null) => {
@@ -1002,18 +1029,27 @@ export function createAnchor<TValue extends AnchorValue>(
                 : 'backward',
             association
           );
-    const mappedFirst = context.mapRecoveryPoint(
-      root,
-      pendingRecoveryFirst,
-      associations[0]
-    );
+    const replacement =
+      kind === 'range' && options.deletion === 'nearest'
+        ? mapDocumentRangeReplacement(
+            context.change,
+            root,
+            pendingRecoveryFirst,
+            pendingRecoverySecond,
+            associations as readonly [-1 | 1, -1 | 1]
+          )
+        : null;
+    const mappedFirst =
+      replacement?.[0] ??
+      context.mapRecoveryPoint(root, pendingRecoveryFirst, associations[0]);
     const mappedSecond =
       kind === 'range'
-        ? context.mapRecoveryPoint(
+        ? (replacement?.[1] ??
+          context.mapRecoveryPoint(
             root,
             pendingRecoverySecond,
             getDefined(associations[1])
-          )
+          ))
         : RECOVERY_NULL_POSITION;
 
     pendingRecoveryFirst = mappedFirst ?? RECOVERY_NULL_POSITION;
@@ -1391,7 +1427,34 @@ export function createAnchor<TValue extends AnchorValue>(
               association
             );
 
+      const replacement =
+        kind === 'range' &&
+        options.deletion === 'nearest' &&
+        !PointApi.equals(pointStates[0].point, getDefined(pointStates[1]).point)
+          ? mapDocumentRangeReplacement(
+              change,
+              root,
+              getSourceDocument().positionAt(pointStates[0].point),
+              getSourceDocument().positionAt(getDefined(pointStates[1]).point),
+              associations as readonly [-1 | 1, -1 | 1]
+            )
+          : null;
       const mappedPoints = pointStates.map((state, index) => {
+        if (replacement) {
+          const point = nextDocument().pointAt(
+            replacement[index],
+            associations[index]
+          );
+          if (!point) return null;
+          const runtimePath = state.nodeKey
+            ? pathOfNodeKey(runtimeEditor, root, state.nodeKey)
+            : null;
+          return {
+            point: withPublicPointRoot(point, root, state.includeRoot),
+            runtimeStable:
+              runtimePath !== null && PathApi.equals(point.path, runtimePath),
+          };
+        }
         const read = () =>
           resolveMappedPoint(
             state,
@@ -1475,10 +1538,42 @@ export function createAnchor<TValue extends AnchorValue>(
           recoveryFirst: pendingRecoveryFirst,
           recoveryFlags: pendingRecoveryFlags,
           recoverySecond: pendingRecoverySecond,
+          pathBoundaryParentNodeKey,
+          pathNodeKey,
         });
       },
       change(context) {
         mapTo(context.after, undefined, context.change, context);
+      },
+      prepareCommit() {
+        const next = {
+          current,
+          pathBoundaryParentNodeKey,
+          pathNodeKey,
+          pendingRecoveryActive,
+          pendingRecoveryBefore,
+          pendingRecoveryFirst,
+          pendingRecoveryFlags,
+          pendingRecoverySecond,
+          pointStates,
+          sourceValue,
+        };
+
+        return () => {
+          ({
+            current,
+            pathBoundaryParentNodeKey,
+            pathNodeKey,
+            pendingRecoveryActive,
+            pendingRecoveryBefore,
+            pendingRecoveryFirst,
+            pendingRecoveryFlags,
+            pendingRecoverySecond,
+            pointStates,
+            sourceValue,
+          } = next);
+          checkpoints.length = 0;
+        };
       },
       commit(innerValue, commit) {
         if (innerValue) mapTo(innerValue, commit);
@@ -1488,6 +1583,7 @@ export function createAnchor<TValue extends AnchorValue>(
         const checkpoint = checkpoints.pop();
 
         if (checkpoint) {
+          ({ pathBoundaryParentNodeKey, pathNodeKey } = checkpoint);
           if (checkpoint.recoveryActive) {
             pendingRecoveryActive = true;
             pendingRecoveryBefore = checkpoint.recoveryBefore;
@@ -1566,8 +1662,9 @@ export function createAnchor<TValue extends AnchorValue>(
 
       return resolved;
     },
-    resolve() {
+    resolve(view?: Editor) {
       if (released) return null;
+      assertAnchorView(viewEditor, root, view);
       materializeHistoryRecovery();
 
       const innerValue3 =

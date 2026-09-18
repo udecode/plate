@@ -5,7 +5,9 @@
   "description": "A combobox for inline suggestions.",
   "dependencies": [
     "@ariakit/react",
-    "platejs"
+    "platejs",
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "files": [
     {

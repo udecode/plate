@@ -4,7 +4,8 @@
   "title": "Horizontal Rule",
   "description": "A horizontal rule component with focus states.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [],
   "files": [

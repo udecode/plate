@@ -3,21 +3,27 @@ import { spyOn } from 'bun:test';
 import { act } from '@testing-library/react';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { MarkdownPlugin } from 'platejs/markdown';
-import { EditorRoot, ParagraphPlugin, createEditor } from 'platejs/react';
+import {
+  type Editor as PlateEditor,
+  EditorRoot,
+  ParagraphPlugin,
+  HeadingPlugin,
+  createEditor,
+} from 'platejs/react';
 import React from 'react';
 
-import { AIAnchorElement, AIKit } from '@/registry/components/editor/ai';
+import { AIKit } from '@/registry/components/editor/ai';
 import { Editor } from '@/registry/components/editor/editor';
 import { AIChatTransportPlugin } from '@/registry/components/editor/use-chat';
 
-export const makeEditor = () =>
+export const makeEditor = (withHeadings = false) =>
   createEditor({
     plugins: [
       ParagraphPlugin,
+      ...(withHeadings ? [HeadingPlugin] : []),
       MarkdownPlugin,
       ...AIKit,
       AIChatTransportPlugin.configure({
-        component: AIAnchorElement,
         slots: {
           afterContainer: () => <span data-testid="custom-ai-container" />,
           afterEditable: () => <span data-testid="custom-ai-menu" />,
@@ -42,7 +48,7 @@ export function Body({
   views = 1,
   sessionKey = 0,
 }: {
-  editor: ReturnType<typeof makeEditor>;
+  editor: PlateEditor;
   readOnly?: readonly boolean[];
   visible?: readonly boolean[];
   views?: number;
@@ -97,6 +103,7 @@ export async function flush() {
 }
 export function controlledFetch(waitForHTTP = false) {
   const requests: Array<{
+    body: BodyInit | null | undefined;
     signal: AbortSignal;
     url: RequestInfo | URL;
     send: (part: unknown) => void;
@@ -133,6 +140,7 @@ export function controlledFetch(waitForHTTP = false) {
         }
       };
       requests.push({
+        body: init?.body,
         signal: init?.signal as AbortSignal,
         url,
         send: (part) =>
@@ -162,25 +170,26 @@ export async function chunk(
   });
   await flush();
 }
-export function adapter(editor: ReturnType<typeof makeEditor>) {
+export function adapter(editor: PlateEditor) {
   const chat = editor.plugin(AIChatPlugin).store.get('chat');
   if (!chat) throw new Error('Expected mounted AI adapter');
   return chat;
 }
-export const value = (editor: ReturnType<typeof makeEditor>) =>
+export const value = (editor: PlateEditor) =>
   JSON.stringify(editor.read.children());
-export function streamState(editor: ReturnType<typeof makeEditor>) {
+export function streamState(editor: PlateEditor) {
   const state = editor.plugin(AIChatPlugin).store.get();
   return {
     streaming: state.streaming,
-    chunks: state._blockChunks,
-    path: state._blockPath,
-    mdx: state._mdxName,
+    preview: JSON.stringify(state.previewValue),
+    key: state._blockKey,
   };
 }
 export const emptyState = {
   streaming: false,
-  chunks: '',
-  path: null,
-  mdx: null,
+  preview: '[]',
+  key: null,
 };
+
+export const draft = (editor: PlateEditor) =>
+  JSON.stringify(editor.plugin(AIChatPlugin).store.get('previewValue'));

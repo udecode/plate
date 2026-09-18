@@ -55,7 +55,7 @@ DOM and returns an `ExternalTextView<TConfig>`:
 
 | Method | Contract |
 | --- | --- |
-| `update({ changes, state })` | Apply exact patches and the supplied canonical state without dispatching another edit. |
+| `update({ changes, state })` | Apply exact patches and the supplied canonical state before returning, without dispatching another edit. |
 | `focus({ edge?, x? }?)` | Focus the local input and honor the requested boundary or horizontal position where supported. |
 | `destroy()` | Release every local listener and resource and remove the adapter's DOM. |
 
@@ -80,6 +80,9 @@ Mounting is client-only. SSR emits the empty host. Unmounting, root changes,
 and explicit document virtualization destroy the view; remount from canonical
 state. Adapter failures reach the editor's `lifecycleErrorSink` with
 `source: "external-text"`. A failed view rejects edits until reset or remount.
+Plate performs one synchronous reset from the latest canonical state when a
+nested lifecycle failure interrupts delivery. A repeated failure leaves the
+view invalid instead of starting a callback loop.
 
 ## Actions
 
@@ -96,8 +99,11 @@ invalid, and read-only edits without changing the document.
 | `history("undo" \| "redo")` | Use the installed Plate history plugin. Returns `false` when no history action applies. |
 
 Versioned actions return `{ status: "applied" | "stale" | "read-only" }`.
-Adapters disable independent undo stacks and never dispatch from `mount`,
-`update`, `focus`, or `destroy` callbacks.
+An action may synchronously call `update` before returning, including a reset
+for rejected input. Adapters disable independent undo stacks and never dispatch
+actions, mutate the owning editor, or reenter their mounted view from `mount`,
+`update`, `focus`, or `destroy` callbacks. Start later edits from input handlers
+or commands after the lifecycle callback returns.
 
 ## Selection and native features
 

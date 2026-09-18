@@ -1,7 +1,9 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "suggestion-style",
-  "dependencies": [],
+  "dependencies": [
+    "class-variance-authority"
+  ],
   "files": [
     {
       "path": "src/registry/lib/inline-suggestion.ts",

@@ -146,13 +146,13 @@ describe('authored React view identity', () => {
       anchor: point(10),
       focus: point(10),
     });
-    view.update.history.undo();
+    view.api.history.undo();
     assert.deepEqual(view.read.children(), [paragraph('Base')]);
     assert.deepEqual(view.read.selection(), {
       anchor: point(4),
       focus: point(4),
     });
-    view.update.history.redo();
+    view.api.history.redo();
     assert.deepEqual(view.read.children(), [paragraph('Base draft')]);
     view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
     assert.deepEqual(native.read.children(), [paragraph('Base')]);

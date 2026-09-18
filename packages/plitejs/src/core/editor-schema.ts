@@ -1497,6 +1497,7 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   };
 
+  const representationContext = Object.freeze({ getSchema: () => api });
   const sliceFitter = createCompiledSliceFitterDelegate<V>(() => ({
     canContain,
     contentAllows,
@@ -1507,7 +1508,7 @@ export const createEditorSchema = <V extends Value = Value>(
     getDescendant,
     getDocumentRoot,
     getDocumentRootProgram,
-    getEditor,
+    getEditor: () => representationContext as unknown as Editor<V>,
     getElementAncestors,
     getElementBehavior,
     getElementContentRoots,
@@ -3823,4 +3824,21 @@ export const createEditorSchema = <V extends Value = Value>(
   COMPILED_SCHEMA_BY_API.set(api, getDeclarativeSchema);
 
   return api;
+};
+
+/** Create immutable schema authority that cannot read or retain a live editor. @internal */
+export const createDetachedEditorSchema = <V extends Value = Value>(
+  schema: CompiledEditorSchema
+): InternalEditorSchemaApi<V> => {
+  const registry = {
+    schemaContributions: { compiled: schema },
+    schemaRevision: schema.revision,
+  } as PluginRegistry<any>;
+
+  return createEditorSchema<V>(
+    () => {
+      throw new Error('Detached editor schema cannot read a live editor.');
+    },
+    () => registry
+  );
 };

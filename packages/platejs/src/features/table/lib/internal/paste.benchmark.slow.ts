@@ -1,3 +1,4 @@
+import { ContentSlice } from '../../../../core';
 import type {
   TableCellElementWithId,
   TableElementWithId,
@@ -60,19 +61,24 @@ const measure = (run: () => void, iterations = 1) => {
   return performance.now() - startedAt;
 };
 
-const prepare = (table: TableElement) =>
-  prepareTablePaste(table, {
+const prepare = (table: TableElement) => {
+  const prepared = prepareTablePaste(ContentSlice.closed([table]), {
     createCell,
     createRow,
-    source: 'model',
+    tableType: 'table',
   });
+
+  if (!prepared) throw new Error('Expected a structural table slice');
+
+  return prepared;
+};
 
 const collectGarbage = async () => {
   const runtime = globalThis as typeof globalThis & {
     Bun?: { gc: (force?: boolean) => void };
   };
 
-  expect(runtime.Bun?.gc).toBeFunction();
+  expect(typeof runtime.Bun?.gc).toBe('function');
 
   for (let attempt = 0; attempt < 4; attempt++) {
     runtime.Bun?.gc(true);
@@ -120,10 +126,13 @@ describe('PreparedTablePaste benchmark', () => {
 
         expect(result.kind).toBe('plan');
         if (result.kind === 'plan') {
-          expect(result.operations).toHaveLength(16);
-          expect(result.operations.every(({ path }) => path.length === 3)).toBe(
-            true
+          expect(result.operations).toHaveLength(0);
+          const placements = result.placementGroups.flatMap(
+            (group) => group.placements
           );
+
+          expect(placements).toHaveLength(16);
+          expect(placements.every(({ at }) => at.length === 3)).toBe(true);
         }
       };
 

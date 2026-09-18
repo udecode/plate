@@ -3,7 +3,11 @@
   "name": "history-toolbar-button",
   "title": "History Toolbar Button",
   "description": "Toolbar buttons for undo and redo operations.",
-  "dependencies": [],
+  "dependencies": [
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react",
+    "platejs"
+  ],
   "registryDependencies": [
     "https://platejs.org/r/toolbar.json"
   ],

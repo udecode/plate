@@ -46,6 +46,7 @@ type DeepMutable<T> = T extends (...args: any[]) => unknown
       ? { -readonly [TKey in keyof T]: DeepMutable<T[TKey]> }
       : T;
 type RuntimeTableCellElement = Omit<TableCellElement, 'type'> & {
+  children: TableCellElement['children'];
   type: string;
 };
 type MutableCell = DeepMutable<RuntimeTableCellElement>;
@@ -107,10 +108,27 @@ export type TableOperation =
       path: Path;
     }>;
 
+type TableSelectionTarget = Readonly<{
+  col?: number;
+  edge?: 'end' | 'start';
+  key?: string;
+  row?: number;
+}>;
+
+type TableSelectionRequest = Readonly<{
+  tablePath: Path;
+  target:
+    | TableSelectionTarget
+    | Readonly<{
+        anchor: TableSelectionTarget;
+        focus: TableSelectionTarget;
+      }>;
+}>;
+
 export type TableMutationPlan = Readonly<{
   kind: 'plan';
   operations: readonly TableOperation[];
-  selection?: Range;
+  selection?: TableSelectionRequest;
 }>;
 
 export type TableMutationDiagnostic =
@@ -263,7 +281,7 @@ const freezeOperation = (operation: MutableOperation): TableOperation => {
 
 const freezePlan = (
   operations: readonly MutableOperation[],
-  selection?: Range
+  selection?: TableSelectionRequest
 ): TableMutationPlan =>
   deepFreeze({
     kind: 'plan' as const,
@@ -343,7 +361,7 @@ const rowIsHeader = (row: TableRowElement) =>
   row.children.length > 0 &&
   (row.children as readonly TableCellElement[]).every(cellIsHeader);
 
-const resizeColumnSizes = (
+export const resizeTableColumnSizes = (
   columnWidths: ReadonlyArray<number | null>,
   index: number,
   columnCount: number,
@@ -464,12 +482,7 @@ const firstTextPoint = (
 const selectionForTable = (
   table: Element,
   tablePath: Path,
-  target: {
-    col?: number;
-    edge?: 'end' | 'start';
-    key?: string;
-    row?: number;
-  }
+  target: TableSelectionTarget
 ): Range | undefined => {
   const grid = compileTableGrid(table);
   const anchor =
@@ -493,8 +506,6 @@ const selectionForTable = (
     kind: 'text' as const,
   });
 };
-
-type TableSelectionTarget = Parameters<typeof selectionForTable>[2];
 
 const selectionForTableTargets = (
   table: Element,
@@ -531,23 +542,16 @@ const planWithSelection = (
         anchor: TableSelectionTarget;
         focus: TableSelectionTarget;
       }>
-): TableMutationPlan => {
-  const selection = target
-    ? (() => {
-        const table = applyOperations(
-          context.table,
-          context.tablePath,
-          operations
-        );
-
-        return table
-          ? selectionForTableTargets(table, context.tablePath, target)
-          : undefined;
-      })()
-    : undefined;
-
-  return freezePlan(operations, selection);
-};
+): TableMutationPlan =>
+  freezePlan(
+    operations,
+    target
+      ? {
+          tablePath: context.tablePath,
+          target,
+        }
+      : undefined
+  );
 
 const planInsertColumn = (
   context: TableContext,
@@ -581,9 +585,7 @@ const planInsertColumn = (
 
   for (const anchor of affected) {
     const crossesBoundary =
-      (intent.atColumn !== undefined || !intent.before) &&
-      !firstColumn &&
-      anchor.col + anchor.colSpan - 1 >= insertCol;
+      anchor.col < insertCol && anchor.col + anchor.colSpan > insertCol;
 
     if (crossesBoundary) {
       operations.push(
@@ -630,7 +632,7 @@ const planInsertColumn = (
       kind: 'set-node',
       path: freezePath(context.tablePath),
       properties: {
-        columnWidths: resizeColumnSizes(
+        columnWidths: resizeTableColumnSizes(
           currentColSizes,
           insertCol,
           context.grid.width,
@@ -1467,5 +1469,19 @@ export const applyTableMutationPlan = (
     }
   }
 
-  if (plan.selection) tx.selection.set(plan.selection);
+  if (plan.selection) {
+    const table = tx.nodes.get(plan.selection.tablePath, {
+      match: ElementApi.isElement,
+    })?.[0];
+    const selection =
+      table && ElementApi.isElement(table)
+        ? selectionForTableTargets(
+            table,
+            plan.selection.tablePath,
+            plan.selection.target
+          )
+        : undefined;
+
+    if (selection) tx.selection.set(selection);
+  }
 };

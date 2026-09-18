@@ -30,6 +30,7 @@ const jsonEqual = (left, right) => {
 export type RunEditorMigrationsOptions = Readonly<{
   check?: boolean;
   cwd?: string;
+  from?: number | 'current';
   write?: boolean;
 }>;
 
@@ -122,61 +123,21 @@ export const runEditorMigrations = async (
       stdin: {
         contents: `import * as editorModule from ${JSON.stringify(entryPath)};
 import { readFileSync, writeFileSync } from 'node:fs';
-import { createEditor, migrateDocument, readEditorSelection } from 'platejs';
-import { isPlugin } from 'platejs';
+import { migrateDocument } from 'platejs/migrations';
 ${JSON_EQUAL_SOURCE}
 
-const plugins = editorModule.EditorKit;
-const schema = editorModule.EditorSchema;
 const migrations = editorModule.EditorMigrations;
-
-if (!Array.isArray(plugins) || !plugins.every(isPlugin)) {
-  throw new Error('Plate migration entry must export EditorKit as a plugin tuple.');
-}
-if (
-  !schema || typeof schema !== 'object' || Array.isArray(schema) ||
-  !Object.keys(schema).every((key) => ['id', 'overrides', 'properties', 'root', 'version'].includes(key)) ||
-  typeof schema.id !== 'string' || typeof schema.version !== 'number' ||
-  (schema.overrides !== undefined && !Array.isArray(schema.overrides)) ||
-  (schema.properties !== undefined &&
-    (!schema.properties || typeof schema.properties !== 'object' || Array.isArray(schema.properties))) ||
-  (schema.root !== undefined &&
-    (!schema.root || typeof schema.root !== 'object' || Array.isArray(schema.root)))
-) {
-  throw new Error('Plate migration entry must export EditorSchema as a named application schema.');
-}
-if (
-  !migrations || typeof migrations !== 'object' || Array.isArray(migrations) ||
-  typeof migrations.id !== 'string' || typeof migrations.version !== 'number' ||
-  !migrations.sourceFingerprints || typeof migrations.sourceFingerprints !== 'object' ||
-  Array.isArray(migrations.sourceFingerprints) ||
-  !Object.values(migrations.sourceFingerprints).every((fingerprint) => typeof fingerprint === 'string') ||
-  !migrations.steps || typeof migrations.steps !== 'object' || Array.isArray(migrations.steps) ||
-  !Object.values(migrations.steps).every((step) => typeof step === 'function')
-) {
-  throw new Error('Plate migration entry must export EditorMigrations as a document migration plan.');
-}
 const request = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const outputs = request.paths.map((path) => {
-  const editor = createEditor({ plugins, schema, migrations, skipInitialization: true });
   const sourceText = readFileSync(path, 'utf8');
   const source = JSON.parse(sourceText);
-  const input = Array.isArray(source) ? { children: source } : source;
-  const migration = migrateDocument(input, { editor, migrations });
-  const current = editor.read.schema.identity();
-  const hasSelection = !Array.isArray(source) && source && typeof source === 'object' &&
-    'document' in source && Object.hasOwn(source, 'selection');
-
-  editor.update.value.replace({
-    document: migration.document,
-    schema: current,
-    ...(hasSelection ? { selection: migration.selection ?? null } : {}),
+  const persisted = !Array.isArray(source) && source && typeof source === 'object' &&
+    Object.hasOwn(source, 'document');
+  const migration = migrateDocument(source, {
+    migrations,
+    ...(!persisted && request.source !== undefined ? { source: request.source } : {}),
   });
-  const output = {
-    document: editor.read.value(),
-    schema: current,
-    ...(hasSelection ? { selection: readEditorSelection(editor) } : {}),
-  };
+  const output = migration.output;
   const outputText = JSON.stringify(output, null, 2) + '\\n';
 
   return { applied: migration.applied, changed: !jsonEqual(source, output), outputText, path };
@@ -195,7 +156,11 @@ writeFileSync(process.argv[3], JSON.stringify(outputs), 'utf8');
     if (!output) throw new Error(`Plate could not bundle "${entryPath}".`);
 
     writeFileSync(bundlePath, output.text, 'utf-8');
-    writeFileSync(requestPath, JSON.stringify({ paths }), 'utf-8');
+    writeFileSync(
+      requestPath,
+      JSON.stringify({ paths, source: options.from }),
+      'utf-8'
+    );
     await evaluate(bundlePath, requestPath, resultPath, cwd);
     const evaluated = JSON.parse(readFileSync(resultPath, 'utf-8')) as Array<{
       applied: number[];

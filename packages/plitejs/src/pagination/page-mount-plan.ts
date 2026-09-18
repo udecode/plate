@@ -1,17 +1,20 @@
 import type { Path } from '..';
 import type {
   PageLayoutFragment,
-  PageLayoutGeometry,
   PageLayoutMode,
   PageLayoutPage,
 } from './index';
+import type { PageLayoutGeometry } from './page-geometry.internal';
 
-type PageFragmentIndex = Pick<
-  PageLayoutFragment,
-  'blockIndex' | 'pageIndex' | 'path' | 'units'
->;
+type PageFragmentIndex = {
+  children?: ReadonlyArray<Readonly<{ path: Path }>>;
+  pageIndex: number;
+  path: Path;
+  type: PageLayoutFragment['type'];
+};
 
 export type PagedEditablePageMountItem = {
+  childPaths: readonly Path[];
   fragmentPaths: readonly Path[];
   index: number;
   key: string;
@@ -19,10 +22,10 @@ export type PagedEditablePageMountItem = {
   size: number;
   start: number;
   topLevelIndexes: readonly number[];
-  unitPaths: readonly Path[];
 };
 
 export type PagedEditablePageMountPlan = {
+  itemIndexesByPath: ReadonlyMap<string, readonly number[]>;
   itemIndexesByTopLevelIndex: ReadonlyMap<number, readonly number[]>;
   items: readonly PagedEditablePageMountItem[];
 };
@@ -66,6 +69,7 @@ export const createPagedEditablePageMountPlan = ({
   mode: PageLayoutMode;
   pages: readonly PageLayoutPage[];
 }): PagedEditablePageMountPlan => {
+  const itemIndexesByPath = new Map<string, number[]>();
   const itemIndexesByTopLevelIndex = new Map<number, number[]>();
   const fragmentsByPageIndex = new Map<number, PageFragmentIndex[]>();
   const pageArrayIndexByPageIndex = new Map(
@@ -85,11 +89,25 @@ export const createPagedEditablePageMountPlan = ({
       (pageIndex) => fragmentsByPageIndex.get(pageIndex) ?? []
     );
     const topLevelIndexes = [
-      ...new Set(itemFragments.map((fragment) => fragment.blockIndex)),
-    ].sort((left, right) => left - right);
+      ...new Set(
+        itemFragments.flatMap((fragment) => [
+          fragment.path[0],
+          ...(fragment.type === 'direct-children'
+            ? (fragment.children ?? []).map((child) => child.path[0])
+            : []),
+        ])
+      ),
+    ]
+      .filter(
+        (topLevelIndex): topLevelIndex is number =>
+          typeof topLevelIndex === 'number'
+      )
+      .sort((left, right) => left - right);
     const fragmentPaths = itemFragments.map((fragment) => fragment.path);
-    const unitPaths = itemFragments.flatMap(
-      (fragment) => fragment.units?.map((unit) => unit.path) ?? []
+    const childPaths = itemFragments.flatMap((fragment) =>
+      fragment.type === 'direct-children'
+        ? (fragment.children ?? []).map((child) => child.path)
+        : []
     );
     const placements = pageIndexes.map((pageIndex) => {
       const pageArrayIndex = pageArrayIndexByPageIndex.get(pageIndex);
@@ -101,15 +119,16 @@ export const createPagedEditablePageMountPlan = ({
     const start = Math.min(...placements.map((placement) => placement.top));
     const size = pageIndexes.reduce((height, pageIndex) => {
       const pageArrayIndex = pageArrayIndexByPageIndex.get(pageIndex);
-      const page = pageArrayIndex == null ? null : pages[pageArrayIndex];
       const placement =
         pageArrayIndex == null ? null : geometry.pagePlacements[pageArrayIndex];
+      const occupied =
+        pageArrayIndex == null ? null : geometry.occupiedSizes[pageArrayIndex];
 
-      if (!page || !placement) {
+      if (!occupied || !placement) {
         return height;
       }
 
-      return Math.max(height, placement.top + page.height - start);
+      return Math.max(height, placement.top + occupied.height - start);
     }, 0);
 
     for (const topLevelIndex of topLevelIndexes) {
@@ -118,8 +137,16 @@ export const createPagedEditablePageMountPlan = ({
       current.push(index);
       itemIndexesByTopLevelIndex.set(topLevelIndex, current);
     }
+    for (const path of [...fragmentPaths, ...childPaths]) {
+      const key = path.join('.');
+      const current = itemIndexesByPath.get(key) ?? [];
+
+      if (!current.includes(index)) current.push(index);
+      itemIndexesByPath.set(key, current);
+    }
 
     return {
+      childPaths,
       fragmentPaths,
       index,
       key: `page-mount:${pageIndexes.join('-')}`,
@@ -127,11 +154,10 @@ export const createPagedEditablePageMountPlan = ({
       size,
       start,
       topLevelIndexes,
-      unitPaths,
     };
   });
 
-  return { itemIndexesByTopLevelIndex, items };
+  return { itemIndexesByPath, itemIndexesByTopLevelIndex, items };
 };
 
 export const getPagedEditableMountedPageIndexes = (

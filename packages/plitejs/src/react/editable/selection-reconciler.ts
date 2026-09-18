@@ -432,6 +432,12 @@ export const applyEditableMouseDown = ({
   onMouseDown?: EditableMouseHandler;
 }) => {
   inputController.state.outsideFocusBoundarySettleUntil = 0;
+  if (
+    inputController.state.activeIntent === 'model-selection-move' ||
+    inputController.state.activeIntent === 'native-selection-move'
+  ) {
+    inputController.state.activeIntent = null;
+  }
 
   if (isInteractiveInternalTarget(editor, event.target)) {
     setEditableModelSelectionPreference({

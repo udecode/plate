@@ -4,7 +4,11 @@ import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { DocxKit } from '@/registry/components/editor/docx';
 import { DocxSourceProvider } from '@/registry/components/editor/docx-source';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { ExportToolbarButton } from '@/registry/components/editor/export-toolbar-button';
 import {
   FixedToolbar,
@@ -20,7 +24,7 @@ const docxPluginNames = new Set<string>(DocxKit.map((plugin) => plugin.name));
 
 const DocxFixedToolbarPlugin = FixedToolbarPlugin.configure({
   slots: {
-    beforeEditable: () => (
+    beforeContainer: () => (
       <FixedToolbar>
         <FixedToolbarButtons>
           <ToolbarGroup>
@@ -52,9 +56,11 @@ export default function DocxDemo() {
   return (
     <DocxSourceProvider>
       <EditorRoot editor={editor}>
-        <EditorContainer variant="demo">
-          <Editor />
-        </EditorContainer>
+        <EditorFrame className="h-[650px]">
+          <EditorContainer>
+            <Editor />
+          </EditorContainer>
+        </EditorFrame>
       </EditorRoot>
     </DocxSourceProvider>
   );

@@ -18,8 +18,15 @@ import {
   Wand,
   X,
 } from 'lucide-react';
-import { createEditorView, ElementApi, isHotkey, NodeApi } from 'platejs';
-import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
+import {
+  createEditorView,
+  ElementApi,
+  isHotkey,
+  NodeApi,
+  TextApi,
+} from 'platejs';
+import { BaseAIPlugin } from 'platejs/ai';
+import { AIChatPlugin } from 'platejs/ai/react';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   useEditorRuntimeState,
@@ -40,7 +47,6 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
-import { useDraftCommentThreadIds } from '@/registry/components/editor/comment';
 import {
   FloatingPopover,
   FloatingPopoverAnchor,
@@ -50,11 +56,57 @@ import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 import { EditorStatic } from './editor-static';
 
-export function AIChatEditor() {
+const PreviewAIPlugin = BaseAIPlugin.extend(({ editor }) => ({
+  decorate: {
+    read: ({ entry: [node, path] }) => {
+      if (!TextApi.isText(node) || node.text.length === 0) return [];
+
+      return [
+        {
+          key: 'ai-preview',
+          range: {
+            anchor: { path, offset: 0 },
+            focus: { path, offset: node.text.length },
+          },
+          attributes: {
+            className:
+              'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',
+            'data-editor-ai-end':
+              NodeApi.last(
+                { children: editor.read.children(), type: '' },
+                []
+              )[0] === node
+                ? ''
+                : undefined,
+          },
+        },
+      ];
+    },
+  },
+}));
+
+const scrollAIPreviewEnd = (editor: Editor, draft: HTMLElement | null) => {
+  const scrollElement = editor.api.dom.scroll();
+  const target = draft?.querySelector<HTMLElement>('[data-editor-ai-end]');
+  if (!scrollElement || !target) return;
+
+  const scrollBounds = scrollElement.getBoundingClientRect();
+  const targetBounds = target.getBoundingClientRect();
+
+  scrollElement.scrollTop +=
+    targetBounds.top +
+    targetBounds.height / 2 -
+    (scrollBounds.top + scrollBounds.height / 2);
+};
+
+export function AIChatEditor({ inline = false }: { inline?: boolean }) {
+  const editor = useEditor();
+  const draftRef = React.useRef<HTMLDivElement>(null);
   const aiEditor = useCreateEditor({
-    plugins: BaseEditorKit,
+    plugins: [...BaseEditorKit, PreviewAIPlugin],
   });
   const document = usePluginStore(AIChatPlugin, 'previewValue');
+  const streaming = usePluginStore(AIChatPlugin, 'streaming');
 
   const preview = useEditorRuntimeState(
     aiEditor,
@@ -64,11 +116,50 @@ export function AIChatEditor() {
     )
   );
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     aiEditor.update({ history: 'skip' }).value.replace({ children: document });
   }, [aiEditor, document]);
 
-  return <EditorStatic variant="aiChat" editor={preview} />;
+  React.useEffect(() => {
+    if (!inline) return;
+
+    scrollAIPreviewEnd(editor, draftRef.current);
+  }, [editor, inline, preview]);
+
+  React.useEffect(() => {
+    const draft = draftRef.current;
+    const Observer = draft?.ownerDocument.defaultView?.ResizeObserver;
+    if (!inline || !draft || !Observer) return undefined;
+
+    const observer = new Observer(() => scrollAIPreviewEnd(editor, draft));
+    observer.observe(draft);
+
+    return () => observer.disconnect();
+  }, [editor, inline]);
+
+  const last =
+    document.length > 0
+      ? NodeApi.last({ children: document, type: '' }, [])[0]
+      : null;
+
+  return (
+    <div ref={draftRef} data-editor-ai-draft="">
+      <EditorStatic
+        variant={inline ? 'none' : 'aiChat'}
+        editor={preview}
+        className={cn(
+          streaming &&
+            '[&_[data-editor-ai-end]]:after:ml-1.5 [&_[data-editor-ai-end]]:after:inline-block [&_[data-editor-ai-end]]:after:size-3 [&_[data-editor-ai-end]]:after:rounded-full [&_[data-editor-ai-end]]:after:bg-purple-600 [&_[data-editor-ai-end]]:after:align-middle [&_[data-editor-ai-end]]:after:content-[""]'
+        )}
+      />
+      {streaming && (!last || !TextApi.isText(last) || !last.text) && (
+        <span
+          data-editor-ai-end=""
+          className="inline-block size-3 rounded-full bg-purple-600 align-middle"
+        />
+      )}
+    </div>
+  );
 }
 
 export function AIMenu() {
@@ -78,11 +169,6 @@ export function AIMenu() {
   const toolName = usePluginStore(AIChatPlugin, 'toolName');
 
   const streaming = usePluginStore(AIChatPlugin, 'streaming');
-  const isSelecting = useEditorSelector(
-    (innerEditor) =>
-      innerEditor.read.selection.nodes().length > 0 ||
-      innerEditor.read.selection.isExpanded()
-  );
   const editAnchorKey = useEditorSelector((innerEditor) => {
     const entry = innerEditor.read.selection.nodes().at(-1);
 
@@ -107,27 +193,30 @@ export function AIMenu() {
   );
 
   React.useEffect(() => {
-    if (!streaming) return undefined;
+    if (!streaming && previewValue.length === 0) return undefined;
 
-    const anchorEntry = read.node({ anchor: true });
+    const anchorEntry = read.node();
     if (!anchorEntry) return undefined;
 
     const anchorDom = editor.api.dom.resolveDOMNode(anchorEntry[0]);
     if (!anchorDom) return undefined;
     const animationFrame = window.requestAnimationFrame(() => {
-      setAnchorElement(anchorDom);
+      setAnchorElement(
+        anchorDom.closest<HTMLElement>('[data-editor-ai-preview-wrapper]') ??
+          anchorDom
+      );
     });
 
     return () => {
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [editor, read, streaming]);
+  }, [editor, previewValue, read, streaming]);
 
   const setOpen = (innerOpen: boolean) => {
     if (innerOpen) {
-      api.show();
-    } else {
-      api.hide();
+      if (!chatOpen) api.show();
+    } else if (chatOpen) {
+      api.hide({ focus: false });
     }
   };
 
@@ -144,31 +233,10 @@ export function AIMenu() {
     }
 
     let nextAnchor: HTMLElement | null = null;
-    const selectedBlock = editor.read.nodes.blocks().at(-1);
-
-    if (selectedBlock) {
-      if (!ElementApi.isElement(selectedBlock[0])) return undefined;
-
-      nextAnchor = editor.api.dom.resolveDOMNode(selectedBlock[0]);
-    } else if (editor.read.selection.isCollapsed()) {
-      const ancestorEntry = editor.read.nodes.block();
-
-      if (!ancestorEntry) return undefined;
-
-      const [ancestor] = ancestorEntry;
-
-      if (
-        !editor.read.selection.isAtBlockEnd() &&
-        ElementApi.isElement(ancestor) &&
-        !editor.read.nodes.isEmpty(ancestor)
-      ) {
-        editor.update.selection.setNodes([ancestorEntry[1]]);
-      }
-
-      nextAnchor = editor.api.dom.resolveDOMNode(ancestor);
-    } else if (editor.read.selection.isExpanded()) {
-      const block = editor.read((state) => state.nodes.blocks()).at(-1);
-      nextAnchor = block ? editor.api.dom.resolveDOMNode(block[0]) : null;
+    const block =
+      editor.read.nodes.blocks().at(-1) ?? editor.read.nodes.block();
+    if (block && ElementApi.isElement(block[0])) {
+      nextAnchor = editor.api.dom.resolveDOMNode(block[0]);
     }
 
     if (!nextAnchor) return undefined;
@@ -217,8 +285,6 @@ export function AIMenu() {
 
   if (toolName === 'comment') return null;
 
-  if (toolName === 'edit' && mode === 'chat' && isLoading) return null;
-
   if (!anchorElement) return null;
 
   return (
@@ -230,7 +296,6 @@ export function AIMenu() {
         onEscapeKeyDown={(e) => {
           e.preventDefault();
 
-          api.stop();
           api.hide();
         }}
         align="center"
@@ -241,10 +306,7 @@ export function AIMenu() {
           value={value}
           onValueChange={setValue}
         >
-          {mode === 'chat' &&
-            isSelecting &&
-            previewValue.length > 0 &&
-            toolName === 'generate' && <AIChatEditor />}
+          {mode === 'chat' && previewValue.length > 0 && <AIChatEditor />}
 
           {isLoading ? (
             <div className="flex grow items-center gap-2 p-2 text-sm text-muted-foreground select-none">
@@ -324,22 +386,7 @@ const aiChatItems = {
     label: 'Accept',
     value: 'accept',
     onSelect: ({ editor }) => {
-      const { mode, toolName } = editor.plugin(AIChatPlugin).store.get();
-
-      if (mode === 'chat' && toolName === 'generate') {
-        editor.plugin(AIChatPlugin).update.replaceSelection();
-        editor.api.dom.focus();
-        return;
-      }
-
-      editor.plugin(AIChatPlugin).update.accept();
-      editor.update((tx) => {
-        const end = tx.points.end([]);
-
-        if (!end) return;
-
-        tx.selection.set({ anchor: end, focus: end });
-      });
+      editor.plugin(AIChatPlugin).api.accept();
       editor.api.dom.focus();
     },
   },
@@ -374,7 +421,10 @@ const aiChatItems = {
 {editor}
 </Document>
 Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
-          : 'Continue writing AFTER <Block> ONLY ONE SENTENCE. DONT REPEAT THE TEXT.',
+          : `<Block>
+{block}
+</Block>
+Continue writing AFTER <Block> with ONLY ONE SENTENCE. DO NOT REPEAT THE TEXT.`,
         toolName: 'generate',
       });
     },
@@ -385,7 +435,6 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     shortcut: 'Escape',
     value: 'discard',
     onSelect: ({ editor }) => {
-      editor.plugin(AIPlugin).update.undo();
       editor.plugin(AIChatPlugin).api.hide();
     },
   },
@@ -467,7 +516,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'insertBelow',
     onSelect: ({ editor }) => {
       /** Format: 'none' Fix insert table */
-      editor.plugin(AIChatPlugin).update.insertBelow({ format: 'none' });
+      editor.plugin(AIChatPlugin).api.insertBelow({ format: 'none' });
       editor.api.dom.focus();
     },
   },
@@ -500,7 +549,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Replace selection',
     value: 'replace',
     onSelect: ({ editor }) => {
-      editor.plugin(AIChatPlugin).update.replaceSelection();
+      editor.plugin(AIChatPlugin).api.replaceSelection();
       editor.api.dom.focus();
     },
   },
@@ -614,6 +663,7 @@ export const AIMenuItems = ({
   const editor = useEditor();
   const comments = editor.plugin(CommentsPlugin);
   const messages = usePluginStore(AIChatPlugin, 'chat')?.messages;
+  const mode = usePluginStore(AIChatPlugin, 'mode');
   const isSelecting = useEditorSelector(
     (innerEditor2) =>
       innerEditor2.read.selection.nodes().length > 0 ||
@@ -622,7 +672,7 @@ export const AIMenuItems = ({
 
   const menuState: EditorChatState =
     (messages?.length ?? 0) > 0
-      ? isSelecting
+      ? mode === 'chat'
         ? 'selectionSuggestion'
         : 'cursorSuggestion'
       : isSelecting
@@ -668,12 +718,9 @@ export const AIMenuItems = ({
 };
 
 export function AILoadingBar() {
-  const editor = useEditor();
   const toolName = usePluginStore(AIChatPlugin, 'toolName');
   const chat = usePluginStore(AIChatPlugin, 'chat');
   const mode = usePluginStore(AIChatPlugin, 'mode');
-  const comments = editor.plugin(CommentsPlugin);
-  const draftThreadIds = useDraftCommentThreadIds();
 
   const status = chat?.status ?? 'ready';
 
@@ -681,12 +728,7 @@ export function AILoadingBar() {
 
   const isLoading = status === 'streaming' || status === 'submitted';
 
-  if (
-    isLoading &&
-    (mode === 'insert' ||
-      toolName === 'comment' ||
-      (toolName === 'edit' && mode === 'chat'))
-  ) {
+  if (isLoading && (mode === 'insert' || toolName === 'comment')) {
     return (
       <div
         className={cn(
@@ -719,43 +761,22 @@ export function AILoadingBar() {
     );
   }
 
-  if (
-    toolName === 'comment' &&
-    status === 'ready' &&
-    comments.installed &&
-    draftThreadIds.length > 0
-  ) {
+  if (toolName === 'comment' && status === 'error') {
     return (
       <div
-        className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-lg border bg-popover p-2 text-sm shadow-lg"
-        data-ai-comment-review=""
+        className="fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center gap-2 rounded-lg border bg-popover p-2 text-sm shadow-lg"
+        data-ai-comment-error=""
         data-editor-keep-selection-visible
       >
-        <span className="px-1 text-muted-foreground">
-          Keep {draftThreadIds.length === 1 ? 'this comment' : 'these comments'}
-          ?
-        </span>
-        <Button
-          onClick={() => {
-            draftThreadIds.forEach(comments.api.publishDraft);
-            api.hide();
-          }}
-          size="sm"
-        >
-          <Check data-icon="inline-start" />
-          Accept
+        <p className="w-full px-1 text-destructive" role="alert">
+          Could not generate comments.
+        </p>
+        <Button onClick={() => api.reload()} size="sm" variant="outline">
+          Try again
         </Button>
-        <Button
-          onClick={() => {
-            draftThreadIds.forEach(comments.api.discardDraft);
-            comments.api.setActive([]);
-            api.hide();
-          }}
-          size="sm"
-          variant="outline"
-        >
+        <Button onClick={() => api.hide()} size="sm" variant="outline">
           <X data-icon="inline-start" />
-          Reject
+          Dismiss
         </Button>
       </div>
     );

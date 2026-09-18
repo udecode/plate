@@ -14,10 +14,14 @@ import { test } from 'node:test';
 
 import {
   discover,
+  documentMetadata,
+  draftExecution,
   draftReview,
+  executionFreshness,
   freshness,
   main,
   orderScopes,
+  planState,
   recordReview,
   records,
   reviewQueue,
@@ -81,8 +85,14 @@ function fixture(t) {
 }
 
 function completed(root, index, overrides = {}) {
+  const draft = draftReview(root, index, overrides.scope ?? 'comments');
   return {
-    ...draftReview(root, index, overrides.scope ?? 'comments'),
+    ...draft,
+    reconciliation: draft.reconciliation.map((entry) => ({
+      ...entry,
+      reason:
+        'The same requirements and unchanged fixture evidence still justify this conclusion.',
+    })),
     id: '2026-09-11-comments-first',
     date: '2026-09-11',
     model: 'fixture-model-a',
@@ -212,6 +222,12 @@ test('historical references survive source deletion while new references must ex
 
   main(root, ['refresh']);
   main(root, ['render']);
+  const hub = readFileSync(
+    join(root, 'docs/research/features/comments.md'),
+    'utf-8'
+  );
+  assert.ok(hub.includes(`\`${evidence}\` (historical input unavailable)`));
+  assert.ok(!hub.includes('](../../retired-proof.md)'));
   assert.equal(main(root, ['check']).records, 1);
   assert.equal(
     main(root, ['lookup', 'comments'])[0].history[0].freshness,
@@ -428,7 +444,7 @@ test('group lookup and partial completion retain individual records, proof and f
   assert.equal(lookup[0].history[0].id, first.id);
   assert.equal(lookup[1].history.length, 0);
   assert.equal(lookup[1].review, 'unassessed');
-  assert.equal(lookup[1].proofState, 'not-replayed');
+  assert.equal(lookup[1].proofState, 'unknown');
   assert.equal(lookup[1].adoption, 'not-assessed');
   assert.equal(lookup[1].reviewGroup.id, 'core');
   assert.deepEqual(
@@ -452,10 +468,7 @@ test('group lookup and partial completion retain individual records, proof and f
     rendered,
     /1 pending reviews across 1 pending questions; 1 reviews in total/
   );
-  assert.match(
-    rendered,
-    /Review: unassessed\. Adoption: not-assessed\. Proof: not-replayed/
-  );
+  assert.match(rendered, /\| unassessed \| not-assessed \| unknown \|/);
   assert.equal(main(root, ['check']).records, 1);
 
   recordReview(
@@ -748,5 +761,588 @@ test('incomplete decisions and unreconciled repeats are rejected', (t) => {
     () =>
       recordReview(root, index, { ...first, id: '2026-09-11-unreconciled' }),
     /reconcile previous/
+  );
+});
+
+function executionFixture(
+  t,
+  { scopes = ['comments'], workKind = 'implementation' } = {}
+) {
+  const fixtureState = fixture(t);
+  const { root, put, index } = fixtureState;
+  const reviews = scopes.map((scope) =>
+    completed(root, index, {
+      scope,
+      id: `2026-09-11-${scope}-basis`,
+      verdict: 'pursue',
+    })
+  );
+  for (const review of reviews) recordReview(root, index, review);
+  const plan = 'docs/plans/2026-09-12-adoption.md';
+  put(
+    plan,
+    `---\nreview_scopes: ${JSON.stringify(scopes)}\nreview_basis: ${JSON.stringify(reviews.map((review) => review.id))}\nwork_kind: ${workKind}\n---\n# Adoption\n\nStatus: Complete. Target adopted and proof executed.\n`
+  );
+  put('docs/proof-result.json', '{"passed":true,"case":"mapped ranges"}\n');
+  const execution = {
+    ...draftExecution(root, index, plan),
+    id: '2026-09-12-adoption-proof',
+    date: '2026-09-12',
+    summary:
+      'The governing owner decision was implemented and the mapped-range case passed.',
+    proof: {
+      state: 'verified',
+      evidence: [
+        {
+          path: 'docs/proof-result.json',
+          sha256: digest('{"passed":true,"case":"mapped ranges"}\n'),
+          claim: 'The fixture public behavior case passed.',
+        },
+      ],
+      limits:
+        'Synthetic helper fixture; no real product behavior is exercised.',
+    },
+  };
+  const persist = () =>
+    put('docs/research/review-index.json', JSON.stringify(index));
+  return { ...fixtureState, reviews, plan, execution, persist };
+}
+
+test('execution after a review is discoverable, bound to evidence, and never replaces the decision', (t) => {
+  const { root, put, index, reviews, plan, execution, persist } =
+    executionFixture(t);
+  recordReview(root, index, execution);
+  persist();
+  const [lookup] = main(root, ['lookup', 'comments']);
+  assert.equal(lookup.current.id, reviews[0].id);
+  assert.equal(draftReview(root, index, 'comments').previous, reviews[0].id);
+  assert.equal(lookup.progress.state, 'completed');
+  assert.equal(lookup.proofState, 'verified');
+  assert.equal(lookup.progress.plan, plan);
+  assert.deepEqual(lookup.progress.reviewBasis, [reviews[0].id]);
+  assert.equal(lookup.subsequentExecution.items[0].id, execution.id);
+  assert.ok(
+    lookup.conflicts.items.some((gap) => gap.kind === 'unreconciled-execution')
+  );
+  index.scopes[0].decision = 'docs/current-decision.md';
+  put(
+    index.scopes[0].decision,
+    `---\ncurrent_review: ${reviews[0].id}\nreconciled_executions: [${execution.id}]\n---\n# Current decision\nThe accepted target is implemented; proof limits remain in the outcome.\n`
+  );
+  persist();
+  assert.equal(main(root, ['lookup', 'comments'])[0].conflicts.total, 0);
+  assert.equal(
+    main(root, ['draft-execution', plan]).plan.sha256,
+    execution.plan.sha256
+  );
+});
+
+test('proof, plan and source changes independently invalidate an execution without rewriting it', (t) => {
+  const { root, put, index, execution, persist } = executionFixture(t);
+  const path = recordReview(root, index, execution);
+  const original = readFileSync(join(root, path), 'utf8');
+  persist();
+  for (const input of [
+    'docs/proof-result.json',
+    execution.plan.path,
+    'packages/platejs/src/features/comments/owner.ts',
+  ]) {
+    const before = readFileSync(join(root, input), 'utf8');
+    put(input, `${before}\nchanged`);
+    assert.equal(
+      executionFreshness(root, execution, discover(root, index)),
+      'stale'
+    );
+    assert.equal(main(root, ['lookup', 'comments'])[0].proofState, 'stale');
+    assert.ok(
+      main(root, ['lookup', 'comments'])[0].conflicts.items.some(
+        (gap) => gap.kind === 'stale-execution-proof'
+      )
+    );
+    assert.equal(readFileSync(join(root, path), 'utf8'), original);
+    put(input, before);
+  }
+  assert.equal(
+    executionFreshness(root, execution, discover(root, index)),
+    'matching'
+  );
+  rmSync(join(root, 'docs/proof-result.json'));
+  assert.equal(
+    executionFreshness(root, execution, discover(root, index)),
+    'stale'
+  );
+});
+
+test('a repeated Stop reuses evidence and a changed verdict must reopen the exact prior question', (t) => {
+  const { root, index } = fixture(t);
+  const first = completed(root, index);
+  recordReview(root, index, first);
+  const repeat = completed(root, index, {
+    id: '2026-09-12-comments-stop',
+    relation: 'reaffirms',
+  });
+  recordReview(root, index, repeat);
+  assert.deepEqual(repeat.source, first.source);
+  assert.deepEqual(index.scopes[0].plans, []);
+  const reversal = completed(root, index, {
+    id: '2026-09-13-comments-reopen',
+    verdict: 'pursue',
+    relation: 'reverses',
+  });
+  assert.throws(
+    () => recordReview(root, index, reversal),
+    /explicitly reopen or supersede/
+  );
+  reversal.reconciliation[0] = {
+    record: repeat.id,
+    question: 'An unrelated paint question',
+    action: 'reopens',
+    reason: 'New contradictory native range evidence.',
+  };
+  assert.throws(
+    () => recordReview(root, index, reversal),
+    /exact prior question/
+  );
+  reversal.reconciliation[0].question = repeat.question;
+  recordReview(root, index, reversal);
+  assert.equal(records(root, index).length, 3);
+  assert.equal(records(root, index)[0].verdict, 'stop');
+});
+
+test('a new review must explicitly reconcile execution that followed its predecessor', (t) => {
+  const { root, index, execution } = executionFixture(t);
+  recordReview(root, index, execution);
+  const next = completed(root, index, {
+    id: '2026-09-13-comments-review',
+    verdict: 'pursue',
+  });
+  assert.ok(next.reconciliation.some((entry) => entry.record === execution.id));
+  assert.throws(
+    () =>
+      recordReview(root, index, {
+        ...next,
+        reconciliation: next.reconciliation.filter(
+          (entry) => entry.record !== execution.id
+        ),
+      }),
+    /subsequent execution/
+  );
+  recordReview(root, index, next);
+  assert.equal(records(root, index).at(-1).id, next.id);
+});
+
+test('a cross-feature plan has one lifecycle and one outcome shared by both question histories', (t) => {
+  const { root, index, execution, persist } = executionFixture(t, {
+    scopes: ['comments', 'link'],
+  });
+  recordReview(root, index, execution);
+  persist();
+  assert.deepEqual(execution.scopes, ['comments', 'link']);
+  assert.equal(execution.reviewBasis.length, 2);
+  for (const scope of execution.scopes) {
+    const [lookup] = main(root, ['lookup', scope]);
+    assert.equal(lookup.progress.record, execution.id);
+    assert.equal(lookup.plans.total, 1);
+    assert.equal(lookup.current.scope, undefined);
+    assert.ok(lookup.current.id.includes(scope));
+  }
+  const invalid = {
+    ...execution,
+    id: '2026-09-12-incomplete-basis',
+    reviewBasis: execution.reviewBasis.slice(0, 1),
+  };
+  assert.throws(
+    () => recordReview(root, index, invalid),
+    /governing review for each scope/
+  );
+  assert.equal(
+    records(root, index).filter((record) => record.kind === 'execution').length,
+    1
+  );
+});
+
+test('missing associations and historical completion remain visible without inventing verified progress', (t) => {
+  const { root, put, index } = fixture(t);
+  const plan = 'docs/plans/2026-01-01-legacy.md';
+  put(plan, '# Historical plan\n\nStatus: Complete\n');
+  index.scopes[0].adoption = 'adopted';
+  index.scopes[0].proofState = 'verified';
+  put('docs/research/review-index.json', JSON.stringify(index));
+  assert.equal(validate(root, index).unassociatedPlans, 1);
+  assert.throws(() => draftExecution(root, index, plan), /Associate the plan/);
+  index.documents = [
+    {
+      path: plan,
+      scopes: ['comments'],
+      kind: 'plan',
+      disposition: 'historical',
+      rationale:
+        'The full plan records comment adoption, but source proof was not retained.',
+      workKind: 'implementation',
+      reviewBasis: [],
+    },
+  ];
+  const execution = {
+    ...draftExecution(root, index, plan),
+    id: '2026-09-12-legacy-import',
+    summary: 'Imported completion claim without recoverable source evidence.',
+    proof: {
+      state: 'unknown',
+      evidence: [],
+      limits: 'Historical completion only; no recoverable proof.',
+    },
+  };
+  assert.equal(execution.binding, 'historical-unbound');
+  assert.throws(
+    () =>
+      recordReview(root, index, {
+        ...execution,
+        proof: { ...execution.proof, state: 'verified' },
+      }),
+    /cannot certify proof/
+  );
+  recordReview(root, index, execution);
+  put('docs/research/review-index.json', JSON.stringify(index));
+  const [lookup] = main(root, ['lookup', 'comments']);
+  assert.equal(lookup.current, null);
+  assert.equal(lookup.adoption, 'unbound');
+  assert.equal(lookup.proofState, 'unknown');
+  assert.equal(validate(root, index).unassociatedPlans, 0);
+});
+
+test('compact lookup omits full source fingerprints and full history remains explicitly available', (t) => {
+  const { root, put, index } = fixture(t);
+  for (let i = 0; i < 12; i++)
+    recordReview(
+      root,
+      index,
+      completed(root, index, { id: `2026-09-11-comments-review-${i}` })
+    );
+  put('docs/research/review-index.json', JSON.stringify(index));
+  const [compact] = main(root, ['lookup', 'comments']);
+  const [detail] = main(root, ['lookup', 'comments', '--detail']);
+  assert.equal(compact.history.length, 3);
+  assert.equal(compact.historyTotal, 12);
+  assert.equal(compact.historyOmitted, 9);
+  assert.equal(compact.history[0].source, undefined);
+  assert.equal(detail.history.length, 12);
+  assert.equal(detail.historyOmitted, 0);
+  assert.ok(detail.history[0].source.files['docs/evidence.md']);
+  assert.ok(JSON.stringify(compact).length < JSON.stringify(detail).length / 2);
+});
+
+test('candidate classification preserves rejections and removes inspected leads from unresolved retrieval', (t) => {
+  const { root, put, index } = fixture(t);
+  put('docs/actual-comments.md', 'Mapped comment ranges.');
+  put('docs/github-comments.md', 'GitHub PR comment process.');
+  put('docs/unknown.md', 'Uninspected candidate.');
+  index.scopes[0].historyCandidates = [
+    'docs/actual-comments.md',
+    'docs/github-comments.md',
+    'docs/unknown.md',
+  ];
+  index.documents = [
+    {
+      path: 'docs/actual-comments.md',
+      scopes: ['comments'],
+      kind: 'specification',
+      disposition: 'historical',
+      rationale: 'Contains the earlier [mapped-range contract](evidence.md).',
+    },
+  ];
+  index.rejectedCandidates = [
+    {
+      path: 'docs/github-comments.md',
+      scopes: ['comments'],
+      reason: 'PR comments are unrelated to document Comments.',
+    },
+  ];
+  put('docs/research/review-index.json', JSON.stringify(index));
+  const [lookup] = main(root, ['lookup', 'comments']);
+  assert.deepEqual(lookup.historyCandidates.items, ['docs/unknown.md']);
+  assert.equal(lookup.rejectedCandidates.total, 1);
+  const [detail] = main(root, ['lookup', 'comments', '--detail']);
+  assert.equal(
+    detail.rejectedCandidates[0].reason,
+    index.rejectedCandidates[0].reason
+  );
+  main(root, ['render']);
+  assert.equal(main(root, ['check']).hubs, 2);
+  assert.match(
+    readFileSync(join(root, 'docs/research/features/comments.md'), 'utf8'),
+    /PR comments are unrelated/
+  );
+  const hub = readFileSync(
+    join(root, 'docs/research/features/comments.md'),
+    'utf8'
+  );
+  assert.ok(hub.includes('Contains the earlier mapped-range contract.'));
+  assert.ok(!hub.includes('](evidence.md)'));
+});
+
+test('metadata and legacy lifecycle labels preserve ambiguity instead of choosing a convenient status', (t) => {
+  const { root, put } = fixture(t);
+  const path = 'docs/plans/status.md';
+  put(
+    path,
+    '---\nreview_scopes:\n  - comments\n  - link\nreview_basis: []\nwork_kind: design\nstatus: active\n---\n# Plan\n\n- goal_status: active\n'
+  );
+  const active = planState(root, path);
+  assert.equal(active.status, 'in-progress');
+  assert.deepEqual(active.review_scopes, ['comments', 'link']);
+  put(path, `${readFileSync(join(root, path), 'utf8')}\nStatus: Complete\n`);
+  assert.equal(planState(root, path).status, 'conflict');
+  assert.deepEqual(documentMetadata('---\nreview_scopes: comments\n---\n'), {
+    review_scopes: null,
+  });
+});
+
+test('a completed design plan does not silently become implementation adoption', (t) => {
+  const { root, index, execution, persist } = executionFixture(t, {
+    workKind: 'design',
+  });
+  recordReview(root, index, execution);
+  persist();
+  const [lookup] = main(root, ['lookup', 'comments']);
+  assert.equal(lookup.progress.workKind, 'design');
+  assert.equal(lookup.progress.state, 'design-complete');
+  assert.equal(lookup.adoption, 'not-established');
+  assert.notEqual(lookup.adoption, 'adopted');
+});
+
+test('recording rejects stale execution inputs, conflicting lifecycle, and plan-only verified claims', (t) => {
+  const { root, put, index, execution, plan } = executionFixture(t);
+  const invalid = {
+    ...execution,
+    proof: {
+      ...execution.proof,
+      evidence: [{ ...execution.plan, claim: 'The plan says complete.' }],
+    },
+  };
+  assert.throws(() => recordReview(root, index, invalid), /plan alone/);
+  const before = readFileSync(join(root, plan), 'utf8');
+  put(plan, `${before}\nChanged plan.\n`);
+  assert.throws(() => recordReview(root, index, execution), /input changed/);
+  put(plan, `${before}\n- goal_status: active\n`);
+  const conflicted = {
+    ...execution,
+    plan: draftExecution(root, index, plan).plan,
+  };
+  assert.throws(
+    () => recordReview(root, index, conflicted),
+    /conflicting plan lifecycle/
+  );
+});
+
+test('generated hubs must match current decisions and leave immutable records untouched', (t) => {
+  const { root, put, index, reviews, execution, persist } = executionFixture(t);
+  const recordPath = recordReview(root, index, execution);
+  const original = readFileSync(join(root, recordPath), 'utf8');
+  index.scopes[0].decision = 'docs/decision.md';
+  put(
+    'docs/decision.md',
+    '---\ncurrent_review: wrong-record\n---\n# Decision\n'
+  );
+  persist();
+  main(root, ['render']);
+  assert.equal(main(root, ['check']).hubs, 2);
+  assert.ok(
+    main(root, ['lookup', 'comments'])[0].conflicts.items.some(
+      (gap) =>
+        gap.kind === 'decision-review-mismatch' &&
+        gap.expected === reviews[0].id
+    )
+  );
+  put('docs/research/features/comments.md', 'Stale hand-edited feature status');
+  assert.throws(() => main(root, ['check']), /feature hub is stale/);
+  main(root, ['render']);
+  assert.equal(readFileSync(join(root, recordPath), 'utf8'), original);
+});
+
+test('a newer decision without retained execution invalidates current progress while preserving the prior outcome', (t) => {
+  const { root, put, index, execution, persist } = executionFixture(t);
+  recordReview(root, index, execution);
+  const replacement = completed(root, index, {
+    id: '2026-09-14-comments-replacement',
+    verdict: 'pursue',
+    relation: 'supersedes',
+  });
+  replacement.reconciliation = replacement.reconciliation.map((entry) => ({
+    ...entry,
+    action: 'supersedes',
+    reason:
+      'Contradictory range evidence requires a different owner; old adoption does not implement it.',
+  }));
+  recordReview(root, index, replacement);
+  persist();
+  const [lookup] = main(root, ['lookup', 'comments']);
+  assert.equal(lookup.progress.state, 'decision-changed');
+  assert.equal(lookup.proofState, 'unknown');
+  assert.equal(lookup.progress.priorOutcome.record, execution.id);
+  assert.ok(
+    lookup.conflicts.items.some((gap) => gap.kind === 'decision-changed')
+  );
+  const oldPlan = 'docs/plans/2026-01-01-recovered.md';
+  put(
+    oldPlan,
+    '---\nreview_scopes: [comments]\nreview_basis: []\nwork_kind: implementation\n---\nStatus: Complete\n'
+  );
+  const recovered = {
+    ...draftExecution(root, index, oldPlan),
+    id: '2026-09-14-recovered',
+    summary: 'Historical completion recovered without evidence.',
+    proof: {
+      state: 'unknown',
+      evidence: [],
+      limits: 'Execution date and source binding are unknown.',
+    },
+  };
+  recordReview(root, index, recovered);
+  persist();
+  assert.equal(main(root, ['lookup', 'comments'])[0].adoption, 'unbound');
+  assert.equal(main(root, ['lookup', 'comments'])[0].proofState, 'unknown');
+});
+
+test('retaining a governing decision preserves valid bound progress across repeated review', (t) => {
+  const { root, index, execution, persist } = executionFixture(t);
+  recordReview(root, index, execution);
+  const first = completed(root, index, {
+    id: '2026-09-13-retained',
+    verdict: 'pursue',
+    relation: 'reaffirms',
+  });
+  recordReview(root, index, first);
+  const second = completed(root, index, {
+    id: '2026-09-14-retained',
+    verdict: 'pursue',
+    relation: 'reaffirms',
+  });
+  assert.ok(
+    !second.reconciliation.some((entry) => entry.record === execution.id)
+  );
+  recordReview(root, index, second);
+  persist();
+  const [lookup] = main(root, ['lookup', 'comments']);
+  assert.equal(lookup.progress.state, 'completed');
+  assert.equal(lookup.proofState, 'verified');
+  assert.equal(lookup.progress.governsCurrentReview, true);
+});
+
+test('gated work and next-line completion labels are recovered without crossing arbitrary prose', (t) => {
+  const { root, put } = fixture(t);
+  const path = 'docs/plans/lifecycle.md';
+  put(path, '# Proposal\n\nStatus: Gated on native proof.\n');
+  assert.equal(planState(root, path).status, 'gated');
+  put(path, '# Historical plan\n\nStatus:\n- Complete.\n');
+  assert.equal(planState(root, path).status, 'completed');
+  put(path, '# Historical plan\n\nStatus:\n\nUnrelated later prose.\n');
+  assert.equal(planState(root, path).status, 'unknown');
+});
+
+test('compact lookup prioritizes current closure and recent governing plans over old unbound candidates', (t) => {
+  const { root, put, index, execution, persist } = executionFixture(t);
+  recordReview(root, index, execution);
+  for (let i = 0; i < 20; i++) {
+    const path = `docs/plans/2026-01-${String(i + 1).padStart(2, '0')}-legacy.md`;
+    put(path, '# Legacy\n\nStatus: Complete\n');
+    index.scopes[0].plans.push(path);
+  }
+  persist();
+  const [lookup] = main(root, ['lookup', 'comments']);
+  assert.equal(lookup.plans.items[0].path, execution.plan.path);
+  assert.ok(
+    lookup.conflicts.items.some((gap) => gap.kind === 'unreconciled-execution')
+  );
+  assert.equal(lookup.conflicts.byKind['unbound-plan'], 20);
+  assert.equal(lookup.plans.total, 21);
+  assert.ok(JSON.stringify(lookup).length < 8000);
+});
+
+test('required decision reconciliation does not invalidate execution proof through a mutable summary input', (t) => {
+  const { root, put, index, reviews, plan, execution, persist } =
+    executionFixture(t);
+  const decision = 'docs/decision.md';
+  index.scopes[0].decision = decision;
+  index.scopes[0].evidenceInputs = [decision];
+  put(decision, `---\ncurrent_review: ${reviews[0].id}\n---\n# Decision\n`);
+  const draft = draftExecution(root, index, plan);
+  assert.equal(draft.source.files[decision], undefined);
+  const outcome = { ...execution, source: draft.source };
+  recordReview(root, index, outcome);
+  put(
+    decision,
+    `---\ncurrent_review: ${reviews[0].id}\nreconciled_executions: [${execution.id}]\n---\n# Decision\nOutcome reconciled.\n`
+  );
+  persist();
+  assert.equal(main(root, ['lookup', 'comments'])[0].proofState, 'verified');
+  assert.equal(main(root, ['lookup', 'comments'])[0].conflicts.total, 0);
+  put('packages/platejs/src/features/comments/owner.ts', 'changed runtime');
+  assert.equal(main(root, ['lookup', 'comments'])[0].proofState, 'stale');
+});
+
+test('explicit no-feature work differs from missing associations and invalid metadata is rejected', (t) => {
+  const { root, put, index } = fixture(t);
+  const path = 'docs/plans/2026-09-12-unrelated.md';
+  put(
+    path,
+    '---\nreview_scopes: []\nreview_basis: []\nwork_kind: workflow\n---\nStatus: In progress\n'
+  );
+  assert.equal(validate(root, index).unassociatedPlans, 0);
+  assert.equal(validate(root, index).explicitlyUnscopedPlans, 1);
+  assert.throws(() => draftExecution(root, index, path), /Associate the plan/);
+  put(
+    path,
+    '---\nreview_scopes: [missing]\nreview_basis: []\nwork_kind: workflow\n---\nStatus: In progress\n'
+  );
+  assert.throws(() => validate(root, index), /Unknown plan scope/);
+  put(
+    path,
+    '---\nreview_scopes: []\nreview_basis: []\nwork_kind: workflow\n---\nStatus: In progress\n- goal_status: active\n'
+  );
+  assert.throws(() => validate(root, index), /one lifecycle Status/);
+  rmSync(join(root, path));
+  index.documents = [
+    {
+      path: 'docs/evidence.md',
+      scopes: ['comments'],
+      kind: 'specification',
+      disposition: 'historial',
+      rationale: 'A typo must not silently classify this as inspected.',
+    },
+  ];
+  assert.throws(() => validate(root, index), /Classify inspected document/);
+});
+
+test('historical imports stay visible without forcing unrelated old executions into every repeated review', (t) => {
+  const { root, put, index } = fixture(t);
+  const first = completed(root, index);
+  recordReview(root, index, first);
+  const plan = 'docs/plans/2026-01-01-historical.md';
+  put(
+    plan,
+    '---\nreview_scopes: [comments]\nreview_basis: []\nwork_kind: implementation\n---\nStatus: Complete\n'
+  );
+  const execution = {
+    ...draftExecution(root, index, plan),
+    id: '2026-09-15-recovered-history',
+    summary: 'Unbound historic completion; execution date unknown.',
+    proof: {
+      state: 'unknown',
+      evidence: [],
+      limits: 'No source binding recovered.',
+    },
+  };
+  recordReview(root, index, execution);
+  const next = completed(root, index, { id: '2026-09-16-comments-stop' });
+  assert.deepEqual(
+    next.reconciliation.map((entry) => entry.record),
+    [first.id]
+  );
+  recordReview(root, index, next);
+  put('docs/research/review-index.json', JSON.stringify(index));
+  assert.ok(
+    main(root, ['lookup', 'comments', '--detail'])[0].history.some(
+      (record) => record.id === execution.id
+    )
   );
 });

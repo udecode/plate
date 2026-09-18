@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-09-15-history-actions",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-09-15-history-actions.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-09-15",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Use explicit editor services for complete history and AI actions",
+  "targets": [
+    {
+      "name": "history-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/history-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-09-15-history-actions",
+      "kind": "behavior",
+      "summary": "Run complete undo, redo, and AI response actions through editor services so each action publishes as one history unit.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["history-toolbar-button", "ai-menu", "use-chat"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-09-15",
+          "entry": "2026-09-15-history-actions",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

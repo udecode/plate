@@ -1,0 +1,51 @@
+{
+  "started_at": "2026-09-17T07:43:23.256589+00:00",
+  "cwd": "/Users/zbeyens/git/plate-2",
+  "command": [
+    "bun",
+    "test",
+    "./packages/platejs/src/react/features/table/useTableSelectionDOM.spec.tsx",
+    "./docs/plite/research/2026-09-17-table-substrate-ownership/sources/paint-probe.test.tsx"
+  ],
+  "host": "macOS-26.3.1-arm64-arm-64bit-Mach-O",
+  "bun_version": "1.3.12",
+  "sha256_before": {
+    "packages/platejs/src/react/features/table/useTableSelectionDOM.ts": "d03b356e9abba9e6e5ef7aa8dd700c23da7db0b9f166307e4390976f842cf8d7",
+    "packages/platejs/src/react/features/table/useTableSelectionDOM.spec.tsx": "022b7d8673fe89d35c45fb1234ee4654e871456a5a8445bd1a1ca23ebed3a81f",
+    "packages/platejs/src/react/features/table/TablePlugin.tsx": "01ba4d2e87db62d7938650c716ee159ca80b966d89924e32401bb42275986e40",
+    "packages/platejs/src/features/table/lib/__tests__/getTestTablePlugins.ts": "7baca426976b0a22e63c104e96af84c2f29057a2ce6444162c0089a9eed1dcbe",
+    "packages/platejs/src/react/plite-react.ts": "5945917b8de3497b0093aa2d21518f7eaf2dd9125a99b3220fcc53ec869ee135",
+    "packages/plitejs/src/react/hooks/use-claim-editable-dom-commit.ts": "fbcdbcbc5346f6ee3832b026fa03bf214f3b48300b58b84c6d24f10912c5d619",
+    "packages/plitejs/src/react/editable/editable-dom-runtime.ts": "f7daf53909249232803255423c0feaea273bacd773e2d823ac401bb39ceaf8ba",
+    "packages/plitejs/src/dom/plugin/dom-root-runtime.ts": "91555dfc2f9784366712efe9a2369d7462ca0105bc3bb6a9775f357c6f616d48",
+    "packages/plitejs/src/dom/plugin/dom-integrity-observer.ts": "a85674cb905c1c3e1e9db2f8319ece1e6f3b573f7eca2104ef3ca3b769bf2749",
+    "packages/plitejs/test/react/mutation-observer-lifecycle-contract.test.tsx": "8edd47379704dd5f5650629d12c57406392c1ade90488d24effe3ed55ee439e4",
+    "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+    "tooling/config/bunTestSetup.ts": "f792ad47c50664174ee921a394fb2f667c69bb2eb6037c4f1e17bba440c93a0e",
+    "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+    "config/workspace-source-entries.mjs": "07fd635afc33e4a04880e27505ae20174546a8b649160c8a88e2156248ae5f64",
+    "tooling/config/tsconfig.test.json": "918050c19c181b90fbadcdaa8d93c7a237c7479a4267770780cc12e1c96829ae",
+    "docs/plite/research/2026-09-17-table-substrate-ownership/sources/paint-probe.test.tsx": "e3a986aad92e3949278e7f860cee9885cfefe8db5092a4e66e4a609ee1b7e18e"
+  },
+  "exit_code": 1,
+  "completed_at": "2026-09-17T07:43:23.982213+00:00",
+  "sha256_after": {
+    "packages/platejs/src/react/features/table/useTableSelectionDOM.ts": "d03b356e9abba9e6e5ef7aa8dd700c23da7db0b9f166307e4390976f842cf8d7",
+    "packages/platejs/src/react/features/table/useTableSelectionDOM.spec.tsx": "022b7d8673fe89d35c45fb1234ee4654e871456a5a8445bd1a1ca23ebed3a81f",
+    "packages/platejs/src/react/features/table/TablePlugin.tsx": "01ba4d2e87db62d7938650c716ee159ca80b966d89924e32401bb42275986e40",
+    "packages/platejs/src/features/table/lib/__tests__/getTestTablePlugins.ts": "7baca426976b0a22e63c104e96af84c2f29057a2ce6444162c0089a9eed1dcbe",
+    "packages/platejs/src/react/plite-react.ts": "5945917b8de3497b0093aa2d21518f7eaf2dd9125a99b3220fcc53ec869ee135",
+    "packages/plitejs/src/react/hooks/use-claim-editable-dom-commit.ts": "fbcdbcbc5346f6ee3832b026fa03bf214f3b48300b58b84c6d24f10912c5d619",
+    "packages/plitejs/src/react/editable/editable-dom-runtime.ts": "f7daf53909249232803255423c0feaea273bacd773e2d823ac401bb39ceaf8ba",
+    "packages/plitejs/src/dom/plugin/dom-root-runtime.ts": "91555dfc2f9784366712efe9a2369d7462ca0105bc3bb6a9775f357c6f616d48",
+    "packages/plitejs/src/dom/plugin/dom-integrity-observer.ts": "a85674cb905c1c3e1e9db2f8319ece1e6f3b573f7eca2104ef3ca3b769bf2749",
+    "packages/plitejs/test/react/mutation-observer-lifecycle-contract.test.tsx": "8edd47379704dd5f5650629d12c57406392c1ade90488d24effe3ed55ee439e4",
+    "bunfig.toml": "ffaf230b1b613a5772fb45f16621774d4917dfc68880a35c208eb7efbb869ddf",
+    "tooling/config/bunTestSetup.ts": "f792ad47c50664174ee921a394fb2f667c69bb2eb6037c4f1e17bba440c93a0e",
+    "config/plite-source-aliases.ts": "cb973002525fb758daa721cc79c561a90257c353c9ffb3e0994992bb4eb32718",
+    "config/workspace-source-entries.mjs": "07fd635afc33e4a04880e27505ae20174546a8b649160c8a88e2156248ae5f64",
+    "tooling/config/tsconfig.test.json": "918050c19c181b90fbadcdaa8d93c7a237c7479a4267770780cc12e1c96829ae",
+    "docs/plite/research/2026-09-17-table-substrate-ownership/sources/paint-probe.test.tsx": "e3a986aad92e3949278e7f860cee9885cfefe8db5092a4e66e4a609ee1b7e18e"
+  },
+  "sources_unchanged_during_run": true
+}

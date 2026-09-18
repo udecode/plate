@@ -300,10 +300,13 @@ export default function TablePerfPage() {
     const samples: number[] = [];
 
     for (let index = 0; index < WARMUP_RUNS + MEASURED_RUNS; index++) {
-      await remount();
+      const startedAt = performance.now();
 
-      if (index >= WARMUP_RUNS && initialRenderRef.current !== null) {
-        samples.push(initialRenderRef.current);
+      await remount();
+      const elapsed = performance.now() - startedAt;
+
+      if (index >= WARMUP_RUNS) {
+        samples.push(elapsed);
       }
     }
 
@@ -398,7 +401,7 @@ export default function TablePerfPage() {
       const startedAt = performance.now();
       editor
         .plugin(TablePlugin)
-        .update.setColumnWidth({ colIndex: 0, width: finalWidth }, { at: [0] });
+        .update.setColumnWidth({ at: [0], colIndex: 0, width: finalWidth });
       await nextPaint();
       const elapsed = performance.now() - startedAt;
       const { root, table } = assertRenderedTable(editor, configRef.current);

@@ -23,10 +23,10 @@ describe('table merge slow contracts', () => {
 
     const createTableEditor = (
       input: TestEditor,
-      { disableMerge = false }: { disableMerge?: boolean } = {}
+      { allowCellSpanEditing = true }: { allowCellSpanEditing?: boolean } = {}
     ) =>
       createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing }),
         selection: input.selection,
         initialValue: input.children,
       });
@@ -87,10 +87,9 @@ describe('table merge slow contracts', () => {
           expect(
             mergedCell.children.map((child) => NodeApi.string(child))
           ).toEqual(['11', '12', '21', '22']);
-          expect(editor.read.selection()).toEqual({
-            anchor: { offset: 2, path: [0, 0, 0, 3, 0] },
-            focus: { offset: 2, path: [0, 0, 0, 3, 0] },
-          });
+          expect(editor.plugin(BaseTablePlugin).read.cell()?.entry[1]).toEqual([
+            0, 0, 0,
+          ]);
         });
 
         it('preserves nested tables while merging outer cells', () => {
@@ -140,7 +139,7 @@ describe('table merge slow contracts', () => {
       });
 
       describe('splitTableCell', () => {
-        it('splits a merged cell into 1x1 cells, creates missing rows, and keeps content in the first cell', () => {
+        it('splits a merged cell into 1x1 cells, fills rows covered by its rowspan, and keeps content in the first cell', () => {
           const input = (
             <editor>
               <htable>
@@ -152,6 +151,7 @@ describe('table merge slow contracts', () => {
                     </hp>
                   </htd>
                 </htr>
+                <htr />
               </htable>
             </editor>
           ) as TestEditor;
@@ -193,9 +193,9 @@ describe('table merge slow contracts', () => {
           editor.plugin(BaseTablePlugin).update.split();
 
           expect(editor.read.children()).toMatchObject(output.children);
-          expect(editor.read.selection()).toEqual(
-            projectTestSelectionRange(output.selection)
-          );
+          expect(editor.plugin(BaseTablePlugin).read.cell()?.entry[1]).toEqual([
+            0, 0, 0,
+          ]);
         });
 
         it('inserts split cells into existing rows before later siblings', () => {
@@ -285,7 +285,9 @@ describe('table merge slow contracts', () => {
             </editor>
           ) as TestEditor;
 
-          const editor = createTableEditor(input, { disableMerge: true });
+          const editor = createTableEditor(input, {
+            allowCellSpanEditing: false,
+          });
 
           editor.update.table.removeRow();
 
@@ -325,7 +327,9 @@ describe('table merge slow contracts', () => {
             </editor>
           ) as TestEditor;
 
-          const editor = createTableEditor(input, { disableMerge: true });
+          const editor = createTableEditor(input, {
+            allowCellSpanEditing: false,
+          });
 
           editor.update.table.removeRow();
 
@@ -390,7 +394,9 @@ describe('table merge slow contracts', () => {
             </editor>
           ) as TestEditor;
 
-          const editor = createTableEditor(input, { disableMerge: true });
+          const editor = createTableEditor(input, {
+            allowCellSpanEditing: false,
+          });
 
           editor.update.table.removeColumn();
 
@@ -430,7 +436,9 @@ describe('table merge slow contracts', () => {
             </editor>
           ) as TestEditor;
 
-          const editor = createTableEditor(input, { disableMerge: true });
+          const editor = createTableEditor(input, {
+            allowCellSpanEditing: false,
+          });
 
           editor.update.table.removeColumn();
 
@@ -448,7 +456,7 @@ describe('table merge slow contracts', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: false }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         selection: input.selection,
         initialValue: input.children,
       });
@@ -597,7 +605,7 @@ describe('table merge slow contracts', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: false }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         selection: input.selection,
         initialValue: input.children,
       });
@@ -833,7 +841,7 @@ describe('table merge slow contracts', () => {
         ]);
       });
 
-      it('keeps the last remaining row intact', () => {
+      it('removes the table when its final row is removed', () => {
         const input = (
           <editor>
             <htable>
@@ -853,7 +861,9 @@ describe('table merge slow contracts', () => {
 
         editor.update.table.removeRow();
 
-        expect(editor.read.children()).toMatchObject(input.children);
+        expect(editor.read.children()).toEqual([
+          { type: 'paragraph', children: [{ text: '' }] },
+        ]);
       });
     });
   }

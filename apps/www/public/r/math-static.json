@@ -2,7 +2,10 @@
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "math-static",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "katex@0.16.22",
+    "lucide-react"
   ],
   "registryDependencies": [
     "https://platejs.org/r/suggestion-style.json"

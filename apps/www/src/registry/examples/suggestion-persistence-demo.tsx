@@ -1,13 +1,14 @@
 'use client';
 
 import type { EditorValueInput, Value } from 'platejs';
-import type { CommentThread } from 'platejs/comments';
+import type { CommentsJSON } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
+import { AllCommentsButton } from '@/registry/components/editor/comment-toolbar-button';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import {
@@ -21,14 +22,14 @@ import { createSuggestionDocument } from '@/registry/examples/values/suggestion-
 
 type SuggestionSnapshot = {
   document: EditorValueInput<Value>;
-  threads: readonly CommentThread[];
+  comments: CommentsJSON | null;
 };
 
 export default function SuggestionPersistenceDemo() {
   const [saved, setSaved] = React.useState<SuggestionSnapshot | null>(null);
   const [loaded, setLoaded] = React.useState<SuggestionSnapshot>(() => ({
     document: createSuggestionDocument(),
-    threads: [],
+    comments: null,
   }));
   const [status, setStatus] = React.useState(
     'Snapshots stay in memory in this example.'
@@ -43,7 +44,7 @@ export default function SuggestionPersistenceDemo() {
           initialState: {
             currentUserId: 'alice',
             users: { alice: { id: 'alice', name: 'Alice' } },
-            initialThreads: loaded.threads,
+            initialComments: loaded.comments,
           },
         }),
       ],
@@ -61,7 +62,7 @@ export default function SuggestionPersistenceDemo() {
             setSaved(
               structuredClone({
                 document: editor.read.value(),
-                threads: editor.plugin(CommentsPlugin).api.getThreads(),
+                comments: editor.plugin(CommentsPlugin).api.toJSON(),
               })
             );
             setStatus('Saved proposals and discussion threads in memory.');
@@ -77,7 +78,7 @@ export default function SuggestionPersistenceDemo() {
             if (!saved) return;
             setLoaded(structuredClone(saved));
             setStatus(
-              'Reloaded the saved proposals and threads. Unsaved changes were discarded.'
+              'Reloaded the saved proposals and threads with a fresh undo history. Unsaved changes were discarded.'
             );
           }}
           size="sm"
@@ -102,10 +103,11 @@ export default function SuggestionPersistenceDemo() {
 
 function SuggestionPersistenceContent() {
   return (
-    <EditorContainer className="h-[280px] rounded-md border" variant="demo">
+    <EditorContainer className="h-[280px] rounded-md border">
       <Toolbar className="border-b px-3 py-1">
         <UndoToolbarButton aria-label="Undo saved document change" />
         <RedoToolbarButton aria-label="Redo saved document change" />
+        <AllCommentsButton />
         <div className="ml-auto">
           <ModeToolbarButton />
         </div>

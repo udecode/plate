@@ -1,0 +1,3555 @@
+{
+  "schema_version": 2,
+  "version_note": "Preserved local snapshot plus later remote freshness supplement. Read freshness_supplement before integrating snapshot gaps as current upstream facts.",
+  "freshness_supplement": {
+    "checked_on": "2026-09-17",
+    "authorization": "Lead requested fetch without checkout/pull and a decisive-file comparison within the authorized research scope; this supersedes the snapshot's no-fetch limit.",
+    "method": [
+      "git ls-remote origin HEAD refs/heads/main",
+      "git fetch --no-tags --no-write-fetch-head origin 4973ca1782ea4278adc496c75eab464a0887bf00",
+      "git diff HEAD 4973ca1782ea4278adc496c75eab464a0887bf00 -- <the 15 explicitly listed decisive files>",
+      "git rev-parse <commit>:<path> for both versions; git show for relevant remote bodies",
+      "Exact extracted BaseSelection interface and $setSelection function body equality"
+    ],
+    "snapshot_commit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+    "remote_head": "4973ca1782ea4278adc496c75eab464a0887bf00",
+    "remote_main": "4973ca1782ea4278adc496c75eab464a0887bf00",
+    "remote_commit_date": "2026-09-17T01:19:29Z",
+    "remote_commit_subject": "build(deps-dev): bump the vitest group across 1 directory with 2 updates (#9157)",
+    "checkout_head_after_fetch": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+    "checkout_branch": "main",
+    "checkout_changed": false,
+    "freshness_result": "Local checkout does not match remote main. Remote commit was fetched and relevant deltas inspected; three decisive files are wholly unchanged, and BaseSelection/$setSelection contracts are unchanged inside otherwise changed core files.",
+    "unchanged_verified": [
+      {
+        "scope": "Entire TableSelection file",
+        "read_id": "selection",
+        "blob": "37b995011a816092abe65d57d8dd9d15c8af8e68"
+      },
+      {
+        "scope": "Entire React TablePlugin file",
+        "read_id": "react",
+        "blob": "3b63049fab7b9a5003e2b3b1bad44b02b79d3a4d"
+      },
+      {
+        "scope": "Entire resize CSS file",
+        "read_id": "resizeCss",
+        "blob": "bb6b6743f430df2e830562a92b44f17fde8144ad"
+      },
+      {
+        "scope": "BaseSelection interface",
+        "snapshot_lines": [
+          394,
+          411
+        ],
+        "remote_lines": [
+          398,
+          415
+        ],
+        "identical": true,
+        "block_sha256": "c2df57f365a96806b68301dbc704b8b743ad5858fcbbab086737afac03b3d881",
+        "read_id": "base"
+      },
+      {
+        "scope": "$setSelection complete function body",
+        "snapshot_lines": [
+          765,
+          789
+        ],
+        "remote_lines": [
+          862,
+          886
+        ],
+        "identical": true,
+        "read_id": "set"
+      },
+      {
+        "scope": "MIT root LICENSE",
+        "snapshot_blob": "b93be90515ccd0b9daedaa589e42bf5929693f1f",
+        "remote_blob": "b93be90515ccd0b9daedaa589e42bf5929693f1f",
+        "identical": true,
+        "lines": [
+          1,
+          21
+        ]
+      }
+    ],
+    "file_comparisons": [
+      {
+        "read_id": "base",
+        "repo_relative_path": "packages/lexical/src/LexicalSelection.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalSelection.ts",
+        "snapshot_blob": "aa90191bf20bc66159d134f0bac751646624f107",
+        "remote_blob": "aa0c622dda40e968b2e7c17ec994ab134204615b",
+        "whole_file_identical": false,
+        "review_scope": "Compared decisive declaration/body only; unrelated file changes not audited"
+      },
+      {
+        "read_id": "state",
+        "repo_relative_path": "packages/lexical/src/LexicalEditorState.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditorState.ts",
+        "snapshot_blob": "a782c6bd6a761a8097f3093cdae2d5b332b702d9",
+        "remote_blob": "9cc3550acc89548142dcc6932bd82b40ee543af5",
+        "whole_file_identical": false,
+        "review_scope": "Read complete file diff hunks; bounded remote body excerpts where listed"
+      },
+      {
+        "read_id": "set",
+        "repo_relative_path": "packages/lexical/src/LexicalUtils.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalUtils.ts",
+        "snapshot_blob": "68509f1a85808d87999aa52183157258e39f97a1",
+        "remote_blob": "c4ccd7f9af0e24bd0bf235896cd05e1cdfdec4b2",
+        "whole_file_identical": false,
+        "review_scope": "Compared decisive declaration/body only; unrelated file changes not audited"
+      },
+      {
+        "read_id": "selection",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableSelection.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableSelection.ts",
+        "snapshot_blob": "37b995011a816092abe65d57d8dd9d15c8af8e68",
+        "remote_blob": "37b995011a816092abe65d57d8dd9d15c8af8e68",
+        "whole_file_identical": true,
+        "review_scope": "Verified whole-file blob equality"
+      },
+      {
+        "read_id": "register",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTablePluginHelpers.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTablePluginHelpers.ts",
+        "snapshot_blob": "4a0b7bcd4763f8d5059bd151537eb29e32803569",
+        "remote_blob": "0d879cb2e58112353952d3cd8faf6ecb68e80f3c",
+        "whole_file_identical": false,
+        "review_scope": "Read complete file diff hunks; bounded remote body excerpts where listed"
+      },
+      {
+        "read_id": "extension",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableExtension.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableExtension.ts",
+        "snapshot_blob": "6dda5bdff360584b99ab3a02baf55d560002f807",
+        "remote_blob": "4867616ee2980cbcdf1c4e8a190474ee6f87c71b",
+        "whole_file_identical": false,
+        "review_scope": "Read complete file diff hunks; bounded remote body excerpts where listed"
+      },
+      {
+        "read_id": "react",
+        "repo_relative_path": "packages/lexical-react/src/LexicalTablePlugin.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-react/src/LexicalTablePlugin.ts",
+        "snapshot_blob": "3b63049fab7b9a5003e2b3b1bad44b02b79d3a4d",
+        "remote_blob": "3b63049fab7b9a5003e2b3b1bad44b02b79d3a4d",
+        "whole_file_identical": true,
+        "review_scope": "Verified whole-file blob equality"
+      },
+      {
+        "read_id": "observer",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableObserver.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableObserver.ts",
+        "snapshot_blob": "92fe5f08c68c3de603c35b2417eabf64ef24a15b",
+        "remote_blob": "dc16fa9466b4998d2e115b91a19b5428eec40dec",
+        "whole_file_identical": false,
+        "review_scope": "Read complete file diff hunks; bounded remote body excerpts where listed"
+      },
+      {
+        "read_id": "dom",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableSelectionHelpers.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableSelectionHelpers.ts",
+        "snapshot_blob": "8b0dab8128736fd7d4d0c78d0201dbaaae904177",
+        "remote_blob": "8a20539effb12f17ffeaf20f77b939733f222720",
+        "whole_file_identical": false,
+        "review_scope": "Read complete file diff hunks; bounded remote body excerpts where listed"
+      },
+      {
+        "read_id": "utils",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableUtils.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableUtils.ts",
+        "snapshot_blob": "1037ed313e978ec2f6f791a33fa534f00b57021e",
+        "remote_blob": "503380e17d629cb6102b7f98f81fe75c029a6685",
+        "whole_file_identical": false,
+        "review_scope": "Read complete file diff hunks; bounded remote body excerpts where listed"
+      },
+      {
+        "read_id": "table",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableNode.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableNode.ts",
+        "snapshot_blob": "1a1dac0ee9c1ae25a5050fe581736ff26a948127",
+        "remote_blob": "38b2a6bf819736254c083e46c942b19a44c54158",
+        "whole_file_identical": false,
+        "review_scope": "Read complete file diff hunks; bounded remote body excerpts where listed"
+      },
+      {
+        "read_id": "row",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableRowNode.ts",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableRowNode.ts",
+        "snapshot_blob": "369b47e3468f46d11fb7e5ae71b7b164fb9e5579",
+        "remote_blob": "6d9eeeb0b46c2d7486fb5209e2ebba577f5830a1",
+        "whole_file_identical": false,
+        "review_scope": "Read complete file diff hunks; bounded remote body excerpts where listed"
+      },
+      {
+        "read_id": "resize",
+        "repo_relative_path": "packages/lexical-playground/src/plugins/TableCellResizer/index.tsx",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-playground/src/plugins/TableCellResizer/index.tsx",
+        "snapshot_blob": "804dc67b2a14a69f85e5ff77d9c8e5ad6d66fca5",
+        "remote_blob": "011beb869da9cd105935a7b4ab084672f433b033",
+        "whole_file_identical": false,
+        "review_scope": "Read complete file diff hunks; bounded remote body excerpts where listed"
+      },
+      {
+        "read_id": "editor",
+        "repo_relative_path": "packages/lexical-playground/src/Editor.tsx",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-playground/src/Editor.tsx",
+        "snapshot_blob": "d3faa8f8a055068514ae94008d87edf26d01adfd",
+        "remote_blob": "867a7c9e26d50f752c5e7a2b9648b0c993b9919f",
+        "whole_file_identical": false,
+        "review_scope": "Read complete file diff hunks; bounded remote body excerpts where listed"
+      },
+      {
+        "read_id": "resizeCss",
+        "repo_relative_path": "packages/lexical-playground/src/plugins/TableCellResizer/index.css",
+        "local_checkout_path": "/Users/zbeyens/git/lexical/packages/lexical-playground/src/plugins/TableCellResizer/index.css",
+        "snapshot_blob": "bb6b6743f430df2e830562a92b44f17fde8144ad",
+        "remote_blob": "bb6b6743f430df2e830562a92b44f17fde8144ad",
+        "whole_file_identical": true,
+        "review_scope": "Verified whole-file blob equality"
+      }
+    ],
+    "remote_reference_contract": "remote_read_id resolves through this supplement's remote_reads; lines are inclusive remote-commit lines, never working-tree line claims. Diff hunks include exact old and remote ranges.",
+    "remote_reads": [
+      {
+        "id": "base",
+        "repo_relative_path": "packages/lexical/src/LexicalSelection.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical/src/LexicalSelection.ts",
+        "blob_sha1": "aa0c622dda40e968b2e7c17ec994ab134204615b",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "selected remote body; full file changed outside declared scope",
+        "line_ranges": [
+          [
+            398,
+            415
+          ]
+        ]
+      },
+      {
+        "id": "state",
+        "repo_relative_path": "packages/lexical/src/LexicalEditorState.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical/src/LexicalEditorState.ts",
+        "blob_sha1": "9cc3550acc89548142dcc6932bd82b40ee543af5",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "complete file diff hunks plus selected remote bodies",
+        "diff_hunks": [
+          {
+            "old_lines": [
+              7,
+              18
+            ],
+            "remote_lines": [
+              7,
+              25
+            ]
+          },
+          {
+            "old_lines": [
+              25,
+              34
+            ],
+            "remote_lines": [
+              32,
+              65
+            ]
+          },
+          {
+            "old_lines": [
+              62,
+              95
+            ],
+            "remote_lines": [
+              93,
+              111
+            ]
+          },
+          {
+            "old_lines": [
+              108,
+              118
+            ],
+            "remote_lines": [
+              124,
+              130
+            ]
+          },
+          {
+            "old_lines": [
+              159,
+              165
+            ],
+            "remote_lines": [
+              171,
+              181
+            ]
+          },
+          {
+            "old_lines": [
+              177,
+              188
+            ],
+            "remote_lines": [
+              193,
+              239
+            ]
+          }
+        ]
+      },
+      {
+        "id": "set",
+        "repo_relative_path": "packages/lexical/src/LexicalUtils.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical/src/LexicalUtils.ts",
+        "blob_sha1": "c4ccd7f9af0e24bd0bf235896cd05e1cdfdec4b2",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "selected remote body; full file changed outside declared scope",
+        "line_ranges": [
+          [
+            862,
+            886
+          ]
+        ]
+      },
+      {
+        "id": "selection",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableSelection.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-table/src/LexicalTableSelection.ts",
+        "blob_sha1": "37b995011a816092abe65d57d8dd9d15c8af8e68",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "reused original reads after verified identical file blob",
+        "line_ranges": [
+          [
+            1,
+            330
+          ],
+          [
+            332,
+            507
+          ]
+        ]
+      },
+      {
+        "id": "register",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTablePluginHelpers.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-table/src/LexicalTablePluginHelpers.ts",
+        "blob_sha1": "0d879cb2e58112353952d3cd8faf6ecb68e80f3c",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "complete file diff hunks plus selected remote bodies",
+        "diff_hunks": [
+          {
+            "old_lines": [
+              46,
+              51
+            ],
+            "remote_lines": [
+              46,
+              52
+            ]
+          },
+          {
+            "old_lines": [
+              152,
+              160
+            ],
+            "remote_lines": [
+              153,
+              168
+            ]
+          }
+        ]
+      },
+      {
+        "id": "extension",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableExtension.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-table/src/LexicalTableExtension.ts",
+        "blob_sha1": "4867616ee2980cbcdf1c4e8a190474ee6f87c71b",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "complete file diff hunks plus selected remote bodies",
+        "diff_hunks": [
+          {
+            "old_lines": [
+              138,
+              148
+            ],
+            "remote_lines": [
+              138,
+              148
+            ]
+          },
+          {
+            "old_lines": [
+              155,
+              161
+            ],
+            "remote_lines": [
+              155,
+              161
+            ]
+          },
+          {
+            "old_lines": [
+              228,
+              234
+            ],
+            "remote_lines": [
+              228,
+              234
+            ]
+          }
+        ]
+      },
+      {
+        "id": "react",
+        "repo_relative_path": "packages/lexical-react/src/LexicalTablePlugin.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-react/src/LexicalTablePlugin.ts",
+        "blob_sha1": "3b63049fab7b9a5003e2b3b1bad44b02b79d3a4d",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "reused original reads after verified identical file blob",
+        "line_ranges": [
+          [
+            1,
+            122
+          ]
+        ]
+      },
+      {
+        "id": "observer",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableObserver.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-table/src/LexicalTableObserver.ts",
+        "blob_sha1": "dc16fa9466b4998d2e115b91a19b5428eec40dec",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "complete file diff hunks plus selected remote bodies",
+        "line_ranges": [
+          [
+            279,
+            340
+          ],
+          [
+            623,
+            651
+          ]
+        ],
+        "diff_hunks": [
+          {
+            "old_lines": [
+              8,
+              13
+            ],
+            "remote_lines": [
+              8,
+              14
+            ]
+          },
+          {
+            "old_lines": [
+              229,
+              234
+            ],
+            "remote_lines": [
+              230,
+              248
+            ]
+          },
+          {
+            "old_lines": [
+              254,
+              259
+            ],
+            "remote_lines": [
+              268,
+              275
+            ]
+          },
+          {
+            "old_lines": [
+              308,
+              313
+            ],
+            "remote_lines": [
+              324,
+              330
+            ]
+          },
+          {
+            "old_lines": [
+              606,
+              612
+            ],
+            "remote_lines": [
+              623,
+              637
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dom",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableSelectionHelpers.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-table/src/LexicalTableSelectionHelpers.ts",
+        "blob_sha1": "8a20539effb12f17ffeaf20f77b939733f222720",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "complete file diff hunks plus selected remote bodies",
+        "line_ranges": [
+          [
+            128,
+            137
+          ],
+          [
+            301,
+            327
+          ],
+          [
+            568,
+            639
+          ],
+          [
+            1022,
+            1037
+          ],
+          [
+            1923,
+            1955
+          ],
+          [
+            2457,
+            2482
+          ]
+        ],
+        "diff_hunks": [
+          {
+            "old_lines": [
+              14,
+              19
+            ],
+            "remote_lines": [
+              14,
+              20
+            ]
+          },
+          {
+            "old_lines": [
+              21,
+              26
+            ],
+            "remote_lines": [
+              22,
+              28
+            ]
+          },
+          {
+            "old_lines": [
+              79,
+              84
+            ],
+            "remote_lines": [
+              81,
+              87
+            ]
+          },
+          {
+            "old_lines": [
+              125,
+              130
+            ],
+            "remote_lines": [
+              128,
+              139
+            ]
+          },
+          {
+            "old_lines": [
+              290,
+              303
+            ],
+            "remote_lines": [
+              299,
+              331
+            ]
+          },
+          {
+            "old_lines": [
+              306,
+              320
+            ],
+            "remote_lines": [
+              334,
+              371
+            ]
+          },
+          {
+            "old_lines": [
+              339,
+              350
+            ],
+            "remote_lines": [
+              390,
+              416
+            ]
+          },
+          {
+            "old_lines": [
+              489,
+              497
+            ],
+            "remote_lines": [
+              555,
+              566
+            ]
+          },
+          {
+            "old_lines": [
+              499,
+              509
+            ],
+            "remote_lines": [
+              568,
+              596
+            ]
+          },
+          {
+            "old_lines": [
+              514,
+              519
+            ],
+            "remote_lines": [
+              601,
+              612
+            ]
+          },
+          {
+            "old_lines": [
+              533,
+              546
+            ],
+            "remote_lines": [
+              626,
+              639
+            ]
+          },
+          {
+            "old_lines": [
+              550,
+              561
+            ],
+            "remote_lines": [
+              643,
+              671
+            ]
+          },
+          {
+            "old_lines": [
+              563,
+              573
+            ],
+            "remote_lines": [
+              673,
+              702
+            ]
+          },
+          {
+            "old_lines": [
+              577,
+              582
+            ],
+            "remote_lines": [
+              706,
+              715
+            ]
+          },
+          {
+            "old_lines": [
+              887,
+              905
+            ],
+            "remote_lines": [
+              1020,
+              1033
+            ]
+          },
+          {
+            "old_lines": [
+              1257,
+              1274
+            ],
+            "remote_lines": [
+              1385,
+              1419
+            ]
+          },
+          {
+            "old_lines": [
+              1775,
+              1791
+            ],
+            "remote_lines": [
+              1920,
+              1951
+            ]
+          },
+          {
+            "old_lines": [
+              1832,
+              1856
+            ],
+            "remote_lines": [
+              1992,
+              2005
+            ]
+          },
+          {
+            "old_lines": [
+              1868,
+              1874
+            ],
+            "remote_lines": [
+              2017,
+              2023
+            ]
+          },
+          {
+            "old_lines": [
+              2100,
+              2105
+            ],
+            "remote_lines": [
+              2249,
+              2275
+            ]
+          },
+          {
+            "old_lines": [
+              2287,
+              2293
+            ],
+            "remote_lines": [
+              2457,
+              2473
+            ]
+          }
+        ]
+      },
+      {
+        "id": "utils",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableUtils.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-table/src/LexicalTableUtils.ts",
+        "blob_sha1": "503380e17d629cb6102b7f98f81fe75c029a6685",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "complete file diff hunks plus selected remote bodies",
+        "line_ranges": [
+          [
+            639,
+            659
+          ]
+        ],
+        "diff_hunks": [
+          {
+            "old_lines": [
+              11,
+              16
+            ],
+            "remote_lines": [
+              11,
+              17
+            ]
+          },
+          {
+            "old_lines": [
+              524,
+              530
+            ],
+            "remote_lines": [
+              525,
+              531
+            ]
+          },
+          {
+            "old_lines": [
+              550,
+              578
+            ],
+            "remote_lines": [
+              551,
+              587
+            ]
+          },
+          {
+            "old_lines": [
+              637,
+              643
+            ],
+            "remote_lines": [
+              646,
+              656
+            ]
+          },
+          {
+            "old_lines": [
+              907,
+              912
+            ],
+            "remote_lines": [
+              920,
+              930
+            ]
+          },
+          {
+            "old_lines": [
+              984,
+              996
+            ],
+            "remote_lines": [
+              1002,
+              1027
+            ]
+          },
+          {
+            "old_lines": [
+              1020,
+              1036
+            ],
+            "remote_lines": [
+              1051,
+              1063
+            ]
+          },
+          {
+            "old_lines": [
+              1588,
+              1593
+            ],
+            "remote_lines": [
+              1615,
+              1624
+            ]
+          }
+        ]
+      },
+      {
+        "id": "table",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableNode.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-table/src/LexicalTableNode.ts",
+        "blob_sha1": "38b2a6bf819736254c083e46c942b19a44c54158",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "complete file diff hunks plus selected remote bodies",
+        "diff_hunks": [
+          {
+            "old_lines": [
+              17,
+              24
+            ],
+            "remote_lines": [
+              17,
+              27
+            ]
+          },
+          {
+            "old_lines": [
+              28,
+              44
+            ],
+            "remote_lines": [
+              31,
+              53
+            ]
+          },
+          {
+            "old_lines": [
+              64,
+              69
+            ],
+            "remote_lines": [
+              73,
+              104
+            ]
+          },
+          {
+            "old_lines": [
+              356,
+              362
+            ],
+            "remote_lines": [
+              391,
+              397
+            ]
+          },
+          {
+            "old_lines": [
+              367,
+              373
+            ],
+            "remote_lines": [
+              402,
+              416
+            ]
+          },
+          {
+            "old_lines": [
+              382,
+              396
+            ],
+            "remote_lines": [
+              425,
+              456
+            ]
+          },
+          {
+            "old_lines": [
+              404,
+              438
+            ],
+            "remote_lines": [
+              464,
+              469
+            ]
+          },
+          {
+            "old_lines": [
+              574,
+              579
+            ],
+            "remote_lines": [
+              605,
+              644
+            ]
+          },
+          {
+            "old_lines": [
+              646,
+              655
+            ],
+            "remote_lines": [
+              711,
+              717
+            ]
+          },
+          {
+            "old_lines": [
+              861,
+              866
+            ],
+            "remote_lines": [
+              923,
+              929
+            ]
+          }
+        ]
+      },
+      {
+        "id": "row",
+        "repo_relative_path": "packages/lexical-table/src/LexicalTableRowNode.ts",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-table/src/LexicalTableRowNode.ts",
+        "blob_sha1": "6d9eeeb0b46c2d7486fb5209e2ebba577f5830a1",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "complete file diff hunks plus selected remote bodies",
+        "diff_hunks": [
+          {
+            "old_lines": [
+              10,
+              29
+            ],
+            "remote_lines": [
+              10,
+              36
+            ]
+          },
+          {
+            "old_lines": [
+              32,
+              38
+            ],
+            "remote_lines": [
+              39,
+              61
+            ]
+          },
+          {
+            "old_lines": [
+              40,
+              67
+            ],
+            "remote_lines": [
+              63,
+              79
+            ]
+          },
+          {
+            "old_lines": [
+              69,
+              82
+            ],
+            "remote_lines": [
+              81,
+              86
+            ]
+          },
+          {
+            "old_lines": [
+              134,
+              140
+            ],
+            "remote_lines": [
+              138,
+              144
+            ]
+          }
+        ]
+      },
+      {
+        "id": "resize",
+        "repo_relative_path": "packages/lexical-playground/src/plugins/TableCellResizer/index.tsx",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-playground/src/plugins/TableCellResizer/index.tsx",
+        "blob_sha1": "011beb869da9cd105935a7b4ab084672f433b033",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "complete file diff hunks plus selected remote bodies",
+        "line_ranges": [
+          [
+            62,
+            88
+          ],
+          [
+            329,
+            393
+          ],
+          [
+            481,
+            523
+          ]
+        ],
+        "diff_hunks": [
+          {
+            "old_lines": [
+              66,
+              71
+            ],
+            "remote_lines": [
+              66,
+              73
+            ]
+          },
+          {
+            "old_lines": [
+              351,
+              357
+            ],
+            "remote_lines": [
+              353,
+              360
+            ]
+          },
+          {
+            "old_lines": [
+              378,
+              384
+            ],
+            "remote_lines": [
+              381,
+              392
+            ]
+          },
+          {
+            "old_lines": [
+              502,
+              512
+            ],
+            "remote_lines": [
+              510,
+              523
+            ]
+          }
+        ]
+      },
+      {
+        "id": "editor",
+        "repo_relative_path": "packages/lexical-playground/src/Editor.tsx",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-playground/src/Editor.tsx",
+        "blob_sha1": "867a7c9e26d50f752c5e7a2b9648b0c993b9919f",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "complete file diff hunks plus selected remote bodies",
+        "line_ranges": [
+          [
+            140,
+            154
+          ]
+        ],
+        "diff_hunks": [
+          {
+            "old_lines": [
+              6,
+              15
+            ],
+            "remote_lines": [
+              6,
+              17
+            ]
+          },
+          {
+            "old_lines": [
+              27,
+              33
+            ],
+            "remote_lines": [
+              29,
+              35
+            ]
+          },
+          {
+            "old_lines": [
+              69,
+              75
+            ],
+            "remote_lines": [
+              71,
+              99
+            ]
+          },
+          {
+            "old_lines": [
+              102,
+              113
+            ],
+            "remote_lines": [
+              126,
+              131
+            ]
+          }
+        ]
+      },
+      {
+        "id": "resizeCss",
+        "repo_relative_path": "packages/lexical-playground/src/plugins/TableCellResizer/index.css",
+        "git_object": "4973ca1782ea4278adc496c75eab464a0887bf00:packages/lexical-playground/src/plugins/TableCellResizer/index.css",
+        "blob_sha1": "bb6b6743f430df2e830562a92b44f17fde8144ad",
+        "source_materialization": "Read Git object using git show/diff; checkout remains at snapshot commit",
+        "read_kind": "reused original reads after verified identical file blob",
+        "line_ranges": [
+          [
+            1,
+            20
+          ]
+        ]
+      }
+    ],
+    "delta_findings": [
+      {
+        "id": "observer-cleanup-corrected",
+        "supersedes_snapshot": [
+          "observer-lifetime-is-root-and-table-scoped"
+        ],
+        "finding": "Current remote adds observer.disconnect() to listenersToRemove. removeListeners() runs those callbacks. The snapshot's missing-disconnect observation must not be reported as a current remote gap.",
+        "evidence": [
+          {
+            "remote_read_id": "observer",
+            "lines": [
+              283,
+              288
+            ]
+          },
+          {
+            "remote_read_id": "observer",
+            "lines": [
+              298,
+              337
+            ]
+          }
+        ]
+      },
+      {
+        "id": "resize-cleanup-and-document-target-corrected",
+        "supersedes_snapshot": [
+          "resize-lifetime-policy-is-incomplete",
+          "resize-cardinality-and-hit-testing"
+        ],
+        "finding": "Current remote adds resizeCleanupRef and unmount cleanup, cleans the previous gesture registration before a new one, registers pointerup on activeCell.elem.ownerDocument, and removes that registration after a successful commit. Portal target uses editor root's ownerDocument.body with global document.body fallback. The snapshot's missing unmount cleanup/global-document-only finding is superseded.",
+        "evidence": [
+          {
+            "remote_read_id": "resize",
+            "lines": [
+              68,
+              70
+            ]
+          },
+          {
+            "remote_read_id": "resize",
+            "lines": [
+              329,
+              392
+            ]
+          },
+          {
+            "remote_read_id": "resize",
+            "lines": [
+              509,
+              523
+            ]
+          }
+        ]
+      },
+      {
+        "id": "resize-cardinality-and-commit-retained",
+        "finding": "Current remote still mounts one TableCellResizer per playground Editor and conditionally renders exactly two physical right/bottom handles for the one active cell. No per-cell map or first-column left handle was introduced. Diff leaves hit-testing, size defaults, guide preview and dimension commits unchanged; pointerup still invokes row-height/column-width update then reset.",
+        "evidence": [
+          {
+            "remote_read_id": "editor",
+            "lines": [
+              143,
+              152
+            ]
+          },
+          {
+            "remote_read_id": "resize",
+            "lines": [
+              329,
+              362
+            ]
+          },
+          {
+            "remote_read_id": "resize",
+            "lines": [
+              487,
+              523
+            ]
+          }
+        ],
+        "diff_evidence_read_ids": [
+          "resize",
+          "editor"
+        ],
+        "limit": "Source ownership/cardinality only; no rendering-cost, performance or browser interaction claim."
+      },
+      {
+        "id": "resize-observed-input-limits-retained",
+        "finding": "The remote resizer delta introduces no keyboard/Escape, RTL logical-edge, pointercancel, blur or lost-pointer-capture handler. It retains editable-only portal rendering. Those absence statements are bounded to the fully read snapshot file plus its complete remote diff. Unmount listener cleanup is present now; do not conflate that improvement with an explicit cancel/rollback gesture policy.",
+        "evidence": [
+          {
+            "remote_read_id": "resize",
+            "lines": [
+              329,
+              392
+            ]
+          },
+          {
+            "remote_read_id": "resize",
+            "lines": [
+              487,
+              523
+            ]
+          }
+        ],
+        "diff_evidence_read_ids": [
+          "resize"
+        ]
+      },
+      {
+        "id": "table-selection-gesture-policy-expanded",
+        "finding": "Separately from resizing, current table-selection dragging tracks pointerId, pointerStartCell and isPointerDrag, uses a 10px tap-slop box, defers touch anchoring until a drag crosses cells, and stops on matching pointercancel or lostpointercapture. Touch drags may auto-scroll after becoming drags. These policies belong to the table browser helper/observer, not the resizer.",
+        "evidence": [
+          {
+            "remote_read_id": "dom",
+            "lines": [
+              131,
+              135
+            ]
+          },
+          {
+            "remote_read_id": "dom",
+            "lines": [
+              302,
+              324
+            ]
+          },
+          {
+            "remote_read_id": "dom",
+            "lines": [
+              571,
+              638
+            ]
+          }
+        ],
+        "diff_evidence_read_ids": [
+          "dom",
+          "observer"
+        ],
+        "limit": "No touch-device/native parity claim; changed tests were not evaluated."
+      },
+      {
+        "id": "deletion-and-presentation-corrections",
+        "finding": "Deleting all selected rows now selects before the table before removing it. Partial clear copies an existing paragraph, retaining presentation while emptying children. Utility delta also preserves presentation when unmerging, resets positional span/width/header state on split cells, avoids an extra empty paragraph during merge, and copies vertical alignment during structured-table paste. These remain table-feature semantics; $clearText still lives on TableObserver.",
+        "evidence": [
+          {
+            "remote_read_id": "utils",
+            "lines": [
+              645,
+              655
+            ]
+          },
+          {
+            "remote_read_id": "observer",
+            "lines": [
+              624,
+              650
+            ]
+          }
+        ],
+        "diff_evidence_read_ids": [
+          "utils",
+          "observer"
+        ],
+        "limit": "The snapshot's conditional invalid-selection regression test is historical evidence, not proof of the current all-row deletion path."
+      },
+      {
+        "id": "span-keyboard-and-range-conversion-corrections",
+        "finding": "Current table helpers reuse the expanded rectangle for formatting, replace the merged-anchor-corner throw with a fallback corner policy, restrict the ArrowDown deferred workaround to selections before the table, and refine Firefox shift-click behavior around nested tables. The split between model topology and browser input/geometry remains.",
+        "evidence": [
+          {
+            "remote_read_id": "dom",
+            "lines": [
+              1023,
+              1030
+            ]
+          },
+          {
+            "remote_read_id": "dom",
+            "lines": [
+              1923,
+              1949
+            ]
+          },
+          {
+            "remote_read_id": "dom",
+            "lines": [
+              2460,
+              2472
+            ]
+          }
+        ],
+        "diff_evidence_read_ids": [
+          "dom"
+        ]
+      },
+      {
+        "id": "framework-boundary-retained",
+        "finding": "TableSelection and React TablePlugin are whole-file identical. TableExtension's delta only removes PURE comments. registerTablePlugin's delta adds row-header inheritance when padding rows. No change moves table semantics into React or core in these inspected deltas.",
+        "diff_evidence_read_ids": [
+          "selection",
+          "react",
+          "extension",
+          "register"
+        ]
+      },
+      {
+        "id": "node-json-plumbing-changed",
+        "finding": "TableNode and TableRowNode replace handwritten JSON/clone methods with nodeSchema/generated declarations; the schemas retain table-owned colWidths and row-owned height, and the setters remain. Table DOM export/import additionally carries direction. EditorState adds compact JSON plumbing while retaining a root-only JSON result and BaseSelection state slot.",
+        "diff_evidence_read_ids": [
+          "table",
+          "row",
+          "state"
+        ],
+        "limit": "Generated serialization machinery outside these files was not audited. This is not a full current public API, serialization compatibility or RTL-resize claim."
+      }
+    ],
+    "impact_on_supported_cut": "The core generic-selection / optional table-semantics / browser projection / playground resize ownership evidence remains. Current remote fixes invalidate using the old missing-disconnect or missing-resizer-unmount-cleanup observations as current defects. The semantic cut candidate remains evidenced by TableObserver still owning clear/format work and table models retaining DOM-coordinate methods. Lead owns whether local architecture should adopt any cut.",
+    "supersession_rule": "All top-level findings, read ranges, issues, test caveats and proof_limits are the preserved dd5c41b snapshot. For current remote, apply this supplement first. Original no-fetch/no-remote-read statements describe the earlier phase only.",
+    "limits": [
+      "Remote comparison is deliberately bounded to the listed 15 decisive files and unchanged LICENSE.",
+      "Only decisive BaseSelection and $setSelection bodies were examined in large changed core files; unrelated RangeSelection/schema changes were not reviewed.",
+      "Original focused tests were inspected at the snapshot commit. No remote test suite run or comprehensive remote test-delta review.",
+      "Issue body excerpts remain historical leads; no additional issues/PRs were fetched.",
+      "No checkout/pull or product-code mutation; fetch changed only Git object storage. Only assigned JSON shard updated."
+    ]
+  },
+  "scope": {
+    "assignment": "Lexical source evidence for the 2026-09-17 table substrate ownership review",
+    "mode": "Research only; source and test inspection",
+    "reserved_for_lead": [
+      "Local Plite/Plate comparison",
+      "Final Best API Review verdict"
+    ],
+    "only_written_file": "docs/plite/research/2026-09-17-table-substrate-ownership/shards/lexical.json",
+    "stop_reason": "Decision-relevant ownership evidenced; no implementation, plan, doctrine, common-ledger change, or new goal."
+  },
+  "repo": {
+    "name": "facebook/lexical",
+    "local_path": "/Users/zbeyens/git/lexical",
+    "origin": "https://github.com/facebook/lexical.git",
+    "inspected_commit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+    "commit_date": "2026-07-27T14:58:01Z",
+    "commit_subject": "[lexical-markdown] Bug Fix: Preserve headings when typing list shortcuts (#8879)",
+    "package": {
+      "name": "@lexical/table",
+      "manifest_version": "0.48.0",
+      "source_entry": "packages/lexical-table/src/index.ts",
+      "license": "MIT"
+    },
+    "freshness": {
+      "checked_on": "2026-09-17",
+      "method": "git ls-remote origin HEAD refs/heads/main",
+      "remote_head": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "remote_main": "4973ca1782ea4278adc496c75eab464a0887bf00",
+      "matches_local": false,
+      "limit": "Remote source not inspected; findings describe only the exact local commit. No checkout, pull, fetch, or existing-clone mutation."
+    },
+    "provenance": {
+      "method": "Compared Git blob hash of each read file with git rev-parse HEAD:<path>, then rechecked HEAD",
+      "scope": "Read files only; no claim about unrelated working-tree files.",
+      "all_read_files_match_inspected_commit": true,
+      "read_file_count": 29
+    },
+    "license": {
+      "spdx": "MIT",
+      "copyright": "Meta Platforms, Inc. and affiliates.",
+      "exact_reads": [
+        {
+          "path": "/Users/zbeyens/git/lexical/LICENSE",
+          "lines": [
+            1,
+            21
+          ]
+        },
+        {
+          "path": "/Users/zbeyens/git/lexical/packages/lexical-table/LICENSE",
+          "lines": [
+            1,
+            21
+          ]
+        }
+      ],
+      "reuse_condition": "License requires inclusion of its copyright and permission notices in copies or substantial portions. This shard records analysis and API shapes; it copies no implementation."
+    }
+  },
+  "read_reference_contract": "Evidence references resolve read_id through exact_reads; lines are inclusive and refer to the inspected commit.",
+  "exact_reads": [
+    {
+      "id": "LICENSE",
+      "repo_relative_path": "LICENSE",
+      "absolute_path": "/Users/zbeyens/git/lexical/LICENSE",
+      "line_ranges": [
+        [
+          1,
+          21
+        ]
+      ],
+      "kind": "source_body",
+      "path": "LICENSE",
+      "blob_sha1": "b93be90515ccd0b9daedaa589e42bf5929693f1f",
+      "matches_inspected_commit": true,
+      "line_count": 21
+    },
+    {
+      "id": "packages/lexical-table/package.json",
+      "repo_relative_path": "packages/lexical-table/package.json",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/package.json",
+      "line_ranges": [
+        [
+          1,
+          77
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/package.json",
+      "blob_sha1": "6c1f217a76b494b134f70be48dfe9c08f1976b00",
+      "matches_inspected_commit": true,
+      "line_count": 77
+    },
+    {
+      "id": "base",
+      "repo_relative_path": "packages/lexical/src/LexicalSelection.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalSelection.ts",
+      "line_ranges": [
+        [
+          385,
+          425
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical/src/LexicalSelection.ts",
+      "blob_sha1": "aa90191bf20bc66159d134f0bac751646624f107",
+      "matches_inspected_commit": true,
+      "line_count": 4411
+    },
+    {
+      "id": "state",
+      "repo_relative_path": "packages/lexical/src/LexicalEditorState.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditorState.ts",
+      "line_ranges": [
+        [
+          130,
+          188
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical/src/LexicalEditorState.ts",
+      "blob_sha1": "a782c6bd6a761a8097f3093cdae2d5b332b702d9",
+      "matches_inspected_commit": true,
+      "line_count": 188
+    },
+    {
+      "id": "set",
+      "repo_relative_path": "packages/lexical/src/LexicalUtils.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical/src/LexicalUtils.ts",
+      "line_ranges": [
+        [
+          765,
+          785
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical/src/LexicalUtils.ts",
+      "blob_sha1": "68509f1a85808d87999aa52183157258e39f97a1",
+      "matches_inspected_commit": true,
+      "line_count": 3552
+    },
+    {
+      "id": "exports",
+      "repo_relative_path": "packages/lexical-table/src/index.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/index.ts",
+      "line_ranges": [
+        [
+          1,
+          109
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/index.ts",
+      "blob_sha1": "6292ea78d9f65c3584a5762de431a941d68f7aa2",
+      "matches_inspected_commit": true,
+      "line_count": 109
+    },
+    {
+      "id": "commands",
+      "repo_relative_path": "packages/lexical-table/src/LexicalTableCommands.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableCommands.ts",
+      "line_ranges": [
+        [
+          8,
+          25
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/LexicalTableCommands.ts",
+      "blob_sha1": "597e9e059024b347bbe9cf0e94e30e2bbb3ec454",
+      "matches_inspected_commit": true,
+      "line_count": 25
+    },
+    {
+      "id": "selection",
+      "repo_relative_path": "packages/lexical-table/src/LexicalTableSelection.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableSelection.ts",
+      "line_ranges": [
+        [
+          1,
+          330
+        ],
+        [
+          332,
+          507
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/LexicalTableSelection.ts",
+      "blob_sha1": "37b995011a816092abe65d57d8dd9d15c8af8e68",
+      "matches_inspected_commit": true,
+      "line_count": 507
+    },
+    {
+      "id": "register",
+      "repo_relative_path": "packages/lexical-table/src/LexicalTablePluginHelpers.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTablePluginHelpers.ts",
+      "line_ranges": [
+        [
+          1,
+          285
+        ],
+        [
+          312,
+          518
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/LexicalTablePluginHelpers.ts",
+      "blob_sha1": "4a0b7bcd4763f8d5059bd151537eb29e32803569",
+      "matches_inspected_commit": true,
+      "line_count": 518
+    },
+    {
+      "id": "extension",
+      "repo_relative_path": "packages/lexical-table/src/LexicalTableExtension.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableExtension.ts",
+      "line_ranges": [
+        [
+          137,
+          234
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/LexicalTableExtension.ts",
+      "blob_sha1": "6dda5bdff360584b99ab3a02baf55d560002f807",
+      "matches_inspected_commit": true,
+      "line_count": 234
+    },
+    {
+      "id": "react",
+      "repo_relative_path": "packages/lexical-react/src/LexicalTablePlugin.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-react/src/LexicalTablePlugin.ts",
+      "line_ranges": [
+        [
+          1,
+          122
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-react/src/LexicalTablePlugin.ts",
+      "blob_sha1": "3b63049fab7b9a5003e2b3b1bad44b02b79d3a4d",
+      "matches_inspected_commit": true,
+      "line_count": 122
+    },
+    {
+      "id": "observer",
+      "repo_relative_path": "packages/lexical-table/src/LexicalTableObserver.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableObserver.ts",
+      "line_ranges": [
+        [
+          1,
+          627
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/LexicalTableObserver.ts",
+      "blob_sha1": "92fe5f08c68c3de603c35b2417eabf64ef24a15b",
+      "matches_inspected_commit": true,
+      "line_count": 627
+    },
+    {
+      "id": "dom",
+      "repo_relative_path": "packages/lexical-table/src/LexicalTableSelectionHelpers.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableSelectionHelpers.ts",
+      "line_ranges": [
+        [
+          218,
+          335
+        ],
+        [
+          492,
+          850
+        ],
+        [
+          970,
+          1030
+        ],
+        [
+          1060,
+          1166
+        ],
+        [
+          1291,
+          1370
+        ],
+        [
+          1487,
+          1583
+        ],
+        [
+          1648,
+          1747
+        ],
+        [
+          2103,
+          2170
+        ],
+        [
+          2345,
+          2492
+        ],
+        [
+          338,
+          379
+        ],
+        [
+          1168,
+          1290
+        ],
+        [
+          1426,
+          1448
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/LexicalTableSelectionHelpers.ts",
+      "blob_sha1": "8b0dab8128736fd7d4d0c78d0201dbaaae904177",
+      "matches_inspected_commit": true,
+      "line_count": 2626
+    },
+    {
+      "id": "utils",
+      "repo_relative_path": "packages/lexical-table/src/LexicalTableUtils.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableUtils.ts",
+      "line_ranges": [
+        [
+          620,
+          725
+        ],
+        [
+          1042,
+          1128
+        ],
+        [
+          1204,
+          1300
+        ],
+        [
+          1446,
+          1620
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/LexicalTableUtils.ts",
+      "blob_sha1": "1037ed313e978ec2f6f791a33fa534f00b57021e",
+      "matches_inspected_commit": true,
+      "line_count": 1674
+    },
+    {
+      "id": "table",
+      "repo_relative_path": "packages/lexical-table/src/LexicalTableNode.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableNode.ts",
+      "line_ranges": [
+        [
+          370,
+          435
+        ],
+        [
+          658,
+          735
+        ],
+        [
+          439,
+          529
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/LexicalTableNode.ts",
+      "blob_sha1": "1a1dac0ee9c1ae25a5050fe581736ff26a948127",
+      "matches_inspected_commit": true,
+      "line_count": 878
+    },
+    {
+      "id": "row",
+      "repo_relative_path": "packages/lexical-table/src/LexicalTableRowNode.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/LexicalTableRowNode.ts",
+      "line_ranges": [
+        [
+          22,
+          128
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/LexicalTableRowNode.ts",
+      "blob_sha1": "369b47e3468f46d11fb7e5ae71b7b164fb9e5579",
+      "matches_inspected_commit": true,
+      "line_count": 149
+    },
+    {
+      "id": "resize",
+      "repo_relative_path": "packages/lexical-playground/src/plugins/TableCellResizer/index.tsx",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-playground/src/plugins/TableCellResizer/index.tsx",
+      "line_ranges": [
+        [
+          1,
+          512
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-playground/src/plugins/TableCellResizer/index.tsx",
+      "blob_sha1": "804dc67b2a14a69f85e5ff77d9c8e5ad6d66fca5",
+      "matches_inspected_commit": true,
+      "line_count": 512
+    },
+    {
+      "id": "clipboard",
+      "repo_relative_path": "packages/lexical-clipboard/src/clipboard.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-clipboard/src/clipboard.ts",
+      "line_ranges": [
+        [
+          80,
+          181
+        ],
+        [
+          413,
+          433
+        ],
+        [
+          803,
+          835
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-clipboard/src/clipboard.ts",
+      "blob_sha1": "abb71ee5ba85c898b50ea54db0de9dc32c68bf17",
+      "matches_inspected_commit": true,
+      "line_count": 1052
+    },
+    {
+      "id": "cursors",
+      "repo_relative_path": "packages/lexical-yjs/src/SyncCursors.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-yjs/src/SyncCursors.ts",
+      "line_ranges": [
+        [
+          969,
+          1053
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-yjs/src/SyncCursors.ts",
+      "blob_sha1": "a55500e930e0cc8fd687aff779c29918d4f2695f",
+      "matches_inspected_commit": true,
+      "line_count": 1053
+    },
+    {
+      "id": "selectionTest",
+      "repo_relative_path": "packages/lexical-table/src/__tests__/unit/LexicalTableSelection.test.tsx",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/__tests__/unit/LexicalTableSelection.test.tsx",
+      "line_ranges": [
+        [
+          229,
+          366
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/__tests__/unit/LexicalTableSelection.test.tsx",
+      "blob_sha1": "39944c0a93a3e6629069c38fc729d841494f801e",
+      "matches_inspected_commit": true,
+      "line_count": 366
+    },
+    {
+      "id": "helperTest",
+      "repo_relative_path": "packages/lexical-table/src/__tests__/unit/LexicalTableSelectionHelpers.test.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/__tests__/unit/LexicalTableSelectionHelpers.test.ts",
+      "line_ranges": [
+        [
+          37,
+          197
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/__tests__/unit/LexicalTableSelectionHelpers.test.ts",
+      "blob_sha1": "32099ab9213fded20cc7b325ce3f4309b43ffee9",
+      "matches_inspected_commit": true,
+      "line_count": 369
+    },
+    {
+      "id": "extensionTest",
+      "repo_relative_path": "packages/lexical-table/src/__tests__/unit/LexicalTableExtension.test.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/__tests__/unit/LexicalTableExtension.test.ts",
+      "line_ranges": [
+        [
+          8,
+          150
+        ],
+        [
+          451,
+          520
+        ],
+        [
+          856,
+          955
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/__tests__/unit/LexicalTableExtension.test.ts",
+      "blob_sha1": "8e255739f2ba41344fbfb4772596f22c09f7cd77",
+      "matches_inspected_commit": true,
+      "line_count": 1098
+    },
+    {
+      "id": "e2e",
+      "repo_relative_path": "packages/lexical-playground/__tests__/e2e/Tables.spec.mjs",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-playground/__tests__/e2e/Tables.spec.mjs",
+      "line_ranges": [
+        [
+          1927,
+          2023
+        ],
+        [
+          2921,
+          2970
+        ],
+        [
+          3020,
+          3138
+        ],
+        [
+          3371,
+          3448
+        ],
+        [
+          3510,
+          3550
+        ],
+        [
+          8101,
+          8205
+        ],
+        [
+          9062,
+          9241
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-playground/__tests__/e2e/Tables.spec.mjs",
+      "blob_sha1": "3019e23906a48ab4d7693c2f9daeceefa0ead098",
+      "matches_inspected_commit": true,
+      "line_count": 9789
+    },
+    {
+      "id": "testUtils",
+      "repo_relative_path": "packages/lexical-playground/__tests__/utils/index.mjs",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-playground/__tests__/utils/index.mjs",
+      "line_ranges": [
+        [
+          26,
+          38
+        ],
+        [
+          296,
+          307
+        ],
+        [
+          355,
+          454
+        ],
+        [
+          483,
+          515
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-playground/__tests__/utils/index.mjs",
+      "blob_sha1": "1009e33ba4253383bb40360eeeef17f67537c274",
+      "matches_inspected_commit": true,
+      "line_count": 1560
+    },
+    {
+      "id": "nodeTest",
+      "repo_relative_path": "packages/lexical-table/src/__tests__/unit/LexicalTableNode.test.tsx",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/src/__tests__/unit/LexicalTableNode.test.tsx",
+      "line_ranges": [
+        [
+          355,
+          414
+        ],
+        [
+          1021,
+          1071
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/src/__tests__/unit/LexicalTableNode.test.tsx",
+      "blob_sha1": "2642b3fff0a940b07709e1a96d208fd9decb5b29",
+      "matches_inspected_commit": true,
+      "line_count": 1903
+    },
+    {
+      "id": "yjs",
+      "repo_relative_path": "packages/lexical-yjs/src/Utils.ts",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-yjs/src/Utils.ts",
+      "line_ranges": [
+        [
+          129,
+          168
+        ],
+        [
+          645,
+          672
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-yjs/src/Utils.ts",
+      "blob_sha1": "848b208ff2c8a356315064a85089d9b9b79828d1",
+      "matches_inspected_commit": true,
+      "line_count": 1089
+    },
+    {
+      "id": "editor",
+      "repo_relative_path": "packages/lexical-playground/src/Editor.tsx",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-playground/src/Editor.tsx",
+      "line_ranges": [
+        [
+          121,
+          137
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-playground/src/Editor.tsx",
+      "blob_sha1": "d3faa8f8a055068514ae94008d87edf26d01adfd",
+      "matches_inspected_commit": true,
+      "line_count": 186
+    },
+    {
+      "id": "packages/lexical-table/LICENSE",
+      "repo_relative_path": "packages/lexical-table/LICENSE",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-table/LICENSE",
+      "line_ranges": [
+        [
+          1,
+          21
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-table/LICENSE",
+      "blob_sha1": "b93be90515ccd0b9daedaa589e42bf5929693f1f",
+      "matches_inspected_commit": true,
+      "line_count": 21
+    },
+    {
+      "id": "resizeCss",
+      "repo_relative_path": "packages/lexical-playground/src/plugins/TableCellResizer/index.css",
+      "absolute_path": "/Users/zbeyens/git/lexical/packages/lexical-playground/src/plugins/TableCellResizer/index.css",
+      "line_ranges": [
+        [
+          1,
+          20
+        ]
+      ],
+      "kind": "source_body",
+      "path": "packages/lexical-playground/src/plugins/TableCellResizer/index.css",
+      "blob_sha1": "bb6b6743f430df2e830562a92b44f17fde8144ad",
+      "matches_inspected_commit": true,
+      "line_count": 20
+    }
+  ],
+  "public_call_shape": [
+    {
+      "owner": "lexical core",
+      "calls": [
+        "$getSelection(): BaseSelection | null",
+        "$setSelection(selection: BaseSelection | null)",
+        "BaseSelection: clone, is, getNodes, extract, getTextContent, insertText, insertRawText, insertNodes, getStartEndPoints, isCollapsed, isBackward, getCachedNodes, setCachedNodes; dirty and _cachedNodes"
+      ],
+      "note": "The interface is generic and includes content operations and a mutable cache contract. It declares no generic transaction-mapping or selection-serialization method.",
+      "evidence": [
+        {
+          "read_id": "base",
+          "lines": [
+            394,
+            411
+          ]
+        },
+        {
+          "read_id": "set",
+          "lines": [
+            765,
+            785
+          ]
+        },
+        {
+          "read_id": "state",
+          "lines": [
+            133,
+            186
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "optional @lexical/table",
+      "calls": [
+        "$setSelection($createTableSelectionFrom(tableNode, anchorCell, focusCell))",
+        "$isTableSelection(selection)",
+        "selection.set(tableKey, anchorCellKey, focusCellKey)",
+        "$computeTableMap(tableNode, cellA, cellB) -> [map, cellAValue, cellBValue]",
+        "$computeTableCellRectBoundary(map, cellAValue, cellBValue)",
+        "$deleteTableRowAtSelection()",
+        "editor.dispatchCommand(INSERT_TABLE_COMMAND, {rows: '2', columns: '3', includeHeaders: true})"
+      ],
+      "note": "TableSelection is exported as a type; public creation uses factories. Map coordinates expand spans. INSERT_TABLE_COMMAND takes string dimensions. Deprecated empty $createTableSelection() and getShape() remain exported; recommended factory validates attachment and table membership in development.",
+      "evidence": [
+        {
+          "read_id": "exports",
+          "lines": [
+            49,
+            104
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            200,
+            223
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            425,
+            482
+          ]
+        },
+        {
+          "read_id": "commands",
+          "lines": [
+            11,
+            25
+          ]
+        },
+        {
+          "read_id": "utils",
+          "lines": [
+            1042,
+            1128
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "framework-neutral table registration",
+      "calls": [
+        "registerTablePlugin(editor, options?: Pick<NamedSignalsOutput<TableConfig>, 'hasNestedTables'>): () => void",
+        "registerTableSelectionObserver(editor, hasTabHandler = true): () => void",
+        "buildEditorFromExtensions(defineExtension({name: 'table-test', dependencies: [TableExtension]}))",
+        "TableExtension config: hasCellBackgroundColor=true, hasCellMerge=true, hasHorizontalScroll=true, hasNestedTables=false, hasStickyScrollbar=false, hasTabHandler=true"
+      ],
+      "note": "Model/command registration and DOM observer registration are separate functions; TableExtension bundles them and the three node classes. Framework-neutral does not mean DOM-independent.",
+      "evidence": [
+        {
+          "read_id": "register",
+          "lines": [
+            319,
+            434
+          ]
+        },
+        {
+          "read_id": "extension",
+          "lines": [
+            141,
+            218
+          ]
+        },
+        {
+          "read_id": "extensionTest",
+          "lines": [
+            56,
+            104
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "React adapter and playground",
+      "calls": [
+        "<TablePlugin hasCellMerge hasCellBackgroundColor hasTabHandler hasHorizontalScroll hasNestedTables />",
+        "<TableCellResizer /> (playground import of default TableCellResizerPlugin)",
+        "tableNode.setColWidths(widths)",
+        "tableRow.setHeight(height)"
+      ],
+      "note": "React TablePlugin returns null and delegates registration through effects. Its horizontal-scroll default is false, while TableExtension defaults true. The resizer is playground React UI, not an exported @lexical/table or core resizer.",
+      "evidence": [
+        {
+          "read_id": "react",
+          "lines": [
+            25,
+            112
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            501,
+            512
+          ]
+        },
+        {
+          "read_id": "editor",
+          "lines": [
+            125,
+            134
+          ]
+        },
+        {
+          "read_id": "table",
+          "lines": [
+            394,
+            427
+          ]
+        },
+        {
+          "read_id": "row",
+          "lines": [
+            104,
+            115
+          ]
+        }
+      ]
+    }
+  ],
+  "ownership": [
+    {
+      "layer": "core",
+      "owns": "Generic selection slot/protocol, editor update and selection assignment. EditorState JSON exports the root, not selection.",
+      "evidence": [
+        {
+          "read_id": "base",
+          "lines": [
+            394,
+            411
+          ]
+        },
+        {
+          "read_id": "state",
+          "lines": [
+            133,
+            186
+          ]
+        },
+        {
+          "read_id": "set",
+          "lines": [
+            765,
+            785
+          ]
+        }
+      ]
+    },
+    {
+      "layer": "optional table feature, model semantics",
+      "owns": "Table/row/cell nodes, cell-key selection, span-aware model map and rectangle expansion, TSV interpretation, table paste policy, row deletion and integrity transforms.",
+      "evidence": [
+        {
+          "read_id": "selection",
+          "lines": [
+            127,
+            251
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            332,
+            416
+          ]
+        },
+        {
+          "read_id": "utils",
+          "lines": [
+            620,
+            718
+          ]
+        },
+        {
+          "read_id": "utils",
+          "lines": [
+            1042,
+            1128
+          ]
+        },
+        {
+          "read_id": "utils",
+          "lines": [
+            1204,
+            1275
+          ]
+        },
+        {
+          "read_id": "register",
+          "lines": [
+            107,
+            177
+          ]
+        },
+        {
+          "read_id": "register",
+          "lines": [
+            437,
+            498
+          ]
+        }
+      ]
+    },
+    {
+      "layer": "optional table feature, browser adapter",
+      "owns": "TableObserver and table selection helpers: DOM grid, pointer hit testing, selection painting, browser range conversion, keyboard geometry, document clipboard forwarding, observer registry and listeners. These live in the same package as model semantics.",
+      "evidence": [
+        {
+          "read_id": "observer",
+          "lines": [
+            215,
+            320
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            218,
+            335
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            594,
+            843
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            1168,
+            1364
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            2349,
+            2485
+          ]
+        }
+      ]
+    },
+    {
+      "layer": "framework adapter",
+      "owns": "React TablePlugin obtains editor context, reacts to props, installs/uninstalls table registrations, and toggles optional transforms.",
+      "evidence": [
+        {
+          "read_id": "react",
+          "lines": [
+            60,
+            112
+          ]
+        }
+      ]
+    },
+    {
+      "layer": "application/playground UI",
+      "owns": "Resize handles, hit zones, guide line, drag refs/state, 92px/33px minimums and initial column widths; pointer-up invokes node setters. Selection painting itself lives below React in @lexical/table.",
+      "evidence": [
+        {
+          "read_id": "resize",
+          "lines": [
+            58,
+            112
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            207,
+            384
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            386,
+            512
+          ]
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "selection-is-real-editor-state",
+      "finding": "TableSelection implements core BaseSelection and occupies EditorState._selection. It stores tableKey and anchor/focus PointType keys, clones points, never reports collapsed, and caches selected descendants. Selection is therefore not merely React/UI state.",
+      "evidence": [
+        {
+          "read_id": "base",
+          "lines": [
+            394,
+            411
+          ]
+        },
+        {
+          "read_id": "state",
+          "lines": [
+            133,
+            186
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            127,
+            223
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            332,
+            416
+          ]
+        }
+      ],
+      "limit": "This supports a generic selection protocol with optional feature semantics; it does not justify putting table-specific nodes or algorithms in editor core."
+    },
+    {
+      "id": "model-map-and-dom-map-differ",
+      "finding": "The model map repeats a cell value across rowspan/colspan coverage, with startRow/startColumn. Rectangle expansion includes whole intersecting merged cells and selection traversal deduplicates by key. Separately getTable() indexes encountered DOM cells and attaches _cell records; TableNode exposes DOM-coordinate lookup methods. These are distinct projections with different semantics.",
+      "evidence": [
+        {
+          "read_id": "utils",
+          "lines": [
+            1042,
+            1128
+          ]
+        },
+        {
+          "read_id": "utils",
+          "lines": [
+            1204,
+            1275
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            366,
+            404
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            1487,
+            1583
+          ]
+        },
+        {
+          "read_id": "table",
+          "lines": [
+            664,
+            735
+          ]
+        }
+      ],
+      "limit": "The getNodes() caching TODO is not measurement or proof that a persistent incremental map is warranted."
+    },
+    {
+      "id": "selection-repair-is-feature-specific",
+      "finding": "There is no mapping method in BaseSelection. TableSelection.isValid() guards root/type/existence and getNodes() returns [] for invalid keys. Row deletion explicitly selects a surviving cell; paste merge work selects a cell from a recomputed map. Cross-cell RangeSelection conversion and table-exit conversion use the observer/browser path.",
+      "evidence": [
+        {
+          "read_id": "base",
+          "lines": [
+            394,
+            411
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            148,
+            172
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            332,
+            339
+          ]
+        },
+        {
+          "read_id": "utils",
+          "lines": [
+            710,
+            718
+          ]
+        },
+        {
+          "read_id": "utils",
+          "lines": [
+            1605,
+            1615
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            1168,
+            1324
+          ]
+        }
+      ],
+      "limit": "Do not infer complete edit/CRDT remapping from key-based addressing. The deleted-row regression test conditionally checks invalid selection if a TableSelection remains; it does not prove preservation of the selected rectangle."
+    },
+    {
+      "id": "copy-paste-has-semantic-and-browser-owners",
+      "finding": "Generic clipboard code accepts BaseSelection and delegates insertion through SELECTION_INSERT_CLIPBOARD_NODES_COMMAND. TableSelection outputs tab/newline cell text; raw text builds a temporary TSV table and pastes through a RangeSelection at the anchor, allowing growth. A structured table pasted onto TableSelection is clipped to the expanded selection boundary; affected merged cells are unmerged and template spans reconstructed. Partial-table HTML export has a test preserving the selected column's width. Document paste/copy forwarding compensates for browser event delivery when custom selection lacks a native range.",
+      "evidence": [
+        {
+          "read_id": "clipboard",
+          "lines": [
+            82,
+            165
+          ]
+        },
+        {
+          "read_id": "clipboard",
+          "lines": [
+            413,
+            425
+          ]
+        },
+        {
+          "read_id": "clipboard",
+          "lines": [
+            807,
+            826
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            229,
+            251
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            407,
+            416
+          ]
+        },
+        {
+          "read_id": "register",
+          "lines": [
+            437,
+            498
+          ]
+        },
+        {
+          "read_id": "utils",
+          "lines": [
+            1485,
+            1615
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            788,
+            843
+          ]
+        },
+        {
+          "read_id": "nodeTest",
+          "lines": [
+            355,
+            413
+          ]
+        }
+      ],
+      "limit": "TSV paste and structured-table paste do not have identical clipping semantics. The observer comment about native-menu copying is not treated as a current blanket failure: the later document-level copy handler and its unit test must also be considered."
+    },
+    {
+      "id": "observer-owns-too-much-semantic-work",
+      "finding": "TableObserver stores DOM elements, gesture state and a TableSelection mirror, but also implements $formatCells and $clearText. Partial clear replaces cell contents with empty paragraphs; a first/last-cell whole-table check removes the table and inserts a paragraph if root becomes empty. Delete/cut commands invoke these observer methods, so semantic deletion is attached to the DOM observer lifecycle.",
+      "evidence": [
+        {
+          "read_id": "observer",
+          "lines": [
+            215,
+            260
+          ]
+        },
+        {
+          "read_id": "observer",
+          "lines": [
+            540,
+            625
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            675,
+            785
+          ]
+        }
+      ],
+      "inference": "A transferable ownership cut is to make formatting/clearing model operations callable without constructing a TableObserver, with the browser adapter invoking them and repainting."
+    },
+    {
+      "id": "keyboard-needs-both-semantic-and-layout-input",
+      "finding": "The DOM observer installs high-priority arrows, Escape, delete and optional Tab handlers. Tab follows real cell siblings/rows and exits the table at its ends. Vertical arrow handling measures caret/cell-edge rectangles; Shift+arrow on TableSelection uses the span-aware model map; Escape selects the focus cell's end. Typeahead can retain vertical arrows.",
+      "evidence": [
+        {
+          "read_id": "dom",
+          "lines": [
+            634,
+            673
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            984,
+            1017
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            1648,
+            1675
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            2103,
+            2116
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            2349,
+            2485
+          ]
+        }
+      ],
+      "inference": "Keep logical cell targeting in the optional table feature and geometry/event arbitration in its browser adapter; moving every key policy to core would not eliminate the layout dependency."
+    },
+    {
+      "id": "observer-lifetime-is-root-and-table-scoped",
+      "finding": "The selection registration owns a TableObservers registry. Mutation listeners create observers, replace them when table DOM identity changes, and remove them on destruction; unregister removes all. Window pointerdown uses registerRootListener because extension registration can precede root mounting. Registry sweeps prune missing table keys. Pointerup/buttons-up stops drag listeners and auto-scroll; observers use AbortController for event listeners.",
+      "evidence": [
+        {
+          "read_id": "register",
+          "lines": [
+            319,
+            379
+          ]
+        },
+        {
+          "read_id": "observer",
+          "lines": [
+            158,
+            211
+          ]
+        },
+        {
+          "read_id": "observer",
+          "lines": [
+            236,
+            320
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            218,
+            318
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            502,
+            545
+          ]
+        },
+        {
+          "read_id": "helperTest",
+          "lines": [
+            67,
+            125
+          ]
+        },
+        {
+          "read_id": "extensionTest",
+          "lines": [
+            887,
+            953
+          ]
+        }
+      ],
+      "limit": "In the inspected TableObserver.trackTable() body, MutationObserver is a local variable with observe() but no recorded disconnect in removeListeners(). This is a source-level lifetime gap, not a reproduced leak or crash."
+    },
+    {
+      "id": "resize-preview-is-local-commit-is-document-state",
+      "finding": "The playground resizer tracks pointer start, active DOM cell, direction and current pointer in React refs/state. Pointer moves update the guide-line position, not row/column dimensions. Pointerup computes a zoom-adjusted delta and performs one editor.update through setColWidths or setHeight, tagged only SKIP_SCROLL_INTO_VIEW_TAG. Persistent widths/heights serialize on table/row nodes.",
+      "evidence": [
+        {
+          "read_id": "resize",
+          "lines": [
+            58,
+            85
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            119,
+            132
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            207,
+            262
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            285,
+            384
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            386,
+            434
+          ]
+        },
+        {
+          "read_id": "table",
+          "lines": [
+            394,
+            427
+          ]
+        },
+        {
+          "read_id": "row",
+          "lines": [
+            57,
+            77
+          ]
+        }
+      ],
+      "limit": "No explicit history boundary/grouping policy or collaboration conflict policy appears in the resize commit path. The mounting transform also writes default widths. Source supports preview/commit separation, not a guarantee of exactly one undo item."
+    },
+    {
+      "id": "resize-cardinality-and-hit-testing",
+      "finding": "Upstream has one resizer overlay per mounted playground Editor, showing handles for one active cell. Editor renders a single TableCellResizer component; the plugin portals one TableCellResizer into document.body. Its JSX conditionally renders exactly two handle divs when activeCell is non-null: physical right and bottom. There is no per-cell handle mapping, per-table overlay instance, or first-column left handle in this implementation.",
+      "hit_testing": "Root pointermove finds the target TD/TH through getDOMCellFromTarget, which walks DOM ancestors and returns the _cell record created by the table DOM observer. Root pointerdown also runs that path for touch. Pointer movement within the resizer container is ignored when not dragging; during drag it updates pointerCurrentPos. Handle layout reads active-cell and table bounding rectangles. A 16px hit zone straddles each right/bottom edge; during drag the active handle becomes a 3px guide spanning the table. CSS positions the handles absolutely and sets touch-action:none.",
+      "evidence": [
+        {
+          "read_id": "editor",
+          "lines": [
+            125,
+            134
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            62,
+            85
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            119,
+            198
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            386,
+            434
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            479,
+            512
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            1426,
+            1447
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            1503,
+            1524
+          ]
+        },
+        {
+          "read_id": "resizeCss",
+          "lines": [
+            10,
+            20
+          ]
+        }
+      ],
+      "observed_input_policies": {
+        "keyboard": "Handle JSX registers pointer handlers only and supplies no tabIndex, role or keyboard handler. Full resizer TSX/CSS inspection and a bounded key/Escape search found no resize-keyboard implementation here. This does not claim editor-wide keyboard absence.",
+        "rtl": "Direction is the physical union 'right' | 'bottom'; right-handle placement uses left + width and width commit uses clientX delta. No RTL/direction lookup or logical-edge flip appears in this resizer. No RTL runtime claim.",
+        "cancel": "Pointerup commits and resets. No pointercancel, Escape, lost-pointer-capture or blur cancellation path appears in the complete resizer file. The per-drag document pointerup listener is removed within the successful commit path, without a matching unmount cleanup in this file.",
+        "read_only": "TableCellResizerPlugin reads useLexicalEditable and renders the portal only when true. This gates the resizer component, its default-width transform and its effect registrations. A transition during an active drag is not explicitly handled by the per-drag pointerup lifetime."
+      },
+      "policy_evidence": [
+        {
+          "read_id": "resize",
+          "lines": [
+            56,
+            85
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            327,
+            384
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            479,
+            512
+          ]
+        }
+      ],
+      "comparison_boundary": "User reports local TableCellResizeControls renders bottom/right handles in every cell plus a left handle in the first column and table-owned shared preview. Local code was not inspected by this worker; the lead owns that comparison. Upstream source supplies the editor-scoped active-cell overlay counterexample, with no rendering-cost, timing or browser-proof claim."
+    },
+    {
+      "id": "resize-lifetime-policy-is-incomplete",
+      "finding": "The resizer exists only while editable, renders through a portal into global document.body, and cleans up mutation/root listeners via effects. Drag start adds a document pointerup handler; that handler removes itself after successful commit/reset. The complete inspected file supplies no pointercancel/Escape handler or effect cleanup for that per-drag pointerup registration, and commit resolves a retained active DOM cell.",
+      "evidence": [
+        {
+          "read_id": "resize",
+          "lines": [
+            78,
+            112
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            177,
+            198
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            207,
+            220
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            285,
+            359
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            362,
+            384
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            501,
+            512
+          ]
+        }
+      ],
+      "limit": "Do not promote the playground drag controller unchanged. Interrupted drag, deleted cell, unmount, root/document replacement and stale DOM are policy gaps to assess; none was reproduced here."
+    },
+    {
+      "id": "collaboration-document-data-is-not-selection-awareness",
+      "finding": "TableNode initializes __colWidths as an own property, and Yjs node-property discovery enumerates own properties of a constructed node. Cursor-awareness sync creates relative positions only for RangeSelection; TableSelection is not mapped to those positions in this path. Table tests can run in collab V1/V2 modes and assert both editor frames, while local selection coordinates are read from the left frame.",
+      "evidence": [
+        {
+          "read_id": "table",
+          "lines": [
+            371,
+            403
+          ]
+        },
+        {
+          "read_id": "row",
+          "lines": [
+            65,
+            77
+          ]
+        },
+        {
+          "read_id": "yjs",
+          "lines": [
+            151,
+            164
+          ]
+        },
+        {
+          "read_id": "yjs",
+          "lines": [
+            651,
+            669
+          ]
+        },
+        {
+          "read_id": "cursors",
+          "lines": [
+            989,
+            1051
+          ]
+        },
+        {
+          "read_id": "testUtils",
+          "lines": [
+            32,
+            36
+          ]
+        },
+        {
+          "read_id": "testUtils",
+          "lines": [
+            298,
+            305
+          ]
+        },
+        {
+          "read_id": "testUtils",
+          "lines": [
+            418,
+            445
+          ]
+        },
+        {
+          "read_id": "testUtils",
+          "lines": [
+            483,
+            511
+          ]
+        }
+      ],
+      "limit": "This is evidence for separate document, awareness, and local gesture ownership. It is not proof of remote cell-selection display, concurrent structural-edit correctness, resize conflict behavior, or an executed collaboration pass."
+    }
+  ],
+  "test_evidence": [
+    {
+      "case": "Framework-neutral extension installation/insertion",
+      "evidence": [
+        {
+          "read_id": "extensionTest",
+          "lines": [
+            56,
+            104
+          ]
+        }
+      ],
+      "assertions": "Builds through TableExtension without React; inserts 2x3 table and checks row/cell structure.",
+      "limit": "Inspected only; not run."
+    },
+    {
+      "case": "TSV paste with merged cells",
+      "evidence": [
+        {
+          "read_id": "selectionTest",
+          "lines": [
+            248,
+            292
+          ]
+        }
+      ],
+      "assertions": "Pastes a 2x3 TSV into a table with a colspan and expects six separate values.",
+      "limit": "Unit source, not OS clipboard interaction."
+    },
+    {
+      "case": "Structured-table paste clips selection",
+      "evidence": [
+        {
+          "read_id": "extensionTest",
+          "lines": [
+            451,
+            518
+          ]
+        }
+      ],
+      "assertions": "3x3 template onto selected 2x2 table preserves 2x2 size and yields A/B, D/E.",
+      "limit": "Programmatic clipboard-node insertion; not native clipboard proof."
+    },
+    {
+      "case": "Partial export and cut",
+      "evidence": [
+        {
+          "read_id": "nodeTest",
+          "lines": [
+            355,
+            413
+          ]
+        },
+        {
+          "read_id": "nodeTest",
+          "lines": [
+            1021,
+            1070
+          ]
+        }
+      ],
+      "assertions": "Exports only second column with its width; partial CUT clears contents while retaining 4x4 table.",
+      "limit": "Inspected assertions; clipboard bytes and real menu actions not executed."
+    },
+    {
+      "case": "Deleted selection keys and detached roots",
+      "evidence": [
+        {
+          "read_id": "selectionTest",
+          "lines": [
+            323,
+            363
+          ]
+        },
+        {
+          "read_id": "helperTest",
+          "lines": [
+            67,
+            125
+          ]
+        }
+      ],
+      "assertions": "Invalid table selection returns no nodes if still present; stale deferred table key and observers after detached-root deletion do not throw.",
+      "limit": "Deleted-selection assertion is conditional. Does not establish generic selection preservation."
+    },
+    {
+      "case": "Late root mount and drag startup",
+      "evidence": [
+        {
+          "read_id": "extensionTest",
+          "lines": [
+            856,
+            953
+          ]
+        }
+      ],
+      "assertions": "Synthetic pointerdown after setRootElement populates observer anchor.",
+      "limit": "Polyfilled PointerEvent/jsdom path; no browser-native input claim."
+    },
+    {
+      "case": "Merged Tab navigation",
+      "evidence": [
+        {
+          "read_id": "e2e",
+          "lines": [
+            2921,
+            2970
+          ]
+        },
+        {
+          "read_id": "e2e",
+          "lines": [
+            3020,
+            3091
+          ]
+        },
+        {
+          "read_id": "e2e",
+          "lines": [
+            3093,
+            3138
+          ]
+        }
+      ],
+      "assertions": "Forward test types across merged cells then outside table; reverse test setup also inspected.",
+      "limit": "Both explicitly skip isCollab. Reverse test final assertions were not inspected. Neither was run."
+    },
+    {
+      "case": "Merged rectangular selection with collaboration-mode harness",
+      "evidence": [
+        {
+          "read_id": "e2e",
+          "lines": [
+            3371,
+            3448
+          ]
+        },
+        {
+          "read_id": "e2e",
+          "lines": [
+            3510,
+            3549
+          ]
+        },
+        {
+          "read_id": "testUtils",
+          "lines": [
+            418,
+            445
+          ]
+        }
+      ],
+      "assertions": "Builds vertical/horizontal merges, selects intersecting cells and asserts selected HTML. The separately inspected assertHTML helper supports checking both collab frames with different expected HTML.",
+      "limit": "Selected excerpts inspected; single actor with peer DOM assertions, not concurrent edit conflict coverage."
+    },
+    {
+      "case": "Resize across merged cells",
+      "evidence": [
+        {
+          "read_id": "e2e",
+          "lines": [
+            1927,
+            2022
+          ]
+        },
+        {
+          "read_id": "e2e",
+          "lines": [
+            8101,
+            8204
+          ]
+        },
+        {
+          "read_id": "testUtils",
+          "lines": [
+            418,
+            445
+          ]
+        }
+      ],
+      "assertions": "Width test drags +50 and expects a column width of 142; full-row merged height test expects a styled row. Cases do not skip collab mode.",
+      "limit": "Height assertion replaces any integer row height with 69px before comparison, so it cannot prove the exact computed height. Tests not run; no transient preview, undo-item, cancel or concurrency assertion evidenced."
+    },
+    {
+      "case": "First drag after changing columns",
+      "evidence": [
+        {
+          "read_id": "e2e",
+          "lines": [
+            9062,
+            9241
+          ]
+        }
+      ],
+      "assertions": "Checks table-key anchor/focus coordinates for first and second columns of a 2x2 table.",
+      "limit": "Attempts mouse drag but falls back to synthetic PointerEvents before failing. Coordinates are read from the active/left frame; not proof of natural gesture reliability or remote table-selection awareness."
+    },
+    {
+      "case": "Document-level read-only copy forwarding",
+      "evidence": [
+        {
+          "read_id": "helperTest",
+          "lines": [
+            128,
+            196
+          ]
+        }
+      ],
+      "assertions": "Synthetic ClipboardEvent on document reaches COPY_COMMAND with table selection in read-only mode.",
+      "limit": "Command-routing assertion, not a browser/OS clipboard payload assertion."
+    }
+  ],
+  "strongest_supported_promotion_or_cut": {
+    "kind": "External-source inference for lead assessment; not a local Plite/Plate verdict",
+    "promotion": "Use a generic core selection protocol to make optional table selection usable by shared editor/clipboard operations; retain table topology, spans, selected-cell enumeration and structural operations in one optional table semantic owner.",
+    "cut": "Remove semantic formatting/clearing ownership from the DOM observer and remove DOM-coordinate addressing from the table model API when defining a cleaner target. Keep the observer as a browser projection/input adapter; keep resize preview and visual handles local, committing only dimensions through the table semantic owner.",
+    "evidence": [
+      {
+        "read_id": "base",
+        "lines": [
+          394,
+          411
+        ]
+      },
+      {
+        "read_id": "selection",
+        "lines": [
+          127,
+          223
+        ]
+      },
+      {
+        "read_id": "utils",
+        "lines": [
+          1042,
+          1128
+        ]
+      },
+      {
+        "read_id": "utils",
+        "lines": [
+          1204,
+          1275
+        ]
+      },
+      {
+        "read_id": "observer",
+        "lines": [
+          540,
+          625
+        ]
+      },
+      {
+        "read_id": "table",
+        "lines": [
+          664,
+          735
+        ]
+      },
+      {
+        "read_id": "resize",
+        "lines": [
+          327,
+          434
+        ]
+      }
+    ],
+    "counterargument": "Lexical's table package already shares one implementation across React and extension consumers. Browser geometry, native selection conversion and event ordering are real requirements, and a thin adapter alone cannot replace them. A generic selection protocol also does not automatically provide correct mapping, remote selection awareness or every editing operation: TableSelection.insertText() is a no-op. Splitting into extra public packages/controllers without another current consumer could add cost without removing ownership overlap.",
+    "adoption_limit": "Do not copy Lexical's broad API, mutation caches or optionality boundaries wholesale. The lead must compare local jobs and hard laws before retaining/promoting any abstraction.",
+    "resize_cardinality_implication": "One editor-scoped active-cell overlay is an evidenced alternative to mounting handles for every cell. Retain semantic table ownership of committed dimensions; handle mounting, DOM hit-testing, guide rendering and gesture lifetime can be shared by the view. This is a source-backed design candidate, not a measured performance win or local verdict."
+  },
+  "rejected_ideas": [
+    {
+      "idea": "Put table nodes, span map and DOM observer in core because table selection is first-class",
+      "reason": "Core already holds BaseSelection without declaring table semantics; table-specific behavior is in an optional package.",
+      "evidence": [
+        {
+          "read_id": "base",
+          "lines": [
+            394,
+            411
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            127,
+            141
+          ]
+        },
+        {
+          "read_id": "exports",
+          "lines": [
+            9,
+            104
+          ]
+        }
+      ]
+    },
+    {
+      "idea": "Delete semantic cell selection and keep only a React highlighted-cell store",
+      "reason": "Selected-node export, TSV insertion, clipboard dispatch and editor selection identity consume the semantic selection below React.",
+      "evidence": [
+        {
+          "read_id": "selection",
+          "lines": [
+            229,
+            251
+          ]
+        },
+        {
+          "read_id": "selection",
+          "lines": [
+            332,
+            416
+          ]
+        },
+        {
+          "read_id": "clipboard",
+          "lines": [
+            413,
+            425
+          ]
+        }
+      ]
+    },
+    {
+      "idea": "Use the DOM cell grid as the canonical span-aware topology map",
+      "reason": "getTable indexes encountered DOM cells while $computeTableMap expands rowspan/colspan coverage; they serve different jobs.",
+      "evidence": [
+        {
+          "read_id": "dom",
+          "lines": [
+            1487,
+            1560
+          ]
+        },
+        {
+          "read_id": "utils",
+          "lines": [
+            1057,
+            1128
+          ]
+        }
+      ]
+    },
+    {
+      "idea": "Promote the playground resizer wholesale as reusable headless infrastructure",
+      "reason": "React/global-document state, application size defaults and incomplete per-drag cancellation/teardown are mixed into it. Transfer preview/commit separation, not this controller unchanged.",
+      "evidence": [
+        {
+          "read_id": "resize",
+          "lines": [
+            58,
+            112
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            327,
+            384
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            501,
+            512
+          ]
+        }
+      ]
+    },
+    {
+      "idea": "Implement persistent incremental table-map caching from the source TODO",
+      "reason": "The inspected TODO supplies neither measurements nor invalidation design evidence; no performance claim is justified.",
+      "evidence": [
+        {
+          "read_id": "selection",
+          "lines": [
+            362,
+            365
+          ]
+        }
+      ]
+    },
+    {
+      "idea": "Claim collaboration/native parity from test names or issue closure",
+      "reason": "Merged Tab tests skip collab, drag tests allow synthetic fallback, height assertions normalize values, and no tests were executed.",
+      "evidence": [
+        {
+          "read_id": "e2e",
+          "lines": [
+            2921,
+            2928
+          ]
+        },
+        {
+          "read_id": "e2e",
+          "lines": [
+            3093,
+            3100
+          ]
+        },
+        {
+          "read_id": "e2e",
+          "lines": [
+            8197,
+            8202
+          ]
+        },
+        {
+          "read_id": "e2e",
+          "lines": [
+            9185,
+            9207
+          ]
+        }
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "number": 8670,
+      "url": "https://github.com/facebook/lexical/issues/8670",
+      "title": "Bug: $handleTableSelectionChangeCommand throws invariant #63 on stale table node keys (poisoned tableObservers registry)",
+      "state": "CLOSED",
+      "closed_at": "2026-06-11T18:48:44Z",
+      "updated_at": "2026-06-11T18:48:44Z",
+      "read_on": "2026-09-17",
+      "method": "gh issue view 8670 --repo facebook/lexical --json number,title,url,state,closedAt,updatedAt,body",
+      "body_summary": "Reports production stale table keys in deferred ArrowDown selection handling and registry entries surviving missed destruction while a root is detached. Requests guarded lookups and registry pruning.",
+      "local_correspondence": [
+        {
+          "read_id": "observer",
+          "lines": [
+            187,
+            211
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            1107,
+            1141
+          ]
+        },
+        {
+          "read_id": "helperTest",
+          "lines": [
+            67,
+            125
+          ]
+        }
+      ],
+      "proof_limit": "Report and closed status are historical leads. Local guards and tests were read; no production reproduction, closing PR or current remote implementation was inspected.",
+      "body_snippet": "When a key has gone stale, selection changes throw invariant #63",
+      "snippet_role": "Exact excerpt of issue body; historical lead only."
+    },
+    {
+      "number": 8079,
+      "url": "https://github.com/facebook/lexical/issues/8079",
+      "title": "Bug: 2×2 table multi-cell selection misses last cell",
+      "state": "CLOSED",
+      "closed_at": "2026-01-20T20:29:15Z",
+      "updated_at": "2026-01-20T20:29:15Z",
+      "read_on": "2026-09-17",
+      "method": "gh issue view 8079 --repo facebook/lexical --json number,title,url,state,closedAt,updatedAt,body",
+      "body_summary": "Reports first-column drag working while the first drag on the second column misses cells. Expected every drag to select the complete target column.",
+      "local_correspondence": [
+        {
+          "read_id": "observer",
+          "lines": [
+            402,
+            472
+          ]
+        },
+        {
+          "read_id": "observer",
+          "lines": [
+            503,
+            537
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            293,
+            304
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            1091,
+            1104
+          ]
+        },
+        {
+          "read_id": "e2e",
+          "lines": [
+            9062,
+            9241
+          ]
+        }
+      ],
+      "proof_limit": "Issue body supplies reproduction intent, not behavior proof. Referenced video/playground were not inspected. Test's synthetic fallback limits gesture evidence.",
+      "body_snippet": "Drag-select the second column from top to bottom — only the bottom cell is selected, the top cell is ignored",
+      "snippet_role": "Exact excerpt of issue body; historical lead only."
+    }
+  ],
+  "leads": [
+    {
+      "lead": "TableSelection/observer source and export entrypoints",
+      "resolution": "Read actual local implementations and focused tests; main evidence is pinned to local commit.",
+      "read_ids": [
+        "exports",
+        "selection",
+        "observer",
+        "register",
+        "dom"
+      ]
+    },
+    {
+      "lead": "Regression #8491 in extension test comment",
+      "url": "https://github.com/facebook/lexical/issues/8491",
+      "resolution": "Issue body/status not fetched; only local test and root-listener registration were inspected.",
+      "evidence": [
+        {
+          "read_id": "extensionTest",
+          "lines": [
+            887,
+            953
+          ]
+        },
+        {
+          "read_id": "dom",
+          "lines": [
+            218,
+            278
+          ]
+        }
+      ]
+    },
+    {
+      "lead": "Regression #7140 in selection unit test",
+      "url": "https://github.com/facebook/lexical/issues/7140",
+      "resolution": "Issue body/status not fetched; invalid-key guard and conditional unit assertion inspected.",
+      "evidence": [
+        {
+          "read_id": "selectionTest",
+          "lines": [
+            323,
+            363
+          ]
+        }
+      ]
+    },
+    {
+      "lead": "Regression #8832 in copy-forwarding unit test",
+      "url": "https://github.com/facebook/lexical/issues/8832",
+      "resolution": "Issue body/status not fetched; actual forwarding implementation and test inspected.",
+      "evidence": [
+        {
+          "read_id": "dom",
+          "lines": [
+            812,
+            843
+          ]
+        },
+        {
+          "read_id": "helperTest",
+          "lines": [
+            128,
+            196
+          ]
+        }
+      ]
+    },
+    {
+      "lead": "Collaboration.spec.mjs and lexical-yjs test inventory",
+      "resolution": "Bounded text searches did not locate a dedicated table concurrency case in those searched files. This is not an exhaustive absence claim. Used table E2E harness and actual cursor-awareness source for bounded conclusions."
+    },
+    {
+      "lead": "Remote main differs from local checkout",
+      "resolution": "Freshness established by ls-remote only. Stop condition reached without altering clone or inspecting remote source."
+    },
+    {
+      "lead": "User's local per-cell resize-handle description",
+      "resolution": "No local product inspection performed. Compared only at the stated ownership/cardinality level against fully read upstream resizer and editor mount site.",
+      "evidence": [
+        {
+          "read_id": "editor",
+          "lines": [
+            125,
+            134
+          ]
+        },
+        {
+          "read_id": "resize",
+          "lines": [
+            479,
+            512
+          ]
+        }
+      ]
+    }
+  ],
+  "proof_limits": [
+    "Source inspection and test-body inspection only. No tests, browser sessions, native device interactions or timing measurements were run.",
+    "No native parity, performance, complete clipboard fidelity, concurrent structural-edit correctness, full selection mapping or complete lifecycle correctness claim.",
+    "Exact commit is local dd5c41b13193efa9ab1574234d8593d2c9e4f988; remote main differs and was not audited.",
+    "Only two GitHub issue bodies were fetched. No GitHub file browsing; no PR body or issue comments inspected.",
+    "No local Plite/Plate implementation comparison, final verdict or implementation proposal was written outside this assigned shard."
+  ]
+}

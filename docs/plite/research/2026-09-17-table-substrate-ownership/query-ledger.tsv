@@ -1,0 +1,16 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+pm-issue-293	gh issue view	https://github.com/ProseMirror/prosemirror-tables/issues/293	body and metadata; no GitHub file browsing	1	1	none	support existing semantic leads	stop: bounded source corroboration complete
+pm-issue-120	gh issue view	https://github.com/ProseMirror/prosemirror-tables/issues/120	body and metadata; no GitHub file browsing	1	1	none	support existing semantic leads	stop: bounded source corroboration complete
+pm-issue-333	gh issue view	https://github.com/ProseMirror/prosemirror-tables/issues/333	body and metadata; no GitHub file browsing	1	1	none	support existing semantic leads	stop: bounded source corroboration complete
+lexical-issue-8670	gh issue view	https://github.com/facebook/lexical/issues/8670	body and metadata; no GitHub file browsing	1	1	none	support existing semantic leads	stop: bounded source corroboration complete
+lexical-issue-8079	gh issue view	https://github.com/facebook/lexical/issues/8079	body and metadata; no GitHub file browsing	1	1	none	support existing semantic leads	stop: bounded source corroboration complete
+ckeditor-issue-12148	gh issue view	https://github.com/ckeditor/ckeditor5/issues/12148	body and metadata; no GitHub file browsing	1	1	none	support existing semantic leads	stop: bounded source corroboration complete
+ckeditor-issue-10156	gh issue view	https://github.com/ckeditor/ckeditor5/issues/10156	body and metadata; no GitHub file browsing	1	1	none	support existing semantic leads	stop: bounded source corroboration complete
+ckeditor-issue-17538	gh issue view	https://github.com/ckeditor/ckeditor5/issues/17538	body and metadata; no GitHub file browsing	1	1	none	support existing semantic leads	stop: bounded source corroboration complete
+web-1	web	ProseMirror tables CellSelection columnResizing selection	primary docs as leads; verify code locally	unknown	unknown	none; assigned source set	support existing semantic leads	local source; complete
+web-2	web	Lexical TableSelection TablePlugin column resize	primary docs as leads; verify code locally	unknown	unknown	none; assigned source set	support existing semantic leads	local source; complete
+web-3	web	CKEditor 5 table column resizing multi cell selection	primary docs as leads; verify code locally	unknown	unknown	none; assigned source set	support existing semantic leads	local source; complete
+web-4	web	ProseKit table resize handle Milkdown table selection plugin	primary docs as leads; verify code locally	unknown	unknown	none; assigned source set	support existing semantic leads	local source; complete
+web-5	web	site.lexical.dev docs packages lexical-table TableSelection	primary docs as leads; verify code locally	unknown	unknown	none; assigned source set	support existing semantic leads	local source; complete
+web-6	web	site.prosekit.dev table handle resizable	primary docs as leads; verify code locally	unknown	unknown	none; assigned source set	support existing semantic leads	local source; complete
+web-7	web	site.milkdown.dev table selectRowCommand selectColCommand	primary docs as leads; verify code locally	unknown	unknown	none; assigned source set	support existing semantic leads	local source; complete

@@ -49,28 +49,3 @@ export function toPlateRegistryDependencySpecifier(dependency: string) {
 
   return `${PLATE_REGISTRY_NAMESPACE_PREFIX}${dependency}`;
 }
-
-export function toLocalRegistryDependency(dependency: string) {
-  const canonicalDependency = toRegistryDependencySpecifier(dependency);
-
-  if (canonicalDependency.startsWith(PLATE_REGISTRY_NAMESPACE_PREFIX)) {
-    return `${canonicalDependency.slice(PLATE_REGISTRY_NAMESPACE_PREFIX.length)}.json`;
-  }
-
-  try {
-    const url = new URL(canonicalDependency);
-
-    if (
-      (url.hostname === 'localhost' ||
-        url.hostname === '127.0.0.1' ||
-        url.hostname === 'platejs.org') &&
-      url.pathname.endsWith('.json')
-    ) {
-      return url.pathname.split('/').at(-1) ?? dependency;
-    }
-  } catch {
-    return canonicalDependency;
-  }
-
-  return canonicalDependency;
-}

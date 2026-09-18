@@ -6,6 +6,7 @@ import * as React from 'react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
+import { AllCommentsButton } from '@/registry/components/editor/comment-toolbar-button';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import {
@@ -80,13 +81,14 @@ export default function SuggestionFormatDemo() {
 
 function SuggestionFormatContent() {
   return (
-    <EditorContainer className="h-[360px]" variant="demo">
+    <EditorContainer className="h-[360px]">
       <Toolbar className="border-b px-3 py-1">
         <UndoToolbarButton aria-label="Undo formatting decision" />
         <RedoToolbarButton aria-label="Redo formatting decision" />
         <MarkToolbarButton aria-label="Bold" plugin={BoldPlugin}>
           B
         </MarkToolbarButton>
+        <AllCommentsButton />
         <div className="ml-auto">
           <ModeToolbarButton />
         </div>

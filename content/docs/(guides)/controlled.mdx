@@ -238,9 +238,8 @@ export function AsyncEditor() {
 
 Use `skipInitialization` when another system owns the startup moment, such as
 collaboration or a multi-step loader. A complete replacement runs configured
-version steps, then each installed plugin's `prepareDocument`, then schema
-fitting. Plugins use preparation for current-schema invariants, not historical
-migrations.
+schema fitting against current input. Convert historical persisted data with
+`migrateDocument` before the replacement transaction.
 
 ```tsx title="components/manual-init-editor.tsx" showLineNumbers {8,13-18}
 import * as React from 'react';

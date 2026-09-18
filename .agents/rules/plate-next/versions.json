@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 201,
+  "latestVersion": 215,
   "versions": [
     {
       "version": 0,
@@ -2336,6 +2336,161 @@
         "Route geometry-dependent autofocus and other post-placement writes through the copied positioning primitive's onPlaced lifecycle instead of timers, polling, or unpositioned effects.",
         "Keep placement coordinates and readiness state private to the positioning primitive and consuming composition; do not add a store, provider, scheduler, or editor-global flag.",
         "Require every supported primitive provider to honor the same callback contract and prove the affected composition with exact browser geometry, focus, and scroll checks."
+      ]
+    },
+    {
+      "version": 202,
+      "date": "2026-09-15",
+      "doctrineFingerprint": "sha256:a851db7f37d66973826b130601c3371b5b13e93185627f8396475ef3020adab8",
+      "summary": "External editable views receive synchronous monotonic canonical feedback across lifecycle callbacks.",
+      "migrationChecks": [
+        "Apply exact canonical patches, acknowledgements and resets before an external-view action returns, preserving before-state coordinates and shared editor history.",
+        "Treat adapter lifecycle and native update listeners as notification boundaries; reject synchronous mutation back into the mounted view or canonical editor before local state advances.",
+        "Preserve newer nested delivery, recover a nested callback failure once from the latest canonical state, and leave repeated failure invalid without adding a replay queue."
+      ]
+    },
+    {
+      "version": 203,
+      "date": "2026-09-15",
+      "doctrineFingerprint": "sha256:d1f612c663f858ab28ae73a028ec7dff0dcfc7dedd845eda2b7580b212d31df4",
+      "summary": "Complete model actions use one service update, and commit-owned state prepares before one coherent publication.",
+      "migrationChecks": [
+        "Expose a complete action through plugin api when it must select published state, open exactly one update, and return that update outcome; keep composable draft mutations in update and delete duplicate forwarding paths.",
+        "Prepare document state, authored projections, persistent anchors, plugin configuration, and local history inside one rejection boundary, then publish them before commit observers.",
+        "Use one core history grouping owner: configured idle timing for ordinary native input and exact mounted origin plus composition epoch for composition phases."
+      ]
+    },
+    {
+      "version": 204,
+      "date": "2026-09-16",
+      "doctrineFingerprint": "sha256:54eadd73c65267ae9eb34ede0ea97619dbc96c70d8cffcad090a162132f0227d",
+      "summary": "Live pagination belongs to its mounted paged view, with truthful fragmentation and separate one-shot headless measurement.",
+      "migrationChecks": [
+        "Configure live page measurement, surfaces, omission, projection and decoration publication on the mounted paged component; expose only current committed layout reads bound to that exact host.",
+        "Keep document state free of derived page-break authority and keep independent headless measurement one-shot; delete public live controllers, providers and caller scheduling or projection assembly.",
+        "Represent fragmentation as text, one atomic owner or every direct element child; derive source paths internally and prove complete and explicitly omitted DOM modes through the exact Plate facade."
+      ]
+    },
+    {
+      "version": 205,
+      "date": "2026-09-16",
+      "doctrineFingerprint": "sha256:4e6e0fb1cd2cbe39c8265f9df387fe9aabcf1c305ae6fba3ab894ef45132ab7c",
+      "summary": "Persisted document conversion is detached, explicit and complete before current-only editor admission.",
+      "migrationChecks": [
+        "Bind the named target plugin tuple, schema, historical fingerprints and ascending steps once with defineDocumentMigrations; reject missing chains and identity drift before invoking a step.",
+        "Run migrateDocument at the app or CLI storage boundary, require explicit source intent for raw input, and load only its exact current output through ordinary editor creation or replacement.",
+        "Delete editor migration options, generic plugin document-preparation hooks, hidden selection mapping and public historical implementation catalogs; keep current invariants with their schema, field or feature validators."
+      ]
+    },
+    {
+      "version": 206,
+      "date": "2026-09-16",
+      "doctrineFingerprint": "sha256:df49e36af7b54e4cb699ebbca229ac6d2855f4e1e41178ebb22310a78b5e0210",
+      "summary": "Keep AI response drafts outside document changes and preserve the invoking editing intent.",
+      "migrationChecks": [
+        "Publish accumulated Markdown or complete table-cell responses to one temporary AI draft without entering Suggesting or writing document history.",
+        "Apply a draft through normal commands in one history batch under current view intent; discard releases mapped targets without undoing other edits.",
+        "Render draft color and the generation indicator in copied UI, and remove serializer feedback and saved-mode restoration from AI streaming."
+      ]
+    },
+    {
+      "version": 207,
+      "date": "2026-09-16",
+      "doctrineFingerprint": "sha256:74ba84996fc4ca0ca8395d72d2b9a4c77adb3bde802f45b923f8916b8bf68168",
+      "summary": "AI session dismissal and request ownership preserve unapplied drafts, mapped targets and unrelated comment drafts.",
+      "migrationChecks": [
+        "Verify close discards unapplied output and cancels its request, while Stop flushes and retains received output.",
+        "Bind prompts, targets and asynchronous callbacks to one request; deleted targets cannot fall back to another document location.",
+        "Review only AI-owned comment drafts, preserving unrelated drafts and outside-click selection."
+      ]
+    },
+    {
+      "version": 208,
+      "date": "2026-09-17",
+      "doctrineFingerprint": "sha256:c41ea3a35fc3c56c5f93a4f525a0fafb9ee93d8701aa117c01ba73c9daedd5d5",
+      "summary": "Command fallback and terminal rejection are explicit, and complete slices preserve exact root ownership atomically.",
+      "migrationChecks": [
+        "Use handle false only to continue to the next handler or descriptor default; an around interceptor delegates only through next() or next.after(prefix), and false is terminal rejection.",
+        "Transfer content, open depths, and the reachable named-root closure as one ContentSlice; prune unreachable roots and reject incomplete source graphs.",
+        "For multi-target fitting, remap exclusive roots per placement, preserve declared shared roots, and publish no partial document, root, selection, history, or authored state."
+      ]
+    },
+    {
+      "version": 209,
+      "date": "2026-09-17",
+      "doctrineFingerprint": "sha256:fdf93972cf2bcca4118a6d45452cd4e52fdbf5df4c68e55f959f2232d2061d49",
+      "summary": "Feature-private canonical host binding may carry benchmarked high-frequency interaction state without changing React attribute delivery.",
+      "migrationChecks": [
+        "Use render.useViewElementAttributes for sparse whole-element attributes that custom React components receive through props.",
+        "Allow a feature-private host binder only for measured high-frequency view-local interaction state through existing canonical node-host refs; add no public hook, store, registry or generic channel for one feature.",
+        "Prove canonical ref forwarding, host replacement, detach, cleanup, hydration, native behavior and production scale before adopting a private binder."
+      ]
+    },
+    {
+      "version": 210,
+      "date": "2026-09-17",
+      "doctrineFingerprint": "sha256:d5c53f295f0d098384fd48bb371610f6fb633edee513032be737233f3b80d78a",
+      "summary": "Comments persist revision-bound opaque attachments separately from semantic conversations and publish durable actions only after canonical commit.",
+      "migrationChecks": [
+        "Load initialComments and save toJSON with the exact document revision; keep mapped ranges out of live thread records and isolate attachment subscriptions from semantic writes.",
+        "Await typed mutation results through initialState.mutate, serialize per thread, fence retired lifetimes, and preserve records and composer input on rejected or failed writes.",
+        "Use Resolve/Reopen outside document history and preserve conversations across suggestion decisions and document undo; ordinary reload uses fresh local undo and no live record replacement protocol."
+      ]
+    },
+    {
+      "version": 211,
+      "date": "2026-09-17",
+      "doctrineFingerprint": "sha256:a09bf764a0d8481d53d427d5137897a883ebf44b988c831c01b0f424bf2422c6",
+      "summary": "Plugin activation separates fallible final-candidate admission from committed-state observation.",
+      "migrationChecks": [
+        "Register synchronous final-document validation and resource initialization through beforePublish; throwing must roll back construction or dynamic publication before observers see it.",
+        "Keep validate and activate available for early candidate assembly, afterPublish for committed-state observation, and all acquired-resource cleanup under activation ownership.",
+        "Prove final candidate coordinates, subsequent anchor mapping, rollback cleanup, and rejection of asynchronous or reentrant publication work."
+      ]
+    },
+    {
+      "version": 212,
+      "date": "2026-09-17",
+      "doctrineFingerprint": "sha256:b85b72d070ea631d965564ec172f8ad92f5acedc2f6303d1902ea41fddbfb91e",
+      "summary": "Retained target identity is model-owned; attachment coordinates and annotation indexes belong to the exact mounted view.",
+      "migrationChecks": [
+        "Resolve a retained native anchor in the requested same-model view through anchor.resolve(view); do not translate projection by serializing and restoring duplicate handles.",
+        "Capture user ranges through the calling editor; keep Comments records, queues and native targets shared while deriving attachment and decoration indexes per view.",
+        "Observe exact-view projection and commits without semantic thread writes, and release index observations independently from shared target lifetime.",
+        "Prove simultaneous views, projection switching, capture semantics and cleanup instead of treating model-only tests as mounted-view proof."
+      ]
+    },
+    {
+      "version": 213,
+      "date": "2026-09-17",
+      "doctrineFingerprint": "sha256:c37466083f91328a84abe5a7ff7b0876c8f010372a82ee52c36d3457f37ce415",
+      "summary": "Authored input intent and visible projection are independent mounted-view policy.",
+      "migrationChecks": [
+        "Allow editing with accepted, proposed, or markup projection; publish independent accepted-content edits directly and keep pending-dependent edits reviewable with the actual author.",
+        "Preserve the current projection when suggestion controls change intent; when proposing from accepted-only content, select markup so new proposals stay visible.",
+        "Load pending authored records through the complete document and prove default editing, visible suggestions, direct input, review, history, persistence, and collaboration together."
+      ]
+    },
+    {
+      "version": 214,
+      "date": "2026-09-18",
+      "doctrineFingerprint": "sha256:ddba9118c47851b2442626b892346b35534ee34173d22ad7817e7509bd0aae6f",
+      "summary": "Copied-source installation derives required dependencies and publishes every supported registry variant as one verified generation.",
+      "migrationChecks": [
+        "Derive required runtime packages and copied-item dependencies from resolved registry source plus the package DAG; retain authored metadata only for policy that source cannot express.",
+        "Build every supported provider and public directory from one compiler invocation with one generated metadata snapshot.",
+        "Publish and validate index, manifest, payload hashes and the generation marker together, rejecting mixed, missing or corrupted generation members."
+      ]
+    },
+    {
+      "version": 215,
+      "date": "2026-09-18",
+      "doctrineFingerprint": "sha256:f0ff3d607fe6751d606d587c1a794bc8c282ad9beba6761c548974a57f750d8f",
+      "summary": "Published conversations remain discoverable independently of current-view target coverage.",
+      "migrationChecks": [
+        "Use exact current-view coverage as the sole authority for inline comment paint, block counts and navigation; remove remembered coordinates and neighbor-only relocation.",
+        "Keep published conversations with unavailable targets in bounded copied discovery UI, resolving attachment only for the mounted page and labeling absence neutrally.",
+        "Prove exact document undo restores retained target identity while unrelated later typing does not inherit it, without adding a Comments location store or mandatory Suggestion dependency."
       ]
     }
   ],

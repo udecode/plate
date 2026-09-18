@@ -213,7 +213,6 @@ of defining another model.
 | `update`            | document mutation and transaction-local reads through the active `tx`                                                                               | no nested one-shot update and no unrelated I/O                                            |
 | native Plite fields | genuine editor-wide substrate through flat `readMiddleware`, commands, corrections, declarations, contributions, events, activation, and validation | not an escape hatch for plugin-scoped state, reads, services, or updates                  |
 | `codecs`            | format encode/decode declarations                                                                                                                   | not runtime service or mutation ownership                                                 |
-| `prepareDocument`   | deterministic installed-plugin preparation of complete current-schema input after host migration and before schema fitting                          | never release migration, source-version selection, normalization, or compatibility policy |
 
 Choose in this order:
 
@@ -229,10 +228,12 @@ Choose in this order:
 
 Historical document versions are not plugin capabilities. Applications bind
 an ascending `defineDocumentMigrations` plan and exact historical source
-fingerprints to their named schema; raw input needs an explicit unversioned
-floor. Runtime and CLI call the shared `migrateDocument` runner. A plugin may
-prepare installed current-schema invariants only after that host chain
-succeeds.
+fingerprints to their named schema and plugin tuple; raw input requires an
+explicit `source` at each conversion. Applications and the CLI call the
+detached `migrateDocument` runner before editor creation or complete
+replacement. Current-document invariants belong to the plugin's schema,
+property, state-field, validation, or transaction owner, never a generic
+document-preparation hook.
 
 Authoring stages have one equally strict protocol:
 

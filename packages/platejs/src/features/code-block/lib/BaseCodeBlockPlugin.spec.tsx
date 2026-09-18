@@ -1026,7 +1026,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
         projectTestSelectionRange(expected.selection)
       );
       expect(commits).toBe(1);
-      expect(editor.read.history.undos()).toHaveLength(1);
+      expect(editor.read.history().undos).toHaveLength(1);
     });
 
     it('inserts vscode lines into the current code block instead of nesting one', () => {
@@ -1258,9 +1258,9 @@ describe('BaseCodeBlockPlugin input rules', () => {
           anchor: { offset: 12, path: [0, 0] },
           focus: { offset: 12, path: [0, 0] },
         });
-        expect(editor.read.history.undos()).toHaveLength(1);
+        expect(editor.read.history().undos).toHaveLength(1);
 
-        editor.update.history.undo();
+        editor.api.history.undo();
 
         expect(editor.read.children()).toEqual(input.children);
       });
@@ -1656,7 +1656,7 @@ describe('codeBlockToDecorations', () => {
       source.read({ editor, entry: editor.read.nodes.get([0, 0])! });
     read();
     editor.update.nodes.remove({ at: [0] });
-    editor.update.history.undo();
+    editor.api.history.undo();
     read();
     expect(mockHighlight).toHaveBeenCalledTimes(2);
     const highlight = mock(() =>

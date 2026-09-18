@@ -264,30 +264,47 @@ Current priorities:
   without extra DOM; components and slots own structure and lifecycle.
   Static feature presets stay server-safe and express their own presentation needs.
 - Inline transient product paint uses the owning plugin's
-  `decorate: { read, observe?, attributes? }` descriptor. Sparse attributes on whole element
-  hosts use `render.useViewElementAttributes`, one React hook host per enabled
-  plugin per mounted view. It returns `{ key, attributes }[]`; Plate privately
-  owns source identity, compiled-plugin precedence, publication, cleanup, and
-  per-`NodeKey` subscriptions. Per-node `render.attributes` and
+  `decorate: { read, observe?, attributes? }` descriptor. Sparse attributes that
+  custom components receive through React use `render.useViewElementAttributes`,
+  one React hook host per enabled plugin per mounted view. It returns
+  `{ key, attributes }[]`; Plate privately owns source identity, compiled-plugin
+  precedence, publication, cleanup, and per-`NodeKey` subscriptions. A feature
+  may bind benchmarked high-frequency interaction state directly to canonical
+  mounted node hosts when the state is private, view-local, and outside React
+  component props. Compose the existing host ref, prove host replacement,
+  detach, cleanup, hydration and native behavior, and add no public hook, store,
+  registry or generic channel. Per-node `render.attributes` and
   `inject.nodeProps.transformProps` stay pure and hook-free. Structural product
   rendering uses components and plugin render slots. Ordinary callers never
   assemble Decoration sources, attribute stores, providers, publishers,
   renderer registries, generic target stores, or manual refreshes to install a feature.
-- Comments owns one keyed model of serializable thread records, actions,
-  subscriptions and private native range handles per editor. Applications load
-  fetched records through `initialState.initialThreads`, replace live records
-  with `api.setThreads`, and persist `api.getThreads()` with the matching document
-  value. The seed is not a second live store. Database I/O and server permissions
-  stay with the application; copied Comment/Discussion UI owns presentation.
+- Comments owns semantic thread records, actions, subscriptions and private
+  native range handles per editor. Applications load `initialState.initialComments`
+  and persist `api.toJSON()` with the exact document revision. The saved envelope
+  separates conversations from opaque range targets; live records retain target
+  identity and `attachment(id)` supplies current coverage or neutral unavailable
+  state. Semantic subscriptions never wake for document mapping. The seed is not
+  a second live store. Database I/O, revision association, CAS and authorization
+  stay with the application through `initialState.mutate`; copied
+  Comment/Discussion UI owns presentation.
   BaseCommentsPlugin owns semantics and CommentsPlugin adds live interactions.
   Consumers do not assemble a channel, provider, factory or anchor-binding effect.
   Reuse Plite Annotation plus plugin Decoration for mapped locations and paint.
   Body or metadata changes perform zero annotation resolution and zero editor-node
-  refreshes. Independent editors bind their own native handles from plain records.
+  refreshes. Independent editors restore their own native handles from the same
+  saved revision. Ordinary reload starts a fresh undo stack; live replacement and
+  changed-baseline collaboration require their own proven transport contract.
   Activation stores selected IDs; keyed writes retain unrelated records and
-  membership lists. Composers clear only after successful actions, including async
-  overrides. Loading preserves identity, authorship, timestamps and status without
-  replaying user commands.
+  membership lists. Durable actions serialize per thread and publish only after
+  canonical commit; rejection preserves records and composers. Draft operations
+  stay local. Resolve/Reopen and explicit deletion are independent of document
+  undo. Loading preserves identity, authorship, timestamps and status without
+  replaying user commands. A published conversation remains discoverable when
+  its target has no current-view coverage. Exact live coverage alone owns
+  inline paint, block counts and navigation; cached coordinates and surviving
+  neighbor endpoints never relocate a thread. Bounded copied UI resolves only
+  its mounted page and labels missing coverage neutrally. Document undo may
+  restore target identity, while unrelated later typing cannot inherit it.
 - Application replies attached to a document-owned entity use that entity's
   identity and location. Accepting, rejecting, undoing, or restoring the entity
   changes derived visibility, not the application's explicit resolution state.
@@ -297,13 +314,17 @@ Current priorities:
   capability. Plate may provide copied registry presentation, mode controls,
   discussion composition, and product defaults, but it does not own another
   suggestion schema, mutation engine, review scan, decision command set, or
-  global input mode. Human and AI proposals use the same authored records and
-  decisions; Comments keeps its independent thread lifecycle.
+  global input mode. Human and explicitly tracked AI edits use the same authored records and
+  decisions; temporary AI drafts remain outside that lifecycle. Comments keeps
+  its independent thread lifecycle.
   Load existing suggestions through the complete `initialValue`, preserving
   authors and change IDs; initialization never replays edits under switched
   identities. `EditorRoot authored` configures the exact mounted view through
   the native owner. Changed intent or projection inputs reconfigure that view;
-  equivalent values preserve subsequent view-local mode commands.
+  equivalent values preserve subsequent view-local mode commands. Editing may
+  keep proposed or markup content visible. Suggestion mode controls preserve
+  that projection when they change intent; proposing from an accepted-only view
+  selects markup so the proposal remains visible.
 - Sibling render slots expose only the lifecycle input owned by their placement:
   the exact Editable ref or the exact container ref. They never inherit the
   host Editable or container DOM props. Register a complete component directly;
@@ -397,16 +418,18 @@ Current priorities:
 - Persisted document lineage lives in an app-owned `{ document, schema }`
   envelope. A named app schema owns one ascending target-version migration
   chain and the expected generated fingerprint for every supported historical
-  envelope version. `migrateDocument` runs it for runtime or offline callers
-  before installed-plugin preparation and schema fitting; missing versions and
-  identity drift fail closed. Only an explicit unversioned floor may omit
-  historical fingerprint proof. The persistence owner allocates each released
+  envelope version. `defineDocumentMigrations` binds that chain to the immutable
+  current plugin tuple and schema. `migrateDocument` runs detached at the app or
+  CLI storage boundary and returns an exact current envelope; missing versions
+  and identity drift fail closed before callbacks. Raw documents require an
+  explicit source at each conversion. Ordinary editor creation and replacement
+  accept current input only. The persistence owner allocates each released
   boundary; implementation batches amend an unreleased target instead of
   inventing later schema versions.
-- `prepareDocument` is an installed-plugin invariant hook for current-schema
-  documents. It is not a release migration, normalizer, source-version
-  selector, or replacement for an application migration chain. History and
-  Yjs room cutovers remain app-owned persistence policy.
+- Current-document invariants belong to their schema, property, state-field,
+  validation, or transaction owner. Plate exposes no generic plugin document-
+  preparation hook and no hidden migration side channel. History and Yjs room
+  cutovers remain app-owned persistence policy.
 - Plugin constructors own every independent author contribution: `api`,
   `read`, `selectors`, `update`, flat native Plite fields, `codecs`, and
   ordinary Plate fields and their context callbacks. There is no nested
@@ -435,6 +458,9 @@ Current priorities:
   intercept it through `commands`, return pure transaction specs, and delegate
   with `next()` to preserve the shared exact-slice, host-codec, and plain-text
   fallback. It is never a root plugin field or separate contribution registry.
+  A `handle` interceptor may return `false` to continue fallback. An `around`
+  interceptor must call `next()` or `next.after(prefix)` to delegate; returning
+  `false` rejects the command and stops fallback.
   The owning plugin or Plate stage contextually infers installed transaction
   capabilities without callback annotations or editor type arguments.
 - Core owns the author-facing codec types and MIME registry entry for a
@@ -790,6 +816,12 @@ Current priorities:
   explicit optional package or registry dependency. Never create a shared
   integration grab bag for dependency-graph aesthetics; extract only a coherent
   capability, durable behavior owner, or real runtime-cycle boundary.
+- Derive required package and registry-item dependencies from each copied
+  item's resolved source graph and the package DAG. Authored registry metadata
+  owns only installation policy that source cannot express: intentional
+  bundles, targets, styles, CSS, optional peers, and provider selection. Build,
+  preview, docs, source checks, and installers consume one generated metadata
+  snapshot rather than reconstructing or hand-listing those facts.
 - Copied Plate registry source installs into one flat `components/editor`
   namespace; `components/ui` remains the selected shadcn primitive layer.
   Feature files and item ids use the feature name, while app-owned plugin-array
@@ -812,6 +844,10 @@ Current priorities:
   direct owner instead of filtering an item or cloning its assembly.
   Unsupported provider/style routes fail closed. Preserve semantic item ids and
   materialize same-style Plate self-dependencies at the request boundary.
+  One environment-neutral compiler emits every public directory, canonical
+  payload, sparse provider overlay, index, metadata, manifest, payload hash,
+  and generation marker. Publication exposes the marker last; request-time
+  readers reject mixed, missing, or corrupted generation members.
 - Root `ListPlugin` owns list schema, transforms, codecs, React behavior, and
   copied registry UI. Do not create a parallel persisted list model or an
   alternative registry graph.
@@ -921,6 +957,26 @@ where trust decisions are actually made.
 
 AI support stays optional, composable, and plugin-first. Core editor APIs
 should not contort around provider churn or hype-cycle abstractions.
+
+Generated document content is a temporary draft until applied. Streaming and
+previewing preserve the user's editing intent and leave document history
+untouched. Apply uses one ordinary transaction under the current intent;
+discard releases the draft and its mapped targets without undoing other work.
+Copied UI owns purple draft presentation and the stream indicator. The
+installed Markdown codec parses the accumulated response; generated document
+nodes are never serialized back into the input stream.
+
+Generated feedback becomes an ordinary published comment thread as soon as its
+creation completes. It uses the normal thread controls rather than a second AI
+approval lifecycle. An unresolved asynchronous creation stays private and
+request-owned so cancellation can discard it safely; Stop, close, retry and
+request replacement preserve every completed comment.
+
+Closing the session discards unapplied document output and cancels its request.
+Stopping generation retains the received document draft for review. Request
+ownership covers transport callbacks, mapped targets and unresolved comment
+creation; stale work cannot affect a replacement request or unrelated comment
+drafts. A deleted target cannot fall back to another document location.
 
 ## Setup
 

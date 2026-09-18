@@ -428,4 +428,40 @@ describe('markdown tables', () => {
       },
     ]);
   });
+
+  it.each([{ colSpan: 2 }, { rowSpan: 2 }])(
+    'rejects lossy table span serialization: %o',
+    (span) => {
+      const editor = createTableEditor();
+
+      expect(() =>
+        editor.api.markdown.serialize({
+          value: {
+            children: [
+              {
+                children: [
+                  {
+                    children: [
+                      {
+                        ...span,
+                        children: [
+                          {
+                            children: [{ text: 'merged' }],
+                            type: 'paragraph',
+                          },
+                        ],
+                        type: 'tableCell',
+                      },
+                    ],
+                    type: 'tableRow',
+                  },
+                ],
+                type: 'table',
+              },
+            ],
+          },
+        })
+      ).toThrow('Markdown tables cannot represent rowSpan or colSpan.');
+    }
+  );
 });

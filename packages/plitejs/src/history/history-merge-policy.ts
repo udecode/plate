@@ -22,6 +22,11 @@ type HistoryPoint = Readonly<{
 
 type ChangedRange = readonly [number, number, number, number];
 
+export type NativeHistoryGrouping = Readonly<{
+  composition?: number;
+  origin: number;
+}>;
+
 type TextHistoryGroup = Readonly<{
   afterPoint: HistoryPoint | null;
   beforePoint: HistoryPoint | null;
@@ -36,7 +41,10 @@ type TextHistoryGroup = Readonly<{
   toBefore: number;
 }>;
 
-export type HistoryBatchGroup = Readonly<{ scope?: object }> &
+export type HistoryBatchGroup = Readonly<{
+  native?: NativeHistoryGrouping;
+  scope?: object;
+}> &
   (
     | Readonly<{
         kind: 'effects';
@@ -358,6 +366,28 @@ export const shouldMergeBatch = (
   );
 };
 
+export const shouldMergeCompositionBatch = (
+  currentBatch: Batch,
+  current: HistoryBatchGroup | null,
+  previousBatch: Batch,
+  previous: HistoryBatchGroup | null,
+  effectsCompatible = false
+): boolean => {
+  if (
+    !effectsCompatible &&
+    (currentBatch.effects.length > 0 || previousBatch.effects.length > 0)
+  ) {
+    return false;
+  }
+
+  return Boolean(
+    current &&
+    previous &&
+    current.root === previous.root &&
+    current.scope === previous.scope
+  );
+};
+
 export const shouldMergeExplicitBatch = (
   currentBatch: Batch,
   current: HistoryBatchGroup | null,
@@ -377,6 +407,8 @@ export const shouldMergeExplicitBatch = (
   ) {
     return true;
   }
+
+  if (effectsCompatible && !isNativeTextInput) return true;
 
   if (
     !current ||

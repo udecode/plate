@@ -740,7 +740,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           );
         });
       }),
-      around(editorCommands.insertBreak, ({ state }) => {
+      handle(editorCommands.insertBreak, ({ state }) => {
         const selection = state.selection();
         const codeBlock = selection
           ? state.nodes.above({

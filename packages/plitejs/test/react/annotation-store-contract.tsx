@@ -1,7 +1,17 @@
 import { act, render } from '@testing-library/react';
-import type { Editor, Range } from 'plitejs';
+import {
+  createEditor as createModelEditor,
+  createEditorView,
+  type Editor,
+  type Range,
+} from 'plitejs';
+import { Suspense } from 'react';
 
-import { createAnnotationStore } from '../../src/annotations';
+import {
+  createAnnotationStore,
+  type AnnotationStore,
+} from '../../src/annotations';
+import { authored } from '../../src/authored';
 import { history } from '../../src/history';
 import { replace as editorReplace } from '../../src/internal';
 import {
@@ -67,6 +77,312 @@ const AnnotationHarness = ({
 };
 
 describe('plite-react annotation store contract', () => {
+  test('reads an unobserved index once per document and observes only until its last subscriber leaves', () => {
+    const editor = createModelEditor({ initialValue: createChildren() });
+    const subscribe = editor.subscribeCommit.bind(editor);
+    const stopped = vi.fn();
+    const subscriptions = vi
+      .spyOn(editor, 'subscribeCommit')
+      .mockImplementation((listener) => {
+        const stop = subscribe(listener);
+        return () => {
+          stopped();
+          stop();
+        };
+      });
+    const anchor = createRangeAnchor(editor, {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 4 },
+    });
+    const store = createAnnotationStore(editor, [{ anchor, id: 'comment' }]);
+    const initialMetrics = store.getMetrics();
+    const initialSnapshot = store.getSnapshot();
+    expect(subscriptions).not.toHaveBeenCalled();
+    for (let index = 0; index < 10; index += 1) {
+      store.getAnnotationsAt(editor.key([0, 0])!);
+      expect(store.getSnapshot()).toBe(initialSnapshot);
+    }
+    expect(store.getMetrics()).toBe(initialMetrics);
+    editor.update.selection.set({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    });
+    expect(store.getSnapshot()).toBe(initialSnapshot);
+    expect(store.getMetrics()).toBe(initialMetrics);
+    editor.update.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+    expect(store.getMetrics()).toBe(initialMetrics);
+    expect(store.getAnnotation('comment')?.range).toEqual({
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 5 },
+    });
+    const refreshed = store.getMetrics();
+    expect(refreshed.annotationResolveCount).toBe(
+      initialMetrics.annotationResolveCount + 1
+    );
+    store.getAnnotationsAt(editor.key([0, 0])!);
+    store.getSnapshot();
+    expect(store.getMetrics()).toBe(refreshed);
+    expect(subscriptions).not.toHaveBeenCalled();
+
+    const globalChanged = vi.fn();
+    const stopGlobal = store.subscribe(globalChanged);
+    const stopEntity = store.subscribeAnnotation('comment', () => {});
+    const stopChanges = store.subscribeChanges(() => {});
+    expect(subscriptions).toHaveBeenCalledTimes(1);
+    stopGlobal();
+    stopEntity();
+    expect(stopped).not.toHaveBeenCalled();
+    stopChanges();
+    stopChanges();
+    expect(stopped).toHaveBeenCalledTimes(1);
+    editor.update.text.insert('?', { at: { path: [0, 0], offset: 0 } });
+    expect(store.getMetrics()).toBe(refreshed);
+    const resume = store.subscribe(globalChanged);
+    expect(subscriptions).toHaveBeenCalledTimes(2);
+    expect(store.getAnnotation('comment')?.range?.anchor.offset).toBe(3);
+    expect(globalChanged).not.toHaveBeenCalled();
+    store.destroy();
+    resume();
+    expect(stopped).toHaveBeenCalledTimes(2);
+    subscriptions.mockRestore();
+    anchor.release();
+  });
+
+  test('one retained target resolves independently in two authored views', async () => {
+    const model = createModelEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: createChildren(),
+    });
+    const first = createEditorView(model);
+    const second = createEditorView(model, {
+      authored: { intent: 'propose', projection: 'markup' },
+    });
+    const range = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 4 },
+    };
+    const projected = {
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 6 },
+    };
+    const anchor = createRangeAnchor(model, range);
+    second.update.text.insert('++', { at: { path: [0, 0], offset: 0 } });
+    const data = Object.freeze({ label: 'shared conversation' });
+    const source = [{ anchor, data, id: 'comment' }];
+    const firstStore = createAnnotationStore(first, source);
+    const secondStore = createAnnotationStore(second, source);
+    const firstChanges = vi.fn();
+    const secondChanges = vi.fn();
+    const stopFirst = firstStore.subscribeChanges(firstChanges);
+    const stopSecond = secondStore.subscribeChanges(secondChanges);
+    const commits = vi.fn();
+    const semanticChanges = vi.fn();
+    const stopCommits = model.subscribeCommit(commits);
+    const stopSemantic = model.api.authored.subscribeChanges(semanticChanges);
+    const before = model.read.value();
+
+    expect(firstStore.getAnnotation('comment')?.range).toEqual(range);
+    expect(secondStore.getAnnotation('comment')?.range).toEqual(projected);
+
+    first.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    await Promise.resolve();
+    expect(firstStore.getAnnotation('comment')?.range).toEqual(projected);
+    expect(firstChanges).toHaveBeenCalledTimes(1);
+    expect(secondChanges).not.toHaveBeenCalled();
+
+    second.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+    await Promise.resolve();
+    expect(firstStore.getAnnotation('comment')?.range).toEqual(projected);
+    expect(secondStore.getAnnotation('comment')?.range).toEqual(range);
+    expect(secondChanges).toHaveBeenCalledTimes(1);
+    expect(firstStore.getAnnotation('comment')?.data).toBe(data);
+    expect(secondStore.getAnnotation('comment')?.data).toBe(data);
+    expect(model.read.value()).toEqual(before);
+    expect(commits).not.toHaveBeenCalled();
+    expect(semanticChanges).not.toHaveBeenCalled();
+
+    const firstMetrics = firstStore.getMetrics();
+    const secondMetrics = secondStore.getMetrics();
+    first.update.selection.set({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    });
+    await Promise.resolve();
+    expect(firstStore.getMetrics()).toBe(firstMetrics);
+    expect(secondStore.getMetrics()).toBe(secondMetrics);
+
+    stopFirst();
+    stopSecond();
+    first.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+    expect(firstStore.getMetrics()).toBe(firstMetrics);
+    expect(firstStore.getAnnotation('comment')?.range).toEqual(range);
+    const passiveMetrics = firstStore.getMetrics();
+    expect(passiveMetrics.annotationResolveCount).toBe(
+      firstMetrics.annotationResolveCount + 1
+    );
+    firstStore.getAnnotationsAt(first.key([0, 0])!);
+    await Promise.resolve();
+    expect(firstStore.getMetrics()).toBe(passiveMetrics);
+    expect(firstChanges).toHaveBeenCalledTimes(1);
+    expect(secondChanges).toHaveBeenCalledTimes(1);
+
+    stopCommits();
+    stopSemantic();
+    firstStore.destroy();
+    secondStore.destroy();
+    anchor.release();
+  });
+
+  test('native commits update the affected view index without a manual refresh', () => {
+    const model = createModelEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: createChildren(),
+    });
+    const accepted = createEditorView(model);
+    const proposed = createEditorView(model, {
+      authored: { intent: 'propose', projection: 'markup' },
+    });
+    const anchor = createRangeAnchor(model, {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 4 },
+    });
+    const annotations = [{ anchor, id: 'comment' }];
+    const acceptedStore = createAnnotationStore(accepted, annotations);
+    const proposedStore = createAnnotationStore(proposed, annotations);
+    const before = acceptedStore.getSnapshot();
+    const acceptedChanged = vi.fn();
+    const proposedChanged = vi.fn();
+    acceptedStore.subscribeChanges(acceptedChanged);
+    proposedStore.subscribeChanges(proposedChanged);
+
+    proposed.update.text.insert('++', { at: { path: [0, 0], offset: 0 } });
+    expect(model.read.text.string([0])).toBe('alpha');
+    expect(acceptedStore.getSnapshot()).toBe(before);
+    expect(acceptedChanged).not.toHaveBeenCalled();
+    expect(proposedStore.getAnnotation('comment')?.range).toEqual({
+      anchor: { path: [0, 0], offset: 3 },
+      focus: { path: [0, 0], offset: 6 },
+    });
+    expect(proposedChanged).toHaveBeenCalledTimes(1);
+    expect(proposedStore.getAnnotationsAt(proposed.key([0, 0])!)).toEqual([
+      proposedStore.getAnnotation('comment'),
+    ]);
+
+    accepted.update.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+    expect(acceptedStore.getAnnotation('comment')?.range).toEqual({
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 5 },
+    });
+    expect(proposedStore.getAnnotation('comment')?.range).toEqual({
+      anchor: { path: [0, 0], offset: 4 },
+      focus: { path: [0, 0], offset: 7 },
+    });
+    expect(acceptedChanged).toHaveBeenCalledTimes(1);
+    expect(proposedChanged).toHaveBeenCalledTimes(2);
+
+    acceptedStore.destroy();
+    proposedStore.destroy();
+    anchor.release();
+  });
+
+  test('abandoned and unmounted React stores do not observe commits or view changes', async () => {
+    const model = createModelEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: createChildren(),
+    });
+    const view = createEditorView(model);
+    const anchor = createRangeAnchor(model, {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 4 },
+    });
+    const annotations = [{ anchor, id: 'comment' }];
+    const suspended = new Promise<never>(() => {});
+    const abandoned: AnnotationStore[] = [];
+    const Abandoned = () => {
+      abandoned.push(useAnnotationStore(view, annotations));
+      throw suspended;
+    };
+    const pending = render(
+      <Suspense fallback="loading">
+        <Abandoned />
+      </Suspense>
+    );
+    expect(abandoned.length).toBeGreaterThan(0);
+    pending.unmount();
+    let active: AnnotationStore | undefined;
+    const Mounted = () => {
+      active = useAnnotationStore(view, annotations);
+      return null;
+    };
+    const mounted = render(<Mounted />);
+    expect(active?.getAnnotation('comment')?.range).toEqual(anchor.resolve());
+    mounted.unmount();
+    await Promise.resolve();
+    const metrics = active?.getMetrics();
+
+    model.update.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+    view.api.authored.setView({ intent: 'propose', projection: 'markup' });
+    await Promise.resolve();
+
+    expect(active?.getMetrics()).toBe(metrics);
+    for (const store of abandoned) {
+      expect(store.getMetrics().annotationResolveCount).toBe(0);
+      expect(store.getSnapshot().allIds).toEqual([]);
+    }
+    expect(anchor.resolve()).toEqual({
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 5 },
+    });
+    anchor.release();
+  });
+
+  test('publishes changed node membership when projection preserves annotation coordinates', async () => {
+    const model = createModelEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: createChildren(),
+    });
+    const view = createEditorView(model);
+    model.update((tx) => {
+      tx.authored.propose();
+      tx.nodes.replace(
+        { type: 'paragraph', children: [{ text: 'other' }] },
+        { at: [0] }
+      );
+    });
+    const range = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 4 },
+    };
+    const store = createAnnotationStore(view, [
+      {
+        id: 'position',
+        anchor: { resolve: () => range, release: () => null },
+      },
+    ]);
+    const oldKey = view.key([0, 0])!;
+    const annotation = store.getAnnotation('position');
+    const changed = vi.fn();
+    const entityChanged = vi.fn();
+    store.subscribeChanges(changed);
+    store.subscribeAnnotation('position', entityChanged);
+
+    view.api.authored.setView({ intent: 'propose', projection: 'markup' });
+    await Promise.resolve();
+    const newKey = view.key([0, 0])!;
+    expect(newKey).not.toBe(oldKey);
+    expect(store.getAnnotation('position')).toBe(annotation);
+    expect(store.getAnnotationsAt(oldKey)).toEqual([]);
+    expect(store.getAnnotationsAt(newKey)).toEqual([annotation]);
+    expect(changed).toHaveBeenCalledTimes(1);
+    expect(changed).toHaveBeenCalledWith({
+      ids: [],
+      nodeKeys: expect.arrayContaining([oldKey, newKey]),
+      reason: 'editor',
+    });
+    expect(entityChanged).not.toHaveBeenCalled();
+    store.destroy();
+  });
+
   test('publishes exact nearest annotation ranges through undo and redo', () => {
     const editor = createEditor({
       plugins: [history()],
@@ -91,10 +407,10 @@ describe('plite-react annotation store contract', () => {
     });
     expect(store.getAnnotation('comment-1')?.range).toEqual(after);
 
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
     expect(store.getAnnotation('comment-1')?.range).toEqual(before);
 
-    editor.update((tx) => tx.history.redo());
+    editor.api.history.redo();
     expect(store.getAnnotation('comment-1')?.range).toEqual(after);
 
     store.destroy();
@@ -153,6 +469,7 @@ describe('plite-react annotation store contract', () => {
       },
     }));
     const store = createAnnotationStore(editor, () => annotations);
+    const stop = store.subscribe(() => {});
 
     idReads = 0;
     editor.update.text.insert('x', { at: { path: [0, 0], offset: 0 } });
@@ -169,7 +486,9 @@ describe('plite-react annotation store contract', () => {
       anchor: { path: [999, 0], offset: 1 },
       focus: { path: [999, 0], offset: 5 },
     });
+    expect(idReads).toBeLessThanOrEqual(8);
 
+    stop();
     store.destroy();
     annotations.forEach(({ anchor }) => anchor.release());
   });

@@ -55,7 +55,7 @@ describe('table resizing', () => {
       ],
     });
     expect(editor.read.children()[0]).toBe(table);
-    expect(editor.read.history.undos()).toHaveLength(0);
+    expect(editor.read.history().undos).toHaveLength(0);
   });
 
   it('preserves adjacent total width at both minimum constraints', () => {
@@ -91,10 +91,15 @@ describe('table resizing', () => {
   it('grows the trailing column without altering earlier widths', () => {
     const { editor, table, plugin } = createFixture();
 
-    plugin.update.resize(
-      plugin.api.createResize(table, { edge: 'right', colIndex: 1 })(50),
-      { at: [0] }
-    );
+    expect(
+      plugin.update.resize({
+        at: table,
+        resize: plugin.api.createResize(table, {
+          edge: 'right',
+          colIndex: 1,
+        })(50),
+      })
+    ).toBe(true);
     expect(editor.read.children()[0]).toMatchObject({
       columnWidths: [120, 230],
     });
@@ -123,19 +128,22 @@ describe('table resizing', () => {
       commits.push(commit)
     );
 
-    plugin.update.resize(plugin.api.createResize(table, { edge: 'left' })(30), {
-      at: [0],
-    });
+    expect(
+      plugin.update.resize({
+        at: table,
+        resize: plugin.api.createResize(table, { edge: 'left' })(30),
+      })
+    ).toBe(true);
     unsubscribe();
     expect(commits).toHaveLength(1);
-    expect(editor.read.history.undos()).toHaveLength(1);
+    expect(editor.read.history().undos).toHaveLength(1);
     expect(editor.read.children()[0]).toMatchObject({
       columnWidths: [90, 180],
       marginLeft: 50,
     });
-    editor.update.history.undo();
+    editor.api.history.undo();
     expect(editor.read.children()).toEqual([table]);
-    editor.update.history.redo();
+    editor.api.history.redo();
     expect(editor.read.children()[0]).toMatchObject({
       columnWidths: [90, 180],
       marginLeft: 50,
@@ -169,7 +177,9 @@ describe('table resizing', () => {
     });
 
     expect(resize(20)).toEqual({ edge: 'bottom', rowIndex: 0, height: 80 });
-    plugin.update.resize(resize(-1000), { at: [0] });
+    expect(plugin.update.resize({ at: table, resize: resize(-1000) })).toBe(
+      true
+    );
     expect(editor.read.children()[0]).toMatchObject({
       children: [{ height: 1 }],
     });
@@ -188,19 +198,19 @@ describe('table resizing', () => {
       plugin.api.createResize(table, { edge: 'left' })(Number.NaN)
     ).toThrow();
     expect(() =>
-      plugin.update.resize(
-        {
+      plugin.update.resize({
+        at: table,
+        resize: {
           edge: 'right',
           columns: [
             { colIndex: 0, width: 160 },
             { colIndex: 1, width: -1 },
           ],
         },
-        { at: [0] }
-      )
+      })
     ).toThrow();
     expect(editor.read.children()).toEqual([table]);
-    expect(editor.read.history.undos()).toHaveLength(0);
+    expect(editor.read.history().undos).toHaveLength(0);
   });
 
   // Normalizing 2,000 columns can exceed Bun's default deadline on shared CI runners.

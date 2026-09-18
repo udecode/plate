@@ -12,7 +12,11 @@ import * as React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import {
+  Editor,
+  EditorContainer,
+  EditorFrame,
+} from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { editableVoidsValue } from '@/registry/examples/values/editable-voids-value';
 
@@ -72,9 +76,11 @@ export function EditableVoidElement({
             editor={editor}
             // initialValue={basicBlocksValue}
           >
-            <EditorContainer>
-              <Editor />
-            </EditorContainer>
+            <EditorFrame className="h-auto">
+              <EditorContainer>
+                <Editor />
+              </EditorContainer>
+            </EditorFrame>
           </EditorRoot>
         </div>
       </div>
@@ -94,9 +100,11 @@ export default function EditableVoidsDemo() {
 
   return (
     <EditorRoot editor={editor}>
-      <EditorContainer>
-        <Editor />
-      </EditorContainer>
+      <EditorFrame>
+        <EditorContainer>
+          <Editor />
+        </EditorContainer>
+      </EditorFrame>
     </EditorRoot>
   );
 }

@@ -4,6 +4,7 @@ import type {
 } from '../../facade';
 import { isRuntimePlugin } from '../../facade';
 import type { Editor } from '../../lib/editor';
+import { assertNoPrepareDocument } from '../../lib/plugin/assertNoPrepareDocument.internal';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { pluginCodecMapDeclaration } from '../../lib/plugin/pluginAuthoringContext';
@@ -359,6 +360,7 @@ const applyStage = (
   contribution: PluginContribution,
   pluginContext: Readonly<{ plugin: Readonly<{ name: string }> }>
 ) => {
+  assertNoPrepareDocument(contribution);
   const isRawPliteDescriptor = Boolean(
     isRuntimePlugin(contribution) && !isNominalPluginDescriptor(contribution)
   );
@@ -569,6 +571,7 @@ export const reapplyResolvedPluginConfigurations = <P extends AnyBasePlugin>(
   let configured = plugin;
 
   for (const configuration of configurations) {
+    assertNoPrepareDocument(configuration);
     configured = inheritResolvedPluginCapabilities(
       configured,
       mergePlugins(configured, configuration)
@@ -585,6 +588,7 @@ export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
   configurations: readonly ResolvedPluginConfiguration[];
   plugin: P;
 }> => {
+  assertNoPrepareDocument(descriptor);
   let plugin = mergePlugins({}, descriptor) as P;
   const descriptorMetadata = getPluginDescriptorMetadata(plugin);
 
@@ -611,6 +615,7 @@ export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
         `Plate plugin "${plugin.name}" configuration must resolve to an object.`
       );
     }
+    assertNoPrepareDocument(value);
     if (Object.hasOwn(value, 'inputRules')) {
       assertConfiguredInputRules(value.inputRules);
     }

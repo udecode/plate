@@ -1,25 +1,26 @@
 import { readFileSync } from 'node:fs';
-import { posix } from 'node:path';
 
-import { parse } from '@babel/parser';
 import { registrySchema } from 'shadcn/schema';
 
 import registryShadcnData from '../registry-shadcn.json';
 import { PLATE_DEFAULT_REGISTRY_STYLE } from '../src/lib/plate-registry-styles';
-import { createPlateRegistry, registry } from '../src/registry/registry';
+import { getRegistryMetadata } from '../src/lib/registry-metadata';
 import { registryFeatures } from '../src/registry/registry-features';
 import {
   toPublicRegistryDependencySpecifier,
   toRegistryDependencySpecifier,
 } from './registry-dependencies.mts';
+import {
+  isImportableRegistrySource,
+  parseModuleImports,
+} from './registry-imports.mts';
+import { createRegistryInstalledTargetResolver } from './registry-installed-targets.mts';
 
 const ABSOLUTE_URL_REGEX = /^https?:\/\//;
 const JSON_SUFFIX_REGEX = /\.json$/;
-const IMPORTABLE_SOURCE_FILE_REGEX = /\.[cm]?[jt]sx?$/;
 const EDITOR_COMPONENT_PATH_SEGMENT = 'components/editor/';
 const EDITOR_COMPONENT_TARGET_PREFIX = '@components/editor/';
 const PLATE_PUBLIC_REGISTRY_BASE_URL = `https://platejs.org/r/${PLATE_DEFAULT_REGISTRY_STYLE}`;
-const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.json'] as const;
 const BASELINE_PACKAGES = new Set([
   'class-variance-authority',
   'clsx',
@@ -76,7 +77,7 @@ const REMOVED_FAMILY_ITEM_NAMES = new Set([
   'toggle-node',
 ]);
 
-const sourceRegistry = createPlateRegistry('https://platejs.org');
+const sourceRegistry = getRegistryMetadata();
 const normalizedRegistry = registrySchema.parse({
   ...sourceRegistry,
   items: sourceRegistry.items.map((item) => ({
@@ -109,7 +110,7 @@ const shadcnItemsByName = new Map(
   registryShadcnData.items.map((item) => [item.name, item])
 );
 const runtimeItemsByName = new Map(
-  registry.items.map((item) => [item.name, item])
+  sourceRegistry.items.map((item) => [item.name, item])
 );
 const unbackedBaseKitDependencies: string[] = [];
 const liveKitBaseImports: string[] = [];
@@ -156,89 +157,16 @@ function getRegistryDependencyTarget(
   return null;
 }
 
-function getImportSources(source: string) {
-  const { program } = parse(source, {
-    plugins: ['jsx', 'typescript'],
-    sourceType: 'unambiguous',
-  });
-  const imports = new Set<string>();
-
-  for (const statement of program.body) {
-    if (
-      (statement.type === 'ImportDeclaration' ||
-        statement.type === 'ExportAllDeclaration' ||
-        statement.type === 'ExportNamedDeclaration') &&
-      statement.source
-    ) {
-      imports.add(statement.source.value);
-    }
-  }
-
-  const visit = (value: unknown) => {
-    if (Array.isArray(value)) {
-      for (const child of value) visit(child);
-
-      return;
-    }
-    if (!value || typeof value !== 'object') return;
-
-    const node = value as Record<string, unknown>;
-
-    if (node.type === 'CallExpression') {
-      const callee = node.callee as Record<string, unknown> | undefined;
-      const [argument] = (node.arguments as unknown[] | undefined) ?? [];
-
-      if (argument && typeof argument === 'object') {
-        const innerSource = argument as Record<string, unknown>;
-
-        if (
-          innerSource.type === 'StringLiteral' &&
-          typeof innerSource.value === 'string' &&
-          (callee?.type === 'Import' ||
-            (callee?.type === 'Identifier' && callee.name === 'require'))
-        ) {
-          imports.add(innerSource.value);
-        }
-      }
-    }
-    if (node.type === 'TSExternalModuleReference') {
-      const expression = node.expression as Record<string, unknown> | undefined;
-
-      if (
-        expression?.type === 'StringLiteral' &&
-        typeof expression.value === 'string'
-      ) {
-        imports.add(expression.value);
-      }
-    }
-    if (node.type === 'ImportExpression') {
-      const innerSource2 = node.source as Record<string, unknown> | undefined;
-
-      if (
-        innerSource2?.type === 'StringLiteral' &&
-        typeof innerSource2.value === 'string'
-      ) {
-        imports.add(innerSource2.value);
-      }
-    }
-
-    for (const child of Object.values(node)) visit(child);
-  };
-
-  visit(program.body);
-
-  return [...imports];
-}
-
 function getRegistryFileImportSources(filePath: string) {
-  if (!IMPORTABLE_SOURCE_FILE_REGEX.test(filePath)) return [];
+  if (!isImportableRegistrySource(filePath)) return [];
 
-  return getImportSources(
+  return parseModuleImports(
     readFileSync(
       new URL(`../src/registry/${filePath}`, import.meta.url),
       'utf-8'
-    )
-  );
+    ),
+    { filePath }
+  ).map((entry) => entry.specifier);
 }
 
 function getDependencyPackageName(dependency: string) {
@@ -266,18 +194,6 @@ function getImportPackageName(specifier: string) {
   }
 
   return specifier.split('/')[0];
-}
-
-function getSourcePathCandidates(sourcePath: string) {
-  if (SOURCE_EXTENSIONS.some((extension) => sourcePath.endsWith(extension))) {
-    return [sourcePath];
-  }
-
-  return [
-    sourcePath,
-    ...SOURCE_EXTENSIONS.map((extension) => `${sourcePath}${extension}`),
-    ...SOURCE_EXTENSIONS.map((extension) => `${sourcePath}/index${extension}`),
-  ];
 }
 
 function importsRegistryItem(importSources: string[], itemName: string) {
@@ -402,99 +318,8 @@ assert(
   ].join('\n')
 );
 
-const sourceFileOwners = new Map<string, Set<string>>();
-const installedTargetOwners = new Map<string, Set<string>>();
-
-function addOwner(
-  owners: Map<string, Set<string>>,
-  path: string,
-  owner: string
-) {
-  const currentOwners = owners.get(path) ?? new Set<string>();
-  currentOwners.add(owner);
-  owners.set(path, currentOwners);
-}
-
-for (const item of normalizedRegistry.items) {
-  for (const file of item.files ?? []) {
-    addOwner(sourceFileOwners, file.path, item.name);
-    addOwner(installedTargetOwners, file.target ?? file.path, item.name);
-
-    if (file.target?.startsWith('@components/')) {
-      addOwner(installedTargetOwners, file.target.slice(1), item.name);
-      addOwner(
-        installedTargetOwners,
-        `@/components/${file.target.slice('@components/'.length)}`,
-        item.name
-      );
-    }
-  }
-}
-
-function findOwners(owners: Map<string, Set<string>>, path: string) {
-  for (const candidate of getSourcePathCandidates(path)) {
-    const pathOwners = owners.get(candidate);
-
-    if (pathOwners) return pathOwners;
-  }
-
-  return null;
-}
-
-function resolveSourceOwners(
-  file: { path: string; target?: string },
-  specifier: string
-) {
-  let sourcePath: string | null = null;
-
-  if (specifier.startsWith('@/registry/')) {
-    sourcePath = specifier.slice('@/registry/'.length);
-  } else if (specifier.startsWith('.')) {
-    sourcePath = posix.normalize(
-      posix.join(posix.dirname(file.path), specifier)
-    );
-  } else if (specifier.startsWith('@/')) {
-    const installedOwners = findOwners(installedTargetOwners, specifier);
-
-    if (installedOwners) return installedOwners;
-
-    sourcePath = specifier.slice('@/'.length);
-  }
-
-  if (!sourcePath) return null;
-
-  return (
-    findOwners(sourceFileOwners, sourcePath) ??
-    findOwners(installedTargetOwners, sourcePath)
-  );
-}
-
-function resolveInstalledRelativeOwners(
-  file: { path: string; target?: string },
-  specifier: string
-) {
-  if (!specifier.startsWith('.')) return null;
-
-  const installedPath = file.target ?? file.path;
-  const importedPath = posix.normalize(
-    posix.join(posix.dirname(installedPath), specifier)
-  );
-
-  return findOwners(installedTargetOwners, importedPath);
-}
-
-function intersectOwners(
-  sourceOwners: Set<string> | null,
-  installedOwners: Set<string> | null
-) {
-  if (!sourceOwners || !installedOwners) return null;
-
-  const owners = new Set(
-    [...sourceOwners].filter((owner) => installedOwners.has(owner))
-  );
-
-  return owners.size > 0 ? owners : null;
-}
+const installedTargetResolver =
+  createRegistryInstalledTargetResolver(normalizedRegistry);
 
 function getInstalledPackages(itemName: string) {
   const packages = new Set(BASELINE_PACKAGES);
@@ -596,14 +421,10 @@ for (const item of normalizedRegistry.items) {
 
       if (HOST_PROVIDED_ALIASES.has(specifier)) continue;
 
-      const sourceOwners = resolveSourceOwners(file, specifier);
-      const installedRelativeOwners = resolveInstalledRelativeOwners(
+      const copiedOwners = installedTargetResolver.resolveCopiedOwners(
         file,
         specifier
       );
-      const copiedOwners = specifier.startsWith('.')
-        ? intersectOwners(sourceOwners, installedRelativeOwners)
-        : sourceOwners;
 
       if (
         !copiedOwners &&

@@ -15,13 +15,12 @@ import {
   authored,
   readAuthoredFormatSnapshot,
 } from '../../platejs/src/authored/index';
+import { createEditor, definePlugin, schema } from '../../platejs/src/index';
 import {
-  createEditor,
-  definePlugin,
   defineDocumentMigrations,
-  schema,
-} from '../../platejs/src/index';
-import { migrateV54 } from '../../platejs/src/migrations/index';
+  migrateDocument,
+  migrateV54,
+} from '../../platejs/src/migrations/index';
 import {
   runEditorMigrationInput,
   runEditorMigrations,
@@ -33,12 +32,13 @@ const RuntimeParagraphPlugin = definePlugin('paragraph', {
   schema: { element: schema.element.textBlock() },
 });
 const RuntimeSchema = { id: 'plate', version: 54 } as const;
-const RuntimeMigrations = defineDocumentMigrations(RuntimeSchema, {
+const RuntimeMigrations = defineDocumentMigrations({
+  plugins: [RuntimeParagraphPlugin],
+  schema: RuntimeSchema,
   sourceFingerprints: { 53: 'source-53' },
   steps: {
     54: migrateV54,
   },
-  unversioned: 53,
 });
 
 const createFixture = (
@@ -56,9 +56,9 @@ const createFixture = (
   temporaryDirectories.push(directory);
   writeFileSync(
     entryPath,
-    `import { definePlugin, defineDocumentMigrations, schema } from '../../platejs/src/index';
+    `import { definePlugin, schema } from '../../platejs/src/index';
 import { authored } from '../../platejs/src/authored/index';
-import { migrateV54 } from '../../platejs/src/migrations/index';
+import { defineDocumentMigrations, migrateV54 } from '../../platejs/src/migrations/index';
 
 const ParagraphPlugin = definePlugin('paragraph', {
   schema: { element: schema.element.textBlock() },
@@ -74,9 +74,10 @@ export const EditorSchema = {
   ${options.applicationRoot ? 'root: schema.content.element(ParagraphPlugin, { min: 2 }),' : ''}
   version: 54,
 } as const;
-export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
+export const EditorMigrations = defineDocumentMigrations({
+  plugins: EditorKit,
+  schema: EditorSchema,
   sourceFingerprints: { 53: 'source-53' },
-  unversioned: 53,
   steps: {
     54: migrateV54,
   },
@@ -150,7 +151,7 @@ describe('plate migrate run', () => {
     const dryRun = await runEditorMigrations(
       fixture.entryPath,
       [fixture.documentPath],
-      { cwd: fixture.directory }
+      { cwd: fixture.directory, from: 53 }
     );
 
     expect(dryRun.changed).toBe(1);
@@ -160,7 +161,7 @@ describe('plate migrate run', () => {
     const written = await runEditorMigrations(
       fixture.entryPath,
       [fixture.documentPath],
-      { cwd: fixture.directory, write: true }
+      { cwd: fixture.directory, from: 53, write: true }
     );
     const output = JSON.parse(readFileSync(fixture.documentPath, 'utf-8'));
 
@@ -173,17 +174,12 @@ describe('plate migrate run', () => {
       kind: 'named',
       version: 54,
     });
-    const runtimeEditor = createEditor({
-      initialValue: JSON.parse(before),
+    const runtime = migrateDocument(JSON.parse(before), {
       migrations: RuntimeMigrations,
-      plugins: [RuntimeParagraphPlugin],
-      schema: RuntimeSchema,
+      source: 53,
     });
 
-    expect(output).toEqual({
-      document: runtimeEditor.read.value(),
-      schema: runtimeEditor.read.schema.identity(),
-    });
+    expect(output).toEqual(runtime.output);
 
     const compact = JSON.stringify(output);
 
@@ -194,7 +190,7 @@ describe('plate migrate run', () => {
     const noopWrite = await runEditorMigrations(
       fixture.entryPath,
       [fixture.documentPath],
-      { cwd: fixture.directory, write: true }
+      { cwd: fixture.directory, from: 53, write: true }
     );
 
     expect(noopWrite.changed).toBe(0);
@@ -206,7 +202,7 @@ describe('plate migrate run', () => {
     const current = await runEditorMigrations(
       fixture.entryPath,
       [fixture.documentPath],
-      { check: true, cwd: fixture.directory }
+      { check: true, cwd: fixture.directory, from: 53 }
     );
 
     expect(current.changed).toBe(0);
@@ -219,7 +215,7 @@ describe('plate migrate run', () => {
     const result = await runEditorMigrationInput(
       fixture.entryPath,
       sourceText,
-      { cwd: fixture.directory }
+      { cwd: fixture.directory, from: 53 }
     );
 
     expect(result.applied).toEqual([54]);
@@ -229,24 +225,75 @@ describe('plate migrate run', () => {
     expect(readFileSync(fixture.documentPath, 'utf-8')).toBe(sourceText);
   });
 
+  it('applies --from only to raw documents in a mixed batch', async () => {
+    const fixture = createFixture();
+    const persistedPath = join(fixture.directory, 'persisted.json');
+
+    writeFileSync(
+      persistedPath,
+      JSON.stringify({
+        document: {
+          children: [{ children: [{ text: 'persisted' }], type: 'p' }],
+        },
+        schema: {
+          fingerprint: 'source-53',
+          id: 'plate',
+          kind: 'named',
+          version: 53,
+        },
+      }),
+      'utf-8'
+    );
+    const result = await runEditorMigrations(
+      fixture.entryPath,
+      [fixture.documentPath, persistedPath],
+      { cwd: fixture.directory, from: 53 }
+    );
+
+    expect(result.files.map(({ applied }) => applied)).toEqual([[54], [54]]);
+    expect(JSON.parse(result.files[0].outputText).document.children).toEqual([
+      { children: [{ text: 'v' }], type: 'paragraph' },
+    ]);
+    expect(JSON.parse(result.files[1].outputText).document.children).toEqual([
+      { children: [{ text: 'persisted' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('requires --from for raw documents', async () => {
+    const fixture = createFixture();
+
+    await expect(
+      runEditorMigrations(fixture.entryPath, [fixture.documentPath], {
+        cwd: fixture.directory,
+      })
+    ).rejects.toThrow(/requires explicit source intent/);
+  });
+
   it('matches runtime semantics for legacy suggestion migration', async () => {
     const fixture = createFixture({ suggestions: true });
     const sourceText = readFileSync(fixture.documentPath, 'utf-8');
     const result = await runEditorMigrationInput(
       fixture.entryPath,
       sourceText,
-      { cwd: fixture.directory }
+      { cwd: fixture.directory, from: 53 }
     );
     const output = JSON.parse(result.outputText);
     const cliEditor = createEditor({
       initialValue: output,
-      migrations: RuntimeMigrations,
       plugins: [RuntimeParagraphPlugin, authored({ authorId: 'reader' })],
       schema: RuntimeSchema,
     });
+    const runtimeOutput = migrateDocument(JSON.parse(sourceText), {
+      migrations: defineDocumentMigrations({
+        plugins: [RuntimeParagraphPlugin, authored({ authorId: 'reader' })],
+        schema: RuntimeSchema,
+        sourceFingerprints: { 53: 'source-53' },
+        steps: { 54: migrateV54 },
+      }),
+      source: 53,
+    }).output;
     const runtimeEditor = createEditor({
-      initialValue: JSON.parse(sourceText),
-      migrations: RuntimeMigrations,
+      initialValue: runtimeOutput,
       plugins: [RuntimeParagraphPlugin, authored({ authorId: 'reader' })],
       schema: RuntimeSchema,
     });
@@ -284,12 +331,12 @@ describe('plate migrate run', () => {
       runEditorMigrationInput(
         defaultFixture.entryPath,
         readFileSync(defaultFixture.documentPath, 'utf-8'),
-        { cwd: defaultFixture.directory }
+        { cwd: defaultFixture.directory, from: 53 }
       ),
       runEditorMigrationInput(
         rootFixture.entryPath,
         readFileSync(rootFixture.documentPath, 'utf-8'),
-        { cwd: rootFixture.directory }
+        { cwd: rootFixture.directory, from: 53 }
       ),
     ]);
     const defaultOutput = JSON.parse(defaultResult.outputText);
@@ -311,7 +358,7 @@ describe('plate migrate run', () => {
     const result = await runEditorMigrations(
       fixture.entryPath,
       [fixture.documentPath],
-      { cwd: fixture.directory }
+      { cwd: fixture.directory, from: 53 }
     );
 
     expect(result.changed).toBe(1);
@@ -323,6 +370,7 @@ describe('plate migrate run', () => {
 
     await runEditorMigrations(fixture.entryPath, [fixture.documentPath], {
       cwd: fixture.directory,
+      from: 53,
       write: true,
     });
     const output = JSON.parse(readFileSync(fixture.documentPath, 'utf-8'));
@@ -348,6 +396,7 @@ describe('plate migrate run', () => {
     await expect(
       runEditorMigrations(fixture.entryPath, [fixture.documentPath], {
         cwd: fixture.directory,
+        from: 53,
       })
     ).rejects.toThrow();
 

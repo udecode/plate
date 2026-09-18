@@ -1,0 +1,82 @@
+{
+  "id": "2026-09-17-comments-mounted-view-ownership",
+  "scope": "comments",
+  "kind": "review",
+  "date": "2026-09-17",
+  "question": "How should one retained comment target resolve and publish attachment changes for independent mounted editor projections?",
+  "model": "gpt-6",
+  "method": "best-api-review/history-v2; first-principles hard-cut; source-render causal reproduction and bounded independent ownership review",
+  "trigger": "Accepted-plan execution reproduced a missing Playground discussion and stale attachment coordinates after switching the mounted projection.",
+  "requirements": [
+    "Preserve one durable conversation record and one native retained target per comment, including deletion and undo recovery.",
+    "Resolve inputs, attachment coordinates and decoration block keys in the exact calling editor view.",
+    "Observe projection and document changes without mutating semantic records or duplicating serialized anchors.",
+    "Release per-view observation independently of shared target lifetime; reject resolution through another model."
+  ],
+  "evidenceReuse": "Reused the accepted Comments persistence plan and focused mutation/lifecycle tests without treating them as mounted-view proof. Inspected native anchors, authored projection, annotation mapping, Comments API rebinding and actual Discussion consumer. An actual rendered Playground initializer changes from five discussion items to four when view keys change; a diagnostic semantic reply restores five while the retained coordinates stay wrong. Existing Chrome and Chromium failures are preserved independently.",
+  "summary": "Pursue exact-view resolution at the retained native anchor and view-local derived annotation indexes. Keep semantic data and target lifetime shared; cut model-bound presentation and reject per-view save/restore clones or semantic writes that merely trigger repaint.",
+  "verdict": "pursue",
+  "previous": "2026-09-16-comments-persistence-architecture",
+  "relation": "supersedes",
+  "alternatives": [
+    "Keep current model-bound indexes: reject; exact rendered Playground loses one discussion after a projection switch despite retaining all records.",
+    "Rebuild UI on arbitrary semantic events or serialize/restore per-view anchors: reject; masks missing native publication and duplicates target lifetime or codecs.",
+    "Extend the existing handle with proposed anchor.resolve(view?): pursue; one target owner selects a same-model view without recapture, with capture-view default.",
+    "Add view.anchor.resolve(anchor): viable but loses to one existing resolution surface without a second current job.",
+    "Use read.ranges.project(range): insufficient; it indexes a resolved range, not retained identity across Authored projections.",
+    "Delete native targets or all per-view derivation: reject; native targets supply deletion/undo recovery and different projected documents require distinct indexes."
+  ],
+  "proofLimits": "Direction is selected and implementation is in progress. Source-render evidence isolates missing index publication and incorrect capture-view resolution; it is not browser acceptance. Native lifecycle, two-view subscription/cleanup, final source types, frozen serialization scale and the original full browser interactions remain required. The concurrent authored write-intent change is separately owned; defaults must preserve Editing with visible markup as authorized there.",
+  "references": [
+    "docs/plans/2026-09-16-comments-history-api.md",
+    "docs/research/decisions/comments-data-ownership.md",
+    "packages/plitejs/src/core/anchor.ts",
+    "packages/plitejs/src/authored/authored.ts",
+    "packages/plitejs/src/annotations/store.ts",
+    "packages/platejs/src/features/comments/BaseCommentsPlugin.ts",
+    "packages/platejs/src/react/features/comments/CommentsPlugin.ts",
+    "apps/www/src/registry/components/editor/discussion.tsx",
+    "apps/www/tests/browser/comment.spec.ts"
+  ],
+  "source": {
+    "files": {
+      "packages/platejs/src/features/comments/BaseCommentsPlugin.ts": "5427e4c9090d3a51795bd71211645a3af31012431218bf5f79f0d9ef9f063a58",
+      "apps/www/src/registry/components/editor/comment.tsx": "63710159a8565744c77cf34e1258caacd1beb1306239022a91e12a302db429ca",
+      "apps/www/src/registry/examples/comment-persistence-demo.tsx": "bdc0a2cc8a49f1299948e0fc9df4dcaf828acc97da1ed07c586fa4d3d15c6728",
+      "apps/www/src/registry/examples/comment-overlap-demo.tsx": "fde0083db6a2966277dc0d930e7d8bb956d2299f39365bd41393868ba07ba02f",
+      "packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts": "a081867dd64a430c9c66d7b722222934176964a30fd348c80a4f5478cf014e50",
+      "apps/www/tests/browser/comment.spec.ts": "eda35936e70f196ee3fe45ff9e67af5127aad5ce6c35c0f288f4947e6980e4cc",
+      "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
+      "apps/www/package.json": "dedd5e93b76023363430b12bb4e9a46d05ab1f71a5ad2f25878967c8058fce90",
+      "packages/plitejs/src/core/anchor.ts": "e9cf59cbff5d3f7dd6e9adaeab883f06c9925b7b2b4daf10e118bb2b8e54c853",
+      "packages/plitejs/src/annotations/store.ts": "42751ea5d63d090064f65a97963fd9c70f3365535c726e9aa11b0f69baca3383",
+      "packages/plitejs/src/authored/authored.ts": "630ffcf9ae442c6a34c6c13d1ad98a49a9c82f42c1f2058b7bb347f9c025bccb",
+      "packages/platejs/src/react/features/comments/CommentsPlugin.ts": "aa9847fb82d3b4e968f9dd7b3b2d1712f48fb3707c68150aa1836102c271c473",
+      "apps/www/src/registry/components/editor/discussion.tsx": "daf09a78c8f378cfd2a395f71dadbe868618cb659b45b6a40057b760282c58a5",
+      "VISION.md": "6cdff92333a16666aee7b12b43b7e8996e7ade1be6490f6a9ea668aef48f1c63",
+      "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
+      "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
+      "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
+      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
+    },
+    "directories": {},
+    "features": {
+      "browser/comment": "d6679f86b0d205248fcc3c10cdc934db514cfc782ffdd7de26d74637d02df7b5",
+      "example/plite/comment-mode": "14d11a62f1f5a69e9c6afb5663cbf53b655f5968acaae639e4a706df0375a0ed",
+      "example/registry/comment-demo": "55bdbac02bbd3159aa5cfc26f8c451e0929296f50d109873721644bbace06cd3",
+      "example/registry/comment-overlap-demo": "e441a129f16cb8fec26fd57ef724fac403801b566323582a65841e342ea52484",
+      "example/registry/comment-persistence-demo": "80fcf63dc49a8cc3bc453a88296f8ae6ad3484dbd6e3a9f60fb3993a9bac1918",
+      "example/registry/comment-review-demo": "78e33e07a9a03389b5fd67e2e5bbec41657c74bfc11ac1025097edaa50d6473a",
+      "example/registry/discussion-demo": "e9025a5adc9c00f69347e171abf11d1969a3539a96680a96d8d13e95a55038a0",
+      "example/value/comment-value": "f07d275b1cfc67c63d9a07e61620530e7f386fde4ec133f957fdfde5d36391d0",
+      "export/platejs/./comments": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "export/platejs/./comments/react": "91fff179933510018188644d236049b70bc001ad42866e254165024f76e8ed9b",
+      "platejs/comments": "adc2e31a4e35320aa62e2dd692edcea45b8d762b56c99e01504eb7d08ccece44",
+      "ui/comment": "4c3bb9497589cbd00a193b9d8dafb544c1a40e202c7c4e7fc6fa5e4dcdc8978b",
+      "ui/comment-toolbar-button": "a844ef3fee43ea803532fba85bbaf599cc6d4613f07e15e4e4180f957c13602d",
+      "ui/discussion": "cc90601e2ace82f371e5428f1d172475857cad7645aae9becf3f494a7d76dabc"
+    },
+    "upstreams": []
+  }
+}

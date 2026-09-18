@@ -13,13 +13,12 @@ import {
 } from './__tests__/getTestTablePlugins';
 import type { TableRowElement } from './BaseTablePlugin';
 import { BaseTablePlugin } from './BaseTablePlugin';
-import { projectTableSelection } from './internal/selection';
 
 describe('table merge', () => {
   describe('removeRow with expanded selections', () => {
     it('removes every row covered by a selected rowspan cell', () => {
       const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: true }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         selection: {
           anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
           focus: { offset: 2, path: [0, 0, 1, 0, 0] },
@@ -95,7 +94,7 @@ describe('table merge', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: false }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         selection: input.selection,
         initialValue: input.children,
       });
@@ -135,12 +134,14 @@ describe('table merge', () => {
         const selection = editor.read.selection();
 
         assert.ok(selection);
-        const view = editor.plugin(BaseTablePlugin).read.selection(selection);
+        const view = editor
+          .plugin(BaseTablePlugin)
+          .read.selection({ at: selection });
 
         assert.ok(view);
-        expect(view.cellEntries).toHaveLength(4);
-        expect(view.tablePath).toEqual([0]);
-        const table = projectTableSelection(view);
+        expect(view.cells).toHaveLength(4);
+        expect(view.table[1]).toEqual([0]);
+        const table = editor.read.slice.get().content[0];
         const firstRow = table?.children[0] as TableRowElement | undefined;
 
         expect(table?.children).toHaveLength(2);
@@ -184,10 +185,12 @@ describe('table merge', () => {
         const selection = editor.read.selection();
 
         assert.ok(selection);
-        const view = editor.plugin(BaseTablePlugin).read.selection(selection);
+        const view = editor
+          .plugin(BaseTablePlugin)
+          .read.selection({ at: selection });
 
         assert.ok(view);
-        expect(view.cellEntries.map(([cell]) => NodeApi.string(cell))).toEqual([
+        expect(view.cells.map(([cell]) => NodeApi.string(cell))).toEqual([
           '11',
           '21',
           '22',
@@ -216,15 +219,9 @@ describe('table merge', () => {
           </editor>
         ) as TestEditor;
         const mergeEditor = createTableEditor(mergeInput);
-        const mergeView = mergeEditor.plugin(BaseTablePlugin).read.selection();
 
-        expect(
-          !!mergeView && mergeView.anchors.length > 1 && mergeView.complete
-        ).toBe(true);
-        expect(
-          mergeView?.anchors.length === 1 &&
-            (mergeView.anchor.colSpan > 1 || mergeView.anchor.rowSpan > 1)
-        ).toBe(false);
+        expect(mergeEditor.plugin(BaseTablePlugin).read.canMerge()).toBe(true);
+        expect(mergeEditor.plugin(BaseTablePlugin).read.canSplit()).toBe(false);
 
         const splitInput = (
           <editor>
@@ -241,15 +238,9 @@ describe('table merge', () => {
           </editor>
         ) as TestEditor;
         const splitEditor = createTableEditor(splitInput);
-        const splitView = splitEditor.plugin(BaseTablePlugin).read.selection();
 
-        expect(
-          !!splitView && splitView.anchors.length > 1 && splitView.complete
-        ).toBe(false);
-        expect(
-          splitView?.anchors.length === 1 &&
-            (splitView.anchor.colSpan > 1 || splitView.anchor.rowSpan > 1)
-        ).toBe(true);
+        expect(splitEditor.plugin(BaseTablePlugin).read.canMerge()).toBe(false);
+        expect(splitEditor.plugin(BaseTablePlugin).read.canSplit()).toBe(true);
       });
     });
   }
@@ -259,7 +250,7 @@ describe('table merge', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: false }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         selection: input.selection,
         initialValue: input.children,
       });
@@ -331,7 +322,7 @@ describe('table merge', () => {
 
         const editor = createTableEditor(input);
 
-        editor.update.table.insertColumn({ at: [0, 0, 1] });
+        editor.update.table.insertColumn({ at: [0, 1, 1], before: true });
 
         expect(editor.read.children()).toMatchObject([
           {
@@ -366,7 +357,7 @@ describe('table merge', () => {
 
     const createTableEditor = (input: TestEditor) =>
       createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: false }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         selection: input.selection,
         initialValue: input.children,
       });
@@ -434,7 +425,7 @@ describe('table merge', () => {
 
         const editor = createTableEditor(input);
 
-        editor.update.table.insertRow({ at: [0, 1] });
+        editor.update.table.insertRow({ at: [0, 1], before: true });
 
         expect(editor.read.children()).toMatchObject([
           {

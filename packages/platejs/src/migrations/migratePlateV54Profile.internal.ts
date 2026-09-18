@@ -1,6 +1,7 @@
 import {
   type Descendant,
   type EditorCoreStateView,
+  type EditorDocumentValue,
   type Element,
   ElementApi,
   type NodeEntry,
@@ -9,14 +10,21 @@ import {
   TextApi,
   type Value,
 } from '../facade';
-import { getCompiledPlatePlugin } from '../internal/plugin/compilePlateModel';
-import type { DocumentMigration } from '../lib/editor/documentMigrations';
+import type {
+  DocumentMigrationContext,
+  DocumentMigrationTarget,
+} from './documentMigrations';
 import {
   V53_ELEMENT_TYPE_OWNERS,
   V53_FIRST_PARTY_IDENTITIES,
-} from './v53-manifest';
+} from './v53-manifest.internal';
 
 const LEGACY_HEADING_TYPE_RE = /^h([1-6])$/;
+
+const getCompiledPlatePlugin = (
+  target: DocumentMigrationTarget,
+  name: string
+) => target.bindings.find((binding) => binding.name === name);
 
 const formatMigrationValue = (value: unknown): string => {
   if (typeof value === 'string') return value;
@@ -28,7 +36,7 @@ type MigrationListSiblingState = {
   nodes: Pick<EditorCoreStateView['nodes'], 'get'>;
 };
 
-type MigrationListSiblingOptions = {
+export type MigrationListSiblingOptions = {
   breakOnEqIndentNeqList?: boolean;
   breakOnLowerIndent?: boolean;
   breakQuery?: (
@@ -51,29 +59,30 @@ const isAbsentCaption = (children: readonly Descendant[]) =>
     Object.keys(children[0]).every((key) => key === 'text'));
 
 /** Upgrade the frozen first-party profile inside the Plate v54 migration. */
-export const migratePlateV54Profile: DocumentMigration = ({
-  document,
-  editor,
-}) => {
+export const migratePlateV54Profile = (
+  {
+    document,
+    target: conversionTarget,
+  }: Pick<DocumentMigrationContext, 'document' | 'target'>,
+  options: Readonly<{ list?: MigrationListSiblingOptions }> = {}
+): EditorDocumentValue => {
   const ownsProperty = (
     key: string,
     placement: 'element' | 'text',
     type?: string
   ) =>
-    editor.read.schema.property({
+    conversionTarget.schema.property({
       key,
       placement,
       ...(type === undefined ? {} : { type }),
     }) !== null;
   const resolveElementType = (name: string) => {
-    const descriptor = getCompiledPlatePlugin(editor, name);
+    const descriptor = getCompiledPlatePlugin(conversionTarget, name);
 
-    return descriptor ? editor.plugin(descriptor).schema.type : undefined;
+    return descriptor?.type;
   };
-  const scriptDescriptor = getCompiledPlatePlugin(editor, 'script');
-  const scriptKey = scriptDescriptor
-    ? editor.plugin(scriptDescriptor).schema.key
-    : undefined;
+  const scriptDescriptor = getCompiledPlatePlugin(conversionTarget, 'script');
+  const scriptKey = scriptDescriptor?.key;
   const mediaTypes = new Set(
     ['audio', 'file', 'image', 'mediaEmbed', 'video']
       .map(resolveElementType)
@@ -95,18 +104,7 @@ export const migratePlateV54Profile: DocumentMigration = ({
   >();
   const typeMigrations = new Map<string, string>();
   const firstPartyElementTypes = new Set<string>();
-  const listDescriptor = getCompiledPlatePlugin(editor, 'list');
-  const configuredListSiblingOptions = listDescriptor
-    ? (
-        (
-          editor.plugin(listDescriptor).store as unknown as {
-            get: () => unknown;
-          }
-        ).get() as {
-          getSiblingListOptions?: MigrationListSiblingOptions;
-        }
-      ).getSiblingListOptions
-    : undefined;
+  const configuredListSiblingOptions = options.list;
 
   for (const entry of V53_FIRST_PARTY_IDENTITIES) {
     if (!entry.kind.startsWith('element-')) continue;
@@ -116,7 +114,7 @@ export const migratePlateV54Profile: DocumentMigration = ({
     if (target) {
       if (
         entry.kind === 'element-unchanged' ||
-        !editor.read.schema.element(entry.identity)
+        !conversionTarget.schema.element(entry.identity)
       ) {
         firstPartyElementTypes.add(entry.identity);
       }
@@ -125,7 +123,7 @@ export const migratePlateV54Profile: DocumentMigration = ({
   }
 
   for (const [legacyType, owner] of Object.entries(V53_ELEMENT_TYPE_OWNERS)) {
-    if (editor.read.schema.element(legacyType)) continue;
+    if (conversionTarget.schema.element(legacyType)) continue;
     const target =
       owner === 'codeLine' ? 'codeLine' : resolveElementType(owner);
 
@@ -250,7 +248,7 @@ export const migratePlateV54Profile: DocumentMigration = ({
 
     if (
       (type === 'th' || type === 'tableCellHeader') &&
-      !editor.read.schema.element(type) &&
+      !conversionTarget.schema.element(type) &&
       tableCellType
     ) {
       if (Object.hasOwn(input, 'header') && input.header !== true) {
@@ -714,7 +712,7 @@ export const migratePlateV54Profile: DocumentMigration = ({
 
     const isInlineCaptionChild = (child: Descendant) =>
       TextApi.isText(child) ||
-      (ElementApi.isElement(child) && editor.read.schema.isInline(child));
+      (ElementApi.isElement(child) && conversionTarget.schema.isInline(child));
     const direct = element.children;
     const migratedLegacy = legacyCaption.map((child, index) =>
       migrateDescendant(child, `${location}.caption.${index}`, element.type)
@@ -778,13 +776,13 @@ export const migratePlateV54Profile: DocumentMigration = ({
       nodes: {
         get: ((
           path: Path,
-          options?: {
+          nodeOptions?: {
             match?: (node: Descendant, path: Path) => boolean;
           }
         ) => {
           const node = getNodeAtPath(path);
 
-          if (!node || (options?.match && !options.match(node, path))) {
+          if (!node || (nodeOptions?.match && !nodeOptions.match(node, path))) {
             return undefined;
           }
 

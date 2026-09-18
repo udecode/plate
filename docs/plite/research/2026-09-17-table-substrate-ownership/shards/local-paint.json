@@ -1,0 +1,104 @@
+{
+  "status": "counterexample-confirmed",
+  "scope": "Bounded local diagnostic; no product changes, independent goal, review or ledger edits. Stopped after one concrete replacement counterexample.",
+  "summary": "A React td-to-th replacement preserving the table element, selected keys and anchor key loses data-table-cell-selected and caretColor. The actual hook and connected Plite EditableDOMRuntime reproduce this after a real DOM commit claim.",
+  "proof_level": "Source inspection plus Bun/Happy DOM; no browser/native caret or visual paint proof.",
+  "probe": {
+    "path": "sources/paint-probe.test.tsx",
+    "cwd": "/Users/zbeyens/git/plate-2",
+    "command": "bun test ./docs/plite/research/2026-09-17-table-substrate-ownership/sources/paint-probe.test.tsx",
+    "exit_code": 1,
+    "result": "0 passing tests, 1 failing test, 12 expect calls: 11 prerequisite/control assertions pass, final paint assertion fails.",
+    "log": "sources/paint-probe-run.log",
+    "fingerprints_and_host": "sources/paint-probe-run.json",
+    "harness": "Existing root bunfig.toml, workspace source aliases, Happy DOM preload and Testing Library render/act. Imports the actual useTableSelectionDOM, createTestTableEditor, EditorRoot, TablePlugin, EditableDOMRuntime and runtime context. claimReactCommit is observed with a call-through spy, never replaced. React renders and replaces the cell; no second paint implementation.",
+    "input": "Two structurally selected table cells; initial anchor td becomes th via React prop rerender with the same React key and data-editor-node-key. Await a timer turn and flush the real runtime DOM scheduler.",
+    "passed_assertions": [
+      { "line": 73, "assertion": "expect(beforeSelection).toEqual({ anchor: cellKeys[0], keys: cellKeys })" },
+      { "line": 74, "assertion": "expect(readPaint(originalAnchor)).toEqual({ selected: 'true', caretColor: 'transparent' })" },
+      { "line": 77, "assertion": "expect(readPaint(survivingCell)).toEqual({ selected: 'true', caretColor: '' })" },
+      { "line": 87, "assertion": "expect(tableRef.current).toBe(table)" },
+      { "line": 88, "assertion": "expect(replacement).not.toBe(originalAnchor)" },
+      { "line": 89, "assertion": "expect(replacement.isConnected).toBe(true)" },
+      { "line": 90, "assertion": "expect(originalAnchor.isConnected).toBe(false)" },
+      { "line": 91, "assertion": "expect(replacement.getAttribute('data-editor-node-key')).toBe(cellKeys[0])" },
+      { "line": 92, "assertion": "expect(selectionState()).toEqual(beforeSelection)" },
+      { "line": 93, "assertion": "expect(claim.mock.calls.length).toBeGreaterThan(beforeClaims)" },
+      { "line": 94, "assertion": "expect(readPaint(survivingCell)).toEqual({ selected: 'true', caretColor: '' })" }
+    ],
+    "failed_assertion": {
+      "line": 105,
+      "assertion": "expect(readPaint(replacement)).toEqual({ selected: 'true', caretColor: 'transparent' })",
+      "expected": { "selected": "true", "caretColor": "transparent" },
+      "actual": { "selected": null, "caretColor": "" }
+    },
+    "observed": {
+      "anchor_before_and_after": "r0:n4",
+      "selected_keys_before_and_after": ["r0:n4", "r0:n7"],
+      "claim_calls_before": 1,
+      "claim_calls_after": 2,
+      "detached_original_before_unmount": { "selected": "true", "caretColor": "transparent" },
+      "surviving_cell": { "selected": "true", "caretColor": "" }
+    }
+  },
+  "existing_spec": {
+    "path": "packages/platejs/src/react/features/table/useTableSelectionDOM.spec.tsx",
+    "result": "Passed unchanged with 22 expect calls in the first combined run; the other test in that run failed during probe fixture setup.",
+    "log": "sources/paint-probe-setup-failure.log",
+    "command_and_fingerprints": "sources/paint-probe-setup-failure.json",
+    "coverage": "Selection membership changes and reversed anchor on stable DOM cells; one initial table scan; restores caret on unmount.",
+    "gap": "No selected DOM-cell replacement, td-to-th transition, or selected-attribute cleanup assertion. The DOM table is manually retained until table.remove() after hook unmount."
+  },
+  "source_findings": [
+    {
+      "path": "packages/platejs/src/react/features/table/useTableSelectionDOM.ts",
+      "lines": [65, 75],
+      "finding": "Early return compares only the table element, caret key and selected keys; individual cell element identity is absent."
+    },
+    {
+      "path": "packages/platejs/src/react/features/table/useTableSelectionDOM.ts",
+      "lines": [101, 171],
+      "finding": "Even without the early return, caret lookup is gated on table/caret-key changes, and selection delta loops skip keys retained in the set. The cached-element connectivity fallback cannot help unless lookup executes."
+    },
+    {
+      "path": "packages/platejs/src/react/features/table/useTableSelectionDOM.ts",
+      "lines": [50, 58],
+      "finding": "Unmount cleanup restores only the previously tracked caret element's inline color. It does not remove selected attributes."
+    }
+  ],
+  "plite_commit_claim": {
+    "handles_this_lifetime": false,
+    "evidence": "The real claim ran again (1 to 2 calls) and the replacement still lacked both paint inputs after scheduler flush.",
+    "source_chain": [
+      "packages/plitejs/src/react/hooks/use-claim-editable-dom-commit.ts:39 useLayoutEffect calls runtime.claimReactCommit()",
+      "packages/plitejs/src/react/editable/editable-dom-runtime.ts:812 forwards to rootRuntime.claimHostCommit()",
+      "packages/plitejs/src/dom/plugin/dom-root-runtime.ts:521 calls domIntegrityObserver.discardPending('host')",
+      "packages/plitejs/src/dom/plugin/dom-integrity-observer.ts:367 drains observer records, publishes DOM change, marks text-flow mutations and counts owned mutations",
+      "packages/plitejs/src/dom/plugin/dom-root-runtime.ts:318 routes DOM change to publishLayout; :763 notifies layout subscribers"
+    ],
+    "assessment": "The claim classifies host mutations for integrity ownership; it has no table-paint reapplication or selected-attribute disposal contract. useTableSelectionDOM does not subscribe to the root layout notifications, and its own render still returns early. Existing Plite mutation-observer lifecycle tests cover ownership/hostile mutation repair, not this cell lifetime.",
+    "plite_contract_test_status": "Read source only; not executed."
+  },
+  "unmount": {
+    "observed": "After full React unmount, held references to the original anchor and surviving cell still have selected='true'; original anchor caretColor is restored to ''.",
+    "limit": "These are detached-node observations, not a live retained-table reproduction. Source supports the cleanup gap, but no separate unmount test was added after reaching the counterexample stop condition."
+  },
+  "setup_failures": [
+    { "log": "sources/paint-probe-setup-failure.log", "cause": "Probe fixture used unknown type p; corrected to paragraph, matching the existing helper. No product assertion executed in this probe attempt." },
+    { "log": "sources/paint-probe-selection-setup-failure.log", "cause": "Probe fixture supplied a range without the required selection protocol; corrected to the existing spec's kind=node shape. No product assertion executed in this attempt." }
+  ],
+  "source_identity": {
+    "algorithm": "sha256",
+    "hook": "d03b356e9abba9e6e5ef7aa8dd700c23da7db0b9f166307e4390976f842cf8d7",
+    "existing_spec": "022b7d8673fe89d35c45fb1234ee4654e871456a5a8445bd1a1ca23ebed3a81f",
+    "probe": "a0db694565fd48661aed1dd9fd8d7784f4b24823816b80fa49c8bdbca1f38378",
+    "manifest": "sources/paint-probe-run.json",
+    "selected_sources_unchanged_during_run": true,
+    "limit": "Manifest fingerprints the named hook/spec, fixture helper, TablePlugin, commit-claim chain and test setup; it is not a complete transitive source or dependency-lock attestation."
+  },
+  "limits": [
+    "No browser launched; no CSS computed-style, screenshot, native caret, focus or trusted input claim.",
+    "Minimal React table host, actual hook/editor/runtime; not the complete production Editable/registry table renderer or a toolbar header command.",
+    "No product source, package tests, parent review or ledgers changed. Research probe intentionally remains failing."
+  ]
+}

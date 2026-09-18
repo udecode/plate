@@ -57,16 +57,20 @@ Disable the menu on a specific surface with
 
 ## Actions
 
-The registry component reads `editor.read.selection.nodes()` and sends each
-mutation to its canonical owner:
+The registry component reads the exact block selection and sends each mutation
+to its feature owner:
 
-| Action               | Owner                       |
-| -------------------- | --------------------------- |
-| Ask AI               | `AIChatPlugin`              |
-| Delete and duplicate | editor node transforms      |
-| Turn into            | registry `applyBlockAction` |
-| Indent and outdent   | `IndentPlugin`              |
-| Align                | editor node transforms      |
+| Action               | Owner                 |
+| -------------------- | --------------------- |
+| Ask AI               | `AIChatPlugin`        |
+| Delete and duplicate | editor node transforms |
+| Text and heading     | block and feature transforms |
+| Quote                | `BaseBlockquotePlugin` |
+| Indent and outdent   | `BaseIndentPlugin`    |
+| Align                | `BaseTextAlignPlugin` |
+
+The menu hides actions whose plugins are absent. It keeps installed structural
+actions disabled when the current selection shape is unsupported.
 
 `BlockContextMenu` is the public copied component. There is no menu-state or
 separate selection package API.

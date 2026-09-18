@@ -5,6 +5,7 @@
 - Add immutable `TransactionSpec` and versioned `DocumentChange` APIs for atomic, serializable updates, with explicit primary and named-root changes and no public primary-root sentinel
 - Compile closed schemas from plugin `schema` declarations with shared `property.*` laws, structural content fitting, stable identity, and typed element, group, root, and property queries
 - Define literal string domains with `property.enum(...)`
+- Avoid redundant editable renders when a controlled read-only prop already determines the effective input policy
 - Bind structural slice fitting to each compiled schema revision through one private, immutable fitter artifact
 - Publish derived schema identities as `{ kind: 'derived', fingerprint }` and application-named lineage as `{ kind: 'named', id, version, fingerprint }`; fingerprints cover compiled semantics only
 - Accept persisted complete-document envelopes with exact schema identity at the root editor boundary and reject them from scoped editor views
@@ -13,13 +14,15 @@
 - Carry element-owned named roots through content slices, enforce one owner for exclusive roots, preserve shared aliases and cycles, namespace cross-source collisions deterministically, and apply owner/root cleanup, cut, undo, and redo atomically
 - Reconfigure plugin slots and install dynamic plugins atomically, requiring an explicit document migration when the candidate schema rejects the current document
 - Activate candidate plugins against isolated state, publish the complete plugin set atomically, and restore every document, field, anchor, and registry fact when activation fails
+- Initialize final-document resources with activation-owned `beforePublish` callbacks; synchronous failures roll back before publication, while `afterPublish` observes committed state
 - Define semantic commands with `defineCommand` and register pure `false | TransactionSpec` handlers through plugin `commands: ({ handle, around }) => [...]` factories
 - Let host input runtimes probe pure command handlers without publishing, so pass-through policy preserves native input and material policy fails closed
 - Dispatch command-backed updates through immutable transaction specs, including plugin-aware `state.transaction(...)` builders and `tx.command`
 - Execute update callbacks, plugin writes and transaction-spec callbacks synchronously; reject thenable results before publishing a commit or returning a spec
 - Expose frozen snapshot identities through `snapshot.index.entries()`, `keyAt()`, and `pathOf()` with bounded lazy structural mapping
 - Capture accepted, proposed, review, markup, property, and change projections through one immutable authored format snapshot. Project ranges with `projectAuthoredRange`, construct sparse imported revision changes with `createAuthoredImportedRevisionChange`, and build imported review documents from ordered `DocumentChange` records. Authored format segments expose their projected `textRange`.
-- Allow `edit` intent with the `markup` projection, mapping exact accepted targets to direct edits while pending-only, retained, and mixed targets remain review-only.
+- Keep Editing writes direct when normalization touches adjacent pending structure; only writes to pending content become reviewable.
+- Preserve authored transaction step boundaries when mapping markup-view edits into accepted coordinates so compound structural edits undo and redo atomically.
 - Give every live descendant, including text, an editor-scoped `NodeKey`. Read it with `editor.key(nodeOrLocation)`, resolve it with `editor.read.nodes.path(nodeKey)`, and pass it to generic `NodeTarget` reads and updates. Node keys are unique across one editor's roots and carry private runtime ownership, so a key from another editor fails closed even when public editor IDs and local allocation order match. Path lookup stays scoped to the current editor or view root. Node keys never enter values, slices, history, or collaboration payloads.
 - Keep schema-bound initialization and common structural transforms local to the changed document region, reducing large-document startup and edit latency.
 - Render transient inline paint through ordered `<Plite decorations>` sources that observe once, read by node, and return keyed render-safe attributes. Keep durable annotations and out-of-flow widgets as separate lifetimes.
@@ -31,6 +34,7 @@
 - Support text selection and one directional exact `NodeSelection` with canonical `paths`, `anchorPath`, `focusPath`, and an optional named root. Preserve node selection through mapping, history, collaboration, marks, and slices without plugin-defined selection kinds.
 - Validate unknown selection values against the built-in selection shapes and current document through `editor.read.selection.isValid(value)`
 - Track persistent Path, Point, and Range values with `editor.anchor`; use auto-released `tx.anchor` handles for locations needed only inside one update or transaction builder
+- Resolve one retained anchor in another view of the same model and root with `anchor.resolve(view)`. Annotation indexes follow their exact view and observe the editor only while subscribed; passive reads stay current without retaining subscriptions.
 - Default bare public editor, read, update, transaction, and view types to the core-only plugin tuple. Use the explicit internal `AnyEditor` boundary when runtime infrastructure intentionally erases installed capabilities.
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
 - Build plugin read method trees once per published configuration, keep their methods live across document commits and transaction drafts, and reject document-derived read data properties

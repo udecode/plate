@@ -4,7 +4,9 @@
   "title": "Media File",
   "description": "A file attachment component with download capability and caption.",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [
     "https://platejs.org/r/caption.json",

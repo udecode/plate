@@ -137,11 +137,16 @@ schema law, and application typing remain outside this skill.
     omit live interaction styles when the static job does not need them.
     Keep one copied color resolver for related selections, carets, and labels;
     use keyed reads and follow `best-api` for stage ordering.
-21. **Whole-element view attributes have one hook host.** Cross-cutting Plate
-    features author sparse `{ key, attributes }[]` through
-    `render.useViewElementAttributes`. Plate owns the private keyed runtime and
-    compiled-plugin precedence. Per-node render and injection callbacks remain
-    pure; components and slots still own structure.
+21. **Whole-element view attributes have one owner.** Cross-cutting Plate
+    attributes delivered through custom React components use sparse
+    `{ key, attributes }[]` from `render.useViewElementAttributes`; Plate owns
+    the private keyed runtime and compiled-plugin precedence. A benchmarked
+    high-frequency interaction may bind private view-local state through the
+    existing canonical node-host refs when custom component props must remain
+    unchanged. Keep that binder feature-owned, prove replacement and cleanup,
+    and add no public hook, registry, store or generic channel. Per-node render
+    and injection callbacks remain pure; components and slots still own
+    structure.
 22. **Feature kits own required React integration.** Installing a copied kit
     installs its session, provider, and exact-view cleanup. Ordinary assemblies
     render EditorRoot and Editor without feature roots or ref plumbing. Reuse
@@ -220,9 +225,11 @@ schema law, and application typing remain outside this skill.
 - Package cleanup must not paste a package-owned transform, query, navigation
   controller, or other semantic algorithm into registry JSX. Keep or publish
   the durable package owner unless the behavior genuinely becomes UI-specific.
-- Registry metadata must declare every package and copied-registry dependency
-  used by an item. Optional cross-feature dependencies are valid when the
-  behavior belongs in that item and remains safe when the plugin is absent.
+- Derive required runtime packages and copied-registry dependencies from each
+  item's resolved source graph. Author only installation policy that source
+  cannot express: intentional bundles, targets, styles, CSS, optional peers,
+  and provider selection. Optional cross-feature dependencies are valid when
+  the behavior belongs in that item and remains safe when the plugin is absent.
 - Colocate integration behavior with the component or kit it modifies. Do not
   extract a miscellaneous integration file or terminal configuration array
   merely to invert dependencies, make a graph look pure, or keep optional
@@ -326,13 +333,17 @@ Read this reference for component families, registry feature variants, headless 
 
 - Update `registry-features.ts`, `registry-editor.ts`, and
   `registry-examples.ts` together.
-- Add explicit `registryDependencies` for every shared UI/style dependency.
-- After source ownership is correct, declare every surviving direct runtime
-  package and registry dependency. Metadata mirrors source; it never grants a
+- Add explicit `registryDependencies` only for shared UI/style policy that the
+  resolved source graph cannot discover. Required source imports and their
+  package DAG are generated installation facts. Metadata may add intentional
+  bundles or optional peers; it never duplicates derivable facts or grants a
   generic host permission to require an optional feature.
 - Build docs and primitive-agnostic registry items once. Resolve only named
   provider-boundary items at request/install time, preserve semantic item ids,
   and rewrite Plate self-dependencies to the requested supported style.
+- Compile all supported providers and public directories as one generation.
+  Publish the index, metadata, manifest, payload hashes, and generation marker
+  together; consumers must reject mixed or incomplete generations.
 - If a component depends on shared CSS vars like highlight tokens, add the style registry dep.
 - Examples should depend on kits plus any extra styles/components they introduce.
 - Treat registry examples as teaching/install surfaces, not optimized host-app
@@ -388,12 +399,17 @@ slots. They never subscribe to results or run deferred searches. Committed
 queries and matches remain in `BaseFindPlugin`; only the focused bar scrolls
 its view, and unmounting a view leaves that shared query intact.
 
-For Comments, pass complete serializable records to the package plugin through
-`initialState.initialThreads`; the package binds editor ranges and owns live
-actions and subscriptions. Copied `CommentKit` owns styling, and `DiscussionKit`
+For Comments, load the saved `CommentsJSON` through `initialState.initialComments`
+with its exact document revision. The package privately restores native anchors;
+`attachment(id)` supplies current coverage and `toJSON()` supplies explicit save
+data. Await durable mutation results before clearing a composer or closing its
+action UI; rejected and failed writes retain input. Resolve/Reopen is separate
+from document undo. Copied `CommentKit` owns styling, and `DiscussionKit`
 adds the combined review composition. UI uses the existing Plate provider and
 installed descriptor; consumers do not create a channel, provider, or binding
 effect. User actions remain the path for new comments and replies.
+Use the event or render slot's exact editor for attachment and target queries;
+one shared conversation can have different coverage in two projected views.
 
 For suggestion setup, load the complete document through `initialValue` and
 set the mounted view's intent and projection through `EditorRoot authored`.

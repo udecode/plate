@@ -109,8 +109,8 @@ describe('native authored fragment collection', () => {
         tx.selection.set(point(8));
         tx.text.deleteBackward();
       });
-      view.update.history.undo();
-      view.update.history.redo();
+      view.api.history.undo();
+      view.api.history.redo();
       updateAuthoredFragment(
         retained,
         (tx) => {
@@ -208,9 +208,9 @@ describe('native authored fragment collection', () => {
       assert.deepEqual(blocks(), expected);
       assert.equal(editor.read.text.string([]), 'Alpha bravo omega');
       assert.equal(view.read.text.string([]), 'Alpha  omega');
-      view.update.history.undo();
+      view.api.history.undo();
       assert.deepEqual(blocks(), ['Alpha bravo omega']);
-      view.update.history.redo();
+      view.api.history.redo();
       assert.deepEqual(blocks(), expected);
       updateAuthoredFragment(retained, (tx) => {
         tx.selection.set(point(0, 1));
@@ -472,7 +472,7 @@ describe('native authored fragment collection', () => {
       selection: editor.read.authored.select({ ids: [changeId] }),
     });
     assert.deepEqual(seen, [{ count: 0, status: 'accepted' }]);
-    editor.update.history.undo();
+    editor.api.history.undo();
     assert.deepEqual(seen, [
       { count: 0, status: 'accepted' },
       { count: 1, status: 'pending' },

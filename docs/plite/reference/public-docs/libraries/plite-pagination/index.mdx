@@ -1,132 +1,159 @@
 ---
 title: "Plite Pagination"
-description: "Derive page geometry, line fragments, and paged editor mount plans from Plite state."
+description: "Measure a Plite document and render one owned paged editor surface."
 ---
 
-`plitejs/pagination` derives page geometry, line fragments, and paged editor
-surfaces from a Plite editor. Use it for pagination lanes and print-like
-surfaces. `PagedEditable` mounts the complete paged DOM by default and can
-explicitly omit offscreen pages.
+`plitejs/pagination` derives immutable page geometry from a Plite editor.
+`PagedEditable` owns the live paged surface: measurement, page arrangement,
+document placement, and optional page-level DOM omission.
 
 ## Installation
-
-```bash
-npm install plitejs @chenglou/pretext
-```
-
-## Pagination
-
-Create a layout reader with `createPliteLayout`. The reader chooses the built-in
-measurement engine and derives layout from the current editor snapshot and your
-page settings.
-
-```tsx
-import { createPliteLayout } from "plitejs/pagination";
-
-const layout = createPliteLayout(editor, {
-  page: {
-    margins: 72,
-    preset: "letter",
-  },
-});
-
-layout.reconfigure({
-  page: {
-    margins: 48,
-    preset: "a4",
-  },
-});
-```
-
-The layout output is derived state. Store document content in Plite roots and
-store product settings in state fields; do not write layout fragments into the
-document unless your product explicitly needs authoritative page breaks.
-
-## React usage
-
-Use `PagedEditable` from `plitejs/pagination/react` when the editor surface should
-render pages.
 
 ```bash
 npm install plitejs @chenglou/pretext react react-dom
 ```
 
+## Paged editing
+
 ```tsx
+import { createPretextPageLayoutEngine } from "plitejs/pagination";
+import {
+  PagedEditable,
+  usePageLayout,
+} from "plitejs/pagination/react";
 import { Plite, useEditor } from "plitejs/react";
-import { PagedEditable, usePliteLayout } from "plitejs/pagination/react";
+import { useMemo, useRef } from "react";
 
 const DocumentEditor = () => {
-  const editor = useEditor({
-    initialValue,
-  });
-  const layout = usePliteLayout(editor, {
-    page: { margins: 72, preset: "letter" },
-  });
+  const editor = useEditor({ initialValue });
+  const editableRef = useRef<HTMLDivElement>(null);
+  const engine = useMemo(() => createPretextPageLayoutEngine(), []);
+  const layout = usePageLayout(editableRef);
 
   return (
     <Plite editor={editor}>
-      <PagedEditable layout={layout} />
+      <output>{layout?.pages.length ?? 0} pages</output>
+      <PagedEditable
+        ref={editableRef}
+        engine={engine}
+        page={{ margins: 72, preset: "letter" }}
+        pageView={{ gap: 24, mode: "single" }}
+        renderPage={({ attributes, page }) => (
+          <div {...attributes} aria-label={`Page ${page.index + 1}`} />
+        )}
+      />
     </Plite>
   );
 };
 ```
 
-`PagedEditable` accepts normal `Editable` props such as `renderElement`,
-`renderLeaf`, and keyboard handlers. Configure transient text paint with `decorations` on the
-surrounding `Plite` provider.
+`PagedEditable` accepts ordinary `Editable` props, including element and leaf
+renderers and event handlers. `renderPage` receives page attributes and page
+geometry. It renders page chrome without document children; the paged surface
+places editable content on the shared canvas.
 
-Set `pageView={{ gap: 24, mode: "spread" }}` to arrange facing pages. Supply
-`renderPage` to style page backgrounds, borders, and shadows; the default page
-surface supplies geometry only. Use `usePliteLayoutFragmentsAtPath(path)` to
-read a node's rendered fragments, passing its renderer path or `useElementPath()`.
+`pageView.mode` accepts `"single"` and `"spread"`. Page settings can be a
+`PageSettings` value or an `EditorStateField<PageSettings>`, so applications can
+keep shared page settings in editor state without storing derived geometry.
 
-`usePliteLayout` publishes option changes after React commits. Outside React,
-call `layout.reconfigure(nextOptions)` to replace the complete configuration in
-one atomic refresh.
+`usePageLayout(editableRef)` reads the snapshot published by that exact
+editable host. It returns `null` before the first valid layout and when
+measurement fails. Sibling paged surfaces keep separate snapshots.
 
-Pass `engine` to `createPliteLayout` or `usePliteLayout` to use custom
-measurement or configure `pretextPageLayoutEngine()`.
+## Explicit fragmentation
 
-## Headless and static use
-
-`createPliteLayout` can run outside React and can fall back to an estimated
-engine when browser canvas measurement is unavailable. Use that for previews,
-tests, and export planning. Treat static output as derived geometry, not as an
-authoritative PDF, print, or collaboration layout source unless your product
-provides the measurement engine and proof for that target.
-
-## Layout-owned boxes
-
-Tables, images, embeds, and other block formatting context style nodes should
-own their layout units through the selected layout engine. The engine should
-not split the Plite table node just to paginate a table. It can paginate
-engine-owned row units while the document tree stays stable.
-
-## Page virtualization
-
-Set `virtualize` when the complete paged DOM exceeds your tested interaction or
-memory budget.
+Inline-flow text is the default. Non-text block structures describe their
+fragmentation through one provider:
 
 ```tsx
-<PagedEditable layout={layout} virtualize />
+<PagedEditable
+  page={{ margins: 72, preset: "letter" }}
+  fragmentation={({ element }) => {
+    if (element.type === "image") {
+      return { type: "atomic", size: { height: 320, width: 480 } };
+    }
+
+    if (element.type === "table") {
+      return {
+        type: "direct-children",
+        sizes: element.children.map(() => ({ height: 36, width: 624 })),
+      };
+    }
+
+    if (element.type === "code") {
+      return { type: "text", keepTogether: true };
+    }
+  }}
+/>
 ```
 
-Pagination omits offscreen page surfaces and document roots on its existing
-canvas. It does not add generic virtual rows or change fragment coordinates.
-Without `virtualize`, every page, fragment, layout unit, and document root stays
-mounted.
+- `text` measures inline runs and can request soft keep-together behavior.
+- `atomic` places one indivisible box with an explicit size.
+- `direct-children` places each immediate child from its explicit size.
 
-The page mount plan keeps pages mounted when they are visible, selected,
-or promoted by interaction. The selected content remains mounted while the
-window changes.
+Plite derives all paths from the document snapshot and validates that the plan
+matches the node shape. Oversized content is placed once and expands occupied
+page geometry instead of being dropped.
 
-## Measurement caveat
+Call `usePageLayoutFragments()` inside an element renderer to read that
+element's mounted page placements. This is useful when a renderer owns a
+fragment-aware boundary for direct children. The hook derives the current path
+from renderer context; callers do not pass paths.
 
-The built-in Pretext-backed engine measures text with browser font metrics.
-That gives stable results inside one browser profile, but different operating
-systems and browsers can still produce slightly different line breaks. Products
-that need exact collaboration or export parity should use an authoritative page
-break source or a shared measurement profile.
+## Headless measurement
+
+`measurePages(editor, options)` reads one coherent editor snapshot and returns
+an immutable `PageLayoutSnapshot`. It neither subscribes nor publishes.
+
+```ts
+import {
+  createEstimatedPageLayoutEngine,
+  measurePages,
+} from "plitejs/pagination";
+
+const snapshot = measurePages(editor, {
+  engine: createEstimatedPageLayoutEngine(),
+  page: { margins: 72, preset: "a4" },
+});
+```
+
+Use `createPretextPageLayoutEngine()` for browser font measurement. Its options
+control whitespace, word breaking, cache size, and cold-block estimation. A
+custom `PageLayoutEngine` receives detached immutable input and must conserve
+source ranges, fragment order, paths, and declared non-text sizes.
+
+Use `typography.block` and `typography.text` to match the rendered line height,
+spacing, font, and letter spacing. Font loading invalidates the built-in
+Pretext measurement cache for mounted paged surfaces.
+
+## Roots and page settings
+
+Pass a named `root` to `PagedEditable` or `measurePages` to measure and render
+that root. Omit `root` for the primary document. `"main"` is an internal root
+spelling and is rejected at the public boundary.
+
+`pageSettingsCodec` persists validated finite `PageSettings` values in a state
+field. The built-in presets are `"a4"` and `"letter"`.
+
+## DOM coverage
+
+`PagedEditable` mounts the complete paged DOM by default. Set `virtualize` when
+the complete surface exceeds the product's measured interaction or memory
+budget. Pagination keeps visible, selected, and explicitly materialized page
+content mounted in one coordinate system.
+
+Omitted content remains in the Plite value, history, and collaboration state.
+Model selection and clipboard serialization can cross it. Native browser find,
+assistive technology, DOM printing, and third-party DOM integrations see only
+mounted content. Use a complete model-based export when those jobs need the
+whole document.
+
+## Fidelity
+
+The Pretext engine uses browser font metrics. Font files, operating systems,
+and browsers can produce different line breaks. Treat live pagination as view
+state. Products that require identical exported pages need a controlled
+measurement environment for that export.
 
 ## Related docs
 

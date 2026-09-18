@@ -1,4 +1,11 @@
-import { type ComponentPropsWithRef, type FormEvent, useMemo } from 'react';
+import {
+  type ComponentPropsWithRef,
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 
 import type {
   EditableDOMBeforeInputHandler,
@@ -78,6 +85,7 @@ export type EditableEventRuntimeCore = {
 };
 
 export type EditableEventRuntime = EditableEventRuntimeCore & {
+  flushPendingNativeTextInput?: () => void;
   handlers: EditableRootEventHandlers;
 };
 
@@ -136,6 +144,30 @@ export const useEditableEventRuntime = ({
       }) satisfies EditableEventRuntimeCore,
     [androidInputManagerRef, repair, runtime.setComposing, selection, trace]
   );
+  const cancelNativeSelectionImportRef = useRef<(() => void) | null>(null);
+  const cancelNativeSelectionImport = useCallback(() => {
+    cancelNativeSelectionImportRef.current?.();
+    cancelNativeSelectionImportRef.current = null;
+  }, []);
+  const scheduleNativeSelectionImport = useCallback(() => {
+    cancelNativeSelectionImport();
+    cancelNativeSelectionImportRef.current = domPhaseScheduler.schedule(
+      'selection-repair',
+      'native-selection-import',
+      () => {
+        cancelNativeSelectionImportRef.current = null;
+        selection.syncDOMSelectionFromRuntime();
+      },
+      { timing: 'timeout' }
+    );
+  }, [cancelNativeSelectionImport, domPhaseScheduler, selection]);
+
+  useEffect(
+    () => () => {
+      cancelNativeSelectionImport();
+    },
+    [cancelNativeSelectionImport]
+  );
 
   useRuntimeTargetBridge({
     domPhaseScheduler: runtime.domPhaseScheduler,
@@ -168,6 +200,7 @@ export const useEditableEventRuntime = ({
     inputController,
     isViewportBackedSelection: runtime.isViewportBackedSelection,
     rootRef,
+    runtime,
     scrollPathIntoView: viewportRuntime?.scrollToPath,
     setExplicitViewportBackedSelection:
       runtime.setExplicitViewportBackedSelection,
@@ -190,6 +223,7 @@ export const useEditableEventRuntime = ({
     queuePendingNativeTextInput: inputHandlers.queuePendingNativeTextInput,
     readOnly,
     repair: eventCore.repair,
+    runtime,
     selection: eventCore.selection,
     setComposing: eventCore.composition.setComposing,
     trace: eventCore.trace,
@@ -236,6 +270,7 @@ export const useEditableEventRuntime = ({
     trace: eventCore.trace,
   });
   const focusMouseHandlers = useRuntimeFocusMouseEvents({
+    cancelNativeSelectionImport,
     clearVerticalGoal: runtime.clearVerticalGoal,
     domPhaseScheduler,
     editor,
@@ -262,6 +297,7 @@ export const useEditableEventRuntime = ({
     onKeyDown,
     readOnly,
     runtime: eventCore,
+    scheduleNativeSelectionImport,
     setExplicitViewportBackedSelection:
       runtime.setExplicitViewportBackedSelection,
     verticalNavigation: runtime,
@@ -291,8 +327,9 @@ export const useEditableEventRuntime = ({
   return useMemo(
     () => ({
       ...eventCore,
+      flushPendingNativeTextInput: inputHandlers.flushPendingNativeTextInput,
       handlers,
     }),
-    [eventCore, handlers]
+    [eventCore, handlers, inputHandlers.flushPendingNativeTextInput]
   );
 };

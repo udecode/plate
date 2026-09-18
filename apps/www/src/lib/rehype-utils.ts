@@ -14,10 +14,11 @@ import type { z } from 'zod';
 import type { UnistNode } from '@/types/unist';
 
 import registryShadcnData from '../../registry-shadcn.json';
-import { registry } from '../registry/registry';
 import { failInvariant } from './failInvariant';
+import { getRegistryMetadata } from './registry-metadata';
 
 const registryShadcn = registryShadcnData as unknown as Registry;
+const registry = getRegistryMetadata();
 
 const PLATE_REGISTRY_NAMESPACE = '@plate/';
 const SHADCN_REGISTRY_NAMESPACE = '@shadcn/';

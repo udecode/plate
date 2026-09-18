@@ -46,6 +46,7 @@ type HistoryBranch<V extends Value> = Readonly<{
   batch: Batch<V>;
   depth: number;
   group: HistoryBatchGroup | null;
+  identity: object;
   mappings: MappingJournal<V> | null;
   next: HistoryBranch<V> | null;
   recovery: AnchorHistoryRecovery | null;
@@ -61,16 +62,76 @@ type HistoryStore<V extends Value> = Readonly<{
 }>;
 
 const HISTORY = new WeakMap<AnyEditor, HistoryStore<Value>>();
+const HISTORY_DRAFTS = new WeakMap<
+  AnyEditor,
+  Array<{ state: HistoryStore<Value> | undefined }>
+>();
+const PUBLISHED_HISTORY_READ_DEPTH = new WeakMap<AnyEditor, number>();
 
-export const captureHistoryState = (editor: AnyEditor) =>
-  HISTORY.get(getEditorRuntimeOwner(editor));
+const getHistoryDraft = (editor: AnyEditor) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if ((PUBLISHED_HISTORY_READ_DEPTH.get(owner) ?? 0) > 0) return undefined;
+
+  return HISTORY_DRAFTS.get(owner)?.at(-1);
+};
+
+export const withHistoryStateDraft = <T>(
+  editor: AnyEditor,
+  state: HistoryStore<Value> | undefined,
+  fn: () => T
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const drafts = HISTORY_DRAFTS.get(owner) ?? [];
+  const draft = { state };
+
+  drafts.push(draft);
+  HISTORY_DRAFTS.set(owner, drafts);
+
+  try {
+    return { result: fn(), state: draft.state } as const;
+  } finally {
+    drafts.pop();
+    if (drafts.length === 0) HISTORY_DRAFTS.delete(owner);
+  }
+};
+
+export const withPublishedHistoryState = <T>(
+  editor: AnyEditor,
+  fn: () => T
+): T => {
+  const owner = getEditorRuntimeOwner(editor);
+  const depth = PUBLISHED_HISTORY_READ_DEPTH.get(owner) ?? 0;
+
+  PUBLISHED_HISTORY_READ_DEPTH.set(owner, depth + 1);
+  try {
+    return fn();
+  } finally {
+    if (depth === 0) PUBLISHED_HISTORY_READ_DEPTH.delete(owner);
+    else PUBLISHED_HISTORY_READ_DEPTH.set(owner, depth);
+  }
+};
+
+export const captureHistoryState = (editor: AnyEditor) => {
+  const draft = getHistoryDraft(editor);
+
+  return draft ? draft.state : HISTORY.get(getEditorRuntimeOwner(editor));
+};
 
 export const restoreHistoryState = (
   editor: AnyEditor,
   state: HistoryStore<Value> | undefined
 ) => {
-  if (state) HISTORY.set(getEditorRuntimeOwner(editor), state);
-  else HISTORY.delete(getEditorRuntimeOwner(editor));
+  const owner = getEditorRuntimeOwner(editor);
+  const draft = getHistoryDraft(owner);
+
+  if (draft) {
+    draft.state = state;
+  } else if (state) {
+    HISTORY.set(owner, state);
+  } else {
+    HISTORY.delete(owner);
+  }
 };
 
 const createStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => ({
@@ -84,11 +145,15 @@ const createStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => ({
 
 const getStore = <V extends Value>(editor: Editor<V>): HistoryStore<V> => {
   const owner = getEditorRuntimeOwner(editor);
-  let store = HISTORY.get(owner) as HistoryStore<V> | undefined;
+  const draft = getHistoryDraft(owner);
+  let store = (draft ? draft.state : HISTORY.get(owner)) as
+    | HistoryStore<V>
+    | undefined;
 
   if (!store) {
     store = createStore(editor);
-    HISTORY.set(owner, store);
+    if (draft) draft.state = store;
+    else HISTORY.set(owner, store);
   }
 
   return store;
@@ -98,7 +163,11 @@ const setStore = <V extends Value>(
   editor: Editor<V>,
   store: HistoryStore<V>
 ) => {
-  HISTORY.set(getEditorRuntimeOwner(editor), store);
+  const owner = getEditorRuntimeOwner(editor);
+  const draft = getHistoryDraft(owner);
+
+  if (draft) draft.state = store;
+  else HISTORY.set(owner, store);
 };
 
 const publish = <V extends Value>(
@@ -200,7 +269,8 @@ const branch = <V extends Value>(
   mappings: MappingJournal<V> | null = null,
   group: HistoryBatchGroup | null = null,
   recovery: AnchorHistoryRecovery | null = null,
-  anchorCeiling = 0
+  anchorCeiling = 0,
+  identity: object = {}
 ): HistoryBranch<V> =>
   Object.freeze({
     anchorCeiling,
@@ -208,6 +278,7 @@ const branch = <V extends Value>(
     batch: freezeBatch(batch),
     depth: (next?.depth ?? 0) + 1,
     group,
+    identity,
     mappings,
     next,
     recovery,
@@ -237,7 +308,8 @@ const clipBranch = <V extends Value>(
       item.mappings,
       item.group,
       item.recovery,
-      item.anchorCeiling
+      item.anchorCeiling,
+      item.identity
     );
   }
 
@@ -251,7 +323,8 @@ const pushBranch = <V extends Value>(
   maxDepth: number,
   group: HistoryBatchGroup | null = null,
   recovery: AnchorHistoryRecovery | null = null,
-  anchorCeiling = 0
+  anchorCeiling = 0,
+  identity: object = {}
 ) =>
   branch(
     batchValue,
@@ -260,7 +333,8 @@ const pushBranch = <V extends Value>(
     null,
     group,
     recovery,
-    anchorCeiling
+    anchorCeiling,
+    identity
   );
 
 const addMapping = <V extends Value>(
@@ -299,6 +373,21 @@ const journalEntries = <V extends Value>(
   }
 
   return entries.reverse();
+};
+
+const retainMappedCompositionGroup = (
+  group: HistoryBatchGroup | null
+): HistoryBatchGroup | null => {
+  if (group?.native?.composition === undefined) return null;
+
+  const shared = {
+    native: group.native,
+    ...(group.scope ? { scope: group.scope } : {}),
+  };
+
+  return group.root === undefined
+    ? Object.freeze({ ...shared, kind: 'effects', root: undefined })
+    : Object.freeze({ ...shared, kind: 'document', root: group.root });
 };
 
 const resolveHead = <V extends Value>(
@@ -387,9 +476,10 @@ const resolveHead = <V extends Value>(
     batchBase,
     next,
     null,
-    null,
+    retainMappedCompositionGroup(value.group),
     recovery,
-    value.anchorCeiling
+    value.anchorCeiling,
+    value.identity
   );
 };
 
@@ -414,6 +504,7 @@ const resolveAll = <V extends Value>(
       base: EditorDocumentValue<V>;
       batch: Batch<V>;
       group: HistoryBatchGroup | null;
+      identity: object;
       recovery: AnchorHistoryRecovery | null;
     }>
   > = [];
@@ -427,6 +518,7 @@ const resolveAll = <V extends Value>(
       base: current.base,
       batch: current.batch,
       group: current.group,
+      identity: current.identity,
       recovery: current.recovery,
     });
     current = current.next;
@@ -443,7 +535,8 @@ const resolveAll = <V extends Value>(
       null,
       entry.group,
       entry.recovery,
-      entry.anchorCeiling
+      entry.anchorCeiling,
+      entry.identity
     );
   }
 
@@ -480,10 +573,10 @@ const fromBatches = <V extends Value>(
 /** Publish activation options and the live schema as one history revision. */
 export const configureHistoryState = <V extends Value>(
   editor: Editor<V>,
-  maxDepth: number
+  maxDepth: number,
+  schema: EditorSchemaIdentity = editor.read.schema.identity()
 ) => {
   const store = getStore(editor);
-  const schema = editor.read.schema.identity();
   const schemaChanged = !areEditorSchemaIdentitiesEqual(store.schema, schema);
 
   if (store.maxDepth === maxDepth && !schemaChanged) return false;
@@ -502,7 +595,9 @@ export const configureHistoryState = <V extends Value>(
 export const synchronizeHistorySchema = <V extends Value>(editor: Editor<V>) =>
   configureHistoryState(editor, getStore(editor).maxDepth);
 
-export const getHistory = <V extends Value>(editor: Editor<V>): History<V> => {
+export const getWorkingHistory = <V extends Value>(
+  editor: Editor<V>
+): History<V> => {
   const store = getStore(editor);
 
   if (store.snapshot) return store.snapshot;
@@ -529,6 +624,9 @@ export const getHistory = <V extends Value>(editor: Editor<V>): History<V> => {
   return snapshot;
 };
 
+export const getHistory = <V extends Value>(editor: Editor<V>): History<V> =>
+  withPublishedHistoryState(editor, () => getWorkingHistory(editor));
+
 export const peekHistoryEntry = <V extends Value>(
   editor: Editor<V>,
   stack: HistoryStack
@@ -553,6 +651,7 @@ export const peekHistoryEntry = <V extends Value>(
         base: resolved.base,
         batch: resolved.batch,
         group: resolved.group,
+        identity: resolved.identity,
         recovery: resolved.recovery,
       })
     : undefined;
@@ -567,6 +666,7 @@ export const writeHistory = <V extends Value>(
   editor: Editor<V>,
   stack: HistoryStack,
   batchValue: Batch<V>,
+  current: EditorDocumentValue<V>,
   options: Readonly<{
     anchorCeiling?: number;
     clearRedos?: boolean;
@@ -580,7 +680,7 @@ export const writeHistory = <V extends Value>(
     [stack]: pushBranch(
       store[stack],
       batchValue,
-      editor.read.value(),
+      current,
       store.maxDepth,
       options.group ?? null,
       options.recovery ?? null,
@@ -594,6 +694,7 @@ export const replaceHistoryHead = <V extends Value>(
   editor: Editor<V>,
   stack: HistoryStack,
   batchValue: Batch<V>,
+  current: EditorDocumentValue<V>,
   options: Readonly<{
     anchorCeiling?: number;
     clearRedos?: boolean;
@@ -609,12 +710,13 @@ export const replaceHistoryHead = <V extends Value>(
   publish(editor, store, {
     [stack]: branch(
       batchValue,
-      editor.read.value(),
+      current,
       resolved.next,
       null,
       options.group ?? null,
       options.recovery ?? null,
-      options.anchorCeiling ?? resolved.anchorCeiling
+      options.anchorCeiling ?? resolved.anchorCeiling,
+      resolved.identity
     ),
     ...(options.clearRedos ? { redos: null } : {}),
   });
@@ -625,6 +727,7 @@ export const completeHistoryAction = <V extends Value>(
   source: HistoryStack,
   destination: HistoryStack,
   batchValue: Batch<V>,
+  current: EditorDocumentValue<V>,
   discardRedos = false
 ) => {
   const store = getStore(editor);
@@ -632,7 +735,6 @@ export const completeHistoryAction = <V extends Value>(
 
   if (!resolved) throw new Error(`Missing ${source} history batch.`);
 
-  const current = editor.read.value();
   let nextSource = resolveTop(editor, resolved.next);
 
   if (nextSource) {
@@ -655,7 +757,8 @@ export const completeHistoryAction = <V extends Value>(
       store.maxDepth,
       resolved.group,
       resolved.recovery,
-      resolved.anchorCeiling
+      resolved.anchorCeiling,
+      resolved.identity
     ),
     [source]: nextSource,
     ...(discardRedos ? { redos: null } : {}),
@@ -717,20 +820,20 @@ export const clearHistoryState = (editor: Editor) => {
 
 export const replaceHistoryState = <V extends Value>(
   editor: Editor<V>,
-  value: Pick<History<V>, 'redos' | 'schema' | 'undos'>
+  value: Pick<History<V>, 'redos' | 'schema' | 'undos'>,
+  current: EditorDocumentValue<V> = editor.read.value()
 ) => {
   const store = getStore(editor);
-  const base = editor.read.value();
   const next = Object.freeze({
     ...store,
-    redos: fromBatches(value.redos, base, store.maxDepth),
+    redos: fromBatches(value.redos, current, store.maxDepth),
     revision: store.revision + 1,
     schema: value.schema,
     snapshot: null,
-    undos: fromBatches(value.undos, base, store.maxDepth),
+    undos: fromBatches(value.undos, current, store.maxDepth),
   });
 
   setStore(editor, next);
 
-  return getHistory(editor);
+  return getWorkingHistory(editor);
 };

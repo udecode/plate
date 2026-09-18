@@ -3,7 +3,11 @@
   "name": "editor-static",
   "title": "Static Editor",
   "description": "Server-safe static editor component.",
-  "dependencies": [],
+  "dependencies": [
+    "class-variance-authority",
+    "diff-match-patch-ts@^0.6.0",
+    "platejs"
+  ],
   "registryDependencies": [],
   "files": [
     {

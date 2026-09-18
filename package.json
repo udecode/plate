@@ -88,7 +88,6 @@
     "prepare": "bun x skiller@latest apply && node .agents/rules/plate-next/scripts/sync-resources.mjs",
     "r": "pnpm --filter www r",
     "rc": "turbo --filter=www rc",
-    "rd": "pnpm --filter www rd",
     "reinstall": "bash tooling/scripts/reinstall.sh",
     "release": "pnpm build && pnpm plite:release:packages && pnpm plite:release:proof && pnpm changeset publish",
     "shadcn:build": "pnpm --filter www shadcn:build",

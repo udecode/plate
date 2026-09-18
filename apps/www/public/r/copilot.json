@@ -6,7 +6,14 @@
   "dependencies": [
     "@ai-sdk/react@3",
     "ai@6",
-    "platejs"
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "fastest-levenshtein@1.0.16",
+    "marked@^15.0.12",
+    "remark-mdx@^3.1.0",
+    "remark-parse@^11.0.0",
+    "remark-stringify@^11.0.0",
+    "unified@^11.0.5"
   ],
   "registryDependencies": [],
   "files": [

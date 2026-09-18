@@ -30,7 +30,6 @@ export type PlatePluginCache = Readonly<{
     textAttributeMarks: readonly string[];
     textRenderers: readonly string[];
   }>;
-  prepareDocument: readonly string[];
   slots: Readonly<{
     afterContainer: readonly string[];
     afterEditable: readonly string[];

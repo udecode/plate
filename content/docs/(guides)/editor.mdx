@@ -12,7 +12,7 @@ plugin.
 Use `createEditor` to create a Plate editor, or `useCreateEditor` in a React component:
 
 ```ts
-import { createEditor } from 'platejs/react';
+import { createEditor } from "platejs/react";
 
 const editor = createEditor({
   plugins: [HeadingPlugin],
@@ -27,8 +27,8 @@ Set the initial content of the editor:
 const editor = createEditor({
   initialValue: [
     {
-      type: 'paragraph',
-      children: [{ text: 'Hello, EditorRoot!' }],
+      type: "paragraph",
+      children: [{ text: "Hello, EditorRoot!" }],
     },
   ],
 });
@@ -45,7 +45,7 @@ const editor = createEditor({
   plugins: [HtmlPlugin, BoldPlugin, ItalicPlugin],
   initialValue: ({ editor }) =>
     editor.api.html.deserialize({
-      element: '<p>This is <b>bold</b> and <i>italic</i> text!</p>',
+      element: "<p>This is <b>bold</b> and <i>italic</i> text!</p>",
     }),
 });
 ```
@@ -75,7 +75,7 @@ lineage. The fingerprint remains tied only to the compiled schema:
 ```ts
 const editor = createEditor({
   plugins: [HeadingPlugin],
-  schema: { id: 'acme-document', version: 3 },
+  schema: { id: "acme-document", version: 3 },
 });
 
 editor.read.schema.identity();
@@ -91,14 +91,10 @@ Omit `schema.root` for Plate's standard nonempty paragraph root. Declare it
 only when the application needs a different top-level grammar.
 
 ```ts
-import { schema } from 'platejs';
-import {
-  createEditor,
-  definePlugin,
-  ParagraphPlugin,
-} from 'platejs/react';
+import { schema } from "platejs";
+import { createEditor, definePlugin, ParagraphPlugin } from "platejs/react";
 
-const SectionPlugin = definePlugin('section', {
+const SectionPlugin = definePlugin("section", {
   schema: {
     element: {
       content: schema.content.element(ParagraphPlugin, { min: 1 }),
@@ -128,45 +124,46 @@ root variant; `min` and `max` remain runtime validation rules.
 ### Document migrations
 
 Persist schema identity beside the document, then declare one application-owned
-migration chain. Target-version steps run in ascending order before installed
-plugin preparation and schema fitting.
+migration chain. Convert stored input before creating or replacing an editor
+value. Target-version steps run in ascending order and the converter returns a
+complete current envelope.
 
 ```ts title="src/editor.ts" showLineNumbers
-import { ParagraphPlugin } from 'platejs/react';
-import {
-  defineDocumentMigrations,
-  migrateV54,
-} from 'platejs/migrations';
+import { ParagraphPlugin } from "platejs/react";
+import { defineDocumentMigrations, migrateV54 } from "platejs/migrations";
 
-import { fingerprint as v53Fingerprint } from './migrations/v54-upgrade-plate/from';
+import { fingerprint as v53Fingerprint } from "./migrations/v54-upgrade-plate/from";
 
 export const EditorKit = [ParagraphPlugin] as const;
 
 export const EditorSchema = {
-  id: 'acme-document',
+  id: "acme-document",
   version: 54,
 } as const;
 
-export const EditorMigrations = defineDocumentMigrations(EditorSchema, {
+export const EditorMigrations = defineDocumentMigrations({
+  plugins: EditorKit,
+  schema: EditorSchema,
   sourceFingerprints: { 53: v53Fingerprint },
   steps: { 54: migrateV54 },
-  unversioned: 53,
 });
 ```
 
-Pass the same three exports to the editor. `unversioned` is an explicit support
-floor for stored documents without schema metadata; remove it when that data is
-no longer supported.
+Run the conversion at the storage boundary, then pass its `output` to the
+editor. Ordinary editor loading accepts current input only.
 
 ```tsx title="src/document-editor.tsx" showLineNumbers
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from "platejs/react";
+import { migrateDocument } from "platejs/migrations";
 
-import { EditorKit, EditorMigrations, EditorSchema } from './editor';
+import { EditorKit, EditorMigrations, EditorSchema } from "./editor";
 
 export function DocumentEditor({ persisted }) {
-  const editor = useCreateEditor({
-    initialValue: persisted,
+  const current = migrateDocument(persisted, {
     migrations: EditorMigrations,
+  }).output;
+  const editor = useCreateEditor({
+    initialValue: current,
     plugins: EditorKit,
     schema: EditorSchema,
   });
@@ -175,26 +172,35 @@ export function DocumentEditor({ persisted }) {
 }
 ```
 
-Store the complete envelope returned by your application boundary:
+Save the returned envelope directly:
 
 ```ts
-const persisted = {
-  document: value,
-  schema: editor.read.schema.identity(),
-};
+await saveDocument(current);
 ```
 
-A document at version 53 loaded by a version 54 editor runs step 54.
-Plate rejects a missing step, a different schema ID, a future version, or a
-fingerprint mismatch instead of fitting incompatible data. Every historical
-envelope version needs its exact generated fingerprint in
-`sourceFingerprints`; raw documents use the explicit `unversioned` floor.
+A version 53 envelope converted by a version 54 definition runs step 54. Plate
+rejects a missing step, a different schema ID, a future version, or a fingerprint
+mismatch. Register every supported historical envelope fingerprint in
+`sourceFingerprints`.
+
+Raw historical documents have no source identity. Supply it at that import
+boundary:
+
+```ts
+const current = migrateDocument(legacyDocument, {
+  migrations: EditorMigrations,
+  source: 53,
+}).output;
+```
+
+Use `source: 'current'` only when the raw document already uses the current
+schema. A persisted envelope cannot also receive a `source` option.
 
 <Callout type="warning" title="History and collaboration need a cutover">
-  Document migrations do not rewrite serialized history or a populated Yjs
-  room. Invalidate or migrate stored history offline, and connect upgraded
-  clients to a new schema-versioned room after migrating its snapshot. Do not
-  mix peers from different schema versions.
+  Document migrations do not rewrite serialized history or a populated Yjs room.
+  Invalidate or migrate stored history offline, and connect upgraded clients to
+  a new schema-versioned room after migrating its snapshot. Do not mix peers
+  from different schema versions.
 </Callout>
 
 ### Import comment annotations
@@ -224,8 +230,8 @@ stale responses, retries, and errors; the editor receives one synchronous
 initial document.
 
 ```tsx
-import type { Value } from 'platejs';
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import type { Value } from "platejs";
+import { EditorRoot, useCreateEditor } from "platejs/react";
 
 function DocumentEditor({ initialValue }: { initialValue: Value }) {
   const editor = useCreateEditor({ initialValue });
@@ -263,23 +269,23 @@ also needs one exact recursive `Value` across the complete plugin graph.
 Export the runtime inputs from one source file:
 
 ```ts title="src/editor.ts"
-import { HeadingPlugin } from 'platejs/react';
-import { TablePlugin } from 'platejs/table/react';
-import { property, schema as s, target } from 'platejs';
+import { HeadingPlugin } from "platejs/react";
+import { TablePlugin } from "platejs/table/react";
+import { property, schema as s, target } from "platejs";
 
 export const EditorKit = [HeadingPlugin, TablePlugin] as const;
 
 export const EditorSchema = {
-  id: 'app-document',
+  id: "app-document",
   version: 1,
   overrides: [
     s.override(HeadingPlugin, {
-      element: { type: 'headingOne' },
+      element: { type: "headingOne" },
     }),
   ],
   properties: {
     reviewState: s.elementProperty(
-      property.enum(['draft', 'approved'] as const),
+      property.enum(["draft", "approved"] as const),
       { target: target.element(HeadingPlugin) }
     ),
   },
@@ -326,14 +332,14 @@ The generated module exports exact editor/value types, static schema handles,
 and a fingerprint. It does not own runtime plugin composition:
 
 ```tsx title="src/editor/document-editor.tsx"
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from "platejs/react";
 
 import {
   schema as generatedSchema,
   type Editor,
   type Value,
-} from './plugins.generated';
-import { EditorKit, EditorSchema } from './editor';
+} from "./plugins.generated";
+import { EditorKit, EditorSchema } from "./editor";
 
 export function insertDocumentContent(editor: Editor) {
   editor.update.heading.insert({ level: 1 });
@@ -399,21 +405,21 @@ contracts and final plugin bindings. Ordinary editors use `createEditor` or
 `useCreateEditor` directly.
 
 ```ts title="scripts/compile-editor.ts" showLineNumbers
-import { writeFileSync } from 'node:fs';
-import { compileEditor } from 'platejs/compiler';
+import { writeFileSync } from "node:fs";
+import { compileEditor } from "platejs/compiler";
 
-import { EditorKit, EditorSchema } from '../src/editor';
+import { EditorKit, EditorSchema } from "../src/editor";
 
 const artifact = compileEditor({ plugins: EditorKit, schema: EditorSchema });
 
-writeFileSync('editor.schema.json', JSON.stringify(artifact.schema, null, 2));
+writeFileSync("editor.schema.json", JSON.stringify(artifact.schema, null, 2));
 ```
 
 The result contains recursively frozen JSON data:
 
-| Field | Content |
-| --- | --- |
-| `schema` | Validated schema contract, identity and fingerprint. |
+| Field      | Content                                                                                                                |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `schema`   | Validated schema contract, identity and fingerprint.                                                                   |
 | `bindings` | Installed capability names, final element types and mark keys; `authoredToggle` identifies an authored toggle command. |
 
 Compilation evaluates configuration, API factories and validators. It does
@@ -442,7 +448,7 @@ Set a custom id for the editor:
 
 ```ts
 const editor = createEditor({
-  id: 'my-custom-editor-id',
+  id: "my-custom-editor-id",
 });
 ```
 
@@ -513,31 +519,30 @@ const editor = useCreateEditor({
 });
 ```
 
-Document preparation generates IDs only for matching elements and removes the
-plugin-owned `id` from excluded elements.
+Current-document admission generates IDs only for matching elements and removes
+the plugin-owned `id` from excluded elements.
 
-Use the pure migration helper before loading stored documents that lack IDs.
-It preserves valid strings, fills missing IDs, reports duplicates, and requires
-an explicit policy for legacy numeric IDs.
+Include `ElementIdPlugin` in `EditorMigrations`. Raw documents that already use
+the current schema can enter through the same detached conversion boundary:
 
 ```ts
-import { migrateElementIds, nanoid } from "platejs";
+import { migrateDocument } from "platejs/migrations";
 
-const result = migrateElementIds(storedValue, {
-  convertNumericId: (id) => `legacy-${id}`,
-  generateId: nanoid,
-  sourceKey: 'legacyElementId',
-});
-
-if (result.duplicates.length > 0) {
-  throw new Error("Resolve duplicate element IDs before loading the document.");
-}
+const current = migrateDocument(rawCurrentDocument, {
+  migrations: EditorMigrations,
+  source: "current",
+}).output;
 
 const editor = createEditor({
   plugins: [ElementIdPlugin],
-  initialValue: result.value,
+  initialValue: current,
 });
 ```
+
+Current admission keeps valid string IDs, fills missing IDs, and rejects
+duplicates. Convert numeric IDs and legacy property names in the migration step
+for their historical schema version, where the application can define an
+explicit collision policy.
 
 ### Navigation feedback
 
@@ -588,7 +593,7 @@ Configure the editor to automatically select a range:
 
 ```ts
 const editor = createEditor({
-  autoSelect: 'end', // or 'start', or true
+  autoSelect: "end", // or 'start', or true
 });
 ```
 
@@ -614,7 +619,7 @@ When your app imports the target, configure that descriptor directly:
 ```ts
 const AppLinkPlugin = LinkPlugin.configure({
   initialState: {
-    allowedSchemes: ['http', 'https'],
+    allowedSchemes: ["http", "https"],
   },
 });
 
@@ -629,8 +634,8 @@ A package plugin may need to adapt another installed package without importing
 it or controlling the consumer's editor kit:
 
 ```ts
-import { PLUGINS } from 'platejs';
-import { definePlugin } from 'platejs/react';
+import { PLUGINS } from "platejs";
+import { definePlugin } from "platejs/react";
 
 const SingleBlockPlugin = definePlugin(PLUGINS.singleBlock, {
   override: {
@@ -671,6 +676,9 @@ plugin tuple. `initialValue` is checked against that schema-derived value.
 ### Plugins type
 
 ```ts
+import { createEditor, LinkPlugin } from 'platejs/react';
+import { TablePlugin } from 'platejs/table/react';
+
 const AppKit = [TablePlugin, LinkPlugin] as const;
 const editor = createEditor({
   plugins: AppKit,
@@ -678,7 +686,7 @@ const editor = createEditor({
 
 // Usage
 editor.update((tx) => {
-  tx.table.insertRow();
+  tx.plugin(TablePlugin).insertRow();
 });
 ```
 
@@ -688,9 +696,9 @@ Create the editor with its plugin tuple and initial document, then derive
 `typeof editor` and `ValueOf<typeof editor>` from that inferred instance.
 
 ```ts
-import type { ValueOf } from 'platejs';
-import { createEditor, LinkPlugin } from 'platejs/react';
-import { TablePlugin } from 'platejs/table/react';
+import type { ValueOf } from "platejs";
+import { createEditor, LinkPlugin } from "platejs/react";
+import { TablePlugin } from "platejs/table/react";
 
 const AppKit = [TablePlugin, LinkPlugin] as const;
 
@@ -698,8 +706,8 @@ const editor = createEditor({
   plugins: AppKit,
   initialValue: [
     {
-      type: 'paragraph',
-      children: [{ text: 'Hello, EditorRoot!' }],
+      type: "paragraph",
+      children: [{ text: "Hello, EditorRoot!" }],
     },
   ],
 });
@@ -712,8 +720,8 @@ A component reads the current editor from context without repeating its plugin
 tuple:
 
 ```ts
-import { useEditor } from 'platejs/react';
-import { TablePlugin } from 'platejs/table/react';
+import { useEditor } from "platejs/react";
+import { TablePlugin } from "platejs/table/react";
 
 const editor = useEditor();
 const table = editor.plugin(TablePlugin);

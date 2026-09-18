@@ -1,0 +1,32 @@
+{
+  "id": "2026-09-18-recovered-2026-09-04-yjs-cursor-presentation",
+  "kind": "execution",
+  "date": "2026-09-18",
+  "scopes": [
+    "collaboration"
+  ],
+  "reviewBasis": [],
+  "workKind": "implementation",
+  "plan": {
+    "path": "docs/plans/2026-09-04-yjs-cursor-presentation.md",
+    "sha256": "ca286775d3ce6452dfe6c8761c384948546f731412776f4b176108c58310c46e"
+  },
+  "binding": "historical-unbound",
+  "outcome": "completed",
+  "summary": "Recovered historical implementation completion from the plan. complete (file ledger only) The record date is the recovery date, not evidence that this work happened after the latest review.",
+  "proof": {
+    "state": "unknown",
+    "evidence": [
+      {
+        "path": "docs/plans/2026-09-04-yjs-cursor-presentation.md",
+        "sha256": "ca286775d3ce6452dfe6c8761c384948546f731412776f4b176108c58310c46e",
+        "claim": "The retained plan reports completion and its original evidence limits; this fingerprint identifies the imported account, not the source of a historical test run."
+      }
+    ],
+    "limits": "Historical execution claim only. Complete original source/fixture/runner and retained result binding has not been recovered or replayed. Do not inherit prior adopted/verified flags as current proof."
+  },
+  "source": null,
+  "references": [
+    "docs/plans/2026-09-04-yjs-cursor-presentation.md"
+  ]
+}

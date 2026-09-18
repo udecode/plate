@@ -10,9 +10,16 @@ import {
   type EditorCommit,
 } from 'plitejs';
 import { authored, type AuthoredChangePublication } from 'plitejs/authored';
+import { history } from 'plitejs/history';
 
 import { encodeAuthoredPositionRoots } from '../src/authored/positions-codec';
-import { authoredState, checksumAuthoredPayload } from '../src/authored/state';
+import { records } from '../src/authored/record-tree';
+import {
+  authoredState,
+  checksumAuthoredPayload,
+  indexAuthoredState,
+  materializeAuthoredEdit,
+} from '../src/authored/state';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -317,7 +324,7 @@ describe('native authored changes', () => {
     assert.deepEqual(proposed.read.children(), [paragraph('Base draft')]);
     assert.equal(restored.read.authored.change(changeId)?.status, 'pending');
     const saved = JSON.parse(JSON.stringify(restored.read.value()));
-    assert.equal(saved.meta.authored.version, 5);
+    assert.equal(saved.meta.authored.version, 6);
     assert.ok(Array.isArray(saved.meta.authored.value.changes));
     assert.ok(Array.isArray(saved.meta.authored.value.operations));
 
@@ -384,7 +391,7 @@ describe('native authored changes', () => {
     );
     assert.equal(
       JSON.parse(JSON.stringify(restored.read.value())).meta.authored.version,
-      5
+      6
     );
   });
 
@@ -420,8 +427,133 @@ describe('native authored changes', () => {
     );
     assert.equal(
       JSON.parse(JSON.stringify(restored.read.value())).meta.authored.version,
-      5
+      6
     );
+  });
+
+  it('loads a v5 authored checkpoint and saves persisted content footprints', () => {
+    const plugin = authored({ authorId: 'alice' });
+    const editor = createEditor({
+      plugins: [plugin],
+      initialValue: [paragraph('Base')],
+    });
+    editor.update((tx) => {
+      tx.authored.propose();
+      tx.text.insert(' draft', { at: point(4) });
+    });
+    const legacy = JSON.parse(JSON.stringify(editor.read.value()));
+    legacy.meta.authored.version = 5;
+    legacy.meta.authored.value.operations =
+      legacy.meta.authored.value.operations.map((operation: unknown[]) =>
+        operation[0] === 0 ? operation.slice(0, 16) : operation
+      );
+
+    const restored = createEditor({
+      plugins: [plugin],
+      initialValue: legacy,
+    });
+    const saved = JSON.parse(JSON.stringify(restored.read.value()));
+
+    assert.equal(saved.meta.authored.version, 6);
+    const edit = saved.meta.authored.value.operations.find(
+      (operation: unknown[]) => operation[0] === 0
+    );
+    assert.equal(edit.length, 17);
+    assert.ok(edit[16].steps.length > 0);
+  });
+
+  it('rebuilds live indexes from v6 footprints without hydrating retained bodies', () => {
+    const propertyEditor = createEditor({
+      plugins: [authored({ authorId: 'alice', retainHistory: true })],
+      initialValue: [paragraph('Base')],
+    });
+    propertyEditor.update((tx) => {
+      tx.authored.propose();
+      tx.nodes.set({ bold: true }, { at: [0, 0] });
+    });
+
+    const deletionEditor = createEditor({
+      plugins: [authored({ authorId: 'alice', retainHistory: true })],
+      initialValue: [paragraph('Base')],
+    });
+    createEditorView(deletionEditor, {
+      authored: { intent: 'propose', projection: 'proposed' },
+    }).update.text.delete({
+      at: { anchor: point(0), focus: point(4) },
+    });
+
+    const compensationEditor = createEditor({
+      plugins: [
+        history(),
+        authored({ authorId: 'alice', retainHistory: true }),
+      ],
+      initialValue: [paragraph('Base')],
+    });
+    compensationEditor.update.text.insert('!', { at: point(4) });
+    assert.equal(compensationEditor.api.history.undo().status, 'applied');
+
+    for (const [editor, kind] of [
+      [propertyEditor, 'property'],
+      [deletionEditor, 'deletion'],
+      [compensationEditor, 'compensation'],
+    ] as const) {
+      const persistedIndex = indexAuthoredState(
+        editor.read.getField(authoredState)
+      );
+      if (kind === 'property') {
+        assert.ok(persistedIndex.properties ?? persistedIndex.textProperties);
+      } else if (kind === 'deletion') {
+        assert.ok(persistedIndex.deletions);
+      } else {
+        assert.ok(persistedIndex.compensations);
+      }
+      const saved = JSON.parse(JSON.stringify(editor.read.value()));
+      for (const operation of saved.meta.authored.value.operations) {
+        if (operation[0] !== 0) continue;
+        operation[15] = '{';
+        operation[14] = checksumAuthoredPayload(operation[15]);
+      }
+
+      const restored = createEditor({
+        plugins: [authored({ authorId: 'reader', retainHistory: true })],
+        initialValue: saved,
+      });
+      const restoredState = restored.read.getField(authoredState);
+      const restoredIndex = indexAuthoredState(restoredState);
+      if (kind === 'property') {
+        assert.deepEqual(restoredIndex.properties, persistedIndex.properties);
+        assert.deepEqual(
+          restoredIndex.textProperties,
+          persistedIndex.textProperties
+        );
+      } else if (kind === 'deletion') {
+        const normalize = (index: typeof persistedIndex.deletions) =>
+          [...records(index)].flatMap(([position, entries]) =>
+            [...records(entries)].map(([order, deletion]) => ({
+              ...deletion,
+              order,
+              position,
+              target: { ...deletion.target, retained: null },
+            }))
+          );
+        assert.deepEqual(
+          normalize(restoredIndex.deletions),
+          normalize(persistedIndex.deletions)
+        );
+      } else {
+        assert.deepEqual(
+          restoredIndex.compensations,
+          persistedIndex.compensations
+        );
+      }
+      const deferred = [...records(restoredState.operations)]
+        .map(([, operation]) => operation)
+        .find(
+          (operation) => operation.kind === 'edit' && 'content' in operation
+        );
+      assert.ok(deferred);
+      assert.throws(() => materializeAuthoredEdit(deferred));
+    }
   });
 
   it('captures direct canonical writes with one transaction identity', () => {
@@ -485,11 +617,11 @@ describe('native authored changes', () => {
     identity = null;
     assert.throws(
       () => editor.update.text.insert('lost', { at: point(4) }),
-      /author is required/
+      /author ID is required/
     );
     assert.throws(
       () => editor.update((tx) => tx.authored.propose()),
-      /author is required/
+      /author ID is required/
     );
     assert.equal(JSON.stringify(editor.read.value()), before);
     assert.equal(commits, 0);
@@ -836,15 +968,15 @@ describe('native authored changes', () => {
       tx.authored.propose();
       assert.deepEqual(tx.children(), [paragraph('Base draft')]);
     });
-    assert.throws(
-      () =>
-        editor.update((tx) => {
-          tx.authored.decide({ selection, action: 'accept' });
-          tx.text.insert(' untracked', { at: point(10) });
-        }),
-      /cannot mix/
+    editor.update((tx) => {
+      tx.authored.decide({ selection, action: 'accept' });
+      tx.text.insert(' suffix', { at: point(10) });
+    });
+    assert.deepEqual(editor.read.children(), [paragraph('Base draft suffix')]);
+    assert.equal(
+      editor.read.authored.change(selection.changes[0].id)?.status,
+      'accepted'
     );
-    assert.equal(JSON.stringify(editor.read.value()), before);
   });
 
   it('ignores duplicate authored delivery and rejects identity reuse with another payload', () => {
@@ -972,7 +1104,7 @@ describe('native authored changes', () => {
       mutate(value.meta.authored.value);
     };
     const corruptions: Array<(value: SavedCheckpoint) => void> = [
-      (value) => (value.meta.authored.version = 6),
+      (value) => (value.meta.authored.version = 7),
       (value) => mutatePayload(value, (payload) => (payload.documentId = '')),
       (value) =>
         mutatePayload(value, (payload) => {
@@ -985,6 +1117,10 @@ describe('native authored changes', () => {
       (value) =>
         mutatePayload(value, (payload) => {
           payload.operations[0][14] = '0000000000000000';
+        }),
+      (value) =>
+        mutatePayload(value, (payload) => {
+          payload.operations[0][16] = null;
         }),
       (value) =>
         mutatePayload(value, (payload) => {

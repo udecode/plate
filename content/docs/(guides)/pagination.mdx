@@ -1,9 +1,11 @@
 ---
 title: Pagination
-description: Derive page geometry and line fragments from a Plate document.
+description: Render a Plate editor as measured pages with explicit fragmentation.
 ---
 
-Use `platejs/pagination` to derive page geometry from the editor value. Layout is a read model; the editor's document, history, and collaboration state remain the source of content.
+`PagedEditable` owns page measurement, page chrome, document placement, and
+optional page-level DOM omission. The editor value remains the source of
+content; page geometry is derived view state.
 
 ## Installation
 
@@ -11,59 +13,100 @@ Use `platejs/pagination` to derive page geometry from the editor value. Layout i
 npm install platejs @chenglou/pretext
 ```
 
-## Create a layout
-
-```ts
-import { createLayout } from 'platejs/pagination';
-
-const layout = createLayout(editor, {
-  page: { margins: 72, preset: 'letter' },
-});
-
-layout.reconfigure({
-  page: { margins: 48, preset: 'a4' },
-});
-```
-
-`reconfigure` replaces the complete configuration in one refresh. Store product page settings in application state or a document state field. Do not write derived fragments into the document unless the product explicitly owns authoritative page breaks.
-
-## React
-
-Use `useLayout` when React owns the layout lifetime. Render the editor with `EditorContent`; derive previews and page chrome from the layout separately.
+## Render a paged editor
 
 ```tsx title="document-editor.tsx" showLineNumbers
-import { EditorContent, EditorRoot, useCreateEditor } from 'platejs/react';
-import { useLayout, useLayoutSnapshot } from 'platejs/pagination/react';
+import { createPretextPageLayoutEngine } from 'platejs/pagination';
+import {
+  PagedEditable,
+  usePageLayout,
+} from 'platejs/pagination/react';
+import { Plate, useCreateEditor } from 'platejs/react';
+import { useMemo, useRef } from 'react';
 
 export function DocumentEditor() {
-  const editor = useCreateEditor({
-    initialValue: [{ type: 'paragraph', children: [{ text: 'Document' }] }],
-  });
-  const layout = useLayout(editor, {
-    page: { margins: 72, preset: 'letter' },
-  });
-
-  const snapshot = useLayoutSnapshot(layout);
+  const editor = useCreateEditor({ initialValue: value });
+  const editableRef = useRef<HTMLDivElement>(null);
+  const engine = useMemo(() => createPretextPageLayoutEngine(), []);
+  const layout = usePageLayout(editableRef);
 
   return (
-    <EditorRoot editor={editor}>
-      <output>{snapshot.pages.length} pages</output>
-      <EditorContent />
-    </EditorRoot>
+    <Plate editor={editor}>
+      <output>{layout?.pages.length ?? 0} pages</output>
+      <PagedEditable
+        ref={editableRef}
+        engine={engine}
+        page={{ margins: 72, preset: 'letter' }}
+        pageView={{ gap: 24, mode: 'single' }}
+        renderPage={({ attributes, page }) => (
+          <div {...attributes} aria-label={`Page ${page.index + 1}`} />
+        )}
+      />
+    </Plate>
   );
 }
 ```
 
-The layout reader supplies geometry; it does not turn this editable into a paged surface. Use its snapshots in the app's preview or layout consumer. `useLayout` publishes option changes after React commits.
+`renderPage` receives page attributes and geometry. It renders page chrome;
+`PagedEditable` places the editable content on the same canvas. Spread mode
+changes page arrangement without changing the document.
 
-Pass `engine` to `createLayout` or `useLayout` for custom measurement. `pretextPageLayoutEngine()` configures the built-in text measurement engine.
+`usePageLayout` reads the layout published by the exact editable element in
+its ref. This keeps sibling paged editors independent and returns `null` before
+the surface publishes its first valid layout.
 
-## Layout contracts
+## Fragment non-text blocks
 
-Tables, images, and embeds own layout units through the selected engine. Paginating a table's row units does not require splitting the table node in the document.
+Text blocks use inline flow by default. Images, embeds, tables, and other
+non-inline structures must describe how they fragment:
 
-Headless measurement can fall back to estimates when browser canvas measurement is unavailable. Such geometry is useful for previews and export planning, but it is not an authoritative PDF or shared page-break source.
+```tsx
+<PagedEditable
+  page={{ margins: 72, preset: 'letter' }}
+  fragmentation={({ element }) => {
+    if (element.type === 'image') {
+      return { type: 'atomic', size: { height: 320, width: 480 } };
+    }
 
-The built-in engine uses browser font metrics. Operating systems, font availability, and browser profiles can produce different line breaks. Exact collaborative or exported pagination needs a shared measurement profile or authoritative page-break source.
+    if (element.type === 'table') {
+      return {
+        type: 'direct-children',
+        sizes: element.children.map(() => ({ height: 36, width: 624 })),
+      };
+    }
 
-For large editable documents, [Virtualized Rendering](/docs/virtualized-rendering) provides the Plate component that omits offscreen blocks. DOM omission changes browser find, accessibility traversal, and DOM-based printing; use a complete model-based export for the full document.
+    if (element.type === 'code_block') {
+      return { type: 'text', keepTogether: true };
+    }
+  }}
+/>
+```
+
+`atomic` places one indivisible box. `direct-children` lets pagination place
+each immediate child while the document tree stays intact. `text` can request
+soft keep-together behavior; content taller than a page still fragments.
+
+Use `usePageLayoutFragments()` inside an element renderer to read the current
+element's mounted page placements. The hook derives the element path from the
+renderer context.
+
+## Measurement
+
+`createPretextPageLayoutEngine()` measures rich inline text with browser font
+metrics. Supply matching `typography` callbacks when rendered fonts, line
+heights, or block spacing differ from the defaults. Call `measurePages` with an
+explicit engine for headless snapshots. `createEstimatedPageLayoutEngine()` is
+useful where browser text measurement is unavailable.
+
+Different font files and browser profiles can produce different line breaks.
+Derived pages are therefore a view result, not stored page-break authority.
+Products that require identical exported pages need one controlled measurement
+environment for that export.
+
+## DOM coverage
+
+`PagedEditable` mounts every page by default. Set `virtualize` only after the
+complete paged DOM exceeds the product's tested interaction or memory budget.
+Virtualization keeps selected and promoted content mounted, but native browser
+find, accessibility traversal, DOM printing, and third-party DOM integrations
+see mounted content only. Use model-based export for the complete document.

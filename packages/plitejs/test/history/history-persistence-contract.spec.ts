@@ -74,11 +74,11 @@ const createStateEditor = (
   });
 
 const undo = (editor: ReturnType<typeof createStateEditor>) => {
-  editor.update((tx) => tx.history.undo());
+  editor.api.history.undo();
 };
 
 const redo = (editor: ReturnType<typeof createStateEditor>) => {
-  editor.update((tx) => tx.history.redo());
+  editor.api.history.redo();
 };
 
 describe('versioned history persistence', () => {
@@ -469,11 +469,11 @@ describe('versioned history persistence', () => {
     restored.update((tx) =>
       tx.history.restore(History.fromJSON(restored, json))
     );
-    restored.update((tx) => tx.history.undo());
+    restored.api.history.undo();
     assert.deepEqual(restored.read.marks(), { bold: true });
     assert.deepEqual(restored.read.selection(), range(2));
 
-    restored.update((tx) => tx.history.redo());
+    restored.api.history.redo();
     assert.deepEqual(restored.read.marks(), { bold: true });
     assert.deepEqual(restored.read.selection(), range(3));
   });
@@ -507,7 +507,7 @@ describe('versioned history persistence', () => {
     const decoded = History.fromJSON(restored, History.toJSON(source));
 
     restored.update((tx) => tx.history.restore(decoded));
-    restoredHeader.update((tx) => tx.history.undo());
+    restoredHeader.api.history.undo();
 
     assert.equal(restoredHeader.read.text.string([]), 'header');
     assert.deepEqual(restoredHeader.read.selection(), {
@@ -581,7 +581,7 @@ describe('versioned history persistence', () => {
     });
 
     source.update((tx) => tx.nodes.set({ undeclared: true }, { at: [0] }));
-    source.update((tx) => tx.history.undo());
+    source.api.history.undo();
 
     const closedParagraph = defineEditorSchema(
       'schema:closed-history-paragraph',
@@ -650,9 +650,9 @@ describe('versioned history persistence', () => {
     restored.update((tx) =>
       tx.history.restore(History.fromJSON(restored, History.toJSON(source)))
     );
-    restored.update((tx) => tx.history.undo());
+    restored.api.history.undo();
     assert.equal(restored.read.getField(counter), 0);
-    restored.update((tx) => tx.history.redo());
+    restored.api.history.redo();
     assert.equal(restored.read.getField(counter), 2);
   });
 

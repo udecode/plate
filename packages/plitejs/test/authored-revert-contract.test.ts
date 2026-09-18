@@ -49,7 +49,7 @@ describe('retained authored revert', () => {
       paragraph('A'),
       paragraph('B bob'),
     ]);
-    editor.update.history.undo();
+    editor.api.history.undo();
     assert.deepEqual(editor.read.children(), [
       paragraph('A alice'),
       paragraph('B bob'),

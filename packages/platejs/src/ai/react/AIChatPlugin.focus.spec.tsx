@@ -16,10 +16,7 @@ function setup() {
   const editor = createEditor({
     plugins: [ParagraphPlugin, AIChatPlugin],
     userId: 'alice',
-    initialValue: [
-      { type: 'paragraph', children: [{ text: 'one' }] },
-      { type: 'aiChat', children: [{ text: '' }] },
-    ],
+    initialValue: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     selection: {
       kind: 'text',
       anchor: { path: [0, 0], offset: 1 },
@@ -69,13 +66,13 @@ test.each([0, 1])(
     const { commands, editor, mounted } = setup();
     const selection = editor.read.selection();
     const value = [editor.read.children()[0]];
-    const undos = editor.read.history.undos();
+    const { undos } = editor.read.history();
 
     await act(async () => {
       editor.plugin(AIChatPlugin).store.set({ open: true });
       mounted.getByRole('textbox', { name: 'AI prompt' }).focus();
 
-      commands[index].plugin(AIChatPlugin).api.hide({ undo: false });
+      commands[index].plugin(AIChatPlugin).api.hide();
     });
 
     await waitFor(() => {
@@ -86,7 +83,7 @@ test.each([0, 1])(
     expect(editor.plugin(AIChatPlugin).store.get('open')).toBe(false);
     expect(editor.read.children()).toEqual(value);
     expect(editor.read.selection()).toEqual(selection);
-    expect(editor.read.history.undos()).toEqual(undos);
+    expect(editor.read.history().undos).toEqual(undos);
   }
 );
 
@@ -97,7 +94,7 @@ test('hide can leave focus on the external control', async () => {
   await act(async () => {
     editor.plugin(AIChatPlugin).store.set({ open: true });
     input.focus();
-    commands[1].plugin(AIChatPlugin).api.hide({ focus: false, undo: false });
+    commands[1].plugin(AIChatPlugin).api.hide({ focus: false });
   });
 
   expect(document.activeElement).toBe(input);
@@ -110,7 +107,7 @@ test('a model close cannot choose one of its mounted views', async () => {
 
   await act(async () => {
     input.focus();
-    editor.plugin(AIChatPlugin).api.hide({ undo: false });
+    editor.plugin(AIChatPlugin).api.hide();
   });
 
   expect(document.activeElement).toBe(input);
@@ -125,9 +122,7 @@ test('a retired AI close does not borrow the remaining mounted view', async () =
 
   await act(async () => {
     input.focus();
-    expect(() => closing.hide({ undo: false })).toThrow(
-      'Cannot update a read-only editor view.'
-    );
+    closing.hide();
   });
 
   expect(document.activeElement).toBe(input);

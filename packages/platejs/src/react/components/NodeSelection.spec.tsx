@@ -412,7 +412,7 @@ describe('NodeSelection', () => {
     });
 
     act(() => {
-      editor.update.history.undo();
+      editor.api.history.undo();
     });
 
     await waitFor(() => {

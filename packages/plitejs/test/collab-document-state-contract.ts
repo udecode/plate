@@ -58,7 +58,7 @@ const readTitle = (editor: ReturnType<typeof createDocumentStateEditor>) =>
 
 const historyUndoCount = (
   editor: ReturnType<typeof createDocumentStateEditor>
-) => editor.read((state) => state.history.undos().length);
+) => editor.read((state) => state.history().undos.length);
 
 const remoteCollabTags = [
   'collaboration',

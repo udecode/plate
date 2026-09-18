@@ -6,12 +6,18 @@ import {
   PlayIcon,
   RotateCcwIcon,
 } from 'lucide-react';
-import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
-import { EditorRoot, useCreateEditor, useStaticEditor } from 'platejs/react';
+import { createEditorView } from 'platejs';
+import { AIChatPlugin } from 'platejs/ai/react';
+import {
+  EditorRoot,
+  useCreateEditor,
+  useStaticEditor,
+  useEditorRuntimeState,
+} from 'platejs/react';
 import {
   type HTMLAttributes,
+  useCallback,
   useEffect,
-  useReducer,
   useRef,
   useState,
 } from 'react';
@@ -21,6 +27,7 @@ import { cn } from '@/lib/utils';
 import {
   Editor,
   EditorContainer,
+  EditorFrame,
   EditorView,
 } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
@@ -36,7 +43,7 @@ const testScenarios = {
   // Basic markdown with complete elements
   columns: [
     'paragraph\n\n<column',
-    '_group',
+    'Group',
     '>\n',
     ' ',
     ' <',
@@ -103,7 +110,7 @@ const testScenarios = {
     '>\n',
     '</',
     'column',
-    '_group',
+    'Group',
     '>\n\nparagraph',
   ],
   links: [
@@ -306,7 +313,6 @@ export default function MarkdownStreamingDemo() {
   const pausedRef = useRef(false);
   const [paused, setPaused] = useState(false);
   const streamRef = useRef<AbortController | null>(null);
-  const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const [streaming, setStreaming] = useState(false);
   const [isPlateStatic, setIsPlateStatic] = useState(false);
   const [speed, setSpeed] = useState<number | null>(null);
@@ -324,6 +330,13 @@ export default function MarkdownStreamingDemo() {
     },
     []
   );
+  const staticPreview = useEditorRuntimeState(
+    editorStatic,
+    useCallback(
+      () => createEditorView(editorStatic, { readOnly: true }),
+      [editorStatic]
+    )
+  );
   const aiChat = editor.plugin(AIChatPlugin);
 
   const currentChunks = testScenarios[selectedScenario];
@@ -339,6 +352,7 @@ export default function MarkdownStreamingDemo() {
   const stopStreaming = () => {
     streamRef.current?.abort();
     streamRef.current = null;
+    aiChat.store.set({ streaming: false });
     setStreaming(false);
     setPausedState(false);
   };
@@ -348,8 +362,8 @@ export default function MarkdownStreamingDemo() {
     setActiveIndex(0);
     editor.update.value.replace({ children: [] });
     editorStatic.update.value.replace({ children: [] });
-    aiChat.store.set({ streaming: false, _blockChunks: '', _blockPath: null });
-    forceUpdate();
+    aiChat.api.reset();
+    editor.update.selection.set(editor.read.points.start([0]) ?? null);
   };
 
   const onStreaming = async () => {
@@ -358,6 +372,7 @@ export default function MarkdownStreamingDemo() {
     streamRef.current = stream;
     const { signal } = stream;
     setStreaming(true);
+    aiChat.store.set({ streaming: true });
     let output = '';
 
     for (let i = 0; i < transformedCurrentChunks.length; i++) {
@@ -367,22 +382,20 @@ export default function MarkdownStreamingDemo() {
       if (signal.aborted) return;
 
       const chunk = transformedCurrentChunks[i];
+      output += chunk.chunk;
       if (isPlateStatic) {
-        output += chunk.chunk;
         editorStatic.update.value.replace(
           editorStatic.api.markdown.deserialize(output)
         );
-        forceUpdate();
       } else {
-        aiChat.update.insertChunk(chunk.chunk, {
-          textProps: { [editor.plugin(AIPlugin).schema.key]: true },
-        });
+        aiChat.api.setPreview(output);
       }
       setActiveIndex(i + 1);
       await waitForChunk(speed ?? chunk.delayInMs, signal);
       if (signal.aborted) return;
     }
     streamRef.current = null;
+    aiChat.store.set({ streaming: false });
     setStreaming(false);
   };
 
@@ -400,19 +413,16 @@ export default function MarkdownStreamingDemo() {
       editorStatic.update.value.replace(
         editorStatic.api.markdown.deserialize(output)
       );
-      forceUpdate();
     } else {
       editor.update.value.replace({ children: [] });
-      aiChat.store.set({
-        streaming: false,
-        _blockChunks: '',
-        _blockPath: null,
-      });
-      for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
-        aiChat.update.insertChunk(chunk.chunk, {
-          textProps: { [editor.plugin(AIPlugin).schema.key]: true },
-        });
-      }
+      aiChat.api.reset();
+      editor.update.selection.set(editor.read.points.start([0]) ?? null);
+      aiChat.api.setPreview(
+        transformedCurrentChunks
+          .slice(0, targetIndex)
+          .map(({ chunk }) => chunk)
+          .join('')
+      );
     }
     setActiveIndex(targetIndex);
   };
@@ -552,18 +562,20 @@ export default function MarkdownStreamingDemo() {
           {isPlateStatic ? (
             <EditorView
               className="h-[500px] overflow-y-auto rounded border"
-              editor={editorStatic}
+              editor={staticPreview}
             />
           ) : (
             <EditorRoot editor={editor}>
-              <EditorContainer className="h-[500px] overflow-y-auto rounded border">
-                <Editor
-                  variant="demo"
-                  className="pb-[20vh]"
-                  placeholder="Type something..."
-                  spellCheck={false}
-                />
-              </EditorContainer>
+              <EditorFrame className="h-[500px] rounded border">
+                <EditorContainer>
+                  <Editor
+                    variant="demo"
+                    className="pb-[20vh]"
+                    placeholder="Type something..."
+                    spellCheck={false}
+                  />
+                </EditorContainer>
+              </EditorFrame>
             </EditorRoot>
           )}
         </div>

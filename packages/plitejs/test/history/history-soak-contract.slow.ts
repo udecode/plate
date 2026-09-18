@@ -55,11 +55,11 @@ const assertEditorIntegrity = (editor: Editor) => {
 };
 
 const undo = (editor: ReturnType<typeof createHistoryEditor>) => {
-  editor.update((tx) => tx.history.undo());
+  editor.api.history.undo();
 };
 
 const redo = (editor: ReturnType<typeof createHistoryEditor>) => {
-  editor.update((tx) => tx.history.redo());
+  editor.api.history.redo();
 };
 
 const createHistoryEditor = () =>
@@ -72,7 +72,7 @@ const assertUndoRedoRoundTrip = (
   const before = structuredClone(editor.read.value());
   let undoCount = 0;
 
-  while (editor.read((state) => state.history.undos()).length > 0) {
+  while (editor.read((state) => state.history().undos).length > 0) {
     trace.push(`round-trip:undo:${undoCount}`);
     undo(editor);
     assertEditorIntegrity(editor);
@@ -194,7 +194,7 @@ describe('plite-history seeded soak contract', () => {
       });
     }
 
-    editor.update((tx) => tx.history.undo());
+    editor.api.history.undo();
 
     assert.equal(
       editor.read.text.string([]),

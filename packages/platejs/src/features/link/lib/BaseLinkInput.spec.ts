@@ -30,7 +30,7 @@ it('prepares a raw URL once before validating and writing it', () => {
   expect(
     editor.read.nodes.find({ at: [], type: BaseLinkPlugin })?.[0]
   ).toMatchObject({ url: 'https://example.com/a%20path%20?q=%E3%81%82' });
-  editor.update.history.undo();
+  editor.api.history.undo();
   expect(
     editor.read.nodes.find({ at: [], type: BaseLinkPlugin })
   ).toBeUndefined();

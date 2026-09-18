@@ -86,7 +86,7 @@ const assertLastRemoteCommit = (
   assert.ok(commit);
   assert.deepEqual(commit.tags, remoteCollabTags);
   assert.equal(
-    editor.read((state) => state.history.undos().length),
+    editor.read((state) => state.history().undos.length),
     0
   );
 };

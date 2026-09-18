@@ -23,9 +23,6 @@
   "references": [
     {
       "path": "./core.json"
-    },
-    {
-      "path": "./proxies.json"
     }
   ]
 }

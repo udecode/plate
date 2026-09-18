@@ -26,7 +26,6 @@ import {
   useElement,
   useElementSelected,
   useFocusedLast,
-  usePluginStore,
   useElementSelector,
   usePath,
 } from 'platejs/react';
@@ -34,7 +33,6 @@ import {
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
-  useTableSelectionDOM,
   useTableResize,
 } from 'platejs/table/react';
 import * as React from 'react';
@@ -77,7 +75,6 @@ type TableResizeStartOptions = {
 };
 
 type TableResizeContextValue = {
-  disableMarginLeft: boolean;
   hasMultiRowSelection: boolean;
   rowSizeOverrides: Map<number, number>;
   clearResizePreview: (handleKey: string) => void;
@@ -93,15 +90,9 @@ type TableResizeContextValue = {
 
 const TABLE_CONTROL_COLUMN_WIDTH = 8;
 
-const TABLE_DEFAULT_COLUMN_WIDTH = 120;
-
 const TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT = 1200;
 
 const TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS = 150;
-const TABLE_SELECTION_OVERLAY_CLASS =
-  'pointer-events-none absolute inset-0 z-1 bg-brand/[.13]';
-
-const TableNodeSelectionContext = React.createContext(false);
 
 const TableResizeContext = React.createContext<TableResizeContextValue | null>(
   null
@@ -131,10 +122,8 @@ const paintIndicator = (
 
 export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
   const { children } = props;
-  const isSelectingTable = useElementSelected({ mode: 'node' });
   const editor = useEditor();
-  const { api, read, store } = useEditor().plugin(TablePlugin);
-  const { disableMarginLeft = false } = store.get();
+  const { api } = useEditor().plugin(TablePlugin);
   const readOnly = useEditorReadOnly();
   const hasControls = !readOnly;
   const controlColumnWidth = hasControls ? TABLE_CONTROL_COLUMN_WIDTH : 0;
@@ -163,16 +152,12 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
     },
     [setRowHeightOverrides]
   );
-  const marginLeft = disableMarginLeft
-    ? 0
-    : (marginLeftOverride ?? props.element.marginLeft ?? 0);
-  const columnWidths = api.getOverriddenColumnSizes(
-    props.element,
-    colSizeOverrides
+  const marginLeft = marginLeftOverride ?? props.element.marginLeft ?? 0;
+  const baseColSizes = api.columnWidths(props.element);
+  const columnWidths = baseColSizes.map(
+    (width, index) => colSizeOverrides.get(index) ?? width
   );
-  const baseColSizes = api.getOverriddenColumnSizes(props.element);
 
-  useTableSelectionDOM(tableRef);
   const deferColumnResize =
     (columnWidths?.length ?? 0) * (props.element.children?.length ?? 0) >
     TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
@@ -181,16 +166,15 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
   const hasExpandedCellSelection = useEditorSelector((innerEditor) => {
     const view = innerEditor.plugin(TablePlugin).read.selection();
 
-    return Boolean(view?.tableKey === tableNodeKey && view.anchors.length > 1);
+    return Boolean(view?.tableKey === tableNodeKey && view.cells.length > 1);
   });
   const hasMultiRowSelection = useEditorSelector((innerEditor) => {
     const view = innerEditor.plugin(TablePlugin).read.selection();
 
     return Boolean(
-      view?.complete &&
-      view.grid.problems.length === 0 &&
+      view?.rectangular &&
       view.tableKey === tableNodeKey &&
-      view.anchors.length > 1 &&
+      view.cells.length > 1 &&
       view.bounds.maxRow > view.bounds.minRow
     );
   });
@@ -223,13 +207,13 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
 
       const first = resize.columns[0];
       const offset =
-        resize.marginLeft === undefined
-          ? controlColumnWidth +
+        resize.edge === 'left'
+          ? controlColumnWidth + resize.marginLeft - marginLeft
+          : controlColumnWidth +
             baseColSizes
               .slice(0, first.colIndex)
               .reduce((total, width) => total + width, 0) +
-            first.width
-          : controlColumnWidth + resize.marginLeft - marginLeft;
+            first.width;
 
       paintIndicator(
         deferColumnResize ? dragIndicatorRef : hoverIndicatorRef,
@@ -239,7 +223,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
       setColSizeOverrides(
         new Map(resize.columns.map(({ colIndex, width }) => [colIndex, width]))
       );
-      if (resize.marginLeft !== undefined) {
+      if (resize.edge === 'left') {
         overrideMarginLeft(resize.marginLeft);
       }
     },
@@ -338,7 +322,6 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
   const tableResizeContext = React.useMemo(
     () => ({
       clearResizePreview,
-      disableMarginLeft,
       hasMultiRowSelection,
       rowSizeOverrides,
       showResizePreview,
@@ -346,25 +329,13 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
     }),
     [
       clearResizePreview,
-      disableMarginLeft,
       hasMultiRowSelection,
       rowSizeOverrides,
       showResizePreview,
       startResize,
     ]
   );
-  const resolvedColSizes = React.useMemo(() => {
-    if (columnWidths && columnWidths.length > 0) {
-      return columnWidths.map(
-        (colSize) => colSize || TABLE_DEFAULT_COLUMN_WIDTH
-      );
-    }
-
-    return Array.from(
-      { length: api.getColumnCount(props.element) },
-      () => TABLE_DEFAULT_COLUMN_WIDTH
-    );
-  }, [api, columnWidths, props.element]);
+  const resolvedColSizes = columnWidths;
   const tableStyle = React.useMemo(
     () => ({
       width: `${
@@ -412,7 +383,10 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
             )}
             style={tableStyle}
             onMouseDown={() => {
-              if ((read.selection()?.anchors.length ?? 0) > 1) {
+              if (
+                (editor.plugin(TablePlugin).read.selection()?.cells.length ??
+                  0) > 1
+              ) {
                 editor.update.selection.collapse();
               }
             }}
@@ -440,11 +414,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
                 ))}
               </colgroup>
             )}
-            <tbody className="min-w-full">
-              <TableNodeSelectionContext value={isSelectingTable}>
-                {children}
-              </TableNodeSelectionContext>
-            </tbody>
+            <tbody className="min-w-full">{children}</tbody>
           </table>
         </div>
       </TableResizeContext>
@@ -463,8 +433,7 @@ function TableFloatingToolbar({
   ...props
 }: React.ComponentProps<typeof FloatingPopoverContent>) {
   const selectedCellCount = useEditorSelector(
-    (editor) =>
-      editor.plugin(TablePlugin).read.selection()?.cellKeys.length ?? 0
+    (editor) => editor.plugin(TablePlugin).read.selection()?.cells.length ?? 0
   );
   const selected = useElementSelected();
   const collapsedInside = useEditorSelector(
@@ -517,15 +486,14 @@ function TableFloatingToolbarContent({
 }) {
   const editor = useEditor();
   const element = useElement(TablePlugin);
-  const disableMerge = usePluginStore(TablePlugin, 'disableMerge');
   const canMergeSelection = useEditorSelector((innerEditor) =>
     innerEditor.plugin(TablePlugin).read.canMerge()
   );
   const canSplitSelection = useEditorSelector((innerEditor) =>
     innerEditor.plugin(TablePlugin).read.canSplit()
   );
-  const canMerge = !collapsedInside && !disableMerge && canMergeSelection;
-  const canSplit = !disableMerge && canSplitSelection;
+  const canMerge = !collapsedInside && canMergeSelection;
+  const canSplit = canSplitSelection;
 
   if (!collapsedInside && !canMerge && !canSplit) return null;
 
@@ -672,8 +640,10 @@ function TableBordersDropdownMenuContent(
 ) {
   const editor = useEditor();
   const borderStates = useEditorSelector((innerEditor) =>
-    innerEditor.plugin(TablePlugin).read.getSelectedCellsBorders()
+    innerEditor.plugin(TablePlugin).read.borders()
   );
+
+  if (!borderStates) return null;
 
   return (
     <DropdownMenuContent
@@ -689,7 +659,7 @@ function TableBordersDropdownMenuContent(
     >
       <DropdownMenuGroup>
         <DropdownMenuCheckboxItem
-          checked={borderStates.top}
+          checked={borderStates.top === true}
           onCheckedChange={() => {
             editor.plugin(TablePlugin).update.toggleBorders({ border: 'top' });
           }}
@@ -698,7 +668,7 @@ function TableBordersDropdownMenuContent(
           <div>Top Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          checked={borderStates.right}
+          checked={borderStates.right === true}
           onCheckedChange={() => {
             editor
               .plugin(TablePlugin)
@@ -709,7 +679,7 @@ function TableBordersDropdownMenuContent(
           <div>Right Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          checked={borderStates.bottom}
+          checked={borderStates.bottom === true}
           onCheckedChange={() => {
             editor
               .plugin(TablePlugin)
@@ -720,7 +690,7 @@ function TableBordersDropdownMenuContent(
           <div>Bottom Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          checked={borderStates.left}
+          checked={borderStates.left === true}
           onCheckedChange={() => {
             editor.plugin(TablePlugin).update.toggleBorders({ border: 'left' });
           }}
@@ -732,7 +702,7 @@ function TableBordersDropdownMenuContent(
 
       <DropdownMenuGroup>
         <DropdownMenuCheckboxItem
-          checked={borderStates.none}
+          checked={borderStates.none === true}
           onCheckedChange={() => {
             editor.plugin(TablePlugin).update.toggleBorders({ border: 'none' });
           }}
@@ -741,7 +711,7 @@ function TableBordersDropdownMenuContent(
           <div>No Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          checked={borderStates.outer}
+          checked={borderStates.outer === true}
           onCheckedChange={() => {
             editor
               .plugin(TablePlugin)
@@ -812,8 +782,6 @@ export function TableRowElement({
   ...props
 }: EditorElementProps<typeof TableRowPlugin>) {
   const { element } = props;
-  const isSelectingRow = useElementSelected({ mode: 'node' });
-  const isSelectingTable = React.useContext(TableNodeSelectionContext);
   const readOnly = useEditorReadOnly();
   const rowIndex = usePath((path) => path.at(-1));
 
@@ -881,10 +849,7 @@ export function TableRowElement({
           )}
         </td>
       )}
-
-      <TableNodeSelectionContext value={isSelectingRow || isSelectingTable}>
-        {children}
-      </TableNodeSelectionContext>
+      {children}
     </EditorElement>
   );
 }
@@ -940,23 +905,22 @@ export function TableCellElement(
   const { element } = props;
   const isHeader = element.header === true;
 
-  const isSelectingRow = React.useContext(TableNodeSelectionContext);
-  const cellIndices = useElementSelector(
+  const cellInfo = useElementSelector(
     TablePlugin,
-    () => editor.plugin(TablePlugin).read.getCellIndices(element),
+    () => editor.plugin(TablePlugin).read.cell({ at: element }),
     {
       equalityFn: (next, previous) =>
-        next?.col === previous?.col && next?.row === previous?.row,
+        next?.col === previous?.col &&
+        next?.row === previous?.row &&
+        next?.colSpan === previous?.colSpan &&
+        next?.rowSpan === previous?.rowSpan &&
+        next?.borders === previous?.borders,
     }
   );
-  const indices = cellIndices ?? { col: 0, row: 0 };
-  const table = editor.plugin(TablePlugin);
-  const borders = table.read.getCellBorders({
-    cellIndices: indices,
-    element,
-  });
-  const colSpan = table.api.getColSpan(element);
-  const rowSpan = table.api.getRowSpan(element);
+  const indices = cellInfo ?? { col: 0, row: 0 };
+  const borders = cellInfo?.borders;
+  const colSpan = cellInfo?.colSpan ?? element.colSpan ?? 1;
+  const rowSpan = cellInfo?.rowSpan ?? element.rowSpan ?? 1;
   const colIndex = indices.col + colSpan - 1;
   const rowIndex = indices.row + rowSpan - 1;
 
@@ -972,10 +936,10 @@ export function TableCellElement(
         'data-[table-cell-selected=true]:before:z-10',
         'data-[table-cell-selected=true]:before:bg-brand/5',
         "before:absolute before:box-border before:select-none before:content-['']",
-        borders.bottom?.width && 'before:border-b before:border-b-border',
-        borders.right?.width && 'before:border-r before:border-r-border',
-        borders.left?.width && 'before:border-l before:border-l-border',
-        borders.top?.width && 'before:border-t before:border-t-border'
+        borders?.bottom.width && 'before:border-b before:border-b-border',
+        borders?.right.width && 'before:border-r before:border-r-border',
+        borders?.left?.width && 'before:border-l before:border-l-border',
+        borders?.top?.width && 'before:border-t before:border-t-border'
       )}
       style={
         {
@@ -1002,15 +966,6 @@ export function TableCellElement(
       {!readOnly && (
         <TableCellResizeControls colIndex={colIndex} rowIndex={rowIndex} />
       )}
-
-      {isSelectingRow && (
-        <div
-          className={TABLE_SELECTION_OVERLAY_CLASS}
-          contentEditable={false}
-          data-editor-root-chrome-ignore="true"
-          data-slot="node-selection-highlight"
-        />
-      )}
     </EditorElement>
   );
 }
@@ -1022,16 +977,12 @@ function TableCellResizeControls({
   colIndex: number;
   rowIndex: number;
 }) {
-  const {
-    clearResizePreview,
-    disableMarginLeft,
-    showResizePreview,
-    startResize,
-  } = useTableResizeContext();
+  const { clearResizePreview, showResizePreview, startResize } =
+    useTableResizeContext();
   const rightHandleKey = `right:${rowIndex}:${colIndex}`;
   const bottomHandleKey = `bottom:${rowIndex}:${colIndex}`;
   const leftHandleKey = `left:${rowIndex}:${colIndex}`;
-  const isLeftHandle = colIndex === 0 && !disableMarginLeft;
+  const isLeftHandle = colIndex === 0;
 
   return (
     <div
@@ -1140,7 +1091,10 @@ function TableCellResizeControls({
 }
 
 export const TableKit = [
-  TablePlugin.configure({ component: TableElement }),
+  TablePlugin.configure({
+    component: TableElement,
+    initialState: { defaultTableWidth: 600 },
+  }),
   TableRowPlugin.configure({ component: TableRowElement }),
   TableCellPlugin.configure({ component: TableCellElement }),
 ];

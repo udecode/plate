@@ -8,14 +8,15 @@ import {
   createTestTableEditor,
   getTestTablePlugins,
 } from './__tests__/getTestTablePlugins';
+import { BaseTablePlugin } from './BaseTablePlugin';
 
 jsxt;
 
 describe('BaseTablePlugin normalization', () => {
-  describe('initialTableWidth is defined and columnWidths is not defined', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'sets columnWidths (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+  describe('defaultTableWidth is defined and columnWidths is not defined', () => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'resolves fallback widths without persisting them (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <fragment>
             <htable>
@@ -49,57 +50,28 @@ describe('BaseTablePlugin normalization', () => {
           </fragment>
         ) as Value;
 
-        const output = (
-          <fragment>
-            <htable columnWidths={[30, 30, 30]}>
-              <htr>
-                <htd>
-                  <hp>
-                    <htext />
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>11</hp>
-                </htd>
-                <htd>
-                  <hp>12</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>
-                    <cursor />
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>21</hp>
-                </htd>
-                <htd>
-                  <hp>22</hp>
-                </htd>
-              </htr>
-            </htable>
-          </fragment>
-        ) as Value;
-
         const editor = createTestTableEditor({
           plugins: getTestTablePlugins({
-            disableMerge,
-            initialTableWidth: 90,
+            allowCellSpanEditing,
+            defaultTableWidth: 90,
           }),
           initialValue: input,
         });
 
         editor.update.value.repair();
-        expect(editor.read.children()).toMatchObject(output);
+        const table = editor.read.nodes.get([0], { type: BaseTablePlugin })![0];
+        expect(editor.plugin(BaseTablePlugin).api.columnWidths(table)).toEqual([
+          48, 48, 48,
+        ]);
+        expect(editor.read.children()).toEqual(input);
       }
     );
   });
 
-  describe('initialTableWidth is defined and columnWidths is partially defined', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'sets columnWidths (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+  describe('defaultTableWidth is defined and columnWidths is partially defined', () => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'resolves fallback widths without persisting them (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <fragment>
             <htable columnWidths={[null, 40, null]}>
@@ -133,57 +105,28 @@ describe('BaseTablePlugin normalization', () => {
           </fragment>
         ) as Value;
 
-        const output = (
-          <fragment>
-            <htable columnWidths={[30, 40, 30]}>
-              <htr>
-                <htd>
-                  <hp>
-                    <htext />
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>11</hp>
-                </htd>
-                <htd>
-                  <hp>12</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>
-                    <cursor />
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>21</hp>
-                </htd>
-                <htd>
-                  <hp>22</hp>
-                </htd>
-              </htr>
-            </htable>
-          </fragment>
-        ) as Value;
-
         const editor = createTestTableEditor({
           plugins: getTestTablePlugins({
-            disableMerge,
-            initialTableWidth: 90,
+            allowCellSpanEditing,
+            defaultTableWidth: 90,
           }),
           initialValue: input,
         });
 
         editor.update.value.repair();
-        expect(editor.read.children()).toMatchObject(output);
+        const table = editor.read.nodes.get([0], { type: BaseTablePlugin })![0];
+        expect(editor.plugin(BaseTablePlugin).api.columnWidths(table)).toEqual([
+          48, 40, 48,
+        ]);
+        expect(editor.read.children()).toEqual(input);
       }
     );
   });
 
-  describe('initialTableWidth is defined and columnWidths is fully defined', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'keeps existing columnWidths when every column width is already defined (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+  describe('defaultTableWidth is defined and columnWidths is fully defined', () => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'keeps existing columnWidths when every column width is already defined (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const input = (
           <fragment>
             <htable columnWidths={[40, 40, 40]}>
@@ -217,61 +160,31 @@ describe('BaseTablePlugin normalization', () => {
           </fragment>
         ) as Value;
 
-        const output = (
-          <fragment>
-            <htable columnWidths={[40, 40, 40]}>
-              <htr>
-                <htd>
-                  <hp>
-                    <htext />
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>11</hp>
-                </htd>
-                <htd>
-                  <hp>12</hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>
-                    <cursor />
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>21</hp>
-                </htd>
-                <htd>
-                  <hp>22</hp>
-                </htd>
-              </htr>
-            </htable>
-          </fragment>
-        ) as Value;
-
         const editor = createTestTableEditor({
           plugins: getTestTablePlugins({
-            disableMerge,
-            initialTableWidth: 90,
+            allowCellSpanEditing,
+            defaultTableWidth: 90,
           }),
           initialValue: input,
         });
 
         editor.update.value.repair();
-        expect(editor.read.children()).toMatchObject(output);
+        const table = editor.read.nodes.get([0], { type: BaseTablePlugin })![0];
+        expect(editor.plugin(BaseTablePlugin).api.columnWidths(table)).toEqual([
+          40, 40, 40,
+        ]);
+        expect(editor.read.children()).toEqual(input);
       }
     );
   });
 
-  describe('enableUnsetSingleColSize', () => {
-    it.each([{ disableMerge: true }, { disableMerge: false }])(
-      'unsets columnWidths for single-column tables (disableMerge: $disableMerge)',
-      ({ disableMerge }) => {
+  describe('single-column widths', () => {
+    it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
+      'preserves columnWidths for single-column tables (allowCellSpanEditing: $allowCellSpanEditing)',
+      ({ allowCellSpanEditing }) => {
         const editor = createTestTableEditor({
           plugins: getTestTablePlugins({
-            disableMerge,
-            enableUnsetSingleColSize: true,
+            allowCellSpanEditing,
           }),
           initialValue: (
             <fragment>
@@ -291,7 +204,7 @@ describe('BaseTablePlugin normalization', () => {
         expect(editor.read.children()).toMatchObject(
           (
             <fragment>
-              <htable>
+              <htable columnWidths={[120]}>
                 <htr>
                   <htd>
                     <hp>cell</hp>
@@ -308,7 +221,7 @@ describe('BaseTablePlugin normalization', () => {
   describe('rectangular table repair', () => {
     it('fills missing logical cells', () => {
       const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: false }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         initialValue: (
           <fragment>
             <htable>
@@ -362,7 +275,7 @@ describe('BaseTablePlugin normalization', () => {
 
     it('clamps a row span to the table height', () => {
       const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: false }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         initialValue: (
           <fragment>
             <htable>
@@ -411,7 +324,7 @@ describe('BaseTablePlugin normalization', () => {
 
     it('splits a cell whose span collides with an earlier row span', () => {
       const editor = createTestTableEditor({
-        plugins: getTestTablePlugins({ disableMerge: false }),
+        plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
         initialValue: (
           <fragment>
             <htable>

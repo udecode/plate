@@ -7,7 +7,9 @@
     "platejs",
     "@radix-ui/react-primitive",
     "@radix-ui/react-slot",
-    "fzf@0.5.2"
+    "fzf@0.5.2",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
   ],
   "registryDependencies": [
     "https://platejs.org/r/editor.json",

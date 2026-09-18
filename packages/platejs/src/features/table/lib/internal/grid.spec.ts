@@ -205,7 +205,7 @@ describe('compileTableGrid', () => {
         return new WeakRef(input);
       }))();
 
-    expect(runtime.Bun?.gc).toBeFunction();
+    expect(typeof runtime.Bun?.gc).toBe('function');
 
     for (let attempt = 0; attempt < 5; attempt++) {
       runtime.Bun?.gc(true);

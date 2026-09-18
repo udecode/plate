@@ -124,7 +124,7 @@ export const OverridePlugin = definePlugin('override', {}).extend(
             ? state.nodes.block({ at: selection.focus })
             : undefined;
 
-          if (!selection || !block) return false;
+          if (!selection || !block) return next();
 
           const [blockNode, blockPath] = block;
           const runAction = (action: string | undefined) => {
@@ -271,7 +271,44 @@ export const OverridePlugin = definePlugin('override', {}).extend(
             });
           }
 
-          return false;
+          return next();
+        }),
+        around(editorCommands.delete, ({ state, next }) => {
+          const selection = state.selection();
+
+          if (!selection || !state.selection.isCollapsed()) return next();
+
+          const block = state.nodes.block({ at: selection.focus });
+
+          if (!block) return next();
+
+          const [blockNode, blockPath] = block;
+          const rules = getEffectiveDeleteRules(
+            'delete.empty',
+            blockNode,
+            blockPath
+          );
+
+          if (rules?.empty !== 'reset') return next();
+
+          const result = next();
+
+          if (result === false) return false;
+
+          return state.transaction.extend(result, (tx) => {
+            const nextSelection = tx.selection();
+            const nextBlock = nextSelection
+              ? tx.nodes.block({ at: nextSelection.focus })
+              : undefined;
+
+            if (
+              nextBlock &&
+              PathApi.equals(nextBlock[1], blockPath) &&
+              tx.nodes.isEmpty(nextBlock[0])
+            ) {
+              tx.blocks.reset({ at: blockPath });
+            }
+          });
         }),
         handle(editorCommands.delete, ({ input, state }) => {
           const selectAdjacentBlockVoid = (

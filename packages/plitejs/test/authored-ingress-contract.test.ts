@@ -135,7 +135,7 @@ describe('authored document ingress', () => {
       [saved.id]
     );
     assert.equal(editor.read.authored.change(saved.id)?.authorId, 'alice');
-    assert.equal(editor.read.history.undos().length, 0);
+    assert.equal(editor.read.history().undos.length, 0);
   });
 
   it('loads plain content as a fresh document and detaches the replaced documents anchors', () => {
@@ -241,14 +241,14 @@ describe('authored document ingress', () => {
     const view = createEditorView(editor, { authored: proposal });
     view.update.text.insert(' first', { at: point(3) });
     view.update.text.insert(' second', { at: point(9) });
-    view.update.history.undo();
-    assert.equal(editor.read.history.undos().length, 1);
-    assert.equal(editor.read.history.redos().length, 1);
+    view.api.history.undo();
+    assert.equal(editor.read.history().undos.length, 1);
+    assert.equal(editor.read.history().redos.length, 1);
     editor.update.value.replace(savedProposal().value);
-    assert.equal(editor.read.history.undos().length, 0);
-    assert.equal(editor.read.history.redos().length, 0);
-    view.update.history.undo();
-    view.update.history.redo();
+    assert.equal(editor.read.history().undos.length, 0);
+    assert.equal(editor.read.history().redos.length, 0);
+    view.api.history.undo();
+    view.api.history.redo();
     assert.deepEqual(view.read.children(), [paragraph('Base draft')]);
   });
 
@@ -272,10 +272,10 @@ describe('authored document ingress', () => {
       assert.equal(change.authorId, 'alice');
       tx.history.restore(History.fromJSON(editor, savedHistory));
     });
-    assert.equal(editor.read.history.undos().length, 1);
-    view.update.history.undo();
+    assert.equal(editor.read.history().undos.length, 1);
+    view.api.history.undo();
     assert.deepEqual(view.read.children(), [paragraph('Base')]);
-    view.update.history.redo();
+    view.api.history.redo();
     assert.deepEqual(view.read.children(), [paragraph('Base draft')]);
   });
 
@@ -323,9 +323,9 @@ describe('authored document ingress', () => {
       anchor: { ...point(11), root: 'note' },
       focus: { ...point(11), root: 'note' },
     });
-    view.update.history.undo();
+    view.api.history.undo();
     assert.deepEqual(view.read.children(), [paragraph('Note')]);
-    view.update.history.redo();
+    view.api.history.redo();
     assert.deepEqual(view.read.children(), [paragraph('Replacement')]);
   });
 });

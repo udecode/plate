@@ -5,6 +5,8 @@ description: Retain author history and compare saved document revisions.
 
 This example installs native authored changes with `retainHistory: true`. Edit as Alice or Bob, revert an accepted contribution, or save two revisions to inspect their structural comparison.
 
+For application revision previews and restores with comments, see [Comments and versions](/docs/comment#document-history-and-versions).
+
 ## Demo
 
 <ComponentPreview name="version-history-demo" />
@@ -18,7 +20,7 @@ This example installs native authored changes with `retainHistory: true`. Edit a
 | Piece | Owner | Role |
 | --- | --- | --- |
 | `authored({ retainHistory: true })` | `platejs/authored` | Captures accepted edits with stable author and change identities and retains their edit bodies. |
-| `authorId` callback | application | Resolves the selected authenticated author once per transaction. |
+| `authorId` callback | application | Resolves the selected author ID once per transaction. |
 | `read.authored.changes(...)` | native authored reads | Returns accepted history as cursor-paged `AuthoredChange` records. |
 | `update.authored.revert(...)` | native authored updates | Creates a compensating contribution for the selected retained change. |
 | `compare(...)` | `platejs/diff` | Compares two immutable saved revisions without changing the editor. |
@@ -57,5 +59,7 @@ const reloaded = createEditor({
   initialValue: saved,
 });
 ```
+
+The fresh editor starts with empty local undo and redo stacks. Retained authored contributions remain in the saved document. If the document has comments, save `CommentsJSON` through `comments.toJSON()` with the same revision and load it through `initialComments`; document undo does not rewind the discussion.
 
 See [Authored Changes](/docs/authored-changes) for review views, decision results, collaboration, and format projections.

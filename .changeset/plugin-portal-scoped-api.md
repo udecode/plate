@@ -8,7 +8,7 @@ Initialize prepared Plate values during schema publication to avoid an extra liv
 
 Remove `withHOC`, `useEditableProps`, `usePlateRootProps`, and the public node-attribute hook. Compose concrete React 19 components directly and receive `ref` as a normal prop.
 
-Export named `*PluginState` contracts for state-owning Core descriptors, including debug, DOM, navigation feedback, and persisted element IDs. Replace the default `NodeIdPlugin` with opt-in `ElementIdPlugin`. It assigns string IDs to block and inline elements through one `generateId` state option, indexes them across every document root, and never assigns IDs to text nodes. Narrow persisted-ID applicability through the compiled application schema target; document preparation generates and retains IDs only for matching elements. Use `migrateElementIds` before editor creation to fill missing IDs, report duplicates, and canonicalize a legacy property through `sourceKey`. Use editor-scoped `NodeKey` for live node targeting, selection, drag and drop, and temporary UI state; node keys cover text nodes and never enter serialized data. Convert a known runtime key at a persistence boundary through `editor.plugin(ElementIdPlugin).read.id(key)`.
+Export named `*PluginState` contracts for state-owning Core descriptors, including debug, DOM, navigation feedback, and persisted element IDs. Replace the default `NodeIdPlugin` with opt-in `ElementIdPlugin`. It assigns string IDs to matching block and inline elements through one `generateId` state option, indexes them across every document root, rejects empty or duplicate IDs, and never assigns IDs to text nodes. Use the compiled schema fitter for absent current IDs and an application document migration for historical ID formats. Use editor-scoped `NodeKey` for live node targeting, selection, drag and drop, and temporary UI state; node keys cover text nodes and never enter serialized data. Convert a known runtime key at a persistence boundary through `editor.plugin(ElementIdPlugin).read.id(key)`.
 
 Infer plugin-local node-property patches from the current plugin plus its required dependencies through a shallow capability graph. Use `nodes.set(props, options)` for typed atomic writes, the exact property handle key for aliases, `unset(key, options)` for removals, and semantic owner updates for prefix or cross-node behavior.
 
@@ -40,9 +40,9 @@ Replace Slate-era Core exports with Plite and Plate-owned names. Delete the dead
 
 Replace `pipeInsertDataQuery` with `prepareHtmlParserQuery`, which compiles one resolved plugin query and runs it against an immutable editor state.
 
-Replace plugin `transformInitialValue` with `prepareDocument` for installed current-schema invariants. Configure application schema upgrades through `defineDocumentMigrations(EditorSchema, { steps })`; Plate runs every required target-version step before plugin preparation and schema fitting for initial and deferred complete-document loads.
+Configure application schema upgrades through `defineDocumentMigrations({ plugins, schema, steps })`. Run `migrateDocument` before editor creation or complete replacement; editor loads accept current-schema input only.
 
-Persist `{ document, schema }` and pass the envelope to `initialValue` or `editor.update.value.replace(...)`. Use `migrateDocument` to run the same chain outside editor publication. Bind each supported historical envelope version to its generated schema fingerprint; use an explicit unversioned floor only for raw documents without identity metadata.
+Persist `{ document, schema, selection? }` and convert it with `migrateDocument` at the storage boundary. Pass the returned `output` to `initialValue` or `editor.update.value.replace(...)`. Bind each supported historical envelope version to its generated schema fingerprint; raw documents require `source: number | 'current'` at each conversion.
 
 Remove exported whitespace character aliases in favor of native character literals. Preserve the first matching descendant returned by `someHtmlElement`.
 
@@ -58,7 +58,7 @@ Preserve decoration rendering without coupling plugin identities to serialized m
 
 Skip autofocus, input rule, and override work when lifecycle targets are unavailable.
 
-Preserve selections when application migrations or `prepareDocument` wrap selected text during editor setup and complete `editor.update.value.replace(...)` loads.
+Preserve selections through explicit detached document migration and final schema fitting before editor setup or complete `editor.update.value.replace(...)` loads.
 
 Install typed plugin-object dependencies recursively with deterministic overrides, dependency-first ordering, and graph validation. Remove global plugin `priority`. Independent plugins keep application order; use `dependencies` for installation requirements and resource-local `priority` for competing shortcuts, input rules, or codecs.
 

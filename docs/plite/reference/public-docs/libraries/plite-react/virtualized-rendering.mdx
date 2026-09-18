@@ -84,9 +84,10 @@ traversal, print output, or third-party DOM access. Virtualized mobile selection
 and IME behavior need browser and device proof for the product's supported
 matrix.
 
-For paginated editors, use `PagedEditable virtualize`. Pagination keeps page
-surfaces, layout fragments, selection projection, and canvas coordinates under
-one owner without importing TanStack Virtual.
+For paginated editors, use `PagedEditable virtualize`. Pagination owns live
+measurement, page surfaces, fragment placement, selection projection, and
+canvas coordinates. `VirtualizedEditable` remains the top-level block option
+for a continuous editor.
 
 See [DOM Coverage Boundaries](./dom-coverage-boundaries) for selection, copy,
 materialization, and native find limits at unmounted ranges.

@@ -34,17 +34,17 @@ import {
   readContentRootAwareSelection,
 } from './content-root-navigation';
 import { shouldModelOwnPlainVerticalLargeDocumentPlugin } from './dom-coverage-vertical-selection';
-import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
+import {
+  type EditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+} from './editable-dom-runtime';
 import {
   isDestructiveEditableCommand,
   isEditableEditingEpochCommand,
   markEditableEditingEpochCommandHandled,
 } from './editing-epoch-adapter';
 import { getEditableCommandFromKeyDown } from './editing-kernel';
-import {
-  getModelOwnedHistoryFocusRepair,
-  type HistoryFocusOwnerApi,
-} from './history-focus';
+import type { HistoryFocusOwnerApi } from './history-focus';
 import {
   type EditableCompositionStateSetter,
   type EditableInputController,
@@ -53,8 +53,10 @@ import {
   isNestedEditableDOMTarget,
   setEditableModelSelectionPreference,
 } from './input-controller';
-import { applyModelOwnedHistoryIntent } from './model-input-strategy';
-import { applyEditableCommand } from './mutation-controller';
+import {
+  applyEditableCommand,
+  applyModelOwnedTextInput,
+} from './mutation-controller';
 import {
   getEditorRuntimeOwner,
   hasPath as editorHasPath,
@@ -298,16 +300,6 @@ const isReadOnlyNativeEditingKey = (nativeEvent: KeyboardEvent) => {
   );
 };
 
-const getModelOwnedHistoryKeyDownResult = (
-  options: {
-    editor: ReactRuntimeEditor;
-  } & HistoryFocusOwnerApi
-): EditableKeyDownResult => {
-  const { focusEditor, repair } = getModelOwnedHistoryFocusRepair(options);
-
-  return keyDownHandled(repair, focusEditor);
-};
-
 const isViewportRuntime = (viewportRuntime: unknown) =>
   typeof viewportRuntime === 'object' &&
   viewportRuntime !== null &&
@@ -447,6 +439,7 @@ export const applyEditableKeyDown = ({
   onKeyDown,
   preferredVerticalX,
   readOnly,
+  replayHistory,
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
@@ -464,6 +457,7 @@ export const applyEditableKeyDown = ({
   onKeyDown?: EditableKeyDownHandler;
   preferredVerticalX?: number;
   readOnly: boolean;
+  replayHistory?: EditableDOMRuntime['replayHistory'];
   getActiveContentRootOwner?: (root: RootKey) => {
     childRoot: RootKey;
     ownerPath: Path;
@@ -479,6 +473,11 @@ export const applyEditableKeyDown = ({
   setComposing: EditableCompositionStateSetter;
   viewportBackedSelection: boolean;
 }): EditableKeyDownResult => {
+  const replay =
+    replayHistory ??
+    ((direction: 'redo' | 'undo') =>
+      getMountedEditableDOMRuntime(editor)?.replayHistory(direction));
+
   if (isInteractiveInternalTarget(editor, event.target)) {
     const { nativeEvent } = event;
     const nestedEditableTarget = (() => {
@@ -567,44 +566,20 @@ export const applyEditableKeyDown = ({
     }
 
     if (!readOnly && Hotkeys.isRedo(nativeEvent)) {
+      const result = replay('redo');
+
+      if (!result || result.status === 'unavailable') return keyDownUnhandled();
       event.preventDefault();
       event.stopPropagation();
-
-      if (
-        applyModelOwnedHistoryIntent({
-          direction: 'redo',
-          editor,
-        })
-      ) {
-        return getModelOwnedHistoryKeyDownResult({
-          editor,
-          getActiveContentRootOwner,
-          getContentRootOwnerViewEditor,
-          getMountedViewEditor,
-        });
-      }
-
       return keyDownHandled();
     }
 
     if (!readOnly && Hotkeys.isUndo(nativeEvent)) {
+      const result = replay('undo');
+
+      if (!result || result.status === 'unavailable') return keyDownUnhandled();
       event.preventDefault();
       event.stopPropagation();
-
-      if (
-        applyModelOwnedHistoryIntent({
-          direction: 'undo',
-          editor,
-        })
-      ) {
-        return getModelOwnedHistoryKeyDownResult({
-          editor,
-          getActiveContentRootOwner,
-          getContentRootOwnerViewEditor,
-          getMountedViewEditor,
-        });
-      }
-
       return keyDownHandled();
     }
 
@@ -702,15 +677,14 @@ export const applyEditableKeyDown = ({
       isPlainTextKeyboardInput(nativeEvent)
     ) {
       event.preventDefault();
-      applyEditableCommand({
-        command: {
-          inputType: 'insertText',
-          kind: 'insert-text',
-          text: nativeEvent.key,
-        },
+      const repair = applyModelOwnedTextInput({
+        data: nativeEvent.key,
         editor,
+        inputController,
+        inputType: 'insertText',
+        selection,
       });
-      return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+      return keyDownHandled(repair);
     }
 
     if (
@@ -746,13 +720,13 @@ export const applyEditableKeyDown = ({
 
       if (targetEditor) {
         event.preventDefault();
-        applyEditableCommand({
-          command: {
-            inputType: 'insertText',
-            kind: 'insert-text',
-            text: nativeEvent.key,
-          },
+        applyModelOwnedTextInput({
+          data: nativeEvent.key,
           editor: targetEditor,
+          inputController:
+            getMountedEditableDOMRuntime(targetEditor)?.inputController,
+          inputType: 'insertText',
+          selection,
         });
         focusPliteEditable(targetEditor);
         const targetScheduler =
@@ -821,15 +795,14 @@ export const applyEditableKeyDown = ({
       isPlainTextKeyboardInput(nativeEvent)
     ) {
       event.preventDefault();
-      applyEditableCommand({
-        command: {
-          inputType: 'insertText',
-          kind: 'insert-text',
-          text: nativeEvent.key,
-        },
+      const repair = applyModelOwnedTextInput({
+        data: nativeEvent.key,
         editor,
+        inputController,
+        inputType: 'insertText',
+        selection: selectionRange,
       });
-      return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+      return keyDownHandled(repair);
     }
 
     const children = editor.read((state) => state.nodes.children());
@@ -846,42 +819,18 @@ export const applyEditableKeyDown = ({
     // any history stack to undo or redo, so we have to manage these
     // hotkeys ourselves. (2019/11/06)
     if (Hotkeys.isRedo(nativeEvent)) {
+      const result = replay('redo');
+
+      if (!result || result.status === 'unavailable') return keyDownUnhandled();
       event.preventDefault();
-
-      if (
-        applyModelOwnedHistoryIntent({
-          direction: 'redo',
-          editor,
-        })
-      ) {
-        return getModelOwnedHistoryKeyDownResult({
-          editor,
-          getActiveContentRootOwner,
-          getContentRootOwnerViewEditor,
-          getMountedViewEditor,
-        });
-      }
-
       return keyDownHandled();
     }
 
     if (Hotkeys.isUndo(nativeEvent)) {
+      const result = replay('undo');
+
+      if (!result || result.status === 'unavailable') return keyDownUnhandled();
       event.preventDefault();
-
-      if (
-        applyModelOwnedHistoryIntent({
-          direction: 'undo',
-          editor,
-        })
-      ) {
-        return getModelOwnedHistoryKeyDownResult({
-          editor,
-          getActiveContentRootOwner,
-          getContentRootOwnerViewEditor,
-          getMountedViewEditor,
-        });
-      }
-
       return keyDownHandled();
     }
 
@@ -900,23 +849,14 @@ export const applyEditableKeyDown = ({
       !nativeEvent.metaKey
     ) {
       event.preventDefault();
-      applyEditableCommand({
-        command: {
-          inputType: 'insertText',
-          kind: 'insert-text',
-          text: nativeEvent.key,
-        },
+      const repair = applyModelOwnedTextInput({
+        data: nativeEvent.key,
         editor,
+        inputController,
+        inputType: 'insertText',
+        selection,
       });
-      return keyDownHandled({
-        focus: true,
-        kind: 'repair-caret-after-text-insert',
-        selectionSourceTransition: {
-          preferModelSelection: true,
-          reason: 'model-command',
-          selectionSource: 'model-owned',
-        },
-      });
+      return keyDownHandled(repair);
     }
 
     const largeDocumentVerticalSelection =
@@ -1118,15 +1058,14 @@ export const applyEditableKeyDown = ({
         !ReactEditor.isComposing(editor)
       ) {
         event.preventDefault();
-        applyEditableCommand({
-          command: {
-            inputType: 'insertText',
-            kind: 'insert-text',
-            text: nativeEvent.key,
-          },
+        const repair = applyModelOwnedTextInput({
+          data: nativeEvent.key,
           editor,
+          inputController,
+          inputType: 'insertText',
+          selection: selectionRange,
         });
-        return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
+        return keyDownHandled(repair);
       }
 
       if (Hotkeys.isTransposeCharacter(nativeEvent)) {

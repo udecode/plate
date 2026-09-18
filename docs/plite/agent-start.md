@@ -14,13 +14,17 @@ source and proof commands in the Plate checkout.
 - Live implementation source: Plite packages under `packages/**`, docs under
   `content/docs/plite/**`, and examples under
   `apps/www/src/app/(app)/examples/plite/**`.
-- Control docs: `docs/plite/**`
+- Current decisions and execution: [feature review ledger](../research/reviews.md)
+  and its generated feature hubs.
+- Current runtime invariants: [architecture contract](references/architecture-contract.md).
+  [This directory](overview.md) also contains historical migration material;
+  inspect the specific document before using it as authority.
 - Recorded architecture claim:
-  [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/plite/absolute-architecture-release-claim.md)
+  [absolute-architecture-release-claim.md](absolute-architecture-release-claim.md)
 - Roadmap and prior decisions:
-  [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/master-roadmap.md)
+  [master-roadmap.md](master-roadmap.md)
 - Gate scoreboard:
-  [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/plite/replacement-gates-scoreboard.md)
+  [replacement-gates-scoreboard.md](replacement-gates-scoreboard.md)
 
 Current API examples must match live source. Prefer direct one-shot reads and
 updates; use callbacks when operations share a snapshot or transaction.
@@ -55,7 +59,7 @@ Historical claims and scoreboards need fresh source-bound proof before reuse.
 
 ## Commands
 
-From `/Users/zbeyens/git/plate-2`:
+From the repository root:
 
 ```sh
 pnpm check:plite:dev
@@ -111,11 +115,11 @@ pnpm lint:fix
 
 These are reference bodies, not entrypoints:
 
-- [ledgers/fork-issue-dossier.md](/Users/zbeyens/git/plate-2/docs/plite/ledgers/fork-issue-dossier.md)
-- [references/architecture-contract.md](/Users/zbeyens/git/plate-2/docs/plite/references/architecture-contract.md)
-- [decoration-roadmap.md](/Users/zbeyens/git/plate-2/docs/plite/decoration-roadmap.md)
-- [decorations-annotations-cluster.md](/Users/zbeyens/git/plate-2/docs/plite/decorations-annotations-cluster.md)
-- [references/pr-description.md](/Users/zbeyens/git/plate-2/docs/plite/references/pr-description.md)
+- [ledgers/fork-issue-dossier.md](ledgers/fork-issue-dossier.md)
+- [references/architecture-contract.md](references/architecture-contract.md)
+- [decoration-roadmap.md](decoration-roadmap.md)
+- [decorations-annotations-cluster.md](decorations-annotations-cluster.md)
+- [references/pr-description.md](references/pr-description.md)
 
 Use indexes and summaries first. Open giant ledgers only when exact issue,
 proof, or maintainer narrative detail is required.

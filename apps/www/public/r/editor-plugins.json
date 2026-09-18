@@ -3,7 +3,11 @@
   "name": "editor-plugins",
   "title": "Editor Plugins",
   "dependencies": [
-    "platejs"
+    "platejs",
+    "@types/papaparse@^5.3.16",
+    "juice@^11.0.1",
+    "papaparse@^5.5.3",
+    "validator@^13.15.15"
   ],
   "registryDependencies": [
     "https://platejs.org/r/editor.json",

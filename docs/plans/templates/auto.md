@@ -41,7 +41,7 @@ Packet ledger:
 | --- | --- | --- | --- | --- | --- |
 | pending | pending | pending | pending | pending | pending |
 
-Link existing Regression, Benchmark and research receipts. Keep their exact
+Link existing Patch corpus, Benchmark and research receipts. Keep their exact
 semantics with those owners. Record measured baseline/candidate results only
 for measured work. Return promoted research outcomes to the originating ledger.
 

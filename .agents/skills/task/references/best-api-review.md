@@ -10,8 +10,13 @@ purpose is not to find work for another skill.
 Start with `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>`
 from the repository root. [The feature review ledger](../../../../docs/research/reviews.md)
 maps current package, registry and tooling capabilities to stable semantic
-questions. Read the linked decisions, earlier attempts, rejected alternatives
-and proof limits. Use `research <key-or-term>` on the same helper for read,
+questions. Compact lookup and the generated `docs/research/features/<scope>.md`
+hub locate the current decision, relevant earlier alternatives, newer execution,
+changed inputs and unresolved conflicts. Read those linked sources before
+proposing more work. Use `lookup <scope> --detail` only for full records and
+fingerprints. Inspect historical candidates before classifying them in the
+index's `documents`; filename matches alone remain candidates. Use
+`research <key-or-term>` on the same helper for read,
 lead and rejection lookup across dated Plite research runs. A text hit routes
 inspection; it does not prove semantic equivalence or current source reuse.
 
@@ -21,13 +26,16 @@ feature coverage. Check the local observation against its base commit and
 fingerprint before interpreting a GitHub-versus-local discrepancy. Related
 scope history supplies context without transferring its review/proof status.
 
-Every repeated invocation requests a fresh review, even with unchanged source
-and the same model. No reassessment flag is required. Frame the ideal from
-current jobs and hard laws, compare all material design lanes, then reconcile
-the earlier conclusion. Reuse exact source observations only while their
-question, fingerprint and relevant dependencies match. Changed source or a
-deliberate reconsideration names what was rechecked and why; it does not start
-external discovery or implementation without that scope.
+Every invocation challenges the strongest deletion/replacement alternative
+against current jobs and hard laws; no reassessment flag is required. First
+reconcile the current decision, earlier material alternatives and subsequent
+execution. Name the conclusions retained, reopened or superseded, with reasons.
+Keep question boundaries: a paint finding does not reopen topology or resize
+without evidence against those decisions. Reuse matching observations; inspect
+changed inputs rather than treating one stale fingerprint as a full reset.
+When the challenge adds no new value, reaffirm and Stop without another plan
+or repeated external research. A completed design is not runtime adoption;
+an implementation receipt may require correcting the decision's progress.
 
 If no scope matches a new proposal, add its semantic question to the index
 with the current comparison owners and explicit evidence inputs. A proposed scope may have
@@ -42,12 +50,20 @@ explicitly; do not fingerprint every prerequisite's whole implementation.
 When no relevant proof is located, record the gap instead of borrowing an
 unrelated test or treating a demo as proof.
 Complete its requirements, alternatives, rationale, source references, proof
-limits, available model identity and relation to the previous review. Record
+limits, available model identity and relation to the previous review. Fill
+`reconciliation` for prior conclusions and later execution using exact record
+IDs, question, `retains`/`reopens`/`supersedes` and reason. Resolve contradictions
+or keep their limits explicit. Record
 with `record <repo-relative-json-path>` before closeout. The helper appends an
-immutable record and updates review state; adoption and proof remain separate.
+immutable record and updates review state. Adoption and proof are derived from
+bound execution outcomes; legacy flags are explicitly unbound claims.
 Reconcile the current decision page, then run `render` and `check`. A Stop
 record is history, not a new implementation task. Small reviews use the same
 compact record without a new plan.
+
+For associated execution, follow Task's [feature-history closure](workflow.md#feature-history-closure).
+Keep each plan's `review_scopes`, `review_basis` and `work_kind` metadata and
+one lifecycle status in that plan. Do not maintain a second status in a hub.
 
 If the source inventory changes, inspect the delta, map added/renamed features
 in `docs/research/review-index.json`, and run `refresh`, `render`, then `check`.

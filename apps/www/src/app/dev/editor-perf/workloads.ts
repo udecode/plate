@@ -1,11 +1,16 @@
 import {
   BaseHeadingPlugin,
   definePlugin,
-  migrateElementIds,
+  ElementIdPlugin,
   property,
   schema,
   type Value,
 } from 'platejs';
+import {
+  defineDocumentMigrations,
+  migrateDocument,
+  type DocumentMigrations,
+} from 'platejs/migrations';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 
@@ -44,6 +49,49 @@ const BenchmarkDenseInlinePropsSchema = definePlugin(
     },
   }
 );
+
+let nextBenchmarkElementId = 0;
+const BenchmarkElementIdPlugin = ElementIdPlugin.configure({
+  initialState: {
+    generateId: () => `editor-perf-${(nextBenchmarkElementId += 1)}`,
+  },
+});
+const elementIdAdmissionMigrations = new Map<
+  EditorPerfWorkloadId,
+  DocumentMigrations
+>();
+
+function getElementIdAdmissionMigrations(workloadId: EditorPerfWorkloadId) {
+  const cached = elementIdAdmissionMigrations.get(workloadId);
+
+  if (cached) return cached;
+
+  const migrations = defineDocumentMigrations({
+    plugins: [
+      ...getEditorPerfWorkloadPlugins(workloadId),
+      BenchmarkElementIdPlugin,
+    ],
+    schema: {
+      id: `editor-perf-${workloadId}-element-id`,
+      version: 1,
+    },
+    steps: {},
+  });
+
+  elementIdAdmissionMigrations.set(workloadId, migrations);
+
+  return migrations;
+}
+
+export function admitEditorPerfElementIds(
+  value: Value,
+  workloadId: EditorPerfWorkloadId
+) {
+  return migrateDocument(value, {
+    migrations: getElementIdAdmissionMigrations(workloadId),
+    source: 'current',
+  }).output.document.children;
+}
 
 export function getEditorPerfWorkloadPlugins(
   workloadId: EditorPerfWorkloadId,
@@ -631,15 +679,10 @@ export function getSeededEditorPerfWorkloadValue({
     return cloneValue(cachedValue);
   }
 
-  const seededValue = migrateElementIds(
+  const seededValue = admitEditorPerfElementIds(
     getEditorPerfWorkloadValue({ blocks, workloadId }),
-    {
-      generateId: createBenchIdFactory(
-        { count: 0 },
-        `seed-${resolvedCacheKey.replace(/[^a-z0-9-]/gi, '-')}`
-      ),
-    }
-  ).value;
+    workloadId
+  );
 
   seededDocumentCache.set(resolvedCacheKey, seededValue);
 

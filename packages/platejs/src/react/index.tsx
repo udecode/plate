@@ -15,7 +15,6 @@ export {
   type Editor,
   type InjectNodeProps,
   type NodeProps,
-  type PrepareDocument,
   type RenderElementProps,
   type RenderLeafProps,
   type RenderTextProps,

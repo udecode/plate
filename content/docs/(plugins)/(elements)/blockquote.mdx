@@ -99,29 +99,43 @@ const editor = createEditor({
 
 ### Turn into toolbar button
 
-You can add blockquote to the [Turn Into Toolbar Button](/docs/toolbar#turn-into-toolbar-button) to toggle blockquotes:
+Add a structural action that calls the blockquote feature directly:
 
 ```tsx
-import { PLUGINS } from 'platejs';
+import { BaseBlockquotePlugin, PLUGINS } from 'platejs';
 
 const turnIntoItem = {
   icon: <QuoteIcon />,
   label: 'Quote',
   value: PLUGINS.blockquote,
+  onSelect: () => {
+    const blockquote = editor.plugin(BaseBlockquotePlugin);
+
+    if (!blockquote.installed || editor.read.view.isReadOnly()) return;
+
+    blockquote.update.toggle();
+  },
 };
 ```
 
 ### Insert toolbar button
 
-You can add blockquote to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert blockquotes:
+Add an insert action that calls the installed blockquote feature:
 
 ```tsx
-import { PLUGINS } from 'platejs';
+import { BaseBlockquotePlugin, PLUGINS } from 'platejs';
 
 const insertItem = {
   icon: <QuoteIcon />,
   label: 'Quote',
   value: PLUGINS.blockquote,
+  onSelect: () => {
+    const blockquote = editor.plugin(BaseBlockquotePlugin);
+
+    if (!blockquote.installed || editor.read.view.isReadOnly()) return;
+
+    blockquote.update.insert({}, { select: true });
+  },
 };
 ```
 

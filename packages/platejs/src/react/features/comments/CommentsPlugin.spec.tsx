@@ -1,8 +1,13 @@
 import { act, render } from '@testing-library/react';
 import * as React from 'react';
 
+import { DefaultAuthoredPlugin } from '../../../authored';
 import type { Range } from '../../../core';
-import type { CommentThread } from '../../../features/comments';
+import {
+  commentBody,
+  commentsFixture,
+  commentThread,
+} from '../../../features/comments/__tests__/commentsFixture';
 import { getPlateDecorationSources } from '../../../internal/plugin/getPlateDecorationSources';
 import {
   type Editor,
@@ -22,32 +27,23 @@ const secondRange: Range = {
   anchor: { offset: 0, path: [1, 0] },
   focus: { offset: 2, path: [1, 0] },
 };
-const record = (id: string, range = firstRange): CommentThread => ({
-  id,
-  createdAt: '2026-09-09T12:00:00.000Z',
-  excerpt: id,
-  userId: 'alice',
-  messages: [
-    {
-      id: `${id}-message`,
-      userId: 'alice',
-      createdAt: '2026-09-09T12:00:00.000Z',
-      body: [{ type: 'paragraph', children: [{ text: 'Comment' }] }],
-    },
-  ],
-  resolved: false,
-  status: 'published',
-  target: { type: 'range', range },
+const record = (id: string, range = firstRange) => ({
+  thread: commentThread(id),
+  range,
 });
-const setup = (initialThreads: readonly CommentThread[]) => {
+const setup = (records: Array<ReturnType<typeof record>>) => {
+  const initialValue = [
+    { children: [{ text: 'Alpha' }], type: 'paragraph' },
+    { children: [{ text: 'Beta' }], type: 'paragraph' },
+  ];
   const editor = createEditor({
-    initialValue: [
-      { children: [{ text: 'Alpha' }], type: 'paragraph' },
-      { children: [{ text: 'Beta' }], type: 'paragraph' },
-    ],
+    initialValue,
     plugins: [
       CommentsPlugin.configure({
-        initialState: { initialThreads, currentUserId: 'alice' },
+        initialState: {
+          initialComments: commentsFixture(records, initialValue),
+          currentUserId: 'alice',
+        },
       }),
     ],
   });
@@ -88,19 +84,6 @@ it('paints ordered overlaps and refreshes only the old and new active nodes', ()
   expect(new Set(refresh.mock.calls[0][0].nodeKeys)).toEqual(
     new Set([editor.key([0, 0]), editor.key([1, 0])])
   );
-  comments.api.setActive(['first', 'overlap']);
-  comments.api.setThreads([
-    record('overlap'),
-    record('first'),
-    record('second', secondRange),
-  ]);
-  expect(comments.store.get('activeIds')).toEqual(['first', 'overlap']);
-  expect(comments.api.idsAt({ path: [0, 0], offset: 3 })).toEqual([
-    'overlap',
-    'first',
-  ]);
-  comments.api.setThreads([record('overlap'), record('second', secondRange)]);
-  expect(comments.store.get('activeIds')).toEqual(['overlap']);
   detach();
 });
 
@@ -119,18 +102,132 @@ it('retains mapped data across observer fan-out, detachment and remount without 
   expect(second).toHaveBeenCalledTimes(2);
   detachSecond();
   editor.update.text.insert('X', { at: { path: [0, 0], offset: 0 } });
-  expect(comments.api.range('first')!.anchor.offset).toBe(2);
+  expect(comments.api.attachment('first')).toMatchObject({
+    type: 'range',
+    status: 'attached',
+    range: { anchor: { offset: 2 } },
+  });
+  expect(
+    source.read({
+      entry: [editor.read.nodes.get([0, 0])![0], [0, 0]],
+    })[0].range
+  ).toEqual({
+    anchor: { path: [0, 0], offset: 2 },
+    focus: { path: [0, 0], offset: 5 },
+  });
   const remount = mock();
   const detach = source.observe!({ refresh: remount });
   editor.update.text.insert('Y', { at: { path: [0, 0], offset: 0 } });
   expect(remount).not.toHaveBeenCalled();
-  expect(comments.api.range('first')!.anchor.offset).toBe(3);
+  expect(comments.api.attachment('first')).toMatchObject({
+    type: 'range',
+    status: 'attached',
+    range: { anchor: { offset: 3 } },
+  });
   const ranges = source.read({
     entry: [editor.read.nodes.get([0, 0])![0], [0, 0]],
   });
   expect(ranges).toHaveLength(1);
-  expect(ranges[0].range).toEqual(comments.api.range('first'));
+  expect(comments.api.attachment('first')).toEqual({
+    type: 'range',
+    status: 'attached',
+    range: ranges[0].range,
+  });
   detach();
+});
+
+it('refreshes passive paint membership without observing and resumes the current index on remount', async () => {
+  const { editor, comments, source } = setup([record('first')]);
+  const subscribe = editor.subscribeCommit.bind(editor);
+  const commits = mock();
+  const stopCommits = subscribe(commits);
+  const stopped = mock();
+  const subscriptions = spyOn(editor, 'subscribeCommit').mockImplementation(
+    (listener) => {
+      const stop = subscribe(listener);
+      return () => {
+        stopped();
+        stop();
+      };
+    }
+  );
+  const value = editor.read.value();
+  const readIds = () =>
+    source
+      .read({ entry: [editor.read.nodes.get([0, 0])![0], [0, 0]] })
+      .map(({ attributes }) => attributes['data-comment-id']);
+  const create = (id: string) =>
+    comments.api.createThread({
+      id,
+      body: commentBody(),
+      target: { type: 'range', range: firstRange },
+    });
+  expect(readIds()).toEqual(['first']);
+  expect(await create('second')).toEqual({
+    status: 'applied',
+    value: 'second',
+  });
+  expect(readIds()).toEqual(['first', 'second']);
+  expect(await comments.api.removeThread('first')).toEqual({
+    status: 'applied',
+    value: undefined,
+  });
+  expect(readIds()).toEqual(['second']);
+  expect(comments.api.idsAt(firstRange.anchor)).toEqual(['second']);
+  expect(editor.read.value()).toEqual(value);
+  expect(commits).not.toHaveBeenCalled();
+  expect(subscriptions).not.toHaveBeenCalled();
+
+  const refresh = mock();
+  const changed = mock();
+  const detach = source.observe!({ refresh });
+  const stopAttachments = comments.api.subscribeAttachments(changed);
+  expect(subscriptions).toHaveBeenCalledTimes(1);
+  detach();
+  expect(stopped).not.toHaveBeenCalled();
+  stopAttachments();
+  expect(stopped).toHaveBeenCalledTimes(1);
+  expect(await comments.api.removeThread('second')).toEqual({
+    status: 'applied',
+    value: undefined,
+  });
+  expect(readIds()).toEqual([]);
+  expect(await create('third')).toEqual({
+    status: 'applied',
+    value: 'third',
+  });
+  expect(readIds()).toEqual(['third']);
+  expect(comments.api.attachment('third')).toEqual({
+    type: 'range',
+    status: 'attached',
+    range: firstRange,
+  });
+  expect(comments.api.idsAt(firstRange.anchor)).toEqual(['third']);
+  expect(editor.read.value()).toEqual(value);
+  expect(commits).not.toHaveBeenCalled();
+  expect(subscriptions).toHaveBeenCalledTimes(1);
+  expect(refresh).not.toHaveBeenCalled();
+  expect(changed).not.toHaveBeenCalled();
+
+  const remounted = mock();
+  const detachRemount = source.observe!({ refresh: remounted });
+  expect(subscriptions).toHaveBeenCalledTimes(2);
+  expect(readIds()).toEqual(['third']);
+  expect(await create('fourth')).toEqual({
+    status: 'applied',
+    value: 'fourth',
+  });
+  expect(readIds()).toEqual(['third', 'fourth']);
+  expect(remounted).toHaveBeenCalledWith({
+    nodeKeys: [editor.key([0, 0])],
+  });
+  detachRemount();
+  expect(stopped).toHaveBeenCalledTimes(2);
+  expect(readIds()).toEqual(['third', 'fourth']);
+  expect(subscriptions).toHaveBeenCalledTimes(2);
+  expect(commits).not.toHaveBeenCalled();
+  subscriptions.mockRestore();
+  stopCommits();
 });
 
 it('keeps fully deleted comments reachable and restores their exact paint on undo', () => {
@@ -141,14 +238,15 @@ it('keeps fully deleted comments reachable and restores their exact paint on und
   const read = () =>
     source.read({ entry: [editor.read.nodes.get([0, 0])![0], [0, 0]] });
   expect(read()).toEqual([]);
-  expect(comments.api.range('first')).toEqual({
-    anchor: firstRange.anchor,
-    focus: firstRange.anchor,
+  expect(comments.api.attachment('first')).toEqual({
+    type: 'range',
+    status: 'unavailable',
   });
-  editor.update((tx) => tx.history.undo());
+  expect(comments.api.getThread('first')).toEqual(commentThread('first'));
+  editor.api.history.undo();
   expect(read()).toHaveLength(1);
   expect(read()[0].range).toEqual(firstRange);
-  editor.update((tx) => tx.history.redo());
+  editor.api.history.redo();
   expect(read()).toEqual([]);
 });
 
@@ -232,4 +330,147 @@ it('uses the current model selection and the calling view permissions', () => {
   expect(comments.api.pendingRange()).toEqual(secondRange);
   view.unmount();
   expect(comments.api.getSnapshot().pending).not.toBeNull();
+});
+
+it('keeps five shared conversations attached and painted in independently configured mounted views', async () => {
+  const initialValue = [{ type: 'paragraph', children: [{ text: 'Alpha' }] }];
+  const ids = ['first', 'second', 'third', 'fourth', 'fifth'];
+  const editor = createEditor({
+    userId: 'alice',
+    initialValue,
+    plugins: [
+      DefaultAuthoredPlugin,
+      CommentsPlugin.configure({
+        initialState: {
+          currentUserId: 'alice',
+          initialComments: commentsFixture(
+            ids.map((id) => record(id)),
+            initialValue
+          ),
+        },
+      }),
+    ],
+  });
+  editor.update((tx) => {
+    tx.authored.propose();
+    tx.text.insert('++', { at: { path: [0, 0], offset: 0 } });
+  });
+  const comments = editor.plugin(CommentsPlugin).api;
+  const records = comments.getThreads();
+  const semantic = mock();
+  const stopSemantic = comments.subscribeThreads(semantic);
+  const commits = mock();
+  const stopCommits = editor.subscribeCommit(commits);
+  const views: Editor[] = [];
+  function Capture({ index }: { index: number }) {
+    const view = useEditor();
+    React.useLayoutEffect(() => {
+      views[index] = view;
+    }, [index, view]);
+    const { api } = view.plugin(CommentsPlugin);
+    const position = React.useSyncExternalStore(
+      api.subscribeAttachments,
+      () => {
+        const attachment = api.attachment('first');
+        return attachment?.type === 'range' && attachment.status === 'attached'
+          ? `${attachment.range.anchor.offset}:${attachment.range.focus.offset}`
+          : 'unavailable';
+      }
+    );
+    return (
+      <>
+        <EditorContent />
+        <output data-testid={`position-${index}`}>{position}</output>
+      </>
+    );
+  }
+  const mounted = render(
+    <>
+      <EditorRoot
+        editor={editor}
+        authored={{ intent: 'edit', projection: 'accepted' }}
+        suppressInstanceWarning
+      >
+        <Capture index={0} />
+      </EditorRoot>
+      <EditorRoot
+        editor={editor}
+        authored={{ intent: 'propose', projection: 'markup' }}
+        suppressInstanceWarning
+      >
+        <Capture index={1} />
+      </EditorRoot>
+    </>
+  );
+  const first = views[0].plugin(CommentsPlugin).api;
+  const second = views[1].plugin(CommentsPlugin).api;
+  const source = getPlateDecorationSources(editor).find(
+    ({ id }) => id === 'comments'
+  )!;
+  const readPaint = (view: Editor) =>
+    source
+      .read({
+        editor: view,
+        entry: [view.read.nodes.get([0, 0])![0], [0, 0]],
+      })
+      .map(({ range }) => range);
+  const projected = {
+    anchor: { path: [0, 0], offset: 3 },
+    focus: { path: [0, 0], offset: 6 },
+  };
+  expect(mounted.getByTestId('position-0').textContent).toBe('1:4');
+  expect(mounted.getByTestId('position-1').textContent).toBe('3:6');
+  expect(first.idsAt(firstRange.anchor)).toEqual(ids);
+  expect(second.idsAt(firstRange.anchor)).toEqual([]);
+  expect(second.idsAt(projected.anchor)).toEqual(ids);
+  expect(readPaint(views[0])).toEqual(ids.map(() => firstRange));
+  expect(readPaint(views[1])).toEqual(ids.map(() => projected));
+
+  await act(async () => {
+    views[0]
+      .plugin(DefaultAuthoredPlugin)
+      .api.setView({ intent: 'edit', projection: 'markup' });
+  });
+  expect(mounted.getByTestId('position-0').textContent).toBe('3:6');
+  expect(mounted.getByTestId('position-1').textContent).toBe('3:6');
+  expect(readPaint(views[0])).toEqual(ids.map(() => projected));
+  expect(first.idsAt(projected.anchor)).toEqual(ids);
+  await act(async () => {
+    views[1]
+      .plugin(DefaultAuthoredPlugin)
+      .api.setView({ intent: 'edit', projection: 'accepted' });
+  });
+  expect(mounted.getByTestId('position-1').textContent).toBe('1:4');
+  expect(readPaint(views[1])).toEqual(ids.map(() => firstRange));
+  expect(first.getSnapshot().visibleThreadIds).toHaveLength(5);
+  expect(second.getSnapshot().visibleThreadIds).toHaveLength(5);
+  for (const current of records) {
+    expect(first.getThread(current.id)).toBe(current);
+    expect(second.getThread(current.id)).toBe(current);
+  }
+  expect(semantic).not.toHaveBeenCalled();
+  expect(commits).not.toHaveBeenCalled();
+  const changed = mock();
+  const refresh = mock();
+  const stopAttachments = first.subscribeAttachments(changed);
+  const stopPaint = source.observe!({ editor: views[0], refresh });
+  mounted.unmount();
+  stopAttachments();
+  stopPaint();
+  views[0]
+    .plugin(DefaultAuthoredPlugin)
+    .api.setView({ intent: 'edit', projection: 'accepted' });
+  await Promise.resolve();
+  expect(changed).not.toHaveBeenCalled();
+  expect(refresh).not.toHaveBeenCalled();
+  expect(first.attachment('first')).toEqual({
+    type: 'range',
+    status: 'attached',
+    range: firstRange,
+  });
+  expect(first.idsAt(firstRange.anchor)).toEqual(ids);
+  stopCommits();
+  stopSemantic();
+  await Promise.all(ids.map((id) => comments.removeThread(id)));
+  expect(first.getThreads()).toEqual([]);
 });

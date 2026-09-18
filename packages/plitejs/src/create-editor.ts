@@ -1,6 +1,10 @@
 import { extendEditor, getFragment } from './core';
 import { createEditorAnchorApi } from './core/anchor';
 import { hasActiveAnchors } from './core/anchor-state';
+import {
+  authoredDocumentCapabilityPoint,
+  type NativeAuthoredDocumentCapability,
+} from './core/authored-document-capability';
 import { initializeAuthoredDocument } from './core/authored-runtime';
 import { createCommandDispatch } from './core/command-registry';
 import {
@@ -62,6 +66,10 @@ import {
   updateEditor,
   withEditorRootChildren,
 } from './core/public-state';
+import type {
+  CompiledEditorSchema,
+  EditorSchemaContract,
+} from './core/schema-compiler';
 import { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
 import {
   assertSelectionSupported,
@@ -78,6 +86,7 @@ import type {
   EditorCommit,
   PluginInput,
   EditorSnapshot,
+  EditorStateField,
   EditorTransactionSpecBuilder,
   EditorUpdateContext,
   EditorUpdateTransaction,
@@ -303,6 +312,7 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
       );
     }
     initializeAuthoredDocument(editor);
+    publication.beforePublish();
     publication.finalize();
     invalidateEditorTransactionSpecs(editor);
   } catch (error) {
@@ -396,6 +406,58 @@ export const compileEditorSchemaContractEntries = (
 
   try {
     return publication.schemaContract();
+  } finally {
+    publication.rollback();
+  }
+};
+
+/** Compile immutable schema and persistent-field authority without publishing it. @internal */
+export const compileEditorSchemaCapabilityEntries = (
+  editor: AnyEditor,
+  entries: readonly InternalPluginPublicationEntry[]
+): Readonly<{
+  authored?: NativeAuthoredDocumentCapability;
+  contract: EditorSchemaContract;
+  fields: ReadonlyArray<EditorStateField<any>>;
+  schema: CompiledEditorSchema;
+}> => {
+  assertPluginPublicationInactive(editor);
+  const hasDocument = assertEditorSchemaBootstrap(editor);
+
+  if (hasDocument || hasActiveAnchors(editor)) {
+    throw new Error(
+      'Editor schema compilation requires an empty editor without active anchors.'
+    );
+  }
+  const publication = prepareScopedPluginPublication(editor, entries, {
+    initialPublication: true,
+    validateDocument: false,
+  });
+
+  try {
+    const compilation = publication.schemaCompilation();
+    const authored = compilation.contributions(authoredDocumentCapabilityPoint);
+
+    if (authored.length > 1) {
+      throw new Error(
+        'Editor schema compilation received multiple authored document capabilities.'
+      );
+    }
+    const ownsAuthored = compilation.fields.some(
+      ({ key }) => key === 'authored'
+    );
+    if (ownsAuthored !== (authored.length === 1)) {
+      throw new Error(
+        'The authored state field and document capability must be installed together.'
+      );
+    }
+
+    return Object.freeze({
+      ...(authored[0] ? { authored: authored[0] } : {}),
+      contract: publication.schemaContract(),
+      fields: compilation.fields,
+      schema: compilation.schema,
+    });
   } finally {
     publication.rollback();
   }

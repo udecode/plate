@@ -27,18 +27,30 @@ implementation request into another architecture review.
 Before expensive investigation, use the project's existing decision index,
 research ledgers and review artifacts to find earlier work on the same user
 job. Match the question and constraints, not only its feature name. Read the
-recorded alternatives, rejected leads, source versions, proof limits and
-unresolved questions. Follow project routing for storage and lookup; do not
-create a separate history system for this skill.
+current decision and the earlier material alternatives, including rejected
+leads. Reconcile later implementation and proof with that decision: a completed
+design is not adopted behavior, a completed implementation can outdate its
+summary, and missing or stale evidence stays explicit. Inspect relevant
+historical candidates before associating them; a filename match is only a lead.
+Follow project routing for storage and lookup; do not create another history
+system or independently maintained progress tracker.
 
 Invoking this skill again requests another review, including when the source
 is unchanged. No special flag or model change is required. Reuse source
 observations whose version, scope and relevant dependencies still match, then
-make a fresh first-principles comparison. A previous verdict does not satisfy
-the new request or make its architecture a hard law. Explain whether the new
-review reaffirms, supersedes, reverses or defers the earlier conclusion, and
-name the changed evidence or reasoning. Do not repeat external discovery
-automatically when the recorded evidence answers the current question.
+challenge the strongest deletion or replacement alternative afresh. A previous
+verdict is evidence, not a hard law. When the challenge adds no material value,
+reaffirm and Stop without another implementation plan or repeated external
+research. Reconsideration does not require redoing a settled investigation.
+
+Record which prior conclusions this review retains, reopens or supersedes and
+why. Changed requirements, contradictory evidence, source changes or a
+materially better argument can justify reopening. Keep that boundary at the
+question level: a paint defect does not silently reopen settled topology or
+resize decisions. A changed fingerprint calls for inspecting the changed input;
+it does not by itself invalidate every decision or establish a better design.
+Name unresolved contradictions between the decision, implementation and proof
+before recommending more work.
 
 Use the supplied proposal, code, plan, or conversation to name the current job,
 the proposed change, and the claimed benefit. Inspect the current owner and a
@@ -199,7 +211,8 @@ a scoring system, review panel or checklist suite merely to issue this verdict.
 Persist material reviews, including Stop and Defer, through the project's
 existing history owner before closing. Record the question and requirements,
 alternatives, verdict and rationale, source/consumer references and versions,
-proof limits, prior-review relation, date, and available model/method identity.
+proof limits, reconciled prior conclusions and reasons, subsequent execution,
+prior-review relation, date, and available model/method identity.
 Keep unknown historical provenance explicit. Preserve completed earlier
 records; correct them with a linked later record. The current summary may
 change while the earlier result remains readable. A negative review record
