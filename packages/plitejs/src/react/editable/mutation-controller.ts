@@ -1109,7 +1109,10 @@ export const applyModelOwnedTextInput = ({
               tx.annotations.set(nativeGroupingInput, nativeInput);
             }
             tx.selection.set(target);
-            tx.command(editorCommands.insertText, { text: data });
+            tx.command(editorCommands.insertText, {
+              options: { at: target },
+              text: data,
+            });
           });
           return;
         }
