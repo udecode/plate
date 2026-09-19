@@ -35,7 +35,7 @@ export const copyBlockMarksToSpanChild = (rootNode: Node) => {
         fontWeight ||
         textDecoration
       ) {
-        const span = document.createElement('span');
+        const span = el.ownerDocument.createElement('span');
 
         if (!['inherit', 'initial'].includes(color)) {
           span.style.color = color;
@@ -53,8 +53,8 @@ export const copyBlockMarksToSpanChild = (rootNode: Node) => {
 
         span.style.textDecoration = textDecoration;
 
-        span.innerHTML = el.innerHTML;
-        element.innerHTML = span.outerHTML;
+        span.append(...Array.from(el.childNodes));
+        el.replaceChildren(span);
       }
     }
 

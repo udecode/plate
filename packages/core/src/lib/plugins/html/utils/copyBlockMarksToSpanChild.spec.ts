@@ -31,4 +31,19 @@ describe('copyBlockMarksToSpanChild', () => {
     expect(root.querySelector('table > span')).toBeNull();
     expect(root.querySelector('p > span')).toBeNull();
   });
+
+  it('keeps parsed children in their source document', () => {
+    const source = new DOMParser().parseFromString(
+      '<p style="color: red"><strong>Text</strong></p>',
+      'text/html'
+    );
+    const child = source.querySelector('strong');
+
+    copyBlockMarksToSpanChild(source.body);
+
+    const span = source.querySelector('p > span');
+
+    expect(span?.ownerDocument).toBe(source);
+    expect(span?.firstChild).toBe(child);
+  });
 });
